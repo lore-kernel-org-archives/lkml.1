@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbYGUCO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759090AbYGUCTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758823AbYGUCO1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 22:14:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758702AbYGUCOQ
+	id S1759090AbYGUCTu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 22:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758893AbYGUCTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 22:14:16 -0400
-Received: from relay2.globalproof.net ([194.146.153.25]:44334 "EHLO
-	relay2.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758700AbYGUCOQ (ORCPT
+	Sun, 20 Jul 2008 22:19:39 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:9876 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758895AbYGUCTi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 22:14:16 -0400
-X-Greylist: delayed 1108 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Jul 2008 22:14:15 EDT
-From: nuclearcat@nuclearcat.com
-To: linux-kernel@vger.kernel.org
-Subject: blackfin and USB
-Date: Mon, 21 Jul 2008 04:55:38 +0300
-User-Agent: KMail/1.9.9
-Cc: idan@nicta.com.au, rgetz@blackfin.uclinux.org, cooloney@kernel.org
+	Sun, 20 Jul 2008 22:19:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=L/eDx2UyTSLZMefbsJaSb/ikgW5ctQH9wkoU1KZDMQlZxgj05Z55ZyUub0JIo3zNX5
+         A9EXXEqizbP9tN4gUrHOysnWBglERtTiSjiHYspPPMK4T0Lvba8rp0GCmo3plR0bC9sw
+         SEoM0IYR9aF1WGXykInOfLf+aC8khTbv56xOo=
+Message-ID: <8bd0f97a0807201919l693e0978rab627f92a72f17f5@mail.gmail.com>
+Date: Sun, 20 Jul 2008 22:19:38 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: nuclearcat@nuclearcat.com
+Subject: Re: blackfin and USB
+Cc: linux-kernel@vger.kernel.org, idan@nicta.com.au,
+       rgetz@blackfin.uclinux.org, cooloney@kernel.org
+In-Reply-To: <200807210455.38681.nuclearcat@nuclearcat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807210455.38681.nuclearcat@nuclearcat.com>
+References: <200807210455.38681.nuclearcat@nuclearcat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there
+On Sun, Jul 20, 2008 at 9:55 PM,  <nuclearcat@nuclearcat.com> wrote:
+> I am trying to configure kernel for Blackfin (BF533). I cannot enable USB driver for host (any)
 
-I am trying to configure kernel for Blackfin (BF533). I cannot enable USB driver for host (any) till i enable PCI (and in fact there is no PCI on blackfin).
-Even if i enable it, i will have:
+add this to drivers/usb/Kconfig:USB_ARCH_HAS_HCD
+default y if BLACKFIN
 
-  CC      drivers/pci/access.o
-  CC      drivers/pci/bus.o
-  CC      drivers/pci/probe.o
-drivers/pci/probe.c: In function 'pci_scan_slot':
-drivers/pci/probe.c:1024: error: implicit declaration of function 'pcibios_scan_all_fns'
+> till i enable PCI (and in fact there is no PCI on blackfin).
+> Even if i enable it, i will have:
 
-I guess there must be a way to enable devices without enabling PCI (logically correct), or it must not call this function.
+dont enable it
 
-I am using 2.6.26 vanilla kernel. 
-Btw is networking works on Blackfin with vanilla?
+> Btw is networking works on Blackfin with vanilla?
+
+"networking" works.  specific driver is up to you to see if it works.
+-mike
