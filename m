@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbYGUMea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbYGUMii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752530AbYGUMea (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 08:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbYGUMeV
+	id S1752881AbYGUMii (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 08:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYGUMia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 08:34:21 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:56083 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbYGUMeV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 08:34:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=vMmssBSO4sv8qlc4cU4AC62L/cfJJaZ2J0atuFaw2pV9BmcqO1CWwZ+icUpMomN/Ih
-         2GbO0NtbMhQ96hZE4Oum3huQxfg/ivSSAtSbCGgEpUKP+DMd+jSGAXhHQVD5H42gzr8W
-         +vHfxj+IleBSe8sqe4sWmVuUqdKgsu+N6zsss=
-Message-ID: <6dd519ae0807210534k462858d6l13de6aaef29a4a9f@mail.gmail.com>
-Date: Mon, 21 Jul 2008 15:34:19 +0300
-From: "Brian Marete" <bgmarete@gmail.com>
-To: "Simon Arlott" <simon@fire.lp0.eu>
-Subject: Re: [PATCH] V4L: Link tuner before saa7134
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-dvb@linuxtv.org
-In-Reply-To: <38354.simon.1216381906@5ec7c279.invalid>
+	Mon, 21 Jul 2008 08:38:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34781 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751394AbYGUMi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 08:38:29 -0400
+Date: Mon, 21 Jul 2008 08:37:06 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Simon Horman <horms@verge.net.au>
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Haren Myneni <hbabu@us.ibm.com>
+Subject: Re: [PATCH] kdump: Update kdump documentation as
+	kexec-tools-resting has been renamed kexec-tools
+Message-ID: <20080721123706.GA4451@redhat.com>
+References: <20080719005835.GA19032@verge.net.au> <20080719011612.GA20745@verge.net.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <6dd519ae0807180428k30abd15eo60fd2856f7a43821@mail.gmail.com>
-	 <38354.simon.1216381906@5ec7c279.invalid>
+In-Reply-To: <20080719011612.GA20745@verge.net.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 2:51 PM, Simon Arlott <simon@fire.lp0.eu> wrote:
->
-> On Fri, July 18, 2008 12:28, Brian Marete wrote:
->> On Jul 14, 6:00 am, hermann pitton <hermann-pit...@arcor.de> wrote:
->>>
->>> #1 users can't set thetunertype anymore,
->>>    but the few cases oftunerdetection from eeprom we have should
->>>    work again for that price.
->>
->> Hello,
->>
->> Any patch yet for above issue? It seems to have made it into 2.6.26.
->>
->> I use saa7134 with everything, including the tuner modules, compiled
->> as a module. My card is detected as a flyvideo2000. The default tuner
->> for that card (#37) allows me to tune into TV but not to FM Radio. I
->> can access both functions (TV and FM Radio) if I override with
->> tuner=69, which is what I usually do. That override does not work on
->> 2.6.26.
->>
->> Any suggestions?
->
-> Modify saa7134_board_init2 so that the manual tuner type setting isn't
-> ignored. The first thing it does is to overwrite the current value
-> (set earlier from module parameter) with the static values... even
-> before trying to autodetect it.
->
-> In saa7134-core.c saa7134_initdev:
->  dev->tuner_type   = saa7134_boards[dev->board].tuner_type;
-> +dev->tuner_addr   = saa7134_boards[dev->board].tuner_addr;
->
-> In saa7134-cards.c saa7134_board_init2:
-> -dev->tuner_type   = saa7134_boards[dev->board].tuner_type;
-> -dev->tuner_addr   = saa7134_boards[dev->board].tuner_addr;
->
-> I think that will fix it.
+On Sat, Jul 19, 2008 at 11:16:14AM +1000, Simon Horman wrote:
+> Signed-off-by: Simon Horman <horms@verge.net.au>
+> 
+> --- 
+> Reposting to Vivek's new email address
+> 
+> Index: linux-2.6/Documentation/kdump/kdump.txt
+> ===================================================================
+> --- linux-2.6.orig/Documentation/kdump/kdump.txt	2008-07-19 10:27:50.000000000 +1000
+> +++ linux-2.6/Documentation/kdump/kdump.txt	2008-07-19 10:51:57.000000000 +1000
+> @@ -65,26 +65,26 @@ Install kexec-tools
+>  
+>  2) Download the kexec-tools user-space package from the following URL:
+>  
+> -http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/kexec-tools-testing.tar.gz
+> +http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/kexec-tools.tar.gz
+>  
+> -This is a symlink to the latest version, which at the time of writing is
+> -20061214, the only release of kexec-tools-testing so far. As other versions
+> -are released, the older ones will remain available at
+> -http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/
+> +This is a symlink to the latest version.
+>  
+> -Note: Latest kexec-tools-testing git tree is available at
+> +The latest kexec-tools git tree is available at:
+>  
+> -git://git.kernel.org/pub/scm/linux/kernel/git/horms/kexec-tools-testing.git
+> +git://git.kernel.org/pub/scm/linux/kernel/git/horms/kexec-tools.git
+>  or
+> -http://www.kernel.org/git/?p=linux/kernel/git/horms/kexec-tools-testing.git;a=summary
+> +http://www.kernel.org/git/?p=linux/kernel/git/horms/kexec-tools.git
+> +
+> +More information about kexec-tools can be found at
+> +http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/README.html
+>  
+>  3) Unpack the tarball with the tar command, as follows:
+>  
+> -   tar xvpzf kexec-tools-testing.tar.gz
+> +   tar xvpzf kexec-tools.tar.gz
+>  
+>  4) Change to the kexec-tools directory, as follows:
+>  
+> -   cd kexec-tools-testing-VERSION
+> +   cd kexec-tools-VERSION
+>  
+>  5) Configure the package, as follows:
 
-And, indeed, it fixed it. I hope the patch will make it into the main-line.
+Looks Good. Thanks Simon.
 
-Thanks.
+Acked-by: Vivek Goyal <vgoyal@redhat.com>
 
--- 
-B. Gitonga Marete
-Tel: +254-722-151-590
+Vivek
