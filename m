@@ -1,64 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbYGUIf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbYGUIh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757134AbYGUIf0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 04:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYGUIfP
+	id S1757592AbYGUIh1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 04:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbYGUIhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 04:35:15 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:32111 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753570AbYGUIfN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 04:35:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Sunle7cqc5Cqm/9PnoigKXaAcQUqWdjFdtD6if4nIcAGepu23Sb7QwWJRJiVlpT4D/
-         cwpMNSPaFp/g3C+tVRJL9PS4c9Gh0/uIojiH8r2aKgXw5J6uIDuhObyusxF21sIjpn0o
-         5RtmzJiTbg/vq/If7CVadA8IbSLEQ7N9ZwPuM=
-Date: Mon, 21 Jul 2008 12:35:09 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] vfs: use kstrdup()
-Message-ID: <20080721083509.GB20011@lenovo>
-References: <4881BEF4.2020201@cn.fujitsu.com> <20080719131317.GA7027@asus> <20080719131909.GB7027@asus> <20080721052713.GY28946@ZenIV.linux.org.uk> <48842CDB.1090009@cn.fujitsu.com> <20080721070346.GA28946@ZenIV.linux.org.uk> <20080721080427.GC6662@lenovo> <20080721082857.GB28946@ZenIV.linux.org.uk>
+	Mon, 21 Jul 2008 04:37:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32894 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753979AbYGUIhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 04:37:11 -0400
+Date: Mon, 21 Jul 2008 10:36:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tomas Winkler <tomas.winkler@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: iwlwifi: fix build bug in "iwlwifi: fix LED stall"
+Message-ID: <20080721083654.GA19849@elte.hu>
+References: <20080720.104411.81744468.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080721082857.GB28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080720.104411.81744468.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Al Viro - Mon, Jul 21, 2008 at 09:28:57AM +0100]
-| On Mon, Jul 21, 2008 at 12:04:27PM +0400, Cyrill Gorcunov wrote:
-| >  		err = mnt_alloc_id(mnt);
-| > -		if (err) {
-| > -			kmem_cache_free(mnt_cache, mnt);
-| > -			return NULL;
-| > +		if (err)
-| > +			goto err;
-| 
-| Ugh...  Labels are in a separate namespace, but really...
-| 
-| > +		if (name) {
-| > +			mnt->mnt_devname = kstrdup(name, GFP_KERNEL);
-| > +			if (!mnt->mnt_devname)
-| > +				goto err;
-| 
-| > +err:
-| > +	kmem_cache_free(mnt_cache, mnt);
-| > +	return NULL;
-| 
-| Leak; note the mnt_alloc_id() above.  Either do that kstrdup() first and
-| kfree the result on mnt_alloc_id() failure or do mnt_free_id() on kstrdup()
-| one...
-| 
 
-oh my, that stupid from my side - will update shortly
+hi David,
 
-		- Cyrill -
+>       iwlwifi: fix LED stall
+
+please find a small build fix below.
+
+	Ingo
+
+-------------->
+commit c61b0199e779caf2dcfdb6e83439c1fdf9f20209
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Mon Jul 21 10:33:42 2008 +0200
+
+    iwlwifi: fix build bug in "iwlwifi: fix LED stall"
+    
+    -tip testing found the following build failure:
+    
+      drivers/net/wireless/iwlwifi/iwl-led.c: In function ‘iwl_led_brightness_set’:
+      drivers/net/wireless/iwlwifi/iwl-led.c:198: error: ‘led_type_str’ undeclared (first use in this function)
+      drivers/net/wireless/iwlwifi/iwl-led.c:198: error: (Each undeclared identifier is reported only once
+      drivers/net/wireless/iwlwifi/iwl-led.c:198: error: for each function it appears in.)
+    
+    Triggered if this driver is built with !CONFIG_IWLWIFI_DEBUG. Introduced
+    by commit 0eee61273.
+    
+    The best fix is to make led_type_str available as a zero-size symbol and to
+    only add members to the array if CONFIG_IWLWIFI_DEBUG is set. This way
+    there's no overhead in the debugging case and we have type checking in the
+    IWL_DEBUG_LED() macro as well.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/net/wireless/iwlwifi/iwl-led.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/wireless/iwlwifi/iwl-led.c b/drivers/net/wireless/iwlwifi/iwl-led.c
+index 899d7a2..d7129f7 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-led.c
++++ b/drivers/net/wireless/iwlwifi/iwl-led.c
+@@ -44,15 +44,15 @@
+ #include "iwl-io.h"
+ #include "iwl-helpers.h"
+ 
+-#ifdef CONFIG_IWLWIFI_DEBUG
+ static const char *led_type_str[] = {
++#ifdef CONFIG_IWLWIFI_DEBUG
+ 	__stringify(IWL_LED_TRG_TX),
+ 	__stringify(IWL_LED_TRG_RX),
+ 	__stringify(IWL_LED_TRG_ASSOC),
+ 	__stringify(IWL_LED_TRG_RADIO),
+ 	NULL
+-};
+ #endif /* CONFIG_IWLWIFI_DEBUG */
++};
+ 
+ 
+ static const struct {
