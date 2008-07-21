@@ -1,92 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbYGUIEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbYGUILh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756902AbYGUIEt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 04:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYGUIEd
+	id S1756408AbYGUILh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 04:11:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYGUILW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 04:04:33 -0400
-Received: from ik-out-1112.google.com ([66.249.90.183]:18398 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753821AbYGUIEb (ORCPT
+	Mon, 21 Jul 2008 04:11:22 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:19072 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753570AbYGUILU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 04:04:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hm7WzwVg5gPFHewTohmnNm8As8oWfynbyzd8mOZpyvn0sNf6bSm8QDsDNmu4RVRJqg
-         R6gi/pzyAs0Blw4SFY6IEFfJEBkDLKdNH2Mg0qHGP/3IfPdxQe4GtsWXi+M+eDB7moiP
-         DB7/ojU0IRmrAcm+SeViH3HlVgqgQXEPN1XNs=
-Date: Mon, 21 Jul 2008 12:04:27 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] vfs: use kstrdup()
-Message-ID: <20080721080427.GC6662@lenovo>
-References: <4881BEF4.2020201@cn.fujitsu.com> <20080719131317.GA7027@asus> <20080719131909.GB7027@asus> <20080721052713.GY28946@ZenIV.linux.org.uk> <48842CDB.1090009@cn.fujitsu.com> <20080721070346.GA28946@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 21 Jul 2008 04:11:20 -0400
+Message-Id: <488460E0.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Mon, 21 Jul 2008 09:11:44 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andi Kleen" <andi@firstfloor.org>, "Takashi Iwai" <tiwai@suse.de>
+Cc: <robert.moore@intel.com>, "Len Brown" <lenb@kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+Subject: Re: Endless ACPI errors on Linus tree (5b664cb235)
+References: <s5hzlof1ll2.wl%tiwai@suse.de>
+ <87od4vqvaj.fsf@basil.nowhere.org> <s5htzencp02.wl%tiwai@suse.de>
+ <s5hr69rz57u.wl%tiwai@suse.de> <s5hk5fjurag.wl%tiwai@suse.de>
+ <4880DE15.76E4.0078.0@novell.com> <s5habgfdu5e.wl%tiwai@suse.de>
+ <20080718165814.GF32051@basil.nowhere.org> <s5hmykexm53.wl%tiwai@suse.de>
+In-Reply-To: <s5hmykexm53.wl%tiwai@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080721070346.GA28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Al Viro - Mon, Jul 21, 2008 at 08:03:46AM +0100]
-| 
-[...]
-| The right thing here is to consider failing allocation of ->mnt_devname
-| as failure of the entire alloc.
-| 
+>> > > After someone else observed some problem with this patch earlier, I had
+>> > > already sent out attached patch as a replacement one. Any chance you
+>> > > could also try this with your box?
+>> > 
+>> > It resulted in the same error, unfortunately.
+>> 
+>> Can you send a acpi table dump please?
 
-Al, what about the patch below? I'm not sure if Li's version already
-in someone tree so it's from-the-scratch. If this ok, i think Li could
-update his version and resend.
+The situation is even worse here - the (v2) bit width now is divisible by 16,
+but still isn't in sync with the v1 field (as is the gpe0 one):
 
-		- Cyrill -
----
+		v1		v2
+PM1a_EVT	4		0x10
+PM1a_CNT	2		0x10
+PM1b_CNT	2		0x10
+PM_TMR		4		0x20
+GPE0		8		0x20
 
-Index: linux-2.6.git/fs/namespace.c
-===================================================================
---- linux-2.6.git.orig/fs/namespace.c	2008-07-21 11:34:37.000000000 +0400
-+++ linux-2.6.git/fs/namespace.c	2008-07-21 12:00:01.000000000 +0400
-@@ -112,9 +112,13 @@ struct vfsmount *alloc_vfsmnt(const char
- 		int err;
- 
- 		err = mnt_alloc_id(mnt);
--		if (err) {
--			kmem_cache_free(mnt_cache, mnt);
--			return NULL;
-+		if (err)
-+			goto err;
-+
-+		if (name) {
-+			mnt->mnt_devname = kstrdup(name, GFP_KERNEL);
-+			if (!mnt->mnt_devname)
-+				goto err;
- 		}
- 
- 		atomic_set(&mnt->mnt_count, 1);
-@@ -127,16 +131,12 @@ struct vfsmount *alloc_vfsmnt(const char
- 		INIT_LIST_HEAD(&mnt->mnt_slave_list);
- 		INIT_LIST_HEAD(&mnt->mnt_slave);
- 		atomic_set(&mnt->__mnt_writers, 0);
--		if (name) {
--			int size = strlen(name) + 1;
--			char *newname = kmalloc(size, GFP_KERNEL);
--			if (newname) {
--				memcpy(newname, name, size);
--				mnt->mnt_devname = newname;
--			}
--		}
- 	}
- 	return mnt;
-+
-+err:
-+	kmem_cache_free(mnt_cache, mnt);
-+	return NULL;
- }
- 
- /*
+That would basically mean there's no way to use the v2 fields here - all
+the code could do is report the inconsitency, but it would have to use
+the v1 field in any case. That's really a shame, and as before I'm
+somewhat hesitant to do so. The only way I could easily find myself
+doing this would be to introduce a command line option controlling the
+behavior here, but that would need to be done outside of the ACPICA
+code I'd assume.
+
+Andi, Bob, Len?
+
+Jan
+
