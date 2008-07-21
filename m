@@ -1,47 +1,512 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932238AbYGUDEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759046AbYGUDE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932238AbYGUDEl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 23:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760209AbYGUDD5
+	id S1759046AbYGUDE6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 23:04:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932070AbYGUDD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 23:03:57 -0400
-Received: from ns.suse.de ([195.135.220.2]:33928 "EHLO mx1.suse.de"
+	Sun, 20 Jul 2008 23:03:58 -0400
+Received: from mx2.suse.de ([195.135.220.15]:43740 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758832AbYGUDDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 23:03:55 -0400
-Message-Id: <20080721025912.901688346@suse.de>
+	id S1759092AbYGUDD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 23:03:56 -0400
+Message-Id: <20080721025913.063165574@suse.de>
 User-Agent: quilt/0.46_cvs20080326-18
-Date: Mon, 21 Jul 2008 04:28:25 +0200
+Date: Mon, 21 Jul 2008 04:28:26 +0200
 From: Andreas Gruenbacher <agruen@suse.de>
 To: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: [genksyms patch 2/4] Include extern information in dumps
+Subject: [genksyms patch 3/4] Track symbol checksum changes
 References: <20080721022823.896799736@suse.de>
-Content-Disposition: inline; filename=patches.suse/genksyms-dump.diff
+Content-Disposition: inline; filename=patches.suse/genksyms-reference.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The extern flag currently is not included in type dump files
-(genksyms --dump-types). Include that flag there for completeness.
+Sometimes it is preferable to avoid changes of exported symbol checksums (to
+avoid breaking externally provided modules).  When a checksum change occurs, it
+can be hard to figure out what caused this change: underlying types may have
+changed, or additional type information may simply have become available at the
+point where a symbol is exported.
+
+Add a new --reference option to genksyms which allows it to report why
+checksums change, based on the type information dumps it creates with
+the --dump-types flag.  Genksyms will read in such a dump from a previous run,
+and report which symbols have changed (and why).
+
+The behavior can be controlled for an entire build as follows: If
+KBUILD_SYMTYPES is set, genksyms uses --dump-types to produce *.symtypes dump
+files.  If any *.symref files exist, those will be used as the reference to
+check against.  If KBUILD_PRESERVE is set, checksum changes will fail the
+build.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- scripts/genksyms/genksyms.c |    2 ++
- 1 file changed, 2 insertions(+)
+ scripts/Makefile.build      |   16 ++
+ scripts/genksyms/genksyms.c |  236 +++++++++++++++++++++++++++++++++++++++++---
+ scripts/genksyms/genksyms.h |    6 +
+ 3 files changed, 239 insertions(+), 19 deletions(-)
 
 Index: b/scripts/genksyms/genksyms.c
 ===================================================================
 --- a/scripts/genksyms/genksyms.c
 +++ b/scripts/genksyms/genksyms.c
-@@ -546,6 +546,8 @@ int main(int argc, char **argv)
- 			}
- 			fputs(sym->name, dumpfile);
- 			putc(' ', dumpfile);
-+			if (sym->is_extern)
-+				fputs("extern ", dumpfile);
- 			print_list(dumpfile, sym->defn);
- 			putc('\n', dumpfile);
+@@ -42,7 +42,8 @@ static FILE *debugfile;
+ int cur_line = 1;
+ char *cur_filename;
  
+-static int flag_debug, flag_dump_defs, flag_dump_types, flag_warnings;
++static int flag_debug, flag_dump_defs, flag_reference, flag_dump_types,
++	   flag_preserve, flag_warnings;
+ static const char *arch = "";
+ static const char *mod_prefix = "";
+ 
+@@ -58,6 +59,8 @@ static const char *const symbol_type_nam
+ 
+ static int equal_list(struct string_list *a, struct string_list *b);
+ static void print_list(FILE * f, struct string_list *list);
++static void print_location(void);
++static void print_type_name(enum symbol_type type, const char *name);
+ 
+ /*----------------------------------------------------------------------*/
+ 
+@@ -151,25 +154,66 @@ struct symbol *find_symbol(const char *n
+ 
+ 	for (sym = symtab[h]; sym; sym = sym->hash_next)
+ 		if (map_to_ns(sym->type) == map_to_ns(ns) &&
+-		    strcmp(name, sym->name) == 0)
++		    strcmp(name, sym->name) == 0 &&
++		    sym->is_declared)
+ 			break;
+ 
+ 	return sym;
+ }
+ 
+-struct symbol *add_symbol(const char *name, enum symbol_type type,
+-			  struct string_list *defn, int is_extern)
++static int is_unknown_symbol(struct symbol *sym)
++{
++	struct string_list *defn;
++
++	return ((sym->type == SYM_STRUCT ||
++		 sym->type == SYM_UNION ||
++		 sym->type == SYM_ENUM) &&
++		(defn = sym->defn)  && defn->tag == SYM_NORMAL &&
++			strcmp(defn->string, "}") == 0 &&
++		(defn = defn->next) && defn->tag == SYM_NORMAL &&
++	    		strcmp(defn->string, "UNKNOWN") == 0 &&
++		(defn = defn->next) && defn->tag == SYM_NORMAL &&
++			strcmp(defn->string, "{") == 0);
++}
++
++struct symbol *__add_symbol(const char *name, enum symbol_type type,
++			    struct string_list *defn, int is_extern,
++			    int is_reference)
+ {
+ 	unsigned long h = crc32(name) % HASH_BUCKETS;
+ 	struct symbol *sym;
++	enum symbol_status status = STATUS_UNCHANGED;
+ 
+ 	for (sym = symtab[h]; sym; sym = sym->hash_next) {
+-		if (map_to_ns(sym->type) == map_to_ns(type)
+-		    && strcmp(name, sym->name) == 0) {
+-			if (!equal_list(sym->defn, defn))
++		if (map_to_ns(sym->type) == map_to_ns(type) &&
++		    strcmp(name, sym->name) == 0) {
++			if (is_reference)
++				/* fall through */ ;
++			else if (sym->type == type &&
++				 equal_list(sym->defn, defn)) {
++				sym->is_declared = 1;
++				return sym;
++			} else if (!sym->is_declared) {
++				status = is_unknown_symbol(sym) ?
++					STATUS_DEFINED : STATUS_MODIFIED;
++			} else {
+ 				error_with_pos("redefinition of %s", name);
+-			return sym;
++				return sym;
++			}
++			break;
++		}
++	}
++
++	if (sym) {
++		struct symbol **psym;
++
++		for (psym = &symtab[h]; *psym; psym = &(*psym)->hash_next) {
++			if (*psym == sym) {
++				*psym = sym->hash_next;
++				break;
++			}
+ 		}
++		--nsyms;
+ 	}
+ 
+ 	sym = xmalloc(sizeof(*sym));
+@@ -183,6 +227,9 @@ struct symbol *add_symbol(const char *na
+ 	sym->hash_next = symtab[h];
+ 	symtab[h] = sym;
+ 
++	sym->is_declared = !is_reference;
++	sym->status = status;
++
+ 	if (flag_debug) {
+ 		fprintf(debugfile, "Defn for %s %s == <",
+ 			symbol_type_name[type], name);
+@@ -196,6 +243,18 @@ struct symbol *add_symbol(const char *na
+ 	return sym;
+ }
+ 
++struct symbol *add_symbol(const char *name, enum symbol_type type,
++			  struct string_list *defn, int is_extern)
++{
++	return __add_symbol(name, type, defn, is_extern, 0);
++}
++
++struct symbol *add_reference_symbol(const char *name, enum symbol_type type,
++				    struct string_list *defn, int is_extern)
++{
++	return __add_symbol(name, type, defn, is_extern, 1);
++}
++
+ /*----------------------------------------------------------------------*/
+ 
+ void free_node(struct string_list *node)
+@@ -236,6 +295,82 @@ static int equal_list(struct string_list
+ 	return !a && !b;
+ }
+ 
++#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
++
++struct string_list *read_node(FILE *f)
++{
++	char buffer[256];
++	struct string_list node = {
++		.string = buffer,
++		.tag = SYM_NORMAL };
++	int c;
++
++	while ((c = fgetc(f)) != EOF) {
++		if (c == ' ') {
++			if (node.string == buffer)
++				continue;
++			break;
++		} else if (c == '\n') {
++			if (node.string == buffer)
++				return NULL;
++			ungetc(c, f);
++			break;
++		}
++		if (node.string >= buffer + sizeof(buffer) - 1) {
++			fprintf(stderr, "Token too long\n");
++			exit(1);
++		}
++		*node.string++ = c;
++	}
++	if (node.string == buffer)
++		return NULL;
++	*node.string = 0;
++	node.string = buffer;
++
++	if (node.string[1] == '#') {
++		int n;
++
++		for (n = 0; n < ARRAY_SIZE(symbol_type_name); n++) {
++			if (node.string[0] == symbol_type_name[n][0]) {
++				node.tag = n;
++				node.string += 2;
++				return copy_node(&node);
++			}
++		}
++		fprintf(stderr, "Unknown type %c\n", node.string[0]);
++		exit(1);
++	}
++	return copy_node(&node);
++}
++
++static void read_reference(FILE *f)
++{
++	while (!feof(f)) {
++		struct string_list *defn = NULL;
++		struct string_list *sym, *def;
++		int is_extern = 0;
++
++		sym = read_node(f);
++		if (!sym)
++			continue;
++		def = read_node(f);
++		if (def && def->tag == SYM_NORMAL &&
++		    !strcmp(def->string, "extern")) {
++			is_extern = 1;
++			free_node(def);
++			def = read_node(f);
++		}
++		while (def) {
++			def->next = defn;
++			defn = def;
++			def = read_node(f);
++		}
++		add_reference_symbol(xstrdup(sym->string), sym->tag,
++					      defn, is_extern);
++		free_node(sym);
++	}
++}
++
+ static void print_node(FILE * f, struct string_list *list)
+ {
+ 	if (list->tag != SYM_NORMAL) {
+@@ -311,6 +446,7 @@ static unsigned long expand_and_crc_sym(
+ 
+ 		case SYM_TYPEDEF:
+ 			subsym = find_symbol(cur->string, cur->tag);
++			/* FIXME: Bad reference files can segfault here. */
+ 			if (subsym->expansion_trail) {
+ 				if (flag_dump_defs)
+ 					fprintf(debugfile, "%s ", cur->string);
+@@ -347,9 +483,22 @@ static unsigned long expand_and_crc_sym(
+ 				t = n;
+ 
+ 				n = xmalloc(sizeof(*n));
+-				n->string = xstrdup("{ UNKNOWN }");
++				n->string = xstrdup("{");
++				n->tag = SYM_NORMAL;
++				n->next = t;
++				t = n;
++
++				n = xmalloc(sizeof(*n));
++				n->string = xstrdup("UNKNOWN");
++				n->tag = SYM_NORMAL;
++				n->next = t;
++				t = n;
++
++				n = xmalloc(sizeof(*n));
++				n->string = xstrdup("}");
+ 				n->tag = SYM_NORMAL;
+ 				n->next = t;
++				t = n;
+ 
+ 				subsym =
+ 				    add_symbol(cur->string, cur->tag, n, 0);
+@@ -397,20 +546,42 @@ void export_symbol(const char *name)
+ 		error_with_pos("export undefined symbol %s", name);
+ 	else {
+ 		unsigned long crc;
++		int has_changed = 0;
+ 
+ 		if (flag_dump_defs)
+ 			fprintf(debugfile, "Export %s == <", name);
+ 
+ 		expansion_trail = (struct symbol *)-1L;
+ 
++		sym->expansion_trail = expansion_trail;
++		expansion_trail = sym;
+ 		crc = expand_and_crc_sym(sym, 0xffffffff) ^ 0xffffffff;
+ 
+ 		sym = expansion_trail;
+ 		while (sym != (struct symbol *)-1L) {
+ 			struct symbol *n = sym->expansion_trail;
++
++			if (sym->status != STATUS_UNCHANGED) {
++				if (!has_changed) {
++					print_location();
++					fprintf(stderr, "%s: %s: modversion "
++						"changed because of changes "
++						"in ", flag_preserve ? "error" :
++						       "warning", name);
++				} else
++					fprintf(stderr, ", ");
++				print_type_name(sym->type, sym->name);
++				if (sym->status == STATUS_DEFINED)
++					fprintf(stderr, " (became defined)");
++				has_changed = 1;
++				if (flag_preserve)
++					errors++;
++			}
+ 			sym->expansion_trail = 0;
+ 			sym = n;
+ 		}
++		if (has_changed)
++			fprintf(stderr, "\n");
+ 
+ 		if (flag_dump_defs)
+ 			fputs(">\n", debugfile);
+@@ -421,13 +592,26 @@ void export_symbol(const char *name)
+ }
+ 
+ /*----------------------------------------------------------------------*/
++
++static void print_location(void)
++{
++	fprintf(stderr, "%s:%d: ", cur_filename ? : "<stdin>", cur_line);
++}
++
++static void print_type_name(enum symbol_type type, const char *name)
++{
++	if (type != SYM_NORMAL)
++		fprintf(stderr, "%s %s", symbol_type_name[type], name);
++	else
++		fprintf(stderr, "%s", name);
++}
++
+ void error_with_pos(const char *fmt, ...)
+ {
+ 	va_list args;
+ 
+ 	if (flag_warnings) {
+-		fprintf(stderr, "%s:%d: ", cur_filename ? : "<stdin>",
+-			cur_line);
++		print_location();
+ 
+ 		va_start(args, fmt);
+ 		vfprintf(stderr, fmt, args);
+@@ -445,7 +629,9 @@ static void genksyms_usage(void)
+ 	      "  -a, --arch            Select architecture\n"
+ 	      "  -d, --debug           Increment the debug level (repeatable)\n"
+ 	      "  -D, --dump            Dump expanded symbol defs (for debugging only)\n"
+-	      "  -T, --dump-types file Dump expanded types into file (for debugging only)\n"
++	      "  -r, --reference file  Read reference symbols from a file\n"
++	      "  -T, --dump-types file Dump expanded types into file\n"
++	      "  -p, --preserve        Preserve reference modversions or fail\n"
+ 	      "  -w, --warnings        Enable warnings\n"
+ 	      "  -q, --quiet           Disable warnings (default)\n"
+ 	      "  -h, --help            Print this message\n"
+@@ -454,7 +640,9 @@ static void genksyms_usage(void)
+ 	      "  -a                    Select architecture\n"
+ 	      "  -d                    Increment the debug level (repeatable)\n"
+ 	      "  -D                    Dump expanded symbol defs (for debugging only)\n"
+-	      "  -T file               Dump expanded types into file (for debugging only)\n"
++	      "  -r file               Read reference symbols from a file\n"
++	      "  -T file               Dump expanded types into file\n"
++	      "  -p                    Preserve reference modversions or fail\n"
+ 	      "  -w                    Enable warnings\n"
+ 	      "  -q                    Disable warnings (default)\n"
+ 	      "  -h                    Print this message\n"
+@@ -465,7 +653,7 @@ static void genksyms_usage(void)
+ 
+ int main(int argc, char **argv)
+ {
+-	FILE *dumpfile = NULL;
++	FILE *dumpfile = NULL, *ref_file = NULL;
+ 	int o;
+ 
+ #ifdef __GNU_LIBRARY__
+@@ -475,16 +663,18 @@ int main(int argc, char **argv)
+ 		{"warnings", 0, 0, 'w'},
+ 		{"quiet", 0, 0, 'q'},
+ 		{"dump", 0, 0, 'D'},
++		{"reference", 1, 0, 'r'},
+ 		{"dump-types", 1, 0, 'T'},
++		{"preserve", 0, 0, 'p'},
+ 		{"version", 0, 0, 'V'},
+ 		{"help", 0, 0, 'h'},
+ 		{0, 0, 0, 0}
+ 	};
+ 
+-	while ((o = getopt_long(argc, argv, "a:dwqVDT:h",
++	while ((o = getopt_long(argc, argv, "a:dwqVDr:T:ph",
+ 				&long_opts[0], NULL)) != EOF)
+ #else				/* __GNU_LIBRARY__ */
+-	while ((o = getopt(argc, argv, "a:dwqVDT:h")) != EOF)
++	while ((o = getopt(argc, argv, "a:dwqVDr:T:ph")) != EOF)
+ #endif				/* __GNU_LIBRARY__ */
+ 		switch (o) {
+ 		case 'a':
+@@ -505,6 +695,14 @@ int main(int argc, char **argv)
+ 		case 'D':
+ 			flag_dump_defs = 1;
+ 			break;
++		case 'r':
++			flag_reference = 1;
++			ref_file = fopen(optarg, "r");
++			if (!ref_file) {
++				perror(optarg);
++				return 1;
++			}
++			break;
+ 		case 'T':
+ 			flag_dump_types = 1;
+ 			dumpfile = fopen(optarg, "w");
+@@ -513,6 +711,9 @@ int main(int argc, char **argv)
+ 				return 1;
+ 			}
+ 			break;
++		case 'p':
++			flag_preserve = 1;
++			break;
+ 		case 'h':
+ 			genksyms_usage();
+ 			return 0;
+@@ -534,6 +735,9 @@ int main(int argc, char **argv)
+ 		/* setlinebuf(debugfile); */
+ 	}
+ 
++	if (flag_reference)
++		read_reference(ref_file);
++
+ 	yyparse();
+ 
+ 	if (flag_dump_types && visited_symbols) {
+Index: b/scripts/genksyms/genksyms.h
+===================================================================
+--- a/scripts/genksyms/genksyms.h
++++ b/scripts/genksyms/genksyms.h
+@@ -29,6 +29,10 @@ enum symbol_type {
+ 	SYM_NORMAL, SYM_TYPEDEF, SYM_ENUM, SYM_STRUCT, SYM_UNION
+ };
+ 
++enum symbol_status {
++	STATUS_UNCHANGED, STATUS_DEFINED, STATUS_MODIFIED
++};
++
+ struct string_list {
+ 	struct string_list *next;
+ 	enum symbol_type tag;
+@@ -43,6 +47,8 @@ struct symbol {
+ 	struct symbol *expansion_trail;
+ 	struct symbol *visited;
+ 	int is_extern;
++	int is_declared;
++	enum symbol_status status;
+ };
+ 
+ typedef struct string_list **yystype;
+Index: b/scripts/Makefile.build
+===================================================================
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -153,12 +153,18 @@ $(obj)/%.i: $(src)/%.c FORCE
+ 
+ quiet_cmd_cc_symtypes_c = SYM $(quiet_modtag) $@
+ cmd_cc_symtypes_c	   = \
++		set -e;							\
+ 		$(CPP) -D__GENKSYMS__ $(c_flags) $<			\
+-		| $(GENKSYMS) -T $@ >/dev/null;				\
++		| $(GENKSYMS) -T $@					\
++			      -r $(firstword $(wildcard			\
++			      	     $(@:.symtypes=.symref) /dev/null))	\
++			      $(if $(KBUILD_PRESERVE),-p)		\
++			      -a $(ARCH)				\
++		  >/dev/null;						\
+ 		test -s $@ || rm -f $@
+ 
+ $(obj)/%.symtypes : $(src)/%.c FORCE
+-	$(call if_changed_dep,cc_symtypes_c)
++	$(call cmd,cc_symtypes_c)
+ 
+ # C (.c) files
+ # The C file is compiled and updated dependency information is generated.
+@@ -187,7 +193,11 @@ cmd_modversions =							\
+ 	if $(OBJDUMP) -h $(@D)/.tmp_$(@F) | grep -q __ksymtab; then	\
+ 		$(CPP) -D__GENKSYMS__ $(c_flags) $<			\
+ 		| $(GENKSYMS) $(if $(KBUILD_SYMTYPES),			\
+-			      -T $(@D)/$(@F:.o=.symtypes)) -a $(ARCH)	\
++			           -T $(@:.o=.symtypes))		\
++			      -r $(firstword $(wildcard			\
++			      	     $(@:.o=.symref) /dev/null))	\
++			      $(if $(KBUILD_PRESERVE),-p)		\
++			      -a $(ARCH)				\
+ 		> $(@D)/.tmp_$(@F:.o=.ver);				\
+ 									\
+ 		$(LD) $(LDFLAGS) -r -o $@ $(@D)/.tmp_$(@F) 		\
 
 
