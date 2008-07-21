@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759184AbYGULZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759318AbYGULZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759184AbYGULZW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 07:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYGULZI
+	id S1759318AbYGULZy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 07:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbYGULZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 07:25:08 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58725 "EHLO mx2.mail.elte.hu"
+	Mon, 21 Jul 2008 07:25:44 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:48345 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750781AbYGULZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 07:25:07 -0400
-Date: Mon, 21 Jul 2008 13:24:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86-rest: fix sparse warnings
-Message-ID: <20080721112453.GB23095@elte.hu>
-References: <1215913730.2711.1.camel@jaswinder.satnam>
-MIME-Version: 1.0
+	id S1751662AbYGULZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 07:25:43 -0400
+Date: Mon, 21 Jul 2008 15:25:15 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, cl@linux-foundation.org,
+       davem@davemloft.net
+Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
+Message-ID: <20080721112515.GA4777@2ka.mipt.ru>
+References: <20080717214222.GA29449@elte.hu> <Pine.LNX.4.64.0807181149460.3852@sbz-30.cs.Helsinki.FI> <20080718091146.GQ6875@elte.hu> <20080721094110.GA16029@elte.hu> <84144f020807210252k68d5cf65i8c7ae3c11cecc046@mail.gmail.com> <20080721100627.GA5953@2ka.mipt.ru> <20080721105051.GA5830@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1215913730.2711.1.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080721105051.GA5830@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jul 21, 2008 at 12:50:51PM +0200, Ingo Molnar (mingo@elte.hu) wrote:
+> > Ingo do you see other similar dumps with last byte modified? That's 
+> > the one which can help to determine the reason.
+> 
+> the problem is, most of the crashes dont come with any usable dump. This 
+> is a laptop so netconsole is the only reliable route out - and if 
+> something in networking crashes chances are that it hoses netconsole 
+> before it can get anything out.
+> 
+> Another thing is that i'm activating netconsole on this box via a kernel 
+> boot line and from within a bzImage (to get it activated as early as 
+> possible) - maybe that's a tad too early for certain initialization 
+> sequences?
+> 
+> I could try run tests with netconsole deactivated, if you think that's a 
+> worthwile line of probing this problem. (although that would make me do 
+> blind tests in essence - having kernel log output is really essential.)
 
-* Jaswinder Singh <jaswinder@infradead.org> wrote:
+Let's try this way first. If system will continue to crash, we will add
+some debug options in various pathes. Existing reports do not contain
+enough information unfortunately, so we will not lose too much.
 
-> CHECK   arch/x86/mm/init_32.c
-> arch/x86/mm/init_32.c:290:13: warning: symbol 'add_one_highpage_init' was not declared. Should it be static?
-> arch/x86/mm/init_32.c:437:6: warning: symbol 'zap_low_mappings' was not declared. Should it be static?
-> arch/x86/mm/init_32.c:774:6: warning: symbol 'free_initmem' was not declared. Should it be static?
-> 
-> CHECK   arch/x86/mm/fault.c
-> arch/x86/mm/fault.c:581:16: warning: symbol 'do_page_fault' was not declared. Should it be static?
-> 
-> CHECK   arch/x86/mm/pat.c
-> arch/x86/mm/pat.c:566:6: warning: symbol 'map_devmem' was not declared. Should it be static?
-> arch/x86/mm/pat.c:583:6: warning: symbol 'unmap_devmem' was not declared. Should it be static?
-> 
-> CHECK   arch/x86/mm/pgtable_32.c
-> arch/x86/mm/pgtable_32.c:115:6: warning: symbol 'set_pmd_pfn' was not declared. Should it be static?
-> 
-> CHECK   arch/x86/mach-default/setup.c
-> arch/x86/mach-default/setup.c:19:5: warning: symbol 'no_broadcast' was not declared. Should it be static?
-> 
-> Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
-> ---
->  arch/x86/mach-default/setup.c |    2 +-
->  include/asm-x86/pat.h         |    3 +++
->  include/asm-x86/pgtable_32.h  |    6 ++++++
->  include/asm-x86/setup.h       |    1 +
->  4 files changed, 11 insertions(+), 1 deletions(-)
-
-please split this up too into individual commits, against tip/master. 
-Cleanups are generally more manageable if they are finegrained.
-
-	Ingo
+-- 
+	Evgeniy Polyakov
