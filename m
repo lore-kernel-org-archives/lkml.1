@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbYGUWe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbYGUWkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756037AbYGUWe0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 18:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbYGUWeE
+	id S1756307AbYGUWkc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 18:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbYGUWkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 18:34:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43866 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753999AbYGUWeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 18:34:03 -0400
-Date: Mon, 21 Jul 2008 18:27:02 -0400
-From: Dave Jones <davej@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Fix serial_txx9 compile.
-Message-ID: <20080721222702.GA19033@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20080721211659.GA29106@redhat.com> <20080721230028.1c7020c9@lxorguk.ukuu.org.uk>
+	Mon, 21 Jul 2008 18:40:15 -0400
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:37504 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754510AbYGUWkO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 18:40:14 -0400
+Message-ID: <4885104A.2070201@lwfinger.net>
+Date: Mon, 21 Jul 2008 17:40:10 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080721230028.1c7020c9@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Patrick McHardy <kaber@trash.net>
+CC: David Miller <davem@davemloft.net>, mingo@elte.hu, ischram@telenet.be,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, j@w1.fi
+Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
+ at 0000000000000370
+References: <4884F3D7.4070604@lwfinger.net>	<20080721.134608.75595942.davem@davemloft.net>	<4884F6E9.6090809@trash.net> <20080721.140120.135667045.davem@davemloft.net> <4884FA3F.70109@trash.net> <48850121.9090106@trash.net> <488504D9.5090100@lwfinger.net> <488507FB.9050101@trash.net>
+In-Reply-To: <488507FB.9050101@trash.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2008 at 11:00:28PM +0100, Alan Cox wrote:
- > On Mon, 21 Jul 2008 17:16:59 -0400
- > Dave Jones <davej@redhat.com> wrote:
- > 
- > > drivers/serial/serial_txx9.c: In function 'receive_chars':
- > > drivers/serial/serial_txx9.c:275: error: 'struct uart_info' has no member named 'tty'
- > 
- > Already fixed ages ago. Its in a patch that didn't get to Linus yet - see
- > the linux-next tree for the stuff pending.
+Patrick McHardy wrote:
+> Larry Finger wrote:
+>> Patrick McHardy wrote:
+>>>
+>>> This is what I was missing, we're setting a lockdep class
+>>> by default depending on dev->type. This patch combined
+>>> with yours should fix all addr_list_lock warnings.
+>>
+>> No cigar yet. I tried davem's patch first, then yours on top of his. I 
+>> still get both the recursive locking and the kernel warning.
+> 
+> Does this one earn me my cigar? :)
 
-Odd. This breakage happened with the merge in -git8
-Why didn't the associated fixes go along with that merge ?
-If it was fixed ages ago, that implies we knowingly merged broken code,
-which seems suboptimal.  If nothing else, we're breaking bisectability
-by merging in two batches.
+Sorry :(
 
-	Dave
+I used the davem patch, the second version of your first one, and your second 
+one. Both problems persist.
 
--- 
-http://www.codemonkey.org.uk
+Still plugging away on bisection.
+
+Larry
