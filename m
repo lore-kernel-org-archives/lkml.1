@@ -1,106 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbYGUKA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbYGUKDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758609AbYGUKA3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 06:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYGUKAW
+	id S1758271AbYGUKDQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 06:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbYGUKC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 06:00:22 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:35713 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754647AbYGUKAV (ORCPT
+	Mon, 21 Jul 2008 06:02:59 -0400
+Received: from mga03.intel.com ([143.182.124.21]:61094 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752040AbYGUKC6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 06:00:21 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: airlied@linux.ie
-Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] DRM: don't enable irqs in locking
-Date: Mon, 21 Jul 2008 11:58:04 +0200
-Message-Id: <1216634284-13412-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.5.6.2
+	Mon, 21 Jul 2008 06:02:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,222,1215414000"; 
+   d="scan'208";a="22711044"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Subject: RE: iwlwifi: fix build bug in "iwlwifi: fix LED stall"
+Date: Mon, 21 Jul 2008 13:02:31 +0300
+Message-ID: <C07C4589BE74A34981C3C3525EE1F801042DD9DC@hasmsx412.ger.corp.intel.com>
+In-Reply-To: <20080721083654.GA19849@elte.hu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: iwlwifi: fix build bug in "iwlwifi: fix LED stall"
+Thread-Index: AcjrDS+zQHLd26cmSuGKPtkGi12p9gAC41oQ
+References: <20080720.104411.81744468.davem@davemloft.net> <20080721083654.GA19849@elte.hu>
+From: "Winkler, Tomas" <tomas.winkler@intel.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "David Miller" <davem@davemloft.net>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+X-OriginalArrivalTime: 21 Jul 2008 10:02:38.0185 (UTC) FILETIME=[E7DD6D90:01C8EB18]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drm_lock_take(); and drm_lock_free(); are called from
-drm_locked_tasklet_func(); which disables interrupts when grabbing its
-spinlock.
 
-Don't allow these locking functions to re-enable interrupts when
-the tasklet expects them disabled. I.e. use spin_lock_irqsave instead of
-spin_lock_bh (with their unlock opposites).
 
-We will get such a warnings otherwise:
-------------[ cut here ]------------
-WARNING: at kernel/softirq.c:136 local_bh_enable_ip+0x8b/0xb0()
-Modules linked in: arc4 ecb crypto_blkcipher cryptomgr crypto_algapi ath5k usbhid mac80211 ohci1394 hid led_class floppy cfg80211 ff_memless ieee1394 rtc_cmos evdev [last unloaded: freq_table]
-Pid: 0, comm: swapper Not tainted 2.6.26-rc8-mm1_64 #427
+>-----Original Message-----
+>From: Ingo Molnar [mailto:mingo@elte.hu]
+>Sent: Monday, July 21, 2008 11:37 AM
+>To: David Miller
+>Cc: netdev@vger.kernel.org; linux-kernel@vger.kernel.org; Winkler,
+Tomas;
+>John W. Linville
+>Subject: iwlwifi: fix build bug in "iwlwifi: fix LED stall"
+>
+>
+>hi David,
+>
+>>       iwlwifi: fix LED stall
+>
+>please find a small build fix below.
+>
+There are already patches that fix this. John has to pick them up from
+the mail.
+Thanks
+Tomas
 
-Call Trace:
- <IRQ>  [<ffffffff8023813f>] warn_on_slowpath+0x5f/0x90
-[...]
- [<ffffffff8023e1fb>] local_bh_enable_ip+0x8b/0xb0
- [<ffffffff8055b2cf>] _spin_unlock_bh+0xf/0x20
- [<ffffffff803b0bd1>] drm_lock_take+0x81/0xe0
- [<ffffffff803b006b>] drm_locked_tasklet_func+0x4b/0xb0
- [<ffffffff8023daf9>] tasklet_hi_action+0x69/0xf0
- [<ffffffff8023e3e4>] __do_softirq+0x84/0xf0
-[stack snipped]
+---------------------------------------------------------------------
+Intel Israel (74) Limited
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: David Airlie <airlied@linux.ie>
----
- drivers/gpu/drm/drm_lock.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/gpu/drm/drm_lock.c b/drivers/gpu/drm/drm_lock.c
-index 0998723..79943e4 100644
---- a/drivers/gpu/drm/drm_lock.c
-+++ b/drivers/gpu/drm/drm_lock.c
-@@ -196,10 +196,11 @@ int drm_unlock(struct drm_device *dev, void *data, struct drm_file *file_priv)
- int drm_lock_take(struct drm_lock_data *lock_data,
- 		  unsigned int context)
- {
-+	unsigned long flags;
- 	unsigned int old, new, prev;
- 	volatile unsigned int *lock = &lock_data->hw_lock->lock;
- 
--	spin_lock_bh(&lock_data->spinlock);
-+	spin_lock_irqsave(&lock_data->spinlock, flags);
- 	do {
- 		old = *lock;
- 		if (old & _DRM_LOCK_HELD)
-@@ -211,7 +212,7 @@ int drm_lock_take(struct drm_lock_data *lock_data,
- 		}
- 		prev = cmpxchg(lock, old, new);
- 	} while (prev != old);
--	spin_unlock_bh(&lock_data->spinlock);
-+	spin_unlock_irqrestore(&lock_data->spinlock, flags);
- 
- 	if (_DRM_LOCKING_CONTEXT(old) == context) {
- 		if (old & _DRM_LOCK_HELD) {
-@@ -270,17 +271,18 @@ static int drm_lock_transfer(struct drm_lock_data *lock_data,
-  */
- int drm_lock_free(struct drm_lock_data *lock_data, unsigned int context)
- {
-+	unsigned long flags;
- 	unsigned int old, new, prev;
- 	volatile unsigned int *lock = &lock_data->hw_lock->lock;
- 
--	spin_lock_bh(&lock_data->spinlock);
-+	spin_lock_irqsave(&lock_data->spinlock, flags);
- 	if (lock_data->kernel_waiters != 0) {
- 		drm_lock_transfer(lock_data, 0);
- 		lock_data->idle_has_lock = 1;
--		spin_unlock_bh(&lock_data->spinlock);
-+		spin_unlock_irqrestore(&lock_data->spinlock, flags);
- 		return 1;
- 	}
--	spin_unlock_bh(&lock_data->spinlock);
-+	spin_unlock_irqrestore(&lock_data->spinlock, flags);
- 
- 	do {
- 		old = *lock;
--- 
-1.5.6.2
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
