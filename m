@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753694AbYGUQuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbYGUQxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753694AbYGUQuL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 12:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYGUQty
+	id S1753487AbYGUQxl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 12:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYGUQxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 12:49:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42976 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751899AbYGUQtx (ORCPT
+	Mon, 21 Jul 2008 12:53:30 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51804
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750784AbYGUQxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 12:49:53 -0400
-Date: Mon, 21 Jul 2008 09:49:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: adobriyan@gmail.com, akpm@linux-foundation.org, netdev@vger.kernel.org,
+	Mon, 21 Jul 2008 12:53:30 -0400
+Date: Mon, 21 Jul 2008 09:53:30 -0700 (PDT)
+Message-Id: <20080721.095330.213354230.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: adobriyan@gmail.com, akpm@linux-foundation.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org, jeffrey.t.kirsher@intel.com
 Subject: Re: [GIT]: Networking
-In-Reply-To: <20080720.221106.201055562.davem@davemloft.net>
-Message-ID: <alpine.LFD.1.10.0807210942310.31863@woody.linux-foundation.org>
-References: <20080720.181440.122144107.davem@davemloft.net> <20080721024056.GA4800@martell.zuzino.mipt.ru> <20080720.194856.92564555.davem@davemloft.net> <20080720.221106.201055562.davem@davemloft.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.1.10.0807210942310.31863@woody.linux-foundation.org>
+References: <20080720.194856.92564555.davem@davemloft.net>
+	<20080720.221106.201055562.davem@davemloft.net>
+	<alpine.LFD.1.10.0807210942310.31863@woody.linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 21 Jul 2008 09:49:49 -0700 (PDT)
 
+> Why is it so unnecessarily fragile to begin with? Especially for stuff 
+> that happens at bootup or suspend, doing a BUG_ON() is _particularly_ 
+> painful, because a dead machine means that you cannot get any logs or 
+> anything else.
 
-On Sun, 20 Jul 2008, David Miller wrote:
->
-> Alexey, please try this patch:
-> 
-> atl1: Do not wake queue before queue has been started.
+I agree, the BUG_ON() was the wrong way to go.
 
-David, can we please make this all a bit less fragile?
+> So wouldn't it be *much* better to do something like the appended, and at 
+> least try to limp on, and maybe have a system that people can get logs 
+> out of?
 
-There are _millions_ of network drivers, and these changes seem to have 
-broken not just common drivers, but also drivers that "work" seem to now 
-have broken suspend/resume.
+Agreed, I'll apply this.  Thanks.
 
-There's at least one report of suspend apparently oopsing now, and I 
-assume it's basically the same thing - it was bisected down to that same 
-37437bb2e1ae8af470dfcd5b4ff454110894ccaf commit ("pkt_sched: Schedule 
-qdiscs instead of netdev_queue.")
-
-Why is it so unnecessarily fragile to begin with? Especially for stuff 
-that happens at bootup or suspend, doing a BUG_ON() is _particularly_ 
-painful, because a dead machine means that you cannot get any logs or 
-anything else.
-
-So wouldn't it be *much* better to do something like the appended, and at 
-least try to limp on, and maybe have a system that people can get logs 
-out of?
-
-			Linus
-
----
- net/core/dev.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 2eed17b..43ab4f5 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -1325,7 +1325,8 @@ static void dev_queue_xmit_nit(struct sk_buff *skb, struct net_device *dev)
- 
- void __netif_schedule(struct Qdisc *q)
- {
--	BUG_ON(q == &noop_qdisc);
-+	if (WARN_ON_ONCE(q == &noop_qdisc))
-+		return;
- 
- 	if (!test_and_set_bit(__QDISC_STATE_SCHED, &q->state)) {
- 		struct softnet_data *sd;
----
+> diff --git a/net/core/dev.c b/net/core/dev.c
+> index 2eed17b..43ab4f5 100644
+> --- a/net/core/dev.c
+> +++ b/net/core/dev.c
+> @@ -1325,7 +1325,8 @@ static void dev_queue_xmit_nit(struct sk_buff *skb, struct net_device *dev)
+>  
+>  void __netif_schedule(struct Qdisc *q)
+>  {
+> -	BUG_ON(q == &noop_qdisc);
+> +	if (WARN_ON_ONCE(q == &noop_qdisc))
+> +		return;
+>  
+>  	if (!test_and_set_bit(__QDISC_STATE_SCHED, &q->state)) {
+>  		struct softnet_data *sd;
+> ---
