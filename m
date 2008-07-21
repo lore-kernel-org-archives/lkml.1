@@ -1,73 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbYGUALD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbYGUALq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758380AbYGUALD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 20:11:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759068AbYGUAJ3
+	id S1758676AbYGUALq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 20:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbYGUALf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 20:09:29 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:29227 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759062AbYGUAJ1 (ORCPT
+	Sun, 20 Jul 2008 20:11:35 -0400
+Received: from monty.telenet-ops.be ([195.130.132.56]:38924 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757041AbYGUALe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 20:09:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=LPbxHleJ+vP5Y6IoVdn32zmK56nsPlwU4U1udK7XViY7mTbIkzgJ12bTl8cloVB1A2
-         pZl3pYtw1FhaTtPAvhX/BBFQp2SR1IzEYDmFYDozh+jEskz/yL8XLupI2ScePR3wd19V
-         5CaA6m2RJdn6gzfPiI4txOkNxlZzLRUAwC0oo=
-Message-ID: <2f11576a0807201709q45aeec3cvb99b0049421245ae@mail.gmail.com>
-Date: Mon, 21 Jul 2008 09:09:26 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: [PATCH -mm] mm: more likely reclaim MADV_SEQUENTIAL mappings
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       Nossum <vegard.nossum@gmail.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <87y73x4w6y.fsf@saeurebad.de>
+	Sun, 20 Jul 2008 20:11:34 -0400
+Date: Mon, 21 Jul 2008 02:11:25 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>
+Subject: Re: [patch 17/29] m68k/atari/debug.c: possible cleanups
+In-Reply-To: <alpine.DEB.1.00.0807202204550.3442@zirkon.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.64.0807210202260.20940@anakin>
+References: <20080717191607.955742542@mail.of.borg> <20080717191754.149215226@mail.of.borg>
+ <alpine.DEB.1.00.0807202204550.3442@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <87y73x4w6y.fsf@saeurebad.de>
-X-Google-Sender-Auth: dcf7a57c49e720eb
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Johannes,
+On Sun, 20 Jul 2008, Michael Schmitz wrote:
+> > - remove the following unused variables:
+> >  - atari_SCC_init_done
+> 
+> That one I'll need to reintroduce for the SCC driver rewrite (which is still
+> stuck in Geert's queue pending cleanups by me).
 
-> File pages accessed only once through sequential-read mappings between
-> fault and scan time are perfect candidates for reclaim.
->
-> This patch makes page_referenced() ignore these singular references and
-> the pages stay on the inactive list where they likely fall victim to the
-> next reclaim phase.
->
-> Already activated pages are still treated normally.  If they were
-> accessed multiple times and therefor promoted to the active list, we
-> probably want to keep them.
->
-> Benchmarks show that big (relative to the system's memory)
-> MADV_SEQUENTIAL mappings read sequentially cause much less kernel
-> activity.  Especially less LRU moving-around because we never activate
-> read-once pages in the first place just to demote them again.
->
-> And leaving these perfect reclaim candidates on the inactive list makes
-> it more likely for the real working set to survive the next reclaim
-> scan.
+I already have a reintroducing patch in my queue,  So Linus can just
+apply the removal patch for now.
 
-looks good to me.
-Actually, I made similar patch half year ago.
+Gr{oetje,eeting}s,
 
-in my experience,
-  - page_referenced_one is performance critical point.
-    you should test some benchmark.
-  - its patch improved mmaped-copy performance about 5%.
-    (Of cource, you should test in current -mm. MM code was changed widely)
+						Geert
 
-So, I'm looking for your test result :)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
