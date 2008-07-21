@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbYGUUxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbYGUUxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbYGUUxT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 16:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYGUUxI
+	id S1756648AbYGUUxd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 16:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755361AbYGUUxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 16:53:08 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42729 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752307AbYGUUxH convert rfc822-to-8bit (ORCPT
+	Mon, 21 Jul 2008 16:53:15 -0400
+Received: from critter.phunnypharm.org ([67.97.251.11]:32990 "EHLO
+	critter.phunnypharm.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754903AbYGUUxP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 16:53:07 -0400
-Date: Mon, 21 Jul 2008 17:32:26 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       user-mode-linux-devel@lists.sourceforge.net, jdike@addtoit.com
-Subject: Re: [Patch] um: fix a build error
-Message-ID: <20080721173226.0c0462f7@the-village.bc.nu>
-In-Reply-To: <20080721165409.GA9023@hack.voiplan.pt>
-References: <20080721165409.GA9023@hack.voiplan.pt>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 21 Jul 2008 16:53:15 -0400
+Subject: Re: [PATCH] VT: Restore VT fonts on switch
+From: Ben Collins <bcollins@swissdisk.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080721134327.3ffab96f@infradead.org>
+References: <E1KL0tq-0001Wk-Ny@critter.phunnypharm.org>
+	 <20080721134327.3ffab96f@infradead.org>
+Content-Type: text/plain
+Organization: SwissDisk
+Date: Mon, 21 Jul 2008 16:53:04 -0400
+Message-Id: <1216673584.7585.189.camel@cunning>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.23.4 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Jul 2008 17:54:09 +0100
-WANG Cong <xiyou.wangcong@gmail.com> wrote:
-
+On Mon, 2008-07-21 at 13:43 -0700, Arjan van de Ven wrote:
+> On Mon, 21 Jul 2008 15:39:44 -0400
+> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 > 
-> Fixed this build error:
+> > Not all X drivers save and restore fonts on text VTs. Add code to the
+> > kernel to explicitly save and restore them on VT switches.
 > 
-> /home/wangcong/Projects/linux-2.6/arch/um/drivers/line.c: In function
-> ‘line_write_interrupt’:
-> /home/wangcong/Projects/linux-2.6/arch/um/drivers/line.c:366: error:
-> ‘struct tty_ldisc’ has no member named ‘write_wakeup’
-> /home/wangcong/Projects/linux-2.6/arch/um/drivers/line.c:367: error:
-> ‘struct tty_ldisc’ has no member named ‘write_wakeup’
-> make[2]: *** [arch/um/drivers/line.o] Error 1
-> make[1]: *** [arch/um/drivers] Error 2
-> make: *** [sub-make] Error 2
 > 
-> Sigend-off-by: WANG Cong <wangcong@zeuux.org>
+> do you have a list of which ones don't ?
 
-NAK - drivers shouldn't be poking around in tty innards in the first
-place then this wouldn't break. Use tty_wakeup(tty); insteaad
+I don't, but perhaps Matthew does.
 
-Alan
