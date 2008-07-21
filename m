@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753649AbYGUTBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbYGUTCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753649AbYGUTBJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 15:01:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbYGUTAy
+	id S1754236AbYGUTCc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 15:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbYGUTCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 15:00:54 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41504
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752712AbYGUTAx (ORCPT
+	Mon, 21 Jul 2008 15:02:20 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:60449 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753111AbYGUTCT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 15:00:53 -0400
-Date: Mon, 21 Jul 2008 12:00:52 -0700 (PDT)
-Message-Id: <20080721.120052.123606398.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: mingo@elte.hu, akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de
-Subject: Re: [crash] kernel BUG at net/core/dev.c:1328!
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org>
-References: <20080721134506.GA27598@elte.hu>
-	<20080721182318.GA20940@elte.hu>
-	<alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Jul 2008 15:02:19 -0400
+Date: Mon, 21 Jul 2008 20:02:16 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: sage@newdream.net, zach.brown@oracle.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] vfs: fix vfs_rename_dir for FS_RENAME_DOES_D_MOVE
+	filesystems
+Message-ID: <20080721190215.GH28946@ZenIV.linux.org.uk>
+References: <E1KKtlz-0008B9-BM@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1KKtlz-0008B9-BM@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 21 Jul 2008 11:35:21 -0700 (PDT)
-
-> Maybe the network drivers are few enough that it will get fixed, or
-> maybe the WARN_ON_ONCE() will just be removed and the rule not
-> reinforced.
+On Mon, Jul 21, 2008 at 01:41:47PM +0200, Miklos Szeredi wrote:
+> From: Miklos Szeredi <mszeredi@suse.cz>
 > 
-> I personally suspect the latter, since it seems to happen with just
-> about _any_ random network driver, including the common and
-> well-maintained ones (ie the Gods only help us for the truly
-> odd/random cases)
+> vfs_rename_dir() doesn't properly account for filesystems with
+> FS_RENAME_DOES_D_MOVE.  If new_dentry has a target inode attached, it
+> unhashes the new_dentry prior to the rename() iop and rehashes it
+> after, but doesn't account for the possibility that rename() may have
+> swapped {old,new}_dentry.  For FS_RENAME_DOES_D_MOVE filesystems, it
+> rehashes new_dentry (now the old renamed-from name, which d_move()
+> expected to go away), such that a subsequent lookup will find it.
+> 
+> This was caught by the recently posted POSIX fstest suite, rename/10.t 
+> test 62 (and others) on ceph.
+> 
+> Fix by not rehashing the new dentry.  Rehashing would only make sense
+> if the rename failed (which should happen extremely rarely), but we
+> cannot handle that case correctly 100% of the time anyway, so...
 
-Yes, we'll see how this plays out.
+Lovely.  AFAICS, that's a fallout from
+commit 349457ccf2592c14bdf13b6706170ae2e94931b1
+Author: Mark Fasheh <mark.fasheh@oracle.com>
+Date:   Fri Sep 8 14:22:21 2006 -0700
 
-Ian Schram just posted a patch for the NULL pointer derfer in
-wireless Ingo reported, so we'll see if that bug will be fixed
-now as well.
+    [PATCH] Allow file systems to manually d_move() inside of ->rename()
+
+that had allowed that crap for directories.  Note that d_rehash() used
+to be needed (d_move() would unhash the source otherwise) and d_move()
+used to be unconditional until the changeset above.
+
+It's _probably_ OK now, but I'd really like to think about NFS behaviour.
+There are subtle traps in that area.
+
+BTW, failing rename() is trivial - just have a non-empty target...
