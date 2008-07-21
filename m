@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774AbYGURRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752443AbYGUR3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752774AbYGURRX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 13:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYGURRP
+	id S1752443AbYGUR3I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 13:29:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYGUR2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 13:17:15 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:36747 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751040AbYGURRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 13:17:14 -0400
-Message-ID: <4884C4A1.7010006@sgi.com>
-Date: Mon, 21 Jul 2008 10:17:21 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+	Mon, 21 Jul 2008 13:28:53 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58818
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751016AbYGUR2w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 13:28:52 -0400
+Date: Mon, 21 Jul 2008 10:28:52 -0700 (PDT)
+Message-Id: <20080721.102852.124418551.davem@davemloft.net>
+To: kaber@trash.net
+Cc: jmorris@namei.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/8] NR_CPUS: Various replacements for NR_CPUS
-References: <20080719011126.745278000@polaris-admin.engr.sgi.com> <20080720082312.GA30150@elte.hu>
-In-Reply-To: <20080720082312.GA30150@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48847BA5.2020600@trash.net>
+References: <4883E465.4050405@trash.net>
+	<Xine.LNX.4.64.0807212143540.17349@us.intercode.com.au>
+	<48847BA5.2020600@trash.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->> I've found one old patch that seems to have been misplaced [...]
-> 
-> How did you notice that i missed them - actual crashes, or measurable 
-> performance impact?
+From: Patrick McHardy <kaber@trash.net>
+Date: Mon, 21 Jul 2008 14:05:57 +0200
 
-It might not have been you.  I was just doing a survey again of NR_CPUS
-usages and noticed something that looked familiar.  (In fact there were
-two patches missing but when I updated the source one of them *magically*
-appeared... ;-)
+> The idea was that NETFILTER_ADVANCED=n enables everything needed
+> by mainstream distributions and hides the rest. We can certainly
+> change the default for this option, but that makes NETFILTER_ADVANCED
+> pretty much useless.
 
-I have three more cases that can be changed coming real soon now.
+A new feature cannot possibly be used by existing distributions.  I
+think that's the main gripe.
 
-> 
->> [...] and a few minor new instances where usage of NR_CPUS may be 
->> incorrect.
->>
->> Also a fixup for CPUMASK_ALLOC is included.
-> 
-> applied to tip/cpus4096, thanks Mike.
+Distributions themselves will enable the feature no matter what we
+mark it's default as.
 
-No, no, thank you!  ;-)
-
-Mike
+And once the feature thus becomes pervasive we can re-adjust the
+default.
