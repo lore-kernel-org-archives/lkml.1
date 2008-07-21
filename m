@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbYGUH5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbYGUH5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbYGUH5x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 03:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbYGUH5a
+	id S1754047AbYGUH5g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 03:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbYGUH5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 03:57:30 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:39758 "EHLO mgw1.diku.dk"
+	Mon, 21 Jul 2008 03:57:14 -0400
+Received: from main.gmane.org ([80.91.229.2]:34065 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756663AbYGUH52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 03:57:28 -0400
-Date: Mon, 21 Jul 2008 09:57:26 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: jgarzik@pobox.com, raisch@de.ibm.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/7] drivers/net/ehea/ehea_main.c: Release mutex in error
- handling code
-Message-ID: <Pine.LNX.4.64.0807210957060.24625@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754119AbYGUH5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 03:57:13 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: el es <el_es_cr@yahoo.co.uk>
+Subject: Re: Kernel version : what about s.yy.ww.tt scheme ?
+Date: Mon, 21 Jul 2008 07:57:03 +0000 (UTC)
+Message-ID: <loom.20080721T074322-56@post.gmane.org>
+References: <loom.20080717T083755-676@post.gmane.org> <alpine.LNX.1.10.0807171140030.18697@fbirervta.pbzchgretzou.qr> <20080720181426.GA29189@1wt.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 81.151.128.130 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.16) Gecko/20080702 Firefox/2.0.0.16)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Willy Tarreau <w <at> 1wt.eu> writes:
 
-The mutex is released on a successful return, so it would seem that it
-should be released on an error return as well.
 
-The semantic patch finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+> 
+> also, causes trouble when stable releases cross a year boundary, or
+> when there are several ones in a week. The stable release should
+> only be a counter, not a date.
+> 
+> Willy
+> 
+> 
 
-// <smpl>
-@@
-expression l;
-@@
+If there are more stable releases in a week, you could put a release counter
+after a dash, say : 2.08.30.40-[2...X]
 
-mutex_lock(l);
-... when != mutex_unlock(l)
-    when any
-    when strict
-(
-if (...) { ... when != mutex_unlock(l)
-+   mutex_unlock(l);
-    return ...;
-}
-|
-mutex_unlock(l);
-)
-// </smpl>
+If stable continues to be used and leaps over to next year, put another .yy.ww
+section : 2.08.30.09.02
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+OK I know that's long, but easy to expand if needed, just be sure to separate
+date pieces with dots and counters with dashes. Or...
 
----
-diff -u -p a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -2937,9 +2937,9 @@ static void ehea_rereg_mrs(struct work_s
- 				}
- 			}
- 		}
--       mutex_unlock(&dlpar_mem_lock);
--       ehea_info("re-initializing driver complete");
-+	ehea_info("re-initializing driver complete");
- out:
-+	mutex_unlock(&dlpar_mem_lock);
- 	return;
- }
- 
+maybe use them the other way round - the current scheme uses counters separated
+by dots, so maybe the new could do ss.yy-ww-tt[[-yy]-ww][.X]] ? Like
+2.08-30-40.2 ? 2.08-30-09-02.2 ? But this seems odd, even to me ;)
+
+el es
+
