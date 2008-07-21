@@ -1,111 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbYGUXHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755735AbYGUXPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755834AbYGUXHz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 19:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbYGUXHr
+	id S1755735AbYGUXPb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 19:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbYGUXPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 19:07:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:51062 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751694AbYGUXHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 19:07:47 -0400
-Subject: Re: [PATCH] pci kernel-doc fatal error
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       torvalds <torvalds@linux-foundation.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-In-Reply-To: <20080721092718.f15dc1ea.randy.dunlap@oracle.com>
-References: <20080721092718.f15dc1ea.randy.dunlap@oracle.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zEK04WH6TS+LtIawmRZq"
-Date: Tue, 22 Jul 2008 09:07:45 +1000
-Message-Id: <1216681665.7427.9.camel@localhost>
+	Mon, 21 Jul 2008 19:15:19 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44341
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752164AbYGUXPR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 19:15:17 -0400
+Date: Mon, 21 Jul 2008 16:15:17 -0700 (PDT)
+Message-Id: <20080721.161517.27161039.davem@davemloft.net>
+To: Larry.Finger@lwfinger.net
+Cc: kaber@trash.net, mingo@elte.hu, ischram@telenet.be,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, j@w1.fi
+Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
+ at 0000000000000370
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4885104A.2070201@lwfinger.net>
+References: <488504D9.5090100@lwfinger.net>
+	<488507FB.9050101@trash.net>
+	<4885104A.2070201@lwfinger.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Larry Finger <Larry.Finger@lwfinger.net>
+Date: Mon, 21 Jul 2008 17:40:10 -0500
 
---=-zEK04WH6TS+LtIawmRZq
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Sorry :(
+> 
+> I used the davem patch, the second version of your first one, and your second 
+> one. Both problems persist.
+> 
+> Still plugging away on bisection.
 
-On Mon, 2008-07-21 at 09:27 -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->=20
-> Fix kernel-doc comments so that they don't produce errors.
-> Also cut some extraneous copy-paste text.
->=20
-> Error(linhead//drivers/pci/pci.c:1133): duplicate section name 'Descripti=
-on'
-> Error(linhead//drivers/pci/pci.c:1189): duplicate section name 'Descripti=
-on'
+GIT bisecting the lockdep problem is surely going the land you on:
 
-But now the description lines exceed 80 columns, and with longer
-function names it's even harder to write a meaningful description in
-under 80 columns.
+commit e308a5d806c852f56590ffdd3834d0df0cbed8d7
+Author: David S. Miller <davem@davemloft.net>
+Date:   Tue Jul 15 00:13:44 2008 -0700
 
-Couldn't kerneldoc be modified to accept multiline descriptions? I know
-they're /short/ descriptions, but still.
-
-cheers
-
-ps. I did look at changing kerneldoc to do that myself, but whereas
-previously I thought I didn't really know perl, now I /know/ I totally
-don't know perl ;)
-
-
-> --- linhead.orig/drivers/pci/pci.c
-> +++ linhead/drivers/pci/pci.c
-> @@ -1123,8 +1123,7 @@ int pci_enable_wake(struct pci_dev *dev,
->  }
-> =20
->  /**
-> - * pci_prepare_to_sleep - prepare PCI device for system-wide transition =
-into
-> - *                        a sleep state
-> + * pci_prepare_to_sleep - prepare PCI device for system-wide transition =
-into a sleep state
->   * @dev: Device to handle.
->   *
->   * Choose the power state appropriate for the device depending on whethe=
-r
-> @@ -1181,8 +1180,7 @@ int pci_prepare_to_sleep(struct pci_dev
->  }
->
->  /**
-> - * pci_back_from_sleep - turn PCI device on during system-wide transitio=
-n into
-> - *                       the working state a sleep state
-> + * pci_back_from_sleep - turn PCI device on during system-wide transitio=
-n into working state
->   * @dev: Device to handle.
->   *
->   * Disable device's sytem wake-up capability and put it into D0.
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-zEK04WH6TS+LtIawmRZq
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIhRbAdSjSd0sB4dIRAreBAJ497FIHr3HGUrkrzBoxP7kTEngY+gCgrZdw
-ajkuzNkWrLJGpS91XdWIK7I=
-=9VyT
------END PGP SIGNATURE-----
-
---=-zEK04WH6TS+LtIawmRZq--
+    netdev: Add netdev->addr_list_lock protection.
+    
+    Add netif_addr_{lock,unlock}{,_bh}() helpers.
+    
+    Use them to protect operations that operate on or read
+    the network device unicast and multicast address lists.
+    
+    Also use them in cases where the code simply wants to
+    block calls into the driver's ->set_rx_mode() and
+    ->set_multicast_list() methods.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
 
