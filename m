@@ -1,106 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbYGUSTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbYGUSVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753336AbYGUSTS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 14:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbYGUSSz
+	id S1753522AbYGUSVP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 14:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYGUSU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 14:18:55 -0400
-Received: from yorgi.telenet-ops.be ([195.130.133.69]:53982 "EHLO
-	yorgi.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbYGUSSx (ORCPT
+	Mon, 21 Jul 2008 14:20:58 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:23878 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751925AbYGUSU5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 14:18:53 -0400
-Message-ID: <4884D2F1.2030704@telenet.be>
-Date: Mon, 21 Jul 2008 20:18:25 +0200
-From: Ian Schram <ischram@telenet.be>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080620)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: mingo@elte.hu, torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       wireless <linux-wireless@vger.kernel.org>, j@w1.fi
-Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
- at 0000000000000370
-References: <20080721134506.GA27598@elte.hu>	<20080721143023.GA32451@elte.hu>	<20080721150446.GA17746@elte.hu> <20080721.082419.70392960.davem@davemloft.net>
-In-Reply-To: <20080721.082419.70392960.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 21 Jul 2008 14:20:57 -0400
+Date: Mon, 21 Jul 2008 11:17:29 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: linux-raid maillist <linux-raid@vger.kernel.org>
+Subject: Re: INFO: task pdflush:393 blocked for more than 120 seconds. &
+ Call traces ... (fwd)
+Message-Id: <20080721111729.b8b987b3.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0807210936410.7212@filesrv1.baby-dragons.com>
+References: <Pine.LNX.4.64.0807210936410.7212@filesrv1.baby-dragons.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was looking at this out of interest, but I'm in no way familiar with the code.
-
-Looks to me that the error handling code in mac80211_hwsim is awkward. Which
-leads to it calling ieee80211_unregister_hw even when ieee80211_register_hw failed.
-
-The function has a for loop where it generates all simulated radios. when something
-fails, the error handling will call mac80211_hwsim_free which frees all simulated radios
-who's pointer isn't zero. However the information stored is insufficient to determine
-whether or not the call to ieee80211_register_hw succeeded or not for a specific radio.
-The included patch makes init_mac80211_hwsim clean up the current simulated radio,
-and then calls into mac80211_hwsim_free to clean up all the radios that did succeed.
-
-This however doesn't explain why the rate control registration failed.. build tested this,
-but had some problems reproducing the original problem.
-
-signed-off-by: Ian Schram <ischram@telenet.be>
---- a/mac80211_hwsim.c	2008-07-21 18:48:38.000000000 +0200
-+++ b/mac80211_hwsim.c	2008-07-21 19:31:44.000000000 +0200
-@@ -364,8 +364,7 @@ static void mac80211_hwsim_free(void)
-  			struct mac80211_hwsim_data *data;
-  			data = hwsim_radios[i]->priv;
-  			ieee80211_unregister_hw(hwsim_radios[i]);
--			if (!IS_ERR(data->dev))
--				device_unregister(data->dev);
-+			device_unregister(data->dev);
-  			ieee80211_free_hw(hwsim_radios[i]);
-  		}
-  	}
-@@ -437,7 +436,7 @@ static int __init init_mac80211_hwsim(vo
-  			       "mac80211_hwsim: device_create_drvdata "
-  			       "failed (%ld)\n", PTR_ERR(data->dev));
-  			err = -ENOMEM;
--			goto failed;
-+			goto failed_drvdata;
-  		}
-  		data->dev->driver = &mac80211_hwsim_driver;
-
-@@ -461,7 +460,7 @@ static int __init init_mac80211_hwsim(vo
-  		if (err < 0) {
-  			printk(KERN_DEBUG "mac80211_hwsim: "
-  			       "ieee80211_register_hw failed (%d)\n", err);
--			goto failed;
-+			goto failed_hw;
-  		}
-
-  		printk(KERN_DEBUG "%s: hwaddr %s registered\n",
-@@ -479,9 +478,9 @@ static int __init init_mac80211_hwsim(vo
-  	rtnl_lock();
-
-  	err = dev_alloc_name(hwsim_mon, hwsim_mon->name);
--	if (err < 0) {
-+	if (err < 0)
-  		goto failed_mon;
--	}
-+
-
-  	err = register_netdevice(hwsim_mon);
-  	if (err < 0)
-@@ -494,7 +493,14 @@ static int __init init_mac80211_hwsim(vo
-  failed_mon:
-  	rtnl_unlock();
-  	free_netdev(hwsim_mon);
-+	mac80211_hwsim_free();
-+	return err;
-
-+failed_hw:
-+	device_unregister(data->dev);
-+failed_drvdata:
-+	ieee80211_free_hw(hw);
-+	hwsim_radios[i] = 0;
-  failed:
-  	mac80211_hwsim_free();
-  	return err;
+[cc-ing lkml]
 
 
+On Mon, 21 Jul 2008 09:40:23 -0800 (AKDT) Mr. James W. Laferriere wrote:
+
+<http://marc.info/?l=linux-raid&m=121666205220699&w=2>
+
+
+Basically a "me too", on x86_64, 4 proc, 8 GB RAM.
+
+I'm using OLTEST (Oracle Linux test) instead of bonnie.  OLTEST never
+finishes because of this.
+
+kernel log (12 MB) is here: http://oss.oracle.com/~rdunlap/kerneltest/logs/netcon-4655.log
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
