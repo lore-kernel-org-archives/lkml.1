@@ -1,77 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbYGUOFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbYGUOFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755384AbYGUOFR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 10:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbYGUOFF
+	id S1753538AbYGUOFp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 10:05:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbYGUOFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 10:05:05 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:53177 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752531AbYGUOFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 10:05:04 -0400
+	Mon, 21 Jul 2008 10:05:32 -0400
+Received: from stinky.trash.net ([213.144.137.162]:38366 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752495AbYGUOFb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 10:05:31 -0400
+Message-ID: <488497AA.7000407@trash.net>
+Date: Mon, 21 Jul 2008 16:05:30 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ranjit Manomohan <ranjitm@google.com>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, menage@google.com
+Subject: Re: [PATCH 2/2] Traffic control cgroups subsystem
+References: <Pine.LNX.4.64.0807181428180.18212@ranjit.corp.google.com>
+In-Reply-To: <Pine.LNX.4.64.0807181428180.18212@ranjit.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18564.38760.212333.375520@harpo.it.uu.se>
-Date: Mon, 21 Jul 2008 16:04:24 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, Ingo Molnar <mingo@elte.hu>,
-       Chuck Ebbert <cebbert@redhat.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: PIC, L-APIC and I/O APIC debug information
-In-Reply-To: <Pine.LNX.4.55.0807211222250.23386@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0807202226310.24038@cliff.in.clinika.pl>
-	<18563.55832.673541.202465@harpo.it.uu.se>
-	<Pine.LNX.4.55.0807211222250.23386@cliff.in.clinika.pl>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki writes:
- > On Mon, 21 Jul 2008, Mikael Pettersson wrote:
- > 
- > >  > +#define __apicdebuginit(type) static type __init
- > > ...
- > >  > -void __init print_IO_APIC(void)
- > >  > +
- > >  > +__apicdebuginit(void) print_IO_APIC(void)
- > >  >  {
- > > 
- > > I _really_ dislike how this abuses the C macro preprocessor
- > > to create pointless new syntax.
- > > 
- > > Since you're editing these function definitions anyway why
- > > not just spell out "static void __init" in readable proper C?
- > 
- >  This is so that while debugging you can make all these functions global
- > with a single change in one place, rather than going through the whole
- > file and finding all the relevant function headers.  Presumably the
- > original reason for the existence of the macro.  Unfortunately an
- > object-like macro cannot be used here, as the "static" keyword has to come
- > first in a function declaration and the section attribute has to come
- > after the type designation.
- > 
- >  What's wrong with the syntax in your opinion?
+Ranjit Manomohan wrote:
+> This patch implements a filter that classifies packets based upon
+> the cgroup_classid of the packet.
 
-It's not even remotely C-like, which will cause confusion
-for anyone or anything trying to read and understand the code.
-
-(Basically you're on the path to PL/1 or Bourne C, neither of
-which were great from a software engineering point of view.)
-
-Something like the following looks saner to me, would it work for you?
-
-	#ifdef debug
-	#define apicdebug	/* empty */
-	#define __apicinit	/* empty */
-	#else
-	#define apicdebug	static
-	#define __apicinit	__init
-	#endif
-	...
-	apicdebug void __apicinit print_IO_APIC(void)
-	{ .. }
-
-/Mikael
+I'd suggest to add this to the flow classifier (cls_flow.c),
+adding a full classifier is overkill just for this one field.
