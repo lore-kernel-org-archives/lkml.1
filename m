@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbYGUXaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbYGUXeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbYGUXaf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 19:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbYGUXa1
+	id S1755992AbYGUXeA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 19:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYGUXdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 19:30:27 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:54095 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753865AbYGUXa0 (ORCPT
+	Mon, 21 Jul 2008 19:33:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34000
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750939AbYGUXdt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 19:30:26 -0400
-Cc: linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org
-Message-Id: <05565665-4792-4522-B346-DD1C5EEDB4CE@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Ben Collins <ben.collins@canonical.com>
-In-Reply-To: <1216656014.7585.146.camel@cunning>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Mon, 21 Jul 2008 19:33:49 -0400
+Date: Mon, 21 Jul 2008 16:33:49 -0700 (PDT)
+Message-Id: <20080721.163349.113841731.davem@davemloft.net>
+To: johnpol@2ka.mipt.ru
+Cc: mingo@elte.hu, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, vegard.nossum@gmail.com, rjw@sisk.pl,
+       cl@linux-foundation.org, auke-jan.h.kok@intel.com
+Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison
+ overwritten
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080721212447.GA10107@2ka.mipt.ru>
+References: <20080721115555.GA24176@elte.hu>
+	<20080721192138.GA27672@elte.hu>
+	<20080721212447.GA10107@2ka.mipt.ru>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v928.1)
-Subject: Re: [PATCH 3/7] bluetooth: Add quirks for a few hci_usb devices
-Date: Tue, 22 Jul 2008 01:30:14 +0200
-References: <E1KKl4I-00068H-S6@swissweb.swissdisk.com> <1216616891.8411.114.camel@violet.holtmann.net> <1216656014.7585.146.camel@cunning>
-X-Mailer: Apple Mail (2.928.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben,
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Date: Tue, 22 Jul 2008 01:24:48 +0400
 
-> Preface: The "Broadcom" device is on unreleased hardware, so I can't
-> disclose the actual model.
+> On Mon, Jul 21, 2008 at 09:21:38PM +0200, Ingo Molnar (mingo@elte.hu) wrote:
+> > So it's now a strong likelyhood that this crash is a combination of 
+> > e1000e+netconsole.
+> 
+> e1000_clean_tx_irq() call looks particulary suspicious: it is called
+> without adapter->tx_queue_lock in poll controller (netconsole callback)
+> and with that lock in NAPI handler.
+> 
+> Can you check kind of this patch:
 
-then put on your todo list to update this entry once you can.
+The call even seems pointless, since the caller will call
+->poll() (which is e1000_clean) as the very next action,
+and that will invoke e1000_clean_tx_irq() properly.
 
-> When the Dell 370 and 410 BT adapters are put into BT radio mode, they
-> need to be prepared like many other Broadcom adapters.
->
-> Also, add quirk Broadcom 2046 devices with HCI_RESET. Reference for  
-> this
-> bug: https://launchpad.net/bugs/249448
->
-> CC: linux-bluetooth@vger.kernel.org
-> Signed-off-by: Michael Frey <michael.frey@canonical.com>
-> Signed-off-by: Mario Limonciello <Mario_Limonciello@Dell.com>
-> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-> Signed-off-by: Ben Collins <ben.collins@canonical.com>
-
-Acked-by: Marcel Holtmann <marcel@holtmann.org>
-
-Regards
-
-Marcel
-
+I would just delete this call from e1000_netpoll() entirely.
