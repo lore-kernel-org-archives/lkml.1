@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbYGUAKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758874AbYGUAKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758260AbYGUAKX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 20:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757722AbYGUAFF
+	id S1758874AbYGUAKp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 20:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742AbYGUAIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 20:05:05 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58664 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757730AbYGUAFD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 20:05:03 -0400
-Subject: [PATCH 22/22] xtensa: Introducing asm/syscalls.h
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: LKML <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>, chris@zankel.net
-In-Reply-To: <1216598318.3679.151.camel@jaswinder.satnam>
-References: <1216592500.3679.14.camel@jaswinder.satnam>
-	 <1216592798.3679.22.camel@jaswinder.satnam>
-	 <1216592879.3679.24.camel@jaswinder.satnam>
-	 <1216593035.3679.27.camel@jaswinder.satnam>
-	 <1216596035.3679.95.camel@jaswinder.satnam>
-	 <1216596106.3679.98.camel@jaswinder.satnam>
-	 <1216596325.3679.104.camel@jaswinder.satnam>
-	 <1216596669.3679.112.camel@jaswinder.satnam>
-	 <1216596749.3679.115.camel@jaswinder.satnam>
-	 <1216596835.3679.117.camel@jaswinder.satnam>
-	 <1216596932.3679.120.camel@jaswinder.satnam>
-	 <1216597066.3679.123.camel@jaswinder.satnam>
-	 <1216597151.3679.125.camel@jaswinder.satnam>
-	 <1216597237.3679.128.camel@jaswinder.satnam>
-	 <1216597352.3679.131.camel@jaswinder.satnam>
-	 <1216597566.3679.135.camel@jaswinder.satnam>
-	 <1216597856.3679.139.camel@jaswinder.satnam>
-	 <1216597923.3679.141.camel@jaswinder.satnam>
-	 <1216597993.3679.144.camel@jaswinder.satnam>
-	 <1216598067.3679.146.camel@jaswinder.satnam>
-	 <1216598151.3679.148.camel@jaswinder.satnam>
-	 <1216598318.3679.151.camel@jaswinder.satnam>
-Content-Type: text/plain
-Date: Mon, 21 Jul 2008 05:30:08 +0530
-Message-Id: <1216598408.3679.154.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Sun, 20 Jul 2008 20:08:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37751 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758906AbYGUAIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 20:08:54 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] coredump: exit_mm: clear ->mm first, then play with ->core_state
+In-Reply-To: Oleg Nesterov's message of  Sunday, 20 July 2008 16:23:54 +0400 <20080720122354.GD143@tv-sign.ru>
+References: <20080716135359.GA1219@tv-sign.ru>
+	<20080720023258.26D2015421D@magilla.localdomain>
+	<20080720122354.GD143@tv-sign.ru>
+Emacs: the road to Hell is paved with extensibility.
+Message-Id: <20080721000842.94DAE15421D@magilla.localdomain>
+Date: Sun, 20 Jul 2008 17:08:42 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Declaring arch-dependent syscalls for xtensa architecture
+> Yes, oom_kill.c in turn need fixes but still this is not nice, and I
+> personally hate this coredump code in the middle of exit_mm().
 
-Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
----
- include/asm-xtensa/syscalls.h |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
+I agree.  I think what we should work towards is having the coredump
+synchronization take place earlier (the tracehook_report_exit point should
+be fine, i.e. before PF_EXITING).  Then have the dumping and the waiting
+for it be killable.  I don't think we can get there in only one or two
+steps, though.
 
-diff --git a/include/asm-xtensa/syscalls.h b/include/asm-xtensa/syscalls.h
-index e69de29..4aa949e 100644
---- a/include/asm-xtensa/syscalls.h
-+++ b/include/asm-xtensa/syscalls.h
-@@ -0,0 +1,17 @@
-+/*
-+ * syscalls.h - Linux syscall interfaces (arch-specific)
-+ *
-+ * Copyright (c) 2008 Jaswinder Singh
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ *
-+ * Please do not call me directly, include linux/syscalls.h
-+ */
-+
-+#ifndef _ASM_XTENSA_SYSCALLS_H
-+#define _ASM_XTENSA_SYSCALLS_H
-+
-+/* define arch dependent syscalls here */
-+
-+#endif /* _ASM_XTENSA_SYSCALLS_H */
--- 
-1.5.5.1
+[The rest if quite off-topic, please do it separately.]
 
+> btw, arch/sparc64/kernel/ptrace.c has a lot of
+> 
+> 	if (target == current)
+> 		copy_xxx_user();
+> 	else
+> 		access_process_vm();
+> 
+> perhaps it make sense to make a helper. 
+
+Dave actually has get_from_target and set_to_target helpers for that.
+The places they aren't used, I assume are either just older code not
+yet streamlined, or places where the separate get/put_user calls perform
+especially better than copy_xxx_user (you'd have to ask Dave).  If multiple
+arch ports find such helpers useful, they could move into common code later.
+
+> Just curious (I don't know what regset is), is it possible that ->get()
+> is called when target->mm == NULL?
+
+It should not happen.  It's only kosher to use user_regset calls on a task
+in a known state (like ptrace stop, or current), and never on kernel threads.
 
 
+Thanks,
+Roland
