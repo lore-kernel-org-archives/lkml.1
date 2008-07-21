@@ -1,105 +1,47 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758005AbYGTPYi (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 20 Jul 2008 11:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754536AbYGTPY2
+	id S1757378AbYGUI2P (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 21 Jul 2008 04:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbYGUI15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 11:24:28 -0400
-Received: from unallocated.dg.net.ua ([213.186.218.211]:56944 "EHLO
-	mail.connect.com.ua" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753364AbYGTPY2 (ORCPT
+	Mon, 21 Jul 2008 04:27:57 -0400
+Received: from ip185.mtgseminar2008.com ([76.164.237.185]:43142 "HELO
+	ip185.mtgseminar2008.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753820AbYGUI14 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 11:24:28 -0400
+	Mon, 21 Jul 2008 04:27:56 -0400
+Date: Mon, 21 Jul 2008 01:22:04 -0700
+From: "Kristi Rodriguez" <kristirodriguez1@mtgseminar2008.com>
 To: linux-kernel@vger.kernel.org
-Subject: =?UTF-8?B?0JrQvtC90L3QtdC60YIgfCDQl9C80ZbQvdC4INC30LAg0L7RgdGC0LDQvdC9?=  =?UTF-8?B?0ZbQuSDRgtC40LbQtNC10L3RjA==?=
-Date: Sun, 20 Jul 2008 18:24:03 +0300
-From: =?UTF-8?B?0JrQvtC80LDQvdC00LAg0JrQvtC90L3QtdC60YLQsA==?= 
-	<donotreply@connect.com.ua>
-Reply-to: Connect <donotreply@connect.com.ua>
-Message-ID: <1fbafd206cd0bf27510ef1cf10959c84@localhost.localdomain>
-X-Priority: 3
-X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.0 rc1]
+Subject: an idea 
 MIME-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-Type: text/plain; charset=UTF-8
+X-Mailer: gdp v8.3.3.1000.5359131
+Reply-To: r.427.5359131@mtgseminar2008.com
+Message-Id: <20080721034501.wesmxwucfm@mtgseminar2008.com>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758005AbYGTPYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757378AbYGUI2P@vger.kernel.org>
 
-=D0=92=D1=96=D1=82=D0=B0=D1=94=D0=BC=D0=BE, =D0=92=D0=BB=D0=B0=D0=B4=D0=
-=B8=D0=BC=D0=B8=D1=80 =D0=9A=D0=B8=D1=80=D0=B8=D0=BB=D0=BE=D0=B2!
+There is nothing more powerful than an idea who's time has come, why be the broker when you can be the banker...by gaining control over your business.
 
-=D0=9F=D1=80=D0=BE=D0=BF=D0=BE=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=B4=D0=BE=
- =D0=B2=D0=B0=D1=88=D0=BE=D1=97 =D1=83=D0=B2=D0=B0=D0=B3=D0=B8 =D0=BF=D0=
-=B5=D1=80=D0=B5=D0=BB=D1=96=D0=BA =D0=BD=D0=B0=D0=B9=D0=B1=D1=96=D0=BB=D1=
-=8C=D1=88 =D1=86=D1=96=D0=BA=D0=B0=D0=B2=D0=B8=D1=85 =D0=BF=D0=BE=D0=B4=
-=D1=96=D0=B9 =D0=BD=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82=D1=
-=96 =D0=B7=D0=B0 =D0=BE=D1=81=D1=82=D0=B0=D0=BD=D0=BD=D1=96=D0=B9 =D1=87=
-=D0=B0=D1=81:
+Reserve seats today at:
 
-=D0=9A=D0=BE=D0=BD=D0=BA=D1=83=D1=80=D1=81 =D0=92=D1=96=D0=B4=D0=B5=D0=BE=
-=D0=BC=D0=B0=D0=BD=D1=96=D1=8F:
-20 =D0=BF=D1=80=D0=B8=D0=B7=D1=96=D0=B2 =D0=BE=D1=82=D1=80=D0=B8=D0=BC=D0=
-=B0=D1=8E=D1=82=D1=8C =D0=BA=D0=BE=D1=80=D0=B8=D1=81=D1=82=D1=83=D0=B2=D0=
-=B0=D1=87=D1=96 =D1=81=D0=B0=D0=B9=D1=82=D1=83, =D1=8F=D0=BA=D1=96 =D0=B7=
-=D0=B0=D0=B2=D0=B0=D0=BD=D1=82=D0=B0=D0=B6=D0=B0=D1=82=D1=8C =D0=BD=D0=B0=
-=D0=B9=D0=B1=D1=96=D0=BB=D1=8C=D1=88=D1=83 =D0=BA=D1=96=D0=BB=D1=8C=D0=BA=
-=D1=96=D1=81=D1=82=D1=8C =D0=BF=D0=BE=D0=BF=D1=83=D0=BB=D1=8F=D1=80=D0=BD=
-=D0=BE=D0=B3=D0=BE =D0=B2=D1=96=D0=B4=D0=B5=D0=BE =D0=B7 4 =D0=BF=D0=BE=
- 14 =D0=BB=D0=B8=D0=BF=D0=BD=D1=8F. =D0=94=D0=B5=D1=82=D0=B0=D0=BB=D1=96=
- =D0=BA=D0=BE=D0=BD=D0=BA=D1=83=D1=80=D1=81=D1=83: http://connect.ua/co=
-ntest/video_views.php
+http://ouryearlyconference.com/
+or
+call today: 858-736-7788
 
 
-=D0=9D=D0=BE=D0=B2=D0=B5 =D0=B2i=D0=B4=D0=B5=D0=BE:
-=D0=9F=D1=80=D0=B8=D0=BA=D0=BE=D0=BB=D1=8B =D0=BD=D0=B0 =D1=80=D0=B0=D0=
-=B1=D0=BE=D1=82=D0=B5 - =D0=B1=D0=BB=D0=BE=D0=BD=D0=B4=D0=B8=D0=BD=D0=BA=
-=D0=B8 =D0=BD=D0=B5 =D1=80=D0=B0=D0=B1=D0=BE=D1=82=D0=B0=D1=8E=D1=82!, =
-4606 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4i=D0=B2: http://co=
-nnect.ua/video/view?id=3D43238
-=D0=9C=D0=B5=D0=B3=D0=B0 =D0=BE=D1=82=D0=B6=D0=B8=D0=B3!, 1463 =D0=BF=D0=
-=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4=D0=B0: http://connect.ua/video/=
-view?id=3D47813
-=D0=9F=D1=80=D0=BE=D0=B8=D1=81=D1=88=D0=B5=D1=81=D1=82=D0=B2=D0=B8=D0=B5=
- =D0=B2 =D0=BC=D0=B5=D1=82=D1=80=D0=BE, 1737 =D0=BF=D0=B5=D1=80=D0=B5=D0=
-=B3=D0=BB=D1=8F=D0=B4i=D0=B2: http://connect.ua/video/view?id=3D48600
-=D0=92=D1=81i =D0=B2i=D0=B4=D0=B5=D0=BE http://connect.ua/video
+to be taken of our list please: 
+http://ouryearlyconference.com/uns/ or, send us a letter to: 
+PBMSII, 5451 Weuery Ave., La JoIIa, CA 92037
 
-=D0=AF=D0=BA=D1=89=D0=BE =D0=B2=D0=BA=D0=B0=D0=B7=D0=B0=D0=BD=D0=B5 =D0=
-=B2=D0=B8=D1=89=D0=B5 =D0=BF=D0=BE=D1=81=D0=B8=D0=BB=D0=B0=D0=BD=D0=BD=D1=
-=8F =D0=BD=D0=B5 =D0=B2=D1=96=D0=B4=D0=BA=D1=80=D0=B8=D0=B2=D0=B0=D1=94=
-=D1=82=D1=8C=D1=81=D1=8F, =D0=B7=D0=BA=D0=BE=D0=BF=D1=96=D1=8E=D0=B9=D1=
-=82=D0=B5 =D0=B9=D0=BE=D0=B3=D0=BE =D0=B4=D0=BE =D0=B1=D1=83=D1=84=D0=B5=
-=D1=80=D0=B0 =D0=BE=D0=B1=D0=BC=D1=96=D0=BD=D1=83, =D0=B2=D1=81=D1=82=D0=
-=B0=D0=B2=D1=82=D0=B5 =D0=B2 =D0=B0=D0=B4=D1=80=D0=B5=D1=81=D0=BD=D0=B8=
-=D0=B9 =D1=80=D1=8F=D0=B4=D0=BE=D0=BA =D0=B1=D1=80=D0=B0=D1=83=D0=B7=D0=
-=B5=D1=80=D0=B0 =D1=82=D0=B0 =D0=BD=D0=B0=D1=82=D0=B8=D1=81=D0=BD=D1=96=
-=D1=82=D1=8C Enter.
 
-=D0=92=D0=B8 =D0=BE=D1=82=D1=80=D0=B8=D0=BC=D0=B0=D0=BB=D0=B8 =D1=86=D0=
-=B5=D0=B9 =D0=BB=D0=B8=D1=81=D1=82, =D1=82=D0=BE=D0=BC=D1=83 =D1=89=D0=BE=
- =D0=B7=D0=B0=D1=80=D0=B5=D1=94=D1=81=D1=82=D1=80=D0=BE=D0=B2=D0=B0=D0=BD=
-=D1=96 =D0=BD=D0=B0 =D1=81=D0=B0=D0=B9=D1=82=D1=96 =D0=BD=D0=B0=D1=86=D1=
-=96=D0=BE=D0=BD=D0=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D1=83=D0=BA=D1=80=D0=
-=B0=D1=97=D0=BD=D1=81=D1=8C=D0=BA=D0=BE=D1=97 =D1=81=D0=BE=D1=86=D1=96=D0=
-=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D0=BC=D0=B5=D1=80=D0=B5=D0=B6=D1=96 =
-Connect.ua
+--------------------------------------------
+. 
 
-=D0=92=D0=B8 =D0=BC=D0=BE=D0=B6=D0=B5=D1=82=D0=B5 =D0=B7=D0=BC=D1=96=D0=
-=BD=D0=B8=D1=82=D0=B8 =D0=BF=D0=B0=D1=80=D0=B0=D0=BC=D0=B5=D1=82=D1=80=D0=
-=B8 =D0=B2=D1=96=D0=B4=D0=BF=D1=80=D0=B0=D0=B2=D0=BB=D0=B5=D0=BD=D0=BD=D1=
-=8F =D0=BF=D0=BE=D0=B2=D1=96=D0=B4=D0=BE=D0=BC=D0=BB=D0=B5=D0=BD=D1=8C =
-=D0=B2 =D0=BE=D0=BF=D1=86=D1=96=D1=8F=D1=85 =D0=B0=D0=BD=D0=BA=D0=B5=D1=
-=82=D0=B8.
 
-=D0=9E=D0=B1`=D1=94=D0=B4=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=A3=D0=BA=D1=
-=80=D0=B0=D1=97=D0=BD=D1=83!
-=D0=9A=D0=BE=D0=BC=D0=B0=D0=BD=D0=B4=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=
-=D0=BA=D1=82=D1=83
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+
+
