@@ -1,58 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753259AbYGUM6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbYGUNHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753259AbYGUM6Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 08:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbYGUM6K
+	id S1753538AbYGUNHS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 09:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbYGUNHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 08:58:10 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:50657 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750847AbYGUM6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 08:58:09 -0400
-Date: Mon, 21 Jul 2008 16:57:47 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, cl@linux-foundation.org,
-       davem@davemloft.net
-Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
-Message-ID: <20080721125747.GA3056@2ka.mipt.ru>
-References: <20080717214222.GA29449@elte.hu> <Pine.LNX.4.64.0807181149460.3852@sbz-30.cs.Helsinki.FI> <20080718091146.GQ6875@elte.hu> <20080721094110.GA16029@elte.hu> <84144f020807210252k68d5cf65i8c7ae3c11cecc046@mail.gmail.com> <20080721100627.GA5953@2ka.mipt.ru> <20080721105051.GA5830@elte.hu> <20080721112515.GA4777@2ka.mipt.ru> <20080721115555.GA24176@elte.hu>
-Mime-Version: 1.0
+	Mon, 21 Jul 2008 09:07:06 -0400
+Received: from ik-out-1112.google.com ([66.249.90.176]:10702 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751728AbYGUNHF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 09:07:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:from;
+        b=W+RIHLKNqPX1kQAIII4AIMj2xL4HVNzoVRFImIEqM3clyS0xXRRxRXqJuOX1LNrp/W
+         jWq9Jsya+OOY3Imx833wilpEgiMHsU2qsfyt7LaUTxEoRERGrwkA2tL4mrS5g5EbF5Kk
+         0M20TAkiyoVlSlwxeBLca4+BC9kxlEMXkYtWA=
+Date: Mon, 21 Jul 2008 15:06:35 +0200
+To: Olaf Hering <olaf@aepfle.de>, Ingo Molnar <mingo@elte.hu>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: asm-x86/processor-flags.h, CONFIG_* leaks
+Message-ID: <20080721130635.GA19123@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080721115555.GA24176@elte.hu>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080721124656.GA28618@aepfle.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2008 at 01:55:55PM +0200, Ingo Molnar (mingo@elte.hu) wrote:
-> > > I could try run tests with netconsole deactivated, if you think 
-> > > that's a worthwile line of probing this problem. (although that 
-> > > would make me do blind tests in essence - having kernel log output 
-> > > is really essential.)
-> > 
-> > Let's try this way first. If system will continue to crash, we will 
-> > add some debug options in various pathes. Existing reports do not 
-> > contain enough information unfortunately, so we will not lose too 
-> > much.
-> 
-> ok. I've turned off netconsole - 8 successful bootups in a row so far. 
-> The box is a slow booter/builder with an 8 kernels/hour test throughput, 
-> so if everything goes fine we should have meaningful results in about 10 
-> hours.
-> 
-> ( there are other, faster testboxes in -tip testing with 33 kernels/hour 
->   build+boot throughput where we'd have to wait only 2 hours - but as 
->   per Murphy's law they dont trigger this bug ;-)
+On Mon, Jul 21, 2008 at 2:46 PM, Olaf Hering <olaf@aepfle.de> wrote:
+>
+> asm-x86/processor-flags.h is an exported header,
+> via 'make headers_install_all'
+>
+> Please move X86_VM_MASK inside __KERNEL__
 
-Since 2.6.25 there was only single change in netpoll.c:
-f5184d267c1aedb9b7a8cc44e08ff6b8d382c3b5
-Which looks innocent.
+Oops, this seems to be my fault. Find the fix below.
 
-Is your driver e1000 or e1000e? Can you check different one?
+As I stated in the original commit, this was tested with 'make
+headers_check', so I can only guess that it's a merge fall-out.
 
+Adrian Bunk pointed it out in my original submission, which is
+why it was explicitly tested... But I just tested it again, and
+why doesn't make headers_check catch it?
+
+Sorry :-/
+
+
+Vegard
+
+
+>From d3795de8f7001aa1a485c52e2f0ce565dd1e23cf Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Mon, 21 Jul 2008 14:54:23 +0200
+Subject: [PATCH] x86: don't leak X86_VM_MASK in processor-flags.h
+
+Apparently,
+
+commit 6330a30a76c1e62d4b4ec238368957f8febf9113
+Author: Vegard Nossum <vegard.nossum@gmail.com>
+Date:   Wed May 28 09:46:19 2008 +0200
+
+    x86: break mutual header inclusion
+
+introduced some CONFIG names to processor-flags.h, which was exported in
+
+commit 6093015db2bd9e70cf20cdd23be1a50733baafdd
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Sun Mar 30 11:45:23 2008 +0200
+
+    x86: cleanup replace most vm86 flags with flags from processor-flags.h, fix
+
+Fix it by wrapping the CONFIG parts in __KERNEL__.
+
+Reported-by: Olaf Hering <olaf@aepfle.de>
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ include/asm-x86/processor-flags.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/include/asm-x86/processor-flags.h b/include/asm-x86/processor-flags.h
+index 092b39b..eff2ecd 100644
+--- a/include/asm-x86/processor-flags.h
++++ b/include/asm-x86/processor-flags.h
+@@ -88,10 +88,12 @@
+ #define CX86_ARR_BASE	0xc4
+ #define CX86_RCR_BASE	0xdc
+ 
++#ifdef __KERNEL__
+ #ifdef CONFIG_VM86
+ #define X86_VM_MASK	X86_EFLAGS_VM
+ #else
+ #define X86_VM_MASK	0 /* No VM86 support */
+ #endif
++#endif
+ 
+ #endif	/* __ASM_I386_PROCESSOR_FLAGS_H */
 -- 
-	Evgeniy Polyakov
+1.5.5.1
+
