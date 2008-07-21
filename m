@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbYGUSfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbYGUSfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753535AbYGUSfM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 14:35:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbYGUSe7
+	id S1754139AbYGUSfh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 14:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYGUSfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 14:34:59 -0400
-Received: from smtp2.tech.numericable.fr ([82.216.111.38]:41944 "EHLO
-	smtp2.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750849AbYGUSe7 (ORCPT
+	Mon, 21 Jul 2008 14:35:18 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:37847 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751189AbYGUSfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 14:34:59 -0400
-Message-ID: <4884D6CF.2070306@numericable.fr>
-Date: Mon, 21 Jul 2008 20:34:55 +0200
-From: Rufus & Azrael <rufus-azrael@numericable.fr>
-User-Agent: Thunderbird 3.0a1 (X11/2008051919)
+	Mon, 21 Jul 2008 14:35:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=bZtx44tIrEBsol8PMNDVDI/1d47rhrcaiZj5rIQraeVFi29b7sHVwzgafCQ0VE0m/f
+         q3lVAgE2oiKRJsEgOOaNMyvixu+1krm+6eHP4zPWC31zTeovxn/VYzz8Gvvsw7eJ+qU4
+         lk6B4AfRi6LlLoTgfGnryp1faIh2kIPg6DPHw=
+Message-ID: <b637ec0b0807211135u19659393x56605e936a0dce7d@mail.gmail.com>
+Date: Mon, 21 Jul 2008 20:35:15 +0200
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Status of the radeonfb driver?
+Cc: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
 MIME-Version: 1.0
-To: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [2.6.26-git7] ACPI warning (perhaps conflict) on boot with SMBus
- host controler (piix4)
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+Hi.
 
-When trying the very latest git kernel (2.6.26-git7) I got this warning 
-in dmesg on boot, about ACPI and PIIX4 SMBus controller :
+The subject says it all, I think. I'm asking because my quite old
+Radeon Mobility X700 ( 1002:5653) is still not supported in latest
+Linus' GIT tree.
+There were some patching floating around some months ago but they
+lacked suspend/resume support. Are there any progress or patches to
+test ?
 
-[    4.770406] ACPI: I/O resource piix4_smbus [0xb00-0xb07] conflicts 
-with ACPI region SMOV [0xb00-0xb06]
-[    4.771726] ACPI: Device needs an ACPI driver
-[    4.773035] piix4_smbus 0000:00:14.0: SMBus Host Controller at 0xb00, 
-revision 0
-
-But my amd64 box works fine and I haven't notice any dysfunction on it. 
-The 26-git6 kernel doesn't cause such a warning.
-
-Regards.
+Regards,
+Fabio
