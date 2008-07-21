@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbYGUUQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbYGUUU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbYGUUQq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 16:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbYGUUQi
+	id S1755294AbYGUUU3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 16:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYGUUUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 16:16:38 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:53236 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753140AbYGUUQh (ORCPT
+	Mon, 21 Jul 2008 16:20:19 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32853
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751554AbYGUUUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 16:16:37 -0400
-Subject: Re: [git pull] scheduler updates for v2.6.27, phase #2
-From: Daniel Walker <dwalker@mvista.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1216668182.7257.80.camel@twins>
-References: <20080721153804.GA26072@elte.hu>
-	 <1216657892.2294.34.camel@dhcp32.mvista.com>
-	 <1216668182.7257.80.camel@twins>
-Content-Type: text/plain
-Date: Mon, 21 Jul 2008 13:16:33 -0700
-Message-Id: <1216671393.2294.49.camel@dhcp32.mvista.com>
+	Mon, 21 Jul 2008 16:20:17 -0400
+Date: Mon, 21 Jul 2008 13:20:17 -0700 (PDT)
+Message-Id: <20080721.132017.209065925.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stefanr@s5r6.in-berlin.de
+Subject: Re: [crash] kernel BUG at net/core/dev.c:1328!
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080721194414.GA4872@elte.hu>
+References: <alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org>
+	<20080721.120052.123606398.davem@davemloft.net>
+	<20080721194414.GA4872@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-21 at 21:23 +0200, Peter Zijlstra wrote:
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon, 21 Jul 2008 21:44:14 +0200
 
-> Does this work for you?
 > 
+> * David Miller <davem@davemloft.net> wrote:
+> 
+> > From: Linus Torvalds <torvalds@linux-foundation.org>
+> > Date: Mon, 21 Jul 2008 11:35:21 -0700 (PDT)
+> > 
+> > > Maybe the network drivers are few enough that it will get fixed, or
+> > > maybe the WARN_ON_ONCE() will just be removed and the rule not
+> > > reinforced.
+> > > 
+> > > I personally suspect the latter, since it seems to happen with just
+> > > about _any_ random network driver, including the common and
+> > > well-maintained ones (ie the Gods only help us for the truly
+> > > odd/random cases)
+> > 
+> > Yes, we'll see how this plays out.
+> > 
+> > Ian Schram just posted a patch for the NULL pointer derfer in wireless 
+> > Ingo reported, so we'll see if that bug will be fixed now as well.
+> 
+> Yes, the fix from Ian below solved the CONFIG_MAC80211_HWSIM=y crash i 
+> was getting. I have no other pending issues other than a few low-prio 
+> ne2000 build failures.
+> 
+> Thanks guys,
 
-Yours removed the warning .. I made an alternate one below only compile
-tested, your choice..
-
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
-
-
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 47ceac9..febb864 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -242,7 +242,7 @@ static int do_balance_runtime(struct rt_rq *rt_rq)
- 	rt_period = ktime_to_ns(rt_b->rt_period);
- 	for_each_cpu_mask(i, rd->span) {
- 		struct rt_rq *iter = sched_rt_period_rt_rq(rt_b, i);
--		s64 diff;
-+		u64 diff;
- 
- 		if (iter == rt_rq)
- 			continue;
-@@ -252,7 +252,7 @@ static int do_balance_runtime(struct rt_rq *rt_rq)
- 			goto next;
- 
- 		diff = iter->rt_runtime - iter->rt_time;
--		if (diff > 0) {
-+		if ((s64)(diff) > 0) {
- 			do_div(diff, weight);
- 			if (rt_rq->rt_runtime + diff > rt_period)
- 				diff = rt_period - rt_rq->rt_runtime;
-
-
+Thanks everyone, applied.
