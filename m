@@ -1,109 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758309AbYGUIo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757881AbYGUItc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758309AbYGUIo4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 04:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755371AbYGUIot
+	id S1757881AbYGUItc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 04:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbYGUItY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 04:44:49 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:29435 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755035AbYGUIos (ORCPT
+	Mon, 21 Jul 2008 04:49:24 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44021 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755371AbYGUItY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 04:44:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=J7ji6ysM0L2DePOGHHqgStH6hb/jSzcuy9OT+4kzsfvgWmjd38zxGxlR/q8F4FnbKh
-         2ORiB0IMAmHSy8f1rpfgakfFfKZehBFVUKxBIjV2T2L1QM0FWHE1pxCB1iNTD6OlYwq8
-         G3NLOiK1ctbaltXdew4jjnGmBQD18pqZni54A=
-Date: Mon, 21 Jul 2008 12:44:43 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] vfs: use kstrdup()
-Message-ID: <20080721084443.GD20011@lenovo>
-References: <4881BEF4.2020201@cn.fujitsu.com> <20080719131317.GA7027@asus> <20080719131909.GB7027@asus> <20080721052713.GY28946@ZenIV.linux.org.uk> <48842CDB.1090009@cn.fujitsu.com> <20080721070346.GA28946@ZenIV.linux.org.uk> <20080721080427.GC6662@lenovo> <488448A1.3030608@cn.fujitsu.com>
+	Mon, 21 Jul 2008 04:49:24 -0400
+Date: Mon, 21 Jul 2008 04:49:09 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/23] tracehook: exec
+Message-ID: <20080721084908.GA11580@infradead.org>
+References: <20080717072541.F390E15411D@magilla.localdomain> <20080717072820.B14E715411D@magilla.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <488448A1.3030608@cn.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080717072820.B14E715411D@magilla.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Li Zefan - Mon, Jul 21, 2008 at 04:28:17PM +0800]
-| Cyrill Gorcunov wrote:
-| > [Al Viro - Mon, Jul 21, 2008 at 08:03:46AM +0100]
-| > | 
-| > [...]
-| > | The right thing here is to consider failing allocation of ->mnt_devname
-| > | as failure of the entire alloc.
-| > | 
-| > 
-| > Al, what about the patch below? I'm not sure if Li's version already
-| > in someone tree so it's from-the-scratch. If this ok, i think Li could
-| > update his version and resend.
-| > 
-| 
-| It's already in -mm tree, but Andrew can drop it and queue the new one.
-| 
-| > 		- Cyrill -
-| > ---
-| > 
-| > Index: linux-2.6.git/fs/namespace.c
-| > ===================================================================
-| > --- linux-2.6.git.orig/fs/namespace.c	2008-07-21 11:34:37.000000000 +0400
-| > +++ linux-2.6.git/fs/namespace.c	2008-07-21 12:00:01.000000000 +0400
-| > @@ -112,9 +112,13 @@ struct vfsmount *alloc_vfsmnt(const char
-| >  		int err;
-| >  
-| >  		err = mnt_alloc_id(mnt);
-| > -		if (err) {
-| > -			kmem_cache_free(mnt_cache, mnt);
-| > -			return NULL;
-| > +		if (err)
-| > +			goto err;
-| > +
-| > +		if (name) {
-| > +			mnt->mnt_devname = kstrdup(name, GFP_KERNEL);
-| > +			if (!mnt->mnt_devname)
-| 
-| should call mnt_free_id() here.
-| 
-| > +				goto err;
-| >  		}
-| >  
-| >  		atomic_set(&mnt->mnt_count, 1);
-| > @@ -127,16 +131,12 @@ struct vfsmount *alloc_vfsmnt(const char
-| >  		INIT_LIST_HEAD(&mnt->mnt_slave_list);
-| >  		INIT_LIST_HEAD(&mnt->mnt_slave);
-| >  		atomic_set(&mnt->__mnt_writers, 0);
-| > -		if (name) {
-| > -			int size = strlen(name) + 1;
-| > -			char *newname = kmalloc(size, GFP_KERNEL);
-| > -			if (newname) {
-| > -				memcpy(newname, name, size);
-| > -				mnt->mnt_devname = newname;
-| > -			}
-| > -		}
-| >  	}
-| >  	return mnt;
-| > +
-| > +err:
-| > +	kmem_cache_free(mnt_cache, mnt);
-| > +	return NULL;
-| >  }
-| >  
-| >  /*
-| > 
-| > 
-|
+On Thu, Jul 17, 2008 at 12:28:20AM -0700, Roland McGrath wrote:
+> This moves all the ptrace hooks related to exec into tracehook.h inlines.
+> 
+> This also lifts the calls for tracing out of the binfmt load_binary hooks
+> into search_binary_handler() after it calls into the binfmt module.  This
+> change has no effect, since all the binfmt modules' load_binary functions
+> did the call at the end on success, and now search_binary_handler() does
+> it immediately after return if successful.  We consolidate the repeated
+> code, and binfmt modules no longer need to import ptrace_notify().
 
-well, as only Al find new version more or less correct we could
-update yours.
- 
-		- Cyrill -
+Care to first just consolidate the code from the binary handlers to
+exec.c and then restrucure it?  Currently mainline doesn't even
+have ptrace_event yet so it's hard to verify the code is the same.
+It certainly isn't for binfmt_som although that's like just a bugfix
+that needs to be documented.  Also the two new routines are too large
+to be inlined, and I would rather not rely on the guarantee that no
+other caller will pop up.
+
