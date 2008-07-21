@@ -1,76 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbYGUJ7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbYGUKA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758156AbYGUJ7s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 05:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYGUJ7k
+	id S1758609AbYGUKA3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 06:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYGUKAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 05:59:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41311 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751660AbYGUJ7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 05:59:39 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/23] tracehook
-In-Reply-To: Andrew Morton's message of  Thursday, 17 July 2008 01:51:05 -0700 <20080717015105.f919f615.akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-References: <20080717072541.F390E15411D@magilla.localdomain>
-	<20080717015105.f919f615.akpm@linux-foundation.org>
-X-Zippy-Says: Boy, am I glad it's only 1971...
-Message-Id: <20080721095932.B409A15421D@magilla.localdomain>
-Date: Mon, 21 Jul 2008 02:59:32 -0700 (PDT)
+	Mon, 21 Jul 2008 06:00:22 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:35713 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754647AbYGUKAV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 06:00:21 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: airlied@linux.ie
+Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1] DRM: don't enable irqs in locking
+Date: Mon, 21 Jul 2008 11:58:04 +0200
+Message-Id: <1216634284-13412-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.6.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo said very well what I think the intrinsic value is.  Indeed, I
-think it is of use even if utrace were never merged.  Anyone who
-decides tomorrow that my crap is useless and whips up a different
-plan instead of utrace, will benefit from reading all the kerneldoc
-in tracehook.h.
+drm_lock_take(); and drm_lock_free(); are called from
+drm_locked_tasklet_func(); which disables interrupts when grabbing its
+spinlock.
 
-The practical value of the patch series right now is that it makes
-life easier for merging and patch juggling.  The new utrace patches
-are indeed coming too, and I'm expecting some vigorous feedback.
-Different versions are likely to bounce around for a while.
-Meanwhile, there are some people trying to track latest+utrace via
-GIT or patching.  The tracehook series makes it so that the utrace
-patches proper touch very little core code and few files, so merge
-and patch conflicts are rare.  I can tell you from doing it a lot
-that there are frequently niggling conflicts to fix up in rebasing
-the tracehook patches after miscellaneous core kernel changes.
-Things requiring changes to tracehook.h are unlikely, but unrelated
-changes textually near the tracehook calls that foul automatic patch
-merging are common.
+Don't allow these locking functions to re-enable interrupts when
+the tasklet expects them disabled. I.e. use spin_lock_irqsave instead of
+spin_lock_bh (with their unlock opposites).
 
-I'll do another few days of polish on utrace first too, but one main
-reason I posted tracehook alone first was to see how much shrapnel I
-took in the face just for this, before getting to the substantive
-bits.  If this much is accepted, that's enough to make it possible
-for utrace or another new thing to be added as a config option.  
+We will get such a warnings otherwise:
+------------[ cut here ]------------
+WARNING: at kernel/softirq.c:136 local_bh_enable_ip+0x8b/0xb0()
+Modules linked in: arc4 ecb crypto_blkcipher cryptomgr crypto_algapi ath5k usbhid mac80211 ohci1394 hid led_class floppy cfg80211 ff_memless ieee1394 rtc_cmos evdev [last unloaded: freq_table]
+Pid: 0, comm: swapper Not tainted 2.6.26-rc8-mm1_64 #427
 
-The new utrace has internal differences from the first version, but
-the more essential point here is that it's entirely optional at
-config time.  Whatever traits utrace has, it's only a new
-non-default config option marked EXPERIMENTAL.  Once the tracehook
-series is accepted, then relative to that, no utrace patches will do
-anything at all if CONFIG_UTRACE is not chosen.
+Call Trace:
+ <IRQ>  [<ffffffff8023813f>] warn_on_slowpath+0x5f/0x90
+[...]
+ [<ffffffff8023e1fb>] local_bh_enable_ip+0x8b/0xb0
+ [<ffffffff8055b2cf>] _spin_unlock_bh+0xf/0x20
+ [<ffffffff803b0bd1>] drm_lock_take+0x81/0xe0
+ [<ffffffff803b006b>] drm_locked_tasklet_func+0x4b/0xb0
+ [<ffffffff8023daf9>] tasklet_hi_action+0x69/0xf0
+ [<ffffffff8023e3e4>] __do_softirq+0x84/0xf0
+[stack snipped]
 
-Another value is for arch folks.  I know at least a few arch
-maintainers are interested in adding this support.  The generic
-tracehook series sets a base on which all the arch support can be
-finished up and ready to enable utrace or something different,
-whatever it is.  If this base is in a canonical shared tree to be
-merged into, then any interested arch people can fully complete this
-work and push it to their arch's users.  This lets people experiment
-on utrace (or a replacement) without also juggling arch patches.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: David Airlie <airlied@linux.ie>
+---
+ drivers/gpu/drm/drm_lock.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/gpu/drm/drm_lock.c b/drivers/gpu/drm/drm_lock.c
+index 0998723..79943e4 100644
+--- a/drivers/gpu/drm/drm_lock.c
++++ b/drivers/gpu/drm/drm_lock.c
+@@ -196,10 +196,11 @@ int drm_unlock(struct drm_device *dev, void *data, struct drm_file *file_priv)
+ int drm_lock_take(struct drm_lock_data *lock_data,
+ 		  unsigned int context)
+ {
++	unsigned long flags;
+ 	unsigned int old, new, prev;
+ 	volatile unsigned int *lock = &lock_data->hw_lock->lock;
+ 
+-	spin_lock_bh(&lock_data->spinlock);
++	spin_lock_irqsave(&lock_data->spinlock, flags);
+ 	do {
+ 		old = *lock;
+ 		if (old & _DRM_LOCK_HELD)
+@@ -211,7 +212,7 @@ int drm_lock_take(struct drm_lock_data *lock_data,
+ 		}
+ 		prev = cmpxchg(lock, old, new);
+ 	} while (prev != old);
+-	spin_unlock_bh(&lock_data->spinlock);
++	spin_unlock_irqrestore(&lock_data->spinlock, flags);
+ 
+ 	if (_DRM_LOCKING_CONTEXT(old) == context) {
+ 		if (old & _DRM_LOCK_HELD) {
+@@ -270,17 +271,18 @@ static int drm_lock_transfer(struct drm_lock_data *lock_data,
+  */
+ int drm_lock_free(struct drm_lock_data *lock_data, unsigned int context)
+ {
++	unsigned long flags;
+ 	unsigned int old, new, prev;
+ 	volatile unsigned int *lock = &lock_data->hw_lock->lock;
+ 
+-	spin_lock_bh(&lock_data->spinlock);
++	spin_lock_irqsave(&lock_data->spinlock, flags);
+ 	if (lock_data->kernel_waiters != 0) {
+ 		drm_lock_transfer(lock_data, 0);
+ 		lock_data->idle_has_lock = 1;
+-		spin_unlock_bh(&lock_data->spinlock);
++		spin_unlock_irqrestore(&lock_data->spinlock, flags);
+ 		return 1;
+ 	}
+-	spin_unlock_bh(&lock_data->spinlock);
++	spin_unlock_irqrestore(&lock_data->spinlock, flags);
+ 
+ 	do {
+ 		old = *lock;
+-- 
+1.5.6.2
 
-Thanks,
-Roland
