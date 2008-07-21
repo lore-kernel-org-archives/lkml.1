@@ -1,92 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbYGUTbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYGUTdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755172AbYGUTbS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 15:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbYGUTa5
+	id S1755249AbYGUTdx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 15:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbYGUTdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 15:30:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49576 "EHLO mx2.mail.elte.hu"
+	Mon, 21 Jul 2008 15:33:44 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:34158 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753560AbYGUTa4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 15:30:56 -0400
-Date: Mon, 21 Jul 2008 21:30:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [crash] kernel BUG at net/core/dev.c:1328!
-Message-ID: <20080721193026.GA30471@elte.hu>
-References: <20080720.104411.81744468.davem@davemloft.net> <20080721133059.GA30637@elte.hu> <20080721134506.GA27598@elte.hu> <20080721182318.GA20940@elte.hu> <alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org> <20080721184616.GA8442@elte.hu>
+	id S1753978AbYGUTdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 15:33:43 -0400
+Date: Mon, 21 Jul 2008 22:33:36 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       Greg KH <greg@kroah.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make struct platform_pm_ops static
+Message-ID: <20080721193336.GB14846@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080721184616.GA8442@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch makes the needlessly global struct platform_pm_ops static.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-> ok, have updated the testboxes to your latest push.
+---
+71ccd993d723c7ce560975622801153de6ca8f59 
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index 3f94039..e621dad 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -862,7 +862,7 @@ static int platform_pm_restore_noirq(struct device *dev)
+ 
+ #endif /* !CONFIG_HIBERNATION */
+ 
+-struct pm_ext_ops platform_pm_ops = {
++static struct pm_ext_ops platform_pm_ops = {
+ 	.base = {
+ 		.prepare = platform_pm_prepare,
+ 		.complete = platform_pm_complete,
 
-and indeed i got the new warning:
-
-[   24.460170] ieee1394: selfid_complete called with successful SelfID stage ... irm_id: 0xFFC0 node_id: 0xFFC0
-[   24.460170] ieee1394: NodeMgr: Processing reset for host 0
-[   24.460170] ------------[ cut here ]------------
-[   24.460170] WARNING: at net/core/dev.c:1330 __netif_schedule+0xc6/0xe0()
-[   24.460170] Pid: 6, comm: events/0 Not tainted 2.6.26-tip-05989-g5172ce5-dirty #13279
-[   24.460170] 
-[   24.460170] Call Trace:
-[   24.460170]  <IRQ>  [<ffffffff8024461a>] warn_on_slowpath+0x5a/0x90
-[   24.460170]  [<ffffffff80264c4d>] ? trace_hardirqs_off+0xd/0x10
-[   24.460170]  [<ffffffff80ba98ca>] ? _spin_unlock_irqrestore+0x4a/0x70
-[   24.460170]  [<ffffffff8088b501>] ? ether1394_reset_priv+0x121/0x140
-[   24.460170]  [<ffffffff809f5db6>] __netif_schedule+0xc6/0xe0
-[   24.460170]  [<ffffffff8088b62a>] ether1394_host_reset+0x10a/0x120
-[   24.460170]  [<ffffffff808719fe>] highlevel_host_reset+0x3e/0x80
-[   24.460170]  [<ffffffff8086fe7c>] hpsb_selfid_complete+0x25c/0x330
-[   24.460170]  [<ffffffff8087e1eb>] ohci_irq_handler+0x82b/0xbc0
-[   24.460170]  [<ffffffff80276e4b>] handle_IRQ_event+0x3b/0x70
-[   24.460170]  [<ffffffff80278de9>] handle_level_irq+0xa9/0x130
-[   24.460170]  [<ffffffff80210d98>] do_IRQ+0xc8/0x1b0
-[   24.460170]  [<ffffffff8020ce13>] ret_from_intr+0x0/0x2e
-[   24.460170]  <EOI>  [<ffffffff80ba98df>] ? _spin_unlock_irqrestore+0x5f/0x70
-[   24.460170]  [<ffffffff80879bd6>] ? set_phy_reg+0x86/0xd0
-[   24.460170]  [<ffffffff80871000>] ? delayed_reset_bus+0x0/0xf0
-[   24.460170]  [<ffffffff8087a3c3>] ? ohci_devctl+0x153/0x240
-[   24.460170]  [<ffffffff8086e762>] ? hpsb_reset_bus+0x22/0x30
-[   24.460170]  [<ffffffff808710ac>] ? delayed_reset_bus+0xac/0xf0
-[   24.460170]  [<ffffffff802562f9>] ? run_workqueue+0x179/0x220
-[   24.460170]  [<ffffffff80256f04>] ? worker_thread+0xa4/0x110
-[   24.460170]  [<ffffffff8025a320>] ? autoremove_wake_function+0x0/0x40
-[   24.460170]  [<ffffffff80256e60>] ? worker_thread+0x0/0x110
-[   24.460170]  [<ffffffff80259eed>] ? kthread+0x4d/0x80
-[   24.460170]  [<ffffffff8020dca9>] ? child_rip+0xa/0x11
-[   24.460170]  [<ffffffff8020cf3e>] ? restore_args+0x0/0x30
-[   24.460170]  [<ffffffff80259ea0>] ? kthread+0x0/0x80
-[   24.460170]  [<ffffffff8020dc9f>] ? child_rip+0x0/0x11
-[   24.460170] 
-[   24.460170] ---[ end trace 7b0ee76e032c9e07 ]---
-[   24.717334] ohci1394: fw-host0: Single packet rcv'd
-[   24.717334] ohci1394: fw-host0: Got phy packet ctx=0 ... discarded
-[   24.728466] Registering platform device 'i8042'. Parent at platform
-[   24.735133] device: 'i8042': device_add
-[   24.741452] bus: 'platform': add device i8042
-[   24.745331] PM: Adding info for platform:i8042
-
-but otherwise the box has booted up just fine. (and even ohci1394 seemed 
-to continue fine after that warning)
-
-	Ingo
