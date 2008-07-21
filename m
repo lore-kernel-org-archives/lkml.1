@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760215AbYGUF10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760302AbYGUF3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760215AbYGUF10 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 01:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbYGUF1T
+	id S1760302AbYGUF3S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 01:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbYGUF3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 01:27:19 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:52292 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774AbYGUF1S (ORCPT
+	Mon, 21 Jul 2008 01:29:09 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:50377 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753503AbYGUF3I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 01:27:18 -0400
-Date: Mon, 21 Jul 2008 06:27:13 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] vfs: use kstrdup()
-Message-ID: <20080721052713.GY28946@ZenIV.linux.org.uk>
-References: <4881BEF4.2020201@cn.fujitsu.com> <20080719131317.GA7027@asus> <20080719131909.GB7027@asus>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080719131909.GB7027@asus>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 21 Jul 2008 01:29:08 -0400
+Subject: Re: [PATCH 4/7] irda: Default to dongle type 9 on IBM hardware
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-kernel@vger.kernel.org, Samuel Ortiz <samuel@sortiz.org>
+In-Reply-To: <E1KKl4I-00068K-V7@swissweb.swissdisk.com>
+References: <E1KKl4I-00068K-V7@swissweb.swissdisk.com>
+Content-Type: text/plain
+Date: Mon, 21 Jul 2008 07:29:36 +0200
+Message-Id: <1216618176.8411.124.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 19, 2008 at 05:19:09PM +0400, Cyrill Gorcunov wrote:
-> [Cyrill Gorcunov - Sat, Jul 19, 2008 at 05:13:17PM +0400]
-> [...]
-> | | -			}
-> | | -		}
-> | | +		mnt->mnt_devname = kstrdup(name, GFP_KERNEL);
-> | |  	}
-> | |  	return mnt;
-> | |  }
-> | | -- 
-> | | 1.5.4.rc3
-> | | 
-> | | 
-> | 
-> | but kstrdup may return NULL - is it safe there?
-> | Sorry if that "not smart" question.
-> | 
-> | 		- Cyrill -
+Hi Matthew,
+
+> CC: Samuel Ortiz <samuel@sortiz.org>
+> Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
+> Signed-off-by: Ben Collins <ben.collins@canonical.com>
+> ---
+>  drivers/net/irda/nsc-ircc.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
 > 
-> ah, I see it is safe - sorry for noise
+> diff --git a/drivers/net/irda/nsc-ircc.c b/drivers/net/irda/nsc-ircc.c
+> index effc1ce..1ecb013 100644
+> --- a/drivers/net/irda/nsc-ircc.c
+> +++ b/drivers/net/irda/nsc-ircc.c
+> @@ -151,8 +151,8 @@ static char *dongle_types[] = {
+>  static chipio_t pnp_info;
+>  static const struct pnp_device_id nsc_ircc_pnp_table[] = {
+>  	{ .id = "NSC6001", .driver_data = 0 },
+> -	{ .id = "IBM0071", .driver_data = 0 },
+>  	{ .id = "HWPC224", .driver_data = 0 },
+> +	{ .id = "IBM0071", .driver_data = 1 },
+>  	{ }
+>  };
+>  
+> @@ -934,6 +934,9 @@ static int nsc_ircc_pnp_probe(struct pnp_dev *dev, const struct pnp_device_id *i
+>  	 * On my box, cfg_base is in the PnP descriptor of the
+>  	 * motherboard. Oh well... Jean II */
+>  
+> +	if (id->driver_data == 1)
+> +		dongle_id = 0x9;
+> +
 
-FWIW, it _is_ a good question.
+this patch is in serious need of introducing some constants to be used
+with driver_data and not plain numbers. Also using a bitmask would be a
+good idea.
 
-	* is all code treating ->mnt_devname as optional?  AFAICS, there's
-at least one place in NFS that doesn't.  We could treat failing allocation
-the same way we treat failing allocation of vfsmount itself - callers can
-cope with that already.
-	* AFAICS, it should be const char *.
-	* ... or perhaps we shouldn't copy it at all.  How about something
-like
-	struct {
-		int count;
-		char name[];
-	}
-with cloning sharing the reference and bumping the count, protecting it with
-e.g. vfsmount_lock?  For setups where we have a lot of bindings/namespaces
-it might be noticable.
+Regards
 
-Any takers?
+Marcel
+
+
