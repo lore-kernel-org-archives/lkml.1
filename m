@@ -1,38 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbYGUVCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbYGUVBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbYGUVCJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 17:02:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbYGUVBp
+	id S1754274AbYGUVBu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 17:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755306AbYGUVBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 17:01:45 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43885 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756126AbYGUVBp (ORCPT
+	Mon, 21 Jul 2008 17:01:34 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60625 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755138AbYGUVBd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 17:01:45 -0400
-Message-ID: <4884F937.7080709@sgi.com>
-Date: Mon, 21 Jul 2008 14:01:43 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
+	Mon, 21 Jul 2008 17:01:33 -0400
+Date: Mon, 21 Jul 2008 21:42:58 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/8] NR_CPUS: Various replacements for NR_CPUS
-References: <20080719011126.745278000@polaris-admin.engr.sgi.com> <20080720082312.GA30150@elte.hu> <4884C4A1.7010006@sgi.com>
-In-Reply-To: <4884C4A1.7010006@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, jgarzik@redhat.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [build failure] hp-plus.c: (.text+0xd7c1a): undefined reference
+ to `ei_close'
+Message-ID: <20080721214258.787a67ca@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080721191519.GA15843@elte.hu>
+References: <20080721.233512.128618365.anemo@mba.ocn.ne.jp>
+	<20080721191519.GA15843@elte.hu>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-...
-> I have three more cases that can be changed coming real soon now.
+On Mon, 21 Jul 2008 21:15:19 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Turns out the changes I was going to make are in linux-next already.
+> 
+> * Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> 
+> > Since commit 055e5110ae0c0c1176a75b78d789294f2ff2f7af ("8390: Split
+> > 8390 support into a pausing and a non pausing driver core"), ne.c
+> > cause this build failure:
+> > 
+> > drivers/built-in.o: In function `ne_probe1':
+> > ne.c:(.init.text+0x2464): undefined reference to `NS8390_init'
+> > drivers/built-in.o: In function `ne_block_output':
+> > ne.c:(.text.ne_block_output+0x1b0): undefined reference to `NS8390_init'
+> 
+> i just triggered a similar build failure, but in a different 
+> ne2000-derived file:
 
-Thanks,
-Mike
+I'll take a look. Various odd things happened with the Makefile for this
+patch and the follow up fixes. If the followup didn't get applied then
+that might explain the breakage.
+
