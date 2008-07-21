@@ -1,39 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbYGUSwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753649AbYGUTBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753149AbYGUSwU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 14:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYGUSwN
+	id S1753649AbYGUTBJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 15:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbYGUTAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 14:52:13 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:43058 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752259AbYGUSwM (ORCPT
+	Mon, 21 Jul 2008 15:00:54 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41504
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752712AbYGUTAx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 14:52:12 -0400
-Subject: Re: ACPI: ACPI_CUSTOM_DSDT_INITRD option
-From: Ben Collins <ben.collins@canonical.com>
-To: "Joshua C." <joshuacov@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <5f6f8c5f0807210344l676f5730n3eb31c79a025d0ce@mail.gmail.com>
-References: <5f6f8c5f0807210344l676f5730n3eb31c79a025d0ce@mail.gmail.com>
-Content-Type: text/plain
-Organization: Canonical
-Date: Mon, 21 Jul 2008 14:52:08 -0400
-Message-Id: <1216666328.7585.169.camel@cunning>
+	Mon, 21 Jul 2008 15:00:53 -0400
+Date: Mon, 21 Jul 2008 12:00:52 -0700 (PDT)
+Message-Id: <20080721.120052.123606398.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: mingo@elte.hu, akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de
+Subject: Re: [crash] kernel BUG at net/core/dev.c:1328!
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org>
+References: <20080721134506.GA27598@elte.hu>
+	<20080721182318.GA20940@elte.hu>
+	<alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.23.4 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-21 at 12:44 +0200, Joshua C. wrote:
-> This feature was considered problematic for the 2.6.25 kernel. And the
-> 0.9x version was rewritten to make the patch work better with the new
-> kernel (here it is: http://gaugusch.at/kernel.shtml ). What about
-> adding it to the new 2.6.27?
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 21 Jul 2008 11:35:21 -0700 (PDT)
 
-Could you rebase it on latest git (lots of fuzz)? Other than that, it
-looks good to me. We've been carrying this patch forever, so would be
-nice to have it applied upstream finally.
+> Maybe the network drivers are few enough that it will get fixed, or
+> maybe the WARN_ON_ONCE() will just be removed and the rule not
+> reinforced.
+> 
+> I personally suspect the latter, since it seems to happen with just
+> about _any_ random network driver, including the common and
+> well-maintained ones (ie the Gods only help us for the truly
+> odd/random cases)
 
+Yes, we'll see how this plays out.
+
+Ian Schram just posted a patch for the NULL pointer derfer in
+wireless Ingo reported, so we'll see if that bug will be fixed
+now as well.
