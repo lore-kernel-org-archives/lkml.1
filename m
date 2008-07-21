@@ -1,80 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYGUMNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYGUMOE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbYGUMNa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 08:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbYGUMMm
+	id S1757530AbYGUMOE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 08:14:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbYGUMNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 08:12:42 -0400
-Received: from mga02.intel.com ([134.134.136.20]:14728 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750760AbYGUMMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 08:12:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,223,1215414000"; 
-   d="scan'208";a="419942151"
-From: Tomas Winkler <tomas.winkler@intel.com>
-To: mingo@elte.hu
-Cc: davem@davemloft.net, linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, "Denis V. Lunev" <den@openvz.org>
-Subject: [PATCH] iwlwifi: compilation error when CONFIG_IWLWIFI_DEBUG is not set
-Date: Mon, 21 Jul 2008 15:12:28 +0300
-Message-Id: <1216642348-26826-3-git-send-email-tomas.winkler@intel.com>
-X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <1216642348-26826-2-git-send-email-tomas.winkler@intel.com>
-References: <20080721083654.GA19849@elte.hu>
- <1216642348-26826-1-git-send-email-tomas.winkler@intel.com>
- <1216642348-26826-2-git-send-email-tomas.winkler@intel.com>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
+	Mon, 21 Jul 2008 08:13:51 -0400
+Received: from stinky.trash.net ([213.144.137.162]:35805 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752183AbYGUMNu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 08:13:50 -0400
+Message-ID: <48847D58.7050501@trash.net>
+Date: Mon, 21 Jul 2008 14:13:12 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Frank Blaschka <frank.blaschka@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: drivers/s390/net/qeth_l3_main.c build error
+References: <20080721105553.GB22914@cs181140183.pp.htv.fi>
+In-Reply-To: <20080721105553.GB22914@cs181140183.pp.htv.fi>
+Content-Type: multipart/mixed;
+ boundary="------------040204070403000204060400"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Denis V. Lunev <den@openvz.org>
+This is a multi-part message in MIME format.
+--------------040204070403000204060400
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-CC [M]  drivers/net/wireless/iwlwifi/iwl-rfkill.o
-drivers/net/wireless/iwlwifi/iwl-led.c: In function 'iwl_led_brightness_set':
-drivers/net/wireless/iwlwifi/iwl-led.c:198: error: 'led_type_str' undeclared (first use in this function)
-drivers/net/wireless/iwlwifi/iwl-led.c:198: error: (Each undeclared identifier is reported only once
-drivers/net/wireless/iwlwifi/iwl-led.c:198: error: for each function it appears in.)
+Adrian Bunk wrote:
+> Commit 6aa895b047720f71ec4eb11452f7c3ce8426941f
+> (vlan: Don't store VLAN tag in cb) causes the following build error:
+>
+> <--  snip  -->
+>
+> ...
+>   CC      drivers/s390/net/qeth_l3_main.o
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/s390/net/qeth_l3_main.c: In function 'qeth_l3_hard_start_xmit':
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/s390/net/qeth_l3_main.c:2654: error: implicit declaration of function 'VLAN_TX_SKB_CB'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/s390/net/qeth_l3_main.c:2654: error: invalid type argument of '->' (have 'int')
+> make[3]: *** [drivers/s390/net/qeth_l3_main.o] Error 1
+>
+> <--  snip  -->
+>   
 
-The problem is that led_type_str is defined under CONFIG_IWLWIFI_DEBUG
-while IWL_DEBUG is a static inline function in this case. Replace it
-with macro.
+Sorry, this patch should fix it.
 
-Signed-off-by: Denis V. Lunev <den@openvz.org>
-Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
----
- drivers/net/wireless/iwlwifi/iwl-debug.h |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/wireless/iwlwifi/iwl-debug.h b/drivers/net/wireless/iwlwifi/iwl-debug.h
-index 097a72f..b4ffd33 100644
---- a/drivers/net/wireless/iwlwifi/iwl-debug.h
-+++ b/drivers/net/wireless/iwlwifi/iwl-debug.h
-@@ -68,12 +68,8 @@ void iwl_dbgfs_unregister(struct iwl_priv *priv);
- #endif
- 
- #else
--static inline void IWL_DEBUG(int level, const char *fmt, ...)
--{
--}
--static inline void IWL_DEBUG_LIMIT(int level, const char *fmt, ...)
--{
--}
-+#define IWL_DEBUG(level, fmt, args...)
-+#define IWL_DEBUG_LIMIT(level, fmt, args...)
- #endif				/* CONFIG_IWLWIFI_DEBUG */
- 
- 
--- 
-1.5.4.1
 
----------------------------------------------------------------------
-Intel Israel (74) Limited
+--------------040204070403000204060400
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="x"
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+cWV0aDogZml4IGJ1aWxkIGVycm9yIGNhdXNlZCBieSBWTEFOIGNoYW5nZXMKCkFkcmlhbiBC
+dW5rIHJlcG9ydHMgdGhpcyBidWlsZCBlcnJvcjoKCkNDICAgICAgZHJpdmVycy9zMzkwL25l
+dC9xZXRoX2wzX21haW4ubwovaG9tZS9idW5rL2xpbnV4L2tlcm5lbC0yLjYvZ2l0L2xpbnV4
+LTIuNi9kcml2ZXJzL3MzOTAvbmV0L3FldGhfbDNfbWFpbi5jOiBJbiBmdW5jdGlvbiAncWV0
+aF9sM19oYXJkX3N0YXJ0X3htaXQnOgovaG9tZS9idW5rL2xpbnV4L2tlcm5lbC0yLjYvZ2l0
+L2xpbnV4LTIuNi9kcml2ZXJzL3MzOTAvbmV0L3FldGhfbDNfbWFpbi5jOjI2NTQ6IGVycm9y
+OiBpbXBsaWNpdCBkZWNsYXJhdGlvbiBvZiBmdW5jdGlvbiAnVkxBTl9UWF9TS0JfQ0InCi9o
+b21lL2J1bmsvbGludXgva2VybmVsLTIuNi9naXQvbGludXgtMi42L2RyaXZlcnMvczM5MC9u
+ZXQvcWV0aF9sM19tYWluLmM6MjY1NDogZXJyb3I6IGludmFsaWQgdHlwZSBhcmd1bWVudCBv
+ZiAnLT4nIChoYXZlICdpbnQnKQptYWtlWzNdOiAqKiogW2RyaXZlcnMvczM5MC9uZXQvcWV0
+aF9sM19tYWluLm9dIEVycm9yIDEKClRoZSBpbnRlbnRpb24gb2YgdGhlIGRyaXZlciBhcHBl
+YXJzIHRvIGJlIHRvIGludmFsaWRhdGUgdGhlIFZMQU4gdGFnLgpDaGFuZ2UgaXQgdG8gc2V0
+IHNrYi0+dmxhbl90Y2kgdG8gemVybywgd2hpY2ggaGFzIHRoZSBzYW1lIGVmZmVjdC4KClNp
+Z25lZC1vZmYtYnk6IFBhdHJpY2sgTWNIYXJkeSA8a2FiZXJAdHJhc2gubmV0PgpkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9zMzkwL25ldC9xZXRoX2wzX21haW4uYyBiL2RyaXZlcnMvczM5MC9u
+ZXQvcWV0aF9sM19tYWluLmMKaW5kZXggYjI5YWZlZi4uMzhkZTMxYiAxMDA2NDQKLS0tIGEv
+ZHJpdmVycy9zMzkwL25ldC9xZXRoX2wzX21haW4uYworKysgYi9kcml2ZXJzL3MzOTAvbmV0
+L3FldGhfbDNfbWFpbi5jCkBAIC0yNjUxLDcgKzI2NTEsNyBAQCBzdGF0aWMgaW50IHFldGhf
+bDNfaGFyZF9zdGFydF94bWl0KHN0cnVjdCBza19idWZmICpza2IsIHN0cnVjdCBuZXRfZGV2
+aWNlICpkZXYpCiAJCQl0YWcgPSAodTE2ICopKG5ld19za2ItPmRhdGEgKyAxMik7CiAJCQkq
+dGFnID0gX19jb25zdGFudF9odG9ucyhFVEhfUF84MDIxUSk7CiAJCQkqKHRhZyArIDEpID0g
+aHRvbnModmxhbl90eF90YWdfZ2V0KG5ld19za2IpKTsKLQkJCVZMQU5fVFhfU0tCX0NCKG5l
+d19za2IpLT5tYWdpYyA9IDA7CisJCQluZXdfc2tiLT52bGFuX3RjaSA9IDA7CiAJCX0KIAl9
+CiAK
+--------------040204070403000204060400--
