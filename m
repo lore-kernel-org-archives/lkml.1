@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbYGUA3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbYGUAbD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757283AbYGUA3W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 20:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbYGUA3O
+	id S1757443AbYGUAbD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 20:31:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbYGUAax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 20:29:14 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:62731 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755446AbYGUA3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 20:29:13 -0400
-Date: Mon, 21 Jul 2008 01:28:43 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: Fix up a comment in ack_APIC_irq()
-Message-ID: <Pine.LNX.4.55.0807210125341.24038@cliff.in.clinika.pl>
+	Sun, 20 Jul 2008 20:30:53 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:56809 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754656AbYGUAaw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 20:30:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wtpwvVp+jRBopjOCci0g0FGGGtWbDD8scdEAEYlBFPWHra4qeWj1RqsSRQ7yUyw5cW
+         q5Agi15Ltp80atCun0eVLUmdXXDw60j5o1qnR8aaCFn1uo3nICDrwKrt0ezCtqYt042W
+         JFnQZOWVSKcXU78LSDqIGcxl9A7XVRejC5+hE=
+Date: Mon, 21 Jul 2008 04:28:37 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jaswinder Singh <jaswinder@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       kernelnewbies <kernelnewbies@nl.linux.org>,
+       David Woodhouse <dwmw2@infradead.org>, rth@twiddle.net,
+       rmk@arm.linux.org.uk, hskinnemoen@atmel.com, cooloney@kernel.org,
+       starvik@axis.com, dhowells@redhat.com, ysato@users.sourceforge.jp,
+       tony.luck@intel.com, takata@linux-m32r.org, geert@linux-m68k.org,
+       ralf@linux-mips.org, matthew@wil.cx, schwidefsky@de.ibm.com,
+       lethal@linux-sh.org, chris@zankel.net
+Subject: Re: [PATCH 0/22] Introducing asm/syscalls.h
+Message-ID: <20080721002837.GA3851@martell.zuzino.mipt.ru>
+References: <1216592500.3679.14.camel@jaswinder.satnam>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1216592500.3679.14.camel@jaswinder.satnam>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Adjust a comment in ack_APIC_irq() according to the recent removal of 
-CONFIG_X86_GOOD_APIC.
+On Mon, Jul 21, 2008 at 03:51:40AM +0530, Jaswinder Singh wrote:
+> The following series of patches introduce asm/syscalls.h in various
+> architectures.
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
-patch-next-2.6.26-rc9-20080711-apic-write-ack-0
-diff -up --recursive --new-file linux-next-2.6.26-rc9-20080711.macro/include/asm-x86/apic.h linux-next-2.6.26-rc9-20080711/include/asm-x86/apic.h
---- linux-next-2.6.26-rc9-20080711.macro/include/asm-x86/apic.h	2008-07-16 17:07:56.000000000 +0000
-+++ linux-next-2.6.26-rc9-20080711/include/asm-x86/apic.h	2008-07-16 23:59:10.000000000 +0000
-@@ -78,9 +78,7 @@ extern int get_physical_broadcast(void);
- static inline void ack_APIC_irq(void)
- {
- 	/*
--	 * ack_APIC_irq() actually gets compiled as a single instruction:
--	 * - a single rmw on Pentium/82489DX
--	 * - a single write on P6+ cores (CONFIG_X86_GOOD_APIC)
-+	 * ack_APIC_irq() actually gets compiled as a single instruction
- 	 * ... yummie.
- 	 */
- 
+Copyright for a bunch of prototypes?
+
+All those /* kernel/signal.c */ comments are generally stupid and
+useless, so no point adding even for functions that rarely move
+(syscalls).
+
+Of course, there is no explanation why files are being added.
+
