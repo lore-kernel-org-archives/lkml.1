@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753028AbYGUQAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbYGUQEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753028AbYGUQAe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 12:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbYGUQA0
+	id S1752823AbYGUQEz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 12:04:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYGUQEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 12:00:26 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:53343 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750794AbYGUQAZ (ORCPT
+	Mon, 21 Jul 2008 12:04:45 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:4011 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbYGUQEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 12:00:25 -0400
-Subject: Re: [PATCH 3/7] bluetooth: Add quirks for a few hci_usb devices
-From: Ben Collins <ben.collins@canonical.com>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org
-In-Reply-To: <1216616891.8411.114.camel@violet.holtmann.net>
-References: <E1KKl4I-00068H-S6@swissweb.swissdisk.com>
-	 <1216616891.8411.114.camel@violet.holtmann.net>
-Content-Type: text/plain
-Organization: Canonical
-Date: Mon, 21 Jul 2008 12:00:14 -0400
-Message-Id: <1216656014.7585.146.camel@cunning>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.23.4 
+	Mon, 21 Jul 2008 12:04:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=fv6K45cTT+UtK3sMI53mHRpqMfzAt5VXEVtgsU0Hy4E7kfiMqRH+J3w1pHRsljy2F8
+         NTROdO9M6JbDsaYt1cZH9KMm0mMYxHmhsviro7cDuh/SiSJvLOHbafNIHYkvY2mNdG2e
+         zzlyGuyCJKAyPwNMpauT3rB6J5ooSkG6w41ig=
+Message-ID: <a4423d670807210904je651e16md5aa61c734de9bdd@mail.gmail.com>
+Date: Mon, 21 Jul 2008 20:04:43 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [GIT]: Networking
+Cc: bhutchings@solarflare.com, adobriyan@gmail.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jeffrey.t.kirsher@intel.com
+In-Reply-To: <20080721.083527.199623566.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080720.221106.201055562.davem@davemloft.net>
+	 <a4423d670807210248l1e2e6999ha462edc99002f964@mail.gmail.com>
+	 <20080721101626.GM10471@solarflare.com>
+	 <20080721.083527.199623566.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Preface: The "Broadcom" device is on unreleased hardware, so I can't
-disclose the actual model.
-
-When the Dell 370 and 410 BT adapters are put into BT radio mode, they
-need to be prepared like many other Broadcom adapters.
-    
-Also, add quirk Broadcom 2046 devices with HCI_RESET. Reference for this
-bug: https://launchpad.net/bugs/249448
-    
-CC: linux-bluetooth@vger.kernel.org
-Signed-off-by: Michael Frey <michael.frey@canonical.com>
-Signed-off-by: Mario Limonciello <Mario_Limonciello@Dell.com>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Signed-off-by: Ben Collins <ben.collins@canonical.com>
-
-diff --git a/drivers/bluetooth/hci_usb.c b/drivers/bluetooth/hci_usb.c
-index 192522e..c33bb59 100644
---- a/drivers/bluetooth/hci_usb.c
-+++ b/drivers/bluetooth/hci_usb.c
-@@ -134,6 +134,13 @@ static struct usb_device_id blacklist_ids[] = {
- 
- 	/* Dell laptop with Broadcom chip */
- 	{ USB_DEVICE(0x413c, 0x8126), .driver_info = HCI_RESET | HCI_WRONG_SCO_MTU },
-+	/* Dell Wireless 370 */
-+	{ USB_DEVICE(0x413c, 0x8156), .driver_info = HCI_RESET | HCI_WRONG_SCO_MTU },
-+	/* Dell Wireless 410 */
-+	{ USB_DEVICE(0x413c, 0x8152), .driver_info = HCI_RESET | HCI_WRONG_SCO_MTU },
-+
-+	/* Broadcom 2046 */
-+	{ USB_DEVICE(0x0a5c, 0x2151), .driver_info = HCI_RESET },
- 
- 	/* Microsoft Wireless Transceiver for Bluetooth 2.0 */
- 	{ USB_DEVICE(0x045e, 0x009c), .driver_info = HCI_RESET },
-
-
+2008/7/21 David Miller <davem@davemloft.net>:
+> From: Ben Hutchings <bhutchings@solarflare.com>
+> Date: Mon, 21 Jul 2008 11:16:27 +0100
+>
+>> Alexander Beregalov wrote:
+>> > Hi David!
+>> >
+>> > There is another problem on sparc64 and happymeal ethernet card.
+>> >
+>> > when tring to up interface:
+>> >
+>> > kernel BUG at net/core/dev.c:1328
+>> [...]
+>>
+>> This is yet another driver calling netif_wake_queue() during dev_open(),
+>> when there is no real qdisc present.  (And yes, sfc is another of those
+>> drivers - I will post a patch after internal review.)
+>
+> Yep, what idiot wrote this driver? ;-)
+>
+> Alexander please try this patch:
+It works, thanks.
