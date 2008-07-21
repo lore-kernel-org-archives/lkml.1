@@ -1,191 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbYGUQS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbYGUQUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754049AbYGUQS0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 12:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753818AbYGUQSM
+	id S1753617AbYGUQUj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 12:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbYGUQU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 12:18:12 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:49664 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751787AbYGUQSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 12:18:10 -0400
-Date: Mon, 21 Jul 2008 20:21:39 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
-Subject: killable/interruptible coredumps
-Message-ID: <20080721162139.GA340@tv-sign.ru>
-References: <20080716135359.GA1219@tv-sign.ru> <20080720023258.26D2015421D@magilla.localdomain> <20080720122354.GD143@tv-sign.ru> <20080721000842.94DAE15421D@magilla.localdomain>
+	Mon, 21 Jul 2008 12:20:28 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37498
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751430AbYGUQU1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 12:20:27 -0400
+Date: Mon, 21 Jul 2008 09:20:27 -0700 (PDT)
+Message-Id: <20080721.092027.14394005.davem@davemloft.net>
+To: ag@alessandroguido.name
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [BUG] kernel BUG at net/core/dev.c:1328!
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <d4b984a30807210914nd4d0db5yb7b93ca5143ff0d5@mail.gmail.com>
+References: <d4b984a30807210914nd4d0db5yb7b93ca5143ff0d5@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080721000842.94DAE15421D@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/20, Roland McGrath wrote:
->
-> Then have the dumping and the waiting
-> for it be killable.
+From: "Alessandro Guido" <ag@alessandroguido.name>
+Date: Mon, 21 Jul 2008 18:14:28 +0200
 
-I think it is easy to make the coredumping killable right now,
+linux-wireless and netdev added to CC:
 
-	--- fs/exec.c~	2008-07-21 19:47:22.000000000 +0400
-	+++ fs/exec.c	2008-07-21 19:56:44.000000000 +0400
-	@@ -1523,6 +1523,7 @@ static inline int zap_threads(struct tas
-		spin_lock_irq(&tsk->sighand->siglock);
-		if (!signal_group_exit(tsk->signal)) {
-			mm->core_state = core_state;
-	+		clear_thread_flag(TIF_SIGPENDING);
-			tsk->signal->group_exit_code = exit_code;
-			nr = zap_process(tsk);
-		}
-	@@ -1735,12 +1736,6 @@ int do_coredump(long signr, int exit_cod
-			goto fail;
-	 
-		/*
-	-	 * Clear any false indication of pending signals that might
-	-	 * be seen by the filesystem code called to write the core file.
-	-	 */
-	-	clear_thread_flag(TIF_SIGPENDING);
-	-
-	-	/*
-		 * lock_kernel() because format_corename() is controlled by sysctl, which
-		 * uses lock_kernel()
-		 */
-	--- fs/binfmt_elf.c~	2008-07-13 20:52:25.000000000 +0400
-	+++ fs/binfmt_elf.c	2008-07-20 19:53:08.000000000 +0400
-	@@ -1105,11 +1105,17 @@ out:
-	  */
-	 static int dump_write(struct file *file, const void *addr, int nr)
-	 {
-	+	if (fatal_signal_pending(current))
-	+		return 0;
-	+
-		return file->f_op->write(file, addr, nr, &file->f_pos) == nr;
-	 }
-	 
-	 static int dump_seek(struct file *file, loff_t off)
-	 {
-	+	if (fatal_signal_pending(current))
-	+		return 0;
-	+
-		if (file->f_op->llseek && file->f_op->llseek != no_llseek) {
-			if (file->f_op->llseek(file, off, SEEK_CUR) < 0)
-				return 0;
-
-This relies on the fact SIGKILL will find the coredumping thread
-because it is not PF_EXITING, even if SIGNAL_GROUP_EXIT is set. This
-is a bit racy though, SIGKILL may come after zap_process(current)
-but before other threads have "died".
-
-
-I wonder if it makes sense to go futher. Currently the coredumping
-thread sets SIGNAL_GROUP_EXIT. We can set signal->group_exit_task
-instead, this way it can be killed by any fatal signal, not only by
-SIGKILL. For example the user can just use ^C (unless it is ignored/etc).
-
-What is your opinion about the patch below? I can't decide wether
-this change is good or bad. It complicates the code, but otoh it
-makes things more consistent, imho. Note also we can change oom_kill
-to check SIGNAL_GROUP_EXIT instead of PF_EXITING to detect the process
-which should release its ->mm and probably free the memory "soon".
-
-It is not clear what should be ->group_exit_code if ->core_dump() is
-interrupted. This patch sets it = exit_code, but perhaps we should
-keep the original signr in that case.
-
-Oleg.
-
---- 26-rc2/fs/exec.c~1_MAKE_KILLABLE	2008-07-20 17:31:40.000000000 +0400
-+++ 26-rc2/fs/exec.c	2008-07-20 19:46:21.000000000 +0400
-@@ -1498,7 +1498,6 @@ static int zap_process(struct task_struc
- 	struct task_struct *t;
- 	int nr = 0;
- 
--	start->signal->flags = SIGNAL_GROUP_EXIT;
- 	start->signal->group_stop_count = 0;
- 
- 	t = start;
-@@ -1523,7 +1522,8 @@ static inline int zap_threads(struct tas
- 	spin_lock_irq(&tsk->sighand->siglock);
- 	if (!signal_group_exit(tsk->signal)) {
- 		mm->core_state = core_state;
--		tsk->signal->group_exit_code = exit_code;
-+		clear_thread_flag(TIF_SIGPENDING);
-+		tsk->signal->group_exit_task = tsk;
- 		nr = zap_process(tsk);
- 	}
- 	spin_unlock_irq(&tsk->sighand->siglock);
-@@ -1574,6 +1574,7 @@ static inline int zap_threads(struct tas
- 			if (p->mm) {
- 				if (unlikely(p->mm == mm)) {
- 					lock_task_sighand(p, &flags);
-+					p->signal->flags = SIGNAL_GROUP_EXIT;
- 					nr += zap_process(p);
- 					unlock_task_sighand(p, &flags);
- 				}
-@@ -1619,7 +1620,7 @@ fail:
- 	return core_waiters;
- }
- 
--static void coredump_finish(struct mm_struct *mm)
-+static inline void core_state_finish(struct mm_struct *mm)
- {
- 	struct core_thread *curr, *next;
- 	struct task_struct *task;
-@@ -1640,6 +1641,17 @@ static void coredump_finish(struct mm_st
- 	mm->core_state = NULL;
- }
- 
-+static void coredump_finish(struct mm_struct *mm, int exit_code)
-+{
-+	spin_lock_irq(&current->sighand->siglock);
-+	current->signal->flags = SIGNAL_GROUP_EXIT;
-+	current->signal->group_exit_code = exit_code;
-+	current->signal->group_exit_task = NULL;
-+	spin_unlock_irq(&current->sighand->siglock);
-+
-+	core_state_finish(mm);
-+}
-+
- /*
-  * set_dumpable converts traditional three-value dumpable to two flags and
-  * stores them into mm->flags.  It modifies lower two bits of mm->flags, but
-@@ -1735,12 +1747,6 @@ int do_coredump(long signr, int exit_cod
- 		goto fail;
- 
- 	/*
--	 * Clear any false indication of pending signals that might
--	 * be seen by the filesystem code called to write the core file.
--	 */
--	clear_thread_flag(TIF_SIGPENDING);
--
--	/*
- 	 * lock_kernel() because format_corename() is controlled by sysctl, which
- 	 * uses lock_kernel()
- 	 */
-@@ -1814,9 +1820,8 @@ int do_coredump(long signr, int exit_cod
- 		goto close_fail;
- 
- 	retval = binfmt->core_dump(signr, regs, file, core_limit);
--
- 	if (retval)
--		current->signal->group_exit_code |= 0x80;
-+		exit_code |= 0x80;
- close_fail:
- 	filp_close(file, NULL);
- fail_unlock:
-@@ -1824,7 +1829,7 @@ fail_unlock:
- 		argv_free(helper_argv);
- 
- 	current->fsuid = fsuid;
--	coredump_finish(mm);
-+	coredump_finish(mm, exit_code);
- fail:
- 	return retval;
- }
-
+> this is what I get when try to det up a wireless connection with
+> current git (v2.6.26-5253-g14b395e):
+> 
+> 
+> kernel BUG at net/core/dev.c:1328!
+> invalid opcode: 0000 [#1] PREEMPT
+> Modules linked in: ipw2200
+> 
+> Pid: 5, comm: events/0 Not tainted (2.6.26-05253-g14b395e #1)
+> EIP: 0060:[<c02e58ca>] EFLAGS: 00010246 CPU: 0
+> EIP is at __netif_schedule+0x3a/0x40
+> EAX: c043d380 EBX: eed84b40 ECX: c043d380 EDX: ffffffff
+> ESI: eed84b44 EDI: ef808140 EBP: ef82bf64 ESP: ef82bf60
+>  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+> Process events/0 (pid: 5, ti=ef82b000 task=ef82cd40 task.ti=ef82b000)
+> Stack: eed84b40 ef82bf80 f0939850 ef808140 ef82bf78 c02ef6c2 eed8584c ef808140
+>        ef82bfa8 c012b02f ef82ce9c ee24fc00 ef82ce9c ffff007b f09396f0 ef808148
+>        ef808140 ef82bfb0 ef82bfd0 c012b53f 00000000 ef82cd40 c012eaf0 ef82bfbc
+> Call Trace:
+>  [<f0939850>] ? ipw_bg_link_up+0x160/0x1f0 [ipw2200]
+>  [<c02ef6c2>] ? rtnl_unlock+0x12/0x20
+>  [<c012b02f>] ? run_workqueue+0x6f/0x160
+>  [<f09396f0>] ? ipw_bg_link_up+0x0/0x1f0 [ipw2200]
+>  [<c012b53f>] ? worker_thread+0x7f/0xe0
+>  [<c012eaf0>] ? autoremove_wake_function+0x0/0x50
+>  [<c012b4c0>] ? worker_thread+0x0/0xe0
+>  [<c012e67a>] ? kthread+0x3a/0x70
+>  [<c012e640>] ? kthread+0x0/0x70
+>  [<c0103c8f>] ? kernel_thread_helper+0x7/0x18
+>  =======================
+> Code: 24 0f ba 28 01 19 d2 85 d2 75 1d 9c 5b fa a1 c0 11 4a c0 89 41
+> 3c b8 02 00 00 00 89 0d c0 11 4a c0 e8 4b ab e3 ff 53 9d 5b 5d c3 <0f>
+> 0b eb fe 66 90 55 89 e5 53 89 c3 8d 40 2c 0f ba 28 01 19 d2
+> EIP: [<c02e58ca>] __netif_schedule+0x3a/0x40 SS:ESP 0068:ef82bf60
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
