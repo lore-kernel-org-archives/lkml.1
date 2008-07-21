@@ -1,87 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYGUMOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbYGUMUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757530AbYGUMOE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 08:14:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbYGUMNv
+	id S1753524AbYGUMUE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 08:20:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbYGUMTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 08:13:51 -0400
-Received: from stinky.trash.net ([213.144.137.162]:35805 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752183AbYGUMNu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 08:13:50 -0400
-Message-ID: <48847D58.7050501@trash.net>
-Date: Mon, 21 Jul 2008 14:13:12 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+	Mon, 21 Jul 2008 08:19:54 -0400
+Received: from mail.hevs.ch ([153.109.23.10]:33034 "EHLO mail.hevs.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750698AbYGUMTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 08:19:54 -0400
+X-Greylist: delayed 1195 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Jul 2008 08:19:54 EDT
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: a.zummo@towertech.it
+Subject: [PATCH] rtc: DS1374 wakup support
+Date: Mon, 21 Jul 2008 13:59:50 +0200
+User-Agent: KMail/1.9.9
+Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Frank Blaschka <frank.blaschka@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: drivers/s390/net/qeth_l3_main.c build error
-References: <20080721105553.GB22914@cs181140183.pp.htv.fi>
-In-Reply-To: <20080721105553.GB22914@cs181140183.pp.htv.fi>
-Content-Type: multipart/mixed;
- boundary="------------040204070403000204060400"
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807211359.51592.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040204070403000204060400
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Wakeup support implementation.
 
-Adrian Bunk wrote:
-> Commit 6aa895b047720f71ec4eb11452f7c3ce8426941f
-> (vlan: Don't store VLAN tag in cb) causes the following build error:
->
-> <--  snip  -->
->
-> ...
->   CC      drivers/s390/net/qeth_l3_main.o
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/s390/net/qeth_l3_main.c: In function 'qeth_l3_hard_start_xmit':
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/s390/net/qeth_l3_main.c:2654: error: implicit declaration of function 'VLAN_TX_SKB_CB'
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/s390/net/qeth_l3_main.c:2654: error: invalid type argument of '->' (have 'int')
-> make[3]: *** [drivers/s390/net/qeth_l3_main.o] Error 1
->
-> <--  snip  -->
->   
+Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
+---
 
-Sorry, this patch should fix it.
+Hi all!
+
+patch agaist 2.6.26, tested on custom ARM board.
+
+Best Regards
+
+Marc
 
 
 
---------------040204070403000204060400
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="x"
-
-cWV0aDogZml4IGJ1aWxkIGVycm9yIGNhdXNlZCBieSBWTEFOIGNoYW5nZXMKCkFkcmlhbiBC
-dW5rIHJlcG9ydHMgdGhpcyBidWlsZCBlcnJvcjoKCkNDICAgICAgZHJpdmVycy9zMzkwL25l
-dC9xZXRoX2wzX21haW4ubwovaG9tZS9idW5rL2xpbnV4L2tlcm5lbC0yLjYvZ2l0L2xpbnV4
-LTIuNi9kcml2ZXJzL3MzOTAvbmV0L3FldGhfbDNfbWFpbi5jOiBJbiBmdW5jdGlvbiAncWV0
-aF9sM19oYXJkX3N0YXJ0X3htaXQnOgovaG9tZS9idW5rL2xpbnV4L2tlcm5lbC0yLjYvZ2l0
-L2xpbnV4LTIuNi9kcml2ZXJzL3MzOTAvbmV0L3FldGhfbDNfbWFpbi5jOjI2NTQ6IGVycm9y
-OiBpbXBsaWNpdCBkZWNsYXJhdGlvbiBvZiBmdW5jdGlvbiAnVkxBTl9UWF9TS0JfQ0InCi9o
-b21lL2J1bmsvbGludXgva2VybmVsLTIuNi9naXQvbGludXgtMi42L2RyaXZlcnMvczM5MC9u
-ZXQvcWV0aF9sM19tYWluLmM6MjY1NDogZXJyb3I6IGludmFsaWQgdHlwZSBhcmd1bWVudCBv
-ZiAnLT4nIChoYXZlICdpbnQnKQptYWtlWzNdOiAqKiogW2RyaXZlcnMvczM5MC9uZXQvcWV0
-aF9sM19tYWluLm9dIEVycm9yIDEKClRoZSBpbnRlbnRpb24gb2YgdGhlIGRyaXZlciBhcHBl
-YXJzIHRvIGJlIHRvIGludmFsaWRhdGUgdGhlIFZMQU4gdGFnLgpDaGFuZ2UgaXQgdG8gc2V0
-IHNrYi0+dmxhbl90Y2kgdG8gemVybywgd2hpY2ggaGFzIHRoZSBzYW1lIGVmZmVjdC4KClNp
-Z25lZC1vZmYtYnk6IFBhdHJpY2sgTWNIYXJkeSA8a2FiZXJAdHJhc2gubmV0PgpkaWZmIC0t
-Z2l0IGEvZHJpdmVycy9zMzkwL25ldC9xZXRoX2wzX21haW4uYyBiL2RyaXZlcnMvczM5MC9u
-ZXQvcWV0aF9sM19tYWluLmMKaW5kZXggYjI5YWZlZi4uMzhkZTMxYiAxMDA2NDQKLS0tIGEv
-ZHJpdmVycy9zMzkwL25ldC9xZXRoX2wzX21haW4uYworKysgYi9kcml2ZXJzL3MzOTAvbmV0
-L3FldGhfbDNfbWFpbi5jCkBAIC0yNjUxLDcgKzI2NTEsNyBAQCBzdGF0aWMgaW50IHFldGhf
-bDNfaGFyZF9zdGFydF94bWl0KHN0cnVjdCBza19idWZmICpza2IsIHN0cnVjdCBuZXRfZGV2
-aWNlICpkZXYpCiAJCQl0YWcgPSAodTE2ICopKG5ld19za2ItPmRhdGEgKyAxMik7CiAJCQkq
-dGFnID0gX19jb25zdGFudF9odG9ucyhFVEhfUF84MDIxUSk7CiAJCQkqKHRhZyArIDEpID0g
-aHRvbnModmxhbl90eF90YWdfZ2V0KG5ld19za2IpKTsKLQkJCVZMQU5fVFhfU0tCX0NCKG5l
-d19za2IpLT5tYWdpYyA9IDA7CisJCQluZXdfc2tiLT52bGFuX3RjaSA9IDA7CiAJCX0KIAl9
-CiAK
---------------040204070403000204060400--
+diff --git a/drivers/rtc/rtc-ds1374.c b/drivers/rtc/rtc-ds1374.c
+index 640acd2..0527dec 100644
+--- a/drivers/rtc/rtc-ds1374.c
++++ b/drivers/rtc/rtc-ds1374.c
+@@ -388,6 +388,7 @@ static int ds1374_probe(struct i2c_client *client,
+ 			dev_err(&client->dev, "unable to request IRQ\n");
+ 			goto out_free;
+ 		}
++		device_init_wakeup(&client->dev, 1);
+ 	}
+ 
+ 	ds1374->rtc = rtc_device_register(client->name, &client->dev,
+@@ -401,8 +402,10 @@ static int ds1374_probe(struct i2c_client *client,
+ 	return 0;
+ 
+ out_irq:
+-	if (client->irq >= 0)
++	if (client->irq >= 0) {
++		device_init_wakeup(&client->dev, 0);
+ 		free_irq(client->irq, client);
++	}
+ 
+ out_free:
+ 	i2c_set_clientdata(client, NULL);
+@@ -419,6 +422,7 @@ static int __devexit ds1374_remove(struct i2c_client *client)
+ 		ds1374->exiting = 1;
+ 		mutex_unlock(&ds1374->mutex);
+ 
++		device_init_wakeup(&client->dev, 0);
+ 		free_irq(client->irq, client);
+ 		flush_scheduled_work();
+ 	}
+@@ -429,12 +433,33 @@ static int __devexit ds1374_remove(struct i2c_client *client)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PM
++static int ds1374_suspend(struct i2c_client *client, pm_message_t state)
++{
++	if (client->irq >= 0 && device_may_wakeup(&client->dev))
++		enable_irq_wake(client->irq);
++	return 0;
++}
++
++static int ds1374_resume(struct i2c_client *client)
++{
++	if (client->irq >= 0 && device_may_wakeup(&client->dev))
++		disable_irq_wake(client->irq);
++	return 0;
++}
++#else
++#define ds1374_suspend	NULL
++#define ds1374_resume	NULL
++#endif
++
+ static struct i2c_driver ds1374_driver = {
+ 	.driver = {
+ 		.name = "rtc-ds1374",
+ 		.owner = THIS_MODULE,
+ 	},
+ 	.probe = ds1374_probe,
++	.suspend = ds1374_suspend,
++	.resume = ds1374_resume,
+ 	.remove = __devexit_p(ds1374_remove),
+ 	.id_table = ds1374_id,
+ };
