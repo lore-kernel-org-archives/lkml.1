@@ -1,50 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753127AbYGUMZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbYGUMea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753127AbYGUMZB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 08:25:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYGUMYx
+	id S1752530AbYGUMea (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 08:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbYGUMeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 08:24:53 -0400
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:42875 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750904AbYGUMYw (ORCPT
+	Mon, 21 Jul 2008 08:34:21 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:56083 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750803AbYGUMeV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 08:24:52 -0400
-Subject: Re: [PATCH] linux-input: bcm5974-0.57: mode-switch to atp_open,
-	cleanup bug fixed
-From: Henrik Rydberg <rydberg@euromail.se>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       robfitz@273k.net, akpm@osdl.org, jikos@jikos.cz, vojtech@suse.cz,
-       dmonakhov@openvz.org, johannes@sipsolutions.net
-In-Reply-To: <20080720051016.GA7853@anvil.corenet.prv>
-References: <1216466049.6238.0.camel@alnilam>
-	 <20080720051016.GA7853@anvil.corenet.prv>
+	Mon, 21 Jul 2008 08:34:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vMmssBSO4sv8qlc4cU4AC62L/cfJJaZ2J0atuFaw2pV9BmcqO1CWwZ+icUpMomN/Ih
+         2GbO0NtbMhQ96hZE4Oum3huQxfg/ivSSAtSbCGgEpUKP+DMd+jSGAXhHQVD5H42gzr8W
+         +vHfxj+IleBSe8sqe4sWmVuUqdKgsu+N6zsss=
+Message-ID: <6dd519ae0807210534k462858d6l13de6aaef29a4a9f@mail.gmail.com>
+Date: Mon, 21 Jul 2008 15:34:19 +0300
+From: "Brian Marete" <bgmarete@gmail.com>
+To: "Simon Arlott" <simon@fire.lp0.eu>
+Subject: Re: [PATCH] V4L: Link tuner before saa7134
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-dvb@linuxtv.org
+In-Reply-To: <38354.simon.1216381906@5ec7c279.invalid>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Mon, 21 Jul 2008 14:24:17 +0200
-Message-Id: <1216643057.28594.6.camel@alnilam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: 83.248.35.11
-X-Scan-Result: No virus found in message 1KKuRf-0004gp-6V.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KKuRf-0004gp-6V 16d1b03ad6b317b3b027175484e1667b
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6dd519ae0807180428k30abd15eo60fd2856f7a43821@mail.gmail.com>
+	 <38354.simon.1216381906@5ec7c279.invalid>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-﻿Hello Dmitry,
+On Fri, Jul 18, 2008 at 2:51 PM, Simon Arlott <simon@fire.lp0.eu> wrote:
+>
+> On Fri, July 18, 2008 12:28, Brian Marete wrote:
+>> On Jul 14, 6:00 am, hermann pitton <hermann-pit...@arcor.de> wrote:
+>>>
+>>> #1 users can't set thetunertype anymore,
+>>>    but the few cases oftunerdetection from eeprom we have should
+>>>    work again for that price.
+>>
+>> Hello,
+>>
+>> Any patch yet for above issue? It seems to have made it into 2.6.26.
+>>
+>> I use saa7134 with everything, including the tuner modules, compiled
+>> as a module. My card is detected as a flyvideo2000. The default tuner
+>> for that card (#37) allows me to tune into TV but not to FM Radio. I
+>> can access both functions (TV and FM Radio) if I override with
+>> tuner=69, which is what I usually do. That override does not work on
+>> 2.6.26.
+>>
+>> Any suggestions?
+>
+> Modify saa7134_board_init2 so that the manual tuner type setting isn't
+> ignored. The first thing it does is to overwrite the current value
+> (set earlier from module parameter) with the static values... even
+> before trying to autodetect it.
+>
+> In saa7134-core.c saa7134_initdev:
+>  dev->tuner_type   = saa7134_boards[dev->board].tuner_type;
+> +dev->tuner_addr   = saa7134_boards[dev->board].tuner_addr;
+>
+> In saa7134-cards.c saa7134_board_init2:
+> -dev->tuner_type   = saa7134_boards[dev->board].tuner_type;
+> -dev->tuner_addr   = saa7134_boards[dev->board].tuner_addr;
+>
+> I think that will fix it.
 
-thank you so much for the review. I will get back tonight with an
-updated version.
+And, indeed, it fixed it. I hope the patch will make it into the main-line.
 
-> What will happen if bcm driver is attached first, before HID had a
-> chance to do its part?
+Thanks.
 
-It seems it will still work, because the bcm5974 gets reopened after HID
-is initialized.
-
-Cheers,
-Henrik
-
-
+-- 
+B. Gitonga Marete
+Tel: +254-722-151-590
