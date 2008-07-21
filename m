@@ -1,140 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbYGUVnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbYGUVnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755821AbYGUVnT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 17:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYGUVm7
+	id S1754840AbYGUVnc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 17:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755835AbYGUVnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 17:42:59 -0400
-Received: from stinky.trash.net ([213.144.137.162]:48833 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750830AbYGUVm6 (ORCPT
+	Mon, 21 Jul 2008 17:43:21 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:46710 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755909AbYGUVnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 17:42:58 -0400
-Message-ID: <488502DF.4030505@trash.net>
-Date: Mon, 21 Jul 2008 23:42:55 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: Larry.Finger@lwfinger.net, mingo@elte.hu, ischram@telenet.be,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, j@w1.fi
-Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
- at 0000000000000370
-References: <4884F3D7.4070604@lwfinger.net>	<20080721.134608.75595942.davem@davemloft.net>	<4884F6E9.6090809@trash.net> <20080721.140120.135667045.davem@davemloft.net> <4884FA3F.70109@trash.net> <48850121.9090106@trash.net>
-In-Reply-To: <48850121.9090106@trash.net>
-Content-Type: multipart/mixed;
- boundary="------------020104030105090007080305"
+	Mon, 21 Jul 2008 17:43:20 -0400
+Subject: [RFC] fix kallsyms to allow discrimination of local symbols
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+Content-Type: text/plain
+Date: Mon, 21 Jul 2008 16:43:14 -0500
+Message-Id: <1216676595.3433.80.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020104030105090007080305
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+The problem is that local symbols, being hidden from the linker, might
+not be unique.  Thus, they don't make good anchors for the symbol
+relative addressing used by kprobes (it takes the first occurrence it
+finds).  Likewise, when they appear in stack traces, it's sometimes not
+obvious which local symbol it is (although context usually allows an
+easy guess).
 
-Patrick McHardy wrote:
-> Patrick McHardy wrote:
->> David Miller wrote:
->>> Maybe something like the following should do it?
->>
->>
->> It looks correct in any case. I'm not sure whether it fixes
->> this lockdep warning though, according to the backtrace and
->> module list its b43 and dev_mc_sync in net/mac80211/main.c
->> that are causing the error, which don't seem to be included
->> in your patch. I'm unable to find where it previously
->> initialized the xmit_lock lockdep class though, so I must
->> be missing something :)
-> 
-> This is what I was missing, we're setting a lockdep class
-> by default depending on dev->type. This patch combined
-> with yours should fix all addr_list_lock warnings.
+Fix all of this by prefixing local symbols with the actual C file name
+they occur in separated by '|' (I had to use '|' since ':' is already in
+use for module prefixes in kallsyms lookups.
 
-This one is a bit nicer, since we only have a single
-addr_list_lock we don't need to pass a pointer to the
-lock.
+I also had to rewrite mksysmap in perl because the necessary text
+formatting changes in shell are painfully slow.
 
+Comments?
 
---------------020104030105090007080305
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
+James
 
-net: set lockdep class for dev->addr_list_lock
+---
 
-Initialize dev->addr_list_lock lockdep classes equally to dev->_xmit_lock.
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 2eed17b..6f8b6c5 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -299,6 +299,7 @@ static const char *netdev_lock_name[] =
- 	 "_xmit_NONE"};
+diff --git a/Makefile b/Makefile
+index 6192922..a416b35 100644
+--- a/Makefile
++++ b/Makefile
+@@ -685,7 +685,7 @@ quiet_cmd_vmlinux_version = GEN     .version
  
- static struct lock_class_key netdev_xmit_lock_key[ARRAY_SIZE(netdev_lock_type)];
-+static struct lock_class_key netdev_addr_lock_key[ARRAY_SIZE(netdev_lock_type)];
+ # Generate System.map
+ quiet_cmd_sysmap = SYSMAP
+-      cmd_sysmap = $(CONFIG_SHELL) $(srctree)/scripts/mksysmap
++      cmd_sysmap = $(PERL) $(srctree)/scripts/mksysmap
  
- static inline unsigned short netdev_lock_pos(unsigned short dev_type)
+ # Link of vmlinux
+ # If CONFIG_KALLSYMS is set .version is already updated
+@@ -759,7 +759,7 @@ endef
+ 
+ # Generate .S file with all kernel symbols
+ quiet_cmd_kallsyms = KSYM    $@
+-      cmd_kallsyms = $(NM) -n $< | $(KALLSYMS) \
++      cmd_kallsyms = $(NM) -n -l $< | sed "s|`pwd`/||" | $(KALLSYMS) \
+                      $(if $(CONFIG_KALLSYMS_ALL),--all-symbols) > $@
+ 
+ .tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
+diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
+index ad2434b..0badae2 100644
+--- a/scripts/kallsyms.c
++++ b/scripts/kallsyms.c
+@@ -63,11 +63,12 @@ static inline int is_arm_mapping_symbol(const char *str)
+ 
+ static int read_symbol(FILE *in, struct sym_entry *s)
  {
-@@ -311,8 +312,8 @@ static inline unsigned short netdev_lock_pos(unsigned short dev_type)
- 	return ARRAY_SIZE(netdev_lock_type) - 1;
- }
+-	char str[500];
++	char str[500], file[500];
+ 	char *sym, stype;
+-	int rc;
++	int rc, c, line;
  
--static inline void netdev_set_lockdep_class(spinlock_t *lock,
--					    unsigned short dev_type)
-+static inline void netdev_set_xmit_lockdep_class(spinlock_t *lock,
-+						 unsigned short dev_type)
- {
- 	int i;
+-	rc = fscanf(in, "%llx %c %499s\n", &s->addr, &stype, str);
++	file[0] = '\0';
++	rc = fscanf(in, "%llx %c %499s", &s->addr, &stype, str);
+ 	if (rc != 3) {
+ 		if (rc != EOF) {
+ 			/* skip line */
+@@ -75,6 +76,12 @@ static int read_symbol(FILE *in, struct sym_entry *s)
+ 		}
+ 		return -1;
+ 	}
++	c = fgetc(in);
++	if (c != '\n') {
++		rc = fscanf(in, "%499[^:]:%d\n", file, &line);
++		if (rc != 2)
++			file[0] = '\0';
++	}
  
-@@ -320,9 +321,22 @@ static inline void netdev_set_lockdep_class(spinlock_t *lock,
- 	lockdep_set_class_and_name(lock, &netdev_xmit_lock_key[i],
- 				   netdev_lock_name[i]);
- }
-+
-+static inline void netdev_set_addr_lockdep_class(struct net_device *dev)
-+{
-+	int i;
-+
-+	i = netdev_lock_pos(dev->type);
-+	lockdep_set_class_and_name(&dev->addr_list_lock,
-+				   &netdev_addr_lock_key[i],
-+				   netdev_lock_name[i]);
+ 	sym = str;
+ 	/* skip prefix char */
+@@ -115,13 +122,22 @@ static int read_symbol(FILE *in, struct sym_entry *s)
+ 	/* include the type field in the symbol name, so that it gets
+ 	 * compressed together */
+ 	s->len = strlen(str) + 1;
++	if (islower(stype))
++		s->len += strlen(file) + 1;
+ 	s->sym = malloc(s->len + 1);
+ 	if (!s->sym) {
+ 		fprintf(stderr, "kallsyms failure: "
+ 			"unable to allocate required amount of memory\n");
+ 		exit(EXIT_FAILURE);
+ 	}
+-	strcpy((char *)s->sym + 1, str);
++	if (islower(stype)) {
++		char *ss = (char *)s->sym + 1;
++		
++		strcpy(ss, file);
++		strcat(ss, "|");
++		strcat(ss, str);
++	} else
++		strcpy((char *)s->sym + 1, str);
+ 	s->sym[0] = stype;
+ 
+ 	return 0;
+diff --git a/scripts/mksysmap b/scripts/mksysmap
+index 6e133a0..496cadd 100644
+--- a/scripts/mksysmap
++++ b/scripts/mksysmap
+@@ -1,4 +1,4 @@
+-#!/bin/sh -x
++#!/usr/bin/perl
+ # Based on the vmlinux file create the System.map file
+ # System.map is used by module-init tools and some debugging
+ # tools to retrieve the actual addresses of symbols in the kernel.
+@@ -41,5 +41,21 @@
+ # so we just ignore them to let readprofile continue to work.
+ # (At least sparc64 has __crc_ in the middle).
+ 
+-$NM -n $1 | grep -v '\( [aNUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
++chomp($cwd = `pwd`);
++open(I, "nm -n -l $ARGV[0]|") || die;
++open(O, ">$ARGV[1]") || die;
++foreach(<I>) {
++    chomp;
++    ($addr, $type, $symbol, $file_and_line) = split(/[ 	]/, $_);
++    next if ($type =~ /[aNUw]/ || $type =~ /\$[adt]/);
++    next if ($symbol=~ /__crc_/);
++    if ($type =~ /[a-z]/ && $file_and_line) {
++	($_) = split(/:/, $file_and_line);
++	(undef, $file) = split(/^$cwd\//, $_);
++	$symbol = $file."|".$symbol;
++    }
++    print O "$addr $type $symbol\n";
 +}
- #else
--static inline void netdev_set_lockdep_class(spinlock_t *lock,
--					    unsigned short dev_type)
-+static inline void netdev_set_xmit_lockdep_class(spinlock_t *lock,
-+						 unsigned short dev_type)
-+{
-+}
-+static inline void netdev_set_addr_lockdep_class(struct net_device *dev)
- {
- }
- #endif
-@@ -3843,7 +3857,7 @@ static void __netdev_init_queue_locks_one(struct net_device *dev,
- 					  void *_unused)
- {
- 	spin_lock_init(&dev_queue->_xmit_lock);
--	netdev_set_lockdep_class(&dev_queue->_xmit_lock, dev->type);
-+	netdev_set_xmit_lockdep_class(&dev_queue->_xmit_lock, dev->type);
- 	dev_queue->xmit_lock_owner = -1;
- }
++
++
  
-@@ -3888,6 +3902,7 @@ int register_netdevice(struct net_device *dev)
- 	net = dev_net(dev);
- 
- 	spin_lock_init(&dev->addr_list_lock);
-+	netdev_set_addr_lockdep_class(dev);
- 	netdev_init_queue_locks(dev);
- 
- 	dev->iflink = -1;
 
---------------020104030105090007080305--
+
