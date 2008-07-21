@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbYGUL7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbYGUMGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758271AbYGUL7q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 07:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYGUL7h
+	id S1755564AbYGUMGs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 08:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYGUMGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 07:59:37 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:48288 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752430AbYGUL7g (ORCPT
+	Mon, 21 Jul 2008 08:06:39 -0400
+Received: from stinky.trash.net ([213.144.137.162]:35651 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750760AbYGUMGi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 07:59:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=UaOhn8ol/fXH3BbBnHOtwyahgftwy+w3pZcYC7UxudGzrOhLhljgPuAdPVI+9kE8Ic
-         4NoMTwQ2BTpSPan6u5R8p+QWhg2F8nUu/AbayPALdQDhYI/5O6PeNud+GzZTlNG2Hycg
-         BFzQqpLuko1R/xB5ARrkf6NnqAkN7eTYpr2OA=
-Date: Mon, 21 Jul 2008 15:57:42 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jeffrey.t.kirsher@intel.com
-Subject: Re: [GIT]: Networking
-Message-ID: <20080721115742.GA4871@martell.zuzino.mipt.ru>
-References: <20080720.181440.122144107.davem@davemloft.net> <20080721024056.GA4800@martell.zuzino.mipt.ru> <20080720.194856.92564555.davem@davemloft.net> <20080720.221106.201055562.davem@davemloft.net>
+	Mon, 21 Jul 2008 08:06:38 -0400
+Message-ID: <48847BA5.2020600@trash.net>
+Date: Mon, 21 Jul 2008 14:05:57 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080720.221106.201055562.davem@davemloft.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: James Morris <jmorris@namei.org>
+CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+References: <20080720.104411.81744468.davem@davemloft.net> <alpine.LFD.1.10.0807201751440.31863@woody.linux-foundation.org> <20080720.180304.51601407.davem@davemloft.net> <4883E465.4050405@trash.net> <Xine.LNX.4.64.0807212143540.17349@us.intercode.com.au>
+In-Reply-To: <Xine.LNX.4.64.0807212143540.17349@us.intercode.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 20, 2008 at 10:11:06PM -0700, David Miller wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Sun, 20 Jul 2008 19:48:56 -0700 (PDT)
-> 
-> > From: Alexey Dobriyan <adobriyan@gmail.com>
-> > Date: Mon, 21 Jul 2008 06:40:56 +0400
-> > 
-> > > OK, the problem is really this buglet:
-> > > 
-> > > 	BUG_ON(q == &noop_qdisc);
-> > > 	__netif_schedule
-> > > 	netif_tx_wake_queue
-> > > 	netif_wake_queue
-> > > 	atl1_check_link
-> > > 	atl1_up		or	atlx_link_chg_task
-> > > 				run_workqueue
-> > 
-> > Thanks for the backtrace I'll work on fixing this.
-> 
-> [ Jeff and co., this is basically the kind of patch I want
->   to see eventually for the Intel drivers too... ]
-> 
-> Alexey, please try this patch:
-> 
-> atl1: Do not wake queue before queue has been started.
+James Morris wrote:
+> On Mon, 21 Jul 2008, Patrick McHardy wrote:
+>
+>   
+>> This is only the NETFILTER_ADVANCED=n default (for SECURITY=y).
+>> The netfilter defaults for NETFILTER_ADVANCED=n should be m/y for
+>> things that are needed by mainstream distributions for normal
+>> usage.
+>>
+>> I'm not sure how this is going to be used, James?
+>>     
+>
+> I think the idea now is that everything new is N by default, but the 
+> intention is to have this enabled in Fedora/RHEL.
 
-Patch helps and networking is back with and without using netconsole,
-thank you!
+Well, this option (NETFILTER_ADVANCED) was introduced specifically
+so Linus doesn't have to go through and enable all the netfilter
+options manually :)
 
-Also wan to say, 8139too driver survived multiqueue TX changes fine.
+The idea was that NETFILTER_ADVANCED=n enables everything needed
+by mainstream distributions and hides the rest. We can certainly
+change the default for this option, but that makes NETFILTER_ADVANCED
+pretty much useless.
+
+> Patrick, would you please fix this up?  The only dev box I have access to 
+> at the moment doesn't boot with recent git (I think it's the macbook2 
+> issue).
+
+Sure. I'd like to hear whether Linus still wants this changed though.
+
 
