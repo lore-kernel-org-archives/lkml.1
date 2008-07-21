@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757475AbYGULEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758592AbYGULFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757475AbYGULEc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 07:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758342AbYGULEH
+	id S1758592AbYGULFg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 07:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYGULF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 07:04:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52261 "EHLO mx2.mail.elte.hu"
+	Mon, 21 Jul 2008 07:05:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55568 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758280AbYGULEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 07:04:06 -0400
-Date: Mon, 21 Jul 2008 13:03:52 +0200
+	id S1751481AbYGULF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 07:05:28 -0400
+Date: Mon, 21 Jul 2008 13:05:10 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: remove extra calling to get ext cpuid level
-Message-ID: <20080721110352.GB10782@elte.hu>
-References: <200807210138.15054.yhlu.kernel@gmail.com> <200807210139.03635.yhlu.kernel@gmail.com>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i386: improve double fault handling
+Message-ID: <20080721110510.GC10782@elte.hu>
+References: <4880A912.76E4.0078.0@novell.com> <4881263B.7060700@zytor.com> <48846B02.76E4.0078.0@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200807210139.03635.yhlu.kernel@gmail.com>
+In-Reply-To: <48846B02.76E4.0078.0@novell.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,18 +35,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+* Jan Beulich <jbeulich@novell.com> wrote:
 
-> --- linux-2.6.orig/arch/x86/kernel/cpu/common_64.c
-> +++ linux-2.6/arch/x86/kernel/cpu/common_64.c
-> @@ -303,7 +303,6 @@ static void __cpuinit early_identify_cpu
->  			c->x86_capability[2] = cpuid_edx(0x80860001);
->  	}
->  
-> -	c->extended_cpuid_level = cpuid_eax(0x80000000);
->  	if (c->extended_cpuid_level >= 0x80000007)
->  		c->x86_power = cpuid_edx(0x80000007);
+> > This patch doesn't apply for me to the extent that I'm hesitant to 
+> > fix it up manually.  Could you please refresh it against current 
+> > -linus?
+> 
+> Make the double fault handler use CPU-specific stacks. Add some 
+> abstraction to simplify future change of other exception handlers to 
+> go through task gates. Add a new notification of the event through the 
+> die notifier chain, also providing some environmental adjustments so 
+> that various infrastructural things work independent of the fact that 
+> the fault and the callbacks are running on other then the normal 
+> kernel stack.
 
-applied to tip/x86/core, thanks.
+this still doesnt apply to latest -git. (or tip/master)
 
 	Ingo
