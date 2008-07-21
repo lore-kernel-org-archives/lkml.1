@@ -1,63 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbYGUTCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754481AbYGUTH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754236AbYGUTCc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 15:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbYGUTCU
+	id S1754481AbYGUTH1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 15:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbYGUTHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 15:02:20 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:60449 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753111AbYGUTCT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 15:02:19 -0400
-Date: Mon, 21 Jul 2008 20:02:16 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: sage@newdream.net, zach.brown@oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] vfs: fix vfs_rename_dir for FS_RENAME_DOES_D_MOVE
-	filesystems
-Message-ID: <20080721190215.GH28946@ZenIV.linux.org.uk>
-References: <E1KKtlz-0008B9-BM@pomaz-ex.szeredi.hu>
+	Mon, 21 Jul 2008 15:07:06 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58892 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752712AbYGUTHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 15:07:04 -0400
+Date: Mon, 21 Jul 2008 21:06:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ian Schram <ischram@telenet.be>
+Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, wireless <linux-wireless@vger.kernel.org>,
+       j@w1.fi
+Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
+	at 0000000000000370
+Message-ID: <20080721190646.GA19044@elte.hu>
+References: <20080721134506.GA27598@elte.hu> <20080721143023.GA32451@elte.hu> <20080721150446.GA17746@elte.hu> <20080721.082419.70392960.davem@davemloft.net> <4884D2F1.2030704@telenet.be>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1KKtlz-0008B9-BM@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <4884D2F1.2030704@telenet.be>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2008 at 01:41:47PM +0200, Miklos Szeredi wrote:
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> vfs_rename_dir() doesn't properly account for filesystems with
-> FS_RENAME_DOES_D_MOVE.  If new_dentry has a target inode attached, it
-> unhashes the new_dentry prior to the rename() iop and rehashes it
-> after, but doesn't account for the possibility that rename() may have
-> swapped {old,new}_dentry.  For FS_RENAME_DOES_D_MOVE filesystems, it
-> rehashes new_dentry (now the old renamed-from name, which d_move()
-> expected to go away), such that a subsequent lookup will find it.
-> 
-> This was caught by the recently posted POSIX fstest suite, rename/10.t 
-> test 62 (and others) on ceph.
-> 
-> Fix by not rehashing the new dentry.  Rehashing would only make sense
-> if the rename failed (which should happen extremely rarely), but we
-> cannot handle that case correctly 100% of the time anyway, so...
 
-Lovely.  AFAICS, that's a fallout from
-commit 349457ccf2592c14bdf13b6706170ae2e94931b1
-Author: Mark Fasheh <mark.fasheh@oracle.com>
-Date:   Fri Sep 8 14:22:21 2006 -0700
+* Ian Schram <ischram@telenet.be> wrote:
 
-    [PATCH] Allow file systems to manually d_move() inside of ->rename()
+> I was looking at this out of interest, but I'm in no way familiar with 
+> the code.
 
-that had allowed that crap for directories.  Note that d_rehash() used
-to be needed (d_move() would unhash the source otherwise) and d_move()
-used to be unconditional until the changeset above.
+thanks Ian for the patch, i'll test it.
 
-It's _probably_ OK now, but I'd really like to think about NFS behaviour.
-There are subtle traps in that area.
+Note that it was whitespace damaged, find below a tidied up version of 
+the patch that i've applied to tip/out-of-tree.
 
-BTW, failing rename() is trivial - just have a non-empty target...
+	Ingo
+
+----------------------->
+commit 2f77dd3a3b5c3a27298fa0a09d8703c09c633fc6
+Author: Ian Schram <ischram@telenet.be>
+Date:   Mon Jul 21 20:18:25 2008 +0200
+
+    mac80211_hwsim.c: fix: BUG: unable to handle kernel NULL pointer dereference at 0000000000000370
+    
+    I was looking at this out of interest, but I'm in no way familiar with
+    the code.
+    
+    Looks to me that the error handling code in mac80211_hwsim is awkward.
+    Which leads to it calling ieee80211_unregister_hw even when
+    ieee80211_register_hw failed.
+    
+    The function has a for loop where it generates all simulated radios.
+    when something fails, the error handling will call mac80211_hwsim_free
+    which frees all simulated radios who's pointer isn't zero. However the
+    information stored is insufficient to determine whether or not the call
+    to ieee80211_register_hw succeeded or not for a specific radio. The
+    included patch makes init_mac80211_hwsim clean up the current simulated
+    radio, and then calls into mac80211_hwsim_free to clean up all the
+    radios that did succeed.
+    
+    This however doesn't explain why the rate control registration failed..
+    build tested this, but had some problems reproducing the original
+    problem.
+    
+    Signed-off-by: Ian Schram <ischram@telenet.be>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/net/wireless/mac80211_hwsim.c |   18 ++++++++++++------
+ 1 files changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/wireless/mac80211_hwsim.c b/drivers/net/wireless/mac80211_hwsim.c
+index 913dc9f..5816230 100644
+--- a/drivers/net/wireless/mac80211_hwsim.c
++++ b/drivers/net/wireless/mac80211_hwsim.c
+@@ -364,8 +364,7 @@ static void mac80211_hwsim_free(void)
+ 			struct mac80211_hwsim_data *data;
+ 			data = hwsim_radios[i]->priv;
+ 			ieee80211_unregister_hw(hwsim_radios[i]);
+-			if (!IS_ERR(data->dev))
+-				device_unregister(data->dev);
++			device_unregister(data->dev);
+ 			ieee80211_free_hw(hwsim_radios[i]);
+ 		}
+ 	}
+@@ -437,7 +436,7 @@ static int __init init_mac80211_hwsim(void)
+ 			       "mac80211_hwsim: device_create_drvdata "
+ 			       "failed (%ld)\n", PTR_ERR(data->dev));
+ 			err = -ENOMEM;
+-			goto failed;
++			goto failed_drvdata;
+ 		}
+ 		data->dev->driver = &mac80211_hwsim_driver;
+ 
+@@ -461,7 +460,7 @@ static int __init init_mac80211_hwsim(void)
+ 		if (err < 0) {
+ 			printk(KERN_DEBUG "mac80211_hwsim: "
+ 			       "ieee80211_register_hw failed (%d)\n", err);
+-			goto failed;
++			goto failed_hw;
+ 		}
+ 
+ 		printk(KERN_DEBUG "%s: hwaddr %s registered\n",
+@@ -479,9 +478,9 @@ static int __init init_mac80211_hwsim(void)
+ 	rtnl_lock();
+ 
+ 	err = dev_alloc_name(hwsim_mon, hwsim_mon->name);
+-	if (err < 0) {
++	if (err < 0)
+ 		goto failed_mon;
+-	}
++
+ 
+ 	err = register_netdevice(hwsim_mon);
+ 	if (err < 0)
+@@ -494,7 +493,14 @@ static int __init init_mac80211_hwsim(void)
+ failed_mon:
+ 	rtnl_unlock();
+ 	free_netdev(hwsim_mon);
++	mac80211_hwsim_free();
++	return err;
+ 
++failed_hw:
++	device_unregister(data->dev);
++failed_drvdata:
++	ieee80211_free_hw(hw);
++	hwsim_radios[i] = 0;
+ failed:
+ 	mac80211_hwsim_free();
+ 	return err;
