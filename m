@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758331AbYGUL3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758680AbYGULcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758331AbYGUL3i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 07:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbYGUL32
+	id S1758680AbYGULcV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 07:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbYGULcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 07:29:28 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:42271 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751692AbYGUL32 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 07:29:28 -0400
-Message-ID: <488472F1.4020609@s5r6.in-berlin.de>
-Date: Mon, 21 Jul 2008 13:28:49 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+	Mon, 21 Jul 2008 07:32:11 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62677 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752119AbYGULcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 07:32:10 -0400
+Date: Mon, 21 Jul 2008 12:31:06 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Mikael Pettersson <mikpe@it.uu.se>
+cc: Ingo Molnar <mingo@elte.hu>, Chuck Ebbert <cebbert@redhat.com>,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: PIC, L-APIC and I/O APIC debug information
+In-Reply-To: <18563.55832.673541.202465@harpo.it.uu.se>
+Message-ID: <Pine.LNX.4.55.0807211222250.23386@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0807202226310.24038@cliff.in.clinika.pl>
+ <18563.55832.673541.202465@harpo.it.uu.se>
 MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
-CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jmorris@namei.org
-Subject: Re: [GIT]: Networking
-References: <20080720.104411.81744468.davem@davemloft.net>	<alpine.LFD.1.10.0807201751440.31863@woody.linux-foundation.org> <20080720.180304.51601407.davem@davemloft.net> <4883E465.4050405@trash.net>
-In-Reply-To: <4883E465.4050405@trash.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy wrote:
->>> 	  Security table (IP_NF_SECURITY) [Y/n/?] (NEW) ?
-...
-> This is only the NETFILTER_ADVANCED=n default (for SECURITY=y).
-> The netfilter defaults for NETFILTER_ADVANCED=n should be m/y for
-> things that are needed by mainstream distributions for normal
-> usage.
+On Mon, 21 Jul 2008, Mikael Pettersson wrote:
 
-Don't ask what mainstream distributors would choose, ask how "make
-oldconfig" or "make silentoldconfig" should behave.  They should not add
-features that weren't there before and are not necessary to continue
-using all features of the old configuration.
--- 
-Stefan Richter
--=====-==--- -=== =-=-=
-http://arcgraph.de/sr/
+>  > +#define __apicdebuginit(type) static type __init
+> ...
+>  > -void __init print_IO_APIC(void)
+>  > +
+>  > +__apicdebuginit(void) print_IO_APIC(void)
+>  >  {
+> 
+> I _really_ dislike how this abuses the C macro preprocessor
+> to create pointless new syntax.
+> 
+> Since you're editing these function definitions anyway why
+> not just spell out "static void __init" in readable proper C?
+
+ This is so that while debugging you can make all these functions global
+with a single change in one place, rather than going through the whole
+file and finding all the relevant function headers.  Presumably the
+original reason for the existence of the macro.  Unfortunately an
+object-like macro cannot be used here, as the "static" keyword has to come
+first in a function declaration and the section attribute has to come
+after the type designation.
+
+ What's wrong with the syntax in your opinion?
+
+  Maciej
