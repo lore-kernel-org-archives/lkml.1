@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbYGUTPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbYGUTPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbYGUTPe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 15:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbYGUTNx
+	id S1754790AbYGUTPw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 15:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbYGUTOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 15:13:53 -0400
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:60554 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755194AbYGUTNu (ORCPT
+	Mon, 21 Jul 2008 15:14:35 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:33401 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754790AbYGUTOc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 15:13:50 -0400
-Message-ID: <4884DFEE.4060003@lwfinger.net>
-Date: Mon, 21 Jul 2008 14:13:50 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ian Schram <ischram@telenet.be>, David Miller <davem@davemloft.net>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       wireless <linux-wireless@vger.kernel.org>, j@w1.fi
-Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
- at 0000000000000370
-References: <20080721134506.GA27598@elte.hu> <20080721143023.GA32451@elte.hu> <20080721150446.GA17746@elte.hu> <20080721.082419.70392960.davem@davemloft.net> <4884D2F1.2030704@telenet.be> <20080721190646.GA19044@elte.hu>
-In-Reply-To: <20080721190646.GA19044@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 21 Jul 2008 15:14:32 -0400
+Subject: Re: [PATCH 0/2] Migrate data off physical pages with corrected
+	memory errors (Version 7)
+From: Alex Williamson <alex.williamson@hp.com>
+To: Russ Anderson <rja@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
+       Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org
+In-Reply-To: <20080720173914.GA9409@sgi.com>
+References: <20080718203514.GD29621@sgi.com>
+	 <87prpa88iw.fsf@basil.nowhere.org>  <20080720173914.GA9409@sgi.com>
+Content-Type: text/plain
+Organization: OSLO R&D
+Date: Mon, 21 Jul 2008 13:11:39 -0600
+Message-Id: <1216667499.8806.79.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ian Schram <ischram@telenet.be> wrote:
+On Sun, 2008-07-20 at 12:39 -0500, Russ Anderson wrote:
+> On Sat, Jul 19, 2008 at 12:37:11PM +0200, Andi Kleen wrote:
+> > If you really wanted to do this you probably should hook it up
+> > to mcelog's (or the IA64 equivalent) DIMM database
 > 
->> I was looking at this out of interest, but I'm in no way familiar with 
->> the code.
-> 
-> thanks Ian for the patch, i'll test it.
-> 
-> Note that it was whitespace damaged, find below a tidied up version of 
-> the patch that i've applied to tip/out-of-tree.
-> 
-> 	Ingo
+> Is there an IA64 equivalent?  I've looked at the x86_64 mcelog,
+> but have not found a IA64 version.
 
-This patch may be needed to fix error handling in the hw_sim code, but I get the 
-crash even with that code disabled. I'm currently bisecting to find the culprit.
+There's a bit in the SAL error record that can tell you when the
+platform thinks the page should be deallocated.  In the section header
+(B2.2), ERROR_RECOVERY_INFO, bit 3 "Error threshold exceeded".  If you
+use this bit, then it's a platform decision.  If you want pages to be
+deallocated on the first hit, then have your SAL always set that bit.  I
+believe HP systems do implement this bit in SAL using some kind of
+heuristics.
 
-Larry
+	Alex
+
+-- 
+Alex Williamson                             HP Open Source & Linux Org.
+
