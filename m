@@ -1,159 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbYGUBpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbYGUBq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757905AbYGUBpi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 21:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756547AbYGUBp3
+	id S1758105AbYGUBq4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 21:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756573AbYGUBqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 21:45:29 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:34514 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756546AbYGUBp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 21:45:28 -0400
-Date: Sun, 20 Jul 2008 21:45:26 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Neil Brown <neilb@suse.de>
-Subject: [git] nfsd changes for 2.6.27
-Message-ID: <20080721014526.GA3895@fieldses.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Sun, 20 Jul 2008 21:46:49 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:65346 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756547AbYGUBqt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 21:46:49 -0400
+Subject: Re: [patch 0/4] Second batch of fastboot patches: get rid of the 2
+	second rootfs delay
+From: Daniel Walker <dwalker@mvista.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Simon Arlott <simon@fire.lp0.eu>,
+       Rene Herman <rene.herman@keyaccess.nl>
+In-Reply-To: <20080720151436.26bdc717@infradead.org>
+References: <20080720151436.26bdc717@infradead.org>
+Content-Type: text/plain
+Date: Sun, 20 Jul 2008 18:46:45 -0700
+Message-Id: <1216604805.14562.7.camel@dhcp32.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull nfsd-related changes from the for-2.6.27 branch of:
+On Sun, 2008-07-20 at 15:14 -0700, Arjan van de Ven wrote:
+> Hi,
+> 
+> this second batch of fastboot patches gets rid of the delay you can get
+> when you're not using an initrd; on my system this delay is a full 2
+> seconds (which is longer than the whole kernel boot combined).
+> 
+> I've also stuck the patch series into a git tree
+> 
+> clone git://git.kernel.org/pub/scm/linux/git/arjan/linux-2.6-fastboot
+> 
 
-  git://linux-nfs.org/~bfields/linux.git for-2.6.27
+Typo in the URL above, I think it's
 
-A few lockd patches are included too (and one minor locks.c patch).
+git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-fastboot
+				   ^^^^^^
+Daniel
 
-Changes include
-
-	- server rdma bug fixes and improvements from Tom Tucker.
-	- Jeff Layton's work converting nfsd to kthreads, fixing some
-	  startup/shutdown races, and simplifying the way that nfsd
-	  threads handle signals.
-	- from Benny Halevy, some of the first patches resulting from
-	  the NFSv4.1/pNFS effort, for now just cleanups of existing 4.0
-	  code.
-
-Plus various cleanup and bugfixes.
-
---b.
-
-Benny Halevy (10):
-      nfsd: make nfs4xdr WRITEMEM safe against zero count
-      nfsd: eliminate unused nfs4_callback.cb_program
-      nfsd: eliminate unused nfs4_callback.cb_stat
-      nfsd: return nfserr_minor_vers_mismatch when compound minorversion != 0
-      nfsd: tabulate nfs4 xdr decoding functions
-      nfsd: unsupported nfs4 ops should fail with nfserr_opnotsupp
-      nfsd: nfs4 minorversion decoder vectors
-      nfsd: dprint operation names
-      nfsd: tabulate nfs4 xdr encoding functions
-      nfsd: take file and mnt write in nfs4_upgrade_open
-
-Chuck Lever (1):
-      lockd: Pass "struct sockaddr *" to new failover-by-IP function
-
-Harvey Harrison (1):
-      nfsd: nfs4xdr.c do-while is not a compound statement
-
-J. Bruce Fields (9):
-      nfsd: remove unnecessary atomic ops
-      nfsd: add dprintk of compound return
-      nfsd: remove three unused NFS4_ACE_* defines
-      nfs: rewrap NFS/RDMA documentation to 80 lines
-      Merge branch 'for-bfields' of git://linux-nfs.org/~tomtucker/xprt-switch-2.6 into for-2.6.27
-      nfsd: document open share bit tracking
-      lockd: minor svclock.c style fixes
-      lockd: get host reference in nlmsvc_create_block() instead of callers
-      nfsd: Use C99 initializers in fs/nfsd/nfs4xdr.c
-
-James Lentini (1):
-      update NFS/RDMA documentation
-
-Jeff Layton (9):
-      knfsd: clean up nfsd filesystem interfaces
-      knfsd: remove special handling for SIGHUP
-      knfsd: convert knfsd to kthread API
-      sunrpc: remove sv_kill_signal field from svc_serv struct
-      lockd: close potential race with rapid lockd_up/lockd_down cycle
-      nfsd: treat all shutdown signals as equivalent
-      lockd: nlm_release_host() checks for NULL, caller needn't
-      lockd: eliminate duplicate nlmsvc_lookup_host call from nlmsvc_testlock
-      lockd: eliminate duplicate nlmsvc_lookup_host call from nlmsvc_lock
-
-Kevin Coffman (3):
-      gss_krb5: create a define for token header size and clean up ptr location
-      gss_krb5: move gss_krb5_crypto into the krb5 module
-      gss_krb5: Use random value to initialize confounder
-
-Miklos Szeredi (2):
-      nfsd: rename MAY_ flags
-      nfsd: clean up mnt_want_write calls
-
-Neil Brown (3):
-      knfsd: Replace lock_kernel with a mutex for nfsd thread startup/shutdown locking.
-      nfsd: fix race in nfsd_nrthreads()
-      nfsd: fix spurious EACCESS in reconnect_path()
-
-NeilBrown (1):
-      knfsd: nfsd: Handle ERESTARTSYS from syscalls.
-
-Richard Kennedy (1):
-      file lock: reorder struct file_lock to save space on 64 bit builds
-
-Tom Tucker (11):
-      svcrdma: Add a type for keeping NFS RPC mapping
-      svcrdma: Use RPC reply map for RDMA_WRITE processing
-      svcrdma: Use reply and chunk map for RDMA_READ processing
-      svcrdma: Move the DMA unmap logic to the CQ handler
-      svcrdma: Add dma map count and WARN_ON
-      svcrdma: Remove unneeded spin locks from __svc_rdma_free
-      svcrdma: Remove unused wait q from svcrdma_xprt structure
-      svcrdma: Limit ORD based on client's advertised IRD
-      svcrdma: Add flush_scheduled_work to module exit function
-      svcrdma: Create a kmem cache for the WR contexts
-      svcrdma: Change WR context get/put to use the kmem cache
-
- Documentation/filesystems/nfs-rdma.txt   |  103 +++++----
- fs/lockd/svc.c                           |   33 +--
- fs/lockd/svc4proc.c                      |    7 +-
- fs/lockd/svclock.c                       |   33 +--
- fs/lockd/svcproc.c                       |    7 +-
- fs/lockd/svcsubs.c                       |   32 ++-
- fs/nfsd/lockd.c                          |    2 +-
- fs/nfsd/nfs2acl.c                        |    7 +-
- fs/nfsd/nfs3acl.c                        |    5 +-
- fs/nfsd/nfs3proc.c                       |    8 +-
- fs/nfsd/nfs4proc.c                       |   76 +++++-
- fs/nfsd/nfs4state.c                      |   49 +++-
- fs/nfsd/nfs4xdr.c                        |  392 +++++++++++++-----------------
- fs/nfsd/nfsctl.c                         |  118 +++++++---
- fs/nfsd/nfsfh.c                          |   31 ++-
- fs/nfsd/nfsproc.c                        |    9 +-
- fs/nfsd/nfssvc.c                         |  148 ++++++------
- fs/nfsd/vfs.c                            |  140 ++++++------
- include/linux/fs.h                       |    4 +-
- include/linux/lockd/lockd.h              |    8 +-
- include/linux/nfs4.h                     |    3 -
- include/linux/nfsd/nfsd.h                |   27 +-
- include/linux/nfsd/state.h               |    2 -
- include/linux/sunrpc/gss_krb5.h          |    3 +
- include/linux/sunrpc/svc.h               |    7 +-
- include/linux/sunrpc/svc_rdma.h          |   36 +++-
- net/sunrpc/auth_gss/Makefile             |    4 +-
- net/sunrpc/auth_gss/gss_krb5_crypto.c    |   10 -
- net/sunrpc/auth_gss/gss_krb5_seal.c      |   26 +-
- net/sunrpc/auth_gss/gss_krb5_unseal.c    |   16 +-
- net/sunrpc/auth_gss/gss_krb5_wrap.c      |   72 ++++---
- net/sunrpc/svc.c                         |  110 +++------
- net/sunrpc/xprtrdma/svc_rdma.c           |   35 +++
- net/sunrpc/xprtrdma/svc_rdma_recvfrom.c  |   84 +++----
- net/sunrpc/xprtrdma/svc_rdma_sendto.c    |  166 ++++++-------
- net/sunrpc/xprtrdma/svc_rdma_transport.c |  195 ++++++----------
- 36 files changed, 1042 insertions(+), 966 deletions(-)
