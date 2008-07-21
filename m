@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbYGUTp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbYGUTsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756397AbYGUTp4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 15:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbYGUTpq
+	id S1755860AbYGUTsc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 15:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754525AbYGUTsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 15:45:46 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41747 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753412AbYGUTpp (ORCPT
+	Mon, 21 Jul 2008 15:48:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60347 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754347AbYGUTsU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 15:45:45 -0400
-Date: Mon, 21 Jul 2008 14:45:43 -0500
-From: Russ Anderson <rja@sgi.com>
-To: Alex Williamson <alex.williamson@hp.com>
-Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
-       Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH 0/2] Migrate data off physical pages with corrected memory errors (Version 7)
-Message-ID: <20080721194543.GA214920@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-References: <20080718203514.GD29621@sgi.com> <87prpa88iw.fsf@basil.nowhere.org> <20080720173914.GA9409@sgi.com> <1216667499.8806.79.camel@lappy>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1216667499.8806.79.camel@lappy>
-User-Agent: Mutt/1.5.9i
+	Mon, 21 Jul 2008 15:48:20 -0400
+Date: Mon, 21 Jul 2008 12:47:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+cc: Ingo Molnar <mingo@elte.hu>, Ian Schram <ischram@telenet.be>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       wireless <linux-wireless@vger.kernel.org>, j@w1.fi
+Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
+ at 0000000000000370
+In-Reply-To: <4884E6E6.7010800@lwfinger.net>
+Message-ID: <alpine.LFD.1.10.0807211246280.31863@woody.linux-foundation.org>
+References: <20080721134506.GA27598@elte.hu> <20080721143023.GA32451@elte.hu> <20080721150446.GA17746@elte.hu> <20080721.082419.70392960.davem@davemloft.net> <4884D2F1.2030704@telenet.be> <20080721190646.GA19044@elte.hu> <4884DFEE.4060003@lwfinger.net>
+ <20080721193425.GA29287@elte.hu> <4884E6E6.7010800@lwfinger.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2008 at 01:11:39PM -0600, Alex Williamson wrote:
-> On Sun, 2008-07-20 at 12:39 -0500, Russ Anderson wrote:
-> > On Sat, Jul 19, 2008 at 12:37:11PM +0200, Andi Kleen wrote:
-> > > If you really wanted to do this you probably should hook it up
-> > > to mcelog's (or the IA64 equivalent) DIMM database
-> > 
-> > Is there an IA64 equivalent?  I've looked at the x86_64 mcelog,
-> > but have not found a IA64 version.
+
+
+On Mon, 21 Jul 2008, Larry Finger wrote:
 > 
-> There's a bit in the SAL error record that can tell you when the
-> platform thinks the page should be deallocated.  In the section header
-> (B2.2), ERROR_RECOVERY_INFO, bit 3 "Error threshold exceeded".  If you
-> use this bit, then it's a platform decision.  If you want pages to be
-> deallocated on the first hit, then have your SAL always set that bit.  I
-> believe HP systems do implement this bit in SAL using some kind of
-> heuristics.
+> Yes, I'm chasing a distinct bug. The header for mine is
+> 
+> Jul 21 12:19:37 larrylap kernel: kernel BUG at net/core/dev.c:1328!
 
-Good point.  Linux does not have that field defined.
+Ok, that one is fixed now in my tree. Or at least it's turned into a 
+warning, so the machine should work.
 
-I'll submit a real patch to Tony shortly.
--------------------------------------------------
----
- include/asm-ia64/sal.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+> With an invalid opcode, mine is likely due to stack corruption.
 
-Index: linus/include/asm-ia64/sal.h
-===================================================================
---- linus.orig/include/asm-ia64/sal.h	2008-07-18 11:32:02.000000000 -0500
-+++ linus/include/asm-ia64/sal.h	2008-07-21 14:40:47.142922279 -0500
-@@ -341,7 +341,8 @@ typedef struct sal_log_record_header {
- typedef struct sal_log_sec_header {
-     efi_guid_t guid;			/* Unique Section ID */
-     sal_log_revision_t revision;	/* Major and Minor revision of Section */
--    u16 reserved;
-+    u8 error_recovery_info;		/* Platform error recovery status */
-+    u8 reserved;
-     u32 len;				/* Section length */
- } sal_log_section_hdr_t;
- 
+No, invalid opcode is because we use the "ud2" instruction for BUG(), 
+which causes an invalid op exception. So any BUG[_ON]() will always cause 
+that on x86.
 
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+		Linus
