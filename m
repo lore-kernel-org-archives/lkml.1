@@ -1,69 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbYGUTVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043AbYGUTVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755303AbYGUTVN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 15:21:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbYGUTUz
+	id S1755043AbYGUTVn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 15:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbYGUTVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 15:20:55 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:52521 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754263AbYGUTUy (ORCPT
+	Mon, 21 Jul 2008 15:21:34 -0400
+Received: from smtp.extricom.com ([192.114.46.18]:57594 "HELO
+	smtp.extricom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753560AbYGUTVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 15:20:54 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4884E174.5030802@s5r6.in-berlin.de>
-Date: Mon, 21 Jul 2008 21:20:20 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.15) Gecko/20080719 SeaMonkey/1.1.10
+	Mon, 21 Jul 2008 15:21:33 -0400
+Message-ID: <4884E0FB.9010909@extricom.com>
+Date: Mon, 21 Jul 2008 22:18:19 +0300
+From: Eran Liberty <liberty@extricom.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [crash] kernel BUG at net/core/dev.c:1328!
-References: <20080721134506.GA27598@elte.hu>	<20080721182318.GA20940@elte.hu>	<alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org> <20080721.120052.123606398.davem@davemloft.net>
-In-Reply-To: <20080721.120052.123606398.davem@davemloft.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, eran.liberty@gmail.com
+Subject: [PATCH 2.6.26] PCI: refuse to re-add a device to a bus upon pci_scan_child_bus()
+References: <48591941.4070408@extricom.com>
+In-Reply-To: <48591941.4070408@extricom.com>
+Content-Type: multipart/mixed;
+ boundary="------------010007000203040801020203"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Linus Torvalds <torvalds@linux-foundation.org>
-> Date: Mon, 21 Jul 2008 11:35:21 -0700 (PDT)
-> 
->> Maybe the network drivers are few enough that it will get fixed, or
->> maybe the WARN_ON_ONCE() will just be removed and the rule not
->> reinforced.
->>
->> I personally suspect the latter, since it seems to happen with just
->> about _any_ random network driver, including the common and
->> well-maintained ones (ie the Gods only help us for the truly
->> odd/random cases)
-> 
-> Yes, we'll see how this plays out.
-> 
-> Ian Schram just posted a patch for the NULL pointer derfer in
-> wireless Ingo reported, so we'll see if that bug will be fixed
-> now as well.
+This is a multi-part message in MIME format.
+--------------010007000203040801020203
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-In the meantime:  Is there perhaps something obviously wrong with 
-drivers/ieee1394/eth1394.c's netdevice initialization?  We do it in 
-ether1394_add_host(), and shortly thereafter the crashing 
-ether1394_host_reset() is called.  So we have essentially
+Dear Penguins,
 
-(add host)
-	dev = alloc_netdev(...);
-	initialize various members in dev...
-	register_netdev(dev);
+As a follow up on my own post ( http://lkml.org/lkml/2008/6/18/195 ), I
+have  solved a small bug/misbehavior within the pci_scan_single_device().
 
-(host reset)
-	netif_stop_queue(dev);
-	discard some stale 1394 stuff if there were some...
-	netif_wake_queue(dev);  <-- crashes in __netif_schedule(dev);
+The misbehavior manifest itself upon calling pci_scan_child_bus() with a
+bus which already contain some devices. After scanning is done devices
+that already existed will be present twice in the PCI bus devise list.
+Once with is_added indication and once without. Trying to add this bus
+will cause a resource conflict as the same device is already present and
+initialized.
 
--- 
-Stefan Richter
--=====-==--- -=== =-=-=
-http://arcgraph.de/sr/
+This patch will simply prevent a device to be added to a pci bus list if 
+it is already there.
+
+Points to consider:
+1. I am not a PCI Guru and might have over looked the bigger picture. Is
+it OK to prevent a device of being re-added?
+2. I have decided that two devices are, in fact, the same instance if it
+has the same: vendor, device, and devfn. Is there a finer test for a
+device identity?
+
+p.s. As per http://www.kernel.org/pub/linux/docs/lkml/#s1-10 it is
+preferred for Mozilla Firefox clients to attach the patch, hence my
+patch is attached.
+
+Liberty
+
+Signed-off-by: Eran Liberty <liberty@extricom.org>
+---
+
+
+--------------010007000203040801020203
+Content-Type: text/x-patch;
+ name="refuse_readd_pci_device.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="refuse_readd_pci_device.patch"
+
+ drivers/pci/probe.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index b1724cf..e3c3ee0 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1002,11 +1002,21 @@ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
+ struct pci_dev *__ref pci_scan_single_device(struct pci_bus *bus, int devfn)
+ {
+ 	struct pci_dev *dev;
++	struct list_head *ln;
+ 
+ 	dev = pci_scan_device(bus, devfn);
+ 	if (!dev)
+ 		return NULL;
+ 
++	/* refuse to re-add a device */
++	list_for_each(ln, &bus->devices) {
++		struct pci_dev *d = pci_dev_b(ln);
++		if ((d->vendor == dev->vendor) &&
++		    (d->device == dev->device) &&
++		    (d->devfn == dev->devfn))
++			return NULL;
++	}
++
+ 	pci_device_add(dev, bus);
+ 
+ 	return dev;
+
+--------------010007000203040801020203--
