@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbYGUCCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758607AbYGUCIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758227AbYGUCCV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 22:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757482AbYGUCCE
+	id S1758607AbYGUCIf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 22:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758413AbYGUCIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 22:02:04 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:4534 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757454AbYGUCCB (ORCPT
+	Sun, 20 Jul 2008 22:08:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57792 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758404AbYGUCIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 22:02:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=ATkMhCGXkPFGeW2GlUgcEROWPEqYR/A2MTci3tFYGDq7gWO+kn7Imn0phY6xoKTLAM
-         zbRj/aghUcPIKO6IZ0qLpilXPwAvJCqlHNxQD5WuxqiIBVXbVTM8IE4rdoSi1EXe2M1U
-         Ahdkwgk4Z0KBMHQ0HBx86Yl4OLFmRsBZ36R+A=
-Date: Sun, 20 Jul 2008 21:03:49 -0500
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, airlied@redhat.com
-Subject: Suspend to RAM regression (bisected)
-Message-ID: <20080721020349.GA4328@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 20 Jul 2008 22:08:18 -0400
+Date: Sun, 20 Jul 2008 19:07:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>, netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: [PATCH 4/4] sky2: Adapt sky2 to use reworked PCI PM
+Message-Id: <20080720190742.84258d7e.akpm@linux-foundation.org>
+In-Reply-To: <200807191442.52759.rjw@sisk.pl>
+References: <200807191436.40726.rjw@sisk.pl>
+	<200807191442.52759.rjw@sisk.pl>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 19 Jul 2008 14:42:51 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-There is a suspend to RAM regression in the latest Linus tree of
-17th of july (5b664cb235e). It was working perfectly with 
-2.6.26.
+> Adapt the sky2 driver to use the reworked PCI PM.
 
-If I suspend to RAM from X with 'echo mem > /sys/power/state' the
-screen comes back very dark and I can't read anything.
-If I switch to the text console and then go back to X this problem
-is fixed and everything is ok.
+I fixed the rejects in "[PATCH 3/4] tg3: Adapt tg3 to use reworked PCI
+PM code" but this patch has too many for me to want to fix them.
 
-I bisected this regression down to c0e09200dc0813972442e550a5905a132768e56c
-("drm: reorganise drm tree to be more future proof"), and I checked that
-reverting this commit (it reverts cleanly) really makes the regression go
-away.
+As usual, please at least take a look at what's in linux-next before
+going and bypassing all that queued work.
 
-The laptop is a Vaio 64bit with Intel GM965/GL960 graphics card.
-More information about my laptop can be found here:
-http://www.ift.unesp.br/users/crmafra/dmesg-good.txt
-
+Patches 3 and 4 (which are Jeff things) depend upon patch 2, which is a
+Jesse thing.  So I will attempt to not send patches 3 and 4 (assuming 4
+gets fixed) to Jeff until Jesse has sent #2 into mainline.  This should
+be interesting.
