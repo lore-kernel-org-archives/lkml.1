@@ -1,176 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbYGUVMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYGUVNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755521AbYGUVMK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 17:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYGUVL5
+	id S1755544AbYGUVNK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 17:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbYGUVM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 17:11:57 -0400
-Received: from phunq.net ([64.81.85.152]:42806 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750881AbYGUVL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 17:11:56 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: linux-kernel@vger.kernel.org
-Subject: [RFC] A better solution to the HTree telldir problem
-Date: Mon, 21 Jul 2008 14:11:51 -0700
-User-Agent: KMail/1.9.5
-Cc: Theodore Tso <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>,
-       linux-ext4@vger.kernel.org, ext2-devel@lists.sourceforge.net
+	Mon, 21 Jul 2008 17:12:57 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:63334 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbYGUVM4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 17:12:56 -0400
+Date: Mon, 21 Jul 2008 14:12:20 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+X-X-Sender: xyzzy@t2.domain.actdsltmp
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+cc: Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: PIXIS gpio controller and gpio flags
+In-Reply-To: <20080721175357.GA1773@polina.dev.rtsoft.ru>
+Message-ID: <Pine.LNX.4.64.0807211340460.26456@t2.domain.actdsltmp>
+References: <20080717140519.GA32617@polina.dev.rtsoft.ru>
+ <20080717141335.GA2219@polina.dev.rtsoft.ru> <20080717150422.GC31932@secretlab.ca>
+ <20080717152006.GA26120@polina.dev.rtsoft.ru>
+ <fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
+ <Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
+ <20080717234201.GA15745@polina.dev.rtsoft.ru> <Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
+ <20080718100549.GA28741@polina.dev.rtsoft.ru> <Pine.LNX.4.64.0807191352040.27586@t2.domain.actdsltmp>
+ <20080721175357.GA1773@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200807211411.52007.phillips@phunq.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ted,
+On Mon, 21 Jul 2008, Anton Vorontsov wrote:
+> On Sat, Jul 19, 2008 at 02:08:01PM -0700, Trent Piepho wrote:
+>> It doesn't look like you have any way to unset the active low flag.  What if
+>> I unload the leds-gpio driver (or another gpio user) and then try to use the
+>> gpio with something else?  The active low flag is stuck on!
+>
+> Why would you want to unset the flags? It is specified in the device
+> tree, and can't be changed. Specifying different flags for the same GPIO
+> would be an error (plus, Linux forbids shared gpios, so you simply can't
+> specify one gpio for several devices).
 
-After all these years, I may have finally noticed a better approach to
-the NFS directory cookie problem in HTree.
+You can't use the same gpio for two different things at the same time, but you
+can load a driver, unload it, and then load another.
 
-Let me summarize the issue for those not privy to its horrors:
+>> Most gpio users, including leds-gpio, can handle gpios being busy.  If
+>> leds-gpio can't get one of the gpios, it rolls back all the leds it did
+>> create, doesn't drive the device and returns EBUSY.  Except with
+>> of_get_gpio() setting the flags, it will change the flags out from under
+>> whatever had the gpio already allocated!
+>
+> You're still assuming that something was allocated. It wasn't. The flag
+> was set, and it should not change. It is irrelevant if request() failed
+> or not.
 
- * The Single Unix Specification defines semantics for directory
-   traversal whereby it is permitted to create and delete directory
-   entries simultaneously with a process that reads the directory
-   entries and does something with them.
+Another driver has requested the gpio with active low NOT set.  Then the led
+driver looks up the property with active low set, which changes the flags. 
+When it tries to request the gpio it fails since the gpio is already in use. 
+The led driver handles this failure.  Except the active low flag is now set
+and the driver that was using the gpio before will now mysteriously stop
+working.  Perhaps by erasing flash instead of reading it or something nasty
+like that.
 
- * SUS specifies that a sequence of all the files in a directory will
-   be returned by the readdir call, and though it leaves unspecified
-   whether a simultaneously deleted or created directory entry will
-   appear in the sequence, it does seem to require that no entry appear
-   more than once and that no entry that existed before the during the
-   entire directory traversal be omitted.  (This is not directly stated,
-   but can be inferred from the definition of directory stream.)
-   http://www.opengroup.org/onlinepubs/009695399/functions/readdir.html
+Is this the proper way to handle a dts mistake that has two drivers trying to
+use the same gpio?  Without the gpio flags getting set when looking up the
+gpio, this situation is handled without any difficulty.
 
-The implied requirement that no pre-existing directory entry be returned 
-multiple times or be omitted poses problems for modern btree directory 
-indexing schemes, which like to move batches of entries around on disk 
-as new entries are created or old ones deleted.  Whatever the indexing 
-scheme, it is necessary to come up with some stable enumeration of 
-directory entries that satisfies the (implied) SUS requirement.  Enter 
-NFS with a monumental design blunder that makes this exceptionally 
-difficult to achieve for any modern directory indexing scheme.  You
-summarize the issues authoritavely here:
-
-   http://lkml.org/lkml/2007/4/7/159
-
-One nit: NFS v2 provides 31 bits worth of telldir cookie, not 32.  (But
-you knew that)
-
-I see that you have been busy explaining the gory details to Chris, as
-you once explained them to me:
-
-   http://oss.oracle.com/pipermail/btrfs-devel/2008-January/000460.html
-
-The code to deal with the telldir cookie problem in HTree was written by 
-one Theodore Y Ts'o in 2002, and consists of some hundreds of lines of 
-clever RB tree hacking that miraculously works so reliably that none of 
-the tens of millions of Ext3 users has had any complaint for years.  Now 
-six years after the fact, I think there is a nicer way.
-
-This is something of a duh: if HTree refrains from splitting leaves 
-while a directory traversal is in progress then a simple linear 
-traversal can be used in classic Ext2/UFS fashion, with the logical 
-file address of each directory entry serving as the telldir cookie.
-
-The idea is to disable leaf splitting during directory traversal and use 
-an alternate leaf overflow mechanism in its place.  To handle a create 
-into a full leaf when splitting is disabled, a new leaf block is 
-created having the same hash index as the current one and inserted 
-before the full leaf in the hash tree to hold the new entry and any 
-subsequent creates into the same hash bucket.  The lookup probe has to 
-be modified slightly to traverse all leaves with the same hash index.
-Or maybe this already works.
-
-HTree could opportunistically re-distribute the entries later when no 
-directory listing is in progress, or it could just leave things as they 
-are.  The fallback is quite unlikely to occur in practice, and the 
-alternative storage format is only very slightly less efficient to 
-process on lookup, and does not consume any extra space.
-
-A possible heuristic for disabling node splitting: disable on each 
-opendir until a matching number of closedirs are received, unless there 
-was a telldir in which case it stays disabled until a following readdir
-returns NULL, followed by matching closedirs.
-
-A new feature bit would be needed should the new overflow code path ever 
-be hit for a given directory (unlikely...) in which case an older 
-HTree-enabled ext3 would fall back to linear scan if somebody manages 
-to write a volume under an ungraded kernel then reboot to an older 
-kernel.  There would also be a flag in the HTree index root block that
-does not affect the volume as a whole.  I think that the way we did it,
-any unknown HTRee flag just causes a fallback to linear scan.  (If so,
-this would be a nice example of forward compatibility gone right.)
-
-Now the sticky bit where the brain damaged NFS semantics really get to
-take their best kick at us.  This mechanism has to work across NFS server
-reboots.  We can notice from the flag in the Htree index root block that 
-a particular directory went into an "NFS mode" that was never properly
-completed.  But how can we know when to take the directory out of NFS
-mode and get on with a slightly more efficient version of life?  Well.
-
-There are two kinds of NFS servers available on Linux: 1) kernel and
-2) userspace.  The kernel version is... part of the kernel, and so we
-can always know when it has mounted our volume.  We could give it a
-minute or two to reconnect to the client that was doing the readdir,
-then assume the readdir will never resume.  Otherwise, if the readdir
-does resume in that time, the client will get exactly the SUS semantics
-and things will work properly even if the server reboots again.
-
-The user space server is another story.  I have no idea how to detect
-its presence, and I doubt we need to care, because it already suffers
-from fatal flaws such as:
-
-  "some awkwardnesses in the semantics (for instance, moving a file
-  to a different directory will render its file handle invalid)"
-  http://packages.debian.org/sid/nfs-user-server
-
-Nobody should use this server, and if they do, they simply risk
-dropouts and repeated filenames in a directory listing if they go out
-of their way to abuse it.  What you would have to do to break the above
-heuristic for the user space NFS server:
-
-  * NFS client starts a directory listing
-  * Server reboots after retrieving some dirents
-  * NFS client creates some new files in the directory, splitting a
-    btree block
-  * Client side ls omits or repeats a few names.  Sob.
-  * Moral of the story is: use knfsd if you want your NFS server to
-    respect reboot semantics properly, or to operate properly at all.
-
-If the new semantics are acceptable, the payoff for adopting this simpler
-method is:
-
-  * Can use a more efficient HTree hash because we do not need to be so
-    paranoid about bucket levelling to avoid rare cases that might break
-    the RB tree approach.
-
-  * We get to use the nice shiny alternative hash mechanism that we put
-    considerable effort into building but so far have never used.
-
-  * Considerably more efficient directory traversal.
-
-  * Delete will now happen in physical create order and therefore not
-    thrash the inode table, which is a problem that HTree can currently
-    hit with large directories ant tight cache.
-
-  * Several hundred lines of special purpose code removed.  (Replaced by
-    maybe 50 different lines of special purpose code.)
-
-Drawbacks:
-
-  * Adds a new feature to knfsd to force it to advertise its presence
-    to filesystems.  On the other hand, this might be seen as a feature
-    useful to other filesystems (btrfs and jfs come to mind).
-
-  * Breaks the user space NFS server worse than it already is.  But it
-    is already fatally broken, so do we care?
-
-Regards,
-
-Daniel
+And is having a gpio used twice in the device tree really a mistake?  What if
+there are two different devices that can be attached to the gpios?  For
+example, an LED bank that can be unplugged and a serial console attached in
+its place, sharing the same connector and gpios.  Other than gpio flags
+getting set when looking up a gpio, it works fine to list both devices in the
+device tree as long as userspace has the correct driver loaded first.
