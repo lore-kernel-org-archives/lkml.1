@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbYGUV0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbYGUV1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755105AbYGUV0O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 17:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbYGUVZ5
+	id S1754866AbYGUV1c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 17:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbYGUV1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 17:25:57 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:36414 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750836AbYGUVZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 17:25:56 -0400
-Date: Tue, 22 Jul 2008 01:24:48 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, cl@linux-foundation.org,
-       davem@davemloft.net, Auke Kok <auke-jan.h.kok@intel.com>
-Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
-Message-ID: <20080721212447.GA10107@2ka.mipt.ru>
-References: <20080717214222.GA29449@elte.hu> <Pine.LNX.4.64.0807181149460.3852@sbz-30.cs.Helsinki.FI> <20080718091146.GQ6875@elte.hu> <20080721094110.GA16029@elte.hu> <84144f020807210252k68d5cf65i8c7ae3c11cecc046@mail.gmail.com> <20080721100627.GA5953@2ka.mipt.ru> <20080721105051.GA5830@elte.hu> <20080721112515.GA4777@2ka.mipt.ru> <20080721115555.GA24176@elte.hu> <20080721192138.GA27672@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080721192138.GA27672@elte.hu>
-User-Agent: Mutt/1.5.9i
+	Mon, 21 Jul 2008 17:27:22 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53999 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751783AbYGUV1V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 17:27:21 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4884FF00.30101@s5r6.in-berlin.de>
+Date: Mon, 21 Jul 2008 23:26:24 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.15) Gecko/20080719 SeaMonkey/1.1.10
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [crash] kernel BUG at net/core/dev.c:1328!
+References: <alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org>	<20080721.120052.123606398.davem@davemloft.net>	<4884E174.5030802@s5r6.in-berlin.de> <20080721.131129.244101157.davem@davemloft.net>
+In-Reply-To: <20080721.131129.244101157.davem@davemloft.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2008 at 09:21:38PM +0200, Ingo Molnar (mingo@elte.hu) wrote:
-> So it's now a strong likelyhood that this crash is a combination of 
-> e1000e+netconsole.
+David Miller wrote:
+> You should only do a netif_stop_queue() in your device
+> initialization, at the very end of ->open() processing
+> when you've fully committed to returning success.
+> 
+> You should not, in particular, be doing a netif_wake_queue()
+> before you've even done a netif_start_queue().
+> 
+> Many of these drivers are using netif_{stop,wake}_queue()
+> to stop packet flow, in particular when link state changes,
+> and netif_carrier_{on,off}() already does all of that for
+> you.
+> 
+> Really, anything outside of:
+> 
+> 1) netif_start_queue() in ->open()
+> 2) netif_stop_queue() in ->stop()
+> 3) netif_{stop,wake}_queue() in the TX packet handling path
+> 
+> is superfluous.
 
-e1000_clean_tx_irq() call looks particulary suspicious: it is called
-without adapter->tx_queue_lock in poll controller (netconsole callback)
-and with that lock in NAPI handler.
-
-Can you check kind of this patch:
-
-diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index 869544b..5f180d8 100644
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -4067,7 +4067,9 @@ static void e1000_netpoll(struct net_device *netdev)
- 	disable_irq(adapter->pdev->irq);
- 	e1000_intr(adapter->pdev->irq, netdev);
- 
-+	spin_lock(&adapter->tx_queue_lock);
- 	e1000_clean_tx_irq(adapter);
-+	spin_unlock(&adapter->tx_queue_lock);
- 
- 	enable_irq(adapter->pdev->irq);
- }
-
-
+Thanks, I wasn't aware of this.  I'll try to fix up eth1394 this way as 
+time permits.
 -- 
-	Evgeniy Polyakov
+Stefan Richter
+-=====-==--- -=== =-=-=
+http://arcgraph.de/sr/
