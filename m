@@ -1,58 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbYGUIkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758057AbYGUInS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755892AbYGUIkH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 04:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755519AbYGUIjl
+	id S1758057AbYGUInS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 04:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbYGUInJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 04:39:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:51283 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755408AbYGUIjl (ORCPT
+	Mon, 21 Jul 2008 04:43:09 -0400
+Received: from ik-out-1112.google.com ([66.249.90.176]:60050 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753570AbYGUInG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 04:39:41 -0400
+	Mon, 21 Jul 2008 04:43:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=m3jxPwyY9oqYdAo9h7Qex+CLxPUcL9fvyAcT748b+reF7IFz3GM0KAmFbmB1rZe/64
-         +XSdxCG/3u9afv3+lTtDG0A9NstmolxFGUqGD8iP5qnUb0X9EagCPSkcsxCIEAzs/Cgr
-         C5P8IeKeq3GwHv3T21JgRHujfohIo/H5bU0sI=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: remove extra calling to get ext cpuid level
-Date: Mon, 21 Jul 2008 01:39:03 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200807210138.15054.yhlu.kernel@gmail.com>
-In-Reply-To: <200807210138.15054.yhlu.kernel@gmail.com>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=H0N1auiWk+RJBZ5BAKFH6lnBUKc8++9tnKMs9DqNyCZI9i1WPJT1I6PLoZ9Ty33vdF
+         aacz1ogRXo3jG9KQMxP+doOwdWBDWps5eFZLo2id9TjoIjrK6HJl2g/Sd/rAP31BYD4O
+         QUFRj1QKSv7K96jrehpdWe+dQadt2OeOJ3O1c=
+Date: Mon, 21 Jul 2008 12:42:59 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] vfs: use kstrdup()
+Message-ID: <20080721084259.GC20011@lenovo>
+References: <4881BEF4.2020201@cn.fujitsu.com> <20080719131317.GA7027@asus> <20080719131909.GB7027@asus> <20080721052713.GY28946@ZenIV.linux.org.uk> <48842CDB.1090009@cn.fujitsu.com> <20080721070346.GA28946@ZenIV.linux.org.uk> <20080721080427.GC6662@lenovo> <20080721082857.GB28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807210139.03635.yhlu.kernel@gmail.com>
+In-Reply-To: <20080721082857.GB28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Al Viro - Mon, Jul 21, 2008 at 09:28:57AM +0100]
+| On Mon, Jul 21, 2008 at 12:04:27PM +0400, Cyrill Gorcunov wrote:
+| >  		err = mnt_alloc_id(mnt);
+| > -		if (err) {
+| > -			kmem_cache_free(mnt_cache, mnt);
+| > -			return NULL;
+| > +		if (err)
+| > +			goto err;
+| 
+| Ugh...  Labels are in a separate namespace, but really...
+| 
+| > +		if (name) {
+| > +			mnt->mnt_devname = kstrdup(name, GFP_KERNEL);
+| > +			if (!mnt->mnt_devname)
+| > +				goto err;
+| 
+| > +err:
+| > +	kmem_cache_free(mnt_cache, mnt);
+| > +	return NULL;
+| 
+| Leak; note the mnt_alloc_id() above.  Either do that kstrdup() first and
+| kfree the result on mnt_alloc_id() failure or do mnt_free_id() on kstrdup()
+| one...
+| 
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+ok, here is an update version. labels names could be not that good
+choosen (check please).
 
+		- Cyrill -
 ---
- arch/x86/kernel/cpu/common_64.c |    1 -
- 1 file changed, 1 deletion(-)
 
-Index: linux-2.6/arch/x86/kernel/cpu/common_64.c
+Index: linux-2.6.git/fs/namespace.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/common_64.c
-+++ linux-2.6/arch/x86/kernel/cpu/common_64.c
-@@ -303,7 +303,6 @@ static void __cpuinit early_identify_cpu
- 			c->x86_capability[2] = cpuid_edx(0x80860001);
+--- linux-2.6.git.orig/fs/namespace.c	2008-07-21 11:34:37.000000000 +0400
++++ linux-2.6.git/fs/namespace.c	2008-07-21 12:40:12.000000000 +0400
+@@ -112,9 +112,13 @@ struct vfsmount *alloc_vfsmnt(const char
+ 		int err;
+ 
+ 		err = mnt_alloc_id(mnt);
+-		if (err) {
+-			kmem_cache_free(mnt_cache, mnt);
+-			return NULL;
++		if (err)
++			goto out_free_cache;
++
++		if (name) {
++			mnt->mnt_devname = kstrdup(name, GFP_KERNEL);
++			if (!mnt->mnt_devname)
++				goto out_free_id;
+ 		}
+ 
+ 		atomic_set(&mnt->mnt_count, 1);
+@@ -127,16 +131,14 @@ struct vfsmount *alloc_vfsmnt(const char
+ 		INIT_LIST_HEAD(&mnt->mnt_slave_list);
+ 		INIT_LIST_HEAD(&mnt->mnt_slave);
+ 		atomic_set(&mnt->__mnt_writers, 0);
+-		if (name) {
+-			int size = strlen(name) + 1;
+-			char *newname = kmalloc(size, GFP_KERNEL);
+-			if (newname) {
+-				memcpy(newname, name, size);
+-				mnt->mnt_devname = newname;
+-			}
+-		}
  	}
+ 	return mnt;
++
++out_free_id:
++	mnt_free_id(mnt);
++out_free_cache:
++	kmem_cache_free(mnt_cache, mnt);
++	return NULL;
+ }
  
--	c->extended_cpuid_level = cpuid_eax(0x80000000);
- 	if (c->extended_cpuid_level >= 0x80000007)
- 		c->x86_power = cpuid_edx(0x80000007);
- 
+ /*
