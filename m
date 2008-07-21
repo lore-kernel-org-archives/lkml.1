@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758607AbYGUCIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbYGUCO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758607AbYGUCIf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 22:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758413AbYGUCIT
+	id S1758823AbYGUCO1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 22:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758702AbYGUCOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 22:08:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57792 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758404AbYGUCIS (ORCPT
+	Sun, 20 Jul 2008 22:14:16 -0400
+Received: from relay2.globalproof.net ([194.146.153.25]:44334 "EHLO
+	relay2.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758700AbYGUCOQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 22:08:18 -0400
-Date: Sun, 20 Jul 2008 19:07:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       pm list <linux-pm@lists.linux-foundation.org>, netdev@vger.kernel.org,
-       Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [PATCH 4/4] sky2: Adapt sky2 to use reworked PCI PM
-Message-Id: <20080720190742.84258d7e.akpm@linux-foundation.org>
-In-Reply-To: <200807191442.52759.rjw@sisk.pl>
-References: <200807191436.40726.rjw@sisk.pl>
-	<200807191442.52759.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 20 Jul 2008 22:14:16 -0400
+X-Greylist: delayed 1108 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Jul 2008 22:14:15 EDT
+From: nuclearcat@nuclearcat.com
+To: linux-kernel@vger.kernel.org
+Subject: blackfin and USB
+Date: Mon, 21 Jul 2008 04:55:38 +0300
+User-Agent: KMail/1.9.9
+Cc: idan@nicta.com.au, rgetz@blackfin.uclinux.org, cooloney@kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807210455.38681.nuclearcat@nuclearcat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Jul 2008 14:42:51 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Hi there
 
-> Adapt the sky2 driver to use the reworked PCI PM.
+I am trying to configure kernel for Blackfin (BF533). I cannot enable USB driver for host (any) till i enable PCI (and in fact there is no PCI on blackfin).
+Even if i enable it, i will have:
 
-I fixed the rejects in "[PATCH 3/4] tg3: Adapt tg3 to use reworked PCI
-PM code" but this patch has too many for me to want to fix them.
+  CC      drivers/pci/access.o
+  CC      drivers/pci/bus.o
+  CC      drivers/pci/probe.o
+drivers/pci/probe.c: In function 'pci_scan_slot':
+drivers/pci/probe.c:1024: error: implicit declaration of function 'pcibios_scan_all_fns'
 
-As usual, please at least take a look at what's in linux-next before
-going and bypassing all that queued work.
+I guess there must be a way to enable devices without enabling PCI (logically correct), or it must not call this function.
 
-Patches 3 and 4 (which are Jeff things) depend upon patch 2, which is a
-Jesse thing.  So I will attempt to not send patches 3 and 4 (assuming 4
-gets fixed) to Jeff until Jesse has sent #2 into mainline.  This should
-be interesting.
+I am using 2.6.26 vanilla kernel. 
+Btw is networking works on Blackfin with vanilla?
