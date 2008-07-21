@@ -1,136 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932219AbYGUDFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbYGUDHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932219AbYGUDFb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jul 2008 23:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932074AbYGUDD7
+	id S932186AbYGUDHa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jul 2008 23:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759045AbYGUDHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jul 2008 23:03:59 -0400
-Received: from mail.suse.de ([195.135.220.2]:33932 "EHLO mx1.suse.de"
+	Sun, 20 Jul 2008 23:07:20 -0400
+Received: from mail.windriver.com ([147.11.1.11]:54318 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759908AbYGUDD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jul 2008 23:03:56 -0400
-Message-Id: <20080721025913.231929061@suse.de>
-User-Agent: quilt/0.46_cvs20080326-18
-Date: Mon, 21 Jul 2008 04:28:27 +0200
-From: Andreas Gruenbacher <agruen@suse.de>
-To: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: [genksyms patch 4/4] Allow to ignore symbol checksum changes
-References: <20080721022823.896799736@suse.de>
-Content-Disposition: inline; filename=patches.suse/genksyms-override.diff
+	id S1759759AbYGUDHT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jul 2008 23:07:19 -0400
+Subject: Re: [PATCH]: libata-scsi: Don't start hotplug work queue if
+	hotplug is	disabled
+From: Chunbo Luo <chunbo.luo@windriver.com>
+Reply-To: chunbo.luo@windriver.com
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <48809BA0.8060500@kernel.org>
+References: <1214533246.6284.10.camel@pek-cluo>
+	 <48809BA0.8060500@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Organization: Wind River
+Date: Mon, 21 Jul 2008 11:03:05 +0800
+Message-Id: <1216609385.6358.14.camel@pek-cluo>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+X-OriginalArrivalTime: 21 Jul 2008 03:05:07.0129 (UTC) FILETIME=[9445A290:01C8EADE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds an "override" keyword for use in *.symvers / *.symref files.  When a
-symbol is overridden, the symbol's old definition will be used for computing
-checksums instead of the new one, preserving the previous checksum.  (Genksyms
-will still warn about the change.)
+On Fri, 2008-07-18 at 22:33 +0900, Tejun Heo wrote:
+> Chunbo Luo wrote:
+> > Hi
+> > 
+> > When ata_scsi_scan_host() scan device failed, it will start a work queue
+> > unconditionally. This may cause some noisy messages. This patch fix this
+> > problem.
+> 
+> ATA_PFLAG_SCSI_HOTPLUG doesn't mean that hotplug is enabled.  It
+> indicates that EH needs to schedule a kick at SCSI's ass and make it
+> scan for discovered devices && work running on ata_aux_wq testing it
+> doesn't mean anything.  There's no synchronization.
+> 
+> >     Previously, queue_delayed_work() was started unconditionally, but if
+> >     ATA_PFLAG_SCSI_HOTPLUG is not set and we do this, the work queue may
+> >     cause multiple messages like this:
+> >     
+> >     ata3.00: WARNING: ATAPI is not supported with this driver, device ignored.
+> 
+> And this message has nothing to do with SCSI.  It's printed by libata
+> proper for several drivers which don't support ATAPI.  Did the patch
+> really kill the warning messages?  Can you please post full boot log
+> from 2.6.26 w/o the patch?
 
-This is meant to allow distributions to hide minor actual as well as fake ABI
-changes. (For example, when extra type information becomes available because
-additional headers are included, this may change checksums even though none of
-the types used have actully changed.)
+If the drivers don't support ATAPI, the hotplug task cannot find linked device,
+and it will start the hotplug task again. Which will print messages continously 
+like this.
 
-This approach also allows to get rid of "#ifdef __GENKSYMS__" hacks in the code,
-which are currently used in some vendor kernels to work around checksum changes.
+----------
+﻿ata3.00: WARNING: ATAPI is not supported with this driver, device ignored.
+﻿ata3.00: WARNING: ATAPI is not supported with this driver, device ignored.
+﻿ata3.00: WARNING: ATAPI is not supported with this driver, device ignored.
+﻿ata3.00: WARNING: ATAPI is not supported with this driver, device ignored.
+...
+------------
 
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+We should find a way to avoid this kind of noisy warning messages.
 
----
- scripts/genksyms/genksyms.c |   34 ++++++++++++++++++++++++++++++----
- scripts/genksyms/genksyms.h |    1 +
- 2 files changed, 31 insertions(+), 4 deletions(-)
-
-Index: b/scripts/genksyms/genksyms.c
-===================================================================
---- a/scripts/genksyms/genksyms.c
-+++ b/scripts/genksyms/genksyms.c
-@@ -191,11 +191,26 @@ struct symbol *__add_symbol(const char *
- 				/* fall through */ ;
- 			else if (sym->type == type &&
- 				 equal_list(sym->defn, defn)) {
-+				if (!sym->is_declared && sym->is_override) {
-+					print_location();
-+					print_type_name(type, name);
-+					fprintf(stderr, " modversion is "
-+						"unchanged\n");
-+				}
- 				sym->is_declared = 1;
- 				return sym;
- 			} else if (!sym->is_declared) {
--				status = is_unknown_symbol(sym) ?
--					STATUS_DEFINED : STATUS_MODIFIED;
-+				if (sym->is_override && flag_preserve) {
-+					print_location();
-+					fprintf(stderr, "ignoring ");
-+					print_type_name(type, name);
-+					fprintf(stderr, " modversion change\n");
-+					sym->is_declared = 1;
-+					return sym;
-+				} else {
-+					status = is_unknown_symbol(sym) ?
-+						STATUS_DEFINED : STATUS_MODIFIED;
-+				}
- 			} else {
- 				error_with_pos("redefinition of %s", name);
- 				return sym;
-@@ -229,6 +244,7 @@ struct symbol *__add_symbol(const char *
- 
- 	sym->is_declared = !is_reference;
- 	sym->status = status;
-+	sym->is_override = 0;
- 
- 	if (flag_debug) {
- 		fprintf(debugfile, "Defn for %s %s == <",
-@@ -348,9 +364,16 @@ static void read_reference(FILE *f)
- 	while (!feof(f)) {
- 		struct string_list *defn = NULL;
- 		struct string_list *sym, *def;
--		int is_extern = 0;
-+		int is_extern = 0, is_override = 0;
-+		struct symbol *subsym;
- 
- 		sym = read_node(f);
-+		if (sym && sym->tag == SYM_NORMAL &&
-+		    !strcmp(sym->string, "override")) {
-+			is_override = 1;
-+			free_node(sym);
-+			sym = read_node(f);
-+		}
- 		if (!sym)
- 			continue;
- 		def = read_node(f);
-@@ -365,8 +388,9 @@ static void read_reference(FILE *f)
- 			defn = def;
- 			def = read_node(f);
- 		}
--		add_reference_symbol(xstrdup(sym->string), sym->tag,
-+		subsym = add_reference_symbol(xstrdup(sym->string), sym->tag,
- 					      defn, is_extern);
-+		subsym->is_override = is_override;
- 		free_node(sym);
- 	}
- }
-@@ -744,6 +768,8 @@ int main(int argc, char **argv)
- 		while (visited_symbols != (struct symbol *)-1L) {
- 			struct symbol *sym = visited_symbols;
- 
-+			if (sym->is_override)
-+				fputs("override ", dumpfile);
- 			if (sym->type != SYM_NORMAL) {
- 				putc(symbol_type_name[sym->type][0], dumpfile);
- 				putc('#', dumpfile);
-Index: b/scripts/genksyms/genksyms.h
-===================================================================
---- a/scripts/genksyms/genksyms.h
-+++ b/scripts/genksyms/genksyms.h
-@@ -49,6 +49,7 @@ struct symbol {
- 	int is_extern;
- 	int is_declared;
- 	enum symbol_status status;
-+	int is_override;
- };
- 
- typedef struct string_list **yystype;
+This patch cannot kill the warning messages, but it can avoid the
+duplicate warning messages.
 
 
+
+
+> 
+> Andrew, please drop the patch from -mm.  Thanks.
+> 
