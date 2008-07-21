@@ -1,76 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbYGUOPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbYGUOQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755536AbYGUOPt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 10:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYGUOPc
+	id S1756010AbYGUOQW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 10:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbYGUOQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 10:15:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35239 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753911AbYGUOPb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 10:15:31 -0400
-Date: Mon, 21 Jul 2008 10:15:27 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Cc: Prarit Bhargava <prarit@redhat.com>
-Message-Id: <20080721141506.3720.93023.sendpatchset@prarit.bos.redhat.com>
-In-Reply-To: <20080721141501.3720.4565.sendpatchset@prarit.bos.redhat.com>
-References: <20080721141501.3720.4565.sendpatchset@prarit.bos.redhat.com>
-Subject: [PATCH]: PCI: GART iommu alignment fixes
+	Mon, 21 Jul 2008 10:16:05 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:42643 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752074AbYGUOQE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 10:16:04 -0400
+Message-ID: <488499FD.5090300@s5r6.in-berlin.de>
+Date: Mon, 21 Jul 2008 16:15:25 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+References: <20080720.104411.81744468.davem@davemloft.net> <20080721135024.GA18320@elte.hu>
+In-Reply-To: <20080721135024.GA18320@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pci_alloc_consistent/dma_alloc_coherent is supposed to return size aligned
-addresses.
+Ingo Molnar wrote:
+> I'm wondering, couldnt we warn about the removed pci express support via 
+> the kernel log? Some simple printk. (Perhaps also with a default-off 
+> .config option that shuts up this warning for users who intentionally 
+> boot E1000=y without e1000e support.)
 
->From Documentation/DMA-mapping.txt:
-
-"pci_alloc_consistent returns two values: the virtual address which you
-can use to access it from the CPU and dma_handle which you pass to the
-card.
-
-The cpu return address and the DMA bus master address are both
-guaranteed to be aligned to the smallest PAGE_SIZE order which
-is greater than or equal to the requested size.  This invariant
-exists (for example) to guarantee that if you allocate a chunk
-which is smaller than or equal to 64 kilobytes, the extent of the
-buffer you receive will not cross a 64K boundary."
-
-Fix the GART's alloc_iommu code to return a size aligned address.  Also fix
-an incorrect alignment calculation in the iommu-helper code.
-
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index faf3229..329718e 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -96,11 +96,12 @@ static unsigned long alloc_iommu(struct device *dev, int size)
- 
- 	spin_lock_irqsave(&iommu_bitmap_lock, flags);
- 	offset = iommu_area_alloc(iommu_gart_bitmap, iommu_pages, next_bit,
--				  size, base_index, boundary_size, 0);
-+				  size, base_index, boundary_size, size - 1);
- 	if (offset == -1) {
- 		need_flush = 1;
- 		offset = iommu_area_alloc(iommu_gart_bitmap, iommu_pages, 0,
--					  size, base_index, boundary_size, 0);
-+					  size, base_index, boundary_size,
-+					  size - 1);
- 	}
- 	if (offset != -1) {
- 		set_bit_string(iommu_gart_bitmap, offset, size);
-diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-index a3b8d4c..b970f1b 100644
---- a/lib/iommu-helper.c
-+++ b/lib/iommu-helper.c
-@@ -16,7 +16,7 @@ again:
- 	index = find_next_zero_bit(map, size, start);
- 
- 	/* Align allocation */
--	index = (index + align_mask) & ~align_mask;
-+	index = (index + align_mask + 1) & ~align_mask;
- 
- 	end = index + nr;
- 	if (end >= size)
+e1000_init_module() already has two printk()s.  A third unconditional
+one won't hurt a lot.  The first two could also be joined.
+-- 
+Stefan Richter
+-=====-==--- -=== =-=-=
+http://arcgraph.de/sr/
