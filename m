@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbYGUSKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752800AbYGUSPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752756AbYGUSKx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 14:10:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbYGUSKp
+	id S1752800AbYGUSPh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 14:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbYGUSPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 14:10:45 -0400
-Received: from web50711.mail.re2.yahoo.com ([206.190.38.163]:48137 "HELO
-	web50711.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750763AbYGUSKp (ORCPT
+	Mon, 21 Jul 2008 14:15:30 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:49537 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbYGUSP3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 14:10:45 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Jul 2008 14:10:45 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=rmJYp7rIsIL3YUpAsGBs0xATWknBMMdWSaoIVM6/1n1kogN08C6w17ZI2suE1nvOPjCod+NgX1SWB7322n9i2rr9ZSbF0AAOy59nDQig/i4fTwR5aVrc2OPQEHvYQENm1Ro6bqfIqauS8NmIIaquZAaRBb189epB0sSh6sfNHgk=;
-X-Mailer: YahooMailWebService/0.7.218
-Date: Mon, 21 Jul 2008 11:04:03 -0700 (PDT)
-From: soohoon lee <soohoon_lee@yahoo.com>
-Reply-To: soohoon_lee@yahoo.com
-Subject: Question: queuing timer interrupts
-To: linux-kernel@vger.kernel.org
+	Mon, 21 Jul 2008 14:15:29 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Eric Paris <eparis@redhat.com>
+Subject: Re: request for comment: generic kernel interface for malware vendors
+Date: Mon, 21 Jul 2008 20:14:17 +0200
+User-Agent: KMail/1.9.9
+Cc: malware-list@lists.printk.net, linux-kernel@vger.kernel.org
+References: <1216613887.2960.18.camel@localhost.localdomain>
+In-Reply-To: <1216613887.2960.18.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <105452.56459.qm@web50711.mail.re2.yahoo.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807212014.17296.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Montag, 21. Juli 2008 schrieb Eric Paris:
+> First I'd like to thank Sophos who stepped up and originally wrote a lot
+> of this code.  They might not recognize it since I've gotten my hands on
+> it, but they were nice enough to get the ball rolling by giving me some
+> GPL code which addressed near every request people on the malware list
+> had.
 
-Hi,
-I like to ask you experts what would be a better way to solve following problem and side effects of my solution.
+I have not looked at the code, but if I remember correctly there was another 
+GPLed code for file access scanning. It was called dazuko. Google gave me  
+http://en.wikipedia.org/wiki/Dazuko
 
-There is a system and sometimes it should unavoidably block interrupts for critical jobs for couple of 10ms so will lost timer ticks.
-But keeping the wall clock is also critical.
-I thought about two solutions.
-1. update wall clock when OS gets out of the critical section.
-2. Add a hardware to count lost timer ticks, it's easy for this system.
-   So when the OS is able to process interrupts again, the hardware generates timer interrupts back to back to compensate lost ticks.
+Maybe you can get some ideas from there as well?
 
-Thanks in advance,
-Soohoon.
-
-
-
-      
+Christian
