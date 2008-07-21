@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbYGUGId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYGUGNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757484AbYGUGId (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 02:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbYGUGIY
+	id S1757983AbYGUGNu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 02:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbYGUGNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 02:08:24 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52794 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbYGUGIX (ORCPT
+	Mon, 21 Jul 2008 02:13:42 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:18629 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbYGUGNl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 02:08:23 -0400
-Subject: Re: [PATCH 0/22] Introducing asm/syscalls.h
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, kernelnewbies <kernelnewbies@nl.linux.org>,
-       David Woodhouse <dwmw2@infradead.org>, rth@twiddle.net,
-       rmk@arm.linux.org.uk, hskinnemoen@atmel.com, cooloney@kernel.org,
-       starvik@axis.com, dhowells@redhat.com, ysato@users.sourceforge.jp,
-       tony.luck@intel.com, takata@linux-m32r.org, geert@linux-m68k.org,
-       ralf@linux-mips.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
-       chris@zankel.net
-In-Reply-To: <20080721055459.GD24246@parisc-linux.org>
-References: <1216592500.3679.14.camel@jaswinder.satnam>
-	 <20080721002837.GA3851@martell.zuzino.mipt.ru>
-	 <1216619100.2705.27.camel@jaswinder.satnam>
-	 <20080721055459.GD24246@parisc-linux.org>
-Content-Type: text/plain; charset=utf8
-Date: Mon, 21 Jul 2008 11:37:14 +0530
-Message-Id: <1216620434.2705.38.camel@jaswinder.satnam>
+	Mon, 21 Jul 2008 02:13:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=lQQyKs1hhEVTErVkXq85jcgp1nCqCzd1xoeZKpk8J853/vHrQ9CHqbTkS8mWWKOgiw
+         wuNF6J931MBwy6LHgfAIjRo3nPIueA5n+3qexp2RfV+4WsXIyFRn79YmbMFkvi+0H8oX
+         /wCKcS92eLRb+2YqrdJKKR2THuqDNgWplNQsE=
+Subject: Re: linux-next: please hold off 2.6.28 stuff
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080721135108.d4ca4be5.sfr@canb.auug.org.au>
+References: <20080721135108.d4ca4be5.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Sun, 20 Jul 2008 23:13:41 -0700
+Message-Id: <1216620821.13328.14.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Matthew,
-
-On Sun, 2008-07-20 at 23:55 -0600, Matthew Wilcox wrote:
-
-> I think it makes more sense to add them to linux/syscall.h, possibly
-> with comments mentioning which architectures implement them.
+On Mon, 2008-07-21 at 13:51 +1000, Stephen Rothwell wrote:
+> Hi all,
 > 
-> If there are architectures with different prototypes for the same
-> syscall, using an ifdef CONFIG_(arch) is /better/ annotation that having
-> them in different header files.
+> Andrew mentioned this and I just thought I would reinforce the message:
 > 
+> Please do not put 2.6.28 code into linux-next until at least after -rc1.
+> This will help Andrew's sanity :-)
 
-﻿linux/syscalls.h is Linux syscall interfaces (non-arch-specific)
+I would say let -rc2 be the flag for putting things for the next (2.6.28) release
+into -next.  That would give akpm time to get his load in as well.
+Between -rc1 and -rc2, he could look at -next to see what patches were
+picked up by maintainers and what he'll still have to send in himself.
 
-So asm/syscalls.h is ﻿Linux syscall interfaces (arch-specific)
+But it's not me doing the work :-)
 
-And if we add all arch dependent syscalls.h in linux/syscalls then it
-will be very complex and do not look nice, for example sys_fork is keep
-on changing for many architecture.
+Keep up the good work Stephen/AKPM.
 
-Thank you,
-
-Jaswinder Singh.
+Harvey
 
