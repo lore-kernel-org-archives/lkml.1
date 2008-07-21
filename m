@@ -1,128 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbYGUTh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755695AbYGUTk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756230AbYGUTh5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 15:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbYGUTho
+	id S1755695AbYGUTk2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 15:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbYGUTkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 15:37:44 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:54918 "EHLO
-	pd6mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753560AbYGUThm (ORCPT
+	Mon, 21 Jul 2008 15:40:17 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:8515 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753446AbYGUTkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 15:37:42 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=u0jdh05EA0H1Dcq6ppUA:9 a=tOf0uBgXWf4bEhcg3Q0A:7 a=QlAMUVgZxDJAGZh1WWZdZjZkiJkA:4 a=Gr1l-fY1kBQA:10 a=CDgK0yFw8z8A:10
-Message-ID: <4884E585.2050104@shaw.ca>
-Date: Mon, 21 Jul 2008 13:37:41 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Mon, 21 Jul 2008 15:40:16 -0400
+Date: Mon, 21 Jul 2008 21:40:00 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Russ Anderson <rja@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
+       Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org
+Subject: Re: [PATCH 0/2] Migrate data off physical pages with corrected memory errors (Version 7)
+Message-ID: <20080721194000.GE29543@basil.nowhere.org>
+References: <20080718203514.GD29621@sgi.com> <87prpa88iw.fsf@basil.nowhere.org> <20080720173914.GA9409@sgi.com>
 MIME-Version: 1.0
-To: Tomas Styblo <tripie@cpan.org>
-CC: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       usb-storage@lists.one-eyed-alien.net
-Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device
- 152d:2338
-References: <fa.eWQqoO1e4Mdhu8SK5jzMFAI/3NU@ifi.uio.no>
-In-Reply-To: <fa.eWQqoO1e4Mdhu8SK5jzMFAI/3NU@ifi.uio.no>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080720173914.GA9409@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 21 Jul 2008 19:39:56.0533 (UTC) FILETIME=[8DEDE250:01C8EB69]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(adding CCs)
+On Sun, Jul 20, 2008 at 12:39:14PM -0500, Russ Anderson wrote:
+> The patch has a module for IA64, based on experience on IA64 hardware.
+> It is a first step, to get the basic functionality in the kernel.
 
-Tomas Styblo wrote:
-> 
-> Hello,
-> 
-> this message includes a patch that provides a workaround for
-> a silent data corruption bug caused by incorrect error handling in
-> the JMicron JM20337 Hi-Speed USB to SATA & PATA Combo Bridge chipset,
-> USB device id 152d:2338.
-> 
-> 
-> - the problem occurs quite rarely, approx. once for 
->   every 20 GB of transfered data during heavy load
-> 
-> - it seems that only read operations are affected
-> 
-> - the problem is accompanied by these messages in syslog each
->   time it occurs:
-> 
-> May 17 15:06:56 kernel: sd 6:0:0:0: [sdb] Sense Key : 0x0 [current] 
-> May 17 15:06:56 kernel: sd 6:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
-> 
-> - the bug is not detected as an error and incorrect data is returned, 
->   causing insidious data corruption
-> 
-> - tested with 3 external disk enclosures (Akasa Integral AK-ENP2SATA-BL) 
->   with different disks on different computers, with kernel 2.6.24 and 2.6.25
-> 
-> - the patch provides a crude workaround by detecting the error condition
->   and retrying the faulty transfer
-> 
-> 
-> The fix needs a review as I don't know much about USB and SCSI.  
-> It's possible that this approach is wrong and that the problem should
-> be fixed somewhere else.
-> 
-> There are other problems with this chipset that make it necessary 
-> to disconnect and power off the enclosure from time to time, but at least
-> there's no data corruption anymore.
+The basic functionality doesn't seem flexible enough for me 
+for useful policies.
 
-I'm not sure this is a good approach. More that this code right above in 
-usb_stor_invoke_transport, which your code undoes the effect of for this 
-device, doesn't seem right:
+> (~20,000 in one customer system).  So disabling the memory on a
+> DIMM with a flaky connector is a small percentage of overall memory.
+> On a large NUMA machine the flaky DIMM connector would only effect
+> memory on one node.
 
-	/* If things are really okay, then let's show that.  Zero
-	 * out the sense buffer so the higher layers won't realize
-	 * we did an unsolicited auto-sense. */
-	if (result == USB_STOR_TRANSPORT_GOOD &&
-		/* Filemark 0, ignore EOM, ILI 0, no sense */
-			(srb->sense_buffer[2] & 0xaf) == 0 &&
-		/* No ASC or ASCQ */
-			srb->sense_buffer[12] == 0 &&
-			srb->sense_buffer[13] == 0) {
-		srb->result = SAM_STAT_GOOD;
-		srb->sense_buffer[0] = 0x0;
-	}
+You would still lose significant parts of that node, won't you?
+Even on the large systems people might miss a node or two.
 
-So if the transport initially gets a failure, but then request sense 
-doesn't show any error, we just go "hmm, guess it was ok after all". 
-That seems kind of dangerous, I shouldn't think we should assume a 
-successful transfer occurred if we got any kind of error.
+> A good enhancement would be to migrate all the data off a DRAM and/or
+> DIMM when a threshold is exceeded.  That would take knowledge of the
+> physical memory to memory map layout.  
 
-If you just delete that code above, does the corruption go away?
+Would be probably difficult to teach this the kernel in a nice generic
+way. In particular interleaving is difficult.
 
-Original attached patch was (likely whitespace damaged now):
+> > If you really wanted to do this you probably should hook it up
+> > to mcelog's (or the IA64 equivalent) DIMM database
+> 
+> Is there an IA64 equivalent?  I've looked at the x86_64 mcelog,
+> but have not found a IA64 version.
 
---- linux-2.6.25.9/drivers/usb/storage/transport.c.orig	2008-06-24 
-23:09:06.000000000 +0200
-+++ linux-2.6.25.9/drivers/usb/storage/transport.c	2008-07-20 
-05:14:32.000000000 +0200
-@@ -661,6 +661,21 @@ void usb_stor_invoke_transport(struct sc
-  			srb->result = SAM_STAT_GOOD;
-  			srb->sense_buffer[0] = 0x0;
-  		}
-+
-+        /* JMicron JM20337 chipset bug workaround - BEGIN */
-+		if (us->pusb_dev->descriptor.idVendor == 0x152d &&
-+            us->pusb_dev->descriptor.idProduct == 0x2338 &&
-+            result == USB_STOR_TRANSPORT_FAILED &&
-+			/* Filemark 0, ignore EOM, ILI 0, no sense */
-+				(srb->sense_buffer[2] & 0xaf) == 0 &&
-+			/* No ASC or ASCQ */
-+				srb->sense_buffer[12] == 0 &&
-+				srb->sense_buffer[13] == 0) {
-+            printk(KERN_WARNING "USB Storage - Working around the 
-JMicron JM20337 chipset bug (idVendor=%04x, idProduct=%04x, NO_SENSE, 
-ASC=0, ASCQ=0) - retrying the read operation\n", 
-us->pusb_dev->descriptor.idVendor, us->pusb_dev->descriptor.idProduct);
-+		    srb->result = (DID_ERROR << 16) | (SUGGEST_RETRY << 24);
-+            return;
-+        }
-+        /* JMicron JM20337 chipset bug workaround - END */
-  	}
+There's a sal logger process in user space I believe, but I have never looked 
+at it. It could do these things in theory.
+Also in the IA64 case the firmware can actually tell the kernel
+what to do because it gets involved here (and firmware often
+has usable heuristics for this case) 
 
-  	/* Did we transfer less than the minimum amount required? */
+> > and DIMM specific knowledge. But it's unlikely it can be really
+> > done nicely in a way that is isolated from very specific 
+> > knowledge about the underlying memory configuration.
+> 
+> Agreed.  An interface to export the physical memory configuration
+> (from ACPI tables?) would be useful.
+
+On x86 there's currently only DMI/SMBIOS for this, but it has some issues.
+
+-Andi
+
