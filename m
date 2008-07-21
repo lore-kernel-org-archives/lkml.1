@@ -1,85 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbYGUPAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbYGUPCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755560AbYGUPAT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 11:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbYGUO77
+	id S1754677AbYGUPCx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 11:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYGUPCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 10:59:59 -0400
-Received: from mx2.suse.de ([195.135.220.15]:40364 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751565AbYGUO76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 10:59:58 -0400
-Date: Mon, 21 Jul 2008 17:00:37 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Greg KH <gregkh@suse.de>,
-       kexec <kexec@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-next@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, kernel-testers@vger.kernel.org
-Subject: Re: linux-next: Tree for July 18: warning at kernel/lockdep.c:2068
- trace_hardirqs_on_caller
-Message-ID: <20080721170037.1a0046b1@halley.suse.de>
-In-Reply-To: <20080721133937.GC4451@redhat.com>
-References: <19f34abd0807190255x304173d4wf2bfabb2d5bce511@mail.gmail.com>
-	<19f34abd0807190559y2fe5ebf9h7095793e82de3122@mail.gmail.com>
-	<20080719221723.GB5578@suse.de>
-	<19f34abd0807191527u61c5ed61kffe2279c8d46915d@mail.gmail.com>
-	<19f34abd0807191544nfd73be5nf7dde4b61992a7e8@mail.gmail.com>
-	<20080719225817.GA6264@suse.de>
-	<19f34abd0807191611y7cabf405iad307ba79591e04f@mail.gmail.com>
-	<1216544462.9311.20.camel@nimitz>
-	<20080721131721.GB4451@redhat.com>
-	<20080721152539.3d8684f9@halley.suse.de>
-	<20080721133937.GC4451@redhat.com>
-Organization: SUSE Linux Products GmbH
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Jul 2008 11:02:46 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:4611 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751099AbYGUPCp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 11:02:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Rp9VcS/dT1TyuYfiOnbKd2M3/uN5u2/97O2E0o7HrJmOT4vhOdRLoUBjt9qIl9KHND
+         W3jFHWc7kab8PGCAanqBDOdiWvOF9mESOa+psB6aQr0Y5hx9gZmUWhlJ1GwI7Xpug2Zr
+         7BJSfGo5+4l9PQna/uF9V0B29MQwRh95FdGg8=
+Date: Mon, 21 Jul 2008 10:04:16 -0500
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, airlied@redhat.com, davem@davemloft.net
+Subject: Re: Suspend to RAM regression (bisected)
+Message-ID: <20080721150415.GA3804@localhost>
+References: <20080721020349.GA4328@localhost> <alpine.LFD.1.10.0807202119240.31863@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807202119240.31863@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vivek Goyal [2008-07-21 09:39]:
->
-> On Mon, Jul 21, 2008 at 03:25:39PM +0200, Bernhard Walle wrote:
-> > * Vivek Goyal [2008-07-21 09:17]:
-> > > 
-> > > Is /proc/iomem updated upon memory hotplug event.
+On Sun 20.Jul'08 at 21:21:06 -0700, Linus Torvalds wrote:
+> On Sun, 20 Jul 2008, Carlos R. Mafra wrote:
 > > 
-> > Yes. I just checked that (yesterday).
-> > 
-> > I think it would make sense to extend /sys/firmware/memmap on
-> > hot-plugging. Just because on reboot, the firmware will see that
-> > memory, too, and report it. However, we need a way to discriminate the
-> > originally firmware-provided memory map with later added memory. I'm
-> > not sure how that can be done, I have to think about it.
+> > I bisected this regression down to c0e09200dc0813972442e550a5905a132768e56c
+> > ("drm: reorganise drm tree to be more future proof"), and I checked that
+> > reverting this commit (it reverts cleanly) really makes the regression go
+> > away.
 > 
-> Probably use another type of RAM identifier (System RAM (hotplug)).
+> Hmm. That did almost only just renames, so maybe it's fixed by the pull I 
+> just did that added the commit "gpu: re-order GPU subdirectory vs char for 
+> AGP vs DRM startup".
 > 
-> But the point is, if /sys/devices/system/memory also represents all
-> the physical memory present in the system then it might be not be
-> justified to create another similar interface. (Until and unless there
-> is something unique about /sys/firmware/memmap).
+> I _just_ pushed out the end result, so it should be in my git tree in a 
+> couple of minutes when the mirroring finishes.
 
-But I don't see anything like a physical address there:
+Ok, I tried your new v2.6.26-5253-g14b395e and unfortunately suspend to
+RAM fails completely now. The backlight doesn't turn off and the keyboard
+leds keep blinking.
 
-  /sys/devices/system/memory/memory2:
-  -r--r--r-- 1 root root 4096 2008-07-21 15:45 phys_device
-  -r--r--r-- 1 root root 4096 2008-07-21 15:45 phys_index
-  -rw-r--r-- 1 root root 4096 2008-07-21 15:45 state
+After several boots I bisected this new regression down to 
+37437bb2e1ae8af470dfcd5b4ff454110894ccaf ("pkt_sched: Schedule qdiscs 
+instead of netdev_queue.") by David Miller. 
 
-(on a PPC64 machine where SUSE kernel has that interface enabled by
-default).
+I could not check whether reverting this commit on top of current 
+kernel fixes the problem because it does not revert cleanly.
 
+But the "good" kernels marked below with the exception of the first one 
+(5b664cb23) did not have the original regression from my report of yesterday, 
+so they were really good.
 
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
+This is the bisection log:
+
+# good: [5b664cb235e97afbf34db9c4d77f08ebd725335e] Merge branch 'upstream-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2
+git-bisect good 5b664cb235e97afbf34db9c4d77f08ebd725335e
+# bad: [14b395e35d1afdd8019d11b92e28041fad591b71] Merge branch 'for-2.6.27' of git://linux-nfs.org/~bfields/linux
+git-bisect bad 14b395e35d1afdd8019d11b92e28041fad591b71
+# good: [6ba33ac8a47d33d0b5996d24ddf66c457cd7180b] amd8111e: delete non NAPI code from the driver.
+git-bisect good 6ba33ac8a47d33d0b5996d24ddf66c457cd7180b
+# skip: [db6d8c7a4027b48d797b369a53f8470aaeed7063] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
+git-bisect skip db6d8c7a4027b48d797b369a53f8470aaeed7063
+# bad: [3a682fbd732d3d27bec722a923952b0938e8a404] pkt_sched: Fix build with NET_SCHED disabled.
+git-bisect bad 3a682fbd732d3d27bec722a923952b0938e8a404
+# good: [925068dcdc746236264d1877d3d5df656e87882a] Merge branch 'davem-next' of master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6
+git-bisect good 925068dcdc746236264d1877d3d5df656e87882a
+# bad: [17715e62a5e5c7224e5f906a4b8f9e5084100118] pkt_sched: Use per-queue locking in shutdown_scheduler_queue.
+git-bisect bad 17715e62a5e5c7224e5f906a4b8f9e5084100118
+# good: [70efce27fc3d54271519244dc5e47da4ed711dd4] net/ipv4/tcp.c: Fix use of PULLHUP instead of POLLHUP in comments.
+git-bisect good 70efce27fc3d54271519244dc5e47da4ed711dd4
+# good: [9a6d276e85aa3d8f308fc5e8de6892daeb60ae5f] core: add stat to track unresolved discards in neighbor cache
+git-bisect good 9a6d276e85aa3d8f308fc5e8de6892daeb60ae5f
+# good: [51cb6db0f5654f08a4a6bfa3888dc36a51c2df3e] mac80211: Reimplement WME using ->select_queue().
+git-bisect good 51cb6db0f5654f08a4a6bfa3888dc36a51c2df3e
+# good: [d3b753db7c4f1f37a98b51974d484fda5d86dab5] pkt_sched: Move gso_skb into Qdisc.
+git-bisect good d3b753db7c4f1f37a98b51974d484fda5d86dab5
+# bad: [37437bb2e1ae8af470dfcd5b4ff454110894ccaf] pkt_sched: Schedule qdiscs instead of netdev_queue.
+git-bisect bad 37437bb2e1ae8af470dfcd5b4ff454110894ccaf
+# good: [7698b4fcabcd790efc4f226bada1e7b5870653af] pkt_sched: Add and use qdisc_root() and qdisc_root_lock().
+git-bisect good 7698b4fcabcd790efc4f226bada1e7b5870653af
