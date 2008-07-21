@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758562AbYGUKQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758871AbYGUKQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758562AbYGUKQj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 06:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYGUKQa
+	id S1758871AbYGUKQy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 06:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758306AbYGUKQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 06:16:30 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:39277 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752040AbYGUKQ3 (ORCPT
+	Mon, 21 Jul 2008 06:16:38 -0400
+Received: from smarthost01.mail.mbr-roch.zen.net.uk ([212.23.3.140]:48616 "EHLO
+	smarthost01.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757987AbYGUKQg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 06:16:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=wdtA/ljvjK0FSP9sXkcSr954Iplhb456d693J7nkV13tQSwQfk5kNENpvXub8AU140
-         Omkq/hxHodxw/c1IliTbpRS6SVapcGgM8UhyXUAOkQjKGYGBjpnW/Oqkm6EgQwV83Q4B
-         qPSLE4gRUqb4HjaUh1+/ehQPq+mXfKCdov05g=
-Date: Mon, 21 Jul 2008 14:16:23 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] vfs: use kstrdup() and check failing allocation
-Message-ID: <20080721101623.GB7694@lenovo>
-References: <48845FAC.9070500@cn.fujitsu.com>
-MIME-Version: 1.0
+	Mon, 21 Jul 2008 06:16:36 -0400
+Date: Mon, 21 Jul 2008 11:16:27 +0100
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: David Miller <davem@davemloft.net>, adobriyan@gmail.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jeffrey.t.kirsher@intel.com
+Subject: Re: [GIT]: Networking
+Message-ID: <20080721101626.GM10471@solarflare.com>
+References: <20080720.181440.122144107.davem@davemloft.net> <20080721024056.GA4800@martell.zuzino.mipt.ru> <20080720.194856.92564555.davem@davemloft.net> <20080720.221106.201055562.davem@davemloft.net> <a4423d670807210248l1e2e6999ha462edc99002f964@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48845FAC.9070500@cn.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <a4423d670807210248l1e2e6999ha462edc99002f964@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
+X-Originating-Smarthost01-IP: [82.69.137.158]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Li Zefan - Mon, Jul 21, 2008 at 06:06:36PM +0800]
-| - use kstrdup() instead of kmalloc() + memcpy()
-| - return NULL if allocating ->mnt_devname failed
-| - mnt_devname should be const
-| 
-| Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-| ---
-| 
-|   Andrew, please drop vfs-use-kstrdup.patch
-| 
-| ---
+Alexander Beregalov wrote:
+> Hi David!
+> 
+> There is another problem on sparc64 and happymeal ethernet card.
+> 
+> when tring to up interface:
+> 
+> kernel BUG at net/core/dev.c:1328
+[...]
 
-Thanks Li. I think Al will be fine with this version.
+This is yet another driver calling netif_wake_queue() during dev_open(),
+when there is no real qdisc present.  (And yes, sfc is another of those
+drivers - I will post a patch after internal review.)
 
-So if you needed:
-Acked-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Ben.
 
-		- Cyrill -
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
