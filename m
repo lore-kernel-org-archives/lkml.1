@@ -1,65 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758684AbYGUKHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbYGUKIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758684AbYGUKHb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 06:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756408AbYGUKHS
+	id S1758756AbYGUKIb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 06:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756813AbYGUKIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 06:07:18 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:60798 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752372AbYGUKHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 06:07:17 -0400
-Date: Mon, 21 Jul 2008 14:06:27 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, cl@linux-foundation.org,
-       davem@davemloft.net
-Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison overwritten
-Message-ID: <20080721100627.GA5953@2ka.mipt.ru>
-References: <20080717214222.GA29449@elte.hu> <Pine.LNX.4.64.0807181149460.3852@sbz-30.cs.Helsinki.FI> <20080718091146.GQ6875@elte.hu> <20080721094110.GA16029@elte.hu> <84144f020807210252k68d5cf65i8c7ae3c11cecc046@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020807210252k68d5cf65i8c7ae3c11cecc046@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+	Mon, 21 Jul 2008 06:08:23 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52802 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756408AbYGUKIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 06:08:22 -0400
+Message-ID: <48845FAC.9070500@cn.fujitsu.com>
+Date: Mon, 21 Jul 2008 18:06:36 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] vfs: use kstrdup() and check failing allocation
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+- use kstrdup() instead of kmalloc() + memcpy()
+- return NULL if allocating ->mnt_devname failed
+- mnt_devname should be const
 
-On Mon, Jul 21, 2008 at 12:52:45PM +0300, Pekka Enberg (penberg@cs.helsinki.fi) wrote:
-> On Mon, Jul 21, 2008 at 12:41 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > update about this problem: just triggered another colorful crash, see
-> > below. This was with the 4K object dump patch already, maybe the dump
-> > gives a clue?
-> 
-> ...to point out the obvious:
-> 
-> > =============================================================================
-> > BUG skbuff_head_cache: Poison overwritten
-> > -----------------------------------------------------------------------------
-> >
-> > INFO: 0xf7ccc100-0xf7ccc103. First byte 0x0 instead of 0x6b
-> > INFO: Allocated in __alloc_skb+0x30/0x10e age=1 cpu=1 pid=1
-> > INFO: Freed in __kfree_skb+0x63/0x66 age=1 cpu=0 pid=0
-> > INFO: Slab 0xc1c34ca0 objects=16 used=1 fp=0xf7ccc100 flags=0x400000c3
-> > INFO: Object 0xf7ccc100 @offset=256 fp=0xf7ccc200
-> >
-> > Bytes b4 0xf7ccc0f0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
-> >  Object 0xf7ccc100:  00 00 00 00 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b ....kkkkkkkkkkkk
-> 
-> Use after free where first four bytes are zeroed.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
 
-Not that obvious...
-skb->next is cleared in lots of places, in xmit network helper
-for example, but since rest of the packet was not modified, it
-means given skb was not freed, so it will not help.
+  Andrew, please drop vfs-use-kstrdup.patch
 
-Ingo do you see other similar dumps with last byte modified?
-That's the one which can help to determine the reason.
+---
 
+ fs/namespace.c        |   24 +++++++++++++-----------
+ include/linux/mount.h |    2 +-
+ 2 files changed, 14 insertions(+), 12 deletions(-)
+
+diff --git a/fs/namespace.c b/fs/namespace.c
+index 4f6f763..e52e11f 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -112,9 +112,13 @@ struct vfsmount *alloc_vfsmnt(const char *name)
+ 		int err;
+ 
+ 		err = mnt_alloc_id(mnt);
+-		if (err) {
+-			kmem_cache_free(mnt_cache, mnt);
+-			return NULL;
++		if (err)
++			goto out_free_cache;
++
++		if (name) {
++			mnt->mnt_devname = kstrdup(name, GFP_KERNEL);
++			if (!mnt->mnt_devname)
++				goto out_free_id;
+ 		}
+ 
+ 		atomic_set(&mnt->mnt_count, 1);
+@@ -127,16 +131,14 @@ struct vfsmount *alloc_vfsmnt(const char *name)
+ 		INIT_LIST_HEAD(&mnt->mnt_slave_list);
+ 		INIT_LIST_HEAD(&mnt->mnt_slave);
+ 		atomic_set(&mnt->__mnt_writers, 0);
+-		if (name) {
+-			int size = strlen(name) + 1;
+-			char *newname = kmalloc(size, GFP_KERNEL);
+-			if (newname) {
+-				memcpy(newname, name, size);
+-				mnt->mnt_devname = newname;
+-			}
+-		}
+ 	}
+ 	return mnt;
++
++out_free_id:
++	mnt_free_id(mnt);
++out_free_cache:
++	kmem_cache_free(mnt_cache, mnt);
++	return NULL;
+ }
+ 
+ /*
+diff --git a/include/linux/mount.h b/include/linux/mount.h
+index 4374d1a..b5efaa2 100644
+--- a/include/linux/mount.h
++++ b/include/linux/mount.h
+@@ -47,7 +47,7 @@ struct vfsmount {
+ 	struct list_head mnt_child;	/* and going through their mnt_child */
+ 	int mnt_flags;
+ 	/* 4 bytes hole on 64bits arches */
+-	char *mnt_devname;		/* Name of device e.g. /dev/dsk/hda1 */
++	const char *mnt_devname;	/* Name of device e.g. /dev/dsk/hda1 */
+ 	struct list_head mnt_list;
+ 	struct list_head mnt_expire;	/* link in fs-specific expiry list */
+ 	struct list_head mnt_share;	/* circular list of shared mounts */
 -- 
-	Evgeniy Polyakov
+1.5.4.rc3
+
