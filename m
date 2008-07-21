@@ -1,64 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbYGUQEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752324AbYGUQNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752823AbYGUQEz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 12:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYGUQEp
+	id S1752324AbYGUQNn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 12:13:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYGUQNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 12:04:45 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:4011 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751406AbYGUQEo (ORCPT
+	Mon, 21 Jul 2008 12:13:33 -0400
+Received: from mga02.intel.com ([134.134.136.20]:20812 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750816AbYGUQNc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 12:04:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=fv6K45cTT+UtK3sMI53mHRpqMfzAt5VXEVtgsU0Hy4E7kfiMqRH+J3w1pHRsljy2F8
-         NTROdO9M6JbDsaYt1cZH9KMm0mMYxHmhsviro7cDuh/SiSJvLOHbafNIHYkvY2mNdG2e
-         zzlyGuyCJKAyPwNMpauT3rB6J5ooSkG6w41ig=
-Message-ID: <a4423d670807210904je651e16md5aa61c734de9bdd@mail.gmail.com>
-Date: Mon, 21 Jul 2008 20:04:43 +0400
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [GIT]: Networking
-Cc: bhutchings@solarflare.com, adobriyan@gmail.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jeffrey.t.kirsher@intel.com
-In-Reply-To: <20080721.083527.199623566.davem@davemloft.net>
+	Mon, 21 Jul 2008 12:13:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,224,1215414000"; 
+   d="scan'208";a="317119776"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080720.221106.201055562.davem@davemloft.net>
-	 <a4423d670807210248l1e2e6999ha462edc99002f964@mail.gmail.com>
-	 <20080721101626.GM10471@solarflare.com>
-	 <20080721.083527.199623566.davem@davemloft.net>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH v2 3/4] I/OAT: tcp_dma_copybreak default valuedependant onI/OAT version
+Date: Mon, 21 Jul 2008 17:13:24 +0100
+Message-ID: <7F38996F7185A24AB9071ED4950AD8C101D2CD4F@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <1216407254.18755.4.camel@dwillia2-linux.ch.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH v2 3/4] I/OAT: tcp_dma_copybreak default valuedependant onI/OAT version
+thread-index: AcjpB69wXhNCXJujRI23YcvB0tk0fgCRKyxg
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+Cc: "Nelson, Shannon" <shannon.nelson@intel.com>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+X-OriginalArrivalTime: 21 Jul 2008 16:13:25.0072 (UTC) FILETIME=[B40AFD00:01C8EB4C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/21 David Miller <davem@davemloft.net>:
-> From: Ben Hutchings <bhutchings@solarflare.com>
-> Date: Mon, 21 Jul 2008 11:16:27 +0100
->
->> Alexander Beregalov wrote:
->> > Hi David!
->> >
->> > There is another problem on sparc64 and happymeal ethernet card.
->> >
->> > when tring to up interface:
->> >
->> > kernel BUG at net/core/dev.c:1328
->> [...]
->>
->> This is yet another driver calling netif_wake_queue() during dev_open(),
->> when there is no real qdisc present.  (And yes, sfc is another of those
->> drivers - I will post a patch after internal review.)
->
-> Yep, what idiot wrote this driver? ;-)
->
-> Alexander please try this patch:
-It works, thanks.
+Williams, Dan J wrote:
+> On Fri, 2008-07-18 at 08:29 -0700, Sosnowski, Maciej wrote:
+>> I/OAT DMA performance tuning showed different optimal values
+>> of tcp_dma_copybreak for different I/OAT versions
+>> (4096 for 1.2 and 2048 for 2.0).
+>> This patch lets ioatdma driver set tcp_dma_copybreak value according
+>> to these results. 
+>> 
+>> Signed-off-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+> 
+> Let's kill some ifdef's... how about the following instead?
+> 
+> diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+> index 171cad6..1c0dafc 100644
+> --- a/drivers/dma/ioat_dma.c
+> +++ b/drivers/dma/ioat_dma.c
+> @@ -1330,6 +1330,8 @@ struct ioatdma_device *ioat_dma_probe(struct
+>  	pci_dev *pdev, if (err)
+>  		goto err_self_test;
+> 
+> +	ioat_set_tcp_copy_break(device);
+> +
+>  	dma_async_device_register(&device->common);
+> 
+>  	return device;
+> diff --git a/drivers/dma/ioatdma.h b/drivers/dma/ioatdma.h
+> index f2c7fed..23e3196 100644
+> --- a/drivers/dma/ioatdma.h
+> +++ b/drivers/dma/ioatdma.h
+> @@ -27,6 +27,7 @@
+>  #include <linux/dmapool.h>
+>  #include <linux/cache.h>
+>  #include <linux/pci_ids.h>
+> +#include <net/tcp.h>
+> 
+>  #define IOAT_DMA_VERSION  "2.04"
+> 
+> @@ -121,6 +122,20 @@ struct ioat_desc_sw {
+>  	struct dma_async_tx_descriptor async_tx;
+>  };
+> 
+> +static inline void ioat_set_tcp_copy_break(struct ioatdma_device
+> *dev) +{
+> +	#ifdef CONFIG_NET_DMA
+> +	switch (dev->version) {
+> +	case IOAT_VER_1_2:
+> +		sysctl_tcp_dma_copybreak = 4096;
+> +		break;
+> +	case IOAT_VER_2_0:
+> +		sysctl_tcp_dma_copybreak = 2048;
+> +		break;
+> +	}
+> +	#endif
+> +}
+> +
+>  #if defined(CONFIG_INTEL_IOATDMA) ||
+>  defined(CONFIG_INTEL_IOATDMA_MODULE) struct ioatdma_device
+>  				      *ioat_dma_probe(struct pci_dev
+*pdev, void __iomem
+> *iobase); 
+> diff --git a/net/core/user_dma.c b/net/core/user_dma.c
+> index 0ad1cd5..de76050 100644
+> --- a/net/core/user_dma.c
+> +++ b/net/core/user_dma.c
+> @@ -34,6 +34,7 @@
+>  #define NET_DMA_DEFAULT_COPYBREAK 4096
+> 
+>  int sysctl_tcp_dma_copybreak = NET_DMA_DEFAULT_COPYBREAK;
+> +EXPORT_SYMBOL(sysctl_tcp_dma_copybreak);
+> 
+>  /**
+>   *	dma_skb_copy_datagram_iovec - Copy a datagram to an iovec.
+
+Yes, I'm fine with this version.
+
+Regards,
+Maciej
