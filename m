@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760237AbYGUEaI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760414AbYGUEae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760237AbYGUEaI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 00:30:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYGUE35
+	id S1760414AbYGUEae (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 00:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbYGUEaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 00:29:57 -0400
-Received: from www.swissdisk.com ([216.66.254.197]:54924 "EHLO
-	swissweb.swissdisk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751414AbYGUE34 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 00:29:56 -0400
-X-Greylist: delayed 2122 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Jul 2008 00:29:56 EDT
-From: Ben Collins <ben.collins@canonical.com>
-Date: Sun, 20 Jul 2008 21:45:08 -0400
-Subject: [PATCH 3/7] bluetooth: Add quirks for a few hci_usb devices
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <24762.90.138.930.038.1036103001.ben.collins@canonical.com>
-CC: linux-bluetooth@vger.kernel.org
-Message-Id: <E1KKl4I-00068H-S6@swissweb.swissdisk.com>
+	Mon, 21 Jul 2008 00:30:23 -0400
+Received: from ns2.suse.de ([195.135.220.15]:49261 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751452AbYGUEaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 00:30:21 -0400
+From: Neil Brown <neilb@suse.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Date: Mon, 21 Jul 2008 14:30:12 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18564.4308.219240.133199@notabene.brown>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Simon Arlott <simon@fire.lp0.eu>, Daniel Walker <dwalker@mvista.com>,
+       Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [patch 3/4] fastboot: make the raid autodetect code wait for
+ all devices to init
+In-Reply-To: message from Arjan van de Ven on Sunday July 20
+References: <20080720151140.4aa7c682@infradead.org>
+	<20080720151339.6f4a83d8@infradead.org>
+	<18563.50428.659101.868745@notabene.brown>
+	<20080720163126.64b39d50@infradead.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the Dell 370 and 410 BT adapters are put into BT radio mode, they
-need to be prepared like many other Broadcom adapters.
+On Sunday July 20, arjan@infradead.org wrote:
+> On Mon, 21 Jul 2008 09:06:36 +1000
+> Neil Brown <neilb@suse.de> wrote:
+> 
+> >     if (driver_probe_done() != 0) {
+> > 	printk("md: Waiting for all devices to be available before
+> > autodetect\n" "md:  If you don't boot off raid, use
+> > raid=noautodetect\n"); do
+> 
+> 
+> how about this patch?
 
-Also, add quirk Broadcom 2046 devices with HCI_RESET.
+Well,
 
-CC: linux-bluetooth@vger.kernel.org
-Signed-off-by: Michael Frey <michael.frey@canonical.com>
-Signed-off-by: Mario Limonciello <Mario_Limonciello@Dell.com>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Signed-off-by: Ben Collins <ben.collins@canonical.com>
----
- drivers/bluetooth/hci_usb.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+> -		while (driver_probe_done() != 0)
+> +		printk(KERN_INFO "md: Waiting for all devices to be available before autodetect\n");
+> +		printk(KERN_INFO "md: If you don't use raid, use raid=noautodetect\n");
 
-diff --git a/drivers/bluetooth/hci_usb.c b/drivers/bluetooth/hci_usb.c
-index 192522e..0254a6b 100644
---- a/drivers/bluetooth/hci_usb.c
-+++ b/drivers/bluetooth/hci_usb.c
-@@ -134,6 +134,13 @@ static struct usb_device_id blacklist_ids[] = {
- 
- 	/* Dell laptop with Broadcom chip */
- 	{ USB_DEVICE(0x413c, 0x8126), .driver_info = HCI_RESET | HCI_WRONG_SCO_MTU },
-+	/* Dell Wireless 370 */
-+	{ USB_DEVICE(0x413c, 0x8156), .driver_info = HCI_RESET | HCI_WRONG_SCO_MTU },
-+	/* Dell Wireless 410 */
-+	{ USB_DEVICE(0x413c, 0x8152), .driver_info = HCI_RESET | HCI_WRONG_SCO_MTU },
-+        
-+        /* Broadcom 2046 */
-+        { USB_DEVICE(0x0a5c, 0x2151), .driver_info = HCI_RESET },
- 
- 	/* Microsoft Wireless Transceiver for Bluetooth 2.0 */
- 	{ USB_DEVICE(0x045e, 0x009c), .driver_info = HCI_RESET },
--- 
-1.5.4.3
+that's better thanks.  I'm quite happy with that.
 
+
+> +		while (driver_probe_done())
+>  			msleep(100);
+
+That's worse.  Now it really looks like a boolean that is being used
+wrongly.  It seems that driver_probe_done either returns 0 or -EBUSY,
+so I'd prefer
+
+> +		while (driver_probe_done() < 0)
+>  			msleep(100);
+
+or even
+
+> +		while (driver_probe_done() == -EBUSY)
+>  			msleep(100);
+
+though that is less robust.
+
+Thanks,
+NeilBrown
