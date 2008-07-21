@@ -1,111 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758057AbYGUInS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbYGUIoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758057AbYGUInS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 04:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbYGUInJ
+	id S1758174AbYGUIoN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 04:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYGUIn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 04:43:09 -0400
-Received: from ik-out-1112.google.com ([66.249.90.176]:60050 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753570AbYGUInG (ORCPT
+	Mon, 21 Jul 2008 04:43:58 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:31203 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753980AbYGUIn6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 04:43:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=H0N1auiWk+RJBZ5BAKFH6lnBUKc8++9tnKMs9DqNyCZI9i1WPJT1I6PLoZ9Ty33vdF
-         aacz1ogRXo3jG9KQMxP+doOwdWBDWps5eFZLo2id9TjoIjrK6HJl2g/Sd/rAP31BYD4O
-         QUFRj1QKSv7K96jrehpdWe+dQadt2OeOJ3O1c=
-Date: Mon, 21 Jul 2008 12:42:59 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
+	Mon, 21 Jul 2008 04:43:58 -0400
+Date: Mon, 21 Jul 2008 10:43:54 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Takashi Iwai <tiwai@suse.de>,
+       robert.moore@intel.com, Len Brown <lenb@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] vfs: use kstrdup()
-Message-ID: <20080721084259.GC20011@lenovo>
-References: <4881BEF4.2020201@cn.fujitsu.com> <20080719131317.GA7027@asus> <20080719131909.GB7027@asus> <20080721052713.GY28946@ZenIV.linux.org.uk> <48842CDB.1090009@cn.fujitsu.com> <20080721070346.GA28946@ZenIV.linux.org.uk> <20080721080427.GC6662@lenovo> <20080721082857.GB28946@ZenIV.linux.org.uk>
+Subject: Re: Endless ACPI errors on Linus tree (5b664cb235)
+Message-ID: <20080721084354.GB20258@basil.nowhere.org>
+References: <s5hzlof1ll2.wl%tiwai@suse.de> <87od4vqvaj.fsf@basil.nowhere.org> <s5htzencp02.wl%tiwai@suse.de> <s5hr69rz57u.wl%tiwai@suse.de> <s5hk5fjurag.wl%tiwai@suse.de> <4880DE15.76E4.0078.0@novell.com> <s5habgfdu5e.wl%tiwai@suse.de> <20080718165814.GF32051@basil.nowhere.org> <s5hmykexm53.wl%tiwai@suse.de> <488460E0.76E4.0078.0@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080721082857.GB28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <488460E0.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 21 Jul 2008 08:43:51.0346 (UTC) FILETIME=[E6730920:01C8EB0D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Al Viro - Mon, Jul 21, 2008 at 09:28:57AM +0100]
-| On Mon, Jul 21, 2008 at 12:04:27PM +0400, Cyrill Gorcunov wrote:
-| >  		err = mnt_alloc_id(mnt);
-| > -		if (err) {
-| > -			kmem_cache_free(mnt_cache, mnt);
-| > -			return NULL;
-| > +		if (err)
-| > +			goto err;
-| 
-| Ugh...  Labels are in a separate namespace, but really...
-| 
-| > +		if (name) {
-| > +			mnt->mnt_devname = kstrdup(name, GFP_KERNEL);
-| > +			if (!mnt->mnt_devname)
-| > +				goto err;
-| 
-| > +err:
-| > +	kmem_cache_free(mnt_cache, mnt);
-| > +	return NULL;
-| 
-| Leak; note the mnt_alloc_id() above.  Either do that kstrdup() first and
-| kfree the result on mnt_alloc_id() failure or do mnt_free_id() on kstrdup()
-| one...
-| 
+> That would basically mean there's no way to use the v2 fields here - all
+> the code could do is report the inconsitency, but it would have to use
+> the v1 field in any case. That's really a shame, and as before I'm
+> somewhat hesitant to do so. The only way I could easily find myself
+> doing this would be to introduce a command line option controlling the
+> behavior here, but that would need to be done outside of the ACPICA
+> code I'd assume.
+> 
+> Andi, Bob, Len?
 
-ok, here is an update version. labels names could be not that good
-choosen (check please).
+I think we should only use v1 FADT fields for now and ignore v2.
 
-		- Cyrill -
----
-
-Index: linux-2.6.git/fs/namespace.c
-===================================================================
---- linux-2.6.git.orig/fs/namespace.c	2008-07-21 11:34:37.000000000 +0400
-+++ linux-2.6.git/fs/namespace.c	2008-07-21 12:40:12.000000000 +0400
-@@ -112,9 +112,13 @@ struct vfsmount *alloc_vfsmnt(const char
- 		int err;
- 
- 		err = mnt_alloc_id(mnt);
--		if (err) {
--			kmem_cache_free(mnt_cache, mnt);
--			return NULL;
-+		if (err)
-+			goto out_free_cache;
-+
-+		if (name) {
-+			mnt->mnt_devname = kstrdup(name, GFP_KERNEL);
-+			if (!mnt->mnt_devname)
-+				goto out_free_id;
- 		}
- 
- 		atomic_set(&mnt->mnt_count, 1);
-@@ -127,16 +131,14 @@ struct vfsmount *alloc_vfsmnt(const char
- 		INIT_LIST_HEAD(&mnt->mnt_slave_list);
- 		INIT_LIST_HEAD(&mnt->mnt_slave);
- 		atomic_set(&mnt->__mnt_writers, 0);
--		if (name) {
--			int size = strlen(name) + 1;
--			char *newname = kmalloc(size, GFP_KERNEL);
--			if (newname) {
--				memcpy(newname, name, size);
--				mnt->mnt_devname = newname;
--			}
--		}
- 	}
- 	return mnt;
-+
-+out_free_id:
-+	mnt_free_id(mnt);
-+out_free_cache:
-+	kmem_cache_free(mnt_cache, mnt);
-+	return NULL;
- }
- 
- /*
+-Andi
