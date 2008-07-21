@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbYGUPHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbYGUPJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755884AbYGUPHi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 11:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYGUPH2
+	id S1756039AbYGUPJg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 11:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbYGUPJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 11:07:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49988
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751099AbYGUPH1 (ORCPT
+	Mon, 21 Jul 2008 11:09:27 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:9786 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753024AbYGUPJ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 11:07:27 -0400
-Date: Mon, 21 Jul 2008 08:07:27 -0700 (PDT)
-Message-Id: <20080721.080727.10939720.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [crash, bisected] Kernel BUG at ffffffff8079afb1
- (__netif_schedule())
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080721133059.GA30637@elte.hu>
-References: <20080720.104411.81744468.davem@davemloft.net>
-	<20080721133059.GA30637@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Jul 2008 11:09:26 -0400
+Date: Mon, 21 Jul 2008 17:09:21 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, torvalds@osdl.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Please pull ACPI tree
+Message-ID: <20080721150921.GA29543@basil.nowhere.org>
+References: <20080721114321.GA28786@basil.nowhere.org> <20080721142343.GA11345@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080721142343.GA11345@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 21 Jul 2008 15:09:18.0740 (UTC) FILETIME=[BF734D40:01C8EB43]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 21 Jul 2008 15:30:59 +0200
-
-> -tip testing on latest -git (v2.6.26-5253-g14b395e) triggered the 
-> following boot crash on a Core2Duo 64-bit testsystem:
+On Mon, Jul 21, 2008 at 04:23:43PM +0200, Ingo Molnar wrote:
 > 
-> ADDRCONF(NETDEV_UP): eth0: link is not ready
-> eth0: Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+> * Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > This reverts some double commits and a trouble some FADT patch.
+> 
+> > Andi Kleen (4):
+> >       Revert "dock: bay: Don't call acpi_walk_namespace() when ACPI is disabled."
+> 
+> in that commit log you say:
+> 
+>    Revert "dock: bay: Don't call acpi_walk_namespace() when ACPI is disabled."
+>    Revert double commit by mistake. Noticed by Thomas Gleixner.
+> 
+> it wasnt just "noticed" by Thomas, he sent a reverter patch with commit 
+> message and patch included. Why didnt you simply apply the patch from 
+> Thomas?
 
-Should be fixed by:
+Of course so that you have something to complain about. I know
+that is your favorite pastime in the last months, so I didn't want to deny
+you the fun.
 
-e1000: resolve tx multiqueue bug
+Seriously, typing in git revert is the way to apply a revert.
+I could have cut'n'pasted his commit message, but it didn't seem
+to make much difference.
 
-With the recent changes to tx mutiqueue, e1000 was not calling
-netif_start_queue() before calling netif_wake_queue().
-This causes an oops during loading of the driver.
+-Andi (who is amazed he has to write emails on trivialities like this) 
 
-(Based on commit d55b53fff0c2ddb639dca04c3f5a0854f292d982
-("igb/ixgbe/e1000e: resolve tx multiqueue bug").)
-
-Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
-Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-index f8df8bd..cf12b05 100644
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -1472,6 +1472,8 @@ e1000_open(struct net_device *netdev)
- 
- 	e1000_irq_enable(adapter);
- 
-+	netif_start_queue(netdev);
-+
- 	/* fire a link status change interrupt to start the watchdog */
- 	E1000_WRITE_REG(&adapter->hw, ICS, E1000_ICS_LSC);
- 
