@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbYGVEUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752246AbYGVE0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752622AbYGVEUc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 00:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYGVEUY
+	id S1752246AbYGVE0k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 00:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYGVE0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 00:20:24 -0400
-Received: from usul.saidi.cx ([204.11.33.34]:45558 "EHLO usul.overt.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750869AbYGVEUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 00:20:23 -0400
-Message-ID: <48855FFB.40808@overt.org>
-Date: Mon, 21 Jul 2008 21:20:11 -0700
-From: Philip Langdale <philipl@overt.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-CC: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       toshiba_acpi@memebeam.org, randy.dunlap@oracle.com
-Subject: Re: [PATCH] toshiba_acpi: Add support for bluetooth toggling	through
- rfkill
-References: <488256C1.6040802@overt.org> <20080720135239.GA14801@khazad-dum.debian.net>
-In-Reply-To: <20080720135239.GA14801@khazad-dum.debian.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 22 Jul 2008 00:26:31 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40290 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbYGVE0b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 00:26:31 -0400
+Date: Mon, 21 Jul 2008 21:26:18 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC] schedule_timeout_range()
+Message-ID: <20080721212618.42493d12@infradead.org>
+In-Reply-To: <1216699922.18980.66.camel@shinybook.infradead.org>
+References: <1216695757.18980.16.camel@shinybook.infradead.org>
+	<1216695942.18980.19.camel@shinybook.infradead.org>
+	<200807221356.29892.nickpiggin@yahoo.com.au>
+	<1216699922.18980.66.camel@shinybook.infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-RunX1: Yes
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
-> Please consider updating your patch to the new style rfkill class.  A quick
-> look at your patch shows that it would benefit from the new
-> RFKILL_STATE_HARD_BLOCKED, and maybe to some rework to separate the
-> bluetooth rfkill controller and the input device switch better.  Depending
-> on the existence of ACPI GPE events when the switch changes state on
-> Toshibas, you may even be able to get rid of some of the polling...
+On Tue, 22 Jul 2008 00:12:02 -0400
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-Well, if I can find said GPE, I'll certainly use it. A cursory glance through
-the dis-assembled AML didn't reveal anything obvious. Is there a way to log
-every single acpi event? I though acpid would receive them but it doesn't
-appear to.
+> How about 'start' and 'end'? Or 'early' and 'late'? I really don't
+> care too much what it's called.
 
-> If you rework/repost your patch, please CC Ivo (the rfkill maintainer) and
-> the linux-wireless mailing list.  If you want me to try to help review the
-> patch as well, please also add me to the CC.
-> 
+or "start" and "delta" ?
 
-I'll do this when I next get enough free time. Thanks for the feedback,
 
---phil
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
