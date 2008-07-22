@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbYGVVJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbYGVVO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756276AbYGVVJn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 17:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755301AbYGVVJd
+	id S1756124AbYGVVO1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 17:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbYGVVOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 17:09:33 -0400
-Received: from ag-out-0708.google.com ([72.14.246.247]:28798 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755198AbYGVVJc (ORCPT
+	Tue, 22 Jul 2008 17:14:11 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:1590 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753155AbYGVVOK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 17:09:32 -0400
+	Tue, 22 Jul 2008 17:14:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=b65HtWpU/IvJ17rk5bzILpjYd6zpNfM/rxj14yWGg5VEcCQ79aKOSbj2eQP3emN1Xu
-         h3vqJiOpSsA7Ie1nhYBaoA39RptLudrxCPQkQcOON8WIrBF3pK6fuxFr0Wk8WNY4wQIV
-         NdD1fkxzaw2gjA2iPebMjmELq3WKqlqEtz9Zc=
-Date: Wed, 23 Jul 2008 00:07:52 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Matt Mackall <mpm@selenic.com>
-Cc: penberg@cs.helsinki.fi, cl@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, rdunlap@xenotime.net
-Subject: Re: [RFC PATCH 4/4] kmemtrace: SLOB hooks.
-Message-ID: <20080722210751.GA14810@localhost>
-References: <1216751808-14428-1-git-send-email-eduard.munteanu@linux360.ro> <1216751808-14428-2-git-send-email-eduard.munteanu@linux360.ro> <1216751808-14428-3-git-send-email-eduard.munteanu@linux360.ro> <1216751808-14428-4-git-send-email-eduard.munteanu@linux360.ro> <1216751808-14428-5-git-send-email-eduard.munteanu@linux360.ro> <1216760035.15519.113.camel@calx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1216760035.15519.113.camel@calx>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+        h=from:to:cc:date:message-id:subject;
+        b=JgNkwnCPjqpx4ePq+zeCHWhRqRcy4RVfpCwSJLwslNEAwAxnSw/UMwst6iq96sYrWI
+         xnRaD1Mc3qI9p7+ypuaP8IvwrhIARrgnkiM/1Ld1yEgE2S1CBnuoxQJeg8ZmiJpxll/s
+         w3GetGLNbYVUnffGVB2YHzMjCtJo9awbo0S7k=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Tue, 22 Jul 2008 23:11:59 +0200
+Message-Id: <20080722211159.20478.74184.sendpatchset@localhost.localdomain>
+Subject: [PATCH 00/10] ide: make ide 'struct hd_driveid'-free
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 03:53:55PM -0500, Matt Mackall wrote:
-> 
-> On Tue, 2008-07-22 at 21:36 +0300, Eduard - Gabriel Munteanu wrote:
-> > -static inline void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
-> > +static __always_inline void *kmem_cache_alloc(struct kmem_cache *cachep,
-> > +					      gfp_t flags)
-> >  {
-> >  	return kmem_cache_alloc_node(cachep, flags, -1);
-> >  }
-> 
-> Why is this needed? builtin_return?
 
-If we don't use __always_inline, we can't be sure whether it's inlined
-or not. And we don't know if we need _THIS_IP_ or _RET_IP_ (equivalent
-to __builtin_return_address(0)). Simple, plain 'inline' does not
-guarantee GCC will inline that function, nor does it warn us if it is
-not inlined.
+Hi,
 
+This patchset (against pata tree + recently posted 'ata: add missing ATA_ID_*
+defines (take 2)' patch) converts drivers/ide/ from using struct hd_driveid to
+use 'raw' id + ATA_ID_* defines instead.  This is a part of larger project to
+remove <linux/hdreg.h> + allows us to safely use ata_id_() & co. inline helpers
+from <linux/ata.h> in drivers/ide/.
+
+patches:
+ #01-02 - drive-by fixes
+ #03-05 - preparatory cleanups
+ #06-07 - main conversion from struct hd_driveid to 'raw' id
+ #08-10 - use more ata_id_*() helpers in drivers/ide/
+
+diffstat:
+ drivers/ide/arm/icside.c       |    4 
+ drivers/ide/arm/palm_bk3710.c  |    3 
+ drivers/ide/ide-acpi.c         |    6 -
+ drivers/ide/ide-cd.c           |   15 +-
+ drivers/ide/ide-disk.c         |  103 +++++++++-----------
+ drivers/ide/ide-dma.c          |   62 ++++++------
+ drivers/ide/ide-floppy.c       |   14 +-
+ drivers/ide/ide-io.c           |    2 
+ drivers/ide/ide-iops.c         |  209 +++++++++++------------------------------
+ drivers/ide/ide-lib.c          |   28 ++---
+ drivers/ide/ide-probe.c        |  164 ++++++++++++++++----------------
+ drivers/ide/ide-proc.c         |    5 
+ drivers/ide/ide-tape.c         |    7 -
+ drivers/ide/ide-taskfile.c     |    6 -
+ drivers/ide/ide-timings.c      |   23 ++--
+ drivers/ide/ide.c              |   67 ++++++++++---
+ drivers/ide/legacy/qd65xx.c    |   26 ++---
+ drivers/ide/pci/alim15x3.c     |    4 
+ drivers/ide/pci/cs5530.c       |   12 +-
+ drivers/ide/pci/hpt366.c       |    8 -
+ drivers/ide/pci/it821x.c       |   55 +++++-----
+ drivers/ide/pci/pdc202xx_new.c |    4 
+ drivers/ide/pci/pdc202xx_old.c |    8 -
+ drivers/ide/pci/sc1200.c       |   12 +-
+ drivers/ide/pci/serverworks.c  |    4 
+ drivers/ide/pci/siimage.c      |    8 -
+ drivers/ide/ppc/pmac.c         |    6 -
+ drivers/scsi/ide-scsi.c        |   13 +-
+ include/linux/ide.h            |   32 +++---
+ 29 files changed, 438 insertions(+), 472 deletions(-)
