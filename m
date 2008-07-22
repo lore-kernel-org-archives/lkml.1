@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYGVMem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbYGVMg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044AbYGVMem (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 08:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYGVMed
+	id S1755528AbYGVMg4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 08:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYGVMgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 08:34:33 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:38036 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752609AbYGVMec (ORCPT
+	Tue, 22 Jul 2008 08:36:49 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:53359 "EHLO
+	localhost.localdomain" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752320AbYGVMgs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 08:34:32 -0400
-Subject: Re: [PATCH] iwlwifi: Enable packet injection for iwl4965
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Stefanik =?ISO-8859-1?Q?G=E1bor?= <netrolller.3d@gmail.com>
-Cc: Zhu Yi <yi.zhu@intel.com>, "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       ipw3945-devel <ipw3945-devel@lists.sourceforge.net>,
-       Tomas Winkler <tomasw@gmail.com>,
-       Tomas Winkler <tomas.winkler@intel.com>,
-       Marco Schuster <marco@harddisk.is-a-geek.org>
-In-Reply-To: <69e28c910807220454q7c8371e1m11b1015ed8398758@mail.gmail.com> (sfid-20080722_135431_738411_383A0B3C)
-References: <69e28c910807181205m6dd0cdcek83f9717bf1ac9dcc@mail.gmail.com>
-	 <69e28c910807220454q7c8371e1m11b1015ed8398758@mail.gmail.com>
-	 (sfid-20080722_135431_738411_383A0B3C)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-+Gs8kXzWfK2x+DNoMHEG"
-Date: Tue, 22 Jul 2008 14:33:28 +0200
-Message-Id: <1216730008.3222.0.camel@johannes.berg>
+	Tue, 22 Jul 2008 08:36:48 -0400
+X-Greylist: delayed 3543 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Jul 2008 08:36:47 EDT
+Subject: pro_arm_davinci_watchdog_fix.patch
+From: Egorov Evgeny <eegorov@ru.mvista.com>
+Reply-To: eegorov@ru.mvista.com
+To: wim@iguana.be
+Cc: linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary="=-A2HJGaIfb/Z78I7wTL+8"
+Date: Tue, 22 Jul 2008 15:36:39 +0400
+Message-Id: <1216726599.3538.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.10.3 (2.10.3-10.fc7) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-+Gs8kXzWfK2x+DNoMHEG
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+--=-A2HJGaIfb/Z78I7wTL+8
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Tue, 2008-07-22 at 13:54 +0200, Stefanik G=C3=A1bor wrote:
+This patch fix bug of watchdog driver's write fuction which allow to
+prevent wdt timeout.  
 
-> What is the status of this patch? Did it get lost? Was it rejected? I
-> didn't get any answer on it, and I can't see it in iwlwifi-2.6.git or
-> wireless-testing.git.
+--=-A2HJGaIfb/Z78I7wTL+8
+Content-Disposition: attachment; filename=pro_arm_davinci_watchdog_fix.patch
+Content-Transfer-Encoding: base64
+Content-Type: text/x-patch; name=pro_arm_davinci_watchdog_fix.patch; charset=UTF-8
 
-It's OLS. Wait a week :)
+U291cmNlOiBNb250YVZpc3RhIFNvZnR3YXJlLCBJbmMuIA0KTVI6MjY4MzMgDQpUeXBlOiBGaXgg
+QnVnIA0KRGlzcG9zaXRpb246IFN1Ym1pdHRlZCB0byBXaW0gdmFuIFNlYnJvZWsNClNpZ25lZC1v
+ZmYtYnk6IEVnb3JvdiBFdmdlbnkgPGVlZ29yb3ZAcnUubXZpc3RhLmNvbT4NCkRlc2NyaXB0aW9u
+Og0KICAgIFRoaXMgcGF0Y2ggZml4IGJ1ZyBvZiB3YXRjaGRvZyBkcml2ZXIncyB3cml0ZSBmdWN0
+aW9uDQogICAgd2hpY2ggYWxsb3cgdG8gcHJldmVudCB3ZHQgdGltZW91dC4gDQoNCkluZGV4OiBs
+aW51eC0yLjYuMTgvZHJpdmVycy9jaGFyL3dhdGNoZG9nL2RhdmluY2lfd2R0LmMNCj09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT0NCi0tLSBsaW51eC0yLjYuMTgub3JpZy9kcml2ZXJzL2NoYXIvd2F0Y2hkb2cvZGF2aW5jaV93
+ZHQuYw0KKysrIGxpbnV4LTIuNi4xOC9kcml2ZXJzL2NoYXIvd2F0Y2hkb2cvZGF2aW5jaV93ZHQu
+Yw0KQEAgLTEzMywxMyArMTMzLDggQEAgc3RhdGljIHNzaXplX3QNCiBkYXZpbmNpX3dkdF93cml0
+ZShzdHJ1Y3QgZmlsZSAqZmlsZSwgY29uc3QgY2hhciAqZGF0YSwgc2l6ZV90IGxlbiwNCiAJCSAg
+bG9mZl90ICpwcG9zKQ0KIHsNCi0JLyogIENhbid0IHNlZWsgKHB3cml0ZSkgb24gdGhpcyBkZXZp
+Y2UgICovDQotCWlmIChwcG9zICE9ICZmaWxlLT5mX3BvcykNCi0JCXJldHVybiAtRVNQSVBFOw0K
+LQ0KIAlpZiAobGVuKQ0KIAkJd2R0X3NlcnZpY2UoKTsNCi0NCiAJcmV0dXJuIGxlbjsNCiB9DQog
+DQo=
 
-johannes
 
---=-+Gs8kXzWfK2x+DNoMHEG
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJIhdOVAAoJEKVg1VMiehFYcOgP/0a/xjjGfIh77YL/qdHeeHiU
-4f8Cxd+zWjz5ZOzHAOJkI0k6j7uF3cxVAnLmh/K/dxIzCuBtv05slImZC0NDYazF
-h+jHX2RKgYf32fJ1m3aXqlRFIV+glHq8mhJE61In1hwliJpp6U5fno+9ooxplP96
-GrVytYXHSGj333sSqkEf1MyLp/3Jp8dAqizWrSkKY4zZH/8uZkGDkyJOkVk0eVId
-Jpk1ajRBaWqjeXK0O4E5kwOS+4U91JjKRiOC0owdMBQBPPTFiQA3zkrYUPUvCPmh
-a1NtVU14o9NCoeJpzUTHMqLzrbRT8/lwSrqQbWGBHJOGVTw2ist9vkFV3dypQjZh
-V22yZo4yHMVEj1DSnaIPa0LtTSkH2w7L7ggm/XWRstbxw5B6fd7pP4HEDp60LYji
-vqDfS5/LZXzFkXgAqvvUzCkMxcxtpYKWAUkALrJZEykdvXZwN1DJhkEMmEBySyZM
-MhQh6hSprxvwyIpeOZDkL7cldZ+qYikwm6JrtqpVEFm3/ZguIN/QX3d9RNCLsscB
-4ae9Qemo2NtJKybnvCO9oVRaBsJu1zBidQtQBcEpNnhjOFXVj8XhUazuMar0NcTV
-pbFDEfFD9b90jPpylmDkAkU4MCsOwiRVQAfho/1BvhD2ideO+7Vu5pqZ000w3pvw
-+kT47R4xsFvv1wxBwmMm
-=iIK7
------END PGP SIGNATURE-----
-
---=-+Gs8kXzWfK2x+DNoMHEG--
-
+--=-A2HJGaIfb/Z78I7wTL+8--
