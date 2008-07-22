@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbYGVN4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbYGVN57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754099AbYGVN4r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 09:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbYGVN4i
+	id S1754278AbYGVN57 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 09:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbYGVN5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 09:56:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52943 "EHLO mx1.redhat.com"
+	Tue, 22 Jul 2008 09:57:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46661 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750770AbYGVN4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 09:56:37 -0400
-Date: Tue, 22 Jul 2008 15:56:29 +0200
-From: Michal Schmidt <mschmidt@redhat.com>
-To: David Vrabel <david.vrabel@csr.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: PCI: MSI interrupts masked using prohibited method
-Message-ID: <20080722155629.1160635e@brian.englab.brq.redhat.com>
-In-Reply-To: <48807166.9010006@csr.com>
-References: <4860D09D.4060801@csr.com>
-	<4864DA54.6000205@csr.com>
-	<200806271007.26248.jbarnes@virtuousgeek.org>
-	<200807161243.03360.jbarnes@virtuousgeek.org>
-	<20080716195853.GL25255@parisc-linux.org>
-	<487F45C0.2080201@csr.com>
-	<20080717153917.GR25255@parisc-linux.org>
-	<alpine.LFD.1.10.0807171745270.4316@apollo.tec.linutronix.de>
-	<20080717165630.GT25255@parisc-linux.org>
-	<487F7DFA.10101@csr.com>
-	<20080717194846.GU25255@parisc-linux.org>
-	<48807166.9010006@csr.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1750711AbYGVN5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 09:57:46 -0400
+Date: Tue, 22 Jul 2008 15:57:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Newall <davidn@davidnewall.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [TCP bug] stuck distcc connections in latest -git
+Message-ID: <20080722135723.GA23077@elte.hu>
+References: <20080720.104411.81744468.davem@davemloft.net> <20080721133059.GA30637@elte.hu> <20080721134506.GA27598@elte.hu> <20080721182318.GA20940@elte.hu> <alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org> <20080721184616.GA8442@elte.hu> <20080722112133.GA6575@elte.hu> <4885E482.5020502@davidnewall.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4885E482.5020502@davidnewall.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jul 2008 11:33:10 +0100
-David Vrabel <david.vrabel@csr.com> wrote:
 
-> Matthew Wilcox wrote:
-> > 
-> > I think David's original patch (just declining to mask the
-> > interrupt) is the best approach to take.  Perhaps architectures
-> > with saner interrupt hardware would like to try the approach I've
-> > mentioned here.
-> > 
-> > I don't like the comment in http://lkml.org/lkml/2008/6/27/199 as
-> > it's not prohibited ... just a bad idea.  How about this patch?
-> 
-> The PCI specification is quite clear that it's prohibited.  The
-> problem also is more severe than simply having spurious interrupts --
-> with some devices if a line interrupt is generated (regardless of
-> whether it ends up on the bus) then no more interrupts are generated.
-> 
-> I also think that the change requires a comment in the code.  It odd
-> to have a mask function that doesn't really mask so a comment is
-> necessary to explain why this is.
-> 
-> Please apply this instead.
-> 
-> David
+* David Newall <davidn@davidnewall.com> wrote:
 
-This breaks the setting of SMP affinity for MSI interrupts :-(
-With the patch, writes to /proc/irq/<n>/smp_affinity are ignored for an
-MSI interrupt.
+> > The hung condition seemed permanent (i waited a couple of minutes).
+> 
+> Not nearly long enough.  Retransmits can be sent as infrequently as 
+> per 180 seconds.  I think there's an argument to use one of the the 
+> various patches that reduce your TCP_RTO_MAX, for example OBATA 
+> Noboru's (http://marc.info/?l=linux-netdev&m=118422471428855): you 
+> don't have to wait unreasonably long before seeing a retransmit.  
+> Remember, three minutes!
 
-Michal
+i know, i waited much more than 180 minutes - about 15 minutes. That is 
+more than enough for this LAN connection.
+
+It's all on the LAN directly via a single gigabit switch and no packet 
+dropping. I noticed the hung build immediately as it happened.
+
+> > I retried the same build 10 times and it would not reproduce - so 
+> > this again is a hard to reproduce condition. (and there's no chance 
+> > to get a proper tcpdump either, at these traffic levels)
+> 
+> You really should start that capture, and on both client and server. 
+> You don't need to dump everything, only traffic to or from 
+> server:distcc.
+
+It's not feasible. That box did in excess of 200 GB of network traffic 
+in the past 7 hours alone. ~10 clients are doing make -j200 type of 
+kernel builds to this 16way buildbox so it is not realistic to tcpdump 
+it - especially given the rarity of this problem. (it has not reoccured 
+since then) The network is local LAN, gigabit ethernet over a single 
+gigabit switch.
+
+	Ingo
