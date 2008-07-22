@@ -1,97 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYGVEcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbYGVEdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbYGVEcW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 00:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYGVEcO
+	id S1755208AbYGVEdu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 00:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbYGVEdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 00:32:14 -0400
-Received: from ozlabs.org ([203.10.76.45]:36897 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750727AbYGVEcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 00:32:13 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86: fix pte_flags() to only return flags, fix lguest.
-Date: Tue, 22 Jul 2008 14:31:58 +1000
-User-Agent: KMail/1.9.9
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
+	Tue, 22 Jul 2008 00:33:41 -0400
+Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:29086 "HELO
+	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750919AbYGVEdk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 00:33:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=hUTNI8z9GDjHPfzJGHGwILbKZSuT3pf033rdov5RCrhwtf5K9RWmb6OdhZVGbt6J6xb5X93FsyYchT/gvmAlwhv8sARpKFqV9hG08GS/Sk6TBfaJ3O4C4H4mWUck7UWMi/W578pn2bOW4rgqmywlBKf0QUYiOjoqhGGqiRkD/io=  ;
+X-YMail-OSG: ygncq_4VM1kzKzF3V4pNKsSqcTgWNuKVLZ6qw7sgQVvWUHPr2ap53Ik1H2ez6XbKz5FAZwGs3lN1HyrBJ8HEcjktK4p86r8OUWdDEGphOM8jyLc4sc5o1WOhYbX_mtAZ2rE-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [RFC] schedule_timeout_range()
+Date: Tue, 22 Jul 2008 14:33:32 +1000
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, arjan@infradead.org
+References: <1216695757.18980.16.camel@shinybook.infradead.org> <200807221356.29892.nickpiggin@yahoo.com.au> <1216699922.18980.66.camel@shinybook.infradead.org>
+In-Reply-To: <1216699922.18980.66.camel@shinybook.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807221431.58991.rusty@rustcorp.com.au>
+Message-Id: <200807221433.32412.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change a15af1c9ea2750a9ff01e51615c45950bad8221b 'x86/paravirt: add
-pte_flags to just get pte flags' removed lguest's private pte_flags()
-in favor of a generic one.
+On Tuesday 22 July 2008 14:12, David Woodhouse wrote:
+> On Tue, 2008-07-22 at 13:56 +1000, Nick Piggin wrote:
+> > Rather than specific "deadline" values (which we can't guarantee anyway),
+> > or vague "can defer" values,
+>
+> We already _have_ those vague 'can defer' timers. They'll get run the
+> next time the CPU happens to be awake after they expire.
 
-Unfortunately, the generic one doesn't filter out the non-flags bits:
-this results in lguest creating corrupt shadow page tables and blowing
-up host memory.
+Right, but that may be too vague to be really useful. OK, not exactly:
+as with anything, if we really need an exact response, we have to wait
+with interrupts disabled etc. However I don't think it would hurt to
+get away from the all or nothing approach with future APIs that are added
+(eventually the old ones could just be implemented over the new).
 
-Since noone is supposed to use the pfn part of pte_flags(), it seems
-safest to always do the filtering.
 
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> >  I would prefer just a small selection of maybe orders of magnitude
+> > flags, maybe SECONDS, MILLISECONDS, MICROSECONDS which gives an amount
+> > of delay the kernel might add to the timer.
+>
+> As far as I can tell, any implementation of that ends up being converted
+> into what we have at the moment -- a deferrable timer which gets run
+> some time after it expires, and a timer which would actually _wake_ a
+> sleeping CPU. You have to create a value for that final timer anyway, so
+> why not just let the in-kernel caller provide it?
 
-diff -r ee1a6adad3d2 arch/x86/kernel/paravirt.c
---- a/arch/x86/kernel/paravirt.c	Mon Jul 21 12:49:25 2008 +1000
-+++ b/arch/x86/kernel/paravirt.c	Tue Jul 22 14:09:33 2008 +1000
-@@ -428,7 +428,7 @@ struct pv_mmu_ops pv_mmu_ops = {
- #endif /* PAGETABLE_LEVELS >= 3 */
- 
- 	.pte_val = native_pte_val,
--	.pte_flags = native_pte_val,
-+	.pte_flags = native_pte_flags,
- 	.pgd_val = native_pgd_val,
- 
- 	.make_pte = native_make_pte,
-diff -r ee1a6adad3d2 include/asm-x86/page.h
---- a/include/asm-x86/page.h	Mon Jul 21 12:49:25 2008 +1000
-+++ b/include/asm-x86/page.h	Tue Jul 22 14:09:33 2008 +1000
-@@ -144,6 +144,18 @@ static inline pteval_t native_pte_val(pt
- 	return pte.pte;
- }
- 
-+/* This belongs in pgtable.h, but our includes are too much of a mess. */
-+#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
-+#define PTE_FLAGS	_AC(0x8000000000000FFF, ULL)
-+#else
-+#define PTE_FLAGS	0x00000FFF
-+#endif
-+
-+static inline pteval_t native_pte_flags(pte_t pte)
-+{
-+	return native_pte_val(pte) & PTE_FLAGS;
-+}
-+
- #define pgprot_val(x)	((x).pgprot)
- #define __pgprot(x)	((pgprot_t) { (x) } )
- 
-@@ -165,7 +177,7 @@ static inline pteval_t native_pte_val(pt
- #endif
- 
- #define pte_val(x)	native_pte_val(x)
--#define pte_flags(x)	native_pte_val(x)
-+#define pte_flags(x)	native_pte_flags(x)
- #define __pte(x)	native_make_pte(x)
- 
- #endif	/* CONFIG_PARAVIRT */
-diff -r ee1a6adad3d2 include/asm-x86/paravirt.h
---- a/include/asm-x86/paravirt.h	Mon Jul 21 12:49:25 2008 +1000
-+++ b/include/asm-x86/paravirt.h	Tue Jul 22 14:09:33 2008 +1000
-@@ -1083,6 +1083,9 @@ static inline pteval_t pte_flags(pte_t p
- 		ret = PVOP_CALL1(pteval_t, pv_mmu_ops.pte_flags,
- 				 pte.pte);
- 
-+#ifdef CONFIG_PARAVIRT_DEBUG
-+	BUG_ON(ret & ~PTE_FLAGS);
-+#endif
- 	return ret;
- }
- 
+That is a fair point.
+
+
+> There's no point in trying to coalesce the 'final' timeouts; if just one
+> of them wakes the CPU and we're in the range for any other 'range
+> timers', those others will happy immediately anyway.
+
+Sure.
+
+
+> We did ponder the idea of a per-process setting which affects userspace
+> delays like nanosleep/poll/select, and introduces a variable extra delay
+> if the CPU is actually sleeping. So we can reduce the number of CPU
+> wakeup events for thosee userspace apps which aren't timing-sensitive.
+
+Not such a bad idea. Maybe also something to think about adding explicitly
+to future syscalls (if not a complete new parameter for delay time, then
+at least a flag or two or different variants for different amounts of
+accuracy). I guess select/poll is pretty widely used though, so there will
+be some good gains just from a per-process setting.
+
+
+> We were also thinking of extending nanosleep/ppoll/pselect also to take
+> a 'range', for those cases where the process-wide setting needs to be
+> overridden. The prctl is a simple solution which doesn't involve
+> modifying large chunks of userspace to use new system calls, but it's
+> not a panacea -- in some places, an app might _want_ a prompt wakeup.
+>
+> For kernel timers, though, I think it's better to let the caller set a
+> non-deferrable timer at a specific time. Although you're right that
+> 'deadline' is probably a bad name for it.
+>
+> How about 'start' and 'end'? Or 'early' and 'late'? I really don't care
+> too much what it's called.
+
+Well I think 'timeout' is fine for the "at least this much time", that's
+well understood and used. As for the slop... slop? deferrable? Hmm,
+precision might come pretty close to the engineering definition, no?
+
+The only thing I dislike about explicit times is that when a driver or
+someone doesn't _really_ know how much to specify. Do you say 10s, 100s?
+It shouldn't be arbitrary, but we should have a few constants I think.
+
+Some upper bound would be nice, which basically would not have to ever
+fire by itself unless there is some CPU activity (so you don't have to
+set two timers as a bonus). After that, I wonder, perhaps some "maximum
+power savings value but not completely deferred"? Say give it a max of
+30s? Or perhaps even that is not future-proof enough if we one day want
+to suspend most of the system between external IOs?
+
+if 
