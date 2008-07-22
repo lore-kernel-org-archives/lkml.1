@@ -1,62 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbYGVThg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbYGVTie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756113AbYGVThg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 15:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYGVTh1
+	id S1756562AbYGVTie (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 15:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYGVTiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 15:37:27 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48511 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750869AbYGVTh0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 15:37:26 -0400
-Subject: [git pull] x86: declaration fixes
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=utf8
-Date: Wed, 23 Jul 2008 01:06:22 +0530
-Message-Id: <1216755382.16481.4.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Tue, 22 Jul 2008 15:38:23 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:34600 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751283AbYGVTiW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 15:38:22 -0400
+Date: Tue, 22 Jul 2008 21:38:18 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: avi@qumranet.com, kvm@vger.kernel.org, xiantao.zhang@intel.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH retry] arch/ia64/kvm/kvm-ia64.c: Add local_irq_restore in
+ error handling code
+Message-ID: <Pine.LNX.4.64.0807222137350.2670@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-﻿Hello Ingo,
+From: Julia Lawall <julia@diku.dk>
 
-Here is updated patches for x86-tip.
+There is a call to local_irq_restore in the normal exit case, so it would
+seem that there should be one on an error return as well.
 
-The following changes since commit a099a9b18ab434594bb01ed920e8c58574203fa9:
-  Ingo Molnar (1):
-        Merge branch 'out-of-tree'
+The semantic patch that finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-are available in the git repository at:
+// <smpl>
+@@
+expression l;
+expression E,E1,E2;
+@@
 
-  git://git.infradead.org/users/jaswinder/linux-2.6-tip.git master
+local_irq_save(l);
+... when != local_irq_restore(l)
+    when != spin_unlock_irqrestore(E,l)
+    when any
+    when strict
+(
+if (...) { ... when != local_irq_restore(l)
+               when != spin_unlock_irqrestore(E1,l)
++   local_irq_restore(l);
+    return ...;
+}
+|
+if (...)
++   {local_irq_restore(l);
+    return ...;
++   }
+|
+spin_unlock_irqrestore(E2,l);
+|
+local_irq_restore(l);
+)
+// </smpl>
 
-Jaswinder Singh (8):
-      x86: apic_XX.c declare functions before they get used
-      x86: vm86_32.c declare functions before they get used
-      x86: mm/init_XX.c declare functions before they get used
-      x86: mm/fault.c declare do_page_fault before they get used
-      x86: mm/ioremap.c declare early_ioremap_debug and early_ioremap_nested as static
-      x86: mm/pageattr.c declare arch_report_meminfo before they get used
-      x86: mm/pgtable_32.c declare set_pmd_pfn before they get used
-      x86: mach-default/setup.c declare no_broadcast before they get used
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
- arch/x86/mach-default/setup.c |    4 +++-
- arch/x86/mm/fault.c           |    3 +--
- arch/x86/mm/init_32.c         |    1 +
- arch/x86/mm/ioremap.c         |    4 ++--
- include/asm-x86/apic.h        |    5 +++++
- include/asm-x86/hw_irq.h      |   10 ++++++++++
- include/asm-x86/page_32.h     |    1 +
- include/asm-x86/page_64.h     |    1 +
- include/asm-x86/pgtable.h     |    2 ++
- include/asm-x86/pgtable_32.h  |    1 +
- include/asm-x86/syscalls.h    |    5 ++++-
- include/asm-x86/traps.h       |    4 ++++
- 12 files changed, 35 insertions(+), 6 deletions(-)
+---
+ .../julia/linuxcopy}/arch/ia64/kvm/kvm-ia64.c      |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-
+diff --git a/home/julia/linux-2.6/arch/ia64/kvm/kvm-ia64.c b/var/julia/linuxcopy/arch/ia64/kvm/kvm-ia64.c
+index 2672f4d..7a37d06 100644
+--- a/home/julia/linux-2.6/arch/ia64/kvm/kvm-ia64.c
++++ b/var/julia/linuxcopy/arch/ia64/kvm/kvm-ia64.c
+@@ -125,9 +125,9 @@ void kvm_arch_hardware_enable(void *garbage)
+ 				PAGE_KERNEL));
+ 	local_irq_save(saved_psr);
+ 	slot = ia64_itr_entry(0x3, KVM_VMM_BASE, pte, KVM_VMM_SHIFT);
++	local_irq_restore(saved_psr);
+ 	if (slot < 0)
+ 		return;
+-	local_irq_restore(saved_psr);
+ 
+ 	spin_lock(&vp_lock);
+ 	status = ia64_pal_vp_init_env(kvm_vsa_base ?
+@@ -160,9 +160,9 @@ void kvm_arch_hardware_disable(void *garbage)
+ 
+ 	local_irq_save(saved_psr);
+ 	slot = ia64_itr_entry(0x3, KVM_VMM_BASE, pte, KVM_VMM_SHIFT);
++	local_irq_restore(saved_psr);
+ 	if (slot < 0)
+ 		return;
+-	local_irq_restore(saved_psr);
+ 
+ 	status = ia64_pal_vp_exit_env(host_iva);
+ 	if (status)
+@@ -1253,6 +1253,7 @@ static int vti_vcpu_setup(struct kvm_vcpu *vcpu, int id)
+ uninit:
+ 	kvm_vcpu_uninit(vcpu);
+ fail:
++	local_irq_restore(psr);
+ 	return r;
+ }
+ 
