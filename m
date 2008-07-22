@@ -1,86 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbYGVEuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbYGVEuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754276AbYGVEuJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 00:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYGVEt6
+	id S1756023AbYGVEuf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 00:50:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYGVEuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 00:49:58 -0400
-Received: from gw.goop.org ([64.81.55.164]:46598 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750727AbYGVEt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 00:49:57 -0400
-Message-ID: <488566EA.5040805@goop.org>
-Date: Mon, 21 Jul 2008 21:49:46 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 22 Jul 2008 00:50:18 -0400
+Received: from smtp115.mail.mud.yahoo.com ([209.191.84.164]:37446 "HELO
+	smtp115.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750899AbYGVEuR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 00:50:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Yaqd69c0rofkpI4BHCcn89JQ2EBSzmuyr/LzSmEwVnTDX3lNtv45f8YaMdbFXTzXYcdcJNmI//pDD4r9DtbQxSJBGVuhTZvA+dZ4vUF/J2XAk8BBz9Qm4g4OIGT8vw9oc0YGUOU8bBBGMm3h8FeIkG/oelBVn00Oj2wGtItY1Rc=  ;
+X-YMail-OSG: pmCx710VM1lBeTI6O9Xw1Wgc0N.0fhA_qVVSKQCqoFkMJiFAsu98g6OmLbKcU8U0bUE_je2j2tdzEcdJbf9zINXyG2AQhI_SUCS9YVaAbpbtAUALsKVm.mAyY0rAQKWeRtw-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [RFC] schedule_timeout_range()
+Date: Tue, 22 Jul 2008 14:50:09 +1000
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, arjan@infradead.org
+References: <1216695757.18980.16.camel@shinybook.infradead.org> <200807221433.32412.nickpiggin@yahoo.com.au> <1216701925.18980.75.camel@shinybook.infradead.org>
+In-Reply-To: <1216701925.18980.75.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix pte_flags() to only return flags, fix lguest.
-References: <200807221431.58991.rusty@rustcorp.com.au>
-In-Reply-To: <200807221431.58991.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807221450.10146.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> Change a15af1c9ea2750a9ff01e51615c45950bad8221b 'x86/paravirt: add
-> pte_flags to just get pte flags' removed lguest's private pte_flags()
-> in favor of a generic one.
+On Tuesday 22 July 2008 14:45, David Woodhouse wrote:
+> On Tue, 2008-07-22 at 14:33 +1000, Nick Piggin wrote:
+> > The only thing I dislike about explicit times is that when a driver or
+> > someone doesn't _really_ know how much to specify. Do you say 10s, 100s?
 >
-> Unfortunately, the generic one doesn't filter out the non-flags bits:
-> this results in lguest creating corrupt shadow page tables and blowing
-> up host memory.
+> This is true, but they certainly have a _better_ idea than we do. If the
+> individual callers can't even come up with an answer, how are we ever
+> going to come up with a generic policy that does the right thing?
+
+OK, how about still having a never-until-machine-is-already-awake?
+
+
+> I really don't think that applying this kind of policy in generic code
+> is useful -- I'd like the callers to provide numbers even if they _do_
+> pull it out of their wossname.
 >
-> Since noone is supposed to use the pfn part of pte_flags(), it seems
-> safest to always do the filtering.
->   
+> The number they provide is the _maximum_ amount of time they should be
+> prepared to wait (let's assume for a moment that they stayed sober and
+> remembered Linux isn't a real-time kernel, so all guarantees are taken
+> with a pinch of salt. Let's not get bogged down in nomenclature).
 
-Thinking about this, I wonder if it needs to be a pv_op at all.  
-Generality says "yes", but there are no users which set it to anything 
-other than native_pte_flags.  The point of it is to return the flags 
-as-is, without needing more complex stuff (like Xen's mfn to pfn 
-conversion).
+Well, I think it is still wise to avoid words like deadline, hard,
+and timeout in the same sentence ;)
 
-In most cases, the surrounding code will be applying its own mask 
-anyway, so making it a simple inline will allow all the masks to get 
-folded together.
 
-If a user which wants to do something other than return the bare flags, 
-it would be easy enough to put the pv_op back.
+> In practice, they'll almost always get called before that maximum time
+> expires -- that's the whole _point_, of course. But we can't _invent_
+> that maximum in generic code; that's really up to the caller.
 
-> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
->
-> diff -r ee1a6adad3d2 arch/x86/kernel/paravirt.c
-> --- a/arch/x86/kernel/paravirt.c	Mon Jul 21 12:49:25 2008 +1000
-> +++ b/arch/x86/kernel/paravirt.c	Tue Jul 22 14:09:33 2008 +1000
-> @@ -428,7 +428,7 @@ struct pv_mmu_ops pv_mmu_ops = {
->  #endif /* PAGETABLE_LEVELS >= 3 */
->  
->  	.pte_val = native_pte_val,
-> -	.pte_flags = native_pte_val,
-> +	.pte_flags = native_pte_flags,
->  	.pgd_val = native_pgd_val,
->  
->  	.make_pte = native_make_pte,
-> diff -r ee1a6adad3d2 include/asm-x86/page.h
-> --- a/include/asm-x86/page.h	Mon Jul 21 12:49:25 2008 +1000
-> +++ b/include/asm-x86/page.h	Tue Jul 22 14:09:33 2008 +1000
-> @@ -144,6 +144,18 @@ static inline pteval_t native_pte_val(pt
->  	return pte.pte;
->  }
->  
-> +/* This belongs in pgtable.h, but our includes are too much of a mess. */
-> +#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
-> +#define PTE_FLAGS	_AC(0x8000000000000FFF, ULL)
-> +#else
-> +#define PTE_FLAGS	0x00000FFF
-> +#endif
->   
-We already have this, it's called PTE_MASK.
-
-    J
+Not a maximum, but just an "I don't know... a lot?" define. But yeah
+I guess there aren't too many good reasons for that.
