@@ -1,104 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbYGVPmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243AbYGVPnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753800AbYGVPmY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 11:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750906AbYGVPmQ
+	id S1754243AbYGVPnj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 11:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750906AbYGVPnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 11:42:16 -0400
-Received: from xenotime.net ([66.160.160.81]:53610 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750711AbYGVPmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 11:42:15 -0400
-Date: Tue, 22 Jul 2008 08:42:11 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: "Peter Teoh" <htmldeveloper@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linuxkernelnewbies@googlegroups.com" 
-	<linuxkernelnewbies@googlegroups.com>
-Subject: Re: make htmldocs errors
-Message-Id: <20080722084211.10d21eb5.rdunlap@xenotime.net>
-In-Reply-To: <804dabb00807220407x683f0eb2we0b64821b9279e3c@mail.gmail.com>
-References: <804dabb00807220407x683f0eb2we0b64821b9279e3c@mail.gmail.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jul 2008 11:43:31 -0400
+Received: from saeurebad.de ([85.214.36.134]:51256 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750794AbYGVPna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 11:43:30 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] x86: rename PTE_MASK to PTE_PFN_MASK
+References: <200807221431.58991.rusty@rustcorp.com.au>
+	<488566EA.5040805@goop.org> <200807221540.47161.rusty@rustcorp.com.au>
+	<4885774E.3000909@goop.org> <873am2kr4n.fsf@saeurebad.de>
+	<4885F43B.7060307@goop.org> <8763qyj6br.fsf@saeurebad.de>
+	<87wsjehrhs.fsf@saeurebad.de> <20080722153336.GA18757@elte.hu>
+Date: Tue, 22 Jul 2008 17:43:04 +0200
+In-Reply-To: <20080722153336.GA18757@elte.hu> (Ingo Molnar's message of "Tue,
+	22 Jul 2008 17:33:36 +0200")
+Message-ID: <87sku1j56f.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jul 2008 19:07:59 +0800 Peter Teoh wrote:
+Hi,
 
-> "make htmldocs" generated the following errors:
-> 
-> Warning(/sda4/download/linux_linus/linux-2.6//include/asm-x86/unaligned.h):
-> no structured comments found
+Ingo Molnar <mingo@elte.hu> writes:
 
-kernel-api.tmpl "includes" asm-x86/unaligned.h, but the latter contains no
-kernel-doc comments.  This is due to some unaligned macro/inline function
-"fixes" (movement/restructuring).  This head file used to contain kernel-doc
-comments for unaligned functions, but it no longer does.
-I'm not sure if any header file does now.  If one does, it needs to be used here
-instead of this header file.
+> * Johannes Weiner <hannes@saeurebad.de> wrote:
+>
+>> Johannes Weiner <hannes@saeurebad.de> writes:
+>> 
+>> > Hi,
+>> >
+>> > Jeremy Fitzhardinge <jeremy@goop.org> writes:
+>> >
+>> >> Johannes Weiner wrote:
+>> >>> PTE_PFN_MASK is not symmetric to PAGE_MASK.
+>> >>
+>> >> No, it isn't.  Is there anything about the name that suggests that it
+>> >> should be?  PTE_PFN_MASK is for operating on pteval_t-typed values
+>> >> extracted from ptes; PAGE_MASK is for operating on addresses.
+>> >
+>> > I meant the naming scheme, not the functionality.
+>> >
+>> > The thing PAGE_MASK and PTE_MASK have in common is that they are masks
+>> > and their names indicate what is masked away when applied.
+>> >
+>> > So PAGE_MASK suggests that it masks out page details.  And PTE_MASK
+>> > suggests that it masks out PTE details.
+>> >
+>> > PTE_PFN_MASK masks suggests that it masks out the flags, according 
+>> > to the existing naming convention.  But it does the opposite.
+>> 
+>> As you explained me how PAGE_MASK was meant, scratch the above ;)
+>
+> btw., feel free to send a patch that adds more comments that makes it 
+> obvious at first sight if someone takes a look at the defines.
 
-> Warning(/sda4/download/linux_linus/linux-2.6//kernel/rcupdate.c:81):
-> No description found for parameter 'synchronize_rcu'
-> Warning(/sda4/download/linux_linus/linux-2.6//kernel/rcupdate.c:81):
-> No description found for parameter 'call_rcu'
+I will do that!
 
-Confusing syntax for a simplistic perl parser.  I'll have to take a look
-at that.
-
-> Error(/sda4/download/linux_linus/linux-2.6//drivers/pci/pci.c:1133):
-> duplicate section name 'Description'
-> Error(/sda4/download/linux_linus/linux-2.6//drivers/pci/pci.c:1189):
-> duplicate section name 'Description'
-
-I have already posted a patch for these.  The function short description
-must be on one line.  Having it on multiple lines confused scripts/kernel-doc.
-
-> Warning(/sda4/download/linux_linus/linux-2.6//include/linux/i2c.h:169):
-> No description found for parameter 'id'
-> Warning(/sda4/download/linux_linus/linux-2.6//include/linux/i2c.h:169):
-> No description found for parameter 'attach_adapter'
-> Warning(/sda4/download/linux_linus/linux-2.6//include/linux/i2c.h:169):
-> No description found for parameter 'detach_adapter'
-> Warning(/sda4/download/linux_linus/linux-2.6//include/linux/i2c.h:169):
-> No description found for parameter 'detach_client'
-> Warning(/sda4/download/linux_linus/linux-2.6//include/linux/i2c.h:169):
-> No description found for parameter 'probe'
-> Warning(/sda4/download/linux_linus/linux-2.6//include/linux/i2c.h:169):
-> No description found for parameter 'remove'
-> Warning(/sda4/download/linux_linus/linux-2.6//include/linux/i2c.h:169):
-> No description found for parameter 'shutdown'
-> Warning(/sda4/download/linux_linus/linux-2.6//include/linux/i2c.h:169):
-> No description found for parameter 'suspend'
-> Warning(/sda4/download/linux_linus/linux-2.6//include/linux/i2c.h:169):
-> No description found for parameter 'resume'
-> Warning(/sda4/download/linux_linus/linux-2.6//include/linux/i2c.h:169):
-> No description found for parameter 'command'
-> Warning(/sda4/download/linux_linus/linux-2.6//include/linux/i2c.h:169):
-> No description found for parameter 'driver'
-> Warning(/sda4/download/linux_linus/linux-2.6//include/linux/i2c.h:169):
-> No description found for parameter 'id_table'
-
-These aren't a mystery at all:  include/linux/i2c.h is missing lots of
-struct i2c_driver field/member descriptions.
-
-
-> make[1]: *** [Documentation/DocBook/kernel-api.xml] Error 2
-> make: *** [htmldocs] Error 2
-> 
-> Can someone explain what is the cause of the error?   Is it because
-> "make htmldocs" attempt to detect for description marked as "/* */"
-> beside the field name?
-
-No.  drivers/pci/pci.c had invalid kernel-doc comments in it (function
-short description on multiple lines).
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+	Hannes
