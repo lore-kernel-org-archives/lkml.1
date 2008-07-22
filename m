@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759215AbYGVXdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbYGVXd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759215AbYGVXdj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756640AbYGVXXd
+	id S1759253AbYGVXd4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbYGVXXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:23:33 -0400
-Received: from mx1.suse.de ([195.135.220.2]:53723 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 19:23:36 -0400
+Received: from ns2.suse.de ([195.135.220.15]:58298 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754622AbYGVXXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:23:31 -0400
-Date: Tue, 22 Jul 2008 16:17:35 -0700
+	id S1757448AbYGVXXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:23:35 -0400
+Date: Tue, 22 Jul 2008 16:17:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Philipp Zabel <philipp.zabel@gmail.com>,
-       Pierre Ossman <drzeus@drzeus.cx>
-Subject: [patch 44/47] pxamci: fix byte aligned DMA transfers
-Message-ID: <20080722231735.GS8282@suse.de>
+       alan@lxorguk.ukuu.org.uk, Pierre Ossman <drzeus@drzeus.cx>
+Subject: [patch 45/47] mmc: dont use DMA on newer ENE controllers
+Message-ID: <20080722231738.GT8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pxamci-fix-byte-aligned-dma-transfers.patch"
+Content-Disposition: inline; filename="mmc-don-t-use-dma-on-newer-ene-controllers.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,63 +39,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Philipp Zabel <philipp.zabel@gmail.com>
+From: Pierre Ossman <drzeus@drzeus.cx>
 
-commit 97f8571e663c808ad2d01a396627235167291556 upstream
+commit bf5b1935d8e42b36a34645788eb261461fe07f2e upstream.
 
-The pxa27x DMA controller defaults to 64-bit alignment. This caused
-the SCR reads to fail (and, depending on card type, error out) when
-card->raw_scr was not aligned on a 8-byte boundary.
+Even the newer ENE controllers have bugs in their DMA engine that make
+it too dangerous to use. Disable it until someone has figured out under
+which conditions it corrupts data.
 
-For performance reasons all scatter-gather addresses passed to
-pxamci_request should be aligned on 8-byte boundaries, but if
-this can't be guaranteed, byte aligned DMA transfers in the
-have to be enabled in the controller to get correct behaviour.
+This has caused problems at least once, and can be found as bug report
+10925 in the kernel bugzilla.
 
-Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
 Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/mmc/host/pxamci.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/mmc/host/sdhci.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/drivers/mmc/host/pxamci.c
-+++ b/drivers/mmc/host/pxamci.c
-@@ -114,6 +114,7 @@ static void pxamci_setup_data(struct pxa
- 	unsigned int nob = data->blocks;
- 	unsigned long long clks;
- 	unsigned int timeout;
-+	bool dalgn = 0;
- 	u32 dcmd;
- 	int i;
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -109,7 +109,8 @@ static const struct pci_device_id pci_id
+ 		.subvendor      = PCI_ANY_ID,
+ 		.subdevice      = PCI_ANY_ID,
+ 		.driver_data    = SDHCI_QUIRK_SINGLE_POWER_WRITE |
+-				  SDHCI_QUIRK_RESET_CMD_DATA_ON_IOS,
++				  SDHCI_QUIRK_RESET_CMD_DATA_ON_IOS |
++				  SDHCI_QUIRK_BROKEN_DMA,
+ 	},
  
-@@ -152,6 +153,9 @@ static void pxamci_setup_data(struct pxa
- 		host->sg_cpu[i].dcmd = dcmd | length;
- 		if (length & 31 && !(data->flags & MMC_DATA_READ))
- 			host->sg_cpu[i].dcmd |= DCMD_ENDIRQEN;
-+		/* Not aligned to 8-byte boundary? */
-+		if (sg_dma_address(&data->sg[i]) & 0x7)
-+			dalgn = 1;
- 		if (data->flags & MMC_DATA_READ) {
- 			host->sg_cpu[i].dsadr = host->res->start + MMC_RXFIFO;
- 			host->sg_cpu[i].dtadr = sg_dma_address(&data->sg[i]);
-@@ -165,6 +169,15 @@ static void pxamci_setup_data(struct pxa
- 	host->sg_cpu[host->dma_len - 1].ddadr = DDADR_STOP;
- 	wmb();
+ 	{
+@@ -118,7 +119,8 @@ static const struct pci_device_id pci_id
+ 		.subvendor      = PCI_ANY_ID,
+ 		.subdevice      = PCI_ANY_ID,
+ 		.driver_data    = SDHCI_QUIRK_SINGLE_POWER_WRITE |
+-				  SDHCI_QUIRK_RESET_CMD_DATA_ON_IOS,
++				  SDHCI_QUIRK_RESET_CMD_DATA_ON_IOS |
++				  SDHCI_QUIRK_BROKEN_DMA,
+ 	},
  
-+	/*
-+	 * The PXA27x DMA controller encounters overhead when working with
-+	 * unaligned (to 8-byte boundaries) data, so switch on byte alignment
-+	 * mode only if we have unaligned data.
-+	 */
-+	if (dalgn)
-+		DALGN |= (1 << host->dma);
-+	else
-+		DALGN &= (1 << host->dma);
- 	DDADR(host->dma) = host->sg_dma;
- 	DCSR(host->dma) = DCSR_RUN;
- }
+ 	{
 
 -- 
