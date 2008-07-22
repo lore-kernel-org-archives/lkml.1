@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759362AbYGVFnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760621AbYGVFoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759362AbYGVFnu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 01:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbYGVF0I
+	id S1760621AbYGVFoJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 01:44:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbYGVF0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 01:26:08 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43390 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 01:26:13 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43395 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757581AbYGVF0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 01:26:06 -0400
+	id S1757393AbYGVF0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 01:26:12 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Adrian Bunk <bunk@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 66/79] always enable FW_LOADER unless EMBEDDED=y
-Date: Mon, 21 Jul 2008 22:19:30 -0700
-Message-Id: <1216703983-21448-66-git-send-email-gregkh@suse.de>
+Cc: Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 67/79] HOWTO: change email addresses of James in HOWTO
+Date: Mon, 21 Jul 2008 22:19:31 -0700
+Message-Id: <1216703983-21448-67-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <20080722051805.GA17373@suse.de>
 References: <20080722051805.GA17373@suse.de>
@@ -22,50 +23,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
+From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
 
-James Bottomley recently discovered that we have
-{request,release}_firmware() dummies for the case of the actual
-functions not being available and has a fix for the bug that was
-actually causing build errors for built-in users with
-CONFIG_FW_LOADER=m.
-
-But now missing selects on FW_LOADER are no longer visible at
-compile-time at all and can become runtime problems.
-
-FW_LOADER is infrastructure with relatively small codesize we can safely
-enable for everyone, and only for people who really need small kernels
-(and can be expected to know what they are doing) it matters being able
-to disable it.
-
-This patch therefore always sets FW_LOADER=y and allows users only to
-disable it with EMBEDDED=y.
-
-As a bonus, we can then get rid of all "select FW_LOADER" plus the due
-to it required "depends on HOTPLUG" which removes some complexity from
-our Kconfig files.
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/Kconfig |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ Documentation/HOWTO |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
-index d47482f..6318f6b 100644
---- a/drivers/base/Kconfig
-+++ b/drivers/base/Kconfig
-@@ -27,8 +27,9 @@ config PREVENT_FIRMWARE_BUILD
- 	  If unsure say Y here.
+diff --git a/Documentation/HOWTO b/Documentation/HOWTO
+index 619e8ca..c2371c5 100644
+--- a/Documentation/HOWTO
++++ b/Documentation/HOWTO
+@@ -358,7 +358,7 @@ Here is a list of some of the different kernel trees available:
+     - pcmcia, Dominik Brodowski <linux@dominikbrodowski.net>
+ 	git.kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
  
- config FW_LOADER
--	tristate "Userspace firmware loading support"
-+	tristate "Userspace firmware loading support" if EMBEDDED
- 	depends on HOTPLUG
-+	default y
- 	---help---
- 	  This option is provided for the case where no in-kernel-tree modules
- 	  require userspace firmware loading support, but a module built outside
+-    - SCSI, James Bottomley <James.Bottomley@SteelEye.com>
++    - SCSI, James Bottomley <James.Bottomley@hansenpartnership.com>
+ 	git.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+ 
+     - x86, Ingo Molnar <mingo@elte.hu>
 -- 
 1.5.6.3
 
