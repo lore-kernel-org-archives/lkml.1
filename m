@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757724AbYGVX12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbYGVX06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757724AbYGVX12 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757186AbYGVXTt
+	id S1757069AbYGVX06 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:26:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757148AbYGVXTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:19:49 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:57835 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 19:19:45 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57811 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757178AbYGVXTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:19:47 -0400
-Date: Tue, 22 Jul 2008 16:16:24 -0700
+	id S1757125AbYGVXTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:19:43 -0400
+Date: Tue, 22 Jul 2008 16:16:22 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Joonwoo Park <joonwpark81@gmail.com>, Patrick McHardy <kaber@trash.net>
-Subject: [patch 27/47] textsearch: fix Boyer-Moore text search bug
-Message-ID: <20080722231624.GB8282@suse.de>
+       Dan Williams <dan.j.williams@intel.com>, Neil Brown <neilb@suse.de>
+Subject: [patch 26/47] md: ensure all blocks are uptodate or locked when
+	syncing
+Message-ID: <20080722231622.GA8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="textsearch-fix-boyer-moore-text-search-bug.patch"
+Content-Disposition: inline; filename="md-ensure-all-blocks-are-uptodate-or-locked-when-syncing.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,35 +40,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Joonwoo Park <joonwpark81@gmail.com>
+From: Dan Williams <dan.j.williams@intel.com>
 
-Upstream commit aebb6a849cfe7d89bcacaaecc20a480dfc1180e7
+commit 7a1fc53c5adb910751a9b212af90302eb4ffb527 upstream
 
-The current logic has a bug which cannot find matching pattern, if the
-pattern is matched from the first character of target string.
-for example:
-	pattern=abc, string=abcdefg
-	pattern=a,   string=abcdefg
-Searching algorithm should return 0 for those things.
+Remove the dubious attempt to prefer 'compute' over 'read'.  Not only is it
+wrong given commit c337869d (md: do not compute parity unless it is on a failed
+drive), but it can trigger a BUG_ON in handle_parity_checks5().
 
-Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- lib/ts_bm.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/md/raid5.c |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
---- a/lib/ts_bm.c
-+++ b/lib/ts_bm.c
-@@ -63,7 +63,7 @@ static unsigned int bm_find(struct ts_co
- 	struct ts_bm *bm = ts_config_priv(conf);
- 	unsigned int i, text_len, consumed = state->offset;
- 	const u8 *text;
--	int shift = bm->patlen, bs;
-+	int shift = bm->patlen - 1, bs;
- 
- 	for (;;) {
- 		text_len = conf->get_next_block(consumed, &text, conf, state);
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -1999,12 +1999,7 @@ static int __handle_issuing_new_read_req
+ 			 */
+ 			s->uptodate++;
+ 			return 0; /* uptodate + compute == disks */
+-		} else if ((s->uptodate < disks - 1) &&
+-			test_bit(R5_Insync, &dev->flags)) {
+-			/* Note: we hold off compute operations while checks are
+-			 * in flight, but we still prefer 'compute' over 'read'
+-			 * hence we only read if (uptodate < * disks-1)
+-			 */
++		} else if (test_bit(R5_Insync, &dev->flags)) {
+ 			set_bit(R5_LOCKED, &dev->flags);
+ 			set_bit(R5_Wantread, &dev->flags);
+ 			if (!test_and_set_bit(STRIPE_OP_IO, &sh->ops.pending))
 
 -- 
