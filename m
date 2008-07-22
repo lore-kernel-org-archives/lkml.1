@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbYGVN57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753778AbYGVOAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754278AbYGVN57 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 09:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbYGVN5r
+	id S1753778AbYGVOAG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 10:00:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbYGVN7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 09:57:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46661 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750711AbYGVN5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 09:57:46 -0400
-Date: Tue, 22 Jul 2008 15:57:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Newall <davidn@davidnewall.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [TCP bug] stuck distcc connections in latest -git
-Message-ID: <20080722135723.GA23077@elte.hu>
-References: <20080720.104411.81744468.davem@davemloft.net> <20080721133059.GA30637@elte.hu> <20080721134506.GA27598@elte.hu> <20080721182318.GA20940@elte.hu> <alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org> <20080721184616.GA8442@elte.hu> <20080722112133.GA6575@elte.hu> <4885E482.5020502@davidnewall.com>
+	Tue, 22 Jul 2008 09:59:54 -0400
+Received: from styx.suse.cz ([82.119.242.94]:35961 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750975AbYGVN7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 09:59:53 -0400
+Date: Tue, 22 Jul 2008 15:59:52 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+cc: Henrik Rydberg <rydberg@euromail.se>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, robfitz@273k.net, akpm@osdl.org,
+       Vojtech Pavlik <vojtech@suse.cz>, dmonakhov@openvz.org
+Subject: Re: [PATCH] hid: wellspring device quirks
+In-Reply-To: <20080722095311.ZZRA012@mailhub.coreip.homeip.net>
+Message-ID: <alpine.LNX.1.10.0807221559010.3037@jikos.suse.cz>
+References: <1215963466.12757.0.camel@alnilam> <alpine.LNX.1.10.0807221504380.3037@jikos.suse.cz> <4885E13E.1010607@euromail.se> <20080722095311.ZZRA012@mailhub.coreip.homeip.net>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4885E482.5020502@davidnewall.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 22 Jul 2008, Dmitry Torokhov wrote:
 
-* David Newall <davidn@davidnewall.com> wrote:
+> Should I take the quirks patch through my tree when I'm ready to apply 
+> bcm5974?
 
-> > The hung condition seemed permanent (i waited a couple of minutes).
-> 
-> Not nearly long enough.  Retransmits can be sent as infrequently as 
-> per 180 seconds.  I think there's an argument to use one of the the 
-> various patches that reduce your TCP_RTO_MAX, for example OBATA 
-> Noboru's (http://marc.info/?l=linux-netdev&m=118422471428855): you 
-> don't have to wait unreasonably long before seeing a retransmit.  
-> Remember, three minutes!
+Hi Dmitry,
 
-i know, i waited much more than 180 minutes - about 15 minutes. That is 
-more than enough for this LAN connection.
+that would be the best option, thanks a lot. Please feel free to add
 
-It's all on the LAN directly via a single gigabit switch and no packet 
-dropping. I noticed the hung build immediately as it happened.
+ 	Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-> > I retried the same build 10 times and it would not reproduce - so 
-> > this again is a hard to reproduce condition. (and there's no chance 
-> > to get a proper tcpdump either, at these traffic levels)
-> 
-> You really should start that capture, and on both client and server. 
-> You don't need to dump everything, only traffic to or from 
-> server:distcc.
+to Henrik's quirk addition patch when you are going to merge it.
 
-It's not feasible. That box did in excess of 200 GB of network traffic 
-in the past 7 hours alone. ~10 clients are doing make -j200 type of 
-kernel builds to this 16way buildbox so it is not realistic to tcpdump 
-it - especially given the rarity of this problem. (it has not reoccured 
-since then) The network is local LAN, gigabit ethernet over a single 
-gigabit switch.
+Thanks,
 
-	Ingo
+-- 
+Jiri Kosina
+SUSE Labs
