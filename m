@@ -1,78 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbYGVXjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbYGVXlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757287AbYGVXjv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYGVXjl
+	id S1757820AbYGVXlk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYGVXlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:39:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46668 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750951AbYGVXjk (ORCPT
+	Tue, 22 Jul 2008 19:41:31 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:55033 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268AbYGVXla (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:39:40 -0400
-Date: Tue, 22 Jul 2008 16:39:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-Cc: david-b@pacbell.net, linux-kernel@vger.kernel.org,
-       g.liakhovetski@pengutronix.de
-Subject: Re: [patch 2.6.26-rc5] gpio: sysfs interface (updated)
-Message-Id: <20080722163924.33e9ff84.akpm@linux-foundation.org>
-In-Reply-To: <20080722232824.GA22596@kroah.com>
-References: <200806121153.36557.david-b@pacbell.net>
-	<20080722162751.e8584d46.akpm@linux-foundation.org>
-	<20080722232824.GA22596@kroah.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 Jul 2008 19:41:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ZlDPiDiUZY8z8Isbp0QhdW9pDj40JG8hSuSsugj3F/74TpwqoAgeFUMn9PRHESB6ry
+         m8d5JTvQ4vYJ7YyFZxLaU3gR4Ye+0vABsRwkuDq5hqF3dxcZKuAmcZ1OQNk/mFnLB1Pg
+         6o9JMsTQD7CUQ4rp5ea7kxdrxBqhIvmEPhUkU=
+Message-ID: <48f7fe350807221641yf06a102x9cd3a4d51841525f@mail.gmail.com>
+Date: Tue, 22 Jul 2008 19:41:29 -0400
+From: "Ryan Hope" <rmh3093@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       williams@redhat.com
+Subject: Re: [-rt][patches] fix compilation errors
+In-Reply-To: <48f7fe350807201416v55b12dacq99e1922b56f02b37@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48f7fe350807201416v55b12dacq99e1922b56f02b37@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jul 2008 16:28:24 -0700
-Greg KH <greg@kroah.com> wrote:
+Bump to CC Clark Williams...
 
-> On Tue, Jul 22, 2008 at 04:27:51PM -0700, Andrew Morton wrote:
-> > On Thu, 12 Jun 2008 11:53:36 -0700
-> > David Brownell <david-b@pacbell.net> wrote:
-> > 
-> > > This adds a simple sysfs interface for GPIOs.
-> > 
-> > device_create_drvdata() has magically vanished from today's linux-next,
-> > so this code doesn't compile any more.
-> > 
-> > This:
-> > 
-> > --- a/drivers/gpio/gpiolib.c~gpio-sysfs-interface-updated-gpio-linux-next-fixes-for-sysfs-support-fix
-> > +++ a/drivers/gpio/gpiolib.c
-> > @@ -453,8 +453,8 @@ int gpio_export(unsigned gpio, bool dire
-> >  	if (status == 0) {
-> >  		struct device	*dev;
-> >  
-> > -		dev = device_create_drvdata(&gpio_class, desc->chip->dev, 0,
-> > -				desc, "gpio%d", gpio);
-> > +		dev = device_create(&gpio_class, desc->chip->dev, 0, desc,
-> > +					"gpio%d", gpio);
-> 
-> Should be NULL instead of 0 there, otherwise sparse will complain.
-> 
-> 
-> >  		if (dev) {
-> >  			if (direction_may_change)
-> >  				status = sysfs_create_group(&dev->kobj,
-> > @@ -537,8 +537,8 @@ static int gpiochip_export(struct gpio_c
-> >  
-> >  	/* use chip->base for the ID; it's already known to be unique */
-> >  	mutex_lock(&sysfs_lock);
-> > -	dev = device_create_drvdata(&gpio_class, chip->dev, 0, chip,
-> > -			"gpiochip%d", chip->base);
-> > +	dev = device_create(&gpio_class, chip->dev, 0, chip, "gpiochip%d",
-> > +				chip->base);
-> 
-> Same here.
-> 
-
-And is this change safe to merge into mainline?  Or should it wait
-until device_create_drvdata-removal and any associated stuff has
-merged?
-
+On Sun, Jul 20, 2008 at 5:16 PM, Ryan Hope <rmh3093@gmail.com> wrote:
+> I had some issues compiling the master branch of the -rt kernel today,
+> the following patches should fix the issues that I encountered:
+>
+> diff --git a/6b92edd2d46e88c69b3979c4f5f55aba974775e8:arch/x86/kernel/io_apic_32.c
+> b/f4b693300667c67b9236454f1076ecdc1c3543aa:arch/x86/kernel/io_apic_32.c
+> index 167ebcbe7a4e96aa1e4140b59972de820465e32a..d3531ee6e0ddcdb6291cc570a500b30cb4c0ca28
+> 100644
+> --- a/6b92edd2d46e88c69b3979c4f5f55aba974775e8:arch/x86/kernel/io_apic_32.c
+> +++ b/f4b693300667c67b9236454f1076ecdc1c3543aa:arch/x86/kernel/io_apic_32.c
+> @@ -1319,7 +1319,7 @@ static void __init setup_IO_APIC_irqs(void)
+>                if (IO_APIC_IRQ(irq)) {
+>                        vector = assign_irq_vector(irq);
+>                        entry.vector = vector;
+> -                       ioapic_register_intr(irq, vector, IOAPIC_AUTO);
+> +                       ioapic_register_intr(irq, vector, IOAPIC_AUTO, apic > 0);
+>
+>                        if (!apic && (irq < 16))
+>                                disable_8259A_irq(irq);
+> @@ -1358,7 +1358,7 @@ static void __init setup_timer_IRQ0_pin(unsigned
+> int apic, unsigned int pin,
+>         * The timer IRQ doesn't have to know that behind the
+>         * scene we may have a 8259A-master in AEOI mode ...
+>         */
+> -       ioapic_register_intr(0, vector, IOAPIC_EDGE);
+> +       ioapic_register_intr(0, vector, IOAPIC_EDGE, apic > 0);
+>
+>        /*
+>         * Add it to the IO-APIC irq-routing table:
+>
+> diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+> index 8ca2763..f80c649 100644
+> --- a/fs/ext4/inode.c
+> +++ b/fs/ext4/inode.c
+> @@ -2182,7 +2182,7 @@ static int ext4_da_writepages(struct
+> address_space *mapping,
+>         * a transaction for special inodes like journal inode on last iput()
+>         * because that could violate lock ordering on umount
+>         */
+> -       if (!mapping->nrpages)
+> +       if (!mapping_nrpages(mapping))
+>                return 0;
+>
+>        /*
+> diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
+> index f8b3be8..9f98f63 100644
+> --- a/fs/jbd2/commit.c
+> +++ b/fs/jbd2/commit.c
+> @@ -197,7 +197,7 @@ static int
+> journal_submit_inode_data_buffers(struct address_space *mapping)
+>        int ret;
+>        struct writeback_control wbc = {
+>                .sync_mode =  WB_SYNC_ALL,
+> -               .nr_to_write = mapping->nrpages * 2,
+> +               .nr_to_write = mapping_nrpages(mapping) * 2,
+>                .range_start = 0,
+>                .range_end = i_size_read(mapping->host),
+>                .for_writepages = 1,
+>
