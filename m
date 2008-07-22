@@ -1,92 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYGVIIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbYGVIKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbYGVIIv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 04:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYGVIIh
+	id S1754187AbYGVIKA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 04:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYGVIJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 04:08:37 -0400
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:45094 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750919AbYGVIIf convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 04:08:35 -0400
-From: Juergen Beisert <jbe@pengutronix.de>
-Organization: Pengutronix - Linux Solutions for Science and Industry
-To: linux-kernel@vger.kernel.org
-Date: Tue, 22 Jul 2008 10:08:26 +0200
-User-Agent: KMail/1.9.9
-Cc: Samuel Sieb <samuel@sieb.net>
-References: <48841A92.4020301@sieb.net> <200807210828.56821.jbe@pengutronix.de> <48856D32.1070101@sieb.net>
-In-Reply-To: <48856D32.1070101@sieb.net>
+	Tue, 22 Jul 2008 04:09:45 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:29302 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751121AbYGVIJn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 04:09:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=N37Nx73bOB+h0rDUvBEdIF5OuMIB3jQrUu8cIUWgaCu7ioHJa+qzyUe3Ejvt0Mzz/+
+         r9I3HF3FWBE0v6iPn5Atb4h0fG8G1IYA8AG8pgWY5OfCP10MMpwwNYnxIqwp9ssNZTRI
+         dUvLVyuXLP1cG9a1KPgKESk/iCOzD/R6I78dU=
+Message-ID: <86802c440807220109s63307f28uc0658402cb26cfea@mail.gmail.com>
+Date: Tue, 22 Jul 2008 01:09:43 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Paul Jackson" <pj@sgi.com>,
+       "Mike Travis" <travis@sgi.com>
+Subject: Re: [PATCH] x86: add apic probe for genapic 64bit v2
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Suresh Siddha" <suresh.b.siddha@intel.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080722071324.GA2664@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200807221008.27867.jbe@pengutronix.de>
-X-SA-Exim-Connect-IP: 83.236.181.29
-X-SA-Exim-Mail-From: jbe@pengutronix.de
-Subject: Re: kernel won't boot on a Cyrix MediaGXm (Geode )
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.extern.pengutronix.de)
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_70575_1247777.1216714183128"
+References: <200807211836.27282.yhlu.kernel@gmail.com>
+	 <200807212208.22116.yhlu.kernel@gmail.com>
+	 <20080722070734.GA16085@elte.hu> <20080722071324.GA2664@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samuel,
+------=_Part_70575_1247777.1216714183128
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Dienstag, 22. Juli 2008, Samuel Sieb wrote:
-> Juergen Beisert wrote:
-> > On Montag, 21. Juli 2008, Samuel Sieb wrote:
-> >> I have a computer here with a CPU that the BIOS identifies as:
-> >> Cyrix MediaGXm/Cx5530 Unicorn Revision 1.19.3B
-> >>
-> >> I can't boot any kernel later than 2.6.22 on it.  Anything later either
-> >> hangs or gives random kernel panics while booting.  I tracked down the
-> >> problem to a specific commit:
-> >>
-> >> commit f25f64ed5bd3c2932493681bdfdb483ea707da0a
-> >
-> > Yes. My patch makes some chipset tweaks working as expected. Or at least
-> > it makes them work. It seems nobody ever tested them before. Remove the
-> > following line (or change it to meet your CPU clock frequency):
+On Tue, Jul 22, 2008 at 12:13 AM, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> This system is kind of an embedded one and it's been working fine, so I
-> haven't bothered upgrading the OS for a long time.  Once I get this
-> working I will be keeping it more up to date.
+> * Ingo Molnar <mingo@elte.hu> wrote:
 >
-> > linux-2.6.25/arch/x86/kernel/cyrix.c, line 151. Disable this line or
-> > change the value 0x04 according to the speed of your CPU. This tweak
-> > helps others with random hangs of their system.
+>> > v2: fix compiling when CONFIG_ACPI is not set
+>>
+>> applied to tip/x86/x2apic - thanks Yinghai.
+>>
+>> > +static struct genapic *apic_probe[] __initdata = {
+>> > +   &apic_x2apic_uv_x,
+>> > +   &apic_x2apic_phys,
+>> > +   &apic_x2apic_cluster,
+>> > +   &apic_physflat,
+>> > +   NULL,
+>> > +};
+>>
+>> very nice generalization!
 >
-> I tried various values and various combinations of commenting out lines
-> and the only one that worked for me was to comment out the PCR1 line
-> just above it.  With that line commented out (or both of them), it
-> boots.
+> btw.:
+>
+>   apic_probe[i]->acpi_madt_oem_check
+>
+> should probably be renamed to something more neutral like "->probe" -
+> there's nothing ACPI about it and some weird boxes could use PCI or
+> other probing mechanisms to discover the type of APIC they want to use.
 
-Hmm, then your BIOS does know more about your hardware than the kernel. ;-)
-The PCR1 line enables the incrementor. If disabled the value in PCR0 doesn't 
-matter.
+32bit has acpi_madt_oem_check and mps_oem_check
+64bit should only have acpi_madt_oem_check
 
-> I do get a message about the TSC clocksource being unstable, 
-> which is a new feature as well.
+>
+> plus i guess genapic_32.h and genapic_64.h should be unified and struct
+> apic_ops should be put into struct genapic?
 
-Its the "stop the clock if the CPU runs into a halt instruction" feature.
-Saves power and keeps your CPU cold. Side effect: It also stops the TSC, while 
-the CPU is idle.
-You can disable this feature by commenting out the line Ingo mentioned. In the 
-case one of these bits was set by your BIOS, your can also revert it:
+yes.
 
-   setCx86(CX86_CCR2, getCx86(CX86_CCR2) & ~0x88);
+hope to call acpi_madt_oem_check and mps_oem_check right after
+acpi_boot_table_init
+to decide apic_ops and genapic as early as possible.
 
-This will prevent your CPU from stopping its clock and the TSC should be 
-stable. But: It will also disable the clockfrequency driver from work.
 
-Juergen
+Jack/Mike,
+does your big box support SRAT? it seems it calling is_uv_system
+before acpi_madt_oem_check is called.
+I like to call early_acpi_boot_init, before acpi_numa_init so
+acpi_madt_oem_check is called before srat is used. can you check
+attached patch on your system?
 
--- 
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-    Handelsregister: Amtsgericht Hildesheim, HRA 2686
-         Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+YH
+
+------=_Part_70575_1247777.1216714183128
+Content-Type: text/x-patch; name=early_madt_oem_check.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fiy811nb0
+Content-Disposition: attachment; filename=early_madt_oem_check.patch
+
+W1BBVENIXSB4ODY6IGNhbGwgZWFybHlfYWNwaV9ib290X2luaXQgYmVmb3JlIGFjcGlfbnVtYV9p
+bml0CgpzbyBjb3VsZCBjYWxsIGFjcGlfbWFkdF9vZW1fY2hlY2sgZWFybHkgdG8gZmluZCBvdXQg
+aWYgaXQgdXYgc3lzdGVtLgphbmQgYWNwaV9udW1hX2luaXQgY291bGQgY2FsbCBpc191dl9zeXN0
+ZW0oKQoKU2lnbmVkLW9mZi1ieTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgoK
+LS0tCiBhcmNoL3g4Ni9rZXJuZWwvc2V0dXAuYyB8ICAgIDQgKysrKwogMSBmaWxlIGNoYW5nZWQs
+IDQgaW5zZXJ0aW9ucygrKQoKSW5kZXg6IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvc2V0dXAu
+Ywo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9hcmNoL3g4Ni9rZXJuZWwvc2V0dXAuYwor
+KysgbGludXgtMi42L2FyY2gveDg2L2tlcm5lbC9zZXR1cC5jCkBAIC03ODUsNiArNzg1LDEwIEBA
+IHZvaWQgX19pbml0IHNldHVwX2FyY2goY2hhciAqKmNtZGxpbmVfcCkKIAlhY3BpX2Jvb3RfdGFi
+bGVfaW5pdCgpOwogCiAjaWZkZWYgQ09ORklHX0FDUElfTlVNQQorI2lmZGVmIENPTkZJR19YODZf
+NjQKKwkvKiB0cnkgdG8gY2FsbCBhY3BpX21hZHRfb2VtX2NoZWNrIGhlcmUgKi8KKwllYXJseV9h
+Y3BpX2Jvb3RfaW5pdCgpOworI2VuZGlmCiAJLyoKIAkgKiBQYXJzZSBTUkFUIHRvIGRpc2NvdmVy
+IG5vZGVzLgogCSAqLwo=
+------=_Part_70575_1247777.1216714183128--
