@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbYGVXeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbYGVXel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758612AbYGVXeX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbYGVXXl
+	id S1755804AbYGVXel (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758165AbYGVXXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:23:41 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53752 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 19:23:45 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53770 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756370AbYGVXXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:23:39 -0400
-Date: Tue, 22 Jul 2008 16:17:43 -0700
+	id S1758163AbYGVXXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:23:43 -0400
+Date: Tue, 22 Jul 2008 16:17:46 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,16 +21,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, akpm@osdl.org,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [patch 46/47] hrtimer: prevent migration for raising softirq
-Message-ID: <20080722231743.GU8282@suse.de>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Patrick Boettcher <pb@linuxtv.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Ludwig Nussel <lnussel@novell.com>
+Subject: [patch 47/47] V4L/DVB (7475): Added support for Terratec Cinergy T
+	USB XXS
+Message-ID: <20080722231746.GV8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hrtimer-prevent-migration-for-raising-softirq.patch"
+Content-Disposition: inline; filename="v4l-dvb-added-support-for-terratec-cinergy-t-usb-xxs.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,49 +42,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Steven Rostedt <rostedt@goodmis.org>
+From: Alexander Simon <alexander.simon@informatik.tu-muenchen.de>
 
-commit ee3ece830f6db9837f7ac67008f532a8c1e755f4 upstream.
+commit dc88807ed61ed0fc0d57bd80a92508b9de638f5d upstream.
 
-Due to a possible deadlock, the waking of the softirq was pushed outside
-of the hrtimer base locks. See commit 0c96c5979a522c3323c30a078a70120e29b5bdbc
 
-Unfortunately this allows the task to migrate after setting up the softirq
-and raising it. Since softirqs run a queue that is per-cpu we may raise the
-softirq on the wrong CPU and this will keep the queued softirq task from
-running.
+Alexander Simon found out that the Terratec Cinergy T USB XXS is just a
+clone of another DiB7070P-based device.
 
-To solve this issue, this patch disables preemption around the releasing
-of the hrtimer lock and raising of the softirq.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Patrick Boettcher <pb@linuxtv.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Ludwig Nussel <lnussel@novell.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/hrtimer.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/media/dvb/dvb-usb/dib0700_devices.c |    7 ++++++-
+ drivers/media/dvb/dvb-usb/dvb-usb-ids.h     |    3 ++-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -896,10 +896,18 @@ hrtimer_start(struct hrtimer *timer, kti
- 	 */
- 	raise = timer->state == HRTIMER_STATE_PENDING;
+--- a/drivers/media/dvb/dvb-usb/dib0700_devices.c
++++ b/drivers/media/dvb/dvb-usb/dib0700_devices.c
+@@ -1062,6 +1062,7 @@ struct usb_device_id dib0700_usb_id_tabl
+ /* 30 */{ USB_DEVICE(USB_VID_PINNACLE,	USB_PID_PINNACLE_PCTV73E) },
+ 	{ USB_DEVICE(USB_VID_YUAN,	USB_PID_YUAN_EC372S) },
+ 	{ USB_DEVICE(USB_VID_TERRATEC,	USB_PID_TERRATEC_CINERGY_HT_EXPRESS) },
++	{ USB_DEVICE(USB_VID_TERRATEC,	USB_PID_TERRATEC_CINERGY_T_XXS) },
+ 	{ 0 }		/* Terminating entry */
+ };
+ MODULE_DEVICE_TABLE(usb, dib0700_usb_id_table);
+@@ -1251,7 +1252,7 @@ struct dvb_usb_device_properties dib0700
+ 			},
+ 		},
  
-+	/*
-+	 * We use preempt_disable to prevent this task from migrating after
-+	 * setting up the softirq and raising it. Otherwise, if me migrate
-+	 * we will raise the softirq on the wrong CPU.
-+	 */
-+	preempt_disable();
-+
- 	unlock_hrtimer_base(timer, &flags);
+-		.num_device_descs = 8,
++		.num_device_descs = 9,
+ 		.devices = {
+ 			{   "DiBcom STK7070P reference design",
+ 				{ &dib0700_usb_id_table[15], NULL },
+@@ -1285,6 +1286,10 @@ struct dvb_usb_device_properties dib0700
+ 				{ &dib0700_usb_id_table[30], NULL },
+ 				{ NULL },
+ 			},
++			{   "Terratec Cinergy T USB XXS",
++				{ &dib0700_usb_id_table[33], NULL },
++				{ NULL },
++			},
+ 		},
  
- 	if (raise)
- 		hrtimer_raise_softirq();
-+	preempt_enable();
+ 		.rc_interval      = DEFAULT_RC_INTERVAL,
+--- a/drivers/media/dvb/dvb-usb/dvb-usb-ids.h
++++ b/drivers/media/dvb/dvb-usb/dvb-usb-ids.h
+@@ -137,6 +137,7 @@
+ #define USB_PID_TERRATEC_CINERGY_DT_XS_DIVERSITY	0x005a
+ #define USB_PID_TERRATEC_CINERGY_HT_USB_XE		0x0058
+ #define USB_PID_TERRATEC_CINERGY_HT_EXPRESS		0x0060
++#define USB_PID_TERRATEC_CINERGY_T_XXS			0x0078
+ #define USB_PID_PINNACLE_EXPRESSCARD_320CX		0x022e
+ #define USB_PID_PINNACLE_PCTV2000E			0x022c
+ #define USB_PID_PINNACLE_PCTV_DVB_T_FLASH		0x0228
+@@ -191,6 +192,6 @@
+ #define USB_PID_GIGABYTE_U7000				0x7001
+ #define USB_PID_ASUS_U3000				0x171f
+ #define USB_PID_ASUS_U3100				0x173f
+-#define  USB_PID_YUAN_EC372S				0x1edc
++#define USB_PID_YUAN_EC372S				0x1edc
  
- 	return ret;
- }
+ #endif
 
 -- 
