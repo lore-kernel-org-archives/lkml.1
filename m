@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbYGVFpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbYGVFpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757266AbYGVFpg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 01:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757313AbYGVF0e
+	id S1757527AbYGVFpz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 01:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757769AbYGVF0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 01:26:34 -0400
-Received: from mx2.suse.de ([195.135.220.15]:43416 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 01:26:45 -0400
+Received: from ns2.suse.de ([195.135.220.15]:43424 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757032AbYGVF0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 01:26:32 -0400
+	id S1757743AbYGVF0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 01:26:41 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+Cc: Andi Kleen <andi@firstfloor.org>, Andi Kleen <ak@linux.intel.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 71/79] driver core: Suppress sysfs warnings for device_rename().
-Date: Mon, 21 Jul 2008 22:19:35 -0700
-Message-Id: <1216703983-21448-71-git-send-email-gregkh@suse.de>
+Subject: [PATCH 72/79] sysdev: Pass the attribute to the low level sysdev show/store function
+Date: Mon, 21 Jul 2008 22:19:36 -0700
+Message-Id: <1216703983-21448-72-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <20080722051805.GA17373@suse.de>
 References: <20080722051805.GA17373@suse.de>
@@ -23,220 +23,1238 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+From: Andi Kleen <andi@firstfloor.org>
 
-driver core: Suppress sysfs warnings for device_rename().
+This allow to dynamically generate attributes and share show/store
+functions between attributes. Right now most attributes are generated
+by special macros and lots of duplicated code. With the attribute
+passed it's instead possible to attach some data to the attribute
+and then use that in shared low level functions to do different things.
 
-Renaming network devices to an already existing name is not
-something we want sysfs to print a scary warning for, since the
-callers can deal with this correctly. So let's introduce
-sysfs_create_link_nowarn() which gets rid of the common warning.
+I need this for the dynamically generated bank attributes in the x86
+machine check code, but it'll allow some further cleanups.
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+I converted all users in tree to the new show/store prototype. It's a single
+huge patch to avoid unbisectable sections.
+
+Runtime tested: x86-32, x86-64
+Compiled only: ia64, powerpc
+Not compile tested/only grep converted: sh, arm, avr32
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/core.c   |    9 +++++----
- fs/sysfs/dir.c        |   37 +++++++++++++++++++++++++++++++++++--
- fs/sysfs/symlink.c    |   41 +++++++++++++++++++++++++++++++++--------
- fs/sysfs/sysfs.h      |    1 +
- include/linux/sysfs.h |   10 ++++++++++
- 5 files changed, 84 insertions(+), 14 deletions(-)
+ arch/arm/kernel/time.c                    |    4 ++-
+ arch/avr32/kernel/cpu.c                   |   38 ++++++++++++++++--------
+ arch/ia64/kernel/err_inject.c             |   22 +++++++++----
+ arch/powerpc/kernel/sysfs.c               |   15 +++++++--
+ arch/powerpc/platforms/cell/cbe_thermal.c |   45 +++++++++++++++++++---------
+ arch/powerpc/platforms/cell/spu_base.c    |    3 +-
+ arch/s390/kernel/smp.c                    |   36 +++++++++++++++--------
+ arch/s390/kernel/time.c                   |   35 +++++++++++++++-------
+ arch/sh/drivers/dma/dma-sysfs.c           |   15 +++++++--
+ arch/sparc64/kernel/sysfs.c               |   16 +++++++---
+ arch/x86/kernel/cpu/mcheck/mce_64.c       |   14 ++++++--
+ arch/x86/kernel/cpu/mcheck/therm_throt.c  |    1 +
+ arch/x86/kernel/microcode.c               |   10 ++++--
+ drivers/base/cpu.c                        |   10 ++++--
+ drivers/base/memory.c                     |   12 +++++--
+ drivers/base/node.c                       |   15 ++++++---
+ drivers/base/sys.c                        |    4 +-
+ drivers/base/topology.c                   |   17 ++++++++---
+ drivers/cpuidle/sysfs.c                   |   10 ++++--
+ drivers/xen/balloon.c                     |    1 +
+ include/linux/sysdev.h                    |    5 ++-
+ kernel/rtmutex-tester.c                   |    7 ++--
+ kernel/sched.c                            |    8 ++++-
+ kernel/time/clocksource.c                 |    8 ++++-
+ 24 files changed, 239 insertions(+), 112 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index c05b115..7d5c63c 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -1345,8 +1345,9 @@ int device_rename(struct device *dev, char *new_name)
- 	if (old_class_name) {
- 		new_class_name = make_class_name(dev->class->name, &dev->kobj);
- 		if (new_class_name) {
--			error = sysfs_create_link(&dev->parent->kobj,
--						  &dev->kobj, new_class_name);
-+			error = sysfs_create_link_nowarn(&dev->parent->kobj,
-+							 &dev->kobj,
-+							 new_class_name);
- 			if (error)
- 				goto out;
- 			sysfs_remove_link(&dev->parent->kobj, old_class_name);
-@@ -1354,8 +1355,8 @@ int device_rename(struct device *dev, char *new_name)
- 	}
- #else
- 	if (dev->class) {
--		error = sysfs_create_link(&dev->class->p->class_subsys.kobj,
--					  &dev->kobj, dev->bus_id);
-+		error = sysfs_create_link_nowarn(&dev->class->p->class_subsys.kobj,
-+						 &dev->kobj, dev->bus_id);
- 		if (error)
- 			goto out;
- 		sysfs_remove_link(&dev->class->p->class_subsys.kobj,
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 8c0e4b9..c1a7efb 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -398,7 +398,7 @@ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
- }
+diff --git a/arch/arm/kernel/time.c b/arch/arm/kernel/time.c
+index cc5145b..368d171 100644
+--- a/arch/arm/kernel/time.c
++++ b/arch/arm/kernel/time.c
+@@ -130,7 +130,9 @@ static const struct leds_evt_name evt_names[] = {
+ 	{ "red",   led_red_on,   led_red_off   },
+ };
  
- /**
-- *	sysfs_add_one - add sysfs_dirent to parent
-+ *	__sysfs_add_one - add sysfs_dirent to parent without warning
-  *	@acxt: addrm context to use
-  *	@sd: sysfs_dirent to be added
-  *
-@@ -417,7 +417,7 @@ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
-  *	0 on success, -EEXIST if entry with the given name already
-  *	exists.
+-static ssize_t leds_store(struct sys_device *dev, const char *buf, size_t size)
++static ssize_t leds_store(struct sys_device *dev,
++			struct sysdev_attribute *attr,
++			const char *buf, size_t size)
+ {
+ 	int ret = -EINVAL, len = strcspn(buf, " ");
+ 
+diff --git a/arch/avr32/kernel/cpu.c b/arch/avr32/kernel/cpu.c
+index b8409ca..e84faff 100644
+--- a/arch/avr32/kernel/cpu.c
++++ b/arch/avr32/kernel/cpu.c
+@@ -26,14 +26,16 @@ static DEFINE_PER_CPU(struct cpu, cpu_devices);
+  * XXX: If/when a SMP-capable implementation of AVR32 will ever be
+  * made, we must make sure that the code executes on the correct CPU.
   */
--int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-+int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+-static ssize_t show_pc0event(struct sys_device *dev, char *buf)
++static ssize_t show_pc0event(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
  {
- 	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
- 		return -EEXIST;
-@@ -435,6 +435,39 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ 	unsigned long pccr;
+ 
+ 	pccr = sysreg_read(PCCR);
+ 	return sprintf(buf, "0x%lx\n", (pccr >> 12) & 0x3f);
  }
- 
- /**
-+ *	sysfs_add_one - add sysfs_dirent to parent
-+ *	@acxt: addrm context to use
-+ *	@sd: sysfs_dirent to be added
-+ *
-+ *	Get @acxt->parent_sd and set sd->s_parent to it and increment
-+ *	nlink of parent inode if @sd is a directory and link into the
-+ *	children list of the parent.
-+ *
-+ *	This function should be called between calls to
-+ *	sysfs_addrm_start() and sysfs_addrm_finish() and should be
-+ *	passed the same @acxt as passed to sysfs_addrm_start().
-+ *
-+ *	LOCKING:
-+ *	Determined by sysfs_addrm_start().
-+ *
-+ *	RETURNS:
-+ *	0 on success, -EEXIST if entry with the given name already
-+ *	exists.
-+ */
-+int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-+{
-+	int ret;
-+
-+	ret = __sysfs_add_one(acxt, sd);
-+	if (ret == -EEXIST) {
-+		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
-+		       "can not be created\n", sd->s_name);
-+		WARN_ON(1);
-+	}
-+	return ret;
-+}
-+
-+/**
-  *	sysfs_remove_one - remove sysfs_dirent from parent
-  *	@acxt: addrm context to use
-  *	@sd: sysfs_dirent to be removed
-diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-index 817f596..a3ba217 100644
---- a/fs/sysfs/symlink.c
-+++ b/fs/sysfs/symlink.c
-@@ -19,13 +19,8 @@
- 
- #include "sysfs.h"
- 
--/**
-- *	sysfs_create_link - create symlink between two objects.
-- *	@kobj:	object whose directory we're creating the link in.
-- *	@target:	object we're pointing to.
-- *	@name:		name of the symlink.
-- */
--int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char * name)
-+static int sysfs_do_create_link(struct kobject *kobj, struct kobject *target,
-+				const char *name, int warn)
+-static ssize_t store_pc0event(struct sys_device *dev, const char *buf,
++static ssize_t store_pc0event(struct sys_device *dev,
++			struct sysdev_attribute *attr, const char *buf,
+ 			      size_t count)
  {
- 	struct sysfs_dirent *parent_sd = NULL;
- 	struct sysfs_dirent *target_sd = NULL;
-@@ -65,7 +60,10 @@ int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char
- 	target_sd = NULL;	/* reference is now owned by the symlink */
- 
- 	sysfs_addrm_start(&acxt, parent_sd);
--	error = sysfs_add_one(&acxt, sd);
-+	if (warn)
-+		error = sysfs_add_one(&acxt, sd);
-+	else
-+		error = __sysfs_add_one(&acxt, sd);
- 	sysfs_addrm_finish(&acxt);
- 
- 	if (error)
-@@ -80,6 +78,33 @@ int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char
+ 	unsigned long val;
+@@ -46,15 +48,17 @@ static ssize_t store_pc0event(struct sys_device *dev, const char *buf,
+ 	sysreg_write(PCCR, val);
+ 	return count;
  }
- 
- /**
-+ *	sysfs_create_link - create symlink between two objects.
-+ *	@kobj:	object whose directory we're creating the link in.
-+ *	@target:	object we're pointing to.
-+ *	@name:		name of the symlink.
-+ */
-+int sysfs_create_link(struct kobject *kobj, struct kobject *target,
-+		      const char *name)
-+{
-+	return sysfs_do_create_link(kobj, target, name, 1);
-+}
-+
-+/**
-+ *	sysfs_create_link_nowarn - create symlink between two objects.
-+ *	@kobj:	object whose directory we're creating the link in.
-+ *	@target:	object we're pointing to.
-+ *	@name:		name of the symlink.
-+ *
-+ *	This function does the same as sysf_create_link(), but it
-+ *	doesn't warn if the link already exists.
-+ */
-+int sysfs_create_link_nowarn(struct kobject *kobj, struct kobject *target,
-+			     const char *name)
-+{
-+	return sysfs_do_create_link(kobj, target, name, 0);
-+}
-+
-+/**
-  *	sysfs_remove_link - remove symlink in object's directory.
-  *	@kobj:	object we're acting for.
-  *	@name:	name of the symlink to remove.
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index ce4e15f..a5db496 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -107,6 +107,7 @@ struct sysfs_dirent *sysfs_get_active_two(struct sysfs_dirent *sd);
- void sysfs_put_active_two(struct sysfs_dirent *sd);
- void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
- 		       struct sysfs_dirent *parent_sd);
-+int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
- int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
- void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
- void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 7858eac..37fa241 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -101,6 +101,9 @@ void sysfs_remove_bin_file(struct kobject *kobj, struct bin_attribute *attr);
- 
- int __must_check sysfs_create_link(struct kobject *kobj, struct kobject *target,
- 				   const char *name);
-+int __must_check sysfs_create_link_nowarn(struct kobject *kobj,
-+					  struct kobject *target,
-+					  const char *name);
- void sysfs_remove_link(struct kobject *kobj, const char *name);
- 
- int __must_check sysfs_create_group(struct kobject *kobj,
-@@ -180,6 +183,13 @@ static inline int sysfs_create_link(struct kobject *kobj,
- 	return 0;
- }
- 
-+static inline int sysfs_create_link_nowarn(struct kobject *kobj,
-+					   struct kobject *target,
-+					   const char *name)
-+{
-+	return 0;
-+}
-+
- static inline void sysfs_remove_link(struct kobject *kobj, const char *name)
+-static ssize_t show_pc0count(struct sys_device *dev, char *buf)
++static ssize_t show_pc0count(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
  {
+ 	unsigned long pcnt0;
+ 
+ 	pcnt0 = sysreg_read(PCNT0);
+ 	return sprintf(buf, "%lu\n", pcnt0);
  }
+-static ssize_t store_pc0count(struct sys_device *dev, const char *buf,
+-			      size_t count)
++static ssize_t store_pc0count(struct sys_device *dev,
++				struct sysdev_attribute *attr,
++				const char *buf, size_t count)
+ {
+ 	unsigned long val;
+ 	char *endp;
+@@ -67,14 +71,16 @@ static ssize_t store_pc0count(struct sys_device *dev, const char *buf,
+ 	return count;
+ }
+ 
+-static ssize_t show_pc1event(struct sys_device *dev, char *buf)
++static ssize_t show_pc1event(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	unsigned long pccr;
+ 
+ 	pccr = sysreg_read(PCCR);
+ 	return sprintf(buf, "0x%lx\n", (pccr >> 18) & 0x3f);
+ }
+-static ssize_t store_pc1event(struct sys_device *dev, const char *buf,
++static ssize_t store_pc1event(struct sys_device *dev,
++			      struct sysdev_attribute *attr, const char *buf,
+ 			      size_t count)
+ {
+ 	unsigned long val;
+@@ -87,14 +93,16 @@ static ssize_t store_pc1event(struct sys_device *dev, const char *buf,
+ 	sysreg_write(PCCR, val);
+ 	return count;
+ }
+-static ssize_t show_pc1count(struct sys_device *dev, char *buf)
++static ssize_t show_pc1count(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	unsigned long pcnt1;
+ 
+ 	pcnt1 = sysreg_read(PCNT1);
+ 	return sprintf(buf, "%lu\n", pcnt1);
+ }
+-static ssize_t store_pc1count(struct sys_device *dev, const char *buf,
++static ssize_t store_pc1count(struct sys_device *dev,
++				struct sysdev_attribute *attr, const char *buf,
+ 			      size_t count)
+ {
+ 	unsigned long val;
+@@ -108,14 +116,16 @@ static ssize_t store_pc1count(struct sys_device *dev, const char *buf,
+ 	return count;
+ }
+ 
+-static ssize_t show_pccycles(struct sys_device *dev, char *buf)
++static ssize_t show_pccycles(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	unsigned long pccnt;
+ 
+ 	pccnt = sysreg_read(PCCNT);
+ 	return sprintf(buf, "%lu\n", pccnt);
+ }
+-static ssize_t store_pccycles(struct sys_device *dev, const char *buf,
++static ssize_t store_pccycles(struct sys_device *dev,
++				struct sysdev_attribute *attr, const char *buf,
+ 			      size_t count)
+ {
+ 	unsigned long val;
+@@ -129,14 +139,16 @@ static ssize_t store_pccycles(struct sys_device *dev, const char *buf,
+ 	return count;
+ }
+ 
+-static ssize_t show_pcenable(struct sys_device *dev, char *buf)
++static ssize_t show_pcenable(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	unsigned long pccr;
+ 
+ 	pccr = sysreg_read(PCCR);
+ 	return sprintf(buf, "%c\n", (pccr & 1)?'1':'0');
+ }
+-static ssize_t store_pcenable(struct sys_device *dev, const char *buf,
++static ssize_t store_pcenable(struct sys_device *dev,
++			      struct sysdev_attribute *attr, const char *buf,
+ 			      size_t count)
+ {
+ 	unsigned long pccr, val;
+diff --git a/arch/ia64/kernel/err_inject.c b/arch/ia64/kernel/err_inject.c
+index b642648..c539c68 100644
+--- a/arch/ia64/kernel/err_inject.c
++++ b/arch/ia64/kernel/err_inject.c
+@@ -55,7 +55,8 @@ static u64 resources[NR_CPUS];
+ 
+ #define show(name) 							\
+ static ssize_t 								\
+-show_##name(struct sys_device *dev, char *buf)				\
++show_##name(struct sys_device *dev, struct sysdev_attribute *attr,	\
++		char *buf)						\
+ {									\
+ 	u32 cpu=dev->id;						\
+ 	return sprintf(buf, "%lx\n", name[cpu]);			\
+@@ -63,7 +64,8 @@ show_##name(struct sys_device *dev, char *buf)				\
+ 
+ #define store(name)							\
+ static ssize_t 								\
+-store_##name(struct sys_device *dev, const char *buf, size_t size)	\
++store_##name(struct sys_device *dev, struct sysdev_attribute *attr,	\
++					const char *buf, size_t size)	\
+ {									\
+ 	unsigned int cpu=dev->id;					\
+ 	name[cpu] = simple_strtoull(buf, NULL, 16);			\
+@@ -76,7 +78,8 @@ show(call_start)
+  * processor. The cpu number in driver is only used for storing data.
+  */
+ static ssize_t
+-store_call_start(struct sys_device *dev, const char *buf, size_t size)
++store_call_start(struct sys_device *dev, struct sysdev_attribute *attr,
++		const char *buf, size_t size)
+ {
+ 	unsigned int cpu=dev->id;
+ 	unsigned long call_start = simple_strtoull(buf, NULL, 16);
+@@ -124,14 +127,16 @@ show(err_type_info)
+ store(err_type_info)
+ 
+ static ssize_t
+-show_virtual_to_phys(struct sys_device *dev, char *buf)
++show_virtual_to_phys(struct sys_device *dev, struct sysdev_attribute *attr,
++			char *buf)
+ {
+ 	unsigned int cpu=dev->id;
+ 	return sprintf(buf, "%lx\n", phys_addr[cpu]);
+ }
+ 
+ static ssize_t
+-store_virtual_to_phys(struct sys_device *dev, const char *buf, size_t size)
++store_virtual_to_phys(struct sys_device *dev, struct sysdev_attribute *attr,
++			const char *buf, size_t size)
+ {
+ 	unsigned int cpu=dev->id;
+ 	u64 virt_addr=simple_strtoull(buf, NULL, 16);
+@@ -154,7 +159,8 @@ show(err_struct_info)
+ store(err_struct_info)
+ 
+ static ssize_t
+-show_err_data_buffer(struct sys_device *dev, char *buf)
++show_err_data_buffer(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	unsigned int cpu=dev->id;
+ 
+@@ -165,7 +171,9 @@ show_err_data_buffer(struct sys_device *dev, char *buf)
+ }
+ 
+ static ssize_t
+-store_err_data_buffer(struct sys_device *dev, const char *buf, size_t size)
++store_err_data_buffer(struct sys_device *dev,
++			struct sysdev_attribute *attr,
++			const char *buf, size_t size)
+ {
+ 	unsigned int cpu=dev->id;
+ 	int ret;
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index c8127f8..aba0ba9 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -28,7 +28,9 @@ static DEFINE_PER_CPU(struct cpu, cpu_devices);
+ /* Time in microseconds we delay before sleeping in the idle loop */
+ DEFINE_PER_CPU(unsigned long, smt_snooze_delay) = { 100 };
+ 
+-static ssize_t store_smt_snooze_delay(struct sys_device *dev, const char *buf,
++static ssize_t store_smt_snooze_delay(struct sys_device *dev,
++				      struct sysdev_attribute *attr,
++				      const char *buf,
+ 				      size_t count)
+ {
+ 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
+@@ -44,7 +46,9 @@ static ssize_t store_smt_snooze_delay(struct sys_device *dev, const char *buf,
+ 	return count;
+ }
+ 
+-static ssize_t show_smt_snooze_delay(struct sys_device *dev, char *buf)
++static ssize_t show_smt_snooze_delay(struct sys_device *dev,
++				     struct sysdev_attribute *attr,
++				     char *buf)
+ {
+ 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
+ 
+@@ -152,14 +156,17 @@ static unsigned long write_##NAME(unsigned long val) \
+ 	mtspr(ADDRESS, val); \
+ 	return 0; \
+ } \
+-static ssize_t show_##NAME(struct sys_device *dev, char *buf) \
++static ssize_t show_##NAME(struct sys_device *dev, \
++			struct sysdev_attribute *attr, \
++			char *buf) \
+ { \
+ 	struct cpu *cpu = container_of(dev, struct cpu, sysdev); \
+ 	unsigned long val = run_on_cpu(cpu->sysdev.id, read_##NAME, 0); \
+ 	return sprintf(buf, "%lx\n", val); \
+ } \
+ static ssize_t __used \
+-	store_##NAME(struct sys_device *dev, const char *buf, size_t count) \
++	store_##NAME(struct sys_device *dev, struct sysdev_attribute *attr, \
++			const char *buf, size_t count) \
+ { \
+ 	struct cpu *cpu = container_of(dev, struct cpu, sysdev); \
+ 	unsigned long val; \
+diff --git a/arch/powerpc/platforms/cell/cbe_thermal.c b/arch/powerpc/platforms/cell/cbe_thermal.c
+index 4852bf3..4d4c8c1 100644
+--- a/arch/powerpc/platforms/cell/cbe_thermal.c
++++ b/arch/powerpc/platforms/cell/cbe_thermal.c
+@@ -97,7 +97,8 @@ static u8 spu_read_register_value(struct sys_device *sysdev, union spe_reg __iom
+ 	return value.spe[spu->spe_id];
+ }
+ 
+-static ssize_t spu_show_temp(struct sys_device *sysdev, char *buf)
++static ssize_t spu_show_temp(struct sys_device *sysdev, struct sysdev_attribute *attr,
++			char *buf)
+ {
+ 	u8 value;
+ 	struct cbe_pmd_regs __iomem *pmd_regs;
+@@ -146,32 +147,38 @@ static ssize_t store_throttle(struct cbe_pmd_regs __iomem *pmd_regs, const char
+ 	return size;
+ }
+ 
+-static ssize_t spu_show_throttle_end(struct sys_device *sysdev, char *buf)
++static ssize_t spu_show_throttle_end(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	return show_throttle(get_pmd_regs(sysdev), buf, 0);
+ }
+ 
+-static ssize_t spu_show_throttle_begin(struct sys_device *sysdev, char *buf)
++static ssize_t spu_show_throttle_begin(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	return show_throttle(get_pmd_regs(sysdev), buf, 8);
+ }
+ 
+-static ssize_t spu_show_throttle_full_stop(struct sys_device *sysdev, char *buf)
++static ssize_t spu_show_throttle_full_stop(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	return show_throttle(get_pmd_regs(sysdev), buf, 16);
+ }
+ 
+-static ssize_t spu_store_throttle_end(struct sys_device *sysdev, const char *buf, size_t size)
++static ssize_t spu_store_throttle_end(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, const char *buf, size_t size)
+ {
+ 	return store_throttle(get_pmd_regs(sysdev), buf, size, 0);
+ }
+ 
+-static ssize_t spu_store_throttle_begin(struct sys_device *sysdev, const char *buf, size_t size)
++static ssize_t spu_store_throttle_begin(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, const char *buf, size_t size)
+ {
+ 	return store_throttle(get_pmd_regs(sysdev), buf, size, 8);
+ }
+ 
+-static ssize_t spu_store_throttle_full_stop(struct sys_device *sysdev, const char *buf, size_t size)
++static ssize_t spu_store_throttle_full_stop(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, const char *buf, size_t size)
+ {
+ 	return store_throttle(get_pmd_regs(sysdev), buf, size, 16);
+ }
+@@ -192,43 +199,51 @@ static ssize_t ppe_show_temp(struct sys_device *sysdev, char *buf, int pos)
+ 
+ /* shows the temperature of the DTS on the PPE,
+  * located near the linear thermal sensor */
+-static ssize_t ppe_show_temp0(struct sys_device *sysdev, char *buf)
++static ssize_t ppe_show_temp0(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	return ppe_show_temp(sysdev, buf, 32);
+ }
+ 
+ /* shows the temperature of the second DTS on the PPE */
+-static ssize_t ppe_show_temp1(struct sys_device *sysdev, char *buf)
++static ssize_t ppe_show_temp1(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	return ppe_show_temp(sysdev, buf, 0);
+ }
+ 
+-static ssize_t ppe_show_throttle_end(struct sys_device *sysdev, char *buf)
++static ssize_t ppe_show_throttle_end(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	return show_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, 32);
+ }
+ 
+-static ssize_t ppe_show_throttle_begin(struct sys_device *sysdev, char *buf)
++static ssize_t ppe_show_throttle_begin(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	return show_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, 40);
+ }
+ 
+-static ssize_t ppe_show_throttle_full_stop(struct sys_device *sysdev, char *buf)
++static ssize_t ppe_show_throttle_full_stop(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	return show_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, 48);
+ }
+ 
+-static ssize_t ppe_store_throttle_end(struct sys_device *sysdev, const char *buf, size_t size)
++static ssize_t ppe_store_throttle_end(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, const char *buf, size_t size)
+ {
+ 	return store_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, size, 32);
+ }
+ 
+-static ssize_t ppe_store_throttle_begin(struct sys_device *sysdev, const char *buf, size_t size)
++static ssize_t ppe_store_throttle_begin(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, const char *buf, size_t size)
+ {
+ 	return store_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, size, 40);
+ }
+ 
+-static ssize_t ppe_store_throttle_full_stop(struct sys_device *sysdev, const char *buf, size_t size)
++static ssize_t ppe_store_throttle_full_stop(struct sys_device *sysdev,
++			struct sysdev_attribute *attr, const char *buf, size_t size)
+ {
+ 	return store_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, size, 48);
+ }
+diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
+index 78f905b..a5bdb89 100644
+--- a/arch/powerpc/platforms/cell/spu_base.c
++++ b/arch/powerpc/platforms/cell/spu_base.c
+@@ -703,7 +703,8 @@ static unsigned long long spu_acct_time(struct spu *spu,
+ }
+ 
+ 
+-static ssize_t spu_stat_show(struct sys_device *sysdev, char *buf)
++static ssize_t spu_stat_show(struct sys_device *sysdev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct spu *spu = container_of(sysdev, struct spu, sysdev);
+ 
+diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
+index b678103..b795b3e 100644
+--- a/arch/s390/kernel/smp.c
++++ b/arch/s390/kernel/smp.c
+@@ -864,7 +864,8 @@ int setup_profiling_timer(unsigned int multiplier)
+ }
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-static ssize_t cpu_configure_show(struct sys_device *dev, char *buf)
++static ssize_t cpu_configure_show(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	ssize_t count;
+ 
+@@ -874,8 +875,9 @@ static ssize_t cpu_configure_show(struct sys_device *dev, char *buf)
+ 	return count;
+ }
+ 
+-static ssize_t cpu_configure_store(struct sys_device *dev, const char *buf,
+-				   size_t count)
++static ssize_t cpu_configure_store(struct sys_device *dev,
++				  struct sysdev_attribute *attr,
++				  const char *buf, size_t count)
+ {
+ 	int cpu = dev->id;
+ 	int val, rc;
+@@ -922,7 +924,8 @@ out:
+ static SYSDEV_ATTR(configure, 0644, cpu_configure_show, cpu_configure_store);
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
+-static ssize_t cpu_polarization_show(struct sys_device *dev, char *buf)
++static ssize_t cpu_polarization_show(struct sys_device *dev,
++				     struct sysdev_attribute *attr, char *buf)
+ {
+ 	int cpu = dev->id;
+ 	ssize_t count;
+@@ -950,7 +953,8 @@ static ssize_t cpu_polarization_show(struct sys_device *dev, char *buf)
+ }
+ static SYSDEV_ATTR(polarization, 0444, cpu_polarization_show, NULL);
+ 
+-static ssize_t show_cpu_address(struct sys_device *dev, char *buf)
++static ssize_t show_cpu_address(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	return sprintf(buf, "%d\n", __cpu_logical_map[dev->id]);
+ }
+@@ -970,7 +974,8 @@ static struct attribute_group cpu_common_attr_group = {
+ 	.attrs = cpu_common_attrs,
+ };
+ 
+-static ssize_t show_capability(struct sys_device *dev, char *buf)
++static ssize_t show_capability(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	unsigned int capability;
+ 	int rc;
+@@ -982,7 +987,8 @@ static ssize_t show_capability(struct sys_device *dev, char *buf)
+ }
+ static SYSDEV_ATTR(capability, 0444, show_capability, NULL);
+ 
+-static ssize_t show_idle_count(struct sys_device *dev, char *buf)
++static ssize_t show_idle_count(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct s390_idle_data *idle;
+ 	unsigned long long idle_count;
+@@ -995,7 +1001,8 @@ static ssize_t show_idle_count(struct sys_device *dev, char *buf)
+ }
+ static SYSDEV_ATTR(idle_count, 0444, show_idle_count, NULL);
+ 
+-static ssize_t show_idle_time(struct sys_device *dev, char *buf)
++static ssize_t show_idle_time(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct s390_idle_data *idle;
+ 	unsigned long long new_time;
+@@ -1112,7 +1119,9 @@ out:
+ 	return rc;
+ }
+ 
+-static ssize_t __ref rescan_store(struct sys_device *dev, const char *buf,
++static ssize_t __ref rescan_store(struct sys_device *dev,
++				  struct sysdev_attribute *attr,
++				  const char *buf,
+ 				  size_t count)
+ {
+ 	int rc;
+@@ -1123,7 +1132,9 @@ static ssize_t __ref rescan_store(struct sys_device *dev, const char *buf,
+ static SYSDEV_ATTR(rescan, 0200, NULL, rescan_store);
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
+-static ssize_t dispatching_show(struct sys_device *dev, char *buf)
++static ssize_t dispatching_show(struct sys_device *dev,
++				struct sysdev_attribute *attr,
++				char *buf)
+ {
+ 	ssize_t count;
+ 
+@@ -1133,8 +1144,9 @@ static ssize_t dispatching_show(struct sys_device *dev, char *buf)
+ 	return count;
+ }
+ 
+-static ssize_t dispatching_store(struct sys_device *dev, const char *buf,
+-				 size_t count)
++static ssize_t dispatching_store(struct sys_device *dev,
++				 struct sysdev_attribute *attr,
++				 const char *buf, size_t count)
+ {
+ 	int val, rc;
+ 	char delim;
+diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
+index f2cede3..ab70d9b 100644
+--- a/arch/s390/kernel/time.c
++++ b/arch/s390/kernel/time.c
+@@ -1100,7 +1100,9 @@ static inline struct etr_aib *etr_aib_from_dev(struct sys_device *dev)
+ 		return etr_port1_online ? &etr_port1 : NULL;
+ }
+ 
+-static ssize_t etr_online_show(struct sys_device *dev, char *buf)
++static ssize_t etr_online_show(struct sys_device *dev,
++				struct sysdev_attribute *attr,
++				char *buf)
+ {
+ 	unsigned int online;
+ 
+@@ -1109,7 +1111,8 @@ static ssize_t etr_online_show(struct sys_device *dev, char *buf)
+ }
+ 
+ static ssize_t etr_online_store(struct sys_device *dev,
+-			      const char *buf, size_t count)
++				struct sysdev_attribute *attr,
++				const char *buf, size_t count)
+ {
+ 	unsigned int value;
+ 
+@@ -1136,7 +1139,9 @@ static ssize_t etr_online_store(struct sys_device *dev,
+ 
+ static SYSDEV_ATTR(online, 0600, etr_online_show, etr_online_store);
+ 
+-static ssize_t etr_stepping_control_show(struct sys_device *dev, char *buf)
++static ssize_t etr_stepping_control_show(struct sys_device *dev,
++					struct sysdev_attribute *attr,
++					char *buf)
+ {
+ 	return sprintf(buf, "%i\n", (dev == &etr_port0_dev) ?
+ 		       etr_eacr.e0 : etr_eacr.e1);
+@@ -1144,7 +1149,8 @@ static ssize_t etr_stepping_control_show(struct sys_device *dev, char *buf)
+ 
+ static SYSDEV_ATTR(stepping_control, 0400, etr_stepping_control_show, NULL);
+ 
+-static ssize_t etr_mode_code_show(struct sys_device *dev, char *buf)
++static ssize_t etr_mode_code_show(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	if (!etr_port0_online && !etr_port1_online)
+ 		/* Status word is not uptodate if both ports are offline. */
+@@ -1155,7 +1161,8 @@ static ssize_t etr_mode_code_show(struct sys_device *dev, char *buf)
+ 
+ static SYSDEV_ATTR(state_code, 0400, etr_mode_code_show, NULL);
+ 
+-static ssize_t etr_untuned_show(struct sys_device *dev, char *buf)
++static ssize_t etr_untuned_show(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct etr_aib *aib = etr_aib_from_dev(dev);
+ 
+@@ -1166,7 +1173,8 @@ static ssize_t etr_untuned_show(struct sys_device *dev, char *buf)
+ 
+ static SYSDEV_ATTR(untuned, 0400, etr_untuned_show, NULL);
+ 
+-static ssize_t etr_network_id_show(struct sys_device *dev, char *buf)
++static ssize_t etr_network_id_show(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct etr_aib *aib = etr_aib_from_dev(dev);
+ 
+@@ -1177,7 +1185,8 @@ static ssize_t etr_network_id_show(struct sys_device *dev, char *buf)
+ 
+ static SYSDEV_ATTR(network, 0400, etr_network_id_show, NULL);
+ 
+-static ssize_t etr_id_show(struct sys_device *dev, char *buf)
++static ssize_t etr_id_show(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct etr_aib *aib = etr_aib_from_dev(dev);
+ 
+@@ -1188,7 +1197,8 @@ static ssize_t etr_id_show(struct sys_device *dev, char *buf)
+ 
+ static SYSDEV_ATTR(id, 0400, etr_id_show, NULL);
+ 
+-static ssize_t etr_port_number_show(struct sys_device *dev, char *buf)
++static ssize_t etr_port_number_show(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct etr_aib *aib = etr_aib_from_dev(dev);
+ 
+@@ -1199,7 +1209,8 @@ static ssize_t etr_port_number_show(struct sys_device *dev, char *buf)
+ 
+ static SYSDEV_ATTR(port, 0400, etr_port_number_show, NULL);
+ 
+-static ssize_t etr_coupled_show(struct sys_device *dev, char *buf)
++static ssize_t etr_coupled_show(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct etr_aib *aib = etr_aib_from_dev(dev);
+ 
+@@ -1210,7 +1221,8 @@ static ssize_t etr_coupled_show(struct sys_device *dev, char *buf)
+ 
+ static SYSDEV_ATTR(coupled, 0400, etr_coupled_show, NULL);
+ 
+-static ssize_t etr_local_time_show(struct sys_device *dev, char *buf)
++static ssize_t etr_local_time_show(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct etr_aib *aib = etr_aib_from_dev(dev);
+ 
+@@ -1221,7 +1233,8 @@ static ssize_t etr_local_time_show(struct sys_device *dev, char *buf)
+ 
+ static SYSDEV_ATTR(local_time, 0400, etr_local_time_show, NULL);
+ 
+-static ssize_t etr_utc_offset_show(struct sys_device *dev, char *buf)
++static ssize_t etr_utc_offset_show(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct etr_aib *aib = etr_aib_from_dev(dev);
+ 
+diff --git a/arch/sh/drivers/dma/dma-sysfs.c b/arch/sh/drivers/dma/dma-sysfs.c
+index 51b57c0..347ee11 100644
+--- a/arch/sh/drivers/dma/dma-sysfs.c
++++ b/arch/sh/drivers/dma/dma-sysfs.c
+@@ -23,7 +23,8 @@ static struct sysdev_class dma_sysclass = {
+ };
+ EXPORT_SYMBOL(dma_sysclass);
+ 
+-static ssize_t dma_show_devices(struct sys_device *dev, char *buf)
++static ssize_t dma_show_devices(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	ssize_t len = 0;
+ 	int i;
+@@ -57,13 +58,15 @@ static int __init dma_sysclass_init(void)
+ }
+ postcore_initcall(dma_sysclass_init);
+ 
+-static ssize_t dma_show_dev_id(struct sys_device *dev, char *buf)
++static ssize_t dma_show_dev_id(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct dma_channel *channel = to_dma_channel(dev);
+ 	return sprintf(buf, "%s\n", channel->dev_id);
+ }
+ 
+ static ssize_t dma_store_dev_id(struct sys_device *dev,
++				struct sysdev_attribute *attr,
+ 				const char *buf, size_t count)
+ {
+ 	struct dma_channel *channel = to_dma_channel(dev);
+@@ -74,6 +77,7 @@ static ssize_t dma_store_dev_id(struct sys_device *dev,
+ static SYSDEV_ATTR(dev_id, S_IRUGO | S_IWUSR, dma_show_dev_id, dma_store_dev_id);
+ 
+ static ssize_t dma_store_config(struct sys_device *dev,
++				struct sysdev_attribute *attr,
+ 				const char *buf, size_t count)
+ {
+ 	struct dma_channel *channel = to_dma_channel(dev);
+@@ -87,13 +91,15 @@ static ssize_t dma_store_config(struct sys_device *dev,
+ 
+ static SYSDEV_ATTR(config, S_IWUSR, NULL, dma_store_config);
+ 
+-static ssize_t dma_show_mode(struct sys_device *dev, char *buf)
++static ssize_t dma_show_mode(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct dma_channel *channel = to_dma_channel(dev);
+ 	return sprintf(buf, "0x%08x\n", channel->mode);
+ }
+ 
+ static ssize_t dma_store_mode(struct sys_device *dev,
++			      struct sysdev_attribute *attr,
+ 			      const char *buf, size_t count)
+ {
+ 	struct dma_channel *channel = to_dma_channel(dev);
+@@ -104,7 +110,8 @@ static ssize_t dma_store_mode(struct sys_device *dev,
+ static SYSDEV_ATTR(mode, S_IRUGO | S_IWUSR, dma_show_mode, dma_store_mode);
+ 
+ #define dma_ro_attr(field, fmt)						\
+-static ssize_t dma_show_##field(struct sys_device *dev, char *buf)	\
++static ssize_t dma_show_##field(struct sys_device *dev, 		\
++				struct sysdev_attribute *attr, char *buf)\
+ {									\
+ 	struct dma_channel *channel = to_dma_channel(dev);		\
+ 	return sprintf(buf, fmt, channel->field);			\
+diff --git a/arch/sparc64/kernel/sysfs.c b/arch/sparc64/kernel/sysfs.c
+index e885034..84e5ce1 100644
+--- a/arch/sparc64/kernel/sysfs.c
++++ b/arch/sparc64/kernel/sysfs.c
+@@ -14,7 +14,8 @@
+ static DEFINE_PER_CPU(struct hv_mmu_statistics, mmu_stats) __attribute__((aligned(64)));
+ 
+ #define SHOW_MMUSTAT_ULONG(NAME) \
+-static ssize_t show_##NAME(struct sys_device *dev, char *buf) \
++static ssize_t show_##NAME(struct sys_device *dev, \
++			struct sysdev_attribute *attr, char *buf) \
+ { \
+ 	struct hv_mmu_statistics *p = &per_cpu(mmu_stats, dev->id); \
+ 	return sprintf(buf, "%lu\n", p->NAME); \
+@@ -135,13 +136,16 @@ static unsigned long write_mmustat_enable(unsigned long val)
+ 	return sun4v_mmustat_conf(ra, &orig_ra);
+ }
+ 
+-static ssize_t show_mmustat_enable(struct sys_device *s, char *buf)
++static ssize_t show_mmustat_enable(struct sys_device *s,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	unsigned long val = run_on_cpu(s->id, read_mmustat_enable, 0);
+ 	return sprintf(buf, "%lx\n", val);
+ }
+ 
+-static ssize_t store_mmustat_enable(struct sys_device *s, const char *buf, size_t count)
++static ssize_t store_mmustat_enable(struct sys_device *s,
++			struct sysdev_attribute *attr, const char *buf,
++			size_t count)
+ {
+ 	unsigned long val, err;
+ 	int ret = sscanf(buf, "%ld", &val);
+@@ -179,14 +183,16 @@ static void unregister_mmu_stats(struct sys_device *s)
+ #endif
+ 
+ #define SHOW_CPUDATA_ULONG_NAME(NAME, MEMBER) \
+-static ssize_t show_##NAME(struct sys_device *dev, char *buf) \
++static ssize_t show_##NAME(struct sys_device *dev, \
++		struct sysdev_attribute *attr, char *buf) \
+ { \
+ 	cpuinfo_sparc *c = &cpu_data(dev->id); \
+ 	return sprintf(buf, "%lu\n", c->MEMBER); \
+ }
+ 
+ #define SHOW_CPUDATA_UINT_NAME(NAME, MEMBER) \
+-static ssize_t show_##NAME(struct sys_device *dev, char *buf) \
++static ssize_t show_##NAME(struct sys_device *dev, \
++		struct sysdev_attribute *attr, char *buf) \
+ { \
+ 	cpuinfo_sparc *c = &cpu_data(dev->id); \
+ 	return sprintf(buf, "%u\n", c->MEMBER); \
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
+index c4a7ec3..e6a4d5f 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
+@@ -762,10 +762,14 @@ DEFINE_PER_CPU(struct sys_device, device_mce);
+ 
+ /* Why are there no generic functions for this? */
+ #define ACCESSOR(name, var, start) \
+-	static ssize_t show_ ## name(struct sys_device *s, char *buf) {	\
++	static ssize_t show_ ## name(struct sys_device *s,		\
++				     struct sysdev_attribute *attr,	\
++				     char *buf) {			\
+ 		return sprintf(buf, "%lx\n", (unsigned long)var);	\
+ 	}								\
+-	static ssize_t set_ ## name(struct sys_device *s,const char *buf,size_t siz) { \
++	static ssize_t set_ ## name(struct sys_device *s,		\
++				    struct sysdev_attribute *attr,	\
++				    const char *buf, size_t siz) {	\
+ 		char *end;						\
+ 		unsigned long new = simple_strtoul(buf, &end, 0);	\
+ 		if (end == buf) return -EINVAL;				\
+@@ -786,14 +790,16 @@ ACCESSOR(bank3ctl,bank[3],mce_restart())
+ ACCESSOR(bank4ctl,bank[4],mce_restart())
+ ACCESSOR(bank5ctl,bank[5],mce_restart())
+ 
+-static ssize_t show_trigger(struct sys_device *s, char *buf)
++static ssize_t show_trigger(struct sys_device *s, struct sysdev_attribute *attr,
++				char *buf)
+ {
+ 	strcpy(buf, trigger);
+ 	strcat(buf, "\n");
+ 	return strlen(trigger) + 1;
+ }
+ 
+-static ssize_t set_trigger(struct sys_device *s,const char *buf,size_t siz)
++static ssize_t set_trigger(struct sys_device *s, struct sysdev_attribute *attr,
++				const char *buf,size_t siz)
+ {
+ 	char *p;
+ 	int len;
+diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+index 1f4cc48..d5ae224 100644
+--- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+@@ -35,6 +35,7 @@ atomic_t therm_throt_en = ATOMIC_INIT(0);
+ 
+ #define define_therm_throt_sysdev_show_func(name)                            \
+ static ssize_t therm_throt_sysdev_show_##name(struct sys_device *dev,        \
++					struct sysdev_attribute *attr,	     \
+                                               char *buf)                     \
+ {                                                                            \
+ 	unsigned int cpu = dev->id;                                          \
+diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
+index 56b9331..fc47906 100644
+--- a/arch/x86/kernel/microcode.c
++++ b/arch/x86/kernel/microcode.c
+@@ -644,7 +644,9 @@ static void microcode_fini_cpu(int cpu)
+ 	mutex_unlock(&microcode_mutex);
+ }
+ 
+-static ssize_t reload_store(struct sys_device *dev, const char *buf, size_t sz)
++static ssize_t reload_store(struct sys_device *dev,
++			    struct sysdev_attribute *attr,
++			    const char *buf, size_t sz)
+ {
+ 	struct ucode_cpu_info *uci = ucode_cpu_info + dev->id;
+ 	char *end;
+@@ -674,14 +676,16 @@ static ssize_t reload_store(struct sys_device *dev, const char *buf, size_t sz)
+ 	return sz;
+ }
+ 
+-static ssize_t version_show(struct sys_device *dev, char *buf)
++static ssize_t version_show(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct ucode_cpu_info *uci = ucode_cpu_info + dev->id;
+ 
+ 	return sprintf(buf, "0x%x\n", uci->rev);
+ }
+ 
+-static ssize_t pf_show(struct sys_device *dev, char *buf)
++static ssize_t pf_show(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct ucode_cpu_info *uci = ucode_cpu_info + dev->id;
+ 
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index e38dfed..20537d5 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -21,15 +21,16 @@ EXPORT_SYMBOL(cpu_sysdev_class);
+ static DEFINE_PER_CPU(struct sys_device *, cpu_sys_devices);
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-static ssize_t show_online(struct sys_device *dev, char *buf)
++static ssize_t show_online(struct sys_device *dev, struct sysdev_attribute *attr,
++			   char *buf)
+ {
+ 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
+ 
+ 	return sprintf(buf, "%u\n", !!cpu_online(cpu->sysdev.id));
+ }
+ 
+-static ssize_t __ref store_online(struct sys_device *dev, const char *buf,
+-			    size_t count)
++static ssize_t __ref store_online(struct sys_device *dev, struct sysdev_attribute *attr,
++				 const char *buf, size_t count)
+ {
+ 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
+ 	ssize_t ret;
+@@ -80,7 +81,8 @@ static inline void register_cpu_control(struct cpu *cpu)
+ #ifdef CONFIG_KEXEC
+ #include <linux/kexec.h>
+ 
+-static ssize_t show_crash_notes(struct sys_device *dev, char *buf)
++static ssize_t show_crash_notes(struct sys_device *dev, struct sysdev_attribute *attr,
++				char *buf)
+ {
+ 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
+ 	ssize_t rc;
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+index 937e825..4d4e0e7 100644
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -92,7 +92,8 @@ unregister_memory(struct memory_block *memory, struct mem_section *section)
+  * uses.
+  */
+ 
+-static ssize_t show_mem_phys_index(struct sys_device *dev, char *buf)
++static ssize_t show_mem_phys_index(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct memory_block *mem =
+ 		container_of(dev, struct memory_block, sysdev);
+@@ -102,7 +103,8 @@ static ssize_t show_mem_phys_index(struct sys_device *dev, char *buf)
+ /*
+  * online, offline, going offline, etc.
+  */
+-static ssize_t show_mem_state(struct sys_device *dev, char *buf)
++static ssize_t show_mem_state(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct memory_block *mem =
+ 		container_of(dev, struct memory_block, sysdev);
+@@ -217,7 +219,8 @@ out:
+ }
+ 
+ static ssize_t
+-store_mem_state(struct sys_device *dev, const char *buf, size_t count)
++store_mem_state(struct sys_device *dev,
++		struct sysdev_attribute *attr, const char *buf, size_t count)
+ {
+ 	struct memory_block *mem;
+ 	unsigned int phys_section_nr;
+@@ -248,7 +251,8 @@ out:
+  * s.t. if I offline all of these sections I can then
+  * remove the physical device?
+  */
+-static ssize_t show_phys_device(struct sys_device *dev, char *buf)
++static ssize_t show_phys_device(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct memory_block *mem =
+ 		container_of(dev, struct memory_block, sysdev);
+diff --git a/drivers/base/node.c b/drivers/base/node.c
+index 0f867a0..5116b78 100644
+--- a/drivers/base/node.c
++++ b/drivers/base/node.c
+@@ -36,11 +36,13 @@ static ssize_t node_read_cpumap(struct sys_device *dev, int type, char *buf)
+ 	return len;
+ }
+ 
+-static inline ssize_t node_read_cpumask(struct sys_device *dev, char *buf)
++static inline ssize_t node_read_cpumask(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	return node_read_cpumap(dev, 0, buf);
+ }
+-static inline ssize_t node_read_cpulist(struct sys_device *dev, char *buf)
++static inline ssize_t node_read_cpulist(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	return node_read_cpumap(dev, 1, buf);
+ }
+@@ -49,7 +51,8 @@ static SYSDEV_ATTR(cpumap,  S_IRUGO, node_read_cpumask, NULL);
+ static SYSDEV_ATTR(cpulist, S_IRUGO, node_read_cpulist, NULL);
+ 
+ #define K(x) ((x) << (PAGE_SHIFT - 10))
+-static ssize_t node_read_meminfo(struct sys_device * dev, char * buf)
++static ssize_t node_read_meminfo(struct sys_device * dev,
++			struct sysdev_attribute *attr, char * buf)
+ {
+ 	int n;
+ 	int nid = dev->id;
+@@ -112,7 +115,8 @@ static ssize_t node_read_meminfo(struct sys_device * dev, char * buf)
+ #undef K
+ static SYSDEV_ATTR(meminfo, S_IRUGO, node_read_meminfo, NULL);
+ 
+-static ssize_t node_read_numastat(struct sys_device * dev, char * buf)
++static ssize_t node_read_numastat(struct sys_device * dev,
++				struct sysdev_attribute *attr, char * buf)
+ {
+ 	return sprintf(buf,
+ 		       "numa_hit %lu\n"
+@@ -130,7 +134,8 @@ static ssize_t node_read_numastat(struct sys_device * dev, char * buf)
+ }
+ static SYSDEV_ATTR(numastat, S_IRUGO, node_read_numastat, NULL);
+ 
+-static ssize_t node_read_distance(struct sys_device * dev, char * buf)
++static ssize_t node_read_distance(struct sys_device * dev,
++			struct sysdev_attribute *attr, char * buf)
+ {
+ 	int nid = dev->id;
+ 	int len = 0;
+diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+index 50690d9..dc7dace 100644
+--- a/drivers/base/sys.c
++++ b/drivers/base/sys.c
+@@ -36,7 +36,7 @@ sysdev_show(struct kobject * kobj, struct attribute * attr, char * buffer)
+ 	struct sysdev_attribute * sysdev_attr = to_sysdev_attr(attr);
+ 
+ 	if (sysdev_attr->show)
+-		return sysdev_attr->show(sysdev, buffer);
++		return sysdev_attr->show(sysdev, sysdev_attr, buffer);
+ 	return -EIO;
+ }
+ 
+@@ -49,7 +49,7 @@ sysdev_store(struct kobject * kobj, struct attribute * attr,
+ 	struct sysdev_attribute * sysdev_attr = to_sysdev_attr(attr);
+ 
+ 	if (sysdev_attr->store)
+-		return sysdev_attr->store(sysdev, buffer, count);
++		return sysdev_attr->store(sysdev, sysdev_attr, buffer, count);
+ 	return -EIO;
+ }
+ 
+diff --git a/drivers/base/topology.c b/drivers/base/topology.c
+index 3f6d9b0..199cd97 100644
+--- a/drivers/base/topology.c
++++ b/drivers/base/topology.c
+@@ -34,7 +34,8 @@
+ static SYSDEV_ATTR(_name, 0444, show_##_name, NULL)
+ 
+ #define define_id_show_func(name)				\
+-static ssize_t show_##name(struct sys_device *dev, char *buf)	\
++static ssize_t show_##name(struct sys_device *dev,		\
++		struct sysdev_attribute *attr, char *buf)	\
+ {								\
+ 	unsigned int cpu = dev->id;				\
+ 	return sprintf(buf, "%d\n", topology_##name(cpu));	\
+@@ -59,14 +60,17 @@ static ssize_t show_cpumap(int type, cpumask_t *mask, char *buf)
+ 
+ #ifdef arch_provides_topology_pointers
+ #define define_siblings_show_map(name)					\
+-static ssize_t show_##name(struct sys_device *dev, char *buf)	\
++static ssize_t show_##name(struct sys_device *dev,			\
++			   struct sysdev_attribute *attr, char *buf)	\
+ {									\
+ 	unsigned int cpu = dev->id;					\
+ 	return show_cpumap(0, &(topology_##name(cpu)), buf);		\
+ }
+ 
+ #define define_siblings_show_list(name)					\
+-static ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
++static ssize_t show_##name##_list(struct sys_device *dev,		\
++				  struct sysdev_attribute *attr,	\
++				  char *buf)				\
+ {									\
+ 	unsigned int cpu = dev->id;					\
+ 	return show_cpumap(1, &(topology_##name(cpu)), buf);		\
+@@ -74,7 +78,8 @@ static ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
+ 
+ #else
+ #define define_siblings_show_map(name)					\
+-static ssize_t show_##name(struct sys_device *dev, char *buf)	\
++static ssize_t show_##name(struct sys_device *dev,			\
++			   struct sysdev_attribute *attr, char *buf)	\
+ {									\
+ 	unsigned int cpu = dev->id;					\
+ 	cpumask_t mask = topology_##name(cpu);				\
+@@ -82,7 +87,9 @@ static ssize_t show_##name(struct sys_device *dev, char *buf)	\
+ }
+ 
+ #define define_siblings_show_list(name)					\
+-static ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
++static ssize_t show_##name##_list(struct sys_device *dev,		\
++				  struct sysdev_attribute *attr,	\
++				  char *buf)				\
+ {									\
+ 	unsigned int cpu = dev->id;					\
+ 	cpumask_t mask = topology_##name(cpu);				\
+diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+index e949618..31a0e0b 100644
+--- a/drivers/cpuidle/sysfs.c
++++ b/drivers/cpuidle/sysfs.c
+@@ -21,7 +21,8 @@ static int __init cpuidle_sysfs_setup(char *unused)
+ }
+ __setup("cpuidle_sysfs_switch", cpuidle_sysfs_setup);
+ 
+-static ssize_t show_available_governors(struct sys_device *dev, char *buf)
++static ssize_t show_available_governors(struct sys_device *dev,
++		struct sysdev_attribute *attr, char *buf)
+ {
+ 	ssize_t i = 0;
+ 	struct cpuidle_governor *tmp;
+@@ -39,7 +40,8 @@ out:
+ 	return i;
+ }
+ 
+-static ssize_t show_current_driver(struct sys_device *dev, char *buf)
++static ssize_t show_current_driver(struct sys_device *dev,
++		struct sysdev_attribute *attr, char *buf)
+ {
+ 	ssize_t ret;
+ 
+@@ -53,7 +55,8 @@ static ssize_t show_current_driver(struct sys_device *dev, char *buf)
+ 	return ret;
+ }
+ 
+-static ssize_t show_current_governor(struct sys_device *dev, char *buf)
++static ssize_t show_current_governor(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
+ {
+ 	ssize_t ret;
+ 
+@@ -68,6 +71,7 @@ static ssize_t show_current_governor(struct sys_device *dev, char *buf)
+ }
+ 
+ static ssize_t store_current_governor(struct sys_device *dev,
++	struct sysdev_attribute *attr,
+ 	const char *buf, size_t count)
+ {
+ 	char gov_name[CPUIDLE_NAME_LEN];
+diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
+index 591bc29..d4427cb 100644
+--- a/drivers/xen/balloon.c
++++ b/drivers/xen/balloon.c
+@@ -610,6 +610,7 @@ static ssize_t show_target_kb(struct sys_device *dev, char *buf)
+ }
+ 
+ static ssize_t store_target_kb(struct sys_device *dev,
++			       struct sysdev_attribute *attr,
+ 			       const char *buf,
+ 			       size_t count)
+ {
+diff --git a/include/linux/sysdev.h b/include/linux/sysdev.h
+index f2767bc..8dcf316 100644
+--- a/include/linux/sysdev.h
++++ b/include/linux/sysdev.h
+@@ -99,8 +99,9 @@ extern void sysdev_unregister(struct sys_device *);
+ 
+ struct sysdev_attribute { 
+ 	struct attribute	attr;
+-	ssize_t (*show)(struct sys_device *, char *);
+-	ssize_t (*store)(struct sys_device *, const char *, size_t);
++	ssize_t (*show)(struct sys_device *, struct sysdev_attribute *, char *);
++	ssize_t (*store)(struct sys_device *, struct sysdev_attribute *,
++			 const char *, size_t);
+ };
+ 
+ 
+diff --git a/kernel/rtmutex-tester.c b/kernel/rtmutex-tester.c
+index 092e4c6..a56f629 100644
+--- a/kernel/rtmutex-tester.c
++++ b/kernel/rtmutex-tester.c
+@@ -297,8 +297,8 @@ static int test_func(void *data)
+  *
+  * opcode:data
+  */
+-static ssize_t sysfs_test_command(struct sys_device *dev, const char *buf,
+-				  size_t count)
++static ssize_t sysfs_test_command(struct sys_device *dev, struct sysdev_attribute *attr,
++				  const char *buf, size_t count)
+ {
+ 	struct sched_param schedpar;
+ 	struct test_thread_data *td;
+@@ -360,7 +360,8 @@ static ssize_t sysfs_test_command(struct sys_device *dev, const char *buf,
+  * @dev:	thread to query
+  * @buf:	char buffer to be filled with thread status info
+  */
+-static ssize_t sysfs_test_status(struct sys_device *dev, char *buf)
++static ssize_t sysfs_test_status(struct sys_device *dev, struct sysdev_attribute *attr,
++				 char *buf)
+ {
+ 	struct test_thread_data *td;
+ 	struct task_struct *tsk;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 99e6d85..b1104ea 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7737,11 +7737,13 @@ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+ }
+ 
+ #ifdef CONFIG_SCHED_MC
+-static ssize_t sched_mc_power_savings_show(struct sys_device *dev, char *page)
++static ssize_t sched_mc_power_savings_show(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *page)
+ {
+ 	return sprintf(page, "%u\n", sched_mc_power_savings);
+ }
+ static ssize_t sched_mc_power_savings_store(struct sys_device *dev,
++					    struct sysdev_attribute *attr,
+ 					    const char *buf, size_t count)
+ {
+ 	return sched_power_savings_store(buf, count, 0);
+@@ -7751,11 +7753,13 @@ static SYSDEV_ATTR(sched_mc_power_savings, 0644, sched_mc_power_savings_show,
+ #endif
+ 
+ #ifdef CONFIG_SCHED_SMT
+-static ssize_t sched_smt_power_savings_show(struct sys_device *dev, char *page)
++static ssize_t sched_smt_power_savings_show(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *page)
+ {
+ 	return sprintf(page, "%u\n", sched_smt_power_savings);
+ }
+ static ssize_t sched_smt_power_savings_store(struct sys_device *dev,
++					     struct sysdev_attribute *attr,
+ 					     const char *buf, size_t count)
+ {
+ 	return sched_power_savings_store(buf, count, 1);
+diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+index dadde53..b1c2da8 100644
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -376,7 +376,8 @@ void clocksource_unregister(struct clocksource *cs)
+  * Provides sysfs interface for listing current clocksource.
+  */
+ static ssize_t
+-sysfs_show_current_clocksources(struct sys_device *dev, char *buf)
++sysfs_show_current_clocksources(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	ssize_t count = 0;
+ 
+@@ -397,6 +398,7 @@ sysfs_show_current_clocksources(struct sys_device *dev, char *buf)
+  * clocksource selction.
+  */
+ static ssize_t sysfs_override_clocksource(struct sys_device *dev,
++					  struct sysdev_attribute *attr,
+ 					  const char *buf, size_t count)
+ {
+ 	struct clocksource *ovr = NULL;
+@@ -449,7 +451,9 @@ static ssize_t sysfs_override_clocksource(struct sys_device *dev,
+  * Provides sysfs interface for listing registered clocksources
+  */
+ static ssize_t
+-sysfs_show_available_clocksources(struct sys_device *dev, char *buf)
++sysfs_show_available_clocksources(struct sys_device *dev,
++				  struct sysdev_attribute *attr,
++				  char *buf)
+ {
+ 	struct clocksource *src;
+ 	ssize_t count = 0;
 -- 
 1.5.6.3
 
