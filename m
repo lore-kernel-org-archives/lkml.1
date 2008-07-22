@@ -1,95 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYGVPQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbYGVPSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbYGVPQw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 11:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbYGVPQp
+	id S1754205AbYGVPSb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 11:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbYGVPSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 11:16:45 -0400
-Received: from namei.org ([69.55.235.186]:41372 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750794AbYGVPQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 11:16:44 -0400
-Date: Wed, 23 Jul 2008 01:08:51 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       safford@watson.ibm.com, serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
-       zohar@us.ibm.com, debora@linux.vnet.ibm.com, srajiv@linux.vnet.ibm.com
-Subject: Re: [Patch 5/5]integrity: IMA as an integrity service provider
-In-Reply-To: <1216331646.3747.24.camel@localhost.localdomain>
-Message-ID: <Xine.LNX.4.64.0807230104380.7346@us.intercode.com.au>
-References: <20080707192529.489789904@linux.vnet.ibm.com> 
- <1215467789.27626.3.camel@localhost.localdomain> 
- <Xine.LNX.4.64.0807160910470.8360@us.intercode.com.au> 
- <1216238733.5886.30.camel@localhost.localdomain> 
- <Xine.LNX.4.64.0807170947470.3212@us.intercode.com.au>
- <1216331646.3747.24.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 22 Jul 2008 11:18:23 -0400
+Received: from main.gmane.org ([80.91.229.2]:52638 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751329AbYGVPSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 11:18:22 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: el es <el_es_cr@yahoo.co.uk>
+Subject: Re: Kernel version : what about YYYY.MM.[01].x ?
+Date: Tue, 22 Jul 2008 15:18:05 +0000 (UTC)
+Message-ID: <loom.20080722T150815-360@post.gmane.org>
+References: <loom.20080717T083755-676@post.gmane.org> <alpine.DEB.1.10.0807171558450.17859@asgard.lang.hm> <20080718152456.GA27729@miggy.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 81.151.128.130 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.16) Gecko/20080702 Firefox/2.0.0.16)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've applied these patches to:
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#devel
+Athanasius <link <at> miggy.org> writes:
 
-which will go into linux-next in about a week.
+> 
+> 1) Need to clearly designate
+>         a) A fresh stable release
+>         b) Also updates to that stable release, without getting confused
+>            with any development releases.
+>         c) A fresh development release/pre-release of next stable, without
+>            getting confused with current stable releases.
+> 
+> 2) The only real objection to the status quo seems to be "the 3rd number
+> is getting too big".  This is highly subjective and not a good enough
+> reason by itself to change the scheme.
+> 
+> 3) It would be nice for stable releases to encode when their initial
+> version was made.  This gives extra information in the version number
+> without having to do a lookup.  The problem with this is you don't know
+> when the next stable release will actually be.  
 
-I fixed up a couple of outstanding issues with atomic vs. atomic_long (see 
-the patch below).
+I'd agree up to this point. But you really _do_not_ want to predict 'when the
+next stable release will be' 'cause this puts pressure on people, and the
+current model works good _because_ there is little pressure... If it stops being
+fun, some really valuable people could go somewhere else... guess where ?
 
-Please test.
+>   But -rcX is just one way of doing it, all we really need is for it to
+> be clear if a version is part of development or part of a stable
+> release.
+> 
+No, the -rcX _is_ good and worth keeping. And the 
 
-----
+> I therefore propose the form YYYY.MM.[sd].x
 
-commit fe2e6187810af248f910f1ca498fe03b54cade2e
-Author: James Morris <jmorris@namei.org>
-Date:   Tue Jul 22 10:43:04 2008 -0400
+And this is where I disagree completely. You got rid of the traditional series
+designator ('s=2' in my scheme), you've lengthened the year part unnecessarily.
+Month is too rough grained, that's why I proposed week as a base.
 
-    integrity: fix up some atomic vs. atomic_long issues
-    
-    Ensure atomic_long_t is used correctly throughout the
-    integrity code.
-    
-    Signed-off-by: James Morris <jmorris@namei.org>
+> 
+> So, 2.6.26 would have been 2008.07.s.0
+> 
+> The first update to it would be 2008.07.s.1
+> 
+> So, YYYY.MM.[0|1].x gives us:
+> 
+>         1) Clear indication of when this stable series started.
+>         2) Clear indication of updates to that stable version.
+>         3) Clear designation of the development versions started after
+>         that stable release.
 
-diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
-index de982c6..986bfb1 100644
---- a/security/integrity/ima/ima.h
-+++ b/security/integrity/ima/ima.h
-@@ -98,7 +98,7 @@ void ima_template_show(struct seq_file *m, void *e,
- extern spinlock_t ima_queue_lock;
- 
- struct ima_h_table {
--	atomic_t len;		/* number of stored measurements in the list */
-+	atomic_long_t len;	/* number of stored measurements in the list */
- 	atomic_long_t violations;
- 	unsigned int max_htable_size;
- 	struct hlist_head queue[IMA_MEASURE_HTABLE_SIZE];
-diff --git a/security/integrity/ima/ima_fs.c b/security/integrity/ima/ima_fs.c
-index fa3cdb0..781460f 100644
---- a/security/integrity/ima/ima_fs.c
-+++ b/security/integrity/ima/ima_fs.c
-@@ -28,7 +28,7 @@ static ssize_t ima_show_htable_value(char __user *buf, size_t count,
- 	char tmpbuf[TMPBUFLEN];
- 	ssize_t len;
- 
--	len = scnprintf(tmpbuf, TMPBUFLEN, "%i\n", atomic_read(val));
-+	len = scnprintf(tmpbuf, TMPBUFLEN, "%li\n", atomic_long_read(val));
- 	return simple_read_from_buffer(buf, count, ppos, tmpbuf, len);
- }
- 
-diff --git a/security/integrity/ima/ima_queue.c b/security/integrity/ima/ima_queue.c
-index e09ddb9..1cb4f03 100644
---- a/security/integrity/ima/ima_queue.c
-+++ b/security/integrity/ima/ima_queue.c
-@@ -106,7 +106,7 @@ int ima_add_measure_entry(struct ima_measure_entry *entry, int violation)
- 	INIT_LIST_HEAD(&qe->later);
- 	list_add_tail_rcu(&qe->later, &ima_measurements);
- 
--	atomic_inc(&ima_htable.len);
-+	atomic_long_inc(&ima_htable.len);
- 	if (ima_add_digest_entry(entry)) {
- 		error = -ENOMEM;
- 		goto out;
+It revamps the current scheme too much - I have only 'abused' it, you've got rid
+of it completely...
+
+> 
+> This not only allows someone to see how long the current
+> development cycle has been going (to within +/- 4 weeks), but also
+> allows a glance at all prior versions to show how quickly development
+> progresses on average between stable versions.
+
+That's why I think week based grain is better..
+
+el es
+
+
+
