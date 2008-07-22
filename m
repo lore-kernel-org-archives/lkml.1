@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759332AbYGVFjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759409AbYGVFjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759332AbYGVFjE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 01:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757161AbYGVFZM
+	id S1759409AbYGVFjt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 01:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757252AbYGVFZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 01:25:12 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53958 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 01:25:21 -0400
+Received: from mx2.suse.de ([195.135.220.15]:43286 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756861AbYGVFZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 01:25:10 -0400
+	id S1757455AbYGVFZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 01:25:19 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 52/79] driver core: remove DEVICE_NAME_SIZE define
-Date: Mon, 21 Jul 2008 22:19:16 -0700
-Message-Id: <1216703983-21448-52-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 54/79] driver core: fix a lot of printk usages of bus_id
+Date: Mon, 21 Jul 2008 22:19:18 -0700
+Message-Id: <1216703983-21448-54-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <20080722051805.GA17373@suse.de>
 References: <20080722051805.GA17373@suse.de>
@@ -22,125 +22,311 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+We have the dev_printk() variants for this kind of thing, use them
+instead of directly trying to access the bus_id field of struct device.
 
-There is no such thing as a "device name size" in the driver core, so
-remove the define and fix up any users of this odd define in the rest of
-the kernel.
+This is done in order to remove bus_id entirely.
 
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/eisa/Makefile        |    2 +-
- drivers/eisa/eisa-bus.c      |    4 ++--
- drivers/mca/mca-bus.c        |    2 +-
- drivers/video/aty/aty128fb.c |    2 +-
- drivers/video/aty/radeonfb.h |    2 +-
- include/linux/device.h       |    3 ---
- include/linux/eisa.h         |    2 +-
- 7 files changed, 7 insertions(+), 10 deletions(-)
+ arch/arm/common/dmabounce.c       |   22 +++++++++-------------
+ arch/arm/common/sa1111.c          |    3 ++-
+ arch/arm/kernel/ecard.c           |    3 +--
+ arch/arm/mach-integrator/impd1.c  |    3 +--
+ arch/powerpc/platforms/chrp/pci.c |    2 +-
+ arch/x86/kernel/pci-dma.c         |    6 ++----
+ arch/x86/kernel/pci-gart_64.c     |    4 +---
+ drivers/acpi/fan.c                |   10 +++++-----
+ drivers/acpi/glue.c               |    6 ++----
+ drivers/acpi/processor_core.c     |    5 ++---
+ drivers/acpi/scan.c               |    2 +-
+ drivers/acpi/thermal.c            |    4 ++--
+ drivers/acpi/video.c              |    5 ++---
+ drivers/base/power/trace.c        |    2 +-
+ 14 files changed, 32 insertions(+), 45 deletions(-)
 
-diff --git a/drivers/eisa/Makefile b/drivers/eisa/Makefile
-index 70abf93..5369ce9 100644
---- a/drivers/eisa/Makefile
-+++ b/drivers/eisa/Makefile
-@@ -9,7 +9,7 @@ obj-${CONFIG_EISA_VIRTUAL_ROOT} += virtual_root.o
+diff --git a/arch/arm/common/dmabounce.c b/arch/arm/common/dmabounce.c
+index 2744673..dd29473 100644
+--- a/arch/arm/common/dmabounce.c
++++ b/arch/arm/common/dmabounce.c
+@@ -554,9 +554,8 @@ dmabounce_register_dev(struct device *dev, unsigned long small_buffer_size,
+ 
+ 	device_info = kmalloc(sizeof(struct dmabounce_device_info), GFP_ATOMIC);
+ 	if (!device_info) {
+-		printk(KERN_ERR
+-			"Could not allocated dmabounce_device_info for %s",
+-			dev->bus_id);
++		dev_err(dev,
++			"Could not allocated dmabounce_device_info\n");
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -594,8 +593,7 @@ dmabounce_register_dev(struct device *dev, unsigned long small_buffer_size,
+ 
+ 	dev->archdata.dmabounce = device_info;
+ 
+-	printk(KERN_INFO "dmabounce: registered device %s on %s bus\n",
+-		dev->bus_id, dev->bus->name);
++	dev_info(dev, "dmabounce: registered device\n");
+ 
+ 	return 0;
+ 
+@@ -614,16 +612,15 @@ dmabounce_unregister_dev(struct device *dev)
+ 	dev->archdata.dmabounce = NULL;
+ 
+ 	if (!device_info) {
+-		printk(KERN_WARNING
+-			"%s: Never registered with dmabounce but attempting" \
+-			"to unregister!\n", dev->bus_id);
++		dev_warn(dev,
++			 "Never registered with dmabounce but attempting"
++			 "to unregister!\n");
+ 		return;
+ 	}
+ 
+ 	if (!list_empty(&device_info->safe_buffers)) {
+-		printk(KERN_ERR
+-			"%s: Removing from dmabounce with pending buffers!\n",
+-			dev->bus_id);
++		dev_err(dev,
++			"Removing from dmabounce with pending buffers!\n");
+ 		BUG();
+ 	}
+ 
+@@ -639,8 +636,7 @@ dmabounce_unregister_dev(struct device *dev)
+ 
+ 	kfree(device_info);
+ 
+-	printk(KERN_INFO "dmabounce: device %s on %s bus unregistered\n",
+-		dev->bus_id, dev->bus->name);
++	dev_info(dev, "dmabounce: device unregistered\n");
+ }
  
  
- # Ugly hack to get DEVICE_NAME_SIZE value...
--DEVICE_NAME_SIZE =$(shell awk '$$1=="\#define" && $$2=="DEVICE_NAME_SIZE" {print $$3-1}' $(srctree)/include/linux/device.h)
-+DEVICE_NAME_SIZE = 50
+diff --git a/arch/arm/common/sa1111.c b/arch/arm/common/sa1111.c
+index eb06d0b..2048ae0 100644
+--- a/arch/arm/common/sa1111.c
++++ b/arch/arm/common/sa1111.c
+@@ -593,7 +593,8 @@ sa1111_init_one_child(struct sa1111 *sachip, struct resource *parent,
+ 		if (dev->dma_mask != 0xffffffffUL) {
+ 			ret = dmabounce_register_dev(&dev->dev, 1024, 4096);
+ 			if (ret) {
+-				printk("SA1111: Failed to register %s with dmabounce", dev->dev.bus_id);
++				dev_err(&dev->dev, "SA1111: Failed to register"
++					" with dmabounce\n");
+ 				device_unregister(&dev->dev);
+ 			}
+ 		}
+diff --git a/arch/arm/kernel/ecard.c b/arch/arm/kernel/ecard.c
+index 8bfd299..2de425f 100644
+--- a/arch/arm/kernel/ecard.c
++++ b/arch/arm/kernel/ecard.c
+@@ -853,8 +853,7 @@ static struct expansion_card *__init ecard_alloc_card(int type, int slot)
+ 	for (i = 0; i < ECARD_NUM_RESOURCES; i++) {
+ 		if (ec->resource[i].flags &&
+ 		    request_resource(&iomem_resource, &ec->resource[i])) {
+-			printk(KERN_ERR "%s: resource(s) not available\n",
+-				ec->dev.bus_id);
++			dev_err(&ec->dev, "resource(s) not available\n");
+ 			ec->resource[i].end -= ec->resource[i].start;
+ 			ec->resource[i].start = 0;
+ 			ec->resource[i].flags = 0;
+diff --git a/arch/arm/mach-integrator/impd1.c b/arch/arm/mach-integrator/impd1.c
+index 62e653a..619d05e 100644
+--- a/arch/arm/mach-integrator/impd1.c
++++ b/arch/arm/mach-integrator/impd1.c
+@@ -407,8 +407,7 @@ static int impd1_probe(struct lm_device *dev)
  
- $(obj)/eisa-bus.o: $(obj)/devlist.h
- 
-diff --git a/drivers/eisa/eisa-bus.c b/drivers/eisa/eisa-bus.c
-index 65dcf04..c950bf8 100644
---- a/drivers/eisa/eisa-bus.c
-+++ b/drivers/eisa/eisa-bus.c
-@@ -22,7 +22,7 @@
- 
- struct eisa_device_info {
- 	struct eisa_device_id id;
--	char name[DEVICE_NAME_SIZE];
-+	char name[50];
- };
- 
- #ifdef CONFIG_EISA_NAMES
-@@ -63,7 +63,7 @@ static void __init eisa_name_device (struct eisa_device *edev)
- 		if (!strcmp (edev->id.sig, eisa_table[i].id.sig)) {
- 			strlcpy (edev->pretty_name,
- 				 eisa_table[i].name,
--				 DEVICE_NAME_SIZE);
-+				 sizeof(edev->pretty_name));
- 			return;
+ 		ret = amba_device_register(d, &dev->resource);
+ 		if (ret) {
+-			printk("unable to register device %s: %d\n",
+-				d->dev.bus_id, ret);
++			dev_err(&d->dev, "unable to register device: %d\n");
+ 			kfree(d);
  		}
  	}
-diff --git a/drivers/mca/mca-bus.c b/drivers/mca/mca-bus.c
-index 67b8e94..ef2dbfe 100644
---- a/drivers/mca/mca-bus.c
-+++ b/drivers/mca/mca-bus.c
-@@ -40,7 +40,7 @@ static struct mca_bus *mca_root_busses[MAX_MCA_BUSSES];
+diff --git a/arch/powerpc/platforms/chrp/pci.c b/arch/powerpc/platforms/chrp/pci.c
+index 609c46d..768c262 100644
+--- a/arch/powerpc/platforms/chrp/pci.c
++++ b/arch/powerpc/platforms/chrp/pci.c
+@@ -367,7 +367,7 @@ static void chrp_pci_fixup_vt8231_ata(struct pci_dev *viaide)
+ 	viaisa = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8231, NULL);
+ 	if (!viaisa)
+ 		return;
+-	printk("Fixing VIA IDE, force legacy mode on '%s'\n", viaide->dev.bus_id);
++	dev_info(&viaide->dev, "Fixing VIA IDE, force legacy mode on\n");
  
- struct mca_device_info {
- 	short pos_id;		/* the 2 byte pos id for this card */
--	char name[DEVICE_NAME_SIZE];
-+	char name[50];
- };
- 
- static int mca_bus_match (struct device *dev, struct device_driver *drv)
-diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
-index 24ee96c..07b6add 100644
---- a/drivers/video/aty/aty128fb.c
-+++ b/drivers/video/aty/aty128fb.c
-@@ -1872,7 +1872,7 @@ static int __devinit aty128_init(struct pci_dev *pdev, const struct pci_device_i
- 	struct fb_info *info = pci_get_drvdata(pdev);
- 	struct aty128fb_par *par = info->par;
- 	struct fb_var_screeninfo var;
--	char video_card[DEVICE_NAME_SIZE];
-+	char video_card[50];
- 	u8 chip_rev;
- 	u32 dac;
- 
-diff --git a/drivers/video/aty/radeonfb.h b/drivers/video/aty/radeonfb.h
-index c347e38..ccbfffd 100644
---- a/drivers/video/aty/radeonfb.h
-+++ b/drivers/video/aty/radeonfb.h
-@@ -289,7 +289,7 @@ struct radeonfb_info {
- 	struct radeon_regs 	state;
- 	struct radeon_regs	init_state;
- 
--	char			name[DEVICE_NAME_SIZE];
-+	char			name[50];
- 
- 	unsigned long		mmio_base_phys;
- 	unsigned long		fb_base_phys;
-diff --git a/include/linux/device.h b/include/linux/device.h
-index fba1bb0..894fdb2 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -25,9 +25,6 @@
- #include <asm/atomic.h>
- #include <asm/device.h>
- 
--#define DEVICE_NAME_SIZE	50
--/* DEVICE_NAME_HALF is really less than half to accommodate slop */
--#define DEVICE_NAME_HALF	__stringify(20)
- #define DEVICE_ID_SIZE		32
- #define BUS_ID_SIZE		20
- 
-diff --git a/include/linux/eisa.h b/include/linux/eisa.h
-index fe806b6..e61c0be 100644
---- a/include/linux/eisa.h
-+++ b/include/linux/eisa.h
-@@ -40,7 +40,7 @@ struct eisa_device {
- 	u64                   dma_mask;
- 	struct device         dev; /* generic device */
- #ifdef CONFIG_EISA_NAMES
--	char		      pretty_name[DEVICE_NAME_SIZE];
-+	char		      pretty_name[50];
+ 	pci_read_config_byte(viaide, PCI_CLASS_PROG, &progif);
+ 	pci_write_config_byte(viaide, PCI_CLASS_PROG, progif & ~0x5);
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index a4213c0..cbecb05 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -314,8 +314,7 @@ int dma_supported(struct device *dev, u64 mask)
+ {
+ #ifdef CONFIG_PCI
+ 	if (mask > 0xffffffff && forbid_dac > 0) {
+-		printk(KERN_INFO "PCI: Disallowing DAC for device %s\n",
+-				 dev->bus_id);
++		dev_info(dev, "PCI: Disallowing DAC for device\n");
+ 		return 0;
+ 	}
  #endif
- };
+@@ -342,8 +341,7 @@ int dma_supported(struct device *dev, u64 mask)
+ 	   type. Normally this doesn't make any difference, but gives
+ 	   more gentle handling of IOMMU overflow. */
+ 	if (iommu_sac_force && (mask >= DMA_40BIT_MASK)) {
+-		printk(KERN_INFO "%s: Force SAC with mask %Lx\n",
+-				 dev->bus_id, mask);
++		dev_info(dev, "Force SAC with mask %Lx\n", mask);
+ 		return 0;
+ 	}
  
+diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
+index be60961..df5f142 100644
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -198,9 +198,7 @@ static void iommu_full(struct device *dev, size_t size, int dir)
+ 	 * out. Hopefully no network devices use single mappings that big.
+ 	 */
+ 
+-	printk(KERN_ERR
+-		"PCI-DMA: Out of IOMMU space for %lu bytes at device %s\n",
+-		size, dev->bus_id);
++	dev_err(dev, "PCI-DMA: Out of IOMMU space for %lu bytes\n", size);
+ 
+ 	if (size > PAGE_SIZE*EMERGENCY_PAGES) {
+ 		if (dir == PCI_DMA_FROMDEVICE || dir == PCI_DMA_BIDIRECTIONAL)
+diff --git a/drivers/acpi/fan.c b/drivers/acpi/fan.c
+index 55c17af..2655bc1 100644
+--- a/drivers/acpi/fan.c
++++ b/drivers/acpi/fan.c
+@@ -263,22 +263,22 @@ static int acpi_fan_add(struct acpi_device *device)
+ 		goto end;
+ 	}
+ 
+-	printk(KERN_INFO PREFIX
+-		"%s is registered as cooling_device%d\n",
+-		device->dev.bus_id, cdev->id);
++	dev_info(&device->dev, "registered as cooling_device%d\n", cdev->id);
+ 
+ 	acpi_driver_data(device) = cdev;
+ 	result = sysfs_create_link(&device->dev.kobj,
+ 				   &cdev->device.kobj,
+ 				   "thermal_cooling");
+ 	if (result)
+-		printk(KERN_ERR PREFIX "Create sysfs link\n");
++		dev_err(&device->dev, "Failed to create sysfs link "
++			"'thermal_cooling'\n");
+ 
+ 	result = sysfs_create_link(&cdev->device.kobj,
+ 				   &device->dev.kobj,
+ 				   "device");
+ 	if (result)
+-		printk(KERN_ERR PREFIX "Create sysfs link\n");
++		dev_err(&device->dev, "Failed to create sysfs link "
++			"'device'\n");
+ 
+ 	result = acpi_fan_add_fs(device);
+ 	if (result)
+diff --git a/drivers/acpi/glue.c b/drivers/acpi/glue.c
+index 2f173e8..0841095 100644
+--- a/drivers/acpi/glue.c
++++ b/drivers/acpi/glue.c
+@@ -146,8 +146,7 @@ static int acpi_bind_one(struct device *dev, acpi_handle handle)
+ 	acpi_status status;
+ 
+ 	if (dev->archdata.acpi_handle) {
+-		printk(KERN_WARNING PREFIX
+-		       "Drivers changed 'acpi_handle' for %s\n", dev->bus_id);
++		dev_warn(dev, "Drivers changed 'acpi_handle'\n");
+ 		return -EINVAL;
+ 	}
+ 	get_device(dev);
+@@ -195,8 +194,7 @@ static int acpi_unbind_one(struct device *dev)
+ 		/* acpi_bind_one increase refcnt by one */
+ 		put_device(dev);
+ 	} else {
+-		printk(KERN_ERR PREFIX
+-		       "Oops, 'acpi_handle' corrupt for %s\n", dev->bus_id);
++		dev_err(dev, "Oops, 'acpi_handle' corrupt\n");
+ 	}
+ 	return 0;
+ }
+diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
+index ec0f2d5..e36422a 100644
+--- a/drivers/acpi/processor_core.c
++++ b/drivers/acpi/processor_core.c
+@@ -714,9 +714,8 @@ static int __cpuinit acpi_processor_start(struct acpi_device *device)
+ 		goto end;
+ 	}
+ 
+-	printk(KERN_INFO PREFIX
+-		"%s is registered as cooling_device%d\n",
+-		device->dev.bus_id, pr->cdev->id);
++	dev_info(&device->dev, "registered as cooling_device%d\n",
++		 pr->cdev->id);
+ 
+ 	result = sysfs_create_link(&device->dev.kobj,
+ 				   &pr->cdev->device.kobj,
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index f3132aa..f6f52c1 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -471,7 +471,7 @@ static int acpi_device_register(struct acpi_device *device,
+ 	device->dev.release = &acpi_device_release;
+ 	result = device_add(&device->dev);
+ 	if(result) {
+-		printk(KERN_ERR PREFIX "Error adding device %s", device->dev.bus_id);
++		dev_err(&device->dev, "Error adding device\n");
+ 		goto end;
+ 	}
+ 
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 84c795f..30a3413 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -1179,8 +1179,8 @@ static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
+ 
+ 	tz->tz_enabled = 1;
+ 
+-	printk(KERN_INFO PREFIX "%s is registered as thermal_zone%d\n",
+-			tz->device->dev.bus_id, tz->thermal_zone->id);
++	dev_info(&tz->device->dev, "registered as thermal_zone%d\n",
++		 tz->thermal_zone->id);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+index 64c8893..37b9e16 100644
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -762,9 +762,8 @@ static void acpi_video_device_find_cap(struct acpi_video_device *device)
+ 		if (IS_ERR(device->cdev))
+ 			return;
+ 
+-		printk(KERN_INFO PREFIX
+-			"%s is registered as cooling_device%d\n",
+-			device->dev->dev.bus_id, device->cdev->id);
++		dev_info(&device->dev->dev, "registered as cooling_device%d\n",
++			 device->cdev->id);
+ 		result = sysfs_create_link(&device->dev->dev.kobj,
+ 				&device->cdev->device.kobj,
+ 				"thermal_cooling");
+diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
+index 9b1b20b..2aa6e8f 100644
+--- a/drivers/base/power/trace.c
++++ b/drivers/base/power/trace.c
+@@ -194,7 +194,7 @@ static int show_dev_hash(unsigned int value)
+ 		struct device * dev = to_device(entry);
+ 		unsigned int hash = hash_string(DEVSEED, dev->bus_id, DEVHASH);
+ 		if (hash == value) {
+-			printk("  hash matches device %s\n", dev->bus_id);
++			dev_info(dev, "hash matches\n");
+ 			match++;
+ 		}
+ 		entry = entry->prev;
 -- 
 1.5.6.3
 
