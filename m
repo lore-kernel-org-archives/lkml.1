@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbYGVT0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755759AbYGVT0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbYGVT0G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 15:26:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbYGVTX5
+	id S1755759AbYGVT0n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 15:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbYGVTYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 15:23:57 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:16203 "EHLO
-	WA4EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754222AbYGVTX4 (ORCPT
+	Tue, 22 Jul 2008 15:24:00 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:25335 "EHLO
+	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752622AbYGVTX5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 15:23:56 -0400
-X-BigFish: VPS22(zzzz10d3izzz32i87il)
+	Tue, 22 Jul 2008 15:23:57 -0400
+X-BigFish: VPS22(zzzz10d3izzz32i87il64h)
+X-Spam-TCS-SCL: 3:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K4F9VC-02-3LT-01
+X-WSS-ID: 0K4F9VC-02-3LU-01
 From: Robert Richter <robert.richter@amd.com>
 To: Barry Kasindorf <barry.kasindorf@amd.com>, Ingo Molnar <mingo@elte.hu>
 CC: Thomas Gleixner <tglx@linutronix.de>,
        oprofile-list <oprofile-list@lists.sourceforge.net>,
        LKML <linux-kernel@vger.kernel.org>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 18/24] OProfile: Fix IBS build error for UP
-Date: Tue, 22 Jul 2008 21:09:02 +0200
-Message-ID: <1216753748-11261-19-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 15/24] OProfile: on_each_cpu(): kill unused retry parameter
+Date: Tue, 22 Jul 2008 21:08:59 +0200
+Message-ID: <1216753748-11261-16-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.5.5.4
 In-Reply-To: <1216753748-11261-1-git-send-email-robert.richter@amd.com>
 References: <1216753748-11261-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 22 Jul 2008 19:23:40.0449 (UTC) FILETIME=[728D0910:01C8EC30]
+X-OriginalArrivalTime: 22 Jul 2008 19:23:40.0183 (UTC) FILETIME=[72647270:01C8EC30]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,49 +35,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- arch/x86/oprofile/op_model_athlon.c |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+), 0 deletions(-)
+ arch/x86/oprofile/op_model_athlon.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/x86/oprofile/op_model_athlon.c b/arch/x86/oprofile/op_model_athlon.c
-index 0d83903..1acb067 100644
+index 284c456..ce73236 100644
 --- a/arch/x86/oprofile/op_model_athlon.c
 +++ b/arch/x86/oprofile/op_model_athlon.c
-@@ -361,6 +361,26 @@ static void op_amd_shutdown(struct op_msrs const * const msrs)
- 	}
+@@ -382,7 +382,7 @@ static int pfm_amd64_setup_eilvt(void)
+ 	u32 value = 0;
+ 
+ 	/* per CPU setup */
+-	on_each_cpu(apic_init_ibs_nmi_per_cpu, NULL, 0, 1);
++	on_each_cpu(apic_init_ibs_nmi_per_cpu, NULL, 1);
+ 
+ 	nodes = 0;
+ 	cpu_cfg = NULL;
+@@ -443,7 +443,7 @@ static void setup_ibs(void)
+ static void clear_ibs_nmi(void)
+ {
+ 	if (ibs_allowed)
+-		on_each_cpu(apic_clear_ibs_nmi_per_cpu, NULL, 1, 1);
++		on_each_cpu(apic_clear_ibs_nmi_per_cpu, NULL, 1);
  }
  
-+#ifndef CONFIG_SMP
-+
-+/* no IBS support */
-+
-+static void setup_ibs(void)
-+{
-+	ibs_allowed = 0;
-+}
-+
-+static void clear_ibs_nmi(void) {}
-+
-+static int op_amd_init(struct oprofile_operations *ops)
-+{
-+	return 0;
-+}
-+
-+static void op_amd_exit(void) {}
-+
-+#else
-+
- static u8 ibs_eilvt_off;
- 
- static inline void apic_init_ibs_nmi_per_cpu(void *arg)
-@@ -505,6 +525,8 @@ static void op_amd_exit(void)
- 	clear_ibs_nmi();
- }
- 
-+#endif
-+
- struct op_x86_model_spec const op_amd_spec = {
- 	.init = op_amd_init,
- 	.exit = op_amd_exit,
+ static void setup_ibs_files(struct super_block *sb, struct dentry *root)
 -- 
 1.5.5.4
 
