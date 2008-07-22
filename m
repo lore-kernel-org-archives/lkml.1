@@ -1,145 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbYGVTbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbYGVTdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757480AbYGVTbz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 15:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbYGVTZK
+	id S1757876AbYGVTdP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 15:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbYGVTcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 15:25:10 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:17474 "EHLO
-	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753570AbYGVTZG (ORCPT
+	Tue, 22 Jul 2008 15:32:22 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:45492 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757519AbYGVTcU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 15:25:06 -0400
-X-BigFish: VPS24(z37d4jzzz10d3izzz32i87il65h)
-X-Spam-TCS-SCL: 4:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K4F9WX-01-8RV-01
-From: Robert Richter <robert.richter@amd.com>
-To: Barry Kasindorf <barry.kasindorf@amd.com>, Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 19/24] x86/oprofile: Macro definition cleanup in op_model_athlon.c
-Date: Tue, 22 Jul 2008 21:09:03 +0200
-Message-ID: <1216753748-11261-20-git-send-email-robert.richter@amd.com>
-X-Mailer: git-send-email 1.5.5.4
-In-Reply-To: <1216753748-11261-1-git-send-email-robert.richter@amd.com>
-References: <1216753748-11261-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 22 Jul 2008 19:23:40.0652 (UTC) FILETIME=[72AC02C0:01C8EC30]
+	Tue, 22 Jul 2008 15:32:20 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5344"; a="4789290"
+Message-ID: <488635B3.2050606@qualcomm.com>
+Date: Tue, 22 Jul 2008 12:32:03 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu,
+       dmitry.adamushko@gmail.com, torvalds@linux-foundation.org, pj@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpu hotplug,	sched:Introduce	cpu_active_map	and	redoscheddomainmanagment
+ (take 2)
+References: <1216122229-4865-1-git-send-email-maxk@qualcomm.com> <487DAD86.BA47.005A.0@novell.com> <487E6BD7.3020006@qualcomm.com> <487E7B6C.BA47.005A.0@novell.com> <487EF1E9.2040101@qualcomm.com> <487EFB71.BA47.005A.0@novell.com> <487F9509.9050802@qualcomm.com> <487F6972.BA47.005A.0@novell.com> <1216382024.28405.26.camel@twins> <488052D5.BA47.005A.0@novell.com> <48856BA9.6050609@qualcomm.com> <4885E952.8020708@novell.com>
+In-Reply-To: <4885E952.8020708@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Robert Richter <robert.richter@amd.com>
----
- arch/x86/oprofile/op_model_athlon.c |   46 +++++++++++++----------------------
- 1 files changed, 17 insertions(+), 29 deletions(-)
+Gregory Haskins wrote:
+> Max Krasnyansky wrote:
+>> Greg, correct me if I'm wrong but we seem to have exact same issue 
+>> with the rq->rq->online map. Lets take "cpu going down" for
+>> example. We're clearing rq->rd->online bit on DYING event, but
+>> nothing AFAICS prevents another cpu calling
+>> rebuild_sched_domains()->partition_sched_domains() in the middle of
+>> the hotplug sequence. partition_sched_domains() will happily reset
+>> rd->rq->online mask and things will fail. I'm talking about this
+>> path
+>>
+>> __build_sched_domains() -> cpu_attach_domain() -> rq_attach_root()
+>>     ...
+>>     cpu_set(rq->cpu, rd->span);
+>>     if (cpu_isset(rq->cpu, cpu_online_map))
+>>         set_rq_online(rq);
+>>     ...
+>>
+>>   
+> 
+> I think you are right, but wouldn't s/online/active above fix that as 
+> well?  The active_map didnt exist at the time that code went in 
+> initially ;)
 
-diff --git a/arch/x86/oprofile/op_model_athlon.c b/arch/x86/oprofile/op_model_athlon.c
-index 1acb067..a3a2058 100644
---- a/arch/x86/oprofile/op_model_athlon.c
-+++ b/arch/x86/oprofile/op_model_athlon.c
-@@ -47,32 +47,20 @@
- #define CTRL_SET_HOST_ONLY(val, h) (val |= ((h & 1) << 9))
- #define CTRL_SET_GUEST_ONLY(val, h) (val |= ((h & 1) << 8))
- 
--#define IBS_FETCH_CTL_HIGH_MASK		0xFFFFFFFF
--/* high dword bit IbsFetchCtl[bit 49] */
--#define IBS_FETCH_VALID_BIT		(1UL << 17)
--/* high dword bit IbsFetchCtl[bit 52] */
--#define IBS_FETCH_PHY_ADDR_VALID_BIT 	(1UL << 20)
--/* high dword bit IbsFetchCtl[bit 48] */
--#define IBS_FETCH_ENABLE		(1UL << 16)
-+/* IbsFetchCtl bits/masks */
-+#define IBS_FETCH_HIGH_VALID_BIT	(1UL << 17)	/* bit 49 */
-+#define IBS_FETCH_HIGH_ENABLE		(1UL << 16)	/* bit 48 */
-+#define IBS_FETCH_LOW_MAX_CNT_MASK	0x0000FFFFUL	/* MaxCnt mask */
- 
--#define IBS_FETCH_CTL_CNT_MASK 		0x00000000FFFF0000UL
--#define IBS_FETCH_CTL_MAX_CNT_MASK 	0x000000000000FFFFUL
--
--/*IbsOpCtl masks/bits */
--#define IBS_OP_VALID_BIT	(1ULL<<18)	/* IbsOpCtl[bit18] */
--#define IBS_OP_ENABLE		(1ULL<<17)	/* IBS_OP_ENABLE[bit17]*/
-+/*IbsOpCtl bits */
-+#define IBS_OP_LOW_VALID_BIT		(1ULL<<18)	/* bit 18 */
-+#define IBS_OP_LOW_ENABLE		(1ULL<<17)	/* bit 17 */
- 
- /* Codes used in cpu_buffer.c */
-+/* This produces duplicate code, need to be fixed */
- #define IBS_FETCH_BEGIN 3
- #define IBS_OP_BEGIN    4
- 
--/*IbsOpData3 masks */
--#define IBS_CTL_LVT_OFFSET_VALID_BIT		(1ULL<<8)
--
--/*PCI Extended Configuration Constants */
--/* MSR to set the IBS control register APIC LVT offset */
--#define IBS_LVT_OFFSET_PCI		0x1CC
--
- /* The function interface needs to be fixed, something like add
-    data. Should then be added to linux/oprofile.h. */
- extern void oprofile_add_ibs_sample(struct pt_regs *const regs,
-@@ -213,7 +201,7 @@ op_amd_handle_ibs(struct pt_regs * const regs,
- 
- 	if (ibs_config.fetch_enabled) {
- 		rdmsr(MSR_AMD64_IBSFETCHCTL, low, high);
--		if (high & IBS_FETCH_VALID_BIT) {
-+		if (high & IBS_FETCH_HIGH_VALID_BIT) {
- 			ibs_fetch.ibs_fetch_ctl_high = high;
- 			ibs_fetch.ibs_fetch_ctl_low = low;
- 			rdmsr(MSR_AMD64_IBSFETCHLINAD, low, high);
-@@ -229,16 +217,16 @@ op_amd_handle_ibs(struct pt_regs * const regs,
- 
- 			/*reenable the IRQ */
- 			rdmsr(MSR_AMD64_IBSFETCHCTL, low, high);
--			high &= ~(IBS_FETCH_VALID_BIT);
--			high |= IBS_FETCH_ENABLE;
--			low &= IBS_FETCH_CTL_MAX_CNT_MASK;
-+			high &= ~IBS_FETCH_HIGH_VALID_BIT;
-+			high |= IBS_FETCH_HIGH_ENABLE;
-+			low &= IBS_FETCH_LOW_MAX_CNT_MASK;
- 			wrmsr(MSR_AMD64_IBSFETCHCTL, low, high);
- 		}
- 	}
- 
- 	if (ibs_config.op_enabled) {
- 		rdmsr(MSR_AMD64_IBSOPCTL, low, high);
--		if (low & IBS_OP_VALID_BIT) {
-+		if (low & IBS_OP_LOW_VALID_BIT) {
- 			rdmsr(MSR_AMD64_IBSOPRIP, low, high);
- 			ibs_op.ibs_op_rip_low = low;
- 			ibs_op.ibs_op_rip_high = high;
-@@ -263,8 +251,8 @@ op_amd_handle_ibs(struct pt_regs * const regs,
- 						(unsigned int *)&ibs_op,
- 						IBS_OP_BEGIN);
- 			rdmsr(MSR_AMD64_IBSOPCTL, low, high);
--			low &= ~(IBS_OP_VALID_BIT);
--			low |= IBS_OP_ENABLE;
-+			low &= ~IBS_OP_LOW_VALID_BIT;
-+			low |= IBS_OP_LOW_ENABLE;
- 			wrmsr(MSR_AMD64_IBSOPCTL, low, high);
- 		}
- 	}
-@@ -307,12 +295,12 @@ static void op_amd_start(struct op_msrs const * const msrs)
- 	}
- 	if (ibs_allowed && ibs_config.fetch_enabled) {
- 		low = (ibs_config.max_cnt_fetch >> 4) & 0xFFFF;
--		high = IBS_FETCH_ENABLE;
-+		high = IBS_FETCH_HIGH_ENABLE;
- 		wrmsr(MSR_AMD64_IBSFETCHCTL, low, high);
- 	}
- 
- 	if (ibs_allowed && ibs_config.op_enabled) {
--		low = ((ibs_config.max_cnt_op >> 4) & 0xFFFF) + IBS_OP_ENABLE;
-+		low = ((ibs_config.max_cnt_op >> 4) & 0xFFFF) + IBS_OP_LOW_ENABLE;
- 		high = 0;
- 		wrmsr(MSR_AMD64_IBSOPCTL, low, high);
- 	}
--- 
-1.5.5.4
+Actually after a bit more thinking :) I realized that the scenario I 
+explained above cannot happen because partition_sched_domains() must be 
+called under get_online_cpus() and the set_rq_online() happens in the 
+hotplug writer's path (ie under cpu_hotplug.lock). Since I unified all 
+the other domain rebuild paths (arch_reinit_sched_domains, etc) we 
+should be safe. But it again means we'd rely on those intricate 
+dependencies that we wanted to avoid with the cpu_active_map. Also 
+cpusets might still need to rebuild the domains in the hotplug writer's 
+path.
+So it's better to fix it once and for all :)
 
+>> -- 
+>>
+>> btw Why didn't we convert sched*.c to use rq->rd->online when it was
+>> introduced ? ie Instead of using cpu_online_map directly.
+>>   
+> I think things were converted where they made sense to convert.  But we 
+> also had a different goal at that time, so perhaps something was 
+> missed.  If you think something else should be converted, please point 
+> it out.
+Ok. I'll keep an eye on it.
 
+> In the meantime, I would suggest we consider this patch on top of yours 
+> (applies to tip/sched/devel):
+> 
+> ----------------------
+> 
+> sched: Fully integrate cpus_active_map and root-domain code
+>   Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+
+Ack.
+The only thing I'm a bit unsure of is the error scenarios in the cpu 
+hotplug event sequence. online_map is not cleared when something in the 
+notifier chain fails, but active_map is.
+
+Max
