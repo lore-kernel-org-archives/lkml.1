@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbYGVO2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbYGVOft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbYGVO2Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 10:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbYGVO2C
+	id S1752860AbYGVOft (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 10:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbYGVOfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 10:28:02 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58905 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbYGVO2B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 10:28:01 -0400
-Subject: Re: 128 GiB memory question-- kernel only sees 64GiB?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, Alan Piszcz <ap@solarrain.com>
-In-Reply-To: <alpine.DEB.1.10.0807221019570.8455@p34.internal.lan>
-References: <alpine.DEB.1.10.0807221019570.8455@p34.internal.lan>
-Content-Type: text/plain
-Date: Tue, 22 Jul 2008 16:28:03 +0200
-Message-Id: <1216736883.7257.102.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jul 2008 10:35:41 -0400
+Received: from saeurebad.de ([85.214.36.134]:50628 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750798AbYGVOfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 10:35:41 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [git pull] x86 fixes
+References: <20080722140348.GA26267@elte.hu>
+Date: Tue, 22 Jul 2008 16:35:14 +0200
+In-Reply-To: <20080722140348.GA26267@elte.hu> (Ingo Molnar's message of "Tue,
+	22 Jul 2008 16:03:48 +0200")
+Message-ID: <87prp6j8bh.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-22 at 10:21 -0400, Justin Piszcz wrote:
-> Hello,
-> 
-> To be able to utilize 128 GiB of memory on a host, does one need to enable 
-> NUMA support? Currently only 64 GiB is showing up.
-> 
-> As far as machine name/motherboard type, I do not have this information 
-> currently but I am told there are one or two of these boxes are running 
-> CentOS 5.x and/or RHEL5/AS.
+Hi,
 
-Sounds like you need to bug RH with that ;-)
+Ingo Molnar <mingo@elte.hu> writes:
 
-> Is there something special you need to do to utilize all 128 GiB of 
-> memory?
+> Linus,
+>
+> Please pull the latest x86 fixes git tree from:
+>
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+>
+> Thanks,
+>
+> 	Ingo
+>
+> ------------------>
+> Jan Kratochvil (1):
+>       x86: fix crash due to missing debugctlmsr on AMD K6-3
+>
+> Jeremy Fitzhardinge (2):
+>       x86: rename PTE_MASK to PTE_PFN_MASK
+>       x86: add PTE_FLAGS_MASK
 
-Does a recent kernel work for you? Also, you could at the very least
-have mentioned your machine architecture; is it x86_64, ia64 or ppc64?
+Are you serious?  It goes _this_ fast?  The patch came into my mbox at
+8:00am this morning and you push it to Linus at 4:00pm already?
 
+What about the inconsistency it introduces?  When I look at PAGE_MASK
+for example, it masks out the PAGE offset.  PTE_MASK masks out PTE
+specifca from a value.
+
+Now, I assume PTE_PFN_MASK masks out the PFN.  Oh, wait, it masks the
+protection bits.
+
+Why not wait a bit longer before pushing things into mainline?
+
+	Hannes
