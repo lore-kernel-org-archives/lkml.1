@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbYGVRkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbYGVRkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753997AbYGVRkR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 13:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYGVRkA
+	id S1754656AbYGVRkg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 13:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYGVRkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 13:40:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51864 "EHLO mx1.redhat.com"
+	Tue, 22 Jul 2008 13:40:10 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:40669 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750875AbYGVRj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 13:39:59 -0400
-Date: Tue, 22 Jul 2008 13:39:14 -0400
-From: Andy Gospodarek <andy@greyhouse.net>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       David Woodhouse <dwmw2@infradead.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] tehuti: use request_firmware
-Message-ID: <20080722173914.GH32408@gospo.rdu.redhat.com>
-References: <1216741806.28669.6.camel@jaswinder.satnam>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752996AbYGVRkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 13:40:08 -0400
+Date: Tue, 22 Jul 2008 20:39:57 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: bjorn.helgaas@hp.com, linux-next@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next build error (PNP/IXJ)
+Message-ID: <20080722173957.GA14846@cs181140183.pp.htv.fi>
+References: <20080722102739.61462b04.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1216741806.28669.6.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.10i
+In-Reply-To: <20080722102739.61462b04.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 09:20:06PM +0530, Jaswinder Singh wrote:
+On Tue, Jul 22, 2008 at 10:27:39AM -0700, Randy Dunlap wrote:
+> Hi,
 > 
-> Firmware blob is little endian.
+> I'm seeing several build errors in linux-next-20080722 that I haven't
+> seen previously, although I don't know what changed to cause this.
 > 
-> Removed bdx_firmware_endianess() as firmware blob is already little endian
+> They are all basically the same, in ixj (drivers/telephony/ixj*), when
+> CONFIG_PNP=n, and CONFIG_PHONE_IXJ=y or =m (so the actual error message
+> varies depending on IXJ=y or =m):
 > 
-> Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
-> ---
->  drivers/net/tehuti.c         |   29 +-
->  drivers/net/tehuti.h         |    1 +
->  drivers/net/tehuti_fw.h      |10712 ------------------------------------------
->  firmware/Makefile            |    1 +
->  firmware/WHENCE              |   12 +
->  firmware/tehuti/bdx.bin.ihex | 2678 +++++++++++
->  6 files changed, 2708 insertions(+), 10725 deletions(-)
->  delete mode 100644 drivers/net/tehuti_fw.h
->  create mode 100644 firmware/tehuti/bdx.bin.ihex
+> IXJ=y:
+> ixj.c:(.text+0x329d98): undefined reference to `pnp_get_resource'
+> or IXJ=m:
+> ERROR: "pnp_get_resource" [drivers/telephony/ixj.ko] undefined!
 > 
+> 
+> Suggestions?
 
-This has been on my TODO list for a while, but just haven't gotten
-around to it yet since I didn't feel like it was that crucial.  Thanks
-for taking the time, Jaswinder.  Did you manage to test it?
+Please send a .config
 
-I would like to try it out before ACKing, so I'll do that tonight or
-tomorrow and post back my results.
+> Thanks,
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
