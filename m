@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbYGVX0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757724AbYGVX12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758781AbYGVX0m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757058AbYGVXTk
+	id S1757724AbYGVX12 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757186AbYGVXTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:19:40 -0400
-Received: from ns2.suse.de ([195.135.220.15]:57792 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 19:19:49 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57835 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757047AbYGVXTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:19:39 -0400
-Date: Tue, 22 Jul 2008 16:16:19 -0700
+	id S1757178AbYGVXTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:19:47 -0400
+Date: Tue, 22 Jul 2008 16:16:24 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Will Newton <will.newton@gmail.com>
-Subject: [patch 25/47] sisusbvga: Fix oops on disconnect.
-Message-ID: <20080722231619.GZ8282@suse.de>
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Joonwoo Park <joonwpark81@gmail.com>, Patrick McHardy <kaber@trash.net>
+Subject: [patch 27/47] textsearch: fix Boyer-Moore text search bug
+Message-ID: <20080722231624.GB8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sisusbvga-fix-oops-on-disconnect.patch"
+Content-Disposition: inline; filename="textsearch-fix-boyer-moore-text-search-bug.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,34 +42,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Will Newton <will.newton@gmail.com>
+From: Joonwoo Park <joonwpark81@gmail.com>
 
-commit f15e39739a1d7dfaa2173a91707a74c11a246648 upstream
+Upstream commit aebb6a849cfe7d89bcacaaecc20a480dfc1180e7
 
-Remove dev_info call on disconnect. The sisusb_dev pointer may have been
-set to zero by sisusb_delete at this point causing an oops.
+The current logic has a bug which cannot find matching pattern, if the
+pattern is matched from the first character of target string.
+for example:
+	pattern=abc, string=abcdefg
+	pattern=a,   string=abcdefg
+Searching algorithm should return 0 for those things.
 
-The message does not provide any extra information over the standard USB
-subsystem output so removing it does not affect functionality.
-
-Signed-off-by: Will Newton <will.newton@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
 ---
- drivers/usb/misc/sisusbvga/sisusb.c |    2 --
- 1 file changed, 2 deletions(-)
+ lib/ts_bm.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/usb/misc/sisusbvga/sisusb.c
-+++ b/drivers/usb/misc/sisusbvga/sisusb.c
-@@ -3264,8 +3264,6 @@ static void sisusb_disconnect(struct usb
+--- a/lib/ts_bm.c
++++ b/lib/ts_bm.c
+@@ -63,7 +63,7 @@ static unsigned int bm_find(struct ts_co
+ 	struct ts_bm *bm = ts_config_priv(conf);
+ 	unsigned int i, text_len, consumed = state->offset;
+ 	const u8 *text;
+-	int shift = bm->patlen, bs;
++	int shift = bm->patlen - 1, bs;
  
- 	/* decrement our usage count */
- 	kref_put(&sisusb->kref, sisusb_delete);
--
--	dev_info(&sisusb->sisusb_dev->dev, "Disconnected\n");
- }
- 
- static struct usb_device_id sisusb_table [] = {
+ 	for (;;) {
+ 		text_len = conf->get_next_block(consumed, &text, conf, state);
 
 -- 
