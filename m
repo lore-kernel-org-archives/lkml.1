@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757533AbYGVXVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbYGVXWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757533AbYGVXVc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbYGVXSJ
+	id S1757868AbYGVXWF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:22:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756172AbYGVXSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:18:09 -0400
-Received: from ns1.suse.de ([195.135.220.2]:52846 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 19:18:16 -0400
+Received: from ns2.suse.de ([195.135.220.15]:57564 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756130AbYGVXSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:18:06 -0400
-Date: Tue, 22 Jul 2008 16:14:52 -0700
+	id S1756119AbYGVXSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:18:15 -0400
+Date: Tue, 22 Jul 2008 16:14:58 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ben Dooks <ben-linux@fluff.org>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [patch 10/47] OHCI: Fix problem if SM501 and another platform
-	driver is selected
-Message-ID: <20080722231452.GK8282@suse.de>
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Leonid <leonidv11@gmail.com>
+Subject: [patch 12/47] USB: ohci - record data toggle after unlink
+Message-ID: <20080722231458.GM8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ohci-fix-problem-if-sm501-and-another-platform-driver-is-selected.patch"
+Content-Disposition: inline; filename="usb-ohci-record-data-toggle-after-unlink.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,71 +40,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Ben Dooks <ben-linux@fluff.org>
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-commit 3ee38d8bf46b364b1ca364ddb7c379a4afcd8bbb upstream
+commit 29c8f6a727a683b5988877dd80dbdefd49e64a51 upstream
 
-If the SM501 and another platform driver, such as the SM501
-then we end up defining PLATFORM_DRIVER twice. This patch
-seperated the SM501 onto a seperate define of SM501_OHCI_DRIVER
-so that it can be selected without overwriting the original
-definition.
+This patch fixes a problem with OHCI where canceling bulk or
+interrupt URBs may lose track of the right data toggle.  This
+seems to be a longstanding bug, possibly dating back to the
+Linux 2.4 kernel, which stayed hidden because
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+ (a) about half the time the data toggle bit was correct;
+ (b) canceling such URBs is unusual; and
+ (c) the few drivers which cancel these URBs either
+      [1] do it only as part of shutting down, or
+      [2] have fault recovery logic, which recovers.
+
+For those transfer types, the toggle is normally written back
+into the ED when each TD is retired.  But canceling bypasses
+the mechanism used to retire TDs ... so on average, half the
+time the toggle bit will be invalid after cancelation.
+
+The fix is simple:  the toggle state of any canceled TDs are
+propagated back to the ED in the finish_unlinks function.
+
+(Issue found by leonidv11@gmail.com ...)
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Leonid <leonidv11@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ohci-hcd.c |   15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ drivers/usb/host/ohci-q.c |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
---- a/drivers/usb/host/ohci-hcd.c
-+++ b/drivers/usb/host/ohci-hcd.c
-@@ -1054,7 +1054,7 @@ MODULE_LICENSE ("GPL");
+--- a/drivers/usb/host/ohci-q.c
++++ b/drivers/usb/host/ohci-q.c
+@@ -952,6 +952,7 @@ rescan_this:
+ 			struct urb	*urb;
+ 			urb_priv_t	*urb_priv;
+ 			__hc32		savebits;
++			u32		tdINFO;
  
- #ifdef CONFIG_MFD_SM501
- #include "ohci-sm501.c"
--#define PLATFORM_DRIVER		ohci_hcd_sm501_driver
-+#define SM501_OHCI_DRIVER	ohci_hcd_sm501_driver
- #endif
+ 			td = list_entry (entry, struct td, td_list);
+ 			urb = td->urb;
+@@ -966,6 +967,17 @@ rescan_this:
+ 			savebits = *prev & ~cpu_to_hc32 (ohci, TD_MASK);
+ 			*prev = td->hwNextTD | savebits;
  
- #if	!defined(PCI_DRIVER) &&		\
-@@ -1062,6 +1062,7 @@ MODULE_LICENSE ("GPL");
- 	!defined(OF_PLATFORM_DRIVER) &&	\
- 	!defined(SA1111_DRIVER) &&	\
- 	!defined(PS3_SYSTEM_BUS_DRIVER) && \
-+	!defined(SM501_OHCI_DRIVER) && \
- 	!defined(SSB_OHCI_DRIVER)
- #error "missing bus glue for ohci-hcd"
- #endif
-@@ -1121,9 +1122,18 @@ static int __init ohci_hcd_mod_init(void
- 		goto error_ssb;
- #endif
- 
-+#ifdef SM501_OHCI_DRIVER
-+	retval = platform_driver_register(&SM501_OHCI_DRIVER);
-+	if (retval < 0)
-+		goto error_sm501;
-+#endif
++			/* If this was unlinked, the TD may not have been
++			 * retired ... so manually save the data toggle.
++			 * The controller ignores the value we save for
++			 * control and ISO endpoints.
++			 */
++			tdINFO = hc32_to_cpup(ohci, &td->hwINFO);
++			if ((tdINFO & TD_T) == TD_T_DATA0)
++				ed->hwHeadP &= ~cpu_to_hc32(ohci, ED_C);
++			else if ((tdINFO & TD_T) == TD_T_DATA1)
++				ed->hwHeadP |= cpu_to_hc32(ohci, ED_C);
 +
- 	return retval;
- 
- 	/* Error path */
-+#ifdef SM501_OHCI_DRIVER
-+ error_sm501:
-+#endif
- #ifdef SSB_OHCI_DRIVER
-  error_ssb:
- #endif
-@@ -1159,6 +1169,9 @@ module_init(ohci_hcd_mod_init);
- 
- static void __exit ohci_hcd_mod_exit(void)
- {
-+#ifdef SM501_OHCI_DRIVER
-+	platform_driver_unregister(&SM501_OHCI_DRIVER);
-+#endif
- #ifdef SSB_OHCI_DRIVER
- 	ssb_driver_unregister(&SSB_OHCI_DRIVER);
- #endif
+ 			/* HC may have partly processed this TD */
+ 			td_done (ohci, urb, td);
+ 			urb_priv->td_cnt++;
 
 -- 
