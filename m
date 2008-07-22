@@ -1,97 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbYGVCm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbYGVCsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755877AbYGVCm0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 22:42:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbYGVCmS
+	id S1756132AbYGVCsy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 22:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852AbYGVCsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 22:42:18 -0400
-Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:34676 "HELO
-	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753866AbYGVCmR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 22:42:17 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=BryVxdfYGrN5qSxhG/RSxATyG6curzu7x/gt8pbPoA1HLCZRxyqxIizKwU7LeGgG+tmetoc72ZKJzdIvDFQ+zIbn996J/4nPWN/UZCsqvG9G8hn3lc5CeZVgZypIgG62zoLpzIPluZqoFqejNRUYxp5aao80f1ZY8GSqc+eJNvc=  ;
-X-YMail-OSG: jtjDpbkVM1nz3aodUtJIGmoL29O6AhhTDw18Os3Q9w4fXXeOLWKE1UzMyUHUeKugagshcIPkq5VVLxGs6hMbeXUXObnfvcsyvcMxaQjOOw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Russ Anderson <rja@sgi.com>
-Subject: Re: [PATCH 1/2] mm: Avoid putting a bad page back on the LRU v7
-Date: Tue, 22 Jul 2008 12:42:10 +1000
-User-Agent: KMail/1.9.5
-Cc: mingo@elte.hu, tglx@linutronix.de, Tony Luck <tony.luck@intel.com>,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
-References: <20080718203606.GE29621@sgi.com>
-In-Reply-To: <20080718203606.GE29621@sgi.com>
+	Mon, 21 Jul 2008 22:48:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41695 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754524AbYGVCsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 22:48:45 -0400
+Date: Mon, 21 Jul 2008 22:41:00 -0400
+From: Dave Jones <davej@redhat.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus <torvalds@linux-foundation.org>, linux-next@vger.kernel.org
+Subject: Re: Fix icom serial compile.
+Message-ID: <20080722024100.GA23365@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Linus <torvalds@linux-foundation.org>, linux-next@vger.kernel.org
+References: <20080721211659.GA29106@redhat.com> <20080721221355.GD3472@redhat.com> <20080721230742.4649b94a@lxorguk.ukuu.org.uk> <20080722112538.03c06649.sfr@canb.auug.org.au> <20080722030519.7d0e5ee3@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807221242.10552.nickpiggin@yahoo.com.au>
+In-Reply-To: <20080722030519.7d0e5ee3@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 19 July 2008 06:36, Russ Anderson wrote:
-> [PATCH 1/2] mm: Avoid putting a bad page back on the LRU v7
->
-> Prevent a page with a physical memory error from being placed back
-> on the LRU.  A new page flag (PG_memerror) is added if
-> CONFIG_PAGEFLAGS_EXTENDED is defined.
->
-> Signed-off-by: Russ Anderson <rja@sgi.com>
-> Reviewed-by: Christoph Lameter <clameter@sgi.com>
->
-> ---
->  include/linux/page-flags.h |   18 ++++++++++++++++--
->  mm/migrate.c               |   31 ++++++++++++++++++++++++++++++-
->  mm/page_alloc.c            |   13 ++++++++-----
->  3 files changed, 54 insertions(+), 8 deletions(-)
->
-> Index: linux/mm/page_alloc.c
-> ===================================================================
-> --- linux.orig/mm/page_alloc.c	2008-07-18 15:15:48.000000000 -0500
-> +++ linux/mm/page_alloc.c	2008-07-18 15:16:09.000000000 -0500
-> @@ -602,10 +602,10 @@ static int prep_new_page(struct page *pa
->  		bad_page(page);
->
->  	/*
-> -	 * For now, we report if PG_reserved was found set, but do not
-> -	 * clear it, and do not allocate the page: as a safety net.
-> +	 * For now, we report if PG_reserved or PG_memerror was found set, but
-> +	 * do not clear it, and do not allocate the page: as a safety net.
->  	 */
-> -	if (PageReserved(page))
-> +	if (PageReserved(page) || PageMemError(page))
->  		return 1;
->
->  	page->flags &= ~(1 << PG_uptodate | 1 << PG_error | 1 << PG_reclaim |
-> @@ -2475,8 +2475,11 @@ static void setup_zone_migrate_reserve(s
->  			continue;
->  		page = pfn_to_page(pfn);
->
-> -		/* Blocks with reserved pages will never free, skip them. */
-> -		if (PageReserved(page))
-> +		/*
-> +		 * Blocks with reserved pages or memory errors will never
-> +		 * free, skip them.
-> +		 */
-> +		if (PageReserved(page) || PageMemError(page))
->  			continue;
->
->  		block_migratetype = get_pageblock_migratetype(page);
+On Tue, Jul 22, 2008 at 03:05:19AM +0100, Alan Cox wrote:
+ > > > NAK. Already in the ttydev tree but not yet gone to Linus
+ > > 
+ > > I have just sent a similar patch.   I have to ask why you sent only some
+ > > of these patches since they were known to break some builds and you had
+ > > the fix patches already ...
+ > 
+ > I sent the first batch only because some later stuff didnt apply and I
+ > happen to believe in testing patches before sending them (something I
+ > note certain other people clearly do after shitting the lot at Linus)
 
-I don't like adding more branches like this into fastpaths like this. It
-would make a lot more sense to me if you just had some private module that
-does the job of isolating the page from the lru and/or elevating their
-refcount so that they do not get put back on freelists.
+So what stopped you from just sending the two diffs already posted here
+twice today ?  They're not dependant upon anything else, and the files
+in questions haven't changed in months.
 
-Migration may need something to perhaps allow migrations of pages not on
-LRU lists but have PageMemError set which is OK, but I really don't like
-adding code and branches to page_alloc.c if possible....
+Leaving the tree broken, and NACKing attempts to fix it don't seem to be
+particularly productive for anyone.
 
-Thanks,
-Nick
+ > I spent the past two days travelling, and all the net time I could get
+ > trying to get the patches merged and tested. Everyone and their
+ > grandmother keep patching the tty code again and again. I just had
+ > another go before bed - its now six pulls in a row someone has broken the
+ > patches.
+ > 
+ > Quite frankly if you want to moan about the fact I've been working till
+ > 4am trying to sort this mess out you can go see figure 1.
+
+Please, less drama, more fixing.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
