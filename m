@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbYGVKrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754606AbYGVKri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755528AbYGVKrM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 06:47:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbYGVKqz
+	id S1754606AbYGVKri (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 06:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbYGVKr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 06:46:55 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:34688 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750971AbYGVKqx (ORCPT
+	Tue, 22 Jul 2008 06:47:27 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41512 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750971AbYGVKr0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 06:46:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=DaEmaFNCZ/QMy3T+G3Z0Gy+91uwWzyvhghLZNtI8aQdDafgNo3+RAKNSpLaFg8GHzO
-         f7iVsJ1KL40ZpdoEWih2/0tGftK6QK9ZzKE8UGlCOK0C3Z9RA5PDgnVY5B3gFCSgvsEU
-         MBE2abUj+ie/FBdZN0xpstgBCD9cwDXbaRpRM=
-Date: Tue, 22 Jul 2008 10:51:58 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: David Miller <davem@davemloft.net>, kaber@trash.net, mingo@elte.hu,
-       ischram@telenet.be, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org, j@w1.fi
-Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
-	at 0000000000000370
-Message-ID: <20080722105158.GA6024@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48857F74.2040406@lwfinger.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 22 Jul 2008 06:47:26 -0400
+Date: Tue, 22 Jul 2008 11:28:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, jgarzik@redhat.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [build failure] hp-plus.c: (.text+0xd7c1a): undefined reference
+ to `ei_close'
+Message-ID: <20080722112844.338d30ff@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080722072334.GA25241@elte.hu>
+References: <20080721.233512.128618365.anemo@mba.ocn.ne.jp>
+	<20080721191519.GA15843@elte.hu>
+	<20080721214258.787a67ca@lxorguk.ukuu.org.uk>
+	<20080722072334.GA25241@elte.hu>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22-07-2008 08:34, Larry Finger wrote:
-...
->>> I used the davem patch, the second version of your first one, and 
->>> your second one. Both problems persist.
+> find the full tested patch below. It solves the build failures i 
+> triggered so far.
 
-Could you send lockdep info after Patrick's "set lockdep classes"
-patch?
+Yes - that matches the patch I sent Jeff on the 8th July
 
-Jarek P.
+Subject: Re: linux-next: Tree for July 8 (ns8390)
+
+From: Alan Cox <alan@redhat.com>
+
+Please try this and if it sorts it fold it into the driver. This is a diff
+between my tree and the linux-next tree
+---
+
+ drivers/net/hp-plus.c |    2 +-
+ drivers/net/hp.c      |    2 +-
+ drivers/net/ne.c      |    8 ++++----
+ drivers/net/wd.c      |    2 +-
+ 4 files changed, 7 insertions(+), 7 deletions(-)
+
