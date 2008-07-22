@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYGVNzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbYGVN4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbYGVNzX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 09:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYGVNzJ
+	id S1754099AbYGVN4r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 09:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbYGVN4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 09:55:09 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48904 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750869AbYGVNzH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 09:55:07 -0400
-Message-ID: <4885E6B0.3060504@zytor.com>
-Date: Tue, 22 Jul 2008 09:54:56 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       Ivan Seskar <Seskar@winlab.rutgers.edu>, jfm3 <jfm3@winlab.rutgers.edu>,
-       Sujith <m.sujith@gmail.com>
-Subject: Re: Bug on 2.6.26 - x86 VIA Nehemiah CentaurHauls processor cannot
- boot
-References: <43e72e890807210614y58065d75j5b2fb3c5ebe6180a@mail.gmail.com> <48848DDF.6010903@zytor.com> <43e72e890807210701w6d7f5638w5fdbea76a1cf1c0b@mail.gmail.com> <48851AC2.8030007@zytor.com> <20080722131408.GA12418@elte.hu> <4885DF9D.2090804@zytor.com> <20080722134601.GA21977@elte.hu>
-In-Reply-To: <20080722134601.GA21977@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 22 Jul 2008 09:56:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52943 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750770AbYGVN4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 09:56:37 -0400
+Date: Tue, 22 Jul 2008 15:56:29 +0200
+From: Michal Schmidt <mschmidt@redhat.com>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: PCI: MSI interrupts masked using prohibited method
+Message-ID: <20080722155629.1160635e@brian.englab.brq.redhat.com>
+In-Reply-To: <48807166.9010006@csr.com>
+References: <4860D09D.4060801@csr.com>
+	<4864DA54.6000205@csr.com>
+	<200806271007.26248.jbarnes@virtuousgeek.org>
+	<200807161243.03360.jbarnes@virtuousgeek.org>
+	<20080716195853.GL25255@parisc-linux.org>
+	<487F45C0.2080201@csr.com>
+	<20080717153917.GR25255@parisc-linux.org>
+	<alpine.LFD.1.10.0807171745270.4316@apollo.tec.linutronix.de>
+	<20080717165630.GT25255@parisc-linux.org>
+	<487F7DFA.10101@csr.com>
+	<20080717194846.GU25255@parisc-linux.org>
+	<48807166.9010006@csr.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->>
->> We can't "printk and panic" because we never get that far in the 
->> kernel proper, for obvious reasons: the code is quite littered with 
->> these buggers.
+On Fri, 18 Jul 2008 11:33:10 +0100
+David Vrabel <david.vrabel@csr.com> wrote:
+
+> Matthew Wilcox wrote:
+> > 
+> > I think David's original patch (just declining to mask the
+> > interrupt) is the best approach to take.  Perhaps architectures
+> > with saner interrupt hardware would like to try the approach I've
+> > mentioned here.
+> > 
+> > I don't like the comment in http://lkml.org/lkml/2008/6/27/199 as
+> > it's not prohibited ... just a bad idea.  How about this patch?
 > 
-> hm. How about to default to a safe NOP all the way up to where we can 
-> fix up alternatives and install a different NOP. (which we could also 
-> test first via intentionally jumping on it and catching any exception 
-> via a special exception handler)
+> The PCI specification is quite clear that it's prohibited.  The
+> problem also is more severe than simply having spurious interrupts --
+> with some devices if a line interrupt is generated (regardless of
+> whether it ends up on the bus) then no more interrupts are generated.
 > 
+> I also think that the change requires a comment in the code.  It odd
+> to have a mask function that doesn't really mask so a comment is
+> necessary to explain why this is.
+> 
+> Please apply this instead.
+> 
+> David
 
-I don't really think that's realistic, especially if gcc starts using 
-these instructions (which it really *should*.)
+This breaks the setting of SMP affinity for MSI interrupts :-(
+With the patch, writes to /proc/irq/<n>/smp_affinity are ignored for an
+MSI interrupt.
 
-You can make the same argument for every non-i386 instruction (heck, 
-even every non-8086 instruction), and it quickly gets unworkable.
-
-Since it is extremely likely that the set of processors affected is now 
-bounded, I think it's just a matter of identifying the relevant CPUID 
-info.  As far as I know, only VIA is affected.
-
-What is worse is that there are a number of "virtual processors" out 
-there which are, in effect, separate implementations of the x86 
-architecture, but don't actually identify as anything else.  Several of 
-them have broken nopl implementations, but identify as processors which 
-are known good in this department.  Again, nothing unique to nopl about 
-this, but it's a generic problem.
-
-	-hpa
+Michal
