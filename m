@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759299AbYGVX3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbYGVXaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759299AbYGVX3a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756755AbYGVXUO
+	id S1757926AbYGVXaL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:30:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbYGVXU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:20:14 -0400
-Received: from ns2.suse.de ([195.135.220.15]:57944 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 19:20:27 -0400
+Received: from mx1.suse.de ([195.135.220.2]:53288 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756737AbYGVXUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:20:12 -0400
-Date: Tue, 22 Jul 2008 16:16:45 -0700
+	id S1757286AbYGVXUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:20:25 -0400
+Date: Tue, 22 Jul 2008 16:16:53 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Matt Porter <mporter@kernel.crashing.org>
-Subject: [patch 33/47] rapidio: fix device reference counting
-Message-ID: <20080722231645.GH8282@suse.de>
+       Jeff Layton <jlayton@redhat.com>, Steven French <sfrench@us.ibm.com>
+Subject: [patch 35/47] cifs: fix wksidarr declaration to be big-endian
+	friendly
+Message-ID: <20080722231653.GJ8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="rapidio-fix-device-reference-counting.patch"
+Content-Disposition: inline; filename="cifs-fix-wksidarr-declaration-to-be-big-endian-friendly.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,33 +40,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Eugene Surovegin <ebs@ebshome.net>
+From: Jeff Layton <jlayton@redhat.com>
 
-commit a7de3902edce099e4102c1272ec0ab569c1791f7 upstream
+commit 536abdb0802f3fac1b217530741853843d63c281 upstream
 
-Fix RapidIO device reference counting.
+The current definition of wksidarr works fine on little endian arches
+(since cpu_to_le32 is a no-op there), but on big-endian arches, it fails
+to compile with this error:
 
-Signed-of-by: Eugene Surovegin <ebs@ebshome.net>
-Cc: Matt Porter <mporter@kernel.crashing.org>
+error: braced-group within expression allowed only inside a function
+
+The problem is that this static declaration has cpu_to_le32 embedded
+within it, and that expands into a function macro.  We need to use
+__constant_cpu_to_le32() instead.
+
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Cc: Steven French <sfrench@us.ibm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/rapidio/rio-driver.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/cifs/cifsacl.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
---- a/drivers/rapidio/rio-driver.c
-+++ b/drivers/rapidio/rio-driver.c
-@@ -101,8 +101,8 @@ static int rio_device_probe(struct devic
- 		if (error >= 0) {
- 			rdev->driver = rdrv;
- 			error = 0;
-+		} else
- 			rio_dev_put(rdev);
--		}
- 	}
- 	return error;
- }
+--- a/fs/cifs/cifsacl.c
++++ b/fs/cifs/cifsacl.c
+@@ -34,11 +34,11 @@
+ static struct cifs_wksid wksidarr[NUM_WK_SIDS] = {
+ 	{{1, 0, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0} }, "null user"},
+ 	{{1, 1, {0, 0, 0, 0, 0, 1}, {0, 0, 0, 0, 0} }, "nobody"},
+-	{{1, 1, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(11), 0, 0, 0, 0} }, "net-users"},
+-	{{1, 1, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(18), 0, 0, 0, 0} }, "sys"},
+-	{{1, 2, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(32), cpu_to_le32(544), 0, 0, 0} }, "root"},
+-	{{1, 2, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(32), cpu_to_le32(545), 0, 0, 0} }, "users"},
+-	{{1, 2, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(32), cpu_to_le32(546), 0, 0, 0} }, "guest"} }
++	{{1, 1, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(11), 0, 0, 0, 0} }, "net-users"},
++	{{1, 1, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(18), 0, 0, 0, 0} }, "sys"},
++	{{1, 2, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(32), __constant_cpu_to_le32(544), 0, 0, 0} }, "root"},
++	{{1, 2, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(32), __constant_cpu_to_le32(545), 0, 0, 0} }, "users"},
++	{{1, 2, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(32), __constant_cpu_to_le32(546), 0, 0, 0} }, "guest"} }
+ ;
+ 
+ 
 
 -- 
