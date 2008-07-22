@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbYGVTQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754269AbYGVTRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbYGVTQg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 15:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbYGVTQ1
+	id S1754269AbYGVTRT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 15:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYGVTRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 15:16:27 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:36737 "EHLO mail.atlantis.sk"
+	Tue, 22 Jul 2008 15:17:11 -0400
+Received: from mga01.intel.com ([192.55.52.88]:63623 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750852AbYGVTQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 15:16:26 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: pata_it821x completely broken
-Date: Tue, 22 Jul 2008 21:16:17 +0200
-User-Agent: KMail/1.9.9
-Cc: Alan Cox <alan@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-References: <200807042153.56644.linux@rainbow-software.org> <200807221959.53669.linux@rainbow-software.org> <20080722191022.0417f45c@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080722191022.0417f45c@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1750975AbYGVTRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 15:17:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,232,1215414000"; 
+   d="scan'208";a="363813657"
+Date: Tue, 22 Jul 2008 12:17:09 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: add apic probe for genapic 64bit v2
+Message-ID: <20080722191708.GE14380@linux-os.sc.intel.com>
+References: <200807211836.27282.yhlu.kernel@gmail.com> <200807212208.22116.yhlu.kernel@gmail.com> <20080722175757.GC14380@linux-os.sc.intel.com> <86802c440807221105s77372df8re2e59440a8f644bd@mail.gmail.com> <20080722181056.GD14380@linux-os.sc.intel.com> <86802c440807221140o20dcc31fjc10f86a22a1125bb@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807222116.19077.linux@rainbow-software.org>
+In-Reply-To: <86802c440807221140o20dcc31fjc10f86a22a1125bb@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 July 2008 20:10:22 Alan Cox wrote:
-> > New patch below, this time with DMA forced on RAID volumes - as my
-> > firmware does not identify the RAID arrays as DMA capable :(
->
-> The underlying problem is that the newer libata rewrites the dev->id data
-> in ways that we can't then patch up. I've actually been hacking on this a
-> bit today. The existing it821x code was working fine and it does the
-> needed patching, it just needs to do it in a different place, and that in
-> turn needs a new ap->ops->read_id() method so it can be hooked.
+On Tue, Jul 22, 2008 at 11:40:13AM -0700, Yinghai Lu wrote:
+> could be apic mode is set to phys flat mode by BIOS.
+> 
+> get
+> APIC error (0x40)...
 
-I can test the code once it's done.
-I just moved my / to the RAID1 provided by IT8212. The controller has a great 
-feature that allows converting a drive between RAID1/standalone without data 
-loss (haven't seen anything like this yet). Also the background rebuild is 
-nice (as seen on much more expensive RAID controllers), it's running as I'm 
-typing this.
+Does this happen while sending IPI's? AP bringup should be same
+irrespective of the genapic mode we select here.
 
->
-> On the bright side that also allows us to implement a pata_mfm/rll
-> driver at last.
->
+> that is the reason for introducing max_phys_apicid.
 
-I used to have an old drive that was something like that - 5.25" Seagate 40MB 
-drive. I sold it including the controller a couple of years ago (it was still 
-working) so no testing fun for me.
+We may need a workaround if it is some cpu/platform specific issue. But we
+need to understand the actual issue and document it properly, so that
+it doesn't break in the future.
 
-> Alan
-
-
-
--- 
-Ondrej Zary
+thanks,
+suresh
