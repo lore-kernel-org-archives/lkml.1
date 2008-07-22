@@ -1,70 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbYGVRwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbYGVR5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754073AbYGVRwn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 13:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbYGVRwe
+	id S1753706AbYGVR5j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 13:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYGVR5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 13:52:34 -0400
-Received: from outbound-mail-123.bluehost.com ([67.222.38.23]:42853 "HELO
-	outbound-mail-123.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750875AbYGVRwd (ORCPT
+	Tue, 22 Jul 2008 13:57:30 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:38514 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbYGVR5a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 13:52:33 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=cbtpohoownVUQHtql8Yd5dqrO7LSgc6AQyjcxLb32qhIQEtdhLyick5bMJxy5A3kOFID6QyeCBHBNDpPulmzokJs5DETeaWV62ToA85M8BxmqL/rFshhjOPMN0hX0pgd;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Michal Schmidt <mschmidt@redhat.com>
-Subject: Re: PCI: MSI interrupts masked using prohibited method
-Date: Tue, 22 Jul 2008 10:52:26 -0700
-User-Agent: KMail/1.9.9
-Cc: David Vrabel <david.vrabel@csr.com>, Matthew Wilcox <matthew@wil.cx>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <4860D09D.4060801@csr.com> <48807166.9010006@csr.com> <20080722155629.1160635e@brian.englab.brq.redhat.com>
-In-Reply-To: <20080722155629.1160635e@brian.englab.brq.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jul 2008 13:57:30 -0400
+Date: Tue, 22 Jul 2008 12:57:29 -0500
+From: scameron@beardog.cca.cpqcorp.net
+To: linux-kernel@vger.kernel.org
+Cc: scameron@beardog.cca.cpqcorp.net
+Subject: Re: HP (Compaq) Smart Array 5xxx controller SCSI driver
+Message-ID: <20080722175729.GC8833@beardog.cca.cpqcorp.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807221052.26879.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+User-Agent: Mutt/1.5.9i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, July 22, 2008 6:56 am Michal Schmidt wrote:
-> On Fri, 18 Jul 2008 11:33:10 +0100
->
-> David Vrabel <david.vrabel@csr.com> wrote:
-> > Matthew Wilcox wrote:
-> > > I think David's original patch (just declining to mask the
-> > > interrupt) is the best approach to take.  Perhaps architectures
-> > > with saner interrupt hardware would like to try the approach I've
-> > > mentioned here.
-> > >
-> > > I don't like the comment in http://lkml.org/lkml/2008/6/27/199 as
-> > > it's not prohibited ... just a bad idea.  How about this patch?
-> >
-> > The PCI specification is quite clear that it's prohibited.  The
-> > problem also is more severe than simply having spurious interrupts --
-> > with some devices if a line interrupt is generated (regardless of
-> > whether it ends up on the bus) then no more interrupts are generated.
-> >
-> > I also think that the change requires a comment in the code.  It odd
-> > to have a mask function that doesn't really mask so a comment is
-> > necessary to explain why this is.
-> >
-> > Please apply this instead.
-> >
-> > David
->
-> This breaks the setting of SMP affinity for MSI interrupts :-(
-> With the patch, writes to /proc/irq/<n>/smp_affinity are ignored for an
-> MSI interrupt.
 
-It should only break it for devices that don't provide a mask bit.  But given 
-that we can't really mask generically on those devices, maybe that's ok given 
-that it fixes the other problems mentioned in this thread...
+James Bottomley wrote:
+> Actually, I think we can make one (which is really required ... it's a
+> lot of pain to move device nodes, just look at libata).  It should be
+> child's play to come up with a udev rule that simply does extra symbolic
+> links from /dev/cciss<n>c<n>p<n> to whatever the sd device is.  That
+> should hide a lot of the problem.
+> 
+> The other issue is plugging the management ioctl in, but that can be
+> done via scsi_host->ioctl.
+> 
+> James 
 
-Jesse
+Another thing which would help would be to expose device type 0x0C (raid
+controller) and let sg bind to it.
+
+CCISS_REPORT_LOGICAL and CCISS_REPORT_PHYSICAL will not return this device, but
+you can artificially jam it into the list of devices, and give it an 8-byte LUN
+address of all zeroes.  It will respond to inquiries, etc, so the regular scsi
+device scan will find it if you map it to some bus/target/lun.
+
+Then, it can be accessed via ioctls (and even SG_IO, though SG_IO seems to be
+broken on some of the distros we support, I've noticed, so that doesn't help as
+much as one might think.)
+
+I think there might be an easier way (or at least it is more obvious to me) to
+convert cciss to be a SCSI driver, and that is to reuse some of the existing
+tape code that's in cciss_scsi.c.  (Probably more obvious to me because I wrote
+that code.)
+
+It is a little hard to see what Tomo's patch does, as it's all in one step.
+
+In the times I've converted cciss to be a SCSI driver in the past 
+the steps were more or less as follows (from memory):
+
+1) copy the driver files into drivers/scsi,
+2) rename everything, change the Makefile/Kconfig stuff to add in the new code.
+3) take out the stuff that makes it a block driver
+4) add a CCISS_REPORT_LOGICAL_LUNS call into the scsi tape device discovery
+code, expose those devices, add the controller itself in to the list of devices
+artificially (8-byte lun address == all zeroes).
+
+At this point the driver will work, but performance will completely suck.
+
+5) switch the tape code to use the block side command allocator, (cmd_alloc()
+in cciss.c) and ditch the rinky-dink tape code command allocator
+(scsi_cmd_alloc() in cciss_scsi.c) and jack up the number of commands 
+and queue depth the SCSI side of the driver will support to something 
+reasonable.
+
+At this point performance will stop completely sucking.
+
+6) rip out a bunch of the block side code.
+7) (I've never actually done this step) move the necessary ioctls to the scsi
+side of the driver.
+
+The tape code has stuff for hot-plugging of things, sort of (and I sent up some
+patches some time ago to make that better awhile ago, but they seemed to get
+ignored for whatever reason.) This would need to change to be a bit more
+careful (look at page 0x83 serial numbers to find what devices were
+new/changed/gone rather than just looking at device type, which is what it's
+doing now.  BTW, I have patches in the works for the block driver to improve
+the behavior of rebuild_lun_table, which currently sucks in the brute force way
+that it does things.  This patch also removes the duplicated discovery
+cdde from cciss_init_one, and has cciss_init_one just call rebuild_lun_table(),
+but I digress.)
+
+In any case, I don't think what I described above was what was done here... It
+looks like the tape code was ditched, and new code that does almost the same
+thing was written.  Maybe there was a good reason for that, I don't know.
+
+-- steve
+
