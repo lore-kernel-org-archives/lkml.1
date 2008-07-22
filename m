@@ -1,108 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755919AbYGVCyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbYGVDA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755919AbYGVCyv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 22:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852AbYGVCym
+	id S1755907AbYGVDA2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 23:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbYGVDAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 22:54:42 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:32466 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752273AbYGVCyl (ORCPT
+	Mon, 21 Jul 2008 23:00:17 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:33653 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754852AbYGVDAQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 22:54:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=LuWBscF6Y8K2Z/9qXtYa4co9hMSh5tCqoTQ8PDjeyZUyPX7wtqpUYLfz7PYah5jN6FiWvUHA93OGLzW7K4mGP+4ZSIPkYiqQW137eMDpH67TOx44467ceSAHjrCVytBlGoFptVBT9EhTRn0N/wXMxk64F4+qQPKHgYB18ub4Bns=  ;
-X-YMail-OSG: Vs619usVM1m91zohdcLbHZapcsIIC_K6JmucI1IYL19fl6jFUrNIv9R.oNo80Va6Jx5HP7.ROl.e0xjx8Ai.BSY15wKQIQN16L1A9wKCIKghc.XP7Fb.KWn6V4Z9ezK6NIw-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH -mm] mm: more likely reclaim MADV_SEQUENTIAL mappings
-Date: Tue, 22 Jul 2008 12:54:28 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Johannes Weiner" <hannes@saeurebad.de>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       Nossum <vegard.nossum@gmail.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-References: <87y73x4w6y.fsf@saeurebad.de> <200807221202.27169.nickpiggin@yahoo.com.au> <20080721223609.70e93725@bree.surriel.com>
-In-Reply-To: <20080721223609.70e93725@bree.surriel.com>
+	Mon, 21 Jul 2008 23:00:16 -0400
+Date: Mon, 21 Jul 2008 22:56:39 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: linux-kernel@vger.kernel.org, Andreas Dilger <adilger@sun.com>,
+       linux-ext4@vger.kernel.org, ext2-devel@lists.sourceforge.net
+Subject: Re: [RFC] A better solution to the HTree telldir problem
+Message-ID: <20080722025638.GK28839@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Daniel Phillips <phillips@phunq.net>, linux-kernel@vger.kernel.org,
+	Andreas Dilger <adilger@sun.com>, linux-ext4@vger.kernel.org,
+	ext2-devel@lists.sourceforge.net
+References: <200807211411.52007.phillips@phunq.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807221254.28473.nickpiggin@yahoo.com.au>
+In-Reply-To: <200807211411.52007.phillips@phunq.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 July 2008 12:36, Rik van Riel wrote:
-> On Tue, 22 Jul 2008 12:02:26 +1000
->
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > I don't actually care what the man page or posix says if it is obviously
-> > silly behaviour. If you want to dispute the technical points of my post,
-> > that would be helpful.
->
-> Application writers read the man page and expect MADV_SEQUENTIAL
-> to do roughly what the name and description imply.
->
-> If you think that the kernel should not bother implementing
-> what the application writers expect, and the application writers
-> should implement special drop-behind magic for Linux, your
-> expectations may not be entirely realistic.
+On Mon, Jul 21, 2008 at 02:11:51PM -0700, Daniel Phillips wrote:
+> This is something of a duh: if HTree refrains from splitting leaves 
+> while a directory traversal is in progress then a simple linear 
+> traversal can be used in classic Ext2/UFS fashion, with the logical 
+> file address of each directory entry serving as the telldir cookie.
 
-The simple fact is that if you already have the knowledge and custom
-code for sequentially accessed mappings, then if you know the pages
-are not going to be used, there is a *far* better way to do it by
-unmapping them than the kernel will ever be able to do itself.
+The problem here is the phrase "while a directory traversal is in
+progress".  What does that mean?  While a file descriptor is open on a
+directory?  An application could call opendir(), and then go to sleep
+for a week.  Or, a user could type control-Z while an "ls -lR" is in
+progress, and then forget to resume it.  So any scheme has to be
+prepared to not split leaves for a *long* time.
 
-Also, it would be perfectly valid to want a sequentially accessed
-mapping but not want to drop the pages early.
+You later say that we only need to do this if the user calls
+telldir(); although of course the kernel doesn't know if the user has
+called telldir().  We only know if the lseek() system call has been
+called.  So it becomes impossible for us to distinguish between an
+application calling telldir() or rewinddir().  So we would end up
+needing to do this more often than might be strictly necessary.
 
-What we should do is update the man page now rather than try adding
-things to support it.
+The problem becomes even worse with NFS, because we have absolutely no
+idea whether or not lseek() has been called.  Even worse, because NFS
+is a stateless protocol, we don't even know when a file handle is
+closed!  So we can't even detect a closedir()!  Or of course, an
+opendir()!  With NFS all you get is an NFS getattr RPC, which could be
+used to service either a stat(2) call or an open(2) call.  The net is
+that while NFS mount is in progress, we would never be able to split a
+leaf.
 
+So your optimization of only doing this if there is a telldir()
+operation may not make the operation be as rare as we might like,
+especially if there are some user programs that keep file descriptors
+open over long periods for inotify purposes, and then use rewinddir().
+We would need to check out the behavior of programs such as trackerd
+and the GNome VFS library routines to see whether this could
+potentially be a problem.
 
-> > Consider this: if the app already has dedicated knowledge and
-> > syscalls to know about this big sequential copy, then it should
-> > go about doing it the *right* way and really get performance
-> > improvement. Automatic unmap-behind even if it was perfect still
-> > needs to scan LRU lists to reclaim.
->
-> Doing nothing _also_ ends up with the kernel scanning the
-> LRU lists, once memory fills up.
+It might be possible to make some assumptions that if userspace calls
+lseek(fd, 0, SEEK_SET), that this really is a rewinddir(), and not a
+telldir(), but this could be a potentially dangerous assumption since
+there is no way to know for sure whether userspace is paying attention
+to the return value of lseek(fd, 0, SEEK_SET) or not.
 
-But we are not doing nothing because we already know and have coded
-for the fact that the mapping will be accessed once, sequentially.
-Now that we have gone this far, we should actually do it properly and
-1. unmap after use, 2. POSIX_FADV_DONTNEED after use. This will give
-you much better performance and cache behaviour than any automatic
-detection scheme, and it doesn't introduce any regressions for existing
-code.
+> The idea is to disable leaf splitting during directory traversal and use 
+> an alternate leaf overflow mechanism in its place.  To handle a create 
+> into a full leaf when splitting is disabled, a new leaf block is 
+> created having the same hash index as the current one and inserted 
+> before the full leaf in the hash tree to hold the new entry and any 
+> subsequent creates into the same hash bucket.  The lookup probe has to 
+> be modified slightly to traverse all leaves with the same hash index.
+> Or maybe this already works.
 
+The lookup probe would indeed need to be modified, but that's not a
+major deal.  The bigger deal is that lookups are less efficient, since
+we it effectively looks like a hash bucket overflow.
 
-> Scanning the LRU lists is a given.
+> HTree could opportunistically re-distribute the entries later when no 
+> directory listing is in progress, or it could just leave things as they 
+> are.  The fallback is quite unlikely to occur in practice, and the 
+> alternative storage format is only very slightly less efficient to 
+> process on lookup, and does not consume any extra space.
 
-It is not.
+How likely it takes place depends on how often an opendir()/readdir()
+cycle is held for a long period of time.  It will depend on your
+application workload.  And if NFS is enabled, all bets are off.
 
+> If the new semantics are acceptable, the payoff for adopting this simpler
+> method is:
+> 
+>   * Can use a more efficient HTree hash because we do not need to be so
+>     paranoid about bucket levelling to avoid rare cases that might break
+>     the RB tree approach.
 
-> All that the patch by Johannes does is make sure the kernel
-> does the right thing when it runs into an MADV_SEQUENTIAL
-> page on the inactive_file list: evict the page immediately,
-> instead of having it pass through the active list and the
-> inactive list again.
->
-> This reduces the number of times that MADV_SEQUENTIAL pages
-> get scanned from 3 to 1, while protecting the working set
-> from MADV_SEQUENTIAL pages.
+Yes we do, because the biggest problem we have right now is your
+original implementation hard codes us to a tree which is at most two
+levels deep.  Clusterfs/Sun has more general code which allows an
+arbitrary deep tree, but we would need to integrate that into the
+kernel, and also get support for that into e2fsck.
 
-We should update the man page. And seeing as Linux had never preferred
-to drop behind *before* now, it is crazy to add such a feature that
-we will then have a much harder time to remove, given that it is
-clearly suboptimal. Update the man page to sketch the *correct* way to
-optimise this type of access.
+>   * We get to use the nice shiny alternative hash mechanism that we put
+>     considerable effort into building but so far have never used.
 
+We are using alternative hash algorithms already....
+
+>   * Delete will now happen in physical create order and therefore not
+>     thrash the inode table, which is a problem that HTree can currently
+>     hit with large directories ant tight cache.
+
+Not just deletes, but any kind of readdir followed by stat operation.
+This includes "ls -sF", find, sendmail/exim queue operations, etc., in
+addition to "rm -rf".
+
+>   * Several hundred lines of special purpose code removed.  (Replaced by
+>     maybe 50 different lines of special purpose code.)
+
+If you mean the rbtree fill code, I suspect the special purpose code
+you are referring to will be roughly end up being roughly the same
+size, plus or minus 20%.  That's because in order to do what you are
+suggesting, after we finish looking at one leaf node, we will need to
+go back to the interior node, and find the next leaf node to see if
+the hash is the same.  And if we are at the end of the interior node,
+we may need to recursively go up one level, and then back down to find
+the subsequent leaf node.
+
+Even worse, since if NFS is enabled in any way, shape or form, this
+scheme is totally and completely screwed.  So we have to the old way
+of doing things if NFS is turned on.
+
+							- Ted
