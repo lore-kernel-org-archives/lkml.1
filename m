@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYGVUVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbYGVUdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754326AbYGVUVR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 16:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYGVUVB
+	id S1753437AbYGVUdS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 16:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbYGVUdC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 16:21:01 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:60774 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbYGVUVA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 16:21:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=F1UTd3i5q2MtFb5lFrGAAP9E4O6I8p2c/wdKaGAD6n9LpX4t+X3auIYO9LI3wIehDe
-         9grS/PWIkkzWmIcRI6TPphF43Eu7YYsjTcovwzq+o7wCioZ+ADd102IbJ9x4sbxRHReP
-         +zsGrC6n317PRmOAN2TCpTgFqXgUcniOmulOk=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [PATCH] x86: move declaring x2apic_extra_bits
-Date: Tue, 22 Jul 2008 13:20:22 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200807211836.27282.yhlu.kernel@gmail.com> <200807212208.22116.yhlu.kernel@gmail.com>
-In-Reply-To: <200807212208.22116.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 22 Jul 2008 16:33:02 -0400
+Received: from xenotime.net ([66.160.160.81]:35968 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751394AbYGVUdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 16:33:00 -0400
+Date: Tue, 22 Jul 2008 13:32:57 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: bjorn.helgaas@hp.com, linux-next@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next build error (PNP/IXJ)
+Message-Id: <20080722133257.7362b9f1.rdunlap@xenotime.net>
+In-Reply-To: <20080722201930.GB14846@cs181140183.pp.htv.fi>
+References: <20080722102739.61462b04.randy.dunlap@oracle.com>
+	<20080722173957.GA14846@cs181140183.pp.htv.fi>
+	<20080722124152.facaa724.rdunlap@xenotime.net>
+	<20080722201930.GB14846@cs181140183.pp.htv.fi>
+Organization: YPO4
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807221320.22729.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 22 Jul 2008 23:19:30 +0300 Adrian Bunk wrote:
 
-it is for uv only
+> On Tue, Jul 22, 2008 at 12:41:52PM -0700, Randy Dunlap wrote:
+> > On Tue, 22 Jul 2008 20:39:57 +0300 Adrian Bunk wrote:
+> > 
+> > > On Tue, Jul 22, 2008 at 10:27:39AM -0700, Randy Dunlap wrote:
+> > > > Hi,
+> > > > 
+> > > > I'm seeing several build errors in linux-next-20080722 that I haven't
+> > > > seen previously, although I don't know what changed to cause this.
+> > > > 
+> > > > They are all basically the same, in ixj (drivers/telephony/ixj*), when
+> > > > CONFIG_PNP=n, and CONFIG_PHONE_IXJ=y or =m (so the actual error message
+> > > > varies depending on IXJ=y or =m):
+> > > > 
+> > > > IXJ=y:
+> > > > ixj.c:(.text+0x329d98): undefined reference to `pnp_get_resource'
+> > > > or IXJ=m:
+> > > > ERROR: "pnp_get_resource" [drivers/telephony/ixj.ko] undefined!
+> > > > 
+> > > > 
+> > > > Suggestions?
+> > > 
+> > > Please send a .config
+> > 
+> > attached.  (IXJ=m)
+> 
+> Works for me with gcc 4.3.1.
+> Which gcc version are you using?
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+gcc (GCC) 4.2.1 (SUSE Linux)
+
+> Does disabling CONFIG_OPTIMIZE_INLINING fix it for you?
+
+Hmpf.  Yes, it sure does.
 
 ---
- arch/x86/kernel/genx2apic_phys.c |    2 --
- arch/x86/kernel/genx2apic_uv_x.c |    2 ++
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/genx2apic_phys.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/genx2apic_phys.c
-+++ linux-2.6/arch/x86/kernel/genx2apic_phys.c
-@@ -10,8 +10,6 @@
- #include <asm/ipi.h>
- #include <asm/genapic.h>
- 
--DEFINE_PER_CPU(int, x2apic_extra_bits);
--
- static int x2apic_phys;
- 
- static int set_x2apic_phys_mode(char *arg)
-Index: linux-2.6/arch/x86/kernel/genx2apic_uv_x.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/genx2apic_uv_x.c
-+++ linux-2.6/arch/x86/kernel/genx2apic_uv_x.c
-@@ -27,6 +27,8 @@
- #include <asm/uv/uv_hub.h>
- #include <asm/uv/bios.h>
- 
-+DEFINE_PER_CPU(int, x2apic_extra_bits);
-+
- static enum uv_system_type uv_system_type;
- 
- static int __init uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
