@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbYGVSmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbYGVSnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbYGVSmT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 14:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbYGVSmH
+	id S1755774AbYGVSnR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 14:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYGVSnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 14:42:07 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34260 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751417AbYGVSmG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 14:42:06 -0400
-Message-ID: <488629D5.4050603@zytor.com>
-Date: Tue, 22 Jul 2008 14:41:25 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Tue, 22 Jul 2008 14:43:01 -0400
+Received: from il.qumranet.com ([212.179.150.194]:52135 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751404AbYGVSnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 14:43:00 -0400
+Message-ID: <48862A30.7050701@qumranet.com>
+Date: Tue, 22 Jul 2008 21:42:56 +0300
+From: Avi Kivity <avi@qumranet.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       Ivan Seskar <Seskar@winlab.rutgers.edu>, jfm3 <jfm3@winlab.rutgers.edu>,
-       Sujith <m.sujith@gmail.com>
-Subject: Re: Bug on 2.6.26 - x86 VIA Nehemiah CentaurHauls processor cannot
- boot
-References: <43e72e890807210614y58065d75j5b2fb3c5ebe6180a@mail.gmail.com>	 <48848DDF.6010903@zytor.com>	 <43e72e890807210701w6d7f5638w5fdbea76a1cf1c0b@mail.gmail.com>	 <48851AC2.8030007@zytor.com> <43e72e890807212147p5d19cfact17e719abb338378c@mail.gmail.com> <488614A3.1060400@garzik.org> <48862526.7060704@zytor.com> <488627E2.2060101@garzik.org>
-In-Reply-To: <488627E2.2060101@garzik.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       kvm@vger.kernel.org
+Subject: Re: [patch 0/4] Port KVM-trace to tracepoints
+References: <20080717155724.897537670@polymtl.ca>
+In-Reply-To: <20080717155724.897537670@polymtl.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> 
->> We're only referring specifically to the family == 6 VIA processors here.
-> 
-> To be specific, I was merely saying that VIA processors where 
-> c->x86_model==6 may lack CMOV.
-> 
-> I have not kept track of what current Kconfig options will set, but in 
-> the past it was quite easy to build a "generic 686 kernel" that required 
-> CMOV and thus excluded these VIA processors.
-> 
-> Distros in the past often wound up intentionally -not- supporting some 
-> of these VIA processors, because they did not want to create a non-CMOV 
-> kernel.  (This policy obviously excluded older x86 as well)
-> 
-> If these things have been addressed recently (< 12-18 months) then all 
-> good.
-> 
+Mathieu Desnoyers wrote:
+> Hi,
+>
+> Here is a port of KVM-trace, currently using macros on top of the Linux Markers,
+> to tracepoints. Note that I cleaned up the instrumentation too, so stuff like
+>
+> KVMTRACE_3D(CR_WRITE, vcpu, (u32)cr,
+>   (u32)kvm_register_read(vcpu, reg),
+>   (u32)((u64)kvm_register_read(vcpu, reg) >> 32),
+>   handler);
+>
+> Sprinkled all across the KVM C code becomes :
+>
+> trace_kvm_cr_write(vcpu, cr, reg);
+>
+> Which looks much nicer, IMHO.
+>
+> It applies on top of linux-next patch-v2.6.26-next-20080715.
+>
+>   
 
-I am pretty sure CONFIG_X86_GENERIC doesn't disable CMOV, and since CMOV 
-is a separate CPUID flag it's all good (if the chip doesn't have it, 
-it'll trap.)
+It does look nicer; but it means maintaining tracepoints becomes much 
+harder, because the information is scattered across many files.
 
-Unfortunately Intel didn't assign a CPUID flag for the long NOPs, and 
-then didn't document them (I think partially because they were a 
-retcon), but yet it reflected a serious hole in Centaur's 
-characterization effort that they bumped family to 6 without following 
-P6 behaviour for a massive range of opcodes.
+kvm tracepoints are heavily tied into the implementation; and making 
+them harder to write means we will have less information.  In fact, I am 
+contemplating moving in another direction (when looking at the 
+pgprintk()s scattered around arch/x86/kvm/mmu.c:
 
-The main reason for disabling P6 NOPs for CONFIG_X86_GENERIC is that the 
-win is so small, and that a number of vendors got it wrong.
+   kvm_trace("pfentry", "page_fault entry addr %lx error code %x\n", 
+cr2, error_code);
 
-	-hpa
+Unlike printk()s, no actual formatting would occur during runtime.  
+Instead, at initialization time all the strings would be parsed into a 
+data structure that describes the data types, and the runtime would 
+simply consult this structure and copy the arguments into trace 
+records.  User space would also be able to pull this structure and so 
+recreate the formatted string.
+
+The advantages I see to this are:
+
+  - easy to add traces; the most important advantage
+  - when the code changes, obsolete traces are completely removed
+  - good performance
+  - no need to have a formats file in userspace (which is tied to the 
+kernel version)
+  - can also send printk()s along, for synchronization with other kvm 
+and kernel events
+
+In fact, why not convert printk() to do this, making it a 
+high-performance logging system?  Of course it would retain the dmesg 
+interface, but we could say that messages at the KERN_TRACE level bypass 
+dmesg and only go to the trace system.
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
