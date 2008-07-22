@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757170AbYGVF2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757774AbYGVF2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757170AbYGVF2a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 01:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756851AbYGVFWv
+	id S1757774AbYGVF2p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 01:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756890AbYGVFW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 01:22:51 -0400
-Received: from mail.suse.de ([195.135.220.2]:53788 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 01:22:56 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53803 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756408AbYGVFWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 01:22:50 -0400
+	id S1756886AbYGVFWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 01:22:55 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 20/79] device create: misc: convert device_create to device_create_drvdata
-Date: Mon, 21 Jul 2008 22:18:44 -0700
-Message-Id: <1216703983-21448-20-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, David Woodhouse <dwmw2@infradead.org>
+Subject: [PATCH 21/79] device create: mtd: convert device_create to device_create_drvdata
+Date: Mon, 21 Jul 2008 22:18:45 -0700
+Message-Id: <1216703983-21448-21-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <20080722051805.GA17373@suse.de>
 References: <20080722051805.GA17373@suse.de>
@@ -25,27 +25,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 device_create() is race-prone, so use the race-free
 device_create_drvdata() instead as device_create() is going away.
 
+Cc: David Woodhouse <dwmw2@infradead.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/misc/phantom.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/mtd/mtdchar.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/misc/phantom.c b/drivers/misc/phantom.c
-index 1861624..4ce3bdc 100644
---- a/drivers/misc/phantom.c
-+++ b/drivers/misc/phantom.c
-@@ -399,8 +399,9 @@ static int __devinit phantom_probe(struct pci_dev *pdev,
- 		goto err_irq;
- 	}
+diff --git a/drivers/mtd/mtdchar.c b/drivers/mtd/mtdchar.c
+index 129d429..aef9f4b 100644
+--- a/drivers/mtd/mtdchar.c
++++ b/drivers/mtd/mtdchar.c
+@@ -28,10 +28,13 @@ static void mtd_notify_add(struct mtd_info* mtd)
+ 	if (!mtd)
+ 		return;
  
--	if (IS_ERR(device_create(phantom_class, &pdev->dev, MKDEV(phantom_major,
--			minor), "phantom%u", minor)))
-+	if (IS_ERR(device_create_drvdata(phantom_class, &pdev->dev,
-+					 MKDEV(phantom_major, minor),
-+					 NULL, "phantom%u", minor)))
- 		dev_err(&pdev->dev, "can't create device\n");
+-	device_create(mtd_class, NULL, MKDEV(MTD_CHAR_MAJOR, mtd->index*2), "mtd%d", mtd->index);
++	device_create_drvdata(mtd_class, NULL,
++			      MKDEV(MTD_CHAR_MAJOR, mtd->index*2),
++			      NULL, "mtd%d", mtd->index);
  
- 	pci_set_drvdata(pdev, pht);
+-	device_create(mtd_class, NULL,
+-		      MKDEV(MTD_CHAR_MAJOR, mtd->index*2+1), "mtd%dro", mtd->index);
++	device_create_drvdata(mtd_class, NULL,
++			      MKDEV(MTD_CHAR_MAJOR, mtd->index*2+1),
++			      NULL, "mtd%dro", mtd->index);
+ }
+ 
+ static void mtd_notify_remove(struct mtd_info* mtd)
 -- 
 1.5.6.3
 
