@@ -1,50 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbYGVXh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbYGVXiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758201AbYGVXh1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759705AbYGVXcZ
+	id S1759632AbYGVXiG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757396AbYGVXh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:32:25 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48094 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758310AbYGVXcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:32:23 -0400
-Message-ID: <48866DDE.9080201@garzik.org>
-Date: Tue, 22 Jul 2008 19:31:42 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 22 Jul 2008 19:37:27 -0400
+Received: from bromo.msbb.uc.edu ([129.137.3.146]:54127 "HELO
+	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758201AbYGVXhZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:37:25 -0400
+Date: Tue, 22 Jul 2008 19:37:22 -0400
+From: Jack Howarth <howarth@bromo.msbb.uc.edu>
+To: jbarnes@virtuousgeek.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86,pci: dmi check for mackpro 2.2 mmconf
+Message-ID: <20080722233722.GA12247@bromo.msbb.uc.edu>
 MIME-Version: 1.0
-To: jie.yang@atheros.com
-CC: m.kozlowski@tuxland.pl, bhutchings@solarflare.com, adobriyan@gmail.com,
-       yjwei@cn.fujitsu.com, rdreier@cisco.com, shemminger@vyatta.com,
-       davem@davemloft.net, jcliburn@gmail.com, parag.warudkar@gmail.com,
-       w@1wt.eu, oliver.schuster@schweigstill.de, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH net-next] atl1e: Atheros L1E Gigabit Ethernet driver
-References: <12163522333496-git-send-email-jie.yang@atheros.com>
-In-Reply-To: <12163522333496-git-send-email-jie.yang@atheros.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jie.yang@atheros.com wrote:
-> From: Jie Yang <jie.yang@atheros.com>
-> 
-> Full patch for the Atheros L1E Gigabit Ethernet driver.
-> Supportring AR8121, AR8113 and AR8114
-> 
-> Signed-off-by: Jie Yang <jie.yang @atheros.com>
-> ---
-> update on comments:
-> 	1) Remove dup MACRO already defined in linux/ethtool.h
-> 	2) Remove pci_using_64 logic for the reason as atl1
-> 
-
-applied
-
-
+Jesse,
+    I am unclear on what you want to push. Are you referring
+to the mmconf_end_bus_num_detect.patch and mmconf_end_bus_num_detect_fix.patch
+fixes that are already in -tip? These work fine in allowing MMCONFIG to work
+on my MacBook Pro and should go into the stable kernel. If you are talking
+about blacklisting pcie pre1.1 devices to solve the problems with ASPM,
+I really don't understand how I do that (in terms of finding out what devices
+to blacklist).
+                     Jack
+   
