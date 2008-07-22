@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbYGVXU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757716AbYGVXVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754176AbYGVXU0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbYGVXRy
+	id S1757716AbYGVXVr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbYGVXSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:17:54 -0400
-Received: from mx2.suse.de ([195.135.220.15]:57471 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 19:18:13 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52881 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755993AbYGVXRx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:17:53 -0400
-Date: Tue, 22 Jul 2008 16:14:38 -0700
+	id S1754129AbYGVXSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:18:11 -0400
+Date: Tue, 22 Jul 2008 16:14:55 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Neil Brown <neilb@suse.de>
-Subject: [patch 07/47] md: Dont acknowlege that stripe-expand is complete
-	until it really is.
-Message-ID: <20080722231438.GH8282@suse.de>
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Alan Stern <stern@rowland.harvard.edu>, Leonid <leonidv11@gmail.com>
+Subject: [patch 11/47] USB: ehci - fix timer regression
+Message-ID: <20080722231455.GL8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="md-don-t-acknowlege-that-stripe-expand-is-complete-until-it-really-is.patch"
+Content-Disposition: inline; filename="usb-ehci-fix-timer-regression.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,52 +40,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Neil Brown <neilb@notabene.brown>
+From: David Brownell <david-b@pacbell.net>
 
-commit efe311431869b40d67911820a309f9a1a41306f3 upstream
+commit 056761e55c8687ddf3db14226213f2e8dc2689bc upstream
 
-We shouldn't acknowledge that a stripe has been expanded (When
-reshaping a raid5 by adding a device) until the moved data has
-actually been written out.  However we are currently
-acknowledging (by calling md_done_sync) when the POST_XOR
-is complete and before the write.
+This patch fixes a regression in the EHCI driver's TIMER_IO_WATCHDOG
+behavior.  The patch "USB: EHCI: add separate IAA watchdog timer" changed
+how that timer is handled, so that short timeouts on the remaining
+timer (unfortunately, overloaded) would never be used.
 
-So track in s.locked whether there are pending writes, and don't
-call md_done_sync yet if there are.
+This takes a more direct approach, reorganizing the code slightly to
+be explicit about only the I/O watchdog role now being overridable.
+It also replaces a now-obsolete comment describing older timer behavior.
 
-Note: we all set R5_LOCKED on devices which are are about to
-read from.  This probably isn't technically necessary, but is
-usually done when writing a block, and justifies the use of
-s.locked here.
-
-This bug can lead to a crash if an array is stopped while an reshape
-is in progress.
-
-Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Leonid <leonidv11@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/raid5.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/usb/host/ehci.h |   19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -2861,6 +2861,8 @@ static void handle_stripe5(struct stripe
+--- a/drivers/usb/host/ehci.h
++++ b/drivers/usb/host/ehci.h
+@@ -176,6 +176,15 @@ timer_action_done (struct ehci_hcd *ehci
+ static inline void
+ timer_action (struct ehci_hcd *ehci, enum ehci_timer_action action)
+ {
++	/* Don't override timeouts which shrink or (later) disable
++	 * the async ring; just the I/O watchdog.  Note that if a
++	 * SHRINK were pending, OFF would never be requested.
++	 */
++	if (timer_pending(&ehci->watchdog)
++			&& ((BIT(TIMER_ASYNC_SHRINK) | BIT(TIMER_ASYNC_OFF))
++				& ehci->actions))
++		return;
++
+ 	if (!test_and_set_bit (action, &ehci->actions)) {
+ 		unsigned long t;
  
- 		for (i = conf->raid_disks; i--; ) {
- 			set_bit(R5_Wantwrite, &sh->dev[i].flags);
-+			set_bit(R5_LOCKED, &dev->flags);
-+			s.locked++;
- 			if (!test_and_set_bit(STRIPE_OP_IO, &sh->ops.pending))
- 				sh->ops.count++;
+@@ -191,15 +200,7 @@ timer_action (struct ehci_hcd *ehci, enu
+ 			t = EHCI_SHRINK_JIFFIES;
+ 			break;
  		}
-@@ -2874,6 +2876,7 @@ static void handle_stripe5(struct stripe
- 			conf->raid_disks);
- 		s.locked += handle_write_operations5(sh, 1, 1);
- 	} else if (s.expanded &&
-+		   s.locked == 0 &&
- 		!test_bit(STRIPE_OP_POSTXOR, &sh->ops.pending)) {
- 		clear_bit(STRIPE_EXPAND_READY, &sh->state);
- 		atomic_dec(&conf->reshape_stripes);
+-		t += jiffies;
+-		// all timings except IAA watchdog can be overridden.
+-		// async queue SHRINK often precedes IAA.  while it's ready
+-		// to go OFF neither can matter, and afterwards the IO
+-		// watchdog stops unless there's still periodic traffic.
+-		if (time_before_eq(t, ehci->watchdog.expires)
+-				&& timer_pending (&ehci->watchdog))
+-			return;
+-		mod_timer (&ehci->watchdog, t);
++		mod_timer(&ehci->watchdog, t + jiffies);
+ 	}
+ }
+ 
 
 -- 
