@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbYGVMym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbYGVM41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755831AbYGVMym (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 08:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbYGVMyf
+	id S1755834AbYGVM41 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 08:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbYGVM4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 08:54:35 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38171 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752320AbYGVMye (ORCPT
+	Tue, 22 Jul 2008 08:56:19 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:33870 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752873AbYGVM4Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 08:54:34 -0400
-Date: Tue, 22 Jul 2008 05:54:21 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [RFC] Imprecise timers.
-Message-ID: <20080722055421.2023d261@infradead.org>
-In-Reply-To: <488589E6.5070300@keyaccess.nl>
-References: <1216695757.18980.16.camel@shinybook.infradead.org>
-	<488589E6.5070300@keyaccess.nl>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 Jul 2008 08:56:16 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=NV37xaZFP8rbceLse57vnQtLb6SpocgViRVKSZ3t3irXBx1qTrilEXI+Yl3jKCLAG
+	2N4e6m+J0ibEWduToT2pA==
+Message-ID: <6599ad830807220556i3c2afc77j2e68d7179830b3ff@mail.gmail.com>
+Date: Tue, 22 Jul 2008 08:56:04 -0400
+From: "Paul Menage" <menage@google.com>
+To: "Patrick McHardy" <kaber@trash.net>
+Subject: Re: [PATCH] Traffic control cgroups subsystem
+Cc: "Ranjit Manomohan" <ranjitm@google.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, lizf@cn.fujitsu.com
+In-Reply-To: <4885D72A.1060106@trash.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0807212100580.1760@ranjit.corp.google.com>
+	 <4885B7DD.7070507@trash.net>
+	 <6599ad830807220514m5afea0fcsb99bf2e95f401c36@mail.gmail.com>
+	 <4885D72A.1060106@trash.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jul 2008 09:19:02 +0200
-Rene Herman <rene.herman@keyaccess.nl> wrote:
+On Tue, Jul 22, 2008 at 8:48 AM, Patrick McHardy <kaber@trash.net> wrote:
+>
+> Using skb->priority for classification would be fine, but it would
+> probably interfere with the default initialization to sk->sk_priority.
 
-> On 22-07-08 05:02, David Woodhouse wrote:
-> 
-> > Many users of timers don't really care too much about exactly when
-> > their timer fires -- and waking a CPU to satisfy such a timer is a
-> > waste of power. This patch implements a 'range' timer which will
-> > fire at a 'convenient' moment within given constraints.
-> > 
-> > It's implemented by a deferrable timer at the beginning of the
-> > range, which will run some time later when the CPU happens to be
-> > awake. And a non-deferrable timer at the hard deadline, to ensure
-> > it really does happen by then.
-> 
-> Are there actually users for this (not just in theory)? The
-> deferrable timer sort of sounds like all I'd ever want if I, as you
-> say, wouldn't really care...
+Well internally we just overloaded sk->sk_priority to be the classid,
+and let skb->priority be inherited from that.
 
-there's a few; mostly around hardware timeout..For example Stephen want
-it for his drivers.
+>
+>> Regarding skb->sk->sk_cgroup_classid, is it always the case that the
+>> original sk is still available when we're making traffic control
+>> decisions? I'd thought that there were cases (e.g. cloning skbs in the
+>> TCP retransmit path) where the pointer to the original sk is lost.
+>
+> After cloning, TCP sets the owner of the skb to the socket, so
+> that should work fine.
+>
 
-EXT3 journal flushing is another one where we can easily say 
-"between 4 and 7 seconds" rather than "exactly at 5"
+OK, so maybe we don't need a per-skb field after all.
 
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Paul
