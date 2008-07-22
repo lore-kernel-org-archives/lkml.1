@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbYGVXge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759502AbYGVXgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758797AbYGVXge (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759411AbYGVXal
+	id S1759502AbYGVXgz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758714AbYGVXat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:30:41 -0400
-Received: from casper.infradead.org ([85.118.1.10]:53078 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757003AbYGVXak (ORCPT
+	Tue, 22 Jul 2008 19:30:49 -0400
+Received: from smtprelay04.ispgateway.de ([80.67.18.16]:52336 "EHLO
+	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759422AbYGVXas (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:30:40 -0400
-Date: Tue, 22 Jul 2008 16:28:24 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       g.liakhovetski@pengutronix.de
-Subject: Re: [patch 2.6.26-rc5] gpio: sysfs interface (updated)
-Message-ID: <20080722232824.GA22596@kroah.com>
-References: <200806121153.36557.david-b@pacbell.net> <20080722162751.e8584d46.akpm@linux-foundation.org>
+	Tue, 22 Jul 2008 19:30:48 -0400
+X-Greylist: delayed 343 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Jul 2008 19:30:48 EDT
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Greg KH <gregkh@suse.de>
+Subject: [PATCH] kobject: Replace ALL occurrences of '/' with '!' instead of only the first one.
+Date: Wed, 23 Jul 2008 01:25:01 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+References: <20080722051805.GA17373@suse.de> <200807222012.39852.ioe-lkml@rameria.de> <20080722205015.GB3028@suse.de>
+In-Reply-To: <20080722205015.GB3028@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080722162751.e8584d46.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200807230125.02532.ioe-lkml@rameria.de>
+X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 04:27:51PM -0700, Andrew Morton wrote:
-> On Thu, 12 Jun 2008 11:53:36 -0700
-> David Brownell <david-b@pacbell.net> wrote:
-> 
-> > This adds a simple sysfs interface for GPIOs.
-> 
-> device_create_drvdata() has magically vanished from today's linux-next,
-> so this code doesn't compile any more.
-> 
-> This:
-> 
-> --- a/drivers/gpio/gpiolib.c~gpio-sysfs-interface-updated-gpio-linux-next-fixes-for-sysfs-support-fix
-> +++ a/drivers/gpio/gpiolib.c
-> @@ -453,8 +453,8 @@ int gpio_export(unsigned gpio, bool dire
->  	if (status == 0) {
->  		struct device	*dev;
->  
-> -		dev = device_create_drvdata(&gpio_class, desc->chip->dev, 0,
-> -				desc, "gpio%d", gpio);
-> +		dev = device_create(&gpio_class, desc->chip->dev, 0, desc,
-> +					"gpio%d", gpio);
+From: Ingo Oeser <ioe-lkml@rameria.de>
 
-Should be NULL instead of 0 there, otherwise sparse will complain.
+A recent patch from Kay Sievers <kay.sievers@vrfy.org>
+replaced the first occurrence of '/' with '!' as needed for block devices.
+
+Now do some cheap defensive coding and replace all of them to avoid future
+issues in this area.
+
+Signed-off-by: Ingo Oeser <ioe-lkml@rameria.de>
+---
+
+To answer your questions:
+> Do you know of block devices with more than one?
+
+No, just defensive coding :-)
+
+> Nice, care to send a follow-on patch for this?
+
+Linus just pulled, so I generated it against his latest tree.
 
 
->  		if (dev) {
->  			if (direction_may_change)
->  				status = sysfs_create_group(&dev->kobj,
-> @@ -537,8 +537,8 @@ static int gpiochip_export(struct gpio_c
->  
->  	/* use chip->base for the ID; it's already known to be unique */
->  	mutex_lock(&sysfs_lock);
-> -	dev = device_create_drvdata(&gpio_class, chip->dev, 0, chip,
-> -			"gpiochip%d", chip->base);
-> +	dev = device_create(&gpio_class, chip->dev, 0, chip, "gpiochip%d",
-> +				chip->base);
+ lib/kobject.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-Same here.
+diff --git a/lib/kobject.c b/lib/kobject.c
+index 7444015..ce2cf43 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -224,8 +224,7 @@ static int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+ 		return -ENOMEM;
+ 
+ 	/* ewww... some of these buggers have '/' in the name ... */
+-	s = strchr(kobj->name, '/');
+-	if (s)
++	while (s = strchr(kobj->name, '/'))
+ 		s[0] = '!';
+ 
+ 	kfree(old_name);
+-- 
+1.5.4.3
 
-thanks,
-
-greg k-h
