@@ -1,121 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbYGVWwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753467AbYGVWwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754640AbYGVWwb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 18:52:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbYGVWwX
+	id S1753467AbYGVWwt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 18:52:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbYGVWwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 18:52:23 -0400
-Received: from mailbox2.myri.com ([64.172.73.26]:1892 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751223AbYGVWwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 18:52:22 -0400
-Message-ID: <488664A0.3040407@myri.com>
-Date: Wed, 23 Jul 2008 00:52:16 +0200
-From: Brice Goglin <brice@myri.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+	Tue, 22 Jul 2008 18:52:39 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:46196 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751782AbYGVWwi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 18:52:38 -0400
+Date: Wed, 23 Jul 2008 00:52:36 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Kevin Holland <khollan@daktronics.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: map keyboard to stdin
+In-Reply-To: <1216760127.6242.18.camel@kevin-laptop>
+Message-ID: <alpine.LNX.1.10.0807230050450.23410@fbirervta.pbzchgretzou.qr>
+References: <1216760127.6242.18.camel@kevin-laptop>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Regression: myri10ge driver in 2.6.26
-References: <20080722150438.GK4359@ics.muni.cz> <48865B04.6030707@myri.com>
-In-Reply-To: <48865B04.6030707@myri.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brice Goglin wrote:
-> Lukas Hejtmanek wrote:
->   
->> Hello,
->>
->> the myri10ge driver in 2.6.26 vanila kernel does not work.
->>
->> Loading the driver produces only:
->> [   86.641632] myri10ge: Version 1.3.99-1.347
->> [   86.641632] PCI: Setting latency timer of device 0000:07:00.0 to 64
->>
->> and nothing more.  
->>     
->
-> I have seen one machine with a similar problem. Does reverting
-> 014377a1df693ff30a9e8b69f0bbb0a38e601f75 help? Also could you check that
-> current Linus' git works fine? (just get the driver source from there,
-> no need to build the whole tree)
->   
+On Tuesday 2008-07-22 22:55, Kevin Holland wrote:
 
-If the above is correct, then patch below should fix it. If so, I'll
-push this into the next stable 2.6.26.x release.
+>Hi all,
+>I have an embedded Linux board that uses 2.6.21, the console is output
+>the serial port.  How can I set it up so a USB keyboard will be accepted
+>as input as well as anything received from the serial port and it will
+>be echoed to the output of the serial port as well.  Basically I want to
+>issue commands either through a terminal program to the embedded board
+>or a USB keyboard that is connected to the board, but I still want to
+>see what was typed on the keyboard out the serial terminal. I have
+>enabled USB HID support in the Kernel as well.
 
-Brice
-
---- linux.old/drivers/net/myri10ge/myri10ge.c	2008-07-23 00:38:52.000000000 +0200
-+++ linux/drivers/net/myri10ge/myri10ge.c	2008-07-23 00:43:16.000000000 +0200
-@@ -3213,26 +3213,26 @@
- 	for (i = 0; i < ETH_ALEN; i++)
- 		netdev->dev_addr[i] = mgp->mac_addr[i];
- 
--	/* allocate rx done ring */
--	bytes = mgp->max_intr_slots * sizeof(*mgp->ss.rx_done.entry);
--	mgp->ss.rx_done.entry = dma_alloc_coherent(&pdev->dev, bytes,
--						&mgp->ss.rx_done.bus, GFP_KERNEL);
--	if (mgp->ss.rx_done.entry == NULL)
--		goto abort_with_ioremap;
--	memset(mgp->ss.rx_done.entry, 0, bytes);
--
- 	myri10ge_select_firmware(mgp);
- 
- 	status = myri10ge_load_firmware(mgp);
- 	if (status != 0) {
- 		dev_err(&pdev->dev, "failed to load firmware\n");
--		goto abort_with_rx_done;
-+		goto abort_with_ioremap;
- 	}
- 
-+	/* allocate rx done ring */
-+	bytes = mgp->max_intr_slots * sizeof(*mgp->ss.rx_done.entry);
-+	mgp->ss.rx_done.entry = dma_alloc_coherent(&pdev->dev, bytes,
-+						&mgp->ss.rx_done.bus, GFP_KERNEL);
-+	if (mgp->ss.rx_done.entry == NULL)
-+		goto abort_with_firmware;
-+	memset(mgp->ss.rx_done.entry, 0, bytes);
-+
- 	status = myri10ge_reset(mgp);
- 	if (status != 0) {
- 		dev_err(&pdev->dev, "failed reset\n");
--		goto abort_with_firmware;
-+		goto abort_with_rx_done;
- 	}
- 
- 	pci_set_drvdata(pdev, mgp);
-@@ -3258,7 +3258,7 @@
- 	 * is set to correct value if MSI is enabled */
- 	status = myri10ge_request_irq(mgp);
- 	if (status != 0)
--		goto abort_with_firmware;
-+		goto abort_with_rx_done;
- 	netdev->irq = pdev->irq;
- 	myri10ge_free_irq(mgp);
- 
-@@ -3287,14 +3287,14 @@
- abort_with_state:
- 	pci_restore_state(pdev);
- 
--abort_with_firmware:
--	myri10ge_dummy_rdma(mgp, 0);
--
- abort_with_rx_done:
- 	bytes = mgp->max_intr_slots * sizeof(*mgp->ss.rx_done.entry);
- 	dma_free_coherent(&pdev->dev, bytes,
- 			  mgp->ss.rx_done.entry, mgp->ss.rx_done.bus);
- 
-+abort_with_firmware:
-+	myri10ge_dummy_rdma(mgp, 0);
-+
- abort_with_ioremap:
- 	iounmap(mgp->sram);
- 
-
-
+Try booting with  console=tty0 console=ttyS0
+I am not sure whether this will accept input from both (that's for you 
+to test), though it definitely outputs to both.
