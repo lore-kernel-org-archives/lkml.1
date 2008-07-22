@@ -1,122 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbYGVTKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbYGVTQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753297AbYGVTKi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 15:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbYGVTKb
+	id S1753512AbYGVTQg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 15:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbYGVTQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 15:10:31 -0400
-Received: from smtp.cs.aau.dk ([130.225.194.6]:33998 "EHLO smtp.cs.aau.dk"
+	Tue, 22 Jul 2008 15:16:27 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:36737 "EHLO mail.atlantis.sk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751058AbYGVTKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 15:10:30 -0400
-Subject: Re: [PATCH 1/2] arch/ia64/kvm/kvm-ia64.c: Add local_irq_restore in
-	error handling code
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Julia Lawall <julia@diku.dk>
-Cc: avi@qumranet.com, kvm@vger.kernel.org, xiantao.zhang@intel.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0807221843140.2670@ask.diku.dk>
-References: <Pine.LNX.4.64.0807221843140.2670@ask.diku.dk>
-Content-Type: text/plain
-Date: Tue, 22 Jul 2008 21:11:04 +0200
-Message-Id: <1216753864.28082.11.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	id S1750852AbYGVTQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 15:16:26 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: pata_it821x completely broken
+Date: Tue, 22 Jul 2008 21:16:17 +0200
+User-Agent: KMail/1.9.9
+Cc: Alan Cox <alan@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+References: <200807042153.56644.linux@rainbow-software.org> <200807221959.53669.linux@rainbow-software.org> <20080722191022.0417f45c@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080722191022.0417f45c@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807222116.19077.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tir, 22 07 2008 kl. 18:44 +0200, skrev Julia Lawall:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> There is a call to local_irq_restore in the normal exit case, so it would
-> seem that there should be one on an error return as well.
-> 
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @@
-> expression l;
-> expression E,E1,E2;
-> @@
-> 
-> local_irq_save(l);
-> ... when != local_irq_restore(l)
->     when != spin_unlock_irqrestore(E,l)
->     when any
->     when strict
-> (
-> if (...) { ... when != local_irq_restore(l)
->                when != spin_unlock_irqrestore(E1,l)
-> +   local_irq_restore(l);
->     return ...;
-> }
-> |
-> if (...)
-> +   {local_irq_restore(l);
->     return ...;
-> +   }
-> |
-> spin_unlock_irqrestore(E2,l);
-> |
-> local_irq_restore(l);
-> )
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> ---
->  arch/ia64/kvm/kvm-ia64.c      |    9 +++++++--
->  1 files changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
-> index 318b811..14e5c99 100644
-> --- a/arch/ia64/kvm/kvm-ia64.c
-> +++ b/arch/ia64/kvm/kvm-ia64.c
-> @@ -125,8 +125,10 @@ void kvm_arch_hardware_enable(void *garbage)
->  				PAGE_KERNEL));
->  	local_irq_save(saved_psr);
->  	slot = ia64_itr_entry(0x3, KVM_VMM_BASE, pte, KVM_VMM_SHIFT);
-> -	if (slot < 0)
-> +	if (slot < 0) {
-> +		local_irq_restore(saved_psr);
->  		return;
-> +	}
->  	local_irq_restore(saved_psr);
+On Tuesday 22 July 2008 20:10:22 Alan Cox wrote:
+> > New patch below, this time with DMA forced on RAID volumes - as my
+> > firmware does not identify the RAID arrays as DMA capable :(
+>
+> The underlying problem is that the newer libata rewrites the dev->id data
+> in ways that we can't then patch up. I've actually been hacking on this a
+> bit today. The existing it821x code was working fine and it does the
+> needed patching, it just needs to do it in a different place, and that in
+> turn needs a new ap->ops->read_id() method so it can be hooked.
 
-If this change makes sense, how about merging the two local_irq_restore
-calls and put them before the if? And shouldn't your checker be able to
-figure this?
+I can test the code once it's done.
+I just moved my / to the RAID1 provided by IT8212. The controller has a great 
+feature that allows converting a drive between RAID1/standalone without data 
+loss (haven't seen anything like this yet). Also the background rebuild is 
+nice (as seen on much more expensive RAID controllers), it's running as I'm 
+typing this.
 
->  
->  	spin_lock(&vp_lock);
-> @@ -160,8 +162,10 @@ void kvm_arch_hardware_disable(void *garbage)
->  
->  	local_irq_save(saved_psr);
->  	slot = ia64_itr_entry(0x3, KVM_VMM_BASE, pte, KVM_VMM_SHIFT);
-> -	if (slot < 0)
-> +	if (slot < 0) {
-> +		local_irq_restore(saved_psr);
->  		return;
-> +	}
->  	local_irq_restore(saved_psr);
->  
-Same as above.
+>
+> On the bright side that also allows us to implement a pata_mfm/rll
+> driver at last.
+>
 
->  	status = ia64_pal_vp_exit_env(host_iva);
-> @@ -1258,6 +1262,7 @@ static int vti_vcpu_setup(struct kvm_vcpu *vcpu, int id)
->  uninit:
->  	kvm_vcpu_uninit(vcpu);
->  fail:
-> +	local_irq_restore(psr);
->  	return r;
->  }
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+I used to have an old drive that was something like that - 5.25" Seagate 40MB 
+drive. I sold it including the controller a couple of years ago (it was still 
+working) so no testing fun for me.
 
+> Alan
+
+
+
+-- 
+Ondrej Zary
