@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYGVKnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbYGVKpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbYGVKnm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 06:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYGVKne
+	id S1755202AbYGVKpb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 06:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbYGVKpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 06:43:34 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41505 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750971AbYGVKnd (ORCPT
+	Tue, 22 Jul 2008 06:45:23 -0400
+Received: from stinky.trash.net ([213.144.137.162]:58262 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754028AbYGVKpW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 06:43:33 -0400
-Date: Tue, 22 Jul 2008 11:25:31 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       Akinobu Mita <akinobu.mita@gmail.com>
-Subject: Re: [PATCH 1/4] Char: merge ip2main and ip2base
-Message-ID: <20080722112531.0090002f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080722030655.1049c2d8.akpm@linux-foundation.org>
-References: <1215264506-32455-1-git-send-email-jirislaby@gmail.com>
-	<20080722024458.f609bb12.akpm@linux-foundation.org>
-	<20080722104441.3dc7caa1@lxorguk.ukuu.org.uk>
-	<20080722030655.1049c2d8.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 Jul 2008 06:45:22 -0400
+Message-ID: <4885BA3C.8080205@trash.net>
+Date: Tue, 22 Jul 2008 12:45:16 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
+MIME-Version: 1.0
+To: Tim Gardner <tim.gardner@canonical.com>
+CC: linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH 1/7] netfilter: Export ip6t_mh.h and xt_quota.h for iptables
+ build
+References: <E1KKl4I-00068B-LW@swissweb.swissdisk.com>
+In-Reply-To: <E1KKl4I-00068B-LW@swissweb.swissdisk.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jul 2008 03:06:55 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Tue, 22 Jul 2008 10:44:41 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Tim Gardner wrote:
+> CC: netfilter-devel@vger.kernel.org
+> Signed-off-by: Soren Hansen <soren@ubuntu.com>
+> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+> Signed-off-by: Ben Collins <ben.lcollins@canonical.com>
+> ---
+>  include/linux/netfilter/Kbuild      |    2 ++
+>  include/linux/netfilter_ipv6/Kbuild |    1 +
+>  2 files changed, 3 insertions(+), 0 deletions(-)
 > 
-> > > I applied these four, but there's a fly in our ointment.
-> > > 
-> > > On 14 July, Akinobu Mita <akinobu.mita@gmail.com> sent a patch titled
-> > > "ip2: avoid add_timer() with pending timer" which Alan acked and then
-> > > claimed was "Queued for ttydev tree".  But afaict he then lost it.
-> > 
-> > Its queued but I can unqueue it as it isn't in the pile pending for Linus
-> > yet.
-> 
-> You've had it queued longer than I've had Jiri's sent-earlier patches
-> queued :(
-> 
-> I guess if Jiri can redo that patch for us then I can slip all five into
-> 2.6.27-rc1?
+> diff --git a/include/linux/netfilter/Kbuild b/include/linux/netfilter/Kbuild
+> index 3aff513..3a04da3 100644
+> --- a/include/linux/netfilter/Kbuild
+> +++ b/include/linux/netfilter/Kbuild
+> @@ -31,6 +31,8 @@ header-y += xt_multiport.h
+>  header-y += xt_owner.h
+>  header-y += xt_pkttype.h
+>  header-y += xt_rateest.h
+> +header-y += xt_policy.h
+> +header-y += xt_quota.h
 
-Fine by me
+xt_policy.h is already included in unidef-y. The others look fine.
 
-Alan
+
