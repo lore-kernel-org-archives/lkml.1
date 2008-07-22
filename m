@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757554AbYGVXXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbYGVXXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757554AbYGVXXG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbYGVXS3
+	id S1757380AbYGVXXx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756238AbYGVXTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:18:29 -0400
-Received: from mx1.suse.de ([195.135.220.2]:52950 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 19:19:05 -0400
+Received: from mail.suse.de ([195.135.220.2]:53035 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754231AbYGVXS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:18:28 -0400
-Date: Tue, 22 Jul 2008 16:15:11 -0700
+	id S1756796AbYGVXTD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:19:03 -0400
+Date: Tue, 22 Jul 2008 16:15:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Michael Buesch <mb@bu3sch.de>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 15/47] b43legacy: Fix possible NULL pointer dereference in
-	DMA code
-Message-ID: <20080722231511.GP8282@suse.de>
+       "David S. Miller" <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 17/47] SCSI: esp: Fix OOPS in esp_reset_cleanup().
+Message-ID: <20080722231525.GR8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="b43legacy-fix-possible-null-pointer-dereference-in-dma-code.patch"
+Content-Disposition: inline; filename="scsi-esp-fix-oops-in-esp_reset_cleanup.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,40 +40,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Michael Buesch <mb@bu3sch.de>
+From: David S. Miller <davem@davemloft.net>
 
-commit 2f9ec47d0954f9d2e5a00209c2689cbc477a8c89 upstream
+commit eadc49b1a8d09480f14caea292142f103a89c77a upstream
 
-This fixes a possible NULL pointer dereference in an error path of the
-DMA allocation error checking code. This is also necessary for a future
-DMA API change that is on its way into the mainline kernel that adds
-an additional dev parameter to dma_mapping_error().
+OOPS reported by Friedrich Oslage <bluebird@porno-bullen.de>
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+The problem here is that tp->starget is set every time a lun
+is allocated for a particular target so we can catch the
+sdev_target parent value.
+
+The reset handler uses the NULL'ness of this value to determine
+which targets are active.
+
+But esp_slave_destroy() does not NULL out this value when appropriate.
+
+So for every target that doesn't respond, the SCSI bus scan causes
+a stale pointer to be left here, with ensuing crashes like you're
+seeing.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/b43legacy/dma.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/esp_scsi.c |    8 ++++++++
+ drivers/scsi/esp_scsi.h |    1 +
+ 2 files changed, 9 insertions(+)
 
---- a/drivers/net/wireless/b43legacy/dma.c
-+++ b/drivers/net/wireless/b43legacy/dma.c
-@@ -876,6 +876,7 @@ struct b43legacy_dmaring *b43legacy_setu
- 	if (!ring)
- 		goto out;
- 	ring->type = type;
-+	ring->dev = dev;
+--- a/drivers/scsi/esp_scsi.c
++++ b/drivers/scsi/esp_scsi.c
+@@ -2364,6 +2364,7 @@ static int esp_slave_alloc(struct scsi_d
+ 	dev->hostdata = lp;
  
- 	nr_slots = B43legacy_RXRING_SLOTS;
- 	if (for_tx)
-@@ -922,7 +923,6 @@ struct b43legacy_dmaring *b43legacy_setu
- 				 DMA_TO_DEVICE);
- 	}
+ 	tp->starget = dev->sdev_target;
++	tp->starget_ref++;
  
--	ring->dev = dev;
- 	ring->nr_slots = nr_slots;
- 	ring->mmio_base = b43legacy_dmacontroller_base(type, controller_index);
- 	ring->index = controller_index;
+ 	spi_min_period(tp->starget) = esp->min_period;
+ 	spi_max_offset(tp->starget) = 15;
+@@ -2412,10 +2413,17 @@ static int esp_slave_configure(struct sc
+ 
+ static void esp_slave_destroy(struct scsi_device *dev)
+ {
++	struct esp *esp = shost_priv(dev->host);
++	struct esp_target_data *tp = &esp->target[dev->id];
+ 	struct esp_lun_data *lp = dev->hostdata;
+ 
+ 	kfree(lp);
+ 	dev->hostdata = NULL;
++
++	BUG_ON(tp->starget_ref <= 0);
++
++	if (!--tp->starget_ref)
++		tp->starget = NULL;
+ }
+ 
+ static int esp_eh_abort_handler(struct scsi_cmnd *cmd)
+--- a/drivers/scsi/esp_scsi.h
++++ b/drivers/scsi/esp_scsi.h
+@@ -322,6 +322,7 @@ struct esp_target_data {
+ 	u8			nego_goal_tags;
+ 
+ 	struct scsi_target	*starget;
++	int			starget_ref;
+ };
+ 
+ struct esp_event_ent {
 
 -- 
