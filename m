@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbYGVIWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbYGVIYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755172AbYGVIWx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 04:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbYGVIWg
+	id S1754902AbYGVIYo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 04:24:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbYGVIYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 04:22:36 -0400
-Received: from mail.suse.de ([195.135.220.2]:41070 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 04:24:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51681 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751952AbYGVIWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 04:22:35 -0400
-Message-ID: <488598C9.6000701@suse.de>
-Date: Tue, 22 Jul 2008 10:22:33 +0200
-From: Hannes Reinecke <hare@suse.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1751768AbYGVIY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 04:24:29 -0400
+Date: Tue, 22 Jul 2008 10:24:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Paul Jackson <pj@sgi.com>, Mike Travis <travis@sgi.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: add apic probe for genapic 64bit v2
+Message-ID: <20080722082410.GB2065@elte.hu>
+References: <200807211836.27282.yhlu.kernel@gmail.com> <200807212208.22116.yhlu.kernel@gmail.com> <20080722070734.GA16085@elte.hu> <20080722071324.GA2664@elte.hu> <86802c440807220109s63307f28uc0658402cb26cfea@mail.gmail.com>
 MIME-Version: 1.0
-To: Mike Miller <mike.miller@hp.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH] Remove pointless curr_queue calculation in block/cciss.c
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------000102040601090504010005"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440807220109s63307f28uc0658402cb26cfea@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000102040601090504010005
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
 
-Hi Mike,
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-in block/cciss.c:cciss_check_queues() curr_queue is calculated
-as the last statement in a for loop, although it's being initialized
-with the next round again and never been used afterwards.
-So this can be removed.
+> On Tue, Jul 22, 2008 at 12:13 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> >> > v2: fix compiling when CONFIG_ACPI is not set
+> >>
+> >> applied to tip/x86/x2apic - thanks Yinghai.
+> >>
+> >> > +static struct genapic *apic_probe[] __initdata = {
+> >> > +   &apic_x2apic_uv_x,
+> >> > +   &apic_x2apic_phys,
+> >> > +   &apic_x2apic_cluster,
+> >> > +   &apic_physflat,
+> >> > +   NULL,
+> >> > +};
+> >>
+> >> very nice generalization!
+> >
+> > btw.:
+> >
+> >   apic_probe[i]->acpi_madt_oem_check
+> >
+> > should probably be renamed to something more neutral like "->probe" -
+> > there's nothing ACPI about it and some weird boxes could use PCI or
+> > other probing mechanisms to discover the type of APIC they want to use.
+> 
+> 32bit has acpi_madt_oem_check and mps_oem_check
+> 64bit should only have acpi_madt_oem_check
 
-Cheers,
+yeah.
 
-Hannes
--- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
+It's just a small detail: what i mean is that the method itself should 
+eventually simply be renamed from "acpi_madt_oem_check" to "probe". 
+There's nothing ACPI about this exept the fact that most current "is 
+this the APIC driver we should be using" checks involve some sort of 
+ACPI discovery. This is a Linux abstraction and as such a more generic 
+name like "probe" sounds more appropriate.
 
---------------000102040601090504010005
-Content-Type: text/plain;
- name="cciss-remove-curr_queue-statement"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="cciss-remove-curr_queue-statement"
-
-Remove curr_queue calculation in block/cciss.c
-
-curr_queue is a local variable in a for loop, and it's
-being initialized at the start of each loop. So any
-assignment at the end of the loop is pointless.
-
-Signed-off-by: Hannes Reinecke <hare@suse.de>
-
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index d81632c..0ce0c27 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -1292,8 +1292,6 @@ static void cciss_check_queues(ctlr_info_t *h)
- 				h->next_to_run = curr_queue;
- 				break;
- 			}
--		} else {
--			curr_queue = (curr_queue + 1) % (h->highest_lun + 1);
- 		}
- 	}
- }
-
---------------000102040601090504010005--
+	Ingo
