@@ -1,31 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbYGVSAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYGVSAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755094AbYGVSAk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 14:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYGVSAN
+	id S1755351AbYGVSAz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 14:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYGVSAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 14:00:13 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36519 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753111AbYGVSAM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 14:00:12 -0400
-Date: Tue, 22 Jul 2008 18:42:37 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Eric Sesterhenn <snakebyte@gmx.de>, xiyou.wangcong@gmail.com,
-       linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net, jdike@addtoit.com
-Subject: Re: [Patch] um: fix a build error
-Message-ID: <20080722184237.7532d052@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080722173509.GE3081@hack.voiplan.pt>
-References: <20080722105812.GB5283@alice>
-	<20080722115354.79ba2314@lxorguk.ukuu.org.uk>
-	<20080722173509.GE3081@hack.voiplan.pt>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 22 Jul 2008 14:00:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49695 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752753AbYGVSAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 14:00:44 -0400
+Date: Tue, 22 Jul 2008 14:00:15 -0400
+From: Rik van Riel <riel@redhat.com>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs
+ (part1: use kprobe symbol_name/offset instead of address)
+Message-ID: <20080722140015.37628ea4@bree.surriel.com>
+In-Reply-To: <20080717213355.GJ18295@redhat.com>
+References: <487E78ED.30804@redhat.com>
+	<1216249383.3358.69.camel@localhost.localdomain>
+	<487E8CE4.70105@redhat.com>
+	<1216259391.3358.85.camel@localhost.localdomain>
+	<1216304290.5515.11.camel@localhost.localdomain>
+	<1216313914.5515.25.camel__21144.9282979176$1216314027$gmane$org@localhost.localdomain>
+	<y0m7ibkjrcj.fsf@ton.toronto.redhat.com>
+	<1216325546.5515.63.camel@localhost.localdomain>
+	<20080717202634.GI18295@redhat.com>
+	<1216328769.5515.78.camel@localhost.localdomain>
+	<20080717213355.GJ18295@redhat.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -33,30 +39,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jul 2008 18:35:09 +0100
-WANG Cong <xiyou.wangcong@gmail.com> wrote:
+On Thu, 17 Jul 2008 17:33:55 -0400
+"Frank Ch. Eigler" <fche@redhat.com> wrote:
 
-> On Tue, Jul 22, 2008 at 11:53:54AM +0100, Alan Cox wrote:
-> >> Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
-> >> 
-> >> --- linux-2.6/arch/um/drivers/line.c.orig	2008-07-22 12:06:17.000000000 +0200
-> >> +++ linux-2.6/arch/um/drivers/line.c	2008-07-22 12:06:49.000000000 +0200
-> >> @@ -362,10 +362,8 @@ static irqreturn_t line_write_interrupt(
-> >>  	if (tty == NULL)
-> >>  		return IRQ_NONE;
-> >>  
-> >> -	if (test_bit(TTY_DO_WRITE_WAKEUP, &tty->flags) &&
-> >> -	   (tty->ldisc.write_wakeup != NULL))
-> >> -		(tty->ldisc.write_wakeup)(tty);
-> >> -
-> >> +	if (test_bit(TTY_DO_WRITE_WAKEUP, &tty->flags))
-> >> +		tty_wakeup(tty);
-> >
-> >Sorry I should have been clearer - you don't want the test_bit either.
-> >
-> 
-> What about the below one?
-> 
-> Signed-off-by: WANG Cong <wangcong@zeuux.org>
+> Yes, that is generally desirable - each case is usually a question of
+> cost/benefit.  One significant requirement for us is to keep working
+> with older kernels.
 
-Acked-by: Alan Cox <alan@redhat.com>
+You will have to weigh that against the benefits of making
+systemtap generally useful for kernel developers, which
+would result in a more active systemtap community and,
+eventually, more available scripts and easier end user
+functionality.
+
+If a project is not aimed squarely at the developers who 
+could give the project critical mass, it is essentially 
+doomed.
+
+-- 
+All rights reversed.
