@@ -1,97 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbYGVXlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbYGVXtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757820AbYGVXlk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYGVXlb
+	id S1755937AbYGVXtw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYGVXtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:41:31 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:55033 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbYGVXla (ORCPT
+	Tue, 22 Jul 2008 19:49:43 -0400
+Received: from harold.telenet-ops.be ([195.130.133.65]:54879 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753161AbYGVXtm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:41:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ZlDPiDiUZY8z8Isbp0QhdW9pDj40JG8hSuSsugj3F/74TpwqoAgeFUMn9PRHESB6ry
-         m8d5JTvQ4vYJ7YyFZxLaU3gR4Ye+0vABsRwkuDq5hqF3dxcZKuAmcZ1OQNk/mFnLB1Pg
-         6o9JMsTQD7CUQ4rp5ea7kxdrxBqhIvmEPhUkU=
-Message-ID: <48f7fe350807221641yf06a102x9cd3a4d51841525f@mail.gmail.com>
-Date: Tue, 22 Jul 2008 19:41:29 -0400
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       williams@redhat.com
-Subject: Re: [-rt][patches] fix compilation errors
-In-Reply-To: <48f7fe350807201416v55b12dacq99e1922b56f02b37@mail.gmail.com>
+	Tue, 22 Jul 2008 19:49:42 -0400
+Date: Wed, 23 Jul 2008 01:49:30 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: circumvention and ignorance (was: Re: linux-next: Tree
+ for July 22)
+In-Reply-To: <20080722184059.a58c79d7.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0807230140000.28765@anakin>
+References: <20080722184059.a58c79d7.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48f7fe350807201416v55b12dacq99e1922b56f02b37@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bump to CC Clark Williams...
+	Hi all,
 
-On Sun, Jul 20, 2008 at 5:16 PM, Ryan Hope <rmh3093@gmail.com> wrote:
-> I had some issues compiling the master branch of the -rt kernel today,
-> the following patches should fix the issues that I encountered:
->
-> diff --git a/6b92edd2d46e88c69b3979c4f5f55aba974775e8:arch/x86/kernel/io_apic_32.c
-> b/f4b693300667c67b9236454f1076ecdc1c3543aa:arch/x86/kernel/io_apic_32.c
-> index 167ebcbe7a4e96aa1e4140b59972de820465e32a..d3531ee6e0ddcdb6291cc570a500b30cb4c0ca28
-> 100644
-> --- a/6b92edd2d46e88c69b3979c4f5f55aba974775e8:arch/x86/kernel/io_apic_32.c
-> +++ b/f4b693300667c67b9236454f1076ecdc1c3543aa:arch/x86/kernel/io_apic_32.c
-> @@ -1319,7 +1319,7 @@ static void __init setup_IO_APIC_irqs(void)
->                if (IO_APIC_IRQ(irq)) {
->                        vector = assign_irq_vector(irq);
->                        entry.vector = vector;
-> -                       ioapic_register_intr(irq, vector, IOAPIC_AUTO);
-> +                       ioapic_register_intr(irq, vector, IOAPIC_AUTO, apic > 0);
->
->                        if (!apic && (irq < 16))
->                                disable_8259A_irq(irq);
-> @@ -1358,7 +1358,7 @@ static void __init setup_timer_IRQ0_pin(unsigned
-> int apic, unsigned int pin,
->         * The timer IRQ doesn't have to know that behind the
->         * scene we may have a 8259A-master in AEOI mode ...
->         */
-> -       ioapic_register_intr(0, vector, IOAPIC_EDGE);
-> +       ioapic_register_intr(0, vector, IOAPIC_EDGE, apic > 0);
->
->        /*
->         * Add it to the IO-APIC irq-routing table:
->
-> diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-> index 8ca2763..f80c649 100644
-> --- a/fs/ext4/inode.c
-> +++ b/fs/ext4/inode.c
-> @@ -2182,7 +2182,7 @@ static int ext4_da_writepages(struct
-> address_space *mapping,
->         * a transaction for special inodes like journal inode on last iput()
->         * because that could violate lock ordering on umount
->         */
-> -       if (!mapping->nrpages)
-> +       if (!mapping_nrpages(mapping))
->                return 0;
->
->        /*
-> diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
-> index f8b3be8..9f98f63 100644
-> --- a/fs/jbd2/commit.c
-> +++ b/fs/jbd2/commit.c
-> @@ -197,7 +197,7 @@ static int
-> journal_submit_inode_data_buffers(struct address_space *mapping)
->        int ret;
->        struct writeback_control wbc = {
->                .sync_mode =  WB_SYNC_ALL,
-> -               .nr_to_write = mapping->nrpages * 2,
-> +               .nr_to_write = mapping_nrpages(mapping) * 2,
->                .range_start = 0,
->                .range_end = i_size_read(mapping->host),
->                .for_writepages = 1,
->
+Looking at today's http://kisskb.ellerman.id.au/kisskb/matrix/, there's
+plenty of red, and not only in the linux-next division :-(
+
+On Tue, 22 Jul 2008, Stephen Rothwell wrote:
+> We are up to 105 trees (counting Linus' and 14 trees of patches pending for
+> Linus' tree), more are welcome (even if they are currently empty).
+> Thanks to those who have contributed, and to those who haven't, please do.
+
+We still see regular merging of trivially breaking patches that
+apparently never have been in linux-next...
+
+> The ttydev tree was partially merged upstream and gained so many
+> conflicts that I have temporarily dropped it.
+
+Worse, we're seeing things getting merged that have been known-broken in
+several linux-next incarnations during the last few weeks...
+
+Now we have such a great thing like linux-next (thanks, Stephen! You
+saved my day a lot lately), perhaps we should start making full use of
+it?
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
