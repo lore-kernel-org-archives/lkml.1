@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbYGVXd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbYGVXeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759253AbYGVXd4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbYGVXXg
+	id S1758612AbYGVXeX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbYGVXXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:23:36 -0400
-Received: from ns2.suse.de ([195.135.220.15]:58298 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 19:23:41 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53752 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757448AbYGVXXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:23:35 -0400
-Date: Tue, 22 Jul 2008 16:17:38 -0700
+	id S1756370AbYGVXXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:23:39 -0400
+Date: Tue, 22 Jul 2008 16:17:43 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,14 +20,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Pierre Ossman <drzeus@drzeus.cx>
-Subject: [patch 45/47] mmc: dont use DMA on newer ENE controllers
-Message-ID: <20080722231738.GT8282@suse.de>
+       Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, akpm@osdl.org,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [patch 46/47] hrtimer: prevent migration for raising softirq
+Message-ID: <20080722231743.GU8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mmc-don-t-use-dma-on-newer-ene-controllers.patch"
+Content-Disposition: inline; filename="hrtimer-prevent-migration-for-raising-softirq.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,46 +41,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Pierre Ossman <drzeus@drzeus.cx>
+From: Steven Rostedt <rostedt@goodmis.org>
 
-commit bf5b1935d8e42b36a34645788eb261461fe07f2e upstream.
+commit ee3ece830f6db9837f7ac67008f532a8c1e755f4 upstream.
 
-Even the newer ENE controllers have bugs in their DMA engine that make
-it too dangerous to use. Disable it until someone has figured out under
-which conditions it corrupts data.
+Due to a possible deadlock, the waking of the softirq was pushed outside
+of the hrtimer base locks. See commit 0c96c5979a522c3323c30a078a70120e29b5bdbc
 
-This has caused problems at least once, and can be found as bug report
-10925 in the kernel bugzilla.
+Unfortunately this allows the task to migrate after setting up the softirq
+and raising it. Since softirqs run a queue that is per-cpu we may raise the
+softirq on the wrong CPU and this will keep the queued softirq task from
+running.
 
-Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+To solve this issue, this patch disables preemption around the releasing
+of the hrtimer lock and raising of the softirq.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/mmc/host/sdhci.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ kernel/hrtimer.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -109,7 +109,8 @@ static const struct pci_device_id pci_id
- 		.subvendor      = PCI_ANY_ID,
- 		.subdevice      = PCI_ANY_ID,
- 		.driver_data    = SDHCI_QUIRK_SINGLE_POWER_WRITE |
--				  SDHCI_QUIRK_RESET_CMD_DATA_ON_IOS,
-+				  SDHCI_QUIRK_RESET_CMD_DATA_ON_IOS |
-+				  SDHCI_QUIRK_BROKEN_DMA,
- 	},
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -896,10 +896,18 @@ hrtimer_start(struct hrtimer *timer, kti
+ 	 */
+ 	raise = timer->state == HRTIMER_STATE_PENDING;
  
- 	{
-@@ -118,7 +119,8 @@ static const struct pci_device_id pci_id
- 		.subvendor      = PCI_ANY_ID,
- 		.subdevice      = PCI_ANY_ID,
- 		.driver_data    = SDHCI_QUIRK_SINGLE_POWER_WRITE |
--				  SDHCI_QUIRK_RESET_CMD_DATA_ON_IOS,
-+				  SDHCI_QUIRK_RESET_CMD_DATA_ON_IOS |
-+				  SDHCI_QUIRK_BROKEN_DMA,
- 	},
++	/*
++	 * We use preempt_disable to prevent this task from migrating after
++	 * setting up the softirq and raising it. Otherwise, if me migrate
++	 * we will raise the softirq on the wrong CPU.
++	 */
++	preempt_disable();
++
+ 	unlock_hrtimer_base(timer, &flags);
  
- 	{
+ 	if (raise)
+ 		hrtimer_raise_softirq();
++	preempt_enable();
+ 
+ 	return ret;
+ }
 
 -- 
