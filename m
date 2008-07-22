@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758951AbYGVFdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759168AbYGVFeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758951AbYGVFdd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 01:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756656AbYGVFXw
+	id S1759168AbYGVFeJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 01:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbYGVFYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 01:23:52 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43123 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 01:24:00 -0400
+Received: from mail.suse.de ([195.135.220.2]:53882 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757192AbYGVFXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 01:23:51 -0400
+	id S1757239AbYGVFX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 01:23:59 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 35/79] block: make blk_lookup_devt use the class iterator function
-Date: Mon, 21 Jul 2008 22:18:59 -0700
-Message-Id: <1216703983-21448-35-git-send-email-gregkh@suse.de>
+Subject: [PATCH 37/79] block: make proc files seq_start use the class_find_device()
+Date: Mon, 21 Jul 2008 22:19:01 -0700
+Message-Id: <1216703983-21448-37-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <20080722051805.GA17373@suse.de>
 References: <20080722051805.GA17373@suse.de>
@@ -28,64 +28,66 @@ internals of the class structures.
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- block/genhd.c |   38 ++++++++++++++++++++++++++------------
- 1 files changed, 26 insertions(+), 12 deletions(-)
+ block/genhd.c |   31 +++++++++++++++++--------------
+ 1 files changed, 17 insertions(+), 14 deletions(-)
 
 diff --git a/block/genhd.c b/block/genhd.c
-index 10b9ac4..e8c42bf 100644
+index 68a5f28..f03bdad 100644
 --- a/block/genhd.c
 +++ b/block/genhd.c
-@@ -677,24 +677,38 @@ void genhd_media_change_notify(struct gendisk *disk)
- EXPORT_SYMBOL_GPL(genhd_media_change_notify);
- #endif  /*  0  */
+@@ -291,18 +291,25 @@ void __init printk_all_partitions(void)
  
-+struct find_block {
-+	const char *name;
-+	int part;
-+};
-+
-+static int match_id(struct device *dev, void *data)
+ #ifdef CONFIG_PROC_FS
+ /* iterator */
++static int find_start(struct device *dev, void *data)
 +{
-+	struct find_block *find = data;
++	loff_t k = *(loff_t *)data;
 +
 +	if (dev->type != &disk_type)
 +		return 0;
-+	if (strcmp(dev->bus_id, find->name) == 0) {
-+		struct gendisk *disk = dev_to_disk(dev);
-+		if (find->part < disk->minors)
-+			return 1;
-+	}
++	if (!k--)
++		return 1;
 +	return 0;
 +}
 +
- dev_t blk_lookup_devt(const char *name, int part)
+ static void *part_start(struct seq_file *part, loff_t *pos)
  {
+-	loff_t k = *pos;
  	struct device *dev;
- 	dev_t devt = MKDEV(0, 0);
-+	struct find_block find;
  
  	mutex_lock(&block_class_lock);
 -	list_for_each_entry(dev, &block_class.devices, node) {
 -		if (dev->type != &disk_type)
 -			continue;
--		if (strcmp(dev->bus_id, name) == 0) {
--			struct gendisk *disk = dev_to_disk(dev);
--
--			if (part < disk->minors)
--				devt = MKDEV(MAJOR(dev->devt),
--					     MINOR(dev->devt) + part);
--			break;
--		}
+-		if (!k--)
+-			return dev_to_disk(dev);
 -	}
-+	find.name = name;
-+	find.part = part;
-+	dev = class_find_device(&block_class, NULL, (void *)&find, match_id);
++	dev = class_find_device(&block_class, NULL, (void *)pos, find_start);
 +	if (dev)
-+		devt = MKDEV(MAJOR(dev->devt),
-+			     MINOR(dev->devt) + part);
- 	mutex_unlock(&block_class_lock);
++		return dev_to_disk(dev);
+ 	return NULL;
+ }
  
- 	return devt;
+@@ -555,16 +562,12 @@ static struct device_type disk_type = {
+ 
+ static void *diskstats_start(struct seq_file *part, loff_t *pos)
+ {
+-	loff_t k = *pos;
+ 	struct device *dev;
+ 
+ 	mutex_lock(&block_class_lock);
+-	list_for_each_entry(dev, &block_class.devices, node) {
+-		if (dev->type != &disk_type)
+-			continue;
+-		if (!k--)
+-			return dev_to_disk(dev);
+-	}
++	dev = class_find_device(&block_class, NULL, (void *)pos, find_start);
++	if (dev)
++		return dev_to_disk(dev);
+ 	return NULL;
+ }
+ 
 -- 
 1.5.6.3
 
