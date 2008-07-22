@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbYGVEry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbYGVEuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbYGVEry (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 00:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYGVErq
+	id S1754276AbYGVEuJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 00:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYGVEt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 00:47:46 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:38349 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750906AbYGVErp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 00:47:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=wiKX0Jj93F1ZJbbgo9wQeH5mc744ytZhSruOrX0Im2vYPMqCEgLKwvKqCjHwOu2/m1
-         kj0xdtyd5RfCUUI+aSmBB2i7j77YMxivZSiRD+3cpw7QhcDwdfrlENpxGzU1yJT+jXks
-         UiiquvKD+UIzsRQyOl0BQz1mJxNzX11vcBfN4=
-Message-ID: <43e72e890807212147p5d19cfact17e719abb338378c@mail.gmail.com>
-Date: Mon, 21 Jul 2008 21:47:44 -0700
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Bug on 2.6.26 - x86 VIA Nehemiah CentaurHauls processor cannot boot
-Cc: "linux kernel" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       "Ivan Seskar" <Seskar@winlab.rutgers.edu>,
-       jfm3 <jfm3@winlab.rutgers.edu>, Sujith <m.sujith@gmail.com>
-In-Reply-To: <48851AC2.8030007@zytor.com>
+	Tue, 22 Jul 2008 00:49:58 -0400
+Received: from gw.goop.org ([64.81.55.164]:46598 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750727AbYGVEt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 00:49:57 -0400
+Message-ID: <488566EA.5040805@goop.org>
+Date: Mon, 21 Jul 2008 21:49:46 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix pte_flags() to only return flags, fix lguest.
+References: <200807221431.58991.rusty@rustcorp.com.au>
+In-Reply-To: <200807221431.58991.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <43e72e890807210614y58065d75j5b2fb3c5ebe6180a@mail.gmail.com>
-	 <48848DDF.6010903@zytor.com>
-	 <43e72e890807210701w6d7f5638w5fdbea76a1cf1c0b@mail.gmail.com>
-	 <48851AC2.8030007@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2008 at 4:24 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Luis R. Rodriguez wrote:
->>
->> On Mon, Jul 21, 2008 at 6:23 AM, H. Peter Anvin <hpa@zytor.com> wrote:
->>>
->>> Luis R. Rodriguez wrote:
->>>>
->>>> This bug seems to be present since 2.6.22 [1], so hope we can get this
->>>> fixed ASAP. Let me know if you have patch suggestions I can test.
->>>>
->>>> This crashes very early, I had to use earlyprintk to get it.
->>>>
->>
->> I've put extra spaces between the culprit.
->>
->> c0387ac2:       0f 1f 40 00             nopl   0x0(%eax)
->>
+Rusty Russell wrote:
+> Change a15af1c9ea2750a9ff01e51615c45950bad8221b 'x86/paravirt: add
+> pte_flags to just get pte flags' removed lguest's private pte_flags()
+> in favor of a generic one.
 >
-> Sure enough, our old friend.
+> Unfortunately, the generic one doesn't filter out the non-flags bits:
+> this results in lguest creating corrupt shadow page tables and blowing
+> up host memory.
 >
-> You have in your configuration:
->
-> CONFIG_M686=y
-> # CONFIG_X86_GENERIC is not set
->
-> ... so this is fully expected; CONFIG_M686 without CONFIG_X86_GENERIC is not
-> compatible with such processors.
->
-> Not a bug.
+> Since noone is supposed to use the pfn part of pte_flags(), it seems
+> safest to always do the filtering.
+>   
 
-Thanks for taking a  look at this. So well, it would be a
-misconfiguration bug by the distribution then to try to support a
-generic 686 kernel wihtout GENERIC then.
+Thinking about this, I wonder if it needs to be a pv_op at all.  
+Generality says "yes", but there are no users which set it to anything 
+other than native_pte_flags.  The point of it is to return the flags 
+as-is, without needing more complex stuff (like Xen's mfn to pfn 
+conversion).
 
-  Luis
+In most cases, the surrounding code will be applying its own mask 
+anyway, so making it a simple inline will allow all the masks to get 
+folded together.
+
+If a user which wants to do something other than return the bare flags, 
+it would be easy enough to put the pv_op back.
+
+> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+>
+> diff -r ee1a6adad3d2 arch/x86/kernel/paravirt.c
+> --- a/arch/x86/kernel/paravirt.c	Mon Jul 21 12:49:25 2008 +1000
+> +++ b/arch/x86/kernel/paravirt.c	Tue Jul 22 14:09:33 2008 +1000
+> @@ -428,7 +428,7 @@ struct pv_mmu_ops pv_mmu_ops = {
+>  #endif /* PAGETABLE_LEVELS >= 3 */
+>  
+>  	.pte_val = native_pte_val,
+> -	.pte_flags = native_pte_val,
+> +	.pte_flags = native_pte_flags,
+>  	.pgd_val = native_pgd_val,
+>  
+>  	.make_pte = native_make_pte,
+> diff -r ee1a6adad3d2 include/asm-x86/page.h
+> --- a/include/asm-x86/page.h	Mon Jul 21 12:49:25 2008 +1000
+> +++ b/include/asm-x86/page.h	Tue Jul 22 14:09:33 2008 +1000
+> @@ -144,6 +144,18 @@ static inline pteval_t native_pte_val(pt
+>  	return pte.pte;
+>  }
+>  
+> +/* This belongs in pgtable.h, but our includes are too much of a mess. */
+> +#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
+> +#define PTE_FLAGS	_AC(0x8000000000000FFF, ULL)
+> +#else
+> +#define PTE_FLAGS	0x00000FFF
+> +#endif
+>   
+We already have this, it's called PTE_MASK.
+
+    J
