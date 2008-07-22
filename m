@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbYGVRSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbYGVRUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754056AbYGVRSS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 13:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYGVRSG
+	id S1754265AbYGVRUW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 13:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbYGVRUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 13:18:06 -0400
-Received: from ns.suse.de ([195.135.220.2]:45096 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752229AbYGVRSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 13:18:05 -0400
-Date: Tue, 22 Jul 2008 10:16:06 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Altobelli, David" <david.altobelli@hp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 75/79] HP iLO driver
-Message-ID: <20080722171606.GA20669@suse.de>
-References: <20080722051805.GA17373@suse.de> <1216703983-21448-75-git-send-email-gregkh@suse.de> <CF70AA892F109448AEA269483B3A983903C30E04F2@G1W1215.americas.hpqcorp.net>
+	Tue, 22 Jul 2008 13:20:07 -0400
+Received: from stinky.trash.net ([213.144.137.162]:37478 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbYGVRUG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 13:20:06 -0400
+Message-ID: <488616C0.8070505@trash.net>
+Date: Tue, 22 Jul 2008 19:20:00 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CF70AA892F109448AEA269483B3A983903C30E04F2@G1W1215.americas.hpqcorp.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Larry Finger <Larry.Finger@lwfinger.net>
+CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: Kernel WARNING: at net/core/dev.c:1330 __netif_schedule+0x2c/0x98()
+References: <4885104A.2070201@lwfinger.net>	<20080721.161517.27161039.davem@davemloft.net>	<48857F74.2040406@lwfinger.net> <20080722.043220.247312412.davem@davemloft.net> <4885DA49.50703@lwfinger.net> <48860D4B.8070003@lwfinger.net>
+In-Reply-To: <48860D4B.8070003@lwfinger.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 05:11:16PM +0000, Altobelli, David wrote:
-> Greg Kroah-Hartman wrote:
-> > diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-> > index 1921b8d..ce67d97 100644
-> > --- a/drivers/misc/Kconfig
-> > +++ b/drivers/misc/Kconfig
-> > @@ -420,4 +420,17 @@ config SGI_XP
-> >           this feature will allow for direct communication between SSIs
-> >           based on a network adapter and DMA messaging.
-> >
-> > +config HP_ILO
-> > +       tristate "Channel interface driver for HP iLO/iLO2 processor"
-> > +       default n
+Larry Finger wrote:
+> I pulled from Linus's tree this morning and now have git-05752-g93ded9b. 
+> The kernel WARNING from __netif_schedule and the lockdep warning are 
+> present with or without the patches from yesterday.
 > 
-> Heiko Carstens submitted a Kconfig "depend on PCI" patch to linux-next,
-> and that should be included with this series.  His mail is below.
-> Outlook might well mangle the diff, but that's my fault, not his.
+> As I stated earlier, the kernel WARNING (it was a BUG then) was 
+> introduced in commit 37437bb2 when the BUG statement was entered.
+> 
+> The lockdep warning started with the next commit (16361127).
+> 
+> The lockdep warning is:
+> 
+> =============================================
+> [ INFO: possible recursive locking detected ]
+> 2.6.26-Linus-git-05752-g93ded9b #49
 
-Thanks, sorry I missed that one, I'll add it to my queue for the next
-patch series to go to Linus.
+                    ^^^^^^^^^^^^^^ dirty?
 
-greg k-h
+This kernel is not using the patches we sent.
