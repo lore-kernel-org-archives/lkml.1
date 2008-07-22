@@ -1,101 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbYGVKyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbYGVK6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754811AbYGVKyQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 06:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbYGVKx7
+	id S1754811AbYGVK6X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 06:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbYGVK6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 06:53:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37999 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750964AbYGVKx6 (ORCPT
+	Tue, 22 Jul 2008 06:58:16 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36932 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750971AbYGVK6P convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 06:53:58 -0400
-Date: Tue, 22 Jul 2008 03:53:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: michael@ellerman.id.au
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-arch@vger.kernel.org,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Peter Anvin <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] Make u64 long long on all architectures (was: the
- printk problem)
-Message-Id: <20080722035318.76cad6dd.akpm@linux-foundation.org>
-In-Reply-To: <1216722995.8357.4.camel@localhost>
-References: <20080625131101.GA6205@digi.com>
-	<20080704104634.GA31634@digi.com>
-	<20080704111540.ddffd241.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
-	<20080704132716.f1e12554.akpm@linux-foundation.org>
-	<20080704204252.GM14894@parisc-linux.org>
-	<20080704150100.1f7b8a65.akpm@linux-foundation.org>
-	<20080705020350.GN14894@parisc-linux.org>
-	<20080722030506.206a2cc2.akpm@linux-foundation.org>
-	<1216722995.8357.4.camel@localhost>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jul 2008 06:58:15 -0400
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX19C86gPqKVCD3yydVzq1c9DnhlzXi4ATADX49B6oN
+	HmolYoBaq2kAi7
+Date: Tue, 22 Jul 2008 12:58:12 +0200
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: xiyou.wangcong@gmail.com
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net, jdike@addtoit.com
+Subject: Re: [Patch] um: fix a build error
+Message-ID: <20080722105812.GB5283@alice>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.26 (x86_64)
+X-Uptime: 12:54:40 up  2:34,  1 user,  load average: 0.09, 0.26, 0.49
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.52
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jul 2008 20:36:35 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
+I just ran across the same build error, does
+something like this look reasonable? Only build
+and boot tested.
 
-> On Tue, 2008-07-22 at 03:05 -0700, Andrew Morton wrote:
-> > On Fri, 4 Jul 2008 20:03:51 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
-> > 
-> > > [PATCH] Make u64 long long on all architectures
-> > > 
-> > > It is currently awkward to print a u64 type.  Some architectures use
-> > > unsigned long while others use unsigned long long.  Since unsigned long
-> > > long is 64-bit for all existing Linux architectures, change those that
-> > > use long to use long long.  Note that this applies only within the
-> > > kernel.  If u64 is being used in a C++ method definition, the symbol
-> > > mangling would change.
-> > > 
-> > > Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-> > > 
-> > > diff --git a/include/asm-generic/int-l64.h b/include/asm-generic/int-l64.h
-> > > index 2af9b75..32f07bd 100644
-> > > --- a/include/asm-generic/int-l64.h
-> > > +++ b/include/asm-generic/int-l64.h
-> > > @@ -23,8 +23,13 @@ typedef unsigned short __u16;
-> > >  typedef __signed__ int __s32;
-> > >  typedef unsigned int __u32;
-> > >  
-> > > +#ifdef __KERNEL__
-> > > +typedef __signed__ long long __s64;
-> > > +typedef unsigned long long __u64;
-> > > +#else
-> > >  typedef __signed__ long __s64;
-> > >  typedef unsigned long __u64;
-> > > +#endif
-> > >  
-> > >  #endif /* __ASSEMBLY__ */
-> > 
-> > This is (IMO) a desirable change and will prevent a heck of a lot of
-> > goofing around, and will permit a lot of prior goofing around to
-> > be removed.
-> > 
-> > But I bet there are lots of instalces of printk("%l", some_u64) down in
-> > arch code where the type of u64 _is_ known which will now spew warnings.
-> > 
-> > Oh well.
-> 
-> As a rough estimate:
-> 
-> concordia powerpc(master) $ find arch/powerpc/ ! -name '*32.*' | xargs grep "%l" | grep -v "%ll" | wc -l
-> 635
+This fixes the following build error:
 
-lolz.  If yesterdays-linux-next on todays-mainline wasn't such a
-hilarious trainwreck I'd test your grepping.  I guess that could be
-done on mainline too.
+  CC      arch/um/drivers/line.o
+  arch/um/drivers/line.c: In function ‘line_write_interrupt’:
+  arch/um/drivers/line.c:366: error: ‘struct tty_ldisc’ has no member
+  named ‘write_wakeup’
+  arch/um/drivers/line.c:367: error: ‘struct tty_ldisc’ has no member
+  named ‘write_wakeup’
+  make[1]: *** [arch/um/drivers/line.o] Error 1
+  make: *** [arch/um/drivers] Error 2
 
-> Someone's gonna get a lot of git points for fixing all those. Might keep
-> the speeling fix crowd busy for a while.
 
-I'm not sure I have the energy for this.
+Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
 
-But we really should do it.
+--- linux-2.6/arch/um/drivers/line.c.orig	2008-07-22 12:06:17.000000000 +0200
++++ linux-2.6/arch/um/drivers/line.c	2008-07-22 12:06:49.000000000 +0200
+@@ -362,10 +362,8 @@ static irqreturn_t line_write_interrupt(
+ 	if (tty == NULL)
+ 		return IRQ_NONE;
+ 
+-	if (test_bit(TTY_DO_WRITE_WAKEUP, &tty->flags) &&
+-	   (tty->ldisc.write_wakeup != NULL))
+-		(tty->ldisc.write_wakeup)(tty);
+-
++	if (test_bit(TTY_DO_WRITE_WAKEUP, &tty->flags))
++		tty_wakeup(tty);
+ 	/*
+ 	 * BLOCKING mode
+ 	 * In blocking mode, everything sleeps on tty->write_wait.
