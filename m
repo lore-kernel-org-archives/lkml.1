@@ -1,159 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbYGVQjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbYGVQla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753252AbYGVQjy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 12:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYGVQjn
+	id S1753274AbYGVQla (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 12:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYGVQlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 12:39:43 -0400
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:61893 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751802AbYGVQjl (ORCPT
+	Tue, 22 Jul 2008 12:41:23 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41518 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751058AbYGVQlW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 12:39:41 -0400
-Message-ID: <48860D4B.8070003@lwfinger.net>
-Date: Tue, 22 Jul 2008 11:39:39 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Tue, 22 Jul 2008 12:41:22 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 22 Jul 2008 18:41:10 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: fw-ohci: TSB43AB22/A dualbuffer workaround
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.6a555e76ba524e73@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>, Patrick McHardy <kaber@trash.net>
-CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: Kernel WARNING: at net/core/dev.c:1330 __netif_schedule+0x2c/0x98()
-References: <4885104A.2070201@lwfinger.net>	<20080721.161517.27161039.davem@davemloft.net>	<48857F74.2040406@lwfinger.net> <20080722.043220.247312412.davem@davemloft.net> <4885DA49.50703@lwfinger.net>
-In-Reply-To: <4885DA49.50703@lwfinger.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David and Patrick,
+Isochronous reception in dualbuffer is reportedly broken with
+TI TSB43AB22A on x86-64.  Descriptor addresses above 2G have been
+determined as the trigger:
+https://bugzilla.redhat.com/show_bug.cgi?id=435550
 
-Here is the latest on this problem.
+Two fixes are possible:
+  - pci_set_consistent_dma_mask(pdev, DMA_31BIT_MASK);
+    at least when IR descriptors are allocated, or
+  - simply don't use dualbuffer.
+This fix implements the latter workaround.
 
-I pulled from Linus's tree this morning and now have git-05752-g93ded9b. The 
-kernel WARNING from __netif_schedule and the lockdep warning are present with or 
-without the patches from yesterday.
+But we keep using dualbuffer on x86-32 which won't give us highmen (and
+thus physical addresses outside the 31bit range) in coherent DMA memory
+allocations.  Right now we could for example also whitelist PPC32, but
+DMA mapping implementation details are expected to change there.
 
-As I stated earlier, the kernel WARNING (it was a BUG then) was introduced in 
-commit 37437bb2 when the BUG statement was entered.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-ohci.c |   37 ++++++++++++++++++++++++-------------
+ include/linux/pci_ids.h    |    1 +
+ 2 files changed, 25 insertions(+), 13 deletions(-)
 
-The lockdep warning started with the next commit (16361127).
+Index: linux/drivers/firewire/fw-ohci.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-ohci.c
++++ linux/drivers/firewire/fw-ohci.c
+@@ -171,7 +171,6 @@ struct iso_context {
+ struct fw_ohci {
+ 	struct fw_card card;
+ 
+-	u32 version;
+ 	__iomem char *registers;
+ 	dma_addr_t self_id_bus;
+ 	__le32 *self_id_cpu;
+@@ -180,6 +179,8 @@ struct fw_ohci {
+ 	int generation;
+ 	int request_generation;	/* for timestamping incoming requests */
+ 	u32 bus_seconds;
++
++	bool use_dualbuffer;
+ 	bool old_uninorth;
+ 	bool bus_reset_packet_quirk;
+ 
+@@ -1885,7 +1886,7 @@ ohci_allocate_iso_context(struct fw_card
+ 	} else {
+ 		mask = &ohci->ir_context_mask;
+ 		list = ohci->ir_context_list;
+-		if (ohci->version >= OHCI_VERSION_1_1)
++		if (ohci->use_dualbuffer)
+ 			callback = handle_ir_dualbuffer_packet;
+ 		else
+ 			callback = handle_ir_packet_per_buffer;
+@@ -1949,7 +1950,7 @@ static int ohci_start_iso(struct fw_iso_
+ 	} else {
+ 		index = ctx - ohci->ir_context_list;
+ 		control = IR_CONTEXT_ISOCH_HEADER;
+-		if (ohci->version >= OHCI_VERSION_1_1)
++		if (ohci->use_dualbuffer)
+ 			control |= IR_CONTEXT_DUAL_BUFFER_MODE;
+ 		match = (tags << 28) | (sync << 8) | ctx->base.channel;
+ 		if (cycle >= 0) {
+@@ -2279,7 +2280,7 @@ ohci_queue_iso(struct fw_iso_context *ba
+ 	spin_lock_irqsave(&ctx->context.ohci->lock, flags);
+ 	if (base->type == FW_ISO_CONTEXT_TRANSMIT)
+ 		retval = ohci_queue_iso_transmit(base, packet, buffer, payload);
+-	else if (ctx->context.ohci->version >= OHCI_VERSION_1_1)
++	else if (ctx->context.ohci->use_dualbuffer)
+ 		retval = ohci_queue_iso_receive_dualbuffer(base, packet,
+ 							 buffer, payload);
+ 	else
+@@ -2341,7 +2342,7 @@ static int __devinit
+ pci_probe(struct pci_dev *dev, const struct pci_device_id *ent)
+ {
+ 	struct fw_ohci *ohci;
+-	u32 bus_options, max_receive, link_speed;
++	u32 bus_options, max_receive, link_speed, version;
+ 	u64 guid;
+ 	int err;
+ 	size_t size;
+@@ -2366,12 +2367,6 @@ pci_probe(struct pci_dev *dev, const str
+ 	pci_write_config_dword(dev, OHCI1394_PCI_HCI_Control, 0);
+ 	pci_set_drvdata(dev, ohci);
+ 
+-#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32)
+-	ohci->old_uninorth = dev->vendor == PCI_VENDOR_ID_APPLE &&
+-			     dev->device == PCI_DEVICE_ID_APPLE_UNI_N_FW;
+-#endif
+-	ohci->bus_reset_packet_quirk = dev->vendor == PCI_VENDOR_ID_TI;
+-
+ 	spin_lock_init(&ohci->lock);
+ 
+ 	tasklet_init(&ohci->bus_reset_tasklet,
+@@ -2390,6 +2385,23 @@ pci_probe(struct pci_dev *dev, const str
+ 		goto fail_iomem;
+ 	}
+ 
++	version = reg_read(ohci, OHCI1394_Version) & 0x00ff00ff;
++	ohci->use_dualbuffer = version >= OHCI_VERSION_1_1;
++
++/* x86-32 currently doesn't use highmem for dma_alloc_coherent */
++#if !defined(CONFIG_X86_32)
++	/* dual-buffer mode is broken with descriptor addresses above 2G */
++	if (dev->vendor == PCI_VENDOR_ID_TI &&
++	    dev->device == PCI_DEVICE_ID_TI_TSB43AB22)
++		ohci->use_dualbuffer = false;
++#endif
++
++#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32)
++	ohci->old_uninorth = dev->vendor == PCI_VENDOR_ID_APPLE &&
++			     dev->device == PCI_DEVICE_ID_APPLE_UNI_N_FW;
++#endif
++	ohci->bus_reset_packet_quirk = dev->vendor == PCI_VENDOR_ID_TI;
++
+ 	ar_context_init(&ohci->ar_request_ctx, ohci,
+ 			OHCI1394_AsReqRcvContextControlSet);
+ 
+@@ -2441,9 +2453,8 @@ pci_probe(struct pci_dev *dev, const str
+ 	if (err < 0)
+ 		goto fail_self_id;
+ 
+-	ohci->version = reg_read(ohci, OHCI1394_Version) & 0x00ff00ff;
+ 	fw_notify("Added fw-ohci device %s, OHCI version %x.%x\n",
+-		  dev->dev.bus_id, ohci->version >> 16, ohci->version & 0xff);
++		  dev->dev.bus_id, version >> 16, version & 0xff);
+ 	return 0;
+ 
+  fail_self_id:
+Index: linux/include/linux/pci_ids.h
+===================================================================
+--- linux.orig/include/linux/pci_ids.h
++++ linux/include/linux/pci_ids.h
+@@ -748,6 +748,7 @@
+ #define PCI_VENDOR_ID_TI		0x104c
+ #define PCI_DEVICE_ID_TI_TVP4020	0x3d07
+ #define PCI_DEVICE_ID_TI_4450		0x8011
++#define PCI_DEVICE_ID_TI_TSB43AB22	0x8023
+ #define PCI_DEVICE_ID_TI_XX21_XX11	0x8031
+ #define PCI_DEVICE_ID_TI_XX21_XX11_FM	0x8033
+ #define PCI_DEVICE_ID_TI_XX21_XX11_SD	0x8034
 
-I am not using any network traffic shaping. Is it correct that the faulty 
-condition is not that q == &noop_qdisc, but that __netif_schedule was called 
-when that condition exists?
+-- 
+Stefan Richter
+-=====-==--- -=== =-==-
+http://arcgraph.de/sr/
 
-
-The lockdep warning is:
-
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.26-Linus-git-05752-g93ded9b #49
----------------------------------------------
-NetworkManager/2611 is trying to acquire lock:
-  (&dev->addr_list_lock){-...}, at: [<ffffffff803a2ad1>] dev_mc_sync+0x19/0x57
-
-but task is already holding lock:
-  (&dev->addr_list_lock){-...}, at: [<ffffffff8039e909>] dev_set_rx_mode+0x19/0x2e
-
-other info that might help us debug this:
-2 locks held by NetworkManager/2611:
-  #0:  (rtnl_mutex){--..}, at: [<ffffffff803a8488>] rtnetlink_rcv+0x12/0x27
-  #1:  (&dev->addr_list_lock){-...}, at: [<ffffffff8039e909>] 
-dev_set_rx_mode+0x19/0x2e
-
-stack backtrace:
-Pid: 2611, comm: NetworkManager Not tainted 2.6.26-Linus-git-05752-g93ded9b #49
-
-Call Trace:
-  [<ffffffff80251b02>] __lock_acquire+0xb7b/0xecc
-  [<ffffffff80251ea4>] lock_acquire+0x51/0x6a
-  [<ffffffff803a2ad1>] dev_mc_sync+0x19/0x57
-  [<ffffffff8040b3fc>] _spin_lock_bh+0x23/0x2c
-  [<ffffffff803a2ad1>] dev_mc_sync+0x19/0x57
-  [<ffffffff8039e911>] dev_set_rx_mode+0x21/0x2e
-  [<ffffffff803a04da>] dev_open+0x8e/0xb0
-  [<ffffffff8039fe84>] dev_change_flags+0xa6/0x163
-  [<ffffffff803a7591>] do_setlink+0x286/0x349
-  [<ffffffff803a849d>] rtnetlink_rcv_msg+0x0/0x1ec
-  [<ffffffff803a849d>] rtnetlink_rcv_msg+0x0/0x1ec
-  [<ffffffff803a849d>] rtnetlink_rcv_msg+0x0/0x1ec
-  [<ffffffff803a77de>] rtnl_setlink+0x10b/0x10d
-  [<ffffffff803a849d>] rtnetlink_rcv_msg+0x0/0x1ec
-  [<ffffffff803b416f>] netlink_rcv_skb+0x34/0x7d
-  [<ffffffff803a8497>] rtnetlink_rcv+0x21/0x27
-  [<ffffffff803b3c6f>] netlink_unicast+0x1f0/0x261
-  [<ffffffff8039a58d>] __alloc_skb+0x66/0x12a
-  [<ffffffff803b3f48>] netlink_sendmsg+0x268/0x27b
-  [<ffffffff80393cb9>] sock_sendmsg+0xcb/0xe3
-  [<ffffffff80246aab>] autoremove_wake_function+0x0/0x2e
-  [<ffffffff8039b2d8>] verify_iovec+0x46/0x82
-  [<ffffffff80393ee8>] sys_sendmsg+0x217/0x28a
-  [<ffffffff80393642>] sockfd_lookup_light+0x1a/0x52
-  [<ffffffff80250990>] trace_hardirqs_on_caller+0xef/0x113
-  [<ffffffff8040af74>] trace_hardirqs_on_thunk+0x3a/0x3f
-  [<ffffffff8020be9b>] system_call_after_swapgs+0x7b/0x80
-========================================================
-
-
-The logged data for the WARNING is as follows:
-
-------------[ cut here ]------------
-WARNING: at net/core/dev.c:1330 __netif_schedule+0x2c/0x98()
-Modules linked in: af_packet nfs lockd nfs_acl rfkill_input sunrpc 
-cpufreq_conservative cpufreq_userspace cpufreq_powersave powernow_k8 fuse loop 
-dm_mod arc4 ecb crypto_blkcipher b43 firmware_class rfkill mac80211 cfg80211 
-led_class input_polldev battery ac button ssb serio_raw forcedeth sr_mod cdrom 
-k8temp hwmon sg sd_mod ehci_hcd ohci_hcd usbcore edd fan thermal processor ext3 
-mbcache jbd pata_amd ahci libata scsi_mod dock
-Pid: 1990, comm: b43 Not tainted 2.6.26-Linus-git-05752-g93ded9b #49
-
-Call Trace:
-  [<ffffffff80233f6d>] warn_on_slowpath+0x51/0x8c
-  [<ffffffff8039d937>] __netif_schedule+0x2c/0x98
-  [<ffffffffa015445d>] ieee80211_scan_completed+0x26b/0x2f1 [mac80211]
-  [<ffffffffa01546de>] ieee80211_sta_scan_work+0x0/0x1b8 [mac80211]
-  [<ffffffff8024325e>] run_workqueue+0xf0/0x1f2
-  [<ffffffff8024343b>] worker_thread+0xdb/0xea
-  [<ffffffff80246aab>] autoremove_wake_function+0x0/0x2e
-  [<ffffffff80243360>] worker_thread+0x0/0xea
-  [<ffffffff8024678b>] kthread+0x47/0x73
-  [<ffffffff8040af74>] trace_hardirqs_on_thunk+0x3a/0x3f
-  [<ffffffff8020cea9>] child_rip+0xa/0x11
-  [<ffffffff8020c4df>] restore_args+0x0/0x30
-  [<ffffffff8024671f>] kthreadd+0x188/0x1ad
-  [<ffffffff80246744>] kthread+0x0/0x73
-  [<ffffffff8020ce9f>] child_rip+0x0/0x11
-
----[ end trace 42d234b678daea7a ]---
-
-Other info I have found. The call to __netif_schedule from 
-ieee80211_scan_completed is through the following code from 
-include/linux/netdevice.h:
-
-/**
-  *      netif_wake_queue - restart transmit
-  *      @dev: network device
-  *
-  *      Allow upper layers to call the device hard_start_xmit routine.
-  *      Used for flow control when transmit resources are available.
-  */
-static inline void netif_tx_wake_queue(struct netdev_queue *dev_queue)
-{
-#ifdef CONFIG_NETPOLL_TRAP
-         if (netpoll_trap()) {
-                 clear_bit(__QUEUE_STATE_XOFF, &dev_queue->state);
-                 return;
-         }
-#endif
-         if (test_and_clear_bit(__QUEUE_STATE_XOFF, &dev_queue->state))
-                 __netif_schedule(dev_queue->qdisc);
-}
-
-It doesn't make any difference if CONFIG_NETPOLL_TRAP is defined or not.
-
-Please let me know if I can provide any further information,
-
-Larry
