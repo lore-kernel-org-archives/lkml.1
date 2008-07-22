@@ -1,93 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbYGVSnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbYGVSpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbYGVSnn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 14:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbYGVSnc
+	id S1755492AbYGVSpN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 14:45:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYGVSo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 14:43:32 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52714 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751542AbYGVSnb (ORCPT
+	Tue, 22 Jul 2008 14:44:56 -0400
+Received: from stinky.trash.net ([213.144.137.162]:40099 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752682AbYGVSoz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 14:43:31 -0400
-Subject: Re: Firmware breakage
-From: David Woodhouse <dwmw2@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20080722191910.11eef7c4@lxorguk.ukuu.org.uk>
-References: <20080722173420.6f90556d@lxorguk.ukuu.org.uk>
-	 <1216748431.3019.6.camel@shinybook.infradead.org>
-	 <20080722190516.4ee477f4@lxorguk.ukuu.org.uk>
-	 <1216751464.3019.29.camel@shinybook.infradead.org>
-	 <20080722191910.11eef7c4@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Tue, 22 Jul 2008 14:43:16 -0400
-Message-Id: <1216752196.3019.32.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Tue, 22 Jul 2008 14:44:55 -0400
+Message-ID: <48862A76.8030307@trash.net>
+Date: Tue, 22 Jul 2008 20:44:06 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+MIME-Version: 1.0
+To: Larry Finger <Larry.Finger@lwfinger.net>
+CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: Kernel WARNING: at net/core/dev.c:1330 __netif_schedule+0x2c/0x98()
+References: <4885104A.2070201@lwfinger.net>	<20080721.161517.27161039.davem@davemloft.net>	<48857F74.2040406@lwfinger.net> <20080722.043220.247312412.davem@davemloft.net> <4885DA49.50703@lwfinger.net> <48860D4B.8070003@lwfinger.net> <488616C0.8070505@trash.net> <4886294C.4060905@lwfinger.net>
+In-Reply-To: <4886294C.4060905@lwfinger.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-22 at 19:19 +0100, Alan Cox wrote:
-> > I was planning to build the firmware binaries as part of 'make modules'
-> > anyway, because Rafael had related problems (not being able to write to
-> > the NFS-exported kernel tree at all).
-> 
-> Yes I just hit that problem too.
+Larry Finger wrote:
+> Patrick McHardy wrote:
+>> Larry Finger wrote:
+>>>
+>>> =============================================
+>>> [ INFO: possible recursive locking detected ]
+>>> 2.6.26-Linus-git-05752-g93ded9b #49
+>>
+>>                    ^^^^^^^^^^^^^^ dirty?
+>>
+>> This kernel is not using the patches we sent.
+>
+> No, but they didn't make any difference. I tried with all 3 applied, 
+> then backed them out one by one. That was the state when I posted before.
 
-I'm testing this now...
+Well, this is a completely different warning.
 
-diff --git a/Makefile b/Makefile
-index 6192922..3b43ddb 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1061,6 +1061,7 @@ modules: $(vmlinux-dirs) $(if $(KBUILD_BUILTIN),vmlinux)
- 	$(Q)$(AWK) '!x[$$0]++' $(vmlinux-dirs:%=$(objtree)/%/modules.order) > $(objtree)/modules.order
- 	@echo '  Building modules, stage 2.';
- 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
-+	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.fwinst obj=firmware __fw_modbuild
- 
- 
- # Target to prepare building external modules
-diff --git a/scripts/Makefile.fwinst b/scripts/Makefile.fwinst
-index c972c0f..e1b3159 100644
---- a/scripts/Makefile.fwinst
-+++ b/scripts/Makefile.fwinst
-@@ -17,14 +17,15 @@ include $(srctree)/$(obj)/Makefile
- 
- include scripts/Makefile.host
- 
--mod-fw := $(addprefix $(INSTALL_FW_PATH)/,$(fw-shipped-m))
--
-+mod-fw := $(fw-shipped-m)
- # If CONFIG_FIRMWARE_IN_KERNEL isn't set, then install the 
- # firmware for in-kernel drivers too.
- ifndef CONFIG_FIRMWARE_IN_KERNEL
--mod-fw += $(addprefix $(INSTALL_FW_PATH)/,$(fw-shipped-y))
-+mod-fw += $(fw-shipped-y)
- endif
- 
-+installed-mod-fw := $(addprefix $(INSTALL_FW_PATH)/,$(mod-fw))
-+
- installed-fw := $(addprefix $(INSTALL_FW_PATH)/,$(fw-shipped-all))
- installed-fw-dirs := $(sort $(dir $(installed-fw))) $(INSTALL_FW_PATH)/.
- 
-@@ -49,7 +50,8 @@ PHONY +=  __fw_install __fw_modinst FORCE
- .PHONY: $(PHONY)
- 
- __fw_install: $(installed-fw)
--__fw_modinst: $(mod-fw)
-+__fw_modinst: $(installed-mod-fw)
-+__fw_modbuild: $(mod-fw)
- 
- FORCE:
- 
-
--- 
-dwmw2
+>
+> Here are the dumps with all 3 patches applied:
+>
+> =============================================
+> [ INFO: possible recursive locking detected ]
+> 2.6.26-Linus-05752-g93ded9b-dirty #53
+> ---------------------------------------------
+> b43/1997 is trying to acquire lock:
+>  (_xmit_IEEE80211#2){-...}, at: [<ffffffffa028f322>] 
+> ieee80211_scan_completed+0x130/0x2e1 [mac80211]
+>
+> but task is already holding lock:
+>  (_xmit_IEEE80211#2){-...}, at: [<ffffffffa028f322>] 
+> ieee80211_scan_completed+0x130/0x2e1 [mac80211] 
 
