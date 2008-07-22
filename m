@@ -1,194 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbYGVOUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbYGVOUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755020AbYGVOUF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 10:20:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbYGVOTx
+	id S1755528AbYGVOUg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 10:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYGVOUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 10:19:53 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:50809 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750946AbYGVOTw (ORCPT
+	Tue, 22 Jul 2008 10:20:23 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:11766 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751615AbYGVOUV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 10:19:52 -0400
-Message-ID: <4885EC11.2050906@novell.com>
-Date: Tue, 22 Jul 2008 10:17:53 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Tue, 22 Jul 2008 10:20:21 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       "Jens.Axboe@oracle.com" <Jens.Axboe@oracle.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Tue, 22 Jul 2008 14:19:22 +0000
+Subject: RE: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI driver
+Thread-Topic: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI driver
+Thread-Index: AcjpjZD6teMIDck+TnaAE6vNdxfLRABtsocg
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A778826B3D60673@GVW0547EXC.americas.hpqcorp.net>
+References: <20080719195150Y.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080719195150Y.fujita.tomonori@lab.ntt.co.jp>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Max Krasnyansky <maxk@qualcomm.com>, mingo@elte.hu,
-       dmitry.adamushko@gmail.com, torvalds@linux-foundation.org, pj@sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpu	hotplug,	sched:Introduce	cpu_active_map	and	redoscheddomainmanagment
- (take	2)
-References: <1216122229-4865-1-git-send-email-maxk@qualcomm.com>	 <487DAD86.BA47.005A.0@novell.com> <487E6BD7.3020006@qualcomm.com>	 <487E7B6C.BA47.005A.0@novell.com> <487EF1E9.2040101@qualcomm.com>	 <487EFB71.BA47.005A.0@novell.com> <487F9509.9050802@qualcomm.com>	 <487F6972.BA47.005A.0@novell.com> <1216382024.28405.26.camel@twins>	 <488052D5.BA47.005A.0@novell.com> <48856BA9.6050609@qualcomm.com>	 <4885E952.8020708@novell.com> <1216736160.7257.97.camel@twins>
-In-Reply-To: <1216736160.7257.97.camel@twins>
-X-Enigmail-Version: 0.95.6
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig875E24E0E1081C2B52BADDBA"
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig875E24E0E1081C2B52BADDBA
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
 
-Peter Zijlstra wrote:
-> On Tue, 2008-07-22 at 10:06 -0400, Gregory Haskins wrote:
->  =20
->> Max Krasnyansky wrote:
->>    =20
->>> Greg, correct me if I'm wrong but we seem to have exact same issue wi=
-th the
->>> rq->rq->online map. Lets take "cpu going down" for example. We're cle=
-aring
->>> rq->rd->online bit on DYING event, but nothing AFAICS prevents anothe=
-r cpu
->>> calling rebuild_sched_domains()->partition_sched_domains() in the mid=
-dle of
->>> the hotplug sequence.
->>> partition_sched_domains() will happily reset rd->rq->online mask and =
-things
->>> will fail. I'm talking about this path
->>>
->>> __build_sched_domains() -> cpu_attach_domain() -> rq_attach_root()
->>> 	...
->>> 	cpu_set(rq->cpu, rd->span);
->>> 	if (cpu_isset(rq->cpu, cpu_online_map))
->>> 		set_rq_online(rq);
->>> 	...
->>>
->>>  =20
->>>      =20
->> I think you are right, but wouldn't s/online/active above fix that as =
 
->> well?  The active_map didnt exist at the time that code went in initia=
-lly ;)
->>
->>    =20
->>> --
->>>
->>> btw Why didn't we convert sched*.c to use rq->rd->online when it was
->>> introduced ? ie Instead of using cpu_online_map directly.
->>>  =20
->>>      =20
->> I think things were converted where they made sense to convert.  But w=
-e=20
->> also had a different goal at that time, so perhaps something was=20
->> missed.  If you think something else should be converted, please point=
-=20
->> it out.
->>
->> In the meantime, I would suggest we consider this patch on top of your=
-s=20
->> (applies to tip/sched/devel):
->>
->> ----------------------
->>
->> sched: Fully integrate cpus_active_map and root-domain code
->>   =20
->> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->>    =20
+> -----Original Message-----
+> From: FUJITA Tomonori [mailto:fujita.tomonori@lab.ntt.co.jp]
+> Sent: Saturday, July 19, 2008 5:52 AM
+> To: Miller, Mike (OS Dev)
+> Cc: James.Bottomley@HansenPartnership.com;
+> Jens.Axboe@oracle.com; linux-scsi@vger.kernel.org;
+> linux-kernel@vger.kernel.org
+> Subject: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller
+> SCSI driver
+>
+> This is a SCSI driver for HP (Compaq) Smart Array 5xxx controllers.
+>
+> SCSI people can skip the following two paragraphs.
+>
+> Currently, a driver for HP (Compaq) Smart Array 5xxx
+> controllers is implemented as a block device driver,
+> block/cciss.c (aka, cciss). But the controller interface is
+> SCSI-3 compatible. The specification says, "A controller that
+> supports CISS is considered to be a SCSI storage array
+> controller". A scsi driver for the controllers was discussed
+
+Not really. The only resemblance we have to a SCSI controller is the fact that we hang SCSI, SAS, and SATA drives off the backend. Our implementation of the SCSI spec is cherry picked for what we need. That, of course, could be changed.
+
+> several times.
+>
+> I think that a SCSI cciss driver can be much simpler (and
+> maintainable) than the block cciss driver (the majority of
+> the code forging SCSI command can go away, we have the proper
+> sysfs entries for free, we can handle scsi tape drives easily
+
+We already handle tape drives quite easily and one of these days I hope to satisfy Andrew to the point where he will accept my sysfs changes.
+
+> etc). It would be helpful for distributions too since they
+> don't need stuff specific to cciss (such as udev rules).
 >
 >
-> Right, makes sense.
+> There isn't any easy migration path for users. So I think
+> that we need to keep the block and scsi drivers for cciss for
+> some time (say two years).
+
+Precisely why I am luke warm to this proposal. Who's going to help customers decide which driver to use? What if a number of customers are happy with the block driver? Who will decide for them when to switch? What if a customer is using the block driver and unknowingly upgrades to the SCSI driver? He's dead the water at best, lost his data at worst.
+
+> My scsi driver is still in an early stage (I tried to keep
+> the changes minimum). I can detect logical units, mount a
+> file system, do lots of I/Os, however, there are lots of
+> TODOs in the management features.
+
+Have you taken into consideration any of the HP utilities and management agents? Those must work, period.
+
 >
-> ACK
->  =20
+> If I can get an ACK from HP about the long-term migration of
+> cciss to SCSI, I'm happy to keep working on the SCSI cciss
+> driver and maintain it until HP takes over the driver.
 
-Thanks Peter.
+We already have a SCSI port of the driver that is at least as functional as you decribe. But I am against it's release for the reasons stated above. If we ever decide to release the SCSI port it should be developed by HP so we can be assured that the utils and agents work as expected. That doesn't mean we wouldn't leverage some of your work. ;)
 
-BTW: I should mention that this was just an RFC.  I haven't even build=20
-tested it yet.  I will do this now.
+If cciss is ever released as a SCSI driver it would be best if the work was done at HP. Thank you for your efforts, Tomo. I hope you understand my position.
 
-Regards,
--Greg
->  =20
->> diff --git a/kernel/sched.c b/kernel/sched.c
->> index 62b1b8e..99ba70d 100644
->> --- a/kernel/sched.c
->> +++ b/kernel/sched.c
->> @@ -6611,7 +6611,7 @@ static void rq_attach_root(struct rq *rq, struct=
-=20
->> root_domain *rd)
->>      rq->rd =3D rd;
->> =20
->>      cpu_set(rq->cpu, rd->span);
->> -    if (cpu_isset(rq->cpu, cpu_online_map))
->> +    if (cpu_isset(rq->cpu, cpu_active_map))
->>          set_rq_online(rq);
->> =20
->>      spin_unlock_irqrestore(&rq->lock, flags);
->> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
->> index 7f70026..2bae8de 100644
->> --- a/kernel/sched_fair.c
->> +++ b/kernel/sched_fair.c
->> @@ -1004,7 +1004,7 @@ static void yield_task_fair(struct rq *rq)
->>   * search starts with cpus closest then further out as needed,
->>   * so we always favor a closer, idle cpu.
->>   * Domains may include CPUs that are not usable for migration,
->> - * hence we need to mask them out (cpu_active_map)
->> + * hence we need to mask them out (rq->rd->online)
->>   *
->>   * Returns the CPU we should wake onto.
->>   */
->> @@ -1032,7 +1032,7 @@ static int wake_idle(int cpu, struct task_struct=
- *p)
->>              || ((sd->flags & SD_WAKE_IDLE_FAR)
->>              && !task_hot(p, task_rq(p)->clock, sd))) {
->>              cpus_and(tmp, sd->span, p->cpus_allowed);
->> -            cpus_and(tmp, tmp, cpu_active_map);
->> +            cpus_and(tmp, tmp, task_rq(p)->rd->online);
->>              for_each_cpu_mask(i, tmp) {
->>                  if (idle_cpu(i)) {
->>                      if (i !=3D task_cpu(p)) {
->> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
->> index 24621ce..d93169d 100644
->> --- a/kernel/sched_rt.c
->> +++ b/kernel/sched_rt.c
->> @@ -936,13 +936,6 @@ static int find_lowest_rq(struct task_struct *tas=
-k)
->>          return -1; /* No targets found */
->> =20
->>      /*
->> -     * Only consider CPUs that are usable for migration.
->> -     * I guess we might want to change cpupri_find() to ignore those
->> -     * in the first place.
->> -     */
->> -    cpus_and(*lowest_mask, *lowest_mask, cpu_active_map);
->> -
->> -    /*
->>       * At this point we have built a mask of cpus representing the
->>       * lowest priority tasks in the system.  Now we want to elect
->>       * the best one based on our affinity and topology.
->>
->> --------------
->>
->> Regards,
->> -Greg
->>
->>    =20
+-- mikem
+
 >
->  =20
-
-
-
---------------enig875E24E0E1081C2B52BADDBA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkiF7BEACgkQlOSOBdgZUxn4PgCfT9SGhXOozHI2U8onlvkqTx08
-JtoAnjI7+RDEomJ4z16AVNdSiJCxRhrC
-=L3n2
------END PGP SIGNATURE-----
-
---------------enig875E24E0E1081C2B52BADDBA--
+>
+> The patch is available at:
+>
+> http://www.kernel.org/pub/linux/kernel/people/tomo/ciss/0001-a
+> dd-HP-Compaq-Smart-Array-5xxx-controller-SCSI-dri.patch
+>
+> clover:/home/fujita# insmod ciss.ko
+> clover:/home/fujita# lsscsi
+> (snip)
+> [1:0:0:0]    disk    HP       LOGICAL VOLUME   1.66  /dev/sde
+> [1:0:0:1]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdf
+> [1:0:0:2]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdg
+> [1:0:0:3]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdh
+>
+> Yeah, it just works as SCSI disk, the dmesg says:
+>
+> sd 1:0:0:0: [sde] Attached SCSI disk
+> sd 1:0:0:1: [sdf] 143305920 512-byte hardware sectors (73373
+> MB) sd 1:0:0:1: [sdf] Write Protect is off sd 1:0:0:1: [sdf]
+> Mode Sense: 5b 00 00 08 sd 1:0:0:1: [sdf] Write cache:
+> disabled, read cache: enabled, doesn't support DPO or FUA
+>
+> I needed a different name and just stole 'ciss' from *BSD.
+> But any names (like hpciss) works for me.
+>
+>
+> Thanks,
+>
