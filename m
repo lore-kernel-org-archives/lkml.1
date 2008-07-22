@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758727AbYGVX0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbYGVX0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758727AbYGVX0Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbYGVXTi
+	id S1758781AbYGVX0m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757058AbYGVXTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:19:38 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:57774 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 19:19:40 -0400
+Received: from ns2.suse.de ([195.135.220.15]:57792 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757023AbYGVXTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:19:35 -0400
-Date: Tue, 22 Jul 2008 16:16:17 -0700
+	id S1757047AbYGVXTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:19:39 -0400
+Date: Tue, 22 Jul 2008 16:16:19 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,16 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>,
-       Andre Naujoks <nautsch@gmail.com>, David Miller <davem@davemloft.net>,
-       Urs Thuermann <urs.thuermann@volkswagen.de>
-Subject: [patch 24/47] can: add sanity checks
-Message-ID: <20080722231617.GY8282@suse.de>
+       Will Newton <will.newton@gmail.com>
+Subject: [patch 25/47] sisusbvga: Fix oops on disconnect.
+Message-ID: <20080722231619.GZ8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="can-add-sanity-checks.patch"
+Content-Disposition: inline; filename="sisusbvga-fix-oops-on-disconnect.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,149 +39,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Oliver Hartkopp <oliver@hartkopp.net>
+From: Will Newton <will.newton@gmail.com>
 
-commit 7f2d38eb7a42bea1c1df51bbdaa2ca0f0bdda07f upstream
+commit f15e39739a1d7dfaa2173a91707a74c11a246648 upstream
 
-Even though the CAN netlayer only deals with CAN netdevices, the
-netlayer interface to the userspace and to the device layer should
-perform some sanity checks.
+Remove dev_info call on disconnect. The sisusb_dev pointer may have been
+set to zero by sisusb_delete at this point causing an oops.
 
-This patch adds several sanity checks that mainly prevent userspace apps
-to send broken content into the system that may be misinterpreted by
-some other userspace application.
+The message does not provide any extra information over the standard USB
+subsystem output so removing it does not affect functionality.
 
-Signed-off-by: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Signed-off-by: Urs Thuermann <urs.thuermann@volkswagen.de>
-Acked-by: Andre Naujoks <nautsch@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Will Newton <will.newton@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/can/af_can.c |   10 ++++++++++
- net/can/bcm.c    |   23 +++++++++++++++++++----
- net/can/raw.c    |    3 +++
- 3 files changed, 32 insertions(+), 4 deletions(-)
+ drivers/usb/misc/sisusbvga/sisusb.c |    2 --
+ 1 file changed, 2 deletions(-)
 
---- a/net/can/af_can.c
-+++ b/net/can/af_can.c
-@@ -205,12 +205,19 @@ static int can_create(struct net *net, s
-  *  -ENOBUFS on full driver queue (see net_xmit_errno())
-  *  -ENOMEM when local loopback failed at calling skb_clone()
-  *  -EPERM when trying to send on a non-CAN interface
-+ *  -EINVAL when the skb->data does not contain a valid CAN frame
-  */
- int can_send(struct sk_buff *skb, int loop)
- {
- 	struct sk_buff *newskb = NULL;
-+	struct can_frame *cf = (struct can_frame *)skb->data;
- 	int err;
+--- a/drivers/usb/misc/sisusbvga/sisusb.c
++++ b/drivers/usb/misc/sisusbvga/sisusb.c
+@@ -3264,8 +3264,6 @@ static void sisusb_disconnect(struct usb
  
-+	if (skb->len != sizeof(struct can_frame) || cf->can_dlc > 8) {
-+		kfree_skb(skb);
-+		return -EINVAL;
-+	}
-+
- 	if (skb->dev->type != ARPHRD_CAN) {
- 		kfree_skb(skb);
- 		return -EPERM;
-@@ -605,6 +612,7 @@ static int can_rcv(struct sk_buff *skb, 
- 		   struct packet_type *pt, struct net_device *orig_dev)
- {
- 	struct dev_rcv_lists *d;
-+	struct can_frame *cf = (struct can_frame *)skb->data;
- 	int matches;
- 
- 	if (dev->type != ARPHRD_CAN || dev->nd_net != &init_net) {
-@@ -612,6 +620,8 @@ static int can_rcv(struct sk_buff *skb, 
- 		return 0;
- 	}
- 
-+	BUG_ON(skb->len != sizeof(struct can_frame) || cf->can_dlc > 8);
-+
- 	/* update statistics */
- 	can_stats.rx_frames++;
- 	can_stats.rx_frames_delta++;
---- a/net/can/bcm.c
-+++ b/net/can/bcm.c
-@@ -326,7 +326,7 @@ static void bcm_send_to_user(struct bcm_
- 
- 	if (head->nframes) {
- 		/* can_frames starting here */
--		firstframe = (struct can_frame *) skb_tail_pointer(skb);
-+		firstframe = (struct can_frame *)skb_tail_pointer(skb);
- 
- 		memcpy(skb_put(skb, datalen), frames, datalen);
- 
-@@ -818,6 +818,10 @@ static int bcm_tx_setup(struct bcm_msg_h
- 		for (i = 0; i < msg_head->nframes; i++) {
- 			err = memcpy_fromiovec((u8 *)&op->frames[i],
- 					       msg->msg_iov, CFSIZ);
-+
-+			if (op->frames[i].can_dlc > 8)
-+				err = -EINVAL;
-+
- 			if (err < 0)
- 				return err;
- 
-@@ -850,6 +854,10 @@ static int bcm_tx_setup(struct bcm_msg_h
- 		for (i = 0; i < msg_head->nframes; i++) {
- 			err = memcpy_fromiovec((u8 *)&op->frames[i],
- 					       msg->msg_iov, CFSIZ);
-+
-+			if (op->frames[i].can_dlc > 8)
-+				err = -EINVAL;
-+
- 			if (err < 0) {
- 				if (op->frames != &op->sframe)
- 					kfree(op->frames);
-@@ -1161,9 +1169,12 @@ static int bcm_tx_send(struct msghdr *ms
- 
- 	skb->dev = dev;
- 	skb->sk  = sk;
--	can_send(skb, 1); /* send with loopback */
-+	err = can_send(skb, 1); /* send with loopback */
- 	dev_put(dev);
- 
-+	if (err)
-+		return err;
-+
- 	return CFSIZ + MHSIZ;
+ 	/* decrement our usage count */
+ 	kref_put(&sisusb->kref, sisusb_delete);
+-
+-	dev_info(&sisusb->sisusb_dev->dev, "Disconnected\n");
  }
  
-@@ -1182,6 +1193,10 @@ static int bcm_sendmsg(struct kiocb *ioc
- 	if (!bo->bound)
- 		return -ENOTCONN;
- 
-+	/* check for valid message length from userspace */
-+	if (size < MHSIZ || (size - MHSIZ) % CFSIZ)
-+		return -EINVAL;
-+
- 	/* check for alternative ifindex for this bcm_op */
- 
- 	if (!ifindex && msg->msg_name) {
-@@ -1256,8 +1271,8 @@ static int bcm_sendmsg(struct kiocb *ioc
- 		break;
- 
- 	case TX_SEND:
--		/* we need at least one can_frame */
--		if (msg_head.nframes < 1)
-+		/* we need exactly one can_frame behind the msg head */
-+		if ((msg_head.nframes != 1) || (size != CFSIZ + MHSIZ))
- 			ret = -EINVAL;
- 		else
- 			ret = bcm_tx_send(msg, ifindex, sk);
---- a/net/can/raw.c
-+++ b/net/can/raw.c
-@@ -632,6 +632,9 @@ static int raw_sendmsg(struct kiocb *ioc
- 	} else
- 		ifindex = ro->ifindex;
- 
-+	if (size != sizeof(struct can_frame))
-+		return -EINVAL;
-+
- 	dev = dev_get_by_index(&init_net, ifindex);
- 	if (!dev)
- 		return -ENXIO;
+ static struct usb_device_id sisusb_table [] = {
 
 -- 
