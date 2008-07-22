@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbYGVRPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbYGVRSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753874AbYGVRPx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 13:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbYGVRPq
+	id S1754056AbYGVRSS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 13:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYGVRSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 13:15:46 -0400
-Received: from ns.suse.de ([195.135.220.2]:44897 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 13:18:06 -0400
+Received: from ns.suse.de ([195.135.220.2]:45096 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752365AbYGVRPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 13:15:45 -0400
-Date: Tue, 22 Jul 2008 10:13:46 -0700
+	id S1752229AbYGVRSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 13:18:05 -0400
+Date: Tue, 22 Jul 2008 10:16:06 -0700
 From: Greg KH <gregkh@suse.de>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Hans J. Koch" <hjk@linutronix.de>
-Subject: Re: [PATCH 58/79] UIO: add generic UIO platform driver
-Message-ID: <20080722171346.GA20623@suse.de>
-References: <20080722051805.GA17373@suse.de> <1216703983-21448-58-git-send-email-gregkh@suse.de> <20080722113440.GA28664@digi.com>
+To: "Altobelli, David" <david.altobelli@hp.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 75/79] HP iLO driver
+Message-ID: <20080722171606.GA20669@suse.de>
+References: <20080722051805.GA17373@suse.de> <1216703983-21448-75-git-send-email-gregkh@suse.de> <CF70AA892F109448AEA269483B3A983903C30E04F2@G1W1215.americas.hpqcorp.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080722113440.GA28664@digi.com>
+In-Reply-To: <CF70AA892F109448AEA269483B3A983903C30E04F2@G1W1215.americas.hpqcorp.net>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 01:34:40PM +0200, Uwe Kleine-König wrote:
-> Hi Greg,
+On Tue, Jul 22, 2008 at 05:11:16PM +0000, Altobelli, David wrote:
+> Greg Kroah-Hartman wrote:
+> > diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+> > index 1921b8d..ce67d97 100644
+> > --- a/drivers/misc/Kconfig
+> > +++ b/drivers/misc/Kconfig
+> > @@ -420,4 +420,17 @@ config SGI_XP
+> >           this feature will allow for direct communication between SSIs
+> >           based on a network adapter and DMA messaging.
+> >
+> > +config HP_ILO
+> > +       tristate "Channel interface driver for HP iLO/iLO2 processor"
+> > +       default n
 > 
-> I posted two minor updates to that patch some days ago.
-> 
-> If you don't find them in your mailbox anymore, you can find them at:
-> 
-> 	http://thread.gmane.org/gmane.linux.kernel/705243
-> 
-> IMHO they are obvious and already have Hans' Acked-by.
-> 
-> Can you please take them?
+> Heiko Carstens submitted a Kconfig "depend on PCI" patch to linux-next,
+> and that should be included with this series.  His mail is below.
+> Outlook might well mangle the diff, but that's my fault, not his.
 
-Yes, I'm slowly catching up on stuff right now, I wanted to get the
-patches that had a lot of testing to Linus for -rc1, as that was most
-important at this moment in time.  Your other patches are still in my
-queue for review, should get to them in a few days, but as OSCON is this
-week, I'm not guaranteeing anything...
-
-thanks for your patience,
+Thanks, sorry I missed that one, I'll add it to my queue for the next
+patch series to go to Linus.
 
 greg k-h
