@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbYGVSL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbYGVSMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbYGVSL6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 14:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbYGVSLt
+	id S1754591AbYGVSMr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 14:12:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbYGVSMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 14:11:49 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:37630 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751554AbYGVSLs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 14:11:48 -0400
-Date: Tue, 22 Jul 2008 12:11:32 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Eran Liberty <liberty@extricom.com>
-Cc: eran liberty <eran.liberty@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 2.6.26] PCI: refuse to re-add a device to a bus upon pci_scan_child_bus()
-Message-ID: <20080722181132.GE7337@parisc-linux.org>
-References: <48591941.4070408@extricom.com> <4884E0FB.9010909@extricom.com> <20080721194957.GH24246@parisc-linux.org> <ffc2b1d40807220121r44823a89jf0126bc1f5273443@mail.gmail.com> <20080722114929.GA7337@parisc-linux.org> <4885DD41.9010202@extricom.com> <20080722141327.GB7337@parisc-linux.org> <4885FBF4.6070306@extricom.com> <20080722165241.GD7337@parisc-linux.org> <48861BAC.1080009@extricom.com>
-MIME-Version: 1.0
+	Tue, 22 Jul 2008 14:12:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44977 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751268AbYGVSMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 14:12:39 -0400
+Date: Tue, 22 Jul 2008 14:11:02 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs (part1: use kprobe symbol_name/offset instead of address)
+Message-ID: <20080722181101.GC9508@redhat.com>
+References: <487E8CE4.70105@redhat.com> <1216259391.3358.85.camel@localhost.localdomain> <1216304290.5515.11.camel@localhost.localdomain> <1216313914.5515.25.camel__21144.9282979176$1216314027$gmane$org@localhost.localdomain> <y0m7ibkjrcj.fsf@ton.toronto.redhat.com> <1216325546.5515.63.camel@localhost.localdomain> <20080717202634.GI18295@redhat.com> <1216328769.5515.78.camel@localhost.localdomain> <20080717213355.GJ18295@redhat.com> <20080722140015.37628ea4@bree.surriel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48861BAC.1080009@extricom.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080722140015.37628ea4@bree.surriel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 08:41:00PM +0300, Eran Liberty wrote:
-> >>Do you perceive any down side to my suggested patch?
-> >>It seems (to me) really logical that a device can not and should not be 
-> >>added twice to a pci bus device list.
-> >>    
-> >
-> >The problem is the other side-effects of what you propose.
-> >  
-> Could you elaborate what ominous side-effects you predict?
+Hi -
 
-Look at the consequences of calling fixup_resource() twice on the same
-resource:
+On Tue, Jul 22, 2008 at 02:00:15PM -0400, Rik van Riel wrote:
+> [...]
+> > Yes, that is generally desirable - each case is usually a question of
+> > cost/benefit.  One significant requirement for us is to keep working
+> > with older kernels.
+> 
+> You will have to weigh that against the benefits of making
+> systemtap generally useful for kernel developers [...]
 
-        res->start = (res->start + offset) & mask;
-        res->end = (res->end + offset) & mask;
+Understood & agreed, Rik.  If an issue arises where there is genuine
+conflict between kernel-developer-usability and something else, we'll
+try to solve it favouring the former if at all possible.
 
-You'll add 'offset' to the other resources twice.
+(The kprobes addressing argument cannot reasonably be placed into this
+category.)
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+
+- FChE
