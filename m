@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbYGVWTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbYGVWUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756823AbYGVWTk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 18:19:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbYGVWTc
+	id S1757486AbYGVWUU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 18:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbYGVWUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 18:19:32 -0400
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:49247 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750855AbYGVWTb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 18:19:31 -0400
-Message-ID: <48865CE0.3020605@euromail.se>
-Date: Wed, 23 Jul 2008 00:19:12 +0200
-From: Henrik Rydberg <rydberg@euromail.se>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Tue, 22 Jul 2008 18:20:07 -0400
+Received: from mga14.intel.com ([143.182.124.37]:21045 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752182AbYGVWUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 18:20:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,233,1215414000"; 
+   d="scan'208";a="23455342"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: [PATCH] pci: proc.c sparse endian annotations
+Date: Tue, 22 Jul 2008 15:20:02 -0700
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1216335450.6029.45.camel@brick> <200807221437.01847.jesse.barnes@intel.com> <1216762847.13328.19.camel@brick>
+In-Reply-To: <1216762847.13328.19.camel@brick>
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       robfitz@273k.net, akpm@osdl.org, jikos@jikos.cz, vojtech@suse.cz,
-       dmonakhov@openvz.org, johannes@sipsolutions.net,
-       Oliver Neukum <oliver@neukum.org>, stern@rowland.harvard.edu
-Subject: Re: [PATCH] linux-input: bcm5974-0.57: mode-switch to atp_open,	cleanup
- bug fixed
-References: <1216466049.6238.0.camel@alnilam> <20080720051016.GA7853@anvil.corenet.prv> <1216688142.4768.26.camel@alnilam> <20080722093606.ZZRA012@mailhub.coreip.homeip.net>
-In-Reply-To: <20080722093606.ZZRA012@mailhub.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: 83.248.35.11
-X-ACL-Warn: Too high rate of unknown addresses received from you
-X-Scan-Result: No virus found in message 1KLQCf-0001ZB-7e.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KLQCf-0001ZB-7e 0483749e822147b4181f0d359042db02
+Content-Disposition: inline
+Message-Id: <200807221520.02480.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry,
+On Tuesday, July 22, 2008 2:40 pm Harvey Harrison wrote:
+> drivers/pci/proc.c:91:3: warning: cast from restricted __le16
+> drivers/pci/proc.c:100:3: warning: cast from restricted __le32
+> drivers/pci/proc.c:109:3: warning: cast from restricted __le16
+> drivers/pci/proc.c:161:40: warning: cast to restricted __le16
+> drivers/pci/proc.c:170:41: warning: cast to restricted __le32
+> drivers/pci/proc.c:179:40: warning: cast to restricted __le16
+>
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-thank you so much for your answers! I would like to send you
-a non-patch of the updated driver shortly if I may; it will
-require more testing before submission, but having your blessing
-first should make things turn around faster.
+Applied to for-linus, thanks.
 
-> >
-> > 3. From the state (!opened,suspended), calling open gets us to what
-> > state?
-> >
-
-Depens on the kind of suspend - manual suspend will cause open to
-fail. Autosuspend (if driver implements it) should resume the device.
-
-[...]
-
->> 5. From the state (opened,suspended), calling resume fails. What state
->> are we in?
->>
-> 
-> Screwed up ;) From the driver POV still (opened, suspended) I think.
-> 
-
-I feel a bit reluctant to implement this particular behavior, since it
-will leave the device in a bad state; if resume fails and stays suspended,
-the device cannot later be opened according to 3). What if a failed
-resume leaves the device in state (!opened,!suspended)? It could then
-later be reopened.
-
-Cheers,
-Henrik Rydberg
-
+Jesse
