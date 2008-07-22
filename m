@@ -1,125 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYGVSk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYGVSj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754453AbYGVSk1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 14:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbYGVSjO
+	id S1756197AbYGVSj4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 14:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbYGVSit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 14:39:14 -0400
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:55286 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754102AbYGVSjL (ORCPT
+	Tue, 22 Jul 2008 14:38:49 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:28151 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755710AbYGVSis (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 14:39:11 -0400
-Message-ID: <4886294C.4060905@lwfinger.net>
-Date: Tue, 22 Jul 2008 13:39:08 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
-CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: Kernel WARNING: at net/core/dev.c:1330 __netif_schedule+0x2c/0x98()
-References: <4885104A.2070201@lwfinger.net>	<20080721.161517.27161039.davem@davemloft.net>	<48857F74.2040406@lwfinger.net> <20080722.043220.247312412.davem@davemloft.net> <4885DA49.50703@lwfinger.net> <48860D4B.8070003@lwfinger.net> <488616C0.8070505@trash.net>
-In-Reply-To: <488616C0.8070505@trash.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jul 2008 14:38:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
+         :sender;
+        b=AxrP6pWFpvOpwk7XxRiMQD97G77kOPGttG92Aq2zqs2KfhfL+S5jzvKp5oclhH8ZlR
+         fVwlxZvYK7PMMU/nXnDji+OhnTCmVWgDfqIJSO8UbZt9jfLC+ykTjPRmaSi8HePLyhIu
+         Rz/JqodmoDKlcTAC4eaCVl2HOoX67lZPcRf8c=
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: penberg@cs.helsinki.fi
+Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       rdunlap@xenotime.net, mpm@selenic.com
+Subject: [RFC PATCH 4/4] kmemtrace: SLOB hooks.
+Date: Tue, 22 Jul 2008 21:36:48 +0300
+Message-Id: <1216751808-14428-5-git-send-email-eduard.munteanu@linux360.ro>
+X-Mailer: git-send-email 1.5.6.1
+In-Reply-To: <1216751808-14428-4-git-send-email-eduard.munteanu@linux360.ro>
+References: <1216751808-14428-1-git-send-email-eduard.munteanu@linux360.ro>
+ <1216751808-14428-2-git-send-email-eduard.munteanu@linux360.ro>
+ <1216751808-14428-3-git-send-email-eduard.munteanu@linux360.ro>
+ <1216751808-14428-4-git-send-email-eduard.munteanu@linux360.ro>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy wrote:
-> Larry Finger wrote:
->>
->> =============================================
->> [ INFO: possible recursive locking detected ]
->> 2.6.26-Linus-git-05752-g93ded9b #49
-> 
->                    ^^^^^^^^^^^^^^ dirty?
-> 
-> This kernel is not using the patches we sent.
+This adds hooks for the SLOB allocator, to allow tracing with kmemtrace.
 
-No, but they didn't make any difference. I tried with all 3 applied, then backed 
-them out one by one. That was the state when I posted before.
+Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+---
+ include/linux/slob_def.h |    9 +++++----
+ mm/slob.c                |   37 +++++++++++++++++++++++++++++++------
+ 2 files changed, 36 insertions(+), 10 deletions(-)
 
-Here are the dumps with all 3 patches applied:
-
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.26-Linus-05752-g93ded9b-dirty #53
----------------------------------------------
-b43/1997 is trying to acquire lock:
-  (_xmit_IEEE80211#2){-...}, at: [<ffffffffa028f322>] 
-ieee80211_scan_completed+0x130/0x2e1 [mac80211]
-
-but task is already holding lock:
-  (_xmit_IEEE80211#2){-...}, at: [<ffffffffa028f322>] 
-ieee80211_scan_completed+0x130/0x2e1 [mac80211]
-
-other info that might help us debug this:
-3 locks held by b43/1997:
-  #0:  ((name)){--..}, at: [<ffffffff80245185>] run_workqueue+0xa7/0x1f2
-  #1:  (&(&local->scan_work)->work){--..}, at: [<ffffffff80245185>] 
-run_workqueue+0xa7/0x1f2
-  #2:  (_xmit_IEEE80211#2){-...}, at: [<ffffffffa028f322>] 
-ieee80211_scan_completed+0x130/0x2e1 [mac80211]
-
-stack backtrace:
-Pid: 1997, comm: b43 Not tainted 2.6.26-Linus-05752-g93ded9b-dirty #53
-
-Call Trace:
-  [<ffffffff80255616>] __lock_acquire+0xb7b/0xecc
-  [<ffffffff8040c9a0>] __mutex_unlock_slowpath+0x100/0x10b
-  [<ffffffff802559b8>] lock_acquire+0x51/0x6a
-  [<ffffffffa028f322>] ieee80211_scan_completed+0x130/0x2e1 [mac80211]
-  [<ffffffff8040dc08>] _spin_lock+0x1e/0x27
-  [<ffffffffa028f322>] ieee80211_scan_completed+0x130/0x2e1 [mac80211]
-  [<ffffffffa028f6ce>] ieee80211_sta_scan_work+0x0/0x1b8 [mac80211]
-  [<ffffffff802451ce>] run_workqueue+0xf0/0x1f2
-  [<ffffffff802453ab>] worker_thread+0xdb/0xea
-  [<ffffffff80248a5f>] autoremove_wake_function+0x0/0x2e
-  [<ffffffff802452d0>] worker_thread+0x0/0xea
-  [<ffffffff80248731>] kthread+0x47/0x73
-  [<ffffffff8040d7b1>] trace_hardirqs_on_thunk+0x3a/0x3f
-  [<ffffffff8020ceb9>] child_rip+0xa/0x11
-  [<ffffffff8020c4ef>] restore_args+0x0/0x30
-  [<ffffffff802486c5>] kthreadd+0x19a/0x1bf
-  [<ffffffff802486ea>] kthread+0x0/0x73
-  [<ffffffff8020ceaf>] child_rip+0x0/0x11
-
-------------[ cut here ]------------
-WARNING: at net/core/dev.c:1344 __netif_schedule+0x2c/0x98()
-Modules linked in: af_packet rfkill_input nfs lockd nfs_acl sunrpc 
-cpufreq_conservative cpufreq_userspace cpufreq_powersave powernow_k8 fuse loop 
-dm_mod arc4 ecb crypto_blkcipher b43 firmware_class rfkill mac80211 
-snd_hda_intel cfg80211 led_class input_polldev k8temp snd_pcm snd_timer battery 
-hwmon sr_mod forcedeth ssb joydev ac button serio_raw cdrom snd soundcore 
-snd_page_alloc sg sd_mod ohci_hcd ehci_hcd usbcore edd fan thermal processor 
-ext3 mbcache jbd pata_amd ahci libata scsi_mod dock
-Pid: 1997, comm: b43 Not tainted 2.6.26-Linus-05752-g93ded9b-dirty #53
-
-Call Trace:
-  [<ffffffff80235d49>] warn_on_slowpath+0x51/0x8c
-  [<ffffffff8040d7b1>] trace_hardirqs_on_thunk+0x3a/0x3f
-  [<ffffffff803a2413>] __netif_schedule+0x2c/0x98
-  [<ffffffffa028f44d>] ieee80211_scan_completed+0x25b/0x2e1 [mac80211]
-  [<ffffffffa028f6ce>] ieee80211_sta_scan_work+0x0/0x1b8 [mac80211]
-  [<ffffffff802451ce>] run_workqueue+0xf0/0x1f2
-  [<ffffffff802453ab>] worker_thread+0xdb/0xea
-  [<ffffffff80248a5f>] autoremove_wake_function+0x0/0x2e
-  [<ffffffff802452d0>] worker_thread+0x0/0xea
-  [<ffffffff80248731>] kthread+0x47/0x73
-  [<ffffffff8040d7b1>] trace_hardirqs_on_thunk+0x3a/0x3f
-  [<ffffffff8020ceb9>] child_rip+0xa/0x11
-  [<ffffffff8020c4ef>] restore_args+0x0/0x30
-  [<ffffffff802486c5>] kthreadd+0x19a/0x1bf
-  [<ffffffff802486ea>] kthread+0x0/0x73
-  [<ffffffff8020ceaf>] child_rip+0x0/0x11
-
----[ end trace 88fab857dc2a4242 ]---
-
-Larry
-
-
-
+diff --git a/include/linux/slob_def.h b/include/linux/slob_def.h
+index 59a3fa4..0ec00b3 100644
+--- a/include/linux/slob_def.h
++++ b/include/linux/slob_def.h
+@@ -3,14 +3,15 @@
+ 
+ void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
+ 
+-static inline void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
++static __always_inline void *kmem_cache_alloc(struct kmem_cache *cachep,
++					      gfp_t flags)
+ {
+ 	return kmem_cache_alloc_node(cachep, flags, -1);
+ }
+ 
+ void *__kmalloc_node(size_t size, gfp_t flags, int node);
+ 
+-static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
++static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+ {
+ 	return __kmalloc_node(size, flags, node);
+ }
+@@ -23,12 +24,12 @@ static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+  * kmalloc is the normal method of allocating memory
+  * in the kernel.
+  */
+-static inline void *kmalloc(size_t size, gfp_t flags)
++static __always_inline void *kmalloc(size_t size, gfp_t flags)
+ {
+ 	return __kmalloc_node(size, flags, -1);
+ }
+ 
+-static inline void *__kmalloc(size_t size, gfp_t flags)
++static __always_inline void *__kmalloc(size_t size, gfp_t flags)
+ {
+ 	return kmalloc(size, flags);
+ }
+diff --git a/mm/slob.c b/mm/slob.c
+index a3ad667..23375ed 100644
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -65,6 +65,7 @@
+ #include <linux/module.h>
+ #include <linux/rcupdate.h>
+ #include <linux/list.h>
++#include <linux/kmemtrace.h>
+ #include <asm/atomic.h>
+ 
+ /*
+@@ -463,27 +464,38 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
+ {
+ 	unsigned int *m;
+ 	int align = max(ARCH_KMALLOC_MINALIGN, ARCH_SLAB_MINALIGN);
++	void *ret;
+ 
+ 	if (size < PAGE_SIZE - align) {
+ 		if (!size)
+ 			return ZERO_SIZE_PTR;
+ 
+ 		m = slob_alloc(size + align, gfp, align, node);
++
+ 		if (!m)
+ 			return NULL;
+ 		*m = size;
+-		return (void *)m + align;
++		ret = (void *)m + align;
++
++		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
++					  _RET_IP_, ret,
++					  size, size + align, gfp, node);
+ 	} else {
+-		void *ret;
++		unsigned int order = get_order(size);
+ 
+-		ret = slob_new_page(gfp | __GFP_COMP, get_order(size), node);
++		ret = slob_new_page(gfp | __GFP_COMP, order, node);
+ 		if (ret) {
+ 			struct page *page;
+ 			page = virt_to_page(ret);
+ 			page->private = size;
+ 		}
+-		return ret;
++
++		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
++					  _RET_IP_, ret,
++					  size, PAGE_SIZE << order, gfp, node);
+ 	}
++
++	return ret;
+ }
+ EXPORT_SYMBOL(__kmalloc_node);
+ 
+@@ -501,6 +513,8 @@ void kfree(const void *block)
+ 		slob_free(m, *m + align);
+ 	} else
+ 		put_page(&sp->page);
++
++	kmemtrace_mark_free(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, block);
+ }
+ EXPORT_SYMBOL(kfree);
+ 
+@@ -569,10 +583,19 @@ void *kmem_cache_alloc_node(struct kmem_cache *c, gfp_t flags, int node)
+ {
+ 	void *b;
+ 
+-	if (c->size < PAGE_SIZE)
++	if (c->size < PAGE_SIZE) {
+ 		b = slob_alloc(c->size, flags, c->align, node);
+-	else
++		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE,
++					  _RET_IP_, b, c->size,
++					  SLOB_UNITS(c->size) * SLOB_UNIT,
++					  flags, node);
++	} else {
+ 		b = slob_new_page(flags, get_order(c->size), node);
++		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE,
++					  _RET_IP_, b, c->size,
++					  PAGE_SIZE << get_order(c->size),
++					  flags, node);
++	}
+ 
+ 	if (c->ctor)
+ 		c->ctor(c, b);
+@@ -608,6 +631,8 @@ void kmem_cache_free(struct kmem_cache *c, void *b)
+ 	} else {
+ 		__kmem_cache_free(b, c->size);
+ 	}
++
++	kmemtrace_mark_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, b);
+ }
+ EXPORT_SYMBOL(kmem_cache_free);
+ 
+-- 
+1.5.6.1
 
