@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbYGVXa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbYGVXbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759471AbYGVXa7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756593AbYGVXXF
+	id S1759504AbYGVXbX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757270AbYGVXXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:23:05 -0400
-Received: from mx2.suse.de ([195.135.220.15]:58196 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 19:23:08 -0400
+Received: from mx1.suse.de ([195.135.220.2]:53612 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756200AbYGVXXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:23:03 -0400
-Date: Tue, 22 Jul 2008 16:17:10 -0700
+	id S1756968AbYGVXXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:23:05 -0400
+Date: Tue, 22 Jul 2008 16:17:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Alan Cox <alan@redhat.com>
-Subject: [patch 37/47] serial8250: sanity check nr_uarts on all paths.
-Message-ID: <20080722231710.GL8282@suse.de>
+       Jaya Kumar <jayakumar.lkml@gmail.com>,
+       Bernard Blackham <bernard@largestprime.net>
+Subject: [patch 38/47] fbdev: bugfix for multiprocess defio
+Message-ID: <20080722231713.GM8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="serial8250-sanity-check-nr_uarts-on-all-paths.patch"
+Content-Disposition: inline; filename="fbdev-bugfix-for-multiprocess-defio.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,40 +40,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Eric W. Biederman <ebiederm@xmission.com>
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
 
-commit 05d81d2222beec7b63ac8c1c8cdb5bb4f82c2bad upstream
+commit f31ad92f34913043cf008d6e479e92dfbaf02df1 upstream
 
-I had 8250.nr_uarts=16 in the boot line of a test kernel and I had a weird
-mysterious crash in sysfs.  After taking an in-depth look I realized that
-CONFIG_SERIAL_8250_NR_UARTS was set to 4 and I was walking off the end of
-the serial8250_ports array.
+This patch is a bugfix for how defio handles multiple processes manipulating
+the same framebuffer.
 
-Ouch!!!
+Thanks to Bernard Blackham for identifying this bug.
 
-Don't let this happen to someone else.
+It occurs when two applications mmap the same framebuffer and concurrently
+write to the same page.  Normally, this doesn't occur since only a single
+process mmaps the framebuffer.  The symptom of the bug is that the mapping
+applications will hang.  The cause is that defio incorrectly tries to add the
+same page twice to the pagelist.  The solution I have is to walk the pagelist
+and check for a duplicate before adding.  Since I needed to walk the pagelist,
+I now also keep the pagelist in sorted order.
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Acked-by: Alan Cox <alan@redhat.com>
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: Bernard Blackham <bernard@largestprime.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/8250.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/video/fb_defio.c |   20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2564,6 +2564,9 @@ static struct console serial8250_console
- 
- static int __init serial8250_console_init(void)
+--- a/drivers/video/fb_defio.c
++++ b/drivers/video/fb_defio.c
+@@ -74,6 +74,7 @@ static int fb_deferred_io_mkwrite(struct
  {
-+	if (nr_uarts > UART_NR)
-+		nr_uarts = UART_NR;
+ 	struct fb_info *info = vma->vm_private_data;
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
++	struct page *cur;
+ 
+ 	/* this is a callback we get when userspace first tries to
+ 	write to the page. we schedule a workqueue. that workqueue
+@@ -83,7 +84,24 @@ static int fb_deferred_io_mkwrite(struct
+ 
+ 	/* protect against the workqueue changing the page list */
+ 	mutex_lock(&fbdefio->lock);
+-	list_add(&page->lru, &fbdefio->pagelist);
 +
- 	serial8250_isa_init_ports();
- 	register_console(&serial8250_console);
- 	return 0;
++	/* we loop through the pagelist before adding in order
++	to keep the pagelist sorted */
++	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
++		/* this check is to catch the case where a new
++		process could start writing to the same page
++		through a new pte. this new access can cause the
++		mkwrite even when the original ps's pte is marked
++		writable */
++		if (unlikely(cur == page))
++			goto page_already_added;
++		else if (cur->index > page->index)
++			break;
++	}
++
++	list_add_tail(&page->lru, &cur->lru);
++
++page_already_added:
+ 	mutex_unlock(&fbdefio->lock);
+ 
+ 	/* come back after delay to process the deferred IO */
 
 -- 
