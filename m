@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755784AbYGVAZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbYGVAZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755784AbYGVAZj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 20:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbYGVAZb
+	id S1756176AbYGVAZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 20:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbYGVAZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 20:25:31 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:51554 "EHLO smtps.tip.net.au"
+	Mon, 21 Jul 2008 20:25:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58024 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754902AbYGVAZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 20:25:31 -0400
-Date: Tue, 22 Jul 2008 10:25:20 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>, ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] serial: fix struct uart_info change fallout
-Message-Id: <20080722102520.ca801ab5.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	id S1752351AbYGVAZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 20:25:48 -0400
+Subject: Re: request for comment: generic kernel interface for malware
+	vendors
+From: Eric Paris <eparis@redhat.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: malware-list@lists.printk.net, linux-kernel@vger.kernel.org
+In-Reply-To: <200807212014.17296.borntraeger@de.ibm.com>
+References: <1216613887.2960.18.camel@localhost.localdomain>
+	 <200807212014.17296.borntraeger@de.ibm.com>
+Content-Type: text/plain
+Date: Mon, 21 Jul 2008 20:23:39 -0400
+Message-Id: <1216686219.3594.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus, Alan,
+On Mon, 2008-07-21 at 20:14 +0200, Christian Borntraeger wrote:
+> Am Montag, 21. Juli 2008 schrieb Eric Paris:
+> > First I'd like to thank Sophos who stepped up and originally wrote a lot
+> > of this code.  They might not recognize it since I've gotten my hands on
+> > it, but they were nice enough to get the ball rolling by giving me some
+> > GPL code which addressed near every request people on the malware list
+> > had.
+> 
+> I have not looked at the code, but if I remember correctly there was another 
+> GPLed code for file access scanning. It was called dazuko. Google gave me  
+> http://en.wikipedia.org/wiki/Dazuko
+> 
+> Maybe you can get some ideas from there as well?
 
-Today's linux-next (actually just Linus' tree) build (powerpc
-ppc64_defconfig) failed like this:
+Maybe ideas, but it works by disabling mandatory access controls.  No
+SELinux, no AppArmor, no SMACK, no TOMOYO, and therefore a non-starter.
 
-drivers/serial/serial_txx9.c: In function 'receive_chars':
-drivers/serial/serial_txx9.c:275: error: 'struct uart_info' has no member named 'tty'
-drivers/serial/icom.c: In function 'recv_interrupt':
-drivers/serial/icom.c:733: error: 'struct uart_info' has no member named 'tty'
+I certainly don't think its a good idea to take a box that I am using to
+try to increase organization wide security and have to lower its
+individual security properties.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/serial/icom.c        |    2 +-
- drivers/serial/serial_txx9.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+-Eric
 
-diff --git a/drivers/serial/icom.c b/drivers/serial/icom.c
-index 9c2df5c..2b7531d 100644
---- a/drivers/serial/icom.c
-+++ b/drivers/serial/icom.c
-@@ -730,7 +730,7 @@ static void xmit_interrupt(u16 port_int_reg, struct icom_port *icom_port)
- static void recv_interrupt(u16 port_int_reg, struct icom_port *icom_port)
- {
- 	short int count, rcv_buff;
--	struct tty_struct *tty = icom_port->uart_port.info->tty;
-+	struct tty_struct *tty = icom_port->uart_port.info->port.tty;
- 	unsigned short int status;
- 	struct uart_icount *icount;
- 	unsigned long offset;
-diff --git a/drivers/serial/serial_txx9.c b/drivers/serial/serial_txx9.c
-index 7ad2192..8fcb4c5 100644
---- a/drivers/serial/serial_txx9.c
-+++ b/drivers/serial/serial_txx9.c
-@@ -272,7 +272,7 @@ static void serial_txx9_initialize(struct uart_port *port)
- static inline void
- receive_chars(struct uart_txx9_port *up, unsigned int *status)
- {
--	struct tty_struct *tty = up->port.info->tty;
-+	struct tty_struct *tty = up->port.info->port.tty;
- 	unsigned char ch;
- 	unsigned int disr = *status;
- 	int max_count = 256;
--- 
-1.5.6.2
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
