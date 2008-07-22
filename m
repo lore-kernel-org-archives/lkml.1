@@ -1,105 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbYGVChh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbYGVCm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756179AbYGVChh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 22:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbYGVCh3
+	id S1755877AbYGVCm0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 22:42:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbYGVCmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 22:37:29 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2827 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750718AbYGVCh2 (ORCPT
+	Mon, 21 Jul 2008 22:42:18 -0400
+Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:34676 "HELO
+	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753866AbYGVCmR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 22:37:28 -0400
-Date: Mon, 21 Jul 2008 22:37:25 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Robert Hancock <hancockr@shaw.ca>
-cc: Tomas Styblo <tripie@cpan.org>, <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>, <usb-storage@lists.one-eyed-alien.net>
-Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device
- 152d:2338
-In-Reply-To: <4884E585.2050104@shaw.ca>
-Message-ID: <Pine.LNX.4.44L0.0807212232001.5882-100000@netrider.rowland.org>
+	Mon, 21 Jul 2008 22:42:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=BryVxdfYGrN5qSxhG/RSxATyG6curzu7x/gt8pbPoA1HLCZRxyqxIizKwU7LeGgG+tmetoc72ZKJzdIvDFQ+zIbn996J/4nPWN/UZCsqvG9G8hn3lc5CeZVgZypIgG62zoLpzIPluZqoFqejNRUYxp5aao80f1ZY8GSqc+eJNvc=  ;
+X-YMail-OSG: jtjDpbkVM1nz3aodUtJIGmoL29O6AhhTDw18Os3Q9w4fXXeOLWKE1UzMyUHUeKugagshcIPkq5VVLxGs6hMbeXUXObnfvcsyvcMxaQjOOw--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Russ Anderson <rja@sgi.com>
+Subject: Re: [PATCH 1/2] mm: Avoid putting a bad page back on the LRU v7
+Date: Tue, 22 Jul 2008 12:42:10 +1000
+User-Agent: KMail/1.9.5
+Cc: mingo@elte.hu, tglx@linutronix.de, Tony Luck <tony.luck@intel.com>,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+References: <20080718203606.GE29621@sgi.com>
+In-Reply-To: <20080718203606.GE29621@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807221242.10552.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Jul 2008, Robert Hancock wrote:
+On Saturday 19 July 2008 06:36, Russ Anderson wrote:
+> [PATCH 1/2] mm: Avoid putting a bad page back on the LRU v7
+>
+> Prevent a page with a physical memory error from being placed back
+> on the LRU.  A new page flag (PG_memerror) is added if
+> CONFIG_PAGEFLAGS_EXTENDED is defined.
+>
+> Signed-off-by: Russ Anderson <rja@sgi.com>
+> Reviewed-by: Christoph Lameter <clameter@sgi.com>
+>
+> ---
+>  include/linux/page-flags.h |   18 ++++++++++++++++--
+>  mm/migrate.c               |   31 ++++++++++++++++++++++++++++++-
+>  mm/page_alloc.c            |   13 ++++++++-----
+>  3 files changed, 54 insertions(+), 8 deletions(-)
+>
+> Index: linux/mm/page_alloc.c
+> ===================================================================
+> --- linux.orig/mm/page_alloc.c	2008-07-18 15:15:48.000000000 -0500
+> +++ linux/mm/page_alloc.c	2008-07-18 15:16:09.000000000 -0500
+> @@ -602,10 +602,10 @@ static int prep_new_page(struct page *pa
+>  		bad_page(page);
+>
+>  	/*
+> -	 * For now, we report if PG_reserved was found set, but do not
+> -	 * clear it, and do not allocate the page: as a safety net.
+> +	 * For now, we report if PG_reserved or PG_memerror was found set, but
+> +	 * do not clear it, and do not allocate the page: as a safety net.
+>  	 */
+> -	if (PageReserved(page))
+> +	if (PageReserved(page) || PageMemError(page))
+>  		return 1;
+>
+>  	page->flags &= ~(1 << PG_uptodate | 1 << PG_error | 1 << PG_reclaim |
+> @@ -2475,8 +2475,11 @@ static void setup_zone_migrate_reserve(s
+>  			continue;
+>  		page = pfn_to_page(pfn);
+>
+> -		/* Blocks with reserved pages will never free, skip them. */
+> -		if (PageReserved(page))
+> +		/*
+> +		 * Blocks with reserved pages or memory errors will never
+> +		 * free, skip them.
+> +		 */
+> +		if (PageReserved(page) || PageMemError(page))
+>  			continue;
+>
+>  		block_migratetype = get_pageblock_migratetype(page);
 
-> (adding CCs)
-> 
-> Tomas Styblo wrote:
-> > 
-> > Hello,
-> > 
-> > this message includes a patch that provides a workaround for
-> > a silent data corruption bug caused by incorrect error handling in
-> > the JMicron JM20337 Hi-Speed USB to SATA & PATA Combo Bridge chipset,
-> > USB device id 152d:2338.
+I don't like adding more branches like this into fastpaths like this. It
+would make a lot more sense to me if you just had some private module that
+does the job of isolating the page from the lru and/or elevating their
+refcount so that they do not get put back on freelists.
 
-The two of you should read through
+Migration may need something to perhaps allow migrations of pages not on
+LRU lists but have PageMemError set which is OK, but I really don't like
+adding code and branches to page_alloc.c if possible....
 
-	http://bugzilla.kernel.org/show_bug.cgi?id=9638
-
-which concerns this very problem.
-
-> > - the problem occurs quite rarely, approx. once for 
-> >   every 20 GB of transfered data during heavy load
-> > 
-> > - it seems that only read operations are affected
-> > 
-> > - the problem is accompanied by these messages in syslog each
-> >   time it occurs:
-> > 
-> > May 17 15:06:56 kernel: sd 6:0:0:0: [sdb] Sense Key : 0x0 [current] 
-> > May 17 15:06:56 kernel: sd 6:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
-> > 
-> > - the bug is not detected as an error and incorrect data is returned, 
-> >   causing insidious data corruption
-> > 
-> > - tested with 3 external disk enclosures (Akasa Integral AK-ENP2SATA-BL) 
-> >   with different disks on different computers, with kernel 2.6.24 and 2.6.25
-> > 
-> > - the patch provides a crude workaround by detecting the error condition
-> >   and retrying the faulty transfer
-> > 
-> > 
-> > The fix needs a review as I don't know much about USB and SCSI.  
-> > It's possible that this approach is wrong and that the problem should
-> > be fixed somewhere else.
-> > 
-> > There are other problems with this chipset that make it necessary 
-> > to disconnect and power off the enclosure from time to time, but at least
-> > there's no data corruption anymore.
-> 
-> I'm not sure this is a good approach. More that this code right above in 
-> usb_stor_invoke_transport, which your code undoes the effect of for this 
-> device, doesn't seem right:
-> 
-> 	/* If things are really okay, then let's show that.  Zero
-> 	 * out the sense buffer so the higher layers won't realize
-> 	 * we did an unsolicited auto-sense. */
-> 	if (result == USB_STOR_TRANSPORT_GOOD &&
-> 		/* Filemark 0, ignore EOM, ILI 0, no sense */
-> 			(srb->sense_buffer[2] & 0xaf) == 0 &&
-> 		/* No ASC or ASCQ */
-> 			srb->sense_buffer[12] == 0 &&
-> 			srb->sense_buffer[13] == 0) {
-> 		srb->result = SAM_STAT_GOOD;
-> 		srb->sense_buffer[0] = 0x0;
-> 	}
-> 
-> So if the transport initially gets a failure, but then request sense 
-> doesn't show any error, we just go "hmm, guess it was ok after all". 
-> That seems kind of dangerous, I shouldn't think we should assume a 
-
-No, no -- you have misread the code.  If the transport initially got a 
-failure then result would be equal to USB_STOR_TRANSPORT_FAILED, not 
-USB_STOR_TRANSPORT_GOOD, so this code wouldn't run.
-
-> If you just delete that code above, does the corruption go away?
-
-Alan Stern
-
+Thanks,
+Nick
