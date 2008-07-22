@@ -1,161 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752913AbYGVHY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYGVH21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752913AbYGVHY0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 03:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYGVHYP
+	id S1753409AbYGVH21 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 03:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbYGVH2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 03:24:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51535 "EHLO mx2.mail.elte.hu"
+	Tue, 22 Jul 2008 03:28:19 -0400
+Received: from vuizook.err.no ([194.24.252.247]:52272 "EHLO vuizook.err.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750781AbYGVHYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 03:24:13 -0400
-Date: Tue, 22 Jul 2008 09:23:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, jgarzik@redhat.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [build failure] hp-plus.c: (.text+0xd7c1a): undefined
-	reference to `ei_close'
-Message-ID: <20080722072334.GA25241@elte.hu>
-References: <20080721.233512.128618365.anemo@mba.ocn.ne.jp> <20080721191519.GA15843@elte.hu> <20080721214258.787a67ca@lxorguk.ukuu.org.uk>
+	id S1751212AbYGVH2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 03:28:18 -0400
+X-Greylist: delayed 581 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Jul 2008 03:28:18 EDT
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] pl2023: Remove USB id (4348:5523) handled by ch341
+Mail-Copies-To: never
+From: Tollef Fog Heen <tfheen@err.no>
+Date: Tue, 22 Jul 2008 09:28:05 +0200
+Message-ID: <871w1mwf7e.fsf@xoog.err.no>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080721214258.787a67ca@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Patch against current git as of last night (so 2.6.26)
 
-> On Mon, 21 Jul 2008 21:15:19 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-> > 
-> > > Since commit 055e5110ae0c0c1176a75b78d789294f2ff2f7af ("8390: Split
-> > > 8390 support into a pausing and a non pausing driver core"), ne.c
-> > > cause this build failure:
-> > > 
-> > > drivers/built-in.o: In function `ne_probe1':
-> > > ne.c:(.init.text+0x2464): undefined reference to `NS8390_init'
-> > > drivers/built-in.o: In function `ne_block_output':
-> > > ne.c:(.text.ne_block_output+0x1b0): undefined reference to `NS8390_init'
-> > 
-> > i just triggered a similar build failure, but in a different 
-> > ne2000-derived file:
-> 
-> I'll take a look. Various odd things happened with the Makefile for 
-> this patch and the follow up fixes. If the followup didn't get applied 
-> then that might explain the breakage.
+USB ID 4348:5523 is handled by the ch341 driver.  Remove it from the
+pl2023 driver.
 
-ok. I also got:
+Reverts 002e8f2c80c6be76bb312940bc278fc10b2b2487.
 
- drivers/built-in.o: In function `hp_probe1':
- hp.c:(.init.text+0xa280): undefined reference to `NS8390_init'
+Signed-off-by: Tollef Fog Heen <tfheen@err.no>
 
-so i suspect most of the 8390p.o library using ne2000 drivers are 
-affected?
-
-i think instead of a manual review i think this is better to fix all the 
-problems:
-
-cd drivers/net/; sed -i 's/NS8390_/NS8390p_/g' \
-  $(grep -l NS8390_ $(grep 8390p.o Makefile | cut -d' ' -f3 | \
-     sed 's/.o$/.c/g'))
-
-find the full tested patch below. It solves the build failures i 
-triggered so far.
-
-	Ingo
-
-------------->
-commit 79f2b8594df44a4f3f11085df656883525b74abd
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Tue Jul 22 09:19:31 2008 +0200
-
-    net 8390p: fix interface usage
-    
-    various drivers were using the wrong APIs:
-    
-     drivers/built-in.o: In function `hp_probe1':
-     hp.c:(.init.text+0xa280): undefined reference to `NS8390_init'
-    
-    fixed via:
-    
-    cd drivers/net/; sed -i 's/NS8390_/NS8390p_/g' \
-      $(grep -l NS8390_ $(grep 8390p.o Makefile | cut -d' ' -f3 | \
-          sed 's/.o$/.c/g'))
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/net/hp-plus.c |    2 +-
- drivers/net/hp.c      |    2 +-
- drivers/net/ne.c      |    2 +-
- drivers/net/ne2.c     |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/hp-plus.c b/drivers/net/hp-plus.c
-index c2c4f49..8239939 100644
---- a/drivers/net/hp-plus.c
-+++ b/drivers/net/hp-plus.c
-@@ -262,7 +262,7 @@ static int __init hpp_probe1(struct net_device *dev, int ioaddr)
- 	}
+diff --git a/drivers/usb/serial/pl2303.c b/drivers/usb/serial/pl2303.c
+index 2a0dd1b..63287ad 100644
+--- a/drivers/usb/serial/pl2303.c
++++ b/drivers/usb/serial/pl2303.c
+@@ -89,7 +89,6 @@ static struct usb_device_id id_table [] = {
+ 	{ USB_DEVICE(ALCOR_VENDOR_ID, ALCOR_PRODUCT_ID) },
+ 	{ USB_DEVICE(WS002IN_VENDOR_ID, WS002IN_PRODUCT_ID) },
+ 	{ USB_DEVICE(COREGA_VENDOR_ID, COREGA_PRODUCT_ID) },
+-	{ USB_DEVICE(HL340_VENDOR_ID, HL340_PRODUCT_ID) },
+ 	{ USB_DEVICE(YCCABLE_VENDOR_ID, YCCABLE_PRODUCT_ID) },
+ 	{ }					/* Terminating entry */
+ };
+diff --git a/drivers/usb/serial/pl2303.h b/drivers/usb/serial/pl2303.h
+index 6ac3bbc..a3bd039 100644
+--- a/drivers/usb/serial/pl2303.h
++++ b/drivers/usb/serial/pl2303.h
+@@ -107,10 +107,6 @@
+ #define COREGA_VENDOR_ID	0x07aa
+ #define COREGA_PRODUCT_ID	0x002a
  
- 	outw(Perf_Page, ioaddr + HP_PAGING);
--	NS8390_init(dev, 0);
-+	NS8390p_init(dev, 0);
- 	/* Leave the 8390 and HP chip reset. */
- 	outw(inw(ioaddr + HPP_OPTION) & ~EnableIRQ, ioaddr + HPP_OPTION);
- 
-diff --git a/drivers/net/hp.c b/drivers/net/hp.c
-index 8281209..0a8c649 100644
---- a/drivers/net/hp.c
-+++ b/drivers/net/hp.c
-@@ -389,7 +389,7 @@ static void __init
- hp_init_card(struct net_device *dev)
- {
- 	int irq = dev->irq;
--	NS8390_init(dev, 0);
-+	NS8390p_init(dev, 0);
- 	outb_p(irqmap[irq&0x0f] | HP_RUN,
- 		   dev->base_addr - NIC_OFFSET + HP_CONFIGURE);
- 	return;
-diff --git a/drivers/net/ne.c b/drivers/net/ne.c
-index 3df231d..4a8a4b1 100644
---- a/drivers/net/ne.c
-+++ b/drivers/net/ne.c
-@@ -355,7 +355,7 @@ static int __init ne_probe1(struct net_device *dev, unsigned long ioaddr)
- 	}
- 
- 	/* Read the 16 bytes of station address PROM.
--	   We must first initialize registers, similar to NS8390_init(eifdev, 0).
-+	   We must first initialize registers, similar to NS8390p_init(eifdev, 0).
- 	   We can't reliably read the SAPROM address without this.
- 	   (I learned the hard way!). */
- 	{
-diff --git a/drivers/net/ne2.c b/drivers/net/ne2.c
-index 8f72563..332df75 100644
---- a/drivers/net/ne2.c
-+++ b/drivers/net/ne2.c
-@@ -404,7 +404,7 @@ static int __init ne2_probe1(struct net_device *dev, int slot)
- 
- 	/* Read the 16 bytes of station address PROM.
- 	   We must first initialize registers, similar to
--	   NS8390_init(eifdev, 0).
-+	   NS8390p_init(eifdev, 0).
- 	   We can't reliably read the SAPROM address without this.
- 	   (I learned the hard way!). */
- 	{
+-/* HL HL-340 (ID: 4348:5523) */
+-#define HL340_VENDOR_ID		0x4348
+-#define HL340_PRODUCT_ID	0x5523
+-
+ /* Y.C. Cable U.S.A., Inc - USB to RS-232 */
+ #define YCCABLE_VENDOR_ID	0x05ad
+ #define YCCABLE_PRODUCT_ID	0x0fba
+
+
+-- 
+Tollef Fog Heen
+UNIX is user friendly, it's just picky about who its friends are
