@@ -1,75 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbYGVRL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754268AbYGVRMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752616AbYGVRL1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 13:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYGVRLJ
+	id S1754268AbYGVRMc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 13:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYGVRMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 13:11:09 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38060 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754042AbYGVRLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 13:11:06 -0400
-Message-ID: <488614A3.1060400@garzik.org>
-Date: Tue, 22 Jul 2008 13:10:59 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 22 Jul 2008 13:12:24 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:24800 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751802AbYGVRMX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 13:12:23 -0400
+From: "Altobelli, David" <david.altobelli@hp.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Tue, 22 Jul 2008 17:11:16 +0000
+Subject: RE: [PATCH 75/79] HP iLO driver
+Thread-Topic: [PATCH 75/79] HP iLO driver
+Thread-Index: Acjru5LBITsFkRVhRLm55+jiiU025AAYJpgg
+Message-ID: <CF70AA892F109448AEA269483B3A983903C30E04F2@G1W1215.americas.hpqcorp.net>
+References: <20080722051805.GA17373@suse.de>
+ <1216703983-21448-75-git-send-email-gregkh@suse.de>
+In-Reply-To: <1216703983-21448-75-git-send-email-gregkh@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       Ivan Seskar <Seskar@winlab.rutgers.edu>, jfm3 <jfm3@winlab.rutgers.edu>,
-       Sujith <m.sujith@gmail.com>
-Subject: Re: Bug on 2.6.26 - x86 VIA Nehemiah CentaurHauls processor cannot
- boot
-References: <43e72e890807210614y58065d75j5b2fb3c5ebe6180a@mail.gmail.com>	 <48848DDF.6010903@zytor.com>	 <43e72e890807210701w6d7f5638w5fdbea76a1cf1c0b@mail.gmail.com>	 <48851AC2.8030007@zytor.com> <43e72e890807212147p5d19cfact17e719abb338378c@mail.gmail.com>
-In-Reply-To: <43e72e890807212147p5d19cfact17e719abb338378c@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luis R. Rodriguez wrote:
-> On Mon, Jul 21, 2008 at 4:24 PM, H. Peter Anvin <hpa@zytor.com> wrote:
->> Luis R. Rodriguez wrote:
->>> On Mon, Jul 21, 2008 at 6:23 AM, H. Peter Anvin <hpa@zytor.com> wrote:
->>>> Luis R. Rodriguez wrote:
->>>>> This bug seems to be present since 2.6.22 [1], so hope we can get this
->>>>> fixed ASAP. Let me know if you have patch suggestions I can test.
->>>>>
->>>>> This crashes very early, I had to use earlyprintk to get it.
->>>>>
->>> I've put extra spaces between the culprit.
->>>
->>> c0387ac2:       0f 1f 40 00             nopl   0x0(%eax)
->>>
->> Sure enough, our old friend.
->>
->> You have in your configuration:
->>
->> CONFIG_M686=y
->> # CONFIG_X86_GENERIC is not set
->>
->> ... so this is fully expected; CONFIG_M686 without CONFIG_X86_GENERIC is not
->> compatible with such processors.
->>
->> Not a bug.
-> 
-> Thanks for taking a  look at this. So well, it would be a
-> misconfiguration bug by the distribution then to try to support a
-> generic 686 kernel wihtout GENERIC then.
+Greg Kroah-Hartman wrote:
+> diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+> index 1921b8d..ce67d97 100644
+> --- a/drivers/misc/Kconfig
+> +++ b/drivers/misc/Kconfig
+> @@ -420,4 +420,17 @@ config SGI_XP
+>           this feature will allow for direct communication between SSIs
+>           based on a network adapter and DMA messaging.
+>
+> +config HP_ILO
+> +       tristate "Channel interface driver for HP iLO/iLO2 processor"
+> +       default n
 
-Well, it may be intentional -- some distros simply exclude support for 
-the lower-volume VIA processors, since that might imply building their 
-"generic 686 kernel" sans CMOV and some other instructions, and changing 
-the compiler's instruction scheduling to something less optimal for the 
-majority.  :/
+Heiko Carstens submitted a Kconfig "depend on PCI" patch to linux-next,
+and that should be included with this series.  His mail is below.
+Outlook might well mangle the diff, but that's my fault, not his.
 
-	Jeff
+----
 
+Subject: [PATCH] Let HP iLO driver depend on PCI
 
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
+"HP iLO driver" causes this:
+
+drivers/misc/hpilo.c: In function 'doorbell_set':
+drivers/misc/hpilo.c:147: error: implicit declaration of function 'iowrite8'
+drivers/misc/hpilo.c: In function 'ilo_ccb_close':
+drivers/misc/hpilo.c:204: error: implicit declaration of function 'iowrite32'
+drivers/misc/hpilo.c:204: error: implicit declaration of function 'ioread32'
+drivers/misc/hpilo.c:222: error: implicit declaration of function 'memset_io'
+drivers/misc/hpilo.c:225: error: implicit declaration of function 'pci_free_consistent'
+drivers/misc/hpilo.c: In function 'ilo_ccb_open':
+drivers/misc/hpilo.c:244: error: implicit declaration of function 'pci_alloc_consistent'
+drivers/misc/hpilo.c:245: warning: assignment makes pointer from integer without a cast
+drivers/misc/hpilo.c:296: error: implicit declaration of function 'memcpy_toio'
+drivers/misc/hpilo.c: In function 'ilo_unmap_device':
+drivers/misc/hpilo.c:575: error: implicit declaration of function 'pci_iounmap'
+drivers/misc/hpilo.c: In function 'ilo_map_device':
+drivers/misc/hpilo.c:585: error: implicit declaration of function 'pci_iomap'
+drivers/misc/hpilo.c:585: warning: assignment makes pointer from integer without a cast
+drivers/misc/hpilo.c:592: warning: assignment makes pointer from integer without a cast
+drivers/misc/hpilo.c:599: warning: assignment makes pointer from integer without a cast
+make[2]: *** [drivers/misc/hpilo.o] Error 1
+
+Just let it depend on PCI.
+
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+
+Greg, this came in via one of your git trees. Please merge/apply. Thanks.
+
+ drivers/misc/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux-next/drivers/misc/Kconfig
+===================================================================
+--- linux-next.orig/drivers/misc/Kconfig
++++ linux-next/drivers/misc/Kconfig
+@@ -423,6 +423,7 @@ config SGI_XP
+ config HP_ILO
+        tristate "Channel interface driver for HP iLO/iLO2 processor"
+        default n
++       depends on PCI
+        help
+          The channel interface driver allows applications to communicate
+          with iLO/iLO2 management processors present on HP ProLiant
