@@ -1,148 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbYGVLyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbYGVLz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754777AbYGVLyj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 07:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbYGVLyb
+	id S1755262AbYGVLz4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 07:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYGVLzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 07:54:31 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:12100 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752279AbYGVLya convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 07:54:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=RTS10NDoHCVof0OoqRkR5gKcBp5wydWMlW+g/2p6Xd4j/382IbGJF0Wo8zLGjOV57U
-         ZieWKGWCFaDubFlF86Um5oZCP/Kxmgf1VYWHA12HIBynuMcvaAcHY9vN1M0lnY8EMRen
-         HKxqxWDaw7gZHbvJ3TX9rpiWnDUq6oht7ztek=
-Message-ID: <69e28c910807220454q7c8371e1m11b1015ed8398758@mail.gmail.com>
-Date: Tue, 22 Jul 2008 13:54:28 +0200
-From: "=?ISO-8859-1?Q?Stefanik_G=E1bor?=" <netrolller.3d@gmail.com>
-To: "Zhu Yi" <yi.zhu@intel.com>, "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [PATCH] iwlwifi: Enable packet injection for iwl4965
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       ipw3945-devel <ipw3945-devel@lists.sourceforge.net>,
-       "Tomas Winkler" <tomasw@gmail.com>,
-       "Tomas Winkler" <tomas.winkler@intel.com>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "Marco Schuster" <marco@harddisk.is-a-geek.org>
-In-Reply-To: <69e28c910807181205m6dd0cdcek83f9717bf1ac9dcc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <69e28c910807181205m6dd0cdcek83f9717bf1ac9dcc@mail.gmail.com>
+	Tue, 22 Jul 2008 07:55:46 -0400
+Received: from gate.crashing.org ([63.228.1.57]:56737 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752759AbYGVLzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 07:55:45 -0400
+Subject: Re: [PATCH] Make u64 long long on all architectures (was: the
+	printk problem)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: michael@ellerman.id.au
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-ia64@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Peter Anvin <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <1216722995.8357.4.camel@localhost>
+References: <20080625131101.GA6205@digi.com>
+	 <20080704104634.GA31634@digi.com>
+	 <20080704111540.ddffd241.akpm@linux-foundation.org>
+	 <alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
+	 <alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
+	 <20080704132716.f1e12554.akpm@linux-foundation.org>
+	 <20080704204252.GM14894@parisc-linux.org>
+	 <20080704150100.1f7b8a65.akpm@linux-foundation.org>
+	 <20080705020350.GN14894@parisc-linux.org>
+	 <20080722030506.206a2cc2.akpm@linux-foundation.org>
+	 <1216722995.8357.4.camel@localhost>
+Content-Type: text/plain
+Date: Tue, 22 Jul 2008 21:36:46 +1000
+Message-Id: <1216726606.11027.207.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 9:05 PM, Stefanik Gábor <netrolller.3d@gmail.com> wrote:
-> Handle station IDs of transmitted packets when in monitor mode, and
-> remove the various anti-injection checks from the iwl4965 driver.
-> This makes injection work on IWL4965 and hopefully IWL50xx. Tested on
-> IWL4965 with aircrack-ng, IWL50xx not tested because I don't have
-> access to an IWL50xx card.
->
-> Note: To inject management frames with this patch, HW crypto support
-> must be disabled using the "swcrypto=1" modparam (or "swcrypto50=1"
-> for IWL50xx). Otherwise most management frames won't be transmitted.
->
-> Signed-off-by: Gábor Stefanik <netrolller.3d@gmail.com>
->
-> ---
->
-> Patch also available as an attachment on this e-mail, as Gmail tends
-> to whitespace-damage patches.
->
-> diff --git a/drivers/net/wireless/iwlwifi/iwl-sta.c
-> b/drivers/net/wireless/iwlwifi/iwl-sta.c
-> index 6d1467d..78b1315 100644
-> --- a/drivers/net/wireless/iwlwifi/iwl-sta.c
-> +++ b/drivers/net/wireless/iwlwifi/iwl-sta.c
-> @@ -968,6 +968,11 @@ int iwl_get_sta_id(struct iwl_priv *priv, struct
-> ieee80211_hdr *hdr)
->                iwl_print_hex_dump(priv, IWL_DL_DROP, (u8 *) hdr, sizeof(*hdr));
->                return priv->hw_params.bcast_sta_id;
->
-> +       /* If we are in monitor mode, use BCAST. This is required for
-> +        * packet injection. */
-> +       case IEEE80211_IF_TYPE_MNTR:
-> +               return priv->hw_params.bcast_sta_id;
-> +
->        default:
->                IWL_WARNING("Unknown mode of operation: %d", priv->iw_mode);
->                return priv->hw_params.bcast_sta_id;
-> diff --git a/drivers/net/wireless/iwlwifi/iwl-tx.c
-> b/drivers/net/wireless/iwlwifi/iwl-tx.c
-> index 032641d..55149d4 100644
-> --- a/drivers/net/wireless/iwlwifi/iwl-tx.c
-> +++ b/drivers/net/wireless/iwlwifi/iwl-tx.c
-> @@ -783,11 +783,6 @@ int iwl_tx_skb(struct iwl_priv *priv, struct sk_buff *skb)
->                goto drop_unlock;
->        }
->
-> -       if (!priv->vif) {
-> -               IWL_DEBUG_DROP("Dropping - !priv->vif\n");
-> -               goto drop_unlock;
-> -       }
-> -
->        if ((ieee80211_get_tx_rate(priv->hw, info)->hw_value & 0xFF) ==
->             IWL_INVALID_RATE) {
->                IWL_ERROR("ERROR: No TX rate available.\n");
-> @@ -810,9 +805,11 @@ int iwl_tx_skb(struct iwl_priv *priv, struct sk_buff *skb)
->
->        /* drop all data frame if we are not associated */
->        if (ieee80211_is_data(fc) &&
-> -          (!iwl_is_associated(priv) ||
-> -           ((priv->iw_mode == IEEE80211_IF_TYPE_STA) && !priv->assoc_id) ||
-> -           !priv->assoc_station_added)) {
-> +           (priv->iw_mode != IEEE80211_IF_TYPE_MNTR ||
-> +           !(info->flags & IEEE80211_TX_CTL_INJECTED)) && /* packet injection */
-> +           (!iwl_is_associated(priv) ||
-> +            ((priv->iw_mode == IEEE80211_IF_TYPE_STA) && !priv->assoc_id) ||
-> +            !priv->assoc_station_added)) {
->                IWL_DEBUG_DROP("Dropping - !iwl_is_associated\n");
->                goto drop_unlock;
->        }
-> @@ -822,7 +819,10 @@ int iwl_tx_skb(struct iwl_priv *priv, struct sk_buff *skb)
->        hdr_len = ieee80211_get_hdrlen(le16_to_cpu(fc));
->
->        /* Find (or create) index into station table for destination station */
-> -       sta_id = iwl_get_sta_id(priv, hdr);
-> +       if (info->flags & IEEE80211_TX_CTL_INJECTED)
-> +               sta_id = priv->hw_params.bcast_sta_id;
-> +       else
-> +               sta_id = iwl_get_sta_id(priv, hdr);
->        if (sta_id == IWL_INVALID_STATION) {
->                DECLARE_MAC_BUF(mac);
->
-> diff --git a/drivers/net/wireless/iwlwifi/iwl4965-base.c
-> b/drivers/net/wireless/iwlwifi/iwl4965-base.c
-> index 60b7a64..380cc38 100644
-> --- a/drivers/net/wireless/iwlwifi/iwl4965-base.c
-> +++ b/drivers/net/wireless/iwlwifi/iwl4965-base.c
-> @@ -2680,12 +2680,6 @@ static int iwl4965_mac_tx(struct ieee80211_hw
-> *hw, struct sk_buff *skb)
->
->        IWL_DEBUG_MAC80211("enter\n");
->
-> -       if (priv->iw_mode == IEEE80211_IF_TYPE_MNTR) {
-> -               IWL_DEBUG_MAC80211("leave - monitor\n");
-> -               dev_kfree_skb_any(skb);
-> -               return 0;
-> -       }
-> -
->        IWL_DEBUG_TX("dev->xmit(%d bytes) at rate 0x%02x\n", skb->len,
->                     ieee80211_get_tx_rate(hw, IEEE80211_SKB_CB(skb))->bitrate);
->
+On Tue, 2008-07-22 at 20:36 +1000, Michael Ellerman wrote:
+> concordia powerpc(master) $ find arch/powerpc/ ! -name '*32.*' | xargs
+> grep "%l" | grep -v "%ll" | wc -l
+> 635
+> 
+> 
+> Someone's gonna get a lot of git points for fixing all those. Might
+> keep
+> the speeling fix crowd busy for a 
 
-What is the status of this patch? Did it get lost? Was it rejected? I
-didn't get any answer on it, and I can't see it in iwlwifi-2.6.git or
-wireless-testing.git.
+But a bunch of those might actually be real longs, not u64's ...
 
--- 
-Vista: [V]iruses, [I]ntruders, [S]pyware, [T]rojans and [A]dware. :-)
+Easier to do the change and build something like ppc6xx_defconfig to get
+a better approximation.
+
+Ben.
+
+
