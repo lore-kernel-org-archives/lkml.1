@@ -1,104 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbYGVMVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbYGVM3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754894AbYGVMVc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 08:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYGVMVZ
+	id S1754571AbYGVM3L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 08:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbYGVM25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 08:21:25 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:63680 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751386AbYGVMVY (ORCPT
+	Tue, 22 Jul 2008 08:28:57 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50720 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbYGVM25 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 08:21:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=PzSbDldlrXGucImS8BIunHRZBTyPxIzvUTnXGnAXUaIeZutLhNIjZMIUwI15QSXqaA
-         PC1ebUE2xWPF2KhJ2vdi8pgjxubVPi+90gWzOVy8gP4FiVgLgFq4EuWrmYaHmmWJLGt9
-         Y+XVwBmVTvLWG8c2aRzrNntNe5KCJnm0BzKqk=
-Message-ID: <cfd18e0f0807220521x5faea19bn1f545b23b84ead6a@mail.gmail.com>
-Date: Tue, 22 Jul 2008 14:21:20 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Oleg Nesterov" <oleg@tv-sign.ru>
-Subject: Re: [PATCH -mm] coredump: format_corename: don't append .%pid if multi-threaded
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Roland McGrath" <roland@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, andi@firstfloor.org
-In-Reply-To: <20080722121824.GB1383@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 22 Jul 2008 08:28:57 -0400
+Subject: [git pull] x86: declaration fixes - version 2
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 22 Jul 2008 17:57:53 +0530
+Message-Id: <1216729673.5338.2.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200807210137.m6L1bN0H011138@imap1.linux-foundation.org>
-	 <20080721102940.666d733d@the-village.bc.nu>
-	 <20080721210121.C5E741541A5@magilla.localdomain>
-	 <20080721221416.6d4f9014@lxorguk.ukuu.org.uk>
-	 <20080722113731.GA1383@tv-sign.ru> <20080722121824.GB1383@tv-sign.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 2:18 PM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> If the coredumping is multi-threaded, format_corename() appends .%pid
-> to the corename. This was needed before the proper multi-thread core
-> dump support, now all the threads in the mm go into a single unified
-> core file.
->
-> Remove this special case, it is not even documented and we have "%p"
-> and core_uses_pid.
+Hello Ingo,
 
-Hi Oleg,
+Here is updated patches for x86-tip.
 
-I have not thought about this at any length, but one question that
-jumps to mind: could this feature still be useful for LinuxThreads,
-where each thread does indeed have a separate PID?
+The following changes since commit 087115517d43c25e7286a62bf4d458becef5a244:
+  Ingo Molnar (1):
+        Merge branch 'xen-64bit'
 
-Cheers,
+are available in the git repository at:
 
-Michael
+  git://git.infradead.org/users/jaswinder/linux-2.6-tip.git master
 
->
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
->
-> --- 26-rc2/fs/exec.c~FORMAT_CORENAME_NO_MT_PID  2008-07-22 15:42:15.000000000 +0400
-> +++ 26-rc2/fs/exec.c    2008-07-22 15:46:04.000000000 +0400
-> @@ -1373,7 +1373,7 @@ EXPORT_SYMBOL(set_binfmt);
->  * name into corename, which must have space for at least
->  * CORENAME_MAX_SIZE bytes plus one byte for the zero terminator.
->  */
-> -static int format_corename(char *corename, int nr_threads, long signr)
-> +static int format_corename(char *corename, long signr)
->  {
->        const char *pat_ptr = core_pattern;
->        int ispipe = (*pat_ptr == '|');
-> @@ -1480,8 +1480,7 @@ static int format_corename(char *corenam
->         * If core_pattern does not include a %p (as is the default)
->         * and core_uses_pid is set, then .%pid will be appended to
->         * the filename. Do not do this for piped commands. */
-> -       if (!ispipe && !pid_in_pattern
-> -           && (core_uses_pid || nr_threads)) {
-> +       if (!ispipe && !pid_in_pattern && core_uses_pid) {
->                rc = snprintf(out_ptr, out_end - out_ptr,
->                              ".%d", task_tgid_vnr(current));
->                if (rc > out_end - out_ptr)
-> @@ -1745,7 +1744,7 @@ int do_coredump(long signr, int exit_cod
->         * uses lock_kernel()
->         */
->        lock_kernel();
-> -       ispipe = format_corename(corename, retval, signr);
-> +       ispipe = format_corename(corename, signr);
->        unlock_kernel();
->        /*
->         * Don't bother to check the RLIMIT_CORE value if core_pattern points
->
->
+Jaswinder Singh (13):
+      x86: Introducing asm/syscalls.h
+      x86: process_32.c declare cpu_number before they get used
+      x86: signal_XX.c declare do_notify_resume before they get used
+      x86: time_XX.c declare functions before they get used
+      x86: setup.c declare saved_video_mode before they get used
+      x86: e820.c declare pci_mem_start before they get used
+      x86: pci-dma.c declare iommu_bio_merge before they get used
+      x86: pci-nommu.c declare nommu_dma_ops before they get used
+      x86: i387.c declare dump_fpu() before they get used
+      x86: ptrace.c declare functions before they get used
+      x86: proc.c declare cpuinfo_op before they get used
+      x86: common.c declare idle_regs before they get used
+      x86: mtrr/main.c declare range_state as static
+
+ arch/x86/kernel/cpu/mtrr/main.c |    2 +-
+ arch/x86/kernel/ioport.c        |    1 +
+ arch/x86/kernel/ldt.c           |    1 +
+ arch/x86/kernel/process_32.c    |    2 +
+ arch/x86/kernel/process_64.c    |    1 +
+ arch/x86/kernel/signal_32.c     |    1 +
+ arch/x86/kernel/signal_64.c     |    1 +
+ arch/x86/kernel/sys_i386_32.c   |    2 +
+ arch/x86/kernel/sys_x86_64.c    |    1 +
+ arch/x86/kernel/time_32.c       |    1 +
+ arch/x86/kernel/tls.c           |    1 +
+ arch/x86/kernel/vm86_32.c       |    1 +
+ include/asm-x86/dma-mapping.h   |    1 +
+ include/asm-x86/e820.h          |    1 +
+ include/asm-x86/i387.h          |    1 +
+ include/asm-x86/io.h            |    2 +
+ include/asm-x86/io_64.h         |    1 -
+ include/asm-x86/processor.h     |    4 ++
+ include/asm-x86/ptrace.h        |    3 +
+ include/asm-x86/setup.h         |    1 +
+ include/asm-x86/signal.h        |    3 +
+ include/asm-x86/smp.h           |    4 +-
+ include/asm-x86/syscalls.h      |   90 +++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/time.h          |    2 +
+ include/asm-x86/timer.h         |    5 ++-
+ 25 files changed, 129 insertions(+), 4 deletions(-)
+ create mode 100644 include/asm-x86/syscalls.h
 
 
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
