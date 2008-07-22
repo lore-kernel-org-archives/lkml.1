@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbYGVUnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYGVUsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754054AbYGVUnw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 16:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbYGVUnm
+	id S1753955AbYGVUsi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 16:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYGVUsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 16:43:42 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60993
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751629AbYGVUnl (ORCPT
+	Tue, 22 Jul 2008 16:48:30 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:8050 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751557AbYGVUs3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 16:43:41 -0400
-Date: Tue, 22 Jul 2008 13:43:41 -0700 (PDT)
-Message-Id: <20080722.134341.143920039.davem@davemloft.net>
-To: Larry.Finger@lwfinger.net
-Cc: kaber@trash.net, mingo@elte.hu, ischram@telenet.be,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, j@w1.fi
-Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
- at 0000000000000370
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4885D808.9060203@lwfinger.net>
-References: <48857F74.2040406@lwfinger.net>
-	<20080722.043220.247312412.davem@davemloft.net>
-	<4885D808.9060203@lwfinger.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jul 2008 16:48:29 -0400
+Date: Wed, 23 Jul 2008 00:48:27 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Kumar Gala <kumar.gala@freescale.com>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: latest tree build failure -- cpm uart & gpio
+Message-ID: <20080722204827.GA16227@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <FBE46DB6-A457-4AD8-9D6E-9D639AD04325@freescale.com> <20080722145330.GA2315@polina.dev.rtsoft.ru> <200807221233.16723.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <200807221233.16723.david-b@pacbell.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Date: Tue, 22 Jul 2008 07:52:24 -0500
-
-> David Miller wrote:
-> > From: Larry Finger <Larry.Finger@lwfinger.net>
-> > Date: Tue, 22 Jul 2008 01:34:28 -0500
+On Tue, Jul 22, 2008 at 12:33:16PM -0700, David Brownell wrote:
+> On Tuesday 22 July 2008, Anton Vorontsov wrote:
+> > On Tue, Jul 22, 2008 at 08:54:16AM -0500, Kumar Gala wrote:
+> > > can someone look at the following compile failure in linus's tree.  I'm 
+> > > guessing part of this has to do with Alan's tty changes (and might  
+> > > already be addressed?).
+> > >
+> > > include/asm-generic/gpio.h:131: error: implicit declaration of function 
+> > > 'gpio_get_value'
+> > > include/asm-generic/gpio.h:137: error: implicit declaration of function 
+> > > 'gpio_set_value'
 > > 
-> >> David Miller wrote:
-> >>> From: Larry Finger <Larry.Finger@lwfinger.net>
-> >>> Date: Mon, 21 Jul 2008 17:40:10 -0500
-> >>>
-> >>>> Sorry :(
-> >>>>
-> >>>> I used the davem patch, the second version of your first one, and your second 
-> >>>> one. Both problems persist.
-> >>>>
-> >>>> Still plugging away on bisection.
-> >>> GIT bisecting the lockdep problem is surely going the land you on:
-> >>>
-> >>> commit e308a5d806c852f56590ffdd3834d0df0cbed8d7
-> >> No. It landed on this one.
+> > I think this patch should help:
 > > 
-> > For the lockdep warnings?
+> > [OF] of_gpio: should use new <linux/gpio.h> header
+> > http://patchwork.ozlabs.org/linuxppc/patch?id=18750
 > 
-> No - this one triggers the kernel BUG as follows:
+> Is that confirmed as fixing this, vs just being the Right Thing To Do?
 
-Well, we were trying to fix the lockdep warnings.  One
-thing at a time :-)
+Just applied the patch locally and the issue is not reproducible
+anymore.
 
-And that BUG is now just a WARN in Linus's tree, so if
-you update you should get further along.
+> > David, can you please Ack it? See Benjamin's mail:
+> > http://ozlabs.org/pipermail/linuxppc-dev/2008-July/060109.html
+> 
+> If you like ... but this is an OF-specific change, making
+> it conform with the interface spec, so I wouldn't expect
+> this to need more approvals than it's already got.
+> 
+> Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+
+Thanks.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
