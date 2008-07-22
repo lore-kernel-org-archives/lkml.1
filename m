@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbYGVNqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbYGVNqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752595AbYGVNqA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 09:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbYGVNpt
+	id S1753866AbYGVNqZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 09:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbYGVNqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 09:45:49 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:50729 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750975AbYGVNpt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 09:45:49 -0400
-Message-ID: <4885E482.5020502@davidnewall.com>
-Date: Tue, 22 Jul 2008 23:15:38 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Tue, 22 Jul 2008 09:46:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49154 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752073AbYGVNqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 09:46:15 -0400
+Date: Tue, 22 Jul 2008 15:46:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@kernel.org>,
+       Ivan Seskar <Seskar@winlab.rutgers.edu>, jfm3 <jfm3@winlab.rutgers.edu>,
+       Sujith <m.sujith@gmail.com>
+Subject: Re: Bug on 2.6.26 - x86 VIA Nehemiah CentaurHauls processor cannot
+	boot
+Message-ID: <20080722134601.GA21977@elte.hu>
+References: <43e72e890807210614y58065d75j5b2fb3c5ebe6180a@mail.gmail.com> <48848DDF.6010903@zytor.com> <43e72e890807210701w6d7f5638w5fdbea76a1cf1c0b@mail.gmail.com> <48851AC2.8030007@zytor.com> <20080722131408.GA12418@elte.hu> <4885DF9D.2090804@zytor.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [TCP bug] stuck distcc connections in latest -git
-References: <20080720.104411.81744468.davem@davemloft.net> <20080721133059.GA30637@elte.hu> <20080721134506.GA27598@elte.hu> <20080721182318.GA20940@elte.hu> <alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org> <20080721184616.GA8442@elte.hu> <20080722112133.GA6575@elte.hu>
-In-Reply-To: <20080722112133.GA6575@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4885DF9D.2090804@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> hm, the distcc TCP hangs are back:
->   
 
-The missing four client-side connections are more interesting than the
-unsent data.
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-> I.e. the client side send-queue is stuck in established state, server 
-> side thinks it's a proper established connection. Nobody makes any 
-> progress.
->   
+> Ingo Molnar wrote:
+>>>
+>>> Not a bug.
+>>
+>> it would still be nice to get a nice printk and panic during bootup  
+>> instead of some obscure crash, hm?
+>>
+>
+> Yes.  The fundamental problem is that Centaur has a set of CPUs which 
+> report family == 6 but don't have the long NOP instructions.  We would 
+> need an exact CPUID criterion for these CPUs in order to be able to 
+> report it as an error.  An alternative would be to attempt trapping in 
+> the real-mode code (#UD is one of the *very* few CPU exceptions which 
+> can be reliably captured in real mode on a BIOS system), but doing so 
+> would probably mean breaking Loadlin at the very least.
+>
+> We can't "printk and panic" because we never get that far in the 
+> kernel proper, for obvious reasons: the code is quite littered with 
+> these buggers.
 
-I might be missing something obvious, but I don't think there's anything
-unusual in the three sessions displayed on the client.  They should be
-"ESTABLISHED", and on the server, too, just as they are.
+hm. How about to default to a safe NOP all the way up to where we can 
+fix up alternatives and install a different NOP. (which we could also 
+test first via intentionally jumping on it and catching any exception 
+via a special exception handler)
 
-> Also note the final 4 connections on the server side - those are not 
-> present on the client box.
->   
-
-Now this is interesting.  I would be much more interested in how the
-client's sides for these disappeared.
-
-> The hung condition seemed permanent (i waited a couple of minutes).
->   
-
-Not nearly long enough.  Retransmits can be sent as infrequently as per
-180 seconds.  I think there's an argument to use one of the the various
-patches that reduce your TCP_RTO_MAX, for example OBATA Noboru's
-(http://marc.info/?l=linux-netdev&m=118422471428855): you don't have to
-wait unreasonably long before seeing a retransmit.  Remember, three minutes!
-
-
-> I retried the same build 10 times and it would not reproduce - so this 
-> again is a hard to reproduce condition. (and there's no chance to get a 
-> proper tcpdump either, at these traffic levels)
-
-You really should start that capture, and on both client and server. 
-You don't need to dump everything, only traffic to or from server:distcc.
+	Ingo
