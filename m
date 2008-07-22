@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbYGVHoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbYGVHpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753448AbYGVHoQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 03:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYGVHoB
+	id S1753964AbYGVHpd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 03:45:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYGVHpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 03:44:01 -0400
-Received: from gwu.lbox.cz ([62.245.111.132]:57741 "EHLO gwu.lbox.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751880AbYGVHoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 03:44:00 -0400
-Date: Tue, 22 Jul 2008 09:43:57 +0200
-From: Nikola Ciprich <extmaillist@linuxbox.cz>
-To: linux-kernel@vger.kernel.org
-Cc: nikola.ciprich@linuxbox.cz, linux-usb@vger.kernel.org
-Subject: 2.6.22: USB getting stuck on SuperMicro PDSME+ boards
-Message-ID: <20080722074357.GC21035@develbox.linuxbox.cz>
+	Tue, 22 Jul 2008 03:45:25 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42019 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751844AbYGVHpY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 03:45:24 -0400
+Date: Tue, 22 Jul 2008 03:44:53 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Bernd Petrovitsch <bernd@firmix.at>
+Cc: "Fred ." <eldmannen@gmail.com>, Kevin Winchester <kjwinchester@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Please add ZFS support (from GPL sources)
+Message-ID: <20080722074453.GA25205@infradead.org>
+References: <f188924b0807171213q43f10b09j47b34674fc8aaa38@mail.gmail.com> <487FA143.9010109@garzik.org> <20080720105724.GA8921@infradead.org> <d1af83620807200535s6516e3b7wd16233391e5e8533@mail.gmail.com> <20080721072801.GA6115@infradead.org> <d1af83620807210439r6b8fa39bu4f3fd76c86aa548d@mail.gmail.com> <f188924b0807210723v3a35de9fgc1565811a0597833@mail.gmail.com> <d1af83620807210740vfef575bp73832fd95d803850@mail.gmail.com> <1216651854.2657.35.camel@spike.firmix.at>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1216651854.2657.35.camel@spike.firmix.at>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 876041 records(22-07-2008)
-X-Envelope-From: ciprich@linuxbox.cz
-X-Spam-Score: N/A (trusted relay)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I'm having problem with USB getting stuck on bunch of machines with PDSME+ boards (I haven't observed
-the problem on any other type of board. Controller identifies as
-8086:27c8 (rev 01) - Intel Corporation 82801G (ICH7 Family) USB UHCI Controller
+On Mon, Jul 21, 2008 at 04:50:54PM +0200, Bernd Petrovitsch wrote:
+> On Mon, 2008-07-21 at 11:40 -0300, Kevin Winchester wrote:
+> [....]
+> > > But it may be covered by patents by Sun. So maybe not allowed make an
+> > > implementation. :(
+> > > Maybe you should consult SFLC (Software Freedom Law Center) first or something.
+> 
+> Since basically *you* wanted that feature in the first place (and for
+> whatever reason do not even start to work on it),
 
-Symptoms:
-- any process trying to access /proc/bus/usb/devices gets stuck in 'D' state
-- khubd seems to be stuck in 'D' state
-- USB devices don't work
+Either you or I have lost track here.  Fred without a lastname asked for
+ZFS support based on the grub code, and never replied again in this
+thread.  Kevin volunteered to work on it.
 
-I'm observing the problem even on machines without any USB devs attached.
-Unfortunately I wasn't able to reproduce the problem on my testing machines I have
-on my disposal here (yet, but I'm still trying), and it's not affecting all PDSME+ boards we have deployed.
-The problem appeared after upgrading machines to 2.6.24 kernels, we haven't observed it on 2.6.21 we used before.
-On affected machines, kernel doesn't emit any OOPS, or anything else which could help to track. It just stops working after some time.
-
-Bad thing is that since I'm not able to reproduce the problem here and I cannot reboot/upgrade production machines too
-often, I can't provide much more information or try bisection :(
-So this is rather desperate attempt to ask if anyone had similar problem or has any tip on where should I look to track it.
-Kernels we're using are vanillas with few small unrelated patches applied.
-Any help would be greatly appreciated
-with best regards
-nik
-
-
--- 
--------------------------------------
-Nikola CIPRICH
-LinuxBox.cz, s.r.o.
-28. rijna 168, 709 01 Ostrava
-
-tel.:   +420 596 603 142
-fax:    +420 596 621 273
-mobil:  +420 777 093 799
-www.linuxbox.cz
-
-mobil servis: +420 737 238 656
-email servis: servis@linuxbox.cz
--------------------------------------
