@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbYGVSWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbYGVSWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754054AbYGVSWT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 14:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbYGVSWH
+	id S1755206AbYGVSWr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 14:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbYGVSWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 14:22:07 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44368 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593AbYGVSWG (ORCPT
+	Tue, 22 Jul 2008 14:22:38 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45709 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752605AbYGVSWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 14:22:06 -0400
-Message-ID: <48862526.7060704@zytor.com>
-Date: Tue, 22 Jul 2008 14:21:26 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       Ivan Seskar <Seskar@winlab.rutgers.edu>, jfm3 <jfm3@winlab.rutgers.edu>,
-       Sujith <m.sujith@gmail.com>
-Subject: Re: Bug on 2.6.26 - x86 VIA Nehemiah CentaurHauls processor cannot
- boot
-References: <43e72e890807210614y58065d75j5b2fb3c5ebe6180a@mail.gmail.com>	 <48848DDF.6010903@zytor.com>	 <43e72e890807210701w6d7f5638w5fdbea76a1cf1c0b@mail.gmail.com>	 <48851AC2.8030007@zytor.com> <43e72e890807212147p5d19cfact17e719abb338378c@mail.gmail.com> <488614A3.1060400@garzik.org>
-In-Reply-To: <488614A3.1060400@garzik.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 22 Jul 2008 14:22:37 -0400
+Date: Tue, 22 Jul 2008 19:05:16 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: Firmware breakage
+Message-ID: <20080722190516.4ee477f4@lxorguk.ukuu.org.uk>
+In-Reply-To: <1216748431.3019.6.camel@shinybook.infradead.org>
+References: <20080722173420.6f90556d@lxorguk.ukuu.org.uk>
+	<1216748431.3019.6.camel@shinybook.infradead.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
->>
->> Thanks for taking a  look at this. So well, it would be a
->> misconfiguration bug by the distribution then to try to support a
->> generic 686 kernel wihtout GENERIC then.
+On Tue, 22 Jul 2008 13:40:31 -0400
+David Woodhouse <dwmw2@infradead.org> wrote:
+
+> On Tue, 2008-07-22 at 17:34 +0100, Alan Cox wrote:
+> > If you crossbuild x86-32 on x86-64 and then attempt to do the install on
+> > an x86-32 box the install now breaks. This used to work until the
+> > firmware changes. Now you get
+> > 
+> > /bin/sh: scripts/basic/fixdep: cannot execute binary file
+> > 
+> > Fixdep should be built for the target platform surely ?
 > 
-> Well, it may be intentional -- some distros simply exclude support for 
-> the lower-volume VIA processors, since that might imply building their 
-> "generic 686 kernel" sans CMOV and some other instructions, and changing 
-> the compiler's instruction scheduling to something less optimal for the 
-> majority.  :/
-> 
+> Er, I haven't knowingly touched anything involving fixdep. Can you show
+> me exactly what you did? I'll try to reproduce and understand what's
+> happening.
 
-X86_GENERIC shouldn't disable CMOV?
+Build on a 64bit box with ARCH=i386
+NFS mount on a 32bit box
+make modules_install on 32bit box
 
-We're only referring specifically to the family == 6 VIA processors here.
+It used to work nicely, as of the firmware changes it doesn't. Not sure
+what the trigger is here yet.
 
-	-hpa
+If I hand rebuild fixdep as a 32bit binary the rest runs through fine.
+
+
 
