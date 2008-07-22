@@ -1,305 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbYGVSeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755919AbYGVSew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755363AbYGVSeU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 14:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbYGVSd1
+	id S1755919AbYGVSew (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 14:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbYGVSdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 14:33:27 -0400
+	Tue, 22 Jul 2008 14:33:36 -0400
 Received: from ti-out-0910.google.com ([209.85.142.190]:27830 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755065AbYGVSdZ (ORCPT
+	with ESMTP id S1755353AbYGVSdf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 14:33:25 -0400
+	Tue, 22 Jul 2008 14:33:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
          :sender;
-        b=YJKwVyjV2Gll5TSKIAt6jt1zS03+VMCaN1jtpVoDIjZTOJFV6wumdsKztDZCuqtxrn
-         TujjUZU8Jk5eJoQ2RrwD6Uxd8+tPzBPG+mC0UWR6wH5IRNC63MJc7DhrYIVB/O9YHBSW
-         8SAQTjaWbfbLe4jWVtTSMzotx27bviiA3XgsY=
+        b=UbRJDj20m8FX2v2ijVr3EsFvXdSa2I1NQ/2ZL6U/gVJs21uNPypR7Zh1Zs7dVbnkC4
+         WX1Q8qR/R3fekFewf7/TOeGGwqs/ULE/wkC7lP2YOkpUL+HYDgR8zeZxEB6DLUAsFYDv
+         sffFWdj/sWP+Sx0/Os4CbAEOKfUlDYfyHFHCY=
 From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 To: penberg@cs.helsinki.fi
 Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
        rdunlap@xenotime.net, mpm@selenic.co
-Subject: [RFC PATCH 2/4] kmemtrace: SLAB hooks.
-Date: Tue, 22 Jul 2008 21:31:31 +0300
-Message-Id: <1216751493-13785-3-git-send-email-eduard.munteanu@linux360.ro>
+Subject: [RFC PATCH 4/4] kmemtrace: SLOB hooks.
+Date: Tue, 22 Jul 2008 21:31:33 +0300
+Message-Id: <1216751493-13785-5-git-send-email-eduard.munteanu@linux360.ro>
 X-Mailer: git-send-email 1.5.6.1
-In-Reply-To: <1216751493-13785-2-git-send-email-eduard.munteanu@linux360.ro>
+In-Reply-To: <1216751493-13785-4-git-send-email-eduard.munteanu@linux360.ro>
 References: <1216751493-13785-1-git-send-email-eduard.munteanu@linux360.ro>
  <1216751493-13785-2-git-send-email-eduard.munteanu@linux360.ro>
+ <1216751493-13785-3-git-send-email-eduard.munteanu@linux360.ro>
+ <1216751493-13785-4-git-send-email-eduard.munteanu@linux360.ro>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds hooks for the SLAB allocator, to allow tracing with kmemtrace.
+This adds hooks for the SLOB allocator, to allow tracing with kmemtrace.
 
 Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 ---
- include/linux/slab_def.h |   68 ++++++++++++++++++++++++++++++++++++++------
- mm/slab.c                |   71 +++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 123 insertions(+), 16 deletions(-)
+ include/linux/slob_def.h |    9 +++++----
+ mm/slob.c                |   37 +++++++++++++++++++++++++++++++------
+ 2 files changed, 36 insertions(+), 10 deletions(-)
 
-diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
-index 39c3a5e..7555ce9 100644
---- a/include/linux/slab_def.h
-+++ b/include/linux/slab_def.h
-@@ -14,6 +14,7 @@
- #include <asm/page.h>		/* kmalloc_sizes.h needs PAGE_SIZE */
- #include <asm/cache.h>		/* kmalloc_sizes.h needs L1_CACHE_BYTES */
- #include <linux/compiler.h>
-+#include <linux/kmemtrace.h>
+diff --git a/include/linux/slob_def.h b/include/linux/slob_def.h
+index 59a3fa4..0ec00b3 100644
+--- a/include/linux/slob_def.h
++++ b/include/linux/slob_def.h
+@@ -3,14 +3,15 @@
  
- /* Size description struct for general caches. */
- struct cache_sizes {
-@@ -28,8 +29,26 @@ extern struct cache_sizes malloc_sizes[];
- void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
- void *__kmalloc(size_t size, gfp_t flags);
+ void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
  
--static inline void *kmalloc(size_t size, gfp_t flags)
-+#ifdef CONFIG_KMEMTRACE
-+extern void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags);
-+extern size_t slab_buffer_size(struct kmem_cache *cachep);
-+#else
-+static __always_inline void *
-+kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags)
+-static inline void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
++static __always_inline void *kmem_cache_alloc(struct kmem_cache *cachep,
++					      gfp_t flags)
  {
-+	return kmem_cache_alloc(cachep, flags);
-+}
-+static inline size_t slab_buffer_size(struct kmem_cache *cachep)
-+{
-+	return 0;
-+}
-+#endif
-+
-+static __always_inline void *kmalloc(size_t size, gfp_t flags)
-+{
-+	struct kmem_cache *cachep;
-+	void *ret;
-+
- 	if (__builtin_constant_p(size)) {
- 		int i = 0;
- 
-@@ -50,10 +69,17 @@ static inline void *kmalloc(size_t size, gfp_t flags)
- found:
- #ifdef CONFIG_ZONE_DMA
- 		if (flags & GFP_DMA)
--			return kmem_cache_alloc(malloc_sizes[i].cs_dmacachep,
--						flags);
-+			cachep = malloc_sizes[i].cs_dmacachep;
-+		else
- #endif
--		return kmem_cache_alloc(malloc_sizes[i].cs_cachep, flags);
-+			cachep = malloc_sizes[i].cs_cachep;
-+
-+		ret = kmem_cache_alloc_notrace(cachep, flags);
-+
-+		kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC, _THIS_IP_, ret,
-+				     size, slab_buffer_size(cachep), flags);
-+
-+		return ret;
- 	}
- 	return __kmalloc(size, flags);
+ 	return kmem_cache_alloc_node(cachep, flags, -1);
  }
-@@ -62,8 +88,25 @@ found:
- extern void *__kmalloc_node(size_t size, gfp_t flags, int node);
- extern void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
+ 
+ void *__kmalloc_node(size_t size, gfp_t flags, int node);
  
 -static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
-+#ifdef CONFIG_KMEMTRACE
-+extern void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
-+					   gfp_t flags,
-+					   int nodeid);
-+#else
-+static __always_inline void *
-+kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
-+			      gfp_t flags,
-+			      int nodeid)
-+{
-+	return kmem_cache_alloc_node(cachep, flags, nodeid);
-+}
-+#endif
-+
 +static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
  {
-+	struct kmem_cache *cachep;
-+	void *ret;
-+
- 	if (__builtin_constant_p(size)) {
- 		int i = 0;
- 
-@@ -84,11 +127,18 @@ static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- found:
- #ifdef CONFIG_ZONE_DMA
- 		if (flags & GFP_DMA)
--			return kmem_cache_alloc_node(malloc_sizes[i].cs_dmacachep,
--						flags, node);
-+			cachep = malloc_sizes[i].cs_dmacachep;
-+		else
- #endif
--		return kmem_cache_alloc_node(malloc_sizes[i].cs_cachep,
--						flags, node);
-+			cachep = malloc_sizes[i].cs_cachep;
-+
-+		ret = kmem_cache_alloc_node_notrace(cachep, flags, node);
-+
-+		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC, _THIS_IP_,
-+					  ret, size, slab_buffer_size(cachep),
-+					  flags, node);
-+
-+		return ret;
- 	}
  	return __kmalloc_node(size, flags, node);
  }
-diff --git a/mm/slab.c b/mm/slab.c
-index 046607f..1496962 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -111,6 +111,7 @@
- #include	<linux/rtmutex.h>
- #include	<linux/reciprocal_div.h>
- #include	<linux/debugobjects.h>
-+#include	<linux/kmemtrace.h>
+@@ -23,12 +24,12 @@ static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+  * kmalloc is the normal method of allocating memory
+  * in the kernel.
+  */
+-static inline void *kmalloc(size_t size, gfp_t flags)
++static __always_inline void *kmalloc(size_t size, gfp_t flags)
+ {
+ 	return __kmalloc_node(size, flags, -1);
+ }
  
- #include	<asm/cacheflush.h>
- #include	<asm/tlbflush.h>
-@@ -567,6 +568,14 @@ static void **dbg_userword(struct kmem_cache *cachep, void *objp)
+-static inline void *__kmalloc(size_t size, gfp_t flags)
++static __always_inline void *__kmalloc(size_t size, gfp_t flags)
+ {
+ 	return kmalloc(size, flags);
+ }
+diff --git a/mm/slob.c b/mm/slob.c
+index a3ad667..23375ed 100644
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -65,6 +65,7 @@
+ #include <linux/module.h>
+ #include <linux/rcupdate.h>
+ #include <linux/list.h>
++#include <linux/kmemtrace.h>
+ #include <asm/atomic.h>
  
- #endif
- 
-+#ifdef CONFIG_KMEMTRACE
-+size_t slab_buffer_size(struct kmem_cache *cachep)
-+{
-+	return cachep->buffer_size;
-+}
-+EXPORT_SYMBOL(slab_buffer_size);
-+#endif
-+
  /*
-  * Do not go above this order unless 0 objects fit into the slab.
-  */
-@@ -3621,10 +3630,23 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
-  */
- void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+@@ -463,27 +464,38 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
  {
--	return __cache_alloc(cachep, flags, __builtin_return_address(0));
-+	void *ret = __cache_alloc(cachep, flags, __builtin_return_address(0));
-+
-+	kmemtrace_mark_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
-+			     obj_size(cachep), cachep->buffer_size, flags);
-+
-+	return ret;
- }
- EXPORT_SYMBOL(kmem_cache_alloc);
- 
-+#ifdef CONFIG_KMEMTRACE
-+void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags)
-+{
-+	return __cache_alloc(cachep, flags, __builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(kmem_cache_alloc_notrace);
-+#endif
-+
- /**
-  * kmem_ptr_validate - check if an untrusted pointer might be a slab entry.
-  * @cachep: the cache we're checking against
-@@ -3669,23 +3691,47 @@ out:
- #ifdef CONFIG_NUMA
- void *kmem_cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid)
- {
--	return __cache_alloc_node(cachep, flags, nodeid,
--			__builtin_return_address(0));
-+	void *ret = __cache_alloc_node(cachep, flags, nodeid,
-+				       __builtin_return_address(0));
-+
-+	kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
-+				  obj_size(cachep), cachep->buffer_size,
-+				  flags, nodeid);
-+
-+	return ret;
- }
- EXPORT_SYMBOL(kmem_cache_alloc_node);
- 
-+#ifdef CONFIG_KMEMTRACE
-+void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
-+				    gfp_t flags,
-+				    int nodeid)
-+{
-+	return __cache_alloc_node(cachep, flags, nodeid,
-+				  __builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(kmem_cache_alloc_node_notrace);
-+#endif
-+
- static __always_inline void *
- __do_kmalloc_node(size_t size, gfp_t flags, int node, void *caller)
- {
- 	struct kmem_cache *cachep;
+ 	unsigned int *m;
+ 	int align = max(ARCH_KMALLOC_MINALIGN, ARCH_SLAB_MINALIGN);
 +	void *ret;
  
- 	cachep = kmem_find_general_cachep(size, flags);
- 	if (unlikely(ZERO_OR_NULL_PTR(cachep)))
- 		return cachep;
--	return kmem_cache_alloc_node(cachep, flags, node);
-+	ret = kmem_cache_alloc_node_notrace(cachep, flags, node);
+ 	if (size < PAGE_SIZE - align) {
+ 		if (!size)
+ 			return ZERO_SIZE_PTR;
+ 
+ 		m = slob_alloc(size + align, gfp, align, node);
 +
-+	kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
-+				  (unsigned long) caller, ret,
-+				  size, cachep->buffer_size, flags, node);
+ 		if (!m)
+ 			return NULL;
+ 		*m = size;
+-		return (void *)m + align;
++		ret = (void *)m + align;
++
++		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
++					  _RET_IP_, ret,
++					  size, size + align, gfp, node);
+ 	} else {
+-		void *ret;
++		unsigned int order = get_order(size);
+ 
+-		ret = slob_new_page(gfp | __GFP_COMP, get_order(size), node);
++		ret = slob_new_page(gfp | __GFP_COMP, order, node);
+ 		if (ret) {
+ 			struct page *page;
+ 			page = virt_to_page(ret);
+ 			page->private = size;
+ 		}
+-		return ret;
++
++		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
++					  _RET_IP_, ret,
++					  size, PAGE_SIZE << order, gfp, node);
+ 	}
 +
 +	return ret;
  }
+ EXPORT_SYMBOL(__kmalloc_node);
  
--#ifdef CONFIG_DEBUG_SLAB
-+#if defined(CONFIG_DEBUG_SLAB) || defined(CONFIG_KMEMTRACE)
- void *__kmalloc_node(size_t size, gfp_t flags, int node)
- {
- 	return __do_kmalloc_node(size, flags, node,
-@@ -3718,6 +3764,7 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
- 					  void *caller)
- {
- 	struct kmem_cache *cachep;
-+	void *ret;
- 
- 	/* If you want to save a few bytes .text space: replace
- 	 * __ with kmem_.
-@@ -3727,11 +3774,17 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
- 	cachep = __find_general_cachep(size, flags);
- 	if (unlikely(ZERO_OR_NULL_PTR(cachep)))
- 		return cachep;
--	return __cache_alloc(cachep, flags, caller);
-+	ret = __cache_alloc(cachep, flags, caller);
+@@ -501,6 +513,8 @@ void kfree(const void *block)
+ 		slob_free(m, *m + align);
+ 	} else
+ 		put_page(&sp->page);
 +
-+	kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC,
-+			     (unsigned long) caller, ret,
-+			     size, cachep->buffer_size, flags);
-+
-+	return ret;
- }
- 
- 
--#ifdef CONFIG_DEBUG_SLAB
-+#if defined(CONFIG_DEBUG_SLAB) || defined(CONFIG_KMEMTRACE)
- void *__kmalloc(size_t size, gfp_t flags)
- {
- 	return __do_kmalloc(size, flags, __builtin_return_address(0));
-@@ -3770,6 +3823,8 @@ void kmem_cache_free(struct kmem_cache *cachep, void *objp)
- 		debug_check_no_obj_freed(objp, obj_size(cachep));
- 	__cache_free(cachep, objp);
- 	local_irq_restore(flags);
-+
-+	kmemtrace_mark_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, objp);
- }
- EXPORT_SYMBOL(kmem_cache_free);
- 
-@@ -3796,6 +3851,8 @@ void kfree(const void *objp)
- 	debug_check_no_obj_freed(objp, obj_size(c));
- 	__cache_free(c, (void *)objp);
- 	local_irq_restore(flags);
-+
-+	kmemtrace_mark_free(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, objp);
++	kmemtrace_mark_free(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, block);
  }
  EXPORT_SYMBOL(kfree);
+ 
+@@ -569,10 +583,19 @@ void *kmem_cache_alloc_node(struct kmem_cache *c, gfp_t flags, int node)
+ {
+ 	void *b;
+ 
+-	if (c->size < PAGE_SIZE)
++	if (c->size < PAGE_SIZE) {
+ 		b = slob_alloc(c->size, flags, c->align, node);
+-	else
++		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE,
++					  _RET_IP_, b, c->size,
++					  SLOB_UNITS(c->size) * SLOB_UNIT,
++					  flags, node);
++	} else {
+ 		b = slob_new_page(flags, get_order(c->size), node);
++		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE,
++					  _RET_IP_, b, c->size,
++					  PAGE_SIZE << get_order(c->size),
++					  flags, node);
++	}
+ 
+ 	if (c->ctor)
+ 		c->ctor(c, b);
+@@ -608,6 +631,8 @@ void kmem_cache_free(struct kmem_cache *c, void *b)
+ 	} else {
+ 		__kmem_cache_free(b, c->size);
+ 	}
++
++	kmemtrace_mark_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, b);
+ }
+ EXPORT_SYMBOL(kmem_cache_free);
  
 -- 
 1.5.6.1
