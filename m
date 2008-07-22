@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932068AbYGVFne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759362AbYGVFnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932068AbYGVFne (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 01:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757585AbYGVF0F
+	id S1759362AbYGVFnu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 01:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbYGVF0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 01:26:05 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43387 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 01:26:08 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43390 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757394AbYGVF0D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 01:26:03 -0400
+	id S1757581AbYGVF0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 01:26:06 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Mike Frysinger <vapier@gentoo.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 65/79] uio-howto.tmpl: use unique output names
-Date: Mon, 21 Jul 2008 22:19:29 -0700
-Message-Id: <1216703983-21448-65-git-send-email-gregkh@suse.de>
+Cc: Adrian Bunk <bunk@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 66/79] always enable FW_LOADER unless EMBEDDED=y
+Date: Mon, 21 Jul 2008 22:19:30 -0700
+Message-Id: <1216703983-21448-66-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <20080722051805.GA17373@suse.de>
 References: <20080722051805.GA17373@suse.de>
@@ -24,34 +22,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier@gentoo.org>
+From: Adrian Bunk <bunk@kernel.org>
 
-The Userspace I/O HOWTO template sets two different sections with the same
-html output name (about.html).  This clearly won't work, so change the
-first one to a unique "aboutthis.html" to prevent clobbering.
+James Bottomley recently discovered that we have
+{request,release}_firmware() dummies for the case of the actual
+functions not being available and has a fix for the bug that was
+actually causing build errors for built-in users with
+CONFIG_FW_LOADER=m.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-Acked-by: Hans J. Koch <hjk@linutronix.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+But now missing selects on FW_LOADER are no longer visible at
+compile-time at all and can become runtime problems.
+
+FW_LOADER is infrastructure with relatively small codesize we can safely
+enable for everyone, and only for people who really need small kernels
+(and can be expected to know what they are doing) it matters being able
+to disable it.
+
+This patch therefore always sets FW_LOADER=y and allows users only to
+disable it with EMBEDDED=y.
+
+As a bonus, we can then get rid of all "select FW_LOADER" plus the due
+to it required "depends on HOTPLUG" which removes some complexity from
+our Kconfig files.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/DocBook/uio-howto.tmpl |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/base/Kconfig |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/DocBook/uio-howto.tmpl b/Documentation/DocBook/uio-howto.tmpl
-index d799a26..df87d1b 100644
---- a/Documentation/DocBook/uio-howto.tmpl
-+++ b/Documentation/DocBook/uio-howto.tmpl
-@@ -75,7 +75,7 @@ GPL version 2.
- </bookinfo>
+diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+index d47482f..6318f6b 100644
+--- a/drivers/base/Kconfig
++++ b/drivers/base/Kconfig
+@@ -27,8 +27,9 @@ config PREVENT_FIRMWARE_BUILD
+ 	  If unsure say Y here.
  
- <chapter id="aboutthisdoc">
--<?dbhtml filename="about.html"?>
-+<?dbhtml filename="aboutthis.html"?>
- <title>About this document</title>
- 
- <sect1 id="translations">
+ config FW_LOADER
+-	tristate "Userspace firmware loading support"
++	tristate "Userspace firmware loading support" if EMBEDDED
+ 	depends on HOTPLUG
++	default y
+ 	---help---
+ 	  This option is provided for the case where no in-kernel-tree modules
+ 	  require userspace firmware loading support, but a module built outside
 -- 
 1.5.6.3
 
