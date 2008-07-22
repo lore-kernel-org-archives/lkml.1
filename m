@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbYGVM3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbYGVMab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754571AbYGVM3L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 08:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbYGVM25
+	id S1755418AbYGVMab (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 08:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYGVMaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 08:28:57 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50720 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbYGVM25 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 08:28:57 -0400
-Subject: [git pull] x86: declaration fixes - version 2
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 22 Jul 2008 17:57:53 +0530
-Message-Id: <1216729673.5338.2.camel@jaswinder.satnam>
+	Tue, 22 Jul 2008 08:30:23 -0400
+Received: from main.gmane.org ([80.91.229.2]:55430 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752759AbYGVMaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 08:30:22 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: el es <el_es_cr@yahoo.co.uk>
+Subject: Re: Kernel version : what about s.yy.ww.tt scheme ?
+Date: Tue, 22 Jul 2008 12:30:13 +0000 (UTC)
+Message-ID: <loom.20080722T120836-981@post.gmane.org>
+References: <loom.20080717T083755-676@post.gmane.org> <alpine.LNX.1.10.0807171140030.18697@fbirervta.pbzchgretzou.qr> <20080720181426.GA29189@1wt.eu> <loom.20080721T074322-56@post.gmane.org> <alpine.DEB.1.10.0807210216260.1125@asgard.lang.hm>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 81.151.128.130 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.16) Gecko/20080702 Firefox/2.0.0.16)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ingo,
+ <david <at> lang.hm> writes:
 
-Here is updated patches for x86-tip.
 
-The following changes since commit 087115517d43c25e7286a62bf4d458becef5a244:
-  Ingo Molnar (1):
-        Merge branch 'xen-64bit'
+> you are well past the point where the complexity overwelmes the 
+> information you are providing.
+> 
+> does it really matter _exactly_ when a release was made?
+> 
+> David Lang
+> 
+It might not really matter, but if you could find a reason for it to be useful,
+then why not ?
 
-are available in the git repository at:
-
-  git://git.infradead.org/users/jaswinder/linux-2.6-tip.git master
-
-Jaswinder Singh (13):
-      x86: Introducing asm/syscalls.h
-      x86: process_32.c declare cpu_number before they get used
-      x86: signal_XX.c declare do_notify_resume before they get used
-      x86: time_XX.c declare functions before they get used
-      x86: setup.c declare saved_video_mode before they get used
-      x86: e820.c declare pci_mem_start before they get used
-      x86: pci-dma.c declare iommu_bio_merge before they get used
-      x86: pci-nommu.c declare nommu_dma_ops before they get used
-      x86: i387.c declare dump_fpu() before they get used
-      x86: ptrace.c declare functions before they get used
-      x86: proc.c declare cpuinfo_op before they get used
-      x86: common.c declare idle_regs before they get used
-      x86: mtrr/main.c declare range_state as static
-
- arch/x86/kernel/cpu/mtrr/main.c |    2 +-
- arch/x86/kernel/ioport.c        |    1 +
- arch/x86/kernel/ldt.c           |    1 +
- arch/x86/kernel/process_32.c    |    2 +
- arch/x86/kernel/process_64.c    |    1 +
- arch/x86/kernel/signal_32.c     |    1 +
- arch/x86/kernel/signal_64.c     |    1 +
- arch/x86/kernel/sys_i386_32.c   |    2 +
- arch/x86/kernel/sys_x86_64.c    |    1 +
- arch/x86/kernel/time_32.c       |    1 +
- arch/x86/kernel/tls.c           |    1 +
- arch/x86/kernel/vm86_32.c       |    1 +
- include/asm-x86/dma-mapping.h   |    1 +
- include/asm-x86/e820.h          |    1 +
- include/asm-x86/i387.h          |    1 +
- include/asm-x86/io.h            |    2 +
- include/asm-x86/io_64.h         |    1 -
- include/asm-x86/processor.h     |    4 ++
- include/asm-x86/ptrace.h        |    3 +
- include/asm-x86/setup.h         |    1 +
- include/asm-x86/signal.h        |    3 +
- include/asm-x86/smp.h           |    4 +-
- include/asm-x86/syscalls.h      |   90 +++++++++++++++++++++++++++++++++++++++
- include/asm-x86/time.h          |    2 +
- include/asm-x86/timer.h         |    5 ++-
- 25 files changed, 129 insertions(+), 4 deletions(-)
- create mode 100644 include/asm-x86/syscalls.h
+As I wrote before, the development of the kernel is currently quite fast-paced.
+The scale of changes is not that dramatic as it was in the early days, is it ?
+Of course things get added, removed and so on. You even get lots of development
+trees tested in linux-next on a daily basis. With date-based version number, you
+can exactly position your own tree in time related to the current development.
+It is more human-readable. The version number as it is, just does not entirely
+fit the current model of development IMO - with 2 week merge window and roughly
+2 months of stabilization period, the counter becomes sort of uninformative... 
+But for the releases, the week-based granularity seems to be enough - the
+current habit of having a stable by number is actually OK too, since the -stable
+team does its job. So, yes, to have a similar version number to what is used
+currently, the scheme could be s.yy.ww.[nn || -rcX], s=series (2), yy= year,
+ww=week when the tree was released, nn= stable number. What do you think ?
 
 
