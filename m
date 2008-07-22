@@ -1,74 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbYGVCgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbYGVChh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755582AbYGVCgj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 22:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbYGVCg2
+	id S1756179AbYGVChh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 22:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbYGVCh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 22:36:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56916 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750698AbYGVCg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 22:36:27 -0400
-Date: Mon, 21 Jul 2008 22:36:09 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Johannes Weiner" <hannes@saeurebad.de>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       Nossum <vegard.nossum@gmail.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] mm: more likely reclaim MADV_SEQUENTIAL mappings
-Message-ID: <20080721223609.70e93725@bree.surriel.com>
-In-Reply-To: <200807221202.27169.nickpiggin@yahoo.com.au>
-References: <87y73x4w6y.fsf@saeurebad.de>
-	<200807211549.00770.nickpiggin@yahoo.com.au>
-	<20080721111412.0bfcd09b@bree.surriel.com>
-	<200807221202.27169.nickpiggin@yahoo.com.au>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Jul 2008 22:37:29 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2827 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750718AbYGVCh2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 22:37:28 -0400
+Date: Mon, 21 Jul 2008 22:37:25 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Robert Hancock <hancockr@shaw.ca>
+cc: Tomas Styblo <tripie@cpan.org>, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>, <usb-storage@lists.one-eyed-alien.net>
+Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device
+ 152d:2338
+In-Reply-To: <4884E585.2050104@shaw.ca>
+Message-ID: <Pine.LNX.4.44L0.0807212232001.5882-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jul 2008 12:02:26 +1000
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Mon, 21 Jul 2008, Robert Hancock wrote:
 
-> I don't actually care what the man page or posix says if it is obviously
-> silly behaviour. If you want to dispute the technical points of my post,
-> that would be helpful.
+> (adding CCs)
+> 
+> Tomas Styblo wrote:
+> > 
+> > Hello,
+> > 
+> > this message includes a patch that provides a workaround for
+> > a silent data corruption bug caused by incorrect error handling in
+> > the JMicron JM20337 Hi-Speed USB to SATA & PATA Combo Bridge chipset,
+> > USB device id 152d:2338.
 
-Application writers read the man page and expect MADV_SEQUENTIAL
-to do roughly what the name and description imply.
+The two of you should read through
 
-If you think that the kernel should not bother implementing
-what the application writers expect, and the application writers
-should implement special drop-behind magic for Linux, your
-expectations may not be entirely realistic.
+	http://bugzilla.kernel.org/show_bug.cgi?id=9638
 
-> Consider this: if the app already has dedicated knowledge and
-> syscalls to know about this big sequential copy, then it should
-> go about doing it the *right* way and really get performance
-> improvement. Automatic unmap-behind even if it was perfect still
-> needs to scan LRU lists to reclaim.
+which concerns this very problem.
 
-Doing nothing _also_ ends up with the kernel scanning the
-LRU lists, once memory fills up.
+> > - the problem occurs quite rarely, approx. once for 
+> >   every 20 GB of transfered data during heavy load
+> > 
+> > - it seems that only read operations are affected
+> > 
+> > - the problem is accompanied by these messages in syslog each
+> >   time it occurs:
+> > 
+> > May 17 15:06:56 kernel: sd 6:0:0:0: [sdb] Sense Key : 0x0 [current] 
+> > May 17 15:06:56 kernel: sd 6:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
+> > 
+> > - the bug is not detected as an error and incorrect data is returned, 
+> >   causing insidious data corruption
+> > 
+> > - tested with 3 external disk enclosures (Akasa Integral AK-ENP2SATA-BL) 
+> >   with different disks on different computers, with kernel 2.6.24 and 2.6.25
+> > 
+> > - the patch provides a crude workaround by detecting the error condition
+> >   and retrying the faulty transfer
+> > 
+> > 
+> > The fix needs a review as I don't know much about USB and SCSI.  
+> > It's possible that this approach is wrong and that the problem should
+> > be fixed somewhere else.
+> > 
+> > There are other problems with this chipset that make it necessary 
+> > to disconnect and power off the enclosure from time to time, but at least
+> > there's no data corruption anymore.
+> 
+> I'm not sure this is a good approach. More that this code right above in 
+> usb_stor_invoke_transport, which your code undoes the effect of for this 
+> device, doesn't seem right:
+> 
+> 	/* If things are really okay, then let's show that.  Zero
+> 	 * out the sense buffer so the higher layers won't realize
+> 	 * we did an unsolicited auto-sense. */
+> 	if (result == USB_STOR_TRANSPORT_GOOD &&
+> 		/* Filemark 0, ignore EOM, ILI 0, no sense */
+> 			(srb->sense_buffer[2] & 0xaf) == 0 &&
+> 		/* No ASC or ASCQ */
+> 			srb->sense_buffer[12] == 0 &&
+> 			srb->sense_buffer[13] == 0) {
+> 		srb->result = SAM_STAT_GOOD;
+> 		srb->sense_buffer[0] = 0x0;
+> 	}
+> 
+> So if the transport initially gets a failure, but then request sense 
+> doesn't show any error, we just go "hmm, guess it was ok after all". 
+> That seems kind of dangerous, I shouldn't think we should assume a 
 
-Scanning the LRU lists is a given.
+No, no -- you have misread the code.  If the transport initially got a 
+failure then result would be equal to USB_STOR_TRANSPORT_FAILED, not 
+USB_STOR_TRANSPORT_GOOD, so this code wouldn't run.
 
-All that the patch by Johannes does is make sure the kernel
-does the right thing when it runs into an MADV_SEQUENTIAL
-page on the inactive_file list: evict the page immediately,
-instead of having it pass through the active list and the
-inactive list again.  
+> If you just delete that code above, does the corruption go away?
 
-This reduces the number of times that MADV_SEQUENTIAL pages
-get scanned from 3 to 1, while protecting the working set
-from MADV_SEQUENTIAL pages.
+Alan Stern
 
--- 
-All rights reversed.
