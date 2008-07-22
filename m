@@ -1,138 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbYGVIme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754933AbYGVIph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755877AbYGVIme (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 04:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYGVIm0
+	id S1754933AbYGVIph (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 04:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYGVIp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 04:42:26 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:52240 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752660AbYGVImY (ORCPT
+	Tue, 22 Jul 2008 04:45:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50444 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751657AbYGVIp2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 04:42:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=qFYLNUhqqSpZ38/W6r1sHNUqj5w4yINTYqE2q+gllxw9XVTUbm8uKdDJt7j9RVEurm
-         jvq6ubw3s/IVyfzbcy23UBsy3ol5GDHKNPDET0/+v0y10FjpLaxHLlp5zuLlxpWUNfMa
-         ULCejmfA7fnmUG6AqPIUc5HzdWPvuC8lUMY+A=
-Message-ID: <aecf5e530807220142k4d53aa7aq568385cfc6cd44a0@mail.gmail.com>
-Date: Tue, 22 Jul 2008 14:12:23 +0530
-From: "sasa sasa" <sasak.1983@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] IRQ : bug fix in setup_irq
-Cc: "Thomas Gleixner" <tglx@linutronix.de>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_83119_21041192.1216716144076"
+	Tue, 22 Jul 2008 04:45:28 -0400
+Date: Tue, 22 Jul 2008 01:45:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2][-mm][resend] memcg limit change shrink usage.
+Message-Id: <20080722014517.04e88306.akpm@linux-foundation.org>
+In-Reply-To: <20080714171522.d1cd50e9.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080714171154.e1cc9943.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080714171522.d1cd50e9.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_83119_21041192.1216716144076
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, 14 Jul 2008 17:15:22 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
->From cf76c764e891a90ab0aaf322327e47e3a3302492 Mon Sep 17 00:00:00 2001
-From: Sandeep Kaushik <sandeep-mmc.kaushik@st.com>
-Date: Tue, 22 Jul 2008 13:20:51 +0530
-Subject: [PATCH] IRQ : bug fix in setup_irq
+> Shrinking memory usage at limit change.
 
-This patch is for bug fix in setup_irq function.
-Error handling is added in setup_irq function. This is required in case if some
-architecture dependent pin's set_type function returned error.
+The above six words are all we really have as a changelog.  It is not
+adequate.
 
-Signed-off-by: Sandeep Kaushik <sandeep-mmc.kaushik@st.com>
----
- kernel/irq/manage.c |   24 ++++++++++++++++++++----
- 1 files changed, 20 insertions(+), 4 deletions(-)
+> This is an enhancement (in TODO list).
+> based on res_counter-limit-change-ebusy.patch
+> 
+> Changelog: v2 -> v3
+>   - supported interrupt by signal. (A user can stop limit change by Ctrl-C.)
+> Changelog: v1 -> v2
+>   - adjusted to be based on write_string() patch set
+>   - removed backword goto.
+>   - removed unneccesary cond_resched().
+> 
+> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> Acked-by: Pavel Emelyanov <xemul@openvz.org>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+>  Documentation/controllers/memory.txt |    3 --
+>  mm/memcontrol.c                      |   48 ++++++++++++++++++++++++++++++++---
+>  2 files changed, 45 insertions(+), 6 deletions(-)
+> 
+> Index: linux-2.6.26-rc8-mm1/mm/memcontrol.c
+> ===================================================================
+> --- linux-2.6.26-rc8-mm1.orig/mm/memcontrol.c
+> +++ linux-2.6.26-rc8-mm1/mm/memcontrol.c
+> @@ -836,6 +836,30 @@ int mem_cgroup_shrink_usage(struct mm_st
+>  	return 0;
+>  }
+>  
+> +int mem_cgroup_resize_limit(struct mem_cgroup *memcg, unsigned long long val)
+> +{
+> +
+> +	int retry_count = MEM_CGROUP_RECLAIM_RETRIES;
+> +	int progress;
+> +	int ret = 0;
+> +
+> +	while (res_counter_set_limit(&memcg->res, val)) {
+> +		if (signal_pending(current)) {
+> +			ret = -EINTR;
+> +			break;
+> +		}
+> +		if (!retry_count) {
+> +			ret = -EBUSY;
+> +			break;
+> +		}
+> +		progress = try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL);
+> +		if (!progress)
+> +			retry_count--;
+> +	}
+> +	return ret;
+> +}
 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 1f31422..a90ed1c 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -339,6 +339,8 @@ int setup_irq(unsigned int irq, struct irqaction *new)
- 		desc->status |= IRQ_NO_BALANCING;
+We could perhaps get away with a basically-unchanglogged patch if the
+code was adequately commented.  But it is not.
 
- 	if (!shared) {
-+		int trigger_type;
-+
- 		irq_chip_set_defaults(desc->chip);
+What the heck does this function *do*?  Why does it exist?
 
- #if defined(CONFIG_IRQ_PER_CPU)
-@@ -346,11 +348,25 @@ int setup_irq(unsigned int irq, struct irqaction *new)
- 			desc->status |= IRQ_PER_CPU;
- #endif
+Guys, this is core Linux kernel, not some weekend hack project.  Please
+work to make it as comprehensible and as maintainable as we possibly
+can.
 
-+		trigger_type = new->flags & IRQF_TRIGGER_MASK;
-+
- 		/* Setup the type (level, edge polarity) if configured: */
--		if (new->flags & IRQF_TRIGGER_MASK) {
--			if (desc->chip && desc->chip->set_type)
--				desc->chip->set_type(irq,
--						new->flags & IRQF_TRIGGER_MASK);
-+		if (trigger_type) {
-+			if (desc->chip && desc->chip->set_type)	{
-+				if ((desc->chip->set_type(irq, trigger_type))) {
-+					printk(KERN_ERR "IRQF_TRIGGER set_type"
-+							"function for IRQ"
-+							"%d (%s) failed\n",
-+							irq, desc->chip->name);
-+					/*
-+					 * Action handler gets freed but
-+					 * last action handler on desc->action
-+					 * list also needs to bet to NULL.
-+					 */
-+					*p = NULL;
-+					goto mismatch;
-+				}
-+			}
- 			else
- 				/*
- 				 * IRQF_TRIGGER_* but the PIC does not support
--- 
-1.5.6.GIT
+Also, it is frequently a mistake for a callee to assume that the caller
+can use GFP_KERNEL.  Often when we do this we end having to change the
+interface so that the caller passes in the gfp_t.  As there's only one
+caller I guess we can get away with it this time.  For now.
 
-------=_Part_83119_21041192.1216716144076
-Content-Type: application/octet-stream;
- name=0001-IRQ-bug-fix-in-setup_irq_new1.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fiy9awmf0
-Content-Disposition: attachment;
- filename=0001-IRQ-bug-fix-in-setup_irq_new1.patch
+> +
+>  /*
+>   * This routine traverse page_cgroup in given list and drop them all.
+>   * *And* this routine doesn't reclaim page itself, just removes page_cgroup.
+> @@ -916,13 +940,29 @@ static u64 mem_cgroup_read(struct cgroup
+>  	return res_counter_read_u64(&mem_cgroup_from_cont(cont)->res,
+>  				    cft->private);
+>  }
+> -
+> +/*
+> + * The user of this function is...
+> + * RES_LIMIT.
+> + */
+>  static int mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
+>  			    const char *buffer)
+>  {
+> -	return res_counter_write(&mem_cgroup_from_cont(cont)->res,
+> -				 cft->private, buffer,
+> -				 res_counter_memparse_write_strategy);
+> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cont);
+> +	unsigned long long val;
+> +	int ret;
+> +
+> +        switch (cft->private) {
+> +	case RES_LIMIT:
+> +		/* This function does all necessary parse...reuse it */
+> +		ret = res_counter_memparse_write_strategy(buffer, &val);
+> +		if (!ret)
+> +			ret = mem_cgroup_resize_limit(memcg, val);
+> +		break;
+> +	default:
+> +		ret = -EINVAL; /* should be BUG() ? */
+> +		break;
+> +	}
+> +	return ret;
+>  }
 
-RnJvbSBjZjc2Yzc2NGU4OTFhOTBhYjBhYWYzMjIzMjdlNDdlM2EzMzAyNDkyIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBTYW5kZWVwIEthdXNoaWsgPHNhbmRlZXAtbW1jLmthdXNoaWtA
-c3QuY29tPgpEYXRlOiBUdWUsIDIyIEp1bCAyMDA4IDEzOjIwOjUxICswNTMwClN1YmplY3Q6IFtQ
-QVRDSF0gSVJRIDogYnVnIGZpeCBpbiBzZXR1cF9pcnEKClRoaXMgcGF0Y2ggaXMgZm9yIGJ1ZyBm
-aXggaW4gc2V0dXBfaXJxIGZ1bmN0aW9uLgpFcnJvciBoYW5kbGluZyBpcyBhZGRlZCBpbiBzZXR1
-cF9pcnEgZnVuY3Rpb24uIFRoaXMgaXMgcmVxdWlyZWQgaW4gY2FzZSBpZiBzb21lCmFyY2hpdGVj
-dHVyZSBkZXBlbmRlbnQgcGluJ3Mgc2V0X3R5cGUgZnVuY3Rpb24gcmV0dXJuZWQgZXJyb3IuCgpT
-aWduZWQtb2ZmLWJ5OiBTYW5kZWVwIEthdXNoaWsgPHNhbmRlZXAtbW1jLmthdXNoaWtAc3QuY29t
-PgotLS0KIGtlcm5lbC9pcnEvbWFuYWdlLmMgfCAgIDI0ICsrKysrKysrKysrKysrKysrKysrLS0t
-LQogMSBmaWxlcyBjaGFuZ2VkLCAyMCBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQoKZGlm
-ZiAtLWdpdCBhL2tlcm5lbC9pcnEvbWFuYWdlLmMgYi9rZXJuZWwvaXJxL21hbmFnZS5jCmluZGV4
-IDFmMzE0MjIuLmE5MGVkMWMgMTAwNjQ0Ci0tLSBhL2tlcm5lbC9pcnEvbWFuYWdlLmMKKysrIGIv
-a2VybmVsL2lycS9tYW5hZ2UuYwpAQCAtMzM5LDYgKzMzOSw4IEBAIGludCBzZXR1cF9pcnEodW5z
-aWduZWQgaW50IGlycSwgc3RydWN0IGlycWFjdGlvbiAqbmV3KQogCQlkZXNjLT5zdGF0dXMgfD0g
-SVJRX05PX0JBTEFOQ0lORzsKIAogCWlmICghc2hhcmVkKSB7CisJCWludCB0cmlnZ2VyX3R5cGU7
-CisKIAkJaXJxX2NoaXBfc2V0X2RlZmF1bHRzKGRlc2MtPmNoaXApOwogCiAjaWYgZGVmaW5lZChD
-T05GSUdfSVJRX1BFUl9DUFUpCkBAIC0zNDYsMTEgKzM0OCwyNSBAQCBpbnQgc2V0dXBfaXJxKHVu
-c2lnbmVkIGludCBpcnEsIHN0cnVjdCBpcnFhY3Rpb24gKm5ldykKIAkJCWRlc2MtPnN0YXR1cyB8
-PSBJUlFfUEVSX0NQVTsKICNlbmRpZgogCisJCXRyaWdnZXJfdHlwZSA9IG5ldy0+ZmxhZ3MgJiBJ
-UlFGX1RSSUdHRVJfTUFTSzsKKwogCQkvKiBTZXR1cCB0aGUgdHlwZSAobGV2ZWwsIGVkZ2UgcG9s
-YXJpdHkpIGlmIGNvbmZpZ3VyZWQ6ICovCi0JCWlmIChuZXctPmZsYWdzICYgSVJRRl9UUklHR0VS
-X01BU0spIHsKLQkJCWlmIChkZXNjLT5jaGlwICYmIGRlc2MtPmNoaXAtPnNldF90eXBlKQotCQkJ
-CWRlc2MtPmNoaXAtPnNldF90eXBlKGlycSwKLQkJCQkJCW5ldy0+ZmxhZ3MgJiBJUlFGX1RSSUdH
-RVJfTUFTSyk7CisJCWlmICh0cmlnZ2VyX3R5cGUpIHsKKwkJCWlmIChkZXNjLT5jaGlwICYmIGRl
-c2MtPmNoaXAtPnNldF90eXBlKQl7CisJCQkJaWYgKChkZXNjLT5jaGlwLT5zZXRfdHlwZShpcnEs
-IHRyaWdnZXJfdHlwZSkpKSB7CisJCQkJCXByaW50ayhLRVJOX0VSUiAiSVJRRl9UUklHR0VSIHNl
-dF90eXBlIgorCQkJCQkJCSJmdW5jdGlvbiBmb3IgSVJRIgorCQkJCQkJCSIlZCAoJXMpIGZhaWxl
-ZFxuIiwKKwkJCQkJCQlpcnEsIGRlc2MtPmNoaXAtPm5hbWUpOworCQkJCQkvKgorCQkJCQkgKiBB
-Y3Rpb24gaGFuZGxlciBnZXRzIGZyZWVkIGJ1dAorCQkJCQkgKiBsYXN0IGFjdGlvbiBoYW5kbGVy
-IG9uIGRlc2MtPmFjdGlvbgorCQkJCQkgKiBsaXN0IGFsc28gbmVlZHMgdG8gYmV0IHRvIE5VTEwu
-CisJCQkJCSAqLworCQkJCQkqcCA9IE5VTEw7CisJCQkJCWdvdG8gbWlzbWF0Y2g7CisJCQkJfQor
-CQkJfQogCQkJZWxzZQogCQkJCS8qCiAJCQkJICogSVJRRl9UUklHR0VSXyogYnV0IHRoZSBQSUMg
-ZG9lcyBub3Qgc3VwcG9ydAotLSAKMS41LjYuR0lUCgo=
-------=_Part_83119_21041192.1216716144076--
