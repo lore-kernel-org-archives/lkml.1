@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbYGVXW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbYGVXWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757951AbYGVXW2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbYGVXSV
+	id S1758040AbYGVXWo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:22:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756288AbYGVXS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:18:21 -0400
-Received: from mail.suse.de ([195.135.220.2]:52919 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 19:18:26 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57589 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755097AbYGVXST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:18:19 -0400
-Date: Tue, 22 Jul 2008 16:15:02 -0700
+	id S1756248AbYGVXSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:18:24 -0400
+Date: Tue, 22 Jul 2008 16:15:05 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,16 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stefan Becker <stefan.becker@nokia.com>,
-       David Brownell <david-b@pacbell.net>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 13/47] USB: fix interrupt disabling for HCDs with shared
-	interrupt handlers
-Message-ID: <20080722231502.GN8282@suse.de>
+       "Klaus S. Madsen" <ubuntu@hjernemadsen.org>,
+       Chuck Short <zulcss@ubuntu.com>, Jean Delvare <khali@linux-fr.org>,
+       Tim Gardner <tim.gardner@canonical.com>,
+       maximilian attems <max@stro.at>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>
+Subject: [patch 14/47] hdaps: add support for various newer Lenovo thinkpads
+Message-ID: <20080722231505.GO8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-fix-interrupt-disabling-for-hcds-with-shared-interrupt-handlers.patch"
+Content-Disposition: inline; filename="hdaps-add-support-for-various-newer-lenovo-thinkpads.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,93 +43,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Stefan Becker <Stefan.Becker@nokia.com>
+From: maximilian attems <max@stro.at>
 
-commit de85422b94ddb23c021126815ea49414047c13dc upstream
+commit 292d73551d0aa19526c3417e791c529b49ebadf3 upstream
 
-As has been discussed several times on LKML, IRQF_SHARED | IRQF_DISABLED
-doesn't work reliably, i.e. a shared interrupt handler CAN'T be certain to
-be called with interrupts disabled. Most USB HCD handlers use IRQF_DISABLED
-and therefore havoc can break out if they share their interrupt with a
-handler that doesn't use it.
+Adds R61, T61p, X61s, X61, Z61m, Z61p models to whitelist.
 
-On my test machine the yenta_socket interrupt handler (no IRQF_DISABLED)
-was registered before ehci_hcd and one uhci_hcd instance. Therefore all
-usb_hcd_irq() invocations for ehci_hcd and for one uhci_hcd instance
-happened with interrupts enabled. That led to random lockups as USB core
-HCD functions that acquire the same spinlock could be called twice
-from interrupt handlers.
+Fixes this:
 
-This patch updates usb_hcd_irq() to always disable/restore interrupts.
-usb_add_hcd() will silently remove any IRQF_DISABLED requested from HCD code.
+cullen@lenny:~$ sudo modprobe hdaps
+FATAL: Error inserting hdaps (/lib/modules/2.6.22-10-generic/kernel/drivers/hwmon/hdaps.ko): No such device
 
-Signed-off-by: Stefan Becker <stefan.becker@nokia.com>
-Acked-by: David Brownell <david-b@pacbell.net>
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
+[25192.888000] hdaps: supported laptop not found!
+[25192.888000] hdaps: driver init failed (ret=-19)!
+
+Originally based on an Ubuntu patch that got it wrong, the dmidecode
+output of the corresponding laptops shows LENOVO as the manufacturer.
+https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.22/+bug/133636
+
+tested on X61s:
+[  184.893588] hdaps: inverting axis readings.
+[  184.893588] hdaps: LENOVO ThinkPad X61s detected.
+[  184.893588] input: hdaps as /class/input/input12
+[  184.924326] hdaps: driver successfully loaded.
+
+Cc: Klaus S. Madsen <ubuntu@hjernemadsen.org>
+Cc: Chuck Short <zulcss@ubuntu.com>
+Cc: Jean Delvare <khali@linux-fr.org>
+Cc: Tim Gardner <tim.gardner@canonical.com>
+Signed-off-by: maximilian attems <max@stro.at>
+Cc: Mark M. Hoffman <mhoffman@lightlink.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/core/hcd.c |   42 ++++++++++++++++++++++++++++++------------
- 1 file changed, 30 insertions(+), 12 deletions(-)
+ drivers/hwmon/hdaps.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -1685,19 +1685,30 @@ EXPORT_SYMBOL_GPL(usb_bus_start_enum);
- irqreturn_t usb_hcd_irq (int irq, void *__hcd)
- {
- 	struct usb_hcd		*hcd = __hcd;
--	int			start = hcd->state;
-+	unsigned long		flags;
-+	irqreturn_t		rc;
+--- a/drivers/hwmon/hdaps.c
++++ b/drivers/hwmon/hdaps.c
+@@ -515,16 +515,24 @@ static struct dmi_system_id __initdata h
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R50"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R51"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R52"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61i"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61"),
+ 	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T41p"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T41"),
+ 	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T42p"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T42"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T43"),
+ 	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T60"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61p"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad X40"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad X41"),
+ 	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X60"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61s"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad Z60m"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61m"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61p"),
+ 	{ .ident = NULL }
+ };
  
--	if (unlikely(start == HC_STATE_HALT ||
--	    !test_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags)))
--		return IRQ_NONE;
--	if (hcd->driver->irq (hcd) == IRQ_NONE)
--		return IRQ_NONE;
--
--	set_bit(HCD_FLAG_SAW_IRQ, &hcd->flags);
--
--	if (unlikely(hcd->state == HC_STATE_HALT))
--		usb_hc_died (hcd);
--	return IRQ_HANDLED;
-+	/* IRQF_DISABLED doesn't work correctly with shared IRQs
-+	 * when the first handler doesn't use it.  So let's just
-+	 * assume it's never used.
-+	 */
-+	local_irq_save(flags);
-+
-+	if (unlikely(hcd->state == HC_STATE_HALT ||
-+		     !test_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags))) {
-+		rc = IRQ_NONE;
-+	} else if (hcd->driver->irq(hcd) == IRQ_NONE) {
-+		rc = IRQ_NONE;
-+	} else {
-+		set_bit(HCD_FLAG_SAW_IRQ, &hcd->flags);
-+
-+		if (unlikely(hcd->state == HC_STATE_HALT))
-+			usb_hc_died(hcd);
-+		rc = IRQ_HANDLED;
-+	}
-+
-+	local_irq_restore(flags);
-+	return rc;
- }
- 
- /*-------------------------------------------------------------------------*/
-@@ -1861,6 +1872,13 @@ int usb_add_hcd(struct usb_hcd *hcd,
- 
- 	/* enable irqs just before we start the controller */
- 	if (hcd->driver->irq) {
-+
-+		/* IRQF_DISABLED doesn't work as advertised when used together
-+		 * with IRQF_SHARED. As usb_hcd_irq() will always disable
-+		 * interrupts we can remove it here.
-+		 */
-+		irqflags &= ~IRQF_DISABLED;
-+
- 		snprintf(hcd->irq_descr, sizeof(hcd->irq_descr), "%s:usb%d",
- 				hcd->driver->description, hcd->self.busnum);
- 		if ((retval = request_irq(irqnum, &usb_hcd_irq, irqflags,
 
 -- 
