@@ -1,144 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbYGVDA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbYGVDCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbYGVDA2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 23:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbYGVDAR
+	id S1756275AbYGVDCP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 23:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbYGVDCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 23:00:17 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:33653 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754852AbYGVDAQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 23:00:16 -0400
-Date: Mon, 21 Jul 2008 22:56:39 -0400
-From: Theodore Tso <tytso@MIT.EDU>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: linux-kernel@vger.kernel.org, Andreas Dilger <adilger@sun.com>,
-       linux-ext4@vger.kernel.org, ext2-devel@lists.sourceforge.net
-Subject: Re: [RFC] A better solution to the HTree telldir problem
-Message-ID: <20080722025638.GK28839@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Daniel Phillips <phillips@phunq.net>, linux-kernel@vger.kernel.org,
-	Andreas Dilger <adilger@sun.com>, linux-ext4@vger.kernel.org,
-	ext2-devel@lists.sourceforge.net
-References: <200807211411.52007.phillips@phunq.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807211411.52007.phillips@phunq.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Mon, 21 Jul 2008 23:02:00 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52752 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754886AbYGVDB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 23:01:59 -0400
+Date: Tue, 22 Jul 2008 13:01:52 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] serial: fix struct uart_info change fallout
+Message-Id: <20080722130152.f115224d.sfr@canb.auug.org.au>
+In-Reply-To: <20080722025850.0d073a5e@lxorguk.ukuu.org.uk>
+References: <20080722102520.ca801ab5.sfr@canb.auug.org.au>
+	<20080722025850.0d073a5e@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__22_Jul_2008_13_01_52_+1000_BcLv.lp1U/rBNWE8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2008 at 02:11:51PM -0700, Daniel Phillips wrote:
-> This is something of a duh: if HTree refrains from splitting leaves 
-> while a directory traversal is in progress then a simple linear 
-> traversal can be used in classic Ext2/UFS fashion, with the logical 
-> file address of each directory entry serving as the telldir cookie.
+--Signature=_Tue__22_Jul_2008_13_01_52_+1000_BcLv.lp1U/rBNWE8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The problem here is the phrase "while a directory traversal is in
-progress".  What does that mean?  While a file descriptor is open on a
-directory?  An application could call opendir(), and then go to sleep
-for a week.  Or, a user could type control-Z while an "ls -lR" is in
-progress, and then forget to resume it.  So any scheme has to be
-prepared to not split leaves for a *long* time.
+Hi Alan,
 
-You later say that we only need to do this if the user calls
-telldir(); although of course the kernel doesn't know if the user has
-called telldir().  We only know if the lseek() system call has been
-called.  So it becomes impossible for us to distinguish between an
-application calling telldir() or rewinddir().  So we would end up
-needing to do this more often than might be strictly necessary.
+On Tue, 22 Jul 2008 02:58:50 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrot=
+e:
+>
+> Yes I know.
 
-The problem becomes even worse with NFS, because we have absolutely no
-idea whether or not lseek() has been called.  Even worse, because NFS
-is a stateless protocol, we don't even know when a file handle is
-closed!  So we can't even detect a closedir()!  Or of course, an
-opendir()!  With NFS all you get is an NFS getattr RPC, which could be
-used to service either a stat(2) call or an open(2) call.  The net is
-that while NFS mount is in progress, we would never be able to split a
-leaf.
+Indeed, you knew before you pushed the breaking patches to Linus.
 
-So your optimization of only doing this if there is a telldir()
-operation may not make the operation be as rare as we might like,
-especially if there are some user programs that keep file descriptors
-open over long periods for inotify purposes, and then use rewinddir().
-We would need to check out the behavior of programs such as trackerd
-and the GNome VFS library routines to see whether this could
-potentially be a problem.
+> I've been trying to get the other patches merged but each of the five
+> pulls of Linus tree I have done has broken the tty patch merges *AGAIN*
+> so I still don't have them tested and ready to merge despite it being 3AM.
 
-It might be possible to make some assumptions that if userspace calls
-lseek(fd, 0, SEEK_SET), that this really is a rewinddir(), and not a
-telldir(), but this could be a potentially dangerous assumption since
-there is no way to know for sure whether userspace is paying attention
-to the return value of lseek(fd, 0, SEEK_SET) or not.
+Then why weren't the fixes rolled back into the original patch or at
+least submitted at the same time?
 
-> The idea is to disable leaf splitting during directory traversal and use 
-> an alternate leaf overflow mechanism in its place.  To handle a create 
-> into a full leaf when splitting is disabled, a new leaf block is 
-> created having the same hash index as the current one and inserted 
-> before the full leaf in the hash tree to hold the new entry and any 
-> subsequent creates into the same hash bucket.  The lookup probe has to 
-> be modified slightly to traverse all leaves with the same hash index.
-> Or maybe this already works.
+> So much for the linux-next tree. Please give it until tomorrow or you are
 
-The lookup probe would indeed need to be modified, but that's not a
-major deal.  The bigger deal is that lookups are less efficient, since
-we it effectively looks like a hash bucket overflow.
+What is your problem with the linux-next tree.  The problem was
+discovered and reported when I first merged the ttydev tree into
+linux-next on July 1.  The fixes were in linux-next on July 2.
 
-> HTree could opportunistically re-distribute the entries later when no 
-> directory listing is in progress, or it could just leave things as they 
-> are.  The fallback is quite unlikely to occur in practice, and the 
-> alternative storage format is only very slightly less efficient to 
-> process on lookup, and does not consume any extra space.
+> just going to break the tree again and mean I have to run another set of
+> tests and regressions.
 
-How likely it takes place depends on how often an opendir()/readdir()
-cycle is held for a long period of time.  It will depend on your
-application workload.  And if NFS is enabled, all bets are off.
+Please give what until tomorrow?
 
-> If the new semantics are acceptable, the payoff for adopting this simpler
-> method is:
-> 
->   * Can use a more efficient HTree hash because we do not need to be so
->     paranoid about bucket levelling to avoid rare cases that might break
->     the RB tree approach.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Yes we do, because the biggest problem we have right now is your
-original implementation hard codes us to a tree which is at most two
-levels deep.  Clusterfs/Sun has more general code which allows an
-arbitrary deep tree, but we would need to integrate that into the
-kernel, and also get support for that into e2fsck.
+--Signature=_Tue__22_Jul_2008_13_01_52_+1000_BcLv.lp1U/rBNWE8
+Content-Type: application/pgp-signature
 
->   * We get to use the nice shiny alternative hash mechanism that we put
->     considerable effort into building but so far have never used.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-We are using alternative hash algorithms already....
+iEYEARECAAYFAkiFTaAACgkQjjKRsyhoI8y4LACeNxayZN3UxWUj/+qkvFm+F+25
+xSsAoLbS8c4UHLMUYki17yu3bpqwOQO2
+=h/3U
+-----END PGP SIGNATURE-----
 
->   * Delete will now happen in physical create order and therefore not
->     thrash the inode table, which is a problem that HTree can currently
->     hit with large directories ant tight cache.
-
-Not just deletes, but any kind of readdir followed by stat operation.
-This includes "ls -sF", find, sendmail/exim queue operations, etc., in
-addition to "rm -rf".
-
->   * Several hundred lines of special purpose code removed.  (Replaced by
->     maybe 50 different lines of special purpose code.)
-
-If you mean the rbtree fill code, I suspect the special purpose code
-you are referring to will be roughly end up being roughly the same
-size, plus or minus 20%.  That's because in order to do what you are
-suggesting, after we finish looking at one leaf node, we will need to
-go back to the interior node, and find the next leaf node to see if
-the hash is the same.  And if we are at the end of the interior node,
-we may need to recursively go up one level, and then back down to find
-the subsequent leaf node.
-
-Even worse, since if NFS is enabled in any way, shape or form, this
-scheme is totally and completely screwed.  So we have to the old way
-of doing things if NFS is turned on.
-
-							- Ted
+--Signature=_Tue__22_Jul_2008_13_01_52_+1000_BcLv.lp1U/rBNWE8--
