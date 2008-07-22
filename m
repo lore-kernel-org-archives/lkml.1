@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbYGVVS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbYGVVTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756217AbYGVVS4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 17:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbYGVVPU
+	id S1757841AbYGVVTm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 17:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756355AbYGVVPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 17:15:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41486 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756632AbYGVVPT (ORCPT
+	Tue, 22 Jul 2008 17:15:51 -0400
+Received: from outbound-mail-16.bluehost.com ([69.89.20.231]:40343 "HELO
+	outbound-mail-16.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756769AbYGVVPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 17:15:19 -0400
-Date: Tue, 22 Jul 2008 14:14:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Travis <travis@sgi.com>
-Cc: mingo@elte.hu, suresh.b.siddha@intel.com, hpa@zytor.com,
-       tglx@linutronix.de, arjan@linux.intel.com, andi@firstfloor.org,
-       ebiederm@xmission.com, jbarnes@virtuousgeek.org, steiner@sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/26] x64, x2apic/intr-remap: Interrupt-remapping and
- x2apic support
-Message-Id: <20080722141419.f4035698.akpm@linux-foundation.org>
-In-Reply-To: <48864A7F.3050908@sgi.com>
-References: <20080710181634.764954000@linux-os.sc.intel.com>
-	<20080710195320.GA23322@elte.hu>
-	<20080722134909.2cbf719b.akpm@linux-foundation.org>
-	<48864A7F.3050908@sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 Jul 2008 17:15:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=KCpNN60rT0Ey804eK+9TZm1qeSO9lHFdbxNKfZDc7dWbceOemyhh6E8u2QTVlSontzKU3OGdjq2WuZSD3b19tYKZZgZo84DykEwsKvYBJAK8+ZQPEtcdg8pXzrqze5CD;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Shaohua Li <shaohua.li@intel.com>
+Subject: Re: [PATCH] x86,pci: dmi check for mackpro 2.2 mmconf
+Date: Tue, 22 Jul 2008 14:15:37 -0700
+User-Agent: KMail/1.9.9
+Cc: Jack Howarth <howarth@bromo.msbb.uc.edu>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200807180941.09779.yhlu.kernel@gmail.com> <20080719191438.GA19759@bromo.msbb.uc.edu> <1216622999.838.1.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <1216622999.838.1.camel@sli10-desk.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807221415.37576.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jul 2008 14:00:47 -0700
-Mike Travis <travis@sgi.com> wrote:
+On Sunday, July 20, 2008 11:49 pm Shaohua Li wrote:
+> On Sat, 2008-07-19 at 15:14 -0400, Jack Howarth wrote:
+> > On Sat, Jul 19, 2008 at 12:04:48PM -0700, Jesse Barnes wrote:
+> > > On Saturday, July 19, 2008 11:40 am Jack Howarth wrote:
+> > > > Jesse,
+> > > >     It seems that MacBook Pro users aren't the only ones suffering
+> > > > from PCIE_ASPM...
+> > > >
+> > > > http://groups.google.com/group/linux.kernel/browse_thread/thread/cc1b
+> > > >8b3ef6 4e3257/dd4e427510bde7f0?lnk=raot
+> > > >
+> > > > I also discovered the pcie_noaspm kernel option from that thread
+> > > > which allows me to boot the kernels built with PCIE_ASPM support by
+> > > > disabling that feature.
+> > >
+> > > Yeah, that's a good data point.  Thanks.  Sounds like there may also be
+> > > some ACPI interaction going on...
+> > >
+> > > Jesse
+> >
+> > Jesse,
+> >    For what its worth, acpi=off alone is insufficent to inhibit the
+> > kernel freezes when PCIE aspm is in use.
+>
+> As Jesse suggested, maybe we should blacklist all pcie pre-1.1 devices.
+> please try.
 
-> Andrew Morton wrote:
-> > On Thu, 10 Jul 2008 21:53:20 +0200
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> >> For review and testing purposes i've created a new topic branch for 
-> >> this: tip/x86/x2apic and have picked up your patches into it.
-> > 
-> > This has today turned up in linux-next and I'm having to rework 2.6.27
-> > patches to compensate for it.
-> > 
-> > Which means that I now need to wait until this work goes into mainline
-> > before I can merge those patches or I need to undo those fixes, route
-> > around Suresh's changes and then force you to fix the resulting damage.
-> > 
-> > What's the score here?  Is this stuff going into 2.6.27?
-> 
-> Hi Andrew,
-> 
-> Jack is out at OLS this week, but yes I believe we're trying to push this
-> into 6.2.27 as that is what the distro's will be basing their distributions
-> on when the new system sees the light of day.
+Jack, did this work for you?  I'm thinking of pushing this but want to make 
+sure it actually solves your problem first.
 
-2.6.27 material shuld not be turning up in linux-next halfway through
-the merge window.
-
-> Is there something I can do to help?  Perhaps work on conflict resolutions?
-
-It was a simple fix.
+Thanks,
+Jesse
