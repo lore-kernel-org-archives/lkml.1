@@ -1,87 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbYGVMsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbYGVMs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754807AbYGVMsN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 08:48:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbYGVMr6
+	id S1755814AbYGVMs7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 08:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYGVMss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 08:47:58 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:1367 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751289AbYGVMr6 (ORCPT
+	Tue, 22 Jul 2008 08:48:48 -0400
+Received: from stinky.trash.net ([213.144.137.162]:61591 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751386AbYGVMsr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 08:47:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=vqEUS+JviyoIfKnVqMzpy6b2hwOukq8Mwp1cJXLkD7U2UjV+V9pXWz9XvHAocCOwVT
-         87F6uNbGwYK6sVufKGgVa7eNuVBtAyuhoqJH343smWD5jkBGtmnGefyElpiuSEZ7Jnkj
-         yJekph3h5GV/wZJBFuz6niOgZJcvcwvC89mws=
-Message-ID: <cfd18e0f0807220547w691346ecyd4819fa4b7c23325@mail.gmail.com>
-Date: Tue, 22 Jul 2008 14:47:56 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Oleg Nesterov" <oleg@tv-sign.ru>
-Subject: Re: [PATCH -mm] coredump: format_corename: don't append .%pid if multi-threaded
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Roland McGrath" <roland@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, andi@firstfloor.org
-In-Reply-To: <20080722124314.GA3267@tv-sign.ru>
+	Tue, 22 Jul 2008 08:48:47 -0400
+Message-ID: <4885D72A.1060106@trash.net>
+Date: Tue, 22 Jul 2008 14:48:42 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Paul Menage <menage@google.com>
+CC: Ranjit Manomohan <ranjitm@google.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, lizf@cn.fujitsu.com
+Subject: Re: [PATCH] Traffic control cgroups subsystem
+References: <Pine.LNX.4.64.0807212100580.1760@ranjit.corp.google.com>	 <4885B7DD.7070507@trash.net> <6599ad830807220514m5afea0fcsb99bf2e95f401c36@mail.gmail.com>
+In-Reply-To: <6599ad830807220514m5afea0fcsb99bf2e95f401c36@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200807210137.m6L1bN0H011138@imap1.linux-foundation.org>
-	 <20080721102940.666d733d@the-village.bc.nu>
-	 <20080721210121.C5E741541A5@magilla.localdomain>
-	 <20080721221416.6d4f9014@lxorguk.ukuu.org.uk>
-	 <20080722113731.GA1383@tv-sign.ru> <20080722121824.GB1383@tv-sign.ru>
-	 <cfd18e0f0807220521x5faea19bn1f545b23b84ead6a@mail.gmail.com>
-	 <20080722124314.GA3267@tv-sign.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 2:43 PM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> On 07/22, Michael Kerrisk wrote:
+Paul Menage wrote:
+> On Tue, Jul 22, 2008 at 6:35 AM, Patrick McHardy <kaber@trash.net> wrote:
+>> Does this really have to be a new skb member? You could
+>> simply use skb->sk->sk_cgroup_classid directly, or if
+>> that doesn't work, maybe skb->priority.
 >>
->> On Tue, Jul 22, 2008 at 2:18 PM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
->> > If the coredumping is multi-threaded, format_corename() appends .%pid
->> > to the corename. This was needed before the proper multi-thread core
->> > dump support, now all the threads in the mm go into a single unified
->> > core file.
->> >
->> > Remove this special case, it is not even documented and we have "%p"
->> > and core_uses_pid.
->>
->> Hi Oleg,
->>
->> I have not thought about this at any length, but one question that
->> jumps to mind: could this feature still be useful for LinuxThreads,
->> where each thread does indeed have a separate PID?
->
-> As far as I know, LinuxThreads use CLONE_VM, right?
+> 
+> We were actually using skb->priority in our internal version of this
+> patch. I suggested that the separate cgroup_classid field be added
+> since it might be considered an abuse of skb->priority and would
+> interfere with existing users of that. If that's not an issue then
+> reusing skb->priority is certainly possible.
 
-Yes.
+Using skb->priority for classification would be fine, but it would
+probably interfere with the default initialization to sk->sk_priority.
 
-> The coredump will create the single core file for all processes because
-> they have the same ->mm, the "threads" won't dump all over each other.
+> Regarding skb->sk->sk_cgroup_classid, is it always the case that the
+> original sk is still available when we're making traffic control
+> decisions? I'd thought that there were cases (e.g. cloning skbs in the
+> TCP retransmit path) where the pointer to the original sk is lost.
 
-Yes, looks like you are right.  I had this vague idea that there were
-circumstances where a dump of a LinuxThreads m-t process could produce
-multipl core files, distinguished by the .PID, but I think I must have
-misremembered.
-
-> And, just in case, this patch doesn't make any difference if core_uses_pid
-> is set or pid_in_pattern is true.
->
-> That said, this is the user-visible change...
-
-True.  Not sure how important that is in this case though.  What is
-the reason for making this change (other than tidiness)?
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+After cloning, TCP sets the owner of the skb to the socket, so
+that should work fine.
