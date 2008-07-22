@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbYGVXUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbYGVXU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757349AbYGVXUu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbYGVXR7
+	id S1754176AbYGVXU0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbYGVXRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:17:59 -0400
-Received: from mail.suse.de ([195.135.220.2]:52780 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 19:17:54 -0400
+Received: from mx2.suse.de ([195.135.220.15]:57471 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753170AbYGVXR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:17:57 -0400
-Date: Tue, 22 Jul 2008 16:14:42 -0700
+	id S1755993AbYGVXRx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:17:53 -0400
+Date: Tue, 22 Jul 2008 16:14:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Neil Brown <neilb@suse.de>
-Subject: [patch 08/47] md: Ensure interrupted recovery completed properly
-	(v1 metadata plus bitmap)
-Message-ID: <20080722231442.GI8282@suse.de>
+Subject: [patch 07/47] md: Dont acknowlege that stripe-expand is complete
+	until it really is.
+Message-ID: <20080722231438.GH8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="md-ensure-interrupted-recovery-completed-properly.patch"
+Content-Disposition: inline; filename="md-don-t-acknowlege-that-stripe-expand-is-complete-until-it-really-is.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,62 +42,50 @@ know.
 ------------------
 From: Neil Brown <neilb@notabene.brown>
 
-commit 8c2e870a625bd336b2e7a65a97c1836acef07322 upstream
+commit efe311431869b40d67911820a309f9a1a41306f3 upstream
 
-If, while assembling an array, we find a device which is not fully
-in-sync with the array, it is important to set the "fullsync" flags.
-This is an exact analog to the setting of this flag in hot_add_disk
-methods.
+We shouldn't acknowledge that a stripe has been expanded (When
+reshaping a raid5 by adding a device) until the moved data has
+actually been written out.  However we are currently
+acknowledging (by calling md_done_sync) when the POST_XOR
+is complete and before the write.
 
-Currently, only v1.x metadata supports having devices in an array
-which are not fully in-sync (it keep track of how in sync they are).
-The 'fullsync' flag only makes a difference when a write-intent bitmap
-is being used.  In this case it tells recovery to ignore the bitmap
-and recovery all blocks.
+So track in s.locked whether there are pending writes, and don't
+call md_done_sync yet if there are.
 
-This fix is already in place for raid1, but not raid5/6 or raid10.
+Note: we all set R5_LOCKED on devices which are are about to
+read from.  This probably isn't technically necessary, but is
+usually done when writing a block, and justifies the use of
+s.locked here.
 
-So without this fix, a raid1 ir raid4/5/6 array with version 1.x
-metadata and a write intent bitmaps, that is stopped in the middle
-of a recovery, will appear to complete the recovery instantly
-after it is reassembled, but the recovery will not be correct.
-
-If you might have an array like that, issueing
-   echo repair > /sys/block/mdXX/md/sync_action
-
-will make sure recovery completes properly.
+This bug can lead to a crash if an array is stopped while an reshape
+is in progress.
 
 Signed-off-by: Neil Brown <neilb@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/raid10.c |    2 ++
- drivers/md/raid5.c  |    4 +++-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+ drivers/md/raid5.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/drivers/md/raid10.c
-+++ b/drivers/md/raid10.c
-@@ -2102,6 +2102,8 @@ static int run(mddev_t *mddev)
- 		    !test_bit(In_sync, &disk->rdev->flags)) {
- 			disk->head_position = 0;
- 			mddev->degraded++;
-+			if (disk->rdev)
-+				conf->fullsync = 1;
- 		}
- 	}
- 
 --- a/drivers/md/raid5.c
 +++ b/drivers/md/raid5.c
-@@ -4166,7 +4166,9 @@ static int run(mddev_t *mddev)
- 				" disk %d\n", bdevname(rdev->bdev,b),
- 				raid_disk);
- 			working_disks++;
--		}
-+		} else
-+			/* Cannot rely on bitmap to complete recovery */
-+			conf->fullsync = 1;
- 	}
+@@ -2861,6 +2861,8 @@ static void handle_stripe5(struct stripe
  
- 	/*
+ 		for (i = conf->raid_disks; i--; ) {
+ 			set_bit(R5_Wantwrite, &sh->dev[i].flags);
++			set_bit(R5_LOCKED, &dev->flags);
++			s.locked++;
+ 			if (!test_and_set_bit(STRIPE_OP_IO, &sh->ops.pending))
+ 				sh->ops.count++;
+ 		}
+@@ -2874,6 +2876,7 @@ static void handle_stripe5(struct stripe
+ 			conf->raid_disks);
+ 		s.locked += handle_write_operations5(sh, 1, 1);
+ 	} else if (s.expanded &&
++		   s.locked == 0 &&
+ 		!test_bit(STRIPE_OP_POSTXOR, &sh->ops.pending)) {
+ 		clear_bit(STRIPE_EXPAND_READY, &sh->state);
+ 		atomic_dec(&conf->reshape_stripes);
 
 -- 
