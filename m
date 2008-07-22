@@ -1,116 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbYGVQTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbYGVQWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753810AbYGVQTv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 12:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYGVQTn
+	id S1754024AbYGVQWl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 12:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYGVQWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 12:19:43 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:58330 "EHLO
-	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752022AbYGVQTm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 12:19:42 -0400
-Date: Tue, 22 Jul 2008 12:19:00 -0400
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       rui.zhang@intel.com, harbour@sfinx.od.ua, pavel@ucw.cz, rjw@sisk.pl
-Subject: Re: +
-	pm-introduce-new-interfaces-schedule_work_on-and-queue_work_on.patch
-	added to -mm tree
-Message-ID: <20080722161900.GA17601@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <200807111846.m6BIkeTj031024@imap1.linux-foundation.org> <20080712162149.GD603@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080712162149.GD603@tv-sign.ru>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 22 Jul 2008 12:22:33 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:54043 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752183AbYGVQWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 12:22:32 -0400
+Date: Wed, 23 Jul 2008 02:22:24 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] serial: fix struct uart_info change fallout
+Message-Id: <20080723022224.22eb4d26.sfr@canb.auug.org.au>
+In-Reply-To: <20080722165929.717e38d4@lxorguk.ukuu.org.uk>
+References: <20080722102520.ca801ab5.sfr@canb.auug.org.au>
+	<20080722025850.0d073a5e@lxorguk.ukuu.org.uk>
+	<20080722130152.f115224d.sfr@canb.auug.org.au>
+	<20080722114436.2c13edea@lxorguk.ukuu.org.uk>
+	<20080723014910.7351c495.sfr@canb.auug.org.au>
+	<20080722165929.717e38d4@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__23_Jul_2008_02_22_24_+1000_qbHkhz.t3Qwcr/IY"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 12, 2008 at 08:21:49PM +0400, Oleg Nesterov wrote:
-> (Gautham cc'ed)
-> 
+--Signature=_Wed__23_Jul_2008_02_22_24_+1000_qbHkhz.t3Qwcr/IY
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sorry for the delay... I'm a bit tied down to other things until aug
-20th :(
+Hi Alan,
 
-> On 07/11, Andrew Morton wrote:
-> >
-> > Subject: pm: introduce new interfaces schedule_work_on() and queue_work_on()
-> > From: Zhang Rui <rui.zhang@intel.com>
-> >
-> > This interface allows adding a job on a specific cpu.
-> >
-> > Although a work struct on a cpu will be scheduled to other cpu if the cpu
-> > dies, there is a recursion if a work task tries to offline the cpu it's
-> > running on.  we need to schedule the task to a specific cpu in this case.
-> > http://bugzilla.kernel.org/show_bug.cgi?id=10897
-> 
-> So, this is used in http://bugzilla.kernel.org/attachment.cgi?id=16707
-> 
-> 	--- linux-2.6.orig/kernel/power/poweroff.c	2008-06-30 16:01:35.000000000 +0800
-> 	+++ linux-2.6/kernel/power/poweroff.c	2008-07-03 10:50:05.000000000 +0800
-> 	@@ -25,7 +25,8 @@
-> 	 
-> 	 static void handle_poweroff(int key, struct tty_struct *tty)
-> 	 {
-> 	-	schedule_work(&poweroff_work);
-> 	+	/* run sysrq poweroff on boot cpu */
-> 	+	schedule_work_on(first_cpu(cpu_online_map), &poweroff_work);
-> 	 }
-> 	 
-> 	 static struct sysrq_key_op	sysrq_poweroff_op = {
-> 
-> A couple of silly questions, I don't understand the low-level details.
-> 
-> This patch (and kernel_power_off() afaics) assumes that the boot cpu
-> can't be cpu_down()'ed. Is it true in general? For example, grep shows
-> that arch/s390/kernel/smp.c:topology_init()->smp_add_present_cpu()
-> sets ->hotpluggable = 1 for all present CPUs?
-
-I tried this on a Power system sometime back and I was able to
-offline CPU0. What I am not sure however, is
-if that was the boot-cpu.
-
-On x86, I do remember reading somewhere why we cannot offline
-CPU0.
-
-/me searches.
-
-Yes, in arch/x86/kernel/topology.c
-
-int __ref arch_register_cpu(int num)
-{
-	/*
-	 * CPU0 cannot be offlined due to several
-	 * restrictions and assumptions in kernel. This basically
-	 * doesnt add a control file, one cannot attempt to offline
-	 * BSP.
-	 *
-	 * Also certain PCI quirks require not to enable hotplug control
-	 * for all CPU's.
-	 */
-	if (num)
-		per_cpu(cpu_devices, num).cpu.hotpluggable = 1;
-	return register_cpu(&per_cpu(cpu_devices, num).cpu, num);
-}
-
-> 
-> Another question. I can't understand why first_cpu(cpu_online_map) is
-> always the boot CPU on every arch. IOW, shouldn't boot_cpu_init() set
-> some "boot_cpu = smp_processor_id()" which should be use instead of
-> first_cpu(cpu_online_map) ?
+On Tue, 22 Jul 2008 16:59:29 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrot=
+e:
 >
+> I really expected to get the rest merged within an hour or two, but then
+> it broke, then I was travelling and each time I got wireless access to
+> resync the tree and work on it - it broke again and again and again.
+>=20
+> Next time I will bump the patch up the pile and get it out earlier when
+> that occurs.
 
-Not very sure about this one.
-> Thanks,
-> 
-> Oleg.
-> 
+Excellent.
 
--- 
-Thanks and Regards
-gautham
+Just asking: do you have an aversion for merging fixes back into
+patches?  Not a problem, just so I know.  Different people work
+differently.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__23_Jul_2008_02_22_24_+1000_qbHkhz.t3Qwcr/IY
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiGCUAACgkQjjKRsyhoI8yJjQCfQIgDLPPf4zIDg5t2Oy3ZZDC/
+/4sAnjv8NSB6qMhjhQN7dWrUXSbG5a9p
+=6thl
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__23_Jul_2008_02_22_24_+1000_qbHkhz.t3Qwcr/IY--
