@@ -1,83 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbYGVQb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbYGVQjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbYGVQb4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 12:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750857AbYGVQbt
+	id S1753252AbYGVQjy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 12:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYGVQjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 12:31:49 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:53403 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750794AbYGVQbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 12:31:48 -0400
-Message-ID: <48860B72.10402@sgi.com>
-Date: Tue, 22 Jul 2008 09:31:46 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 22 Jul 2008 12:39:43 -0400
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:61893 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751802AbYGVQjl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 12:39:41 -0400
+Message-ID: <48860D4B.8070003@lwfinger.net>
+Date: Tue, 22 Jul 2008 11:39:39 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: add apic probe for genapic 64bit v2
-References: <200807211836.27282.yhlu.kernel@gmail.com>	 <200807212208.22116.yhlu.kernel@gmail.com>	 <20080722070734.GA16085@elte.hu> <20080722071324.GA2664@elte.hu> <86802c440807220109s63307f28uc0658402cb26cfea@mail.gmail.com>
-In-Reply-To: <86802c440807220109s63307f28uc0658402cb26cfea@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: David Miller <davem@davemloft.net>, Patrick McHardy <kaber@trash.net>
+CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Kernel WARNING: at net/core/dev.c:1330 __netif_schedule+0x2c/0x98()
+References: <4885104A.2070201@lwfinger.net>	<20080721.161517.27161039.davem@davemloft.net>	<48857F74.2040406@lwfinger.net> <20080722.043220.247312412.davem@davemloft.net> <4885DA49.50703@lwfinger.net>
+In-Reply-To: <4885DA49.50703@lwfinger.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Tue, Jul 22, 2008 at 12:13 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> * Ingo Molnar <mingo@elte.hu> wrote:
->>
->>>> v2: fix compiling when CONFIG_ACPI is not set
->>> applied to tip/x86/x2apic - thanks Yinghai.
->>>
->>>> +static struct genapic *apic_probe[] __initdata = {
->>>> +   &apic_x2apic_uv_x,
->>>> +   &apic_x2apic_phys,
->>>> +   &apic_x2apic_cluster,
->>>> +   &apic_physflat,
->>>> +   NULL,
->>>> +};
->>> very nice generalization!
->> btw.:
->>
->>   apic_probe[i]->acpi_madt_oem_check
->>
->> should probably be renamed to something more neutral like "->probe" -
->> there's nothing ACPI about it and some weird boxes could use PCI or
->> other probing mechanisms to discover the type of APIC they want to use.
-> 
-> 32bit has acpi_madt_oem_check and mps_oem_check
-> 64bit should only have acpi_madt_oem_check
-> 
->> plus i guess genapic_32.h and genapic_64.h should be unified and struct
->> apic_ops should be put into struct genapic?
-> 
-> yes.
-> 
-> hope to call acpi_madt_oem_check and mps_oem_check right after
-> acpi_boot_table_init
-> to decide apic_ops and genapic as early as possible.
-> 
-> 
-> Jack/Mike,
-> does your big box support SRAT? it seems it calling is_uv_system
-> before acpi_madt_oem_check is called.
-> I like to call early_acpi_boot_init, before acpi_numa_init so
-> acpi_madt_oem_check is called before srat is used. can you check
-> attached patch on your system?
-> 
-> YH
-> 
+David and Patrick,
 
-Hi,
+Here is the latest on this problem.
 
-Yes, I believe so though the final BIOS is not yet complete.
+I pulled from Linus's tree this morning and now have git-05752-g93ded9b. The 
+kernel WARNING from __netif_schedule and the lockdep warning are present with or 
+without the patches from yesterday.
 
-Next chance I get, I'll try out your patch.
+As I stated earlier, the kernel WARNING (it was a BUG then) was introduced in 
+commit 37437bb2 when the BUG statement was entered.
 
-Thanks,
-Mike
+The lockdep warning started with the next commit (16361127).
+
+I am not using any network traffic shaping. Is it correct that the faulty 
+condition is not that q == &noop_qdisc, but that __netif_schedule was called 
+when that condition exists?
+
+
+The lockdep warning is:
+
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.26-Linus-git-05752-g93ded9b #49
+---------------------------------------------
+NetworkManager/2611 is trying to acquire lock:
+  (&dev->addr_list_lock){-...}, at: [<ffffffff803a2ad1>] dev_mc_sync+0x19/0x57
+
+but task is already holding lock:
+  (&dev->addr_list_lock){-...}, at: [<ffffffff8039e909>] dev_set_rx_mode+0x19/0x2e
+
+other info that might help us debug this:
+2 locks held by NetworkManager/2611:
+  #0:  (rtnl_mutex){--..}, at: [<ffffffff803a8488>] rtnetlink_rcv+0x12/0x27
+  #1:  (&dev->addr_list_lock){-...}, at: [<ffffffff8039e909>] 
+dev_set_rx_mode+0x19/0x2e
+
+stack backtrace:
+Pid: 2611, comm: NetworkManager Not tainted 2.6.26-Linus-git-05752-g93ded9b #49
+
+Call Trace:
+  [<ffffffff80251b02>] __lock_acquire+0xb7b/0xecc
+  [<ffffffff80251ea4>] lock_acquire+0x51/0x6a
+  [<ffffffff803a2ad1>] dev_mc_sync+0x19/0x57
+  [<ffffffff8040b3fc>] _spin_lock_bh+0x23/0x2c
+  [<ffffffff803a2ad1>] dev_mc_sync+0x19/0x57
+  [<ffffffff8039e911>] dev_set_rx_mode+0x21/0x2e
+  [<ffffffff803a04da>] dev_open+0x8e/0xb0
+  [<ffffffff8039fe84>] dev_change_flags+0xa6/0x163
+  [<ffffffff803a7591>] do_setlink+0x286/0x349
+  [<ffffffff803a849d>] rtnetlink_rcv_msg+0x0/0x1ec
+  [<ffffffff803a849d>] rtnetlink_rcv_msg+0x0/0x1ec
+  [<ffffffff803a849d>] rtnetlink_rcv_msg+0x0/0x1ec
+  [<ffffffff803a77de>] rtnl_setlink+0x10b/0x10d
+  [<ffffffff803a849d>] rtnetlink_rcv_msg+0x0/0x1ec
+  [<ffffffff803b416f>] netlink_rcv_skb+0x34/0x7d
+  [<ffffffff803a8497>] rtnetlink_rcv+0x21/0x27
+  [<ffffffff803b3c6f>] netlink_unicast+0x1f0/0x261
+  [<ffffffff8039a58d>] __alloc_skb+0x66/0x12a
+  [<ffffffff803b3f48>] netlink_sendmsg+0x268/0x27b
+  [<ffffffff80393cb9>] sock_sendmsg+0xcb/0xe3
+  [<ffffffff80246aab>] autoremove_wake_function+0x0/0x2e
+  [<ffffffff8039b2d8>] verify_iovec+0x46/0x82
+  [<ffffffff80393ee8>] sys_sendmsg+0x217/0x28a
+  [<ffffffff80393642>] sockfd_lookup_light+0x1a/0x52
+  [<ffffffff80250990>] trace_hardirqs_on_caller+0xef/0x113
+  [<ffffffff8040af74>] trace_hardirqs_on_thunk+0x3a/0x3f
+  [<ffffffff8020be9b>] system_call_after_swapgs+0x7b/0x80
+========================================================
+
+
+The logged data for the WARNING is as follows:
+
+------------[ cut here ]------------
+WARNING: at net/core/dev.c:1330 __netif_schedule+0x2c/0x98()
+Modules linked in: af_packet nfs lockd nfs_acl rfkill_input sunrpc 
+cpufreq_conservative cpufreq_userspace cpufreq_powersave powernow_k8 fuse loop 
+dm_mod arc4 ecb crypto_blkcipher b43 firmware_class rfkill mac80211 cfg80211 
+led_class input_polldev battery ac button ssb serio_raw forcedeth sr_mod cdrom 
+k8temp hwmon sg sd_mod ehci_hcd ohci_hcd usbcore edd fan thermal processor ext3 
+mbcache jbd pata_amd ahci libata scsi_mod dock
+Pid: 1990, comm: b43 Not tainted 2.6.26-Linus-git-05752-g93ded9b #49
+
+Call Trace:
+  [<ffffffff80233f6d>] warn_on_slowpath+0x51/0x8c
+  [<ffffffff8039d937>] __netif_schedule+0x2c/0x98
+  [<ffffffffa015445d>] ieee80211_scan_completed+0x26b/0x2f1 [mac80211]
+  [<ffffffffa01546de>] ieee80211_sta_scan_work+0x0/0x1b8 [mac80211]
+  [<ffffffff8024325e>] run_workqueue+0xf0/0x1f2
+  [<ffffffff8024343b>] worker_thread+0xdb/0xea
+  [<ffffffff80246aab>] autoremove_wake_function+0x0/0x2e
+  [<ffffffff80243360>] worker_thread+0x0/0xea
+  [<ffffffff8024678b>] kthread+0x47/0x73
+  [<ffffffff8040af74>] trace_hardirqs_on_thunk+0x3a/0x3f
+  [<ffffffff8020cea9>] child_rip+0xa/0x11
+  [<ffffffff8020c4df>] restore_args+0x0/0x30
+  [<ffffffff8024671f>] kthreadd+0x188/0x1ad
+  [<ffffffff80246744>] kthread+0x0/0x73
+  [<ffffffff8020ce9f>] child_rip+0x0/0x11
+
+---[ end trace 42d234b678daea7a ]---
+
+Other info I have found. The call to __netif_schedule from 
+ieee80211_scan_completed is through the following code from 
+include/linux/netdevice.h:
+
+/**
+  *      netif_wake_queue - restart transmit
+  *      @dev: network device
+  *
+  *      Allow upper layers to call the device hard_start_xmit routine.
+  *      Used for flow control when transmit resources are available.
+  */
+static inline void netif_tx_wake_queue(struct netdev_queue *dev_queue)
+{
+#ifdef CONFIG_NETPOLL_TRAP
+         if (netpoll_trap()) {
+                 clear_bit(__QUEUE_STATE_XOFF, &dev_queue->state);
+                 return;
+         }
+#endif
+         if (test_and_clear_bit(__QUEUE_STATE_XOFF, &dev_queue->state))
+                 __netif_schedule(dev_queue->qdisc);
+}
+
+It doesn't make any difference if CONFIG_NETPOLL_TRAP is defined or not.
+
+Please let me know if I can provide any further information,
+
+Larry
