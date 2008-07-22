@@ -1,139 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754933AbYGVIph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbYGVIpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754933AbYGVIph (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 04:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYGVIp3
+	id S1755907AbYGVIpv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 04:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754939AbYGVIph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 04:45:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50444 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751657AbYGVIp2 (ORCPT
+	Tue, 22 Jul 2008 04:45:37 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:32454 "EHLO
+	pd2mo1so-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753968AbYGVIpf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 04:45:28 -0400
-Date: Tue, 22 Jul 2008 01:45:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2][-mm][resend] memcg limit change shrink usage.
-Message-Id: <20080722014517.04e88306.akpm@linux-foundation.org>
-In-Reply-To: <20080714171522.d1cd50e9.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080714171154.e1cc9943.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080714171522.d1cd50e9.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 Jul 2008 04:45:35 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=r49yaCuOCbK1QH-TmvkA:9 a=mSmMP3ZelyA6qCpuhhYA:7 a=zCD_YcvDlDA5YMC7B1vEluNXwmUA:4 a=759cccFogNYA:10 a=tNCvaO9EbNoA:10 a=CDgK0yFw8z8A:10
+Message-ID: <48859E2C.4070805@shaw.ca>
+Date: Tue, 22 Jul 2008 02:45:32 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Tomas Styblo <tripie@cpan.org>
+CC: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       usb-storage@lists.one-eyed-alien.net,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix -	device
+ 152d:2338
+References: <fa.eWQqoO1e4Mdhu8SK5jzMFAI/3NU@ifi.uio.no> <4884E585.2050104@shaw.ca> <20080722051110.GA8303@notebook.homenet.local> <488570A5.8000602@shaw.ca> <20080722061147.GB8303@notebook.homenet.local>
+In-Reply-To: <20080722061147.GB8303@notebook.homenet.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jul 2008 17:15:22 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> Shrinking memory usage at limit change.
-
-The above six words are all we really have as a changelog.  It is not
-adequate.
-
-> This is an enhancement (in TODO list).
-> based on res_counter-limit-change-ebusy.patch
+Tomas Styblo wrote:
+> * Robert Hancock <hancockr@shaw.ca> [Tue, 22 Jul 2008]:
+>> In any case, given that your code apparently fixes the corruption it seems 
+>> that srb->result is being set to SAM_STAT_CHECK_CONDITION, but the 
+>> DID_ERROR and SUGGEST_RETRY flags are not being set. Presumably then the  
+>> SCSI layer looks at the sense data and says "hmm, nothing to worry about 
+>> here" and carries on.
 > 
-> Changelog: v2 -> v3
->   - supported interrupt by signal. (A user can stop limit change by Ctrl-C.)
-> Changelog: v1 -> v2
->   - adjusted to be based on write_string() patch set
->   - removed backword goto.
->   - removed unneccesary cond_resched().
+> That's exactly what I thought was happening, after a cursory 
+> look at the SCSI code.
 > 
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> Acked-by: Pavel Emelyanov <xemul@openvz.org>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>> I think we do need something like your patch, though it should likely be 
+>> moved inside the if (need_auto_sense) check, and I don't see a reason to 
+>> limit to this device ID only.
 > 
->  Documentation/controllers/memory.txt |    3 --
->  mm/memcontrol.c                      |   48 ++++++++++++++++++++++++++++++++---
->  2 files changed, 45 insertions(+), 6 deletions(-)
+> Thank you. This is a very insidious bug as it doesn't manifest
+> itself very often, months of data corruption may pass before you
+> notice it.
 > 
-> Index: linux-2.6.26-rc8-mm1/mm/memcontrol.c
-> ===================================================================
-> --- linux-2.6.26-rc8-mm1.orig/mm/memcontrol.c
-> +++ linux-2.6.26-rc8-mm1/mm/memcontrol.c
-> @@ -836,6 +836,30 @@ int mem_cgroup_shrink_usage(struct mm_st
->  	return 0;
->  }
->  
-> +int mem_cgroup_resize_limit(struct mem_cgroup *memcg, unsigned long long val)
-> +{
-> +
-> +	int retry_count = MEM_CGROUP_RECLAIM_RETRIES;
-> +	int progress;
-> +	int ret = 0;
-> +
-> +	while (res_counter_set_limit(&memcg->res, val)) {
-> +		if (signal_pending(current)) {
-> +			ret = -EINTR;
-> +			break;
-> +		}
-> +		if (!retry_count) {
-> +			ret = -EBUSY;
-> +			break;
-> +		}
-> +		progress = try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL);
-> +		if (!progress)
-> +			retry_count--;
-> +	}
-> +	return ret;
-> +}
+> So is there a bug in the chipset, or does the error handling code 
+> not follow specifications?
 
-We could perhaps get away with a basically-unchanglogged patch if the
-code was adequately commented.  But it is not.
+It looks clear to me that it's a bug in the chipset. It's supposed to 
+set some valid sense data if an error occurs, not just set the "failed" 
+flag in the USB storage status word. (Presumably the fact that these 
+errors are occurring in the first place is a bug in itself.. though that 
+could be a problem with the enclosure or drive as well.)
 
-What the heck does this function *do*?  Why does it exist?
+However the kernel should be more robust and not ignore the error 
+indication that it is giving.
 
-Guys, this is core Linux kernel, not some weekend hack project.  Please
-work to make it as comprehensible and as maintainable as we possibly
-can.
+> I wonder if the company that makes the chipset should be notified
+> about this problem?
 
-Also, it is frequently a mistake for a callee to assume that the caller
-can use GFP_KERNEL.  Often when we do this we end having to change the
-interface so that the caller passes in the gfp_t.  As there's only one
-caller I guess we can get away with it this time.  For now.
-
-> +
->  /*
->   * This routine traverse page_cgroup in given list and drop them all.
->   * *And* this routine doesn't reclaim page itself, just removes page_cgroup.
-> @@ -916,13 +940,29 @@ static u64 mem_cgroup_read(struct cgroup
->  	return res_counter_read_u64(&mem_cgroup_from_cont(cont)->res,
->  				    cft->private);
->  }
-> -
-> +/*
-> + * The user of this function is...
-> + * RES_LIMIT.
-> + */
->  static int mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
->  			    const char *buffer)
->  {
-> -	return res_counter_write(&mem_cgroup_from_cont(cont)->res,
-> -				 cft->private, buffer,
-> -				 res_counter_memparse_write_strategy);
-> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cont);
-> +	unsigned long long val;
-> +	int ret;
-> +
-> +        switch (cft->private) {
-> +	case RES_LIMIT:
-> +		/* This function does all necessary parse...reuse it */
-> +		ret = res_counter_memparse_write_strategy(buffer, &val);
-> +		if (!ret)
-> +			ret = mem_cgroup_resize_limit(memcg, val);
-> +		break;
-> +	default:
-> +		ret = -EINVAL; /* should be BUG() ? */
-> +		break;
-> +	}
-> +	return ret;
->  }
-
+I suppose it wouldn't hurt to let JMicron know about this. I doubt they 
+could do anything for existing chipsets, but it might help them avoid 
+this bug in future designs.
