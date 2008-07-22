@@ -1,24 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbYGVFic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759332AbYGVFjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759259AbYGVFic (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 01:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757383AbYGVFZF
+	id S1759332AbYGVFjE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 01:39:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757161AbYGVFZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 01:25:05 -0400
-Received: from ns.suse.de ([195.135.220.2]:53941 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 01:25:12 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53958 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757452AbYGVFZC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 01:25:02 -0400
+	id S1756861AbYGVFZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 01:25:10 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Dave Young <hidave.darkstar@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 50/79] class: change internal semaphore to a mutex
-Date: Mon, 21 Jul 2008 22:19:14 -0700
-Message-Id: <1216703983-21448-50-git-send-email-gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 52/79] driver core: remove DEVICE_NAME_SIZE define
+Date: Mon, 21 Jul 2008 22:19:16 -0700
+Message-Id: <1216703983-21448-52-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <20080722051805.GA17373@suse.de>
 References: <20080722051805.GA17373@suse.de>
@@ -26,204 +22,125 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Young <hidave.darkstar@gmail.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
 
-Now that the lockdep infrastructure in the class core is in place, we
-should be able to properly change the internal class semaphore to be a
-mutex.
+There is no such thing as a "device name size" in the driver core, so
+remove the define and fix up any users of this odd define in the rest of
+the kernel.
 
-David wrote the original patch, and Greg fixed it up to apply properly
-due to all of the recent changes in this area.
-
-From: Dave Young <hidave.darkstar@gmail.com>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/base.h  |    4 ++--
- drivers/base/class.c |   23 ++++++++++++-----------
- drivers/base/core.c  |    9 +++++----
- 3 files changed, 19 insertions(+), 17 deletions(-)
+ drivers/eisa/Makefile        |    2 +-
+ drivers/eisa/eisa-bus.c      |    4 ++--
+ drivers/mca/mca-bus.c        |    2 +-
+ drivers/video/aty/aty128fb.c |    2 +-
+ drivers/video/aty/radeonfb.h |    2 +-
+ include/linux/device.h       |    3 ---
+ include/linux/eisa.h         |    2 +-
+ 7 files changed, 7 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/base/base.h b/drivers/base/base.h
-index c035dc2..31dc0cd 100644
---- a/drivers/base/base.h
-+++ b/drivers/base/base.h
-@@ -44,7 +44,7 @@ struct driver_private {
-  * @class_devices - list of devices associated with this class
-  * @class_interfaces - list of class_interfaces associated with this class
-  * @class_dirs - "glue" directory for virtual devices associated with this class
-- * @class_sem - semaphore to protect the children, devices, and interfaces lists.
-+ * @class_mutex - mutex to protect the children, devices, and interfaces lists.
-  * @class - pointer back to the struct class that this structure is associated
-  * with.
-  *
-@@ -57,7 +57,7 @@ struct class_private {
- 	struct list_head class_devices;
- 	struct list_head class_interfaces;
- 	struct kset class_dirs;
--	struct semaphore class_sem;
-+	struct mutex class_mutex;
- 	struct class *class;
+diff --git a/drivers/eisa/Makefile b/drivers/eisa/Makefile
+index 70abf93..5369ce9 100644
+--- a/drivers/eisa/Makefile
++++ b/drivers/eisa/Makefile
+@@ -9,7 +9,7 @@ obj-${CONFIG_EISA_VIRTUAL_ROOT} += virtual_root.o
+ 
+ 
+ # Ugly hack to get DEVICE_NAME_SIZE value...
+-DEVICE_NAME_SIZE =$(shell awk '$$1=="\#define" && $$2=="DEVICE_NAME_SIZE" {print $$3-1}' $(srctree)/include/linux/device.h)
++DEVICE_NAME_SIZE = 50
+ 
+ $(obj)/eisa-bus.o: $(obj)/devlist.h
+ 
+diff --git a/drivers/eisa/eisa-bus.c b/drivers/eisa/eisa-bus.c
+index 65dcf04..c950bf8 100644
+--- a/drivers/eisa/eisa-bus.c
++++ b/drivers/eisa/eisa-bus.c
+@@ -22,7 +22,7 @@
+ 
+ struct eisa_device_info {
+ 	struct eisa_device_id id;
+-	char name[DEVICE_NAME_SIZE];
++	char name[50];
  };
- #define to_class(obj)	\
-diff --git a/drivers/base/class.c b/drivers/base/class.c
-index 8900056..839d27c 100644
---- a/drivers/base/class.c
-+++ b/drivers/base/class.c
-@@ -18,6 +18,7 @@
- #include <linux/err.h>
- #include <linux/slab.h>
- #include <linux/genhd.h>
-+#include <linux/mutex.h>
- #include "base.h"
  
- #define to_class_attr(_attr) container_of(_attr, struct class_attribute, attr)
-@@ -147,7 +148,7 @@ int __class_register(struct class *cls, struct lock_class_key *key)
- 	INIT_LIST_HEAD(&cp->class_devices);
- 	INIT_LIST_HEAD(&cp->class_interfaces);
- 	kset_init(&cp->class_dirs);
--	init_MUTEX(&cp->class_sem);
-+	__mutex_init(&cp->class_mutex, "struct class mutex", key);
- 	error = kobject_set_name(&cp->class_subsys.kobj, "%s", cls->name);
- 	if (error) {
- 		kfree(cp);
-@@ -281,7 +282,7 @@ char *make_class_name(const char *name, struct kobject *kobj)
-  * We check the return of @fn each time. If it returns anything
-  * other than 0, we break out and return that value.
-  *
-- * Note, we hold class->class_sem in this function, so it can not be
-+ * Note, we hold class->class_mutex in this function, so it can not be
-  * re-acquired in @fn, otherwise it will self-deadlocking. For
-  * example, calls to add or remove class members would be verboten.
-  */
-@@ -293,7 +294,7 @@ int class_for_each_device(struct class *class, struct device *start,
- 
- 	if (!class)
- 		return -EINVAL;
--	down(&class->p->class_sem);
-+	mutex_lock(&class->p->class_mutex);
- 	list_for_each_entry(dev, &class->p->class_devices, node) {
- 		if (start) {
- 			if (start == dev)
-@@ -306,7 +307,7 @@ int class_for_each_device(struct class *class, struct device *start,
- 		if (error)
- 			break;
+ #ifdef CONFIG_EISA_NAMES
+@@ -63,7 +63,7 @@ static void __init eisa_name_device (struct eisa_device *edev)
+ 		if (!strcmp (edev->id.sig, eisa_table[i].id.sig)) {
+ 			strlcpy (edev->pretty_name,
+ 				 eisa_table[i].name,
+-				 DEVICE_NAME_SIZE);
++				 sizeof(edev->pretty_name));
+ 			return;
+ 		}
  	}
--	up(&class->p->class_sem);
-+	mutex_unlock(&class->p->class_mutex);
+diff --git a/drivers/mca/mca-bus.c b/drivers/mca/mca-bus.c
+index 67b8e94..ef2dbfe 100644
+--- a/drivers/mca/mca-bus.c
++++ b/drivers/mca/mca-bus.c
+@@ -40,7 +40,7 @@ static struct mca_bus *mca_root_busses[MAX_MCA_BUSSES];
  
- 	return error;
- }
-@@ -329,7 +330,7 @@ EXPORT_SYMBOL_GPL(class_for_each_device);
-  *
-  * Note, you will need to drop the reference with put_device() after use.
-  *
-- * We hold class->class_sem in this function, so it can not be
-+ * We hold class->class_mutex in this function, so it can not be
-  * re-acquired in @match, otherwise it will self-deadlocking. For
-  * example, calls to add or remove class members would be verboten.
-  */
-@@ -343,7 +344,7 @@ struct device *class_find_device(struct class *class, struct device *start,
- 	if (!class)
- 		return NULL;
+ struct mca_device_info {
+ 	short pos_id;		/* the 2 byte pos id for this card */
+-	char name[DEVICE_NAME_SIZE];
++	char name[50];
+ };
  
--	down(&class->p->class_sem);
-+	mutex_lock(&class->p->class_mutex);
- 	list_for_each_entry(dev, &class->p->class_devices, node) {
- 		if (start) {
- 			if (start == dev)
-@@ -357,7 +358,7 @@ struct device *class_find_device(struct class *class, struct device *start,
- 		} else
- 			put_device(dev);
- 	}
--	up(&class->p->class_sem);
-+	mutex_unlock(&class->p->class_mutex);
+ static int mca_bus_match (struct device *dev, struct device_driver *drv)
+diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
+index 24ee96c..07b6add 100644
+--- a/drivers/video/aty/aty128fb.c
++++ b/drivers/video/aty/aty128fb.c
+@@ -1872,7 +1872,7 @@ static int __devinit aty128_init(struct pci_dev *pdev, const struct pci_device_i
+ 	struct fb_info *info = pci_get_drvdata(pdev);
+ 	struct aty128fb_par *par = info->par;
+ 	struct fb_var_screeninfo var;
+-	char video_card[DEVICE_NAME_SIZE];
++	char video_card[50];
+ 	u8 chip_rev;
+ 	u32 dac;
  
- 	return found ? dev : NULL;
- }
-@@ -375,13 +376,13 @@ int class_interface_register(struct class_interface *class_intf)
- 	if (!parent)
- 		return -EINVAL;
+diff --git a/drivers/video/aty/radeonfb.h b/drivers/video/aty/radeonfb.h
+index c347e38..ccbfffd 100644
+--- a/drivers/video/aty/radeonfb.h
++++ b/drivers/video/aty/radeonfb.h
+@@ -289,7 +289,7 @@ struct radeonfb_info {
+ 	struct radeon_regs 	state;
+ 	struct radeon_regs	init_state;
  
--	down(&parent->p->class_sem);
-+	mutex_lock(&parent->p->class_mutex);
- 	list_add_tail(&class_intf->node, &parent->p->class_interfaces);
- 	if (class_intf->add_dev) {
- 		list_for_each_entry(dev, &parent->p->class_devices, node)
- 			class_intf->add_dev(dev, class_intf);
- 	}
--	up(&parent->p->class_sem);
-+	mutex_unlock(&parent->p->class_mutex);
+-	char			name[DEVICE_NAME_SIZE];
++	char			name[50];
  
- 	return 0;
- }
-@@ -394,13 +395,13 @@ void class_interface_unregister(struct class_interface *class_intf)
- 	if (!parent)
- 		return;
+ 	unsigned long		mmio_base_phys;
+ 	unsigned long		fb_base_phys;
+diff --git a/include/linux/device.h b/include/linux/device.h
+index fba1bb0..894fdb2 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -25,9 +25,6 @@
+ #include <asm/atomic.h>
+ #include <asm/device.h>
  
--	down(&parent->p->class_sem);
-+	mutex_lock(&parent->p->class_mutex);
- 	list_del_init(&class_intf->node);
- 	if (class_intf->remove_dev) {
- 		list_for_each_entry(dev, &parent->p->class_devices, node)
- 			class_intf->remove_dev(dev, class_intf);
- 	}
--	up(&parent->p->class_sem);
-+	mutex_unlock(&parent->p->class_mutex);
+-#define DEVICE_NAME_SIZE	50
+-/* DEVICE_NAME_HALF is really less than half to accommodate slop */
+-#define DEVICE_NAME_HALF	__stringify(20)
+ #define DEVICE_ID_SIZE		32
+ #define BUS_ID_SIZE		20
  
- 	class_put(parent);
- }
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index b90ae6f..c05b115 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -21,6 +21,7 @@
- #include <linux/genhd.h>
- #include <linux/kallsyms.h>
- #include <linux/semaphore.h>
-+#include <linux/mutex.h>
+diff --git a/include/linux/eisa.h b/include/linux/eisa.h
+index fe806b6..e61c0be 100644
+--- a/include/linux/eisa.h
++++ b/include/linux/eisa.h
+@@ -40,7 +40,7 @@ struct eisa_device {
+ 	u64                   dma_mask;
+ 	struct device         dev; /* generic device */
+ #ifdef CONFIG_EISA_NAMES
+-	char		      pretty_name[DEVICE_NAME_SIZE];
++	char		      pretty_name[50];
+ #endif
+ };
  
- #include "base.h"
- #include "power/power.h"
-@@ -907,7 +908,7 @@ int device_add(struct device *dev)
- 		klist_add_tail(&dev->knode_parent, &parent->klist_children);
- 
- 	if (dev->class) {
--		down(&dev->class->p->class_sem);
-+		mutex_lock(&dev->class->p->class_mutex);
- 		/* tie the class to the device */
- 		list_add_tail(&dev->node, &dev->class->p->class_devices);
- 
-@@ -916,7 +917,7 @@ int device_add(struct device *dev)
- 				    &dev->class->p->class_interfaces, node)
- 			if (class_intf->add_dev)
- 				class_intf->add_dev(dev, class_intf);
--		up(&dev->class->p->class_sem);
-+		mutex_unlock(&dev->class->p->class_mutex);
- 	}
-  Done:
- 	put_device(dev);
-@@ -1017,7 +1018,7 @@ void device_del(struct device *dev)
- 	if (dev->class) {
- 		device_remove_class_symlinks(dev);
- 
--		down(&dev->class->p->class_sem);
-+		mutex_lock(&dev->class->p->class_mutex);
- 		/* notify any interfaces that the device is now gone */
- 		list_for_each_entry(class_intf,
- 				    &dev->class->p->class_interfaces, node)
-@@ -1025,7 +1026,7 @@ void device_del(struct device *dev)
- 				class_intf->remove_dev(dev, class_intf);
- 		/* remove the device from the class list */
- 		list_del_init(&dev->node);
--		up(&dev->class->p->class_sem);
-+		mutex_unlock(&dev->class->p->class_mutex);
- 	}
- 	device_remove_file(dev, &uevent_attr);
- 	device_remove_attrs(dev);
 -- 
 1.5.6.3
 
