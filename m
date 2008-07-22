@@ -1,29 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbYGVOlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYGVOnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755156AbYGVOlA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 10:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbYGVOkm
+	id S1753828AbYGVOnm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 10:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbYGVOnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 10:40:42 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41160 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751769AbYGVOkl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 10:40:41 -0400
-Date: Tue, 22 Jul 2008 15:23:30 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sean Young <sean@mess.org>
-Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] Led driver for technologic systems 5500
-Message-ID: <20080722152330.7dc860b5@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080722141823.GA81435@atlantis.8hz.com>
-References: <20080721211403.GB72268@atlantis.8hz.com>
-	<1216715492.5421.1.camel@dax.rpnet.com>
-	<20080722141823.GA81435@atlantis.8hz.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 22 Jul 2008 10:43:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53458 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750798AbYGVOne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 10:43:34 -0400
+Date: Tue, 22 Jul 2008 10:43:27 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, Alan Piszcz <ap@solarrain.com>
+Subject: Re: 128 GiB memory question-- kernel only sees 64GiB?
+Message-ID: <20080722104327.30cee9be@bree.surriel.com>
+In-Reply-To: <alpine.DEB.1.10.0807221019570.8455@p34.internal.lan>
+References: <alpine.DEB.1.10.0807221019570.8455@p34.internal.lan>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,18 +26,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think that's why DMI was invented, AFAIK. I have no idea whether how many
-> X86 devices exist on these I/O ports (0x77/0x74). The only other thing I can 
-> think of is that this is an AMD Elan so the Kconfig could depend on ELAN 
-> and not X86
+On Tue, 22 Jul 2008 10:21:44 -0400 (EDT)
+Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
 
-If it is ELAN hardware then checking for an ELAN system would certainly
-cut down a lot on the misdetects. Does the box have other unique
-signatures you might detect. Good candidates we've used in the past have
-been
+> To be able to utilize 128 GiB of memory on a host, does one need to enable 
+> NUMA support? Currently only 64 GiB is showing up.
 
-- PCI subvendor identifiers
-- BIOS strings (eg does the BIOS contain the sequence 'Technologic
-systems 5500' or similar anywhere)
+How much memory does the BIOS say the system has?
 
-Alan
+Can you get the e820 memory map (from early boot up) of the systems?
+ 
+> As far as machine name/motherboard type, I do not have this information 
+> currently but I am told there are one or two of these boxes are running 
+> CentOS 5.x and/or RHEL5/AS.
+
+Hopefully not with 64GB each :))
+ 
+> Is there something special you need to do to utilize all 128 GiB of 
+> memory?
+
+You need to use a 64 bit kernel, for one.
+
+-- 
+All rights reversed.
