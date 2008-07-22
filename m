@@ -1,48 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752246AbYGVE0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYGVEcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752246AbYGVE0k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 00:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYGVE0b
+	id S1753381AbYGVEcW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 00:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYGVEcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 00:26:31 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40290 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbYGVE0b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 00:26:31 -0400
-Date: Mon, 21 Jul 2008 21:26:18 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC] schedule_timeout_range()
-Message-ID: <20080721212618.42493d12@infradead.org>
-In-Reply-To: <1216699922.18980.66.camel@shinybook.infradead.org>
-References: <1216695757.18980.16.camel@shinybook.infradead.org>
-	<1216695942.18980.19.camel@shinybook.infradead.org>
-	<200807221356.29892.nickpiggin@yahoo.com.au>
-	<1216699922.18980.66.camel@shinybook.infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 Jul 2008 00:32:14 -0400
+Received: from ozlabs.org ([203.10.76.45]:36897 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750727AbYGVEcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 00:32:13 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] x86: fix pte_flags() to only return flags, fix lguest.
+Date: Tue, 22 Jul 2008 14:31:58 +1000
+User-Agent: KMail/1.9.9
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200807221431.58991.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jul 2008 00:12:02 -0400
-David Woodhouse <dwmw2@infradead.org> wrote:
+Change a15af1c9ea2750a9ff01e51615c45950bad8221b 'x86/paravirt: add
+pte_flags to just get pte flags' removed lguest's private pte_flags()
+in favor of a generic one.
 
-> How about 'start' and 'end'? Or 'early' and 'late'? I really don't
-> care too much what it's called.
+Unfortunately, the generic one doesn't filter out the non-flags bits:
+this results in lguest creating corrupt shadow page tables and blowing
+up host memory.
 
-or "start" and "delta" ?
+Since noone is supposed to use the pfn part of pte_flags(), it seems
+safest to always do the filtering.
 
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+diff -r ee1a6adad3d2 arch/x86/kernel/paravirt.c
+--- a/arch/x86/kernel/paravirt.c	Mon Jul 21 12:49:25 2008 +1000
++++ b/arch/x86/kernel/paravirt.c	Tue Jul 22 14:09:33 2008 +1000
+@@ -428,7 +428,7 @@ struct pv_mmu_ops pv_mmu_ops = {
+ #endif /* PAGETABLE_LEVELS >= 3 */
+ 
+ 	.pte_val = native_pte_val,
+-	.pte_flags = native_pte_val,
++	.pte_flags = native_pte_flags,
+ 	.pgd_val = native_pgd_val,
+ 
+ 	.make_pte = native_make_pte,
+diff -r ee1a6adad3d2 include/asm-x86/page.h
+--- a/include/asm-x86/page.h	Mon Jul 21 12:49:25 2008 +1000
++++ b/include/asm-x86/page.h	Tue Jul 22 14:09:33 2008 +1000
+@@ -144,6 +144,18 @@ static inline pteval_t native_pte_val(pt
+ 	return pte.pte;
+ }
+ 
++/* This belongs in pgtable.h, but our includes are too much of a mess. */
++#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
++#define PTE_FLAGS	_AC(0x8000000000000FFF, ULL)
++#else
++#define PTE_FLAGS	0x00000FFF
++#endif
++
++static inline pteval_t native_pte_flags(pte_t pte)
++{
++	return native_pte_val(pte) & PTE_FLAGS;
++}
++
+ #define pgprot_val(x)	((x).pgprot)
+ #define __pgprot(x)	((pgprot_t) { (x) } )
+ 
+@@ -165,7 +177,7 @@ static inline pteval_t native_pte_val(pt
+ #endif
+ 
+ #define pte_val(x)	native_pte_val(x)
+-#define pte_flags(x)	native_pte_val(x)
++#define pte_flags(x)	native_pte_flags(x)
+ #define __pte(x)	native_make_pte(x)
+ 
+ #endif	/* CONFIG_PARAVIRT */
+diff -r ee1a6adad3d2 include/asm-x86/paravirt.h
+--- a/include/asm-x86/paravirt.h	Mon Jul 21 12:49:25 2008 +1000
++++ b/include/asm-x86/paravirt.h	Tue Jul 22 14:09:33 2008 +1000
+@@ -1083,6 +1083,9 @@ static inline pteval_t pte_flags(pte_t p
+ 		ret = PVOP_CALL1(pteval_t, pv_mmu_ops.pte_flags,
+ 				 pte.pte);
+ 
++#ifdef CONFIG_PARAVIRT_DEBUG
++	BUG_ON(ret & ~PTE_FLAGS);
++#endif
+ 	return ret;
+ }
+ 
