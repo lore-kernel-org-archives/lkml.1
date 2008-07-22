@@ -1,80 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbYGVR5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbYGVR6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754703AbYGVR5x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 13:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYGVR5d
+	id S1754307AbYGVR6V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 13:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYGVR57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 13:57:33 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:23393 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752521AbYGVR5c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 13:57:32 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: linux-next build error (PNP/IXJ)
-Date: Tue, 22 Jul 2008 11:57:13 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-next@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-References: <20080722102739.61462b04.randy.dunlap@oracle.com>
-In-Reply-To: <20080722102739.61462b04.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jul 2008 13:57:59 -0400
+Received: from mga09.intel.com ([134.134.136.24]:59428 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752649AbYGVR56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 13:57:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,232,1215414000"; 
+   d="scan'208";a="317977056"
+Date: Tue, 22 Jul 2008 10:57:57 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: add apic probe for genapic 64bit v2
+Message-ID: <20080722175757.GC14380@linux-os.sc.intel.com>
+References: <200807211836.27282.yhlu.kernel@gmail.com> <200807212208.22116.yhlu.kernel@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807221157.14371.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+In-Reply-To: <200807212208.22116.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 July 2008 11:27:39 am Randy Dunlap wrote:
-> I'm seeing several build errors in linux-next-20080722 that I haven't
-> seen previously, although I don't know what changed to cause this.
+On Mon, Jul 21, 2008 at 10:08:21PM -0700, Yinghai Lu wrote:
 > 
-> They are all basically the same, in ixj (drivers/telephony/ixj*), when
-> CONFIG_PNP=n, and CONFIG_PHONE_IXJ=y or =m (so the actual error message
-> varies depending on IXJ=y or =m):
-> 
-> IXJ=y:
-> ixj.c:(.text+0x329d98): undefined reference to `pnp_get_resource'
-> or IXJ=m:
-> ERROR: "pnp_get_resource" [drivers/telephony/ixj.ko] undefined!
-> 
-> 
-> Suggestions?
+> Index: linux-2.6/arch/x86/kernel/genapic_64.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/genapic_64.c
+> +++ linux-2.6/arch/x86/kernel/genapic_64.c
+> -                       genapic = &apic_x2apic_cluster;
+...
 
-I'd use something like the attached.  I don't have a build environment
-where CONFIG_PNP=n (all I have is x86 and ia64), so I haven't tested
-this.
+> -       } else
+> -#ifdef CONFIG_ACPI
+> -       /*
+> -        * Quirk: some x86_64 machines can only use physical APIC mode
+> -        * regardless of how many processors are present (x86_64 ES7000
+> -        * is an example).
+> -        */
+> -       if (acpi_gbl_FADT.header.revision > FADT2_REVISION_ID &&
+> -                       (acpi_gbl_FADT.flags & ACPI_FADT_APIC_PHYSICAL))
+> -               genapic = &apic_physflat;
+> -       else
+> -#endif
+> -
+> -       if (max_physical_apicid < 8)
+> -               genapic = &apic_flat;
+> -       else
+> -               genapic = &apic_physflat;
+> -
+> -       printk(KERN_INFO "Setting APIC routing to %s\n", genapic->name);
+> +       if (genapic == &apic_flat) {
+> +               if (max_physical_apicid >= 8)
 
-ixj: don't use PNP interfaces when CONFIG_PNP=n
-    
-This patch fixes a build problem when CONFIG_PNP=n.
-    
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Yinghai, though not directly realted to this probe cleanup, what is this
+'max_physical_apicid' doing.
 
-diff --git a/drivers/telephony/ixj.c b/drivers/telephony/ixj.c
-index 49cd979..51b7fb4 100644
---- a/drivers/telephony/ixj.c
-+++ b/drivers/telephony/ixj.c
-@@ -7588,6 +7588,7 @@ static IXJ *new_ixj(unsigned long port)
- 
- static int __init ixj_probe_isapnp(int *cnt)
- {               
-+#ifdef CONFIG_PNP
- 	int probe = 0;
- 	int func = 0x110;
-         struct pnp_dev *dev = NULL, *old_dev = NULL;
-@@ -7664,6 +7665,9 @@ static int __init ixj_probe_isapnp(int *cnt)
- 		dev = NULL;
- 	}
- 	return probe;
-+#else
-+	return 0;
-+#endif
- }
-                         
- static int __init ixj_probe_isa(int *cnt)
+I don't understand the need for this commit.
+
+> commit e0da33646826b66ef933d47ea2fb7a693fd849bf
+> Author: Yinghai Lu <yhlu.kernel@gmail.com>
+> Date:   Sun Jun 8 18:29:22 2008 -0700
+> 
+>     x86: introduce max_physical_apicid for bigsmp switching
+>     
+>     a multi-socket test-system with 3 or 4 ioapics, when 4 dualcore cpus or
+>     2 quadcore cpus installed, needs to switch to bigsmp or physflat.
+>     
+>     CPU apic id is [4,11] instead of [0,7], and we need to check max apic
+>     id instead of cpu numbers.
+
+for logical flat, it really shouldn't matter how large the physical apic id
+is. In logical flat, OS programs the LDR and the limitation is the
+number of cpu's which is '8'.
+
+What am I missing here?
+
+thanks,
+suresh
