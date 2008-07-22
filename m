@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbYGVCVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbYGVCXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755983AbYGVCVf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 22:21:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbYGVCVZ
+	id S1756154AbYGVCXU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 22:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbYGVCXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 22:21:25 -0400
-Received: from mail.hauppauge.com ([167.206.143.4]:2371 "EHLO
-	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754855AbYGVCVY (ORCPT
+	Mon, 21 Jul 2008 22:23:08 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57491 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753928AbYGVCXH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 22:21:24 -0400
-Message-ID: <4885440C.8000109@linuxtv.org>
-Date: Mon, 21 Jul 2008 22:21:00 -0400
-From: Michael Krufky <mkrufky@linuxtv.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] dvb/siano/: cleanups
-References: <20080721193344.GE14846@cs181140183.pp.htv.fi>
-In-Reply-To: <20080721193344.GE14846@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 21 Jul 2008 22:23:07 -0400
+Date: Tue, 22 Jul 2008 03:05:19 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus <torvalds@linux-foundation.org>, linux-next@vger.kernel.org
+Subject: Re: Fix icom serial compile.
+Message-ID: <20080722030519.7d0e5ee3@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080722112538.03c06649.sfr@canb.auug.org.au>
+References: <20080721211659.GA29106@redhat.com>
+	<20080721221355.GD3472@redhat.com>
+	<20080721230742.4649b94a@lxorguk.ukuu.org.uk>
+	<20080722112538.03c06649.sfr@canb.auug.org.au>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro,
+> > NAK. Already in the ttydev tree but not yet gone to Linus
+> 
+> I have just sent a similar patch.   I have to ask why you sent only some
+> of these patches since they were known to break some builds and you had
+> the fix patches already ...
 
-Please see my pull request, below.
+I sent the first batch only because some later stuff didnt apply and I
+happen to believe in testing patches before sending them (something I
+note certain other people clearly do after shitting the lot at Linus)
 
-Adrian Bunk wrote:
-> This patch contains the following cleanups:
-> - mark smscore_module_init() as __init
-> - mark smscore_module_exit as __exit
-> - make the following needlessly global code static:
->   - smscoreapi.c: struct g_smscore_notifyees
->   - smscoreapi.c: struct g_smscore_devices
->   - smscoreapi.c: struct g_smscore_deviceslock
->   - smscoreapi.c: struct g_smscore_registry
->   - smscoreapi.c: struct g_smscore_registrylock
->   - smscoreapi.c: smscore_module_init()
->   - smscoreapi.c: smscore_module_exit()
->   - smsdvb.c: struct g_smsdvb_clients
->   - smsdvb.c: struct g_smsdvb_clientslock
->
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->
-> ---
->
->  drivers/media/dvb/siano/smscoreapi.c |   14 +++++++-------
->  drivers/media/dvb/siano/smsdvb.c     |    4 ++--
->  2 files changed, 9 insertions(+), 9 deletions(-)
->   
-Thank you for this, Adrian.  I've pushed this into my tree.
+I spent the past two days travelling, and all the net time I could get
+trying to get the patches merged and tested. Everyone and their
+grandmother keep patching the tty code again and again. I just had
+another go before bed - its now six pulls in a row someone has broken the
+patches.
 
-Mauro,
-
-Please pull from:
-
-http://linuxtv.org/hg/~mkrufky/sms1xxx
-
-for:
-
-- sms1xxx: dvb/siano/: cleanups
-
- smscoreapi.c |   14 +++++++-------
- smsdvb.c     |    4 ++--
- 2 files changed, 9 insertions(+), 9 deletions(-)
-
-Regards,
-
-Mike
+Quite frankly if you want to moan about the fact I've been working till
+4am trying to sort this mess out you can go see figure 1.
