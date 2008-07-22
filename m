@@ -1,462 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752789AbYGVEIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752304AbYGVEM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752789AbYGVEIa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 00:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750839AbYGVEIS
+	id S1752304AbYGVEM2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 00:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750707AbYGVEMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 00:08:18 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:37040 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbYGVEIQ (ORCPT
+	Tue, 22 Jul 2008 00:12:20 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35208 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750703AbYGVEMS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 00:08:16 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:to:cc:subject:message-id:mime-version:content-type;
-	b=WblFJYTbF9oL45H+6JrF7hCOX/WpgRC3YEJUAHAgNufUId2vL2Vq9HbRUdGjO4sxy
-	PT0Uxi+9FCujM5YQY6k3A==
-Date: Mon, 21 Jul 2008 21:08:02 -0700 (PDT)
-From: Ranjit Manomohan <ranjitm@google.com>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-cc: lizf@cn.fujitsu.com, kaber@trash.net, menage@google.com
-Subject: [PATCH] Traffic control cgroups subsystem
-Message-ID: <Pine.LNX.4.64.0807212100580.1760@ranjit.corp.google.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 22 Jul 2008 00:12:18 -0400
+Subject: Re: [RFC] schedule_timeout_range()
+From: David Woodhouse <dwmw2@infradead.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, arjan@infradead.org
+In-Reply-To: <200807221356.29892.nickpiggin@yahoo.com.au>
+References: <1216695757.18980.16.camel@shinybook.infradead.org>
+	 <1216695942.18980.19.camel@shinybook.infradead.org>
+	 <200807221356.29892.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Tue, 22 Jul 2008 00:12:02 -0400
+Message-Id: <1216699922.18980.66.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-07-22 at 13:56 +1000, Nick Piggin wrote:
+> Rather than specific "deadline" values (which we can't guarantee anyway),
+> or vague "can defer" values,
 
-[Take 2] - Incorporated comments from Patric McHardy & Li Zefan.
+We already _have_ those vague 'can defer' timers. They'll get run the
+next time the CPU happens to be awake after they expire.
 
-This patch provides a simple resource controller (cgroup_tc) based on the
-cgroups infrastructure to manage network traffic. The cgroup_tc resource
-controller can be used to schedule and shape traffic belonging to the task(s)
-in a particular cgroup.
+>  I would prefer just a small selection of maybe orders of magnitude
+> flags, maybe SECONDS, MILLISECONDS, MICROSECONDS which gives an amount
+> of delay the kernel might add to the timer.
 
-The implementation consists of two parts:
+As far as I can tell, any implementation of that ends up being converted
+into what we have at the moment -- a deferrable timer which gets run
+some time after it expires, and a timer which would actually _wake_ a
+sleeping CPU. You have to create a value for that final timer anyway, so
+why not just let the in-kernel caller provide it?
 
-1) A resource controller (cgroup_tc) that is used to associate packets from
-    a particular task belonging to a cgroup with a traffic control class id (
-    tc_classid). This tc_classid is propagated to all sockets created by tasks
-    in the cgroup and from there to all packets associated with those sockets.
+There's no point in trying to coalesce the 'final' timeouts; if just one
+of them wakes the CPU and we're in the range for any other 'range
+timers', those others will happy immediately anyway.
 
-2) A modified traffic control classifier (cls_flow) that can classify packets
-    based on the tc_classid field in the packet to specific destination classes.
+We did ponder the idea of a per-process setting which affects userspace
+delays like nanosleep/poll/select, and introduces a variable extra delay
+if the CPU is actually sleeping. So we can reduce the number of CPU
+wakeup events for thosee userspace apps which aren't timing-sensitive.
 
-An example of the use of this resource controller would be to limit
-the traffic from all tasks from a file_server cgroup to 100Mbps. We could
-achieve this by doing:
+We were also thinking of extending nanosleep/ppoll/pselect also to take
+a 'range', for those cases where the process-wide setting needs to be
+overridden. The prctl is a simple solution which doesn't involve
+modifying large chunks of userspace to use new system calls, but it's
+not a panacea -- in some places, an app might _want_ a prompt wakeup.
 
-# make a cgroup of file transfer processes and assign it a uniqe classid
-# of 0x10 - this will be used lated to direct packets.
-mkdir -p /dev/cgroup
-mount -t cgroup tc -otc /dev/cgroup
-mkdir /dev/cgroup/file_transfer
-echo 0x10 > /dev/cgroup/file_transfer/tc.classid
-echo $PID_OF_FILE_XFER_PROCESS > /dev/cgroup/file_transfer/tasks
+For kernel timers, though, I think it's better to let the caller set a
+non-deferrable timer at a specific time. Although you're right that
+'deadline' is probably a bad name for it. 
 
-# Now create a HTB class that rate limits traffic to 100mbits and attach
-# a filter to direct all traffic from cgroup file_transfer to this new class.
-tc qdisc add dev eth0 root handle 1: htb
-tc class add dev eth0 parent 1: classid 1:10 htb rate 100mbit ceil 100mbit
-tc filter add dev eth0 parent 1: handle 800 protocol ip prio 1 flow map key cgroup-classid baseclass 1:10
+How about 'start' and 'end'? Or 'early' and 'late'? I really don't care
+too much what it's called.
 
-Signed-off-by: Ranjit Manomohan <ranjitm@google.com>
+-- 
+dwmw2
 
----
-diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
-index e287745..4b12372 100644
---- a/include/linux/cgroup_subsys.h
-+++ b/include/linux/cgroup_subsys.h
-@@ -48,3 +48,9 @@ SUBSYS(devices)
-  #endif
-
-  /* */
-+
-+#ifdef CONFIG_CGROUP_TC
-+SUBSYS(tc)
-+#endif
-+
-+/* */
-diff --git a/include/linux/cgroup_tc.h b/include/linux/cgroup_tc.h
-new file mode 100644
-index 0000000..decef81
---- /dev/null
-+++ b/include/linux/cgroup_tc.h
-@@ -0,0 +1,25 @@
-+#ifndef __LINUX_CGROUP_TC_H
-+#define __LINUX_CGROUP_TC_H
-+
-+/* Interface to obtain tasks cgroup identifier. */
-+
-+#include <linux/cgroup.h>
-+#include <linux/skbuff.h>
-+#include <net/sock.h>
-+
-+#ifdef CONFIG_CGROUP_TC
-+
-+void cgroup_tc_set_sock_classid(struct sock *sk);
-+
-+#define cgroup_tc_set_skb_classid(sk, skb) \
-+	skb->cgroup_classid = sk->sk_cgroup_classid
-+
-+#else
-+
-+#define cgroup_tc_set_sock_classid(sk)
-+
-+#define cgroup_tc_set_skb_classid(sk, skb)
-+
-+#endif /* CONFIG_CGROUP_TC */
-+
-+#endif /* __LINUX_CGROUP_TC_H */
-diff --git a/include/linux/pkt_cls.h b/include/linux/pkt_cls.h
-index 99efbed..deead80 100644
---- a/include/linux/pkt_cls.h
-+++ b/include/linux/pkt_cls.h
-@@ -349,6 +349,7 @@ enum
-  	FLOW_KEY_SKUID,
-  	FLOW_KEY_SKGID,
-  	FLOW_KEY_VLAN_TAG,
-+	FLOW_KEY_CGROUP_CLASSID,
-  	__FLOW_KEY_MAX,
-  };
-
-diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-index 299ec4b..e124294 100644
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -326,6 +326,10 @@ struct sk_buff {
-  	__u32			secmark;
-  #endif
-
-+#ifdef CONFIG_CGROUP_TC
-+	__u32			cgroup_classid;
-+#endif
-+
-  	__u32			mark;
-
-  	sk_buff_data_t		transport_header;
-diff --git a/include/net/sock.h b/include/net/sock.h
-index dc42b44..7a4e09c 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -271,6 +271,9 @@ struct sock {
-  	int			sk_write_pending;
-  	void			*sk_security;
-  	__u32			sk_mark;
-+#ifdef CONFIG_CGROUP_TC
-+	__u32			sk_cgroup_classid;
-+#endif
-  	/* XXX 4 bytes hole on 64 bit */
-  	void			(*sk_state_change)(struct sock *sk);
-  	void			(*sk_data_ready)(struct sock *sk, int bytes);
-diff --git a/init/Kconfig b/init/Kconfig
-index 6135d07..c28fde8 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -289,6 +289,17 @@ config CGROUP_DEBUG
-
-  	  Say N if unsure
-
-+config CGROUP_TC
-+	bool "Traffic control cgroup subsystem"
-+	depends on CGROUPS
-+	default n
-+	help
-+	  This option enables a simple cgroup subsystem that
-+	  allows network traffic to be classified based on the
-+	  cgroup of the task originating the traffic.
-+
-+	  Say N if unsure
-+
-  config CGROUP_NS
-          bool "Namespace cgroup subsystem"
-          depends on CGROUPS
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 1c9938a..08b217b 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -42,6 +42,7 @@ obj-$(CONFIG_CGROUPS) += cgroup.o
-  obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
-  obj-$(CONFIG_CPUSETS) += cpuset.o
-  obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
-+obj-$(CONFIG_CGROUP_TC) += tc_cgroup.o
-  obj-$(CONFIG_UTS_NS) += utsname.o
-  obj-$(CONFIG_USER_NS) += user_namespace.o
-  obj-$(CONFIG_PID_NS) += pid_namespace.o
-diff --git a/kernel/tc_cgroup.c b/kernel/tc_cgroup.c
-new file mode 100644
-index 0000000..1c62a6c
---- /dev/null
-+++ b/kernel/tc_cgroup.c
-@@ -0,0 +1,108 @@
-+/*
-+ * tc_cgroup.c - traffic control cgroup subsystem
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/cgroup.h>
-+#include <linux/fs.h>
-+#include <linux/slab.h>
-+#include <linux/cgroup_tc.h>
-+
-+struct tc_cgroup {
-+	struct cgroup_subsys_state css;
-+	unsigned int classid;
-+};
-+
-+struct cgroup_subsys tc_subsys;
-+
-+static inline struct tc_cgroup *cgroup_to_tc(
-+		struct cgroup *cgroup)
-+{
-+	return container_of(cgroup_subsys_state(cgroup, tc_subsys_id),
-+			    struct tc_cgroup, css);
-+}
-+
-+static int cgroup_tc_classid(struct task_struct *tsk)
-+{
-+	int tc_classid;
-+
-+	rcu_read_lock();
-+	tc_classid =  container_of(task_subsys_state(tsk, tc_subsys_id),
-+					 struct tc_cgroup, css)->classid;
-+	rcu_read_unlock();
-+	return tc_classid;
-+}
-+
-+void cgroup_tc_set_sock_classid(struct sock *sk)
-+{
-+	if (sk)
-+		sk->sk_cgroup_classid = cgroup_tc_classid(current);
-+}
-+
-+static struct cgroup_subsys_state *tc_create(struct cgroup_subsys *ss,
-+						struct cgroup *cgroup)
-+{
-+	struct tc_cgroup *tc_cgroup;
-+
-+	tc_cgroup = kzalloc(sizeof(*tc_cgroup), GFP_KERNEL);
-+
-+	if (!tc_cgroup)
-+		return ERR_PTR(-ENOMEM);
-+
-+	/* Copy parent's class id if present */
-+	if (cgroup->parent)
-+		tc_cgroup->classid = cgroup_to_tc(cgroup->parent)->classid;
-+
-+	return &tc_cgroup->css;
-+}
-+
-+static void tc_destroy(struct cgroup_subsys *ss,
-+			struct cgroup *cgroup)
-+{
-+	kfree(cgroup_to_tc(cgroup));
-+}
-+
-+static int tc_write_u64(struct cgroup *cgrp, struct cftype *cft, u64 val)
-+{
-+	struct tc_cgroup *tc = cgroup_to_tc(cgrp);
-+
-+	cgroup_lock();
-+	if (cgroup_is_removed(cgrp)) {
-+		cgroup_unlock();
-+		return -ENODEV;
-+	}
-+
-+	tc->classid = (unsigned int) (val & 0xffffffff);
-+	cgroup_unlock();
-+	return 0;
-+}
-+
-+static u64 tc_read_u64(struct cgroup *cont, struct cftype *cft)
-+{
-+	struct tc_cgroup *tc = cgroup_to_tc(cont);
-+	return tc->classid;
-+}
-+
-+static struct cftype tc_files[] = {
-+	{
-+		.name = "classid",
-+		.read_u64 = tc_read_u64,
-+		.write_u64 = tc_write_u64,
-+	}
-+};
-+
-+static int tc_populate(struct cgroup_subsys *ss, struct cgroup *cont)
-+{
-+	int err;
-+	err = cgroup_add_files(cont, ss, tc_files, ARRAY_SIZE(tc_files));
-+	return err;
-+}
-+
-+struct cgroup_subsys tc_subsys = {
-+	.name = "tc",
-+	.create = tc_create,
-+	.destroy  = tc_destroy,
-+	.populate = tc_populate,
-+	.subsys_id = tc_subsys_id,
-+};
-diff --git a/net/ipv4/ip_output.c b/net/ipv4/ip_output.c
-index e527628..ff75d8e 100644
---- a/net/ipv4/ip_output.c
-+++ b/net/ipv4/ip_output.c
-@@ -81,6 +81,7 @@
-  #include <linux/mroute.h>
-  #include <linux/netlink.h>
-  #include <linux/tcp.h>
-+#include <linux/cgroup_tc.h>
-
-  int sysctl_ip_default_ttl __read_mostly = IPDEFTTL;
-
-@@ -168,6 +169,9 @@ int ip_build_and_send_pkt(struct sk_buff *skb, struct sock *sk,
-  	}
-
-  	skb->priority = sk->sk_priority;
-+
-+	cgroup_tc_set_skb_classid(sk, skb);
-+
-  	skb->mark = sk->sk_mark;
-
-  	/* Send it out. */
-@@ -386,6 +390,9 @@ packet_routed:
-  			     (skb_shinfo(skb)->gso_segs ?: 1) - 1);
-
-  	skb->priority = sk->sk_priority;
-+
-+	cgroup_tc_set_skb_classid(sk, skb);
-+
-  	skb->mark = sk->sk_mark;
-
-  	return ip_local_out(skb);
-@@ -1278,6 +1285,7 @@ int ip_push_pending_frames(struct sock *sk)
-  	iph->daddr = rt->rt_dst;
-
-  	skb->priority = sk->sk_priority;
-+	cgroup_tc_set_skb_classid(sk, skb);
-  	skb->mark = sk->sk_mark;
-  	skb->dst = dst_clone(&rt->u.dst);
-
-@@ -1387,6 +1395,7 @@ void ip_send_reply(struct sock *sk, struct sk_buff *skb, struct ip_reply_arg *ar
-  	bh_lock_sock(sk);
-  	inet->tos = ip_hdr(skb)->tos;
-  	sk->sk_priority = skb->priority;
-+	cgroup_tc_set_skb_classid(sk, skb);
-  	sk->sk_protocol = ip_hdr(skb)->protocol;
-  	sk->sk_bound_dev_if = arg->bound_dev_if;
-  	ip_append_data(sk, ip_reply_glue_bits, arg->iov->iov_base, len, 0,
-diff --git a/net/ipv6/ip6_output.c b/net/ipv6/ip6_output.c
-index 48cdce9..826b770 100644
---- a/net/ipv6/ip6_output.c
-+++ b/net/ipv6/ip6_output.c
-@@ -56,6 +56,7 @@
-  #include <net/xfrm.h>
-  #include <net/checksum.h>
-  #include <linux/mroute6.h>
-+#include <linux/cgroup_tc.h>
-
-  static int ip6_fragment(struct sk_buff *skb, int (*output)(struct sk_buff *));
-
-@@ -257,6 +258,8 @@ int ip6_xmit(struct sock *sk, struct sk_buff *skb, struct flowi *fl,
-  	ipv6_addr_copy(&hdr->daddr, first_hop);
-
-  	skb->priority = sk->sk_priority;
-+	cgroup_tc_set_skb_classid(sk, skb);
-+
-  	skb->mark = sk->sk_mark;
-
-  	mtu = dst_mtu(dst);
-@@ -1448,6 +1451,7 @@ int ip6_push_pending_frames(struct sock *sk)
-  	ipv6_addr_copy(&hdr->daddr, final_dst);
-
-  	skb->priority = sk->sk_priority;
-+	cgroup_tc_set_skb_classid(sk, skb);
-  	skb->mark = sk->sk_mark;
-
-  	skb->dst = dst_clone(&rt->u.dst);
-diff --git a/net/sched/Makefile b/net/sched/Makefile
-index 1d2b0f7..91e9ee0 100644
---- a/net/sched/Makefile
-+++ b/net/sched/Makefile
-@@ -36,6 +36,7 @@ obj-$(CONFIG_NET_CLS_TCINDEX)	+= cls_tcindex.o
-  obj-$(CONFIG_NET_CLS_RSVP6)	+= cls_rsvp6.o
-  obj-$(CONFIG_NET_CLS_BASIC)	+= cls_basic.o
-  obj-$(CONFIG_NET_CLS_FLOW)	+= cls_flow.o
-+obj-$(CONFIG_NET_CLS_CGROUP)	+= cls_cgroup.o
-  obj-$(CONFIG_NET_EMATCH)	+= ematch.o
-  obj-$(CONFIG_NET_EMATCH_CMP)	+= em_cmp.o
-  obj-$(CONFIG_NET_EMATCH_NBYTE)	+= em_nbyte.o
-diff --git a/net/sched/cls_flow.c b/net/sched/cls_flow.c
-index 971b867..2a63ffc 100644
---- a/net/sched/cls_flow.c
-+++ b/net/sched/cls_flow.c
-@@ -280,6 +280,14 @@ static u32 flow_get_vlan_tag(const struct sk_buff *skb)
-  	return tag & VLAN_VID_MASK;
-  }
-
-+static u32 flow_get_cgroup_classid(const struct sk_buff *skb)
-+{
-+#ifdef CONFIG_CGROUP_TC
-+	return skb->cgroup_classid;
-+#endif
-+	return 0;
-+}
-+
-  static u32 flow_key_get(const struct sk_buff *skb, int key)
-  {
-  	switch (key) {
-@@ -317,6 +325,8 @@ static u32 flow_key_get(const struct sk_buff *skb, int key)
-  		return flow_get_skgid(skb);
-  	case FLOW_KEY_VLAN_TAG:
-  		return flow_get_vlan_tag(skb);
-+	case FLOW_KEY_CGROUP_CLASSID:
-+		return flow_get_cgroup_classid(skb);
-  	default:
-  		WARN_ON(1);
-  		return 0;
-@@ -359,7 +369,12 @@ static int flow_classify(struct sk_buff *skb, struct tcf_proto *tp,
-  			classid %= f->divisor;
-
-  		res->class   = 0;
--		res->classid = TC_H_MAKE(f->baseclass, f->baseclass + classid);
-+
-+		if (key == FLOW_KEY_CGROUP_CLASSID)
-+			res->classid = TC_H_MAKE(f->baseclass, classid);
-+		else
-+			res->classid = TC_H_MAKE(f->baseclass,
-+						 f->baseclass + classid);
-
-  		r = tcf_exts_exec(skb, &f->exts, res);
-  		if (r < 0)
-diff --git a/net/socket.c b/net/socket.c
-index 66c4a8c..b7421ec 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -93,6 +93,7 @@
-
-  #include <net/sock.h>
-  #include <linux/netfilter.h>
-+#include <linux/cgroup_tc.h>
-
-  static int sock_no_open(struct inode *irrelevant, struct file *dontcare);
-  static ssize_t sock_aio_read(struct kiocb *iocb, const struct iovec *iov,
-@@ -1170,6 +1171,8 @@ static int __sock_create(struct net *net, int family, int type, int protocol,
-  	if (err < 0)
-  		goto out_module_put;
-
-+	cgroup_tc_set_sock_classid(sock->sk);
-+
-  	/*
-  	 * Now to bump the refcnt of the [loadable] module that owns this
-  	 * socket at sock_release time we decrement its refcnt.
-@@ -1444,6 +1447,8 @@ asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
-  	if (err < 0)
-  		goto out_fd;
-
-+	cgroup_tc_set_sock_classid(newsock->sk);
-+
-  	if (upeer_sockaddr) {
-  		if (newsock->ops->getname(newsock, (struct sockaddr *)address,
-  					  &len, 2) < 0) {
