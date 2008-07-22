@@ -1,68 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbYGVEpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbYGVEry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753382AbYGVEpx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 00:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbYGVEpo
+	id S1754192AbYGVEry (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 00:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYGVErq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 00:45:44 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56471 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751309AbYGVEpo (ORCPT
+	Tue, 22 Jul 2008 00:47:46 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:38349 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750906AbYGVErp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 00:45:44 -0400
-Subject: Re: [RFC] schedule_timeout_range()
-From: David Woodhouse <dwmw2@infradead.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, arjan@infradead.org
-In-Reply-To: <200807221433.32412.nickpiggin@yahoo.com.au>
-References: <1216695757.18980.16.camel@shinybook.infradead.org>
-	 <200807221356.29892.nickpiggin@yahoo.com.au>
-	 <1216699922.18980.66.camel@shinybook.infradead.org>
-	 <200807221433.32412.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Tue, 22 Jul 2008 00:45:25 -0400
-Message-Id: <1216701925.18980.75.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Tue, 22 Jul 2008 00:47:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=wiKX0Jj93F1ZJbbgo9wQeH5mc744ytZhSruOrX0Im2vYPMqCEgLKwvKqCjHwOu2/m1
+         kj0xdtyd5RfCUUI+aSmBB2i7j77YMxivZSiRD+3cpw7QhcDwdfrlENpxGzU1yJT+jXks
+         UiiquvKD+UIzsRQyOl0BQz1mJxNzX11vcBfN4=
+Message-ID: <43e72e890807212147p5d19cfact17e719abb338378c@mail.gmail.com>
+Date: Mon, 21 Jul 2008 21:47:44 -0700
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Bug on 2.6.26 - x86 VIA Nehemiah CentaurHauls processor cannot boot
+Cc: "linux kernel" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@kernel.org>,
+       "Ivan Seskar" <Seskar@winlab.rutgers.edu>,
+       jfm3 <jfm3@winlab.rutgers.edu>, Sujith <m.sujith@gmail.com>
+In-Reply-To: <48851AC2.8030007@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <43e72e890807210614y58065d75j5b2fb3c5ebe6180a@mail.gmail.com>
+	 <48848DDF.6010903@zytor.com>
+	 <43e72e890807210701w6d7f5638w5fdbea76a1cf1c0b@mail.gmail.com>
+	 <48851AC2.8030007@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-22 at 14:33 +1000, Nick Piggin wrote:
-> The only thing I dislike about explicit times is that when a driver or
-> someone doesn't _really_ know how much to specify. Do you say 10s, 100s?
+On Mon, Jul 21, 2008 at 4:24 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Luis R. Rodriguez wrote:
+>>
+>> On Mon, Jul 21, 2008 at 6:23 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+>>>
+>>> Luis R. Rodriguez wrote:
+>>>>
+>>>> This bug seems to be present since 2.6.22 [1], so hope we can get this
+>>>> fixed ASAP. Let me know if you have patch suggestions I can test.
+>>>>
+>>>> This crashes very early, I had to use earlyprintk to get it.
+>>>>
+>>
+>> I've put extra spaces between the culprit.
+>>
+>> c0387ac2:       0f 1f 40 00             nopl   0x0(%eax)
+>>
+>
+> Sure enough, our old friend.
+>
+> You have in your configuration:
+>
+> CONFIG_M686=y
+> # CONFIG_X86_GENERIC is not set
+>
+> ... so this is fully expected; CONFIG_M686 without CONFIG_X86_GENERIC is not
+> compatible with such processors.
+>
+> Not a bug.
 
-This is true, but they certainly have a _better_ idea than we do. If the
-individual callers can't even come up with an answer, how are we ever
-going to come up with a generic policy that does the right thing? 
+Thanks for taking a  look at this. So well, it would be a
+misconfiguration bug by the distribution then to try to support a
+generic 686 kernel wihtout GENERIC then.
 
-I really don't think that applying this kind of policy in generic code
-is useful -- I'd like the callers to provide numbers even if they _do_
-pull it out of their wossname.
-
-The number they provide is the _maximum_ amount of time they should be
-prepared to wait (let's assume for a moment that they stayed sober and
-remembered Linux isn't a real-time kernel, so all guarantees are taken
-with a pinch of salt. Let's not get bogged down in nomenclature).
-
-In practice, they'll almost always get called before that maximum time
-expires -- that's the whole _point_, of course. But we can't _invent_
-that maximum in generic code; that's really up to the caller.
-
-> Some upper bound would be nice, which basically would not have to ever
-> fire by itself unless there is some CPU activity (so you don't have to
-> set two timers as a bonus). After that, I wonder, perhaps some "maximum
-> power savings value but not completely deferred"? Say give it a max of
-> 30s? Or perhaps even that is not future-proof enough if we one day want
-> to suspend most of the system between external IOs?
-
-I _really_ don't think we want to go there. Let the caller set a maximum
-amount of time they're prepared to wait, and that's it.
-
--- 
-dwmw2
-
+  Luis
