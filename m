@@ -1,111 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYGVTSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbYGVTTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103AbYGVTSm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 15:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYGVTSc
+	id S1754544AbYGVTTk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 15:19:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYGVTTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 15:18:32 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:49227 "EHLO mgw1.diku.dk"
+	Tue, 22 Jul 2008 15:19:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53663 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750718AbYGVTSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 15:18:31 -0400
-Date: Tue, 22 Jul 2008 21:18:27 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-Cc: avi@qumranet.com, kvm@vger.kernel.org, xiantao.zhang@intel.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/2] arch/ia64/kvm/kvm-ia64.c: Add local_irq_restore in
- error handling code
-In-Reply-To: <1216753864.28082.11.camel@odie.local>
-Message-ID: <Pine.LNX.4.64.0807222115210.2670@ask.diku.dk>
-References: <Pine.LNX.4.64.0807221843140.2670@ask.diku.dk>
- <1216753864.28082.11.camel@odie.local>
+	id S1751061AbYGVTTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 15:19:31 -0400
+To: Avi Kivity <avi@qumranet.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       kvm@vger.kernel.org
+Subject: Re: [patch 0/4] Port KVM-trace to tracepoints
+References: <20080717155724.897537670@polymtl.ca>
+	<48862A30.7050701@qumranet.com>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Tue, 22 Jul 2008 15:16:12 -0400
+In-Reply-To: <48862A30.7050701@qumranet.com> (Avi Kivity's message of "Tue, 22 Jul 2008 21:42:56 +0300")
+Message-ID: <y0mabg991c3.fsf@ton.toronto.redhat.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-511516320-1442744024-1216754307=:2670"
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Avi Kivity <avi@qumranet.com> writes:
 
----511516320-1442744024-1216754307=:2670
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+> [...]
+> kvm tracepoints are heavily tied into the implementation; and making
+> them harder to write means we will have less information.  In fact, I
+> am contemplating moving in another direction (when looking at the
+> pgprintk()s scattered around arch/x86/kvm/mmu.c:
+>
+>   kvm_trace("pfentry", "page_fault entry addr %lx error code %x\n",
+> cr2, error_code);
+>
+> Unlike printk()s, no actual formatting would occur during runtime.
 
-On Tue, 22 Jul 2008, Simon Holm Thøgersen wrote:
+Have you considered using trace_mark() directly - eliminating the
+KVM_TRACEN() middlemen?
 
-> tir, 22 07 2008 kl. 18:44 +0200, skrev Julia Lawall:
-> > From: Julia Lawall <julia@diku.dk>
-> > 
-> > There is a call to local_irq_restore in the normal exit case, so it would
-> > seem that there should be one on an error return as well.
-> > 
-> > The semantic patch that makes this change is as follows:
-> > (http://www.emn.fr/x-info/coccinelle/)
-> > 
-> > // <smpl>
-> > @@
-> > expression l;
-> > expression E,E1,E2;
-> > @@
-> > 
-> > local_irq_save(l);
-> > ... when != local_irq_restore(l)
-> >     when != spin_unlock_irqrestore(E,l)
-> >     when any
-> >     when strict
-> > (
-> > if (...) { ... when != local_irq_restore(l)
-> >                when != spin_unlock_irqrestore(E1,l)
-> > +   local_irq_restore(l);
-> >     return ...;
-> > }
-> > |
-> > if (...)
-> > +   {local_irq_restore(l);
-> >     return ...;
-> > +   }
-> > |
-> > spin_unlock_irqrestore(E2,l);
-> > |
-> > local_irq_restore(l);
-> > )
-> > // </smpl>
-> > 
-> > Signed-off-by: Julia Lawall <julia@diku.dk>
-> > 
-> > ---
-> >  arch/ia64/kvm/kvm-ia64.c      |    9 +++++++--
-> >  1 files changed, 7 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
-> > index 318b811..14e5c99 100644
-> > --- a/arch/ia64/kvm/kvm-ia64.c
-> > +++ b/arch/ia64/kvm/kvm-ia64.c
-> > @@ -125,8 +125,10 @@ void kvm_arch_hardware_enable(void *garbage)
-> >  				PAGE_KERNEL));
-> >  	local_irq_save(saved_psr);
-> >  	slot = ia64_itr_entry(0x3, KVM_VMM_BASE, pte, KVM_VMM_SHIFT);
-> > -	if (slot < 0)
-> > +	if (slot < 0) {
-> > +		local_irq_restore(saved_psr);
-> >  		return;
-> > +	}
-> >  	local_irq_restore(saved_psr);
-> 
-> If this change makes sense, how about merging the two local_irq_restore
-> calls and put them before the if? And shouldn't your checker be able to
-> figure this?
+> Instead, at initialization time all the strings would be parsed into
+> a data structure that describes the data types, and the runtime
+> would simply consult this structure and copy the arguments into
+> trace records.  User space would also be able to pull this structure
+> and so recreate the formatted string.
 
-No, it pretty much only does what it's told, which is to put a
-local_irq_restore before the return.  
+If one really wanted to, one could build such a mechanism on top of
+marker-based callbacks.
 
-Since slot is a local variable, it does seem like the call to 
-local_irq_restore could be safely moved upwards, so I will do that 
-instead.
+> The advantages I see to this are:
+>
+>  - easy to add traces; the most important advantage
+>  - when the code changes, obsolete traces are completely removed
+>  - good performance
 
-thanks,
-julia
+Ditto.
 
----511516320-1442744024-1216754307=:2670--
+>  - no need to have a formats file in userspace (which is tied to the
+> kernel version)
+
+OTOH, you'd have the kernel collecting compact binary records
+containing just the parameters, which are at least as tied to kernel
+version.
+
+>  - can also send printk()s along, for synchronization with other kvm
+> and kernel events
+
+Ditto.  It is elementary to attach a printk-generating marker callback.
+
+
+- FChE
