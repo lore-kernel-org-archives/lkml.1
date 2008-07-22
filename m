@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757805AbYGVF0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbYGVF1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757805AbYGVF0t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 01:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756568AbYGVFWc
+	id S1757452AbYGVF1J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 01:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756773AbYGVFWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 01:22:32 -0400
-Received: from ns.suse.de ([195.135.220.2]:53759 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 01:22:36 -0400
+Received: from mx1.suse.de ([195.135.220.2]:53763 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756750AbYGVFWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 01:22:31 -0400
+	id S1756766AbYGVFWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 01:22:35 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Ben Collins <ben.collins@ubuntu.com>
-Subject: [PATCH 15/79] device create: ieee1394: convert device_create to device_create_drvdata
-Date: Mon, 21 Jul 2008 22:18:39 -0700
-Message-Id: <1216703983-21448-15-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Roland Dreier <rolandd@cisco.com>,
+       Sean Hefty <sean.hefty@intel.com>,
+       Hal Rosenstock <hal.rosenstock@gmail.com>
+Subject: [PATCH 16/79] device create: infiniband: convert device_create to device_create_drvdata
+Date: Mon, 21 Jul 2008 22:18:40 -0700
+Message-Id: <1216703983-21448-16-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <20080722051805.GA17373@suse.de>
 References: <20080722051805.GA17373@suse.de>
@@ -25,67 +27,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 device_create() is race-prone, so use the race-free
 device_create_drvdata() instead as device_create() is going away.
 
-Cc: Ben Collins <ben.collins@ubuntu.com>
-Acked-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Roland Dreier <rolandd@cisco.com>
+Cc: Sean Hefty <sean.hefty@intel.com>
+Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/ieee1394/dv1394.c    |    7 ++++---
- drivers/ieee1394/raw1394.c   |    4 ++--
- drivers/ieee1394/video1394.c |    6 +++---
- 3 files changed, 9 insertions(+), 8 deletions(-)
+ drivers/infiniband/hw/ipath/ipath_file_ops.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/ieee1394/dv1394.c b/drivers/ieee1394/dv1394.c
-index 9d19aec..b6eb2cf 100644
---- a/drivers/ieee1394/dv1394.c
-+++ b/drivers/ieee1394/dv1394.c
-@@ -2296,9 +2296,10 @@ static void dv1394_add_host(struct hpsb_host *host)
- 
- 	ohci = (struct ti_ohci *)host->hostdata;
- 
--	device_create(hpsb_protocol_class, NULL, MKDEV(
--		IEEE1394_MAJOR,	IEEE1394_MINOR_BLOCK_DV1394 * 16 + (id<<2)),
--		"dv1394-%d", id);
-+	device_create_drvdata(hpsb_protocol_class, NULL,
-+			      MKDEV(IEEE1394_MAJOR,
-+				    IEEE1394_MINOR_BLOCK_DV1394 * 16 + (id<<2)), NULL,
-+			      "dv1394-%d", id);
- 
- 	dv1394_init(ohci, DV1394_NTSC, MODE_RECEIVE);
- 	dv1394_init(ohci, DV1394_NTSC, MODE_TRANSMIT);
-diff --git a/drivers/ieee1394/raw1394.c b/drivers/ieee1394/raw1394.c
-index 96f2847..6fa9e4a 100644
---- a/drivers/ieee1394/raw1394.c
-+++ b/drivers/ieee1394/raw1394.c
-@@ -3010,10 +3010,10 @@ static int __init init_raw1394(void)
- 	hpsb_register_highlevel(&raw1394_highlevel);
- 
- 	if (IS_ERR
--	    (device_create(
-+	    (device_create_drvdata(
- 	      hpsb_protocol_class, NULL,
- 	      MKDEV(IEEE1394_MAJOR, IEEE1394_MINOR_BLOCK_RAW1394 * 16),
--	      RAW1394_DEVICE_NAME))) {
-+	      NULL, RAW1394_DEVICE_NAME))) {
- 		ret = -EFAULT;
- 		goto out_unreg;
+diff --git a/drivers/infiniband/hw/ipath/ipath_file_ops.c b/drivers/infiniband/hw/ipath/ipath_file_ops.c
+index 35f301c..56c0eda 100644
+--- a/drivers/infiniband/hw/ipath/ipath_file_ops.c
++++ b/drivers/infiniband/hw/ipath/ipath_file_ops.c
+@@ -2455,7 +2455,7 @@ static int init_cdev(int minor, char *name, const struct file_operations *fops,
+ 		goto err_cdev;
  	}
-diff --git a/drivers/ieee1394/video1394.c b/drivers/ieee1394/video1394.c
-index 069b9f6..25db6e6 100644
---- a/drivers/ieee1394/video1394.c
-+++ b/drivers/ieee1394/video1394.c
-@@ -1341,9 +1341,9 @@ static void video1394_add_host (struct hpsb_host *host)
- 	hpsb_set_hostinfo_key(&video1394_highlevel, host, ohci->host->id);
  
- 	minor = IEEE1394_MINOR_BLOCK_VIDEO1394 * 16 + ohci->host->id;
--	device_create(hpsb_protocol_class, NULL,
--		      MKDEV(IEEE1394_MAJOR, minor),
--		      "%s-%d", VIDEO1394_DRIVER_NAME, ohci->host->id);
-+	device_create_drvdata(hpsb_protocol_class, NULL,
-+			      MKDEV(IEEE1394_MAJOR, minor), NULL,
-+			      "%s-%d", VIDEO1394_DRIVER_NAME, ohci->host->id);
- }
+-	device = device_create(ipath_class, NULL, dev, name);
++	device = device_create_drvdata(ipath_class, NULL, dev, NULL, name);
  
- 
+ 	if (IS_ERR(device)) {
+ 		ret = PTR_ERR(device);
 -- 
 1.5.6.3
 
