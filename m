@@ -1,48 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbYGVSUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYGVSVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753486AbYGVSUc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 14:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYGVSUW
+	id S1754213AbYGVSVl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 14:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbYGVSVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 14:20:22 -0400
-Received: from outbound-mail-141.bluehost.com ([67.222.38.31]:36080 "HELO
-	outbound-mail-141.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751268AbYGVSUV convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 14:20:21 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=mLS5ES0F1ZPdFrNjNq6rmdh0bIVVlioJHhtaO2A8Rjzqf20visihsNpfdVmrntlpDRbx3LT9xFiMfDf0g9aRQYr/mWLaM5o3z+FKJ0d6q6LQTYlkZfIONLtOB/IBYavN;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Alex Chiang <achiang@hp.com>
-Subject: Re: [PATCH] PCI: hotplug: fix error path in pci_slot's register_slot
-Date: Tue, 22 Jul 2008 11:20:13 -0700
-User-Agent: KMail/1.9.9
-Cc: juha_motorsportcom@luukku.com, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20080717171332.GD24683@ldl.fc.hp.com>
-In-Reply-To: <20080717171332.GD24683@ldl.fc.hp.com>
+	Tue, 22 Jul 2008 14:21:31 -0400
+Received: from 81-66-111-23.rev.numericable.fr ([81.66.111.23]:55681 "EHLO
+	rubis.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750961AbYGVSVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 14:21:30 -0400
+X-Greylist: delayed 450 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Jul 2008 14:21:30 EDT
+Message-ID: <4886235F.6010407@jourdois.fr>
+Date: Tue, 22 Jul 2008 20:13:51 +0200
+From: =?UTF-8?B?U3TDqXBoYW5lIEpvdXJkb2lz?= <stephane@jourdois.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200807221120.13424.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+To: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org,
+       ipw3945-devel <ipw3945-devel@lists.sourceforge.net>
+Subject: Re: [ipw3945-devel] [PATCH] iwlwifi: Enable packet injection for
+ iwl4965
+References: <69e28c910807181205m6dd0cdcek83f9717bf1ac9dcc@mail.gmail.com> <69e28c910807220454q7c8371e1m11b1015ed8398758@mail.gmail.com> <4885DDC4.2060609@googlemail.com>
+In-Reply-To: <4885DDC4.2060609@googlemail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-DSPAM-Factors: 27,
+	linux, 0.00010,
+	wrote, 0.00010,
+	git, 0.00010,
+	git, 0.00010,
+	>+>, 0.00010,
+	To*linux, 0.00011,
+	To*linux, 0.00011,
+	To*vger.kernel.org, 0.00012,
+	>>, 0.00013,
+	>>, 0.00013,
+	Subject*[PATCH], 0.00016,
+	currently, 0.00016,
+	References*mail.gmail.com>, 0.00017,
+	References*mail.gmail.com>, 0.00017,
+	User-Agent*Thunderbird, 0.00017,
+	since, 0.00018,
+	next, 0.00021,
+	To*kernel, 0.00022,
+	The+patch, 0.00022,
+	testing, 0.00023,
+	patch, 0.00025,
+	any, 0.00025,
+	any, 0.00025,
+	tree, 0.00028,
+	least, 0.00029,
+	of+this, 0.00029,
+	To*linux+kernel, 0.00031
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, July 17, 2008 10:13 am Alex Chiang wrote:
-> Juha Leppänen noticed that an error path in register_slot()
-> wasn't returning appropriately, leading to a condition where we
-> might access a kfree'ed pointer, so let's fix that.
->
-> Additionally, fix up the copyright information in the file while
-> we're in there.
->
-> Signed-off-by: Alex Chiang <achiang@hp.com>
+Johannes Engel a écrit :
+> Stefanik Gábor wrote:
+>> What is the status of this patch? Did it get lost? Was it rejected? I
+>> didn't get any answer on it, and I can't see it in iwlwifi-2.6.git or
+>> wireless-testing.git.
+> 
+> Actually it is at least in linux-next since 30th of June as of commit 
+> 914233d68f07d5d9c22630cd5a84fdfd98f39da2.
 
-Thanks Alex & Juha, I've applied this to my for-linus tree.
+I beg your pardon, but this commit is for iwl3945, not iwl4965.
+The patch for iwl4965 is currently not in any git tree.
 
-Jesse
+Stephane.
+
+-- 
+  ///  Stephane Jourdois     /"\  ASCII RIBBON CAMPAIGN \\\
+(((    Consultant securite  \ /    AGAINST HTML MAIL    )))
+  \\\   157 Bd Davout         X                         ///
+   \\\  75020  Paris         / \    +33 6 8643 3085    ///
