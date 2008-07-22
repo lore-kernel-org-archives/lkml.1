@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752738AbYGVHnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbYGVHoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752738AbYGVHnM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 03:43:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYGVHmz
+	id S1753448AbYGVHoQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 03:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYGVHoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 03:42:55 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:18975 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751830AbYGVHmy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 03:42:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=wTp5LLfgHKzHi6xGy1KbzixutdG64Q8xaGl+13ZFVATadckMwPSbpIOMZoZ3uyOU2j
-         cTEMXZUQPbXfpKkXLjqzNaMyG+Eg/7KSFea7yLxyrXU3JISRTENpiujAKiWXRDgQxEdV
-         5fBWoNqZGskySXz4AOytDbRzaHuR6FwHU0yRM=
-Message-ID: <b25312890807220042i66fce3coe4947b569c335b5b@mail.gmail.com>
-Date: Tue, 22 Jul 2008 10:42:53 +0300
-From: "Rami Rosen" <roszenrami@gmail.com>
-To: "Ming Lei" <tom.leiming@gmail.com>
-Subject: Re: BUG: iwlwifi build failed
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <d82e647a0807212143r2f598a59y76a79fd9bb8f17@mail.gmail.com>
+	Tue, 22 Jul 2008 03:44:01 -0400
+Received: from gwu.lbox.cz ([62.245.111.132]:57741 "EHLO gwu.lbox.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751880AbYGVHoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 03:44:00 -0400
+Date: Tue, 22 Jul 2008 09:43:57 +0200
+From: Nikola Ciprich <extmaillist@linuxbox.cz>
+To: linux-kernel@vger.kernel.org
+Cc: nikola.ciprich@linuxbox.cz, linux-usb@vger.kernel.org
+Subject: 2.6.22: USB getting stuck on SuperMicro PDSME+ boards
+Message-ID: <20080722074357.GC21035@develbox.linuxbox.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <d82e647a0807212143r2f598a59y76a79fd9bb8f17@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 876041 records(22-07-2008)
+X-Envelope-From: ciprich@linuxbox.cz
+X-Spam-Score: N/A (trusted relay)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
-  - This problem was reported and a patch was sent recently; probably
-it is not yet in your tree yet.
+I'm having problem with USB getting stuck on bunch of machines with PDSME+ boards (I haven't observed
+the problem on any other type of board. Controller identifies as
+8086:27c8 (rev 01) - Intel Corporation 82801G (ICH7 Family) USB UHCI Controller
 
-  - I assume that your .config file does not have CONFIG_IWLWIFI_DEBUG set.
-On the net-2.6 current tree, when you **do** set the
-CONFIG_IWLWIFI_DEBUG, this problem does not occur
-(and, as can be understood, when CONFIG_IWLWIFI_DEBUG
-is not set, it does occur).
+Symptoms:
+- any process trying to access /proc/bus/usb/devices gets stuck in 'D' state
+- khubd seems to be stuck in 'D' state
+- USB devices don't work
 
-So, if it is possible for you for the time being, till this patch
-finds its way into the tree, I suggest that you
-might set the CONFIG_IWLWIFI_DEBUG and run make.
+I'm observing the problem even on machines without any USB devs attached.
+Unfortunately I wasn't able to reproduce the problem on my testing machines I have
+on my disposal here (yet, but I'm still trying), and it's not affecting all PDSME+ boards we have deployed.
+The problem appeared after upgrading machines to 2.6.24 kernels, we haven't observed it on 2.6.21 we used before.
+On affected machines, kernel doesn't emit any OOPS, or anything else which could help to track. It just stops working after some time.
 
-More details on this patch you can find here:
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-07/msg09132.html
+Bad thing is that since I'm not able to reproduce the problem here and I cannot reboot/upgrade production machines too
+often, I can't provide much more information or try bisection :(
+So this is rather desperate attempt to ask if anyone had similar problem or has any tip on where should I look to track it.
+Kernels we're using are vanillas with few small unrelated patches applied.
+Any help would be greatly appreciated
+with best regards
+nik
 
-Regards,
-Rami Rosen
 
+-- 
+-------------------------------------
+Nikola CIPRICH
+LinuxBox.cz, s.r.o.
+28. rijna 168, 709 01 Ostrava
 
-On Tue, Jul 22, 2008 at 7:43 AM, Ming Lei <tom.leiming@gmail.com> wrote:
-> commit 93ded9b8fd42abe2c3607097963d8de6ad9117eb
-> Merge: 6d52dcb... f756cbd...
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Mon Jul 21 15:42:20 2008 -0700
-> =====================================
->
-> drivers/net/wireless/iwlwifi/iwl-led.c: In function 'iwl_led_brightness_set':
-> drivers/net/wireless/iwlwifi/iwl-led.c:198: error: 'led_type_str'
-> undeclared (first use in this function)
-> drivers/net/wireless/iwlwifi/iwl-led.c:198: error: (Each undeclared
-> identifier is reported only once
-> drivers/net/wireless/iwlwifi/iwl-led.c:198: error: for each function
-> it appears in.)
-> make[4]: *** [drivers/net/wireless/iwlwifi/iwl-led.o] Error 1
-> make[3]: *** [drivers/net/wireless/iwlwifi] Error 2
-> make[2]: *** [drivers/net/wireless] Error 2
-> make[1]: *** [drivers/net] Error 2
-> make: *** [drivers] Error 2
->
->
-> --
-> Lei Ming
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+tel.:   +420 596 603 142
+fax:    +420 596 621 273
+mobil:  +420 777 093 799
+www.linuxbox.cz
+
+mobil servis: +420 737 238 656
+email servis: servis@linuxbox.cz
+-------------------------------------
