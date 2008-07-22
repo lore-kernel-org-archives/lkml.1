@@ -1,156 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbYGVWCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbYGVWDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755100AbYGVWCI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 18:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYGVWBv
+	id S1755593AbYGVWDh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 18:03:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbYGVWD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 18:01:51 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53257 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752182AbYGVWBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 18:01:50 -0400
-Message-ID: <48865899.3030209@garzik.org>
-Date: Tue, 22 Jul 2008 18:00:57 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 22 Jul 2008 18:03:26 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:43007 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753536AbYGVWDZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 18:03:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=O4NkHButxbzE7qDF23Rd0Nqj91b+yq4gKzi6dN/6itXrilachytCGaCMesFdzM/iQh
+         Sp8FvxZ3gpD4r26lbb66ewURN0+l0JkDEy3XA0unDPHH03Q/z1L4xUI7rMEu9/0QID5D
+         KkzuQrCR0sOqeygJPLek2SobsjC4uj2Hno9To=
+Message-ID: <52d4a3890807221503y572c9ae2k49e1f3f6a50076c4@mail.gmail.com>
+Date: Wed, 23 Jul 2008 01:03:24 +0300
+From: "Mohammed Gamal" <m.gamal005@gmail.com>
+To: linux-net@vger.kernel.org
+Subject: [Oops] b43 driver on 2.6.26
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
-       jgarzik@redhat.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [build failure] hp-plus.c: (.text+0xd7c1a): undefined	reference
- to `ei_close'
-References: <20080721.233512.128618365.anemo@mba.ocn.ne.jp> <20080721191519.GA15843@elte.hu> <20080721214258.787a67ca@lxorguk.ukuu.org.uk> <20080722072334.GA25241@elte.hu>
-In-Reply-To: <20080722072334.GA25241@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_118536_24295655.1216764204293"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> 
->> On Mon, 21 Jul 2008 21:15:19 +0200
->> Ingo Molnar <mingo@elte.hu> wrote:
->>
->>> * Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
->>>
->>>> Since commit 055e5110ae0c0c1176a75b78d789294f2ff2f7af ("8390: Split
->>>> 8390 support into a pausing and a non pausing driver core"), ne.c
->>>> cause this build failure:
->>>>
->>>> drivers/built-in.o: In function `ne_probe1':
->>>> ne.c:(.init.text+0x2464): undefined reference to `NS8390_init'
->>>> drivers/built-in.o: In function `ne_block_output':
->>>> ne.c:(.text.ne_block_output+0x1b0): undefined reference to `NS8390_init'
->>> i just triggered a similar build failure, but in a different 
->>> ne2000-derived file:
->> I'll take a look. Various odd things happened with the Makefile for 
->> this patch and the follow up fixes. If the followup didn't get applied 
->> then that might explain the breakage.
-> 
-> ok. I also got:
-> 
->  drivers/built-in.o: In function `hp_probe1':
->  hp.c:(.init.text+0xa280): undefined reference to `NS8390_init'
-> 
-> so i suspect most of the 8390p.o library using ne2000 drivers are 
-> affected?
-> 
-> i think instead of a manual review i think this is better to fix all the 
-> problems:
-> 
-> cd drivers/net/; sed -i 's/NS8390_/NS8390p_/g' \
->   $(grep -l NS8390_ $(grep 8390p.o Makefile | cut -d' ' -f3 | \
->      sed 's/.o$/.c/g'))
-> 
-> find the full tested patch below. It solves the build failures i 
-> triggered so far.
-> 
-> 	Ingo
-> 
-> ------------->
-> commit 79f2b8594df44a4f3f11085df656883525b74abd
-> Author: Ingo Molnar <mingo@elte.hu>
-> Date:   Tue Jul 22 09:19:31 2008 +0200
-> 
->     net 8390p: fix interface usage
->     
->     various drivers were using the wrong APIs:
->     
->      drivers/built-in.o: In function `hp_probe1':
->      hp.c:(.init.text+0xa280): undefined reference to `NS8390_init'
->     
->     fixed via:
->     
->     cd drivers/net/; sed -i 's/NS8390_/NS8390p_/g' \
->       $(grep -l NS8390_ $(grep 8390p.o Makefile | cut -d' ' -f3 | \
->           sed 's/.o$/.c/g'))
->     
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  drivers/net/hp-plus.c |    2 +-
->  drivers/net/hp.c      |    2 +-
->  drivers/net/ne.c      |    2 +-
->  drivers/net/ne2.c     |    2 +-
->  4 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/hp-plus.c b/drivers/net/hp-plus.c
-> index c2c4f49..8239939 100644
-> --- a/drivers/net/hp-plus.c
-> +++ b/drivers/net/hp-plus.c
-> @@ -262,7 +262,7 @@ static int __init hpp_probe1(struct net_device *dev, int ioaddr)
->  	}
->  
->  	outw(Perf_Page, ioaddr + HP_PAGING);
-> -	NS8390_init(dev, 0);
-> +	NS8390p_init(dev, 0);
->  	/* Leave the 8390 and HP chip reset. */
->  	outw(inw(ioaddr + HPP_OPTION) & ~EnableIRQ, ioaddr + HPP_OPTION);
->  
-> diff --git a/drivers/net/hp.c b/drivers/net/hp.c
-> index 8281209..0a8c649 100644
-> --- a/drivers/net/hp.c
-> +++ b/drivers/net/hp.c
-> @@ -389,7 +389,7 @@ static void __init
->  hp_init_card(struct net_device *dev)
->  {
->  	int irq = dev->irq;
-> -	NS8390_init(dev, 0);
-> +	NS8390p_init(dev, 0);
->  	outb_p(irqmap[irq&0x0f] | HP_RUN,
->  		   dev->base_addr - NIC_OFFSET + HP_CONFIGURE);
->  	return;
-> diff --git a/drivers/net/ne.c b/drivers/net/ne.c
-> index 3df231d..4a8a4b1 100644
-> --- a/drivers/net/ne.c
-> +++ b/drivers/net/ne.c
-> @@ -355,7 +355,7 @@ static int __init ne_probe1(struct net_device *dev, unsigned long ioaddr)
->  	}
->  
->  	/* Read the 16 bytes of station address PROM.
-> -	   We must first initialize registers, similar to NS8390_init(eifdev, 0).
-> +	   We must first initialize registers, similar to NS8390p_init(eifdev, 0).
->  	   We can't reliably read the SAPROM address without this.
->  	   (I learned the hard way!). */
->  	{
-> diff --git a/drivers/net/ne2.c b/drivers/net/ne2.c
-> index 8f72563..332df75 100644
-> --- a/drivers/net/ne2.c
-> +++ b/drivers/net/ne2.c
-> @@ -404,7 +404,7 @@ static int __init ne2_probe1(struct net_device *dev, int slot)
->  
->  	/* Read the 16 bytes of station address PROM.
->  	   We must first initialize registers, similar to
-> -	   NS8390_init(eifdev, 0).
-> +	   NS8390p_init(eifdev, 0).
->  	   We can't reliably read the SAPROM address without this.
->  	   (I learned the hard way!). */
+------=_Part_118536_24295655.1216764204293
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-applied
+I get the following oops with b43 driver on scanning for wireless networks.
+----
 
+------=_Part_118536_24295655.1216764204293
+Content-Type: application/octet-stream; name=oops
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fiz1zems0
+Content-Disposition: attachment; filename=oops
 
+WyAgOTc5LjA1OTE1OF0gLS0tLS0tLS0tLS0tWyBjdXQgaGVyZSBdLS0tLS0tLS0tLS0tClsgIDk3
+OS4wNTkxODFdIGtlcm5lbCBCVUcgYXQgbmV0L2NvcmUvZGV2LmM6MTMyOCEKWyAgOTc5LjA1OTE5
+MF0gaW52YWxpZCBvcGNvZGU6IDAwMDAgWzFdIFNNUCAKWyAgOTc5LjA1OTIwMl0gQ1BVIDAgClsg
+IDk3OS4wNTkyMTFdIE1vZHVsZXMgbGlua2VkIGluOiByZmtpbGxfaW5wdXQgYXJjNCBlY2IgY3J5
+cHRvX2Jsa2NpcGhlciBiNDMgcmZraWxsIG1hYzgwMjExIGNmZzgwMjExIGxlZF9jbGFzcyBpbnB1
+dF9wb2xsZGV2IGlwdjYgaTkxNSBkcm0gYmluZm10X21pc2MgcmZjb21tIGwyY2FwIG5mc2QgbG9j
+a2QgYXV0aF9ycGNnc3Mgc3VucnBjIGV4cG9ydGZzIGlwdF9NQVNRVUVSQURFIGlwdGFibGVfbmF0
+IG5mX25hdCBuZl9jb25udHJhY2tfaXB2NCB4dF9zdGF0ZSBuZl9jb25udHJhY2sgaXB0X1JFSkVD
+VCB4dF90Y3B1ZHAgYnJpZGdlIHN0cCBrdm1faW50ZWwga3ZtIHBwZGV2IGFjcGlfY3B1ZnJlcSBj
+cHVmcmVxX29uZGVtYW5kIGNwdWZyZXFfdXNlcnNwYWNlIGNwdWZyZXFfc3RhdHMgZnJlcV90YWJs
+ZSBjcHVmcmVxX2NvbnNlcnZhdGl2ZSBjcHVmcmVxX3Bvd2Vyc2F2ZSBwY2lfc2xvdCBzYnMgc2Jz
+aGMgaXB0YWJsZV9maWx0ZXIgaXBfdGFibGVzIHhfdGFibGVzIHBhcnBvcnRfcGMgbHAgcGFycG9y
+dCBzbmRfaGRhX2ludGVsIHNuZF9wY21fb3NzIHNuZF9taXhlcl9vc3Mgc25kX3BjbSBzbmRfcGFn
+ZV9hbGxvYyBzbmRfaHdkZXAgc25kX3NlcV9kdW1teSBzbmRfc2VxX29zcyBzbmRfc2VxX21pZGkg
+c25kX3Jhd21pZGkgc25kX3NlcV9taWRpX2V2ZW50IHNuZF9zZXEgc25kX3RpbWVyIHNuZF9zZXFf
+ZGV2aWNlIHNuZCBoY2lfdXNiIHNvdW5kY29yZSBzZXJpb19yYXcgYmx1ZXRvb3RoIGFjIGlUQ09f
+d2R0IGJ1dHRvbiBwc21vdXNlIHBjc3BrciBpVENPX3ZlbmRvcl9zdXBwb3J0IGNvbnRhaW5lciBi
+YXR0ZXJ5IHNocGNocCBwY2lfaG90cGx1ZyBpbnRlbF9hZ3AgZXZkZXYgZG1fbXVsdGlwYXRoIGRt
+X21vZCBzY3NpX2RoIGV4dDMgamJkIG1iY2FjaGUgc2cgc3JfbW9kIHNkX21vZCBjZHJvbSBhdGFf
+Z2VuZXJpYyBhdGFfcGlpeCBsaWJhdGEgc2NzaV9tb2QgZG9jayB1aGNpX2hjZCBlaGNpX2hjZCBz
+c2IgcGNtY2lhIHBjbWNpYV9jb3JlIHVzYmNvcmUgcmFpZDEwIHJhaWQ0NTYgYXN5bmNfeG9yIGFz
+eW5jX21lbWNweSBhc3luY190eCB4b3IgcmFpZDEgcmFpZDAgbXVsdGlwYXRoIGxpbmVhciBtZF9t
+b2QgdGhlcm1hbCBwcm9jZXNzb3IgZmFuIGZ1c2UKWyAgOTc5LjA1OTU2NF0gUGlkOiA4NzE4LCBj
+b21tOiBiNDMgTm90IHRhaW50ZWQgMi42LjI2ICMxMQpbICA5NzkuMDU5NTczXSBSSVA6IDAwMTA6
+WzxmZmZmZmZmZjgwM2YwZjBkPl0gIFs8ZmZmZmZmZmY4MDNmMGYwZD5dIF9fbmV0aWZfc2NoZWR1
+bGUrMHg2ZC8weDgwClsgIDk3OS4wNTk2MDNdIFJTUDogMDAxODpmZmZmODgwMDM5MjUzZGUwICBF
+RkxBR1M6IDAwMDEwMjQ2ClsgIDk3OS4wNTk2MTJdIFJBWDogMDAwMDAwMDBmZmZmZmZmZiBSQlg6
+IGZmZmY4ODAwMzIwNDk3MDAgUkNYOiAwMDAwMDAwMDAwMDAwMDAwClsgIDk3OS4wNTk2MjJdIFJE
+WDogZmZmZjg4MDAzOWI1ZTc0MCBSU0k6IGZmZmZmZmZmODA1ZGNhNDAgUkRJOiBmZmZmZmZmZjgw
+NWRjYTQwClsgIDk3OS4wNTk2MzJdIFJCUDogZmZmZjg4MDAzOTI1M2RmMCBSMDg6IGZmZmY4ODAw
+M2I1OTk4MDggUjA5OiBmZmZmZmZmZmEyMTZjZWUwClsgIDk3OS4wNTk2NDFdIFIxMDogMDAwMDAw
+MDAwMDAwMDAwMSBSMTE6IDAwMDAwMDAwMDAwMDAwMDAgUjEyOiBmZmZmODgwMDMxZGM2ZjE4Clsg
+IDk3OS4wNTk2NTFdIFIxMzogZmZmZjg4MDAzMmYxZDAwMCBSMTQ6IGZmZmY4ODAwMzFkYzYyZTAg
+UjE1OiAwMDAwMDAwMDAwMDAwMDAwClsgIDk3OS4wNTk2NjNdIEZTOiAgMDAwMDAwMDAwMDAwMDAw
+MCgwMDAwKSBHUzpmZmZmZmZmZjgwNmFkMjgwKDAwMDApIGtubEdTOjAwMDAwMDAwMDAwMDAwMDAK
+WyAgOTc5LjA1OTY3NF0gQ1M6ICAwMDEwIERTOiAwMDE4IEVTOiAwMDE4IENSMDogMDAwMDAwMDA4
+MDA1MDAzYgpbICA5NzkuMDU5NjgzXSBDUjI6IDAwMDAwMDAwMDA0MmQ2YTAgQ1IzOiAwMDAwMDAw
+MDAwMjAxMDAwIENSNDogMDAwMDAwMDAwMDAwMjZlMApbICA5NzkuMDU5Njk0XSBEUjA6IDAwMDAw
+MDAwMDAwMDAwMDAgRFIxOiAwMDAwMDAwMDAwMDAwMDAwIERSMjogMDAwMDAwMDAwMDAwMDAwMApb
+ICA5NzkuMDU5NzA0XSBEUjM6IDAwMDAwMDAwMDAwMDAwMDAgRFI2OiAwMDAwMDAwMGZmZmYwZmYw
+IERSNzogMDAwMDAwMDAwMDAwMDQwMApbICA5NzkuMDU5NzE1XSBQcm9jZXNzIGI0MyAocGlkOiA4
+NzE4LCB0aHJlYWRpbmZvIGZmZmY4ODAwMzkyNTIwMDAsIHRhc2sgZmZmZjg4MDAzYTFmY2UyMCkK
+WyAgOTc5LjA1OTcyM10gU3RhY2s6ICBmZmZmODgwMDM5MjUzZGYwIGZmZmY4ODAwMzIwNDk3MDAg
+ZmZmZjg4MDAzOTI1M2U1MCBmZmZmZmZmZmEyMGE2MTIzClsgIDk3OS4wNTk3NDVdICBmZmZmZmZm
+ZmZmZmZmZmZmIGZmZmY4ODAwMzIwNDkwMDAgMDAwMDAwMDAwMDAwMDAwMCAwMDAwMDAwMDAwMDAw
+MDAwClsgIDk3OS4wNTk3NjJdICBmZmZmODgwMDM5MjUzZTQwIGZmZmY4ODAwMzFkYzZmNDggMDAw
+MDAwMDAwMDAwMDAwMCBmZmZmODgwMDMxZGM2MmUwClsgIDk3OS4wNTk3NzhdIENhbGwgVHJhY2U6
+ClsgIDk3OS4wNTk4NTVdICBbPGZmZmZmZmZmYTIwYTYxMjM+XSBpZWVlODAyMTFfc2Nhbl9jb21w
+bGV0ZWQrMHgyMzMvMHgyYzAgW21hYzgwMjExXQpbICA5NzkuMDU5OTQ3XSAgWzxmZmZmZmZmZmEy
+MGE4ZjM4Pl0gaWVlZTgwMjExX3N0YV9zY2FuX3dvcmsrMHhhOC8weDIwMCBbbWFjODAyMTFdClsg
+IDk3OS4wNjAwMDJdICBbPGZmZmZmZmZmYTIwYThlOTA+XSA/IGllZWU4MDIxMV9zdGFfc2Nhbl93
+b3JrKzB4MC8weDIwMCBbbWFjODAyMTFdClsgIDk3OS4wNjAwMzZdICBbPGZmZmZmZmZmODAyNTA5
+YTA+XSBydW5fd29ya3F1ZXVlKzB4ZDAvMHgxNzAKWyAgOTc5LjA2MDA2OF0gIFs8ZmZmZmZmZmY4
+MDI1MTQ5Mz5dIHdvcmtlcl90aHJlYWQrMHhhMy8weDExMApbICA5NzkuMDYwMDkwXSAgWzxmZmZm
+ZmZmZjgwMjU0OTcwPl0gPyBhdXRvcmVtb3ZlX3dha2VfZnVuY3Rpb24rMHgwLzB4NDAKWyAgOTc5
+LjA2MDEyMl0gIFs8ZmZmZmZmZmY4MDI1MTNmMD5dID8gd29ya2VyX3RocmVhZCsweDAvMHgxMTAK
+WyAgOTc5LjA2MDE0Ml0gIFs8ZmZmZmZmZmY4MDI1NDRiZD5dIGt0aHJlYWQrMHg0ZC8weDgwClsg
+IDk3OS4wNjAxNzVdICBbPGZmZmZmZmZmODAyMGQ4Zjk+XSBjaGlsZF9yaXArMHhhLzB4MTEKWyAg
+OTc5LjA2MDIzOV0gIFs8ZmZmZmZmZmY4MDI1NDQ3MD5dID8ga3RocmVhZCsweDAvMHg4MApbICA5
+NzkuMDYwMjU1XSAgWzxmZmZmZmZmZjgwMjBkOGVmPl0gPyBjaGlsZF9yaXArMHgwLzB4MTEKWyAg
+OTc5LjA2MDI3M10gClsgIDk3OS4wNjAyNzhdIApbICA5NzkuMDYwMjgzXSBDb2RlOiA4MCA4MCBi
+ZiAwMiAwMCAwMCAwMCA0OCAwMSBjMiA0OCA4YiAwMiA0OCA4OSA0NiA2OCA0OCA4OSAzMiBlOCBm
+NSAzMSBlNSBmZiA0OCA4OSBkZiA1NyA5ZCA2NiAwZiAxZiA0NCAwMCAwMCA0OCA4MyBjNCAwOCA1
+YiBjOSBjMyA8MGY+IDBiIGViIGZlIDY2IDY2IDY2IDY2IDY2IDY2IDJlIDBmIDFmIDg0IDAwIDAw
+IDAwIDAwIDAwIDU1IDQ4IApbICA5NzkuMDYwNDI3XSBSSVAgIFs8ZmZmZmZmZmY4MDNmMGYwZD5d
+IF9fbmV0aWZfc2NoZWR1bGUrMHg2ZC8weDgwClsgIDk3OS4wNjA0NDRdICBSU1AgPGZmZmY4ODAw
+MzkyNTNkZTA+ClsgIDk3OS4wNjA1MjZdIC0tLVsgZW5kIHRyYWNlIDU1ZjE2MTBhOWU1NjY5YmUg
+XS0tLQoK
+------=_Part_118536_24295655.1216764204293--
