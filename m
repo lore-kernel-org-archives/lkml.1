@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbYGVKXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbYGVKYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754540AbYGVKXp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 06:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbYGVKXi
+	id S1755053AbYGVKYy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 06:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYGVKYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 06:23:38 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:32814 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751820AbYGVKXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 06:23:37 -0400
-Date: Tue, 22 Jul 2008 14:27:17 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] workqueues: do CPU_UP_CANCELED if CPU_UP_PREPARE fails
-Message-ID: <20080722102717.GB1068@tv-sign.ru>
-References: <200807220826.m6M8Q4I6018588@imap1.linux-foundation.org> <20080722084526.GA165@tv-sign.ru> <20080722085938.GA5857@localhost.localdomain> <20080722091636.GA241@tv-sign.ru> <20080722095539.GA6188@localhost.localdomain> <20080722102354.GA1068@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 22 Jul 2008 06:24:41 -0400
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:23573 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753296AbYGVKYk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 06:24:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=oKJb8Hgjo0oAtWbJLz33rfng1jYja5LsNxgMy6KUAjNa1Himl0gbaPU7nT06TcjO0S7XKtuT6B6i9J2daYTSXjw0lPc+vSjuBpOhYzPjwJEg9jxwmNHO8XLlQObKE505TTeBCYSfk5FyESOOe4WvLhVv/CBkTBweCyiUcyBv0Ds=  ;
+X-YMail-OSG: ovRmTTYVM1lBY1PSiJQwvjM1w8jyCUJf3TIkjo_.eHaBWfdSVDLB36DBY1B7VWB.9SdOTUZhBj5RDWypv3ygVEpp0n4Kjqa7Cyj967niyebYMMRi8ghoNxzl1Us_OoR_g6w-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2.6.26-rc-mm] gpio: max732x driver
+Date: Tue, 22 Jul 2008 03:24:38 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>, Eric Miao <eric.y.miao@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>, Jack Ren <jack.ren@marvell.com>
+References: <200807131918.06377.david-b@pacbell.net> <20080722020542.d180162d.akpm@linux-foundation.org>
+In-Reply-To: <20080722020542.d180162d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20080722102354.GA1068@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+Message-Id: <200807220324.38929.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(replaces workqueue-proper-error-unwinding-in-cpu-hotplug-error-path.patch)
+On Tuesday 22 July 2008, Andrew Morton wrote:
+> > +     if ((mask & chip->dir_input) == 0) {
+> > +             dev_dbg(&chip->client->dev, "%s port %d is output only\n",
+> > +                     chip->client->name, off);
+> > +             return -EACCES;
+> 
+> I don't think that EACCES is a suitable error code here.  That's a
+> security/permissions sort of thing.  If userspace is requesting this
+> driver to do something which the hardware cannot do then probably
+> EINVAL is the appropriate return code.
 
-The bug was pointed out by Akinobu Mita <akinobu.mita@gmail.com>, and this
-patch is based on his original patch.
+EINVAL is one of the most ambiguous return codes available.  It's
+worth avoiding whenever there's *ANY* more meaningful code!  In this
+case, the gpio_direction_input() call is good about returning that
+fault code only for bogus GPIO numbers.
 
-workqueue_cpu_callback(CPU_UP_PREPARE) expects that if it returns NOTIFY_BAD,
-_cpu_up() will send CPU_UP_CANCELED then.
+EACCES is what you should get trying to open a write-only file for
+reading, which seems like a very direct analogy.  That argument is
+just fine... it's the particular access request which must be denied,
+in this case because hardware itself disallows it rather than a bit
+in an inode.
 
-However, this is not true since
-
-	"cpu hotplug: cpu: deliver CPU_UP_CANCELED only to NOTIFY_OKed callbacks with CPU_UP_PREPARE"
-	commit: a0d8cdb652d35af9319a9e0fb7134de2a276c636
-
-The callback which has returned NOTIFY_BAD will not receive CPU_UP_CANCELED.
-Change the code to fulfil the CPU_UP_CANCELED logic if CPU_UP_PREPARE fails.
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- 26-rc2/kernel/workqueue.c~WQ_CPU_UP_PREPARE	2008-07-12 19:40:57.000000000 +0400
-+++ 26-rc2/kernel/workqueue.c	2008-07-22 13:43:47.000000000 +0400
-@@ -911,6 +911,7 @@ static int __devinit workqueue_cpu_callb
- 	unsigned int cpu = (unsigned long)hcpu;
- 	struct cpu_workqueue_struct *cwq;
- 	struct workqueue_struct *wq;
-+	int ret = NOTIFY_OK;
- 
- 	action &= ~CPU_TASKS_FROZEN;
- 
-@@ -918,7 +919,7 @@ static int __devinit workqueue_cpu_callb
- 	case CPU_UP_PREPARE:
- 		cpu_set(cpu, cpu_populated_map);
- 	}
--
-+undo:
- 	list_for_each_entry(wq, &workqueues, list) {
- 		cwq = per_cpu_ptr(wq->cpu_wq, cpu);
- 
-@@ -928,7 +929,9 @@ static int __devinit workqueue_cpu_callb
- 				break;
- 			printk(KERN_ERR "workqueue [%s] for %i failed\n",
- 				wq->name, cpu);
--			return NOTIFY_BAD;
-+			action = CPU_UP_CANCELED;
-+			ret = NOTIFY_BAD;
-+			goto undo;
- 
- 		case CPU_ONLINE:
- 			start_workqueue_thread(cwq, cpu);
-@@ -948,7 +951,7 @@ static int __devinit workqueue_cpu_callb
- 		cpu_clear(cpu, cpu_populated_map);
- 	}
- 
--	return NOTIFY_OK;
-+	return ret;
- }
- 
- void __init init_workqueues(void)
-
+- Dave
