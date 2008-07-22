@@ -1,99 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbYGVC3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbYGVCgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755855AbYGVC3f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 22:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYGVC32
+	id S1755582AbYGVCgj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 22:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbYGVCg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 22:29:28 -0400
-Received: from ozlabs.org ([203.10.76.45]:34909 "EHLO ozlabs.org"
+	Mon, 21 Jul 2008 22:36:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56916 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750698AbYGVC31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 22:29:27 -0400
-Subject: Re: [PATCH] pci kernel-doc fatal error
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       torvalds <torvalds@linux-foundation.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-In-Reply-To: <20080721161440.31c97fb8.randy.dunlap@oracle.com>
-References: <20080721092718.f15dc1ea.randy.dunlap@oracle.com>
-	 <1216681665.7427.9.camel@localhost>
-	 <20080721161440.31c97fb8.randy.dunlap@oracle.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-sDOzEDMsossJjNuFwA1J"
-Date: Tue, 22 Jul 2008 12:29:25 +1000
-Message-Id: <1216693765.8479.6.camel@localhost>
+	id S1750698AbYGVCg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 22:36:27 -0400
+Date: Mon, 21 Jul 2008 22:36:09 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "Johannes Weiner" <hannes@saeurebad.de>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       Nossum <vegard.nossum@gmail.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] mm: more likely reclaim MADV_SEQUENTIAL mappings
+Message-ID: <20080721223609.70e93725@bree.surriel.com>
+In-Reply-To: <200807221202.27169.nickpiggin@yahoo.com.au>
+References: <87y73x4w6y.fsf@saeurebad.de>
+	<200807211549.00770.nickpiggin@yahoo.com.au>
+	<20080721111412.0bfcd09b@bree.surriel.com>
+	<200807221202.27169.nickpiggin@yahoo.com.au>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 22 Jul 2008 12:02:26 +1000
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
---=-sDOzEDMsossJjNuFwA1J
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> I don't actually care what the man page or posix says if it is obviously
+> silly behaviour. If you want to dispute the technical points of my post,
+> that would be helpful.
 
-On Mon, 2008-07-21 at 16:14 -0700, Randy Dunlap wrote:
-> On Tue, 22 Jul 2008 09:07:45 +1000 Michael Ellerman wrote:
->=20
-> > On Mon, 2008-07-21 at 09:27 -0700, Randy Dunlap wrote:
-> > > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > >=20
-> > > Fix kernel-doc comments so that they don't produce errors.
-> > > Also cut some extraneous copy-paste text.
-> > >=20
-> > > Error(linhead//drivers/pci/pci.c:1133): duplicate section name 'Descr=
-iption'
-> > > Error(linhead//drivers/pci/pci.c:1189): duplicate section name 'Descr=
-iption'
-> >=20
-> > But now the description lines exceed 80 columns, and with longer
->=20
-> Yes, I'm pretty well aware of that.  :(
-> This is one of the places where we tolerate that, while not enjoying it.
->=20
-> This is a request that akpm has also made, and it makes some sense, and i=
-t's
-> on my long list of (volunteer) doc work to do...
+Application writers read the man page and expect MADV_SEQUENTIAL
+to do roughly what the name and description imply.
 
-Sure.
+If you think that the kernel should not bother implementing
+what the application writers expect, and the application writers
+should implement special drop-behind magic for Linux, your
+expectations may not be entirely realistic.
 
-> > ps. I did look at changing kerneldoc to do that myself, but whereas
-> > previously I thought I didn't really know perl, now I /know/ I totally
-> > don't know perl ;)
->=20
-> Yes, I understand that comment.  ;)
-> That's part of the problem, of course.
-> I.e., if it were straightforward, it would probably already be done.
+> Consider this: if the app already has dedicated knowledge and
+> syscalls to know about this big sequential copy, then it should
+> go about doing it the *right* way and really get performance
+> improvement. Automatic unmap-behind even if it was perfect still
+> needs to scan LRU lists to reclaim.
 
-I guess there's also a good reason why the kernel implements its own
-doco-from-c-comments extraction tool, rather than using something that
-already exists (doxygen?).
+Doing nothing _also_ ends up with the kernel scanning the
+LRU lists, once memory fills up.
 
-cheers
+Scanning the LRU lists is a given.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+All that the patch by Johannes does is make sure the kernel
+does the right thing when it runs into an MADV_SEQUENTIAL
+page on the inactive_file list: evict the page immediately,
+instead of having it pass through the active list and the
+inactive list again.  
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+This reduces the number of times that MADV_SEQUENTIAL pages
+get scanned from 3 to 1, while protecting the working set
+from MADV_SEQUENTIAL pages.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-sDOzEDMsossJjNuFwA1J
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIhUYFdSjSd0sB4dIRApzwAJ40qejkR/KZj729P1/3WM0iy7a/zACfUnYN
-l6WBxizWOfHJ9rqKlhzcrjw=
-=8/n4
------END PGP SIGNATURE-----
-
---=-sDOzEDMsossJjNuFwA1J--
-
+-- 
+All rights reversed.
