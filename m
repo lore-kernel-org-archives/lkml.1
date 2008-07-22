@@ -1,56 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbYGVWAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbYGVWCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbYGVWAa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 18:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbYGVWAW
+	id S1755100AbYGVWCI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 18:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYGVWBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 18:00:22 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49591 "EHLO gate.crashing.org"
+	Tue, 22 Jul 2008 18:01:51 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53257 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751404AbYGVWAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 18:00:22 -0400
-Subject: Re: [PATCH 18/79] device create: macintosh: convert device_create
-	to device_create_drvdata
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1216703983-21448-18-git-send-email-gregkh@suse.de>
-References: <20080722051805.GA17373@suse.de>
-	 <1216703983-21448-18-git-send-email-gregkh@suse.de>
-Content-Type: text/plain
-Date: Wed, 23 Jul 2008 08:00:16 +1000
-Message-Id: <1216764016.11027.209.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	id S1752182AbYGVWBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 18:01:50 -0400
+Message-ID: <48865899.3030209@garzik.org>
+Date: Tue, 22 Jul 2008 18:00:57 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       jgarzik@redhat.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [build failure] hp-plus.c: (.text+0xd7c1a): undefined	reference
+ to `ei_close'
+References: <20080721.233512.128618365.anemo@mba.ocn.ne.jp> <20080721191519.GA15843@elte.hu> <20080721214258.787a67ca@lxorguk.ukuu.org.uk> <20080722072334.GA25241@elte.hu>
+In-Reply-To: <20080722072334.GA25241@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-21 at 22:18 -0700, Greg Kroah-Hartman wrote:
-> device_create() is race-prone, so use the race-free
-> device_create_drvdata() instead as device_create() is going away.
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-> ---
->  drivers/macintosh/adb.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+Ingo Molnar wrote:
+> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 > 
-> diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
-> index e5d4468..cae5248 100644
-> --- a/drivers/macintosh/adb.c
-> +++ b/drivers/macintosh/adb.c
-> @@ -862,7 +862,8 @@ adbdev_init(void)
->  	adb_dev_class = class_create(THIS_MODULE, "adb");
->  	if (IS_ERR(adb_dev_class))
->  		return;
-> -	device_create(adb_dev_class, NULL, MKDEV(ADB_MAJOR, 0), "adb");
-> +	device_create_drvdata(adb_dev_class, NULL, MKDEV(ADB_MAJOR, 0), NULL,
-> +			      "adb");
+>> On Mon, 21 Jul 2008 21:15:19 +0200
+>> Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>>> * Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+>>>
+>>>> Since commit 055e5110ae0c0c1176a75b78d789294f2ff2f7af ("8390: Split
+>>>> 8390 support into a pausing and a non pausing driver core"), ne.c
+>>>> cause this build failure:
+>>>>
+>>>> drivers/built-in.o: In function `ne_probe1':
+>>>> ne.c:(.init.text+0x2464): undefined reference to `NS8390_init'
+>>>> drivers/built-in.o: In function `ne_block_output':
+>>>> ne.c:(.text.ne_block_output+0x1b0): undefined reference to `NS8390_init'
+>>> i just triggered a similar build failure, but in a different 
+>>> ne2000-derived file:
+>> I'll take a look. Various odd things happened with the Makefile for 
+>> this patch and the follow up fixes. If the followup didn't get applied 
+>> then that might explain the breakage.
+> 
+> ok. I also got:
+> 
+>  drivers/built-in.o: In function `hp_probe1':
+>  hp.c:(.init.text+0xa280): undefined reference to `NS8390_init'
+> 
+> so i suspect most of the 8390p.o library using ne2000 drivers are 
+> affected?
+> 
+> i think instead of a manual review i think this is better to fix all the 
+> problems:
+> 
+> cd drivers/net/; sed -i 's/NS8390_/NS8390p_/g' \
+>   $(grep -l NS8390_ $(grep 8390p.o Makefile | cut -d' ' -f3 | \
+>      sed 's/.o$/.c/g'))
+> 
+> find the full tested patch below. It solves the build failures i 
+> triggered so far.
+> 
+> 	Ingo
+> 
+> ------------->
+> commit 79f2b8594df44a4f3f11085df656883525b74abd
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Tue Jul 22 09:19:31 2008 +0200
+> 
+>     net 8390p: fix interface usage
+>     
+>     various drivers were using the wrong APIs:
+>     
+>      drivers/built-in.o: In function `hp_probe1':
+>      hp.c:(.init.text+0xa280): undefined reference to `NS8390_init'
+>     
+>     fixed via:
+>     
+>     cd drivers/net/; sed -i 's/NS8390_/NS8390p_/g' \
+>       $(grep -l NS8390_ $(grep 8390p.o Makefile | cut -d' ' -f3 | \
+>           sed 's/.o$/.c/g'))
+>     
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  drivers/net/hp-plus.c |    2 +-
+>  drivers/net/hp.c      |    2 +-
+>  drivers/net/ne.c      |    2 +-
+>  drivers/net/ne2.c     |    2 +-
+>  4 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/hp-plus.c b/drivers/net/hp-plus.c
+> index c2c4f49..8239939 100644
+> --- a/drivers/net/hp-plus.c
+> +++ b/drivers/net/hp-plus.c
+> @@ -262,7 +262,7 @@ static int __init hpp_probe1(struct net_device *dev, int ioaddr)
+>  	}
 >  
->  	platform_device_register(&adb_pfdev);
->  	platform_driver_probe(&adb_pfdrv, adb_dummy_probe);
+>  	outw(Perf_Page, ioaddr + HP_PAGING);
+> -	NS8390_init(dev, 0);
+> +	NS8390p_init(dev, 0);
+>  	/* Leave the 8390 and HP chip reset. */
+>  	outw(inw(ioaddr + HPP_OPTION) & ~EnableIRQ, ioaddr + HPP_OPTION);
+>  
+> diff --git a/drivers/net/hp.c b/drivers/net/hp.c
+> index 8281209..0a8c649 100644
+> --- a/drivers/net/hp.c
+> +++ b/drivers/net/hp.c
+> @@ -389,7 +389,7 @@ static void __init
+>  hp_init_card(struct net_device *dev)
+>  {
+>  	int irq = dev->irq;
+> -	NS8390_init(dev, 0);
+> +	NS8390p_init(dev, 0);
+>  	outb_p(irqmap[irq&0x0f] | HP_RUN,
+>  		   dev->base_addr - NIC_OFFSET + HP_CONFIGURE);
+>  	return;
+> diff --git a/drivers/net/ne.c b/drivers/net/ne.c
+> index 3df231d..4a8a4b1 100644
+> --- a/drivers/net/ne.c
+> +++ b/drivers/net/ne.c
+> @@ -355,7 +355,7 @@ static int __init ne_probe1(struct net_device *dev, unsigned long ioaddr)
+>  	}
+>  
+>  	/* Read the 16 bytes of station address PROM.
+> -	   We must first initialize registers, similar to NS8390_init(eifdev, 0).
+> +	   We must first initialize registers, similar to NS8390p_init(eifdev, 0).
+>  	   We can't reliably read the SAPROM address without this.
+>  	   (I learned the hard way!). */
+>  	{
+> diff --git a/drivers/net/ne2.c b/drivers/net/ne2.c
+> index 8f72563..332df75 100644
+> --- a/drivers/net/ne2.c
+> +++ b/drivers/net/ne2.c
+> @@ -404,7 +404,7 @@ static int __init ne2_probe1(struct net_device *dev, int slot)
+>  
+>  	/* Read the 16 bytes of station address PROM.
+>  	   We must first initialize registers, similar to
+> -	   NS8390_init(eifdev, 0).
+> +	   NS8390p_init(eifdev, 0).
+>  	   We can't reliably read the SAPROM address without this.
+>  	   (I learned the hard way!). */
+
+applied
+
 
