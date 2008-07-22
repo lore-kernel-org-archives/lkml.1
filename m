@@ -1,70 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbYGVMPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbYGVMSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbYGVMPN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 08:15:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYGVMO6
+	id S1755161AbYGVMSS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 08:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYGVMSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 08:14:58 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:46200 "EHLO mail.screens.ru"
+	Tue, 22 Jul 2008 08:18:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39206 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752622AbYGVMO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 08:14:57 -0400
-Date: Tue, 22 Jul 2008 16:18:24 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Roland McGrath <roland@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, andi@firstfloor.org,
-       Michael Kerrisk <mtk.manpages@googlemail.com>
-Subject: [PATCH -mm] coredump: format_corename: don't append .%pid if multi-threaded
-Message-ID: <20080722121824.GB1383@tv-sign.ru>
-References: <200807210137.m6L1bN0H011138@imap1.linux-foundation.org> <20080721102940.666d733d@the-village.bc.nu> <20080721210121.C5E741541A5@magilla.localdomain> <20080721221416.6d4f9014@lxorguk.ukuu.org.uk> <20080722113731.GA1383@tv-sign.ru>
-Mime-Version: 1.0
+	id S1751690AbYGVMSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 08:18:07 -0400
+Date: Tue, 22 Jul 2008 14:17:49 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Kratochvil <jan.kratochvil@redhat.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Roland McGrath <roland@redhat.com>,
+       Mikulas Patocka <mpatocka@redhat.com>,
+       Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: [patch] Fix crash due to missing debugctlmsr on AMD K6-3
+Message-ID: <20080722121749.GC5806@elte.hu>
+References: <20080722120047.GA6795@host0.dyn.jankratochvil.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080722113731.GA1383@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080722120047.GA6795@host0.dyn.jankratochvil.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the coredumping is multi-threaded, format_corename() appends .%pid
-to the corename. This was needed before the proper multi-thread core
-dump support, now all the threads in the mm go into a single unified
-core file.
 
-Remove this special case, it is not even documented and we have "%p"
-and core_uses_pid.
+* Jan Kratochvil <jan.kratochvil@redhat.com> wrote:
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> Hi,
+> 
+> currently if you use PTRACE_SINGLEBLOCK on AMD K6-3 (i586) it will 
+> crash. Kernel now wrongly assumes existing DEBUGCTLMSR MSR register 
+> there.
+> 
+> Removed the assumption also for some other non-K6 CPUs but I am not 
+> sure there (but it can only bring small inefficiency there if my 
+> assumption is wrong).
+> 
+> Based on info from Roland McGrath, Chuck Ebbert and Mikulas Patocka. 
+> More info at:
+> 	https://bugzilla.redhat.com/show_bug.cgi?id=456175
+> 
+> Please Cc me in a reply.
 
---- 26-rc2/fs/exec.c~FORMAT_CORENAME_NO_MT_PID	2008-07-22 15:42:15.000000000 +0400
-+++ 26-rc2/fs/exec.c	2008-07-22 15:46:04.000000000 +0400
-@@ -1373,7 +1373,7 @@ EXPORT_SYMBOL(set_binfmt);
-  * name into corename, which must have space for at least
-  * CORENAME_MAX_SIZE bytes plus one byte for the zero terminator.
-  */
--static int format_corename(char *corename, int nr_threads, long signr)
-+static int format_corename(char *corename, long signr)
- {
- 	const char *pat_ptr = core_pattern;
- 	int ispipe = (*pat_ptr == '|');
-@@ -1480,8 +1480,7 @@ static int format_corename(char *corenam
- 	 * If core_pattern does not include a %p (as is the default)
- 	 * and core_uses_pid is set, then .%pid will be appended to
- 	 * the filename. Do not do this for piped commands. */
--	if (!ispipe && !pid_in_pattern
--	    && (core_uses_pid || nr_threads)) {
-+	if (!ispipe && !pid_in_pattern && core_uses_pid) {
- 		rc = snprintf(out_ptr, out_end - out_ptr,
- 			      ".%d", task_tgid_vnr(current));
- 		if (rc > out_end - out_ptr)
-@@ -1745,7 +1744,7 @@ int do_coredump(long signr, int exit_cod
- 	 * uses lock_kernel()
- 	 */
-  	lock_kernel();
--	ispipe = format_corename(corename, retval, signr);
-+	ispipe = format_corename(corename, signr);
- 	unlock_kernel();
- 	/*
- 	 * Don't bother to check the RLIMIT_CORE value if core_pattern points
+applied to tip/x86/urgent, thanks Jan! The commit below is also for 
+-stable.
 
+	Ingo
+
+----------------->
+commit d536b1f86591fb081c7a56eab04e711eb4dab951
+Author: Jan Kratochvil <jan.kratochvil@redhat.com>
+Date:   Tue Jul 22 14:00:47 2008 +0200
+
+    x86: fix crash due to missing debugctlmsr on AMD K6-3
+    
+    currently if you use PTRACE_SINGLEBLOCK on AMD K6-3 (i586) it will crash.
+    Kernel now wrongly assumes existing DEBUGCTLMSR MSR register there.
+    
+    Removed the assumption also for some other non-K6 CPUs but I am not sure there
+    (but it can only bring small inefficiency there if my assumption is wrong).
+    
+    Based on info from Roland McGrath, Chuck Ebbert and Mikulas Patocka.
+    More info at:
+    	https://bugzilla.redhat.com/show_bug.cgi?id=456175
+    
+    Signed-off-by: Jan Kratochvil <jan.kratochvil@redhat.com>
+    Cc: <stable@kernel.org>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/Kconfig.cpu |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 54b8c02..2c518fb 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -414,4 +414,4 @@ config X86_MINIMUM_CPU_FAMILY
+ 
+ config X86_DEBUGCTLMSR
+ 	def_bool y
+-	depends on !(M586MMX || M586TSC || M586 || M486 || M386)
++	depends on !(MK6 || MWINCHIPC6 || MWINCHIP2 || MWINCHIP3D || MCYRIXIII || M586MMX || M586TSC || M586 || M486 || M386)
