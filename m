@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753146AbYGVM6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbYGVNCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753146AbYGVM6r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 08:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYGVM6k
+	id S1755597AbYGVNCZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 09:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYGVNCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 08:58:40 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:35606 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752521AbYGVM6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 08:58:39 -0400
-Date: Tue, 22 Jul 2008 17:02:06 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Roland McGrath <roland@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org
-Subject: Re: [PATCH -mm] coredump: format_corename: don't append .%pid if multi-threaded
-Message-ID: <20080722130206.GA3297@tv-sign.ru>
-References: <200807210137.m6L1bN0H011138@imap1.linux-foundation.org> <20080721102940.666d733d@the-village.bc.nu> <20080721210121.C5E741541A5@magilla.localdomain> <20080721221416.6d4f9014@lxorguk.ukuu.org.uk> <20080722113731.GA1383@tv-sign.ru> <20080722121824.GB1383@tv-sign.ru> <cfd18e0f0807220521x5faea19bn1f545b23b84ead6a@mail.gmail.com> <20080722124314.GA3267@tv-sign.ru> <cfd18e0f0807220547w691346ecyd4819fa4b7c23325@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cfd18e0f0807220547w691346ecyd4819fa4b7c23325@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	Tue, 22 Jul 2008 09:02:13 -0400
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:50792 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751027AbYGVNCM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 09:02:12 -0400
+Message-ID: <4885DA49.50703@lwfinger.net>
+Date: Tue, 22 Jul 2008 08:02:01 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: kaber@trash.net, mingo@elte.hu, ischram@telenet.be,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, j@w1.fi
+Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
+ at 0000000000000370
+References: <4885104A.2070201@lwfinger.net>	<20080721.161517.27161039.davem@davemloft.net>	<48857F74.2040406@lwfinger.net> <20080722.043220.247312412.davem@davemloft.net>
+In-Reply-To: <20080722.043220.247312412.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/22, Michael Kerrisk wrote:
->
-> On Tue, Jul 22, 2008 at 2:43 PM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> >
-> > That said, this is the user-visible change...
->
-> True.  Not sure how important that is in this case though.  What is
-> the reason for making this change (other than tidiness)?
+David Miller wrote:
+> From: Larry Finger <Larry.Finger@lwfinger.net>
+> Date: Tue, 22 Jul 2008 01:34:28 -0500
+> 
+>> David Miller wrote:
+>>> From: Larry Finger <Larry.Finger@lwfinger.net>
+>>> Date: Mon, 21 Jul 2008 17:40:10 -0500
+>>>
+>>>> Sorry :(
+>>>>
+>>>> I used the davem patch, the second version of your first one, and your second 
+>>>> one. Both problems persist.
+>>>>
+>>>> Still plugging away on bisection.
+>>> GIT bisecting the lockdep problem is surely going the land you on:
+>>>
+>>> commit e308a5d806c852f56590ffdd3834d0df0cbed8d7
+>> No. It landed on this one.
+> 
+> For the lockdep warnings?
 
-Tidiness is the only reason.
+When I was just one commit later, I got both the lockdep warning and the BUG. 
+This is the commit in question.
 
-Please don't hesitate to nack this patch if you think we shouldn't
-change the historical behaviour, the cleanup is very minor.
+commit 16361127ebed0fb8f9d7cc94c6e137eaf710f676
+Author: David S. Miller <davem@davemloft.net>
+Date:   Wed Jul 16 02:23:17 2008 -0700
 
-As for me, I think it is a bit strange we append "%.pid" depending on
-is_multithreaded, the same app can have 1 or more threads for various
-reasons when the coredump happens, but this behaviour is very old and
-perhaps it is too late to change.
+     pkt_sched: dev_init_scheduler() does not need to lock qdisc tree.
 
-Oleg.
+     We are registering the device, there is no way anyone can get
+     at this object's qdiscs yet in any meaningful way.
 
+     Signed-off-by: David S. Miller <davem@davemloft.net>
+
+Larry
