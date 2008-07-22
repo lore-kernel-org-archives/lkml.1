@@ -1,114 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbYGVWDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbYGVWFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbYGVWDh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 18:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbYGVWD0
+	id S1755313AbYGVWFt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 18:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbYGVWFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 18:03:26 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:43007 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753536AbYGVWDZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 18:03:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=O4NkHButxbzE7qDF23Rd0Nqj91b+yq4gKzi6dN/6itXrilachytCGaCMesFdzM/iQh
-         Sp8FvxZ3gpD4r26lbb66ewURN0+l0JkDEy3XA0unDPHH03Q/z1L4xUI7rMEu9/0QID5D
-         KkzuQrCR0sOqeygJPLek2SobsjC4uj2Hno9To=
-Message-ID: <52d4a3890807221503y572c9ae2k49e1f3f6a50076c4@mail.gmail.com>
-Date: Wed, 23 Jul 2008 01:03:24 +0300
-From: "Mohammed Gamal" <m.gamal005@gmail.com>
-To: linux-net@vger.kernel.org
-Subject: [Oops] b43 driver on 2.6.26
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_118536_24295655.1216764204293"
+	Tue, 22 Jul 2008 18:05:41 -0400
+Received: from gate.crashing.org ([63.228.1.57]:52816 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751404AbYGVWFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 18:05:40 -0400
+Subject: Re: latest tree build failure -- cpm uart & gpio
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: avorontsov@ru.mvista.com
+Cc: Kumar Gala <kumar.gala@freescale.com>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Brownell <david-b@pacbell.net>
+In-Reply-To: <20080722145330.GA2315@polina.dev.rtsoft.ru>
+References: <FBE46DB6-A457-4AD8-9D6E-9D639AD04325@freescale.com>
+	 <20080722145330.GA2315@polina.dev.rtsoft.ru>
+Content-Type: text/plain
+Date: Wed, 23 Jul 2008 08:05:09 +1000
+Message-Id: <1216764309.11027.211.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_118536_24295655.1216764204293
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, 2008-07-22 at 18:53 +0400, Anton Vorontsov wrote:
+> On Tue, Jul 22, 2008 at 08:54:16AM -0500, Kumar Gala wrote:
+> > can someone look at the following compile failure in linus's tree.  I'm 
+> > guessing part of this has to do with Alan's tty changes (and might  
+> > already be addressed?).
+> >
+> > include/asm-generic/gpio.h:131: error: implicit declaration of function 
+> > 'gpio_get_value'
+> > include/asm-generic/gpio.h:137: error: implicit declaration of function 
+> > 'gpio_set_value'
+> 
+> I think this patch should help:
+> 
+> [OF] of_gpio: should use new <linux/gpio.h> header
+> http://patchwork.ozlabs.org/linuxppc/patch?id=18750
+> 
+> David, can you please Ack it? See Benjamin's mail:
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-July/060109.html
+> 
 
-I get the following oops with b43 driver on scanning for wireless networks.
-----
+Hrm.. I though I had that one in my latest batch. In fact, I just
+checked and it got merged.
 
-------=_Part_118536_24295655.1216764204293
-Content-Type: application/octet-stream; name=oops
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fiz1zems0
-Content-Disposition: attachment; filename=oops
+Ben.
 
-WyAgOTc5LjA1OTE1OF0gLS0tLS0tLS0tLS0tWyBjdXQgaGVyZSBdLS0tLS0tLS0tLS0tClsgIDk3
-OS4wNTkxODFdIGtlcm5lbCBCVUcgYXQgbmV0L2NvcmUvZGV2LmM6MTMyOCEKWyAgOTc5LjA1OTE5
-MF0gaW52YWxpZCBvcGNvZGU6IDAwMDAgWzFdIFNNUCAKWyAgOTc5LjA1OTIwMl0gQ1BVIDAgClsg
-IDk3OS4wNTkyMTFdIE1vZHVsZXMgbGlua2VkIGluOiByZmtpbGxfaW5wdXQgYXJjNCBlY2IgY3J5
-cHRvX2Jsa2NpcGhlciBiNDMgcmZraWxsIG1hYzgwMjExIGNmZzgwMjExIGxlZF9jbGFzcyBpbnB1
-dF9wb2xsZGV2IGlwdjYgaTkxNSBkcm0gYmluZm10X21pc2MgcmZjb21tIGwyY2FwIG5mc2QgbG9j
-a2QgYXV0aF9ycGNnc3Mgc3VucnBjIGV4cG9ydGZzIGlwdF9NQVNRVUVSQURFIGlwdGFibGVfbmF0
-IG5mX25hdCBuZl9jb25udHJhY2tfaXB2NCB4dF9zdGF0ZSBuZl9jb25udHJhY2sgaXB0X1JFSkVD
-VCB4dF90Y3B1ZHAgYnJpZGdlIHN0cCBrdm1faW50ZWwga3ZtIHBwZGV2IGFjcGlfY3B1ZnJlcSBj
-cHVmcmVxX29uZGVtYW5kIGNwdWZyZXFfdXNlcnNwYWNlIGNwdWZyZXFfc3RhdHMgZnJlcV90YWJs
-ZSBjcHVmcmVxX2NvbnNlcnZhdGl2ZSBjcHVmcmVxX3Bvd2Vyc2F2ZSBwY2lfc2xvdCBzYnMgc2Jz
-aGMgaXB0YWJsZV9maWx0ZXIgaXBfdGFibGVzIHhfdGFibGVzIHBhcnBvcnRfcGMgbHAgcGFycG9y
-dCBzbmRfaGRhX2ludGVsIHNuZF9wY21fb3NzIHNuZF9taXhlcl9vc3Mgc25kX3BjbSBzbmRfcGFn
-ZV9hbGxvYyBzbmRfaHdkZXAgc25kX3NlcV9kdW1teSBzbmRfc2VxX29zcyBzbmRfc2VxX21pZGkg
-c25kX3Jhd21pZGkgc25kX3NlcV9taWRpX2V2ZW50IHNuZF9zZXEgc25kX3RpbWVyIHNuZF9zZXFf
-ZGV2aWNlIHNuZCBoY2lfdXNiIHNvdW5kY29yZSBzZXJpb19yYXcgYmx1ZXRvb3RoIGFjIGlUQ09f
-d2R0IGJ1dHRvbiBwc21vdXNlIHBjc3BrciBpVENPX3ZlbmRvcl9zdXBwb3J0IGNvbnRhaW5lciBi
-YXR0ZXJ5IHNocGNocCBwY2lfaG90cGx1ZyBpbnRlbF9hZ3AgZXZkZXYgZG1fbXVsdGlwYXRoIGRt
-X21vZCBzY3NpX2RoIGV4dDMgamJkIG1iY2FjaGUgc2cgc3JfbW9kIHNkX21vZCBjZHJvbSBhdGFf
-Z2VuZXJpYyBhdGFfcGlpeCBsaWJhdGEgc2NzaV9tb2QgZG9jayB1aGNpX2hjZCBlaGNpX2hjZCBz
-c2IgcGNtY2lhIHBjbWNpYV9jb3JlIHVzYmNvcmUgcmFpZDEwIHJhaWQ0NTYgYXN5bmNfeG9yIGFz
-eW5jX21lbWNweSBhc3luY190eCB4b3IgcmFpZDEgcmFpZDAgbXVsdGlwYXRoIGxpbmVhciBtZF9t
-b2QgdGhlcm1hbCBwcm9jZXNzb3IgZmFuIGZ1c2UKWyAgOTc5LjA1OTU2NF0gUGlkOiA4NzE4LCBj
-b21tOiBiNDMgTm90IHRhaW50ZWQgMi42LjI2ICMxMQpbICA5NzkuMDU5NTczXSBSSVA6IDAwMTA6
-WzxmZmZmZmZmZjgwM2YwZjBkPl0gIFs8ZmZmZmZmZmY4MDNmMGYwZD5dIF9fbmV0aWZfc2NoZWR1
-bGUrMHg2ZC8weDgwClsgIDk3OS4wNTk2MDNdIFJTUDogMDAxODpmZmZmODgwMDM5MjUzZGUwICBF
-RkxBR1M6IDAwMDEwMjQ2ClsgIDk3OS4wNTk2MTJdIFJBWDogMDAwMDAwMDBmZmZmZmZmZiBSQlg6
-IGZmZmY4ODAwMzIwNDk3MDAgUkNYOiAwMDAwMDAwMDAwMDAwMDAwClsgIDk3OS4wNTk2MjJdIFJE
-WDogZmZmZjg4MDAzOWI1ZTc0MCBSU0k6IGZmZmZmZmZmODA1ZGNhNDAgUkRJOiBmZmZmZmZmZjgw
-NWRjYTQwClsgIDk3OS4wNTk2MzJdIFJCUDogZmZmZjg4MDAzOTI1M2RmMCBSMDg6IGZmZmY4ODAw
-M2I1OTk4MDggUjA5OiBmZmZmZmZmZmEyMTZjZWUwClsgIDk3OS4wNTk2NDFdIFIxMDogMDAwMDAw
-MDAwMDAwMDAwMSBSMTE6IDAwMDAwMDAwMDAwMDAwMDAgUjEyOiBmZmZmODgwMDMxZGM2ZjE4Clsg
-IDk3OS4wNTk2NTFdIFIxMzogZmZmZjg4MDAzMmYxZDAwMCBSMTQ6IGZmZmY4ODAwMzFkYzYyZTAg
-UjE1OiAwMDAwMDAwMDAwMDAwMDAwClsgIDk3OS4wNTk2NjNdIEZTOiAgMDAwMDAwMDAwMDAwMDAw
-MCgwMDAwKSBHUzpmZmZmZmZmZjgwNmFkMjgwKDAwMDApIGtubEdTOjAwMDAwMDAwMDAwMDAwMDAK
-WyAgOTc5LjA1OTY3NF0gQ1M6ICAwMDEwIERTOiAwMDE4IEVTOiAwMDE4IENSMDogMDAwMDAwMDA4
-MDA1MDAzYgpbICA5NzkuMDU5NjgzXSBDUjI6IDAwMDAwMDAwMDA0MmQ2YTAgQ1IzOiAwMDAwMDAw
-MDAwMjAxMDAwIENSNDogMDAwMDAwMDAwMDAwMjZlMApbICA5NzkuMDU5Njk0XSBEUjA6IDAwMDAw
-MDAwMDAwMDAwMDAgRFIxOiAwMDAwMDAwMDAwMDAwMDAwIERSMjogMDAwMDAwMDAwMDAwMDAwMApb
-ICA5NzkuMDU5NzA0XSBEUjM6IDAwMDAwMDAwMDAwMDAwMDAgRFI2OiAwMDAwMDAwMGZmZmYwZmYw
-IERSNzogMDAwMDAwMDAwMDAwMDQwMApbICA5NzkuMDU5NzE1XSBQcm9jZXNzIGI0MyAocGlkOiA4
-NzE4LCB0aHJlYWRpbmZvIGZmZmY4ODAwMzkyNTIwMDAsIHRhc2sgZmZmZjg4MDAzYTFmY2UyMCkK
-WyAgOTc5LjA1OTcyM10gU3RhY2s6ICBmZmZmODgwMDM5MjUzZGYwIGZmZmY4ODAwMzIwNDk3MDAg
-ZmZmZjg4MDAzOTI1M2U1MCBmZmZmZmZmZmEyMGE2MTIzClsgIDk3OS4wNTk3NDVdICBmZmZmZmZm
-ZmZmZmZmZmZmIGZmZmY4ODAwMzIwNDkwMDAgMDAwMDAwMDAwMDAwMDAwMCAwMDAwMDAwMDAwMDAw
-MDAwClsgIDk3OS4wNTk3NjJdICBmZmZmODgwMDM5MjUzZTQwIGZmZmY4ODAwMzFkYzZmNDggMDAw
-MDAwMDAwMDAwMDAwMCBmZmZmODgwMDMxZGM2MmUwClsgIDk3OS4wNTk3NzhdIENhbGwgVHJhY2U6
-ClsgIDk3OS4wNTk4NTVdICBbPGZmZmZmZmZmYTIwYTYxMjM+XSBpZWVlODAyMTFfc2Nhbl9jb21w
-bGV0ZWQrMHgyMzMvMHgyYzAgW21hYzgwMjExXQpbICA5NzkuMDU5OTQ3XSAgWzxmZmZmZmZmZmEy
-MGE4ZjM4Pl0gaWVlZTgwMjExX3N0YV9zY2FuX3dvcmsrMHhhOC8weDIwMCBbbWFjODAyMTFdClsg
-IDk3OS4wNjAwMDJdICBbPGZmZmZmZmZmYTIwYThlOTA+XSA/IGllZWU4MDIxMV9zdGFfc2Nhbl93
-b3JrKzB4MC8weDIwMCBbbWFjODAyMTFdClsgIDk3OS4wNjAwMzZdICBbPGZmZmZmZmZmODAyNTA5
-YTA+XSBydW5fd29ya3F1ZXVlKzB4ZDAvMHgxNzAKWyAgOTc5LjA2MDA2OF0gIFs8ZmZmZmZmZmY4
-MDI1MTQ5Mz5dIHdvcmtlcl90aHJlYWQrMHhhMy8weDExMApbICA5NzkuMDYwMDkwXSAgWzxmZmZm
-ZmZmZjgwMjU0OTcwPl0gPyBhdXRvcmVtb3ZlX3dha2VfZnVuY3Rpb24rMHgwLzB4NDAKWyAgOTc5
-LjA2MDEyMl0gIFs8ZmZmZmZmZmY4MDI1MTNmMD5dID8gd29ya2VyX3RocmVhZCsweDAvMHgxMTAK
-WyAgOTc5LjA2MDE0Ml0gIFs8ZmZmZmZmZmY4MDI1NDRiZD5dIGt0aHJlYWQrMHg0ZC8weDgwClsg
-IDk3OS4wNjAxNzVdICBbPGZmZmZmZmZmODAyMGQ4Zjk+XSBjaGlsZF9yaXArMHhhLzB4MTEKWyAg
-OTc5LjA2MDIzOV0gIFs8ZmZmZmZmZmY4MDI1NDQ3MD5dID8ga3RocmVhZCsweDAvMHg4MApbICA5
-NzkuMDYwMjU1XSAgWzxmZmZmZmZmZjgwMjBkOGVmPl0gPyBjaGlsZF9yaXArMHgwLzB4MTEKWyAg
-OTc5LjA2MDI3M10gClsgIDk3OS4wNjAyNzhdIApbICA5NzkuMDYwMjgzXSBDb2RlOiA4MCA4MCBi
-ZiAwMiAwMCAwMCAwMCA0OCAwMSBjMiA0OCA4YiAwMiA0OCA4OSA0NiA2OCA0OCA4OSAzMiBlOCBm
-NSAzMSBlNSBmZiA0OCA4OSBkZiA1NyA5ZCA2NiAwZiAxZiA0NCAwMCAwMCA0OCA4MyBjNCAwOCA1
-YiBjOSBjMyA8MGY+IDBiIGViIGZlIDY2IDY2IDY2IDY2IDY2IDY2IDJlIDBmIDFmIDg0IDAwIDAw
-IDAwIDAwIDAwIDU1IDQ4IApbICA5NzkuMDYwNDI3XSBSSVAgIFs8ZmZmZmZmZmY4MDNmMGYwZD5d
-IF9fbmV0aWZfc2NoZWR1bGUrMHg2ZC8weDgwClsgIDk3OS4wNjA0NDRdICBSU1AgPGZmZmY4ODAw
-MzkyNTNkZTA+ClsgIDk3OS4wNjA1MjZdIC0tLVsgZW5kIHRyYWNlIDU1ZjE2MTBhOWU1NjY5YmUg
-XS0tLQoK
-------=_Part_118536_24295655.1216764204293--
+
