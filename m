@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbYGVXaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759415AbYGVXal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757926AbYGVXaL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbYGVXU1
+	id S1759415AbYGVXal (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbYGVXUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:20:27 -0400
-Received: from mx1.suse.de ([195.135.220.2]:53288 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 19:20:30 -0400
+Received: from mx2.suse.de ([195.135.220.15]:58006 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757286AbYGVXUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:20:25 -0400
-Date: Tue, 22 Jul 2008 16:16:53 -0700
+	id S1756787AbYGVXU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:20:28 -0400
+Date: Tue, 22 Jul 2008 16:16:57 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jeff Layton <jlayton@redhat.com>, Steven French <sfrench@us.ibm.com>
-Subject: [patch 35/47] cifs: fix wksidarr declaration to be big-endian
-	friendly
-Message-ID: <20080722231653.GJ8282@suse.de>
+       Cortland Setlow <csetlow@tower-research.com>,
+       Andres Salomon <dilinger@debian.org>, Jonathan Corbet <corbet@lwn.net>
+Subject: [patch 36/47] ov7670: clean up ov7670_read semantics
+Message-ID: <20080722231657.GK8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cifs-fix-wksidarr-declaration-to-be-big-endian-friendly.patch"
+Content-Disposition: inline; filename="ov7670-clean-up-ov7670_read-semantics.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,48 +40,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Jeff Layton <jlayton@redhat.com>
+From: Andres Salomon <dilinger@queued.net>
 
-commit 536abdb0802f3fac1b217530741853843d63c281 upstream
+commit bca5c2c550f16d2dc2d21ffb7b4712bd0a7d32a9 upstream
 
-The current definition of wksidarr works fine on little endian arches
-(since cpu_to_le32 is a no-op there), but on big-endian arches, it fails
-to compile with this error:
+Cortland Setlow pointed out a bug in ov7670.c where the result from
+ov7670_read() was just being checked for !0, rather than <0.  This made me
+realize that ov7670_read's semantics were rather confusing; it both fills
+in 'value' with the result, and returns it.  This is goes against general
+kernel convention; so rather than fixing callers, let's fix the function.
 
-error: braced-group within expression allowed only inside a function
+This makes ov7670_read return <0 in the case of an error, and 0 upon
+success. Thus, code like:
 
-The problem is that this static declaration has cpu_to_le32 embedded
-within it, and that expands into a function macro.  We need to use
-__constant_cpu_to_le32() instead.
+res = ov7670_read(...);
+if (!res)
+	goto error;
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-Cc: Steven French <sfrench@us.ibm.com>
+.will work properly.
+
+Signed-off-by: Cortland Setlow <csetlow@tower-research.com>
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+Acked-by: Jonathan Corbet <corbet@lwn.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/cifs/cifsacl.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/media/video/ov7670.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/fs/cifs/cifsacl.c
-+++ b/fs/cifs/cifsacl.c
-@@ -34,11 +34,11 @@
- static struct cifs_wksid wksidarr[NUM_WK_SIDS] = {
- 	{{1, 0, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0} }, "null user"},
- 	{{1, 1, {0, 0, 0, 0, 0, 1}, {0, 0, 0, 0, 0} }, "nobody"},
--	{{1, 1, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(11), 0, 0, 0, 0} }, "net-users"},
--	{{1, 1, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(18), 0, 0, 0, 0} }, "sys"},
--	{{1, 2, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(32), cpu_to_le32(544), 0, 0, 0} }, "root"},
--	{{1, 2, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(32), cpu_to_le32(545), 0, 0, 0} }, "users"},
--	{{1, 2, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(32), cpu_to_le32(546), 0, 0, 0} }, "guest"} }
-+	{{1, 1, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(11), 0, 0, 0, 0} }, "net-users"},
-+	{{1, 1, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(18), 0, 0, 0, 0} }, "sys"},
-+	{{1, 2, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(32), __constant_cpu_to_le32(544), 0, 0, 0} }, "root"},
-+	{{1, 2, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(32), __constant_cpu_to_le32(545), 0, 0, 0} }, "users"},
-+	{{1, 2, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(32), __constant_cpu_to_le32(546), 0, 0, 0} }, "guest"} }
- ;
+--- a/drivers/media/video/ov7670.c
++++ b/drivers/media/video/ov7670.c
+@@ -406,8 +406,10 @@ static int ov7670_read(struct i2c_client
+ 	int ret;
  
+ 	ret = i2c_smbus_read_byte_data(c, reg);
+-	if (ret >= 0)
++	if (ret >= 0) {
+ 		*value = (unsigned char) ret;
++		ret = 0;
++	}
+ 	return ret;
+ }
  
 
 -- 
