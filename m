@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYGVUzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbYGVU4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbYGVUzo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 16:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYGVUze
+	id S1754095AbYGVU4T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 16:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYGVUz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 16:55:34 -0400
-Received: from lucidpixels.com ([75.144.35.66]:39263 "EHLO lucidpixels.com"
+	Tue, 22 Jul 2008 16:55:58 -0400
+Received: from waste.org ([66.93.16.53]:33273 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751994AbYGVUzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 16:55:33 -0400
-Date: Tue, 22 Jul 2008 16:55:32 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Rik van Riel <riel@redhat.com>
-cc: linux-kernel@vger.kernel.org, Alan Piszcz <ap@solarrain.com>
-Subject: Re: 128 GiB memory question-- kernel only sees 64GiB?
-In-Reply-To: <20080722104327.30cee9be@bree.surriel.com>
-Message-ID: <alpine.DEB.1.10.0807221655140.11681@p34.internal.lan>
-References: <alpine.DEB.1.10.0807221019570.8455@p34.internal.lan> <20080722104327.30cee9be@bree.surriel.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1751262AbYGVUz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 16:55:58 -0400
+Subject: Re: [RFC PATCH 4/4] kmemtrace: SLOB hooks.
+From: Matt Mackall <mpm@selenic.com>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: penberg@cs.helsinki.fi, cl@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, rdunlap@xenotime.net
+In-Reply-To: <1216751808-14428-5-git-send-email-eduard.munteanu@linux360.ro>
+References: <1216751808-14428-1-git-send-email-eduard.munteanu@linux360.ro>
+	 <1216751808-14428-2-git-send-email-eduard.munteanu@linux360.ro>
+	 <1216751808-14428-3-git-send-email-eduard.munteanu@linux360.ro>
+	 <1216751808-14428-4-git-send-email-eduard.munteanu@linux360.ro>
+	 <1216751808-14428-5-git-send-email-eduard.munteanu@linux360.ro>
+Content-Type: text/plain
+Date: Tue, 22 Jul 2008 15:53:55 -0500
+Message-Id: <1216760035.15519.113.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Tue, 2008-07-22 at 21:36 +0300, Eduard - Gabriel Munteanu wrote:
+> This adds hooks for the SLOB allocator, to allow tracing with kmemtrace.
+> 
+> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> ---
+>  include/linux/slob_def.h |    9 +++++----
+>  mm/slob.c                |   37 +++++++++++++++++++++++++++++++------
+>  2 files changed, 36 insertions(+), 10 deletions(-)
+> 
+> diff --git a/include/linux/slob_def.h b/include/linux/slob_def.h
+> index 59a3fa4..0ec00b3 100644
+> --- a/include/linux/slob_def.h
+> +++ b/include/linux/slob_def.h
+> @@ -3,14 +3,15 @@
+>  
+>  void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
+>  
+> -static inline void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+> +static __always_inline void *kmem_cache_alloc(struct kmem_cache *cachep,
+> +					      gfp_t flags)
+>  {
+>  	return kmem_cache_alloc_node(cachep, flags, -1);
+>  }
 
-On Tue, 22 Jul 2008, Rik van Riel wrote:
+Why is this needed? builtin_return?
 
-> On Tue, 22 Jul 2008 10:21:44 -0400 (EDT)
-> Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
->
->> To be able to utilize 128 GiB of memory on a host, does one need to enable
->> NUMA support? Currently only 64 GiB is showing up.
->
-> How much memory does the BIOS say the system has?
-Asked them.
+-- 
+Mathematics is the supreme nostalgia of our time.
 
->
-> Can you get the e820 memory map (from early boot up) of the systems?
-Probably can't get this.
-
->
->> As far as machine name/motherboard type, I do not have this information
->> currently but I am told there are one or two of these boxes are running
->> CentOS 5.x and/or RHEL5/AS.
->
-> Hopefully not with 64GB each :))
-Nope :P
-
->
->> Is there something special you need to do to utilize all 128 GiB of
->> memory?
->
-> You need to use a 64 bit kernel, for one.
-Will verify what they are running, thanks.
