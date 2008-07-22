@@ -1,95 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYGVWxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbYGVW4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbYGVWxO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 18:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755745AbYGVWwy
+	id S1755469AbYGVW4X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 18:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbYGVW4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 18:52:54 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:51939 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754762AbYGVWww (ORCPT
+	Tue, 22 Jul 2008 18:56:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50063
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753260AbYGVW4L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 18:52:52 -0400
-Subject: Re: acpi based pci gap calculation  - v3
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Andi Kleen <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Brown@vger.kernel.org, Len <len.brown@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       TJ <linux@tjworld.net>
-In-Reply-To: <200807221450.52114.jbarnes@virtuousgeek.org>
-References: <1216148382.6135.21.camel@alok-dev1>
-	 <1216330272.32324.26.camel@alok-dev1> <1216663147.26169.5.camel@alok-dev1>
-	 <200807221450.52114.jbarnes@virtuousgeek.org>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Tue, 22 Jul 2008 15:52:48 -0700
-Message-Id: <1216767168.5693.31.camel@alok-dev1>
+	Tue, 22 Jul 2008 18:56:11 -0400
+Date: Tue, 22 Jul 2008 15:56:11 -0700 (PDT)
+Message-Id: <20080722.155611.176476925.davem@davemloft.net>
+To: ag@alessandroguido.name
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [BUG] kernel BUG at net/core/dev.c:1328!
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <d4b984a30807220254t1aaf6ac4q874329966511b0c5@mail.gmail.com>
+References: <d4b984a30807210914nd4d0db5yb7b93ca5143ff0d5@mail.gmail.com>
+	<20080721.092027.14394005.davem@davemloft.net>
+	<d4b984a30807220254t1aaf6ac4q874329966511b0c5@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-22 at 14:50 -0700, Jesse Barnes wrote:
-> On Monday, July 21, 2008 10:59 am Alok Kataria wrote:
-> > Hi Jesse,
-> >
-> > Did you get a chance to try this patch on your box. Let me know what are
-> > the values you get now.
-> 
-> Here's the dmesg from my box with the ACPI gap stuff applied.
-> 
-> I'm still more inclined to TJ's approach though; it should give us a lot more
-> space for PCI devices; though you're right that avoiding conflicts is
-> definitely important too...
+From: "Alessandro Guido" <ag@alessandroguido.name>
+Date: Tue, 22 Jul 2008 11:54:26 +0200
 
-Hi Jesse,
+> Got a WARNING this morning (2.6.26-05752-g93ded9b) and I think it's related.
 
-Thanks for sending the log.
+Please try this patch:
 
-In the log that you sent me, please note the following debug messages
--------
-E820_DEBUG: Searching for gap between (0x00000000 - 0x100000000)
-E820_DEBUG: Found gap starting at 0xbf000000 size 0x40f00000
-Allocating PCI resources starting at c0000000 (gap: bf000000:40f00000)
--------
+ipw2200: Call netif_*_queue() interfaces properly.
 
-This is the gap that was allocated by walking just the e820_map
+netif_carrier_{on,off}() handles starting and stopping packet
+flow into the driver.  So there is no reason to invoke netif_stop_queue()
+and netif_wake_queue() in response to link status events.
 
-With my changes we query the _CRS resource and get following info
-------
-ACPI_DEBUG start_addr 0xf8000000 gapsize 0x00400000 address_length 0x06b00000
-                end_addr is 0xfeb00000
-E820_DEBUG: Searching for gap between (0xf8000000 - 0xfeb00000)
-E820_DEBUG: Found gap at start starting at 0x100000000 size 0x07f00000
-ACPI_DEBUG start_addr 0xbf000000 gapsize 0x07f00000 address_length 0x31000000
-                end_addr is 0xf0000000
-E820_DEBUG: Searching for gap between (0xbf000000 - 0xf0000000)
-E820_DEBUG: Found gap starting at 0xbf000000 size 0x31000000
-------
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
-So there are 2 producer regions one from [0xBF000000 - 0xF0000000] and
-another from [0xF8000000 - 0xFEB00000]. That means BIOS has reserved the
-area from [0xF0000000 - 0xF7FFFFFF] for some other resource.
-If you look a little below in the log there is this
-
-----
-system 00:01: iomem range 0xf0000000-0xf7ffffff has been reserved
-----
-
-So the gap that we had calculated first i.e. from e820_setup_gap did
-contain a collision i.e. though a resource was reserved from 
-[0xf0000000 - 0xf7ffffff] our gap calculation doesn't take that into
-account.  My patch fixes this issue.
-
-So, IMHO this is a BUG and should be fixed. Please let me know your
-views. 
-
-Thanks,
-Alok
-
+diff --git a/drivers/net/wireless/ipw2200.c b/drivers/net/wireless/ipw2200.c
+index 6e70460..1acfbcd 100644
+--- a/drivers/net/wireless/ipw2200.c
++++ b/drivers/net/wireless/ipw2200.c
+@@ -4972,8 +4972,7 @@ static int ipw_queue_tx_reclaim(struct ipw_priv *priv,
+ 	}
+       done:
+ 	if ((ipw_tx_queue_space(q) > q->low_mark) &&
+-	    (qindex >= 0) &&
+-	    (priv->status & STATUS_ASSOCIATED) && netif_running(priv->net_dev))
++	    (qindex >= 0))
+ 		netif_wake_queue(priv->net_dev);
+ 	used = q->first_empty - q->last_used;
+ 	if (used < 0)
+@@ -10154,14 +10153,8 @@ static  void init_sys_config(struct ipw_sys_config *sys_config)
+ 
+ static int ipw_net_open(struct net_device *dev)
+ {
+-	struct ipw_priv *priv = ieee80211_priv(dev);
+ 	IPW_DEBUG_INFO("dev->open\n");
+-	/* we should be verifying the device is ready to be opened */
+-	mutex_lock(&priv->mutex);
+-	if (!(priv->status & STATUS_RF_KILL_MASK) &&
+-	    (priv->status & STATUS_ASSOCIATED))
+-		netif_start_queue(dev);
+-	mutex_unlock(&priv->mutex);
++	netif_start_queue(dev);
+ 	return 0;
+ }
+ 
+@@ -10481,13 +10474,6 @@ static int ipw_net_hard_start_xmit(struct ieee80211_txb *txb,
+ 	IPW_DEBUG_TX("dev->xmit(%d bytes)\n", txb->payload_size);
+ 	spin_lock_irqsave(&priv->lock, flags);
+ 
+-	if (!(priv->status & STATUS_ASSOCIATED)) {
+-		IPW_DEBUG_INFO("Tx attempt while not associated.\n");
+-		priv->ieee->stats.tx_carrier_errors++;
+-		netif_stop_queue(dev);
+-		goto fail_unlock;
+-	}
+-
+ #ifdef CONFIG_IPW2200_PROMISCUOUS
+ 	if (rtap_iface && netif_running(priv->prom_net_dev))
+ 		ipw_handle_promiscuous_tx(priv, txb);
+@@ -10499,10 +10485,6 @@ static int ipw_net_hard_start_xmit(struct ieee80211_txb *txb,
+ 	spin_unlock_irqrestore(&priv->lock, flags);
+ 
+ 	return ret;
+-
+-      fail_unlock:
+-	spin_unlock_irqrestore(&priv->lock, flags);
+-	return 1;
+ }
+ 
+ static struct net_device_stats *ipw_net_get_stats(struct net_device *dev)
+@@ -10703,13 +10685,6 @@ static void ipw_link_up(struct ipw_priv *priv)
+ 	priv->last_packet_time = 0;
+ 
+ 	netif_carrier_on(priv->net_dev);
+-	if (netif_queue_stopped(priv->net_dev)) {
+-		IPW_DEBUG_NOTIF("waking queue\n");
+-		netif_wake_queue(priv->net_dev);
+-	} else {
+-		IPW_DEBUG_NOTIF("starting queue\n");
+-		netif_start_queue(priv->net_dev);
+-	}
+ 
+ 	cancel_delayed_work(&priv->request_scan);
+ 	cancel_delayed_work(&priv->request_direct_scan);
+@@ -10739,7 +10714,6 @@ static void ipw_link_down(struct ipw_priv *priv)
+ {
+ 	ipw_led_link_down(priv);
+ 	netif_carrier_off(priv->net_dev);
+-	netif_stop_queue(priv->net_dev);
+ 	notify_wx_assoc_event(priv);
+ 
+ 	/* Cancel any queued work ... */
+@@ -11419,7 +11393,6 @@ static void ipw_down(struct ipw_priv *priv)
+ 	/* Clear all bits but the RF Kill */
+ 	priv->status &= STATUS_RF_KILL_MASK | STATUS_EXIT_PENDING;
+ 	netif_carrier_off(priv->net_dev);
+-	netif_stop_queue(priv->net_dev);
+ 
+ 	ipw_stop_nic(priv);
+ 
+@@ -11522,7 +11495,6 @@ static int ipw_prom_open(struct net_device *dev)
+ 
+ 	IPW_DEBUG_INFO("prom dev->open\n");
+ 	netif_carrier_off(dev);
+-	netif_stop_queue(dev);
+ 
+ 	if (priv->ieee->iw_mode != IW_MODE_MONITOR) {
+ 		priv->sys_config.accept_all_data_frames = 1;
+@@ -11558,7 +11530,6 @@ static int ipw_prom_stop(struct net_device *dev)
+ static int ipw_prom_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ {
+ 	IPW_DEBUG_INFO("prom dev->xmit\n");
+-	netif_stop_queue(dev);
+ 	return -EOPNOTSUPP;
+ }
+ 
