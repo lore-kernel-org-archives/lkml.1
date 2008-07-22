@@ -1,140 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYGVI76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbYGVJDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbYGVI76 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 04:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYGVI7u
+	id S1753891AbYGVJDn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 05:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbYGVJDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 04:59:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:1247 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751414AbYGVI7t (ORCPT
+	Tue, 22 Jul 2008 05:03:34 -0400
+Received: from li26-190.members.linode.com ([67.18.89.190]:46836 "EHLO
+	notebook.homenet.local" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751414AbYGVJDd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 04:59:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=I9GBPjJbV0pGrRbAae38LkRx3841X4DwlE1Q0LLTBndR/mqtBa3c/M1Uu5F/SpMXOa
-         S3GcaWeEFt2svuYYY4V+nnWpRZUnlBJgmpgsDtVBdQJcpKy2hesHOYEARxk5B4HBnQsp
-         egaNNJrV+X9ucxyyb46/ZnzJ2wFhiFYXpSl7c=
-Date: Tue, 22 Jul 2008 17:59:38 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: +
-	workqueue-proper-error-unwinding-in-cpu-hotplug-error-path.patch
-	added to -mm tree
-Message-ID: <20080722085938.GA5857@localhost.localdomain>
-References: <200807220826.m6M8Q4I6018588@imap1.linux-foundation.org> <20080722084526.GA165@tv-sign.ru>
+	Tue, 22 Jul 2008 05:03:33 -0400
+Date: Tue, 22 Jul 2008 11:03:31 +0200
+From: Tomas Styblo <tripie@cpan.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net
+Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix -
+	device 152d:2338
+Message-ID: <20080722090331.GC8303@notebook.homenet.local>
+References: <4884E585.2050104@shaw.ca> <Pine.LNX.4.44L0.0807212232001.5882-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080722084526.GA165@tv-sign.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.44L0.0807212232001.5882-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 12:45:26PM +0400, Oleg Nesterov wrote:
-> On 07/22, Andrew Morton wrote:
-> > 
-> > From: Akinobu Mita <akinobu.mita@gmail.com>
-> > 
-> > Add proper error unwinding in error path in CPU_UP_PREPARE notifier.
+* Alan Stern <stern@rowland.harvard.edu> [Tue, 22 Jul 2008]:
+> On Mon, 21 Jul 2008, Robert Hancock wrote:
+> > > this message includes a patch that provides a workaround for
+> > > a silent data corruption bug caused by incorrect error handling in
+> > > the JMicron JM20337 Hi-Speed USB to SATA & PATA Combo Bridge chipset,
+> > > USB device id 152d:2338.
 > 
-> Could you clarify?
-
-Sure.
-
-> > --- a/kernel/workqueue.c~workqueue-proper-error-unwinding-in-cpu-hotplug-error-path
-> > +++ a/kernel/workqueue.c
-> > @@ -928,6 +928,15 @@ static int __devinit workqueue_cpu_callb
-> >  				break;
-> >  			printk(KERN_ERR "workqueue [%s] for %i failed\n",
-> >  				wq->name, cpu);
-> > +
-> > +			list_for_each_entry_continue_reverse(wq, &workqueues,
-> > +							list) {
-> > +				cwq = per_cpu_ptr(wq->cpu_wq, cpu);
-> > +				start_workqueue_thread(cwq, -1);
-> > +				cleanup_workqueue_thread(cwq);
-> > +			}
-> > +			cpu_clear(cpu, cpu_populated_map);
-> > +
-> >  			return NOTIFY_BAD;
+> The two of you should read through
 > 
-> If CPU_UP_PREPARE fails, _cpu_up() sends CPU_UP_CANCELED, and afaics
-> workqueue_cpu_callback() correctly cleanups cwq->thread's.
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=9638
+> 
+> which concerns this very problem.
 
-_cpu_up() does not send CPU_UP_CANCELED to the callback which has
-returned NOTIFY_BAD.
+I had found this bugreport and read through it before I posted my
+patch. I don't think this is the same problem. The error messages
+and the description of the problem are different from what I've
+been trying to fix.
 
-The behavior was changed by this commit:
+Anyway, I'll send the patch to this person so he can try it. 
+I guess it won't fix his problem. This patch is much simpler and doesn't 
+need any delays - I really think this is a different situation.
 
-commit a0d8cdb652d35af9319a9e0fb7134de2a276c636
-Author: Akinobu Mita <akinobu.mita@gmail.com>
-Date:   Thu Oct 18 03:05:12 2007 -0700
+I sometimes experience the problems described by this person, as I
+noted in the first message with the patch. When these "reset high
+speed USB device" messages appear, it is usually necessary to
+disconnect and power off the device. In my experience, data
+corruption can be prevented in this situation by setting:
 
-    cpu hotplug: cpu: deliver CPU_UP_CANCELED only to NOTIFY_OKed callbacks with CPU_UP_PREPARE
-    
-    The functions in a CPU notifier chain is called with CPU_UP_PREPARE event
-    before making the CPU online.  If one of the callback returns NOTIFY_BAD, it
-    stops to deliver CPU_UP_PREPARE event, and CPU online operation is canceled.
-    Then CPU_UP_CANCELED event is delivered to the functions in a CPU notifier
-    chain again.
-    
-    This CPU_UP_CANCELED event is delivered to the functions which have been
-    called with CPU_UP_PREPARE, not delivered to the functions which haven't been
-    called with CPU_UP_PREPARE.
-    
-    The problem that makes existing cpu hotplug error handlings complex is that
-    the CPU_UP_CANCELED event is delivered to the function that has returned
-    NOTIFY_BAD, too.
-    
-    Usually we don't expect to call destructor function against the object that
-    has failed to initialize.  It is like:
-    
-    	err = register_something();
-    	if (err) {
-    		unregister_something();
-    		return err;
-    	}
-    
-    So it is natural to deliver CPU_UP_CANCELED event only to the functions that
-    have returned NOTIFY_OK with CPU_UP_PREPARE event and not to call the function
-    that have returned NOTIFY_BAD.  This is what this patch is doing.
-    
-    Otherwise, every cpu hotplug notifiler has to track whether notifiler event is
-    failed or not for each cpu.  (drivers/base/topology.c is doing this with
-    topology_dev_map)
-    
-    Similary this patch makes same thing with CPU_DOWN_PREPARE and CPU_DOWN_FAILED
-    evnets.
-    
-    Acked-by: Rusty Russell <rusty@rustcorp.com.au>
-    Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-    Cc: Gautham R Shenoy <ego@in.ibm.com>
-    Cc: Oleg Nesterov <oleg@tv-sign.ru>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+# tune2fs -e remount-ro /dev/sdX
 
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 38033db..a21f71a 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -150,6 +150,7 @@ static int _cpu_down(unsigned int cpu, int tasks_frozen)
- 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
- 					hcpu, -1, &nr_calls);
- 	if (err == NOTIFY_BAD) {
-+		nr_calls--;
- 		__raw_notifier_call_chain(&cpu_chain, CPU_DOWN_FAILED | mod,
- 					  hcpu, nr_calls, NULL);
- 		printk("%s: attempt to take down CPU %u failed\n",
-@@ -233,6 +234,7 @@ static int __cpuinit _cpu_up(unsigned int cpu, int tasks_frozen)
- 	ret = __raw_notifier_call_chain(&cpu_chain, CPU_UP_PREPARE | mod, hcpu,
- 							-1, &nr_calls);
- 	if (ret == NOTIFY_BAD) {
-+		nr_calls--;
- 		printk("%s: attempt to bring up CPU %u failed\n",
- 				__FUNCTION__, cpu);
- 		ret = -EINVAL;
+But this is a different problem - in this situation the error
+actually IS detected.
+
+
+
+-- 
+Tomas Styblo <tripie@cpan.org>
