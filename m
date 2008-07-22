@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbYGVCSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbYGVCVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756065AbYGVCSS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 22:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbYGVCSH
+	id S1755983AbYGVCVf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 22:21:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbYGVCVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 22:18:07 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49755 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753866AbYGVCSE (ORCPT
+	Mon, 21 Jul 2008 22:21:25 -0400
+Received: from mail.hauppauge.com ([167.206.143.4]:2371 "EHLO
+	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754855AbYGVCVY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 22:18:04 -0400
-Date: Tue, 22 Jul 2008 03:00:11 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Dave Jones <davej@redhat.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] serial: fix struct uart_info change fallout
-Message-ID: <20080722030011.6b0d8137@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080722003814.GA14809@redhat.com>
-References: <20080722102520.ca801ab5.sfr@canb.auug.org.au>
-	<20080722003814.GA14809@redhat.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 21 Jul 2008 22:21:24 -0400
+Message-ID: <4885440C.8000109@linuxtv.org>
+Date: Mon, 21 Jul 2008 22:21:00 -0400
+From: Michael Krufky <mkrufky@linuxtv.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] dvb/siano/: cleanups
+References: <20080721193344.GE14846@cs181140183.pp.htv.fi>
+In-Reply-To: <20080721193344.GE14846@cs181140183.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Jul 2008 20:38:14 -0400
-Dave Jones <davej@redhat.com> wrote:
+Mauro,
 
-> On Tue, Jul 22, 2008 at 10:25:20AM +1000, Stephen Rothwell wrote:
->  > Hi Linus, Alan,
->  > 
->  > Today's linux-next (actually just Linus' tree) build (powerpc
->  > ppc64_defconfig) failed like this:
->  > 
->  > drivers/serial/serial_txx9.c: In function 'receive_chars':
->  > drivers/serial/serial_txx9.c:275: error: 'struct uart_info' has no member named 'tty'
->  > drivers/serial/icom.c: In function 'recv_interrupt':
->  > drivers/serial/icom.c:733: error: 'struct uart_info' has no member named 'tty'
-> 
-> That's the same pair of patches I sent earlier, which apparently were
-> "Already in the ttydev tree" which should be in linux-next ?
+Please see my pull request, below.
 
-And are in Linux next, and would be in the Linus submission queue except
-that everyone keeps patching tty files from other trees.
+Adrian Bunk wrote:
+> This patch contains the following cleanups:
+> - mark smscore_module_init() as __init
+> - mark smscore_module_exit as __exit
+> - make the following needlessly global code static:
+>   - smscoreapi.c: struct g_smscore_notifyees
+>   - smscoreapi.c: struct g_smscore_devices
+>   - smscoreapi.c: struct g_smscore_deviceslock
+>   - smscoreapi.c: struct g_smscore_registry
+>   - smscoreapi.c: struct g_smscore_registrylock
+>   - smscoreapi.c: smscore_module_init()
+>   - smscoreapi.c: smscore_module_exit()
+>   - smsdvb.c: struct g_smsdvb_clients
+>   - smsdvb.c: struct g_smsdvb_clientslock
+>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>
+> ---
+>
+>  drivers/media/dvb/siano/smscoreapi.c |   14 +++++++-------
+>  drivers/media/dvb/siano/smsdvb.c     |    4 ++--
+>  2 files changed, 9 insertions(+), 9 deletions(-)
+>   
+Thank you for this, Adrian.  I've pushed this into my tree.
 
-<mutter>
+Mauro,
 
-Alan
+Please pull from:
+
+http://linuxtv.org/hg/~mkrufky/sms1xxx
+
+for:
+
+- sms1xxx: dvb/siano/: cleanups
+
+ smscoreapi.c |   14 +++++++-------
+ smsdvb.c     |    4 ++--
+ 2 files changed, 9 insertions(+), 9 deletions(-)
+
+Regards,
+
+Mike
