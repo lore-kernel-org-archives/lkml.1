@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759772AbYGVXcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758416AbYGVXdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759772AbYGVXcr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758107AbYGVXXY
+	id S1758416AbYGVXdG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:33:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbYGVXX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:23:24 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58281 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 19:23:28 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53710 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757424AbYGVXXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:23:22 -0400
-Date: Tue, 22 Jul 2008 16:17:29 -0700
+	id S1758111AbYGVXX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:23:27 -0400
+Date: Tue, 22 Jul 2008 16:17:32 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 42/47] crypto: chainiv - Invoke completion function
-Message-ID: <20080722231729.GQ8282@suse.de>
+       Vitaly Bordug <vitb@kernel.crashing.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [patch 43/47] powerpc: Add missing reference to coherent_dma_mask
+Message-ID: <20080722231732.GR8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="crypto-chainiv-invoke-completion-function.patch"
+Content-Disposition: inline; filename="powerpc-add-missing-reference-to-coherent_dma_mask.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,59 +40,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Vitaly Bordug <vitb@kernel.crashing.org>
 
-Upstream commit: 872ac8743cb400192a9fce4ba2d3ffd7bb309685
+commit ba0fc709e197415aadd46b9ec208dc4abaa21edd upstream
 
-When chainiv postpones requests it never calls their completion functions.
-This causes symptoms such as memory leaks when IPsec is in use.
+There is dma_mask in of_device upon of_platform_device_create()
+but we don't actually set coherent_dma_mask. This may cause weird
+behavior of USB subsystem using of_device USB host drivers.
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- crypto/chainiv.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/of_platform.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/crypto/chainiv.c
-+++ b/crypto/chainiv.c
-@@ -117,6 +117,7 @@ static int chainiv_init(struct crypto_tf
- static int async_chainiv_schedule_work(struct async_chainiv_ctx *ctx)
- {
- 	int queued;
-+	int err = ctx->err;
+--- a/arch/powerpc/kernel/of_platform.c
++++ b/arch/powerpc/kernel/of_platform.c
+@@ -76,6 +76,8 @@ struct of_device* of_platform_device_cre
+ 		return NULL;
  
- 	if (!ctx->queue.qlen) {
- 		smp_mb__before_clear_bit();
-@@ -131,7 +132,7 @@ static int async_chainiv_schedule_work(s
- 	BUG_ON(!queued);
- 
- out:
--	return ctx->err;
-+	return err;
- }
- 
- static int async_chainiv_postpone_request(struct skcipher_givcrypt_request *req)
-@@ -227,6 +228,7 @@ static void async_chainiv_do_postponed(s
- 						     postponed);
- 	struct skcipher_givcrypt_request *req;
- 	struct ablkcipher_request *subreq;
-+	int err;
- 
- 	/* Only handle one request at a time to avoid hogging keventd. */
- 	spin_lock_bh(&ctx->lock);
-@@ -241,7 +243,11 @@ static void async_chainiv_do_postponed(s
- 	subreq = skcipher_givcrypt_reqctx(req);
- 	subreq->base.flags |= CRYPTO_TFM_REQ_MAY_SLEEP;
- 
--	async_chainiv_givencrypt_tail(req);
-+	err = async_chainiv_givencrypt_tail(req);
+ 	dev->dma_mask = 0xffffffffUL;
++	dev->dev.coherent_dma_mask = DMA_32BIT_MASK;
 +
-+	local_bh_disable();
-+	skcipher_givcrypt_complete(req, err);
-+	local_bh_enable();
- }
+ 	dev->dev.bus = &of_platform_bus_type;
  
- static int async_chainiv_init(struct crypto_tfm *tfm)
+ 	/* We do not fill the DMA ops for platform devices by default.
 
 -- 
