@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755743AbYGVMlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbYGVMl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755743AbYGVMlh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 08:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbYGVMl3
+	id S1755976AbYGVMl7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 08:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYGVMlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 08:41:29 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36889 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752759AbYGVMl2 (ORCPT
+	Tue, 22 Jul 2008 08:41:50 -0400
+Received: from vms044pub.verizon.net ([206.46.252.44]:61898 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752770AbYGVMlu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 08:41:28 -0400
-Date: Tue, 22 Jul 2008 13:23:45 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: Alan Cox <alan@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial_txx9: Fix build failure by tty_port conversion
-Message-ID: <20080722132345.5916af3b@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080721.234128.41011776.anemo@mba.ocn.ne.jp>
-References: <20080721.234128.41011776.anemo@mba.ocn.ne.jp>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jul 2008 08:41:50 -0400
+Date: Tue, 22 Jul 2008 08:41:27 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Floppy access by dd fails for 2.6.26-rc2 to final,
+ possibly even earlier
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <200807220841.27796.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Jul 2008 23:41:28 +0900 (JST)
-Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+Greetings;
 
-> Since commit df4f4dd429870f435f8d5d9d561db029a29f063b ("serial: use
-> tty_port"), serial_txx9 cause this build failure:
-> 
-> linux/drivers/serial/serial_txx9.c: In function 'receive_chars':
-> linux/drivers/serial/serial_txx9.c:275: error: 'struct uart_info' has no member named 'tty'
-> 
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+I just been advised by private email that I an not the only one who has lost the 
+use of his floppy drive via dd.  The corresponder noted that he had a copy of 
+DSL with a 2.4.something kernel, and his drive worked flawlessly while booted 
+to DSL.
 
-Already sent to Linus
+So now there are at least 2 floppy users wandering in the wilderness looking for 
+water.  We need it to support 20 year old computers without a TCP stack or 
+network cards.
+
+Who is the floppy.c maintainer these days?
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+For fools rush in where angels fear to tread.
+		-- Alexander Pope
