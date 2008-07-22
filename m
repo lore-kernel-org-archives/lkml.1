@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYGVFXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbYGVFY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbYGVFXl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 01:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756539AbYGVFV6
+	id S1756875AbYGVFY0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 01:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYGVFWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 01:21:58 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43032 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 01:22:05 -0400
+Received: from ns.suse.de ([195.135.220.2]:53710 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756477AbYGVFV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 01:21:56 -0400
+	id S1752074AbYGVFWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 01:22:04 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 06/79] device create: char: convert device_create to device_create_drvdata
-Date: Mon, 21 Jul 2008 22:18:30 -0700
-Message-Id: <1216703983-21448-6-git-send-email-gregkh@suse.de>
+Subject: [PATCH 08/79] device create: dca: convert device_create to device_create_drvdata
+Date: Mon, 21 Jul 2008 22:18:32 -0700
+Message-Id: <1216703983-21448-8-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <20080722051805.GA17373@suse.de>
 References: <20080722051805.GA17373@suse.de>
@@ -27,379 +27,35 @@ device_create_drvdata() instead as device_create() is going away.
 
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/dsp56k.c                      |    3 ++-
- drivers/char/ip2/ip2main.c                 |   12 ++++++------
- drivers/char/ipmi/ipmi_devintf.c           |    2 +-
- drivers/char/istallion.c                   |    5 +++--
- drivers/char/lp.c                          |    3 ++-
- drivers/char/mem.c                         |    6 +++---
- drivers/char/misc.c                        |    4 ++--
- drivers/char/pcmcia/cm4000_cs.c            |    2 +-
- drivers/char/pcmcia/cm4040_cs.c            |    3 ++-
- drivers/char/ppdev.c                       |    5 +++--
- drivers/char/raw.c                         |    7 ++++---
- drivers/char/snsc.c                        |    3 ++-
- drivers/char/stallion.c                    |    4 ++--
- drivers/char/tty_io.c                      |   12 +++++++-----
- drivers/char/vc_screen.c                   |   12 ++++++------
- drivers/char/viotape.c                     |    8 ++++----
- drivers/char/vt.c                          |   14 ++++++++------
- drivers/char/xilinx_hwicap/xilinx_hwicap.c |    5 +++--
- 18 files changed, 61 insertions(+), 49 deletions(-)
+ drivers/dca/dca-sysfs.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/char/dsp56k.c b/drivers/char/dsp56k.c
-index b9a30c3..33c466a 100644
---- a/drivers/char/dsp56k.c
-+++ b/drivers/char/dsp56k.c
-@@ -500,7 +500,8 @@ static int __init dsp56k_init_driver(void)
- 		err = PTR_ERR(dsp56k_class);
- 		goto out_chrdev;
- 	}
--	device_create(dsp56k_class, NULL, MKDEV(DSP56K_MAJOR, 0), "dsp56k");
-+	device_create_drvdata(dsp56k_class, NULL, MKDEV(DSP56K_MAJOR, 0),
-+			      NULL, "dsp56k");
- 
- 	printk(banner);
- 	goto out;
-diff --git a/drivers/char/ip2/ip2main.c b/drivers/char/ip2/ip2main.c
-index 5dc7440..9cb48fc 100644
---- a/drivers/char/ip2/ip2main.c
-+++ b/drivers/char/ip2/ip2main.c
-@@ -718,12 +718,12 @@ ip2_loadmain(int *iop, int *irqp)
- 			}
- 
- 			if ( NULL != ( pB = i2BoardPtrTable[i] ) ) {
--				device_create(ip2_class, NULL,
--						MKDEV(IP2_IPL_MAJOR, 4 * i),
--						"ipl%d", i);
--				device_create(ip2_class, NULL,
--						MKDEV(IP2_IPL_MAJOR, 4 * i + 1),
--						"stat%d", i);
-+				device_create_drvdata(ip2_class, NULL,
-+						      MKDEV(IP2_IPL_MAJOR, 4 * i),
-+						      NULL, "ipl%d", i);
-+				device_create_drvdata(ip2_class, NULL,
-+						      MKDEV(IP2_IPL_MAJOR, 4 * i + 1),
-+						      NULL, "stat%d", i);
- 
- 			    for ( box = 0; box < ABS_MAX_BOXES; ++box )
- 			    {
-diff --git a/drivers/char/ipmi/ipmi_devintf.c b/drivers/char/ipmi/ipmi_devintf.c
-index c11a404..64e1c16 100644
---- a/drivers/char/ipmi/ipmi_devintf.c
-+++ b/drivers/char/ipmi/ipmi_devintf.c
-@@ -871,7 +871,7 @@ static void ipmi_new_smi(int if_num, struct device *device)
- 	entry->dev = dev;
- 
- 	mutex_lock(&reg_list_mutex);
--	device_create(ipmi_class, device, dev, "ipmi%d", if_num);
-+	device_create_drvdata(ipmi_class, device, dev, NULL, "ipmi%d", if_num);
- 	list_add(&entry->link, &reg_list);
- 	mutex_unlock(&reg_list_mutex);
- }
-diff --git a/drivers/char/istallion.c b/drivers/char/istallion.c
-index 7930fba..24637bb 100644
---- a/drivers/char/istallion.c
-+++ b/drivers/char/istallion.c
-@@ -4599,8 +4599,9 @@ static int __init istallion_module_init(void)
- 
- 	istallion_class = class_create(THIS_MODULE, "staliomem");
- 	for (i = 0; i < 4; i++)
--		device_create(istallion_class, NULL, MKDEV(STL_SIOMEMMAJOR, i),
--			      "staliomem%d", i);
-+		device_create_drvdata(istallion_class, NULL,
-+				      MKDEV(STL_SIOMEMMAJOR, i),
-+				      NULL, "staliomem%d", i);
- 
- 	return 0;
- err_deinit:
-diff --git a/drivers/char/lp.c b/drivers/char/lp.c
-index 71abb4c..3f2719b 100644
---- a/drivers/char/lp.c
-+++ b/drivers/char/lp.c
-@@ -813,7 +813,8 @@ static int lp_register(int nr, struct parport *port)
- 	if (reset)
- 		lp_reset(nr);
- 
--	device_create(lp_class, port->dev, MKDEV(LP_MAJOR, nr), "lp%d", nr);
-+	device_create_drvdata(lp_class, port->dev, MKDEV(LP_MAJOR, nr), NULL,
-+			      "lp%d", nr);
- 
- 	printk(KERN_INFO "lp%d: using %s (%s).\n", nr, port->name, 
- 	       (port->irq == PARPORT_IRQ_NONE)?"polling":"interrupt-driven");
-diff --git a/drivers/char/mem.c b/drivers/char/mem.c
-index b6772d6..c2dba82 100644
---- a/drivers/char/mem.c
-+++ b/drivers/char/mem.c
-@@ -989,9 +989,9 @@ static int __init chr_dev_init(void)
- 
- 	mem_class = class_create(THIS_MODULE, "mem");
- 	for (i = 0; i < ARRAY_SIZE(devlist); i++)
--		device_create(mem_class, NULL,
--			      MKDEV(MEM_MAJOR, devlist[i].minor),
--			      devlist[i].name);
-+		device_create_drvdata(mem_class, NULL,
-+				      MKDEV(MEM_MAJOR, devlist[i].minor),
-+				      NULL, devlist[i].name);
- 
- 	return 0;
- }
-diff --git a/drivers/char/misc.c b/drivers/char/misc.c
-index 6e1563c..999aa77 100644
---- a/drivers/char/misc.c
-+++ b/drivers/char/misc.c
-@@ -217,8 +217,8 @@ int misc_register(struct miscdevice * misc)
- 		misc_minors[misc->minor >> 3] |= 1 << (misc->minor & 7);
- 	dev = MKDEV(MISC_MAJOR, misc->minor);
- 
--	misc->this_device = device_create(misc_class, misc->parent, dev,
--					  "%s", misc->name);
-+	misc->this_device = device_create_drvdata(misc_class, misc->parent,
-+						  dev, NULL, "%s", misc->name);
- 	if (IS_ERR(misc->this_device)) {
- 		err = PTR_ERR(misc->this_device);
- 		goto out;
-diff --git a/drivers/char/pcmcia/cm4000_cs.c b/drivers/char/pcmcia/cm4000_cs.c
-index e4a4fbd..f070ae7 100644
---- a/drivers/char/pcmcia/cm4000_cs.c
-+++ b/drivers/char/pcmcia/cm4000_cs.c
-@@ -1896,7 +1896,7 @@ static int cm4000_probe(struct pcmcia_device *link)
- 		return ret;
- 	}
- 
--	device_create(cmm_class, NULL, MKDEV(major, i), "cmm%d", i);
-+	device_create_drvdata(cmm_class, NULL, MKDEV(major, i), NULL, "cmm%d", i);
- 
- 	return 0;
- }
-diff --git a/drivers/char/pcmcia/cm4040_cs.c b/drivers/char/pcmcia/cm4040_cs.c
-index 6181f8a..0b5934b 100644
---- a/drivers/char/pcmcia/cm4040_cs.c
-+++ b/drivers/char/pcmcia/cm4040_cs.c
-@@ -653,7 +653,8 @@ static int reader_probe(struct pcmcia_device *link)
- 		return ret;
- 	}
- 
--	device_create(cmx_class, NULL, MKDEV(major, i), "cmx%d", i);
-+	device_create_drvdata(cmx_class, NULL, MKDEV(major, i), NULL,
-+			      "cmx%d", i);
- 
- 	return 0;
- }
-diff --git a/drivers/char/ppdev.c b/drivers/char/ppdev.c
-index f6e6aca..7af7a7e 100644
---- a/drivers/char/ppdev.c
-+++ b/drivers/char/ppdev.c
-@@ -752,8 +752,9 @@ static const struct file_operations pp_fops = {
- 
- static void pp_attach(struct parport *port)
+diff --git a/drivers/dca/dca-sysfs.c b/drivers/dca/dca-sysfs.c
+index 011328f..9a70377 100644
+--- a/drivers/dca/dca-sysfs.c
++++ b/drivers/dca/dca-sysfs.c
+@@ -14,8 +14,9 @@ int dca_sysfs_add_req(struct dca_provider *dca, struct device *dev, int slot)
  {
--	device_create(ppdev_class, port->dev, MKDEV(PP_MAJOR, port->number),
--			"parport%d", port->number);
-+	device_create_drvdata(ppdev_class, port->dev,
-+			      MKDEV(PP_MAJOR, port->number),
-+			      NULL, "parport%d", port->number);
- }
+ 	struct device *cd;
  
- static void pp_detach(struct parport *port)
-diff --git a/drivers/char/raw.c b/drivers/char/raw.c
-index 505fcbe..47b8cf2 100644
---- a/drivers/char/raw.c
-+++ b/drivers/char/raw.c
-@@ -131,8 +131,8 @@ raw_ioctl(struct inode *inode, struct file *filp,
- static void bind_device(struct raw_config_request *rq)
- {
- 	device_destroy(raw_class, MKDEV(RAW_MAJOR, rq->raw_minor));
--	device_create(raw_class, NULL, MKDEV(RAW_MAJOR, rq->raw_minor),
--		      "raw%d", rq->raw_minor);
-+	device_create_drvdata(raw_class, NULL, MKDEV(RAW_MAJOR, rq->raw_minor),
-+			      NULL, "raw%d", rq->raw_minor);
- }
- 
- /*
-@@ -283,7 +283,8 @@ static int __init raw_init(void)
- 		ret = PTR_ERR(raw_class);
- 		goto error_region;
+-	cd = device_create(dca_class, dca->cd, MKDEV(0, slot + 1),
+-			   "requester%d", slot);
++	cd = device_create_drvdata(dca_class, dca->cd,
++				   MKDEV(0, slot + 1), NULL,
++				   "requester%d", slot);
+ 	if (IS_ERR(cd))
+ 		return PTR_ERR(cd);
+ 	return 0;
+@@ -46,7 +47,8 @@ idr_try_again:
+ 		return err;
  	}
--	device_create(raw_class, NULL, MKDEV(RAW_MAJOR, 0), "rawctl");
-+	device_create_drvdata(raw_class, NULL, MKDEV(RAW_MAJOR, 0), NULL,
-+			      "rawctl");
  
- 	return 0;
- 
-diff --git a/drivers/char/snsc.c b/drivers/char/snsc.c
-index 0b799ac..3ce60df 100644
---- a/drivers/char/snsc.c
-+++ b/drivers/char/snsc.c
-@@ -444,7 +444,8 @@ scdrv_init(void)
- 				continue;
- 			}
- 
--			device_create(snsc_class, NULL, dev, "%s", devname);
-+			device_create_drvdata(snsc_class, NULL, dev, NULL,
-+					      "%s", devname);
- 
- 			ia64_sn_irtr_intr_enable(scd->scd_nasid,
- 						 0 /*ignored */ ,
-diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
-index 0243efb..45aeeea 100644
---- a/drivers/char/stallion.c
-+++ b/drivers/char/stallion.c
-@@ -4753,8 +4753,8 @@ static int __init stallion_module_init(void)
- 	if (IS_ERR(stallion_class))
- 		printk("STALLION: failed to create class\n");
- 	for (i = 0; i < 4; i++)
--		device_create(stallion_class, NULL, MKDEV(STL_SIOMEMMAJOR, i),
--			      "staliomem%d", i);
-+		device_create_drvdata(stallion_class, NULL, MKDEV(STL_SIOMEMMAJOR, i),
-+				      NULL, "staliomem%d", i);
- 
- 	return 0;
- err_unrtty:
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 82f6a8c..dc9202d 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -4045,7 +4045,7 @@ struct device *tty_register_device(struct tty_driver *driver, unsigned index,
- 	else
- 		tty_line_name(driver, index, name);
- 
--	return device_create(tty_class, device, dev, name);
-+	return device_create_drvdata(tty_class, device, dev, NULL, name);
- }
- 
- /**
-@@ -4323,20 +4323,22 @@ static int __init tty_init(void)
- 	if (cdev_add(&tty_cdev, MKDEV(TTYAUX_MAJOR, 0), 1) ||
- 	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 0), 1, "/dev/tty") < 0)
- 		panic("Couldn't register /dev/tty driver\n");
--	device_create(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 0), "tty");
-+	device_create_drvdata(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 0), NULL,
-+			      "tty");
- 
- 	cdev_init(&console_cdev, &console_fops);
- 	if (cdev_add(&console_cdev, MKDEV(TTYAUX_MAJOR, 1), 1) ||
- 	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 1), 1, "/dev/console") < 0)
- 		panic("Couldn't register /dev/console driver\n");
--	device_create(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 1), "console");
-+	device_create_drvdata(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 1), NULL,
-+			      "console");
- 
- #ifdef CONFIG_UNIX98_PTYS
- 	cdev_init(&ptmx_cdev, &ptmx_fops);
- 	if (cdev_add(&ptmx_cdev, MKDEV(TTYAUX_MAJOR, 2), 1) ||
- 	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 2), 1, "/dev/ptmx") < 0)
- 		panic("Couldn't register /dev/ptmx driver\n");
--	device_create(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 2), "ptmx");
-+	device_create_drvdata(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 2), NULL, "ptmx");
- #endif
- 
- #ifdef CONFIG_VT
-@@ -4344,7 +4346,7 @@ static int __init tty_init(void)
- 	if (cdev_add(&vc0_cdev, MKDEV(TTY_MAJOR, 0), 1) ||
- 	    register_chrdev_region(MKDEV(TTY_MAJOR, 0), 1, "/dev/vc/0") < 0)
- 		panic("Couldn't register /dev/tty0 driver\n");
--	device_create(tty_class, NULL, MKDEV(TTY_MAJOR, 0), "tty0");
-+	device_create_drvdata(tty_class, NULL, MKDEV(TTY_MAJOR, 0), NULL, "tty0");
- 
- 	vty_init();
- #endif
-diff --git a/drivers/char/vc_screen.c b/drivers/char/vc_screen.c
-index eebfad2..c2ae52d 100644
---- a/drivers/char/vc_screen.c
-+++ b/drivers/char/vc_screen.c
-@@ -481,10 +481,10 @@ static struct class *vc_class;
- 
- void vcs_make_sysfs(struct tty_struct *tty)
- {
--	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, tty->index + 1),
--			"vcs%u", tty->index + 1);
--	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, tty->index + 129),
--			"vcsa%u", tty->index + 1);
-+	device_create_drvdata(vc_class, NULL, MKDEV(VCS_MAJOR, tty->index + 1),
-+			      NULL, "vcs%u", tty->index + 1);
-+	device_create_drvdata(vc_class, NULL, MKDEV(VCS_MAJOR, tty->index + 129),
-+			      NULL, "vcsa%u", tty->index + 1);
- }
- 
- void vcs_remove_sysfs(struct tty_struct *tty)
-@@ -499,7 +499,7 @@ int __init vcs_init(void)
- 		panic("unable to get major %d for vcs device", VCS_MAJOR);
- 	vc_class = class_create(THIS_MODULE, "vc");
- 
--	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, 0), "vcs");
--	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, 128), "vcsa");
-+	device_create_drvdata(vc_class, NULL, MKDEV(VCS_MAJOR, 0), NULL, "vcs");
-+	device_create_drvdata(vc_class, NULL, MKDEV(VCS_MAJOR, 128), NULL, "vcsa");
- 	return 0;
- }
-diff --git a/drivers/char/viotape.c b/drivers/char/viotape.c
-index e5da98d..7a70a40 100644
---- a/drivers/char/viotape.c
-+++ b/drivers/char/viotape.c
-@@ -886,10 +886,10 @@ static int viotape_probe(struct vio_dev *vdev, const struct vio_device_id *id)
- 	state[i].cur_part = 0;
- 	for (j = 0; j < MAX_PARTITIONS; ++j)
- 		state[i].part_stat_rwi[j] = VIOT_IDLE;
--	device_create(tape_class, NULL, MKDEV(VIOTAPE_MAJOR, i),
--			"iseries!vt%d", i);
--	device_create(tape_class, NULL, MKDEV(VIOTAPE_MAJOR, i | 0x80),
--			"iseries!nvt%d", i);
-+	device_create_drvdata(tape_class, NULL, MKDEV(VIOTAPE_MAJOR, i),
-+			      NULL, "iseries!vt%d", i);
-+	device_create_drvdata(tape_class, NULL, MKDEV(VIOTAPE_MAJOR, i | 0x80),
-+			      NULL, "iseries!nvt%d", i);
- 	printk(VIOTAPE_KERN_INFO "tape iseries/vt%d is iSeries "
- 			"resource %10.10s type %4.4s, model %3.3s\n",
- 			i, viotape_unitinfo[i].rsrcname,
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index 935f1c2..e32a076 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -3425,9 +3425,10 @@ int register_con_driver(const struct consw *csw, int first, int last)
- 	if (retval)
- 		goto err;
- 
--	con_driver->dev = device_create(vtconsole_class, NULL,
--					MKDEV(0, con_driver->node),
--					"vtcon%i", con_driver->node);
-+	con_driver->dev = device_create_drvdata(vtconsole_class, NULL,
-+						MKDEV(0, con_driver->node),
-+						NULL, "vtcon%i",
-+						con_driver->node);
- 
- 	if (IS_ERR(con_driver->dev)) {
- 		printk(KERN_WARNING "Unable to create device for %s; "
-@@ -3535,9 +3536,10 @@ static int __init vtconsole_class_init(void)
- 		struct con_driver *con = &registered_con_driver[i];
- 
- 		if (con->con && !con->dev) {
--			con->dev = device_create(vtconsole_class, NULL,
--						 MKDEV(0, con->node),
--						 "vtcon%i", con->node);
-+			con->dev = device_create_drvdata(vtconsole_class, NULL,
-+							 MKDEV(0, con->node),
-+							 NULL, "vtcon%i",
-+							 con->node);
- 
- 			if (IS_ERR(con->dev)) {
- 				printk(KERN_WARNING "Unable to create "
-diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-index 1e1b81e..51966cc 100644
---- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-+++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-@@ -658,8 +658,9 @@ static int __devinit hwicap_setup(struct device *dev, int id,
- 		dev_err(dev, "cdev_add() failed\n");
- 		goto failed3;
- 	}
--	/*  devfs_mk_cdev(devt, S_IFCHR|S_IRUGO|S_IWUGO, DRIVER_NAME); */
--	device_create(icap_class, dev, devt, "%s%d", DRIVER_NAME, id);
-+
-+	device_create_drvdata(icap_class, dev, devt, NULL,
-+			      "%s%d", DRIVER_NAME, id);
- 	return 0;		/* success */
- 
-  failed3:
+-	cd = device_create(dca_class, dev, MKDEV(0, 0), "dca%d", dca->id);
++	cd = device_create_drvdata(dca_class, dev, MKDEV(0, 0), NULL,
++				   "dca%d", dca->id);
+ 	if (IS_ERR(cd)) {
+ 		spin_lock(&dca_idr_lock);
+ 		idr_remove(&dca_idr, dca->id);
 -- 
 1.5.6.3
 
