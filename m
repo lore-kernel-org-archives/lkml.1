@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbYGVT4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbYGVT6E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754475AbYGVT4I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 15:56:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYGVTzz
+	id S1754695AbYGVT6E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 15:58:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbYGVT5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 15:55:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57090 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751856AbYGVTzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 15:55:54 -0400
-To: Avi Kivity <avi@qumranet.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       kvm@vger.kernel.org
-Subject: Re: [patch 0/4] Port KVM-trace to tracepoints
-References: <20080717155724.897537670@polymtl.ca>
-	<48862A30.7050701@qumranet.com>
-	<y0mabg991c3.fsf@ton.toronto.redhat.com>
-	<488635A7.2030609@qumranet.com>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Tue, 22 Jul 2008 15:54:04 -0400
-In-Reply-To: <488635A7.2030609@qumranet.com> (Avi Kivity's message of "Tue, 22 Jul 2008 22:31:51 +0300")
-Message-ID: <y0m4p6h8zkz.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 22 Jul 2008 15:57:54 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:41044 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbYGVT5x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 15:57:53 -0400
+Message-ID: <48863C46.1060704@keyaccess.nl>
+Date: Tue, 22 Jul 2008 22:00:06 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Fabio Comolli <fabio.comolli@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: New conflict message in latest GIT
+References: <b637ec0b0807221156x46d550a1h4180d6d624daeeb@mail.gmail.com>
+In-Reply-To: <b637ec0b0807221156x46d550a1h4180d6d624daeeb@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: 1.0 (+)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity <avi@qumranet.com> writes:
+On 22-07-08 20:56, Fabio Comolli wrote:
 
-> [...]
->> Have you considered using trace_mark() directly - eliminating the
->> KVM_TRACEN() middlemen?
-> [...]
-> Using trace_mark() directly -- looking at it, seems to fit the
-> requirements exactly.  Should have looked at it earlier.  Is there a
-> way to get a list of all markers?
+> Linus' GIT tree 2.6.26-05752-g93ded9b shows this message:
+> 
+> i801_smbus 0000:00:1f.3: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+> ACPI: I/O resource 0000:00:1f.3 [0x18e0-0x18ff] conflicts with ACPI
+> region SMBI [0x18e0-0x18ef]
+> ACPI: Device needs an ACPI driver
+> 
+> There is no equivalent in 2.6.26 or previous kernels.
 
->From kernel-space, I can't find just now an API for listing them, but
-there probably is / could be one.
+[ snip ]
 
->From user-space, lttng tools can probably do it.  systemtap can too:
-     % stap -l 'kernel.mark("*")'
+> 00:1f.3 SMBus: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family)
 
-You could prototype binary tracing thusly:
-     % stap -e 'probe kernel.mark("kvm_foobar") { 
-         printf("%4b%4b%4b", # three 4-byte ints
-                cpu(), $arg1, $arg2)
-       }'
+I believe this message in itself needn't be a problem but the code 
+producing this warning isn't new...
 
-> Perhaps the kvmtrace marker->relay integration should be made a marker
-> feature, since there is nothing specific to kvm in it.
+Bjorn, this reminds me of the:
 
-Right, I believe something like that is in the lttng patch suite.
+pnp-have-quirk_system_pci_resources-include-io-resources.patch
 
+in Andrew's tree that I need to have my soundcard not fail due to the IO 
+resource being claimed by PNPACPI. The fact that I needed it was new to 
+2.6.26 (but going back to 2.6.25 I all of a sudden also needed it there 
+which made me conclude that some BIOS reconfig had occured).
 
-- FChE
+ACPI isn't doing odd things I hope?
+
+Rene.
