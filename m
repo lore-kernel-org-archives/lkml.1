@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbYGVX3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759299AbYGVX3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbYGVX3r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757219AbYGVXUT
+	id S1759299AbYGVX3a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756755AbYGVXUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:20:19 -0400
-Received: from ns.suse.de ([195.135.220.2]:53263 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 19:20:14 -0400
+Received: from ns2.suse.de ([195.135.220.15]:57944 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756610AbYGVXUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:20:17 -0400
-Date: Tue, 22 Jul 2008 16:16:50 -0700
+	id S1756737AbYGVXUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:20:12 -0400
+Date: Tue, 22 Jul 2008 16:16:45 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Marcin Obara <marcin_obara@users.sourceforge.net>,
-       Marcel Selhorst <tpm@selhorst.net>,
-       Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Subject: [patch 34/47] tpm: add Intel TPM TIS device HID
-Message-ID: <20080722231650.GI8282@suse.de>
+       Matt Porter <mporter@kernel.crashing.org>
+Subject: [patch 33/47] rapidio: fix device reference counting
+Message-ID: <20080722231645.GH8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tpm-add-intel-tpm-tis-device-hid.patch"
+Content-Disposition: inline; filename="rapidio-fix-device-reference-counting.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,32 +39,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Marcin Obara <marcin_obara@users.sourceforge.net>
+From: Eugene Surovegin <ebs@ebshome.net>
 
-commit fb0e7e11d017beb5f0b1fa25bc51e49e65c46d67 upstream
+commit a7de3902edce099e4102c1272ec0ab569c1791f7 upstream
 
-This patch adds Intel TPM TIS device HID:  ICO0102
+Fix RapidIO device reference counting.
 
-Signed-off-by: Marcin Obara <marcin_obara@users.sourceforge.net>
-Acked-by: Marcel Selhorst <tpm@selhorst.net>
-Acked-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Signed-of-by: Eugene Surovegin <ebs@ebshome.net>
+Cc: Matt Porter <mporter@kernel.crashing.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/tpm/tpm_tis.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/rapidio/rio-driver.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/char/tpm/tpm_tis.c
-+++ b/drivers/char/tpm/tpm_tis.c
-@@ -623,6 +623,7 @@ static struct pnp_device_id tpm_pnp_tbl[
- 	{"IFX0102", 0},		/* Infineon */
- 	{"BCM0101", 0},		/* Broadcom */
- 	{"NSC1200", 0},		/* National */
-+	{"ICO0102", 0},		/* Intel */
- 	/* Add new here */
- 	{"", 0},		/* User Specified */
- 	{"", 0}			/* Terminator */
+--- a/drivers/rapidio/rio-driver.c
++++ b/drivers/rapidio/rio-driver.c
+@@ -101,8 +101,8 @@ static int rio_device_probe(struct devic
+ 		if (error >= 0) {
+ 			rdev->driver = rdrv;
+ 			error = 0;
++		} else
+ 			rio_dev_put(rdev);
+-		}
+ 	}
+ 	return error;
+ }
 
 -- 
