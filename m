@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbYGVWZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbYGVW0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756376AbYGVWZi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 18:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbYGVWZa
+	id S1756365AbYGVW0q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 18:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYGVW0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 18:25:30 -0400
-Received: from woodchuck.wormnet.eu ([77.75.105.223]:58412 "EHLO
-	woodchuck.wormnet.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754762AbYGVWZ3 (ORCPT
+	Tue, 22 Jul 2008 18:26:38 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:8172 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752848AbYGVW0h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 18:25:29 -0400
-X-Greylist: delayed 1341 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Jul 2008 18:25:29 EDT
-Date: Tue, 22 Jul 2008 23:03:06 +0100
-From: Alexander Clouter <alex@digriz.org.uk>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] ALi M7101 PMU also available on Sun Netra's too
-Message-ID: <20080722220306.GA4832@inskipp.digriz.org.uk>
+	Tue, 22 Jul 2008 18:26:37 -0400
+Date: Wed, 23 Jul 2008 02:26:34 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Kumar Gala <kumar.gala@freescale.com>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: latest tree build failure -- cpm uart & gpio
+Message-ID: <20080722222634.GA4427@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <FBE46DB6-A457-4AD8-9D6E-9D639AD04325@freescale.com> <20080722145330.GA2315@polina.dev.rtsoft.ru> <1216764309.11027.211.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-Organization: diGriz
-X-URL: http://www.digriz.org.uk/
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1216764309.11027.211.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Jul 23, 2008 at 08:05:09AM +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2008-07-22 at 18:53 +0400, Anton Vorontsov wrote:
+> > On Tue, Jul 22, 2008 at 08:54:16AM -0500, Kumar Gala wrote:
+> > > can someone look at the following compile failure in linus's tree.  I'm 
+> > > guessing part of this has to do with Alan's tty changes (and might  
+> > > already be addressed?).
+> > >
+> > > include/asm-generic/gpio.h:131: error: implicit declaration of function 
+> > > 'gpio_get_value'
+> > > include/asm-generic/gpio.h:137: error: implicit declaration of function 
+> > > 'gpio_set_value'
+> > 
+> > I think this patch should help:
+> > 
+> > [OF] of_gpio: should use new <linux/gpio.h> header
+> > http://patchwork.ozlabs.org/linuxppc/patch?id=18750
+> > 
+> > David, can you please Ack it? See Benjamin's mail:
+> > http://ozlabs.org/pipermail/linuxppc-dev/2008-July/060109.html
+> > 
+> 
+> Hrm.. I though I had that one in my latest batch. In fact, I just
+> checked and it got merged.
 
-Well my Sun Netra T1 AC200 has one of these...bit harsh not letting me use it 
-and all :)
+Ah, great. So the issue should be fixed already... I just pulled the
+Linus' tree, and it is there indeed.
 
-==========
-alex@woodchuck:~$ lspci -nn 
-00:01.0 PCI bridge [0604]: Sun Microsystems Computer Corp. Simba Advanced PCI Bridge [108e:5000] (rev 13)
-00:01.1 PCI bridge [0604]: Sun Microsystems Computer Corp. Simba Advanced PCI Bridge [108e:5000] (rev 13)
-01:03.0 Non-VGA unclassified device [0000]: ALi Corporation M7101 Power Management Controller [PMU] [10b9:7101]
-01:05.1 Ethernet controller [0200]: Sun Microsystems Computer Corp. RIO GEM [108e:1101] (rev 01)
-01:05.3 USB Controller [0c03]: Sun Microsystems Computer Corp. RIO USB [108e:1103] (rev 01)
-01:07.0 ISA bridge [0601]: ALi Corporation M1533/M1535 PCI to ISA Bridge [Aladdin IV/V/V+] [10b9:1533]
-01:0c.0 Bridge [0680]: Sun Microsystems Computer Corp. RIO EBUS [108e:1100] (rev 01)
-01:0c.1 Ethernet controller [0200]: Sun Microsystems Computer Corp. RIO GEM [108e:1101] (rev 01)
-01:0c.3 USB Controller [0c03]: Sun Microsystems Computer Corp. RIO USB [108e:1103] (rev 01)
-01:0d.0 IDE interface [0101]: ALi Corporation M5229 IDE [10b9:5229] (rev c3)
-02:08.0 SCSI storage controller [0100]: LSI Logic / Symbios Logic 53C896/897 [1000:000b] (rev 07)
-02:08.1 SCSI storage controller [0100]: LSI Logic / Symbios Logic 53C896/897 [1000:000b] (rev 07)
-==========
+Thanks,
 
-Cheers
-
-Signed-off-by: Alexander Clouter <alex@digriz.org.uk>
-
---- linux-2.6.26/drivers/watchdog/Kconfig.orig	2008-07-22 22:49:38.386293182 +0100
-+++ linux-2.6.26/drivers/watchdog/Kconfig	2008-07-22 22:53:38.087273613 +0100
-@@ -285,10 +285,11 @@
- 
- config ALIM7101_WDT
- 	tristate "ALi M7101 PMU Computer Watchdog"
--	depends on X86 && PCI
-+	depends on PCI
- 	help
- 	  This is the driver for the hardware watchdog on the ALi M7101 PMU
--	  as used in the x86 Cobalt servers.
-+	  as used in the x86 Cobalt servers and also found in some
-+	  SPARC Netra servers too.
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called alim7101_wdt.
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
