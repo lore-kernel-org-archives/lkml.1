@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbYGVNaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbYGVNcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752547AbYGVNaX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 09:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbYGVNaK
+	id S1753487AbYGVNcM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 09:32:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbYGVNb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 09:30:10 -0400
-Received: from mga10.intel.com ([192.55.52.92]:55925 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750711AbYGVNaJ (ORCPT
+	Tue, 22 Jul 2008 09:31:58 -0400
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:41995 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750845AbYGVNb6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 09:30:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,231,1215414000"; 
-   d="scan'208";a="363720115"
-Date: Tue, 22 Jul 2008 09:24:01 -0400
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Zachary Amsden <zach@vmware.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] x86: APIC: Remove apic_write_around(); use alternatives
-Message-ID: <20080722132401.GA17165@ywang-dev>
-References: <1216420937.30348.30.camel@bodhitayantram.eng.vmware.com> <20080718224922.GB4507@linux-os.sc.intel.com> <86802c440807181551l7e6e143dy7cea8ab59f1830ed@mail.gmail.com> <20080718230012.GD4507@linux-os.sc.intel.com> <86802c440807181604y502e7deal98abfeb1ceee769d@mail.gmail.com> <20080718231828.GE4507@linux-os.sc.intel.com> <20080719214944.GC836@elte.hu> <20080719215325.GA12737@elte.hu> <20080720120811.GA16138@elte.hu> <20080721175940.GA14380@linux-os.sc.intel.com>
+	Tue, 22 Jul 2008 09:31:58 -0400
+Message-ID: <4885E13E.1010607@euromail.se>
+Date: Tue, 22 Jul 2008 15:31:42 +0200
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080721175940.GA14380@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Jiri Kosina <jkosina@suse.cz>
+CC: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, robfitz@273k.net,
+       akpm@osdl.org, Vojtech Pavlik <vojtech@suse.cz>, dmonakhov@openvz.org
+Subject: Re: [PATCH] hid: wellspring device quirks
+References: <1215963466.12757.0.camel@alnilam> <alpine.LNX.1.10.0807221504380.3037@jikos.suse.cz>
+In-Reply-To: <alpine.LNX.1.10.0807221504380.3037@jikos.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.35.11
+X-Scan-Result: No virus found in message 1KLHy8-0004mK-9A.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KLHy8-0004mK-9A 6971a6b23caec8df026a28f79da040f9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2008 at 10:59:41AM -0700, Suresh Siddha wrote:
-> Thanks Ingo. I tested tip/master and found an issue (patch attached)
-> for x2apic support. This is not because of the recent merges we had, but
-> because of something(where we still access memory based interface after
-> enabling x2apic mode) that slipped through my earlier tests.
+Jiri Kosina wrote:
+> On Sun, 13 Jul 2008, Henrik Rydberg wrote:
 > 
-> Probably it is a good idea to unmap the memory mapped interface, once we switch
-> to x2apic mode. That will catch the issues much earlier. I will
-> post another patch for this.
+>> This patch adds the HID_QUIRK_IGNORE_MOUSE quirk for the Apple USB
+>> multitouch devices based on BCM5974, aka Wellspring. These devices
+>> will instead be picked up by the new bcm5974 driver.
 > 
-> Meanwhile, I will do more testing of tip/master along with addressing
-> open issues.
-> ---
+> Hi Henrik,
 > 
-> [patch] x64, apic: use generic apic_write() for ack_APIC_irq()
+> is the mouse not working at all with standard HID driver?
 > 
-> ack_APIC_irq() is used at too many generic places (and not just during
-> irq_chip handling!) to use the native_apic_mem_write(). For ex, this will
-> break x2apic based systems.
-> 
-> Fix ack_APIC_irq() to use the generic apic_write() even for 64-bit.
-> 
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> ---
-> 
-> diff --git a/include/asm-x86/apic.h b/include/asm-x86/apic.h
-> index 300b65e..1df955f 100644
-> --- a/include/asm-x86/apic.h
-> +++ b/include/asm-x86/apic.h
-> @@ -138,11 +138,7 @@ static inline void ack_APIC_irq(void)
->  	 */
->  
->  	/* Docs say use 0 for future compatibility */
-> -#ifdef CONFIG_X86_32
->  	apic_write(APIC_EOI, 0);
-> -#else
-> -	native_apic_mem_write(APIC_EOI, 0);
-> -#endif
->  }
->  
 
-ACK. I tested this patch on my x2apic capable box and it works well. Without this patch, kernel built from tip/x86/x2apic cannot boot in x2apic mode and all APs got stuck in smp_callin->calibrate_delay and failed to boot. After applying this patch, system boots well and all processors got up and running successfully.
+Yes, it is working out-of-the-box, only poorly.
+
+> I'd prefer to postpone merging this patch until bcm5974 hits mainline if
+> the device works in a limited way with standard HID driver, so that we
+> don't introduce regression.
+> 
+
+Absolutely, this patch should be applied together with the bcm5974 driver,
+or not be applied. The driver patch is here:
+
+http://userweb.kernel.org/~akpm/mmotm/broken-out/input-bcm5974-055-smoother-motion-irq-simplification.patch
+
+> If the device doesn't work with HID driver at all though, it is probably
+> perfectly fine to merge it right away. Please let me know, I have no
+> knowledge about this particular device.
+
+It is fine to leave it, but I would of course prefer to have the driver included together with this patch.
+
+Thanks!
+Henrik Rydberg
+
