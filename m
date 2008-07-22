@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbYGVAZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYGVA3D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbYGVAZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 20:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbYGVAZt
+	id S1756056AbYGVA3D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 20:29:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbYGVA2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 20:25:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58024 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752351AbYGVAZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 20:25:48 -0400
-Subject: Re: request for comment: generic kernel interface for malware
-	vendors
-From: Eric Paris <eparis@redhat.com>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: malware-list@lists.printk.net, linux-kernel@vger.kernel.org
-In-Reply-To: <200807212014.17296.borntraeger@de.ibm.com>
-References: <1216613887.2960.18.camel@localhost.localdomain>
-	 <200807212014.17296.borntraeger@de.ibm.com>
-Content-Type: text/plain
-Date: Mon, 21 Jul 2008 20:23:39 -0400
-Message-Id: <1216686219.3594.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Mon, 21 Jul 2008 20:28:53 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:9567 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752787AbYGVA2w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jul 2008 20:28:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=sXcuE3TTFryMuGLqXeE+GSqwkY8jd3hXZT4SqNjGJLxCVkb+/9YbfXvpI3R96YMmvj
+         LP/9UCk5Oj+/geGBvJNax38uroxYaD/gbf+UBPG6JPpirtjX0wVFgxMQHOtKaGbgYvZY
+         stYDEkVouRqEFDLGHluKY81EQlppAR+YWMy7o=
+Message-ID: <488529B2.1080609@gmail.com>
+Date: Mon, 21 Jul 2008 20:28:34 -0400
+From: roel kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: mingo@elte.hu, rml@tech9.net, a.p.zijlstra@chello.nl
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/9] sched: test below 0 on unsigned sysctl_sched_rt_period
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-21 at 20:14 +0200, Christian Borntraeger wrote:
-> Am Montag, 21. Juli 2008 schrieb Eric Paris:
-> > First I'd like to thank Sophos who stepped up and originally wrote a lot
-> > of this code.  They might not recognize it since I've gotten my hands on
-> > it, but they were nice enough to get the ball rolling by giving me some
-> > GPL code which addressed near every request people on the malware list
-> > had.
-> 
-> I have not looked at the code, but if I remember correctly there was another 
-> GPLed code for file access scanning. It was called dazuko. Google gave me  
-> http://en.wikipedia.org/wiki/Dazuko
-> 
-> Maybe you can get some ideas from there as well?
+Peter, you added the test in global_rt_runtime(), in commit
+d0b27fa77854b149ad4af08b0fe47fe712a47ade
+could you take a look at it and tell whether this test should
+be replaced by something else?
 
-Maybe ideas, but it works by disabling mandatory access controls.  No
-SELinux, no AppArmor, no SMACK, no TOMOYO, and therefore a non-starter.
+The patch was only checkpatch tested
+---
+sysctl_sched_rt_period is unsigned so the test doesn't work.
+state_filter is an unsigned long so the test didn't work
 
-I certainly don't think its a good idea to take a box that I am using to
-try to increase organization wide security and have to lower its
-individual security properties.
-
--Eric
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 99e6d85..2030340 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -832,9 +832,6 @@ static inline u64 global_rt_period(void)
+ 
+ static inline u64 global_rt_runtime(void)
+ {
+-	if (sysctl_sched_rt_period < 0)
+-		return RUNTIME_INF;
+-
+ 	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
+ }
+ 
+@@ -5707,7 +5704,7 @@ void show_state_filter(unsigned long state_filter)
+ 	/*
+ 	 * Only show locks if all tasks are dumped:
+ 	 */
+-	if (state_filter == -1)
++	if (state_filter == -1ul)
+ 		debug_show_all_locks();
+ }
+ 
