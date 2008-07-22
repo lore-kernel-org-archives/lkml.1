@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbYGVQoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752439AbYGVQpB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753277AbYGVQoi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 12:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYGVQo3
+	id S1752439AbYGVQpB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 12:45:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbYGVQow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 12:44:29 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:35233 "EHLO mgw2.diku.dk"
+	Tue, 22 Jul 2008 12:44:52 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:35253 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750794AbYGVQo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 12:44:28 -0400
-Date: Tue, 22 Jul 2008 18:44:24 +0200 (CEST)
+	id S1753638AbYGVQov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 12:44:51 -0400
+Date: Tue, 22 Jul 2008 18:44:48 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: avi@qumranet.com, kvm@vger.kernel.org, xiantao.zhang@intel.com,
+To: ralf@linux-mips.org, linux-mips@linux-mips.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/2] arch/ia64/kvm/kvm-ia64.c: Add local_irq_restore in error
- handling code
-Message-ID: <Pine.LNX.4.64.0807221843140.2670@ask.diku.dk>
+Subject: [PATCH 2/2] : Add local_irq_restore in error handling code
+Message-ID: <Pine.LNX.4.64.0807221844250.2670@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -62,42 +61,18 @@ local_irq_restore(l);
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- arch/ia64/kvm/kvm-ia64.c      |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+ arch/mips/mm/tlb-r3k.c        |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
-index 318b811..14e5c99 100644
---- a/arch/ia64/kvm/kvm-ia64.c
-+++ b/arch/ia64/kvm/kvm-ia64.c
-@@ -125,8 +125,10 @@ void kvm_arch_hardware_enable(void *garbage)
- 				PAGE_KERNEL));
- 	local_irq_save(saved_psr);
- 	slot = ia64_itr_entry(0x3, KVM_VMM_BASE, pte, KVM_VMM_SHIFT);
--	if (slot < 0)
-+	if (slot < 0) {
-+		local_irq_restore(saved_psr);
- 		return;
-+	}
- 	local_irq_restore(saved_psr);
- 
- 	spin_lock(&vp_lock);
-@@ -160,8 +162,10 @@ void kvm_arch_hardware_disable(void *garbage)
- 
- 	local_irq_save(saved_psr);
- 	slot = ia64_itr_entry(0x3, KVM_VMM_BASE, pte, KVM_VMM_SHIFT);
--	if (slot < 0)
-+	if (slot < 0) {
-+		local_irq_restore(saved_psr);
- 		return;
-+	}
- 	local_irq_restore(saved_psr);
- 
- 	status = ia64_pal_vp_exit_env(host_iva);
-@@ -1258,6 +1262,7 @@ static int vti_vcpu_setup(struct kvm_vcpu *vcpu, int id)
- uninit:
- 	kvm_vcpu_uninit(vcpu);
- fail:
-+	local_irq_restore(psr);
- 	return r;
- }
- 
+diff --git a/arch/mips/mm/tlb-r3k.c b/arch/mips/mm/tlb-r3k.c
+index a782549..7d7e822 100644
+--- a/arch/mips/mm/tlb-r3k.c
++++ b/arch/mips/mm/tlb-r3k.c
+@@ -247,6 +247,7 @@ void __init add_wired_entry(unsigned long entrylo0, unsigned long entrylo1,
+ 		w = read_c0_wired();
+ 		write_c0_wired(w + 1);
+ 		if (read_c0_wired() != w + 1) {
++			local_irq_restore(flags);
+ 			printk("[tlbwired] No WIRED reg?\n");
+ 			return;
+ 		}
