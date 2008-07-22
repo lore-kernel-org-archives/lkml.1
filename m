@@ -1,97 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbYGVLWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbYGVLX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754622AbYGVLWH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 07:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbYGVLVx
+	id S1754876AbYGVLX2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 07:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYGVLXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 07:21:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49551 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751277AbYGVLVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 07:21:52 -0400
-Date: Tue, 22 Jul 2008 13:21:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [TCP bug] stuck distcc connections in latest -git
-Message-ID: <20080722112133.GA6575@elte.hu>
-References: <20080720.104411.81744468.davem@davemloft.net> <20080721133059.GA30637@elte.hu> <20080721134506.GA27598@elte.hu> <20080721182318.GA20940@elte.hu> <alpine.LFD.1.10.0807211131390.31863@woody.linux-foundation.org> <20080721184616.GA8442@elte.hu>
+	Tue, 22 Jul 2008 07:23:20 -0400
+Received: from mail28.messagelabs.com ([216.82.249.131]:18581 "EHLO
+	mail28.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751994AbYGVLXU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 07:23:20 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-10.tower-28.messagelabs.com!1216725798!21284454!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Tue, 22 Jul 2008 13:23:15 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: sasa sasa <sasak.1983@gmail.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] IRQ : bug fix in setup_irq
+Message-ID: <20080722112315.GA28060@digi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20080721184616.GA8442@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <aecf5e530807220142k4d53aa7aq568385cfc6cd44a0@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 22 Jul 2008 11:23:15.0600 (UTC) FILETIME=[559A2100:01C8EBED]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Sandeep,
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+there is a patch in -mm that does the same (and more, so it asserts that
+irqaction *new isn't added to the desc->action list if set_type fails.)
 
-> ok, have updated the testboxes to your latest push.
-> 
-> Btw., otherwise the big networking pull held up pretty well on a 
-> healthy range of testboxes i have, [...]
+See http://thread.gmane.org/gmane.linux.kernel/698011/focus=702236 or 
 
-hm, the distcc TCP hangs are back:
+	handle-failure-of-irqchip-set_type-in-setup_irq.patch
+	handle-failure-of-irqchip-set_type-in-setup_irq-update.patch
 
-Distcc client box (quad, 10.0.1.16) running v2.6.24:
+in mmotm.
 
- dione:~> netstat -nt | grep -vw TIME_WAIT | grep 3632
- tcp        0 250455 10.0.1.16:55559             10.0.1.19:3632              ESTABLISHED
- tcp        0 254743 10.0.1.16:56096             10.0.1.19:3632              ESTABLISHED
- tcp        0 219617 10.0.1.16:55674             10.0.1.19:3632              ESTABLISHED
+Best regards
+Uwe
 
-              [ ^--- note the stuck send-queue ]
-
-Distcc server box (16-way, 10.0.1.19) running very-latest:
-
- phoenix:~> netstat -nt | grep 10.0.1.16 | grep 3632 
-
- tcp        0      0 10.0.1.19:3632              10.0.1.16:55559             ESTABLISHED 
- tcp        0      0 10.0.1.19:3632              10.0.1.16:56096             ESTABLISHED 
- tcp        0      0 10.0.1.19:3632              10.0.1.16:55674             ESTABLISHED 
-
- tcp        0      0 10.0.1.19:3632              10.0.1.16:34411             ESTABLISHED 
- tcp        0      0 10.0.1.19:3632              10.0.1.16:51094             ESTABLISHED 
- tcp        0      0 10.0.1.19:3632              10.0.1.16:60787             ESTABLISHED 
- tcp        0      0 10.0.1.19:3632              10.0.1.16:50874             ESTABLISHED 
-
-I.e. the client side send-queue is stuck in established state, server 
-side thinks it's a proper established connection. Nobody makes any 
-progress.
-
-Also note the final 4 connections on the server side - those are not 
-present on the client box.
-
-The hung condition seemed permanent (i waited a couple of minutes).
-
-Then i shut down the distccd on the server side, which propagated to the 
-client:
-
- distcc[18496] (dcc_pump_sendfile) ERROR: sendfile failed: Broken pipe
- distcc[18496] (dcc_readx) ERROR: unexpected eof on fd4
- distcc[18496] (dcc_r_token_int) ERROR: read failed while waiting for token "DONE"
- distcc[18496] Warning: failed to distribute kernel/futex.c to ph/20, running locally instead
-
-Server side lingered in FIN_WAIT2 a bit:
-
-Proto Recv-Q Send-Q Local Address               Foreign Address             State
-tcp        0      0 10.0.1.19:3632              10.0.1.16:56096             FIN_WAIT2
-tcp        0      0 10.0.1.19:3632              10.0.1.16:55559             FIN_WAIT2
-
-I retried the same build 10 times and it would not reproduce - so this 
-again is a hard to reproduce condition. (and there's no chance to get a 
-proper tcpdump either, at these traffic levels)
-
-	Ingo
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
