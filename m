@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbYGVTdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbYGVTdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757194AbYGVTdh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 15:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757100AbYGVTdV
+	id S1758016AbYGVTdy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 15:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbYGVTdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 15:33:21 -0400
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:22727 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757137AbYGVTdT (ORCPT
+	Tue, 22 Jul 2008 15:33:23 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:33114 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756924AbYGVTdV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 15:33:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=FgqfxuSw3QebNL93em0Vw3SBc3Qckou7IvTkvBRKEnMg1ejpg3/hJr8Tc0s0hTvcAg1b/kCF4LC+NqjTQSmT+kPDf4Jc0vwgcSHjAqsrbLKEH9UzRo2MBf+p3nRQYW51GzL1HQQESI2YZPZ27V5gKKFcW66BQCejNTwmoB/1PpQ=  ;
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: latest tree build failure -- cpm uart & gpio
-Date: Tue, 22 Jul 2008 12:33:16 -0700
-User-Agent: KMail/1.9.9
-Cc: Kumar Gala <kumar.gala@freescale.com>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <FBE46DB6-A457-4AD8-9D6E-9D639AD04325@freescale.com> <20080722145330.GA2315@polina.dev.rtsoft.ru>
-In-Reply-To: <20080722145330.GA2315@polina.dev.rtsoft.ru>
+	Tue, 22 Jul 2008 15:33:21 -0400
+Message-ID: <48863680.4080203@keyaccess.nl>
+Date: Tue, 22 Jul 2008 21:35:28 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Ondrej Zary <linux@rainbow-software.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: pata_it821x completely broken
+References: <200807042153.56644.linux@rainbow-software.org> <200807221959.53669.linux@rainbow-software.org> <20080722191022.0417f45c@lxorguk.ukuu.org.uk> <200807222116.19077.linux@rainbow-software.org>
+In-Reply-To: <200807222116.19077.linux@rainbow-software.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807221233.16723.david-b@pacbell.net>
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 July 2008, Anton Vorontsov wrote:
-> On Tue, Jul 22, 2008 at 08:54:16AM -0500, Kumar Gala wrote:
-> > can someone look at the following compile failure in linus's tree.  I'm 
-> > guessing part of this has to do with Alan's tty changes (and might  
-> > already be addressed?).
-> >
-> > include/asm-generic/gpio.h:131: error: implicit declaration of function 
-> > 'gpio_get_value'
-> > include/asm-generic/gpio.h:137: error: implicit declaration of function 
-> > 'gpio_set_value'
+On 22-07-08 21:16, Ondrej Zary wrote:
+
+> On Tuesday 22 July 2008 20:10:22 Alan Cox wrote:
+
+>> On the bright side that also allows us to implement a pata_mfm/rll 
+>> driver at last.
 > 
-> I think this patch should help:
-> 
-> [OF] of_gpio: should use new <linux/gpio.h> header
-> http://patchwork.ozlabs.org/linuxppc/patch?id=18750
+> I used to have an old drive that was something like that - 5.25"
+> Seagate 40MB drive. I sold it including the controller a couple of
+> years ago (it was still working) so no testing fun for me.
 
-Is that confirmed as fixing this, vs just being the Right Thing To Do?
+Looking at a Western Digital "FileCard 30" consisting of a Seagate 
+ST-125 and WDQC16 8-bit ISA controller. MFM I believe.
 
- 
-> David, can you please Ack it? See Benjamin's mail:
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-July/060109.html
+I put a sticker on it with: "io=0x320, irq=5, dma=3 615/4/26 (or 614)"
 
-If you like ... but this is an OF-specific change, making
-it conform with the interface spec, so I wouldn't expect
-this to need more approvals than it's already got.
+The thing has its own BIOS and if If I'm not mistaken it could only live 
+in an AT+ with all other drives in the BIOS turned of. This might mean 
+I'd be capable of testing it from a boot-floppy only but if you 
+desperately want a tester, I'll try to volunteer ;-)
 
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+I remember using DOS "debug" to jump into its BIOS low-level format 
+routine so I did get it doing something...
 
-
-> 
-> -- 
-> Anton Vorontsov
-> email: cbouatmailru@gmail.com
-> irc://irc.freenode.net/bd2
-> 
-
-
+Rene.
