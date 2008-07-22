@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbYGVFiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbYGVFic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759211AbYGVFiQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 01:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757435AbYGVFY5
+	id S1759259AbYGVFic (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 01:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757383AbYGVFZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 01:24:57 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43245 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 01:25:05 -0400
+Received: from ns.suse.de ([195.135.220.2]:53941 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757038AbYGVFY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 01:24:56 -0400
+	id S1757452AbYGVFZC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 01:25:02 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Matthew Wilcox <matthew@wil.cx>, Kay Sievers <kay.sievers@vrfy.org>,
-       Dave Young <hidave.darkstar@gmail.com>,
+Cc: Dave Young <hidave.darkstar@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Kay Sievers <kay.sievers@vrfy.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 49/79] class: add lockdep infrastructure
-Date: Mon, 21 Jul 2008 22:19:13 -0700
-Message-Id: <1216703983-21448-49-git-send-email-gregkh@suse.de>
+Subject: [PATCH 50/79] class: change internal semaphore to a mutex
+Date: Mon, 21 Jul 2008 22:19:14 -0700
+Message-Id: <1216703983-21448-50-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <20080722051805.GA17373@suse.de>
 References: <20080722051805.GA17373@suse.de>
@@ -27,139 +26,204 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matthew Wilcox <matthew@wil.cx>
+From: Dave Young <hidave.darkstar@gmail.com>
 
-This adds the infrastructure to properly handle lockdep issues when the
-internal class semaphore is changed to a mutex.
+Now that the lockdep infrastructure in the class core is in place, we
+should be able to properly change the internal class semaphore to be a
+mutex.
 
-Matthew wrote the original patch, and Greg fixed it up to work properly
-with the class_create() function.
+David wrote the original patch, and Greg fixed it up to apply properly
+due to all of the recent changes in this area.
 
-
-From: Matthew Wilcox <matthew@wil.cx>
+From: Dave Young <hidave.darkstar@gmail.com>
+Cc: Matthew Wilcox <matthew@wil.cx>
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Dave Young <hidave.darkstar@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/class.c   |   11 ++++++-----
- include/linux/device.h |   25 +++++++++++++++++++++++--
- 2 files changed, 29 insertions(+), 7 deletions(-)
+ drivers/base/base.h  |    4 ++--
+ drivers/base/class.c |   23 ++++++++++++-----------
+ drivers/base/core.c  |    9 +++++----
+ 3 files changed, 19 insertions(+), 17 deletions(-)
 
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index c035dc2..31dc0cd 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -44,7 +44,7 @@ struct driver_private {
+  * @class_devices - list of devices associated with this class
+  * @class_interfaces - list of class_interfaces associated with this class
+  * @class_dirs - "glue" directory for virtual devices associated with this class
+- * @class_sem - semaphore to protect the children, devices, and interfaces lists.
++ * @class_mutex - mutex to protect the children, devices, and interfaces lists.
+  * @class - pointer back to the struct class that this structure is associated
+  * with.
+  *
+@@ -57,7 +57,7 @@ struct class_private {
+ 	struct list_head class_devices;
+ 	struct list_head class_interfaces;
+ 	struct kset class_dirs;
+-	struct semaphore class_sem;
++	struct mutex class_mutex;
+ 	struct class *class;
+ };
+ #define to_class(obj)	\
 diff --git a/drivers/base/class.c b/drivers/base/class.c
-index d24d211..8900056 100644
+index 8900056..839d27c 100644
 --- a/drivers/base/class.c
 +++ b/drivers/base/class.c
-@@ -134,7 +134,7 @@ static void remove_class_attrs(struct class *cls)
- 	}
- }
+@@ -18,6 +18,7 @@
+ #include <linux/err.h>
+ #include <linux/slab.h>
+ #include <linux/genhd.h>
++#include <linux/mutex.h>
+ #include "base.h"
  
--int class_register(struct class *cls)
-+int __class_register(struct class *cls, struct lock_class_key *key)
- {
- 	struct class_private *cp;
- 	int error;
-@@ -178,6 +178,7 @@ int class_register(struct class *cls)
- 	class_put(cls);
+ #define to_class_attr(_attr) container_of(_attr, struct class_attribute, attr)
+@@ -147,7 +148,7 @@ int __class_register(struct class *cls, struct lock_class_key *key)
+ 	INIT_LIST_HEAD(&cp->class_devices);
+ 	INIT_LIST_HEAD(&cp->class_interfaces);
+ 	kset_init(&cp->class_dirs);
+-	init_MUTEX(&cp->class_sem);
++	__mutex_init(&cp->class_mutex, "struct class mutex", key);
+ 	error = kobject_set_name(&cp->class_subsys.kobj, "%s", cls->name);
+ 	if (error) {
+ 		kfree(cp);
+@@ -281,7 +282,7 @@ char *make_class_name(const char *name, struct kobject *kobj)
+  * We check the return of @fn each time. If it returns anything
+  * other than 0, we break out and return that value.
+  *
+- * Note, we hold class->class_sem in this function, so it can not be
++ * Note, we hold class->class_mutex in this function, so it can not be
+  * re-acquired in @fn, otherwise it will self-deadlocking. For
+  * example, calls to add or remove class members would be verboten.
+  */
+@@ -293,7 +294,7 @@ int class_for_each_device(struct class *class, struct device *start,
+ 
+ 	if (!class)
+ 		return -EINVAL;
+-	down(&class->p->class_sem);
++	mutex_lock(&class->p->class_mutex);
+ 	list_for_each_entry(dev, &class->p->class_devices, node) {
+ 		if (start) {
+ 			if (start == dev)
+@@ -306,7 +307,7 @@ int class_for_each_device(struct class *class, struct device *start,
+ 		if (error)
+ 			break;
+ 	}
+-	up(&class->p->class_sem);
++	mutex_unlock(&class->p->class_mutex);
+ 
  	return error;
  }
-+EXPORT_SYMBOL_GPL(__class_register);
- 
- void class_unregister(struct class *cls)
- {
-@@ -203,7 +204,8 @@ static void class_create_release(struct class *cls)
-  * Note, the pointer created here is to be destroyed when finished by
-  * making a call to class_destroy().
+@@ -329,7 +330,7 @@ EXPORT_SYMBOL_GPL(class_for_each_device);
+  *
+  * Note, you will need to drop the reference with put_device() after use.
+  *
+- * We hold class->class_sem in this function, so it can not be
++ * We hold class->class_mutex in this function, so it can not be
+  * re-acquired in @match, otherwise it will self-deadlocking. For
+  * example, calls to add or remove class members would be verboten.
   */
--struct class *class_create(struct module *owner, const char *name)
-+struct class *__class_create(struct module *owner, const char *name,
-+			     struct lock_class_key *key)
- {
- 	struct class *cls;
- 	int retval;
-@@ -218,7 +220,7 @@ struct class *class_create(struct module *owner, const char *name)
- 	cls->owner = owner;
- 	cls->class_release = class_create_release;
+@@ -343,7 +344,7 @@ struct device *class_find_device(struct class *class, struct device *start,
+ 	if (!class)
+ 		return NULL;
  
--	retval = class_register(cls);
-+	retval = __class_register(cls, key);
- 	if (retval)
- 		goto error;
+-	down(&class->p->class_sem);
++	mutex_lock(&class->p->class_mutex);
+ 	list_for_each_entry(dev, &class->p->class_devices, node) {
+ 		if (start) {
+ 			if (start == dev)
+@@ -357,7 +358,7 @@ struct device *class_find_device(struct class *class, struct device *start,
+ 		} else
+ 			put_device(dev);
+ 	}
+-	up(&class->p->class_sem);
++	mutex_unlock(&class->p->class_mutex);
  
-@@ -228,6 +230,7 @@ error:
- 	kfree(cls);
- 	return ERR_PTR(retval);
+ 	return found ? dev : NULL;
  }
-+EXPORT_SYMBOL_GPL(__class_create);
+@@ -375,13 +376,13 @@ int class_interface_register(struct class_interface *class_intf)
+ 	if (!parent)
+ 		return -EINVAL;
  
- /**
-  * class_destroy - destroys a struct class structure
-@@ -412,9 +415,7 @@ int __init classes_init(void)
+-	down(&parent->p->class_sem);
++	mutex_lock(&parent->p->class_mutex);
+ 	list_add_tail(&class_intf->node, &parent->p->class_interfaces);
+ 	if (class_intf->add_dev) {
+ 		list_for_each_entry(dev, &parent->p->class_devices, node)
+ 			class_intf->add_dev(dev, class_intf);
+ 	}
+-	up(&parent->p->class_sem);
++	mutex_unlock(&parent->p->class_mutex);
  
- EXPORT_SYMBOL_GPL(class_create_file);
- EXPORT_SYMBOL_GPL(class_remove_file);
--EXPORT_SYMBOL_GPL(class_register);
- EXPORT_SYMBOL_GPL(class_unregister);
--EXPORT_SYMBOL_GPL(class_create);
- EXPORT_SYMBOL_GPL(class_destroy);
+ 	return 0;
+ }
+@@ -394,13 +395,13 @@ void class_interface_unregister(struct class_interface *class_intf)
+ 	if (!parent)
+ 		return;
  
- EXPORT_SYMBOL_GPL(class_interface_register);
-diff --git a/include/linux/device.h b/include/linux/device.h
-index b055608..0e1d24c 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -16,6 +16,7 @@
- #include <linux/kobject.h>
- #include <linux/klist.h>
- #include <linux/list.h>
-+#include <linux/lockdep.h>
- #include <linux/compiler.h>
- #include <linux/types.h>
- #include <linux/module.h>
-@@ -205,8 +206,18 @@ struct class {
+-	down(&parent->p->class_sem);
++	mutex_lock(&parent->p->class_mutex);
+ 	list_del_init(&class_intf->node);
+ 	if (class_intf->remove_dev) {
+ 		list_for_each_entry(dev, &parent->p->class_devices, node)
+ 			class_intf->remove_dev(dev, class_intf);
+ 	}
+-	up(&parent->p->class_sem);
++	mutex_unlock(&parent->p->class_mutex);
  
- extern struct kobject *sysfs_dev_block_kobj;
- extern struct kobject *sysfs_dev_char_kobj;
--extern int __must_check class_register(struct class *class);
-+extern int __must_check __class_register(struct class *class,
-+					 struct lock_class_key *key);
- extern void class_unregister(struct class *class);
-+
-+/* This is a #define to keep the compiler from merging different
-+ * instances of the __key variable */
-+#define class_register(class)			\
-+({						\
-+	static struct lock_class_key __key;	\
-+	__class_register(class, &__key);	\
-+})
-+
- extern int class_for_each_device(struct class *class, struct device *start,
- 				 void *data,
- 				 int (*fn)(struct device *dev, void *data));
-@@ -239,9 +250,19 @@ struct class_interface {
- extern int __must_check class_interface_register(struct class_interface *);
- extern void class_interface_unregister(struct class_interface *);
+ 	class_put(parent);
+ }
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index b90ae6f..c05b115 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -21,6 +21,7 @@
+ #include <linux/genhd.h>
+ #include <linux/kallsyms.h>
+ #include <linux/semaphore.h>
++#include <linux/mutex.h>
  
--extern struct class *class_create(struct module *owner, const char *name);
-+extern struct class * __must_check __class_create(struct module *owner,
-+						  const char *name,
-+						  struct lock_class_key *key);
- extern void class_destroy(struct class *cls);
+ #include "base.h"
+ #include "power/power.h"
+@@ -907,7 +908,7 @@ int device_add(struct device *dev)
+ 		klist_add_tail(&dev->knode_parent, &parent->klist_children);
  
-+/* This is a #define to keep the compiler from merging different
-+ * instances of the __key variable */
-+#define class_create(owner, name)		\
-+({						\
-+	static struct lock_class_key __key;	\
-+	__class_create(owner, name, &__key);	\
-+})
-+
- /*
-  * The type of device, "struct device" is embedded in. A class
-  * or bus can contain devices of different types
+ 	if (dev->class) {
+-		down(&dev->class->p->class_sem);
++		mutex_lock(&dev->class->p->class_mutex);
+ 		/* tie the class to the device */
+ 		list_add_tail(&dev->node, &dev->class->p->class_devices);
+ 
+@@ -916,7 +917,7 @@ int device_add(struct device *dev)
+ 				    &dev->class->p->class_interfaces, node)
+ 			if (class_intf->add_dev)
+ 				class_intf->add_dev(dev, class_intf);
+-		up(&dev->class->p->class_sem);
++		mutex_unlock(&dev->class->p->class_mutex);
+ 	}
+  Done:
+ 	put_device(dev);
+@@ -1017,7 +1018,7 @@ void device_del(struct device *dev)
+ 	if (dev->class) {
+ 		device_remove_class_symlinks(dev);
+ 
+-		down(&dev->class->p->class_sem);
++		mutex_lock(&dev->class->p->class_mutex);
+ 		/* notify any interfaces that the device is now gone */
+ 		list_for_each_entry(class_intf,
+ 				    &dev->class->p->class_interfaces, node)
+@@ -1025,7 +1026,7 @@ void device_del(struct device *dev)
+ 				class_intf->remove_dev(dev, class_intf);
+ 		/* remove the device from the class list */
+ 		list_del_init(&dev->node);
+-		up(&dev->class->p->class_sem);
++		mutex_unlock(&dev->class->p->class_mutex);
+ 	}
+ 	device_remove_file(dev, &uevent_attr);
+ 	device_remove_attrs(dev);
 -- 
 1.5.6.3
 
