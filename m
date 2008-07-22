@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbYGVW4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbYGVXEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469AbYGVW4X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 18:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbYGVW4M
+	id S1755217AbYGVXEY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbYGVXEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 18:56:12 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50063
+	Tue, 22 Jul 2008 19:04:10 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60027
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753260AbYGVW4L (ORCPT
+	by vger.kernel.org with ESMTP id S1753196AbYGVXEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 18:56:11 -0400
-Date: Tue, 22 Jul 2008 15:56:11 -0700 (PDT)
-Message-Id: <20080722.155611.176476925.davem@davemloft.net>
-To: ag@alessandroguido.name
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [BUG] kernel BUG at net/core/dev.c:1328!
+	Tue, 22 Jul 2008 19:04:09 -0400
+Date: Tue, 22 Jul 2008 16:04:09 -0700 (PDT)
+Message-Id: <20080722.160409.216536011.davem@davemloft.net>
+To: Larry.Finger@lwfinger.net
+Cc: kaber@trash.net, torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: Kernel WARNING: at net/core/dev.c:1330
+ __netif_schedule+0x2c/0x98()
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <d4b984a30807220254t1aaf6ac4q874329966511b0c5@mail.gmail.com>
-References: <d4b984a30807210914nd4d0db5yb7b93ca5143ff0d5@mail.gmail.com>
-	<20080721.092027.14394005.davem@davemloft.net>
-	<d4b984a30807220254t1aaf6ac4q874329966511b0c5@mail.gmail.com>
+In-Reply-To: <4886294C.4060905@lwfinger.net>
+References: <48860D4B.8070003@lwfinger.net>
+	<488616C0.8070505@trash.net>
+	<4886294C.4060905@lwfinger.net>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,119 +31,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Alessandro Guido" <ag@alessandroguido.name>
-Date: Tue, 22 Jul 2008 11:54:26 +0200
+From: Larry Finger <Larry.Finger@lwfinger.net>
+Date: Tue, 22 Jul 2008 13:39:08 -0500
 
-> Got a WARNING this morning (2.6.26-05752-g93ded9b) and I think it's related.
+> =============================================
+> [ INFO: possible recursive locking detected ]
+> 2.6.26-Linus-05752-g93ded9b-dirty #53
+> ---------------------------------------------
+> b43/1997 is trying to acquire lock:
+>   (_xmit_IEEE80211#2){-...}, at: [<ffffffffa028f322>] 
+> ieee80211_scan_completed+0x130/0x2e1 [mac80211]
+> 
+> but task is already holding lock:
+>   (_xmit_IEEE80211#2){-...}, at: [<ffffffffa028f322>] 
+> ieee80211_scan_completed+0x130/0x2e1 [mac80211]
+> 
+> other info that might help us debug this:
+> 3 locks held by b43/1997:
+>   #0:  ((name)){--..}, at: [<ffffffff80245185>] run_workqueue+0xa7/0x1f2
+>   #1:  (&(&local->scan_work)->work){--..}, at: [<ffffffff80245185>] 
+> run_workqueue+0xa7/0x1f2
+>   #2:  (_xmit_IEEE80211#2){-...}, at: [<ffffffffa028f322>] 
+> ieee80211_scan_completed+0x130/0x2e1 [mac80211]
+> 
+> stack backtrace:
+> Pid: 1997, comm: b43 Not tainted 2.6.26-Linus-05752-g93ded9b-dirty #53
+> 
+> Call Trace:
+>   [<ffffffff80255616>] __lock_acquire+0xb7b/0xecc
+>   [<ffffffff8040c9a0>] __mutex_unlock_slowpath+0x100/0x10b
+>   [<ffffffff802559b8>] lock_acquire+0x51/0x6a
+>   [<ffffffffa028f322>] ieee80211_scan_completed+0x130/0x2e1 [mac80211]
+>   [<ffffffff8040dc08>] _spin_lock+0x1e/0x27
+>   [<ffffffffa028f322>] ieee80211_scan_completed+0x130/0x2e1 [mac80211]
+>   [<ffffffffa028f6ce>] ieee80211_sta_scan_work+0x0/0x1b8 [mac80211]
+>   [<ffffffff802451ce>] run_workqueue+0xf0/0x1f2
+>   [<ffffffff802453ab>] worker_thread+0xdb/0xea
+>   [<ffffffff80248a5f>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802452d0>] worker_thread+0x0/0xea
+>   [<ffffffff80248731>] kthread+0x47/0x73
+>   [<ffffffff8040d7b1>] trace_hardirqs_on_thunk+0x3a/0x3f
+>   [<ffffffff8020ceb9>] child_rip+0xa/0x11
+>   [<ffffffff8020c4ef>] restore_args+0x0/0x30
+>   [<ffffffff802486c5>] kthreadd+0x19a/0x1bf
+>   [<ffffffff802486ea>] kthread+0x0/0x73
+>   [<ffffffff8020ceaf>] child_rip+0x0/0x11
 
-Please try this patch:
+Lockdep doesn't like that we have an array of objects (the TX queues)
+and we're iterating over them grabbing all of their locks.
 
-ipw2200: Call netif_*_queue() interfaces properly.
-
-netif_carrier_{on,off}() handles starting and stopping packet
-flow into the driver.  So there is no reason to invoke netif_stop_queue()
-and netif_wake_queue() in response to link status events.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/drivers/net/wireless/ipw2200.c b/drivers/net/wireless/ipw2200.c
-index 6e70460..1acfbcd 100644
---- a/drivers/net/wireless/ipw2200.c
-+++ b/drivers/net/wireless/ipw2200.c
-@@ -4972,8 +4972,7 @@ static int ipw_queue_tx_reclaim(struct ipw_priv *priv,
- 	}
-       done:
- 	if ((ipw_tx_queue_space(q) > q->low_mark) &&
--	    (qindex >= 0) &&
--	    (priv->status & STATUS_ASSOCIATED) && netif_running(priv->net_dev))
-+	    (qindex >= 0))
- 		netif_wake_queue(priv->net_dev);
- 	used = q->first_empty - q->last_used;
- 	if (used < 0)
-@@ -10154,14 +10153,8 @@ static  void init_sys_config(struct ipw_sys_config *sys_config)
- 
- static int ipw_net_open(struct net_device *dev)
- {
--	struct ipw_priv *priv = ieee80211_priv(dev);
- 	IPW_DEBUG_INFO("dev->open\n");
--	/* we should be verifying the device is ready to be opened */
--	mutex_lock(&priv->mutex);
--	if (!(priv->status & STATUS_RF_KILL_MASK) &&
--	    (priv->status & STATUS_ASSOCIATED))
--		netif_start_queue(dev);
--	mutex_unlock(&priv->mutex);
-+	netif_start_queue(dev);
- 	return 0;
- }
- 
-@@ -10481,13 +10474,6 @@ static int ipw_net_hard_start_xmit(struct ieee80211_txb *txb,
- 	IPW_DEBUG_TX("dev->xmit(%d bytes)\n", txb->payload_size);
- 	spin_lock_irqsave(&priv->lock, flags);
- 
--	if (!(priv->status & STATUS_ASSOCIATED)) {
--		IPW_DEBUG_INFO("Tx attempt while not associated.\n");
--		priv->ieee->stats.tx_carrier_errors++;
--		netif_stop_queue(dev);
--		goto fail_unlock;
--	}
--
- #ifdef CONFIG_IPW2200_PROMISCUOUS
- 	if (rtap_iface && netif_running(priv->prom_net_dev))
- 		ipw_handle_promiscuous_tx(priv, txb);
-@@ -10499,10 +10485,6 @@ static int ipw_net_hard_start_xmit(struct ieee80211_txb *txb,
- 	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	return ret;
--
--      fail_unlock:
--	spin_unlock_irqrestore(&priv->lock, flags);
--	return 1;
- }
- 
- static struct net_device_stats *ipw_net_get_stats(struct net_device *dev)
-@@ -10703,13 +10685,6 @@ static void ipw_link_up(struct ipw_priv *priv)
- 	priv->last_packet_time = 0;
- 
- 	netif_carrier_on(priv->net_dev);
--	if (netif_queue_stopped(priv->net_dev)) {
--		IPW_DEBUG_NOTIF("waking queue\n");
--		netif_wake_queue(priv->net_dev);
--	} else {
--		IPW_DEBUG_NOTIF("starting queue\n");
--		netif_start_queue(priv->net_dev);
--	}
- 
- 	cancel_delayed_work(&priv->request_scan);
- 	cancel_delayed_work(&priv->request_direct_scan);
-@@ -10739,7 +10714,6 @@ static void ipw_link_down(struct ipw_priv *priv)
- {
- 	ipw_led_link_down(priv);
- 	netif_carrier_off(priv->net_dev);
--	netif_stop_queue(priv->net_dev);
- 	notify_wx_assoc_event(priv);
- 
- 	/* Cancel any queued work ... */
-@@ -11419,7 +11393,6 @@ static void ipw_down(struct ipw_priv *priv)
- 	/* Clear all bits but the RF Kill */
- 	priv->status &= STATUS_RF_KILL_MASK | STATUS_EXIT_PENDING;
- 	netif_carrier_off(priv->net_dev);
--	netif_stop_queue(priv->net_dev);
- 
- 	ipw_stop_nic(priv);
- 
-@@ -11522,7 +11495,6 @@ static int ipw_prom_open(struct net_device *dev)
- 
- 	IPW_DEBUG_INFO("prom dev->open\n");
- 	netif_carrier_off(dev);
--	netif_stop_queue(dev);
- 
- 	if (priv->ieee->iw_mode != IW_MODE_MONITOR) {
- 		priv->sys_config.accept_all_data_frames = 1;
-@@ -11558,7 +11530,6 @@ static int ipw_prom_stop(struct net_device *dev)
- static int ipw_prom_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
- {
- 	IPW_DEBUG_INFO("prom dev->xmit\n");
--	netif_stop_queue(dev);
- 	return -EOPNOTSUPP;
- }
- 
+Does anyone know how to teach lockdep that this is OK?
