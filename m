@@ -1,213 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbYGVOPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbYGVOQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753252AbYGVOPz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 10:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbYGVOPr
+	id S1754790AbYGVOQT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 10:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbYGVOQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 10:15:47 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:33227 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbYGVOPr (ORCPT
+	Tue, 22 Jul 2008 10:16:00 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:56810 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750869AbYGVOP7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 10:15:47 -0400
-Date: Tue, 22 Jul 2008 15:15:44 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Ramax Lo <ramaxlo@gmail.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-arm-kernel@lists.arm.linux.org.uk,
+	Tue, 22 Jul 2008 10:15:59 -0400
+X-SourceIP: 62.163.52.83
+Subject: Re: [PATCH] cpu
+	hotplug,	sched:Introduce	cpu_active_map	and	redoscheddomainmanagment (take
+	2)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Max Krasnyansky <maxk@qualcomm.com>, mingo@elte.hu,
+       dmitry.adamushko@gmail.com, torvalds@linux-foundation.org, pj@sgi.com,
        linux-kernel@vger.kernel.org
-Subject: Re: Add to_irq fields to gpiolib (with sample implementation)
-Message-ID: <20080722141544.GP8517@trinity.fluff.org>
-References: <20080718130433.GA24568@fluff.org.uk> <901c91090807210343r3c483656p6c9b2ef77ffee2a0@mail.gmail.com>
+In-Reply-To: <4885E952.8020708@novell.com>
+References: <1216122229-4865-1-git-send-email-maxk@qualcomm.com>
+	 <487DAD86.BA47.005A.0@novell.com> <487E6BD7.3020006@qualcomm.com>
+	 <487E7B6C.BA47.005A.0@novell.com> <487EF1E9.2040101@qualcomm.com>
+	 <487EFB71.BA47.005A.0@novell.com> <487F9509.9050802@qualcomm.com>
+	 <487F6972.BA47.005A.0@novell.com> <1216382024.28405.26.camel@twins>
+	 <488052D5.BA47.005A.0@novell.com> <48856BA9.6050609@qualcomm.com>
+	 <4885E952.8020708@novell.com>
+Content-Type: text/plain
+Date: Tue, 22 Jul 2008 16:16:00 +0200
+Message-Id: <1216736160.7257.97.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <901c91090807210343r3c483656p6c9b2ef77ffee2a0@mail.gmail.com>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2008 at 06:43:02PM +0800, Ramax Lo wrote:
-> 2008/7/18 Ben Dooks <ben-linux@fluff.org>:
-> > The two patches form a pair of patches to show
-> > that we should consider adding an to_irq field
-> > to the gpio_chip structure and gpiolib support.
+On Tue, 2008-07-22 at 10:06 -0400, Gregory Haskins wrote:
+> Max Krasnyansky wrote:
+> > Greg, correct me if I'm wrong but we seem to have exact same issue with the
+> > rq->rq->online map. Lets take "cpu going down" for example. We're clearing
+> > rq->rd->online bit on DYING event, but nothing AFAICS prevents another cpu
+> > calling rebuild_sched_domains()->partition_sched_domains() in the middle of
+> > the hotplug sequence.
+> > partition_sched_domains() will happily reset rd->rq->online mask and things
+> > will fail. I'm talking about this path
 > >
+> > __build_sched_domains() -> cpu_attach_domain() -> rq_attach_root()
+> > 	...
+> > 	cpu_set(rq->cpu, rd->span);
+> > 	if (cpu_isset(rq->cpu, cpu_online_map))
+> > 		set_rq_online(rq);
+> > 	...
+> >
+> >   
 > 
-> Indeed, it's necessary to add a new field to provide
-> a general interface.
+> I think you are right, but wouldn't s/online/active above fix that as 
+> well?  The active_map didnt exist at the time that code went in initially ;)
 > 
-> > The reason is that if we add support for devices
-> > registering gpio to also register interrputs, then
-> > a single arch-dependant interrupt mapping is not
-> > going to be sufficient.
-> >
-> > Note, this set does not remove any clashing
-> > definitions that may have of gpio_to_irq.
-> >
-> > ---
-> > GPIO: Add generic gpio_to_irq call.
-> >
-> > Add gpio_to_irq() implementation allowing the
-> > gpio_chip registration to also specify an function
-> > to map GPIO offsets into IRQs.
-> >
-> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-> >
-> > Index: linux-2.6.26-quilt3/drivers/gpio/gpiolib.c
-> > ===================================================================
-> > --- linux-2.6.26-quilt3.orig/drivers/gpio/gpiolib.c     2008-07-18 00:40:52.000000000 +0100
-> > +++ linux-2.6.26-quilt3/drivers/gpio/gpiolib.c  2008-07-18 00:52:07.000000000 +0100
-> > @@ -339,6 +339,36 @@ const char *gpiochip_is_requested(struct
-> >  }
-> >  EXPORT_SYMBOL_GPL(gpiochip_is_requested);
-> >
-> > +int gpio_to_irq(unsigned gpio)
-> > +{
-> > +       struct gpio_chip        *chip;
-> > +       struct gpio_desc        *desc = &gpio_desc[gpio];
-> > +       unsigned long           flags;
-> > +       int                     status = -EINVAL;
-> > +
-> > +       spin_lock_irqsave(&gpio_lock, flags);
-> > +
-> > +       if (!gpio_is_valid(gpio))
-> > +               goto fail;
-> > +
-> > +       chip = desc->chip;
-> > +       if (!chip || !chip->to_irq)
-> > +               goto fail;
-> > +
-> > +       gpio -= chip->base;
-> > +       if (gpio >= chip->ngpio)
-> > +               goto fail;
-> > +
-> > +       status = chip->to_irq(chip, gpio);
-> > +
-> > + fail:
-> > +       spin_unlock_irqrestore(&gpio_lock, flags);
-> > +       if (status)
-> > +               pr_debug("%s: gpio-%d status %d\n",
-> > +                       __func__, gpio, status);
-> > +       return status;
-> > +}
-> > +EXPORT_SYMBOL_GPL(gpio_to_irq);
-> >
-> 
-> Is it possible to define it as __gpio_to_irq(), and let people
-> define their macro or inline function, like the case of
-> __gpio_get_value(), to maintain compatibility?
-
-Ok, should I resubmit with this changed?
- 
-> >  /* Drivers MUST set GPIO direction before making get/set calls.  In
-> >  * some cases this is done in early boot, before IRQs are enabled.
-> > Index: linux-2.6.26-quilt3/include/asm-generic/gpio.h
-> > ===================================================================
-> > --- linux-2.6.26-quilt3.orig/include/asm-generic/gpio.h 2008-07-18 00:40:52.000000000 +0100
-> > +++ linux-2.6.26-quilt3/include/asm-generic/gpio.h      2008-07-18 00:46:32.000000000 +0100
-> > @@ -40,6 +40,7 @@ struct module;
-> >  * @dbg_show: optional routine to show contents in debugfs; default code
-> >  *     will be used when this is omitted, but custom code can show extra
-> >  *     state (such as pullup/pulldown configuration).
-> > + * @to_irq: convert gpio offset to IRQ number.
-> >  * @base: identifies the first GPIO number handled by this chip; or, if
-> >  *     negative during registration, requests dynamic ID allocation.
-> >  * @ngpio: the number of GPIOs handled by this controller; the last GPIO
-> > @@ -71,6 +72,9 @@ struct gpio_chip {
-> >                                                unsigned offset, int value);
-> >        void                    (*dbg_show)(struct seq_file *s,
-> >                                                struct gpio_chip *chip);
-> > +       int                     (*to_irq)(struct gpio_chip *chip,
-> > +                                         unsigned offset);
-> > +
-> >        int                     base;
-> >        u16                     ngpio;
-> >        unsigned                can_sleep:1;
-> > @@ -97,6 +101,7 @@ extern int gpio_direction_output(unsigne
-> >  extern int gpio_get_value_cansleep(unsigned gpio);
-> >  extern void gpio_set_value_cansleep(unsigned gpio, int value);
-> >
-> > +extern int gpio_to_irq(unsigned gpio);
-> >
-> >  /* A platform's <asm/gpio.h> code may want to inline the I/O calls when
-> >  * the GPIO is constant and refers to some always-present controller,
-> >
-> >
-> > S3C24XX: Add gpio_to_irq implementation
-> >
-> > Add the necessary to_irq fields for the S3C24XX
-> > GPIO banks that support IRQs.
-> >
-> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-> >
-> > Index: linux-2.6.26-quilt3/arch/arm/plat-s3c24xx/gpiolib.c
-> > ===================================================================
-> > --- linux-2.6.26-quilt3.orig/arch/arm/plat-s3c24xx/gpiolib.c    2008-07-18 12:35:15.000000000 +0100
-> > +++ linux-2.6.26-quilt3/arch/arm/plat-s3c24xx/gpiolib.c 2008-07-18 12:37:39.000000000 +0100
-> > @@ -150,6 +150,19 @@ static int s3c24xx_gpiolib_banka_output(
-> >        return 0;
-> >  }
-> >
-> > +static int s3c24xx_gpiolib_bankf_toirq(struct gpio_chip *chip, unsigned offset)
-> > +{
-> > +       if (offset < 4)
-> > +               return IRQ_EINT0 + offset;
-> > +
-> > +       return IRQ_EINT4 + (offset - 4);
-> > +}
-> > +
-> > +static int s3c24xx_gpiolib_bankg_toirq(struct gpio_chip *chip, unsigned offset)
-> > +{
-> > +       return IRQ_EINT8 + offset;
-> > +}
-> > +
-> >
-> >  struct s3c24xx_gpio_chip gpios[] = {
-> >        [0] = {
-> > @@ -228,6 +241,7 @@ struct s3c24xx_gpio_chip gpios[] = {
-> >                        .direction_output       = s3c24xx_gpiolib_output,
-> >                        .set                    = s3c24xx_gpiolib_set,
-> >                        .get                    = s3c24xx_gpiolib_get,
-> > +                       .to_irq                 = s3c24xx_gpiolib_bankf_toirq,
-> >                },
-> >        },
-> >        [6] = {
-> > @@ -241,6 +255,7 @@ struct s3c24xx_gpio_chip gpios[] = {
-> >                        .direction_output       = s3c24xx_gpiolib_output,
-> >                        .set                    = s3c24xx_gpiolib_set,
-> >                        .get                    = s3c24xx_gpiolib_get,
-> > +                       .to_irq                 = s3c24xx_gpiolib_bankg_toirq,
-> >                },
-> >        },
-> >  };
-> >
-> >
 > > --
-> > Ben (ben@fluff.org, http://www.fluff.org/)
 > >
-> >  'a smiley only costs 4 bytes'
-> >
-> > -------------------------------------------------------------------
-> > List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-> > FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-> > Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
-> >
+> > btw Why didn't we convert sched*.c to use rq->rd->online when it was
+> > introduced ? ie Instead of using cpu_online_map directly.
+> >   
+> I think things were converted where they made sense to convert.  But we 
+> also had a different goal at that time, so perhaps something was 
+> missed.  If you think something else should be converted, please point 
+> it out.
 > 
-> -------------------------------------------------------------------
-> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+> In the meantime, I would suggest we consider this patch on top of yours 
+> (applies to tip/sched/devel):
+> 
+> ----------------------
+> 
+> sched: Fully integrate cpus_active_map and root-domain code
+>    
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 
--- 
--- 
-Ben
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+Right, makes sense.
+
+ACK
+
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 62b1b8e..99ba70d 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -6611,7 +6611,7 @@ static void rq_attach_root(struct rq *rq, struct 
+> root_domain *rd)
+>      rq->rd = rd;
+>  
+>      cpu_set(rq->cpu, rd->span);
+> -    if (cpu_isset(rq->cpu, cpu_online_map))
+> +    if (cpu_isset(rq->cpu, cpu_active_map))
+>          set_rq_online(rq);
+>  
+>      spin_unlock_irqrestore(&rq->lock, flags);
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 7f70026..2bae8de 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -1004,7 +1004,7 @@ static void yield_task_fair(struct rq *rq)
+>   * search starts with cpus closest then further out as needed,
+>   * so we always favor a closer, idle cpu.
+>   * Domains may include CPUs that are not usable for migration,
+> - * hence we need to mask them out (cpu_active_map)
+> + * hence we need to mask them out (rq->rd->online)
+>   *
+>   * Returns the CPU we should wake onto.
+>   */
+> @@ -1032,7 +1032,7 @@ static int wake_idle(int cpu, struct task_struct *p)
+>              || ((sd->flags & SD_WAKE_IDLE_FAR)
+>              && !task_hot(p, task_rq(p)->clock, sd))) {
+>              cpus_and(tmp, sd->span, p->cpus_allowed);
+> -            cpus_and(tmp, tmp, cpu_active_map);
+> +            cpus_and(tmp, tmp, task_rq(p)->rd->online);
+>              for_each_cpu_mask(i, tmp) {
+>                  if (idle_cpu(i)) {
+>                      if (i != task_cpu(p)) {
+> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+> index 24621ce..d93169d 100644
+> --- a/kernel/sched_rt.c
+> +++ b/kernel/sched_rt.c
+> @@ -936,13 +936,6 @@ static int find_lowest_rq(struct task_struct *task)
+>          return -1; /* No targets found */
+>  
+>      /*
+> -     * Only consider CPUs that are usable for migration.
+> -     * I guess we might want to change cpupri_find() to ignore those
+> -     * in the first place.
+> -     */
+> -    cpus_and(*lowest_mask, *lowest_mask, cpu_active_map);
+> -
+> -    /*
+>       * At this point we have built a mask of cpus representing the
+>       * lowest priority tasks in the system.  Now we want to elect
+>       * the best one based on our affinity and topology.
+> 
+> --------------
+> 
+> Regards,
+> -Greg
+> 
 
