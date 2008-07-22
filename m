@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbYGVSbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbYGVSbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754505AbYGVSbZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 14:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYGVSbR
+	id S1755274AbYGVSbj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 14:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYGVSbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 14:31:17 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44404 "EHLO
+	Tue, 22 Jul 2008 14:31:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44407 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbYGVSbR (ORCPT
+	with ESMTP id S1752602AbYGVSbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 14:31:17 -0400
-Subject: Re: [RFC] systemtap: begin the process of using proper kernel APIs
-	(part1: use kprobe symbol_name/offset instead of address)
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Rik van Riel <riel@redhat.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
-In-Reply-To: <20080722181101.GC9508@redhat.com>
-References: <487E8CE4.70105@redhat.com>
-	 <1216259391.3358.85.camel@localhost.localdomain>
-	 <1216304290.5515.11.camel@localhost.localdomain>
-	 <1216313914.5515.25.camel__21144.9282979176$1216314027$gmane$org@localhost.localdomain>
-	 <y0m7ibkjrcj.fsf@ton.toronto.redhat.com>
-	 <1216325546.5515.63.camel@localhost.localdomain>
-	 <20080717202634.GI18295@redhat.com>
-	 <1216328769.5515.78.camel@localhost.localdomain>
-	 <20080717213355.GJ18295@redhat.com>
-	 <20080722140015.37628ea4@bree.surriel.com>
-	 <20080722181101.GC9508@redhat.com>
+	Tue, 22 Jul 2008 14:31:18 -0400
+Subject: Re: Firmware breakage
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
+In-Reply-To: <20080722190516.4ee477f4@lxorguk.ukuu.org.uk>
+References: <20080722173420.6f90556d@lxorguk.ukuu.org.uk>
+	 <1216748431.3019.6.camel@shinybook.infradead.org>
+	 <20080722190516.4ee477f4@lxorguk.ukuu.org.uk>
 Content-Type: text/plain
-Date: Tue, 22 Jul 2008 20:31:17 +0200
-Message-Id: <1216751477.7257.115.camel@twins>
+Date: Tue, 22 Jul 2008 14:31:04 -0400
+Message-Id: <1216751464.3019.29.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-22 at 14:11 -0400, Frank Ch. Eigler wrote:
-> Hi -
+On Tue, 2008-07-22 at 19:05 +0100, Alan Cox wrote:
+> On Tue, 22 Jul 2008 13:40:31 -0400
+> David Woodhouse <dwmw2@infradead.org> wrote:
 > 
-> On Tue, Jul 22, 2008 at 02:00:15PM -0400, Rik van Riel wrote:
-> > [...]
-> > > Yes, that is generally desirable - each case is usually a question of
-> > > cost/benefit.  One significant requirement for us is to keep working
-> > > with older kernels.
+> > On Tue, 2008-07-22 at 17:34 +0100, Alan Cox wrote:
+> > > If you crossbuild x86-32 on x86-64 and then attempt to do the install on
+> > > an x86-32 box the install now breaks. This used to work until the
+> > > firmware changes. Now you get
+> > > 
+> > > /bin/sh: scripts/basic/fixdep: cannot execute binary file
+> > > 
+> > > Fixdep should be built for the target platform surely ?
 > > 
-> > You will have to weigh that against the benefits of making
-> > systemtap generally useful for kernel developers [...]
+> > Er, I haven't knowingly touched anything involving fixdep. Can you show
+> > me exactly what you did? I'll try to reproduce and understand what's
+> > happening.
 > 
-> Understood & agreed, Rik.  If an issue arises where there is genuine
-> conflict between kernel-developer-usability and something else, we'll
-> try to solve it favouring the former if at all possible.
+> Build on a 64bit box with ARCH=i386
+> NFS mount on a 32bit box
+> make modules_install on 32bit box
 > 
-> (The kprobes addressing argument cannot reasonably be placed into this
-> category.)
+> It used to work nicely, as of the firmware changes it doesn't. Not sure
+> what the trigger is here yet.
 
-You have your viewpoint inverted, if the kernel developers think you
-have a problem, and you fail to address it, they will walk away.
+Hm, I think it's because we're not building the firmware binaries until
+modules_install time, and only _then_ do we want to build the ihex2fw
+tool.
 
-If you want the kernel people to endorse your project, you'll have to
-please them. Its that simple. If that means having to radically
-re-structure your design, and/or break backwards compatibility then so
-be it. Such are the costs for not collaborating from the start.
+If you run 'make modules_install INSTALL_MOD_PATH=/tmp/foo' on the
+x86_64 host first, does that fix it?
 
-If you stubbornly refuse to co-operate you'll either break the project
-or invite a fork/rewrite by someone else if the idea is deemed
-worthwhile enough.
+I was planning to build the firmware binaries as part of 'make modules'
+anyway, because Rafael had related problems (not being able to write to
+the NFS-exported kernel tree at all).
+
+-- 
+dwmw2
 
