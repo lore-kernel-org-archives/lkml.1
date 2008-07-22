@@ -1,89 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbYGVGSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbYGVGen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754061AbYGVGSM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 02:18:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbYGVGR5
+	id S1753266AbYGVGen (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 02:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbYGVGec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 02:17:57 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39072 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751810AbYGVGR4 (ORCPT
+	Tue, 22 Jul 2008 02:34:32 -0400
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:61072 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750718AbYGVGeb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 02:17:56 -0400
-Date: Tue, 22 Jul 2008 15:15:11 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Bernhard Walle <bwalle@suse.de>
-Subject: Re: linux-next: Tree for July 18: warning at kernel/lockdep.c:2068 trace_hardirqs_on_caller
-Cc: Vivek Goyal <vgoyal@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Greg KH <gregkh@suse.de>,
-       kexec <kexec@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-next@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, kernel-testers@vger.kernel.org
-In-Reply-To: <20080721170037.1a0046b1@halley.suse.de>
-References: <20080721133937.GC4451@redhat.com> <20080721170037.1a0046b1@halley.suse.de>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080722142345.8733.E1E9C6FF@jp.fujitsu.com>
+	Tue, 22 Jul 2008 02:34:31 -0400
+Message-ID: <48857F74.2040406@lwfinger.net>
+Date: Tue, 22 Jul 2008 01:34:28 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: David Miller <davem@davemloft.net>
+CC: kaber@trash.net, mingo@elte.hu, ischram@telenet.be,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, j@w1.fi
+Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
+ at 0000000000000370
+References: <488504D9.5090100@lwfinger.net>	<488507FB.9050101@trash.net>	<4885104A.2070201@lwfinger.net> <20080721.161517.27161039.davem@davemloft.net>
+In-Reply-To: <20080721.161517.27161039.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-> > > > Is /proc/iomem updated upon memory hotplug event.
-> > > 
-> > > Yes. I just checked that (yesterday).
-> > > 
-> > > I think it would make sense to extend /sys/firmware/memmap on
-> > > hot-plugging. Just because on reboot, the firmware will see that
-> > > memory, too, and report it. However, we need a way to discriminate the
-> > > originally firmware-provided memory map with later added memory. I'm
-> > > not sure how that can be done, I have to think about it.
-> > 
-> > Probably use another type of RAM identifier (System RAM (hotplug)).
-> > 
-> > But the point is, if /sys/devices/system/memory also represents all
-> > the physical memory present in the system then it might be not be
-> > justified to create another similar interface. (Until and unless there
-> > is something unique about /sys/firmware/memmap).
+David Miller wrote:
+> From: Larry Finger <Larry.Finger@lwfinger.net>
+> Date: Mon, 21 Jul 2008 17:40:10 -0500
 > 
-> But I don't see anything like a physical address there:
+>> Sorry :(
+>>
+>> I used the davem patch, the second version of your first one, and your second 
+>> one. Both problems persist.
+>>
+>> Still plugging away on bisection.
 > 
->   /sys/devices/system/memory/memory2:
->   -r--r--r-- 1 root root 4096 2008-07-21 15:45 phys_device
->   -r--r--r-- 1 root root 4096 2008-07-21 15:45 phys_index
->   -rw-r--r-- 1 root root 4096 2008-07-21 15:45 state
+> GIT bisecting the lockdep problem is surely going the land you on:
 > 
-> (on a PPC64 machine where SUSE kernel has that interface enabled by
-> default).
+> commit e308a5d806c852f56590ffdd3834d0df0cbed8d7
 
-I wrote about them Documentation/memory-hotplug.txt. Please see it.
+No. It landed on this one.
 
-But I think /sys/firmware/memmap is better for kexec than using them.
-They are made for each sections whose size is fixed on each architecture.
-There is no information about areas which are occupied by firmware, and
-its fixed size directories are not suitable to show them.
+37437bb2e1ae8af470dfcd5b4ff454110894ccaf is first bad commit
+commit 37437bb2e1ae8af470dfcd5b4ff454110894ccaf
+Author: David S. Miller <davem@davemloft.net>
+Date:   Wed Jul 16 02:15:04 2008 -0700
 
+     pkt_sched: Schedule qdiscs instead of netdev_queue.
 
-BTW, does kexec needs the information about not only hot-added normal memory
-but also "hot-added occupied (reserved) memory by firmware"?
-Fujitsu has ia64 box which can add memory. The information about memory
-area is notified via _CRS method of ACPI. Our firmware team said that
-there was no interface to notify the area which was occupied by firmware.
-So, _CRS shows only normal (not-reserved) memory area. It means OS can't know
-reserved memory which is hot-added.
+     When we have shared qdiscs, packets come out of the qdiscs
+     for multiple transmit queues.
 
-If kexec has to know those reserved area, then it is very bad news for me. :-(
+     Therefore it doesn't make any sense to schedule the transmit
+     queue when logically we cannot know ahead of time the TX
+     queue of the SKB that the qdisc->dequeue() will give us.
 
+     Just for sanity I added a BUG check to make sure we never
+     get into a state where the noop_qdisc is scheduled.
 
-Thanks.
+     Signed-off-by: David S. Miller <davem@davemloft.net>
 
--- 
-Yasunori Goto 
+:040000 040000 4d13d1fb1ae37d9720c3db6b1368866e78621f55 
+f1a0f5e5a191e7904b528d9e10069a4324a5d328 M      include
+:040000 040000 3515aad52a2cdaaba85feeffc0944d7f07a19c96 
+4854d4f4df9726a2e8837037f82bde807bed2ede M      net
 
-
+Larry
