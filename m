@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbYGVXXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbYGVXYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758133AbYGVXXi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:23:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbYGVXSf
+	id S1757566AbYGVXYU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756814AbYGVXTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:18:35 -0400
-Received: from mx2.suse.de ([195.135.220.15]:57616 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 19:19:08 -0400
+Received: from ns2.suse.de ([195.135.220.15]:57682 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756525AbYGVXSd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:18:33 -0400
-Date: Tue, 22 Jul 2008 16:15:19 -0700
+	id S1755922AbYGVXTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:19:07 -0400
+Date: Tue, 22 Jul 2008 16:15:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 16/47] netdrvr: 3c59x: remove irqs_disabled warning from
-	local_bh_enable
-Message-ID: <20080722231519.GQ8282@suse.de>
+       "David S. Miller" <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 18/47] SCSI: esp: tidy up target reference counting
+Message-ID: <20080722231530.GS8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="netdrvr-3c59x-remove-irqs_disabled-warning-from-local_bh_enable.patch"
+Content-Disposition: inline; filename="scsi-esp-tidy-up-target-reference-counting.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,122 +40,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Ingo Molnar <mingo@elte.hu>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-commit c5643cab7bf663ae049b11be43de8819683176dd upstream
+commit ec5e69f6d3f4350681d6f7eaae515cf014be9276 upstream
 
-Original Author: Michael Buesch <mb@bu3sch.de>
+The esp driver currently does hand rolled reference counting of its
+target.  It's much easier to do what it needs to do if it's plugged into
+the mid-layer callbacks (target_alloc and target_destroy) which were
+designed for this case, so do it this way and get rid of the internal
+target reference count.
 
-net, vortex: fix lockup
-
-Ingo Molnar reported:
-
--tip testing found that Johannes Berg's "softirq: remove irqs_disabled
-warning from local_bh_enable" enhancement to lockdep triggers a new
-warning on an old testbox that uses 3c59x vortex and netlogging:
-
------>
-    calling  vortex_init+0x0/0xb0
-    PCI: Found IRQ 10 for device 0000:00:0b.0
-    PCI: Sharing IRQ 10 with 0000:00:0a.0
-    PCI: Sharing IRQ 10 with 0000:00:0b.1
-    3c59x: Donald Becker and others.
-    0000:00:0b.0: 3Com PCI 3c556 Laptop Tornado at e0800400.
-    PCI: Enabling bus mastering for device 0000:00:0b.0
-    initcall vortex_init+0x0/0xb0 returned 0 after 47 msecs
-..
-    calling  init_netconsole+0x0/0x1b0
-    netconsole: local port 4444
-    netconsole: local IP 10.0.1.9
-    netconsole: interface eth0
-    netconsole: remote port 4444
-    netconsole: remote IP 10.0.1.16
-    netconsole: remote ethernet address 00:19:xx:xx:xx:xx
-    netconsole: device eth0 not up yet, forcing it
-    eth0:  setting half-duplex.
-    eth0:  setting full-duplex.
-------------[ cut here ]------------
-    WARNING: at kernel/softirq.c:137 local_bh_enable_ip+0xd1/0xe0()
-    Pid: 1, comm: swapper Not tainted 2.6.26-rc6-tip #2091
-     [<c0125ecf>] warn_on_slowpath+0x4f/0x70
-     [<c0126834>] ? release_console_sem+0x1b4/0x1d0
-     [<c0126d00>] ? vprintk+0x2a0/0x450
-     [<c012fde5>] ? __mod_timer+0xa5/0xc0
-     [<c046f7fd>] ? mdio_sync+0x3d/0x50
-     [<c0160ef6>] ? marker_probe_cb+0x46/0xa0
-     [<c0126ed7>] ? printk+0x27/0x50
-     [<c046f4c3>] ? vortex_set_duplex+0x43/0xc0
-     [<c046f521>] ? vortex_set_duplex+0xa1/0xc0
-     [<c0471b92>] ? vortex_timer+0xe2/0x3e0
-     [<c012b361>] local_bh_enable_ip+0xd1/0xe0
-     [<c08d9f9f>] _spin_unlock_bh+0x2f/0x40
-     [<c0471b92>] vortex_timer+0xe2/0x3e0
-     [<c014743b>] ? trace_hardirqs_on+0xb/0x10
-     [<c0147358>] ? trace_hardirqs_on_caller+0x88/0x160
-     [<c012f8b2>] run_timer_softirq+0x162/0x1c0
-     [<c0471ab0>] ? vortex_timer+0x0/0x3e0
-     [<c012b361>] local_bh_enable_ip+0xd1/0xe0
-     [<c08d9f9f>] _spin_unlock_bh+0x2f/0x40
-     [<c0471b92>] vortex_timer+0xe2/0x3e0
-     [<c014743b>] ? trace_hardirqs_on+0xb/0x10
-     [<c0147358>] ? trace_hardirqs_on_caller+0x88/0x160
-     [<c012f8b2>] run_timer_softirq+0x162/0x1c0
-     [<c0471ab0>] ? vortex_timer+0x0/0x3e0
-     [<c0471ab0>] ? vortex_timer+0x0/0x3e0
-     [<c012b60a>] __do_softirq+0x9a/0x160
-     [<c012b570>] ? __do_softirq+0x0/0x160
-     [<c0106775>] call_on_stack+0x15/0x30
-     [<c012b4f5>] ? irq_exit+0x55/0x60
-     [<c0106e85>] ? do_IRQ+0x85/0xd0
-     [<c0147391>] ? trace_hardirqs_on_caller+0xc1/0x160
-     [<c0104888>] ? common_interrupt+0x28/0x30
-     [<c08d8ac8>] ? mutex_unlock+0x8/0x10
-     [<c08d8180>] ? _cond_resched+0x10/0x30
-     [<c07a3be7>] ? netpoll_setup+0x117/0x390
-     [<c0cbfcfe>] ? init_netconsole+0x14e/0x1b0
-     [<c013d539>] ? ktime_get+0x19/0x40
-     [<c0c9bab2>] ? kernel_init+0x1b2/0x2c0
-     [<c0cbfbb0>] ? init_netconsole+0x0/0x1b0
-     [<c0396aa4>] ? trace_hardirqs_on_thunk+0xc/0x10
-     [<c0103f12>] ? restore_nocheck_notrace+0x0/0xe
-     [<c0c9b900>] ? kernel_init+0x0/0x2c0
-     [<c0c9b900>] ? kernel_init+0x0/0x2c0
-     [<c0104aa7>] ? kernel_thread_helper+0x7/0x10
-     =======================
----[ end trace 37f9c502aff112e0 ]---
-    console [netcon0] enabled
-    netconsole: network logging started
-    initcall init_netconsole+0x0/0x1b0 returned 0 after 2914 msecs
-
-looking at the driver I think the bug is real and the fix actually
-is trivial.
-
-vp->lock is also taken in hardware IRQ context, so we _have_ to always
-use irqsafe locking. As we run in a timer with IRQs disabled,
-we can simply use spin_lock.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Acked-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/3c59x.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/scsi/esp_scsi.c |   30 ++++++++++++++++++++----------
+ drivers/scsi/esp_scsi.h |    1 -
+ 2 files changed, 20 insertions(+), 11 deletions(-)
 
---- a/drivers/net/3c59x.c
-+++ b/drivers/net/3c59x.c
-@@ -1769,9 +1769,10 @@ vortex_timer(unsigned long data)
- 	case XCVR_MII: case XCVR_NWAY:
- 		{
- 			ok = 1;
--			spin_lock_bh(&vp->lock);
-+			/* Interrupts are already disabled */
-+			spin_lock(&vp->lock);
- 			vortex_check_media(dev, 0);
--			spin_unlock_bh(&vp->lock);
-+			spin_unlock(&vp->lock);
- 		}
- 		break;
- 	  default:					/* Other media types handled by Tx timeouts. */
+--- a/drivers/scsi/esp_scsi.c
++++ b/drivers/scsi/esp_scsi.c
+@@ -2352,6 +2352,24 @@ void scsi_esp_unregister(struct esp *esp
+ }
+ EXPORT_SYMBOL(scsi_esp_unregister);
+ 
++static int esp_target_alloc(struct scsi_target *starget)
++{
++	struct esp *esp = shost_priv(dev_to_shost(&starget->dev));
++	struct esp_target_data *tp = &esp->target[starget->id];
++
++	tp->starget = starget;
++
++	return 0;
++}
++
++static void esp_target_destroy(struct scsi_target *starget)
++{
++	struct esp *esp = shost_priv(dev_to_shost(&starget->dev));
++	struct esp_target_data *tp = &esp->target[starget->id];
++
++	tp->starget = NULL;
++}
++
+ static int esp_slave_alloc(struct scsi_device *dev)
+ {
+ 	struct esp *esp = shost_priv(dev->host);
+@@ -2363,9 +2381,6 @@ static int esp_slave_alloc(struct scsi_d
+ 		return -ENOMEM;
+ 	dev->hostdata = lp;
+ 
+-	tp->starget = dev->sdev_target;
+-	tp->starget_ref++;
+-
+ 	spi_min_period(tp->starget) = esp->min_period;
+ 	spi_max_offset(tp->starget) = 15;
+ 
+@@ -2413,17 +2428,10 @@ static int esp_slave_configure(struct sc
+ 
+ static void esp_slave_destroy(struct scsi_device *dev)
+ {
+-	struct esp *esp = shost_priv(dev->host);
+-	struct esp_target_data *tp = &esp->target[dev->id];
+ 	struct esp_lun_data *lp = dev->hostdata;
+ 
+ 	kfree(lp);
+ 	dev->hostdata = NULL;
+-
+-	BUG_ON(tp->starget_ref <= 0);
+-
+-	if (!--tp->starget_ref)
+-		tp->starget = NULL;
+ }
+ 
+ static int esp_eh_abort_handler(struct scsi_cmnd *cmd)
+@@ -2603,6 +2611,8 @@ struct scsi_host_template scsi_esp_templ
+ 	.name			= "esp",
+ 	.info			= esp_info,
+ 	.queuecommand		= esp_queuecommand,
++	.target_alloc		= esp_target_alloc,
++	.target_destroy		= esp_target_destroy,
+ 	.slave_alloc		= esp_slave_alloc,
+ 	.slave_configure	= esp_slave_configure,
+ 	.slave_destroy		= esp_slave_destroy,
+--- a/drivers/scsi/esp_scsi.h
++++ b/drivers/scsi/esp_scsi.h
+@@ -322,7 +322,6 @@ struct esp_target_data {
+ 	u8			nego_goal_tags;
+ 
+ 	struct scsi_target	*starget;
+-	int			starget_ref;
+ };
+ 
+ struct esp_event_ent {
 
 -- 
