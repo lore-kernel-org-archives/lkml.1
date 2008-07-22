@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbYGVFea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbYGVFfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758107AbYGVFea (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 01:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbYGVFYE
+	id S1758248AbYGVFfE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 01:35:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756876AbYGVFYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 01:24:04 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53892 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 01:24:14 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53900 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756853AbYGVFYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 01:24:03 -0400
+	id S1756857AbYGVFYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 01:24:12 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 38/79] block: move header for /proc/partitions to seq_start
-Date: Mon, 21 Jul 2008 22:19:02 -0700
-Message-Id: <1216703983-21448-38-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       Hal Rosenstock <hal.rosenstock@gmail.com>
+Subject: [PATCH 40/79] infiniband: rename "device" to "ib_device" in cm_device
+Date: Mon, 21 Jul 2008 22:19:04 -0700
+Message-Id: <1216703983-21448-40-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <20080722051805.GA17373@suse.de>
 References: <20080722051805.GA17373@suse.de>
@@ -22,41 +24,207 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The seq_start call is the better place for the header for the file, that
-way we don't have to be mucking in the class structure to try to figure
-out if this is the first partition or not.
+This pointer really is a struct ib_device, not a struct device, so name
+it properly to help prevent confusion.
+
+This makes the followon patch in this series much smaller and easier to
+understand as well.
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Roland Dreier <rolandd@cisco.com>
+Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
+Acked-by: Sean Hefty <sean.hefty@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- block/genhd.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ drivers/infiniband/core/cm.c |   47 +++++++++++++++++++++--------------------
+ 1 files changed, 24 insertions(+), 23 deletions(-)
 
-diff --git a/block/genhd.c b/block/genhd.c
-index f03bdad..70f1d70 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -305,6 +305,10 @@ static int find_start(struct device *dev, void *data)
- static void *part_start(struct seq_file *part, loff_t *pos)
+diff --git a/drivers/infiniband/core/cm.c b/drivers/infiniband/core/cm.c
+index 55738ee..8dc4429 100644
+--- a/drivers/infiniband/core/cm.c
++++ b/drivers/infiniband/core/cm.c
+@@ -162,7 +162,7 @@ struct cm_port {
+ 
+ struct cm_device {
+ 	struct list_head list;
+-	struct ib_device *device;
++	struct ib_device *ib_device;
+ 	struct kobject dev_obj;
+ 	u8 ack_delay;
+ 	struct cm_port *port[0];
+@@ -339,7 +339,7 @@ static void cm_init_av_for_response(struct cm_port *port, struct ib_wc *wc,
  {
- 	struct device *dev;
-+	loff_t n = *pos;
-+
-+	if (!n)
-+		seq_puts(part, "major minor  #blocks  name\n\n");
+ 	av->port = port;
+ 	av->pkey_index = wc->pkey_index;
+-	ib_init_ah_from_wc(port->cm_dev->device, port->port_num, wc,
++	ib_init_ah_from_wc(port->cm_dev->ib_device, port->port_num, wc,
+ 			   grh, &av->ah_attr);
+ }
  
- 	mutex_lock(&block_class_lock);
- 	dev = class_find_device(&block_class, NULL, (void *)pos, find_start);
-@@ -338,9 +342,6 @@ static int show_partition(struct seq_file *part, void *v)
- 	int n;
- 	char buf[BDEVNAME_SIZE];
+@@ -353,7 +353,7 @@ static int cm_init_av_by_path(struct ib_sa_path_rec *path, struct cm_av *av)
  
--	if (&sgp->dev.node == block_class.devices.next)
--		seq_puts(part, "major minor  #blocks  name\n\n");
--
- 	/* Don't show non-partitionable removeable devices or empty devices */
- 	if (!get_capacity(sgp) ||
- 			(sgp->minors == 1 && (sgp->flags & GENHD_FL_REMOVABLE)))
+ 	read_lock_irqsave(&cm.device_lock, flags);
+ 	list_for_each_entry(cm_dev, &cm.device_list, list) {
+-		if (!ib_find_cached_gid(cm_dev->device, &path->sgid,
++		if (!ib_find_cached_gid(cm_dev->ib_device, &path->sgid,
+ 					&p, NULL)) {
+ 			port = cm_dev->port[p-1];
+ 			break;
+@@ -364,13 +364,13 @@ static int cm_init_av_by_path(struct ib_sa_path_rec *path, struct cm_av *av)
+ 	if (!port)
+ 		return -EINVAL;
+ 
+-	ret = ib_find_cached_pkey(cm_dev->device, port->port_num,
++	ret = ib_find_cached_pkey(cm_dev->ib_device, port->port_num,
+ 				  be16_to_cpu(path->pkey), &av->pkey_index);
+ 	if (ret)
+ 		return ret;
+ 
+ 	av->port = port;
+-	ib_init_ah_from_path(cm_dev->device, port->port_num, path,
++	ib_init_ah_from_path(cm_dev->ib_device, port->port_num, path,
+ 			     &av->ah_attr);
+ 	av->timeout = path->packet_life_time + 1;
+ 	return 0;
+@@ -1515,7 +1515,7 @@ static int cm_req_handler(struct cm_work *work)
+ 
+ 	req_msg = (struct cm_req_msg *)work->mad_recv_wc->recv_buf.mad;
+ 
+-	cm_id = ib_create_cm_id(work->port->cm_dev->device, NULL, NULL);
++	cm_id = ib_create_cm_id(work->port->cm_dev->ib_device, NULL, NULL);
+ 	if (IS_ERR(cm_id))
+ 		return PTR_ERR(cm_id);
+ 
+@@ -1550,7 +1550,7 @@ static int cm_req_handler(struct cm_work *work)
+ 	cm_format_paths_from_req(req_msg, &work->path[0], &work->path[1]);
+ 	ret = cm_init_av_by_path(&work->path[0], &cm_id_priv->av);
+ 	if (ret) {
+-		ib_get_cached_gid(work->port->cm_dev->device,
++		ib_get_cached_gid(work->port->cm_dev->ib_device,
+ 				  work->port->port_num, 0, &work->path[0].sgid);
+ 		ib_send_cm_rej(cm_id, IB_CM_REJ_INVALID_GID,
+ 			       &work->path[0].sgid, sizeof work->path[0].sgid,
+@@ -2950,7 +2950,7 @@ static int cm_sidr_req_handler(struct cm_work *work)
+ 	struct cm_sidr_req_msg *sidr_req_msg;
+ 	struct ib_wc *wc;
+ 
+-	cm_id = ib_create_cm_id(work->port->cm_dev->device, NULL, NULL);
++	cm_id = ib_create_cm_id(work->port->cm_dev->ib_device, NULL, NULL);
+ 	if (IS_ERR(cm_id))
+ 		return PTR_ERR(cm_id);
+ 	cm_id_priv = container_of(cm_id, struct cm_id_private, id);
+@@ -3578,7 +3578,7 @@ static void cm_get_ack_delay(struct cm_device *cm_dev)
+ {
+ 	struct ib_device_attr attr;
+ 
+-	if (ib_query_device(cm_dev->device, &attr))
++	if (ib_query_device(cm_dev->ib_device, &attr))
+ 		cm_dev->ack_delay = 0; /* acks will rely on packet life time */
+ 	else
+ 		cm_dev->ack_delay = attr.local_ca_ack_delay;
+@@ -3676,7 +3676,7 @@ static void cm_remove_port_fs(struct cm_port *port)
+ 	kobject_put(&port->port_obj);
+ }
+ 
+-static void cm_add_one(struct ib_device *device)
++static void cm_add_one(struct ib_device *ib_device)
+ {
+ 	struct cm_device *cm_dev;
+ 	struct cm_port *port;
+@@ -3691,26 +3691,27 @@ static void cm_add_one(struct ib_device *device)
+ 	int ret;
+ 	u8 i;
+ 
+-	if (rdma_node_get_transport(device->node_type) != RDMA_TRANSPORT_IB)
++	if (rdma_node_get_transport(ib_device->node_type) != RDMA_TRANSPORT_IB)
+ 		return;
+ 
+ 	cm_dev = kzalloc(sizeof(*cm_dev) + sizeof(*port) *
+-			 device->phys_port_cnt, GFP_KERNEL);
++			 ib_device->phys_port_cnt, GFP_KERNEL);
+ 	if (!cm_dev)
+ 		return;
+ 
+-	cm_dev->device = device;
++	cm_dev->ib_device = ib_device;
+ 	cm_get_ack_delay(cm_dev);
+ 
+ 	ret = kobject_init_and_add(&cm_dev->dev_obj, &cm_dev_obj_type,
+-				   &cm_class.subsys.kobj, "%s", device->name);
++				   &cm_class.subsys.kobj, "%s",
++				   ib_device->name);
+ 	if (ret) {
+ 		kfree(cm_dev);
+ 		return;
+ 	}
+ 
+ 	set_bit(IB_MGMT_METHOD_SEND, reg_req.method_mask);
+-	for (i = 1; i <= device->phys_port_cnt; i++) {
++	for (i = 1; i <= ib_device->phys_port_cnt; i++) {
+ 		port = kzalloc(sizeof *port, GFP_KERNEL);
+ 		if (!port)
+ 			goto error1;
+@@ -3723,7 +3724,7 @@ static void cm_add_one(struct ib_device *device)
+ 		if (ret)
+ 			goto error1;
+ 
+-		port->mad_agent = ib_register_mad_agent(device, i,
++		port->mad_agent = ib_register_mad_agent(ib_device, i,
+ 							IB_QPT_GSI,
+ 							&reg_req,
+ 							0,
+@@ -3733,11 +3734,11 @@ static void cm_add_one(struct ib_device *device)
+ 		if (IS_ERR(port->mad_agent))
+ 			goto error2;
+ 
+-		ret = ib_modify_port(device, i, 0, &port_modify);
++		ret = ib_modify_port(ib_device, i, 0, &port_modify);
+ 		if (ret)
+ 			goto error3;
+ 	}
+-	ib_set_client_data(device, &cm_client, cm_dev);
++	ib_set_client_data(ib_device, &cm_client, cm_dev);
+ 
+ 	write_lock_irqsave(&cm.device_lock, flags);
+ 	list_add_tail(&cm_dev->list, &cm.device_list);
+@@ -3753,14 +3754,14 @@ error1:
+ 	port_modify.clr_port_cap_mask = IB_PORT_CM_SUP;
+ 	while (--i) {
+ 		port = cm_dev->port[i-1];
+-		ib_modify_port(device, port->port_num, 0, &port_modify);
++		ib_modify_port(ib_device, port->port_num, 0, &port_modify);
+ 		ib_unregister_mad_agent(port->mad_agent);
+ 		cm_remove_port_fs(port);
+ 	}
+ 	kobject_put(&cm_dev->dev_obj);
+ }
+ 
+-static void cm_remove_one(struct ib_device *device)
++static void cm_remove_one(struct ib_device *ib_device)
+ {
+ 	struct cm_device *cm_dev;
+ 	struct cm_port *port;
+@@ -3770,7 +3771,7 @@ static void cm_remove_one(struct ib_device *device)
+ 	unsigned long flags;
+ 	int i;
+ 
+-	cm_dev = ib_get_client_data(device, &cm_client);
++	cm_dev = ib_get_client_data(ib_device, &cm_client);
+ 	if (!cm_dev)
+ 		return;
+ 
+@@ -3778,9 +3779,9 @@ static void cm_remove_one(struct ib_device *device)
+ 	list_del(&cm_dev->list);
+ 	write_unlock_irqrestore(&cm.device_lock, flags);
+ 
+-	for (i = 1; i <= device->phys_port_cnt; i++) {
++	for (i = 1; i <= ib_device->phys_port_cnt; i++) {
+ 		port = cm_dev->port[i-1];
+-		ib_modify_port(device, port->port_num, 0, &port_modify);
++		ib_modify_port(ib_device, port->port_num, 0, &port_modify);
+ 		ib_unregister_mad_agent(port->mad_agent);
+ 		flush_workqueue(cm.wq);
+ 		cm_remove_port_fs(port);
 -- 
 1.5.6.3
 
