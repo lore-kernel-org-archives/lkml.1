@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbYGVL4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYGVMKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721AbYGVL4T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 07:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755418AbYGVLz7
+	id S1754429AbYGVMKH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 08:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbYGVMJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 07:55:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57109 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755202AbYGVLz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 07:55:56 -0400
-Date: Tue, 22 Jul 2008 13:55:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] x86: rename PTE_MASK to PTE_PFN_MASK
-Message-ID: <20080722115540.GA26178@elte.hu>
-References: <200807221431.58991.rusty@rustcorp.com.au> <4885774E.3000909@goop.org> <20080722083626.GC2065@elte.hu> <200807222058.37130.rusty@rustcorp.com.au>
+	Tue, 22 Jul 2008 08:09:55 -0400
+Received: from host0.dyn.jankratochvil.net ([89.250.240.59]:40090 "EHLO
+	host0.dyn.jankratochvil.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751778AbYGVMJw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 08:09:52 -0400
+X-Greylist: delayed 538 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Jul 2008 08:09:52 EDT
+Date: Tue, 22 Jul 2008 14:00:47 +0200
+From: Jan Kratochvil <jan.kratochvil@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [patch] Fix crash due to missing debugctlmsr on AMD K6-3
+Message-ID: <20080722120047.GA6795@host0.dyn.jankratochvil.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="zhXaljGHf11kAtnf"
 Content-Disposition: inline
-In-Reply-To: <200807222058.37130.rusty@rustcorp.com.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+--zhXaljGHf11kAtnf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> On Tuesday 22 July 2008 18:36:26 Ingo Molnar wrote:
-> > * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> > > Rusty, in his peevish way, complained that macros defining constants
-> > > should have a name which somewhat accurately reflects the actual
-> > > purpose of the constant.
-> >
-> > Applied to tip/x86/cleanups anyway. Rusty will find out himself how bad
-> > this whole concept of clean and understandable code is, soon enough!
-> 
-> I am disgusted with this inappropriate emphasis on clarity over 
-> obscurity.  It should be pretty clear to everyone here that we can't 
-> have both!
-> 
-> Fortunately, there is a way to partially rectify the situation. Ingo, 
-> please apply.
+Hi,
 
-> +/* There's something suspicious about this line: see PTE_PFN_MASK comment. */
->  #define __PHYSICAL_MASK		((phys_addr_t)(1ULL << __PHYSICAL_MASK_SHIFT) - 1)
+currently if you use PTRACE_SINGLEBLOCK on AMD K6-3 (i586) it will crash.
+Kernel now wrongly assumes existing DEBUGCTLMSR MSR register there.
 
->  /* PTE_PFN_MASK extracts the PFN from a (pte|pmd|pud|pgd)val_t */
-> +/* This line is quite subtle.  See __PHYSICAL_MASK comment above. */
->  #define PTE_PFN_MASK		((pteval_t)PHYSICAL_PAGE_MASK)
+Removed the assumption also for some other non-K6 CPUs but I am not sure there
+(but it can only bring small inefficiency there if my assumption is wrong).
 
-Now that you and Jeremy have thoroughly destroyed this file's obscurity 
-with your disgusting cleanups and clarifications, i fear it's beyond 
-repair. No matter how much i'd love to apply this infinitely recursive 
-piece of documentation (what a genius it takes to even think of it!) i 
-regret that i cannot. So sad.
+Based on info from Roland McGrath, Chuck Ebbert and Mikulas Patocka.
+More info at:
+	https://bugzilla.redhat.com/show_bug.cgi?id=456175
 
-	Ingo
+Please Cc me in a reply.
+
+
+Regards,
+Jan
+
+--zhXaljGHf11kAtnf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="linux-2.6.26-debugctlmsr-k6.patch"
+
+Signed-off-by: Jan Kratochvil <jan.kratochvil@redhat.com>
+
+--- linux-2.6.26/arch/x86/Kconfig.cpu-orig	2008-07-13 23:51:29.000000000 +0200
++++ linux-2.6.26/arch/x86/Kconfig.cpu	2008-07-22 13:44:19.000000000 +0200
+@@ -414,4 +414,4 @@ config X86_MINIMUM_CPU_FAMILY
+ 
+ config X86_DEBUGCTLMSR
+ 	def_bool y
+-	depends on !(M586MMX || M586TSC || M586 || M486 || M386)
++	depends on !(MK6 || MWINCHIPC6 || MWINCHIP2 || MWINCHIP3D || MCYRIXIII || M586MMX || M586TSC || M586 || M486 || M386)
+
+--zhXaljGHf11kAtnf--
