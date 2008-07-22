@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757614AbYGVXZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758627AbYGVXZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757614AbYGVXZL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:25:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756081AbYGVXTW
+	id S1758627AbYGVXZo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbYGVXT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:19:22 -0400
-Received: from mail.suse.de ([195.135.220.2]:53116 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 19:19:27 -0400
+Received: from ns.suse.de ([195.135.220.2]:53151 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756860AbYGVXTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:19:21 -0400
-Date: Tue, 22 Jul 2008 16:16:09 -0700
+	id S1756901AbYGVXT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:19:26 -0400
+Date: Tue, 22 Jul 2008 16:16:11 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jeff Mahoney <jeffm@suse.com>
-Subject: [patch 21/47] reiserfs: discard prealloc in reiserfs_delete_inode
-Message-ID: <20080722231609.GV8282@suse.de>
+       Mike Miller <mike.miller@hp.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: [patch 22/47] cciss: read config to obtain max outstanding
+	commands per controller
+Message-ID: <20080722231611.GW8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="reiserfs-discard-prealloc-in-reiserfs_delete_inode.patch"
+Content-Disposition: inline; filename="cciss-read-config-to-obtain-max-outstanding-commands-per-controller.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,36 +40,134 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Jeff Mahoney <jeffm@suse.com>
+From: Mike Miller <mike.miller@hp.com>
 
-commit eb35c218d83ec0780d9db869310f2e333f628702 upstream
+commit 491539982aa01fa71de93c2a06ac5d890d4cf1e2 upstream
 
-With the removal of struct file from the xattr code,
-reiserfs_file_release() isn't used anymore, so the prealloc isn't
-discarded.  This causes hangs later down the line.
+This patch changes the way we determine the maximum number of outstanding
+commands for each controller.
 
-This patch adds it to reiserfs_delete_inode.  In most cases it will be a
-no-op due to it already having been called, but will avoid hangs with
-xattrs.
+Most Smart Array controllers can support up to 1024 commands, the notable
+exceptions are the E200 and E200i.
 
-Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+The next generation of controllers which were just added support a mode of
+operation called Zero Memory Raid (ZMR).  In this mode they only support
+64 outstanding commands.  In Full Function Raid (FFR) mode they support
+1024.
+
+We have been setting the queue depth by arbitrarily assigning some value
+for each controller.  We needed a better way to set the queue depth to
+avoid lots of annoying "fifo full" messages.  So we made the driver a
+little smarter.  We now read the config table and subtract 4 from the
+returned value.  The -4 is to allow some room for ioctl calls which are
+not tracked the same way as io commands are tracked.
+
+Please consider this for inclusion.
+
+Signed-off-by: Mike Miller <mike.miller@hp.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/reiserfs/inode.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/block/cciss.c |   66 ++++++++++++++++++++++++++++----------------------
+ 1 file changed, 37 insertions(+), 29 deletions(-)
 
---- a/fs/reiserfs/inode.c
-+++ b/fs/reiserfs/inode.c
-@@ -45,6 +45,8 @@ void reiserfs_delete_inode(struct inode 
- 			goto out;
- 		reiserfs_update_inode_transaction(inode);
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -106,35 +106,34 @@ MODULE_DEVICE_TABLE(pci, cciss_pci_devic
+ /*  board_id = Subsystem Device ID & Vendor ID
+  *  product = Marketing Name for the board
+  *  access = Address of the struct of function pointers
+- *  nr_cmds = Number of commands supported by controller
+  */
+ static struct board_type products[] = {
+-	{0x40700E11, "Smart Array 5300", &SA5_access, 512},
+-	{0x40800E11, "Smart Array 5i", &SA5B_access, 512},
+-	{0x40820E11, "Smart Array 532", &SA5B_access, 512},
+-	{0x40830E11, "Smart Array 5312", &SA5B_access, 512},
+-	{0x409A0E11, "Smart Array 641", &SA5_access, 512},
+-	{0x409B0E11, "Smart Array 642", &SA5_access, 512},
+-	{0x409C0E11, "Smart Array 6400", &SA5_access, 512},
+-	{0x409D0E11, "Smart Array 6400 EM", &SA5_access, 512},
+-	{0x40910E11, "Smart Array 6i", &SA5_access, 512},
+-	{0x3225103C, "Smart Array P600", &SA5_access, 512},
+-	{0x3223103C, "Smart Array P800", &SA5_access, 512},
+-	{0x3234103C, "Smart Array P400", &SA5_access, 512},
+-	{0x3235103C, "Smart Array P400i", &SA5_access, 512},
+-	{0x3211103C, "Smart Array E200i", &SA5_access, 120},
+-	{0x3212103C, "Smart Array E200", &SA5_access, 120},
+-	{0x3213103C, "Smart Array E200i", &SA5_access, 120},
+-	{0x3214103C, "Smart Array E200i", &SA5_access, 120},
+-	{0x3215103C, "Smart Array E200i", &SA5_access, 120},
+-	{0x3237103C, "Smart Array E500", &SA5_access, 512},
+-	{0x323D103C, "Smart Array P700m", &SA5_access, 512},
+-	{0x3241103C, "Smart Array P212", &SA5_access, 384},
+-	{0x3243103C, "Smart Array P410", &SA5_access, 384},
+-	{0x3245103C, "Smart Array P410i", &SA5_access, 384},
+-	{0x3247103C, "Smart Array P411", &SA5_access, 384},
+-	{0x3249103C, "Smart Array P812", &SA5_access, 384},
+-	{0xFFFF103C, "Unknown Smart Array", &SA5_access, 120},
++	{0x40700E11, "Smart Array 5300", &SA5_access},
++	{0x40800E11, "Smart Array 5i", &SA5B_access},
++	{0x40820E11, "Smart Array 532", &SA5B_access},
++	{0x40830E11, "Smart Array 5312", &SA5B_access},
++	{0x409A0E11, "Smart Array 641", &SA5_access},
++	{0x409B0E11, "Smart Array 642", &SA5_access},
++	{0x409C0E11, "Smart Array 6400", &SA5_access},
++	{0x409D0E11, "Smart Array 6400 EM", &SA5_access},
++	{0x40910E11, "Smart Array 6i", &SA5_access},
++	{0x3225103C, "Smart Array P600", &SA5_access},
++	{0x3223103C, "Smart Array P800", &SA5_access},
++	{0x3234103C, "Smart Array P400", &SA5_access},
++	{0x3235103C, "Smart Array P400i", &SA5_access},
++	{0x3211103C, "Smart Array E200i", &SA5_access},
++	{0x3212103C, "Smart Array E200", &SA5_access},
++	{0x3213103C, "Smart Array E200i", &SA5_access},
++	{0x3214103C, "Smart Array E200i", &SA5_access},
++	{0x3215103C, "Smart Array E200i", &SA5_access},
++	{0x3237103C, "Smart Array E500", &SA5_access},
++	{0x323D103C, "Smart Array P700m", &SA5_access},
++	{0x3241103C, "Smart Array P212", &SA5_access},
++	{0x3243103C, "Smart Array P410", &SA5_access},
++	{0x3245103C, "Smart Array P410i", &SA5_access},
++	{0x3247103C, "Smart Array P411", &SA5_access},
++	{0x3249103C, "Smart Array P812", &SA5_access},
++	{0xFFFF103C, "Unknown Smart Array", &SA5_access},
+ };
  
-+		reiserfs_discard_prealloc(&th, inode);
-+
- 		err = reiserfs_delete_object(&th, inode);
+ /* How long to wait (in milliseconds) for board to go into simple mode */
+@@ -3082,11 +3081,20 @@ static int __devinit cciss_pci_init(ctlr
+ 	print_cfg_table(c->cfgtable);
+ #endif				/* CCISS_DEBUG */
  
- 		/* Do quota update inside a transaction for journaled quotas. We must do that
++	/* Some controllers support Zero Memory Raid (ZMR).
++	 * When configured in ZMR mode the number of supported
++	 * commands drops to 64. So instead of just setting an
++	 * arbitrary value we make the driver a little smarter.
++	 * We read the config table to tell us how many commands
++	 * are supported on the controller then subtract 4 to
++	 * leave a little room for ioctl calls.
++	 */
++	c->max_commands = readl(&(c->cfgtable->CmdsOutMax));
+ 	for (i = 0; i < ARRAY_SIZE(products); i++) {
+ 		if (board_id == products[i].board_id) {
+ 			c->product_name = products[i].product_name;
+ 			c->access = *(products[i].access);
+-			c->nr_cmds = products[i].nr_cmds;
++			c->nr_cmds = c->max_commands - 4;
+ 			break;
+ 		}
+ 	}
+@@ -3106,7 +3114,7 @@ static int __devinit cciss_pci_init(ctlr
+ 		if (subsystem_vendor_id == PCI_VENDOR_ID_HP) {
+ 			c->product_name = products[i-1].product_name;
+ 			c->access = *(products[i-1].access);
+-			c->nr_cmds = products[i-1].nr_cmds;
++			c->nr_cmds = c->max_commands - 4;
+ 			printk(KERN_WARNING "cciss: This is an unknown "
+ 				"Smart Array controller.\n"
+ 				"cciss: Please update to the latest driver "
 
 -- 
