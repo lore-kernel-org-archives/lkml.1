@@ -1,51 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYGVOnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYGVOqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbYGVOnm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 10:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbYGVOnf
+	id S1754036AbYGVOqv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 10:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYGVOqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 10:43:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53458 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750798AbYGVOne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 10:43:34 -0400
-Date: Tue, 22 Jul 2008 10:43:27 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, Alan Piszcz <ap@solarrain.com>
-Subject: Re: 128 GiB memory question-- kernel only sees 64GiB?
-Message-ID: <20080722104327.30cee9be@bree.surriel.com>
-In-Reply-To: <alpine.DEB.1.10.0807221019570.8455@p34.internal.lan>
-References: <alpine.DEB.1.10.0807221019570.8455@p34.internal.lan>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 Jul 2008 10:46:43 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:56090 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751234AbYGVOqm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 10:46:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=AcpCUAmLfpcQfx487M/3j4SYtguFjl3lpcYxi42U9yl4F639Hhozc3TJ8lBthTgbGN
+         sWbVW7Mt++8V1a9T00B5Q4BYmMUjKmOmUNzRgvnTzp4BnBpu9w3DCuOc3jk4AyhgBG+W
+         /6wO2aIE/pUkIUM0af0o9EK+9sK2VcjS0ZuoY=
+Message-ID: <cfd18e0f0807220746k41ff209bgc099a83042e38086@mail.gmail.com>
+Date: Tue, 22 Jul 2008 16:46:41 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Oleg Nesterov" <oleg@tv-sign.ru>
+Subject: Re: [PATCH -mm] coredump: format_corename: don't append .%pid if multi-threaded
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Roland McGrath" <roland@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, andi@firstfloor.org
+In-Reply-To: <20080722130206.GA3297@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200807210137.m6L1bN0H011138@imap1.linux-foundation.org>
+	 <20080721102940.666d733d@the-village.bc.nu>
+	 <20080721210121.C5E741541A5@magilla.localdomain>
+	 <20080721221416.6d4f9014@lxorguk.ukuu.org.uk>
+	 <20080722113731.GA1383@tv-sign.ru> <20080722121824.GB1383@tv-sign.ru>
+	 <cfd18e0f0807220521x5faea19bn1f545b23b84ead6a@mail.gmail.com>
+	 <20080722124314.GA3267@tv-sign.ru>
+	 <cfd18e0f0807220547w691346ecyd4819fa4b7c23325@mail.gmail.com>
+	 <20080722130206.GA3297@tv-sign.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jul 2008 10:21:44 -0400 (EDT)
-Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+On Tue, Jul 22, 2008 at 3:02 PM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> On 07/22, Michael Kerrisk wrote:
+>>
+>> On Tue, Jul 22, 2008 at 2:43 PM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
+>> >
+>> > That said, this is the user-visible change...
+>>
+>> True.  Not sure how important that is in this case though.  What is
+>> the reason for making this change (other than tidiness)?
+>
+> Tidiness is the only reason.
+>
+> Please don't hesitate to nack this patch if you think we shouldn't
+> change the historical behaviour, the cleanup is very minor.
 
-> To be able to utilize 128 GiB of memory on a host, does one need to enable 
-> NUMA support? Currently only 64 GiB is showing up.
+It is hard to think of something that might break because of this, so
+I'll remain silent.
 
-How much memory does the BIOS say the system has?
+> As for me, I think it is a bit strange we append "%.pid" depending on
+> is_multithreaded, the same app can have 1 or more threads for various
 
-Can you get the e820 memory map (from early boot up) of the systems?
- 
-> As far as machine name/motherboard type, I do not have this information 
-> currently but I am told there are one or two of these boxes are running 
-> CentOS 5.x and/or RHEL5/AS.
+Agreed.  It is strange.
 
-Hopefully not with 64GB each :))
- 
-> Is there something special you need to do to utilize all 128 GiB of 
-> memory?
+Cheers,
 
-You need to use a 64 bit kernel, for one.
+Michael
+
+> reasons when the coredump happens, but this behaviour is very old and
+> perhaps it is too late to change.
+>
+> Oleg.
+>
+>
+
+
 
 -- 
-All rights reversed.
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
