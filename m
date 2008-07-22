@@ -1,353 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbYGVRpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbYGVRwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753342AbYGVRpH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 13:45:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYGVRov
+	id S1754073AbYGVRwn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 13:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbYGVRwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 13:44:51 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:25242 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752300AbYGVRot (ORCPT
+	Tue, 22 Jul 2008 13:52:34 -0400
+Received: from outbound-mail-123.bluehost.com ([67.222.38.23]:42853 "HELO
+	outbound-mail-123.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750875AbYGVRwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 13:44:49 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:to:cc:subject:message-id:mime-version:content-type;
-	b=Ph23qmK6XdoeQV5Pt+6D4j8M6cKSmU1z4Z6iWfhPM+9t066ddOMe9oBOBaeUdqguT
-	U7I3TLdtldNHicgj7JKvA==
-Date: Tue, 22 Jul 2008 10:44:18 -0700 (PDT)
-From: Ranjit Manomohan <ranjitm@google.com>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-cc: lizf@cn.fujitsu.com, kaber@trash.net, menage@google.com
-Subject: [PATCH] Traffic control cgroups subsystem
-Message-ID: <Pine.LNX.4.64.0807221041210.1091@ranjit.corp.google.com>
+	Tue, 22 Jul 2008 13:52:33 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=cbtpohoownVUQHtql8Yd5dqrO7LSgc6AQyjcxLb32qhIQEtdhLyick5bMJxy5A3kOFID6QyeCBHBNDpPulmzokJs5DETeaWV62ToA85M8BxmqL/rFshhjOPMN0hX0pgd;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Michal Schmidt <mschmidt@redhat.com>
+Subject: Re: PCI: MSI interrupts masked using prohibited method
+Date: Tue, 22 Jul 2008 10:52:26 -0700
+User-Agent: KMail/1.9.9
+Cc: David Vrabel <david.vrabel@csr.com>, Matthew Wilcox <matthew@wil.cx>,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <4860D09D.4060801@csr.com> <48807166.9010006@csr.com> <20080722155629.1160635e@brian.englab.brq.redhat.com>
+In-Reply-To: <20080722155629.1160635e@brian.englab.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807221052.26879.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Take 3] -- Fixed additional comments from Patrick McHardy
+On Tuesday, July 22, 2008 6:56 am Michal Schmidt wrote:
+> On Fri, 18 Jul 2008 11:33:10 +0100
+>
+> David Vrabel <david.vrabel@csr.com> wrote:
+> > Matthew Wilcox wrote:
+> > > I think David's original patch (just declining to mask the
+> > > interrupt) is the best approach to take.  Perhaps architectures
+> > > with saner interrupt hardware would like to try the approach I've
+> > > mentioned here.
+> > >
+> > > I don't like the comment in http://lkml.org/lkml/2008/6/27/199 as
+> > > it's not prohibited ... just a bad idea.  How about this patch?
+> >
+> > The PCI specification is quite clear that it's prohibited.  The
+> > problem also is more severe than simply having spurious interrupts --
+> > with some devices if a line interrupt is generated (regardless of
+> > whether it ends up on the bus) then no more interrupts are generated.
+> >
+> > I also think that the change requires a comment in the code.  It odd
+> > to have a mask function that doesn't really mask so a comment is
+> > necessary to explain why this is.
+> >
+> > Please apply this instead.
+> >
+> > David
+>
+> This breaks the setting of SMP affinity for MSI interrupts :-(
+> With the patch, writes to /proc/irq/<n>/smp_affinity are ignored for an
+> MSI interrupt.
 
-This patch provides a simple resource controller (cgroup_tc) based on the
-cgroups infrastructure to manage network traffic. The cgroup_tc resource
-controller can be used to schedule and shape traffic belonging to the task(s)
-in a particular cgroup.
+It should only break it for devices that don't provide a mask bit.  But given 
+that we can't really mask generically on those devices, maybe that's ok given 
+that it fixes the other problems mentioned in this thread...
 
-The implementation consists of two parts:
-
-1) A resource controller (cgroup_tc) that is used to associate packets from
-    a particular task belonging to a cgroup with a traffic control class id (
-    tc_classid). This tc_classid is propagated to all sockets created by tasks
-    in the cgroup and will be used for classifying packets at the link layer.
-
-2) A modified traffic control classifier (cls_flow) that can classify packets
-    based on the tc_classid field in the socket to specific destination classes.
-
-An example of the use of this resource controller would be to limit
-the traffic from all tasks from a file_server cgroup to 100Mbps. We could
-achieve this by doing:
-
-# make a cgroup of file transfer processes and assign it a uniqe classid
-# of 0x10 - this will be used lated to direct packets.
-mkdir -p /dev/cgroup
-mount -t cgroup tc -otc /dev/cgroup
-mkdir /dev/cgroup/file_transfer
-echo 0x10 > /dev/cgroup/file_transfer/tc.classid
-echo $PID_OF_FILE_XFER_PROCESS > /dev/cgroup/file_transfer/tasks
-
-# Now create a HTB class that rate limits traffic to 100mbits and attach
-# a filter to direct all traffic from cgroup file_transfer to this new class.
-tc qdisc add dev eth0 root handle 1: htb
-tc class add dev eth0 parent 1: classid 1:10 htb rate 100mbit ceil 100mbit
-tc filter add dev eth0 parent 1: handle 800 protocol ip prio 1 flow map key cgroup-classid baseclass 1:10
-
-Signed-off-by: Ranjit Manomohan <ranjitm@google.com>
-
----
-diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
-index e287745..4b12372 100644
---- a/include/linux/cgroup_subsys.h
-+++ b/include/linux/cgroup_subsys.h
-@@ -48,3 +48,9 @@ SUBSYS(devices)
-  #endif
-
-  /* */
-+
-+#ifdef CONFIG_CGROUP_TC
-+SUBSYS(tc)
-+#endif
-+
-+/* */
-diff --git a/include/linux/cgroup_tc.h b/include/linux/cgroup_tc.h
-new file mode 100644
-index 0000000..e4ba6a1
---- /dev/null
-+++ b/include/linux/cgroup_tc.h
-@@ -0,0 +1,20 @@
-+#ifndef __LINUX_CGROUP_TC_H
-+#define __LINUX_CGROUP_TC_H
-+
-+/* Interface to obtain tasks cgroup identifier. */
-+
-+#include <linux/cgroup.h>
-+#include <linux/skbuff.h>
-+#include <net/sock.h>
-+
-+#ifdef CONFIG_CGROUP_TC
-+
-+void cgroup_tc_set_sock_classid(struct sock *sk);
-+
-+#else
-+
-+#define cgroup_tc_set_sock_classid(sk)
-+
-+#endif /* CONFIG_CGROUP_TC */
-+
-+#endif /* __LINUX_CGROUP_TC_H */
-diff --git a/include/linux/pkt_cls.h b/include/linux/pkt_cls.h
-index 99efbed..deead80 100644
---- a/include/linux/pkt_cls.h
-+++ b/include/linux/pkt_cls.h
-@@ -349,6 +349,7 @@ enum
-  	FLOW_KEY_SKUID,
-  	FLOW_KEY_SKGID,
-  	FLOW_KEY_VLAN_TAG,
-+	FLOW_KEY_CGROUP_CLASSID,
-  	__FLOW_KEY_MAX,
-  };
-
-diff --git a/include/net/sock.h b/include/net/sock.h
-index dc42b44..7a4e09c 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -271,6 +271,9 @@ struct sock {
-  	int			sk_write_pending;
-  	void			*sk_security;
-  	__u32			sk_mark;
-+#ifdef CONFIG_CGROUP_TC
-+	__u32			sk_cgroup_classid;
-+#endif
-  	/* XXX 4 bytes hole on 64 bit */
-  	void			(*sk_state_change)(struct sock *sk);
-  	void			(*sk_data_ready)(struct sock *sk, int bytes);
-diff --git a/init/Kconfig b/init/Kconfig
-index 6135d07..c28fde8 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -289,6 +289,17 @@ config CGROUP_DEBUG
-
-  	  Say N if unsure
-
-+config CGROUP_TC
-+	bool "Traffic control cgroup subsystem"
-+	depends on CGROUPS
-+	default n
-+	help
-+	  This option enables a simple cgroup subsystem that
-+	  allows network traffic to be classified based on the
-+	  cgroup of the task originating the traffic.
-+
-+	  Say N if unsure
-+
-  config CGROUP_NS
-          bool "Namespace cgroup subsystem"
-          depends on CGROUPS
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 1c9938a..08b217b 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -42,6 +42,7 @@ obj-$(CONFIG_CGROUPS) += cgroup.o
-  obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
-  obj-$(CONFIG_CPUSETS) += cpuset.o
-  obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
-+obj-$(CONFIG_CGROUP_TC) += tc_cgroup.o
-  obj-$(CONFIG_UTS_NS) += utsname.o
-  obj-$(CONFIG_USER_NS) += user_namespace.o
-  obj-$(CONFIG_PID_NS) += pid_namespace.o
-diff --git a/kernel/tc_cgroup.c b/kernel/tc_cgroup.c
-new file mode 100644
-index 0000000..1c62a6c
---- /dev/null
-+++ b/kernel/tc_cgroup.c
-@@ -0,0 +1,108 @@
-+/*
-+ * tc_cgroup.c - traffic control cgroup subsystem
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/cgroup.h>
-+#include <linux/fs.h>
-+#include <linux/slab.h>
-+#include <linux/cgroup_tc.h>
-+
-+struct tc_cgroup {
-+	struct cgroup_subsys_state css;
-+	unsigned int classid;
-+};
-+
-+struct cgroup_subsys tc_subsys;
-+
-+static inline struct tc_cgroup *cgroup_to_tc(
-+		struct cgroup *cgroup)
-+{
-+	return container_of(cgroup_subsys_state(cgroup, tc_subsys_id),
-+			    struct tc_cgroup, css);
-+}
-+
-+static int cgroup_tc_classid(struct task_struct *tsk)
-+{
-+	int tc_classid;
-+
-+	rcu_read_lock();
-+	tc_classid =  container_of(task_subsys_state(tsk, tc_subsys_id),
-+					 struct tc_cgroup, css)->classid;
-+	rcu_read_unlock();
-+	return tc_classid;
-+}
-+
-+void cgroup_tc_set_sock_classid(struct sock *sk)
-+{
-+	if (sk)
-+		sk->sk_cgroup_classid = cgroup_tc_classid(current);
-+}
-+
-+static struct cgroup_subsys_state *tc_create(struct cgroup_subsys *ss,
-+						struct cgroup *cgroup)
-+{
-+	struct tc_cgroup *tc_cgroup;
-+
-+	tc_cgroup = kzalloc(sizeof(*tc_cgroup), GFP_KERNEL);
-+
-+	if (!tc_cgroup)
-+		return ERR_PTR(-ENOMEM);
-+
-+	/* Copy parent's class id if present */
-+	if (cgroup->parent)
-+		tc_cgroup->classid = cgroup_to_tc(cgroup->parent)->classid;
-+
-+	return &tc_cgroup->css;
-+}
-+
-+static void tc_destroy(struct cgroup_subsys *ss,
-+			struct cgroup *cgroup)
-+{
-+	kfree(cgroup_to_tc(cgroup));
-+}
-+
-+static int tc_write_u64(struct cgroup *cgrp, struct cftype *cft, u64 val)
-+{
-+	struct tc_cgroup *tc = cgroup_to_tc(cgrp);
-+
-+	cgroup_lock();
-+	if (cgroup_is_removed(cgrp)) {
-+		cgroup_unlock();
-+		return -ENODEV;
-+	}
-+
-+	tc->classid = (unsigned int) (val & 0xffffffff);
-+	cgroup_unlock();
-+	return 0;
-+}
-+
-+static u64 tc_read_u64(struct cgroup *cont, struct cftype *cft)
-+{
-+	struct tc_cgroup *tc = cgroup_to_tc(cont);
-+	return tc->classid;
-+}
-+
-+static struct cftype tc_files[] = {
-+	{
-+		.name = "classid",
-+		.read_u64 = tc_read_u64,
-+		.write_u64 = tc_write_u64,
-+	}
-+};
-+
-+static int tc_populate(struct cgroup_subsys *ss, struct cgroup *cont)
-+{
-+	int err;
-+	err = cgroup_add_files(cont, ss, tc_files, ARRAY_SIZE(tc_files));
-+	return err;
-+}
-+
-+struct cgroup_subsys tc_subsys = {
-+	.name = "tc",
-+	.create = tc_create,
-+	.destroy  = tc_destroy,
-+	.populate = tc_populate,
-+	.subsys_id = tc_subsys_id,
-+};
-diff --git a/net/sched/cls_flow.c b/net/sched/cls_flow.c
-index 971b867..68b2d2d 100644
---- a/net/sched/cls_flow.c
-+++ b/net/sched/cls_flow.c
-@@ -280,6 +280,15 @@ static u32 flow_get_vlan_tag(const struct sk_buff *skb)
-  	return tag & VLAN_VID_MASK;
-  }
-
-+static u32 flow_get_cgroup_classid(const struct sk_buff *skb)
-+{
-+#ifdef CONFIG_CGROUP_TC
-+	if (skb->sk)
-+		return skb->sk->sk_cgroup_classid;
-+#endif
-+	return 0;
-+}
-+
-  static u32 flow_key_get(const struct sk_buff *skb, int key)
-  {
-  	switch (key) {
-@@ -317,6 +326,8 @@ static u32 flow_key_get(const struct sk_buff *skb, int key)
-  		return flow_get_skgid(skb);
-  	case FLOW_KEY_VLAN_TAG:
-  		return flow_get_vlan_tag(skb);
-+	case FLOW_KEY_CGROUP_CLASSID:
-+		return flow_get_cgroup_classid(skb);
-  	default:
-  		WARN_ON(1);
-  		return 0;
-@@ -359,7 +370,12 @@ static int flow_classify(struct sk_buff *skb, struct tcf_proto *tp,
-  			classid %= f->divisor;
-
-  		res->class   = 0;
--		res->classid = TC_H_MAKE(f->baseclass, f->baseclass + classid);
-+
-+		if (key == FLOW_KEY_CGROUP_CLASSID)
-+			res->classid = TC_H_MAKE(f->baseclass, classid);
-+		else
-+			res->classid = TC_H_MAKE(f->baseclass,
-+						 f->baseclass + classid);
-
-  		r = tcf_exts_exec(skb, &f->exts, res);
-  		if (r < 0)
-diff --git a/net/socket.c b/net/socket.c
-index 66c4a8c..b7421ec 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -93,6 +93,7 @@
-
-  #include <net/sock.h>
-  #include <linux/netfilter.h>
-+#include <linux/cgroup_tc.h>
-
-  static int sock_no_open(struct inode *irrelevant, struct file *dontcare);
-  static ssize_t sock_aio_read(struct kiocb *iocb, const struct iovec *iov,
-@@ -1170,6 +1171,8 @@ static int __sock_create(struct net *net, int family, int type, int protocol,
-  	if (err < 0)
-  		goto out_module_put;
-
-+	cgroup_tc_set_sock_classid(sock->sk);
-+
-  	/*
-  	 * Now to bump the refcnt of the [loadable] module that owns this
-  	 * socket at sock_release time we decrement its refcnt.
-@@ -1444,6 +1447,8 @@ asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
-  	if (err < 0)
-  		goto out_fd;
-
-+	cgroup_tc_set_sock_classid(newsock->sk);
-+
-  	if (upeer_sockaddr) {
-  		if (newsock->ops->getname(newsock, (struct sockaddr *)address,
-  					  &len, 2) < 0) {
+Jesse
