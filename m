@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759558AbYGVXbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbYGVXbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759558AbYGVXbl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 19:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbYGVXXM
+	id S1759632AbYGVXbz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 19:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756631AbYGVXXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 19:23:12 -0400
-Received: from mail.suse.de ([195.135.220.2]:53644 "EHLO mx1.suse.de"
+	Tue, 22 Jul 2008 19:23:15 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58225 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756520AbYGVXXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 19:23:10 -0400
-Date: Tue, 22 Jul 2008 16:17:16 -0700
+	id S1756469AbYGVXXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 19:23:13 -0400
+Date: Tue, 22 Jul 2008 16:17:23 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Darren Jenkins <darrenrjenkins@gmail.com>, Karsten Keil <kkeil@suse.de>
-Subject: [patch 39/47] drivers/isdn/i4l/isdn_common.c fix small resource
-	leak
-Message-ID: <20080722231716.GN8282@suse.de>
+       Darren Jenkins <darrenrjenkins@gmail.com>,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: [patch 40/47] drivers/char/pcmcia/ipwireless/hardware.c fix
+	resource leak
+Message-ID: <20080722231723.GO8282@suse.de>
 References: <20080722230208.148102983@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="drivers-isdn-i4l-isdn_common.c-fix-small-resource-leak.patch"
+Content-Disposition: inline; filename="drivers-char-pcmcia-ipwireless-hardware.c-fix-resource-leak.patch"
 In-Reply-To: <20080722231342.GA8282@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,40 +43,38 @@ know.
 ------------------
 From: Darren Jenkins <darrenrjenkins@gmail.com>
 
-commit 4fc89e3911aa5357b55b85b60c4beaeb8a48a290 upstream
+commit 43f77e91eadbc290eb76a08110a039c809dde6c9 upstream
 
-Coverity CID: 1356 RESOURCE_LEAK
+Coverity CID: 2172 RESOURCE_LEAK
 
-I found a very old patch for this that was Acked but did not get applied
-https://lists.linux-foundation.org/pipermail/kernel-janitors/2006-September/016362.html
+When pool_allocate() tries to enlarge a packet, if it can not allocate enough
+memory, it returns NULL without first freeing the old packet.
 
-There looks to be a small leak in isdn_writebuf_stub() in isdn_common.c, when
-copy_from_user() returns an un-copied data length (length != 0).  The below
-patch should be a minimally invasive fix.
+This patch just frees the packet first.
 
 Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com>
-Acked-by: Karsten Keil <kkeil@suse.de>
+Acked-by: Jiri Kosina <jkosina@suse.cz>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/isdn/i4l/isdn_common.c |    4 +++-
+ drivers/char/pcmcia/ipwireless/hardware.c |    4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/drivers/isdn/i4l/isdn_common.c
-+++ b/drivers/isdn/i4l/isdn_common.c
-@@ -1977,8 +1977,10 @@ isdn_writebuf_stub(int drvidx, int chan,
- 	if (!skb)
- 		return -ENOMEM;
- 	skb_reserve(skb, hl);
--	if (copy_from_user(skb_put(skb, len), buf, len))
-+	if (copy_from_user(skb_put(skb, len), buf, len)) {
-+		dev_kfree_skb(skb);
- 		return -EFAULT;
-+	}
- 	ret = dev->drv[drvidx]->interface->writebuf_skb(drvidx, chan, 1, skb);
- 	if (ret <= 0)
- 		dev_kfree_skb(skb);
+--- a/drivers/char/pcmcia/ipwireless/hardware.c
++++ b/drivers/char/pcmcia/ipwireless/hardware.c
+@@ -616,8 +616,10 @@ static struct ipw_rx_packet *pool_alloca
+ 		packet = kmalloc(sizeof(struct ipw_rx_packet) +
+ 				old_packet->length + minimum_free_space,
+ 				GFP_ATOMIC);
+-		if (!packet)
++		if (!packet) {
++			kfree(old_packet);
+ 			return NULL;
++		}
+ 		memcpy(packet, old_packet,
+ 				sizeof(struct ipw_rx_packet)
+ 					+ old_packet->length);
 
 -- 
