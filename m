@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbYGVRkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbYGVRkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbYGVRkg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 13:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYGVRkK
+	id S1755036AbYGVRkz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 13:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbYGVRkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 13:40:10 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:40669 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752996AbYGVRkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 13:40:08 -0400
-Date: Tue, 22 Jul 2008 20:39:57 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: bjorn.helgaas@hp.com, linux-next@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next build error (PNP/IXJ)
-Message-ID: <20080722173957.GA14846@cs181140183.pp.htv.fi>
-References: <20080722102739.61462b04.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080722102739.61462b04.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 22 Jul 2008 13:40:45 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60331 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752912AbYGVRko (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 13:40:44 -0400
+Subject: Re: Firmware breakage
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
+In-Reply-To: <20080722173420.6f90556d@lxorguk.ukuu.org.uk>
+References: <20080722173420.6f90556d@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Tue, 22 Jul 2008 13:40:31 -0400
+Message-Id: <1216748431.3019.6.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 10:27:39AM -0700, Randy Dunlap wrote:
-> Hi,
+On Tue, 2008-07-22 at 17:34 +0100, Alan Cox wrote:
+> If you crossbuild x86-32 on x86-64 and then attempt to do the install on
+> an x86-32 box the install now breaks. This used to work until the
+> firmware changes. Now you get
 > 
-> I'm seeing several build errors in linux-next-20080722 that I haven't
-> seen previously, although I don't know what changed to cause this.
+> /bin/sh: scripts/basic/fixdep: cannot execute binary file
 > 
-> They are all basically the same, in ixj (drivers/telephony/ixj*), when
-> CONFIG_PNP=n, and CONFIG_PHONE_IXJ=y or =m (so the actual error message
-> varies depending on IXJ=y or =m):
-> 
-> IXJ=y:
-> ixj.c:(.text+0x329d98): undefined reference to `pnp_get_resource'
-> or IXJ=m:
-> ERROR: "pnp_get_resource" [drivers/telephony/ixj.ko] undefined!
-> 
-> 
-> Suggestions?
+> Fixdep should be built for the target platform surely ?
 
-Please send a .config
-
-> Thanks,
-
-cu
-Adrian
+Er, I haven't knowingly touched anything involving fixdep. Can you show
+me exactly what you did? I'll try to reproduce and understand what's
+happening.
 
 -- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
