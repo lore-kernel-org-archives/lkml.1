@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbYGVFpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760300AbYGVFqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757527AbYGVFpz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 01:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757769AbYGVF0p
+	id S1760300AbYGVFqx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 01:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757351AbYGVF05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 01:26:45 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43424 "EHLO mx2.suse.de"
+	Tue, 22 Jul 2008 01:26:57 -0400
+Received: from mx2.suse.de ([195.135.220.15]:43432 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757743AbYGVF0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 01:26:41 -0400
+	id S1757840AbYGVF0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 01:26:55 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Andi Kleen <andi@firstfloor.org>, Andi Kleen <ak@linux.intel.com>,
+Cc: David Altobelli <david.altobelli@hp.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 72/79] sysdev: Pass the attribute to the low level sysdev show/store function
-Date: Mon, 21 Jul 2008 22:19:36 -0700
-Message-Id: <1216703983-21448-72-git-send-email-gregkh@suse.de>
+Subject: [PATCH 75/79] HP iLO driver
+Date: Mon, 21 Jul 2008 22:19:39 -0700
+Message-Id: <1216703983-21448-75-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <20080722051805.GA17373@suse.de>
 References: <20080722051805.GA17373@suse.de>
@@ -23,1238 +23,1026 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
+From: David Altobelli <david.altobelli@hp.com>
 
-This allow to dynamically generate attributes and share show/store
-functions between attributes. Right now most attributes are generated
-by special macros and lots of duplicated code. With the attribute
-passed it's instead possible to attach some data to the attribute
-and then use that in shared low level functions to do different things.
+A driver for the HP iLO/iLO2 management processor, which allows userspace
+programs to query the management processor.  Programs can open a channel
+to the device (/dev/hpilo/dXccbN), and use this to send/receive queries.
+The O_EXCL open flag is used to indicate that a particular channel cannot
+be shared between processes.  This driver will replace various packages
+HP has shipped, including hprsm and hp-ilo.
 
-I need this for the dynamically generated bank attributes in the x86
-machine check code, but it'll allow some further cleanups.
-
-I converted all users in tree to the new show/store prototype. It's a single
-huge patch to avoid unbisectable sections.
-
-Runtime tested: x86-32, x86-64
-Compiled only: ia64, powerpc
-Not compile tested/only grep converted: sh, arm, avr32
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: David Altobelli <david.altobelli@hp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/arm/kernel/time.c                    |    4 ++-
- arch/avr32/kernel/cpu.c                   |   38 ++++++++++++++++--------
- arch/ia64/kernel/err_inject.c             |   22 +++++++++----
- arch/powerpc/kernel/sysfs.c               |   15 +++++++--
- arch/powerpc/platforms/cell/cbe_thermal.c |   45 +++++++++++++++++++---------
- arch/powerpc/platforms/cell/spu_base.c    |    3 +-
- arch/s390/kernel/smp.c                    |   36 +++++++++++++++--------
- arch/s390/kernel/time.c                   |   35 +++++++++++++++-------
- arch/sh/drivers/dma/dma-sysfs.c           |   15 +++++++--
- arch/sparc64/kernel/sysfs.c               |   16 +++++++---
- arch/x86/kernel/cpu/mcheck/mce_64.c       |   14 ++++++--
- arch/x86/kernel/cpu/mcheck/therm_throt.c  |    1 +
- arch/x86/kernel/microcode.c               |   10 ++++--
- drivers/base/cpu.c                        |   10 ++++--
- drivers/base/memory.c                     |   12 +++++--
- drivers/base/node.c                       |   15 ++++++---
- drivers/base/sys.c                        |    4 +-
- drivers/base/topology.c                   |   17 ++++++++---
- drivers/cpuidle/sysfs.c                   |   10 ++++--
- drivers/xen/balloon.c                     |    1 +
- include/linux/sysdev.h                    |    5 ++-
- kernel/rtmutex-tester.c                   |    7 ++--
- kernel/sched.c                            |    8 ++++-
- kernel/time/clocksource.c                 |    8 ++++-
- 24 files changed, 239 insertions(+), 112 deletions(-)
+ drivers/misc/Kconfig  |   13 +
+ drivers/misc/Makefile |    1 +
+ drivers/misc/hpilo.c  |  768 +++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/misc/hpilo.h  |  189 ++++++++++++
+ 4 files changed, 971 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/misc/hpilo.c
+ create mode 100644 drivers/misc/hpilo.h
 
-diff --git a/arch/arm/kernel/time.c b/arch/arm/kernel/time.c
-index cc5145b..368d171 100644
---- a/arch/arm/kernel/time.c
-+++ b/arch/arm/kernel/time.c
-@@ -130,7 +130,9 @@ static const struct leds_evt_name evt_names[] = {
- 	{ "red",   led_red_on,   led_red_off   },
- };
- 
--static ssize_t leds_store(struct sys_device *dev, const char *buf, size_t size)
-+static ssize_t leds_store(struct sys_device *dev,
-+			struct sysdev_attribute *attr,
-+			const char *buf, size_t size)
- {
- 	int ret = -EINVAL, len = strcspn(buf, " ");
- 
-diff --git a/arch/avr32/kernel/cpu.c b/arch/avr32/kernel/cpu.c
-index b8409ca..e84faff 100644
---- a/arch/avr32/kernel/cpu.c
-+++ b/arch/avr32/kernel/cpu.c
-@@ -26,14 +26,16 @@ static DEFINE_PER_CPU(struct cpu, cpu_devices);
-  * XXX: If/when a SMP-capable implementation of AVR32 will ever be
-  * made, we must make sure that the code executes on the correct CPU.
-  */
--static ssize_t show_pc0event(struct sys_device *dev, char *buf)
-+static ssize_t show_pc0event(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	unsigned long pccr;
- 
- 	pccr = sysreg_read(PCCR);
- 	return sprintf(buf, "0x%lx\n", (pccr >> 12) & 0x3f);
- }
--static ssize_t store_pc0event(struct sys_device *dev, const char *buf,
-+static ssize_t store_pc0event(struct sys_device *dev,
-+			struct sysdev_attribute *attr, const char *buf,
- 			      size_t count)
- {
- 	unsigned long val;
-@@ -46,15 +48,17 @@ static ssize_t store_pc0event(struct sys_device *dev, const char *buf,
- 	sysreg_write(PCCR, val);
- 	return count;
- }
--static ssize_t show_pc0count(struct sys_device *dev, char *buf)
-+static ssize_t show_pc0count(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	unsigned long pcnt0;
- 
- 	pcnt0 = sysreg_read(PCNT0);
- 	return sprintf(buf, "%lu\n", pcnt0);
- }
--static ssize_t store_pc0count(struct sys_device *dev, const char *buf,
--			      size_t count)
-+static ssize_t store_pc0count(struct sys_device *dev,
-+				struct sysdev_attribute *attr,
-+				const char *buf, size_t count)
- {
- 	unsigned long val;
- 	char *endp;
-@@ -67,14 +71,16 @@ static ssize_t store_pc0count(struct sys_device *dev, const char *buf,
- 	return count;
- }
- 
--static ssize_t show_pc1event(struct sys_device *dev, char *buf)
-+static ssize_t show_pc1event(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	unsigned long pccr;
- 
- 	pccr = sysreg_read(PCCR);
- 	return sprintf(buf, "0x%lx\n", (pccr >> 18) & 0x3f);
- }
--static ssize_t store_pc1event(struct sys_device *dev, const char *buf,
-+static ssize_t store_pc1event(struct sys_device *dev,
-+			      struct sysdev_attribute *attr, const char *buf,
- 			      size_t count)
- {
- 	unsigned long val;
-@@ -87,14 +93,16 @@ static ssize_t store_pc1event(struct sys_device *dev, const char *buf,
- 	sysreg_write(PCCR, val);
- 	return count;
- }
--static ssize_t show_pc1count(struct sys_device *dev, char *buf)
-+static ssize_t show_pc1count(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	unsigned long pcnt1;
- 
- 	pcnt1 = sysreg_read(PCNT1);
- 	return sprintf(buf, "%lu\n", pcnt1);
- }
--static ssize_t store_pc1count(struct sys_device *dev, const char *buf,
-+static ssize_t store_pc1count(struct sys_device *dev,
-+				struct sysdev_attribute *attr, const char *buf,
- 			      size_t count)
- {
- 	unsigned long val;
-@@ -108,14 +116,16 @@ static ssize_t store_pc1count(struct sys_device *dev, const char *buf,
- 	return count;
- }
- 
--static ssize_t show_pccycles(struct sys_device *dev, char *buf)
-+static ssize_t show_pccycles(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	unsigned long pccnt;
- 
- 	pccnt = sysreg_read(PCCNT);
- 	return sprintf(buf, "%lu\n", pccnt);
- }
--static ssize_t store_pccycles(struct sys_device *dev, const char *buf,
-+static ssize_t store_pccycles(struct sys_device *dev,
-+				struct sysdev_attribute *attr, const char *buf,
- 			      size_t count)
- {
- 	unsigned long val;
-@@ -129,14 +139,16 @@ static ssize_t store_pccycles(struct sys_device *dev, const char *buf,
- 	return count;
- }
- 
--static ssize_t show_pcenable(struct sys_device *dev, char *buf)
-+static ssize_t show_pcenable(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	unsigned long pccr;
- 
- 	pccr = sysreg_read(PCCR);
- 	return sprintf(buf, "%c\n", (pccr & 1)?'1':'0');
- }
--static ssize_t store_pcenable(struct sys_device *dev, const char *buf,
-+static ssize_t store_pcenable(struct sys_device *dev,
-+			      struct sysdev_attribute *attr, const char *buf,
- 			      size_t count)
- {
- 	unsigned long pccr, val;
-diff --git a/arch/ia64/kernel/err_inject.c b/arch/ia64/kernel/err_inject.c
-index b642648..c539c68 100644
---- a/arch/ia64/kernel/err_inject.c
-+++ b/arch/ia64/kernel/err_inject.c
-@@ -55,7 +55,8 @@ static u64 resources[NR_CPUS];
- 
- #define show(name) 							\
- static ssize_t 								\
--show_##name(struct sys_device *dev, char *buf)				\
-+show_##name(struct sys_device *dev, struct sysdev_attribute *attr,	\
-+		char *buf)						\
- {									\
- 	u32 cpu=dev->id;						\
- 	return sprintf(buf, "%lx\n", name[cpu]);			\
-@@ -63,7 +64,8 @@ show_##name(struct sys_device *dev, char *buf)				\
- 
- #define store(name)							\
- static ssize_t 								\
--store_##name(struct sys_device *dev, const char *buf, size_t size)	\
-+store_##name(struct sys_device *dev, struct sysdev_attribute *attr,	\
-+					const char *buf, size_t size)	\
- {									\
- 	unsigned int cpu=dev->id;					\
- 	name[cpu] = simple_strtoull(buf, NULL, 16);			\
-@@ -76,7 +78,8 @@ show(call_start)
-  * processor. The cpu number in driver is only used for storing data.
-  */
- static ssize_t
--store_call_start(struct sys_device *dev, const char *buf, size_t size)
-+store_call_start(struct sys_device *dev, struct sysdev_attribute *attr,
-+		const char *buf, size_t size)
- {
- 	unsigned int cpu=dev->id;
- 	unsigned long call_start = simple_strtoull(buf, NULL, 16);
-@@ -124,14 +127,16 @@ show(err_type_info)
- store(err_type_info)
- 
- static ssize_t
--show_virtual_to_phys(struct sys_device *dev, char *buf)
-+show_virtual_to_phys(struct sys_device *dev, struct sysdev_attribute *attr,
-+			char *buf)
- {
- 	unsigned int cpu=dev->id;
- 	return sprintf(buf, "%lx\n", phys_addr[cpu]);
- }
- 
- static ssize_t
--store_virtual_to_phys(struct sys_device *dev, const char *buf, size_t size)
-+store_virtual_to_phys(struct sys_device *dev, struct sysdev_attribute *attr,
-+			const char *buf, size_t size)
- {
- 	unsigned int cpu=dev->id;
- 	u64 virt_addr=simple_strtoull(buf, NULL, 16);
-@@ -154,7 +159,8 @@ show(err_struct_info)
- store(err_struct_info)
- 
- static ssize_t
--show_err_data_buffer(struct sys_device *dev, char *buf)
-+show_err_data_buffer(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	unsigned int cpu=dev->id;
- 
-@@ -165,7 +171,9 @@ show_err_data_buffer(struct sys_device *dev, char *buf)
- }
- 
- static ssize_t
--store_err_data_buffer(struct sys_device *dev, const char *buf, size_t size)
-+store_err_data_buffer(struct sys_device *dev,
-+			struct sysdev_attribute *attr,
-+			const char *buf, size_t size)
- {
- 	unsigned int cpu=dev->id;
- 	int ret;
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index c8127f8..aba0ba9 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -28,7 +28,9 @@ static DEFINE_PER_CPU(struct cpu, cpu_devices);
- /* Time in microseconds we delay before sleeping in the idle loop */
- DEFINE_PER_CPU(unsigned long, smt_snooze_delay) = { 100 };
- 
--static ssize_t store_smt_snooze_delay(struct sys_device *dev, const char *buf,
-+static ssize_t store_smt_snooze_delay(struct sys_device *dev,
-+				      struct sysdev_attribute *attr,
-+				      const char *buf,
- 				      size_t count)
- {
- 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-@@ -44,7 +46,9 @@ static ssize_t store_smt_snooze_delay(struct sys_device *dev, const char *buf,
- 	return count;
- }
- 
--static ssize_t show_smt_snooze_delay(struct sys_device *dev, char *buf)
-+static ssize_t show_smt_snooze_delay(struct sys_device *dev,
-+				     struct sysdev_attribute *attr,
-+				     char *buf)
- {
- 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
- 
-@@ -152,14 +156,17 @@ static unsigned long write_##NAME(unsigned long val) \
- 	mtspr(ADDRESS, val); \
- 	return 0; \
- } \
--static ssize_t show_##NAME(struct sys_device *dev, char *buf) \
-+static ssize_t show_##NAME(struct sys_device *dev, \
-+			struct sysdev_attribute *attr, \
-+			char *buf) \
- { \
- 	struct cpu *cpu = container_of(dev, struct cpu, sysdev); \
- 	unsigned long val = run_on_cpu(cpu->sysdev.id, read_##NAME, 0); \
- 	return sprintf(buf, "%lx\n", val); \
- } \
- static ssize_t __used \
--	store_##NAME(struct sys_device *dev, const char *buf, size_t count) \
-+	store_##NAME(struct sys_device *dev, struct sysdev_attribute *attr, \
-+			const char *buf, size_t count) \
- { \
- 	struct cpu *cpu = container_of(dev, struct cpu, sysdev); \
- 	unsigned long val; \
-diff --git a/arch/powerpc/platforms/cell/cbe_thermal.c b/arch/powerpc/platforms/cell/cbe_thermal.c
-index 4852bf3..4d4c8c1 100644
---- a/arch/powerpc/platforms/cell/cbe_thermal.c
-+++ b/arch/powerpc/platforms/cell/cbe_thermal.c
-@@ -97,7 +97,8 @@ static u8 spu_read_register_value(struct sys_device *sysdev, union spe_reg __iom
- 	return value.spe[spu->spe_id];
- }
- 
--static ssize_t spu_show_temp(struct sys_device *sysdev, char *buf)
-+static ssize_t spu_show_temp(struct sys_device *sysdev, struct sysdev_attribute *attr,
-+			char *buf)
- {
- 	u8 value;
- 	struct cbe_pmd_regs __iomem *pmd_regs;
-@@ -146,32 +147,38 @@ static ssize_t store_throttle(struct cbe_pmd_regs __iomem *pmd_regs, const char
- 	return size;
- }
- 
--static ssize_t spu_show_throttle_end(struct sys_device *sysdev, char *buf)
-+static ssize_t spu_show_throttle_end(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	return show_throttle(get_pmd_regs(sysdev), buf, 0);
- }
- 
--static ssize_t spu_show_throttle_begin(struct sys_device *sysdev, char *buf)
-+static ssize_t spu_show_throttle_begin(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	return show_throttle(get_pmd_regs(sysdev), buf, 8);
- }
- 
--static ssize_t spu_show_throttle_full_stop(struct sys_device *sysdev, char *buf)
-+static ssize_t spu_show_throttle_full_stop(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	return show_throttle(get_pmd_regs(sysdev), buf, 16);
- }
- 
--static ssize_t spu_store_throttle_end(struct sys_device *sysdev, const char *buf, size_t size)
-+static ssize_t spu_store_throttle_end(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, const char *buf, size_t size)
- {
- 	return store_throttle(get_pmd_regs(sysdev), buf, size, 0);
- }
- 
--static ssize_t spu_store_throttle_begin(struct sys_device *sysdev, const char *buf, size_t size)
-+static ssize_t spu_store_throttle_begin(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, const char *buf, size_t size)
- {
- 	return store_throttle(get_pmd_regs(sysdev), buf, size, 8);
- }
- 
--static ssize_t spu_store_throttle_full_stop(struct sys_device *sysdev, const char *buf, size_t size)
-+static ssize_t spu_store_throttle_full_stop(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, const char *buf, size_t size)
- {
- 	return store_throttle(get_pmd_regs(sysdev), buf, size, 16);
- }
-@@ -192,43 +199,51 @@ static ssize_t ppe_show_temp(struct sys_device *sysdev, char *buf, int pos)
- 
- /* shows the temperature of the DTS on the PPE,
-  * located near the linear thermal sensor */
--static ssize_t ppe_show_temp0(struct sys_device *sysdev, char *buf)
-+static ssize_t ppe_show_temp0(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	return ppe_show_temp(sysdev, buf, 32);
- }
- 
- /* shows the temperature of the second DTS on the PPE */
--static ssize_t ppe_show_temp1(struct sys_device *sysdev, char *buf)
-+static ssize_t ppe_show_temp1(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	return ppe_show_temp(sysdev, buf, 0);
- }
- 
--static ssize_t ppe_show_throttle_end(struct sys_device *sysdev, char *buf)
-+static ssize_t ppe_show_throttle_end(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	return show_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, 32);
- }
- 
--static ssize_t ppe_show_throttle_begin(struct sys_device *sysdev, char *buf)
-+static ssize_t ppe_show_throttle_begin(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	return show_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, 40);
- }
- 
--static ssize_t ppe_show_throttle_full_stop(struct sys_device *sysdev, char *buf)
-+static ssize_t ppe_show_throttle_full_stop(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	return show_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, 48);
- }
- 
--static ssize_t ppe_store_throttle_end(struct sys_device *sysdev, const char *buf, size_t size)
-+static ssize_t ppe_store_throttle_end(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, const char *buf, size_t size)
- {
- 	return store_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, size, 32);
- }
- 
--static ssize_t ppe_store_throttle_begin(struct sys_device *sysdev, const char *buf, size_t size)
-+static ssize_t ppe_store_throttle_begin(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, const char *buf, size_t size)
- {
- 	return store_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, size, 40);
- }
- 
--static ssize_t ppe_store_throttle_full_stop(struct sys_device *sysdev, const char *buf, size_t size)
-+static ssize_t ppe_store_throttle_full_stop(struct sys_device *sysdev,
-+			struct sysdev_attribute *attr, const char *buf, size_t size)
- {
- 	return store_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, size, 48);
- }
-diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
-index 78f905b..a5bdb89 100644
---- a/arch/powerpc/platforms/cell/spu_base.c
-+++ b/arch/powerpc/platforms/cell/spu_base.c
-@@ -703,7 +703,8 @@ static unsigned long long spu_acct_time(struct spu *spu,
- }
- 
- 
--static ssize_t spu_stat_show(struct sys_device *sysdev, char *buf)
-+static ssize_t spu_stat_show(struct sys_device *sysdev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	struct spu *spu = container_of(sysdev, struct spu, sysdev);
- 
-diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
-index b678103..b795b3e 100644
---- a/arch/s390/kernel/smp.c
-+++ b/arch/s390/kernel/smp.c
-@@ -864,7 +864,8 @@ int setup_profiling_timer(unsigned int multiplier)
- }
- 
- #ifdef CONFIG_HOTPLUG_CPU
--static ssize_t cpu_configure_show(struct sys_device *dev, char *buf)
-+static ssize_t cpu_configure_show(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	ssize_t count;
- 
-@@ -874,8 +875,9 @@ static ssize_t cpu_configure_show(struct sys_device *dev, char *buf)
- 	return count;
- }
- 
--static ssize_t cpu_configure_store(struct sys_device *dev, const char *buf,
--				   size_t count)
-+static ssize_t cpu_configure_store(struct sys_device *dev,
-+				  struct sysdev_attribute *attr,
-+				  const char *buf, size_t count)
- {
- 	int cpu = dev->id;
- 	int val, rc;
-@@ -922,7 +924,8 @@ out:
- static SYSDEV_ATTR(configure, 0644, cpu_configure_show, cpu_configure_store);
- #endif /* CONFIG_HOTPLUG_CPU */
- 
--static ssize_t cpu_polarization_show(struct sys_device *dev, char *buf)
-+static ssize_t cpu_polarization_show(struct sys_device *dev,
-+				     struct sysdev_attribute *attr, char *buf)
- {
- 	int cpu = dev->id;
- 	ssize_t count;
-@@ -950,7 +953,8 @@ static ssize_t cpu_polarization_show(struct sys_device *dev, char *buf)
- }
- static SYSDEV_ATTR(polarization, 0444, cpu_polarization_show, NULL);
- 
--static ssize_t show_cpu_address(struct sys_device *dev, char *buf)
-+static ssize_t show_cpu_address(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	return sprintf(buf, "%d\n", __cpu_logical_map[dev->id]);
- }
-@@ -970,7 +974,8 @@ static struct attribute_group cpu_common_attr_group = {
- 	.attrs = cpu_common_attrs,
- };
- 
--static ssize_t show_capability(struct sys_device *dev, char *buf)
-+static ssize_t show_capability(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	unsigned int capability;
- 	int rc;
-@@ -982,7 +987,8 @@ static ssize_t show_capability(struct sys_device *dev, char *buf)
- }
- static SYSDEV_ATTR(capability, 0444, show_capability, NULL);
- 
--static ssize_t show_idle_count(struct sys_device *dev, char *buf)
-+static ssize_t show_idle_count(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	struct s390_idle_data *idle;
- 	unsigned long long idle_count;
-@@ -995,7 +1001,8 @@ static ssize_t show_idle_count(struct sys_device *dev, char *buf)
- }
- static SYSDEV_ATTR(idle_count, 0444, show_idle_count, NULL);
- 
--static ssize_t show_idle_time(struct sys_device *dev, char *buf)
-+static ssize_t show_idle_time(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	struct s390_idle_data *idle;
- 	unsigned long long new_time;
-@@ -1112,7 +1119,9 @@ out:
- 	return rc;
- }
- 
--static ssize_t __ref rescan_store(struct sys_device *dev, const char *buf,
-+static ssize_t __ref rescan_store(struct sys_device *dev,
-+				  struct sysdev_attribute *attr,
-+				  const char *buf,
- 				  size_t count)
- {
- 	int rc;
-@@ -1123,7 +1132,9 @@ static ssize_t __ref rescan_store(struct sys_device *dev, const char *buf,
- static SYSDEV_ATTR(rescan, 0200, NULL, rescan_store);
- #endif /* CONFIG_HOTPLUG_CPU */
- 
--static ssize_t dispatching_show(struct sys_device *dev, char *buf)
-+static ssize_t dispatching_show(struct sys_device *dev,
-+				struct sysdev_attribute *attr,
-+				char *buf)
- {
- 	ssize_t count;
- 
-@@ -1133,8 +1144,9 @@ static ssize_t dispatching_show(struct sys_device *dev, char *buf)
- 	return count;
- }
- 
--static ssize_t dispatching_store(struct sys_device *dev, const char *buf,
--				 size_t count)
-+static ssize_t dispatching_store(struct sys_device *dev,
-+				 struct sysdev_attribute *attr,
-+				 const char *buf, size_t count)
- {
- 	int val, rc;
- 	char delim;
-diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
-index f2cede3..ab70d9b 100644
---- a/arch/s390/kernel/time.c
-+++ b/arch/s390/kernel/time.c
-@@ -1100,7 +1100,9 @@ static inline struct etr_aib *etr_aib_from_dev(struct sys_device *dev)
- 		return etr_port1_online ? &etr_port1 : NULL;
- }
- 
--static ssize_t etr_online_show(struct sys_device *dev, char *buf)
-+static ssize_t etr_online_show(struct sys_device *dev,
-+				struct sysdev_attribute *attr,
-+				char *buf)
- {
- 	unsigned int online;
- 
-@@ -1109,7 +1111,8 @@ static ssize_t etr_online_show(struct sys_device *dev, char *buf)
- }
- 
- static ssize_t etr_online_store(struct sys_device *dev,
--			      const char *buf, size_t count)
-+				struct sysdev_attribute *attr,
-+				const char *buf, size_t count)
- {
- 	unsigned int value;
- 
-@@ -1136,7 +1139,9 @@ static ssize_t etr_online_store(struct sys_device *dev,
- 
- static SYSDEV_ATTR(online, 0600, etr_online_show, etr_online_store);
- 
--static ssize_t etr_stepping_control_show(struct sys_device *dev, char *buf)
-+static ssize_t etr_stepping_control_show(struct sys_device *dev,
-+					struct sysdev_attribute *attr,
-+					char *buf)
- {
- 	return sprintf(buf, "%i\n", (dev == &etr_port0_dev) ?
- 		       etr_eacr.e0 : etr_eacr.e1);
-@@ -1144,7 +1149,8 @@ static ssize_t etr_stepping_control_show(struct sys_device *dev, char *buf)
- 
- static SYSDEV_ATTR(stepping_control, 0400, etr_stepping_control_show, NULL);
- 
--static ssize_t etr_mode_code_show(struct sys_device *dev, char *buf)
-+static ssize_t etr_mode_code_show(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	if (!etr_port0_online && !etr_port1_online)
- 		/* Status word is not uptodate if both ports are offline. */
-@@ -1155,7 +1161,8 @@ static ssize_t etr_mode_code_show(struct sys_device *dev, char *buf)
- 
- static SYSDEV_ATTR(state_code, 0400, etr_mode_code_show, NULL);
- 
--static ssize_t etr_untuned_show(struct sys_device *dev, char *buf)
-+static ssize_t etr_untuned_show(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	struct etr_aib *aib = etr_aib_from_dev(dev);
- 
-@@ -1166,7 +1173,8 @@ static ssize_t etr_untuned_show(struct sys_device *dev, char *buf)
- 
- static SYSDEV_ATTR(untuned, 0400, etr_untuned_show, NULL);
- 
--static ssize_t etr_network_id_show(struct sys_device *dev, char *buf)
-+static ssize_t etr_network_id_show(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	struct etr_aib *aib = etr_aib_from_dev(dev);
- 
-@@ -1177,7 +1185,8 @@ static ssize_t etr_network_id_show(struct sys_device *dev, char *buf)
- 
- static SYSDEV_ATTR(network, 0400, etr_network_id_show, NULL);
- 
--static ssize_t etr_id_show(struct sys_device *dev, char *buf)
-+static ssize_t etr_id_show(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	struct etr_aib *aib = etr_aib_from_dev(dev);
- 
-@@ -1188,7 +1197,8 @@ static ssize_t etr_id_show(struct sys_device *dev, char *buf)
- 
- static SYSDEV_ATTR(id, 0400, etr_id_show, NULL);
- 
--static ssize_t etr_port_number_show(struct sys_device *dev, char *buf)
-+static ssize_t etr_port_number_show(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	struct etr_aib *aib = etr_aib_from_dev(dev);
- 
-@@ -1199,7 +1209,8 @@ static ssize_t etr_port_number_show(struct sys_device *dev, char *buf)
- 
- static SYSDEV_ATTR(port, 0400, etr_port_number_show, NULL);
- 
--static ssize_t etr_coupled_show(struct sys_device *dev, char *buf)
-+static ssize_t etr_coupled_show(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	struct etr_aib *aib = etr_aib_from_dev(dev);
- 
-@@ -1210,7 +1221,8 @@ static ssize_t etr_coupled_show(struct sys_device *dev, char *buf)
- 
- static SYSDEV_ATTR(coupled, 0400, etr_coupled_show, NULL);
- 
--static ssize_t etr_local_time_show(struct sys_device *dev, char *buf)
-+static ssize_t etr_local_time_show(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	struct etr_aib *aib = etr_aib_from_dev(dev);
- 
-@@ -1221,7 +1233,8 @@ static ssize_t etr_local_time_show(struct sys_device *dev, char *buf)
- 
- static SYSDEV_ATTR(local_time, 0400, etr_local_time_show, NULL);
- 
--static ssize_t etr_utc_offset_show(struct sys_device *dev, char *buf)
-+static ssize_t etr_utc_offset_show(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	struct etr_aib *aib = etr_aib_from_dev(dev);
- 
-diff --git a/arch/sh/drivers/dma/dma-sysfs.c b/arch/sh/drivers/dma/dma-sysfs.c
-index 51b57c0..347ee11 100644
---- a/arch/sh/drivers/dma/dma-sysfs.c
-+++ b/arch/sh/drivers/dma/dma-sysfs.c
-@@ -23,7 +23,8 @@ static struct sysdev_class dma_sysclass = {
- };
- EXPORT_SYMBOL(dma_sysclass);
- 
--static ssize_t dma_show_devices(struct sys_device *dev, char *buf)
-+static ssize_t dma_show_devices(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	ssize_t len = 0;
- 	int i;
-@@ -57,13 +58,15 @@ static int __init dma_sysclass_init(void)
- }
- postcore_initcall(dma_sysclass_init);
- 
--static ssize_t dma_show_dev_id(struct sys_device *dev, char *buf)
-+static ssize_t dma_show_dev_id(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	struct dma_channel *channel = to_dma_channel(dev);
- 	return sprintf(buf, "%s\n", channel->dev_id);
- }
- 
- static ssize_t dma_store_dev_id(struct sys_device *dev,
-+				struct sysdev_attribute *attr,
- 				const char *buf, size_t count)
- {
- 	struct dma_channel *channel = to_dma_channel(dev);
-@@ -74,6 +77,7 @@ static ssize_t dma_store_dev_id(struct sys_device *dev,
- static SYSDEV_ATTR(dev_id, S_IRUGO | S_IWUSR, dma_show_dev_id, dma_store_dev_id);
- 
- static ssize_t dma_store_config(struct sys_device *dev,
-+				struct sysdev_attribute *attr,
- 				const char *buf, size_t count)
- {
- 	struct dma_channel *channel = to_dma_channel(dev);
-@@ -87,13 +91,15 @@ static ssize_t dma_store_config(struct sys_device *dev,
- 
- static SYSDEV_ATTR(config, S_IWUSR, NULL, dma_store_config);
- 
--static ssize_t dma_show_mode(struct sys_device *dev, char *buf)
-+static ssize_t dma_show_mode(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	struct dma_channel *channel = to_dma_channel(dev);
- 	return sprintf(buf, "0x%08x\n", channel->mode);
- }
- 
- static ssize_t dma_store_mode(struct sys_device *dev,
-+			      struct sysdev_attribute *attr,
- 			      const char *buf, size_t count)
- {
- 	struct dma_channel *channel = to_dma_channel(dev);
-@@ -104,7 +110,8 @@ static ssize_t dma_store_mode(struct sys_device *dev,
- static SYSDEV_ATTR(mode, S_IRUGO | S_IWUSR, dma_show_mode, dma_store_mode);
- 
- #define dma_ro_attr(field, fmt)						\
--static ssize_t dma_show_##field(struct sys_device *dev, char *buf)	\
-+static ssize_t dma_show_##field(struct sys_device *dev, 		\
-+				struct sysdev_attribute *attr, char *buf)\
- {									\
- 	struct dma_channel *channel = to_dma_channel(dev);		\
- 	return sprintf(buf, fmt, channel->field);			\
-diff --git a/arch/sparc64/kernel/sysfs.c b/arch/sparc64/kernel/sysfs.c
-index e885034..84e5ce1 100644
---- a/arch/sparc64/kernel/sysfs.c
-+++ b/arch/sparc64/kernel/sysfs.c
-@@ -14,7 +14,8 @@
- static DEFINE_PER_CPU(struct hv_mmu_statistics, mmu_stats) __attribute__((aligned(64)));
- 
- #define SHOW_MMUSTAT_ULONG(NAME) \
--static ssize_t show_##NAME(struct sys_device *dev, char *buf) \
-+static ssize_t show_##NAME(struct sys_device *dev, \
-+			struct sysdev_attribute *attr, char *buf) \
- { \
- 	struct hv_mmu_statistics *p = &per_cpu(mmu_stats, dev->id); \
- 	return sprintf(buf, "%lu\n", p->NAME); \
-@@ -135,13 +136,16 @@ static unsigned long write_mmustat_enable(unsigned long val)
- 	return sun4v_mmustat_conf(ra, &orig_ra);
- }
- 
--static ssize_t show_mmustat_enable(struct sys_device *s, char *buf)
-+static ssize_t show_mmustat_enable(struct sys_device *s,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	unsigned long val = run_on_cpu(s->id, read_mmustat_enable, 0);
- 	return sprintf(buf, "%lx\n", val);
- }
- 
--static ssize_t store_mmustat_enable(struct sys_device *s, const char *buf, size_t count)
-+static ssize_t store_mmustat_enable(struct sys_device *s,
-+			struct sysdev_attribute *attr, const char *buf,
-+			size_t count)
- {
- 	unsigned long val, err;
- 	int ret = sscanf(buf, "%ld", &val);
-@@ -179,14 +183,16 @@ static void unregister_mmu_stats(struct sys_device *s)
- #endif
- 
- #define SHOW_CPUDATA_ULONG_NAME(NAME, MEMBER) \
--static ssize_t show_##NAME(struct sys_device *dev, char *buf) \
-+static ssize_t show_##NAME(struct sys_device *dev, \
-+		struct sysdev_attribute *attr, char *buf) \
- { \
- 	cpuinfo_sparc *c = &cpu_data(dev->id); \
- 	return sprintf(buf, "%lu\n", c->MEMBER); \
- }
- 
- #define SHOW_CPUDATA_UINT_NAME(NAME, MEMBER) \
--static ssize_t show_##NAME(struct sys_device *dev, char *buf) \
-+static ssize_t show_##NAME(struct sys_device *dev, \
-+		struct sysdev_attribute *attr, char *buf) \
- { \
- 	cpuinfo_sparc *c = &cpu_data(dev->id); \
- 	return sprintf(buf, "%u\n", c->MEMBER); \
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
-index c4a7ec3..e6a4d5f 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
-@@ -762,10 +762,14 @@ DEFINE_PER_CPU(struct sys_device, device_mce);
- 
- /* Why are there no generic functions for this? */
- #define ACCESSOR(name, var, start) \
--	static ssize_t show_ ## name(struct sys_device *s, char *buf) {	\
-+	static ssize_t show_ ## name(struct sys_device *s,		\
-+				     struct sysdev_attribute *attr,	\
-+				     char *buf) {			\
- 		return sprintf(buf, "%lx\n", (unsigned long)var);	\
- 	}								\
--	static ssize_t set_ ## name(struct sys_device *s,const char *buf,size_t siz) { \
-+	static ssize_t set_ ## name(struct sys_device *s,		\
-+				    struct sysdev_attribute *attr,	\
-+				    const char *buf, size_t siz) {	\
- 		char *end;						\
- 		unsigned long new = simple_strtoul(buf, &end, 0);	\
- 		if (end == buf) return -EINVAL;				\
-@@ -786,14 +790,16 @@ ACCESSOR(bank3ctl,bank[3],mce_restart())
- ACCESSOR(bank4ctl,bank[4],mce_restart())
- ACCESSOR(bank5ctl,bank[5],mce_restart())
- 
--static ssize_t show_trigger(struct sys_device *s, char *buf)
-+static ssize_t show_trigger(struct sys_device *s, struct sysdev_attribute *attr,
-+				char *buf)
- {
- 	strcpy(buf, trigger);
- 	strcat(buf, "\n");
- 	return strlen(trigger) + 1;
- }
- 
--static ssize_t set_trigger(struct sys_device *s,const char *buf,size_t siz)
-+static ssize_t set_trigger(struct sys_device *s, struct sysdev_attribute *attr,
-+				const char *buf,size_t siz)
- {
- 	char *p;
- 	int len;
-diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-index 1f4cc48..d5ae224 100644
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -35,6 +35,7 @@ atomic_t therm_throt_en = ATOMIC_INIT(0);
- 
- #define define_therm_throt_sysdev_show_func(name)                            \
- static ssize_t therm_throt_sysdev_show_##name(struct sys_device *dev,        \
-+					struct sysdev_attribute *attr,	     \
-                                               char *buf)                     \
- {                                                                            \
- 	unsigned int cpu = dev->id;                                          \
-diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
-index 56b9331..fc47906 100644
---- a/arch/x86/kernel/microcode.c
-+++ b/arch/x86/kernel/microcode.c
-@@ -644,7 +644,9 @@ static void microcode_fini_cpu(int cpu)
- 	mutex_unlock(&microcode_mutex);
- }
- 
--static ssize_t reload_store(struct sys_device *dev, const char *buf, size_t sz)
-+static ssize_t reload_store(struct sys_device *dev,
-+			    struct sysdev_attribute *attr,
-+			    const char *buf, size_t sz)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + dev->id;
- 	char *end;
-@@ -674,14 +676,16 @@ static ssize_t reload_store(struct sys_device *dev, const char *buf, size_t sz)
- 	return sz;
- }
- 
--static ssize_t version_show(struct sys_device *dev, char *buf)
-+static ssize_t version_show(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + dev->id;
- 
- 	return sprintf(buf, "0x%x\n", uci->rev);
- }
- 
--static ssize_t pf_show(struct sys_device *dev, char *buf)
-+static ssize_t pf_show(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + dev->id;
- 
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index e38dfed..20537d5 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -21,15 +21,16 @@ EXPORT_SYMBOL(cpu_sysdev_class);
- static DEFINE_PER_CPU(struct sys_device *, cpu_sys_devices);
- 
- #ifdef CONFIG_HOTPLUG_CPU
--static ssize_t show_online(struct sys_device *dev, char *buf)
-+static ssize_t show_online(struct sys_device *dev, struct sysdev_attribute *attr,
-+			   char *buf)
- {
- 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
- 
- 	return sprintf(buf, "%u\n", !!cpu_online(cpu->sysdev.id));
- }
- 
--static ssize_t __ref store_online(struct sys_device *dev, const char *buf,
--			    size_t count)
-+static ssize_t __ref store_online(struct sys_device *dev, struct sysdev_attribute *attr,
-+				 const char *buf, size_t count)
- {
- 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
- 	ssize_t ret;
-@@ -80,7 +81,8 @@ static inline void register_cpu_control(struct cpu *cpu)
- #ifdef CONFIG_KEXEC
- #include <linux/kexec.h>
- 
--static ssize_t show_crash_notes(struct sys_device *dev, char *buf)
-+static ssize_t show_crash_notes(struct sys_device *dev, struct sysdev_attribute *attr,
-+				char *buf)
- {
- 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
- 	ssize_t rc;
-diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-index 937e825..4d4e0e7 100644
---- a/drivers/base/memory.c
-+++ b/drivers/base/memory.c
-@@ -92,7 +92,8 @@ unregister_memory(struct memory_block *memory, struct mem_section *section)
-  * uses.
-  */
- 
--static ssize_t show_mem_phys_index(struct sys_device *dev, char *buf)
-+static ssize_t show_mem_phys_index(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	struct memory_block *mem =
- 		container_of(dev, struct memory_block, sysdev);
-@@ -102,7 +103,8 @@ static ssize_t show_mem_phys_index(struct sys_device *dev, char *buf)
- /*
-  * online, offline, going offline, etc.
-  */
--static ssize_t show_mem_state(struct sys_device *dev, char *buf)
-+static ssize_t show_mem_state(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	struct memory_block *mem =
- 		container_of(dev, struct memory_block, sysdev);
-@@ -217,7 +219,8 @@ out:
- }
- 
- static ssize_t
--store_mem_state(struct sys_device *dev, const char *buf, size_t count)
-+store_mem_state(struct sys_device *dev,
-+		struct sysdev_attribute *attr, const char *buf, size_t count)
- {
- 	struct memory_block *mem;
- 	unsigned int phys_section_nr;
-@@ -248,7 +251,8 @@ out:
-  * s.t. if I offline all of these sections I can then
-  * remove the physical device?
-  */
--static ssize_t show_phys_device(struct sys_device *dev, char *buf)
-+static ssize_t show_phys_device(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	struct memory_block *mem =
- 		container_of(dev, struct memory_block, sysdev);
-diff --git a/drivers/base/node.c b/drivers/base/node.c
-index 0f867a0..5116b78 100644
---- a/drivers/base/node.c
-+++ b/drivers/base/node.c
-@@ -36,11 +36,13 @@ static ssize_t node_read_cpumap(struct sys_device *dev, int type, char *buf)
- 	return len;
- }
- 
--static inline ssize_t node_read_cpumask(struct sys_device *dev, char *buf)
-+static inline ssize_t node_read_cpumask(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	return node_read_cpumap(dev, 0, buf);
- }
--static inline ssize_t node_read_cpulist(struct sys_device *dev, char *buf)
-+static inline ssize_t node_read_cpulist(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	return node_read_cpumap(dev, 1, buf);
- }
-@@ -49,7 +51,8 @@ static SYSDEV_ATTR(cpumap,  S_IRUGO, node_read_cpumask, NULL);
- static SYSDEV_ATTR(cpulist, S_IRUGO, node_read_cpulist, NULL);
- 
- #define K(x) ((x) << (PAGE_SHIFT - 10))
--static ssize_t node_read_meminfo(struct sys_device * dev, char * buf)
-+static ssize_t node_read_meminfo(struct sys_device * dev,
-+			struct sysdev_attribute *attr, char * buf)
- {
- 	int n;
- 	int nid = dev->id;
-@@ -112,7 +115,8 @@ static ssize_t node_read_meminfo(struct sys_device * dev, char * buf)
- #undef K
- static SYSDEV_ATTR(meminfo, S_IRUGO, node_read_meminfo, NULL);
- 
--static ssize_t node_read_numastat(struct sys_device * dev, char * buf)
-+static ssize_t node_read_numastat(struct sys_device * dev,
-+				struct sysdev_attribute *attr, char * buf)
- {
- 	return sprintf(buf,
- 		       "numa_hit %lu\n"
-@@ -130,7 +134,8 @@ static ssize_t node_read_numastat(struct sys_device * dev, char * buf)
- }
- static SYSDEV_ATTR(numastat, S_IRUGO, node_read_numastat, NULL);
- 
--static ssize_t node_read_distance(struct sys_device * dev, char * buf)
-+static ssize_t node_read_distance(struct sys_device * dev,
-+			struct sysdev_attribute *attr, char * buf)
- {
- 	int nid = dev->id;
- 	int len = 0;
-diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-index 50690d9..dc7dace 100644
---- a/drivers/base/sys.c
-+++ b/drivers/base/sys.c
-@@ -36,7 +36,7 @@ sysdev_show(struct kobject * kobj, struct attribute * attr, char * buffer)
- 	struct sysdev_attribute * sysdev_attr = to_sysdev_attr(attr);
- 
- 	if (sysdev_attr->show)
--		return sysdev_attr->show(sysdev, buffer);
-+		return sysdev_attr->show(sysdev, sysdev_attr, buffer);
- 	return -EIO;
- }
- 
-@@ -49,7 +49,7 @@ sysdev_store(struct kobject * kobj, struct attribute * attr,
- 	struct sysdev_attribute * sysdev_attr = to_sysdev_attr(attr);
- 
- 	if (sysdev_attr->store)
--		return sysdev_attr->store(sysdev, buffer, count);
-+		return sysdev_attr->store(sysdev, sysdev_attr, buffer, count);
- 	return -EIO;
- }
- 
-diff --git a/drivers/base/topology.c b/drivers/base/topology.c
-index 3f6d9b0..199cd97 100644
---- a/drivers/base/topology.c
-+++ b/drivers/base/topology.c
-@@ -34,7 +34,8 @@
- static SYSDEV_ATTR(_name, 0444, show_##_name, NULL)
- 
- #define define_id_show_func(name)				\
--static ssize_t show_##name(struct sys_device *dev, char *buf)	\
-+static ssize_t show_##name(struct sys_device *dev,		\
-+		struct sysdev_attribute *attr, char *buf)	\
- {								\
- 	unsigned int cpu = dev->id;				\
- 	return sprintf(buf, "%d\n", topology_##name(cpu));	\
-@@ -59,14 +60,17 @@ static ssize_t show_cpumap(int type, cpumask_t *mask, char *buf)
- 
- #ifdef arch_provides_topology_pointers
- #define define_siblings_show_map(name)					\
--static ssize_t show_##name(struct sys_device *dev, char *buf)	\
-+static ssize_t show_##name(struct sys_device *dev,			\
-+			   struct sysdev_attribute *attr, char *buf)	\
- {									\
- 	unsigned int cpu = dev->id;					\
- 	return show_cpumap(0, &(topology_##name(cpu)), buf);		\
- }
- 
- #define define_siblings_show_list(name)					\
--static ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
-+static ssize_t show_##name##_list(struct sys_device *dev,		\
-+				  struct sysdev_attribute *attr,	\
-+				  char *buf)				\
- {									\
- 	unsigned int cpu = dev->id;					\
- 	return show_cpumap(1, &(topology_##name(cpu)), buf);		\
-@@ -74,7 +78,8 @@ static ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
- 
- #else
- #define define_siblings_show_map(name)					\
--static ssize_t show_##name(struct sys_device *dev, char *buf)	\
-+static ssize_t show_##name(struct sys_device *dev,			\
-+			   struct sysdev_attribute *attr, char *buf)	\
- {									\
- 	unsigned int cpu = dev->id;					\
- 	cpumask_t mask = topology_##name(cpu);				\
-@@ -82,7 +87,9 @@ static ssize_t show_##name(struct sys_device *dev, char *buf)	\
- }
- 
- #define define_siblings_show_list(name)					\
--static ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
-+static ssize_t show_##name##_list(struct sys_device *dev,		\
-+				  struct sysdev_attribute *attr,	\
-+				  char *buf)				\
- {									\
- 	unsigned int cpu = dev->id;					\
- 	cpumask_t mask = topology_##name(cpu);				\
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index e949618..31a0e0b 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -21,7 +21,8 @@ static int __init cpuidle_sysfs_setup(char *unused)
- }
- __setup("cpuidle_sysfs_switch", cpuidle_sysfs_setup);
- 
--static ssize_t show_available_governors(struct sys_device *dev, char *buf)
-+static ssize_t show_available_governors(struct sys_device *dev,
-+		struct sysdev_attribute *attr, char *buf)
- {
- 	ssize_t i = 0;
- 	struct cpuidle_governor *tmp;
-@@ -39,7 +40,8 @@ out:
- 	return i;
- }
- 
--static ssize_t show_current_driver(struct sys_device *dev, char *buf)
-+static ssize_t show_current_driver(struct sys_device *dev,
-+		struct sysdev_attribute *attr, char *buf)
- {
- 	ssize_t ret;
- 
-@@ -53,7 +55,8 @@ static ssize_t show_current_driver(struct sys_device *dev, char *buf)
- 	return ret;
- }
- 
--static ssize_t show_current_governor(struct sys_device *dev, char *buf)
-+static ssize_t show_current_governor(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
- {
- 	ssize_t ret;
- 
-@@ -68,6 +71,7 @@ static ssize_t show_current_governor(struct sys_device *dev, char *buf)
- }
- 
- static ssize_t store_current_governor(struct sys_device *dev,
-+	struct sysdev_attribute *attr,
- 	const char *buf, size_t count)
- {
- 	char gov_name[CPUIDLE_NAME_LEN];
-diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
-index 591bc29..d4427cb 100644
---- a/drivers/xen/balloon.c
-+++ b/drivers/xen/balloon.c
-@@ -610,6 +610,7 @@ static ssize_t show_target_kb(struct sys_device *dev, char *buf)
- }
- 
- static ssize_t store_target_kb(struct sys_device *dev,
-+			       struct sysdev_attribute *attr,
- 			       const char *buf,
- 			       size_t count)
- {
-diff --git a/include/linux/sysdev.h b/include/linux/sysdev.h
-index f2767bc..8dcf316 100644
---- a/include/linux/sysdev.h
-+++ b/include/linux/sysdev.h
-@@ -99,8 +99,9 @@ extern void sysdev_unregister(struct sys_device *);
- 
- struct sysdev_attribute { 
- 	struct attribute	attr;
--	ssize_t (*show)(struct sys_device *, char *);
--	ssize_t (*store)(struct sys_device *, const char *, size_t);
-+	ssize_t (*show)(struct sys_device *, struct sysdev_attribute *, char *);
-+	ssize_t (*store)(struct sys_device *, struct sysdev_attribute *,
-+			 const char *, size_t);
- };
- 
- 
-diff --git a/kernel/rtmutex-tester.c b/kernel/rtmutex-tester.c
-index 092e4c6..a56f629 100644
---- a/kernel/rtmutex-tester.c
-+++ b/kernel/rtmutex-tester.c
-@@ -297,8 +297,8 @@ static int test_func(void *data)
-  *
-  * opcode:data
-  */
--static ssize_t sysfs_test_command(struct sys_device *dev, const char *buf,
--				  size_t count)
-+static ssize_t sysfs_test_command(struct sys_device *dev, struct sysdev_attribute *attr,
-+				  const char *buf, size_t count)
- {
- 	struct sched_param schedpar;
- 	struct test_thread_data *td;
-@@ -360,7 +360,8 @@ static ssize_t sysfs_test_command(struct sys_device *dev, const char *buf,
-  * @dev:	thread to query
-  * @buf:	char buffer to be filled with thread status info
-  */
--static ssize_t sysfs_test_status(struct sys_device *dev, char *buf)
-+static ssize_t sysfs_test_status(struct sys_device *dev, struct sysdev_attribute *attr,
-+				 char *buf)
- {
- 	struct test_thread_data *td;
- 	struct task_struct *tsk;
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 99e6d85..b1104ea 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7737,11 +7737,13 @@ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
- }
- 
- #ifdef CONFIG_SCHED_MC
--static ssize_t sched_mc_power_savings_show(struct sys_device *dev, char *page)
-+static ssize_t sched_mc_power_savings_show(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *page)
- {
- 	return sprintf(page, "%u\n", sched_mc_power_savings);
- }
- static ssize_t sched_mc_power_savings_store(struct sys_device *dev,
-+					    struct sysdev_attribute *attr,
- 					    const char *buf, size_t count)
- {
- 	return sched_power_savings_store(buf, count, 0);
-@@ -7751,11 +7753,13 @@ static SYSDEV_ATTR(sched_mc_power_savings, 0644, sched_mc_power_savings_show,
- #endif
- 
- #ifdef CONFIG_SCHED_SMT
--static ssize_t sched_smt_power_savings_show(struct sys_device *dev, char *page)
-+static ssize_t sched_smt_power_savings_show(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *page)
- {
- 	return sprintf(page, "%u\n", sched_smt_power_savings);
- }
- static ssize_t sched_smt_power_savings_store(struct sys_device *dev,
-+					     struct sysdev_attribute *attr,
- 					     const char *buf, size_t count)
- {
- 	return sched_power_savings_store(buf, count, 1);
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index dadde53..b1c2da8 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -376,7 +376,8 @@ void clocksource_unregister(struct clocksource *cs)
-  * Provides sysfs interface for listing current clocksource.
-  */
- static ssize_t
--sysfs_show_current_clocksources(struct sys_device *dev, char *buf)
-+sysfs_show_current_clocksources(struct sys_device *dev,
-+				struct sysdev_attribute *attr, char *buf)
- {
- 	ssize_t count = 0;
- 
-@@ -397,6 +398,7 @@ sysfs_show_current_clocksources(struct sys_device *dev, char *buf)
-  * clocksource selction.
-  */
- static ssize_t sysfs_override_clocksource(struct sys_device *dev,
-+					  struct sysdev_attribute *attr,
- 					  const char *buf, size_t count)
- {
- 	struct clocksource *ovr = NULL;
-@@ -449,7 +451,9 @@ static ssize_t sysfs_override_clocksource(struct sys_device *dev,
-  * Provides sysfs interface for listing registered clocksources
-  */
- static ssize_t
--sysfs_show_available_clocksources(struct sys_device *dev, char *buf)
-+sysfs_show_available_clocksources(struct sys_device *dev,
-+				  struct sysdev_attribute *attr,
-+				  char *buf)
- {
- 	struct clocksource *src;
- 	ssize_t count = 0;
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index 1921b8d..ce67d97 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -420,4 +420,17 @@ config SGI_XP
+ 	  this feature will allow for direct communication between SSIs
+ 	  based on a network adapter and DMA messaging.
+ 
++config HP_ILO
++	tristate "Channel interface driver for HP iLO/iLO2 processor"
++	default n
++	help
++	  The channel interface driver allows applications to communicate
++	  with iLO/iLO2 management processors present on HP ProLiant
++	  servers.  Upon loading, the driver creates /dev/hpilo/dXccbN files,
++	  which can be used to gather data from the management processor,
++	  via read and write system calls.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called hpilo.
++
+ endif # MISC_DEVICES
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index a6dac6a..688fe76 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -27,3 +27,4 @@ obj-$(CONFIG_INTEL_MENLOW)	+= intel_menlow.o
+ obj-$(CONFIG_ENCLOSURE_SERVICES) += enclosure.o
+ obj-$(CONFIG_KGDB_TESTS)	+= kgdbts.o
+ obj-$(CONFIG_SGI_XP)		+= sgi-xp/
++obj-$(CONFIG_HP_ILO)		+= hpilo.o
+diff --git a/drivers/misc/hpilo.c b/drivers/misc/hpilo.c
+new file mode 100644
+index 0000000..05e2982
+--- /dev/null
++++ b/drivers/misc/hpilo.c
+@@ -0,0 +1,768 @@
++/*
++ * Driver for HP iLO/iLO2 management processor.
++ *
++ * Copyright (C) 2008 Hewlett-Packard Development Company, L.P.
++ *	David Altobelli <david.altobelli@hp.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/pci.h>
++#include <linux/ioport.h>
++#include <linux/device.h>
++#include <linux/file.h>
++#include <linux/cdev.h>
++#include <linux/spinlock.h>
++#include <linux/delay.h>
++#include <linux/uaccess.h>
++#include <linux/io.h>
++#include "hpilo.h"
++
++static struct class *ilo_class;
++static unsigned int ilo_major;
++static char ilo_hwdev[MAX_ILO_DEV];
++
++static inline int get_entry_id(int entry)
++{
++	return (entry & ENTRY_MASK_DESCRIPTOR) >> ENTRY_BITPOS_DESCRIPTOR;
++}
++
++static inline int get_entry_len(int entry)
++{
++	return ((entry & ENTRY_MASK_QWORDS) >> ENTRY_BITPOS_QWORDS) << 3;
++}
++
++static inline int mk_entry(int id, int len)
++{
++	int qlen = len & 7 ? (len >> 3) + 1 : len >> 3;
++	return id << ENTRY_BITPOS_DESCRIPTOR | qlen << ENTRY_BITPOS_QWORDS;
++}
++
++static inline int desc_mem_sz(int nr_entry)
++{
++	return nr_entry << L2_QENTRY_SZ;
++}
++
++/*
++ * FIFO queues, shared with hardware.
++ *
++ * If a queue has empty slots, an entry is added to the queue tail,
++ * and that entry is marked as occupied.
++ * Entries can be dequeued from the head of the list, when the device
++ * has marked the entry as consumed.
++ *
++ * Returns true on successful queue/dequeue, false on failure.
++ */
++static int fifo_enqueue(struct ilo_hwinfo *hw, char *fifobar, int entry)
++{
++	struct fifo *fifo_q = FIFOBARTOHANDLE(fifobar);
++	int ret = 0;
++
++	spin_lock(&hw->fifo_lock);
++	if (!(fifo_q->fifobar[(fifo_q->tail + 1) & fifo_q->imask]
++	      & ENTRY_MASK_O)) {
++		fifo_q->fifobar[fifo_q->tail & fifo_q->imask] |=
++				(entry & ENTRY_MASK_NOSTATE) | fifo_q->merge;
++		fifo_q->tail += 1;
++		ret = 1;
++	}
++	spin_unlock(&hw->fifo_lock);
++
++	return ret;
++}
++
++static int fifo_dequeue(struct ilo_hwinfo *hw, char *fifobar, int *entry)
++{
++	struct fifo *fifo_q = FIFOBARTOHANDLE(fifobar);
++	int ret = 0;
++	u64 c;
++
++	spin_lock(&hw->fifo_lock);
++	c = fifo_q->fifobar[fifo_q->head & fifo_q->imask];
++	if (c & ENTRY_MASK_C) {
++		if (entry)
++			*entry = c & ENTRY_MASK_NOSTATE;
++
++		fifo_q->fifobar[fifo_q->head & fifo_q->imask] =
++							(c | ENTRY_MASK) + 1;
++		fifo_q->head += 1;
++		ret = 1;
++	}
++	spin_unlock(&hw->fifo_lock);
++
++	return ret;
++}
++
++static int ilo_pkt_enqueue(struct ilo_hwinfo *hw, struct ccb *ccb,
++			   int dir, int id, int len)
++{
++	char *fifobar;
++	int entry;
++
++	if (dir == SENDQ)
++		fifobar = ccb->ccb_u1.send_fifobar;
++	else
++		fifobar = ccb->ccb_u3.recv_fifobar;
++
++	entry = mk_entry(id, len);
++	return fifo_enqueue(hw, fifobar, entry);
++}
++
++static int ilo_pkt_dequeue(struct ilo_hwinfo *hw, struct ccb *ccb,
++			   int dir, int *id, int *len, void **pkt)
++{
++	char *fifobar, *desc;
++	int entry = 0, pkt_id = 0;
++	int ret;
++
++	if (dir == SENDQ) {
++		fifobar = ccb->ccb_u1.send_fifobar;
++		desc = ccb->ccb_u2.send_desc;
++	} else {
++		fifobar = ccb->ccb_u3.recv_fifobar;
++		desc = ccb->ccb_u4.recv_desc;
++	}
++
++	ret = fifo_dequeue(hw, fifobar, &entry);
++	if (ret) {
++		pkt_id = get_entry_id(entry);
++		if (id)
++			*id = pkt_id;
++		if (len)
++			*len = get_entry_len(entry);
++		if (pkt)
++			*pkt = (void *)(desc + desc_mem_sz(pkt_id));
++	}
++
++	return ret;
++}
++
++static inline void doorbell_set(struct ccb *ccb)
++{
++	iowrite8(1, ccb->ccb_u5.db_base);
++}
++
++static inline void doorbell_clr(struct ccb *ccb)
++{
++	iowrite8(2, ccb->ccb_u5.db_base);
++}
++static inline int ctrl_set(int l2sz, int idxmask, int desclim)
++{
++	int active = 0, go = 1;
++	return l2sz << CTRL_BITPOS_L2SZ |
++	       idxmask << CTRL_BITPOS_FIFOINDEXMASK |
++	       desclim << CTRL_BITPOS_DESCLIMIT |
++	       active << CTRL_BITPOS_A |
++	       go << CTRL_BITPOS_G;
++}
++static void ctrl_setup(struct ccb *ccb, int nr_desc, int l2desc_sz)
++{
++	/* for simplicity, use the same parameters for send and recv ctrls */
++	ccb->send_ctrl = ctrl_set(l2desc_sz, nr_desc-1, nr_desc-1);
++	ccb->recv_ctrl = ctrl_set(l2desc_sz, nr_desc-1, nr_desc-1);
++}
++
++static inline int fifo_sz(int nr_entry)
++{
++	/* size of a fifo is determined by the number of entries it contains */
++	return (nr_entry * sizeof(u64)) + FIFOHANDLESIZE;
++}
++
++static void fifo_setup(void *base_addr, int nr_entry)
++{
++	struct fifo *fifo_q = base_addr;
++	int i;
++
++	/* set up an empty fifo */
++	fifo_q->head = 0;
++	fifo_q->tail = 0;
++	fifo_q->reset = 0;
++	fifo_q->nrents = nr_entry;
++	fifo_q->imask = nr_entry - 1;
++	fifo_q->merge = ENTRY_MASK_O;
++
++	for (i = 0; i < nr_entry; i++)
++		fifo_q->fifobar[i] = 0;
++}
++
++static void ilo_ccb_close(struct pci_dev *pdev, struct ccb_data *data)
++{
++	struct ccb *driver_ccb;
++	struct ccb __iomem *device_ccb;
++	int retries;
++
++	driver_ccb = &data->driver_ccb;
++	device_ccb = data->mapped_ccb;
++
++	/* complicated dance to tell the hw we are stopping */
++	doorbell_clr(driver_ccb);
++	iowrite32(ioread32(&device_ccb->send_ctrl) & ~(1 << CTRL_BITPOS_G),
++		  &device_ccb->send_ctrl);
++	iowrite32(ioread32(&device_ccb->recv_ctrl) & ~(1 << CTRL_BITPOS_G),
++		  &device_ccb->recv_ctrl);
++
++	/* give iLO some time to process stop request */
++	for (retries = 1000; retries > 0; retries--) {
++		doorbell_set(driver_ccb);
++		udelay(1);
++		if (!(ioread32(&device_ccb->send_ctrl) & (1 << CTRL_BITPOS_A))
++		    &&
++		    !(ioread32(&device_ccb->recv_ctrl) & (1 << CTRL_BITPOS_A)))
++			break;
++	}
++	if (retries == 0)
++		dev_err(&pdev->dev, "Closing, but controller still active\n");
++
++	/* clear the hw ccb */
++	memset_io(device_ccb, 0, sizeof(struct ccb));
++
++	/* free resources used to back send/recv queues */
++	pci_free_consistent(pdev, data->dma_size, data->dma_va, data->dma_pa);
++}
++
++static int ilo_ccb_open(struct ilo_hwinfo *hw, struct ccb_data *data, int slot)
++{
++	char *dma_va, *dma_pa;
++	int pkt_id, pkt_sz, i, error;
++	struct ccb *driver_ccb, *ilo_ccb;
++	struct pci_dev *pdev;
++
++	driver_ccb = &data->driver_ccb;
++	ilo_ccb = &data->ilo_ccb;
++	pdev = hw->ilo_dev;
++
++	data->dma_size = 2 * fifo_sz(NR_QENTRY) +
++			 2 * desc_mem_sz(NR_QENTRY) +
++			 ILO_START_ALIGN + ILO_CACHE_SZ;
++
++	error = -ENOMEM;
++	data->dma_va = pci_alloc_consistent(pdev, data->dma_size,
++					    &data->dma_pa);
++	if (!data->dma_va)
++		goto out;
++
++	dma_va = (char *)data->dma_va;
++	dma_pa = (char *)data->dma_pa;
++
++	memset(dma_va, 0, data->dma_size);
++
++	dma_va = (char *)roundup((unsigned long)dma_va, ILO_START_ALIGN);
++	dma_pa = (char *)roundup((unsigned long)dma_pa, ILO_START_ALIGN);
++
++	/*
++	 * Create two ccb's, one with virt addrs, one with phys addrs.
++	 * Copy the phys addr ccb to device shared mem.
++	 */
++	ctrl_setup(driver_ccb, NR_QENTRY, L2_QENTRY_SZ);
++	ctrl_setup(ilo_ccb, NR_QENTRY, L2_QENTRY_SZ);
++
++	fifo_setup(dma_va, NR_QENTRY);
++	driver_ccb->ccb_u1.send_fifobar = dma_va + FIFOHANDLESIZE;
++	ilo_ccb->ccb_u1.send_fifobar = dma_pa + FIFOHANDLESIZE;
++	dma_va += fifo_sz(NR_QENTRY);
++	dma_pa += fifo_sz(NR_QENTRY);
++
++	dma_va = (char *)roundup((unsigned long)dma_va, ILO_CACHE_SZ);
++	dma_pa = (char *)roundup((unsigned long)dma_pa, ILO_CACHE_SZ);
++
++	fifo_setup(dma_va, NR_QENTRY);
++	driver_ccb->ccb_u3.recv_fifobar = dma_va + FIFOHANDLESIZE;
++	ilo_ccb->ccb_u3.recv_fifobar = dma_pa + FIFOHANDLESIZE;
++	dma_va += fifo_sz(NR_QENTRY);
++	dma_pa += fifo_sz(NR_QENTRY);
++
++	driver_ccb->ccb_u2.send_desc = dma_va;
++	ilo_ccb->ccb_u2.send_desc = dma_pa;
++	dma_pa += desc_mem_sz(NR_QENTRY);
++	dma_va += desc_mem_sz(NR_QENTRY);
++
++	driver_ccb->ccb_u4.recv_desc = dma_va;
++	ilo_ccb->ccb_u4.recv_desc = dma_pa;
++
++	driver_ccb->channel = slot;
++	ilo_ccb->channel = slot;
++
++	driver_ccb->ccb_u5.db_base = hw->db_vaddr + (slot << L2_DB_SIZE);
++	ilo_ccb->ccb_u5.db_base = NULL; /* hw ccb's doorbell is not used */
++
++	/* copy the ccb with physical addrs to device memory */
++	data->mapped_ccb = (struct ccb __iomem *)
++				(hw->ram_vaddr + (slot * ILOHW_CCB_SZ));
++	memcpy_toio(data->mapped_ccb, ilo_ccb, sizeof(struct ccb));
++
++	/* put packets on the send and receive queues */
++	pkt_sz = 0;
++	for (pkt_id = 0; pkt_id < NR_QENTRY; pkt_id++) {
++		ilo_pkt_enqueue(hw, driver_ccb, SENDQ, pkt_id, pkt_sz);
++		doorbell_set(driver_ccb);
++	}
++
++	pkt_sz = desc_mem_sz(1);
++	for (pkt_id = 0; pkt_id < NR_QENTRY; pkt_id++)
++		ilo_pkt_enqueue(hw, driver_ccb, RECVQ, pkt_id, pkt_sz);
++
++	doorbell_clr(driver_ccb);
++
++	/* make sure iLO is really handling requests */
++	for (i = 1000; i > 0; i--) {
++		if (ilo_pkt_dequeue(hw, driver_ccb, SENDQ, &pkt_id, NULL, NULL))
++			break;
++		udelay(1);
++	}
++
++	if (i) {
++		ilo_pkt_enqueue(hw, driver_ccb, SENDQ, pkt_id, 0);
++		doorbell_set(driver_ccb);
++	} else {
++		dev_err(&pdev->dev, "Open could not dequeue a packet\n");
++		error = -EBUSY;
++		goto free;
++	}
++
++	return 0;
++free:
++	pci_free_consistent(pdev, data->dma_size, data->dma_va, data->dma_pa);
++out:
++	return error;
++}
++
++static inline int is_channel_reset(struct ccb *ccb)
++{
++	/* check for this particular channel needing a reset */
++	return FIFOBARTOHANDLE(ccb->ccb_u1.send_fifobar)->reset;
++}
++
++static inline void set_channel_reset(struct ccb *ccb)
++{
++	/* set a flag indicating this channel needs a reset */
++	FIFOBARTOHANDLE(ccb->ccb_u1.send_fifobar)->reset = 1;
++}
++
++static inline int is_device_reset(struct ilo_hwinfo *hw)
++{
++	/* check for global reset condition */
++	return ioread32(&hw->mmio_vaddr[DB_OUT]) & (1 << DB_RESET);
++}
++
++static inline void clear_device(struct ilo_hwinfo *hw)
++{
++	/* clear the device (reset bits, pending channel entries) */
++	iowrite32(-1, &hw->mmio_vaddr[DB_OUT]);
++}
++
++static void ilo_locked_reset(struct ilo_hwinfo *hw)
++{
++	int slot;
++
++	/*
++	 * Mapped memory is zeroed on ilo reset, so set a per ccb flag
++	 * to indicate that this ccb needs to be closed and reopened.
++	 */
++	for (slot = 0; slot < MAX_CCB; slot++) {
++		if (!hw->ccb_alloc[slot])
++			continue;
++		set_channel_reset(&hw->ccb_alloc[slot]->driver_ccb);
++	}
++
++	clear_device(hw);
++}
++
++static void ilo_reset(struct ilo_hwinfo *hw)
++{
++	spin_lock(&hw->alloc_lock);
++
++	/* reset might have been handled after lock was taken */
++	if (is_device_reset(hw))
++		ilo_locked_reset(hw);
++
++	spin_unlock(&hw->alloc_lock);
++}
++
++static ssize_t ilo_read(struct file *fp, char __user *buf,
++			size_t len, loff_t *off)
++{
++	int err, found, cnt, pkt_id, pkt_len;
++	struct ccb_data *data;
++	struct ccb *driver_ccb;
++	struct ilo_hwinfo *hw;
++	void *pkt;
++
++	data = fp->private_data;
++	driver_ccb = &data->driver_ccb;
++	hw = data->ilo_hw;
++
++	if (is_device_reset(hw) || is_channel_reset(driver_ccb)) {
++		/*
++		 * If the device has been reset, applications
++		 * need to close and reopen all ccbs.
++		 */
++		ilo_reset(hw);
++		return -ENODEV;
++	}
++
++	/*
++	 * This function is to be called when data is expected
++	 * in the channel, and will return an error if no packet is found
++	 * during the loop below.  The sleep/retry logic is to allow
++	 * applications to call read() immediately post write(),
++	 * and give iLO some time to process the sent packet.
++	 */
++	cnt = 20;
++	do {
++		/* look for a received packet */
++		found = ilo_pkt_dequeue(hw, driver_ccb, RECVQ, &pkt_id,
++					&pkt_len, &pkt);
++		if (found)
++			break;
++		cnt--;
++		msleep(100);
++	} while (!found && cnt);
++
++	if (!found)
++		return -EAGAIN;
++
++	/* only copy the length of the received packet */
++	if (pkt_len < len)
++		len = pkt_len;
++
++	err = copy_to_user(buf, pkt, len);
++
++	/* return the received packet to the queue */
++	ilo_pkt_enqueue(hw, driver_ccb, RECVQ, pkt_id, desc_mem_sz(1));
++
++	return err ? -EFAULT : len;
++}
++
++static ssize_t ilo_write(struct file *fp, const char __user *buf,
++			 size_t len, loff_t *off)
++{
++	int err, pkt_id, pkt_len;
++	struct ccb_data *data;
++	struct ccb *driver_ccb;
++	struct ilo_hwinfo *hw;
++	void *pkt;
++
++	data = fp->private_data;
++	driver_ccb = &data->driver_ccb;
++	hw = data->ilo_hw;
++
++	if (is_device_reset(hw) || is_channel_reset(driver_ccb)) {
++		/*
++		 * If the device has been reset, applications
++		 * need to close and reopen all ccbs.
++		 */
++		ilo_reset(hw);
++		return -ENODEV;
++	}
++
++	/* get a packet to send the user command */
++	if (!ilo_pkt_dequeue(hw, driver_ccb, SENDQ, &pkt_id, &pkt_len, &pkt))
++		return -EBUSY;
++
++	/* limit the length to the length of the packet */
++	if (pkt_len < len)
++		len = pkt_len;
++
++	/* on failure, set the len to 0 to return empty packet to the device */
++	err = copy_from_user(pkt, buf, len);
++	if (err)
++		len = 0;
++
++	/* send the packet */
++	ilo_pkt_enqueue(hw, driver_ccb, SENDQ, pkt_id, len);
++	doorbell_set(driver_ccb);
++
++	return err ? -EFAULT : len;
++}
++
++static int ilo_close(struct inode *ip, struct file *fp)
++{
++	int slot;
++	struct ccb_data *data;
++	struct ilo_hwinfo *hw;
++
++	slot = iminor(ip) % MAX_CCB;
++	hw = container_of(ip->i_cdev, struct ilo_hwinfo, cdev);
++
++	spin_lock(&hw->alloc_lock);
++
++	if (is_device_reset(hw))
++		ilo_locked_reset(hw);
++
++	if (hw->ccb_alloc[slot]->ccb_cnt == 1) {
++
++		data = fp->private_data;
++
++		ilo_ccb_close(hw->ilo_dev, data);
++
++		kfree(data);
++		hw->ccb_alloc[slot] = NULL;
++	} else
++		hw->ccb_alloc[slot]->ccb_cnt--;
++
++	spin_unlock(&hw->alloc_lock);
++
++	return 0;
++}
++
++static int ilo_open(struct inode *ip, struct file *fp)
++{
++	int slot, error;
++	struct ccb_data *data;
++	struct ilo_hwinfo *hw;
++
++	slot = iminor(ip) % MAX_CCB;
++	hw = container_of(ip->i_cdev, struct ilo_hwinfo, cdev);
++
++	/* new ccb allocation */
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	spin_lock(&hw->alloc_lock);
++
++	if (is_device_reset(hw))
++		ilo_locked_reset(hw);
++
++	/* each fd private_data holds sw/hw view of ccb */
++	if (hw->ccb_alloc[slot] == NULL) {
++		/* create a channel control block for this minor */
++		error = ilo_ccb_open(hw, data, slot);
++		if (!error) {
++			hw->ccb_alloc[slot] = data;
++			hw->ccb_alloc[slot]->ccb_cnt = 1;
++			hw->ccb_alloc[slot]->ccb_excl = fp->f_flags & O_EXCL;
++			hw->ccb_alloc[slot]->ilo_hw = hw;
++		} else
++			kfree(data);
++	} else {
++		kfree(data);
++		if (fp->f_flags & O_EXCL || hw->ccb_alloc[slot]->ccb_excl) {
++			/*
++			 * The channel exists, and either this open
++			 * or a previous open of this channel wants
++			 * exclusive access.
++			 */
++			error = -EBUSY;
++		} else {
++			hw->ccb_alloc[slot]->ccb_cnt++;
++			error = 0;
++		}
++	}
++	spin_unlock(&hw->alloc_lock);
++
++	if (!error)
++		fp->private_data = hw->ccb_alloc[slot];
++
++	return error;
++}
++
++static const struct file_operations ilo_fops = {
++	.owner		= THIS_MODULE,
++	.read		= ilo_read,
++	.write		= ilo_write,
++	.open 		= ilo_open,
++	.release 	= ilo_close,
++};
++
++static void ilo_unmap_device(struct pci_dev *pdev, struct ilo_hwinfo *hw)
++{
++	pci_iounmap(pdev, hw->db_vaddr);
++	pci_iounmap(pdev, hw->ram_vaddr);
++	pci_iounmap(pdev, hw->mmio_vaddr);
++}
++
++static int __devinit ilo_map_device(struct pci_dev *pdev, struct ilo_hwinfo *hw)
++{
++	int error = -ENOMEM;
++
++	/* map the memory mapped i/o registers */
++	hw->mmio_vaddr = pci_iomap(pdev, 1, 0);
++	if (hw->mmio_vaddr == NULL) {
++		dev_err(&pdev->dev, "Error mapping mmio\n");
++		goto out;
++	}
++
++	/* map the adapter shared memory region */
++	hw->ram_vaddr = pci_iomap(pdev, 2, MAX_CCB * ILOHW_CCB_SZ);
++	if (hw->ram_vaddr == NULL) {
++		dev_err(&pdev->dev, "Error mapping shared mem\n");
++		goto mmio_free;
++	}
++
++	/* map the doorbell aperture */
++	hw->db_vaddr = pci_iomap(pdev, 3, MAX_CCB * ONE_DB_SIZE);
++	if (hw->db_vaddr == NULL) {
++		dev_err(&pdev->dev, "Error mapping doorbell\n");
++		goto ram_free;
++	}
++
++	return 0;
++ram_free:
++	pci_iounmap(pdev, hw->ram_vaddr);
++mmio_free:
++	pci_iounmap(pdev, hw->mmio_vaddr);
++out:
++	return error;
++}
++
++static void ilo_remove(struct pci_dev *pdev)
++{
++	int i, minor;
++	struct ilo_hwinfo *ilo_hw = pci_get_drvdata(pdev);
++
++	clear_device(ilo_hw);
++
++	minor = MINOR(ilo_hw->cdev.dev);
++	for (i = minor; i < minor + MAX_CCB; i++)
++		device_destroy(ilo_class, MKDEV(ilo_major, i));
++
++	cdev_del(&ilo_hw->cdev);
++	ilo_unmap_device(pdev, ilo_hw);
++	pci_release_regions(pdev);
++	pci_disable_device(pdev);
++	kfree(ilo_hw);
++	ilo_hwdev[(minor / MAX_CCB)] = 0;
++}
++
++static int __devinit ilo_probe(struct pci_dev *pdev,
++			       const struct pci_device_id *ent)
++{
++	int devnum, minor, start, error;
++	struct ilo_hwinfo *ilo_hw;
++
++	/* find a free range for device files */
++	for (devnum = 0; devnum < MAX_ILO_DEV; devnum++) {
++		if (ilo_hwdev[devnum] == 0) {
++			ilo_hwdev[devnum] = 1;
++			break;
++		}
++	}
++
++	if (devnum == MAX_ILO_DEV) {
++		dev_err(&pdev->dev, "Error finding free device\n");
++		return -ENODEV;
++	}
++
++	/* track global allocations for this device */
++	error = -ENOMEM;
++	ilo_hw = kzalloc(sizeof(*ilo_hw), GFP_KERNEL);
++	if (!ilo_hw)
++		goto out;
++
++	ilo_hw->ilo_dev = pdev;
++	spin_lock_init(&ilo_hw->alloc_lock);
++	spin_lock_init(&ilo_hw->fifo_lock);
++
++	error = pci_enable_device(pdev);
++	if (error)
++		goto free;
++
++	pci_set_master(pdev);
++
++	error = pci_request_regions(pdev, ILO_NAME);
++	if (error)
++		goto disable;
++
++	error = ilo_map_device(pdev, ilo_hw);
++	if (error)
++		goto free_regions;
++
++	pci_set_drvdata(pdev, ilo_hw);
++	clear_device(ilo_hw);
++
++	cdev_init(&ilo_hw->cdev, &ilo_fops);
++	ilo_hw->cdev.owner = THIS_MODULE;
++	start = devnum * MAX_CCB;
++	error = cdev_add(&ilo_hw->cdev, MKDEV(ilo_major, start), MAX_CCB);
++	if (error) {
++		dev_err(&pdev->dev, "Could not add cdev\n");
++		goto unmap;
++	}
++
++	for (minor = 0 ; minor < MAX_CCB; minor++) {
++		struct device *dev;
++		dev = device_create(ilo_class, &pdev->dev,
++				    MKDEV(ilo_major, minor), NULL,
++				    "hpilo!d%dccb%d", devnum, minor);
++		if (IS_ERR(dev))
++			dev_err(&pdev->dev, "Could not create files\n");
++	}
++
++	return 0;
++unmap:
++	ilo_unmap_device(pdev, ilo_hw);
++free_regions:
++	pci_release_regions(pdev);
++disable:
++	pci_disable_device(pdev);
++free:
++	kfree(ilo_hw);
++out:
++	ilo_hwdev[devnum] = 0;
++	return error;
++}
++
++static struct pci_device_id ilo_devices[] = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_COMPAQ, 0xB204) },
++	{ }
++};
++MODULE_DEVICE_TABLE(pci, ilo_devices);
++
++static struct pci_driver ilo_driver = {
++	.name 	  = ILO_NAME,
++	.id_table = ilo_devices,
++	.probe 	  = ilo_probe,
++	.remove   = __devexit_p(ilo_remove),
++};
++
++static int __init ilo_init(void)
++{
++	int error;
++	dev_t dev;
++
++	ilo_class = class_create(THIS_MODULE, "iLO");
++	if (IS_ERR(ilo_class)) {
++		error = PTR_ERR(ilo_class);
++		goto out;
++	}
++
++	error = alloc_chrdev_region(&dev, 0, MAX_OPEN, ILO_NAME);
++	if (error)
++		goto class_destroy;
++
++	ilo_major = MAJOR(dev);
++
++	error =	pci_register_driver(&ilo_driver);
++	if (error)
++		goto chr_remove;
++
++	return 0;
++chr_remove:
++	unregister_chrdev_region(dev, MAX_OPEN);
++class_destroy:
++	class_destroy(ilo_class);
++out:
++	return error;
++}
++
++static void __exit ilo_exit(void)
++{
++	pci_unregister_driver(&ilo_driver);
++	unregister_chrdev_region(MKDEV(ilo_major, 0), MAX_OPEN);
++	class_destroy(ilo_class);
++}
++
++MODULE_VERSION("0.05");
++MODULE_ALIAS(ILO_NAME);
++MODULE_DESCRIPTION(ILO_NAME);
++MODULE_AUTHOR("David Altobelli <david.altobelli@hp.com>");
++MODULE_LICENSE("GPL v2");
++
++module_init(ilo_init);
++module_exit(ilo_exit);
+diff --git a/drivers/misc/hpilo.h b/drivers/misc/hpilo.h
+new file mode 100644
+index 0000000..a281207
+--- /dev/null
++++ b/drivers/misc/hpilo.h
+@@ -0,0 +1,189 @@
++/*
++ * linux/drivers/char/hpilo.h
++ *
++ * Copyright (C) 2008 Hewlett-Packard Development Company, L.P.
++ *	David Altobelli <david.altobelli@hp.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#ifndef __HPILO_H
++#define __HPILO_H
++
++#define ILO_NAME "hpilo"
++
++/* max number of open channel control blocks per device, hw limited to 32 */
++#define MAX_CCB		8
++/* max number of supported devices */
++#define MAX_ILO_DEV	1
++/* max number of files */
++#define MAX_OPEN	(MAX_CCB * MAX_ILO_DEV)
++
++/*
++ * Per device, used to track global memory allocations.
++ */
++struct ilo_hwinfo {
++	/* mmio registers on device */
++	char __iomem *mmio_vaddr;
++
++	/* doorbell registers on device */
++	char __iomem *db_vaddr;
++
++	/* shared memory on device used for channel control blocks */
++	char __iomem *ram_vaddr;
++
++	/* files corresponding to this device */
++	struct ccb_data *ccb_alloc[MAX_CCB];
++
++	struct pci_dev *ilo_dev;
++
++	spinlock_t alloc_lock;
++	spinlock_t fifo_lock;
++
++	struct cdev cdev;
++};
++
++/* offset from mmio_vaddr */
++#define DB_OUT		0xD4
++/* DB_OUT reset bit */
++#define DB_RESET	26
++
++/*
++ * Channel control block. Used to manage hardware queues.
++ * The format must match hw's version.  The hw ccb is 128 bytes,
++ * but the context area shouldn't be touched by the driver.
++ */
++#define ILOSW_CCB_SZ	64
++#define ILOHW_CCB_SZ 	128
++struct ccb {
++	union {
++		char *send_fifobar;
++		u64 padding1;
++	} ccb_u1;
++	union {
++		char *send_desc;
++		u64 padding2;
++	} ccb_u2;
++	u64 send_ctrl;
++
++	union {
++		char *recv_fifobar;
++		u64 padding3;
++	} ccb_u3;
++	union {
++		char *recv_desc;
++		u64 padding4;
++	} ccb_u4;
++	u64 recv_ctrl;
++
++	union {
++		char __iomem *db_base;
++		u64 padding5;
++	} ccb_u5;
++
++	u64 channel;
++
++	/* unused context area (64 bytes) */
++};
++
++/* ccb queue parameters */
++#define SENDQ		1
++#define RECVQ 		2
++#define NR_QENTRY    	4
++#define L2_QENTRY_SZ 	12
++
++/* ccb ctrl bitfields */
++#define CTRL_BITPOS_L2SZ             0
++#define CTRL_BITPOS_FIFOINDEXMASK    4
++#define CTRL_BITPOS_DESCLIMIT        18
++#define CTRL_BITPOS_A                30
++#define CTRL_BITPOS_G                31
++
++/* ccb doorbell macros */
++#define L2_DB_SIZE		14
++#define ONE_DB_SIZE		(1 << L2_DB_SIZE)
++
++/*
++ * Per fd structure used to track the ccb allocated to that dev file.
++ */
++struct ccb_data {
++	/* software version of ccb, using virtual addrs */
++	struct ccb  driver_ccb;
++
++	/* hardware version of ccb, using physical addrs */
++	struct ccb  ilo_ccb;
++
++	/* hardware ccb is written to this shared mapped device memory */
++	struct ccb __iomem *mapped_ccb;
++
++	/* dma'able memory used for send/recv queues */
++	void       *dma_va;
++	dma_addr_t  dma_pa;
++	size_t      dma_size;
++
++	/* pointer to hardware device info */
++	struct ilo_hwinfo *ilo_hw;
++
++	/* usage count, to allow for shared ccb's */
++	int	    ccb_cnt;
++
++	/* open wanted exclusive access to this ccb */
++	int	    ccb_excl;
++};
++
++/*
++ * FIFO queue structure, shared with hw.
++ */
++#define ILO_START_ALIGN	4096
++#define ILO_CACHE_SZ 	 128
++struct fifo {
++    u64 nrents;	/* user requested number of fifo entries */
++    u64 imask;  /* mask to extract valid fifo index */
++    u64 merge;	/*  O/C bits to merge in during enqueue operation */
++    u64 reset;	/* set to non-zero when the target device resets */
++    u8  pad_0[ILO_CACHE_SZ - (sizeof(u64) * 4)];
++
++    u64 head;
++    u8  pad_1[ILO_CACHE_SZ - (sizeof(u64))];
++
++    u64 tail;
++    u8  pad_2[ILO_CACHE_SZ - (sizeof(u64))];
++
++    u64 fifobar[1];
++};
++
++/* convert between struct fifo, and the fifobar, which is saved in the ccb */
++#define FIFOHANDLESIZE (sizeof(struct fifo) - sizeof(u64))
++#define FIFOBARTOHANDLE(_fifo) \
++	((struct fifo *)(((char *)(_fifo)) - FIFOHANDLESIZE))
++
++/* the number of qwords to consume from the entry descriptor */
++#define ENTRY_BITPOS_QWORDS      0
++/* descriptor index number (within a specified queue) */
++#define ENTRY_BITPOS_DESCRIPTOR  10
++/* state bit, fifo entry consumed by consumer */
++#define ENTRY_BITPOS_C           22
++/* state bit, fifo entry is occupied */
++#define ENTRY_BITPOS_O           23
++
++#define ENTRY_BITS_QWORDS        10
++#define ENTRY_BITS_DESCRIPTOR    12
++#define ENTRY_BITS_C             1
++#define ENTRY_BITS_O             1
++#define ENTRY_BITS_TOTAL	\
++	(ENTRY_BITS_C + ENTRY_BITS_O + \
++	 ENTRY_BITS_QWORDS + ENTRY_BITS_DESCRIPTOR)
++
++/* extract various entry fields */
++#define ENTRY_MASK ((1 << ENTRY_BITS_TOTAL) - 1)
++#define ENTRY_MASK_C (((1 << ENTRY_BITS_C) - 1) << ENTRY_BITPOS_C)
++#define ENTRY_MASK_O (((1 << ENTRY_BITS_O) - 1) << ENTRY_BITPOS_O)
++#define ENTRY_MASK_QWORDS \
++	(((1 << ENTRY_BITS_QWORDS) - 1) << ENTRY_BITPOS_QWORDS)
++#define ENTRY_MASK_DESCRIPTOR \
++	(((1 << ENTRY_BITS_DESCRIPTOR) - 1) << ENTRY_BITPOS_DESCRIPTOR)
++
++#define ENTRY_MASK_NOSTATE (ENTRY_MASK >> (ENTRY_BITS_C + ENTRY_BITS_O))
++
++#endif /* __HPILO_H */
 -- 
 1.5.6.3
 
