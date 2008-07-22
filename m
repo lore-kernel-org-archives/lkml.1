@@ -1,66 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbYGVNcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752811AbYGVNfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753487AbYGVNcM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 09:32:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbYGVNb6
+	id S1752811AbYGVNfA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 09:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbYGVNeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 09:31:58 -0400
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:41995 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750845AbYGVNb6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 09:31:58 -0400
-Message-ID: <4885E13E.1010607@euromail.se>
-Date: Tue, 22 Jul 2008 15:31:42 +0200
-From: Henrik Rydberg <rydberg@euromail.se>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Tue, 22 Jul 2008 09:34:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33240 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750961AbYGVNet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 09:34:49 -0400
+Date: Tue, 22 Jul 2008 15:34:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: johnpol@2ka.mipt.ru, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, vegard.nossum@gmail.com, rjw@sisk.pl,
+       cl@linux-foundation.org, auke-jan.h.kok@intel.com,
+       jeffrey.t.kirsher@intel.com
+Subject: Re: [bug, netconsole, SLUB] BUG skbuff_head_cache: Poison
+	overwritten
+Message-ID: <20080722133415.GA23046@elte.hu>
+References: <20080721115555.GA24176@elte.hu> <20080721192138.GA27672@elte.hu> <20080721212447.GA10107@2ka.mipt.ru> <20080721.163349.113841731.davem@davemloft.net> <20080722075000.GB15807@elte.hu>
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, robfitz@273k.net,
-       akpm@osdl.org, Vojtech Pavlik <vojtech@suse.cz>, dmonakhov@openvz.org
-Subject: Re: [PATCH] hid: wellspring device quirks
-References: <1215963466.12757.0.camel@alnilam> <alpine.LNX.1.10.0807221504380.3037@jikos.suse.cz>
-In-Reply-To: <alpine.LNX.1.10.0807221504380.3037@jikos.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: 83.248.35.11
-X-Scan-Result: No virus found in message 1KLHy8-0004mK-9A.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KLHy8-0004mK-9A 6971a6b23caec8df026a28f79da040f9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080722075000.GB15807@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> On Sun, 13 Jul 2008, Henrik Rydberg wrote:
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > > Can you check kind of this patch:
+> > 
+> > The call even seems pointless, since the caller will call ->poll() 
+> > (which is e1000_clean) as the very next action, and that will invoke 
+> > e1000_clean_tx_irq() properly.
+> > 
+> > I would just delete this call from e1000_netpoll() entirely.
 > 
->> This patch adds the HID_QUIRK_IGNORE_MOUSE quirk for the Apple USB
->> multitouch devices based on BCM5974, aka Wellspring. These devices
->> will instead be picked up by the new bcm5974 driver.
+> ok, i've added the patch below to tip/out-of-tree.
 > 
-> Hi Henrik,
+> Overnight test had about 100 successful bootups on this testbox. 
+> (until it stopped on a drivers/net/hp.c build error - which is 
+> unrelated to this problem)
 > 
-> is the mouse not working at all with standard HID driver?
-> 
+> So testing with netconsole disabled is conclusive enough to implicate 
+> netconsole strongly. I've now re-enabled netconsole on the testbox and 
+> will continue the test with the fix below. Previously it would crash 
+> within 10-40 iterations.
 
-Yes, it is working out-of-the-box, only poorly.
+it's now past 50 successful iterations with e1000e+netconsole enabled 
+again with the fix applied, and not a single crash, hang, memory 
+corruption or other weirdness happened. Jeff, please apply the fix 
+below.
 
-> I'd prefer to postpone merging this patch until bcm5974 hits mainline if
-> the device works in a limited way with standard HID driver, so that we
-> don't introduce regression.
-> 
+Thanks,
 
-Absolutely, this patch should be applied together with the bcm5974 driver,
-or not be applied. The driver patch is here:
+	Ingo
 
-http://userweb.kernel.org/~akpm/mmotm/broken-out/input-bcm5974-055-smoother-motion-irq-simplification.patch
+---------------->
+commit 1fd48807674d4f6defe82258c46619ce2c116943
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Tue Jul 22 09:44:32 2008 +0200
 
-> If the device doesn't work with HID driver at all though, it is probably
-> perfectly fine to merge it right away. Please let me know, I have no
-> knowledge about this particular device.
+    e1000e: fix e1000_netpoll(), remove extraneous e1000_clean_tx_irq() call
+    
+    Evgeniy Polyakov noticed that drivers/net/e1000e/netdev.c:e1000_netpoll()
+    was calling e1000_clean_tx_irq() without taking the TX lock.
+    
+    David Miller suggested to remove the call altogether: since in this
+    callpah there's periodic calls to ->poll() anyway which will do
+    e1000_clean_tx_irq() and will garbage-collect any finished TX ring
+    descriptors.
+    
+    This fix solved the e1000e+netconsole crashes i've been seeing:
+    
+    =============================================================================
+    BUG skbuff_head_cache: Poison overwritten
+    -----------------------------------------------------------------------------
+    
+    INFO: 0xf658ae9c-0xf658ae9c. First byte 0x6a instead of 0x6b
+    INFO: Allocated in __alloc_skb+0x2c/0x110 age=0 cpu=0 pid=5098
+    INFO: Freed in __kfree_skb+0x31/0x80 age=0 cpu=1 pid=4440
+    INFO: Slab 0xc16cc140 objects=16 used=1 fp=0xf658ae00 flags=0x400000c3
+    INFO: Object 0xf658ae00 @offset=3584 fp=0xf658af00
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/net/e1000e/netdev.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-It is fine to leave it, but I would of course prefer to have the driver included together with this patch.
-
-Thanks!
-Henrik Rydberg
-
+diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+index 869544b..9c0f56b 100644
+--- a/drivers/net/e1000e/netdev.c
++++ b/drivers/net/e1000e/netdev.c
+@@ -4067,8 +4067,6 @@ static void e1000_netpoll(struct net_device *netdev)
+ 	disable_irq(adapter->pdev->irq);
+ 	e1000_intr(adapter->pdev->irq, netdev);
+ 
+-	e1000_clean_tx_irq(adapter);
+-
+ 	enable_irq(adapter->pdev->irq);
+ }
+ #endif
