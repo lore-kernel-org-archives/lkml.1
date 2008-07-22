@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYGVLBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbYGVLCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbYGVLBQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 07:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbYGVLBB
+	id S1754555AbYGVLCw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 07:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYGVLCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 07:01:01 -0400
-Received: from ozlabs.org ([203.10.76.45]:36682 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751108AbYGVLBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 07:01:00 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/2] x86: rename PTE_MASK to PTE_PFN_MASK
-Date: Tue, 22 Jul 2008 20:58:36 +1000
-User-Agent: KMail/1.9.9
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
-References: <200807221431.58991.rusty@rustcorp.com.au> <4885774E.3000909@goop.org> <20080722083626.GC2065@elte.hu>
-In-Reply-To: <20080722083626.GC2065@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 22 Jul 2008 07:02:44 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60958 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751189AbYGVLCn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 07:02:43 -0400
+Date: Tue, 22 Jul 2008 11:44:36 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] serial: fix struct uart_info change fallout
+Message-ID: <20080722114436.2c13edea@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080722130152.f115224d.sfr@canb.auug.org.au>
+References: <20080722102520.ca801ab5.sfr@canb.auug.org.au>
+	<20080722025850.0d073a5e@lxorguk.ukuu.org.uk>
+	<20080722130152.f115224d.sfr@canb.auug.org.au>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807222058.37130.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 July 2008 18:36:26 Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> > Rusty, in his peevish way, complained that macros defining constants
-> > should have a name which somewhat accurately reflects the actual
-> > purpose of the constant.
->
-> Applied to tip/x86/cleanups anyway. Rusty will find out himself how bad
-> this whole concept of clean and understandable code is, soon enough!
+> What is your problem with the linux-next tree.  The problem was
+> discovered and reported when I first merged the ttydev tree into
+> linux-next on July 1.  The fixes were in linux-next on July 2.
 
-I am disgusted with this inappropriate emphasis on clarity over obscurity.  It
-should be pretty clear to everyone here that we can't have both!
+Yes .. and ? The clashes kept happening despite that when I was doing the
+merges (and going on holiday for a week and trying to sort it out with
+limited time and internet access)
 
-Fortunately, there is a way to partially rectify the situation. Ingo, please
-apply.
+Sorry I don't follow your line of discussion at all here ?
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- include/asm-x86/page.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> > just going to break the tree again and mean I have to run another set of
+> > tests and regressions.
+> 
+> Please give what until tomorrow?
 
-diff --git a/include/asm-x86/page.h b/include/asm-x86/page.h
-index 6c84622..4207518 100644
---- a/include/asm-x86/page.h
-+++ b/include/asm-x86/page.h
-@@ -10,6 +10,7 @@
- 
- #ifdef __KERNEL__
- 
-+/* There's something suspicious about this line: see PTE_PFN_MASK comment. */
- #define __PHYSICAL_MASK		((phys_addr_t)(1ULL << __PHYSICAL_MASK_SHIFT) - 1)
- #define __VIRTUAL_MASK		((1UL << __VIRTUAL_MASK_SHIFT) - 1)
- 
-@@ -19,6 +20,7 @@
- #define PHYSICAL_PAGE_MASK	(((signed long)PAGE_MASK) & __PHYSICAL_MASK)
- 
- /* PTE_PFN_MASK extracts the PFN from a (pte|pmd|pud|pgd)val_t */
-+/* This line is quite subtle.  See __PHYSICAL_MASK comment above. */
- #define PTE_PFN_MASK		((pteval_t)PHYSICAL_PAGE_MASK)
- 
- /* PTE_FLAGS_MASK extracts the flags from a (pte|pmd|pud|pgd)val_t */
+it - the situation. The patches have all gone to Linus.
+
+Alan
