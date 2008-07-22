@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755738AbYGVF55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbYGVF6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755738AbYGVF55 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 01:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYGVF5r
+	id S1756824AbYGVF6W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 01:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYGVF6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 01:57:47 -0400
-Received: from phunq.net ([64.81.85.152]:45212 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750781AbYGVF5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 01:57:46 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Theodore Tso <tytso@mit.edu>
-Subject: Re: [RFC] A better solution to the HTree telldir problem
-Date: Mon, 21 Jul 2008 22:57:38 -0700
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Andreas Dilger <adilger@sun.com>,
-       linux-ext4@vger.kernel.org, ext2-devel@lists.sourceforge.net
-References: <200807211411.52007.phillips@phunq.net> <20080722025638.GK28839@mit.edu>
-In-Reply-To: <20080722025638.GK28839@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 22 Jul 2008 01:58:06 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59700 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751184AbYGVF6F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 01:58:05 -0400
+Subject: Re: [git pull] x86: declaration fixes
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080721180439.GA13720@elte.hu>
+References: <1216662432.28271.30.camel@jaswinder.satnam>
+	 <20080721180439.GA13720@elte.hu>
+Content-Type: text/plain
+Date: Tue, 22 Jul 2008 11:27:01 +0530
+Message-Id: <1216706221.2595.8.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807212257.38160.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 July 2008 19:56, Theodore Tso wrote:
-> Even worse, since if NFS is enabled in any way, shape or form, this
-> scheme is totally and completely screwed.  So we have to the old way
-> of doing things if NFS is turned on.
+Hello Ingo,
 
-I didn't realize it would be so difficult to detect telldir coming from
-NFSD.  NFS is the entire reason for all this posturing, so if the
-strategy fails for NFS then it isn't worth spending any time on it.
+On Mon, 2008-07-21 at 20:04 +0200, Ingo Molnar wrote:
+> * Jaswinder Singh <jaswinder@infradead.org> wrote:
+> 
 
-I wrote generic btree code for ddsnap with arbitrary depth and merge on
-delete, but was never able to justify the time to port it to HTree
-during my day job.  Props to clusterfs (Andreas!) for stepping up to
-do this.  No doubt a commercial imperative helped achieve focus there.
+> another thing:
+> 
+> --- a/include/asm-x86/signal.h
+> +++ b/include/asm-x86/signal.h
+> 
+> +void do_notify_resume(struct pt_regs *, void *, __u32);
+> +
+> 
+> please add "extern" to each such prototype declaration. (the same is 
+> true for a handful of other prototypes you've added - please re-review 
+> and fix them)
+> 
 
-But I will not use HTree for my own filesystem work, I will use a new
-thing called PHTree, which is a (P)hysically stable variant of HTree,
-obtained by inserting a new layer of index blocks between the index
-nodes and the dirent blocks, the "terminal" index blocks.  Each
-terminal index block is populated with { hash : block } pairs, each of
-which indicates that there is a dirent in <block> with hash <hash>.
+I was trying to follow other functions declaration in the file.
 
-This requires one extra lookup per operation which is regretable, but
-it solves the physical stability problem.  Directory entries will just
-stay in the leaf blocks in which they are first created, and only
-index nodes will ever be split.  Because leaf blocks will typically be
-full instead of 75% full in HTree, the space usage ends up about the
-same.  A more efficient hash algorithm can be used, and deletion and
-other operations will tend to be faster due to less thrashing of the
-inode table.
+function declaration without extern :-
 
-Free space management becomes an issue: when dirents are deleted we
-need to be able to re-use them for new entries.  To support efficient
-detection of available dirents of appropriate size, I will use a lazy
-method of recording the maximum sized dirent available in any leaf
-block.  The actual largest free direct may be smaller than that, which
-will be detected when a search fails, causing the lazy limit to be
-updated.  We can safely skip searching for free space in any block
-for which the lazy max is less than the size we require.  One byte is
-sufficient for the lazy max, so one 4K block is sufficient to keep
-track of 2^12 * 2^12 bytes worth of directory blocks, a 16 meg
-directory with about half a million entries.  For larger directories
-this structure becomes a radix tree, with lazy max recorded also at
-each index pointer for quick free space searching.
+http://git.infradead.org/users/jaswinder/linux-2.6-tip.git?a=commitdiff;h=f740a1e1bbee2ce8a0b1b97361771db40afc37d2
+http://git.infradead.org/users/jaswinder/linux-2.6-tip.git?a=commitdiff;h=b7b5113220da95eaa8b75ebd5bbd5278eed122e5
 
-Mind you, I haven't coded this yet and it will be a good few months
-before I do, so I don't have performance numbers.  I just thought I
-should mention it now, because I expect it to meet or beat HTree
-overall in performance while supporting brain damaged NFS semantics in
-a much nicer way.  Hopefully we will find out for sure before Ext4
-indexing becomes cast in stone.
+function declaration with extern :-
 
-Regards,
+http://git.infradead.org/users/jaswinder/linux-2.6-tip.git?a=commitdiff;h=8cac4294a5e9b036c30d30e2e894e74201ee1c6b
+http://git.infradead.org/users/jaswinder/linux-2.6-tip.git?a=commitdiff;h=e7d3d48dbf3e517e2e827a2adc6a2f861b16e6a6
+http://git.infradead.org/users/jaswinder/linux-2.6-tip.git?a=commitdiff;h=feb49274338051ddf11d16f67b08ee6cafb32dbf
 
-Daniel
+But you are emphasizing to use extern for all function declarations.
+
+With current gcc, I think using extern with function declaration is :-
+1. Wastage of time
+2. Wastage of energy
+3. Increase file size with 7 bytes for each extern.
+
+If there is any secret behind using extern in kernel header files.
+Please let me know.
+
+Thank you,
+
+Jaswinder Singh.
+
