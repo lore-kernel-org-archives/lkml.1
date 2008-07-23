@@ -1,100 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbYGWF2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbYGWFyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754926AbYGWF2F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 01:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbYGWF1y
+	id S1754361AbYGWFyI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 01:54:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYGWFxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 01:27:54 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:41113 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753023AbYGWF1x (ORCPT
+	Wed, 23 Jul 2008 01:53:52 -0400
+Received: from smtp-out-41.synserver.de ([217.119.50.41]:1032 "HELO
+	smtp-out-41.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750786AbYGWFxv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 01:27:53 -0400
-X-Sasl-enc: YG+F6FVJbs9BemsFbsyVEvuds/6xuSyiO9eKBmj1Ehgo 1216790872
-Subject: Re: [PATCH 6/7] autofs4 - use struct qstr in waitq.c
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, autofs@linux.kernel.org,
-       linux-fsdevel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
-       Jeff Moyer <jmoyer@redhat.com>
-In-Reply-To: <20080722221731.9b688b45.akpm@linux-foundation.org>
-References: <20080617122336.14725.64829.stgit@raven.themaw.net>
-	 <20080617122406.14725.84758.stgit@raven.themaw.net>
-	 <20080722161357.802ad1a5.akpm@linux-foundation.org>
-	 <1216789721.2995.29.camel@raven.themaw.net>
-	 <20080722221731.9b688b45.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 23 Jul 2008 13:24:00 +0800
-Message-Id: <1216790642.2995.41.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jul 2008 01:53:51 -0400
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: markus@trippelsdorf.de
+X-SynServer-PPID: 3904
+Date: Wed, 23 Jul 2008 07:40:39 +0200
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Alessandro Guido <ag@alessandroguido.name>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: WARNING: at net/core/dev.c:1328!
+Message-ID: <20080723054039.GA2272@gentoox2.trippelsdorf.de>
+References: <d4b984a30807210914nd4d0db5yb7b93ca5143ff0d5@mail.gmail.com> <20080721.092027.14394005.davem@davemloft.net> <d4b984a30807220254t1aaf6ac4q874329966511b0c5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d4b984a30807220254t1aaf6ac4q874329966511b0c5@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 22, 2008 at 11:54:26AM +0200, Alessandro Guido wrote:
+> Got a WARNING this morning (2.6.26-05752-g93ded9b) and I think it's related.
 
-On Tue, 2008-07-22 at 22:17 -0700, Andrew Morton wrote:
-> On Wed, 23 Jul 2008 13:08:40 +0800 Ian Kent <raven@themaw.net> wrote:
-> 
-> > 
-> > On Tue, 2008-07-22 at 16:13 -0700, Andrew Morton wrote:
-> > > On Tue, 17 Jun 2008 20:24:06 +0800
-> > > Ian Kent <raven@themaw.net> wrote:
-> > > 
-> > > > From: Jeff Moyer <jmoyer@redhat.com>
-> > > > 
-> > > > The autofs_wait_queue already contains all of the fields of the
-> > > > struct qstr, so change it into a qstr.
-> > > > 
-> > > > This patch, from Jeff Moyer, has been modified a liitle by myself.
-> > > > 
-> > > > Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
-> > > > Signed-off-by: Ian Kent <raven@themaw.net>
-> > > 
-> > > So this patch which had been happily sitting in -mm for a month has
-> > > suddenly broken because linux-next's three-day-old
-> > > 4bce7ce7c7d0d57b78dacc3a2bd87ec63b2d9b4c has removed LOOKUP_ACCESS.
-> > > 
-> > > This is suboptimal.
-> > > 
-> > > Now what do I do?
-> > 
-> > Ummm .. I'm confused.
-> > 
-> > Your patch autofs4-use-lookup-intent-flags-to-trigger-mounts-fix.patch
-> > allows the linux-next kernel to build with all the autofs4 patches
-> > currently posted for inclusion in mm but the patch you mention here
-> > isn't concerned with the lookup flags?
-> 
-> Yeah, I picked the wrong patch to reply to.
+Same thing here (latest git):
 
-Hahaha, ;)
+skge eth1: enabling interface
+skge eth1: disabling interface
+------------[ cut here ]------------
+WARNING: at net/core/dev.c:1344 __netif_schedule+0x24/0x6d()
+Pid: 1904, comm: ip Not tainted 2.6.26-06077-gc010b2f #33
 
-> 
-> > The removal of LOOKUP_ACCESS is quite interesting. AFAIKS it effectively
-> > prevents the patch
-> > autofs4-use-lookup-intent-flags-to-trigger-mounts.patch from also
-> > resolving an issue with recursive autofs mounts while still resolving
-> > the issue that the patch was actually meant to address.
-> > 
-> > It's hard to get exited about the former issue as Al Viro has NACKed a
-> > previous patch that added the LOOKUP_ACCESS check, indicating the
-> > availability of the lookup flags will be changing. Also there is a
-> > question as to whether autofs will support the use mount points in
-> > automount maps that themselves refer to an automount path (the recursive
-> > bit).
-> 
-> So what do we do?
+Call Trace:
+ [<ffffffff8022e5f4>] warn_on_slowpath+0x4c/0x87
+ [<ffffffff802fc5cb>] delay_tsc+0x0/0x55
+ [<ffffffff802fc5cb>] delay_tsc+0x0/0x55
+ [<ffffffff802fc5e7>] delay_tsc+0x1c/0x55
+ [<ffffffff8037e2ee>] gm_phy_write+0x50/0x90
+ [<ffffffff8037e2f8>] gm_phy_write+0x5a/0x90
+ [<ffffffff8037f03f>] skge_led+0x1fb/0x20b
+ [<ffffffff804202e8>] __netif_schedule+0x24/0x6d
+ [<ffffffff80381298>] skge_down+0x440/0x4cf
+ [<ffffffff803814be>] skge_change_mtu+0x3d/0x61
+ [<ffffffff80420775>] dev_set_mtu+0x46/0x79
+ [<ffffffff80427a51>] do_setlink+0x1c5/0x31f
+ [<ffffffff804287d3>] rtnl_newlink+0x2b9/0x3e3
+ [<ffffffff804285a8>] rtnl_newlink+0x8e/0x3e3
+ [<ffffffff80428d69>] rtnetlink_rcv_msg+0x5a/0x1ea
+ [<ffffffff80428d0f>] rtnetlink_rcv_msg+0x0/0x1ea
+ [<ffffffff8042efde>] netlink_rcv_skb+0x34/0x7e
+ [<ffffffff80428d09>] rtnetlink_rcv+0x1f/0x25
+ [<ffffffff8042eb97>] netlink_unicast+0x119/0x17f
+ [<ffffffff8041b35d>] __alloc_skb+0x61/0x123
+ [<ffffffff8042ee37>] netlink_sendmsg+0x23a/0x24d
+ [<ffffffff804152e4>] sock_sendmsg+0xcb/0xe3
+ [<ffffffff8023f670>] autoremove_wake_function+0x0/0x2e
+ [<ffffffff80225643>] need_resched+0x1e/0x28
+ [<ffffffff804147d8>] move_addr_to_kernel+0x25/0x36
+ [<ffffffff8041c090>] verify_iovec+0x46/0x82
+ [<ffffffff80415513>] sys_sendmsg+0x217/0x28a
+ [<ffffffff8042e01e>] netlink_insert+0xfe/0x121
+ [<ffffffff80414b40>] sockfd_lookup_light+0x1a/0x52
+ [<ffffffff80261fe5>] __vma_link+0x58/0x61
+ [<ffffffff80262062>] vma_link+0x74/0x99
+ [<ffffffff802630ce>] do_brk+0x2c1/0x319
+ [<ffffffff8020b3eb>] system_call_after_swapgs+0x7b/0x80
 
-Yeah, best thing to do is to go with the patch that you did to resolve
-it. I'm going to need to deal with changes to the availability of the
-lookup flags to modules as they come up anyway.
+---[ end trace 92936ef183e09876 ]---
+skge eth1: enabling interface
+skge eth1: Link is up at 100 Mbps, full duplex, flow control both
 
-I don't want to hold things up due to the recursive mount issue as Al
-has pointed out it doesn't work correctly now anyway. I haven't had time
-to look into it as it isn't at the top of my priority list.
-
-Ian
-
-
+-- 
+Markus
