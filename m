@@ -1,129 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbYGWHBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753092AbYGWHOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753438AbYGWHBo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 03:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbYGWHBh
+	id S1753092AbYGWHOn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 03:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbYGWHOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 03:01:37 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:37409 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750718AbYGWHBg (ORCPT
+	Wed, 23 Jul 2008 03:14:34 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:4962 "EHLO
+	pd2mo1so-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750718AbYGWHOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 03:01:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OmKXmFmal8k+QcAwQjKf661Cme2C/3jBrsMqVOwjcjJyzXxs2GbATk17x+vpeMwoaY
-         kqR5RtylLtL8AAdf7QLYkUEkASKM4q57OJpn32kBoO1gmm+6axiXZA2qytWl2T2ZPghB
-         GcBdUUPqQL+pYgBhsfdlMrw480TH9X5v3ACOk=
-Message-ID: <74d0deb30807230001x176e375cq9a8060c20596f36f@mail.gmail.com>
-Date: Wed, 23 Jul 2008 09:01:34 +0200
-From: "pHilipp Zabel" <philipp.zabel@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: [patch 44/47] pxamci: fix byte aligned DMA transfers
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Justin Forbes" <jmforbes@linuxtx.org>,
-       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Dave Jones" <davej@redhat.com>,
-       "Chuck Wolber" <chuckw@quantumlinux.com>,
-       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
-       "Michael Krufky" <mkrufky@linuxtv.org>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Domenico Andreoli" <cavokz@gmail.com>, "Willy Tarreau" <w@1wt.eu>,
-       "Rodrigo Rubira Branco" <rbranco@la.checkpoint.com>,
-       "Jake Edge" <jake@lwn.net>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Pierre Ossman" <drzeus@drzeus.cx>
-In-Reply-To: <20080722231735.GS8282@suse.de>
+	Wed, 23 Jul 2008 03:14:33 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=-Pabf1b0GW0V_JFh4IkA:9 a=ZiK1Aija60C05RMU05M3ZUmBXJQA:4 a=l9iCJtgIvv4A:10 a=GFZTb6icBPAA:10
+Message-ID: <4886DA32.6080401@sieb.net>
+Date: Wed, 23 Jul 2008 00:13:54 -0700
+From: Samuel Sieb <samuel@sieb.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.15) Gecko/20080706 Fedora/1.1.10-1.fc9 SeaMonkey/1.1.10
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Juergen Beisert <jbe@pengutronix.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: kernel won't boot on a Cyrix MediaGXm (Geode )
+References: <48841A92.4020301@sieb.net> <200807210828.56821.jbe@pengutronix.de> <48856D32.1070101@sieb.net> <200807221008.27867.jbe@pengutronix.de>
+In-Reply-To: <200807221008.27867.jbe@pengutronix.de>
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080722230208.148102983@mini.kroah.org>
-	 <20080722231342.GA8282@suse.de> <20080722231735.GS8282@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Wed, Jul 23, 2008 at 1:17 AM, Greg KH <gregkh@suse.de> wrote:
-> 2.6.25-stable review patch.  If anyone has any objections, please let us
-> know.
-
-There is an ugly typo in the patch below that was fixed by Karl Beldan:
-http://git.kernel.org/?p=linux/kernel/git/drzeus/mmc.git;a=commit;h=28bbe535df5c461c25eb57affb30e007072429c3
-
-Not sure how you handle this, maybe this patch should only go in
-together with the other.
-
-> ------------------
-> From: Philipp Zabel <philipp.zabel@gmail.com>
->
-> commit 97f8571e663c808ad2d01a396627235167291556 upstream
->
-> The pxa27x DMA controller defaults to 64-bit alignment. This caused
-> the SCR reads to fail (and, depending on card type, error out) when
-> card->raw_scr was not aligned on a 8-byte boundary.
->
-> For performance reasons all scatter-gather addresses passed to
-> pxamci_request should be aligned on 8-byte boundaries, but if
-> this can't be guaranteed, byte aligned DMA transfers in the
-> have to be enabled in the controller to get correct behaviour.
->
-> Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
-> Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
-> Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
->
-> ---
->  drivers/mmc/host/pxamci.c |   13 +++++++++++++
->  1 file changed, 13 insertions(+)
->
-> --- a/drivers/mmc/host/pxamci.c
-> +++ b/drivers/mmc/host/pxamci.c
-> @@ -114,6 +114,7 @@ static void pxamci_setup_data(struct pxa
->        unsigned int nob = data->blocks;
->        unsigned long long clks;
->        unsigned int timeout;
-> +       bool dalgn = 0;
->        u32 dcmd;
->        int i;
->
-> @@ -152,6 +153,9 @@ static void pxamci_setup_data(struct pxa
->                host->sg_cpu[i].dcmd = dcmd | length;
->                if (length & 31 && !(data->flags & MMC_DATA_READ))
->                        host->sg_cpu[i].dcmd |= DCMD_ENDIRQEN;
-> +               /* Not aligned to 8-byte boundary? */
-> +               if (sg_dma_address(&data->sg[i]) & 0x7)
-> +                       dalgn = 1;
->                if (data->flags & MMC_DATA_READ) {
->                        host->sg_cpu[i].dsadr = host->res->start + MMC_RXFIFO;
->                        host->sg_cpu[i].dtadr = sg_dma_address(&data->sg[i]);
-> @@ -165,6 +169,15 @@ static void pxamci_setup_data(struct pxa
->        host->sg_cpu[host->dma_len - 1].ddadr = DDADR_STOP;
->        wmb();
->
-> +       /*
-> +        * The PXA27x DMA controller encounters overhead when working with
-> +        * unaligned (to 8-byte boundaries) data, so switch on byte alignment
-> +        * mode only if we have unaligned data.
-> +        */
-> +       if (dalgn)
-> +               DALGN |= (1 << host->dma);
-> +       else
-> +               DALGN &= (1 << host->dma);
-                         ^^^^^ here
-
->        DDADR(host->dma) = host->sg_dma;
->        DCSR(host->dma) = DCSR_RUN;
->  }
->
-> --
->
-
-regards
-Philipp
+Juergen Beisert wrote:
+> On Dienstag, 22. Juli 2008, Samuel Sieb wrote:
+>> Juergen Beisert wrote:
+>>> linux-2.6.25/arch/x86/kernel/cyrix.c, line 151. Disable this line or
+>>> change the value 0x04 according to the speed of your CPU. This tweak
+>>> helps others with random hangs of their system.
+>> I tried various values and various combinations of commenting out lines
+>> and the only one that worked for me was to comment out the PCR1 line
+>> just above it.  With that line commented out (or both of them), it
+>> boots.
+> 
+> Hmm, then your BIOS does know more about your hardware than the kernel. ;-)
+> The PCR1 line enables the incrementor. If disabled the value in PCR0 doesn't 
+> matter.
+> 
+I did some more testing and the end result is that you can't enable the 
+incrementor on this cpu.  I tried values from 0 to 7 for the PCR0 and it 
+always crashed or hung (0 also gave noise all over the screen).  The 
+values set by the BIOS are PCR1: 1 and PCR0: 0.
