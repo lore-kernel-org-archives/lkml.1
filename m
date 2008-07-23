@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbYGWUNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbYGWUOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755461AbYGWUNh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 16:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbYGWUN3
+	id S1755668AbYGWUOw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 16:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbYGWUOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 16:13:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43128 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752675AbYGWUN3 (ORCPT
+	Wed, 23 Jul 2008 16:14:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45228
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752675AbYGWUOm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 16:13:29 -0400
-Date: Wed, 23 Jul 2008 13:12:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, andi@firstfloor.org,
-       arjan@infradead.org, ebiederm@xmission.com, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: usb debug port early console
-Message-Id: <20080723131218.f03ed672.akpm@linux-foundation.org>
-In-Reply-To: <200807231252.20371.yhlu.kernel@gmail.com>
-References: <200807231252.20371.yhlu.kernel@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 23 Jul 2008 16:14:42 -0400
+Date: Wed, 23 Jul 2008 13:14:41 -0700 (PDT)
+Message-Id: <20080723.131441.200166513.davem@davemloft.net>
+To: peterz@infradead.org
+Cc: jarkao2@gmail.com, Larry.Finger@lwfinger.net, kaber@trash.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, mingo@redhat.com
+Subject: Re: Kernel WARNING: at net/core/dev.c:1330
+ __netif_schedule+0x2c/0x98()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1216810696.7257.175.camel@twins>
+References: <1216806614.7257.152.camel@twins>
+	<20080723101352.GD4561@ff.dom.local>
+	<1216810696.7257.175.camel@twins>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jul 2008 12:52:20 -0700
-Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+From: Peter Zijlstra <peterz@infradead.org>
+Date: Wed, 23 Jul 2008 12:58:16 +0200
 
-> 
-> 
-> based on work from Eric, and add some timeout so don't dead loop when debug device
-> is not installed
-> 
->
-> ...
->
-> +static void dbgp_mdelay(int ms)
-> +{
-> +	int i;
-> +	while (ms--) {
-> +		for (i = 0; i < 1000; i++)
-> +			outb(0x1, 0x80);
-> +	}
-> +}
+> So I guess my question is, is netif_tx_lock() here to stay, or is the
+> right fix to convert all those drivers to use __netif_tx_lock() which
+> locks only a single queue?
 
-hm.  port 80 has a guaranteed one microsecond?  Why not
-udelay()/mdelay()/etc?
+It's staying.
 
-> +static void dbgp_breath(void)
-> +{
-> +	/* Sleep to give the debug port a chance to breathe */
-> +}
+It's trying to block all potential calls into the ->hard_start_xmit()
+method of the driver, and the only reliable way to do that is to take
+all the TX queue locks.  And in one form or another, we're going to
+have this "grab/release all the TX queue locks" construct.
 
-I expect the compiler will optimise away any calls to this.
-
->
-> ...
->
-> --- linux-2.6.orig/arch/x86/kernel/head64.c
-> +++ linux-2.6/arch/x86/kernel/head64.c
-> @@ -72,6 +72,8 @@ static void __init copy_bootdata(char *r
->  	}
->  }
->  
-> +extern void __init enable_debug_console(char *buf);
-
-Please always pass all patches through scripts/checkpatch.pl.
-
+I find it interesting that this cannot be simply described to lockdep
+:-)
