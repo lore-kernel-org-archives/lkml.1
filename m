@@ -1,92 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756744AbYGWXqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbYGWXtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756744AbYGWXqr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 19:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbYGWXqj
+	id S1755241AbYGWXtv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 19:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754992AbYGWXti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 19:46:39 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:60143 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752759AbYGWXqi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 19:46:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=sXGrzFH5bgF+A9MqqDMYkoBDkX6GGHpkrwwph+HFyMQPnjpO4kOYv3rZzMKn+X8tpG
-         zQSvgTuVxp4e+bvivl97pZzSsGPi848Py8a7fpQJw3AcGbfkH0ug24i+l1fw4+NP2YvW
-         x1ED+cEI7683hEpFruz8g534ngOLCGwlKC6pU=
-Message-ID: <86802c440807231646t11313612x4107c2c780d2b0f9@mail.gmail.com>
-Date: Wed, 23 Jul 2008 16:46:36 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [PATCH] x86: usb debug port early console v2
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080723232142.GD30234@kroah.com>
+	Wed, 23 Jul 2008 19:49:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44100 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753778AbYGWXth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 19:49:37 -0400
+Message-ID: <4887C2F7.6040506@redhat.com>
+Date: Wed, 23 Jul 2008 19:47:03 -0400
+From: Prarit Bhargava <prarit@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: joro@8bytes.org
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       jbarnes@virtuousgeek.org, ed.pollard@ibm.com, epollard@redhat.com
+Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
+References: <20080723111928.15828.42561.sendpatchset@prarit.bos.redhat.com>	<20080723221033.GD13662@8bytes.org> <20080724081528F.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080724081528F.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200807231252.20371.yhlu.kernel@gmail.com>
-	 <200807231400.53957.yhlu.kernel@gmail.com>
-	 <20080723224533.GA29234@kroah.com>
-	 <86802c440807231554g4fc4f981j5f9a8db9ab51fe93@mail.gmail.com>
-	 <20080723232142.GD30234@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 4:21 PM, Greg KH <greg@kroah.com> wrote:
-> On Wed, Jul 23, 2008 at 03:54:09PM -0700, Yinghai Lu wrote:
->> On Wed, Jul 23, 2008 at 3:45 PM, Greg KH <greg@kroah.com> wrote:
->> > On Wed, Jul 23, 2008 at 02:00:53PM -0700, Yinghai Lu wrote:
->> >> --- linux-2.6.orig/drivers/usb/host/ehci.h
->> >> +++ linux-2.6/drivers/usb/host/ehci.h
->> >
->> > I don't understand the issue of any of these #ifdefs here.  Why are they
->> > needed?
->>
->> In file included from arch/x86/kernel/early_printk.c:19:
->> arch/x86/kernel/../../../drivers/usb/host/ehci.h:109: error: field
->> 'iaa_watchdog' has incomplete type
+
+>> Interesting. Have you experienced any problems because of that
+>> misbehavior in the GART code? AMD IOMMU currently also violates this
+>> requirement. I will send a patch to fix that there too.
+>>     
 >
-> Ah, so you are papering over the real problem here, right?
->
-> Why not just include the properly needed #includes either where you are
-> including this header file, or add the dependancies to the ehci.h file
-> itself (which is usually preferred.)
+>   
 
-how about moving
+Joerg,  yes I can see misbehavior caused by this code.  O/w I wouldn't 
+be spending my time fixing it :) :)
 
-struct ehci_caps;
-struct ehci_regs;
-struct ehci_dbg_port;
+See below ....
 
-to one header file in include/usb
-so could use
-#include <linux/usb/ehci_def.h>
-instead of
-#include "../../../drivers/usb/host/ehci.h"
+> IIRC, only PARISC and POWER IOMMUs follow the above rule. So I also
+> wondered what problem he hit.
+>   
 
->
->> > And shouldn't there be a separate config option for early printk through
->> > the ehci debug port?
->>
->> under usb or processor?
->
-> Somewhere.
->
-> Also, usb patches should be cc:ed to the linux-usb mailing list.  I'm
-> sure the EHCI authors would like to comment on this patch...
+I wonder if IBM's Calgary IOMMU needs this fix? ... I've added Ed 
+Pollard to find out.
 
-oh, i thought you wrote the ehci code.
+On big memory footprint (16G or above) systems it is possible that the 
+e820 map reserves most of the lower 4G of memory for system use*.  So 
+it's possible that the 4G region is almost completely reserved at boot 
+time and so the kernel starts using the IOMMU for DMA (see 
+dma_alloc_coherent()).  The addresses returned are not properly aligned, 
+and this causes serious problems for some drivers that require a 
+physical aligned address for the device.
 
-YH
+P.
+
+* I have one large system with 64G of memory on which I can reproduce 
+this issue very quickly.  Even booting the system with mem=16G seems to 
+cause the problem, although I did have to load a module that reserved a 
+few M of DMA addresses before I started alloc'ing from the IOMMU.
+
+I also reproduced this on a smaller system by loading one module that 
+reserved as much DMA-able region as possible, and then loaded another 
+module that reserved from the IOMMU.  While this situation is a bit 
+contrived the bug still hit -- the returned addresses are not properly 
+aligned.
+
