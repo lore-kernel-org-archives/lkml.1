@@ -1,129 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbYGWWsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbYGWWvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756365AbYGWWsn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 18:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbYGWWsc
+	id S1755862AbYGWWvK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 18:51:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbYGWWuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 18:48:32 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39081 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754414AbYGWWsb (ORCPT
+	Wed, 23 Jul 2008 18:50:52 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:48011 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754048AbYGWWuv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 18:48:31 -0400
-Date: Wed, 23 Jul 2008 15:45:33 -0700
-From: Greg KH <greg@kroah.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: usb debug port early console v2
-Message-ID: <20080723224533.GA29234@kroah.com>
-References: <200807231252.20371.yhlu.kernel@gmail.com> <200807231400.53957.yhlu.kernel@gmail.com>
+	Wed, 23 Jul 2008 18:50:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=aDJAx3L//QcWgq16535JZFKJHAhhu5cP+mAb7ztYbo/xQPDhaGGRjsbEDOZoqPuzoI
+         JmQTV/eoVrTeJGMJVjuxtzTuXcIf4U+Nf4sk+8L/+LK8WVBrZ23EVzG/HZedmeQOTU2Z
+         LR2VWKSCkaoly6oOABU8SiLAz/PfOQVAkdVeY=
+Message-ID: <19f34abd0807231550h4ba88a9qa27b1c9e5afc80cb@mail.gmail.com>
+Date: Thu, 24 Jul 2008 00:50:49 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
+       "Jeff Garzik" <jgarzik@pobox.com>
+Subject: Re: recent -git: BUG in free_thread_xstate
+Cc: "Suresh Siddha" <suresh.b.siddha@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org
+In-Reply-To: <19f34abd0807231545u5bc8b55fm768527a02268f111@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200807231400.53957.yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <19f34abd0807231307y191c0ad7tfab4cda57ee88eb@mail.gmail.com>
+	 <20080723203109.GH14380@linux-os.sc.intel.com>
+	 <19f34abd0807231352j1ba1414am84ee9683df9b5657@mail.gmail.com>
+	 <b647ffbd0807231422w546e59e9p8362ee798b169a25@mail.gmail.com>
+	 <b647ffbd0807231435h73740808p76143d3d4457b597@mail.gmail.com>
+	 <19f34abd0807231445h79fac5cbwecd0563b74bc18ad@mail.gmail.com>
+	 <b647ffbd0807231501va30f6d4kee49d1daa30227fc@mail.gmail.com>
+	 <19f34abd0807231505w1a25c2bak329a622f3a287e97@mail.gmail.com>
+	 <19f34abd0807231545u5bc8b55fm768527a02268f111@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 02:00:53PM -0700, Yinghai Lu wrote:
-> --- linux-2.6.orig/drivers/usb/host/ehci.h
-> +++ linux-2.6/drivers/usb/host/ehci.h
-> @@ -62,6 +62,7 @@ struct ehci_stats {
->  
->  #define	EHCI_MAX_ROOT_PORTS	15		/* see HCS_N_PORTS */
->  
-> +#ifndef EARLY_PRINTK
->  struct ehci_hcd {			/* one per controller */
->  	/* glue to PCI and HCD framework */
->  	struct ehci_caps __iomem *caps;
-> @@ -207,6 +208,7 @@ timer_action (struct ehci_hcd *ehci, enu
->  		mod_timer(&ehci->watchdog, t + jiffies);
->  	}
->  }
-> +#endif /* EARLY_PRINTK */
->  
->  /*-------------------------------------------------------------------------*/
->  
-> @@ -352,6 +354,8 @@ struct ehci_dbg_port {
->  
->  #define	QTD_NEXT(ehci, dma)	cpu_to_hc32(ehci, (u32)dma)
->  
-> +#ifndef EARLY_PRINTK
+On Thu, Jul 24, 2008 at 12:45 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> Hey, with this patch applied:
+>
+> diff --git a/include/asm-x86/string_32.h b/include/asm-x86/string_32.h
+> index b49369a..7bef7ea 100644
+> --- a/include/asm-x86/string_32.h
+> +++ b/include/asm-x86/string_32.h
+> @@ -29,9 +29,14 @@ extern char *strchr(const char *s, int c);
+>  #define __HAVE_ARCH_STRLEN
+>  extern size_t strlen(const char *s);
+>
+> +extern void warn_on_slowpath(const char *file, int line);
 > +
->  /*
->   * EHCI Specification 0.95 Section 3.5
->   * QTD: describe data transfer components (buffer, direction, ...)
-> @@ -392,7 +396,7 @@ struct ehci_qtd {
->  	struct urb		*urb;			/* qtd's urb */
->  	size_t			length;			/* length of buffer */
->  } __attribute__ ((aligned (32)));
-> -
-> +#endif
->  /* mask NakCnt+T in qh->hw_alt_next */
->  #define QTD_MASK(ehci)	cpu_to_hc32 (ehci, ~0x1f)
->  
-> @@ -449,6 +453,7 @@ union ehci_shadow {
->   * These appear in both the async and (for interrupt) periodic schedules.
->   */
->  
-> +#ifndef EARLY_PRINTK
->  struct ehci_qh {
->  	/* first part defined by EHCI spec */
->  	__hc32			hw_next;	/* see EHCI 3.6.1 */
-> @@ -504,6 +509,7 @@ struct ehci_qh {
->  #define NO_FRAME ((unsigned short)~0)			/* pick new start */
->  	struct usb_device	*dev;		/* access to TT */
->  } __attribute__ ((aligned (32)));
-> +#endif /* EARLY_PRITNK */
->  
->  /*-------------------------------------------------------------------------*/
->  
-> @@ -517,6 +523,7 @@ struct ehci_iso_packet {
->  	u32			buf1;
->  };
->  
-> +#ifndef EARLY_PRINTK
->  /* temporary schedule data for packets from iso urbs (both speeds)
->   * each packet is one logical usb transaction to the device (not TT),
->   * beginning at stream->next_uframe
-> @@ -651,6 +658,7 @@ struct ehci_sitd {
->  	unsigned		frame;
->  	unsigned		index;
->  } __attribute__ ((aligned (32)));
-> +#endif
->  
->  /*-------------------------------------------------------------------------*/
->  
-> @@ -672,6 +680,8 @@ struct ehci_fstn {
->  	union ehci_shadow	fstn_next;	/* ptr to periodic q entry */
->  } __attribute__ ((aligned (32)));
->  
-> +#ifndef EARLY_PRINTK
+>  static __always_inline void * __memcpy(void * to, const void * from, size_t n)
+>  {
+>  int d0, d1, d2;
+> +       if (n == 0x6b)
+> +               warn_on_slowpath(__FILE__, __LINE__);
 > +
->  /*-------------------------------------------------------------------------*/
->  
->  #ifdef CONFIG_USB_EHCI_ROOT_HUB_TT
-> @@ -843,4 +853,6 @@ static inline u32 hc32_to_cpup (const st
->  
->  /*-------------------------------------------------------------------------*/
->  
-> +#endif /* EARLY_PRINTK */
-> +
->  #endif /* __LINUX_EHCI_HCD_H */
+>  __asm__ __volatile__(
+>        "rep ; movsl\n\t"
+>        "movl %4,%%ecx\n\t"
+>
+> I have found an important clue; it seems to be my network driver's fault:
+>
+> ------------[ cut here ]------------
+> WARNING: at include2/asm/string_32.h:38 skb_copy_and_csum_dev+0xee/0x100()
+> Pid: 3989, comm: bash Tainted: G        W 2.6.26-dirty #3
+>  [<c013496f>] warn_on_slowpath+0x4f/0x70
+>  [<c0198041>] ? check_bytes_and_report+0x21/0xc0
+>  [<c04a8544>] ? __kfree_skb+0x34/0x80
+>  [<c0198041>] ? check_bytes_and_report+0x21/0xc0
+>  [<c01983ef>] ? check_object+0xdf/0x1f0
+>  [<c0198041>] ? check_bytes_and_report+0x21/0xc0
+>  [<c04a8544>] ? __kfree_skb+0x34/0x80
+>  [<c01983ef>] ? check_object+0xdf/0x1f0
+>  [<c04bbafc>] ? find_skb+0x3c/0x80
+>  [<c04a9f7e>] skb_copy_and_csum_dev+0xee/0x100
+>  [<c03539d7>] rtl8139_start_xmit+0x57/0x130
+>  [<c019a84b>] ? __kmalloc_track_caller+0x8b/0x120
+>  [<c04bba6e>] netpoll_send_skb+0x14e/0x1a0
+>  [<c04bbf54>] netpoll_send_udp+0x1e4/0x210
+>  [<c0374b0c>] write_msg+0x8c/0xc0
+>  [<c0135053>] __call_console_drivers+0x53/0x60
+>  [<c01350ab>] _call_console_drivers+0x4b/0x90
+>  [<c01351f5>] release_console_sem+0xc5/0x1f0
+>  [<c01357fe>] vprintk+0x2ce/0x420
+>  [<c0107e7d>] ? do_IRQ+0x4d/0xa0
+>  [<c0104de5>] ? restore_nocheck+0x12/0x15
+>  [<c0286ae1>] ? delay_tsc+0x61/0xb8
+>  [<c0286b06>] ? delay_tsc+0x86/0xb8
+>  [<c013596b>] printk+0x1b/0x20
+>  [<c0580d5d>] native_cpu_up+0x7cd/0x880
+>  [<c01df741>] ? internal_create_group+0xd1/0x180
+>  [<c0580470>] ? do_fork_idle+0x0/0x20
+>  [<c014d7c9>] ? __raw_notifier_call_chain+0x19/0x20
+>  [<c05826f3>] _cpu_up+0x83/0x100
+>  [<c05827b9>] cpu_up+0x49/0x70
+>  [<c05635d8>] store_online+0x58/0x80
+>  [<c0563580>] ? store_online+0x0/0x80
+>  [<c02fda2b>] sysdev_store+0x2b/0x40
+>  [<c01dd7b2>] sysfs_write_file+0xa2/0x100
+>  [<c019f156>] vfs_write+0x96/0x130
+>  [<c01dd710>] ? sysfs_write_file+0x0/0x100
+>  [<c019f81d>] sys_write+0x3d/0x70
+>  [<c0104cdb>] sysenter_past_esp+0x78/0xd1
+>  =======================
+> ---[ end trace a7919e7f17c0a725 ]---
+>
+> In particular, these are interesting:
+>
+>  [<c04a9f7e>] skb_copy_and_csum_dev+0xee/0x100
+>
+> This is net/core/skbuff.c:1731:
+>        skb_copy_from_linear_data(skb, to, csstart);
+>
+>  [<c03539d7>] rtl8139_start_xmit+0x57/0x130
+>
+> This is drivers/net/8139too.c:1711:
+>                dev_kfree_skb(skb);
+>
 
-I don't understand the issue of any of these #ifdefs here.  Why are they
-needed?
+Oops, this should of course be the line just above (because the
+address on the stack is the return address...), which is:
 
-And shouldn't there be a separate config option for early printk through
-the ehci debug port?
+                skb_copy_and_csum_dev(skb, tp->tx_buf[entry]);
 
-thanks,
+(Big surprise there ;-))
 
-greg k-h
+> (The line numbers are still from v2.6.26, but this reproduces on
+> current -git as well.)
+>
+> Is this enough information to fix it? :-)
+
+I've also added Jeff Garzik to Cc since he seems to be the maintainer
+of this driver.
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
