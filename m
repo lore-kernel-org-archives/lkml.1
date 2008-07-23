@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbYGWLkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbYGWLoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbYGWLkW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 07:40:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750871AbYGWLkL
+	id S1753920AbYGWLoX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 07:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYGWLoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 07:40:11 -0400
-Received: from andromeda.dapyr.net ([206.212.254.10]:49285 "EHLO
-	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbYGWLkK (ORCPT
+	Wed, 23 Jul 2008 07:44:11 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:31052 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951AbYGWLoJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 07:40:10 -0400
-X-Greylist: delayed 581 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Jul 2008 07:40:09 EDT
-Date: Wed, 23 Jul 2008 07:30:07 -0400
-From: ketuzsezr@darnok.org
-To: Jan Beulich <jbeulich@novell.com>
-Cc: ketuzsezr@darnok.org, pjones@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] iscsi_ibft_find: fix modpost warning
-Message-ID: <20080723113007.GA13214@andromeda.dapyr.net>
-References: <4880A721.76E4.0078.0@novell.com>
-Mime-Version: 1.0
+	Wed, 23 Jul 2008 07:44:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wLcIlarsGOm1rLzUhgQHS1jqMymozpimNn5tdFd/iHtKt0SgHiPDsLCfaAyQe926pg
+         QycahILmPvrhbdIVpuoq8FGX8XpdJ7yoq4JagRVdRlMsQ9QSPmuO/yvXv12QmTSQXdh6
+         onOPXNlmB5uobBcWS+apOFFXFC9zv1w1WZ4/8=
+Date: Wed, 23 Jul 2008 11:49:14 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: David Miller <davem@davemloft.net>, Larry.Finger@lwfinger.net,
+       kaber@trash.net, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       mingo@redhat.com
+Subject: Re: Kernel WARNING: at net/core/dev.c:1330
+	__netif_schedule+0x2c/0x98()
+Message-ID: <20080723114914.GF4561@ff.dom.local>
+References: <20080722.160409.216536011.davem@davemloft.net> <20080723062036.GA4561@ff.dom.local> <20080723.005921.113868915.davem@davemloft.net> <20080723085452.GB4561@ff.dom.local> <1216803786.7257.146.camel@twins> <20080723093459.GC4561@ff.dom.local> <1216806614.7257.152.camel@twins> <20080723101352.GD4561@ff.dom.local> <1216810696.7257.175.camel@twins> <20080723113519.GE4561@ff.dom.local>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4880A721.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080723113519.GE4561@ff.dom.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 01:22:25PM +0100, Jan Beulich wrote:
-> Exporting __init functions is wrong.
-
-Looks good. Thanks for catching that.
-
+On Wed, Jul 23, 2008 at 11:35:19AM +0000, Jarek Poplawski wrote:
+> On Wed, Jul 23, 2008 at 12:58:16PM +0200, Peter Zijlstra wrote:
+...
+> > When I look at the mac802.11 code in ieee80211_tx_pending() it looks
+> > like it can do with just one lock at a time, instead of all - but I
+> > might be missing some obvious details.
+> > 
+> > So I guess my question is, is netif_tx_lock() here to stay, or is the
+> > right fix to convert all those drivers to use __netif_tx_lock() which
+> > locks only a single queue?
+> > 
 > 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> 
-> ---
->  drivers/firmware/iscsi_ibft_find.c |    1 -
->  1 file changed, 1 deletion(-)
-> 
-> --- linux-2.6.26/drivers/firmware/iscsi_ibft_find.c	2008-07-13 23:51:29.000000000 +0200
-> +++ 2.6.26-firmware-iscsi-modpost-warning/drivers/firmware/iscsi_ibft_find.c	2008-07-17 14:45:12.000000000 +0200
-> @@ -81,4 +81,3 @@ void __init reserve_ibft_region(void)
->  	if (ibft_addr)
->  		reserve_bootmem(pos, PAGE_ALIGN(len), BOOTMEM_DEFAULT);
->  }
-> -EXPORT_SYMBOL_GPL(reserve_ibft_region);
+> It's a new thing mainly for new hardware/drivers, and just after
+> conversion (older drivers effectively use __netif_tx_lock()), so it'll
+> probably stay for some time until something better is found. David,
+> will tell the rest, I hope.
 
+...And, of course, these new drivers should also lock a single queue
+where possible.
+ 
+Jarek P.
