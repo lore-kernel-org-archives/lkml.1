@@ -1,133 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbYGWIwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbYGWIza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754616AbYGWIwO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 04:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbYGWIv5
+	id S1754629AbYGWIza (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 04:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYGWIzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 04:51:57 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62350 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750721AbYGWIvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 04:51:55 -0400
-Message-ID: <4886F0C5.7040605@cn.fujitsu.com>
-Date: Wed, 23 Jul 2008 16:50:13 +0800
-From: Wang Chen <wangchen@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-CC: Alessandro Guido <ag@alessandroguido.name>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH] skge: resolve tx multiqueue bug
-References: <d4b984a30807210914nd4d0db5yb7b93ca5143ff0d5@mail.gmail.com> <20080721.092027.14394005.davem@davemloft.net> <d4b984a30807220254t1aaf6ac4q874329966511b0c5@mail.gmail.com> <20080723054039.GA2272@gentoox2.trippelsdorf.de>
-In-Reply-To: <20080723054039.GA2272@gentoox2.trippelsdorf.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 23 Jul 2008 04:55:21 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44557 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751138AbYGWIzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 04:55:20 -0400
+Subject: Re: [patch 4/4] KVM-trace port to tracepoints
+From: Peter Zijlstra <peterz@infradead.org>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Jan Kiszka <jan.kiszka@siemens.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       "Feng(Eric) Liu" <eric.e.liu@intel.com>
+In-Reply-To: <4886E6FD.4090200@qumranet.com>
+References: <20080717155724.897537670@polymtl.ca>
+	 <20080717160003.359557938@polymtl.ca> <487F7800.4010502@siemens.com>
+	 <20080717172853.GB29855@Krystal> <488604F8.1040008@siemens.com>
+	 <48862B01.7070907@qumranet.com> <1216799346.7257.125.camel@twins>
+	 <4886E6FD.4090200@qumranet.com>
+Content-Type: text/plain
+Date: Wed, 23 Jul 2008 10:55:03 +0200
+Message-Id: <1216803303.7257.138.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Markus Trippelsdorf said the following on 2008-7-23 13:40:
-> On Tue, Jul 22, 2008 at 11:54:26AM +0200, Alessandro Guido wrote:
->> Got a WARNING this morning (2.6.26-05752-g93ded9b) and I think it's related.
+On Wed, 2008-07-23 at 11:08 +0300, Avi Kivity wrote:
+> Peter Zijlstra wrote:
+> > On Tue, 2008-07-22 at 21:46 +0300, Avi Kivity wrote:
+> >   
+> >> Jan Kiszka wrote:
+> >>     
+> >>> That's true - as long as you don't have to add/remove/modify
+> >>> tracepoints. I had to do this job in the past (not for KVM). Having 1
+> >>> spot in 1 file (based on generic probes) would be handier in that case
+> >>> than 5 spots in 3 files. But if the KVM tracepoints are considered
+> >>> stable in their number and structure, that shouldn't be an issue here.
+> >>>
+> >>>   
+> >>>       
+> >> Tracepoints aren't stable; they are artefacts of the implementation.
+> >>     
+> >
+> > Which IMHO makes it unsuitable for trace_mark() as that will be exported
+> > to user-space, and every time you change your tracepoints you'll change
+> > user visible things - not nice.
+> >   
 > 
-> Same thing here (latest git):
+> They are used for debugging (mostly performance related), so changes are 
+> expected.
 > 
-> skge eth1: enabling interface
-> skge eth1: disabling interface
-> ------------[ cut here ]------------
-> WARNING: at net/core/dev.c:1344 __netif_schedule+0x24/0x6d()
-> Pid: 1904, comm: ip Not tainted 2.6.26-06077-gc010b2f #33
-> 
-> Call Trace:
->  [<ffffffff8022e5f4>] warn_on_slowpath+0x4c/0x87
->  [<ffffffff802fc5cb>] delay_tsc+0x0/0x55
->  [<ffffffff802fc5cb>] delay_tsc+0x0/0x55
->  [<ffffffff802fc5e7>] delay_tsc+0x1c/0x55
->  [<ffffffff8037e2ee>] gm_phy_write+0x50/0x90
->  [<ffffffff8037e2f8>] gm_phy_write+0x5a/0x90
->  [<ffffffff8037f03f>] skge_led+0x1fb/0x20b
->  [<ffffffff804202e8>] __netif_schedule+0x24/0x6d
->  [<ffffffff80381298>] skge_down+0x440/0x4cf
->  [<ffffffff803814be>] skge_change_mtu+0x3d/0x61
->  [<ffffffff80420775>] dev_set_mtu+0x46/0x79
->  [<ffffffff80427a51>] do_setlink+0x1c5/0x31f
->  [<ffffffff804287d3>] rtnl_newlink+0x2b9/0x3e3
->  [<ffffffff804285a8>] rtnl_newlink+0x8e/0x3e3
->  [<ffffffff80428d69>] rtnetlink_rcv_msg+0x5a/0x1ea
->  [<ffffffff80428d0f>] rtnetlink_rcv_msg+0x0/0x1ea
->  [<ffffffff8042efde>] netlink_rcv_skb+0x34/0x7e
->  [<ffffffff80428d09>] rtnetlink_rcv+0x1f/0x25
->  [<ffffffff8042eb97>] netlink_unicast+0x119/0x17f
->  [<ffffffff8041b35d>] __alloc_skb+0x61/0x123
->  [<ffffffff8042ee37>] netlink_sendmsg+0x23a/0x24d
->  [<ffffffff804152e4>] sock_sendmsg+0xcb/0xe3
->  [<ffffffff8023f670>] autoremove_wake_function+0x0/0x2e
->  [<ffffffff80225643>] need_resched+0x1e/0x28
->  [<ffffffff804147d8>] move_addr_to_kernel+0x25/0x36
->  [<ffffffff8041c090>] verify_iovec+0x46/0x82
->  [<ffffffff80415513>] sys_sendmsg+0x217/0x28a
->  [<ffffffff8042e01e>] netlink_insert+0xfe/0x121
->  [<ffffffff80414b40>] sockfd_lookup_light+0x1a/0x52
->  [<ffffffff80261fe5>] __vma_link+0x58/0x61
->  [<ffffffff80262062>] vma_link+0x74/0x99
->  [<ffffffff802630ce>] do_brk+0x2c1/0x319
->  [<ffffffff8020b3eb>] system_call_after_swapgs+0x7b/0x80
-> 
-> ---[ end trace 92936ef183e09876 ]---
-> skge eth1: enabling interface
-> skge eth1: Link is up at 100 Mbps, full duplex, flow control both
-> 
+> What uses of trace_mark() depend on a stable interface? blktrace?
 
-Markus, please try this.
+There are currently no trace_mark() sites in the kernel that I'm aware
+of (except for the scheduler :-/, and those should be converted to
+tracepoints ASAP).
 
-- Add netif_start_queue() in ->open()
-- netif_carrier_*() is enough, remove netif_*_queue()
+Andrew raised the whole point about trace_mark() generating an
+user-visible interface and thus it should be stable, and I agree with
+that.
 
-Signed-off-by: Wang Chen <wangchen@cn.fujitsu.com>
----
-diff --git a/drivers/net/skge.c b/drivers/net/skge.c
-index 2e26dce..7507585 100644
---- a/drivers/net/skge.c
-+++ b/drivers/net/skge.c
-@@ -1069,7 +1069,6 @@ static void skge_link_up(struct skge_port *skge)
- 		    LED_BLK_OFF|LED_SYNC_OFF|LED_ON);
- 
- 	netif_carrier_on(skge->netdev);
--	netif_wake_queue(skge->netdev);
- 
- 	if (netif_msg_link(skge)) {
- 		printk(KERN_INFO PFX
-@@ -1084,7 +1083,6 @@ static void skge_link_down(struct skge_port *skge)
- {
- 	skge_write8(skge->hw, SK_REG(skge->port, LNK_LED_REG), LED_OFF);
- 	netif_carrier_off(skge->netdev);
--	netif_stop_queue(skge->netdev);
- 
- 	if (netif_msg_link(skge))
- 		printk(KERN_INFO PFX "%s: Link is down.\n", skge->netdev->name);
-@@ -2450,7 +2448,6 @@ static void skge_phy_reset(struct skge_port *skge)
- 	int port = skge->port;
- 	struct net_device *dev = hw->dev[port];
- 
--	netif_stop_queue(skge->netdev);
- 	netif_carrier_off(skge->netdev);
- 
- 	spin_lock_bh(&hw->phy_lock);
-@@ -2640,6 +2637,7 @@ static int skge_up(struct net_device *dev)
- 	spin_unlock_irq(&hw->hw_lock);
- 
- 	napi_enable(&skge->napi);
-+	netif_start_queue(dev);
- 	return 0;
- 
-  free_rx_ring:
-@@ -3863,7 +3861,6 @@ static struct net_device *skge_devinit(struct skge_hw *hw, int port,
- 
- 	/* device is off until link detection */
- 	netif_carrier_off(dev);
--	netif_stop_queue(dev);
- 
- 	return dev;
- }
+What that means is that trace_mark() can only be used for really stable
+points.
+
+This in turn means we might as well use trace points.
+
+Which allows for the conclusion that trace_mark() is not needed and
+could be removed from the kernel.
+
+However - it might be handy for ad-hoc debugging purposes that never see
+the light of day (linus' git tree in this case). So on those grounds one
+could argue against removing trace_mark.
+
+
+
 
