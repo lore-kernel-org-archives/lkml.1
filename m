@@ -1,71 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYGWNpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbYGWNra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbYGWNpX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 09:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbYGWNpL
+	id S1754223AbYGWNra (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 09:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbYGWNrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 09:45:11 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:21616 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751014AbYGWNpK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 09:45:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=lBoHzJ2L+q1hJs+TzO4XI2SaTaeTn9rwtLSLVyrqGTjqzy7VkCAE+Sr4SUBjf/Hp8/
-         lGSaVxmvj/PYItUgzTGi9WbYxInQCyoDxbt09EHEGu+GZjXso+KovbT59fnB+n2TNlGB
-         pf8bhAe0jDB1XkcaiSjbahOPP3DdFFeIJZZZk=
-Message-ID: <a1d7a2f20807230645t461265ecu2d9e7f70484a8c91@mail.gmail.com>
-Date: Wed, 23 Jul 2008 15:45:09 +0200
-From: "Jerome Arbez-Gindre" <jeromearbezgindre@gmail.com>
-To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
-Subject: Re: New IDX in linux/connector.h ?
-Cc: linux-kernel@vger.kernel.org, deweerdt@free.fr
-In-Reply-To: <20080723125307.GA12017@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 23 Jul 2008 09:47:23 -0400
+Received: from mo10.iij4u.or.jp ([210.138.174.78]:60028 "EHLO mo10.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752523AbYGWNrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 09:47:22 -0400
+Date: Wed, 23 Jul 2008 22:46:49 +0900
+To: hare@suse.de
+Cc: fujita.tomonori@lab.ntt.co.jp, mike.miller@hp.com,
+       James.Bottomley@HansenPartnership.com, Jens.Axboe@oracle.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI driver
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <48858611.8020401@suse.de>
+References: <20080719195150Y.fujita.tomonori@lab.ntt.co.jp>
+	<48858611.8020401@suse.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a1d7a2f20807230540l4aa7e3f5i1511a2ea71fed8a9@mail.gmail.com>
-	 <20080723125307.GA12017@2ka.mipt.ru>
+Message-Id: <20080723224432G.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Evgeniy,
+On Tue, 22 Jul 2008 09:02:41 +0200
+Hannes Reinecke <hare@suse.de> wrote:
 
->> Would it be possible to declare in linux/connector.h an IDX for the
->> BB, without any restriction on the VAL the BB could use?
->
-> Sure.
-> VAL (which is 'value' of course) is a private 'offset' inside given
-> index (IDX), so when you register single IDX all corresponding VALs
-> belong to the same user.
+> > There isn't any easy migration path for users. So I think that we need
+> > to keep the block and scsi drivers for cciss for some time (say two
+> > years).
+> > 
+> > My scsi driver is still in an early stage (I tried to keep the changes
+> > minimum). I can detect logical units, mount a file system, do lots of
+> > I/Os, however, there are lots of TODOs in the management features.
+> > 
+> > If I can get an ACK from HP about the long-term migration of cciss to
+> > SCSI, I'm happy to keep working on the SCSI cciss driver and maintain
+> > it until HP takes over the driver.
+> > 
+> First of all, thanks, Tomo, for doing this.
+> It's been on my to-do list for about as long as I started looking on
+> the cciss code. However, some thoughts:
+> 
+> - Having cciss using the SCSI infrastructure is indeed far more logical.
+>   Although it looks as if it doesn't support the SCSI spec in full
+>   (ie no conformity claimed in the INQUIRY data) it certainly implements
+>   quite a large subset.
 
-I meant:
+I'm not sure about this. The ciss spec says that the controllers
+support mandatory SCSI commands. About INQUIRY data, at least, debian
+udev rules nicely created symbolic links under /dev/disk/by-id/.
 
- diff --git a/include/linux/connector.h b/include/linux/connector.h
-index 96a89d3..361996c 100644
---- a/include/linux/connector.h
-+++ b/include/linux/connector.h
-@@ -38,6 +38,7 @@
- #define CN_W1_VAL			0x1
- #define CN_IDX_V86D			0x4
- #define CN_VAL_V86D_UVESAFB		0x1
-+#define CN_IDX_BB			0x5
 
- #define CN_NETLINK_USERS		5
+> - The error handling in the SCSI infrastructure is far better structured
+>   as that one in the existing cciss driver, so the SCSI driver would
+>   benefit from this.
 
-> I even wanted to have private indexes, i.e. those which are supposed to
-> be used by out-of-the-tree code, and no in-kernel users would ever touch
-> this numbers.
+Agreed, this is an area that we can improve greatly with the scsi
+infrastructure, I think.
 
-So which numbers am I suppose to use ... taking account that BB will
-probably stay for a long time out-of-the-tree ?
 
-Thanks
+> - Nevertheless, the cciss driver and the corresponding sysfs / device node
+>   layout has become the de-facto standard over the years and it will be
+>   _hard_ to change that.
+> 
+> - However, given that the sysfs information from the cciss driver is quite
+>   rudimentary I doubt if anyone will indeed notice if the _internal_ driver
+>   is a SCSI or a block level driver, as long as the _external_ interface
+>   (ioctl, device-node layout etc) stays the same.
+> 
+> Having said that I think this is the direction it should take:
+> 
+> - Split the existing cciss driver in two parts, one part for the
+>   block-level interface and one for the lower-level device handling bits.
+> - Redo the patch based on that, so that existing code can be shared
+>   (and fixes there would be included in both drivers).
+> - Add some hooks/safeguards so that only _one_ interface driver can
+>   be loaded.
+> 
+> This way we would be able keep the existing functionality and allow
+> users to play around with the new driver.
+> Long-term we can start moving the driver itself to SCSI, and keeping
+> the existing cciss block interface only as a wrapper which adjusts
+> the major:minor numbers; the device-node layout can be handled by udev.
 
-              Jerome Arbez-Gindre
+Agreed about keeping the existing interfaces (changing only the
+internal implementation, which users don't care about). I thought
+about the similar things (tricks like ide-scsi does) during writing a
+patch but also thought that udev rules can do the similar jobs, as
+James pointed out. And seems that udev rules nicely works.
