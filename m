@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287AbYGWHou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbYGWHqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753287AbYGWHou (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 03:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYGWHol
+	id S1753927AbYGWHqs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 03:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbYGWHqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 03:44:41 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:60066 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750793AbYGWHol (ORCPT
+	Wed, 23 Jul 2008 03:46:38 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:63791 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751266AbYGWHqh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 03:44:41 -0400
-X-Sasl-enc: pVbckYbAwa/6ni6gMQjkDwbw/XveMkGC7AMSBd3zPks1 1216799080
-Message-ID: <4886E164.2070304@ladisch.de>
-Date: Wed, 23 Jul 2008 09:44:36 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 23 Jul 2008 03:46:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=AXW1BL0shuXO+Aztdx8XS9v7CKQ0uEQL3XzXC3wyuWVer8KVf1W956JEzIwIWUxbsp
+         cJrJOZZcga3hylvfb1g2gOdCenQ2cXwERf9GPy2zW70iUBDRS6bACkYRtoDfmIzq8rUE
+         pofnlBOCFL1YKyGnHYaWuQPAVofUFFASHxE4o=
+Message-ID: <89239e000807230046s2ab36c2bi9b7f972701b63a77@mail.gmail.com>
+Date: Wed, 23 Jul 2008 15:46:35 +0800
+From: "Chen Zheng" <nkchenz@gmail.com>
+To: kjwinchester@gmail.com
+Subject: Re: Please add ZFS support (from GPL sources)
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <89239e000807230040l7491478fy2ed6a43f9f2fcdb7@mail.gmail.com>
 MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-CC: lkml <linux-kernel@vger.kernel.org>, bob.picco@hp.com,
-       venkatesh.pallipadi@intel.com, Vojtech Pavlik <vojtech@suse.cz>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [patch 2.6.26] /dev/hpet - fixes and cleanup
-References: <200807221508.56672.david-b@pacbell.net>
-In-Reply-To: <200807221508.56672.david-b@pacbell.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <89239e000807230040l7491478fy2ed6a43f9f2fcdb7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell wrote:
->   * Tighten and correct the userspace interface code
->       ...
->       + only open comparators that have an interrupt, and can thus
->         perform "real work"
+On Jul 21, 7:39 am 2008, Kevin Winchester
+>No one else seems to have volunteered, so I would certainly like to
+>give it a try.  I guess I need to get the ZFS grub code, create a ZFS
+>filesystem, and start looking around for information on linux
+>filesystem development and ZFS (obviously without looking at any CDDL
+>licensed code).
 
-This prevents userspace applications from doing mmap() on /dev/hpet
-even if there is no interrupt.
+>Once I get a handle on that, I'll see where I can get before I need to
+>ask a thousand questions.
 
-This seems to be the only part of the userspace interface that is
-used in practice.  Because of the availability of POSIX timers, it might
-make sense to deprecate the HPET ioctl interface.
+Hi Kevin,  a few weeks ago I wrote a python module for fun,  which can read
+most of zfs data structure. Based on ondiskformat0822.pdf, I started
+it from scratch.
 
-> And re that kernel interface:  IMO, worth having a relatively
-> generic interface for hardware timers instead of inventing a new
-> interface for each new bit of hardware.
+http://code.google.com/p/zfspy/
 
-AFAIK it was intended to be similar to the RTC callback interface, but
-that was before the generic high-precision timer stuff was introduced.
-
-
-Regards,
-Clemens
+It maybe useful if you want to learn zfs on disk data structure.
