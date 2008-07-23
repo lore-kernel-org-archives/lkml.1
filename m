@@ -1,97 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754787AbYGWRAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbYGWRDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754787AbYGWRAj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 13:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbYGWRAa
+	id S1754279AbYGWRDr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 13:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYGWRDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 13:00:30 -0400
-Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:57245 "EHLO
-	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649AbYGWRA2 (ORCPT
+	Wed, 23 Jul 2008 13:03:39 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:46138 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751797AbYGWRDj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 13:00:28 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <488763AD.4050400@gmail.com>
-Date: Wed, 23 Jul 2008 18:00:29 +0100
-From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>,
-       spi-devel-general@lists.sourceforge.net,
-       LM Sensors <lm-sensors@lm-sensors.org>
-CC: Jean Delvare <khali@linux-fr.org>, Dmitry Torokhov <dtor@mail.ru>,
-       "Hans J. Koch" <hjk@linutronix.de>, hmh@hmh.eng.br,
-       David Brownell <david-b@pacbell.net>, mgross@linux.intel.com,
-       Ben Nizette <bn@niasdigital.com>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: [Patch 0/4] IndustrialIO subsystem (ADCs, accelerometers etc)
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jul 2008 13:03:39 -0400
+To: mikulas@artax.karlin.mff.cuni.cz
+CC: miklos@szeredi.hu, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
+In-reply-to: <Pine.LNX.4.64.0807231412070.1841@artax.karlin.mff.cuni.cz>
+	(message from Mikulas Patocka on Wed, 23 Jul 2008 14:13:01 +0200
+	(CEST))
+Subject: Re: [patch 04/14] hpfs: dont call notify_change
+References: <20080722221259.866628660@szeredi.hu> <20080722221322.168296561@szeredi.hu> <Pine.LNX.4.64.0807231412070.1841@artax.karlin.mff.cuni.cz>
+Message-Id: <E1KLhkW-0004y4-Ge@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 23 Jul 2008 19:03:36 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear All,
+On Wed, 23 Jul 2008, Mikulas Patocka wrote:
+> What about down_write on i_alloc_sem --- notify change takes that and your 
+> patch bypasses that.
 
-The need for an industrialio subsystem was discussed in
-http://lkml.org/lkml/2008/5/20/135
+i_alloc_sem is only relevant if filesystem uses blockdev_direct_IO()
+and friends.  It is not used for anything else, so for hpfs there's no
+need to surround take that lock.
 
-Firstly thanks to all the people who have contributed to the discussion
-of this in the past.
+Thanks,
+Miklos
 
-In brief the intention is provide a kernel subsystem directed towards the
-handling on sensors (and later related output devices) such as ADC's,
-accelerometers and many others.
-
-Key features of the subsystem include:
-
-* Provision of sysfs access for direct reading from devices (similar to hwmon
-  but without the buffering / update rate restrictions)
-
-* Provision of chrdevs through which events may be passed to userspace in a
-  similar fashion to the input subsystem.  These events may be anything from
-  hardware thresholds set on the sensor itself to sw / hw ring buffer event
-  notifications (50% full etc).
-
-* Provision of access via chrdevs to hardware ring buffers on devices that
-  provide them.
-
-* Software ring buffer support to allow semi regular capture of data form the
-  device.  Typically this will be driven from either datardy events, or from
-  a periodic timer interrupt (to this end a very simple wrapper for periodic
-  RTC's is included. This will move to more generic timer interfaces as and when
-  they become available.  For now available rtc's must be registered with the
-  subsystem via the industrialio_register_ptimer function form within a board
-  init.
-
-* A set of sample drivers illustrating the main 'classes' of device. By classes
-  I really mean devices that are interfaced with in a similar way.
-
-The subsystem is now in a functional state with a small set of drivers:
-
-Max1363 (supports numerous Maxim i2c ADC's) (tested with max1363 and max1238 chips)
-   - Uses a periodic timer to provide ring buffer mode.
-   - All reads form these devices are scan modes so direct single element access
-     is not provided.
-   - Monitor mode on max1363 is not yet supported (need to do a bit debugging of
-     the board I have so as to be able to test this).
-
-ST LIS3L02DQ - SPI accelerometer.
-   - Uses a datardy interrupt to driver a software ring buffer.
-   - Most functionality of this device is supported.
-
-VTI SCA3000 (tested with an e05)
-   - Hardware ring buffer.
-
-More drivers in preparation.
-
-Next focus will be on cleaning up / implementing a more generic timer framework
-and allowing the system to partly run if not all dependencies are met 
-(particularly availability of timers).
-
-An initial set of patches will be attached to this thread shortly.
-
---
-Jonathan Cameron
+> > From: Miklos Szeredi <mszeredi@suse.cz>
+> > 
+> > hpfs_unlink() calls notify_change() to truncate the file before
+> > deleting.  Replace with explicit call to hpfs_notify_change().
+> > 
+> > This is equivalent, except that:
+> >  - security_inode_setattr() is not called before hpfs_notify_change()
+> >  - fsnotify_change() is not called after hpfs_notify_change()
+> > 
+> > The truncation is just an implementation detail, so both the security
+> > check and the notification are unnecessary.
+> > 
+> > Possibly even the ctime modification is wrong?
+> > 
+> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> > CC: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+> > ---
+> >  fs/hpfs/namei.c |    3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6/fs/hpfs/namei.c
+> > ===================================================================
+> > --- linux-2.6.orig/fs/hpfs/namei.c	2008-07-23 00:10:13.000000000 +0200
+> > +++ linux-2.6/fs/hpfs/namei.c	2008-07-23 00:10:22.000000000 +0200
+> > @@ -426,7 +426,8 @@ again:
+> >  			/*printk("HPFS: truncating file before delete.\n");*/
+> >  			newattrs.ia_size = 0;
+> >  			newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
+> > -			err = notify_change(dentry, &newattrs);
+> > +			newattrs.ia_ctime = current_fs_time(inode->i_sb);
+> > +			err = hpfs_notify_change(dentry, &newattrs);
+> >  			put_write_access(inode);
+> >  			if (!err)
+> >  				goto again;
+> > 
+> > --
+> > 
+> 
