@@ -1,106 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYGWWRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbYGWWSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbYGWWRY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 18:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbYGWWRQ
+	id S1755873AbYGWWSu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 18:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbYGWWSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 18:17:16 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:35646 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753928AbYGWWRQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 18:17:16 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAOpIh0hMRKxB/2dsb2JhbACBWrIi
-Date: Wed, 23 Jul 2008 18:17:14 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Markers : fix markers read barrier for multiple probes
-Message-ID: <20080723221714.GA1561@Krystal>
+	Wed, 23 Jul 2008 18:18:41 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40746 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753475AbYGWWSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 18:18:41 -0400
+Subject: Re: [PATCH 0/2][RT] powerpc - fix bug in irq reverse mapping radix
+	tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: Linux RT Users <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+       Tim Chavez <tinytim@us.ibm.com>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>,
+       Gilles Carry <Gilles.Carry@ext.bull.net>, paulus@samba.org,
+       michael@ellerman.id.au
+In-Reply-To: <20080723165932.57e3ada2@bull.net>
+References: <20080723165932.57e3ada2@bull.net>
+Content-Type: text/plain
+Date: Thu, 24 Jul 2008 08:17:38 +1000
+Message-Id: <1216851458.11027.346.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:12:46 up 49 days,  2:53,  5 users,  load average: 0.59, 0.86,
-	0.67
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul pointed out two incorrect read barriers in the marker handler code in the
-path where multiple probes are connected. Those are ordering reads of "ptype"
-(single or multi probe marker), "multi" array pointer, and "multi" array data
-access.
 
-It should be ordered like this :
+>   The root cause of this bug lies in the fact that the XICS interrupt controller
+> uses a radix tree for its reverse irq mapping and that we cannot allocate the tree
+> nodes (even GFP_ATOMIC) with preemption disabled.
 
-read ptype
-smp_rmb()
-read multi array pointer
-smp_read_barrier_depends()
-access data referenced by multi array pointer
+Is that yet another caes of -rt changing some basic kernel semantics ?
 
-The code with a single probe connected (optimized case, does not have to
-allocate an array) has correct memory ordering.
+>   In fact, we have 2 nested preemption disabling when we want to allocate
+> a new node:
+> 
+>   - setup_irq() does a spin_lock_irqsave() before calling xics_startup() which
+>     then calls irq_radix_revmap() to insert a new node in the tree
+> 
+>   - irq_radix_revmap() also does a spin_lock_irqsave() (in irq_radix_wrlock())
+>     before the radix_tree_insert()
+> 
+>   The first patch moves the call to irq_radix_revmap() from xics_startup() out to
+> xics_host_map_direct() and xics_host_map_lpar() which are called with preemption
+> enabled.
 
-It applies to kernel 2.6.26.x, 2.6.25.x and linux-next.
+I suppose that would work.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
----
- kernel/marker.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+>   The second patch is a little more involved in that it takes advantage of
+> the concurrent radix tree to simplify the locking requirements and allows
+> to allocate a new node outside a preemption disabled section.
+> 
+>   I just hope I've correctly understood the concurrent radix trees semantic
+> and got the (absence of) locking right.
 
-Index: linux-2.6.26-rc7-lttng/kernel/marker.c
-===================================================================
---- linux-2.6.26-rc7-lttng.orig/kernel/marker.c	2008-06-25 18:09:49.000000000 -0400
-+++ linux-2.6.26-rc7-lttng/kernel/marker.c	2008-06-25 18:10:57.000000000 -0400
-@@ -127,6 +127,11 @@
- 		struct marker_probe_closure *multi;
- 		int i;
- 		/*
-+		 * Read mdata->ptype before mdata->multi.
-+		 */
-+		smp_rmb();
-+		multi = mdata->multi;
-+		/*
- 		 * multi points to an array, therefore accessing the array
- 		 * depends on reading multi. However, even in this case,
- 		 * we must insure that the pointer is read _before_ the array
-@@ -134,7 +139,6 @@
- 		 * in the fast path, so put the explicit barrier here.
- 		 */
- 		smp_read_barrier_depends();
--		multi = mdata->multi;
- 		for (i = 0; multi[i].func; i++) {
- 			va_start(args, fmt);
- 			multi[i].func(multi[i].probe_private, call_private, fmt,
-@@ -177,6 +181,11 @@
- 		struct marker_probe_closure *multi;
- 		int i;
- 		/*
-+		 * Read mdata->ptype before mdata->multi.
-+		 */
-+		smp_rmb();
-+		multi = mdata->multi;
-+		/*
- 		 * multi points to an array, therefore accessing the array
- 		 * depends on reading multi. However, even in this case,
- 		 * we must insure that the pointer is read _before_ the array
-@@ -184,7 +193,6 @@
- 		 * in the fast path, so put the explicit barrier here.
- 		 */
- 		smp_read_barrier_depends();
--		multi = mdata->multi;
- 		for (i = 0; multi[i].func; i++)
- 			multi[i].func(multi[i].probe_private, call_private, fmt,
- 				&args);
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Hrm, that will need some scrutinity.
+
+Thanks for looking at this.
+
+Cheers,
+Ben.
+
+
