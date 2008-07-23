@@ -1,876 +1,749 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbYGWVBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbYGWVJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755623AbYGWVBj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 17:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYGWVBb
+	id S1755382AbYGWVJR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 17:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754616AbYGWVJC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 17:01:31 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:63340 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbYGWVBa (ORCPT
+	Wed, 23 Jul 2008 17:09:02 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:53308 "EHLO
+	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754601AbYGWVI7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 17:01:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=eOpsI48h++9bUeVOpKyicgVXFTB0NjcV9gomJec7C481iZ40/J0eSqR6Fbr8v65X39
-         EBvJLTCAFL+a9+T7Hn/l8wHvOXrDohDsuAdmNuXl/I2C9xSU5cc/bm0JhteIQrcY9MjW
-         k4P77ceIs7zxYZK68jUs50V2Ux4ZSBw7cu2oc=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, "Greg KH" <greg@kroah.com>
-Subject: [PATCH] x86: usb debug port early console v2
-Date: Wed, 23 Jul 2008 14:00:53 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200807231252.20371.yhlu.kernel@gmail.com>
-In-Reply-To: <200807231252.20371.yhlu.kernel@gmail.com>
+	Wed, 23 Jul 2008 17:08:59 -0400
+X-BigFish: VPS16(zz655O10d1Izz10d3izzz32i87il43j66h)
+X-Spam-TCS-SCL: 5:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0K4H9DQ-01-3TD-01
+From: Robert Richter <robert.richter@amd.com>
+To: Jason Yeh <jason.yeh@amd.com>, Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>, Jason Yeh <jason.yeh@amd.com>,
+       Robert Richter <robert.richter@amd.com>
+Subject: [PATCH] Oprofile Multiplexing Patch
+Date: Wed, 23 Jul 2008 23:05:53 +0200
+Message-ID: <1216847153-28435-2-git-send-email-robert.richter@amd.com>
+X-Mailer: git-send-email 1.5.5.4
+X-OriginalArrivalTime: 23 Jul 2008 21:08:22.0053 (UTC) FILETIME=[3D177D50:01C8ED08]
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807231400.53957.yhlu.kernel@gmail.com>
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jason Yeh <jason.yeh@amd.com>
 
-based on work from Eric, and add some timeout so don't dead loop when debug
-device is not installed
+This patch introduces multiplexing support for the Oprofile kernel
+module. It basically adds a new function pointer in oprofile_operator
+allowing each architecture to supply its callback to switch between
+different sets of event when the timer expires. Userspace tools can
+modify the time slice through /dev/oprofile/time_slice.
 
-v2: fix checkpatch warning
+It also modifies the number of counters exposed to the userspace through
+/dev/oprofile. For example, the number of counters for AMD CPUs are
+changed to 32 and multiplexed in the sets of 4.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-
+Signed-off-by: Jason Yeh <jason.yeh@amd.com>
+Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- Documentation/kernel-parameters.txt |    3 
- arch/x86/kernel/early_printk.c      |  642 +++++++++++++++++++++++++++++++++++-
- drivers/usb/host/ehci.h             |   14 
- 3 files changed, 654 insertions(+), 5 deletions(-)
+ arch/x86/oprofile/nmi_int.c       |  100 ++++++++++++++++++++++++++++++++++---
+ arch/x86/oprofile/op_counter.h    |    3 +-
+ arch/x86/oprofile/op_model_amd.c  |   76 +++++++++++++++++-----------
+ arch/x86/oprofile/op_model_p4.c   |    4 ++
+ arch/x86/oprofile/op_model_ppro.c |    2 +
+ arch/x86/oprofile/op_x86_model.h  |    3 +
+ drivers/oprofile/oprof.c          |   58 ++++++++++++++++++++-
+ drivers/oprofile/oprof.h          |    4 +-
+ drivers/oprofile/oprofile_files.c |   39 ++++++++++++++-
+ include/linux/oprofile.h          |    3 +
+ 10 files changed, 247 insertions(+), 45 deletions(-)
 
-Index: linux-2.6/Documentation/kernel-parameters.txt
-===================================================================
---- linux-2.6.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6/Documentation/kernel-parameters.txt
-@@ -654,11 +654,12 @@ and is between 256 and 4096 characters.
- 	earlyprintk=	[X86-32,X86-64,SH,BLACKFIN]
- 			earlyprintk=vga
- 			earlyprintk=serial[,ttySn[,baudrate]]
-+			earlyprintk=dbgp
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index f46d8fc..186ab90 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -23,12 +23,18 @@
+ #include "op_counter.h"
+ #include "op_x86_model.h"
  
- 			Append ",keep" to not disable it when the real console
- 			takes over.
- 
--			Only vga or serial at a time, not both.
-+			Only vga or serial or usb debug port at a time.
- 
- 			Currently only ttyS0 and ttyS1 are supported.
- 
-Index: linux-2.6/arch/x86/kernel/early_printk.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/early_printk.c
-+++ linux-2.6/arch/x86/kernel/early_printk.c
-@@ -3,11 +3,20 @@
- #include <linux/init.h>
- #include <linux/string.h>
- #include <linux/screen_info.h>
-+#include <linux/usb/ch9.h>
-+#include <linux/pci_regs.h>
-+#include <linux/pci_ids.h>
-+#include <linux/errno.h>
- #include <asm/io.h>
- #include <asm/processor.h>
- #include <asm/fcntl.h>
- #include <asm/setup.h>
- #include <xen/hvc-console.h>
-+#include <asm/pci-direct.h>
-+#include <asm/pgtable.h>
-+#include <asm/fixmap.h>
-+#define EARLY_PRINTK
-+#include "../../../drivers/usb/host/ehci.h"
- 
- /* Simple VGA output */
- #define VGABASE		(__ISA_IO_base + 0xb8000)
-@@ -78,6 +87,7 @@ static int early_serial_base = 0x3f8;  /
- static int early_serial_putc(unsigned char ch)
- {
- 	unsigned timeout = 0xffff;
++DEFINE_PER_CPU(int, switch_index);
 +
- 	while ((inb(early_serial_base + LSR) & XMTRDY) == 0 && --timeout)
- 		cpu_relax();
- 	outb(ch, early_serial_base + TXR);
-@@ -151,6 +161,602 @@ static struct console early_serial_conso
- 	.index =	-1,
- };
+ static struct op_x86_model_spec const *model;
+ static DEFINE_PER_CPU(struct op_msrs, cpu_msrs);
+ static DEFINE_PER_CPU(unsigned long, saved_lvtpc);
  
-+
-+static struct ehci_caps __iomem *ehci_caps;
-+static struct ehci_regs __iomem *ehci_regs;
-+static struct ehci_dbg_port __iomem *ehci_debug;
-+static unsigned dbgp_endpoint_out;
-+
-+#define USB_DEBUG_DEVNUM 127
-+
-+#define DBGP_DATA_TOGGLE	0x8800
-+
-+static inline u32 dbgp_pid_update(u32 x, u32 tok)
+ static int nmi_start(void);
+ static void nmi_stop(void);
++static void nmi_cpu_save_mpx_registers(struct op_msrs *msrs);
++static void nmi_cpu_restore_mpx_registers(struct op_msrs *msrs);
++static void nmi_cpu_stop(void *dummy);
++static void nmi_cpu_start(void *dummy);
+ 
+ /* 0 == registered but off, 1 == registered and on */
+ static int nmi_enabled = 0;
+@@ -81,6 +87,47 @@ static void exit_sysfs(void)
+ #define exit_sysfs() do { } while (0)
+ #endif /* CONFIG_PM */
+ 
++static void nmi_cpu_switch(void *dummy)
 +{
-+	return ((x ^ DBGP_DATA_TOGGLE) & 0xffff00) | (tok & 0xff);
-+}
++	int cpu = smp_processor_id();
++	int si = per_cpu(switch_index, cpu);
++	struct op_msrs *msrs = &per_cpu(cpu_msrs, cpu);
 +
-+static inline u32 dbgp_len_update(u32 x, u32 len)
-+{
-+	return (x & ~0x0f) | (len & 0x0f);
++	nmi_cpu_stop(NULL);
++	nmi_cpu_save_mpx_registers(msrs);
++
++	/* move to next set */
++	si += model->num_hardware_counters;
++	if ((si > model->num_counters) || (counter_config[si].count == 0))
++		per_cpu(switch_index, smp_processor_id()) = 0;
++	else
++		per_cpu(switch_index, smp_processor_id()) = si;
++
++	nmi_cpu_restore_mpx_registers(msrs);
++	model->setup_ctrs(msrs);
++	nmi_cpu_start(NULL);
 +}
 +
 +/*
-+ * USB Packet IDs (PIDs)
++ * Quick check to see if multiplexing is necessary.
++ * The check should be sufficient since counters are used
++ * in ordre.
 + */
-+
-+/* token */
-+#define USB_PID_OUT		0xe1
-+#define USB_PID_IN		0x69
-+#define USB_PID_SOF		0xa5
-+#define USB_PID_SETUP		0x2d
-+/* handshake */
-+#define USB_PID_ACK		0xd2
-+#define USB_PID_NAK		0x5a
-+#define USB_PID_STALL		0x1e
-+#define USB_PID_NYET		0x96
-+/* data */
-+#define USB_PID_DATA0		0xc3
-+#define USB_PID_DATA1		0x4b
-+#define USB_PID_DATA2		0x87
-+#define USB_PID_MDATA		0x0f
-+/* Special */
-+#define USB_PID_PREAMBLE	0x3c
-+#define USB_PID_ERR		0x3c
-+#define USB_PID_SPLIT		0x78
-+#define USB_PID_PING		0xb4
-+#define USB_PID_UNDEF_0		0xf0
-+
-+#define USB_PID_DATA_TOGGLE	0x88
-+#define DBGP_CLAIM (DBGP_OWNER | DBGP_ENABLED | DBGP_INUSE)
-+
-+#define PCI_CAP_ID_EHCI_DEBUG	0xa
-+
-+#define HUB_ROOT_RESET_TIME	50	/* times are in msec */
-+#define HUB_SHORT_RESET_TIME	10
-+#define HUB_LONG_RESET_TIME	200
-+#define HUB_RESET_TIMEOUT	500
-+
-+#define DBGP_MAX_PACKET		8
-+
-+static int dbgp_wait_until_complete(void)
++static int nmi_multiplex_on(void)
 +{
-+	unsigned ctrl;
-+	int loop = 0x100000;
-+
-+	do {
-+		ctrl = readl(&ehci_debug->control);
-+		/* Stop when the transaction is finished */
-+		if (ctrl & DBGP_DONE)
-+			break;
-+	} while (--loop > 0);
-+
-+	if (!loop)
-+		return -1;
-+
-+	/* Now that we have observed the completed transaction,
-+	 * clear the done bit.
-+	 */
-+	writel(ctrl | DBGP_DONE, &ehci_debug->control);
-+	return (ctrl & DBGP_ERROR) ? -DBGP_ERRCODE(ctrl) : DBGP_LEN(ctrl);
++	return counter_config[model->num_hardware_counters].count ? 0 : -EINVAL;
 +}
 +
-+static void dbgp_mdelay(int ms)
++static int nmi_switch_event(void)
 +{
-+	int i;
++	if (nmi_multiplex_on() < 0)
++		return -EINVAL;
 +
-+	while (ms--) {
-+		for (i = 0; i < 1000; i++)
-+			outb(0x1, 0x80);
-+	}
-+}
-+
-+static void dbgp_breath(void)
-+{
-+	/* Sleep to give the debug port a chance to breathe */
-+}
-+
-+static int dbgp_wait_until_done(unsigned ctrl)
-+{
-+	unsigned pids, lpid;
-+	int ret;
-+	int loop = 3;
-+
-+retry:
-+	writel(ctrl | DBGP_GO, &ehci_debug->control);
-+	ret = dbgp_wait_until_complete();
-+	pids = readl(&ehci_debug->pids);
-+	lpid = DBGP_PID_GET(pids);
-+
-+	if (ret < 0)
-+		return ret;
-+
-+	/* If the port is getting full or it has dropped data
-+	 * start pacing ourselves, not necessary but it's friendly.
-+	 */
-+	if ((lpid == USB_PID_NAK) || (lpid == USB_PID_NYET))
-+		dbgp_breath();
-+
-+	/* If I get a NACK reissue the transmission */
-+	if (lpid == USB_PID_NAK) {
-+		if (--loop > 0)
-+			goto retry;
-+	}
-+
-+	return ret;
-+}
-+
-+static void dbgp_set_data(const void *buf, int size)
-+{
-+	const unsigned char *bytes = buf;
-+	unsigned lo, hi;
-+	int i;
-+
-+	lo = hi = 0;
-+	for (i = 0; i < 4 && i < size; i++)
-+		lo |= bytes[i] << (8*i);
-+	for (; i < 8 && i < size; i++)
-+		hi |= bytes[i] << (8*(i - 4));
-+	writel(lo, &ehci_debug->data03);
-+	writel(hi, &ehci_debug->data47);
-+}
-+
-+static void dbgp_get_data(void *buf, int size)
-+{
-+	unsigned char *bytes = buf;
-+	unsigned lo, hi;
-+	int i;
-+
-+	lo = readl(&ehci_debug->data03);
-+	hi = readl(&ehci_debug->data47);
-+	for (i = 0; i < 4 && i < size; i++)
-+		bytes[i] = (lo >> (8*i)) & 0xff;
-+	for (; i < 8 && i < size; i++)
-+		bytes[i] = (hi >> (8*(i - 4))) & 0xff;
-+}
-+
-+static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
-+			 const char *bytes, int size)
-+{
-+	unsigned pids, addr, ctrl;
-+	int ret;
-+
-+	if (size > DBGP_MAX_PACKET)
-+		return -1;
-+
-+	addr = DBGP_EPADDR(devnum, endpoint);
-+
-+	pids = readl(&ehci_debug->pids);
-+	pids = dbgp_pid_update(pids, USB_PID_OUT);
-+
-+	ctrl = readl(&ehci_debug->control);
-+	ctrl = dbgp_len_update(ctrl, size);
-+	ctrl |= DBGP_OUT;
-+	ctrl |= DBGP_GO;
-+
-+	dbgp_set_data(bytes, size);
-+	writel(addr, &ehci_debug->address);
-+	writel(pids, &ehci_debug->pids);
-+
-+	ret = dbgp_wait_until_done(ctrl);
-+	if (ret < 0)
-+		return ret;
-+
-+	return ret;
-+}
-+
-+static int dbgp_bulk_read(unsigned devnum, unsigned endpoint, void *data,
-+				 int size)
-+{
-+	unsigned pids, addr, ctrl;
-+	int ret;
-+
-+	if (size > DBGP_MAX_PACKET)
-+		return -1;
-+
-+	addr = DBGP_EPADDR(devnum, endpoint);
-+
-+	pids = readl(&ehci_debug->pids);
-+	pids = dbgp_pid_update(pids, USB_PID_IN);
-+
-+	ctrl = readl(&ehci_debug->control);
-+	ctrl = dbgp_len_update(ctrl, size);
-+	ctrl &= ~DBGP_OUT;
-+	ctrl |= DBGP_GO;
-+
-+	writel(addr, &ehci_debug->address);
-+	writel(pids, &ehci_debug->pids);
-+	ret = dbgp_wait_until_done(ctrl);
-+	if (ret < 0)
-+		return ret;
-+	if (size > ret)
-+		size = ret;
-+	dbgp_get_data(data, size);
-+	return ret;
-+}
-+
-+static int dbgp_control_msg(unsigned devnum, int requesttype, int request,
-+	int value, int index, void *data, int size)
-+{
-+	unsigned pids, addr, ctrl;
-+	struct usb_ctrlrequest req;
-+	int read;
-+	int ret;
-+
-+	read = (requesttype & USB_DIR_IN) != 0;
-+	if (size > (read ? DBGP_MAX_PACKET:0))
-+		return -1;
-+
-+	/* Compute the control message */
-+	req.bRequestType = requesttype;
-+	req.bRequest = request;
-+	req.wValue = value;
-+	req.wIndex = index;
-+	req.wLength = size;
-+
-+	pids = DBGP_PID_SET(USB_PID_DATA0, USB_PID_SETUP);
-+	addr = DBGP_EPADDR(devnum, 0);
-+
-+	ctrl = readl(&ehci_debug->control);
-+	ctrl = dbgp_len_update(ctrl, sizeof(req));
-+	ctrl |= DBGP_OUT;
-+	ctrl |= DBGP_GO;
-+
-+	/* Send the setup message */
-+	dbgp_set_data(&req, sizeof(req));
-+	writel(addr, &ehci_debug->address);
-+	writel(pids, &ehci_debug->pids);
-+	ret = dbgp_wait_until_done(ctrl);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Read the result */
-+	ret = dbgp_bulk_read(devnum, 0, data, size);
-+	return ret;
-+}
-+
-+
-+/* Find a PCI capability */
-+static __u32 __init find_cap(int num, int slot, int func, int cap)
-+{
-+	u8 pos;
-+	int bytes;
-+
-+	if (!(read_pci_config_16(num, slot, func, PCI_STATUS) &
-+		PCI_STATUS_CAP_LIST))
-+		return 0;
-+	pos = read_pci_config_byte(num, slot, func, PCI_CAPABILITY_LIST);
-+	for (bytes = 0; bytes < 48 && pos >= 0x40; bytes++) {
-+		u8 id;
-+		pos &= ~3;
-+		id = read_pci_config_byte(num, slot, func, pos+PCI_CAP_LIST_ID);
-+		if (id == 0xff)
-+			break;
-+		if (id == cap)
-+			return pos;
-+		pos = read_pci_config_byte(num, slot, func,
-+						 pos+PCI_CAP_LIST_NEXT);
-+	}
-+	return 0;
-+}
-+
-+static __u32 __init find_dbgp(int ehci_num, unsigned *rbus, unsigned *rslot,
-+				unsigned *rfunc)
-+{
-+	unsigned bus, slot, func;
-+
-+	for (bus = 0; bus < 256; bus++) {
-+		for (slot = 0; slot < 32; slot++) {
-+			for (func = 0; func < 8; func++) {
-+				u32 class;
-+				unsigned cap;
-+
-+				class = read_pci_config(bus, slot, func,
-+							 PCI_CLASS_REVISION);
-+				if ((class >> 8) != PCI_CLASS_SERIAL_USB_EHCI)
-+					continue;
-+				cap = find_cap(bus, slot, func,
-+						 PCI_CAP_ID_EHCI_DEBUG);
-+				if (!cap)
-+					continue;
-+				if (ehci_num-- != 0)
-+					continue;
-+				*rbus = bus;
-+				*rslot = slot;
-+				*rfunc = func;
-+				return cap;
-+			}
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int ehci_reset_port(int port)
-+{
-+	unsigned portsc;
-+	unsigned delay_time, delay;
-+	int loop;
-+
-+	/* Reset the usb debug port */
-+	portsc = readl(&ehci_regs->port_status[port - 1]);
-+	portsc &= ~PORT_PE;
-+	portsc |= PORT_RESET;
-+	writel(portsc, &ehci_regs->port_status[port - 1]);
-+
-+	delay = HUB_ROOT_RESET_TIME;
-+	for (delay_time = 0; delay_time < HUB_RESET_TIMEOUT;
-+	     delay_time += delay) {
-+		dbgp_mdelay(delay);
-+
-+		portsc = readl(&ehci_regs->port_status[port - 1]);
-+		if (portsc & PORT_RESET) {
-+			/* force reset to complete */
-+			loop = 2;
-+			writel(portsc & ~(PORT_RWC_BITS | PORT_RESET),
-+				&ehci_regs->port_status[port - 1]);
-+			do {
-+				portsc = readl(&ehci_regs->port_status[port-1]);
-+			} while ((portsc & PORT_RESET) && (--loop > 0));
-+		}
-+
-+		/* Device went away? */
-+		if (!(portsc & PORT_CONNECT))
-+			return -ENOTCONN;
-+
-+		/* bomb out completely if something weird happend */
-+		if ((portsc & PORT_CSC))
-+			return -EINVAL;
-+
-+		/* If we've finished resetting, then break out of the loop */
-+		if (!(portsc & PORT_RESET) && (portsc & PORT_PE))
-+			return 0;
-+	}
-+	return -EBUSY;
-+}
-+
-+static int ehci_wait_for_port(int port)
-+{
-+	unsigned status;
-+	int ret, reps;
-+
-+	for (reps = 0; reps < 3; reps++) {
-+		dbgp_mdelay(100);
-+		status = readl(&ehci_regs->status);
-+		if (status & STS_PCD) {
-+			ret = ehci_reset_port(port);
-+			if (ret == 0)
-+				return 0;
-+		}
-+	}
-+	return -ENOTCONN;
-+}
-+
-+
-+#define DBGP_DEBUG 0
-+#if DBGP_DEBUG
-+# define dbgp_printk early_printk
-+#else
-+static inline void dbgp_printk(const char *fmt, ...) { }
-+#endif
-+
-+static int ehci_setup(void)
-+{
-+	unsigned cmd, ctrl, status, portsc, hcs_params, debug_port, n_ports;
-+	int ret;
-+	int loop;
-+
-+	hcs_params = readl(&ehci_caps->hcs_params);
-+	debug_port = HCS_DEBUG_PORT(hcs_params);
-+	n_ports    = HCS_N_PORTS(hcs_params);
-+
-+	dbgp_printk("debug_port: %d\n", debug_port);
-+	dbgp_printk("n_ports:    %d\n", n_ports);
-+
-+	loop = 10;
-+	/* Reset the EHCI controller */
-+	cmd = readl(&ehci_regs->command);
-+	cmd |= CMD_RESET;
-+	writel(cmd, &ehci_regs->command);
-+	do {
-+		cmd = readl(&ehci_regs->command);
-+	} while ((cmd & CMD_RESET) && (--loop > 0));
-+
-+	/* Claim ownership, but do not enable yet */
-+	ctrl = readl(&ehci_debug->control);
-+	ctrl |= DBGP_OWNER;
-+	ctrl &= ~(DBGP_ENABLED | DBGP_INUSE);
-+	writel(ctrl, &ehci_debug->control);
-+
-+	/* Start the ehci running */
-+	cmd = readl(&ehci_regs->command);
-+	cmd &= ~(CMD_LRESET | CMD_IAAD | CMD_PSE | CMD_ASE | CMD_RESET);
-+	cmd |= CMD_RUN;
-+	writel(cmd, &ehci_regs->command);
-+
-+	/* Ensure everything is routed to the EHCI */
-+	writel(FLAG_CF, &ehci_regs->configured_flag);
-+
-+	/* Wait until the controller is no longer halted */
-+	loop = 10;
-+	do {
-+		status = readl(&ehci_regs->status);
-+	} while ((status & STS_HALT) && (--loop > 0));
-+
-+	/* Wait for a device to show up in the debug port */
-+	ret = ehci_wait_for_port(debug_port);
-+	if (ret < 0) {
-+		dbgp_printk("No device found in debug port\n");
-+		return -1;
-+	}
-+
-+	/* Enable the debug port */
-+	ctrl = readl(&ehci_debug->control);
-+	ctrl |= DBGP_CLAIM;
-+	writel(ctrl, &ehci_debug->control);
-+	ctrl = readl(&ehci_debug->control);
-+	if ((ctrl & DBGP_CLAIM) != DBGP_CLAIM) {
-+		dbgp_printk("No device in debug port\n");
-+		writel(ctrl & ~DBGP_CLAIM, &ehci_debug->control);
-+		return -1;
-+
-+	}
-+
-+	/* Completely transfer the debug device to the debug controller */
-+	portsc = readl(&ehci_regs->port_status[debug_port - 1]);
-+	portsc &= ~PORT_PE;
-+	writel(portsc, &ehci_regs->port_status[debug_port - 1]);
++	on_each_cpu(nmi_cpu_switch, NULL, 0, 1);
 +
 +	return 0;
 +}
 +
-+static int __init early_dbgp_init(char *s)
-+{
-+	struct usb_debug_descriptor dbgp_desc;
-+	void __iomem *ehci_bar;
-+	unsigned ctrl, devnum;
-+	unsigned bus, slot, func, cap;
-+	unsigned debug_port, bar, offset;
-+	unsigned bar_val;
-+	char *e;
-+	int ret;
-+	unsigned dbgp_num;
-+
-+	if (!early_pci_allowed())
-+		return -1;
-+
-+	dbgp_num = 0;
-+	if (*s)
-+		dbgp_num = strict_strtoul(s, 10, &e);
-+	dbgp_printk("dbgp_num: %d\n", dbgp_num);
-+	cap = find_dbgp(dbgp_num, &bus, &slot, &func);
-+	if (!cap)
-+		return -1;
-+
-+	dbgp_printk("Found EHCI debug port\n");
-+
-+	debug_port = read_pci_config(bus, slot, func, cap);
-+	bar = (debug_port >> 29) & 0x7;
-+	bar = (bar * 4) + 0xc;
-+	offset = (debug_port >> 16) & 0xfff;
-+	dbgp_printk("bar: %02x offset: %03x\n", bar, offset);
-+	if (bar != PCI_BASE_ADDRESS_0) {
-+		dbgp_printk("only debug ports on bar 1 handled.\n");
-+		return -1;
-+	}
-+
-+	bar_val = read_pci_config(bus, slot, func, PCI_BASE_ADDRESS_0);
-+	dbgp_printk("bar_val: %02x offset: %03x\n", bar_val, offset);
-+	if (bar_val & ~PCI_BASE_ADDRESS_MEM_MASK) {
-+		dbgp_printk("only simple 32bit mmio bars supported\n");
-+		return -1;
-+	}
-+
-+
-+	/* FIXME I don't have the bar size so just guess PAGE_SIZE is more
-+	 * than enough.  1K is the biggest I have seen.
-+	 */
-+	set_fixmap_nocache(FIX_DBGP_BASE, bar_val & PAGE_MASK);
-+	ehci_bar = (void __iomem *)__fix_to_virt(FIX_DBGP_BASE);
-+	ehci_bar += bar_val & ~PAGE_MASK;
-+	dbgp_printk("ehci_bar: %p\n", ehci_bar);
-+
-+	ehci_caps  = ehci_bar;
-+	ehci_regs  = ehci_bar + HC_LENGTH(readl(&ehci_caps->hc_capbase));
-+	ehci_debug = ehci_bar + offset;
-+
-+	ret = ehci_setup();
-+	if (ret < 0) {
-+		dbgp_printk("ehci_setup failed\n");
-+		ehci_debug = 0;
-+		return -1;
-+	}
-+	dbgp_mdelay(100);
-+
-+	/* Find the debug device and make it device number 127 */
-+	for (devnum = 0; devnum <= 127; devnum++) {
-+		ret = dbgp_control_msg(devnum,
-+			USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_DEVICE,
-+			USB_REQ_GET_DESCRIPTOR, (USB_DT_DEBUG << 8), 0,
-+			&dbgp_desc, sizeof(dbgp_desc));
-+		if (ret > 0)
-+			break;
-+	}
-+	if (devnum > 127) {
-+		dbgp_printk("Could not find attached debug device\n");
-+		goto err;
-+	}
-+	if (ret < 0) {
-+		dbgp_printk("Attached device is not a debug device\n");
-+		goto err;
-+	}
-+	dbgp_endpoint_out = dbgp_desc.bDebugOutEndpoint;
-+
-+	/* Move the device to 127 if it isn't already there */
-+	if (devnum != USB_DEBUG_DEVNUM) {
-+		ret = dbgp_control_msg(devnum,
-+			USB_DIR_OUT | USB_TYPE_STANDARD | USB_RECIP_DEVICE,
-+			USB_REQ_SET_ADDRESS, USB_DEBUG_DEVNUM, 0, NULL, 0);
-+		if (ret < 0) {
-+			dbgp_printk("Could not move attached device to %d\n",
-+				USB_DEBUG_DEVNUM);
-+			goto err;
-+		}
-+		devnum = USB_DEBUG_DEVNUM;
-+	}
-+
-+	/* Enable the debug interface */
-+	ret = dbgp_control_msg(USB_DEBUG_DEVNUM,
-+		USB_DIR_OUT | USB_TYPE_STANDARD | USB_RECIP_DEVICE,
-+		USB_REQ_SET_FEATURE, USB_DEVICE_DEBUG_MODE, 0, NULL, 0);
-+	if (ret < 0) {
-+		dbgp_printk(" Could not enable the debug device\n");
-+		goto err;
-+	}
-+
-+	/* Perform a small write to get the even/odd data state in sync
-+	 */
-+	ret = dbgp_bulk_write(USB_DEBUG_DEVNUM, dbgp_endpoint_out, " ", 1);
-+	if (ret < 0) {
-+		dbgp_printk("dbgp_bulk_write failed: %d\n", ret);
-+		goto err;
-+	}
-+
-+
-+	return 0;
-+err:
-+	/* Things didn't work so remove my claim */
-+	ctrl = readl(&ehci_debug->control);
-+	ctrl &= ~(DBGP_CLAIM | DBGP_OUT);
-+	writel(ctrl, &ehci_debug->control);
-+	ehci_debug = 0;
-+
-+	return -1;
-+}
-+
-+static void early_dbgp_write(struct console *con, const char *str, unsigned n)
-+{
-+	int chunk, ret;
-+
-+	if (!ehci_debug)
-+		return;
-+	while (n > 0) {
-+		chunk = n;
-+		if (chunk > DBGP_MAX_PACKET)
-+			chunk = DBGP_MAX_PACKET;
-+		ret = dbgp_bulk_write(USB_DEBUG_DEVNUM,
-+			dbgp_endpoint_out, str, chunk);
-+		str += chunk;
-+		n -= chunk;
-+	}
-+}
-+
-+static struct console early_dbgp_console = {
-+	.name =		"earlydbg",
-+	.write =	early_dbgp_write,
-+	.flags =	CON_PRINTBUFFER,
-+	.index =	-1,
-+};
-+
- /* Console interface to a host file on AMD's SimNow! */
- 
- static int simnow_fd;
-@@ -165,6 +771,7 @@ enum {
- static noinline long simnow(long cmd, long a, long b, long c)
+ static int profile_exceptions_notify(struct notifier_block *self,
+ 				     unsigned long val, void *data)
  {
- 	long ret;
-+
- 	asm volatile("cpuid" :
- 		     "=a" (ret) :
- 		     "b" (a), "c" (b), "d" (c), "0" (MAGIC1), "D" (cmd + MAGIC2));
-@@ -174,6 +781,7 @@ static noinline long simnow(long cmd, lo
- static void __init simnow_init(char *str)
+@@ -144,11 +191,10 @@ static void free_msrs(void)
+ 
+ static int allocate_msrs(void)
  {
- 	char *fn = "klog";
-+
- 	if (*str == '=')
- 		fn = ++str;
- 	/* error ignored */
-@@ -208,10 +816,11 @@ asmlinkage void early_printk(const char
- 	va_end(ap);
- }
+-	int success = 1;
++	int i, success = 1;
+ 	size_t controls_size = sizeof(struct op_msr) * model->num_controls;
+ 	size_t counters_size = sizeof(struct op_msr) * model->num_counters;
  
--static int __initdata keep_early;
+-	int i;
+ 	for_each_possible_cpu(i) {
+ 		per_cpu(cpu_msrs, i).counters = kmalloc(counters_size,
+ 								GFP_KERNEL);
+@@ -156,8 +202,8 @@ static int allocate_msrs(void)
+ 			success = 0;
+ 			break;
+ 		}
+-		per_cpu(cpu_msrs, i).controls = kmalloc(controls_size,
+-								GFP_KERNEL);
++		per_cpu(cpu_msrs, i).controls =
++				kmalloc(controls_size, GFP_KERNEL);
+ 		if (!per_cpu(cpu_msrs, i).controls) {
+ 			success = 0;
+ 			break;
+@@ -201,7 +247,8 @@ static int nmi_setup(void)
+ 		return err;
+ 	}
  
- static int __init setup_early_printk(char *buf)
- {
-+	int keep_early;
-+
- 	if (!buf)
- 		return 0;
+-	/* We need to serialize save and setup for HT because the subset
++	/*
++	 * We need to serialize save and setup for HT because the subset
+ 	 * of msrs are distinct for save and setup operations
+ 	 */
  
-@@ -219,8 +828,7 @@ static int __init setup_early_printk(cha
- 		return 0;
- 	early_console_initialized = 1;
- 
--	if (strstr(buf, "keep"))
--		keep_early = 1;
-+	keep_early = (strstr(buf, "keep") != NULL);
- 
- 	if (!strncmp(buf, "serial", 6)) {
- 		early_serial_init(buf + 6);
-@@ -238,6 +846,15 @@ static int __init setup_early_printk(cha
- 		simnow_init(buf + 6);
- 		early_console = &simnow_console;
- 		keep_early = 1;
-+	} else if (!strncmp(buf, "dbgp", 4)) {
-+		if (early_dbgp_init(buf+4) < 0)
-+			return 0;
-+		early_console = &early_dbgp_console;
-+		/*
-+		 * usb subsys will reset ehci controller, so don't keep
-+		 * that early console
-+		 */
-+		keep_early = 0;
- #ifdef CONFIG_HVC_XEN
- 	} else if (!strncmp(buf, "xen", 3)) {
- 		early_console = &xenboot_console;
-@@ -251,4 +868,23 @@ static int __init setup_early_printk(cha
- 	register_console(early_console);
+@@ -217,7 +264,6 @@ static int nmi_setup(void)
+ 				per_cpu(cpu_msrs, 0).controls,
+ 				sizeof(struct op_msr) * model->num_controls);
+ 		}
+-
+ 	}
+ 	on_each_cpu(nmi_save_registers, NULL, 1);
+ 	on_each_cpu(nmi_cpu_setup, NULL, 1);
+@@ -225,7 +271,41 @@ static int nmi_setup(void)
  	return 0;
  }
-+
-+void __init enable_debug_console(char *buf)
+ 
+-static void nmi_restore_registers(struct op_msrs *msrs)
++static void nmi_cpu_save_mpx_registers(struct op_msrs *msrs)
 +{
-+#if DBGP_DEBUG
-+	struct console *old_early_console = NULL;
++	unsigned int si = __get_cpu_var(switch_index);
++	unsigned int const nr_ctrs = model->num_hardware_counters;
++	struct op_msr *counters = &msrs->counters[si];
++	unsigned int i;
 +
-+	if (early_console_initialized && early_console) {
-+		old_early_console = early_console;
-+		unregister_console(early_console);
-+		early_console_initialized = 0;
++	for (i = 0; i < nr_ctrs; ++i) {
++		int offset = i + si;
++		if (counters[offset].addr) {
++			rdmsr(counters[offset].addr,
++				counters[offset].multiplex.low,
++				counters[offset].multiplex.high);
++		}
 +	}
-+
-+	setup_early_printk(buf);
-+
-+	if (early_console == old_early_console && old_early_console)
-+		register_console(old_early_console);
-+#endif
 +}
 +
- early_param("earlyprintk", setup_early_printk);
-Index: linux-2.6/drivers/usb/host/ehci.h
-===================================================================
---- linux-2.6.orig/drivers/usb/host/ehci.h
-+++ linux-2.6/drivers/usb/host/ehci.h
-@@ -62,6 +62,7 @@ struct ehci_stats {
++static void nmi_cpu_restore_mpx_registers(struct op_msrs *msrs)
++{
++	unsigned int si = __get_cpu_var(switch_index);
++	unsigned int const nr_ctrs = model->num_hardware_counters;
++	struct op_msr *counters = &msrs->counters[si];
++	unsigned int i;
++
++	for (i = 0; i < nr_ctrs; ++i) {
++		int offset = i + si;
++		if (counters[offset].addr) {
++			wrmsr(counters[offset].addr,
++				counters[offset].multiplex.low,
++				counters[offset].multiplex.high);
++		}
++	}
++}
++
++static void nmi_cpu_restore_registers(struct op_msrs *msrs)
+ {
+ 	unsigned int const nr_ctrs = model->num_counters;
+ 	unsigned int const nr_ctrls = model->num_controls;
+@@ -265,7 +345,8 @@ static void nmi_cpu_shutdown(void *dummy)
+ 	apic_write(APIC_LVTERR, v | APIC_LVT_MASKED);
+ 	apic_write(APIC_LVTPC, per_cpu(saved_lvtpc, cpu));
+ 	apic_write(APIC_LVTERR, v);
+-	nmi_restore_registers(msrs);
++	nmi_cpu_restore_registers(msrs);
++	__get_cpu_var(switch_index) = 0;
+ }
  
- #define	EHCI_MAX_ROOT_PORTS	15		/* see HCS_N_PORTS */
+ static void nmi_shutdown(void)
+@@ -328,6 +409,7 @@ static int nmi_create_files(struct super_block *sb, struct dentry *root)
+ 		oprofilefs_create_ulong(sb, dir, "unit_mask", &counter_config[i].unit_mask);
+ 		oprofilefs_create_ulong(sb, dir, "kernel", &counter_config[i].kernel);
+ 		oprofilefs_create_ulong(sb, dir, "user", &counter_config[i].user);
++		counter_config[i].save_count_low = 0;
+ 	}
  
-+#ifndef EARLY_PRINTK
- struct ehci_hcd {			/* one per controller */
- 	/* glue to PCI and HCD framework */
- 	struct ehci_caps __iomem *caps;
-@@ -207,6 +208,7 @@ timer_action (struct ehci_hcd *ehci, enu
- 		mod_timer(&ehci->watchdog, t + jiffies);
+ 	return 0;
+@@ -455,12 +537,14 @@ int __init op_nmi_init(struct oprofile_operations *ops)
+ 	}
+ 
+ 	/* default values, can be overwritten by model */
++	__get_cpu_var(switch_index) = 0;
+ 	ops->create_files = nmi_create_files;
+ 	ops->setup = nmi_setup;
+ 	ops->shutdown = nmi_shutdown;
+ 	ops->start = nmi_start;
+ 	ops->stop = nmi_stop;
+ 	ops->cpu_type = cpu_type;
++	ops->switch_events = nmi_switch_event;
+ 
+ 	if (model->init)
+ 		ret = model->init(ops);
+diff --git a/arch/x86/oprofile/op_counter.h b/arch/x86/oprofile/op_counter.h
+index 2880b15..786d6e0 100644
+--- a/arch/x86/oprofile/op_counter.h
++++ b/arch/x86/oprofile/op_counter.h
+@@ -10,13 +10,14 @@
+ #ifndef OP_COUNTER_H
+ #define OP_COUNTER_H
+  
+-#define OP_MAX_COUNTER 8
++#define OP_MAX_COUNTER 32
+  
+ /* Per-perfctr configuration as set via
+  * oprofilefs.
+  */
+ struct op_counter_config {
+         unsigned long count;
++		unsigned long save_count_low;
+         unsigned long enabled;
+         unsigned long event;
+         unsigned long kernel;
+diff --git a/arch/x86/oprofile/op_model_amd.c b/arch/x86/oprofile/op_model_amd.c
+index d9faf60..bbf2b68 100644
+--- a/arch/x86/oprofile/op_model_amd.c
++++ b/arch/x86/oprofile/op_model_amd.c
+@@ -15,6 +15,7 @@
+ #include <linux/oprofile.h>
+ #include <linux/device.h>
+ #include <linux/pci.h>
++#include <linux/percpu.h>
+ 
+ #include <asm/ptrace.h>
+ #include <asm/msr.h>
+@@ -23,8 +24,10 @@
+ #include "op_x86_model.h"
+ #include "op_counter.h"
+ 
+-#define NUM_COUNTERS 4
+-#define NUM_CONTROLS 4
++#define NUM_COUNTERS 32
++#define NUM_HARDWARE_COUNTERS 4
++#define NUM_CONTROLS 32
++#define NUM_HARDWARE_CONTROLS 4
+ 
+ #define CTR_IS_RESERVED(msrs, c) (msrs->counters[(c)].addr ? 1 : 0)
+ #define CTR_READ(l, h, msrs, c) do {rdmsr(msrs->counters[(c)].addr, (l), (h)); } while (0)
+@@ -48,6 +51,7 @@
+ #define CTRL_SET_GUEST_ONLY(val, h) (val |= ((h & 1) << 8))
+ 
+ static unsigned long reset_value[NUM_COUNTERS];
++DECLARE_PER_CPU(int, switch_index);
+ 
+ #ifdef CONFIG_OPROFILE_IBS
+ 
+@@ -130,15 +134,17 @@ static void op_amd_fill_in_addresses(struct op_msrs * const msrs)
+ 	int i;
+ 
+ 	for (i = 0; i < NUM_COUNTERS; i++) {
+-		if (reserve_perfctr_nmi(MSR_K7_PERFCTR0 + i))
+-			msrs->counters[i].addr = MSR_K7_PERFCTR0 + i;
++		int hw_counter = i % NUM_HARDWARE_COUNTERS;
++		if (reserve_perfctr_nmi(MSR_K7_PERFCTR0 + hw_counter))
++			msrs->counters[i].addr = MSR_K7_PERFCTR0 + hw_counter;
+ 		else
+ 			msrs->counters[i].addr = 0;
+ 	}
+ 
+ 	for (i = 0; i < NUM_CONTROLS; i++) {
+-		if (reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + i))
+-			msrs->controls[i].addr = MSR_K7_EVNTSEL0 + i;
++		int hw_control = i % NUM_HARDWARE_CONTROLS;
++		if (reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + hw_control))
++			msrs->controls[i].addr = MSR_K7_EVNTSEL0 + hw_control;
+ 		else
+ 			msrs->controls[i].addr = 0;
+ 	}
+@@ -150,8 +156,16 @@ static void op_amd_setup_ctrs(struct op_msrs const * const msrs)
+ 	unsigned int low, high;
+ 	int i;
+ 
++	for (i = 0; i < NUM_HARDWARE_CONTROLS; ++i) {
++		int offset = i + __get_cpu_var(switch_index);
++		if (counter_config[offset].enabled)
++			reset_value[offset] = counter_config[offset].count;
++		else
++			reset_value[offset] = 0;
++	}
++
+ 	/* clear all counters */
+-	for (i = 0 ; i < NUM_CONTROLS; ++i) {
++	for (i = 0 ; i < NUM_HARDWARE_CONTROLS; ++i) {
+ 		if (unlikely(!CTRL_IS_RESERVED(msrs, i)))
+ 			continue;
+ 		CTRL_READ(low, high, msrs, i);
+@@ -161,34 +175,31 @@ static void op_amd_setup_ctrs(struct op_msrs const * const msrs)
+ 	}
+ 
+ 	/* avoid a false detection of ctr overflows in NMI handler */
+-	for (i = 0; i < NUM_COUNTERS; ++i) {
++	for (i = 0; i < NUM_HARDWARE_COUNTERS; ++i) {
+ 		if (unlikely(!CTR_IS_RESERVED(msrs, i)))
+ 			continue;
+ 		CTR_WRITE(1, msrs, i);
+ 	}
+ 
+ 	/* enable active counters */
+-	for (i = 0; i < NUM_COUNTERS; ++i) {
+-		if ((counter_config[i].enabled) && (CTR_IS_RESERVED(msrs, i))) {
+-			reset_value[i] = counter_config[i].count;
+-
+-			CTR_WRITE(counter_config[i].count, msrs, i);
++	for (i = 0; i < NUM_HARDWARE_COUNTERS; ++i) {
++		int offset = i + __get_cpu_var(switch_index);
++		if ((counter_config[offset].enabled) && (CTR_IS_RESERVED(msrs, i))) {
++			CTR_WRITE(counter_config[offset].count, msrs, i);
+ 
+ 			CTRL_READ(low, high, msrs, i);
+ 			CTRL_CLEAR_LO(low);
+ 			CTRL_CLEAR_HI(high);
+ 			CTRL_SET_ENABLE(low);
+-			CTRL_SET_USR(low, counter_config[i].user);
+-			CTRL_SET_KERN(low, counter_config[i].kernel);
+-			CTRL_SET_UM(low, counter_config[i].unit_mask);
+-			CTRL_SET_EVENT_LOW(low, counter_config[i].event);
+-			CTRL_SET_EVENT_HIGH(high, counter_config[i].event);
++			CTRL_SET_USR(low, counter_config[offset].user);
++			CTRL_SET_KERN(low, counter_config[offset].kernel);
++			CTRL_SET_UM(low, counter_config[offset].unit_mask);
++			CTRL_SET_EVENT_LOW(low, counter_config[offset].event);
++			CTRL_SET_EVENT_HIGH(high, counter_config[offset].event);
+ 			CTRL_SET_HOST_ONLY(high, 0);
+ 			CTRL_SET_GUEST_ONLY(high, 0);
+ 
+ 			CTRL_WRITE(low, high, msrs, i);
+-		} else {
+-			reset_value[i] = 0;
+ 		}
  	}
  }
-+#endif /* EARLY_PRINTK */
+@@ -276,13 +287,14 @@ static int op_amd_check_ctrs(struct pt_regs * const regs,
+ 	unsigned int low, high;
+ 	int i;
  
- /*-------------------------------------------------------------------------*/
+-	for (i = 0 ; i < NUM_COUNTERS; ++i) {
+-		if (!reset_value[i])
++	for (i = 0 ; i < NUM_HARDWARE_COUNTERS ; ++i) {
++		int offset = i + __get_cpu_var(switch_index);
++		if (!reset_value[offset])
+ 			continue;
+ 		CTR_READ(low, high, msrs, i);
+ 		if (CTR_OVERFLOWED(low)) {
+-			oprofile_add_sample(regs, i);
+-			CTR_WRITE(reset_value[i], msrs, i);
++			oprofile_add_sample(regs, offset);
++			CTR_WRITE(reset_value[offset], msrs, i);
+ 		}
+ 	}
  
-@@ -352,6 +354,8 @@ struct ehci_dbg_port {
- 
- #define	QTD_NEXT(ehci, dma)	cpu_to_hc32(ehci, (u32)dma)
- 
-+#ifndef EARLY_PRINTK
+@@ -298,8 +310,10 @@ static void op_amd_start(struct op_msrs const * const msrs)
+ {
+ 	unsigned int low, high;
+ 	int i;
+-	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
+-		if (reset_value[i]) {
 +
- /*
-  * EHCI Specification 0.95 Section 3.5
-  * QTD: describe data transfer components (buffer, direction, ...)
-@@ -392,7 +396,7 @@ struct ehci_qtd {
- 	struct urb		*urb;			/* qtd's urb */
- 	size_t			length;			/* length of buffer */
- } __attribute__ ((aligned (32)));
--
-+#endif
- /* mask NakCnt+T in qh->hw_alt_next */
- #define QTD_MASK(ehci)	cpu_to_hc32 (ehci, ~0x1f)
++	for (i = 0 ; i < NUM_HARDWARE_COUNTERS ; ++i) {
++		int offset = i + __get_cpu_var(switch_index);
++		if (reset_value[offset]) {
+ 			CTRL_READ(low, high, msrs, i);
+ 			CTRL_SET_ACTIVE(low);
+ 			CTRL_WRITE(low, high, msrs, i);
+@@ -329,8 +343,8 @@ static void op_amd_stop(struct op_msrs const * const msrs)
  
-@@ -449,6 +453,7 @@ union ehci_shadow {
-  * These appear in both the async and (for interrupt) periodic schedules.
-  */
+ 	/* Subtle: stop on all counters to avoid race with
+ 	 * setting our pm callback */
+-	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
+-		if (!reset_value[i])
++	for (i = 0 ; i < NUM_HARDWARE_COUNTERS ; ++i) {
++		if (!reset_value[i + per_cpu(switch_index, smp_processor_id())])
+ 			continue;
+ 		CTRL_READ(low, high, msrs, i);
+ 		CTRL_SET_INACTIVE(low);
+@@ -356,11 +370,11 @@ static void op_amd_shutdown(struct op_msrs const * const msrs)
+ {
+ 	int i;
  
-+#ifndef EARLY_PRINTK
- struct ehci_qh {
- 	/* first part defined by EHCI spec */
- 	__hc32			hw_next;	/* see EHCI 3.6.1 */
-@@ -504,6 +509,7 @@ struct ehci_qh {
- #define NO_FRAME ((unsigned short)~0)			/* pick new start */
- 	struct usb_device	*dev;		/* access to TT */
- } __attribute__ ((aligned (32)));
-+#endif /* EARLY_PRITNK */
- 
- /*-------------------------------------------------------------------------*/
- 
-@@ -517,6 +523,7 @@ struct ehci_iso_packet {
- 	u32			buf1;
+-	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
++	for (i = 0 ; i < NUM_HARDWARE_COUNTERS ; ++i) {
+ 		if (CTR_IS_RESERVED(msrs, i))
+ 			release_perfctr_nmi(MSR_K7_PERFCTR0 + i);
+ 	}
+-	for (i = 0 ; i < NUM_CONTROLS ; ++i) {
++	for (i = 0 ; i < NUM_HARDWARE_COUNTERS ; ++i) {
+ 		if (CTRL_IS_RESERVED(msrs, i))
+ 			release_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
+ 	}
+@@ -534,6 +548,8 @@ struct op_x86_model_spec const op_amd_spec = {
+ 	.exit = op_amd_exit,
+ 	.num_counters = NUM_COUNTERS,
+ 	.num_controls = NUM_CONTROLS,
++	.num_hardware_counters = NUM_HARDWARE_COUNTERS,
++	.num_hardware_controls = NUM_HARDWARE_CONTROLS,
+ 	.fill_in_addresses = &op_amd_fill_in_addresses,
+ 	.setup_ctrs = &op_amd_setup_ctrs,
+ 	.check_ctrs = &op_amd_check_ctrs,
+diff --git a/arch/x86/oprofile/op_model_p4.c b/arch/x86/oprofile/op_model_p4.c
+index 56b4757..e641545 100644
+--- a/arch/x86/oprofile/op_model_p4.c
++++ b/arch/x86/oprofile/op_model_p4.c
+@@ -701,6 +701,8 @@ static void p4_shutdown(struct op_msrs const * const msrs)
+ struct op_x86_model_spec const op_p4_ht2_spec = {
+ 	.num_counters = NUM_COUNTERS_HT2,
+ 	.num_controls = NUM_CONTROLS_HT2,
++	.num_hardware_counters = NUM_COUNTERS_HT2,
++	.num_hardware_controls = NUM_CONTROLS_HT2,
+ 	.fill_in_addresses = &p4_fill_in_addresses,
+ 	.setup_ctrs = &p4_setup_ctrs,
+ 	.check_ctrs = &p4_check_ctrs,
+@@ -713,6 +715,8 @@ struct op_x86_model_spec const op_p4_ht2_spec = {
+ struct op_x86_model_spec const op_p4_spec = {
+ 	.num_counters = NUM_COUNTERS_NON_HT,
+ 	.num_controls = NUM_CONTROLS_NON_HT,
++	.num_hardware_counters = NUM_COUNTERS_NON_HT,
++	.num_hardware_controls = NUM_CONTROLS_NON_HT,
+ 	.fill_in_addresses = &p4_fill_in_addresses,
+ 	.setup_ctrs = &p4_setup_ctrs,
+ 	.check_ctrs = &p4_check_ctrs,
+diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
+index eff431f..e5811aa 100644
+--- a/arch/x86/oprofile/op_model_ppro.c
++++ b/arch/x86/oprofile/op_model_ppro.c
+@@ -183,6 +183,8 @@ static void ppro_shutdown(struct op_msrs const * const msrs)
+ struct op_x86_model_spec const op_ppro_spec = {
+ 	.num_counters = NUM_COUNTERS,
+ 	.num_controls = NUM_CONTROLS,
++	.num_hardware_counters = NUM_COUNTERS,
++	.num_hardware_controls = NUM_CONTROLS,
+ 	.fill_in_addresses = &ppro_fill_in_addresses,
+ 	.setup_ctrs = &ppro_setup_ctrs,
+ 	.check_ctrs = &ppro_check_ctrs,
+diff --git a/arch/x86/oprofile/op_x86_model.h b/arch/x86/oprofile/op_x86_model.h
+index 05a0261..e07ba10 100644
+--- a/arch/x86/oprofile/op_x86_model.h
++++ b/arch/x86/oprofile/op_x86_model.h
+@@ -19,6 +19,7 @@ struct op_saved_msr {
+ struct op_msr {
+ 	unsigned long addr;
+ 	struct op_saved_msr saved;
++	struct op_saved_msr multiplex;
  };
  
-+#ifndef EARLY_PRINTK
- /* temporary schedule data for packets from iso urbs (both speeds)
-  * each packet is one logical usb transaction to the device (not TT),
-  * beginning at stream->next_uframe
-@@ -651,6 +658,7 @@ struct ehci_sitd {
- 	unsigned		frame;
- 	unsigned		index;
- } __attribute__ ((aligned (32)));
-+#endif
+ struct op_msrs {
+@@ -34,6 +35,8 @@ struct pt_regs;
+ struct op_x86_model_spec {
+ 	int (*init)(struct oprofile_operations *ops);
+ 	void (*exit)(void);
++	unsigned int const num_hardware_counters;
++	unsigned int const num_hardware_controls;
+ 	unsigned int const num_counters;
+ 	unsigned int const num_controls;
+ 	void (*fill_in_addresses)(struct op_msrs * const msrs);
+diff --git a/drivers/oprofile/oprof.c b/drivers/oprofile/oprof.c
+index 2c64517..b2fa5df 100644
+--- a/drivers/oprofile/oprof.c
++++ b/drivers/oprofile/oprof.c
+@@ -12,6 +12,8 @@
+ #include <linux/init.h>
+ #include <linux/oprofile.h>
+ #include <linux/moduleparam.h>
++#include <linux/workqueue.h>
++#include <linux/time.h>
+ #include <asm/mutex.h>
  
- /*-------------------------------------------------------------------------*/
- 
-@@ -672,6 +680,8 @@ struct ehci_fstn {
- 	union ehci_shadow	fstn_next;	/* ptr to periodic q entry */
- } __attribute__ ((aligned (32)));
- 
-+#ifndef EARLY_PRINTK
+ #include "oprof.h"
+@@ -19,13 +21,18 @@
+ #include "cpu_buffer.h"
+ #include "buffer_sync.h"
+ #include "oprofile_stats.h"
 +
- /*-------------------------------------------------------------------------*/
++static unsigned long is_setup;
++static void switch_worker(struct work_struct *work);
++static DECLARE_DELAYED_WORK(switch_work, switch_worker);
++static DEFINE_MUTEX(start_mutex);
+  
+ struct oprofile_operations oprofile_ops;
  
- #ifdef CONFIG_USB_EHCI_ROOT_HUB_TT
-@@ -843,4 +853,6 @@ static inline u32 hc32_to_cpup (const st
++unsigned long timeout_jiffies;
+ unsigned long oprofile_started;
+ unsigned long backtrace_depth;
+-static unsigned long is_setup;
+-static DEFINE_MUTEX(start_mutex);
++/* Multiplexing defaults at 1 msec*/
  
- /*-------------------------------------------------------------------------*/
+ /* timer
+    0 - use performance monitoring hardware if available
+@@ -87,6 +94,16 @@ out:
+ 	return err;
+ }
  
-+#endif /* EARLY_PRINTK */
++static void start_switch_worker(void)
++{
++	schedule_delayed_work(&switch_work, timeout_jiffies);
++}
 +
- #endif /* __LINUX_EHCI_HCD_H */
++static void switch_worker(struct work_struct *work)
++{
++	if (!oprofile_ops.switch_events())
++		start_switch_worker();
++}
+ 
+ /* Actually start profiling (echo 1>/dev/oprofile/enable) */
+ int oprofile_start(void)
+@@ -94,7 +111,6 @@ int oprofile_start(void)
+ 	int err = -EINVAL;
+  
+ 	mutex_lock(&start_mutex);
+- 
+ 	if (!is_setup)
+ 		goto out;
+ 
+@@ -108,6 +124,9 @@ int oprofile_start(void)
+ 	if ((err = oprofile_ops.start()))
+ 		goto out;
+ 
++	if (oprofile_ops.switch_events)
++		start_switch_worker();
++
+ 	oprofile_started = 1;
+ out:
+ 	mutex_unlock(&start_mutex);
+@@ -123,6 +142,7 @@ void oprofile_stop(void)
+ 		goto out;
+ 	oprofile_ops.stop();
+ 	oprofile_started = 0;
++	cancel_delayed_work_sync(&switch_work);
+ 	/* wake up the daemon to read what remains */
+ 	wake_up_buffer_waiter();
+ out:
+@@ -155,6 +175,32 @@ post_sync:
+ 	mutex_unlock(&start_mutex);
+ }
+ 
++/* User inputs in ms, converts to jiffies */
++int oprofile_set_timeout(unsigned long val_msec)
++{
++	int err = 0;
++
++	mutex_lock(&start_mutex);
++
++	if (oprofile_started) {
++		err = -EBUSY;
++		goto out;
++	}
++
++	if (!oprofile_ops.switch_events) {
++		err = -EINVAL;
++		goto out;
++	}
++
++	timeout_jiffies = msecs_to_jiffies(val_msec);
++	if (timeout_jiffies == MAX_JIFFY_OFFSET)
++		timeout_jiffies = msecs_to_jiffies(1);
++
++out:
++	mutex_unlock(&start_mutex);
++	return err;
++
++}
+ 
+ int oprofile_set_backtrace(unsigned long val)
+ {
+@@ -179,10 +225,16 @@ out:
+ 	return err;
+ }
+ 
++static void __init oprofile_switch_timer_init(void)
++{
++	timeout_jiffies = msecs_to_jiffies(1);
++}
++
+ static int __init oprofile_init(void)
+ {
+ 	int err;
+ 
++	oprofile_switch_timer_init();
+ 	err = oprofile_arch_init(&oprofile_ops);
+ 
+ 	if (err < 0 || timer) {
+diff --git a/drivers/oprofile/oprof.h b/drivers/oprofile/oprof.h
+index 1832365..c4406a7 100644
+--- a/drivers/oprofile/oprof.h
++++ b/drivers/oprofile/oprof.h
+@@ -27,7 +27,8 @@ extern unsigned long fs_buffer_watershed;
+ extern struct oprofile_operations oprofile_ops;
+ extern unsigned long oprofile_started;
+ extern unsigned long backtrace_depth;
+- 
++extern unsigned long timeout_jiffies;
++
+ struct super_block;
+ struct dentry;
+ 
+@@ -35,5 +36,6 @@ void oprofile_create_files(struct super_block * sb, struct dentry * root);
+ void oprofile_timer_init(struct oprofile_operations * ops);
+ 
+ int oprofile_set_backtrace(unsigned long depth);
++int oprofile_set_timeout(unsigned long time);
+  
+ #endif /* OPROF_H */
+diff --git a/drivers/oprofile/oprofile_files.c b/drivers/oprofile/oprofile_files.c
+index ef953ba..cc4f5a1 100644
+--- a/drivers/oprofile/oprofile_files.c
++++ b/drivers/oprofile/oprofile_files.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/fs.h>
+ #include <linux/oprofile.h>
++#include <linux/jiffies.h>
+ 
+ #include "event_buffer.h"
+ #include "oprofile_stats.h"
+@@ -18,6 +19,40 @@ unsigned long fs_buffer_size = 131072;
+ unsigned long fs_cpu_buffer_size = 8192;
+ unsigned long fs_buffer_watershed = 32768; /* FIXME: tune */
+ 
++static ssize_t timeout_read(struct file *file, char __user *buf,
++		size_t count, loff_t *offset)
++{
++	return oprofilefs_ulong_to_user(jiffies_to_msecs(timeout_jiffies),
++				buf, count, offset);
++}
++
++
++static ssize_t timeout_write(struct file *file, char const __user *buf,
++		size_t count, loff_t *offset)
++{
++	unsigned long val;
++	int retval;
++
++	if (*offset)
++		return -EINVAL;
++
++	retval = oprofilefs_ulong_from_user(&val, buf, count);
++	if (retval)
++		return retval;
++
++	retval = oprofile_set_timeout(val);
++
++	if (retval)
++		return retval;
++	return count;
++}
++
++static const struct file_operations timeout_fops = {
++	.read		= timeout_read,
++	.write		= timeout_write,
++};
++
++
+ static ssize_t depth_read(struct file * file, char __user * buf, size_t count, loff_t * offset)
+ {
+ 	return oprofilefs_ulong_to_user(backtrace_depth, buf, count, offset);
+@@ -85,11 +120,10 @@ static ssize_t enable_write(struct file * file, char const __user * buf, size_t
+ 
+ 	if (*offset)
+ 		return -EINVAL;
+-
+ 	retval = oprofilefs_ulong_from_user(&val, buf, count);
+ 	if (retval)
+ 		return retval;
+- 
++
+ 	if (val)
+ 		retval = oprofile_start();
+ 	else
+@@ -129,6 +163,7 @@ void oprofile_create_files(struct super_block * sb, struct dentry * root)
+ 	oprofilefs_create_file(sb, root, "cpu_type", &cpu_type_fops); 
+ 	oprofilefs_create_file(sb, root, "backtrace_depth", &depth_fops);
+ 	oprofilefs_create_file(sb, root, "pointer_size", &pointer_size_fops);
++	oprofilefs_create_file(sb, root, "timeout_ms", &timeout_fops);
+ 	oprofile_create_stats_files(sb, root);
+ 	if (oprofile_ops.create_files)
+ 		oprofile_ops.create_files(sb, root);
+diff --git a/include/linux/oprofile.h b/include/linux/oprofile.h
+index bcb8f72..687f2f4 100644
+--- a/include/linux/oprofile.h
++++ b/include/linux/oprofile.h
+@@ -67,6 +67,9 @@ struct oprofile_operations {
+ 
+ 	/* Initiate a stack backtrace. Optional. */
+ 	void (*backtrace)(struct pt_regs * const regs, unsigned int depth);
++
++	/* Multiplex between different events. Optional. */
++	int (*switch_events)(void);
+ 	/* CPU identification string. */
+ 	char * cpu_type;
+ };
+-- 
+1.5.5.4
+
+
