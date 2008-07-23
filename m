@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbYGWTB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbYGWTI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755679AbYGWTB1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 15:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbYGWTBM
+	id S1754554AbYGWTI1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 15:08:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYGWTIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 15:01:12 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:1190 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752648AbYGWTBL (ORCPT
+	Wed, 23 Jul 2008 15:08:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41735 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751187AbYGWTIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 15:01:11 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] make pnp_build_option() static
-Date: Wed, 23 Jul 2008 13:00:42 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: ambx1@neo.rr.com, Rene Herman <rene.herman@gmail.com>,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@linux.intel.com>,
-       Len Brown <lenb@kernel.org>
-References: <20080722172021.GN14846@cs181140183.pp.htv.fi>
-In-Reply-To: <20080722172021.GN14846@cs181140183.pp.htv.fi>
+	Wed, 23 Jul 2008 15:08:18 -0400
+Date: Wed, 23 Jul 2008 12:08:01 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [GIT PULL] MMC updates for 2.6.27-rc1
+In-Reply-To: <20080723150031.36e5b85a@mjolnir.drzeus.cx>
+Message-ID: <alpine.LFD.1.10.0807231206230.4754@woody.linux-foundation.org>
+References: <20080719015911.02faddf6@mjolnir.drzeus.cx> <20080723150031.36e5b85a@mjolnir.drzeus.cx>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807231300.42905.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 July 2008 11:20:21 am Adrian Bunk wrote:
-> pnp_build_optionq() can now become static.
+
+
+On Wed, 23 Jul 2008, Pierre Ossman wrote:
+>
+>  include/linux/scatterlist.h |   38 +++++++
+>  lib/scatterlist.c           |  176 +++++++++++++++++++++++++---------
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> Tejun Heo (1):
+>       sg: reimplement sg mapping iterator
 
-Acked-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+I'd really have been a lot happier about this one if it had had a few 
+Acked-by's from people like Jens and James.
 
-PNP patches have been going through the ACPI tree lately.
-I copied Andi and Len.
+But I pulled, and pushed out. I think Jens is on vacation, but I'm adding 
+him to the cc anyway.
 
-> ---
-> 87ec46ea755fc5349371bf2208b30264da355699 
-> diff --git a/drivers/pnp/resource.c b/drivers/pnp/resource.c
-> index 4cfe3a1..2e5b7eb 100644
-> --- a/drivers/pnp/resource.c
-> +++ b/drivers/pnp/resource.c
-> @@ -30,8 +30,9 @@ static int pnp_reserve_mem[16] = {[0 ... 15] = -1 };	/* reserve (don't use) some
->   * option registration
->   */
->  
-> -struct pnp_option *pnp_build_option(struct pnp_dev *dev, unsigned long type,
-> -				    unsigned int option_flags)
-> +static struct pnp_option *pnp_build_option(struct pnp_dev *dev,
-> +					   unsigned long type,
-> +					   unsigned int option_flags)
->  {
->  	struct pnp_option *option;
->  
-> 
-> 
-
-
+		Linus
