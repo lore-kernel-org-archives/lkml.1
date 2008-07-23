@@ -1,95 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbYGWUhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbYGWUjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755871AbYGWUhI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 16:37:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755098AbYGWUg4
+	id S1755894AbYGWUjc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 16:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754402AbYGWUjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 16:36:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44157 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754402AbYGWUgz (ORCPT
+	Wed, 23 Jul 2008 16:39:24 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:58856 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753851AbYGWUjX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 16:36:55 -0400
-Date: Wed, 23 Jul 2008 13:36:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, andi@firstfloor.org,
-       arjan@infradead.org, ebiederm@xmission.com, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: usb debug port early console
-Message-Id: <20080723133601.5a7bc494.akpm@linux-foundation.org>
-In-Reply-To: <86802c440807231318h76ec9465td0c179668cfe4473@mail.gmail.com>
-References: <200807231252.20371.yhlu.kernel@gmail.com>
-	<20080723131218.f03ed672.akpm@linux-foundation.org>
-	<86802c440807231318h76ec9465td0c179668cfe4473@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 Jul 2008 16:39:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=s9RSbBKxC/CkWpf1zv/js5eifv11hJm4aCkqR7RowPxiZWuebHyNh4BGTjPAsqzG39
+         TwYpd+fFqBoP5U20Gr+I3Uj4k1utaArr3VR4HRs6mtuPuWPtp8zVboB03TliaOi8kH4K
+         Ddl2aWdDgryja1F39pI0nF+t52MMXKSbUN7U4=
+Message-ID: <19f34abd0807231339i4ba524d6u27f1c4054197a81@mail.gmail.com>
+Date: Wed, 23 Jul 2008 22:39:22 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Suresh Siddha" <suresh.b.siddha@intel.com>
+Subject: Re: recent -git: BUG in free_thread_xstate
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+In-Reply-To: <20080723203109.GH14380@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0807231307y191c0ad7tfab4cda57ee88eb@mail.gmail.com>
+	 <20080723203109.GH14380@linux-os.sc.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jul 2008 13:18:12 -0700
-"Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+Hi!
 
-> > Please always pass all patches through scripts/checkpatch.pl.
+On Wed, Jul 23, 2008 at 10:31 PM, Suresh Siddha
+<suresh.b.siddha@intel.com> wrote:
+> On Wed, Jul 23, 2008 at 01:07:04PM -0700, Vegard Nossum wrote:
+>> Hi,
+>>
+>> I just got this on c010b2f76c3032e48097a6eef291d8593d5d79a6 (-git from
+>> yesterday):
+>
+> Do you see this in 2.6.26 aswell? I suspect it is coming from post 2.6.26
+> changes.
 
-What I meant was to use checkpatch and then to actually read its
-output ;)
+Just reproduced it on latest linux-2.6.git.
 
-> yhlu@linux-zpir:~/xx/xx/kernel/tip/linux-2.6> ./scripts/checkpatch.pl
-> patches/9xxx.patch
-> WARNING: line over 80 characters
-> #319: FILE: arch/x86/kernel/early_printk.c:420:
-> +       if (!(read_pci_config_16(num, slot, func, PCI_STATUS) &
-> PCI_STATUS_CAP_LIST))
-> 
-> WARNING: line over 80 characters
-> #330: FILE: arch/x86/kernel/early_printk.c:431:
-> +               pos = read_pci_config_byte(num, slot, func,
-> pos+PCI_CAP_LIST_NEXT);
-> 
-> WARNING: line over 80 characters
-> #335: FILE: arch/x86/kernel/early_printk.c:436:
-> +static __u32 __init find_dbgp(int ehci_num, unsigned *rbus, unsigned
-> *rslot, unsigned *rfunc)
-> 
-> WARNING: line over 80 characters
-> #344: FILE: arch/x86/kernel/early_printk.c:445:
-> +                               class = read_pci_config(bus, slot,
-> func, PCI_CLASS_REVISION);
-> 
-> WARNING: line over 80 characters
-> #347: FILE: arch/x86/kernel/early_printk.c:448:
-> +                               cap = find_cap(bus, slot, func,
-> PCI_CAP_ID_EHCI_DEBUG);
-> 
-> WARNING: line over 80 characters
-> #386: FILE: arch/x86/kernel/early_printk.c:487:
-> +                               portsc =
-> readl(&ehci_regs->port_status[port - 1]);
+>> BUG: unable to handle kernel paging request at 00664381
+>> IP: [<c010b274>] free_thread_xstate+0x4/0x30
+> ...
+>
 
-I don't think the 80-col warnigns should necessarily all be fixed.  But
-one should take a look at the code and ask "did I really need to do it
-that way?".
+The funny thing is that this number (00664281) is _always_ the same,
+even on the newer kernel. What's special about it?
 
-> WARNING: externs should be avoided in .c files
-> #425: FILE: arch/x86/kernel/early_printk.c:526:
-> +void early_printk(const char *fmt, ...);
+>> EIP is at arch/x86/kernel/process.c:36:
+>>
+>>         if (tsk->thread.xstate) {
+>>
+>
+> It looks like the kernel stack of that process got corrupted, corrupting the
+> task pointer in thread_info. Can you send us your config file?
 
-This one is a must-fix.
+It has been uploaded here:
 
-> WARNING: consider using strict_strtoul in preference to simple_strtoul
-> #518: FILE: arch/x86/kernel/early_printk.c:619:
-> +               dbgp_num = simple_strtoul(s, &e, 10);
+http://userweb.kernel.org/~vegard/bugs/20080724-fork/config
 
-simple_strtoul() is sometimes OK for kernel parameters, sometimes
-strict_strtoul() is better.
+Given the reproducible nature of this, I think I'll just go ahead and
+start a bisect...
 
-> WARNING: externs should be avoided in .c files
-> #722: FILE: arch/x86/kernel/head64.c:75:
-> +extern void __init enable_debug_console(char *buf);
+Thanks for looking :-)
 
-This one also should be fixed.
 
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
