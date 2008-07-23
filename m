@@ -1,175 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbYGWShz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbYGWSig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755594AbYGWShz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 14:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbYGWSgO
+	id S1755473AbYGWSig (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 14:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754792AbYGWSgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 14:36:14 -0400
-Received: from mail.windriver.com ([147.11.1.11]:64590 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753962AbYGWSgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 14:36:13 -0400
-From: Jason Wessel <jason.wessel@windriver.com>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       Jason Wessel <jason.wessel@windriver.com>, galak@kernel.crashing.org
-Subject: [PATCH 4/5] kgdb: kgdboc console poll hooks for cpm uart
-Date: Wed, 23 Jul 2008 13:35:38 -0500
-Message-Id: <1216838139-719-5-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1216838139-719-4-git-send-email-jason.wessel@windriver.com>
-References: <1216838139-719-1-git-send-email-jason.wessel@windriver.com>
- <1216838139-719-2-git-send-email-jason.wessel@windriver.com>
- <1216838139-719-3-git-send-email-jason.wessel@windriver.com>
- <1216838139-719-4-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 23 Jul 2008 18:35:55.0326 (UTC) FILETIME=[F137B5E0:01C8ECF2]
+	Wed, 23 Jul 2008 14:36:17 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:4653 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754735AbYGWSgP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 14:36:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
+         :message-id:content-type:content-transfer-encoding;
+        b=xxFcDBUkp6h3sPdE4wHx3eg93U/bCXjdiQyOjuWHPdrHwyioCZkhGdRxC6g9JnaQCG
+         xoPezgm72mgydLzQrO+FJ5gg08WzNnUTz17ksrRmkqWbI+JgMoH5CPdaho1mrOZe9L1c
+         2SWqkABnvmjQ6FNNl+Bq+IWZgWkUGIg6BzzLw=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 3/4] xsysace: make it 'struct hd_driveid'-free
+Date: Wed, 23 Jul 2008 20:32:38 +0200
+User-Agent: KMail/1.9.9
+Cc: Grant Likely <grant.likely@secretlab.ca>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200807232032.39073.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add in console polling hooks for the cpm uart for use with kgdb and
-kgdboc.
+* Change cf_id field in struct ace_device from 'struct hd_driveid *id'
+  to 'u16 *id' and update driver accordingly.
 
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-CC: galak@kernel.crashing.org
+* Include <linux/ata.h> directly instead of through <linux/hdreg.h>.
+
+While at it:
+
+* Use ata_id_u32() macro.
+
+There should be no functional changes caused by this patch.
+
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/serial/cpm_uart/cpm_uart_core.c |   95 ++++++++++++++++++++++++++++++-
- 1 files changed, 94 insertions(+), 1 deletions(-)
+depends on 'ata: add missing ATA_ID_* defines (take 2)' patch
+posted earlier (http://lkml.org/lkml/2008/7/22/469)
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index 93e407e..1ff80de 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -201,6 +201,10 @@ static void cpm_uart_int_tx(struct uart_port *port)
- 	cpm_uart_tx_pump(port);
- }
+ drivers/block/xsysace.c |   30 +++++++++++++-----------------
+ 1 file changed, 13 insertions(+), 17 deletions(-)
+
+Index: b/drivers/block/xsysace.c
+===================================================================
+--- a/drivers/block/xsysace.c
++++ b/drivers/block/xsysace.c
+@@ -89,6 +89,7 @@
+ #include <linux/delay.h>
+ #include <linux/slab.h>
+ #include <linux/blkdev.h>
++#include <linux/ata.h>
+ #include <linux/hdreg.h>
+ #include <linux/platform_device.h>
+ #if defined(CONFIG_OF)
+@@ -208,7 +209,7 @@ struct ace_device {
+ 	struct gendisk *gd;
  
-+#ifdef CONFIG_CONSOLE_POLL
-+static int serial_polled;
-+#endif
-+
- /*
-  * Receive characters
-  */
-@@ -222,6 +226,12 @@ static void cpm_uart_int_rx(struct uart_port *port)
- 	 */
- 	bdp = pinfo->rx_cur;
- 	for (;;) {
-+#ifdef CONFIG_CONSOLE_POLL
-+		if (unlikely(serial_polled)) {
-+			serial_polled = 0;
-+			return;
-+		}
-+#endif
- 		/* get status */
- 		status = in_be16(&bdp->cbd_sc);
- 		/* If this one is empty, return happy */
-@@ -253,7 +263,12 @@ static void cpm_uart_int_rx(struct uart_port *port)
- 				goto handle_error;
- 			if (uart_handle_sysrq_char(port, ch))
- 				continue;
--
-+#ifdef CONFIG_CONSOLE_POLL
-+			if (unlikely(serial_polled)) {
-+				serial_polled = 0;
-+				return;
-+			}
-+#endif
- 		      error_return:
- 			tty_insert_flip_char(tty, ch, flg);
- 
-@@ -865,6 +880,80 @@ static void cpm_uart_config_port(struct uart_port *port, int flags)
- 		cpm_uart_request_port(port);
- 	}
- }
-+
-+#ifdef CONFIG_CONSOLE_POLL
-+/* Serial polling routines for writing and reading from the uart while
-+ * in an interrupt or debug context.
-+ */
-+
-+#define GDB_BUF_SIZE	512	/* power of 2, please */
-+
-+static char poll_buf[GDB_BUF_SIZE];
-+static char *pollp;
-+static int poll_chars;
-+
-+static int poll_wait_key(char *obuf, struct uart_cpm_port *pinfo)
-+{
-+	u_char		c, *cp;
-+	volatile cbd_t	*bdp;
-+	int		i;
-+
-+	/* Get the address of the host memory buffer.
-+	 */
-+	bdp = pinfo->rx_cur;
-+	while (bdp->cbd_sc & BD_SC_EMPTY)
-+		;
-+
-+	/* If the buffer address is in the CPM DPRAM, don't
-+	 * convert it.
-+	 */
-+	cp = cpm2cpu_addr(bdp->cbd_bufaddr, pinfo);
-+
-+	if (obuf) {
-+		i = c = bdp->cbd_datlen;
-+		while (i-- > 0)
-+			*obuf++ = *cp++;
-+	} else
-+		c = *cp;
-+	bdp->cbd_sc &= ~(BD_SC_BR | BD_SC_FR | BD_SC_PR | BD_SC_OV | BD_SC_ID);
-+	bdp->cbd_sc |= BD_SC_EMPTY;
-+
-+	if (bdp->cbd_sc & BD_SC_WRAP)
-+		bdp = pinfo->rx_bd_base;
-+	else
-+		bdp++;
-+	pinfo->rx_cur = (cbd_t *)bdp;
-+
-+	return (int)c;
-+}
-+
-+static int cpm_get_poll_char(struct uart_port *port)
-+{
-+	struct uart_cpm_port *pinfo = (struct uart_cpm_port *)port;
-+
-+	if (!serial_polled) {
-+		serial_polled = 1;
-+		poll_chars = 0;
-+	}
-+	if (poll_chars <= 0) {
-+		poll_chars = poll_wait_key(poll_buf, pinfo);
-+		pollp = poll_buf;
-+	}
-+	poll_chars--;
-+	return *pollp++;
-+}
-+
-+static void cpm_put_poll_char(struct uart_port *port,
-+			 unsigned char c)
-+{
-+	struct uart_cpm_port *pinfo = (struct uart_cpm_port *)port;
-+	static char ch[2];
-+
-+	ch[0] = (char)c;
-+	cpm_uart_early_write(pinfo->port.line, ch, 1);
-+}
-+#endif /* CONFIG_CONSOLE_POLL */
-+
- static struct uart_ops cpm_uart_pops = {
- 	.tx_empty	= cpm_uart_tx_empty,
- 	.set_mctrl	= cpm_uart_set_mctrl,
-@@ -882,6 +971,10 @@ static struct uart_ops cpm_uart_pops = {
- 	.request_port	= cpm_uart_request_port,
- 	.config_port	= cpm_uart_config_port,
- 	.verify_port	= cpm_uart_verify_port,
-+#ifdef CONFIG_CONSOLE_POLL
-+	.poll_get_char = cpm_get_poll_char,
-+	.poll_put_char = cpm_put_poll_char,
-+#endif
+ 	/* Inserted CF card parameters */
+-	struct hd_driveid cf_id;
++	u16 cf_id[ATA_ID_WORDS];
  };
  
- struct uart_cpm_port cpm_uart_ports[UART_NR];
--- 
-1.5.5.1
-
+ static int ace_major;
+@@ -402,21 +403,14 @@ static void ace_dump_regs(struct ace_dev
+ 		 ace_in32(ace, ACE_CFGLBA), ace_in(ace, ACE_FATSTAT));
+ }
+ 
+-void ace_fix_driveid(struct hd_driveid *id)
++void ace_fix_driveid(u16 *id)
+ {
+ #if defined(__BIG_ENDIAN)
+-	u16 *buf = (void *)id;
+ 	int i;
+ 
+ 	/* All half words have wrong byte order; swap the bytes */
+-	for (i = 0; i < sizeof(struct hd_driveid); i += 2, buf++)
+-		*buf = le16_to_cpu(*buf);
+-
+-	/* Some of the data values are 32bit; swap the half words  */
+-	id->lba_capacity = ((id->lba_capacity >> 16) & 0x0000FFFF) |
+-	    ((id->lba_capacity << 16) & 0xFFFF0000);
+-	id->spg = ((id->spg >> 16) & 0x0000FFFF) |
+-	    ((id->spg << 16) & 0xFFFF0000);
++	for (i = 0; i < ATA_ID_WORDS; i++, id++)
++		*id = le16_to_cpu(*id);
+ #endif
+ }
+ 
+@@ -592,7 +586,7 @@ static void ace_fsm_dostate(struct ace_d
+ 		break;
+ 
+ 	case ACE_FSM_STATE_IDENTIFY_COMPLETE:
+-		ace_fix_driveid(&ace->cf_id);
++		ace_fix_driveid(&ace->cf_id[0]);
+ 		ace_dump_mem(&ace->cf_id, 512);	/* Debug: Dump out disk ID */
+ 
+ 		if (ace->data_result) {
+@@ -605,9 +599,10 @@ static void ace_fsm_dostate(struct ace_d
+ 			ace->media_change = 0;
+ 
+ 			/* Record disk parameters */
+-			set_capacity(ace->gd, ace->cf_id.lba_capacity);
++			set_capacity(ace->gd,
++				ata_id_u32(&ace->cf_id, ATA_ID_LBA_CAPACITY));
+ 			dev_info(ace->dev, "capacity: %i sectors\n",
+-				 ace->cf_id.lba_capacity);
++				ata_id_u32(&ace->cf_id, ATA_ID_LBA_CAPACITY));
+ 		}
+ 
+ 		/* We're done, drop to IDLE state and notify waiters */
+@@ -907,12 +902,13 @@ static int ace_release(struct inode *ino
+ static int ace_getgeo(struct block_device *bdev, struct hd_geometry *geo)
+ {
+ 	struct ace_device *ace = bdev->bd_disk->private_data;
++	u16 *cf_id = &ace->cf_id[0];
+ 
+ 	dev_dbg(ace->dev, "ace_getgeo()\n");
+ 
+-	geo->heads = ace->cf_id.heads;
+-	geo->sectors = ace->cf_id.sectors;
+-	geo->cylinders = ace->cf_id.cyls;
++	geo->heads	= cf_id[ATA_ID_HEADS];
++	geo->sectors	= cf_id[ATA_ID_SECTORS];
++	geo->cylinders	= cf_id[ATA_ID_CYLS];
+ 
+ 	return 0;
+ }
