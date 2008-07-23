@@ -1,102 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbYGWVg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbYGWVhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755156AbYGWVg0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 17:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbYGWVgC
+	id S1756301AbYGWVhH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 17:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755020AbYGWVgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 17:36:02 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:7457 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754847AbYGWVf6 (ORCPT
+	Wed, 23 Jul 2008 17:36:54 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:33111 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755080AbYGWVgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 17:35:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=TgvJ0D9faLpplEO1OqJyKsbJa36wMVNcJiNl0Tb0Nvopaes72YayA9iyWcezd/B3Nv
-         dEyZSAd0CdRtmzWBfacVAKh/MlcIu9QoBzny5JX4PII4/3k1yCcKO4SP+8aMRE9SqriW
-         YGXINBiD0/JGiOdfw5yU+4OfbrCBMWKdsw0ic=
-Message-ID: <19f34abd0807231435yed788d1r30b1e420c5b9de5d@mail.gmail.com>
-Date: Wed, 23 Jul 2008 23:35:56 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       "the arch/x86 maintainers" <x86@kernel.org>
-Subject: Re: recent -git: BUG in free_thread_xstate
-Cc: "Suresh Siddha" <suresh.b.siddha@intel.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <19f34abd0807231328j3fdb1f13r31a567bdd780a974@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0807231307y191c0ad7tfab4cda57ee88eb@mail.gmail.com>
-	 <19f34abd0807231323g2ad85760v2a289b6fd0602cb1@mail.gmail.com>
-	 <19f34abd0807231328j3fdb1f13r31a567bdd780a974@mail.gmail.com>
+	Wed, 23 Jul 2008 17:36:52 -0400
+To: yi.zhu@intel.com, reinette.chatre@intel.com,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Potential iwlwifi locking problem in 2.6.26-git9
+From: "Theodore Ts'o" <tytso@MIT.EDU>
+Phone: (781) 391-3464
+Message-Id: <E1KLm0c-0002O6-RO@closure.thunk.org>
+Date: Wed, 23 Jul 2008 17:36:30 -0400
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 10:28 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> On Wed, Jul 23, 2008 at 10:23 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->> My test is basically stressing the network and running CPU hotplug at
->> the same time.
->
-> FWIW, a third run gives us this additional clue before going down with
-> the first error I posted in this thread:
->
-> =============================================================================
-> BUG task_struct: Poison overwritten
-> -----------------------------------------------------------------------------
-> INFO: 0xf3d00000-0xf3d0006b. First byte 0x1 instead of 0x6b
 
-Note that the number of overwritten bytes is exactly 0x6b. This sounds
-VERY much like a use-after-free, e.g. maybe something loaded 0x6b into
-the "size" parameter for memcpy().
+Is this a new one?  I don't think I've seen this on LKML....
 
-> INFO: Allocated in copy_process+0x68/0x1130 age=4 cpu=0 pid=4338
-> INFO: Freed in free_task+0x2c/0x30 age=2 cpu=0 pid=4
+      	      	    	       	    	    - Ted
 
-Pid 4 seems to always be ksoftirqd/0 on this machine.
-
-> INFO: Slab 0xc1c25c00 objects=8 used=3 fp=0xf3d00000 flags=0x400020c3
-> INFO: Object 0xf3d00000 @offset=0 fp=0xf3d03fc0
->  Object 0xf3d00000:  01 40 66 00 00 16 ec ee ad b9 00 1c 26 8a 70 f8
-> .@f...<EC><U+EB79>..&.p<F8>
-
-That's the "magic number": 0x00664001.
-
-Why would this always get written in this position of the task struct?
-
->  Object 0xf3d00010:  08 00 45 00 00 54 00 00 40 00 40 01 b7 e8 c0 a8
-> ..E..T..@.@.<B7><E8><C0><A8>
->  Object 0xf3d00020:  00 c4 c0 a8 00 ac 08 00 6e c0 df 24 55 33 75 af
-> .<C4><C0><A8>.<AC>..n<C0><DF>$U3u<AF>
->  Object 0xf3d00030:  87 48 69 ec 03 00 08 09 0a 0b 0c 0d 0e 0f 10 11
-> .Hi<EC>............
->  Object 0xf3d00040:  12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f 20 21
-> ...............!
->  Object 0xf3d00050:  22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f 30 31
-> "#$%&'()*+,-./01
->  Object 0xf3d00060:  32 33 34 35 36 37 89 e0 c8 4a fb e0 6b 6b 6b 6b
-> 234567.<E0><C8>J<FB><E0>kkkk
-
-Why is it writing the sequence of numbers from 0x08 to 0x37 here?
-
-Also, the last line disassembles to this:
-
-   0:   89 e0                   mov    %esp,%eax
-   2:   c8 4a 4b e0             enterq $0x4b4a,$0xe0
-
-
-...Additional clues may be found... maybe :-)
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+[  728.456792] 
+[  728.456795] =============================================
+[  728.456810] [ INFO: possible recursive locking detected ]
+[  728.456818] 2.6.26-05781-g44ea66a #25
+[  728.456823] ---------------------------------------------
+[  728.456830] NetworkManager/8287 is trying to acquire lock:
+[  728.456836]  (&dev->addr_list_lock){-...}, at: [<c028c81e>] dev_mc_sync+0x1c/0x59
+[  728.456867] 
+[  728.456869] but task is already holding lock:
+[  728.456875]  (&dev->addr_list_lock){-...}, at: [<c0287ffe>] dev_set_rx_mode+0x19/0x2b
+[  728.456894] 
+[  728.456895] other info that might help us debug this:
+[  728.456902] 2 locks held by NetworkManager/8287:
+[  728.456908]  #0:  (rtnl_mutex){--..}, at: [<c029150a>] rtnl_lock+0x14/0x16
+[  728.456929]  #1:  (&dev->addr_list_lock){-...}, at: [<c0287ffe>] dev_set_rx_mode+0x19/0x2b
+[  728.456949] 
+[  728.456951] stack backtrace:
+[  728.456961] Pid: 8287, comm: NetworkManager Not tainted 2.6.26-05781-g44ea66a #25
+[  728.456999]  [<c014568e>] __lock_acquire+0x99f/0xcc5
+[  728.457037]  [<c0144924>] ? trace_hardirqs_on+0xb/0xd
+[  728.457054]  [<c01448ce>] ? trace_hardirqs_on_caller+0xd2/0x11d
+[  728.457076]  [<c0145da6>] lock_acquire+0x6a/0x90
+[  728.457091]  [<c028c81e>] ? dev_mc_sync+0x1c/0x59
+[  728.457109]  [<c02f7189>] _spin_lock_bh+0x26/0x53
+[  728.457126]  [<c028c81e>] ? dev_mc_sync+0x1c/0x59
+[  728.457143]  [<c028c81e>] dev_mc_sync+0x1c/0x59
+[  728.457159]  [<f90bebd6>] ieee80211_set_multicast_list+0xca/0xd2 [mac80211]
+[  728.457223]  [<c0287f6c>] __dev_set_rx_mode+0x7e/0x81
+[  728.457239]  [<c0288005>] dev_set_rx_mode+0x20/0x2b
+[  728.457255]  [<c028ad54>] dev_open+0x84/0x9e
+[  728.457269]  [<c0288e9d>] dev_change_flags+0xa1/0x14f
+[  728.457286]  [<c0290af3>] do_setlink+0x250/0x300
+[  728.457308]  [<c02f7000>] ? _read_unlock+0x22/0x25
+[  728.457327]  [<c0291a8f>] rtnl_setlink+0xa9/0xc1
+[  728.457364]  [<c01448e4>] ? trace_hardirqs_on_caller+0xe8/0x11d
+[  728.457384]  [<c02919e6>] ? rtnl_setlink+0x0/0xc1
+[  728.457401]  [<c02916c7>] rtnetlink_rcv_msg+0x197/0x1b1
+[  728.457424]  [<c0291530>] ? rtnetlink_rcv_msg+0x0/0x1b1
+[  728.457441]  [<c029e55d>] netlink_rcv_skb+0x35/0x7a
+[  728.457460]  [<c0291528>] rtnetlink_rcv+0x1c/0x24
+[  728.457476]  [<c029e381>] netlink_unicast+0x1ad/0x20e
+[  728.457499]  [<c029eaca>] netlink_sendmsg+0x248/0x255
+[  728.457530]  [<c027e91d>] sock_sendmsg+0xe3/0xfe
+[  728.457562]  [<c0138a71>] ? autoremove_wake_function+0x0/0x35
+[  728.457583]  [<c010878a>] ? native_sched_clock+0xd5/0xf4
+[  728.457609]  [<c010857f>] ? sched_clock+0xb/0x1c
+[  728.457628]  [<c0142ca9>] ? lock_release_holdtime+0x3f/0x44
+[  728.457652]  [<c0208670>] ? copy_from_user+0x45/0x68
+[  728.457672]  [<c02852d6>] ? verify_iovec+0x45/0x73
+[  728.457693]  [<c027ea8a>] sys_sendmsg+0x152/0x1ad
+[  728.457713]  [<c027f541>] ? sys_recvmsg+0x177/0x184
+[  728.457734]  [<c019136e>] ? fget_light+0x95/0xb5
+[  728.457757]  [<c02088db>] ? copy_to_user+0x47/0x50
+[  728.457776]  [<c027f3b2>] ? move_addr_to_user+0x5b/0x73
+[  728.457796]  [<c027f717>] ? sys_getsockname+0x70/0x7b
+[  728.457814]  [<c02f702d>] ? _spin_unlock_bh+0x2a/0x2d
+[  728.457831]  [<c028045d>] ? release_sock+0xb3/0xbb
+[  728.457851]  [<c0281909>] ? sock_setsockopt+0x49d/0x4a8
+[  728.457874]  [<c0191384>] ? fget_light+0xab/0xb5
+[  728.457909]  [<c027fa05>] sys_socketcall+0x168/0x183
+[  728.457935]  [<c0103a0b>] sysenter_past_esp+0x78/0xc5
+[  728.457969]  =======================
