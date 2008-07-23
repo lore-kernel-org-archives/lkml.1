@@ -1,51 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbYGWWKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbYGWWNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171AbYGWWKp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 18:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYGWWKh
+	id S1754825AbYGWWNv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 18:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbYGWWNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 18:10:37 -0400
-Received: from 8bytes.org ([88.198.83.132]:59951 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752768AbYGWWKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 18:10:36 -0400
-Date: Thu, 24 Jul 2008 00:10:33 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       jbarnes@virtuousgeek.org, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
-Message-ID: <20080723221033.GD13662@8bytes.org>
-References: <20080723111928.15828.42561.sendpatchset@prarit.bos.redhat.com>
-MIME-Version: 1.0
+	Wed, 23 Jul 2008 18:13:42 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:45713 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753587AbYGWWNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 18:13:41 -0400
+Date: Wed, 23 Jul 2008 17:13:38 -0500
+From: Russ Anderson <rja@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: mingo@elte.hu, tglx@linutronix.de, Tony Luck <tony.luck@intel.com>,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH 1/2] mm: Avoid putting a bad page back on the LRU v7
+Message-ID: <20080723221338.GB193408@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+References: <20080718203606.GE29621@sgi.com> <200807221242.10552.nickpiggin@yahoo.com.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080723111928.15828.42561.sendpatchset@prarit.bos.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200807221242.10552.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 07:19:43AM -0400, Prarit Bhargava wrote:
-> pci_alloc_consistent/dma_alloc_coherent does not return size aligned
-> addresses.
+On Tue, Jul 22, 2008 at 12:42:10PM +1000, Nick Piggin wrote:
+> On Saturday 19 July 2008 06:36, Russ Anderson wrote:
+> > [PATCH 1/2] mm: Avoid putting a bad page back on the LRU v7
+> >
+> > Prevent a page with a physical memory error from being placed back
+> > on the LRU.  A new page flag (PG_memerror) is added if
+> > CONFIG_PAGEFLAGS_EXTENDED is defined.
+> >
+> > Signed-off-by: Russ Anderson <rja@sgi.com>
+> > Reviewed-by: Christoph Lameter <clameter@sgi.com>
+> >
+> > ---
+> >  include/linux/page-flags.h |   18 ++++++++++++++++--
+> >  mm/migrate.c               |   31 ++++++++++++++++++++++++++++++-
+> >  mm/page_alloc.c            |   13 ++++++++-----
+> >  3 files changed, 54 insertions(+), 8 deletions(-)
+> >
+> > Index: linux/mm/page_alloc.c
+> > ===================================================================
+> > --- linux.orig/mm/page_alloc.c	2008-07-18 15:15:48.000000000 -0500
+> > +++ linux/mm/page_alloc.c	2008-07-18 15:16:09.000000000 -0500
+> > @@ -602,10 +602,10 @@ static int prep_new_page(struct page *pa
+> >  		bad_page(page);
+> >
+> >  	/*
+> > -	 * For now, we report if PG_reserved was found set, but do not
+> > -	 * clear it, and do not allocate the page: as a safety net.
+> > +	 * For now, we report if PG_reserved or PG_memerror was found set, but
+> > +	 * do not clear it, and do not allocate the page: as a safety net.
+> >  	 */
+> > -	if (PageReserved(page))
+> > +	if (PageReserved(page) || PageMemError(page))
+> >  		return 1;
+> >
+> >  	page->flags &= ~(1 << PG_uptodate | 1 << PG_error | 1 << PG_reclaim |
+> > @@ -2475,8 +2475,11 @@ static void setup_zone_migrate_reserve(s
+> >  			continue;
+> >  		page = pfn_to_page(pfn);
+> >
+> > -		/* Blocks with reserved pages will never free, skip them. */
+> > -		if (PageReserved(page))
+> > +		/*
+> > +		 * Blocks with reserved pages or memory errors will never
+> > +		 * free, skip them.
+> > +		 */
+> > +		if (PageReserved(page) || PageMemError(page))
+> >  			continue;
+> >
+> >  		block_migratetype = get_pageblock_migratetype(page);
 > 
-> >From Documentation/DMA-mapping.txt:
+> I don't like adding more branches like this into fastpaths like this. It
+> would make a lot more sense to me if you just had some private module that
+> does the job of isolating the page from the lru and/or elevating their
+> refcount so that they do not get put back on freelists.
+
+That is how it works.  If PageMemError is set the migration code
+leaves the page with an elevated refcount.  The PageMemError() check
+was to avoid reallocating the page was an additional safty net.
+I'll pull the checks.
+
+> Migration may need something to perhaps allow migrations of pages not on
+> LRU lists but have PageMemError set which is OK, but I really don't like
+> adding code and branches to page_alloc.c if possible....
 > 
-> "pci_alloc_consistent returns two values: the virtual address which you
-> can use to access it from the CPU and dma_handle which you pass to the
-> card.
-> 
-> The cpu return address and the DMA bus master address are both
-> guaranteed to be aligned to the smallest PAGE_SIZE order which
-> is greater than or equal to the requested size.  This invariant
-> exists (for example) to guarantee that if you allocate a chunk
-> which is smaller than or equal to 64 kilobytes, the extent of the
-> buffer you receive will not cross a 64K boundary."
+> Thanks,
+> Nick
 
-Interesting. Have you experienced any problems because of that
-misbehavior in the GART code? AMD IOMMU currently also violates this
-requirement. I will send a patch to fix that there too.
-
-Joerg
-
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
