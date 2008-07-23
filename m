@@ -1,75 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbYGWWOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYGWWRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755634AbYGWWOg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 18:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbYGWWO2
+	id S1755454AbYGWWRY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 18:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbYGWWRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 18:14:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45974 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751137AbYGWWO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 18:14:27 -0400
-Message-ID: <4887ACD5.1020202@redhat.com>
-Date: Wed, 23 Jul 2008 18:12:37 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: "Frank Ch. Eigler" <fche@redhat.com>
-CC: Arjan van de Ven <arjan@infradead.org>, Rik van Riel <riel@redhat.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
-Subject: Re: systemtap & backward compatibility, was Re: [RFC] systemtap:
-  begin the process of using proper kernel APIs
-References: <487E8CE4.70105@redhat.com>	<1216259391.3358.85.camel@localhost.localdomain>	<1216304290.5515.11.camel@localhost.localdomain>	<1216313914.5515.25.camel__21144.9282979176$1216314027$gmane$org@localhost.localdomain>	<y0m7ibkjrcj.fsf@ton.toronto.redhat.com>	<1216325546.5515.63.camel@localhost.localdomain>	<20080717202634.GI18295@redhat.com>	<1216328769.5515.78.camel@localhost.localdomain>	<20080717213355.GJ18295@redhat.com>	<20080722140015.37628ea4@bree.surriel.com>	<20080723150434.GC11191@redhat.com>	<20080723082856.334f9c17__2909.60763018138$1216827051$gmane$org@infradead.org> <y0m3am0blj2.fsf@ton.toronto.redhat.com>
-In-Reply-To: <y0m3am0blj2.fsf@ton.toronto.redhat.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 23 Jul 2008 18:17:16 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:35646 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753928AbYGWWRQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 18:17:16 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EAOpIh0hMRKxB/2dsb2JhbACBWrIi
+Date: Wed, 23 Jul 2008 18:17:14 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Markers : fix markers read barrier for multiple probes
+Message-ID: <20080723221714.GA1561@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:12:46 up 49 days,  2:53,  5 users,  load average: 0.59, 0.86,
+	0.67
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Frank,
+Paul pointed out two incorrect read barriers in the marker handler code in the
+path where multiple probes are connected. Those are ordering reads of "ptype"
+(single or multi probe marker), "multi" array pointer, and "multi" array data
+access.
 
-Frank Ch. Eigler wrote:
-> Arjan van de Ven <arjan@infradead.org> writes:
-[...]
->> (and when it's seen it gets a rather luke warm reception, but that's
->> a different story).
-> 
-> I hope the backward compatibility issue, as it stands today, helps
-> explain the reasons for the current deal with kprobes.
+It should be ordered like this :
 
-I understood that the current deal with kprobes is also for integrating
-user probe logic and kernel probe logic.
-Obviously, it is hard uprobe to provide same symbol_name interface,
-because it requires to access(and analyze) userspace symbol
-information from kernel.
+read ptype
+smp_rmb()
+read multi array pointer
+smp_read_barrier_depends()
+access data referenced by multi array pointer
 
-> In the interim (before we come up with a way of moving more
-> kernel-coupled systemtap code into kernel.org/git), would y'all
-> consider an arrangement?  Those of you who care about systemtap, and
-> are intending to make an incompatible kernel/module interface change,
-> please run the systemtap testsuite before & after.  If it regresses,
-> send us a note or a patch.  If practical, we'll integrate it (and add
-> any backward-compatibility hacks if needed) into systemtap.
+The code with a single probe connected (optimized case, does not have to
+allocate an array) has correct memory ordering.
 
-Hmm, I think it's very costly way for both of kernel developers and
-systemtap developers.
->From the long term of viewpoint, I think it's better (less costly)
-to merge systemtap runtime/tapset into upstream kernel and maintain
-it. Then, we can stabilize its API by ourselves on upstream.
-Since it reduces the catchup/maintenance cost and it enables users
-to use stap on upstream kernel, I think it is benefit for both.
+It applies to kernel 2.6.26.x, 2.6.25.x and linux-next.
 
-Thank you,
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+---
+ kernel/marker.c |   12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
+Index: linux-2.6.26-rc7-lttng/kernel/marker.c
+===================================================================
+--- linux-2.6.26-rc7-lttng.orig/kernel/marker.c	2008-06-25 18:09:49.000000000 -0400
++++ linux-2.6.26-rc7-lttng/kernel/marker.c	2008-06-25 18:10:57.000000000 -0400
+@@ -127,6 +127,11 @@
+ 		struct marker_probe_closure *multi;
+ 		int i;
+ 		/*
++		 * Read mdata->ptype before mdata->multi.
++		 */
++		smp_rmb();
++		multi = mdata->multi;
++		/*
+ 		 * multi points to an array, therefore accessing the array
+ 		 * depends on reading multi. However, even in this case,
+ 		 * we must insure that the pointer is read _before_ the array
+@@ -134,7 +139,6 @@
+ 		 * in the fast path, so put the explicit barrier here.
+ 		 */
+ 		smp_read_barrier_depends();
+-		multi = mdata->multi;
+ 		for (i = 0; multi[i].func; i++) {
+ 			va_start(args, fmt);
+ 			multi[i].func(multi[i].probe_private, call_private, fmt,
+@@ -177,6 +181,11 @@
+ 		struct marker_probe_closure *multi;
+ 		int i;
+ 		/*
++		 * Read mdata->ptype before mdata->multi.
++		 */
++		smp_rmb();
++		multi = mdata->multi;
++		/*
+ 		 * multi points to an array, therefore accessing the array
+ 		 * depends on reading multi. However, even in this case,
+ 		 * we must insure that the pointer is read _before_ the array
+@@ -184,7 +193,6 @@
+ 		 * in the fast path, so put the explicit barrier here.
+ 		 */
+ 		smp_read_barrier_depends();
+-		multi = mdata->multi;
+ 		for (i = 0; multi[i].func; i++)
+ 			multi[i].func(multi[i].probe_private, call_private, fmt,
+ 				&args);
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
