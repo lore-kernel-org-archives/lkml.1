@@ -1,341 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbYGWTo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbYGWTqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbYGWTo5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 15:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbYGWTou
+	id S1754899AbYGWTqi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 15:46:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbYGWTqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 15:44:50 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:45605 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753640AbYGWTot (ORCPT
+	Wed, 23 Jul 2008 15:46:30 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:62220 "EHLO
+	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753293AbYGWTq3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 15:44:49 -0400
-Subject: Re: [GIT PULL] MMC updates for 2.6.27-rc1
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pierre Ossman <drzeus-list@drzeus.cx>, LKML <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <alpine.LFD.1.10.0807231206230.4754@woody.linux-foundation.org>
-References: <20080719015911.02faddf6@mjolnir.drzeus.cx>
-	 <20080723150031.36e5b85a@mjolnir.drzeus.cx>
-	 <alpine.LFD.1.10.0807231206230.4754@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 23 Jul 2008 15:44:34 -0400
-Message-Id: <1216842274.22728.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jul 2008 15:46:29 -0400
+X-BigFish: VPS-11(zz1432R98dR936eT62a3L1805M78fbpzz10d3izzz32i6bh87il63h)
+X-Spam-TCS-SCL: 2:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0K4H5KW-02-44F-01
+Date: Wed, 23 Jul 2008 21:46:08 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Maynard Johnson <maynardj@us.ibm.com>
+CC: rrichter@elbe.amd.com, Barry Kasindorf <barry.kasindorf@amd.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       Carl Love <cel@us.ibm.com>
+Subject: Re: [PATCH 10/24] x86/oprofile: Add IBS support for AMD CPUs, IBS
+	buffer handling routines
+Message-ID: <20080723194608.GH17134@erda.amd.com>
+References: <1216753748-11261-1-git-send-email-robert.richter@amd.com> <1216753748-11261-11-git-send-email-robert.richter@amd.com> <48878485.3090909@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <48878485.3090909@us.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 23 Jul 2008 19:46:16.0311 (UTC) FILETIME=[C51EE870:01C8ECFC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-23 at 12:08 -0700, Linus Torvalds wrote:
-> 
-> On Wed, 23 Jul 2008, Pierre Ossman wrote:
+On 23.07.08 14:20:37, Maynard Johnson wrote:
+> Robert Richter wrote:
+
+[...]
+
+> > @@ -252,6 +253,71 @@ void oprofile_add_sample(struct pt_regs * const regs, unsigned long event)
+> >  	oprofile_add_ext_sample(pc, regs, event, is_kernel);
+> >  }
 > >
-> >  include/linux/scatterlist.h |   38 +++++++
-> >  lib/scatterlist.c           |  176 +++++++++++++++++++++++++---------
-> > 
-> > Tejun Heo (1):
-> >       sg: reimplement sg mapping iterator
-> 
-> I'd really have been a lot happier about this one if it had had a few 
-> Acked-by's from people like Jens and James.
-> 
-> But I pulled, and pushed out. I think Jens is on vacation, but I'm adding 
-> him to the cc anyway.
+> > +#define MAX_IBS_SAMPLE_SIZE	14
+> > +static int log_ibs_sample(struct oprofile_cpu_buffer *cpu_buf,
+> > +	unsigned long pc, int is_kernel, unsigned  int *ibs, int ibs_code)
+> > +{
+> > +	struct task_struct *task;
+> > +
+> > +	cpu_buf->sample_received++;
+> > +
+> > +	if (nr_available_slots(cpu_buf) < MAX_IBS_SAMPLE_SIZE) {
+> > +		cpu_buf->sample_lost_overflow++;
+> > +		return 0;
+> > +	}
+> > +
+> > +	is_kernel = !!is_kernel;
+> > +
+> > +	/* notice a switch from user->kernel or vice versa */
+> > +	if (cpu_buf->last_is_kernel != is_kernel) {
+> > +		cpu_buf->last_is_kernel = is_kernel;
+> > +		add_code(cpu_buf, is_kernel);
+> > +	}
+> > +
+> > +	/* notice a task switch */
+> > +	if (!is_kernel) {
+> > +		task = current;
+> > +
+> > +		if (cpu_buf->last_task != task) {
+> > +			cpu_buf->last_task = task;
+> > +			add_code(cpu_buf, (unsigned long)task);
+> > +		}
+> > +	}
+> > +
+> > +	add_code(cpu_buf, ibs_code);
+> > +	add_sample(cpu_buf, ibs[0], ibs[1]);
+> > +	add_sample(cpu_buf, ibs[2], ibs[3]);
+> > +	add_sample(cpu_buf, ibs[4], ibs[5]);
+> > +
+> > +	if (ibs_code == IBS_OP_BEGIN) {
+> > +	add_sample(cpu_buf, ibs[6], ibs[7]);
+> > +	add_sample(cpu_buf, ibs[8], ibs[9]);
+> > +	add_sample(cpu_buf, ibs[10], ibs[11]);
+> > +	}
+> > +
+> > +	return 1;
+> > +}
+> > +
+> >   
+> I'm concerned about the arch-specific nature of the "ibs" functions
+> above being placed here in the generic portion of the oprofile driver. 
+> Better to generalize the external function defined below (and rename it)
+> by invoking arch-specific handlers via function pointers.  Hopefully
+> find a way to move the arch-specific code back to where it belongs,
+> under the appropriate arch/ directory.
 
-I was on the cc list, just not really paying attention.  Anyway, I've
-copied tomo who did the previous scatterlist work.  It actually looks
-fine to me other than a technical API violation:  kunmap_atomic is
-supposed to be called on the page virtual address without offset.  I
-think this is irrelevant since all implementations look to mask out the
-offset bits anyway.
+Yes, this is true. The plan is to rework the code so that IBS is only
+in op_model_amd.c. The only thing visible outside will then be the
+code macros introduced in patch #9. The code will change into generic
+with something like add_u64(). This function will then be called from
+the IBS handler.
 
-James
+This is also the reason I did not add op_amd_handle_ibs() to the API
+definition in linux/oprofile.h.
 
----
+-Robert
 
->From 137d3edb48425f82a6a4226b664f90ed5e42eea5 Mon Sep 17 00:00:00 2001
-From: Tejun Heo <htejun@gmail.com>
-Date: Sat, 19 Jul 2008 23:03:35 +0900
-Subject: sg: reimplement sg mapping iterator
-
-This is alternative implementation of sg content iterator introduced
-by commit 83e7d317... from Pierre Ossman in next-20080716.  As there's
-already an sg iterator which iterates over sg entries themselves, name
-this sg_mapping_iterator.
-
-Slightly edited description from the original implementation follows.
-
-Iteration over a sg list is not that trivial when you take into
-account that memory pages might have to be mapped before being used.
-Unfortunately, that means that some parts of the kernel restrict
-themselves to directly accesible memory just to not have to deal with
-the mess.
-
-This patch adds a simple iterator system that allows any code to
-easily traverse an sg list and not have to deal with all the details.
-The user can decide to consume part of the iteration.  Also, iteration
-can be stopped and resumed later if releasing the kmap between
-iteration steps is necessary.  These features are useful to implement
-piecemeal sg copying for interrupt drive PIO for example.
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
----
- include/linux/scatterlist.h |   38 +++++++++
- lib/scatterlist.c           |  176 +++++++++++++++++++++++++++++++-----------
- 2 files changed, 168 insertions(+), 46 deletions(-)
-
-diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
-index 71fc813..e599698 100644
---- a/include/linux/scatterlist.h
-+++ b/include/linux/scatterlist.h
-@@ -224,4 +224,42 @@ size_t sg_copy_to_buffer(struct scatterlist *sgl, unsigned int nents,
-  */
- #define SG_MAX_SINGLE_ALLOC		(PAGE_SIZE / sizeof(struct scatterlist))
- 
-+
-+/*
-+ * Mapping sg iterator
-+ *
-+ * Iterates over sg entries mapping page-by-page.  On each successful
-+ * iteration, @miter->page points to the mapped page and
-+ * @miter->length bytes of data can be accessed at @miter->addr.  As
-+ * long as an interation is enclosed between start and stop, the user
-+ * is free to choose control structure and when to stop.
-+ *
-+ * @miter->consumed is set to @miter->length on each iteration.  It
-+ * can be adjusted if the user can't consume all the bytes in one go.
-+ * Also, a stopped iteration can be resumed by calling next on it.
-+ * This is useful when iteration needs to release all resources and
-+ * continue later (e.g. at the next interrupt).
-+ */
-+
-+#define SG_MITER_ATOMIC		(1 << 0)	 /* use kmap_atomic */
-+
-+struct sg_mapping_iter {
-+	/* the following three fields can be accessed directly */
-+	struct page		*page;		/* currently mapped page */
-+	void			*addr;		/* pointer to the mapped area */
-+	size_t			length;		/* length of the mapped area */
-+	size_t			consumed;	/* number of consumed bytes */
-+
-+	/* these are internal states, keep away */
-+	struct scatterlist	*__sg;		/* current entry */
-+	unsigned int		__nents;	/* nr of remaining entries */
-+	unsigned int		__offset;	/* offset within sg */
-+	unsigned int		__flags;
-+};
-+
-+void sg_miter_start(struct sg_mapping_iter *miter, struct scatterlist *sgl,
-+		    unsigned int nents, unsigned int flags);
-+bool sg_miter_next(struct sg_mapping_iter *miter);
-+void sg_miter_stop(struct sg_mapping_iter *miter);
-+
- #endif /* _LINUX_SCATTERLIST_H */
-diff --git a/lib/scatterlist.c b/lib/scatterlist.c
-index b80c211..876ba6d 100644
---- a/lib/scatterlist.c
-+++ b/lib/scatterlist.c
-@@ -295,6 +295,117 @@ int sg_alloc_table(struct sg_table *table, unsigned int nents, gfp_t gfp_mask)
- EXPORT_SYMBOL(sg_alloc_table);
- 
- /**
-+ * sg_miter_start - start mapping iteration over a sg list
-+ * @miter: sg mapping iter to be started
-+ * @sgl: sg list to iterate over
-+ * @nents: number of sg entries
-+ *
-+ * Description:
-+ *   Starts mapping iterator @miter.
-+ *
-+ * Context:
-+ *   Don't care.
-+ */
-+void sg_miter_start(struct sg_mapping_iter *miter, struct scatterlist *sgl,
-+		    unsigned int nents, unsigned int flags)
-+{
-+	memset(miter, 0, sizeof(struct sg_mapping_iter));
-+
-+	miter->__sg = sgl;
-+	miter->__nents = nents;
-+	miter->__offset = 0;
-+	miter->__flags = flags;
-+}
-+EXPORT_SYMBOL(sg_miter_start);
-+
-+/**
-+ * sg_miter_next - proceed mapping iterator to the next mapping
-+ * @miter: sg mapping iter to proceed
-+ *
-+ * Description:
-+ *   Proceeds @miter@ to the next mapping.  @miter@ should have been
-+ *   started using sg_miter_start().  On successful return,
-+ *   @miter@->page, @miter@->addr and @miter@->length point to the
-+ *   current mapping.
-+ *
-+ * Context:
-+ *   IRQ disabled if SG_MITER_ATOMIC.  IRQ must stay disabled till
-+ *   @miter@ is stopped.  May sleep if !SG_MITER_ATOMIC.
-+ *
-+ * Returns:
-+ *   true if @miter contains the next mapping.  false if end of sg
-+ *   list is reached.
-+ */
-+bool sg_miter_next(struct sg_mapping_iter *miter)
-+{
-+	unsigned int off, len;
-+
-+	/* check for end and drop resources from the last iteration */
-+	if (!miter->__nents)
-+		return false;
-+
-+	sg_miter_stop(miter);
-+
-+	/* get to the next sg if necessary.  __offset is adjusted by stop */
-+	if (miter->__offset == miter->__sg->length && --miter->__nents) {
-+		miter->__sg = sg_next(miter->__sg);
-+		miter->__offset = 0;
-+	}
-+
-+	/* map the next page */
-+	off = miter->__sg->offset + miter->__offset;
-+	len = miter->__sg->length - miter->__offset;
-+
-+	miter->page = nth_page(sg_page(miter->__sg), off >> PAGE_SHIFT);
-+	off &= ~PAGE_MASK;
-+	miter->length = min_t(unsigned int, len, PAGE_SIZE - off);
-+	miter->consumed = miter->length;
-+
-+	if (miter->__flags & SG_MITER_ATOMIC)
-+		miter->addr = kmap_atomic(miter->page, KM_BIO_SRC_IRQ) + off;
-+	else
-+		miter->addr = kmap(miter->page) + off;
-+
-+	return true;
-+}
-+EXPORT_SYMBOL(sg_miter_next);
-+
-+/**
-+ * sg_miter_stop - stop mapping iteration
-+ * @miter: sg mapping iter to be stopped
-+ *
-+ * Description:
-+ *   Stops mapping iterator @miter.  @miter should have been started
-+ *   started using sg_miter_start().  A stopped iteration can be
-+ *   resumed by calling sg_miter_next() on it.  This is useful when
-+ *   resources (kmap) need to be released during iteration.
-+ *
-+ * Context:
-+ *   IRQ disabled if the SG_MITER_ATOMIC is set.  Don't care otherwise.
-+ */
-+void sg_miter_stop(struct sg_mapping_iter *miter)
-+{
-+	WARN_ON(miter->consumed > miter->length);
-+
-+	/* drop resources from the last iteration */
-+	if (miter->addr) {
-+		miter->__offset += miter->consumed;
-+
-+		if (miter->__flags & SG_MITER_ATOMIC) {
-+			WARN_ON(!irqs_disabled());
-+			kunmap_atomic(miter->addr, KM_BIO_SRC_IRQ);
-+		} else
-+			kunmap(miter->addr);
-+
-+		miter->page = NULL;
-+		miter->addr = NULL;
-+		miter->length = 0;
-+		miter->consumed = 0;
-+	}
-+}
-+EXPORT_SYMBOL(sg_miter_stop);
-+
-+/**
-  * sg_copy_buffer - Copy data between a linear buffer and an SG list
-  * @sgl:		 The SG list
-  * @nents:		 Number of SG entries
-@@ -309,56 +420,29 @@ EXPORT_SYMBOL(sg_alloc_table);
- static size_t sg_copy_buffer(struct scatterlist *sgl, unsigned int nents,
- 			     void *buf, size_t buflen, int to_buffer)
- {
--	struct scatterlist *sg;
--	size_t buf_off = 0;
--	int i;
--
--	WARN_ON(!irqs_disabled());
--
--	for_each_sg(sgl, sg, nents, i) {
--		struct page *page;
--		int n = 0;
--		unsigned int sg_off = sg->offset;
--		unsigned int sg_copy = sg->length;
--
--		if (sg_copy > buflen)
--			sg_copy = buflen;
--		buflen -= sg_copy;
--
--		while (sg_copy > 0) {
--			unsigned int page_copy;
--			void *p;
--
--			page_copy = PAGE_SIZE - sg_off;
--			if (page_copy > sg_copy)
--				page_copy = sg_copy;
--
--			page = nth_page(sg_page(sg), n);
--			p = kmap_atomic(page, KM_BIO_SRC_IRQ);
--
--			if (to_buffer)
--				memcpy(buf + buf_off, p + sg_off, page_copy);
--			else {
--				memcpy(p + sg_off, buf + buf_off, page_copy);
--				flush_kernel_dcache_page(page);
--			}
--
--			kunmap_atomic(p, KM_BIO_SRC_IRQ);
--
--			buf_off += page_copy;
--			sg_off += page_copy;
--			if (sg_off == PAGE_SIZE) {
--				sg_off = 0;
--				n++;
--			}
--			sg_copy -= page_copy;
-+	unsigned int offset = 0;
-+	struct sg_mapping_iter miter;
-+
-+	sg_miter_start(&miter, sgl, nents, SG_MITER_ATOMIC);
-+
-+	while (sg_miter_next(&miter) && offset < buflen) {
-+		unsigned int len;
-+
-+		len = min(miter.length, buflen - offset);
-+
-+		if (to_buffer)
-+			memcpy(buf + offset, miter.addr, len);
-+		else {
-+			memcpy(miter.addr, buf + offset, len);
-+			flush_kernel_dcache_page(miter.page);
- 		}
- 
--		if (!buflen)
--			break;
-+		offset += len;
- 	}
- 
--	return buf_off;
-+	sg_miter_stop(&miter);
-+
-+	return offset;
- }
- 
- /**
 -- 
-1.5.5.1
-
-
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
