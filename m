@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbYGWEwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbYGWExJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133AbYGWEwg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 00:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYGWEw1
+	id S1755071AbYGWExJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 00:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbYGWEwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 00:52:27 -0400
-Received: from mail.hauppauge.com ([167.206.143.4]:2797 "EHLO
-	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752468AbYGWEw1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 00:52:27 -0400
-Message-ID: <4886B8D6.5030107@linuxtv.org>
-Date: Wed, 23 Jul 2008 00:51:34 -0400
-From: Michael Krufky <mkrufky@linuxtv.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Chuck Ebbert <cebbert@redhat.com>, Domenico Andreoli <cavokz@gmail.com>,
-       Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/47] 2.6.25-stable review
-References: <20080722231342.GA8282@suse.de> <4886B69A.9090609@linuxtv.org>
-In-Reply-To: <4886B69A.9090609@linuxtv.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jul 2008 00:52:53 -0400
+Received: from 1wt.eu ([62.212.114.60]:1918 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752597AbYGWEww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 00:52:52 -0400
+Date: Wed, 23 Jul 2008 06:52:31 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [bisected] kernel panic 2.6.22 -> 2.6.26-rc9+
+Message-ID: <20080723045230.GD29189@1wt.eu>
+References: <m3d4lisk4i.fsf@maximus.localdomain> <20080713013107.23f060f2.akpm@linux-foundation.org> <m3abgmcb68.fsf@maximus.localdomain> <20080713112230.e86ba9ae.akpm@linux-foundation.org> <m3lk05jvw5.fsf@maximus.localdomain> <20080713145525.51a1ca3a.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080713145525.51a1ca3a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Krufky wrote:
-> Greg KH wrote:
->   
->> This is the start of the stable review cycle for the 2.6.25.12 release.
-> Would it be possible to add the seven patches that I sent two days ago? 
-> It is very important that patch #1 gets into the first dot release, to
-> avoid confusion with cx18 firmware revisions.  Thanks.
+On Sun, Jul 13, 2008 at 02:55:25PM -0700, Andrew Morton wrote:
+> On Sun, 13 Jul 2008 23:51:06 +0200 Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> 
+> > Andrew Morton <akpm@linux-foundation.org> writes:
+> > 
+> > > --- a/include/asm-arm/bitops.h~a
+> > > +++ a/include/asm-arm/bitops.h
+> > > @@ -277,9 +277,16 @@ static inline int constant_fls(int x)
+> > >   * the clz instruction for much better code efficiency.
+> > >   */
+> > >  
+> > > -#define fls(x) \
+> > > +#define __fls(x) \
+> > >  	( __builtin_constant_p(x) ? constant_fls(x) : \
+> > >  	  ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 32-__r; }) )
+> > > +
+> > > +/* Implement fls() in C so that 64-bit args are suitably truncated */
+> > > +static inline int fls(int x)
+> > > +{
+> > > +	return __fls(x);
+> > > +}
+> > > +
+> > 
+> > Well, I like it more as it fixes all possible places instead of only
+> > fls64().
+> > 
+> > But... can't we just move the #define body into the inline fls(x)?
+> > Will there be other users of __fls(x)? It seems the
+> > __builtin_constant_p(x) works for inline functions.
+> 
+> Could.  That was a minimal&safe thing.
+> 
+> > The above patch fixes the kernel panic, too.
+> 
+> OK, thanks.
 
-Please disregard that email -- I mistakenly thought this was a 2.6.26.1
-review cycle -- my mistake!
+Andrew,
 
-I'm sorry for the noise.
+have you sent your patch to Linus ? I haven't seen it merged yet, and
+I'd like to get it into -stable too.
 
--Mike
+Thanks,
+Willy
+
