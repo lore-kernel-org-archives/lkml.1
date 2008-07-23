@@ -1,44 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753710AbYGWNze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbYGWOEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753710AbYGWNze (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 09:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYGWNz0
+	id S1754057AbYGWOEO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 10:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbYGWOD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 09:55:26 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55565 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751772AbYGWNzZ (ORCPT
+	Wed, 23 Jul 2008 10:03:56 -0400
+Received: from smtp-out-41.synserver.de ([217.119.50.41]:1055 "HELO
+	smtp-out-41.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752936AbYGWODz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 09:55:25 -0400
-Date: Wed, 23 Jul 2008 15:54:43 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "Alex Nixon (Intern)" <Alex.Nixon@eu.citrix.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ian Campbell <Ian.Campbell@eu.citrix.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: Large increase in context switch rate
-Message-ID: <20080723135443.GA20882@one.firstfloor.org>
-References: <487E43D9.7080703@goop.org> <87mykgrxtv.fsf@basil.nowhere.org> <0E902970173AF84089673FA54B7FE78A329073@lonpexch01.citrite.net>
-Mime-Version: 1.0
+	Wed, 23 Jul 2008 10:03:55 -0400
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: markus@trippelsdorf.de
+X-SynServer-PPID: 24699
+Date: Wed, 23 Jul 2008 16:03:47 +0200
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Wang Chen <wangchen@cn.fujitsu.com>
+Cc: Alessandro Guido <ag@alessandroguido.name>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] skge: resolve tx multiqueue bug
+Message-ID: <20080723140347.GA2245@gentoox2.trippelsdorf.de>
+References: <d4b984a30807210914nd4d0db5yb7b93ca5143ff0d5@mail.gmail.com> <20080721.092027.14394005.davem@davemloft.net> <d4b984a30807220254t1aaf6ac4q874329966511b0c5@mail.gmail.com> <20080723054039.GA2272@gentoox2.trippelsdorf.de> <4886F0C5.7040605@cn.fujitsu.com> <20080723101827.GA2236@gentoox2.trippelsdorf.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <0E902970173AF84089673FA54B7FE78A329073@lonpexch01.citrite.net>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080723101827.GA2236@gentoox2.trippelsdorf.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Seems to be a mystery why that patch is (seemingly) the culprit...anyone
+On Wed, Jul 23, 2008 at 12:18:27PM +0200, Markus Trippelsdorf wrote:
+> On Wed, Jul 23, 2008 at 04:50:13PM +0800, Wang Chen wrote:
+> > Markus Trippelsdorf said the following on 2008-7-23 13:40:
+> > > On Tue, Jul 22, 2008 at 11:54:26AM +0200, Alessandro Guido wrote:
+> > >> Got a WARNING this morning (2.6.26-05752-g93ded9b) and I think it's related.
+> > > 
+> > > Same thing here (latest git):
+> > > 
+> > > skge eth1: enabling interface
+> > > skge eth1: disabling interface
+> > > ------------[ cut here ]------------
+> > > WARNING: at net/core/dev.c:1344 __netif_schedule+0x24/0x6d()
+> > > Pid: 1904, comm: ip Not tainted 2.6.26-06077-gc010b2f #33
+> > >  [<ffffffff8020b3eb>] system_call_after_swapgs+0x7b/0x80
+> ...
+> > > ---[ end trace 92936ef183e09876 ]---
+> > > skge eth1: enabling interface
+> > > skge eth1: Link is up at 100 Mbps, full duplex, flow control both
+> > > 
+> > 
+> > Markus, please try this.
+> > 
+> > - Add netif_start_queue() in ->open()
+> > - netif_carrier_*() is enough, remove netif_*_queue()
+> 
+> Unfortunately, your patch does not fix this. I still get the same warning.
+> 
 
-Yes looks weird.
+This patch works for me:
 
-> have any ideas?  Maybe there's some other variable I'm not keeping
-> constant?
+diff --git a/drivers/net/skge.c b/drivers/net/skge.c
+index 2e26dce..d761296 100644
+--- a/drivers/net/skge.c
++++ b/drivers/net/skge.c
+@@ -1069,7 +1069,6 @@ static void skge_link_up(struct skge_port *skge)
+                    LED_BLK_OFF|LED_SYNC_OFF|LED_ON);
 
-Did you verify it was really that patch by unapplying/reapplying it?
-Sometimes there are mistakes in the bisect process.
+        netif_carrier_on(skge->netdev);
+-       netif_wake_queue(skge->netdev);
 
--Andi
+        if (netif_msg_link(skge)) {
+                printk(KERN_INFO PFX
+@@ -1084,7 +1083,6 @@ static void skge_link_down(struct skge_port *skge)
+ {
+        skge_write8(skge->hw, SK_REG(skge->port, LNK_LED_REG), LED_OFF);
+        netif_carrier_off(skge->netdev);
+-       netif_stop_queue(skge->netdev);
 
+        if (netif_msg_link(skge))
+                printk(KERN_INFO PFX "%s: Link is down.\n", skge->netdev->name);
+@@ -2450,7 +2448,6 @@ static void skge_phy_reset(struct skge_port *skge)
+        int port = skge->port;
+        struct net_device *dev = hw->dev[port];
+
+-       netif_stop_queue(skge->netdev);
+        netif_carrier_off(skge->netdev);
+
+        spin_lock_bh(&hw->phy_lock);
+@@ -2640,6 +2637,7 @@ static int skge_up(struct net_device *dev)
+        spin_unlock_irq(&hw->hw_lock);
+
+        napi_enable(&skge->napi);
++       netif_start_queue(dev);
+        return 0;
+
+  free_rx_ring:
+@@ -2673,8 +2671,6 @@ static int skge_down(struct net_device *dev)
+        if (netif_msg_ifdown(skge))
+                printk(KERN_INFO PFX "%s: disabling interface\n", dev->name);
+
+-       netif_stop_queue(dev);
+-
+        if (hw->chip_id == CHIP_ID_GENESIS && hw->phy_type == SK_PHY_XMAC)
+                del_timer_sync(&skge->link_timer);
+
+@@ -3863,7 +3859,6 @@ static struct net_device *skge_devinit(struct skge_hw *hw, int port,
+
+        /* device is off until link detection */
+        netif_carrier_off(dev);
+-       netif_stop_queue(dev);
+
+        return dev;
+ }
+
+
+-- 
+Markus
