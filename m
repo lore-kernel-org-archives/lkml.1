@@ -1,123 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYGWH2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbYGWHcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753371AbYGWH2A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 03:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbYGWH1v
+	id S1753236AbYGWHcz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 03:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbYGWHcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 03:27:51 -0400
-Received: from ozlabs.org ([203.10.76.45]:34953 "EHLO ozlabs.org"
+	Wed, 23 Jul 2008 03:32:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56204 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750793AbYGWH1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 03:27:50 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PULL] lguest and virtio patches
-Date: Wed, 23 Jul 2008 17:27:34 +1000
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Mark McLoughlin <markmc@redhat.com>,
-       Johannes Weiner <hannes@saeurebad.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Carsten Otte <cotte@de.ibm.com>, lguest <lguest@ozlabs.org>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+	id S1750774AbYGWHcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 03:32:46 -0400
+Date: Wed, 23 Jul 2008 09:32:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh <jaswinder@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [git pull] x86: declaration fixes - ver2
+Message-ID: <20080723073233.GA21172@elte.hu>
+References: <1216786052.2602.2.camel@jaswinder.satnam>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807231727.35138.rusty@rustcorp.com.au>
+In-Reply-To: <1216786052.2602.2.camel@jaswinder.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Note the arch/s390 bit is from virtio console on KVM/s390)
 
-The following changes since commit 0988c37c248e824953d95a11412696c348dbca91:
-  Linus Torvalds (1):
-        Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+* Jaswinder Singh <jaswinder@infradead.org> wrote:
 
-are available in the git repository at:
+> Hello Ingo,
+> 
+> Here are updated patches for x86-tip.
+> 
+> The following changes since commit a099a9b18ab434594bb01ed920e8c58574203fa9:
+>   Ingo Molnar (1):
+>         Merge branch 'out-of-tree'
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git master
+looks good, but could you please switch over the changes to be based on 
+the "upstream" topic branch of your patches, i.e. to tip/x86/prototypes?
 
-Andrew Morton (1):
-      lguest: use cpu capability accessors
+You can do it the following way:
 
-Christian Borntraeger (5):
-      virtio_blk: check for hardsector size from host
-      hvc_console: rework setup to replace irq functions with callbacks
-      virtio_console: use virtqueue notification for hvc_console
-      virtio: console as a config option
-      s390: use virtio_console for KVM on s390
+  git checkout master
+  git merge tip/master                                  # get latest
+  git checkout -b x86/prototypes-for-tip                # new pull branch
+  git rebase --onto tip/x86/prototypes tip/master       # switch
 
-Herbert Xu (2):
-      virtio net: Add ethtool ops for SG/GSO
-      virtio net: Allow receiving SG packets
+In theory this should run just fine without any conflicts or manual 
+intervention needed.
 
-Johannes Weiner (1):
-      lguest: fix switcher_page leak on unload
+If that rebase command ran fine, double-check the end result by looking 
+at the output of:
 
-Mark McLoughlin (4):
-      virtio: fix virtio_net xmit of freed skb bug
-      lguest: Don't leak /dev/zero fd
-      lguest: Support assigning a MAC address
-      virtio: Use bus_type probe and remove methods
+  git log tip/x86/prototypes..x86/prototypes-for-tip
 
-Rusty Russell (19):
-      virtio: Recycle unused recv buffer pages for large skbs in net driver
-      lguest: set max_pfn_mapped, growl loudly at Yinghai Lu
-      lguest: Guest int3 fix
-      lguest: Debugging patch for lguest network performance
-      lguest: fix verbose printing of device features.
-      lguest: virtio-rng support
-      virtio: clarify that ABI is usable by any implementations
-      virtio: don't always force a notification when ring is full
-      lguest: wrap last_avail accesses.
-      lguest: net block unneeded receive queue update notifications
-      lguest: Tell Guest net not to notify us on every packet xmit
-      lguest: Adaptive timeout
-      virtio: Formally reserve bits 28-31 to be 'transport' features.
-      virtio: Rename set_features to finalize_features
-      virtio: Add transport feature handling stub for virtio_ring.
-      lguest: Remove 'network: no dma buffer!' warning
-      lguest: Use GSO/IFF_VNET_HDR extensions on tun/tap
-      lguest: Enlarge virtio rings
-      lguest: turn Waker into a thread, not a process
+... then resend the pull request for the x86/prototypes branch you have, 
+by doing something like:
 
- Documentation/lguest/lguest.c         |  531 ++++++++++++++++++++++++--------
- arch/s390/Kconfig                     |    1 +
- arch/s390/kernel/setup.c              |    4 +-
- arch/x86/lguest/boot.c                |    3 +
- drivers/block/virtio_blk.c            |   10 +-
- drivers/char/Kconfig                  |   11 +-
- drivers/char/Makefile                 |    1 +
- drivers/char/hvc_console.c            |   85 ++----
- drivers/char/hvc_console.h            |   35 ++-
- drivers/char/hvc_irq.c                |   44 +++
- drivers/char/hvc_iseries.c            |    2 +
- drivers/char/hvc_vio.c                |    2 +
- drivers/char/hvc_xen.c                |    2 +
- drivers/char/virtio_console.c         |   40 ++-
- drivers/lguest/core.c                 |    1 +
- drivers/lguest/interrupts_and_traps.c |   24 +-
- drivers/lguest/lguest_device.c        |   14 +-
- drivers/lguest/x86/core.c             |    4 +-
- drivers/net/virtio_net.c              |  114 ++++++-
- drivers/s390/kvm/kvm_virtio.c         |   34 ++-
- drivers/virtio/virtio.c               |   26 +-
- drivers/virtio/virtio_pci.c           |   13 +-
- drivers/virtio/virtio_ring.c          |   22 ++-
- include/asm-s390/kvm_virtio.h         |   10 +
- include/linux/virtio_9p.h             |    2 +
- include/linux/virtio_balloon.h        |    2 +
- include/linux/virtio_blk.h            |    5 +
- include/linux/virtio_config.h         |   16 +-
- include/linux/virtio_console.h        |    2 +
- include/linux/virtio_net.h            |    2 +
- include/linux/virtio_pci.h            |    5 +-
- include/linux/virtio_ring.h           |    2 +
- include/linux/virtio_rng.h            |    2 +
- 33 files changed, 805 insertions(+), 266 deletions(-)
- create mode 100644 drivers/char/hvc_irq.c
+git-request-pull tip/x86/prototypes git://git.infradead.org/users/jaswinder/linux-2.6-tip.git x86/prototypes-for-tip
+
+The reason for not basing your branch on tip/master is that we want to 
+keep x86/protypes topic a "pure" topic that is mergable without waiting 
+for other topics - without mixing it with all other topics that are 
+integrated into tip/master.
+
+And note that x86/prototypes-for-tip is a by-line branch that you should 
+not touch after sending the pull request (so that what i pull matches up 
+to the summary in the email you send) - you can still evolve your master 
+branch with other work, create other branches, etc.
+
+Let me know if there's any Git hickup.
+
+Thanks,
+
+	Ingo
