@@ -1,56 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbYGWNQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbYGWNUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754236AbYGWNQX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 09:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYGWNQK
+	id S1754006AbYGWNUj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 09:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYGWNU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 09:16:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:51508 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752393AbYGWNQG (ORCPT
+	Wed, 23 Jul 2008 09:20:28 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:59481 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750996AbYGWNU1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 09:16:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=LrOO3k8E2h3AJRaKDGSk2AfKqSRNRu62msW1pb1RaF9MxzU/6s13QrXiRr45j2knfM
-         Hbap5B3PH4yYNUvqeVNeeB7UbqLCYBXJTAOCVEOPRcA6smsj+2b8c5QqZ1DR8hr7STnE
-         FCxPkDXr/yaDpf9vhcns8pf237vaB4FpMaPM0=
-Message-ID: <5a4c581d0807230616n5a8e7ecfm172cfe0bd8d11b7e@mail.gmail.com>
-Date: Wed, 23 Jul 2008 15:16:05 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Alessandro Guido" <ag@alessandroguido.name>
-Subject: Re: [BUG] kernel BUG at net/core/dev.c:1328!
-Cc: "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <d4b984a30807230057t319eca71g32262305bdb07582@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 23 Jul 2008 09:20:27 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqEEAPrIhkhMRKxB/2dsb2JhbACBWrB0
+Date: Wed, 23 Jul 2008 09:20:24 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Jan Kiszka <jan.kiszka@siemens.com>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       "Feng(Eric) Liu" <eric.e.liu@intel.com>
+Subject: Re: [patch 4/4] KVM-trace port to tracepoints
+Message-ID: <20080723132024.GC15401@Krystal>
+References: <20080717155724.897537670@polymtl.ca> <20080717160003.359557938@polymtl.ca> <487F7800.4010502@siemens.com> <20080717172853.GB29855@Krystal> <488604F8.1040008@siemens.com> <48862B01.7070907@qumranet.com> <1216799346.7257.125.camel@twins> <4886E6FD.4090200@qumranet.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <d4b984a30807210914nd4d0db5yb7b93ca5143ff0d5@mail.gmail.com>
-	 <20080721.092027.14394005.davem@davemloft.net>
-	 <d4b984a30807220254t1aaf6ac4q874329966511b0c5@mail.gmail.com>
-	 <20080722.155611.176476925.davem@davemloft.net>
-	 <d4b984a30807230057t319eca71g32262305bdb07582@mail.gmail.com>
+In-Reply-To: <4886E6FD.4090200@qumranet.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:16:11 up 48 days, 17:57,  4 users,  load average: 0.64, 0.53,
+	0.54
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 9:57 AM, Alessandro Guido
-<ag@alessandroguido.name> wrote:
-> I'm testing the latest Linus' git which includes your patch
-> (2.6.26-06077-gc010b2f) and the problem is fixed.
+* Avi Kivity (avi@qumranet.com) wrote:
+> Peter Zijlstra wrote:
+>> On Tue, 2008-07-22 at 21:46 +0300, Avi Kivity wrote:
+>>   
+>>> Jan Kiszka wrote:
+>>>     
+>>>> That's true - as long as you don't have to add/remove/modify
+>>>> tracepoints. I had to do this job in the past (not for KVM). Having 1
+>>>> spot in 1 file (based on generic probes) would be handier in that case
+>>>> than 5 spots in 3 files. But if the KVM tracepoints are considered
+>>>> stable in their number and structure, that shouldn't be an issue here.
+>>>>
+>>>>         
+>>> Tracepoints aren't stable; they are artefacts of the implementation.
+>>>     
+>>
+>> Which IMHO makes it unsuitable for trace_mark() as that will be exported
+>> to user-space, and every time you change your tracepoints you'll change
+>> user visible things - not nice.
+>>   
 >
-> Thank you!
+> They are used for debugging (mostly performance related), so changes are 
+> expected.
+>
+> What uses of trace_mark() depend on a stable interface? blktrace?
+>
 
--git10 also has this fixed for me. Thanks,
+Actually, LTTng likes to have the { marker name, field name } pairs
+unchanged for the markers it looks for, but that's about it. If a
+userspace analysis plugin fails to see a marker (because it is disabled
+or changed), it just does not apply its particular analysis on the
+trace.
 
---alessandro
+Since the markers and marker types are self-described in the trace,
+userspace can detect any change the the present markers, so there is no
+need to rely on "version numbers" because we are able to proceed to a
+complete marker list verification (names, field names, types) before
+starting the trace analysis.
 
- "Give me love / Or give me hate
- Give me anything that's not just ok"
+Mathieu
 
- (Sophia, 'Weightless')
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
