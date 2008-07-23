@@ -1,122 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbYGWFGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbYGWFMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754676AbYGWFGw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 01:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYGWFGm
+	id S1754851AbYGWFMp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 01:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYGWFMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 01:06:42 -0400
-Received: from 1wt.eu ([62.212.114.60]:1925 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752389AbYGWFGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 01:06:41 -0400
-Date: Wed, 23 Jul 2008 07:06:03 +0200
-From: Willy Tarreau <w@1wt.eu>
+	Wed, 23 Jul 2008 01:12:35 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:44540 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752473AbYGWFMf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 01:12:35 -0400
+X-Sasl-enc: Kvwr9YYOrxtcgxl3ZnfcPf0d+vujXf1eYRe8BvKJvpk1 1216789953
+Subject: Re: [PATCH 6/7] autofs4 - use struct qstr in waitq.c
+From: Ian Kent <raven@themaw.net>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [bisected] kernel panic 2.6.22 -> 2.6.26-rc9+
-Message-ID: <20080723050603.GG29189@1wt.eu>
-References: <m3d4lisk4i.fsf@maximus.localdomain> <20080713013107.23f060f2.akpm@linux-foundation.org> <m3abgmcb68.fsf@maximus.localdomain> <20080713112230.e86ba9ae.akpm@linux-foundation.org> <m3lk05jvw5.fsf@maximus.localdomain> <20080713145525.51a1ca3a.akpm@linux-foundation.org> <20080723045230.GD29189@1wt.eu> <20080722220056.234af367.akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, autofs@linux.kernel.org,
+       linux-fsdevel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
+       Jeff Moyer <jmoyer@redhat.com>
+In-Reply-To: <20080722161357.802ad1a5.akpm@linux-foundation.org>
+References: <20080617122336.14725.64829.stgit@raven.themaw.net>
+	 <20080617122406.14725.84758.stgit@raven.themaw.net>
+	 <20080722161357.802ad1a5.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 23 Jul 2008 13:08:40 +0800
+Message-Id: <1216789721.2995.29.camel@raven.themaw.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080722220056.234af367.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 10:00:56PM -0700, Andrew Morton wrote:
-> On Wed, 23 Jul 2008 06:52:31 +0200 Willy Tarreau <w@1wt.eu> wrote:
+
+On Tue, 2008-07-22 at 16:13 -0700, Andrew Morton wrote:
+> On Tue, 17 Jun 2008 20:24:06 +0800
+> Ian Kent <raven@themaw.net> wrote:
 > 
-> > On Sun, Jul 13, 2008 at 02:55:25PM -0700, Andrew Morton wrote:
-> > > On Sun, 13 Jul 2008 23:51:06 +0200 Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> > > 
-> > > > Andrew Morton <akpm@linux-foundation.org> writes:
-> > > > 
-> > > > > --- a/include/asm-arm/bitops.h~a
-> > > > > +++ a/include/asm-arm/bitops.h
-> > > > > @@ -277,9 +277,16 @@ static inline int constant_fls(int x)
-> > > > >   * the clz instruction for much better code efficiency.
-> > > > >   */
-> > > > >  
-> > > > > -#define fls(x) \
-> > > > > +#define __fls(x) \
-> > > > >  	( __builtin_constant_p(x) ? constant_fls(x) : \
-> > > > >  	  ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 32-__r; }) )
-> > > > > +
-> > > > > +/* Implement fls() in C so that 64-bit args are suitably truncated */
-> > > > > +static inline int fls(int x)
-> > > > > +{
-> > > > > +	return __fls(x);
-> > > > > +}
-> > > > > +
-> > > > 
-> > > > Well, I like it more as it fixes all possible places instead of only
-> > > > fls64().
-> > > > 
-> > > > But... can't we just move the #define body into the inline fls(x)?
-> > > > Will there be other users of __fls(x)? It seems the
-> > > > __builtin_constant_p(x) works for inline functions.
-> > > 
-> > > Could.  That was a minimal&safe thing.
-> > > 
-> > > > The above patch fixes the kernel panic, too.
-> > > 
-> > > OK, thanks.
+> > From: Jeff Moyer <jmoyer@redhat.com>
 > > 
-> > Andrew,
+> > The autofs_wait_queue already contains all of the fields of the
+> > struct qstr, so change it into a qstr.
 > > 
-> > have you sent your patch to Linus ? I haven't seen it merged yet, and
-> > I'd like to get it into -stable too.
+> > This patch, from Jeff Moyer, has been modified a liitle by myself.
+> > 
+> > Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
+> > Signed-off-by: Ian Kent <raven@themaw.net>
 > 
-> This one?
+> So this patch which had been happily sitting in -mm for a month has
+> suddenly broken because linux-next's three-day-old
+> 4bce7ce7c7d0d57b78dacc3a2bd87ec63b2d9b4c has removed LOOKUP_ACCESS.
 > 
-> From: Andrew Morton <akpm@linux-foundation.org>
+> This is suboptimal.
 > 
-> arm's fls() is implemented as a macro, causing it to misbehave when passed
-> 64-bit arguments.  Fix.
-> 
-> Cc: Nickolay Vinogradov <nickolay@protei.ru>
-> Tested-by: Krzysztof Halasa <khc@pm.waw.pl>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  include/asm-arm/bitops.h |    9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-> diff -puN include/asm-arm/bitops.h~arm-fix-fls-for-64-bit-arguments include/asm-arm/bitops.h
-> --- a/include/asm-arm/bitops.h~arm-fix-fls-for-64-bit-arguments
-> +++ a/include/asm-arm/bitops.h
-> @@ -277,9 +277,16 @@ static inline int constant_fls(int x)
->   * the clz instruction for much better code efficiency.
->   */
->  
-> -#define fls(x) \
-> +#define __fls(x) \
->  	( __builtin_constant_p(x) ? constant_fls(x) : \
->  	  ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 32-__r; }) )
-> +
-> +/* Implement fls() in C so that 64-bit args are suitably truncated */
-> +static inline int fls(int x)
-> +{
-> +	return __fls(x);
-> +}
-> +
->  #define ffs(x) ({ unsigned long __t = (x); fls(__t & -__t); })
->  #define __ffs(x) (ffs(x) - 1)
->  #define ffz(x) __ffs( ~(x) )
-> _
-> 
+> Now what do I do?
 
-yes, precisely this one.
+Ummm .. I'm confused.
 
-> Nope, I'm just kind of sitting on it.  I'll put a stable@kernel.org tag
-> on it and send it to Russell I guess.
+Your patch autofs4-use-lookup-intent-flags-to-trigger-mounts-fix.patch
+allows the linux-next kernel to build with all the autofs4 patches
+currently posted for inclusion in mm but the patch you mention here
+isn't concerned with the lookup flags?
 
-Perfect, thanks!
-Willy
+The removal of LOOKUP_ACCESS is quite interesting. AFAIKS it effectively
+prevents the patch
+autofs4-use-lookup-intent-flags-to-trigger-mounts.patch from also
+resolving an issue with recursive autofs mounts while still resolving
+the issue that the patch was actually meant to address.
+
+It's hard to get exited about the former issue as Al Viro has NACKed a
+previous patch that added the LOOKUP_ACCESS check, indicating the
+availability of the lookup flags will be changing. Also there is a
+question as to whether autofs will support the use mount points in
+automount maps that themselves refer to an automount path (the recursive
+bit).
+
+Ian
 
