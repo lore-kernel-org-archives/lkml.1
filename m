@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbYGWSzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbYGWSzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755509AbYGWSzX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 14:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYGWSzF
+	id S1755623AbYGWSzp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 14:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbYGWSzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 14:55:05 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:49126 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649AbYGWSzE (ORCPT
+	Wed, 23 Jul 2008 14:55:13 -0400
+Received: from mu-out-0910.google.com ([209.85.134.191]:21810 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754428AbYGWSzM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 14:55:04 -0400
-Date: Wed, 23 Jul 2008 20:55:01 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: ttydev tree build failure
-In-Reply-To: <20080723172837.3d784d85@lxorguk.ukuu.org.uk>
-Message-ID: <Pine.LNX.4.64.0807232048440.24017@anakin>
-References: <20080723171743.1436cf2a.sfr@canb.auug.org.au>
- <Pine.LNX.4.64.0807231436310.1185@anakin> <20080723154610.348ffc07@lxorguk.ukuu.org.uk>
- <Pine.LNX.4.64.0807231748250.20868@anakin> <20080723164731.00c163f1@lxorguk.ukuu.org.uk>
- <Pine.LNX.4.64.0807231838470.21737@anakin> <20080723172837.3d784d85@lxorguk.ukuu.org.uk>
+	Wed, 23 Jul 2008 14:55:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=llWX5P8l+HDBRZrelTnbK86K2+d1ToZmyYZGfrrNdsNplE7Jd/WAcAIKQclJzq4lW3
+         LztuGSp7iHL0iOJ+Gqbr/XqKdGhHvDGg++KO3YXFF7qSXqeF0HDyo2Q1efPHl9P8VMFe
+         2FOyPWuFq9hUtU0VELZqNIZUSVdds+zaQUKeQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [PATCH] ide-floppy fix
+Date: Wed, 23 Jul 2008 20:51:11 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, stable@kernel.org
+References: <20080715053356.GA18628@gollum.tnic> <200807222149.19939.bzolnier@gmail.com> <20080723063224.GB17724@gollum.tnic>
+In-Reply-To: <20080723063224.GB17724@gollum.tnic>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807232051.12226.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jul 2008, Alan Cox wrote:
-> > Update all drivers when making core tty infrastructure changes?
-> > Thanks!
+On Wednesday 23 July 2008, Borislav Petkov wrote:
+
+[...]
+
+> > Now it should be finally fixed.
 > 
-> I don't have an Amiga with that board, I don't have an obscure VME 68K
-> board. The changes required at this point would be tricky to verify
-> without hardware, and the upcoming changes will require significant
-> changes to all the hardware drivers, which will need someone to actually
-> maintain the drivers, or to drop them.
+> True story. Works here too.
 
-IC, testing/maintaining non-trival changes is a different situation.
+Thanks for verifying it.
 
-But it would still be nice to announce such removals/breakings in advance,
-cfr. Documentation/feature-removal-schedule.txt. At least we knew the old
-NCR53C9x core was going away, taken with it all drivers depending on it...
+> Hm, let's see whether there's time during the weekend. I already have something
+> stolen from pata_legacy but I'll do some more testing first. By the way, what
+> are the chances of exporting those pieces of code from drivers/ata/pata_legacy.c
+> and adding the function def into some header instead of duplicating the code into
+> ide_generic.c?
 
-Anyone who cares about these drivers (ser_a2232 and vme_scc, perhaps
-others?)?
+Good idea (<linux/ata.h> sounds like a perfect spot).
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks,
+Bart
