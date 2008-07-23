@@ -1,99 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbYGWQKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbYGWQNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754476AbYGWQKH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 12:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbYGWQJo
+	id S1754112AbYGWQNG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 12:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYGWQMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 12:09:44 -0400
-Received: from proxy3.bredband.net ([195.54.101.73]:61677 "EHLO
-	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753091AbYGWQJn (ORCPT
+	Wed, 23 Jul 2008 12:12:53 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:44112 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751012AbYGWQMx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 12:09:43 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApE6AD/0hkjVchRXPGdsb2JhbACBWpBrAQEBAS0Bn1Q
-Message-ID: <57249.192.168.101.12.1216829380.squirrel@intranet>
-In-Reply-To: <20080723143411.GA2905@tv-sign.ru>
-References: <487F5D6B.1090007@hozac.com> <20080723143411.GA2905@tv-sign.ru>
-Date: Wed, 23 Jul 2008 18:09:40 +0200 (CEST)
-Subject: Re: [PATCH 1/2] signals: kill(-1) should only signal processes in 
-     the same namespace
-From: "Daniel Hokka Zakrisson" <daniel@hozac.com>
-To: "Oleg Nesterov" <oleg@tv-sign.ru>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       ebiederm@xmission.com, xemul@openvz.org, akpm@linux-foundation.org
-User-Agent: SquirrelMail/1.4.10a-1.fc6
+	Wed, 23 Jul 2008 12:12:53 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=YOexUJkgUlqM7/JHSQtCRIz0p8gs6lfPuVGx6O9L7mc+umBEJCTlF2Kxcb1pLUi5SWZ/zsCWGYQgbkiLsgGY/lq1EunSDU7WFaNsj1BfxkCwR1FLWMeG9+k91cLE0GJHY9tgQuD/i7pdMdJgWBbd6Bzw2BaRKpTbcLrBVzEZJbc=  ;
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Uwe =?iso-8859-1?q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+Subject: Re: [PATCH] set_irq_wake: fix return code and wake status tracking
+Date: Wed, 23 Jul 2008 09:00:27 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Russell King <rmk@arm.linux.org.uk>, Andrew Morton <akpm@osdl.org>,
+       Linus Torvalds <torvalds@osdl.org>
+References: <1216816945-20223-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+In-Reply-To: <1216816945-20223-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200807230900.27563.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 07/17, Daniel Hokka Zakrisson wrote:
->>
->> +int task_in_pid_ns(struct task_struct *tsk, struct pid_namespace *ns)
->> +{
->> +	struct pid *pid = task_pid(tsk);
->> +
->> +	if (!pid)
->> +		return 0;
->> +
->> +	if (pid->level < ns->level)
->> +		return 0;
->> +
->> +	if (pid->numbers[ns->level].ns != ns)
->> +		return 0;
->> +
->> +	return 1;
->> +}
->> +
->>  static __init int pid_namespaces_init(void)
->>  {
->>  	pid_ns_cachep = KMEM_CACHE(pid_namespace, SLAB_PANIC);
->> diff --git a/kernel/signal.c b/kernel/signal.c
->> index 6c0958e..93713a5 100644
->> --- a/kernel/signal.c
->> +++ b/kernel/signal.c
->> @@ -1145,7 +1145,8 @@ static int kill_something_info(int sig, struct
->> siginfo *info, int pid)
->>  		struct task_struct * p;
->>
->>  		for_each_process(p) {
->> -			if (p->pid > 1 && !same_thread_group(p, current)) {
->> +			if (p->pid > 1 && !same_thread_group(p, current) &&
->> +			    task_in_pid_ns(p, current->nsproxy->pid_ns)) {
->>  				int err = group_send_sig_info(sig, info, p);
->>  				++count;
->>  				if (err != -EPERM)
->
-> Do we really need all these complications? Afaics, we can make
-> a simpler patch,
->
-> 	--- kernel/signal.c
-> 	+++ kernel/signal.c
-> 	@@ -1136,7 +1136,7 @@ static int kill_something_info(int sig,
-> 			struct task_struct * p;
->
-> 			for_each_process(p) {
-> 	-			if (p->pid > 1 && !same_thread_group(p, current)) {
-> 	+			if (task_pid_vnr(p) > 1 && !same_thread_group(p, current)) {
-> 					int err = group_send_sig_info(sig, info, p);
-> 					++count;
-> 					if (err != -EPERM)
->
->
-> task_pid_vnr(p) returns 0 if "p" is not visible from the current's
-> namespace. "> 1" ensures we don't kill the child reaper as well.
->
-> No?
->
-> Oleg.
+On Wednesday 23 July 2008, Uwe Kleine-König wrote:
+> Since 15a647eba94c3da27ccc666bea72e7cca06b2d19 set_irq_wake returned -ENXIO
+> if another device had it already enabled.  Zero is the right value to
+> return in this case.  Moreover the change to desc->status was not reverted
+> if desc->chip->set_wake returned an error.
+> 
+> Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
 
-You are absolutely right, that is sufficient and much cleaner.
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
--- 
-Daniel Hokka Zakrisson
+
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Russell King <rmk@arm.linux.org.uk>
+> Cc: Andrew Morton <akpm@osdl.org>
+> Cc: Linus Torvalds <torvalds@osdl.org>
+> ---
+>  kernel/irq/manage.c |   39 +++++++++++++++++++++++++++------------
+>  1 files changed, 27 insertions(+), 12 deletions(-)
+> 
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index e01ad8e..227cd49 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -194,6 +194,17 @@ void enable_irq(unsigned int irq)
+>  }
+>  EXPORT_SYMBOL(enable_irq);
+>  
+> +int set_irq_wake_real(unsigned int irq, unsigned int on)
+> +{
+> +	struct irq_desc *desc = irq_desc + irq;
+> +	int ret = -ENXIO;
+> +
+> +	if (desc->chip->set_wake)
+> +		ret = desc->chip->set_wake(irq, on);
+> +
+> +	return ret;
+> +}
+> +
+>  /**
+>   *	set_irq_wake - control irq power management wakeup
+>   *	@irq:	interrupt to control
+> @@ -210,30 +221,34 @@ int set_irq_wake(unsigned int irq, unsigned int on)
+>  {
+>  	struct irq_desc *desc = irq_desc + irq;
+>  	unsigned long flags;
+> -	int ret = -ENXIO;
+> -	int (*set_wake)(unsigned, unsigned) = desc->chip->set_wake;
+> +	int ret = 0;
+>  
+>  	/* wakeup-capable irqs can be shared between drivers that
+>  	 * don't need to have the same sleep mode behaviors.
+>  	 */
+>  	spin_lock_irqsave(&desc->lock, flags);
+>  	if (on) {
+> -		if (desc->wake_depth++ == 0)
+> -			desc->status |= IRQ_WAKEUP;
+> -		else
+> -			set_wake = NULL;
+> +		if (desc->wake_depth++ == 0) {
+> +			ret = set_irq_wake_real(irq, on);
+> +			if (ret)
+> +				desc->wake_depth = 0;
+> +			else
+> +				desc->status |= IRQ_WAKEUP;
+> +		}
+>  	} else {
+>  		if (desc->wake_depth == 0) {
+>  			printk(KERN_WARNING "Unbalanced IRQ %d "
+>  					"wake disable\n", irq);
+>  			WARN_ON(1);
+> -		} else if (--desc->wake_depth == 0)
+> -			desc->status &= ~IRQ_WAKEUP;
+> -		else
+> -			set_wake = NULL;
+> +		} else if (--desc->wake_depth == 0) {
+> +			ret = set_irq_wake_real(irq, on);
+> +			if (ret)
+> +				desc->wake_depth = 1;
+> +			else
+> +				desc->status &= ~IRQ_WAKEUP;
+> +		}
+>  	}
+> -	if (set_wake)
+> -		ret = desc->chip->set_wake(irq, on);
+> +
+>  	spin_unlock_irqrestore(&desc->lock, flags);
+>  	return ret;
+>  }
+> -- 
+> 1.5.6.3
+> 
+
+
