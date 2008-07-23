@@ -1,106 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbYGXAHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbYGXAIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755900AbYGXAHs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 20:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbYGXAHj
+	id S1756938AbYGXAIK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 20:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbYGXAHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 20:07:39 -0400
-Received: from ns1.spydercomm.com ([69.64.58.82]:58785 "EHLO
-	neon.spydercomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754625AbYGXAHh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 20:07:37 -0400
-X-Greylist: delayed 2569 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Jul 2008 20:07:37 EDT
-Message-ID: <4887BDAA.6040303@queuemail.com>
-Date: Wed, 23 Jul 2008 19:24:26 -0400
-From: paul s <mactel-linux.org-users@queuemail.com>
-Reply-To: mactel-linux.org-users@queuemail.com
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: roberto@unbit.it
-CC: mactel-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [Mactel-linux-devel] [PATCH] Support for Intel iMac in applesmc
-References: <1216814135.5834.9.camel@sirius>
-In-Reply-To: <1216814135.5834.9.camel@sirius>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 23 Jul 2008 20:07:48 -0400
+Received: from waste.org ([66.93.16.53]:52692 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756649AbYGXAHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 20:07:47 -0400
+Subject: Re: recent -git: BUG in free_thread_xstate
+From: Matt Mackall <mpm@selenic.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Jeff Garzik <jgarzik@pobox.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       netdev@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>
+In-Reply-To: <19f34abd0807231620q6d870bc0k74d176c9e5253ff3@mail.gmail.com>
+References: <19f34abd0807231307y191c0ad7tfab4cda57ee88eb@mail.gmail.com>
+	 <20080723203109.GH14380@linux-os.sc.intel.com>
+	 <19f34abd0807231352j1ba1414am84ee9683df9b5657@mail.gmail.com>
+	 <b647ffbd0807231422w546e59e9p8362ee798b169a25@mail.gmail.com>
+	 <b647ffbd0807231435h73740808p76143d3d4457b597@mail.gmail.com>
+	 <19f34abd0807231445h79fac5cbwecd0563b74bc18ad@mail.gmail.com>
+	 <b647ffbd0807231501va30f6d4kee49d1daa30227fc@mail.gmail.com>
+	 <19f34abd0807231505w1a25c2bak329a622f3a287e97@mail.gmail.com>
+	 <19f34abd0807231545u5bc8b55fm768527a02268f111@mail.gmail.com>
+	 <19f34abd0807231550h4ba88a9qa27b1c9e5afc80cb@mail.gmail.com>
+	 <19f34abd0807231620q6d870bc0k74d176c9e5253ff3@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 23 Jul 2008 18:53:55 -0500
+Message-Id: <1216857235.15519.189.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-2.1.12 (neon.spydercomm.com [69.64.58.82]); Wed, 23 Jul 2008 19:24:22 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-applying these changes manually to the 2.6.25.10 source loads the 
-applesmc on the imac 7,1 as well and recognizes the three fans...
 
-cheers
-paul
+On Thu, 2008-07-24 at 01:20 +0200, Vegard Nossum wrote:
+> >> +extern void warn_on_slowpath(const char *file, int line);
 
+Mmm, fun.
 
+> >>  [<c013496f>] warn_on_slowpath+0x4f/0x70
+> >>  [<c0198041>] ? check_bytes_and_report+0x21/0xc0
+> >>  [<c04a8544>] ? __kfree_skb+0x34/0x80
+> >>  [<c0198041>] ? check_bytes_and_report+0x21/0xc0
+> >>  [<c01983ef>] ? check_object+0xdf/0x1f0
+> >>  [<c0198041>] ? check_bytes_and_report+0x21/0xc0
+> >>  [<c04a8544>] ? __kfree_skb+0x34/0x80
+> >>  [<c01983ef>] ? check_object+0xdf/0x1f0
+> >>  [<c04bbafc>] ? find_skb+0x3c/0x80
+> >>  [<c04a9f7e>] skb_copy_and_csum_dev+0xee/0x100
+> >>  [<c03539d7>] rtl8139_start_xmit+0x57/0x130
+> >>  [<c019a84b>] ? __kmalloc_track_caller+0x8b/0x120
+> >>  [<c04bba6e>] netpoll_send_skb+0x14e/0x1a0
+> >>  [<c04bbf54>] netpoll_send_udp+0x1e4/0x210
 
-Roberto De Ioris wrote:
-> Hi all, this patch (2.6.26 vanilla) add supports for fans and
-> temperature sensors on intel iMac.
-> 
-> Tested on iMac 24" 2.8ghz (iMac8,1), it supports the following sensors:
-> 
-> cpu A
-> ambient
-> gpu
-> gpu diode
-> gpu heatsink
-> hd bay 1
-> memory controller
-> optical drive
-> power
-> 
-> Signed-off-by: Roberto De Ioris <roberto@unbit.it>
-> ---
-> diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
-> index aacc0c4..bc616c3 100644
-> --- a/drivers/hwmon/applesmc.c
-> +++ b/drivers/hwmon/applesmc.c
-> @@ -98,6 +98,8 @@ static const char* temperature_sensors_sets[][36] = {
->           "TH1P", "TH2P", "TH3P", "TMAP", "TMAS", "TMBS", "TM0P",
-> "TM0S",
->           "TM1P", "TM1S", "TM2P", "TM2S", "TM3S", "TM8P", "TM8S",
-> "TM9P",
->           "TM9S", "TN0H", "TS0C", NULL },
-> +/* Set 5: iMac */
-> +       { "TC0D", "TA0P", "TG0P", "TG0D", "TG0H", "TH0P", "Tm0P",
-> "TO0P", "Tp0C", NULL },
->  };
->  
->  /* List of keys used to read/write fan speeds */
-> @@ -1223,6 +1225,8 @@ static __initdata struct dmi_match_data
-> applesmc_dmi_data[] = {
->         { .accelerometer = 0, .light = 0, .temperature_set = 3 },
->  /* MacPro: temperature set 4 */
->         { .accelerometer = 0, .light = 0, .temperature_set = 4 },
-> +/* iMac: temperature set 5 */
-> +       { .accelerometer = 0, .light = 0, .temperature_set = 5 },
->  };
->  
->  /* Note that DMI_MATCH(...,"MacBook") will match "MacBookPro1,1".
-> @@ -1248,6 +1252,10 @@ static __initdata struct dmi_system_id
-> applesmc_whitelist[] = {
->           DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
->           DMI_MATCH(DMI_PRODUCT_NAME,"MacPro2") },
->                 (void*)&applesmc_dmi_data[4]},
-> +       { applesmc_dmi_match, "Apple iMac", {
-> +         DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
-> +         DMI_MATCH(DMI_PRODUCT_NAME,"iMac") },
-> +               (void*)&applesmc_dmi_data[5]},
->         { .ident = NULL }
->  };
-> 
-> 
-> 
-> -------------------------------------------------------------------------
-> This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-> Build the coolest Linux based applications with Moblin SDK & win great prizes
-> Grand prize is a trip for two to an Open Source event anywhere in the world
-> http://moblin-contest.org/redirect.php?banner_id=100&url=/
-> _______________________________________________
-> Mactel-linux-devel mailing list
-> Mactel-linux-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/mactel-linux-devel
+Trying to warn_on from inside a network driver from inside netpoll may
+cause trouble.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
