@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbYGWWep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbYGWWjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbYGWWep (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 18:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbYGWWef
+	id S1755301AbYGWWjy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 18:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbYGWWjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 18:34:35 -0400
-Received: from stinky.trash.net ([213.144.137.162]:47862 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753720AbYGWWee (ORCPT
+	Wed, 23 Jul 2008 18:39:46 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:21834 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753905AbYGWWjq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 18:34:34 -0400
-Message-ID: <4887B1F0.3000407@trash.net>
-Date: Thu, 24 Jul 2008 00:34:24 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ranjit Manomohan <ranjitm@google.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, lizf@cn.fujitsu.com, menage@google.com
-Subject: Re: [PATCH] Traffic control cgroups subsystem
-References: <Pine.LNX.4.64.0807221041210.1091@ranjit.corp.google.com> <20080723150536.ded38b22.akpm@linux-foundation.org>
-In-Reply-To: <20080723150536.ded38b22.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jul 2008 18:39:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=hPixK6sNydsL0hEoOjctPSyU3Ag47XSDRWpaDU4gdUa8Wo515/phPV58dT9l7j3Wp4
+         ph83knewogi7bpRPJctNNfDYiGXxeB0m4be/8hRZnUYtnnYD+QQoTfs+zFo+ls6wY/2R
+         onm+ruy5xB4XkoSJxb6Lrdr0oXVdwQZGFC/Vs=
+Subject: kernel/trace/ftrace.c new warning in next-20080723
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
+       linux-next <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 23 Jul 2008 15:39:45 -0700
+Message-Id: <1216852786.30386.30.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 22 Jul 2008 10:44:18 -0700 (PDT)
-> Ranjit Manomohan <ranjitm@google.com> wrote:
-> 
->> @@ -359,7 +370,12 @@ static int flow_classify(struct sk_buff *skb, struct tcf_proto *tp,
->>   			classid %= f->divisor;
->>
->>   		res->class   = 0;
->> -		res->classid = TC_H_MAKE(f->baseclass, f->baseclass + classid);
->> +
->> +		if (key == FLOW_KEY_CGROUP_CLASSID)
->> +			res->classid = TC_H_MAKE(f->baseclass, classid);
->> +		else
->> +			res->classid = TC_H_MAKE(f->baseclass,
->> +						 f->baseclass + classid);
-> 
-> This causes a warning:
-> 
-> net/sched/cls_flow.c: In function 'flow_classify':
-> net/sched/cls_flow.c:344: warning: 'key' may be used uninitialized in this function
-> 
-> that warning is a non-issue if we happen to know that f->nkeys can
-> never be zero.  I don't know if that is guaranteed at this code site?
+> kernel/trace/ftrace.c: In function ‘ftrace_run_update_code’:
+> kernel/trace/ftrace.c:590: warning: ‘stop_machine_run’ is deprecated (declared at include/linux/stop_machine.h:59)
+> kernel/trace/ftrace.c: In function ‘ftrace_update_code’:
+> kernel/trace/ftrace.c:790: warning: ‘stop_machine_run’ is deprecated (declared at include/linux/stop_machine.h:59)
+> kernel/trace/ftrace.c: In function ‘ftrace_dynamic_init’:
+> kernel/trace/ftrace.c:1567: warning: ‘stop_machine_run’ is deprecated (declared at include/linux/stop_machine.h:59)
 
-It is by the flow_change() function, but special casing the
-CGROUP_CLASSID is not acceptable anyway. There should be no
-need for that, a simple linear mapping to classids is done
-by default in mapping mode, the sk_cgroup_classid simply
-shouldn't include qdisc IDs.
+FYI,
+
+Harvey
+
