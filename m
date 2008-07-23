@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbYGWIpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbYGWIt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754277AbYGWIpK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 04:45:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYGWIo6
+	id S1754011AbYGWIt7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 04:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYGWIts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 04:44:58 -0400
-Received: from s200aog14.obsmtp.com ([207.126.144.128]:41163 "EHLO
-	s200aog14.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbYGWIo5 (ORCPT
+	Wed, 23 Jul 2008 04:49:48 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:10209 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbYGWItq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 04:44:57 -0400
-X-Greylist: delayed 1254 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Jul 2008 04:44:57 EDT
-Message-ID: <4886EA28.4080801@st.com>
-Date: Wed, 23 Jul 2008 10:22:00 +0200
-From: Wolfgang Johann BETZ <wolfgang.betz@st.com>
-Organization: STMicroelectronics Srl
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: en-us, en
+	Wed, 23 Jul 2008 04:49:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uAA+84POpcnufFi5BG1PPFTx20Ze4XS7iKY5TnRtJqiEuBVF5SyKYSpCryKcNUoU1F
+         8EuHJJw90br2Df7cK8E+FLg2EdZXSu/LF4vitZlUlL0z5OhiTBX7B7rh9agWDU9f/dae
+         u58sjhh3kastJIboo1/fOT/gaX517XN1jnjWs=
+Date: Wed, 23 Jul 2008 08:54:52 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: Larry.Finger@lwfinger.net, kaber@trash.net, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       peterz@infradead.org, mingo@redhat.com
+Subject: Re: Kernel WARNING: at net/core/dev.c:1330
+	__netif_schedule+0x2c/0x98()
+Message-ID: <20080723085452.GB4561@ff.dom.local>
+References: <20080722.160409.216536011.davem@davemloft.net> <20080723062036.GA4561@ff.dom.local> <20080723.005921.113868915.davem@davemloft.net>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: Wolfgang Betz <wolfgang.betz@st.com>, mingo@elte.hu
-Subject: RT task preemtion/scheduling on SMP
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080723.005921.113868915.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ciao,
+On Wed, Jul 23, 2008 at 12:59:21AM -0700, David Miller wrote:
+> From: Jarek Poplawski <jarkao2@gmail.com>
+> Date: Wed, 23 Jul 2008 06:20:36 +0000
+> 
+> > PS: if there is nothing new in lockdep the classical method would
+> > be to change this static array:
+> > 
+> > static struct lock_class_key
+> > netdev_xmit_lock_key[ARRAY_SIZE(netdev_lock_type)];
+> > 
+> > to
+> > 
+> > static struct lock_class_key
+> > netdev_xmit_lock_key[ARRAY_SIZE(netdev_lock_type)][MAX_NUM_TX_QUEUES];
+> > 
+> > and set lockdep classes per queue as well. (If we are sure we don't
+> > need lockdep subclasses anywhere this could be optimized by using
+> > one lock_class_key per 8 queues and spin_lock_nested()).
+> 
+> Unfortunately MAX_NUM_TX_QUEUES is USHORT_MAX, so this isn't really
+> a feasible approach.
 
-while studying how real-time tasks (i.e. SCHED_FIFO or SCHED_RR) are 
-implemented on SMP systems with respect to preemption of lower priority 
-tasks, I came to the following question:
-On uni-processor (UP) systems higher priority tasks are guaranteed to 
-preempt lower priority ones as soon as they become runnable. Now I am 
-wondering what happens on SMP systems as ideally for example once a RT 
-task which has a higher priority than any of the currently executing 
-tasks on the different CPUs becomes runnable it should also be 
-immediately scheduled on the CPU with the lowest priority currently 
-executing task. So, in terms of real-time, it should be guaranteed that 
-at any moment the set of runnable tasks with the highest priorities are 
-actually running on the available CPUs.
-Now, while studying the Linux kernel (precisely version 2.6.24.4 with 
-Ingo Molnar's RT patch version 2.6.24.4-rt4 applied) it seemed to me as 
-if the kernel maintains a separate run queue for each of the available 
-CPUs and would anyway put a RT task which becomes (again) runnable on 
-the run queue of the CPU with the lowest priority currently executing 
-task, but I could not find anything which would make sure that a 
-rescheduling takes place (e.g. by triggering an IPI) in case the awaking 
-task has a higher priority and the current CPU is different from the 
-selected one (on whose run queue it has put the awaking task).
-Now, first of all I would like to ask if my observation is correct?
-If yes, I am wondering if this problem has in the meanwhile been tackled 
-with, is currently under investigation, is gonna be tackled with in the 
-(near) future, is considered as being non resolvable (e.g. without 
-compromising the overall throughput of the system too heavily), or ... 
-something else?
+Is it used by real devices already? Maybe for the beginning we could
+start with something less?
 
-Regards,
-Wolfgang
+> spin_lock_nested() isn't all that viable either, as the subclass
+> limit is something like 8.
 
+This method would need to do some additional counting: depending of
+a queue number each 8 subsequent queues share (are set to) the same
+class and their number mod 8 gives the subqueue number for
+spin_lock_nested().
 
-P.S.: similarly to the above example, in case a RT task blocks, to me
-       it seems as if the next task is gonna be taken from the run queue
-       of the current CPU without considering that another CPU might have
-       a higher priority runnable task in its run queue.
+I'll try to find if there is something new around this in lockdep.
+(lockdep people added to CC.)
 
-
+Jarek P.
