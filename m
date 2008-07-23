@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbYGWAVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbYGWAXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756899AbYGWAVG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 20:21:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756195AbYGWAUl
+	id S1756620AbYGWAXG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 20:23:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbYGWAWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 20:20:41 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41327 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755965AbYGWAUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 20:20:40 -0400
-Date: Wed, 23 Jul 2008 10:20:32 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@linux-foundation.org>
-Cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: airprime.c resurrected. Bad merge?
-Message-Id: <20080723102032.48126b29.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__23_Jul_2008_10_20_32_+1000_5ssKUsiPZdupPPZX"
+	Tue, 22 Jul 2008 20:22:54 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:48969 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751768AbYGWAWx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 20:22:53 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=dsMiz3bpqqa4lWUoymnO/FQuJZiPJGJ53xps2bgwCijet9vdpZYVkK13L+Nhx2gV+Uf7lPc60Fsher1ZFuEsHy571+b294fRR6WXzqHlKdREFoPcKrlAJDEfEYu2S/CmgBmWSsvSIrLsXLyPj8DQ1eTqdUdw9mHYYUyTlH+Gccw=  ;
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [USB boot crash, -git] ecm_do_notify(), list_add corruption. prev->next should be next (ffff88003b8f82f8)
+Date: Tue, 22 Jul 2008 17:22:47 -0700
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <20080721223038.GA2051@suse.de> <20080722134042.GA14315@elte.hu> <20080723001043.GB8477@suse.de>
+In-Reply-To: <20080723001043.GB8477@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807221722.47670.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__23_Jul_2008_10_20_32_+1000_5ssKUsiPZdupPPZX
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tuesday 22 July 2008, Greg KH wrote:
+> On Tue, Jul 22, 2008 at 03:40:42PM +0200, Ingo Molnar wrote:
+> > 
+> > hi Greg, David,
+> > 
+> > -tip randconfig boot testing just found this USB boot crash regression:
+> > 
+> > dummy_udc dummy_udc: enabled ep-a (ep1in-bulk) maxpacket 512
+> > dummy_udc dummy_udc: enabled ep-b (ep2out-bulk) maxpacket 512
+> 
+> Wierd, if we don't have the hardware, this shouldn't be a problem, right
+> David?
 
-Hi Linus,
+Getting ready to reproduce it ... it takes a while to resync my
+patch queue with git-current.  :)
 
-We have in your tree today:
-
-commit 640c1bce86d1e11ee6a1263fdf6170d3210b1684 "USB: delete airprime
-driver" which removes (among other things) drivers/usb/serial/airprime.c.
-
-followed later by:
-
-commit 95da310e66ee8090119596c70ca8432e57f9a97f "usb_serial: API all
-change" which seems to have completely resurrected the same file (but
-none of the other bit removed by the above commit).
-
-In linux-next I had resolved that conflict by removing the file.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__23_Jul_2008_10_20_32_+1000_5ssKUsiPZdupPPZX
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiGeVAACgkQjjKRsyhoI8yuFgCaAiSgt2iMSRa9asDz7ObUvhHS
-2hoAn1w1e8pmoGBZ/SYj+9sGWIYiamFb
-=GDgm
------END PGP SIGNATURE-----
-
---Signature=_Wed__23_Jul_2008_10_20_32_+1000_5ssKUsiPZdupPPZX--
+- Dave
