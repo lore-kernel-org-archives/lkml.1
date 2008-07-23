@@ -1,190 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbYGWPpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbYGWPp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753815AbYGWPpe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 11:45:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbYGWPp1
+	id S1754249AbYGWPp6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 11:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbYGWPps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 11:45:27 -0400
-Received: from mga02.intel.com ([134.134.136.20]:61817 "EHLO mga02.intel.com"
+	Wed, 23 Jul 2008 11:45:48 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:56060 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751914AbYGWPp0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 11:45:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,239,1215414000"; 
-   d="scan'208";a="364206142"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1751433AbYGWPps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 11:45:48 -0400
+Date: Wed, 23 Jul 2008 11:45:33 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH] lockd: trivial sparse endian annotations
+Message-ID: <20080723154533.GA12595@fieldses.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Endless ACPI errors on Linus tree (5b664cb235)
-Date: Wed, 23 Jul 2008 08:43:49 -0700
-Message-ID: <9D39833986E69849A2A8E74C1078B6B3B68DDD@orsmsx415.amr.corp.intel.com>
-In-reply-to: <488731DD.76E4.0078.0@novell.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Endless ACPI errors on Linus tree (5b664cb235)
-Thread-Index: AcjstxtTLqcog5YgToOFCSsR3t8P3QAIw2Ew
-References: <s5hzlof1ll2.wl%tiwai@suse.de> <87od4vqvaj.fsf@basil.nowhere.org> <s5htzencp02.wl%tiwai@suse.de> <s5hr69rz57u.wl%tiwai@suse.de> <s5hk5fjurag.wl%tiwai@suse.de> <4880DE15.76E4.0078.0@novell.com> <s5habgfdu5e.wl%tiwai@suse.de> <20080718165814.GF32051@basil.nowhere.org> <s5hmykexm53.wl%tiwai@suse.de> <488460E0.76E4.0078.0@novell.com> <20080721084354.GB20258@basil.nowhere.org> <488731DD.76E4.0078.0@novell.com>
-From: "Moore, Robert" <robert.moore@intel.com>
-To: "Jan Beulich" <jbeulich@novell.com>, "Andi Kleen" <andi@firstfloor.org>,
-       "Len Brown" <lenb@kernel.org>
-Cc: "Andrew Paprocki" <andrew@ishiboo.com>, "Takashi Iwai" <tiwai@suse.de>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "Gough, Robert" <robert.gough@intel.com>
-X-OriginalArrivalTime: 23 Jul 2008 15:43:50.0224 (UTC) FILETIME=[E6FA2D00:01C8ECDA]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080720234211.4c77f506.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Couple of thoughts.
+On Sun, Jul 20, 2008 at 11:42:11PM -0700, Andrew Morton wrote:
+> On Thu, 17 Jul 2008 17:41:35 -0700 Harvey Harrison <harvey.harrison@gmail.com> wrote:
+> 
+> > fs/lockd/svcproc.c:115:11: warning: incorrect type in initializer (different base types)
+> > fs/lockd/svcproc.c:115:11:    expected int [signed] rc
+> > fs/lockd/svcproc.c:115:11:    got restricted __be32 [usertype] <noident>
+> > ... and so on...
+> 
+> Bruce handles lockd stuff.
 
-I think we must use the V2 field if it is present and the address value
-is > 32 bits.
+Actually Trond normally handles client-specific lockd code (e.g.
+fs/lockd/clnt*.c), though of course I'm happy to triage stuff and pass
+it along.
 
-What if the V2 address is < 32 bits but does not match the V1 address?
+> Not that a reader of ./MAINTAINERS would know this </hint>.
 
->-----Original Message-----
->From: Jan Beulich [mailto:jbeulich@novell.com]
->Sent: Wednesday, July 23, 2008 4:28 AM
->To: Andi Kleen; Len Brown
->Cc: Moore, Robert; Andrew Paprocki; Takashi Iwai; LKML
->Subject: Re: Endless ACPI errors on Linus tree (5b664cb235)
->
->>>> Andi Kleen <andi@firstfloor.org> 21.07.08 10:43 >>>
->>> That would basically mean there's no way to use the v2 fields here -
-all
->>> the code could do is report the inconsitency, but it would have to
-use
->>> the v1 field in any case. That's really a shame, and as before I'm
->>> somewhat hesitant to do so. The only way I could easily find myself
->>> doing this would be to introduce a command line option controlling
-the
->>> behavior here, but that would need to be done outside of the ACPICA
->>> code I'd assume.
->>>
->>> Andi, Bob, Len?
->>
->>I think we should only use v1 FADT fields for now and ignore v2.
->
->Here we go:
->
->Subject: ACPI: fix FADT parsing (v3)
->
->The (1.0 inherited) separate length fields in the FADT are byte
->granular. Further, PM1a/b may live in distinct address spaces, and they
->also could have different widths (if using the respective v2 fields was
->okay, which in practice it apparently isn't). acpi_tb_convert_fadt()
->should account for all of these conditions.
->
->Signed-off-by: Jan Beulich <jbeulich@novell.com>
->
->---
-> drivers/acpi/tables/tbfadt.c |   32 +++++++++++++++++++++++++-------
-> 1 file changed, 25 insertions(+), 7 deletions(-)
->
->--- linux-2.6.26/drivers/acpi/tables/tbfadt.c	2008-07-13
->23:51:29.000000000 +0200
->+++ 2.6.26-acpi-fadt-parse/drivers/acpi/tables/tbfadt.c
-2008-07-23
->13:21:22.000000000 +0200
->@@ -50,7 +50,7 @@ ACPI_MODULE_NAME("tbfadt")
-> /* Local prototypes */
-> static void inline
-> acpi_tb_init_generic_address(struct acpi_generic_address
-*generic_address,
->-			     u8 bit_width, u64 address);
->+			     u8 byte_width, u64 address);
->
-> static void acpi_tb_convert_fadt(void);
->
->@@ -111,7 +111,7 @@ static struct acpi_fadt_info fadt_info_t
->  * FUNCTION:    acpi_tb_init_generic_address
->  *
->  * PARAMETERS:  generic_address     - GAS struct to be initialized
->- *              bit_width           - Width of this register
->+ *              byte_width          - Width of this register
->  *              Address             - Address of the register
->  *
->  * RETURN:      None
->@@ -124,7 +124,7 @@ static struct acpi_fadt_info fadt_info_t
->
-> static void inline
-> acpi_tb_init_generic_address(struct acpi_generic_address
-*generic_address,
->-			     u8 bit_width, u64 address)
->+			     u8 byte_width, u64 address)
-> {
->
-> 	/*
->@@ -136,7 +136,7 @@ acpi_tb_init_generic_address(struct acpi
-> 	/* All other fields are byte-wide */
->
-> 	generic_address->space_id = ACPI_ADR_SPACE_SYSTEM_IO;
->-	generic_address->bit_width = bit_width;
->+	generic_address->bit_width = byte_width << 3;
-> 	generic_address->bit_offset = 0;
-> 	generic_address->access_width = 0;
-> }
->@@ -342,9 +342,20 @@ static void acpi_tb_convert_fadt(void)
-> 	 * useful to calculate them once, here.
-> 	 *
-> 	 * The PM event blocks are split into two register blocks, first
-is
->the
->-	 * PM Status Register block, followed immediately by the PM
-Enable
->Register
->-	 * block. Each is of length (pm1_event_length/2)
->+	 * PM Status Register block, followed immediately by the PM
-Enable
->+	 * Register block. Each is of length
-(xpm1x_event_block.bit_width/2).
->+	 *
->+	 * On various systems the v2 fields (and particularly the bit
-widths)
->+	 * cannot be relied upon, though. Hence resort to using the v1
-length
->+	 * here (and warn about the inconsistency).
-> 	 */
->+	if (acpi_gbl_FADT.xpm1a_event_block.bit_width
->+	    != acpi_gbl_FADT.pm1_event_length * 8)
->+		printk(KERN_WARNING "FADT: "
->+		       "X_PM1a_EVT_BLK.bit_width (%u) does not match"
->+		       " PM1_EVT_LEN (%u)\n",
->+		       acpi_gbl_FADT.xpm1a_event_block.bit_width,
->+		       acpi_gbl_FADT.pm1_event_length);
-> 	pm1_register_length = (u8)
->ACPI_DIV_2(acpi_gbl_FADT.pm1_event_length);
->
-> 	/* The PM1A register block is required */
->@@ -360,13 +371,20 @@ static void acpi_tb_convert_fadt(void)
-> 	/* The PM1B register block is optional, ignore if not present */
->
-> 	if (acpi_gbl_FADT.xpm1b_event_block.address) {
->+		if (acpi_gbl_FADT.xpm1b_event_block.bit_width
->+		    != acpi_gbl_FADT.pm1_event_length * 8)
->+			printk(KERN_WARNING "FADT: "
->+			       "X_PM1b_EVT_BLK.bit_width (%u) does not
-match"
->+			       " PM1_EVT_LEN (%u)\n",
->+
-acpi_gbl_FADT.xpm1b_event_block.bit_width,
->+			       acpi_gbl_FADT.pm1_event_length);
-> 		acpi_tb_init_generic_address(&acpi_gbl_xpm1b_enable,
-> 					     pm1_register_length,
->
-(acpi_gbl_FADT.xpm1b_event_block.
-> 					      address +
-pm1_register_length));
-> 		/* Don't forget to copy space_id of the GAS */
-> 		acpi_gbl_xpm1b_enable.space_id =
->-		    acpi_gbl_FADT.xpm1a_event_block.space_id;
->+		    acpi_gbl_FADT.xpm1b_event_block.space_id;
->
-> 	}
-> }
->
+Would this help?
 
+--b.
+
+commit e8b43555a2a8c71e8501924e260f62b9545c598b
+Author: J. Bruce Fields <bfields@citi.umich.edu>
+Date:   Wed Jul 23 08:49:50 2008 -0400
+
+    MAINTAINERS: mention lockd and sunrpc in nfs entries
+    
+    The actual division of labor is a little vague in some of the common
+    code, but if the patches get to one of us then we can sort it out.
+    
+    Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 0652ab3..c382ad3 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2418,7 +2418,7 @@ L:	kernel-janitors@vger.kernel.org
+ W:	http://www.kerneljanitors.org/
+ S:	Maintained
+ 
+-KERNEL NFSD
++KERNEL NFSD, SUNRPC, AND LOCKD SERVERS
+ P:	J. Bruce Fields
+ M:	bfields@fieldses.org
+ P:	Neil Brown
+@@ -3036,7 +3036,7 @@ M:	ja@ssi.bg
+ L:	netdev@vger.kernel.org
+ S:	Maintained
+ 
+-NFS CLIENT
++NFS, SUNRPC, AND LOCKD CLIENTS
+ P:	Trond Myklebust
+ M:	Trond.Myklebust@netapp.com
+ L:	linux-nfs@vger.kernel.org
