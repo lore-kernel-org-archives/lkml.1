@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbYGWMYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbYGWM1C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753437AbYGWMYR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 08:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbYGWMYB
+	id S1753875AbYGWM1C (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 08:27:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYGWM0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 08:24:01 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:43715 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbYGWMYB (ORCPT
+	Wed, 23 Jul 2008 08:26:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37928 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbYGWM0x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 08:24:01 -0400
-Message-ID: <488722F6.1000400@us.ibm.com>
-Date: Wed, 23 Jul 2008 07:24:22 -0500
-From: Maynard Johnson <maynardj@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Robert Richter <robert.richter@amd.com>
-CC: Barry Kasindorf <barry.kasindorf@amd.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-Subject: Re: [PATCH 0/24] oprofile: Add IBS support for AMD CPUs
-References: <1216753748-11261-1-git-send-email-robert.richter@amd.com>
-In-Reply-To: <1216753748-11261-1-git-send-email-robert.richter@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jul 2008 08:26:53 -0400
+Subject: [git pull] x86: declaration fixes - ver3
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf8
+Date: Wed, 23 Jul 2008 17:55:47 +0530
+Message-Id: <1216815947.11897.2.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Richter wrote:
-> Patches #1-3 are not directly related to IBS.
-> Patch #4 adds generic support of model specific initialization.
->   
-And patches 5-9 are for . . .
+﻿Hello Ingo,
+ 
+Please pull these patches for x86-tip.
 
-It seems that you have 5 independent patch sets here.  I don't see any
-advantage in posting them together in one large group -- maybe more of a
-disadvantage, since some are pretty non-controversial and should get
-accepted fairly easily, while others will probably result in extended
-discussion.  You might consider reposting these 5 patch sets
-individually.  But I'm not so familiar with kernel patch
-review/acceptance process, so maybe this is fine as it is if subsets of
-the 24 patches are accepted incrementally.
+The following changes since commit 1e84911c6c37fd1080ef07039e19c346628b31db:
+  Jaswinder Singh (1):
+        x86: mtrr/main.c declare range_state as static
 
--Maynard
-> Patches #10, #11 add the core implementation of IBS.
-> Patches #12-24 contain code improvements and small fixes.
->
->
->
->
-> -------------------------------------------------------------------------
-> This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-> Build the coolest Linux based applications with Moblin SDK & win great prizes
-> Grand prize is a trip for two to an Open Source event anywhere in the world
-> http://moblin-contest.org/redirect.php?banner_id=100&url=/
-> _______________________________________________
-> oprofile-list mailing list
-> oprofile-list@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/oprofile-list
->   
+are available in the git repository at:
+
+  git://git.infradead.org/users/jaswinder/linux-2.6-tip.git x86/prototypes-for-tip
+
+Jaswinder Singh (8):
+      x86: apic_XX.c declare functions before they get used
+      x86: vm86_32.c declare functions before they get used
+      x86: mm/init_XX.c declare functions before they get used
+      x86: mm/fault.c declare do_page_fault before they get used
+      x86: mm/ioremap.c declare early_ioremap_debug and early_ioremap_nested as static
+      x86: mm/pageattr.c declare arch_report_meminfo before they get used
+      x86: mm/pgtable_32.c declare set_pmd_pfn before they get used
+      x86: mach-default/setup.c declare no_broadcast before they get used
+
+ arch/x86/mach-default/setup.c |    4 +++-
+ arch/x86/mm/fault.c           |    3 +--
+ arch/x86/mm/init_32.c         |    1 +
+ arch/x86/mm/ioremap.c         |    4 ++--
+ include/asm-x86/apic.h        |    5 +++++
+ include/asm-x86/hw_irq.h      |   10 ++++++++++
+ include/asm-x86/page_32.h     |    1 +
+ include/asm-x86/page_64.h     |    1 +
+ include/asm-x86/pgtable.h     |    2 ++
+ include/asm-x86/pgtable_32.h  |    1 +
+ include/asm-x86/syscalls.h    |    5 ++++-
+ include/asm-x86/traps.h       |    4 ++++
+ 12 files changed, 35 insertions(+), 6 deletions(-)
 
 
