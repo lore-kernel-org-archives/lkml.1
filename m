@@ -1,61 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756715AbYGWXwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbYGWXyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756715AbYGWXwe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 19:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbYGWXw0
+	id S1756818AbYGWXyZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 19:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbYGWXyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 19:52:26 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:44716 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753928AbYGWXwZ (ORCPT
+	Wed, 23 Jul 2008 19:54:16 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:41153 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755161AbYGWXyO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 19:52:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=aNpXvxNnZk8z8PYqs4bQ7RDwiwSTJlE0ZnNxL56pL+QIGHmeRtt78dyuPt6bfDMf2x
-         3ZHhYEftYLirdBM3SfxblRNI33z2HqNgqrVMMpNpNRbJazARK3nfy753XifImNEydROY
-         EeFxQIMNlFylLJGSpng6b0EQ1L1IUsH/Lus1E=
-Subject: [PATCH] cifs: avoid mixing bool and le16
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Steve French <smfrench@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 23 Jul 2008 16:52:18 -0700
-Message-Id: <1216857138.30386.33.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 23 Jul 2008 19:54:14 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=JWOM+lwWmXx6BymrK0y9LFmjTk1WFrOPPp0wSNLt22wc8EoNK9+kBGVRTU2DW7azQ
+	Qzji18R6rf5kUReGWbKkw==
+Message-ID: <166fe7950807231654ib5759e1kae54887f0918d3fb@mail.gmail.com>
+Date: Wed, 23 Jul 2008 16:54:03 -0700
+From: "Ranjit Manomohan" <ranjitm@google.com>
+To: "Patrick McHardy" <kaber@trash.net>
+Subject: Re: [PATCH] Traffic control cgroups subsystem
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, lizf@cn.fujitsu.com, menage@google.com
+In-Reply-To: <4887B1F0.3000407@trash.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0807221041210.1091@ranjit.corp.google.com>
+	 <20080723150536.ded38b22.akpm@linux-foundation.org>
+	 <4887B1F0.3000407@trash.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/cifs/cifssmb.c:3917:13: warning: incorrect type in assignment (different base types)
-fs/cifs/cifssmb.c:3917:13:    expected bool [unsigned] [usertype] is_unicode
-fs/cifs/cifssmb.c:3917:13:    got restricted __le16
+On Wed, Jul 23, 2008 at 3:34 PM, Patrick McHardy <kaber@trash.net> wrote:
+> Andrew Morton wrote:
+>>
+>> On Tue, 22 Jul 2008 10:44:18 -0700 (PDT)
+>> Ranjit Manomohan <ranjitm@google.com> wrote:
+>>
+>>> @@ -359,7 +370,12 @@ static int flow_classify(struct sk_buff *skb, struct
+>>> tcf_proto *tp,
+>>>                        classid %= f->divisor;
+>>>
+>>>                res->class   = 0;
+>>> -               res->classid = TC_H_MAKE(f->baseclass, f->baseclass +
+>>> classid);
+>>> +
+>>> +               if (key == FLOW_KEY_CGROUP_CLASSID)
+>>> +                       res->classid = TC_H_MAKE(f->baseclass, classid);
+>>> +               else
+>>> +                       res->classid = TC_H_MAKE(f->baseclass,
+>>> +                                                f->baseclass + classid);
+>>
+>> This causes a warning:
+>>
+>> net/sched/cls_flow.c: In function 'flow_classify':
+>> net/sched/cls_flow.c:344: warning: 'key' may be used uninitialized in this
+>> function
+>>
+>> that warning is a non-issue if we happen to know that f->nkeys can
+>> never be zero.  I don't know if that is guaranteed at this code site?
+>
+> It is by the flow_change() function, but special casing the
+> CGROUP_CLASSID is not acceptable anyway. There should be no
+> need for that, a simple linear mapping to classids is done
+> by default in mapping mode, the sk_cgroup_classid simply
+> shouldn't include qdisc IDs.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- fs/cifs/cifssmb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I did not want to special case it but I want an identity mapping not a
+linear one.  For some reason a baseclass of X:0 is not allowed, and
+there does not seem to be a clean way to get a 1-1 mapping (tc.classid
+-> X:tc.classid). I would have to workaround it by using a baseclass
+of the form X:Y and then subtracting Y from the value written to
+tc.classid which seemed very non intuitive.
 
-diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
-index 4511b70..56f1a71 100644
---- a/fs/cifs/cifssmb.c
-+++ b/fs/cifs/cifssmb.c
-@@ -3914,7 +3914,7 @@ parse_DFS_referrals(TRANSACTION2_GET_DFS_REFER_RSP *pSMBr,
- 	bool is_unicode;
- 	struct dfs_referral_level_3 *ref;
- 
--	is_unicode = pSMBr->hdr.Flags2 & SMBFLG2_UNICODE;
-+	is_unicode = !!(pSMBr->hdr.Flags2 & SMBFLG2_UNICODE);
- 	*num_of_nodes = le16_to_cpu(pSMBr->NumberOfReferrals);
- 
- 	if (*num_of_nodes < 1) {
--- 
-1.5.6.4.570.g052e
+Any particular reason for this restriction? Am I missing any other
+technique of getting a 1-1 mapping using the flow classifier?
 
+-Thanks,
+Ranjit
 
-
+>
