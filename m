@@ -1,79 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbYGWElW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYGWEnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754032AbYGWElW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 00:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYGWElN
+	id S1754353AbYGWEnR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 00:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYGWEnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 00:41:13 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59255 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752365AbYGWElM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 00:41:12 -0400
-Date: Wed, 23 Jul 2008 14:41:04 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Linus <torvalds@linux-foundation.org>,
-       Hirokazu Takata <takata@linux-m32r.org>, linux-m32r@ml.linux-m32r.org,
-       Kyle McMartin <kyle@mcmartin.ca>, Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       linux-parisc@vger.kernel.org, Chris Zankel <chris@zankel.net>
-Subject: Re: linux-next: Requirements and process
-Message-Id: <20080723144104.ac3a74e4.sfr@canb.auug.org.au>
-In-Reply-To: <20080502233519.a988b552.akpm@linux-foundation.org>
-References: <20080503154542.18807e59.sfr@canb.auug.org.au>
-	<20080502233519.a988b552.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__23_Jul_2008_14_41_04_+1000_WinOkhk5k6GJ0abh"
+	Wed, 23 Jul 2008 00:43:05 -0400
+Received: from mail.hauppauge.com ([167.206.143.4]:2547 "EHLO
+	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752159AbYGWEnE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 00:43:04 -0400
+Message-ID: <4886B69A.9090609@linuxtv.org>
+Date: Wed, 23 Jul 2008 00:42:02 -0400
+From: Michael Krufky <mkrufky@linuxtv.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Chuck Ebbert <cebbert@redhat.com>, Domenico Andreoli <cavokz@gmail.com>,
+       Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/47] 2.6.25-stable review
+References: <20080722231342.GA8282@suse.de>
+In-Reply-To: <20080722231342.GA8282@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__23_Jul_2008_14_41_04_+1000_WinOkhk5k6GJ0abh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2 May 2008 23:35:19 -0700 Andrew Morton <akpm@linux-foundation.org>=
- wrote:
+Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.25.12 release.
+> There are 47 patches in this series, all will be posted as a response to
+> this one.  If anyone has any issues with these being applied, please let
+> us know.  If anyone is a maintainer of the proper subsystem, and wants
+> to add a Signed-off-by: line to the patch, please respond with it.
 >
-> On Sat, 3 May 2008 15:45:42 +1000 Stephen Rothwell <sfr@canb.auug.org.au>=
- wrote:
->=20
-> > The following architectures are not in linux-next (and should be):
-> >=20
-> > alpha		cris		frv
-> > h8300		m32r		m68knommu
-> > mips		mn10300		parisc
-> > um		v850		xtensa
->=20
-> mips, m32r, parisc and xtensa do have git trees.  The rest are mastered as
-> discrete patches in -mm.
->=20
-> Except for m68knommu, which pops unexpectedly out of the woodwork during
-> the merge window.  I've asked that this be altered ;)
+> These patches are sent out with a number of different people on the
+> Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
+> to add your name to the list.  If you want to be off the reviewer list,
+> also email us.
+>
+> Responses should be made by July 24, 22:00:00 UTC.  Anything received
+> after that time might be too late.
+>   
+Greg,
 
-So (from the above list) cris, m68knommu and mips have joined the
-linux-next fray ...
+Would it be possible to add the seven patches that I sent two days ago? 
+It is very important that patch #1 gets into the first dot release, to
+avoid confusion with cx18 firmware revisions.  Thanks.
 
-(cc's some maintainers)
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+These were sent to stable at kernel dot org:
 
---Signature=_Wed__23_Jul_2008_14_41_04_+1000_WinOkhk5k6GJ0abh
-Content-Type: application/pgp-signature
+[2.6.26.y PATCH 1/7] V4L: cx18: Upgrade to newer firmware & update
+documentation
+http://linuxtv.org/pipermail/v4l-dvb-maintainer/2008-July/007427.html
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+[2.6.26.y PATCH 2/7] DVB: dib0700: add support for Hauppauge Nova-TD
+Stick 52009
+http://linuxtv.org/pipermail/v4l-dvb-maintainer/2008-July/007429.html
 
-iEYEARECAAYFAkiGtmAACgkQjjKRsyhoI8wyOACbBTwN5V0gylPybMMxU5tHHps7
-3O4An0XbMoeQaeGJGIPgQjKZkqC5byEO
-=8ZSr
------END PGP SIGNATURE-----
+[2.6.26.y PATCH 3/7] V4L: uvcvideo: Fix a buffer overflow in format
+descriptor parsing
+http://linuxtv.org/pipermail/v4l-dvb-maintainer/2008-July/007428.html
 
---Signature=_Wed__23_Jul_2008_14_41_04_+1000_WinOkhk5k6GJ0abh--
+[2.6.26.y PATCH 4/7] V4L: uvcvideo: Use GFP_NOIO when allocating memory
+during resume
+http://linuxtv.org/pipermail/v4l-dvb-maintainer/2008-July/007430.html
+
+[2.6.26.y PATCH 5/7] V4L: uvcvideo: Don't free URB buffers on suspend
+http://linuxtv.org/pipermail/v4l-dvb-maintainer/2008-July/007431.html
+
+[2.6.26.y PATCH 6/7] V4L: uvcvideo: Make input device support optional 
+http://linuxtv.org/pipermail/v4l-dvb-maintainer/2008-July/007432.html
+
+[2.6.26.y PATCH 7/7] V4L: uvcvideo: Add support for Medion Akoya Mini
+E1210 integrated webcam
+http://linuxtv.org/pipermail/v4l-dvb-maintainer/2008-July/007433.html
+
+Regards,
+
+Mike Krufky
