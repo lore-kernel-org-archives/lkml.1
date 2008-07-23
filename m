@@ -1,111 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbYGWTTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbYGWTU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbYGWTTb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 15:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYGWTTX
+	id S1754593AbYGWTU1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 15:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbYGWTUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 15:19:23 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:50370 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751394AbYGWTTW (ORCPT
+	Wed, 23 Jul 2008 15:20:17 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:52557 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649AbYGWTUP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 15:19:22 -0400
-Date: Wed, 23 Jul 2008 20:19:18 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       spi-devel-general@lists.sourceforge.net,
-       LM Sensors <lm-sensors@lm-sensors.org>, mgross@linux.intel.com,
-       Dmitry Torokhov <dtor@mail.ru>, David Brownell <david-b@pacbell.net>,
-       hmh@hmh.eng.br, Jean Delvare <khali@linux-fr.org>,
-       Ben Nizette <bn@niasdigital.com>
-Subject: Re: [spi-devel-general] [Patch 0/4] IndustrialIO subsystem (ADCs, accelerometers etc)
-Message-ID: <20080723191918.GC26938@trinity.fluff.org>
-References: <488763AD.4050400@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <488763AD.4050400@gmail.com>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+	Wed, 23 Jul 2008 15:20:15 -0400
+Message-ID: <48878485.3090909@us.ibm.com>
+Date: Wed, 23 Jul 2008 14:20:37 -0500
+From: Maynard Johnson <maynardj@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: rrichter@elbe.amd.com
+CC: Barry Kasindorf <barry.kasindorf@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       Carl Love <cel@us.ibm.com>
+Subject: Re: [PATCH 10/24] x86/oprofile: Add IBS support for AMD CPUs, IBS
+ buffer handling routines
+References: <1216753748-11261-1-git-send-email-robert.richter@amd.com> <1216753748-11261-11-git-send-email-robert.richter@amd.com>
+In-Reply-To: <1216753748-11261-11-git-send-email-robert.richter@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 06:00:29PM +0100, Jonathan Cameron wrote:
-> Dear All,
-> 
-> The need for an industrialio subsystem was discussed in
-> http://lkml.org/lkml/2008/5/20/135
+Robert Richter wrote:
+> From: Barry Kasindorf <barry.kasindorf@amd.com>
+>
+> This patchset supports the new profiling hardware available in the
+> latest AMD CPUs in the oProfile driver.
+>
+> Signed-off-by: Barry Kasindorf <barry.kasindorf@amd.com>
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> ---
+>  drivers/oprofile/buffer_sync.c |   72 +++++++++++++++++++++++++++++++++++++++-
+>  drivers/oprofile/cpu_buffer.c  |   68 +++++++++++++++++++++++++++++++++++++-
+>  drivers/oprofile/cpu_buffer.h  |    2 +
+>  3 files changed, 140 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/oprofile/buffer_sync.c b/drivers/oprofile/buffer_sync.c
+> index 615929f..e1782d2 100644
+> --- a/drivers/oprofile/buffer_sync.c
+> +++ b/drivers/oprofile/buffer_sync.c
+> @@ -5,6 +5,7 @@
+>   * @remark Read the file COPYING
+>   *
+>   * @author John Levon <levon@movementarian.org>
+> + * @author Barry Kasindorf
+>   *
+>   * This is the core of the buffer management. Each
+>   * CPU buffer is processed and entered into the
+> @@ -272,7 +273,7 @@ static void increment_tail(struct oprofile_cpu_buffer *b)
+>  {
+>  	unsigned long new_tail = b->tail_pos + 1;
+>
+> -	rmb();
+> +	rmb();	/* be sure fifo pointers are synchromized */
+>
+>  	if (new_tail < b->buffer_size)
+>  		b->tail_pos = new_tail;
+> @@ -327,6 +328,67 @@ static void add_trace_begin(void)
+>  	add_event_entry(TRACE_BEGIN_CODE);
+>  }
+>
+> +#define IBS_FETCH_CODE_SIZE	2
+> +#define IBS_OP_CODE_SIZE	5
+> +#define IBS_EIP(offset)				\
+> +	(((struct op_sample *)&cpu_buf->buffer[(offset)])->eip)
+> +#define IBS_EVENT(offset)				\
+> +	(((struct op_sample *)&cpu_buf->buffer[(offset)])->event)
+> +
+> +/*
+> + * Add IBS fetch and op entries to event buffer
+> + */
+> +static void add_ibs_begin(struct oprofile_cpu_buffer *cpu_buf, int code,
+> +	int in_kernel, struct mm_struct *mm)
+> +{
+> +	unsigned long rip;
+> +	int i, count;
+> +	unsigned long ibs_cookie = 0;
+> +	off_t offset;
+> +
+> +	increment_tail(cpu_buf);	/* move to RIP entry */
+> +
+> +	rip = IBS_EIP(cpu_buf->tail_pos);
+> +
+> +#ifdef __LP64__
+> +	rip += IBS_EVENT(cpu_buf->tail_pos) << 32;
+> +#endif
+> +
+> +	if (mm) {
+> +		ibs_cookie = lookup_dcookie(mm, rip, &offset);
+> +
+> +		if (ibs_cookie == NO_COOKIE)
+> +			offset = rip;
+> +		if (ibs_cookie == INVALID_COOKIE) {
+> +			atomic_inc(&oprofile_stats.sample_lost_no_mapping);
+> +			offset = rip;
+> +		}
+> +		if (ibs_cookie != last_cookie) {
+> +			add_cookie_switch(ibs_cookie);
+> +			last_cookie = ibs_cookie;
+> +		}
+> +	} else
+> +		offset = rip;
+> +
+> +	add_event_entry(ESCAPE_CODE);
+> +	add_event_entry(code);
+> +	add_event_entry(offset);	/* Offset from Dcookie */
+> +
+> +	/* we send the Dcookie offset, but send the raw Linear Add also*/
+> +	add_event_entry(IBS_EIP(cpu_buf->tail_pos));
+> +	add_event_entry(IBS_EVENT(cpu_buf->tail_pos));
+> +
+> +	if (code == IBS_FETCH_CODE)
+> +		count = IBS_FETCH_CODE_SIZE;	/*IBS FETCH is 2 int64s*/
+> +	else
+> +		count = IBS_OP_CODE_SIZE;	/*IBS OP is 5 int64s*/
+> +
+> +	for (i = 0; i < count; i++) {
+> +		increment_tail(cpu_buf);
+> +		add_event_entry(IBS_EIP(cpu_buf->tail_pos));
+> +		add_event_entry(IBS_EVENT(cpu_buf->tail_pos));
+> +	}
+> +}
+>   
+>  static void add_sample_entry(unsigned long offset, unsigned long event)
+>  {
+> @@ -524,6 +586,14 @@ void sync_buffer(int cpu)
+>  			} else if (s->event == CPU_TRACE_BEGIN) {
+>  				state = sb_bt_start;
+>  				add_trace_begin();
+> +			} else if (s->event == IBS_FETCH_BEGIN) {
+> +				state = sb_bt_start;
+> +				add_ibs_begin(cpu_buf,
+> +					IBS_FETCH_CODE, in_kernel, mm);
+> +			} else if (s->event == IBS_OP_BEGIN) {
+> +				state = sb_bt_start;
+> +				add_ibs_begin(cpu_buf,
+> +					IBS_OP_CODE, in_kernel, mm);
+>  			} else {
+>  				struct mm_struct *oldmm = mm;
+>
+> diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
+> index 2450b3a..c9ac4e1 100644
+> --- a/drivers/oprofile/cpu_buffer.c
+> +++ b/drivers/oprofile/cpu_buffer.c
+> @@ -5,6 +5,7 @@
+>   * @remark Read the file COPYING
+>   *
+>   * @author John Levon <levon@movementarian.org>
+> + * @author Barry Kasindorf <barry.kasindorf@amd.com>
+>   *
+>   * Each CPU has a local buffer that stores PC value/event
+>   * pairs. We also log context switches when we notice them.
+> @@ -207,7 +208,7 @@ static int log_sample(struct oprofile_cpu_buffer * cpu_buf, unsigned long pc,
+>  	return 1;
+>  }
+>
+> -static int oprofile_begin_trace(struct oprofile_cpu_buffer * cpu_buf)
+> +static int oprofile_begin_trace(struct oprofile_cpu_buffer *cpu_buf)
+>  {
+>  	if (nr_available_slots(cpu_buf) < 4) {
+>  		cpu_buf->sample_lost_overflow++;
+> @@ -252,6 +253,71 @@ void oprofile_add_sample(struct pt_regs * const regs, unsigned long event)
+>  	oprofile_add_ext_sample(pc, regs, event, is_kernel);
+>  }
+>
+> +#define MAX_IBS_SAMPLE_SIZE	14
+> +static int log_ibs_sample(struct oprofile_cpu_buffer *cpu_buf,
+> +	unsigned long pc, int is_kernel, unsigned  int *ibs, int ibs_code)
+> +{
+> +	struct task_struct *task;
+> +
+> +	cpu_buf->sample_received++;
+> +
+> +	if (nr_available_slots(cpu_buf) < MAX_IBS_SAMPLE_SIZE) {
+> +		cpu_buf->sample_lost_overflow++;
+> +		return 0;
+> +	}
+> +
+> +	is_kernel = !!is_kernel;
+> +
+> +	/* notice a switch from user->kernel or vice versa */
+> +	if (cpu_buf->last_is_kernel != is_kernel) {
+> +		cpu_buf->last_is_kernel = is_kernel;
+> +		add_code(cpu_buf, is_kernel);
+> +	}
+> +
+> +	/* notice a task switch */
+> +	if (!is_kernel) {
+> +		task = current;
+> +
+> +		if (cpu_buf->last_task != task) {
+> +			cpu_buf->last_task = task;
+> +			add_code(cpu_buf, (unsigned long)task);
+> +		}
+> +	}
+> +
+> +	add_code(cpu_buf, ibs_code);
+> +	add_sample(cpu_buf, ibs[0], ibs[1]);
+> +	add_sample(cpu_buf, ibs[2], ibs[3]);
+> +	add_sample(cpu_buf, ibs[4], ibs[5]);
+> +
+> +	if (ibs_code == IBS_OP_BEGIN) {
+> +	add_sample(cpu_buf, ibs[6], ibs[7]);
+> +	add_sample(cpu_buf, ibs[8], ibs[9]);
+> +	add_sample(cpu_buf, ibs[10], ibs[11]);
+> +	}
+> +
+> +	return 1;
+> +}
+> +
+>   
+I'm concerned about the arch-specific nature of the "ibs" functions
+above being placed here in the generic portion of the oprofile driver. 
+Better to generalize the external function defined below (and rename it)
+by invoking arch-specific handlers via function pointers.  Hopefully
+find a way to move the arch-specific code back to where it belongs,
+under the appropriate arch/ directory.
 
-The name is really bad, this sounds like something for doing large
-scale industrial process control.
- 
-> Firstly thanks to all the people who have contributed to the discussion
-> of this in the past.
-> 
-> In brief the intention is provide a kernel subsystem directed towards the
-> handling on sensors (and later related output devices) such as ADC's,
-> accelerometers and many others.
+-Maynard
+> +void oprofile_add_ibs_sample(struct pt_regs *const regs,
+> +				unsigned int * const ibs_sample, u8 code)
+> +{
+> +	int is_kernel = !user_mode(regs);
+> +	unsigned long pc = profile_pc(regs);
+> +
+> +	struct oprofile_cpu_buffer *cpu_buf =
+> +			 &per_cpu(cpu_buffer, smp_processor_id());
+> +
+> +	if (!backtrace_depth) {
+> +		log_ibs_sample(cpu_buf, pc, is_kernel, ibs_sample, code);
+> +		return;
+> +	}
+> +
+> +	/* if log_sample() fails we can't backtrace since we lost the source
+> +	* of this event */
+> +	if (log_ibs_sample(cpu_buf, pc, is_kernel, ibs_sample, code))
+> +		oprofile_ops.backtrace(regs, backtrace_depth);
+> +}
+> +
+>  void oprofile_add_pc(unsigned long pc, int is_kernel, unsigned long event)
+>  {
+>  	struct oprofile_cpu_buffer *cpu_buf = &__get_cpu_var(cpu_buffer);
+> diff --git a/drivers/oprofile/cpu_buffer.h b/drivers/oprofile/cpu_buffer.h
+> index c3e366b..9c44d00 100644
+> --- a/drivers/oprofile/cpu_buffer.h
+> +++ b/drivers/oprofile/cpu_buffer.h
+> @@ -55,5 +55,7 @@ void cpu_buffer_reset(struct oprofile_cpu_buffer * cpu_buf);
+>  /* transient events for the CPU buffer -> event buffer */
+>  #define CPU_IS_KERNEL 1
+>  #define CPU_TRACE_BEGIN 2
+> +#define IBS_FETCH_BEGIN 3
+> +#define IBS_OP_BEGIN    4
+>
+>  #endif /* OPROFILE_CPU_BUFFER_H */
+>   
 
-We've already got an perfectly good hwmon framework, do we really need
-to do this again?
-
-> Key features of the subsystem include:
-> 
-> * Provision of sysfs access for direct reading from devices (similar to hwmon
->   but without the buffering / update rate restrictions)
-> 
-> * Provision of chrdevs through which events may be passed to userspace in a
->   similar fashion to the input subsystem.  These events may be anything from
->   hardware thresholds set on the sensor itself to sw / hw ring buffer event
->   notifications (50% full etc).
-> 
-> * Provision of access via chrdevs to hardware ring buffers on devices that
->   provide them.
-> 
-> * Software ring buffer support to allow semi regular capture of data form the
->   device.  Typically this will be driven from either datardy events, or from
->   a periodic timer interrupt (to this end a very simple wrapper for periodic
->   RTC's is included. This will move to more generic timer interfaces as and when
->   they become available.  For now available rtc's must be registered with the
->   subsystem via the industrialio_register_ptimer function form within a board
->   init.
-> 
-> * A set of sample drivers illustrating the main 'classes' of device. By classes
->   I really mean devices that are interfaced with in a similar way.
-> 
-> The subsystem is now in a functional state with a small set of drivers:
-> 
-> Max1363 (supports numerous Maxim i2c ADC's) (tested with max1363 and max1238 chips)
->    - Uses a periodic timer to provide ring buffer mode.
->    - All reads form these devices are scan modes so direct single element access
->      is not provided.
->    - Monitor mode on max1363 is not yet supported (need to do a bit debugging of
->      the board I have so as to be able to test this).
-> 
-> ST LIS3L02DQ - SPI accelerometer.
->    - Uses a datardy interrupt to driver a software ring buffer.
->    - Most functionality of this device is supported.
-> 
-> VTI SCA3000 (tested with an e05)
->    - Hardware ring buffer.
-> 
-> More drivers in preparation.
-> 
-> Next focus will be on cleaning up / implementing a more generic timer framework
-> and allowing the system to partly run if not all dependencies are met 
-> (particularly availability of timers).
-> 
-> An initial set of patches will be attached to this thread shortly.
-
--- 
-Ben
-
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
 
