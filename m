@@ -1,75 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbYGWExJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbYGWFCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755071AbYGWExJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 00:53:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbYGWEwx
+	id S1754639AbYGWFCh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 01:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYGWFC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 00:52:53 -0400
-Received: from 1wt.eu ([62.212.114.60]:1918 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752597AbYGWEww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 00:52:52 -0400
-Date: Wed, 23 Jul 2008 06:52:31 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Andrew Morton <akpm@linux-foundation.org>
+	Wed, 23 Jul 2008 01:02:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42260 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752527AbYGWFCZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 01:02:25 -0400
+Date: Tue, 22 Jul 2008 22:00:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Willy Tarreau <w@1wt.eu>
 Cc: Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org,
        netdev@vger.kernel.org,
        Stephen Hemminger <shemminger@linux-foundation.org>,
        "David S. Miller" <davem@davemloft.net>,
        Russell King <rmk+lkml@arm.linux.org.uk>
 Subject: Re: [bisected] kernel panic 2.6.22 -> 2.6.26-rc9+
-Message-ID: <20080723045230.GD29189@1wt.eu>
-References: <m3d4lisk4i.fsf@maximus.localdomain> <20080713013107.23f060f2.akpm@linux-foundation.org> <m3abgmcb68.fsf@maximus.localdomain> <20080713112230.e86ba9ae.akpm@linux-foundation.org> <m3lk05jvw5.fsf@maximus.localdomain> <20080713145525.51a1ca3a.akpm@linux-foundation.org>
+Message-Id: <20080722220056.234af367.akpm@linux-foundation.org>
+In-Reply-To: <20080723045230.GD29189@1wt.eu>
+References: <m3d4lisk4i.fsf@maximus.localdomain>
+	<20080713013107.23f060f2.akpm@linux-foundation.org>
+	<m3abgmcb68.fsf@maximus.localdomain>
+	<20080713112230.e86ba9ae.akpm@linux-foundation.org>
+	<m3lk05jvw5.fsf@maximus.localdomain>
+	<20080713145525.51a1ca3a.akpm@linux-foundation.org>
+	<20080723045230.GD29189@1wt.eu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080713145525.51a1ca3a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 13, 2008 at 02:55:25PM -0700, Andrew Morton wrote:
-> On Sun, 13 Jul 2008 23:51:06 +0200 Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> 
-> > Andrew Morton <akpm@linux-foundation.org> writes:
-> > 
-> > > --- a/include/asm-arm/bitops.h~a
-> > > +++ a/include/asm-arm/bitops.h
-> > > @@ -277,9 +277,16 @@ static inline int constant_fls(int x)
-> > >   * the clz instruction for much better code efficiency.
-> > >   */
-> > >  
-> > > -#define fls(x) \
-> > > +#define __fls(x) \
-> > >  	( __builtin_constant_p(x) ? constant_fls(x) : \
-> > >  	  ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 32-__r; }) )
-> > > +
-> > > +/* Implement fls() in C so that 64-bit args are suitably truncated */
-> > > +static inline int fls(int x)
-> > > +{
-> > > +	return __fls(x);
-> > > +}
-> > > +
-> > 
-> > Well, I like it more as it fixes all possible places instead of only
-> > fls64().
-> > 
-> > But... can't we just move the #define body into the inline fls(x)?
-> > Will there be other users of __fls(x)? It seems the
-> > __builtin_constant_p(x) works for inline functions.
-> 
-> Could.  That was a minimal&safe thing.
-> 
-> > The above patch fixes the kernel panic, too.
-> 
-> OK, thanks.
+On Wed, 23 Jul 2008 06:52:31 +0200 Willy Tarreau <w@1wt.eu> wrote:
 
-Andrew,
+> On Sun, Jul 13, 2008 at 02:55:25PM -0700, Andrew Morton wrote:
+> > On Sun, 13 Jul 2008 23:51:06 +0200 Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> > 
+> > > Andrew Morton <akpm@linux-foundation.org> writes:
+> > > 
+> > > > --- a/include/asm-arm/bitops.h~a
+> > > > +++ a/include/asm-arm/bitops.h
+> > > > @@ -277,9 +277,16 @@ static inline int constant_fls(int x)
+> > > >   * the clz instruction for much better code efficiency.
+> > > >   */
+> > > >  
+> > > > -#define fls(x) \
+> > > > +#define __fls(x) \
+> > > >  	( __builtin_constant_p(x) ? constant_fls(x) : \
+> > > >  	  ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 32-__r; }) )
+> > > > +
+> > > > +/* Implement fls() in C so that 64-bit args are suitably truncated */
+> > > > +static inline int fls(int x)
+> > > > +{
+> > > > +	return __fls(x);
+> > > > +}
+> > > > +
+> > > 
+> > > Well, I like it more as it fixes all possible places instead of only
+> > > fls64().
+> > > 
+> > > But... can't we just move the #define body into the inline fls(x)?
+> > > Will there be other users of __fls(x)? It seems the
+> > > __builtin_constant_p(x) works for inline functions.
+> > 
+> > Could.  That was a minimal&safe thing.
+> > 
+> > > The above patch fixes the kernel panic, too.
+> > 
+> > OK, thanks.
+> 
+> Andrew,
+> 
+> have you sent your patch to Linus ? I haven't seen it merged yet, and
+> I'd like to get it into -stable too.
 
-have you sent your patch to Linus ? I haven't seen it merged yet, and
-I'd like to get it into -stable too.
+This one?
 
-Thanks,
-Willy
+From: Andrew Morton <akpm@linux-foundation.org>
+
+arm's fls() is implemented as a macro, causing it to misbehave when passed
+64-bit arguments.  Fix.
+
+Cc: Nickolay Vinogradov <nickolay@protei.ru>
+Tested-by: Krzysztof Halasa <khc@pm.waw.pl>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/asm-arm/bitops.h |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff -puN include/asm-arm/bitops.h~arm-fix-fls-for-64-bit-arguments include/asm-arm/bitops.h
+--- a/include/asm-arm/bitops.h~arm-fix-fls-for-64-bit-arguments
++++ a/include/asm-arm/bitops.h
+@@ -277,9 +277,16 @@ static inline int constant_fls(int x)
+  * the clz instruction for much better code efficiency.
+  */
+ 
+-#define fls(x) \
++#define __fls(x) \
+ 	( __builtin_constant_p(x) ? constant_fls(x) : \
+ 	  ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 32-__r; }) )
++
++/* Implement fls() in C so that 64-bit args are suitably truncated */
++static inline int fls(int x)
++{
++	return __fls(x);
++}
++
+ #define ffs(x) ({ unsigned long __t = (x); fls(__t & -__t); })
+ #define __ffs(x) (ffs(x) - 1)
+ #define ffz(x) __ffs( ~(x) )
+_
+
+
+Nope, I'm just kind of sitting on it.  I'll put a stable@kernel.org tag
+on it and send it to Russell I guess.
 
