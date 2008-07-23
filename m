@@ -1,84 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751772AbYGWJHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbYGWJaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751772AbYGWJHm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 05:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYGWJHd
+	id S1754291AbYGWJaH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 05:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYGWJ3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 05:07:33 -0400
-Received: from smtp1.versatel.nl ([62.58.50.88]:53465 "EHLO smtp1.versatel.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751229AbYGWJHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 05:07:32 -0400
-Message-ID: <4886F6BF.6070900@hhs.nl>
-Date: Wed, 23 Jul 2008 11:15:43 +0200
-From: Hans de Goede <j.w.r.degoede@hhs.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 23 Jul 2008 05:29:55 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:11671 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751266AbYGWJ3y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 05:29:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=eMGhCfPjhaA7e573+wst1N16cmG0X0NkJ7U/q0jC6VUMD5yG2Jzs/3ExmButJpehYN
+         eqmLnwkozMK2Kg6T0GZubIevTGOqA/ocFTDlzjIObBWuKuS+OZ0OlWkzKvWSr0sWqdcy
+         /V6Wm7w+5lS5C2dl3GmqizAeLhJOUgxAuEjmw=
+Date: Wed, 23 Jul 2008 09:35:00 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: David Miller <davem@davemloft.net>, Larry.Finger@lwfinger.net,
+       kaber@trash.net, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       mingo@redhat.com
+Subject: Re: Kernel WARNING: at net/core/dev.c:1330
+	__netif_schedule+0x2c/0x98()
+Message-ID: <20080723093459.GC4561@ff.dom.local>
+References: <20080722.160409.216536011.davem@davemloft.net> <20080723062036.GA4561@ff.dom.local> <20080723.005921.113868915.davem@davemloft.net> <20080723085452.GB4561@ff.dom.local> <1216803786.7257.146.camel@twins>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Hans Verkuil <hverkuil@xs4all.nl>,
-       Linux and Kernel Video <video4linux-list@redhat.com>,
-       Hans de Goede <j.w.r.degoede@hhs.nl>
-Subject: Re: fs/char_dev.c memory leak (broken reference counting)
-References: <4886F47A.3090102@hhs.nl>
-In-Reply-To: <4886F47A.3090102@hhs.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1216803786.7257.146.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hans de Goede wrote:
-
-<snip>
-
-> And here is the problem when the fd refering to the character device 
-> gets closed, no-one does a kobj_put. chrdev_open replace the file's f_op 
-> pointer with the device driver fops, so the only fops release which will 
-> get called is that of the device driver, cdev_put (which will call 
-> kobj_put on the kobj) is exported, so device driver release methods 
-> could and I guess should call cdev_put, but under drivers/char there is 
-> not a single driver calling cdev_put !!
+On Wed, Jul 23, 2008 at 11:03:06AM +0200, Peter Zijlstra wrote:
+> On Wed, 2008-07-23 at 08:54 +0000, Jarek Poplawski wrote:
+> > On Wed, Jul 23, 2008 at 12:59:21AM -0700, David Miller wrote:
+> > > From: Jarek Poplawski <jarkao2@gmail.com>
+> > > Date: Wed, 23 Jul 2008 06:20:36 +0000
+> > > 
+> > > > PS: if there is nothing new in lockdep the classical method would
+> > > > be to change this static array:
+> > > > 
+> > > > static struct lock_class_key
+> > > > netdev_xmit_lock_key[ARRAY_SIZE(netdev_lock_type)];
+> > > > 
+> > > > to
+> > > > 
+> > > > static struct lock_class_key
+> > > > netdev_xmit_lock_key[ARRAY_SIZE(netdev_lock_type)][MAX_NUM_TX_QUEUES];
+> > > > 
+> > > > and set lockdep classes per queue as well. (If we are sure we don't
+> > > > need lockdep subclasses anywhere this could be optimized by using
+> > > > one lock_class_key per 8 queues and spin_lock_nested()).
+> > > 
+> > > Unfortunately MAX_NUM_TX_QUEUES is USHORT_MAX, so this isn't really
+> > > a feasible approach.
+> > 
+> > Is it used by real devices already? Maybe for the beginning we could
+> > start with something less?
+> > 
+> > > spin_lock_nested() isn't all that viable either, as the subclass
+> > > limit is something like 8.
+> > 
+> > This method would need to do some additional counting: depending of
+> > a queue number each 8 subsequent queues share (are set to) the same
+> > class and their number mod 8 gives the subqueue number for
+> > spin_lock_nested().
+> > 
+> > I'll try to find if there is something new around this in lockdep.
+> > (lockdep people added to CC.)
 > 
-> So unless I'm missing something the kojb release callback never gets 
-> called.
+> There isn't.
 > 
-
-Never mind, I just found out that cdev_put gets called from __fput() in 
-fs/file_table.c, thats somewhat convoluted if I may say so, I think atleast a 
-comment in char_dev.c explaining this would be in order.
-
-So that only leaves this part of my mail:
-
-> ###
+> Is there a static data structure that the driver needs to instantiate to
+> 'create' a queue? Something like:
 > 
-> While on this topic in case of an usb device whose driver exports an 
-> chardev to userspace, the device can be disconnected while the chardev 
-> is still open. Currently usb-chardev drivers need to do their own 
-> reference counting in their open / release fops to make sure their 
-> device structure stays around until the last user has closed the device.
-> 
-> The reference counting in cdev is almost an 
-> exact duplicate of the ref counting done in the device driver, thus I 
-> would like to propose to add a release function ptr to the cdev struct 
-> which if not NULL gets called from the cdev kobj release handler, then 
-> then device driver no longer has to duplicate the ref counting.
-> 
-> This esp seems to make sense in cases where the device driver uses 
-> cdev_init, as then the cdev structure could currently be freed by the 
-> device driver (in case of hot unplug) without it knowing for sure that 
-> there are no more users of the cdev structure. For example even when the 
-> device driver does its own ref counting in the open / release fops, 
-> there could still be some users in the form of open cdev sysfs files.
-> 
+> /* this imaginary e1000 hardware has 16 hardware queues */
+> static struct net_tx_queue e1000e_tx_queues[16]; 
 
-I would still very much like to see this release callback get added, if there 
-are no objections I'll do a patch for this.
+I guess, not.
 
-Regards,
+Then, IMHO, we could be practical and simply skip lockdep validation
+for "some" range of locks: e.g. to set the table for the first 256
+queues only, and to do e.g. __raw_spin_lock() for bigger numbers. (If
+there are any bad locking patterns this should be enough for checking.)
 
-Hans
-
-p.s.
-
-Please keep me in the CC, I'm not subscribed to the kernel mailinglist.
-
+Jarek P.
