@@ -1,62 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYGWQya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbYGWQ7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbYGWQya (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 12:54:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYGWQyW
+	id S1754162AbYGWQ7Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 12:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbYGWQ65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 12:54:22 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:37030 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751394AbYGWQyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 12:54:21 -0400
-Date: Wed, 23 Jul 2008 19:54:05 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, Rik van Riel <riel@redhat.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
-Subject: Re: systemtap & backward compatibility, was Re: [RFC] systemtap:
-	begin the process of using proper kernel APIs
-Message-ID: <20080723165405.GE14846@cs181140183.pp.htv.fi>
-References: <1216313914.5515.25.camel__21144.9282979176$1216314027$gmane$org@localhost.localdomain> <y0m7ibkjrcj.fsf@ton.toronto.redhat.com> <1216325546.5515.63.camel@localhost.localdomain> <20080717202634.GI18295@redhat.com> <1216328769.5515.78.camel@localhost.localdomain> <20080717213355.GJ18295@redhat.com> <20080722140015.37628ea4@bree.surriel.com> <20080723150434.GC11191@redhat.com> <20080723082856.334f9c17__2909.60763018138$1216827051$gmane$org@infradead.org> <y0m3am0blj2.fsf@ton.toronto.redhat.com>
+	Wed, 23 Jul 2008 12:58:57 -0400
+Received: from outbound-mail-06.bluehost.com ([69.89.17.206]:45481 "HELO
+	outbound-mail-06.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752609AbYGWQ64 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 12:58:56 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=CWXCUYlSxj/5bCPt9qbj6jB0ITA8WGhGtT78huALm9h2sWVnEhjZ+zAlekEyOuPLd7H5uFAWPMEqJHQ/H5HB0RbkO6QWZzjHriD6r6HwddIqDz7ZeM2DFoWH/DadQ/Da;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: akataria@vmware.com
+Subject: Re: acpi based pci gap calculation  - v3
+Date: Wed, 23 Jul 2008 09:58:32 -0700
+User-Agent: KMail/1.9.9
+Cc: Andi Kleen <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Brown@vger.kernel.org, Len <len.brown@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       TJ <linux@tjworld.net>
+References: <1216148382.6135.21.camel@alok-dev1> <200807221450.52114.jbarnes@virtuousgeek.org> <1216767168.5693.31.camel@alok-dev1>
+In-Reply-To: <1216767168.5693.31.camel@alok-dev1>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <y0m3am0blj2.fsf@ton.toronto.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200807230958.32898.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 12:41:37PM -0400, Frank Ch. Eigler wrote:
->...
-> In the interim (before we come up with a way of moving more
-> kernel-coupled systemtap code into kernel.org/git), would y'all
-> consider an arrangement?  Those of you who care about systemtap, and
-> are intending to make an incompatible kernel/module interface change,
-> please run the systemtap testsuite before & after.  If it regresses,
-> send us a note or a patch.  If practical, we'll integrate it (and add
-> any backward-compatibility hacks if needed) into systemtap.
+On Tuesday, July 22, 2008 3:52 pm Alok Kataria wrote:
+> In the log that you sent me, please note the following debug messages
+> -------
+> E820_DEBUG: Searching for gap between (0x00000000 - 0x100000000)
+> E820_DEBUG: Found gap starting at 0xbf000000 size 0x40f00000
+> Allocating PCI resources starting at c0000000 (gap: bf000000:40f00000)
+> -------
+>
+> This is the gap that was allocated by walking just the e820_map
+>
+> With my changes we query the _CRS resource and get following info
+> ------
+> ACPI_DEBUG start_addr 0xf8000000 gapsize 0x00400000 address_length
+> 0x06b00000 end_addr is 0xfeb00000
+> E820_DEBUG: Searching for gap between (0xf8000000 - 0xfeb00000)
+> E820_DEBUG: Found gap at start starting at 0x100000000 size 0x07f00000
+> ACPI_DEBUG start_addr 0xbf000000 gapsize 0x07f00000 address_length
+> 0x31000000 end_addr is 0xf0000000
+> E820_DEBUG: Searching for gap between (0xbf000000 - 0xf0000000)
+> E820_DEBUG: Found gap starting at 0xbf000000 size 0x31000000
+> ------
+>
+> So there are 2 producer regions one from [0xBF000000 - 0xF0000000] and
+> another from [0xF8000000 - 0xFEB00000]. That means BIOS has reserved the
+> area from [0xF0000000 - 0xF7FFFFFF] for some other resource.
+> If you look a little below in the log there is this
+>
+> ----
+> system 00:01: iomem range 0xf0000000-0xf7ffffff has been reserved
+> ----
+>
+> So the gap that we had calculated first i.e. from e820_setup_gap did
+> contain a collision i.e. though a resource was reserved from
+> [0xf0000000 - 0xf7ffffff] our gap calculation doesn't take that into
+> account.  My patch fixes this issue.
+>
+> So, IMHO this is a BUG and should be fixed. Please let me know your
+> views.
 
-The number of incompatible kernel/module interface changes per kernel is 
-most likely some medium three digit number.
+Yes, there's a conflict there, but on many machines it's probably a harmless 
+one.  My main concerns are these:
+  1) it changes long standing behavior and doesn't fix any real reported bugs
+     I'm aware of (feel free to point me at some)
+  2) it looks like it will dramatically reduce the available PCI resource
+     space on at least some platforms, and that space is already scarce in our
+     current scheme
 
-What you have in mind is therefore not really feasible.
+So basically, I'm just feeling very conservative about any changes to resource 
+allocation, that's all.
 
-But we have several levels of kernels that incorporate future stuff, 
-from -rc over -next to -mm, and you could implement automated runs 
-of the systemtap testsuite against the latest ones.
+If this change were coupled with one that allowed us to exploit more available 
+address space for PCI resources I'd feel much more comfortable about it, 
+which is why I'm so interested in TJ's work (/me goes off to read his wiki 
+now).
 
-> - FChE
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks,
+Jesse
