@@ -1,104 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYGWUcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbYGWUf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756209AbYGWUcW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 16:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755184AbYGWUcO
+	id S1755870AbYGWUf5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 16:35:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754402AbYGWUfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 16:32:14 -0400
-Received: from krynn.se.axis.com ([193.13.178.10]:46003 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754999AbYGWUcN (ORCPT
+	Wed, 23 Jul 2008 16:35:48 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38405 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753713AbYGWUfr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 16:32:13 -0400
-Date: Wed, 23 Jul 2008 22:21:48 +0200
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "mingo@elte.hu" <mingo@elte.hu>,
-       "x86@kernel.org" <x86@kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Russell King <rmk@arm.linux.org.uk>,
-       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Lennert Buytenhek <kernel@wantstofly.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Paul Mackerras <paulus@samba.org>,
-       David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Tim Bird <tim.bird@am.sony.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Dave Miller <davem@davemloft.net>
-Subject: Re: [PATCH] (updated, rolled up) make section names compatible with -ffunction-sections -fdata-sections
-Message-ID: <20080723202148.GA2949@axis.com>
-References: <200807172213.37411.vda.linux@googlemail.com>
+	Wed, 23 Jul 2008 16:35:47 -0400
+Date: Wed, 23 Jul 2008 13:32:50 -0700
+From: Greg KH <greg@kroah.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: pHilipp Zabel <philipp.zabel@gmail.com>, Greg KH <gregkh@suse.de>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <w@1wt.eu>,
+       Chuck Wolber <chuckw@quantumlinux.com>, alan@lxorguk.ukuu.org.uk,
+       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
+       Jake Edge <jake@lwn.net>, Michael Krufky <mkrufky@linuxtv.org>,
+       stable@kernel.org, Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: [stable] [patch 44/47] pxamci: fix byte aligned DMA transfers
+Message-ID: <20080723203250.GA26454@kroah.com>
+References: <20080722230208.148102983@mini.kroah.org> <20080722231342.GA8282@suse.de> <20080722231735.GS8282@suse.de> <74d0deb30807230001x176e375cq9a8060c20596f36f@mail.gmail.com> <20080723201258.GA26156@kroah.com> <alpine.LFD.1.10.0807231322250.4754@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200807172213.37411.vda.linux@googlemail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <alpine.LFD.1.10.0807231322250.4754@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 10:13:37PM +0200, Denys Vlasenko wrote:
-> Hi Andrew,
-> 
-> Here is the update against current Linus tree,
-> rolled up into one patch.
-> 
-> James Bottomley suggested a different naming scheme:
-> instead of swapping parts (.text.head -> .head.text),
-> prepend .kernel to our special section names.
-> This patch implements his idea.
-> 
-> ppc and v850 are dropped per comments from arch people.
-> parisc and x86 had minor fixes. x86 fix added proper
-> executable bits to a section:
-> 
-> -.section ".text.head"
-> +.section ".kernel.text.head","ax",@progbits
-> 
-> Does arch/m68k/kernel/sun3-head.S need the same fix?
-> 
-> The patch is run-tested on x86_64.
-> 
-> I would like to ask arch maintainers to ACK/NAK this patch,
-> and Andrew to act accordingly.
-> 
-> Changelog follows:
+On Wed, Jul 23, 2008 at 01:24:12PM -0700, Linus Torvalds wrote:
 > 
 > 
+> On Wed, 23 Jul 2008, Greg KH wrote:
 > 
-> The purpose of these patches is to make kernel buildable
-> with "gcc -ffunction-sections -fdata-sections".
+> > On Wed, Jul 23, 2008 at 09:01:34AM +0200, pHilipp Zabel wrote:
+> > > 
+> > > There is an ugly typo in the patch below that was fixed by Karl Beldan:
+> > > http://git.kernel.org/?p=linux/kernel/git/drzeus/mmc.git;a=commit;h=28bbe535df5c461c25eb57affb30e007072429c3
+> > > 
+> > > Not sure how you handle this, maybe this patch should only go in
+> > > together with the other.
+> > 
+> > As the above mentioned patch isn't in Linus's tree yet, I can't take it.
+> > 
+> > Care to send it to stable@kernel.org when it does go in?  Or is this
+> > current patch just broken without it and not worth adding at all?
 > 
-> The problem is that with -ffunction-sections -fdata-sections gcc
-> creates sections like .text.head and .data.nosave
-> whenever someone has innocuous code like this:
-> 
-> static void head(...) {...}
-> 
-> or this:
-> 
-> int f(...) { static int nosave; ... }
-> 
-> somewhere in the kernel.
-> 
-> Kernel linker script is confused by such names and puts these sections
-> in wrong places.
-> 
-> This patch renames all "magic" section names used by kernel
-> to not have this format, eliminating the possibility of such collisions.
-> 
-> Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+> Hmm. I think it's commit 4fe16897c59882420d66f2d503106653d026ed6c 
+> upstream. I don't know why it has a different SHA1 in the mmc tree, but I 
+> assume that it's because the MMC tree has rebased at some point. Ugh.
 
-CRIS part:
+Ah, thanks, I missed that.
 
-Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
+Hm, that is added post 2.6.26, so I'll add this fixup patch to the
+.25-stable tree, and also add this one to the .26-stable queue.
 
-> vda
+Philipp, is that correct, or does this original one also need to get
+added to the .26-stable queue as well?
 
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+thanks,
+
+greg k-h
