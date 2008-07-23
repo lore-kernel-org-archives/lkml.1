@@ -1,68 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752413AbYGWP3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbYGWPdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752413AbYGWP3d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 11:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYGWP3Q
+	id S1754032AbYGWPdR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 11:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbYGWPdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 11:29:16 -0400
-Received: from casper.infradead.org ([85.118.1.10]:57317 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753302AbYGWP3P (ORCPT
+	Wed, 23 Jul 2008 11:33:06 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56458 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbYGWPdF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 11:29:15 -0400
-Date: Wed, 23 Jul 2008 08:14:03 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: 7eggert@gmx.de
-Cc: "Rafael C. de Almeida" <almeidaraf@gmail.com>,
-       Eric Paris <eparis@redhat.com>, malware-list@lists.printk.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: request for comment: generic kernel interface for malware
- vendors
-Message-ID: <20080723081403.4c615bcb@infradead.org>
-In-Reply-To: <E1KLdgU-0001a9-7F@be1.7eggert.dyndns.org>
-References: <aRVce-Em-3@gated-at.bofh.it>
-	<aS7Go-7AK-3@gated-at.bofh.it>
-	<E1KLdgU-0001a9-7F@be1.7eggert.dyndns.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Wed, 23 Jul 2008 11:33:05 -0400
+Subject: Re: systemtap & backward compatibility, was Re: [RFC] systemtap:
+	begin the process of using proper kernel APIs
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Rik van Riel <riel@redhat.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+In-Reply-To: <20080723150434.GC11191@redhat.com>
+References: <487E8CE4.70105@redhat.com>
+	 <1216259391.3358.85.camel@localhost.localdomain>
+	 <1216304290.5515.11.camel@localhost.localdomain>
+	 <1216313914.5515.25.camel__21144.9282979176$1216314027$gmane$org@localhost.localdomain>
+	 <y0m7ibkjrcj.fsf@ton.toronto.redhat.com>
+	 <1216325546.5515.63.camel@localhost.localdomain>
+	 <20080717202634.GI18295@redhat.com>
+	 <1216328769.5515.78.camel@localhost.localdomain>
+	 <20080717213355.GJ18295@redhat.com>
+	 <20080722140015.37628ea4@bree.surriel.com>
+	 <20080723150434.GC11191@redhat.com>
+Content-Type: text/plain
+Date: Wed, 23 Jul 2008 17:33:07 +0200
+Message-Id: <1216827187.7257.189.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jul 2008 14:43:09 +0200
-Bodo Eggert <7eggert@gmx.de> wrote:
-
-> Rafael C. de Almeida <almeidaraf@gmail.com> wrote:
-> > Eric Paris wrote:
+On Wed, 2008-07-23 at 11:04 -0400, Frank Ch. Eigler wrote:
+> Hi -
 > 
-> >> [Kernel support for malware scanners]
+> I wrote:
 > 
-> > I'm a newbie here, so don't take me too serious. But I don't see why
-> > that needs a kernel interface, at least from the example on the
-> > Documentation directory (patch 9). Seems to me you could just use
-> > file permission to deny or allow the access for a certain file. The
-> > only thing that would be a little trickier from user-space is to
-> > know when a given file is read. So, talpa should do only that or
-> > you could take advantage of preload like trickle does for bandwidth
-> > shapping.
+> > > [...] One significant requirement for us is to keep working with
+> > > older kernels.  [...]
 > 
-> How do you ensure that the LD_PRELOAD variable stays intact and will
-> be honored by all applications - including that commercial one
-> supplying it's own libc, by suid-binaries and by programs written in
-> a non-libc-language?
+> Maybe it's worth elaborating on why the need for backward
+> compatibility is different for systemtap than for typical kernel-side
+> code.
+> 
+> The bulk of systemtap is a user-space program, and it does very
+> user-spacey things like parsing dwarf and invoking compilers, running
+> network servers.  Soon it will include user-space libraries.  It is so
+> different from the stuff normally found there that no one has AFAIK
+> seriously proposed that the entire software be made part of the kernel
+> git tree.  So it is an ordinary separate user-space package, built by
+> users and distributors.
+> 
+> It does happen to *generate* kernel modules.  The way that such a
+> module must interface with any particular kernel is naturally subject
+> to the whims & desires of the kernel du jour.  This is why we have a
+> mass of mechanism to try to automatically speak to each kernel version
+> as appropriate.
+> 
+> It is desirable to minimize this mass for obvious reasons.  When a new
+> upstream kernel comes out with a tasty new feature -- or a less tasty
+> API rewrite -- we need to extend systemtap to support that too.  We
+> cannot easily take old support away, because then the same user-space
+> code base would no longer run against actually installed kernels.
+> 
+> To draw an analogy, systemtap is somewhat like low-level userspace
+> code like glibc or syslogd or udevd.  I hope no one would seriously
+> propose casually committing code to those packages that would make
+> them unusable on prior kernel versions.  Accepting such a patch would
+> require their maintainers to fork outright every time a kernel change
+> occurs.
+> 
+> Things are good however if the low-level userspace changes are
+> backward-compatible, so that the new kernel facility is used when
+> present, but the software does not regress if it is not.  I believe
+> this is what we need to aim for, even though it puts the bulk of the
+> burden on systemtap (or glibc, or ...).
+> 
+> I hope this fills in some of the gaps in the background.
 
-neither approach is fool proof for that matter
-it's just a matter of how high you want to put the bar.
+Why does a new version of stap have to work on ancient kernels?
 
-that's why it's really important to see the design ideas for this
-code... to figure out what it is supposed to do ;)
+A new gnome version requires a new gtk version, a new kde version
+requires a new qt etc.. so why does a new stap not require a new kernel?
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Why isn't only supporting the last few kernels, say for example as far
+back as there are -stable series at the moment of release, good enough?
+
+People who insist on running stale kernels are usually the same people
+who run stale userspace - we call those enterprise people - so why can't
+they run matching stale version of the kernel and stap?
+
