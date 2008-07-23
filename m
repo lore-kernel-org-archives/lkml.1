@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYGWPMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbYGWPW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbYGWPMB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 11:12:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYGWPLw
+	id S1753743AbYGWPW4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 11:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYGWPWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 11:11:52 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:57903 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750762AbYGWPLv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 11:11:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:from;
-        b=VtqF1E8sxpz1/2DgSQnCH/sk81U5kpwYUuAycrmnnAKSC4n/9vZF3kwUfvxmXYXPdE
-         E29mrN/VxFuS51QoMhWaNbp2Wc2BibycWC1CXRY7ang5mN8HUYV6UGhAhK90YzFEocm+
-         bh6y6bvGGijhGUDJ8jIK7tsxtB/MdKaCjTeOc=
-Date: Wed, 23 Jul 2008 19:11:44 +0200
-To: Andrei Popa <andrei.popa@i-neo.ro>, Oliver Neukum <oneukum@suse.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kernel oops
-Message-ID: <20080723171144.GA7349@localhost.localdomain>
+	Wed, 23 Jul 2008 11:22:48 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64951 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752232AbYGWPWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 11:22:47 -0400
+Message-ID: <48874C6A.1020604@cn.fujitsu.com>
+Date: Wed, 23 Jul 2008 23:21:14 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1216817556.4415.29.camel@ierdnac>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Markus Trippelsdorf <markus@trippelsdorf.de>,
+       David Miller <davem@davemloft.net>
+CC: Alessandro Guido <ag@alessandroguido.name>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] skge: resolve tx multiqueue bug
+References: <d4b984a30807210914nd4d0db5yb7b93ca5143ff0d5@mail.gmail.com> <20080721.092027.14394005.davem@davemloft.net> <d4b984a30807220254t1aaf6ac4q874329966511b0c5@mail.gmail.com> <20080723054039.GA2272@gentoox2.trippelsdorf.de> <4886F0C5.7040605@cn.fujitsu.com> <20080723101827.GA2236@gentoox2.trippelsdorf.de> <20080723140347.GA2245@gentoox2.trippelsdorf.de>
+In-Reply-To: <20080723140347.GA2245@gentoox2.trippelsdorf.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Markus Trippelsdorf said the following on 2008-7-23 22:03:
+> On Wed, Jul 23, 2008 at 12:18:27PM +0200, Markus Trippelsdorf wrote:
+>> On Wed, Jul 23, 2008 at 04:50:13PM +0800, Wang Chen wrote:
+>>> Markus Trippelsdorf said the following on 2008-7-23 13:40:
+>>>> On Tue, Jul 22, 2008 at 11:54:26AM +0200, Alessandro Guido wrote:
+>>>>> Got a WARNING this morning (2.6.26-05752-g93ded9b) and I think it's related.
+>>>> Same thing here (latest git):
+>>>>
+>>>> skge eth1: enabling interface
+>>>> skge eth1: disabling interface
+>>>> ------------[ cut here ]------------
+>>>> WARNING: at net/core/dev.c:1344 __netif_schedule+0x24/0x6d()
+>>>> Pid: 1904, comm: ip Not tainted 2.6.26-06077-gc010b2f #33
+>>>>  [<ffffffff8020b3eb>] system_call_after_swapgs+0x7b/0x80
+>> ...
+>>>> ---[ end trace 92936ef183e09876 ]---
+>>>> skge eth1: enabling interface
+>>>> skge eth1: Link is up at 100 Mbps, full duplex, flow control both
+>>>>
+>>> Markus, please try this.
+>>>
+>>> - Add netif_start_queue() in ->open()
+>>> - netif_carrier_*() is enough, remove netif_*_queue()
+>> Unfortunately, your patch does not fix this. I still get the same warning.
+>>
+> 
+> This patch works for me:
 
-On Wed, Jul 23, 2008 at 2:52 PM, Andrei Popa <andrei.popa@i-neo.ro> wrote:
->
-> Hello,
->
-> I installed gnokii-0.6.22-r2 and gave the command "gnokii --identify"
-> and the kernel oopsed:
->
-> BUG: unable to handle kernel NULL pointer dereference at 00000458
-> IP: [<c0444b52>] mutex_unlock+0x0/0xb
-> *pde = 00000000
-> Oops: 0002 [#1] PREEMPT SMP
->
-> Pid: 19043, comm: gnokii Not tainted (2.6.26-ineo7 #2)
-> EIP: 0060:[<c0444b52>] EFLAGS: 00010246 CPU: 0
-> EIP is at mutex_unlock+0x0/0xb
-...
->  [<c03830ae>] acm_tty_open+0x4c/0x214
+Your patch works for me too. So I think it's better than mine. :)
 
-This shouldn't be too hard; the code is trying to unlock the mutex
-&acm->mutex even when "acm" is NULL. It seems that the label "err_out"
-is otherwise unused, so it makes sense to move this one step further
-down, so that it doesn't try to unlock the non-existant mutex.
+Tested-by: Wang Chen <wangchen@cn.fujitsu.com>
 
-If the problem is reproducible, you could try the patch below!
+Dave, since Markus and me tested this patch, would you please apply it?
 
 
-Vegard
 
-PS: I actually think the code has some other problems too. Shouldn't
-&acm->mutex be locked before we even inspect acm->dev?
-
-
-Reported-by: Andrei Popa <andrei.popa@i-neo.ro>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-
-diff --git a/drivers/usb/class/cdc-acm.c b/drivers/usb/class/cdc-acm.c
-index 63c3404..74d03a7 100644
---- a/drivers/usb/class/cdc-acm.c
-+++ b/drivers/usb/class/cdc-acm.c
-@@ -525,8 +525,8 @@ static int acm_tty_open(struct tty_struct *tty, struct file *filp)
- 	tasklet_schedule(&acm->urb_task);
- 
- done:
--err_out:
- 	mutex_unlock(&acm->mutex);
-+err_out:
- 	mutex_unlock(&open_mutex);
- 	return rv;
- 
