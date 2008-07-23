@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbYGWQuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYGWQya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754298AbYGWQuh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 12:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYGWQu3
+	id S1754063AbYGWQya (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 12:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYGWQyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 12:50:29 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:20442 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751797AbYGWQu2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 12:50:28 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=1/NQGnXsIIKOSzuK/gWYZZwimyrTat49FEV93h6cXhT9Yl2Tjgpq9KxkLSenuezJAXcRRcUGMgch+q5wQzMsvOk3fz4BkYFNtmrv0VihMUhgEX7cDe15wdVpvxKv8SI335DA1W7w8R6nrzv/hhzQufzCtSj/sUQJ9HsclEUWYtA=  ;
-X-YMail-OSG: aGBzo68VM1lvQKPrdq1ul8hYqx35DQZ25069Yx0hstyTUBVI8vNzxwxQpFvI3n7eo1df.584dniOgKOD_eNkgAtZTn.F55KU4jn60D593_qe5Dv3pbgJsSC7NwSiH906unI-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Clemens Ladisch <clemens@ladisch.de>
-Subject: Re: [patch 2.6.26] /dev/hpet - fixes and cleanup
-Date: Wed, 23 Jul 2008 09:50:25 -0700
-User-Agent: KMail/1.9.9
-Cc: lkml <linux-kernel@vger.kernel.org>, bob.picco@hp.com,
-       venkatesh.pallipadi@intel.com, Vojtech Pavlik <vojtech@suse.cz>,
-       the arch/x86 maintainers <x86@kernel.org>
-References: <200807221508.56672.david-b@pacbell.net> <4886E164.2070304@ladisch.de> <200807230912.49850.david-b@pacbell.net>
-In-Reply-To: <200807230912.49850.david-b@pacbell.net>
+	Wed, 23 Jul 2008 12:54:22 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:37030 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751394AbYGWQyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 12:54:21 -0400
+Date: Wed, 23 Jul 2008 19:54:05 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Rik van Riel <riel@redhat.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+Subject: Re: systemtap & backward compatibility, was Re: [RFC] systemtap:
+	begin the process of using proper kernel APIs
+Message-ID: <20080723165405.GE14846@cs181140183.pp.htv.fi>
+References: <1216313914.5515.25.camel__21144.9282979176$1216314027$gmane$org@localhost.localdomain> <y0m7ibkjrcj.fsf@ton.toronto.redhat.com> <1216325546.5515.63.camel@localhost.localdomain> <20080717202634.GI18295@redhat.com> <1216328769.5515.78.camel@localhost.localdomain> <20080717213355.GJ18295@redhat.com> <20080722140015.37628ea4@bree.surriel.com> <20080723150434.GC11191@redhat.com> <20080723082856.334f9c17__2909.60763018138$1216827051$gmane$org@infradead.org> <y0m3am0blj2.fsf@ton.toronto.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200807230950.26160.david-b@pacbell.net>
+In-Reply-To: <y0m3am0blj2.fsf@ton.toronto.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 July 2008, David Brownell wrote:
-> On Wednesday 23 July 2008, Clemens Ladisch wrote:
-> > David Brownell wrote:
-> > >   * Tighten and correct the userspace interface code
-> > >       ...
-> > >       + only open comparators that have an interrupt, and can thus
-> > >         perform "real work"
-> > 
-> > This prevents userspace applications from doing mmap() on /dev/hpet
-> > even if there is no interrupt.
-> 
-> OK, I removed that ... HPET_IE_ON will already fail.
+On Wed, Jul 23, 2008 at 12:41:37PM -0400, Frank Ch. Eigler wrote:
+>...
+> In the interim (before we come up with a way of moving more
+> kernel-coupled systemtap code into kernel.org/git), would y'all
+> consider an arrangement?  Those of you who care about systemtap, and
+> are intending to make an incompatible kernel/module interface change,
+> please run the systemtap testsuite before & after.  If it regresses,
+> send us a note or a patch.  If practical, we'll integrate it (and add
+> any backward-compatibility hacks if needed) into systemtap.
 
-This change will be included in the next version of this patch, which
-I'll send after other responses get more of a chance to trickle in.
-(That line already changed because of the hd_task elimination.)
+The number of incompatible kernel/module interface changes per kernel is 
+most likely some medium three digit number.
 
---- g26.orig/drivers/char/hpet.c	2008-07-23 09:43:59.000000000 -0700
-+++ g26/drivers/char/hpet.c	2008-07-23 09:03:34.000000000 -0700
-@@ -189,8 +189,7 @@ static int hpet_open(struct inode *inode
- 
- 	for (devp = NULL, hpetp = hpets; hpetp && !devp; hpetp = hpetp->hp_next)
- 		for (i = 0; i < hpetp->hp_ntimer; i++)
--			if (hpetp->hp_dev[i].hd_flags & HPET_OPEN
--					|| !hpetp->hp_dev[i].hd_hdwirq)
-+			if (hpetp->hp_dev[i].hd_flags & HPET_OPEN)
- 				continue;
- 			else {
- 				devp = &hpetp->hp_dev[i];
+What you have in mind is therefore not really feasible.
+
+But we have several levels of kernels that incorporate future stuff, 
+from -rc over -next to -mm, and you could implement automated runs 
+of the systemtap testsuite against the latest ones.
+
+> - FChE
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
