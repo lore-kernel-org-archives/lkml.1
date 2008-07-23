@@ -1,148 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753553AbYGWRq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbYGWRsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753553AbYGWRq0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 13:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYGWRqN
+	id S1754591AbYGWRsN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 13:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYGWRr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 13:46:13 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:23363 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752768AbYGWRqM (ORCPT
+	Wed, 23 Jul 2008 13:47:59 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:51465 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751400AbYGWRr6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 13:46:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=bcNtwPW/KW1DDvo0+kQhTuQViTQVXngJSgC+sCHf5kW2ySBsMz76vHzgJKizhemBD4
-         1FlQeHaJRG2BXFC0dGu5DMOCuaKrXQ8wfhhlJkPvG9WKigyyPtCx4bV8ib2DISlRrtnS
-         Yb4wIRDTiDN/sYiCbVXnpCXXeeynRHoVLxkgM=
-Message-ID: <19f34abd0807231046o4b194409w7d0e28a7cd745afa@mail.gmail.com>
-Date: Wed, 23 Jul 2008 19:46:12 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Dieter Ries" <clip2@gmx.de>
-Subject: Re: Current Git: BUG: unable to handle kernel paging request at 0000000001a40ca0
-Cc: linux-kernel@vger.kernel.org, jgarzik@pobox.com, netdev@vger.kernel.org,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>
-In-Reply-To: <488750AA.20707@gmx.de>
+	Wed, 23 Jul 2008 13:47:58 -0400
+Date: Wed, 23 Jul 2008 13:47:53 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+Subject: Re: [RFC] fix kallsyms to allow discrimination of local symbols
+Message-ID: <20080723174753.GL8826@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	James Bottomley <James.Bottomley@HansenPartnership.com>,
+	"Frank Ch. Eigler" <fche@redhat.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	systemtap@sourceware.org
+References: <1216676595.3433.80.camel@localhost.localdomain> <y0mprp68zg9.fsf@ton.toronto.redhat.com> <1216698788.3433.116.camel@localhost.localdomain> <20080722115101.GB9508@redhat.com> <1216739683.3364.43.camel@localhost.localdomain> <y0mk5fd9a64.fsf@ton.toronto.redhat.com> <20080723014804.GA8826@mit.edu> <20080723041612.GA11191@redhat.com> <20080723162505.GJ8826@mit.edu> <1216831226.13159.26.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <488750AA.20707@gmx.de>
+In-Reply-To: <1216831226.13159.26.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 5:39 PM, Dieter Ries <clip2@gmx.de> wrote:
-> Hi,
->
-> I just encountered a Bug in latest git:
->
-> As this is my first bugreport, I am not sure who to cc and which information
-> to provide, so please advise me. Some information is below.
+On Wed, Jul 23, 2008 at 12:40:26PM -0400, James Bottomley wrote:
+> I'm not sure we'd want to do it with CTF either ... the only reason to
+> have it in the kernel is if the kernel wants to use it.  Right at the
+> moment with the dwarf, systemtap userspace is the only consumer, so it
+> doesn't need to be in the kernel; I don't really see that changing with
+> CTF.  I think dtrace does it because the D runtime is in-kernel so some
+> of the run time typing needs the CTF.
 
-Hi,
+As far as I understand things, all of that is done in userspace and
+byte-compiled down to run in their simple DTrace VM.  The reason for
+CTF being in the Open Slaris is for their kernel debugger (kmdb) and
+so that a crash dump can be guaranteed to be easily analyzed.[1]
 
-Thanks for the report!
+   	  	     	    	       	  - Ted
 
-> BUG: unable to handle kernel paging request at 0000000001a40ca0
-> IP: [<ffffffff80290632>] kmem_cache_alloc+0x50/0x81
-> PGD 79d33067 PUD 79cf7067 PMD 0
-> Oops: 0000 [1] SMP
-> CPU 0
-> Modules linked in: radeon drm uinput snd_hda_intel iwl3945 snd_pcm snd_timer
-> rfkill snd led_class snd_page_alloc
-> Pid: 3516, comm: ifconfig Not tainted 2.6.26-06077-gc010b2f #23
-> RIP: 0010:[<ffffffff80290632>]  [<ffffffff80290632>]
-> kmem_cache_alloc+0x50/0x81
-> RSP: 0000:ffff880079d079e8  EFLAGS: 00010006
-> RAX: 0000000000000000 RBX: 0000000000000296 RCX: ffffffff802704ae
-> RDX: ffff880001016700 RSI: 0000000001a40ca0 RDI: ffffffff808b5fa0
-> RBP: ffff880079d07a08 R08: 000000000000000c R09: 0000000000000001
+[1] http://blogs.sun.com/levon/entry/reducing_ctf_overhead
 
-[snip]
-
-> Code: 98 48 8b 94 c7 e0 00 00 00 48 8b 32 44 8b 6a 18 48 85 f6 75 13 49 89
-> d0 44 89 e6 83 ca ff e8 b3 f8 ff ff 48 89 c6 eb 0a 8b 42 14 <48> 8b 04 c6 48
-> 89 02 53 9d 31 c0 41 c1 ec 0f 48 85 f6 0f 95 c0
-
-The code decodes to:
-
-    mov    0x14(%rdx),%eax
-    mov    (%rsi,%rax,8),%rax <--- HERE!
-
-which corresponds to this code in mm/slub.c:
-
-                c->freelist = object[c->offset];
-
-So the mov 0x14(%rdx) is the loading of c->offset, which means that
-the pointer "c" is held in %rdx (= 0xffff880001016700), and the
-variable c->offset is held in %eax (= 0).
-
-It also means that the pointer "object" is held in %rsi (= 0x1a40ca0).
-Now, clearly the object pointer is bogus. It was loaded on the line
-above:
-
-                object = c->freelist;
-
-..and it may look like c->freelist has become corrupted. This one is
-again loaded from the line:
-
-        c = get_cpu_slab(s, smp_processor_id());
-
-Everything seems normal, except the c->freelist pointer.
-
-The rest of the messages are from the same function, but from
-different code paths:
-
->  [<ffffffff802704ae>] mempool_alloc_slab+0x16/0x18
->  [<ffffffff802705c2>] mempool_alloc+0x3e/0xfa
->  [<ffffffff802b8db7>] bio_alloc_bioset+0x27/0x94
->  [<ffffffff802b8e7e>] bio_alloc+0x15/0x24
->  [<ffffffff802b4ebb>] submit_bh+0x78/0x119
->  [<ffffffff803129dc>] journal_commit_transaction+0x76d/0xccd
->  [<ffffffff8031596b>] kjournald+0xc8/0x200
->  [<ffffffff80247e6a>] kthread+0x4e/0x7c
->  [<ffffffff8020c289>] child_rip+0xa/0x11
-
-and
-
->  [<ffffffff804c6b64>] scsi_pool_alloc_command+0x4d/0x73
->  [<ffffffff804c6c72>] __scsi_get_command+0x1e/0x9c
->  [<ffffffff804c6d26>] scsi_get_command+0x36/0xa5
->  [<ffffffff804cb1e8>] scsi_get_cmd_from_req+0x2a/0x5e
->  [<ffffffff804cb5ec>] scsi_setup_fs_cmnd+0x5d/0x87
->  [<ffffffff804ebc53>] sd_prep_fn+0x66/0x449
->  [<ffffffff803ebed1>] elv_next_request+0xe3/0x1a4
->  [<ffffffff804cc490>] scsi_request_fn+0x80/0x334
->  [<ffffffff803edaee>] __generic_unplug_device+0x29/0x2e
->  [<ffffffff803ee5de>] generic_unplug_device+0x2e/0x3c
->  [<ffffffff803ec5e8>] blk_unplug_work+0x19/0x1b
->  [<ffffffff80244890>] run_workqueue+0x81/0x10a
->  [<ffffffff8024529d>] worker_thread+0xdd/0xea
->  [<ffffffff80247e6a>] kthread+0x4e/0x7c
->  [<ffffffff8020c289>] child_rip+0xa/0x11
-
-...this seems to suggest that none of the backtraces may actually give
-a good clue as to who caused the corruption to begin with. (In other
-words, I have no more clue than you on who to Cc this.)
-
-Does the number 0x1a40ca0 look familiar to anybody?
-
-Dieter: If this is reproducible, it would probably help quite a bit to
-configure the kernel with CONFIG_SLUB_DEBUG and boot with
-slub_debug=FZPUT (unless you already have CONFIG_SLUB_DEBUG_ON set, in
-which case you are already running with the SLUB debugging at boot).
-It might catch the corruption before it becomes fatal, or give us some
-more clues anyway.
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
