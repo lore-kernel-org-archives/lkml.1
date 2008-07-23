@@ -1,43 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbYGWD6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYGWEIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbYGWD6U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 23:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYGWD6N
+	id S1753371AbYGWEIo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 00:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYGWEIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 23:58:13 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59080 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750983AbYGWD6M (ORCPT
+	Wed, 23 Jul 2008 00:08:36 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49130 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752007AbYGWEIf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 23:58:12 -0400
-Date: Tue, 22 Jul 2008 17:34:30 -0700
-From: Greg KH <greg@kroah.com>
-To: Takenori Nagano <t-nagano@ah.jp.nec.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Japanese translation of Documentation/SubmitChecklist
-Message-ID: <20080723003430.GA3172@kroah.com>
-References: <487C64A6.1020607@ah.jp.nec.com> <48867944.2070303@ah.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48867944.2070303@ah.jp.nec.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 23 Jul 2008 00:08:35 -0400
+Subject: [git pull] x86: declaration fixes - ver2
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 23 Jul 2008 09:37:31 +0530
+Message-Id: <1216786052.2602.2.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 09:20:20AM +0900, Takenori Nagano wrote:
-> Hi Greg,
-> 
-> I sent this patch last week, but there are no reaction. :-(
-> Can you merge this into driver core?(like ja_JP/SubmittingPatches)
-> http://www.ussg.iu.edu/hypermail/linux/kernel/0710.3/3540.html
+Hello Ingo,
 
-It's in my to-apply queue, sorry, been lagged due to vacation, merge
-window, and conferences.
+Here are updated patches for x86-tip.
 
-I'll get to it soon, it's not lost.
+The following changes since commit a099a9b18ab434594bb01ed920e8c58574203fa9:
+  Ingo Molnar (1):
+        Merge branch 'out-of-tree'
 
-thanks,
+are available in the git repository at:
 
-greg k-h
+  git://git.infradead.org/users/jaswinder/linux-2.6-tip.git master
+
+Jaswinder Singh (8):
+      x86: apic_XX.c declare functions before they get used
+      x86: vm86_32.c declare functions before they get used
+      x86: mm/init_XX.c declare functions before they get used
+      x86: mm/fault.c declare do_page_fault before they get used
+      x86: mm/ioremap.c declare early_ioremap_debug and early_ioremap_nested as static
+      x86: mm/pageattr.c declare arch_report_meminfo before they get used
+      x86: mm/pgtable_32.c declare set_pmd_pfn before they get used
+      x86: mach-default/setup.c declare no_broadcast before they get used
+
+ arch/x86/mach-default/setup.c |    4 +++-
+ arch/x86/mm/fault.c           |    3 +--
+ arch/x86/mm/init_32.c         |    1 +
+ arch/x86/mm/ioremap.c         |    4 ++--
+ include/asm-x86/apic.h        |    5 +++++
+ include/asm-x86/hw_irq.h      |   10 ++++++++++
+ include/asm-x86/page_32.h     |    1 +
+ include/asm-x86/page_64.h     |    1 +
+ include/asm-x86/pgtable.h     |    2 ++
+ include/asm-x86/pgtable_32.h  |    1 +
+ include/asm-x86/syscalls.h    |    5 ++++-
+ include/asm-x86/traps.h       |    4 ++++
+ 12 files changed, 35 insertions(+), 6 deletions(-)
+
+
