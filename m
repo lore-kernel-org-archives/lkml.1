@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbYGWH5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754347AbYGWH7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753921AbYGWH5k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 03:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbYGWH50
+	id S1754347AbYGWH7F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 03:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbYGWH6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 03:57:26 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:65147 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751416AbYGWH5Z (ORCPT
+	Wed, 23 Jul 2008 03:58:53 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:45828 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751416AbYGWH6w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 03:57:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=NBevbzwQL9nbFwkv8eNMvw3MkQpo1TfxcSjXPCMzhjkmvfRhNoEFz3c1AKv65/SGfE
-         DoGKbl2qpZed6Db+9OG2oTqQoBq9IofoPMorGfCYEW8pThZSn7+B3t/rEIWNqzRUuB4L
-         ezRRQEd8Pccow3C8YvFmHqriJB+5OW/cejjFs=
-Message-ID: <d4b984a30807230057t319eca71g32262305bdb07582@mail.gmail.com>
-Date: Wed, 23 Jul 2008 09:57:24 +0200
-From: "Alessandro Guido" <ag@alessandroguido.name>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [BUG] kernel BUG at net/core/dev.c:1328!
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20080722.155611.176476925.davem@davemloft.net>
+	Wed, 23 Jul 2008 03:58:52 -0400
+Message-ID: <4886E540.2070106@keyaccess.nl>
+Date: Wed, 23 Jul 2008 10:01:04 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Fabio Comolli <fabio.comolli@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: New conflict message in latest GIT
+References: <b637ec0b0807221156x46d550a1h4180d6d624daeeb@mail.gmail.com>	 <48863C46.1060704@keyaccess.nl> <48863FB4.9080500@keyaccess.nl> <b637ec0b0807230017w39ecd5bapc9a6afe29a39d5f3@mail.gmail.com>
+In-Reply-To: <b637ec0b0807230017w39ecd5bapc9a6afe29a39d5f3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d4b984a30807210914nd4d0db5yb7b93ca5143ff0d5@mail.gmail.com>
-	 <20080721.092027.14394005.davem@davemloft.net>
-	 <d4b984a30807220254t1aaf6ac4q874329966511b0c5@mail.gmail.com>
-	 <20080722.155611.176476925.davem@davemloft.net>
-X-Google-Sender-Auth: e14599cf96f73cc5
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm testing the latest Linus' git which includes your patch
-(2.6.26-06077-gc010b2f) and the problem is fixed.
+On 23-07-08 09:17, Fabio Comolli wrote:
 
-Thank you!
+>> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc8/2.6.26-rc8-mm1/broken-out/pnp-have-quirk_system_pci_resources-include-io-resources.patch
+> 
+> I did not add it manually for sure. By the way, I don't see any ACPI
+> related problems with this kernel.
+
+You can just look at drivers/pnp/quirks.c:quirk_system_pci_resources() 
+and see if it's still IORESOURCE_MEM only (current linus) or includes 
+IORESOURCE_IO resources as per that patch.
+
+Had a momentary notion that if we specifically exclude ACPI in favour of 
+PCI as that patch does this could _cause_ the message -- before, the PCI 
+smbus driver just would've failed but perhaps you don't even have such a 
+driver or something.
+
+Probably way of base. Just had a deja vu to my own soundcard trouble.
+
+Rene
