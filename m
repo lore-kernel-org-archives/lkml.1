@@ -1,60 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbYGWAO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755125AbYGWAUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756217AbYGWAO7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 20:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbYGWAOs
+	id S1755125AbYGWAUe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 20:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbYGWAUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 20:14:48 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59691
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753371AbYGWAOs (ORCPT
+	Tue, 22 Jul 2008 20:20:25 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:42611 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbYGWAUX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 20:14:48 -0400
-Date: Tue, 22 Jul 2008 17:14:48 -0700 (PDT)
-Message-Id: <20080722.171448.05499825.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 22 Jul 2008 20:20:23 -0400
+Message-ID: <48867944.2070303@ah.jp.nec.com>
+Date: Wed, 23 Jul 2008 09:20:20 +0900
+From: Takenori Nagano <t-nagano@ah.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>, greg@kroah.com
+Subject: Re: [PATCH] Japanese translation of Documentation/SubmitChecklist
+References: <487C64A6.1020607@ah.jp.nec.com>
+In-Reply-To: <487C64A6.1020607@ah.jp.nec.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Greg,
 
-Please pull to get these sparc updates, thanks a lot!
+I sent this patch last week, but there are no reaction. :-(
+Can you merge this into driver core?(like ja_JP/SubmittingPatches)
+http://www.ussg.iu.edu/hypermail/linux/kernel/0710.3/3540.html
 
-The following changes since commit e4f25060b87a627f5cda84b8134911d43c919458:
-  David Howells (1):
-        sparc: Remove Sparc's asm-offsets for sclow.S
+Thanks,
+  Takenori
 
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
-
-Bartlomiej Zolnierkiewicz (4):
-      ide: <asm-sparc/ide_64.h>: use %r0 for outw_be()
-      ide: <asm-sparc/ide_32.h>: use __raw_{read,write}w()
-      ide: <asm-sparc/ide_64.h>: use __raw_{read,write}w()
-      ide: merge <asm-sparc/ide_64.h> with <asm-sparc/ide_32.h>
-
-David S. Miller (2):
-      sparc64: Do not define BIO_VMERGE_BOUNDARY.
-      sparc: Fixes the DRM layer build on sparc.
-
-Stephen Rothwell (1):
-      sparc32: pass -m32 when building vmlinux.lds
-
- arch/sparc/Makefile        |    1 +
- include/asm-sparc/ide.h    |  102 ++++++++++++++++++++++++++++++++++++--
- include/asm-sparc/ide_32.h |   95 -----------------------------------
- include/asm-sparc/ide_64.h |  118 --------------------------------------------
- include/asm-sparc/io_32.h  |    1 +
- include/asm-sparc/io_64.h  |    2 +-
- 6 files changed, 100 insertions(+), 219 deletions(-)
- delete mode 100644 include/asm-sparc/ide_32.h
- delete mode 100644 include/asm-sparc/ide_64.h
+Takenori Nagano wrote:
+> Hi,
+> 
+> This patch adds SubmitChecklist translated into Japanese to
+> Documentation/ja_JP directory.
+> The translated SubmitChecklist has already been reviewed by JF project.
+> 
+> SubmitChecklist is one of the important policy documents.
+> So, I would like to merge into 2.6.27.
+> 
+> Signed-off-by: Takenori Nagano <t-nagano@ah.jp.nec.com>
+> ---
+> diff -uprN linux-2.6.26.orig/Documentation/ja_JP/SubmitChecklist
+> linux-2.6.26/Documentation/ja_JP/SubmitChecklist
+> --- linux-2.6.26.orig/Documentation/ja_JP/SubmitChecklist	1970-01-01
+> 09:00:00.000000000 +0900
+> +++ linux-2.6.26/Documentation/ja_JP/SubmitChecklist	2008-07-15
+> 17:46:13.591862098 +0900
+> @@ -0,0 +1,111 @@
+> +NOTE:
+> +This is a version of Documentation/SubmitChecklist into Japanese.
+> +This document is maintained by Takenori Nagano <t-nagano@ah.jp.nec.com>
+> +and the JF Project team <http://www.linux.or.jp/JF/>.
+> +If you find any difference between this document and the original file
+> +or a problem with the translation,
+> +please contact the maintainer of this file or JF project.
+> +
+> +Please also note that the purpose of this file is to be easier to read
+> +for non English (read: Japanese) speakers and is not intended as a
+> +fork. So if you have any comments or updates of this file, please try
+> +to update the original English file first.
+> +
+> +Last Updated: 2008/07/14
+> +==================================
+> +これは、
+> +linux-2.6.26/Documentation/SubmitChecklist の和訳です。
+> +
+> +翻訳団体： JF プロジェクト < http://www.linux.or.jp/JF/ >
+> +翻訳日： 2008/07/14
+> +翻訳者： Takenori Nagano <t-nagano at ah dot jp dot nec dot com>
+> +校正者： Masanori Kobayashi さん <zap03216 at nifty dot ne dot jp>
+> +==================================
+> +
+> +
+> +Linux カーネルパッチ投稿者向けチェックリスト
+> +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> +
+> +本書では、パッチをより素早く取り込んでもらいたい開発者が実践すべき基本的な事柄
+> +をいくつか紹介します。ここにある全ての事柄は、Documentation/SubmittingPatches
+> +などのLinuxカーネルパッチ投稿に際しての心得を補足するものです。
+> +
+> + 1: 妥当なCONFIGオプションや変更されたCONFIGオプション、つまり =y, =m, =n
+> +    全てで正しくビルドできることを確認してください。その際、gcc及びリンカが
+> +    warningやerrorを出していないことも確認してください。
+> +
+> + 2: allnoconfig, allmodconfig オプションを用いて正しくビルドできることを
+> +    確認してください。
+> +
+> + 3: 手許のクロスコンパイルツールやOSDLのPLMのようなものを用いて、複数の
+> +    アーキテクチャにおいても正しくビルドできることを確認してください。
+> +
+> + 4: 64bit長の'unsigned long'を使用しているppc64は、クロスコンパイルでの
+> +    チェックに適当なアーキテクチャです。
+> +
+> + 5: カーネルコーディングスタイルに準拠しているかどうか確認してください(!)
+> +
+> + 6: CONFIGオプションの追加・変更をした場合には、CONFIGメニューが壊れていない
+> +    ことを確認してください。
+> +
+> + 7: 新しくKconfigのオプションを追加する際には、必ずそのhelpも記述してください。
+> +
+> + 8: 適切なKconfigの依存関係を考えながら慎重にチェックしてください。
+> +    ただし、この作業はマシンを使ったテストできちんと行うのがとても困難です。
+> +    うまくやるには、自分の頭で考えることです。
+> +
+> + 9: sparseを利用してちゃんとしたコードチェックをしてください。
+> +
+> +10: 'make checkstack' と 'make namespacecheck' を利用し、問題が発見されたら
+> +    修正してください。'make checkstack' は明示的に問題を示しませんが、どれか
+> +    １つの関数が512バイトより大きいスタックを使っていれば、修正すべき候補と
+> +    なります。
+> +
+> +11: グローバルなkernel API を説明する kernel-doc をソースの中に含めてください。
+> +    ( staticな関数においては必須ではありませんが、含めてもらっても結構です )
+> +    そして、'make htmldocs' もしくは 'make mandocs' を利用して追記した
+> +    ドキュメントのチェックを行い、問題が見つかった場合には修正を行ってください。
+> +
+> +12: CONFIG_PREEMPT, CONFIG_DEBUG_PREEMPT, CONFIG_DEBUG_SLAB,
+> +    CONFIG_DEBUG_PAGEALLOC, CONFIG_DEBUG_MUTEXES, CONFIG_DEBUG_SPINLOCK,
+> +    CONFIG_DEBUG_SPINLOCK_SLEEP これら全てを同時に有効にして動作確認を
+> +    行ってください。
+> +
+> +13: CONFIG_SMP, CONFIG_PREEMPT を有効にした場合と無効にした場合の両方で
+> +    ビルドした上、動作確認を行ってください。
+> +
+> +14: もしパッチがディスクのI/O性能などに影響を与えるようであれば、
+> +    'CONFIG_LBD'オプションを有効にした場合と無効にした場合の両方で
+> +    テストを実施してみてください。
+> +
+> +15: lockdepの機能を全て有効にした上で、全てのコードパスを評価してください。
+> +
+> +16: /proc に新しいエントリを追加した場合には、Documentation/ 配下に
+> +    必ずドキュメントを追加してください。
+> +
+> +17: 新しいブートパラメータを追加した場合には、
+> +    必ずDocumentation/kernel-parameters.txt に説明を追加してください。
+> +
+> +18: 新しくmoduleにパラメータを追加した場合には、MODULE_PARM_DESC()を
+> +    利用して必ずその説明を記述してください。
+> +
+> +19: 新しいuserspaceインタフェースを作成した場合には、Documentation/ABI/ に
+> +    Documentation/ABI/README を参考にして必ずドキュメントを追加してください。
+> +
+> +20: 'make headers_check'を実行して全く問題がないことを確認してください。
+> +
+> +21: 少なくともslabアロケーションとpageアロケーションに失敗した場合の
+> +    挙動について、fault-injectionを利用して確認してください。
+> +    Documentation/fault-injection/ を参照してください。
+> +
+> +    追加したコードがかなりの量であったならば、サブシステム特有の
+> +    fault-injectionを追加したほうが良いかもしれません。
+> +
+> +22: 新たに追加したコードは、`gcc -W'でコンパイルしてください。
+> +    このオプションは大量の不要なメッセージを出力しますが、
+> +    "warning: comparison between signed and unsigned" のようなメッセージは、
+> +    バグを見つけるのに役に立ちます。
+> +
+> +23: 投稿したパッチが -mm パッチセットにマージされた後、全ての既存のパッチや
+> +    VM, VFS およびその他のサブシステムに関する様々な変更と、現時点でも共存
+> +    できることを確認するテストを行ってください。
+> 
