@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756426AbYGWXXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbYGWXYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756426AbYGWXXr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 19:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbYGWXXj
+	id S1754276AbYGWXYh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 19:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbYGWXY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 19:23:39 -0400
-Received: from sh.osrg.net ([192.16.179.4]:54050 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754471AbYGWXXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 19:23:39 -0400
-Date: Thu, 24 Jul 2008 08:23:25 +0900
-To: prarit@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       jbarnes@virtuousgeek.org, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080723111928.15828.42561.sendpatchset@prarit.bos.redhat.com>
-References: <20080723111928.15828.42561.sendpatchset@prarit.bos.redhat.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080724082347U.fujita.tomonori@lab.ntt.co.jp>
+	Wed, 23 Jul 2008 19:24:27 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55882 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751061AbYGWXY0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 19:24:26 -0400
+Date: Wed, 23 Jul 2008 16:21:42 -0700
+From: Greg KH <greg@kroah.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: usb debug port early console v2
+Message-ID: <20080723232142.GD30234@kroah.com>
+References: <200807231252.20371.yhlu.kernel@gmail.com> <200807231400.53957.yhlu.kernel@gmail.com> <20080723224533.GA29234@kroah.com> <86802c440807231554g4fc4f981j5f9a8db9ab51fe93@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440807231554g4fc4f981j5f9a8db9ab51fe93@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jul 2008 07:19:43 -0400
-Prarit Bhargava <prarit@redhat.com> wrote:
-
-> pci_alloc_consistent/dma_alloc_coherent does not return size aligned
-> addresses.
+On Wed, Jul 23, 2008 at 03:54:09PM -0700, Yinghai Lu wrote:
+> On Wed, Jul 23, 2008 at 3:45 PM, Greg KH <greg@kroah.com> wrote:
+> > On Wed, Jul 23, 2008 at 02:00:53PM -0700, Yinghai Lu wrote:
+> >> --- linux-2.6.orig/drivers/usb/host/ehci.h
+> >> +++ linux-2.6/drivers/usb/host/ehci.h
+> >
+> > I don't understand the issue of any of these #ifdefs here.  Why are they
+> > needed?
 > 
-> From Documentation/DMA-mapping.txt:
-> 
-> "pci_alloc_consistent returns two values: the virtual address which you
-> can use to access it from the CPU and dma_handle which you pass to the
-> card.
-> 
-> The cpu return address and the DMA bus master address are both
-> guaranteed to be aligned to the smallest PAGE_SIZE order which
-> is greater than or equal to the requested size.  This invariant
-> exists (for example) to guarantee that if you allocate a chunk
-> which is smaller than or equal to 64 kilobytes, the extent of the
-> buffer you receive will not cross a 64K boundary."
-> 
-> 1.  Modify alloc_iommu to allow for an alignment mask
-> 2.  Modify pci_gart_simple to return size-aligned values.
-> 3.  Fixup the alignment calculation in the iommu-helper code.
+> In file included from arch/x86/kernel/early_printk.c:19:
+> arch/x86/kernel/../../../drivers/usb/host/ehci.h:109: error: field
+> 'iaa_watchdog' has incomplete type
 
-Hmm, you don't fix anything in the helper code. You just use
-__ALIGN_MASK.
+Ah, so you are papering over the real problem here, right?
 
-And please don't use __ALIGN_MASK. You will notice that no one in
-mainline use __ALIGN_MASK. Andrew said that we should not.
+Why not just include the properly needed #includes either where you are
+including this header file, or add the dependancies to the ehci.h file
+itself (which is usually preferred.)
 
-Ideally, we should use ALIGN here but the current code was accepted
-because it is pretty simple and we have an comment what we do here. So
-please let it alone.
+> > And shouldn't there be a separate config option for early printk through
+> > the ehci debug port?
+> 
+> under usb or processor?
+
+Somewhere.
+
+Also, usb patches should be cc:ed to the linux-usb mailing list.  I'm
+sure the EHCI authors would like to comment on this patch...
+
+thanks,
+
+greg k-h
