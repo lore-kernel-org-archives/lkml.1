@@ -1,46 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbYGWLtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYGWMCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753353AbYGWLtF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 07:49:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYGWLsz
+	id S1753388AbYGWMCv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 08:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbYGWMCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 07:48:55 -0400
-Received: from mail-in-11.arcor-online.net ([151.189.21.51]:43715 "EHLO
-	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751223AbYGWLsy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 07:48:54 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [RFC] schedule_timeout_range()
-To: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       arjan@infradead.org, David Woodhouse <dwmw2@infradead.org>
-Reply-To: 7eggert@gmx.de
-Date: Wed, 23 Jul 2008 13:52:06 +0200
-References: <aSgqr-EJ-15@gated-at.bofh.it> <aShcU-3uj-11@gated-at.bofh.it> <aShw5-4ai-9@gated-at.bofh.it> <aShPs-4IY-1@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1KLct4-0001Wx-O9@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+	Wed, 23 Jul 2008 08:02:43 -0400
+Received: from [81.174.68.18] ([81.174.68.18]:28755 "EHLO smtp.unbit.it"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750871AbYGWMCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 08:02:42 -0400
+X-Greylist: delayed 424 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Jul 2008 08:02:42 EDT
+Subject: [PATCH] Support for Intel iMac in applesmc
+From: Roberto De Ioris <roberto@unbit.it>
+Reply-To: roberto@unbit.it
+To: mactel-linux-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Unbit
+Date: Wed, 23 Jul 2008 13:55:35 +0200
+Message-Id: <1216814135.5834.9.camel@sirius>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.23.4 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+Hi all, this patch (2.6.26 vanilla) add supports for fans and
+temperature sensors on intel iMac.
 
-> The only thing I dislike about explicit times is that when a driver or
-> someone doesn't _really_ know how much to specify. Do you say 10s, 100s?
-> It shouldn't be arbitrary, but we should have a few constants I think.
+Tested on iMac 24" 2.8ghz (iMac8,1), it supports the following sensors:
 
-You'd replace "Should I use 10 or 100 seconds?" with "Should I use
-TIMEOUT_10_SEC or TIMEOUT_100_SEC?", while replacing "I want 40 seconds!"
-with "Danmed, I want 40 seconds, but that's not an option!".
+cpu A
+ambient
+gpu
+gpu diode
+gpu heatsink
+hd bay 1
+memory controller
+optical drive
+power
 
-BTW: If you don't know about which timeout you should use, you should think
-about mowing the lawn instead. ¢¢
+Signed-off-by: Roberto De Ioris <roberto@unbit.it>
+---
+diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
+index aacc0c4..bc616c3 100644
+--- a/drivers/hwmon/applesmc.c
++++ b/drivers/hwmon/applesmc.c
+@@ -98,6 +98,8 @@ static const char* temperature_sensors_sets[][36] = {
+          "TH1P", "TH2P", "TH3P", "TMAP", "TMAS", "TMBS", "TM0P",
+"TM0S",
+          "TM1P", "TM1S", "TM2P", "TM2S", "TM3S", "TM8P", "TM8S",
+"TM9P",
+          "TM9S", "TN0H", "TS0C", NULL },
++/* Set 5: iMac */
++       { "TC0D", "TA0P", "TG0P", "TG0D", "TG0H", "TH0P", "Tm0P",
+"TO0P", "Tp0C", NULL },
+ };
+ 
+ /* List of keys used to read/write fan speeds */
+@@ -1223,6 +1225,8 @@ static __initdata struct dmi_match_data
+applesmc_dmi_data[] = {
+        { .accelerometer = 0, .light = 0, .temperature_set = 3 },
+ /* MacPro: temperature set 4 */
+        { .accelerometer = 0, .light = 0, .temperature_set = 4 },
++/* iMac: temperature set 5 */
++       { .accelerometer = 0, .light = 0, .temperature_set = 5 },
+ };
+ 
+ /* Note that DMI_MATCH(...,"MacBook") will match "MacBookPro1,1".
+@@ -1248,6 +1252,10 @@ static __initdata struct dmi_system_id
+applesmc_whitelist[] = {
+          DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
+          DMI_MATCH(DMI_PRODUCT_NAME,"MacPro2") },
+                (void*)&applesmc_dmi_data[4]},
++       { applesmc_dmi_match, "Apple iMac", {
++         DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
++         DMI_MATCH(DMI_PRODUCT_NAME,"iMac") },
++               (void*)&applesmc_dmi_data[5]},
+        { .ident = NULL }
+ };
 
 
