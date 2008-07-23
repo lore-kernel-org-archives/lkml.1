@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbYGWIHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbYGWIIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbYGWIHN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 04:07:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYGWIG4
+	id S1754495AbYGWIIs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 04:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYGWIId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 04:06:56 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:37836 "EHLO minas.ics.muni.cz"
+	Wed, 23 Jul 2008 04:08:33 -0400
+Received: from il.qumranet.com ([212.179.150.194]:48721 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751223AbYGWIGz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 04:06:55 -0400
-Date: Wed, 23 Jul 2008 10:06:38 +0200
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Brice Goglin <brice@myri.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Regression: myri10ge driver in 2.6.26
-Message-ID: <20080723080638.GL4359@ics.muni.cz>
-References: <20080722150438.GK4359@ics.muni.cz> <48865B04.6030707@myri.com> <488664A0.3040407@myri.com>
+	id S1750721AbYGWIIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 04:08:31 -0400
+Message-ID: <4886E6FD.4090200@qumranet.com>
+Date: Wed, 23 Jul 2008 11:08:29 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <488664A0.3040407@myri.com>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 147.251.3.109
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 23 Jul 2008 10:06:37 +0200 (CEST)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Jan Kiszka <jan.kiszka@siemens.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       "Feng(Eric) Liu" <eric.e.liu@intel.com>
+Subject: Re: [patch 4/4] KVM-trace port to tracepoints
+References: <20080717155724.897537670@polymtl.ca>	 <20080717160003.359557938@polymtl.ca> <487F7800.4010502@siemens.com>	 <20080717172853.GB29855@Krystal> <488604F8.1040008@siemens.com>	 <48862B01.7070907@qumranet.com> <1216799346.7257.125.camel@twins>
+In-Reply-To: <1216799346.7257.125.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 12:52:16AM +0200, Brice Goglin wrote:
-> > I have seen one machine with a similar problem. Does reverting
-> > 014377a1df693ff30a9e8b69f0bbb0a38e601f75 help? Also could you check that
-> > current Linus' git works fine? (just get the driver source from there,
-> > no need to build the whole tree)
-> >   
-> 
-> If the above is correct, then patch below should fix it. If so, I'll
-> push this into the next stable 2.6.26.x release.
+Peter Zijlstra wrote:
+> On Tue, 2008-07-22 at 21:46 +0300, Avi Kivity wrote:
+>   
+>> Jan Kiszka wrote:
+>>     
+>>> That's true - as long as you don't have to add/remove/modify
+>>> tracepoints. I had to do this job in the past (not for KVM). Having 1
+>>> spot in 1 file (based on generic probes) would be handier in that case
+>>> than 5 spots in 3 files. But if the KVM tracepoints are considered
+>>> stable in their number and structure, that shouldn't be an issue here.
+>>>
+>>>   
+>>>       
+>> Tracepoints aren't stable; they are artefacts of the implementation.
+>>     
+>
+> Which IMHO makes it unsuitable for trace_mark() as that will be exported
+> to user-space, and every time you change your tracepoints you'll change
+> user visible things - not nice.
+>   
 
-did not try to revert the mentioned patch but your attached patch made the
-kernel driver working. So, please push it into the next stable.
+They are used for debugging (mostly performance related), so changes are 
+expected.
+
+What uses of trace_mark() depend on a stable interface? blktrace?
+
 
 -- 
-Luká¹ Hejtmánek
+error compiling committee.c: too many arguments to function
+
