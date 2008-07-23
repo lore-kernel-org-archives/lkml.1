@@ -1,67 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbYGWRs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbYGWRua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755076AbYGWRs2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 13:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbYGWRsI
+	id S1754769AbYGWRua (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 13:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbYGWRuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 13:48:08 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:58274 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753822AbYGWRsG (ORCPT
+	Wed, 23 Jul 2008 13:50:23 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54862 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752768AbYGWRuW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 13:48:06 -0400
-X-Sasl-enc: kz7Pw67KJjMU5U/Xzv2r+YWjGlU+TCDoK09pJOTbPGR9 1216835284
-Date: Wed, 23 Jul 2008 14:48:01 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       spi-devel-general@lists.sourceforge.net,
-       LM Sensors <lm-sensors@lm-sensors.org>,
-       Jean Delvare <khali@linux-fr.org>, Dmitry Torokhov <dtor@mail.ru>,
-       "Hans J. Koch" <hjk@linutronix.de>,
-       David Brownell <david-b@pacbell.net>, mgross@linux.intel.com,
-       Ben Nizette <bn@niasdigital.com>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 0/4] IndustrialIO subsystem (ADCs, accelerometers etc)
-Message-ID: <20080723174801.GC11009@khazad-dum.debian.net>
-References: <488763AD.4050400@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <488763AD.4050400@gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 23 Jul 2008 13:50:22 -0400
+Subject: Re: Odd swapping issue
+From: Peter Zijlstra <peterz@infradead.org>
+To: Rafal Wijata <devnull@wijata.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <488761F0.4040906@wijata.com>
+References: <488761F0.4040906@wijata.com>
+Content-Type: text/plain
+Date: Wed, 23 Jul 2008 19:50:28 +0200
+Message-Id: <1216835428.7257.194.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jul 2008, Jonathan Cameron wrote:
-> The subsystem is now in a functional state with a small set of drivers:
+On Wed, 2008-07-23 at 18:53 +0200, Rafal Wijata wrote:
+> It happened twice recently(within one week), therefore I'm posting here.
 > 
-> Max1363 (supports numerous Maxim i2c ADC's) (tested with max1363 and max1238 chips)
->    - Uses a periodic timer to provide ring buffer mode.
->    - All reads form these devices are scan modes so direct single element access
->      is not provided.
->    - Monitor mode on max1363 is not yet supported (need to do a bit debugging of
->      the board I have so as to be able to test this).
-> 
-> ST LIS3L02DQ - SPI accelerometer.
->    - Uses a datardy interrupt to driver a software ring buffer.
->    - Most functionality of this device is supported.
-> 
-> VTI SCA3000 (tested with an e05)
->    - Hardware ring buffer.
+> 32bit Fedora7, 2.6.23.17-88.fc7PAE, 16G ram, 12G swap, 2*dualXeon
 
-I'd like to see something done to have the common parts of interfaces of the
-same class (e.g. accelerometers) be standard.  Like hwmon does with
-temp#_input, etc.
+16g ram on a 32bit kernel is stretching it... may I suggest running a
+64bit kernel?
 
-Otherwise you made it easier to write drivers, but did nothing to help
-userspace to USE the drivers :-)
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
