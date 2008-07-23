@@ -1,134 +1,329 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbYGWUS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYGWUUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756039AbYGWUS0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 16:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbYGWUSQ
+	id S1755868AbYGWUUP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 16:20:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbYGWUUC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 16:18:16 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:51493 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754862AbYGWUSP (ORCPT
+	Wed, 23 Jul 2008 16:20:02 -0400
+Received: from mail-va3.bigfish.com ([216.32.180.112]:60433 "EHLO
+	mail70-va3-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754735AbYGWUUA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 16:18:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=CTGkrrNWTOM+/um8QFhiBAGn6CJH+u3gD9xcWWxqSKXdPdjF32CZeoLFG8C3V4sSsI
-         H29mtzl2uBo6FqEMZbnoJha7q6RnX5b/eMhpZWN/XeoMAm8TuwqkkRElWFbKNIa0wW65
-         NtfeLfqE2pm9aFeftEjvlOdiCf5jpjY141DOo=
-Message-ID: <86802c440807231318h76ec9465td0c179668cfe4473@mail.gmail.com>
-Date: Wed, 23 Jul 2008 13:18:12 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86: usb debug port early console
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, andi@firstfloor.org,
-       arjan@infradead.org, ebiederm@xmission.com, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080723131218.f03ed672.akpm@linux-foundation.org>
+	Wed, 23 Jul 2008 16:20:00 -0400
+X-BigFish: VPS-11(zz1432R98dR936eT62a3L1805M78fbpzz10d3izzz32i6bh87il)
+X-FB-SS: 7,
+X-FB-DOMAIN-IP-MATCH: fail
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-WSS-ID: 0K4H74D-02-654-01
+Date: Wed, 23 Jul 2008 22:19:25 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Carl Love <cel@us.ibm.com>
+Cc: Barry Kasindorf <barry.kasindorf@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>
+Subject: Re: [PATCH 10/24] x86/oprofile: Add IBS support for AMD CPUs, IBS
+	buffer handling routines
+Message-ID: <20080723201924.GJ17134@erda.amd.com>
+References: <1216753748-11261-1-git-send-email-robert.richter@amd.com> <1216753748-11261-11-git-send-email-robert.richter@amd.com> <1216843317.26829.58.camel@carll-linux-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200807231252.20371.yhlu.kernel@gmail.com>
-	 <20080723131218.f03ed672.akpm@linux-foundation.org>
+In-Reply-To: <1216843317.26829.58.camel@carll-linux-desktop>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 23 Jul 2008 20:19:32.0671 (UTC) FILETIME=[6B0B44F0:01C8ED01]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 1:12 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Wed, 23 Jul 2008 12:52:20 -0700
-> Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->>
->>
->> based on work from Eric, and add some timeout so don't dead loop when debug device
->> is not installed
->>
->>
->> ...
->>
->> +static void dbgp_mdelay(int ms)
->> +{
->> +     int i;
->> +     while (ms--) {
->> +             for (i = 0; i < 1000; i++)
->> +                     outb(0x1, 0x80);
->> +     }
->> +}
->
-> hm.  port 80 has a guaranteed one microsecond?  Why not
-> udelay()/mdelay()/etc?
->
->> +static void dbgp_breath(void)
->> +{
->> +     /* Sleep to give the debug port a chance to breathe */
->> +}
->
-> I expect the compiler will optimise away any calls to this.
->
->>
->> ...
->>
->> --- linux-2.6.orig/arch/x86/kernel/head64.c
->> +++ linux-2.6/arch/x86/kernel/head64.c
->> @@ -72,6 +72,8 @@ static void __init copy_bootdata(char *r
->>       }
->>  }
->>
->> +extern void __init enable_debug_console(char *buf);
->
-> Please always pass all patches through scripts/checkpatch.pl.
-yhlu@linux-zpir:~/xx/xx/kernel/tip/linux-2.6> ./scripts/checkpatch.pl
-patches/9xxx.patch
-WARNING: line over 80 characters
-#319: FILE: arch/x86/kernel/early_printk.c:420:
-+       if (!(read_pci_config_16(num, slot, func, PCI_STATUS) &
-PCI_STATUS_CAP_LIST))
+On 23.07.08 13:01:57, Carl Love wrote:
+> 
+> On Tue, 2008-07-22 at 21:08 +0200, Robert Richter wrote:
+> > From: Barry Kasindorf <barry.kasindorf@amd.com>
+> > 
+> > This patchset supports the new profiling hardware available in the
+> > latest AMD CPUs in the oProfile driver.
+> > 
+> > Signed-off-by: Barry Kasindorf <barry.kasindorf@amd.com>
+> > Signed-off-by: Robert Richter <robert.richter@amd.com>
+> > ---
+> >  drivers/oprofile/buffer_sync.c |   72 +++++++++++++++++++++++++++++++++++++++-
+> >  drivers/oprofile/cpu_buffer.c  |   68 +++++++++++++++++++++++++++++++++++++-
+> >  drivers/oprofile/cpu_buffer.h  |    2 +
+> >  3 files changed, 140 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/oprofile/buffer_sync.c b/drivers/oprofile/buffer_sync.c
+> > index 615929f..e1782d2 100644
+> > --- a/drivers/oprofile/buffer_sync.c
+> > +++ b/drivers/oprofile/buffer_sync.c
+> > @@ -5,6 +5,7 @@
+> >   * @remark Read the file COPYING
+> >   *
+> >   * @author John Levon <levon@movementarian.org>
+> > + * @author Barry Kasindorf
+> >   *
+> >   * This is the core of the buffer management. Each
+> >   * CPU buffer is processed and entered into the
+> > @@ -272,7 +273,7 @@ static void increment_tail(struct oprofile_cpu_buffer *b)
+> >  {
+> >  	unsigned long new_tail = b->tail_pos + 1;
+> > 
+> > -	rmb();
+> > +	rmb();	/* be sure fifo pointers are synchromized */
+> > 
+> >  	if (new_tail < b->buffer_size)
+> >  		b->tail_pos = new_tail;
+> > @@ -327,6 +328,67 @@ static void add_trace_begin(void)
+> >  	add_event_entry(TRACE_BEGIN_CODE);
+> >  }
+> > 
+> > +#define IBS_FETCH_CODE_SIZE	2
+> > +#define IBS_OP_CODE_SIZE	5
+> > +#define IBS_EIP(offset)				\
+> > +	(((struct op_sample *)&cpu_buf->buffer[(offset)])->eip)
+> > +#define IBS_EVENT(offset)				\
+> > +	(((struct op_sample *)&cpu_buf->buffer[(offset)])->event)
+> > +
+> > +/*
+> > + * Add IBS fetch and op entries to event buffer
+> > + */
+> > +static void add_ibs_begin(struct oprofile_cpu_buffer *cpu_buf, int code,
+> > +	int in_kernel, struct mm_struct *mm)
+> > +{
+> > +	unsigned long rip;
+> > +	int i, count;
+> > +	unsigned long ibs_cookie = 0;
+> > +	off_t offset;
+> > +
+> > +	increment_tail(cpu_buf);	/* move to RIP entry */
+> > +
+> > +	rip = IBS_EIP(cpu_buf->tail_pos);
+> > +
+> > +#ifdef __LP64__
+> > +	rip += IBS_EVENT(cpu_buf->tail_pos) << 32;
+> > +#endif
+> > +
+> > +	if (mm) {
+> > +		ibs_cookie = lookup_dcookie(mm, rip, &offset);
+> > +
+> > +		if (ibs_cookie == NO_COOKIE)
+> > +			offset = rip;
+> > +		if (ibs_cookie == INVALID_COOKIE) {
+> > +			atomic_inc(&oprofile_stats.sample_lost_no_mapping);
+> > +			offset = rip;
+> > +		}
+> > +		if (ibs_cookie != last_cookie) {
+> > +			add_cookie_switch(ibs_cookie);
+> > +			last_cookie = ibs_cookie;
+> > +		}
+> > +	} else
+> > +		offset = rip;
+> > +
+> > +	add_event_entry(ESCAPE_CODE);
+> > +	add_event_entry(code);
+> > +	add_event_entry(offset);	/* Offset from Dcookie */
+> > +
+> > +	/* we send the Dcookie offset, but send the raw Linear Add also*/
+> > +	add_event_entry(IBS_EIP(cpu_buf->tail_pos));
+> > +	add_event_entry(IBS_EVENT(cpu_buf->tail_pos));
+> > +
+> > +	if (code == IBS_FETCH_CODE)
+> > +		count = IBS_FETCH_CODE_SIZE;	/*IBS FETCH is 2 int64s*/
+> > +	else
+> > +		count = IBS_OP_CODE_SIZE;	/*IBS OP is 5 int64s*/
+> > +
+> > +	for (i = 0; i < count; i++) {
+> > +		increment_tail(cpu_buf);
+> > +		add_event_entry(IBS_EIP(cpu_buf->tail_pos));
+> > +		add_event_entry(IBS_EVENT(cpu_buf->tail_pos));
+> > +	}
+> > +}
+> 
+> In general, I think it would be good to make the IBS stuff as arch
+> independent as possible.  Could you move the above function to the arch
+> specific code.  Here a generic function pointer could be exported which
+> would be assigned to the arch specific routine.  This would enable
+> another architecture to reuse this code.  
 
-WARNING: line over 80 characters
-#330: FILE: arch/x86/kernel/early_printk.c:431:
-+               pos = read_pci_config_byte(num, slot, func,
-pos+PCI_CAP_LIST_NEXT);
+Yes, this will change too (see my mail to Maynard). No IBS outside of
+op_model_amd.c. The solution is copy the samples directly in
+sync_buffer() until a new escape code is received. Internals of the
+samples (type, size, etc.) are not needed in this case. The address
+convertion will use existion functions as well.
 
-WARNING: line over 80 characters
-#335: FILE: arch/x86/kernel/early_printk.c:436:
-+static __u32 __init find_dbgp(int ehci_num, unsigned *rbus, unsigned
-*rslot, unsigned *rfunc)
+-Robert
 
-WARNING: line over 80 characters
-#344: FILE: arch/x86/kernel/early_printk.c:445:
-+                               class = read_pci_config(bus, slot,
-func, PCI_CLASS_REVISION);
+> 
+> > 
+> >  static void add_sample_entry(unsigned long offset, unsigned long event)
+> >  {
+> > @@ -524,6 +586,14 @@ void sync_buffer(int cpu)
+> >  			} else if (s->event == CPU_TRACE_BEGIN) {
+> >  				state = sb_bt_start;
+> >  				add_trace_begin();
+> > +			} else if (s->event == IBS_FETCH_BEGIN) {
+> > +				state = sb_bt_start;
+> > +				add_ibs_begin(cpu_buf,
+> > +					IBS_FETCH_CODE, in_kernel, mm);
+> > +			} else if (s->event == IBS_OP_BEGIN) {
+> > +				state = sb_bt_start;
+> > +				add_ibs_begin(cpu_buf,
+> > +					IBS_OP_CODE, in_kernel, mm);
+> >  			} else {
+> >  				struct mm_struct *oldmm = mm;
+> > 
+> 
+> If you made the log_ibs_sample() more generic, as discussed below, then
+> the #defines could be changed to generic names and thus allow other
+> architectures to leverage the same code.  
+> 
+> 
+> > diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
+> > index 2450b3a..c9ac4e1 100644
+> > --- a/drivers/oprofile/cpu_buffer.c
+> > +++ b/drivers/oprofile/cpu_buffer.c
+> > @@ -5,6 +5,7 @@
+> >   * @remark Read the file COPYING
+> >   *
+> >   * @author John Levon <levon@movementarian.org>
+> > + * @author Barry Kasindorf <barry.kasindorf@amd.com>
+> >   *
+> >   * Each CPU has a local buffer that stores PC value/event
+> >   * pairs. We also log context switches when we notice them.
+> > @@ -207,7 +208,7 @@ static int log_sample(struct oprofile_cpu_buffer * cpu_buf, unsigned long pc,
+> >  	return 1;
+> >  }
+> > 
+> > -static int oprofile_begin_trace(struct oprofile_cpu_buffer * cpu_buf)
+> > +static int oprofile_begin_trace(struct oprofile_cpu_buffer *cpu_buf)
+> >  {
+> >  	if (nr_available_slots(cpu_buf) < 4) {
+> >  		cpu_buf->sample_lost_overflow++;
+> > @@ -252,6 +253,71 @@ void oprofile_add_sample(struct pt_regs * const regs, unsigned long event)
+> >  	oprofile_add_ext_sample(pc, regs, event, is_kernel);
+> >  }
+> > 
+> > +#define MAX_IBS_SAMPLE_SIZE	14
+> > +static int log_ibs_sample(struct oprofile_cpu_buffer *cpu_buf,
+> > +	unsigned long pc, int is_kernel, unsigned  int *ibs, int ibs_code)
+> > +{
+> > +	struct task_struct *task;
+> > +
+> > +	cpu_buf->sample_received++;
+> > +
+> > +	if (nr_available_slots(cpu_buf) < MAX_IBS_SAMPLE_SIZE) {
+> > +		cpu_buf->sample_lost_overflow++;
+> > +		return 0;
+> > +	}
+> > +
+> > +	is_kernel = !!is_kernel;
+> > +
+> > +	/* notice a switch from user->kernel or vice versa */
+> > +	if (cpu_buf->last_is_kernel != is_kernel) {
+> > +		cpu_buf->last_is_kernel = is_kernel;
+> > +		add_code(cpu_buf, is_kernel);
+> > +	}
+> > +
+> > +	/* notice a task switch */
+> > +	if (!is_kernel) {
+> > +		task = current;
+> > +
+> > +		if (cpu_buf->last_task != task) {
+> > +			cpu_buf->last_task = task;
+> > +			add_code(cpu_buf, (unsigned long)task);
+> > +		}
+> > +	}
+> > +
+> > +	add_code(cpu_buf, ibs_code);
+> > +	add_sample(cpu_buf, ibs[0], ibs[1]);
+> > +	add_sample(cpu_buf, ibs[2], ibs[3]);
+> > +	add_sample(cpu_buf, ibs[4], ibs[5]);
+> > +
+> > +	if (ibs_code == IBS_OP_BEGIN) {
+> > +	add_sample(cpu_buf, ibs[6], ibs[7]);
+> > +	add_sample(cpu_buf, ibs[8], ibs[9]);
+> > +	add_sample(cpu_buf, ibs[10], ibs[11]);
+> > +	}
+> > +
+> > +	return 1;
+> > +}
+> > +
+> 
+> Can we make this function a bit more general?  Specifically, suppose 
+> 
+> static int log_generic_sample (struct oprofile_cpu_buffer *cpu_buf, 
+>                                  unsigned int *array, int num_entries) 
+> 
+> If we just passed in an array of data that is ready to just be copied
+> directly to 
+> the kernel buffer in a for loop: 
+> 
+> for (i=0; i<num_entries; i=i+2) 
+> 
+>         add_sample(cpu_buf, array[i], array[i+1]); 
+> 
+> The arch specific code would have to do the if(ibs_code == IBS_OP_BEGIN)
+> code to either add the stuff into the input array or not.  The
+> appropriate number of entries would be passed.   
+> 
+> The  if (cpu_buf->last_is_kernel != is_kernel) statement might be hard
+> to do from the architecture code and might have to stay in the
+> log_generic_sample. It would be good if we could find a way to also move
+> this line of code to the arch specific code to setup the generic array
+> of data to pass to log_generic_sample(). Maybe the arch specific code
+> could have an array of last_is_kernel to refer to when preparing the
+> data for the log_generic_sample() call.
+> 
+> By making this more generic and flexible in the number of entries and
+> pushing the logic of what to put into the array into the arch specific
+> code, it could be used by other architectures.  I had something along
+> the lines of the above log_generic_sample() in a version of a patch for
+> the CELL architecture.  On CELL, I have to take samples from the various
+> SPUs and push them into the kernel buffer.  I had tried to do it using
+> the per CPU buffers.  I ended up dropping the approach for other
+> reasons.  The point is I can see where something a little more
+> generic/flexible could be used by other architectures.
+> 
+> > +void oprofile_add_ibs_sample(struct pt_regs *const regs,
+> > +				unsigned int * const ibs_sample, u8 code)
+> > +{
+> > +	int is_kernel = !user_mode(regs);
+> > +	unsigned long pc = profile_pc(regs);
+> > +
+> > +	struct oprofile_cpu_buffer *cpu_buf =
+> > +			 &per_cpu(cpu_buffer, smp_processor_id());
+> > +
+> > +	if (!backtrace_depth) {
+> > +		log_ibs_sample(cpu_buf, pc, is_kernel, ibs_sample, code);
+> > +		return;
+> > +	}
+> > +
+> > +	/* if log_sample() fails we can't backtrace since we lost the source
+> > +	* of this event */
+> > +	if (log_ibs_sample(cpu_buf, pc, is_kernel, ibs_sample, code))
+> > +		oprofile_ops.backtrace(regs, backtrace_depth);
+> > +}
+> > +
+> >  void oprofile_add_pc(unsigned long pc, int is_kernel, unsigned long event)
+> >  {
+> >  	struct oprofile_cpu_buffer *cpu_buf = &__get_cpu_var(cpu_buffer);
+> > diff --git a/drivers/oprofile/cpu_buffer.h b/drivers/oprofile/cpu_buffer.h
+> > index c3e366b..9c44d00 100644
+> > --- a/drivers/oprofile/cpu_buffer.h
+> > +++ b/drivers/oprofile/cpu_buffer.h
+> > @@ -55,5 +55,7 @@ void cpu_buffer_reset(struct oprofile_cpu_buffer * cpu_buf);
+> >  /* transient events for the CPU buffer -> event buffer */
+> >  #define CPU_IS_KERNEL 1
+> >  #define CPU_TRACE_BEGIN 2
+> > +#define IBS_FETCH_BEGIN 3
+> > +#define IBS_OP_BEGIN    4
+> > 
+> >  #endif /* OPROFILE_CPU_BUFFER_H */
+> 
+> 
 
-WARNING: line over 80 characters
-#347: FILE: arch/x86/kernel/early_printk.c:448:
-+                               cap = find_cap(bus, slot, func,
-PCI_CAP_ID_EHCI_DEBUG);
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
-WARNING: line over 80 characters
-#386: FILE: arch/x86/kernel/early_printk.c:487:
-+                               portsc =
-readl(&ehci_regs->port_status[port - 1]);
-
-WARNING: externs should be avoided in .c files
-#425: FILE: arch/x86/kernel/early_printk.c:526:
-+void early_printk(const char *fmt, ...);
-
-WARNING: consider using strict_strtoul in preference to simple_strtoul
-#518: FILE: arch/x86/kernel/early_printk.c:619:
-+               dbgp_num = simple_strtoul(s, &e, 10);
-
-WARNING: externs should be avoided in .c files
-#722: FILE: arch/x86/kernel/head64.c:75:
-+extern void __init enable_debug_console(char *buf);
-
-total: 0 errors, 9 warnings, 773 lines checked
-
-patches/9xxx.patch has style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
-
-YH
