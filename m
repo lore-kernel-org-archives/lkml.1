@@ -1,119 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbYGWOEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754389AbYGWOFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057AbYGWOEO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 10:04:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbYGWOD4
+	id S1754389AbYGWOFH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 10:05:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbYGWOEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 10:03:56 -0400
-Received: from smtp-out-41.synserver.de ([217.119.50.41]:1055 "HELO
-	smtp-out-41.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752936AbYGWODz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 10:03:55 -0400
-X-SynServer-TrustedSrc: 1
-X-SynServer-AuthUser: markus@trippelsdorf.de
-X-SynServer-PPID: 24699
-Date: Wed, 23 Jul 2008 16:03:47 +0200
-From: Markus Trippelsdorf <markus@trippelsdorf.de>
-To: Wang Chen <wangchen@cn.fujitsu.com>
-Cc: Alessandro Guido <ag@alessandroguido.name>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] skge: resolve tx multiqueue bug
-Message-ID: <20080723140347.GA2245@gentoox2.trippelsdorf.de>
-References: <d4b984a30807210914nd4d0db5yb7b93ca5143ff0d5@mail.gmail.com> <20080721.092027.14394005.davem@davemloft.net> <d4b984a30807220254t1aaf6ac4q874329966511b0c5@mail.gmail.com> <20080723054039.GA2272@gentoox2.trippelsdorf.de> <4886F0C5.7040605@cn.fujitsu.com> <20080723101827.GA2236@gentoox2.trippelsdorf.de>
-MIME-Version: 1.0
+	Wed, 23 Jul 2008 10:04:53 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:59738 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752932AbYGWOEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 10:04:53 -0400
+Date: Wed, 23 Jul 2008 18:04:50 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jerome Arbez-Gindre <jeromearbezgindre@gmail.com>
+Cc: linux-kernel@vger.kernel.org, deweerdt@free.fr
+Subject: Re: New IDX in linux/connector.h ?
+Message-ID: <20080723140450.GA30991@2ka.mipt.ru>
+References: <a1d7a2f20807230540l4aa7e3f5i1511a2ea71fed8a9@mail.gmail.com> <20080723125307.GA12017@2ka.mipt.ru> <a1d7a2f20807230645t461265ecu2d9e7f70484a8c91@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080723101827.GA2236@gentoox2.trippelsdorf.de>
+In-Reply-To: <a1d7a2f20807230645t461265ecu2d9e7f70484a8c91@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 12:18:27PM +0200, Markus Trippelsdorf wrote:
-> On Wed, Jul 23, 2008 at 04:50:13PM +0800, Wang Chen wrote:
-> > Markus Trippelsdorf said the following on 2008-7-23 13:40:
-> > > On Tue, Jul 22, 2008 at 11:54:26AM +0200, Alessandro Guido wrote:
-> > >> Got a WARNING this morning (2.6.26-05752-g93ded9b) and I think it's related.
-> > > 
-> > > Same thing here (latest git):
-> > > 
-> > > skge eth1: enabling interface
-> > > skge eth1: disabling interface
-> > > ------------[ cut here ]------------
-> > > WARNING: at net/core/dev.c:1344 __netif_schedule+0x24/0x6d()
-> > > Pid: 1904, comm: ip Not tainted 2.6.26-06077-gc010b2f #33
-> > >  [<ffffffff8020b3eb>] system_call_after_swapgs+0x7b/0x80
-> ...
-> > > ---[ end trace 92936ef183e09876 ]---
-> > > skge eth1: enabling interface
-> > > skge eth1: Link is up at 100 Mbps, full duplex, flow control both
-> > > 
-> > 
-> > Markus, please try this.
-> > 
-> > - Add netif_start_queue() in ->open()
-> > - netif_carrier_*() is enough, remove netif_*_queue()
+On Wed, Jul 23, 2008 at 03:45:09PM +0200, Jerome Arbez-Gindre (jeromearbezgindre@gmail.com) wrote:
+>  diff --git a/include/linux/connector.h b/include/linux/connector.h
+> index 96a89d3..361996c 100644
+> --- a/include/linux/connector.h
+> +++ b/include/linux/connector.h
+> @@ -38,6 +38,7 @@
+>  #define CN_W1_VAL			0x1
+>  #define CN_IDX_V86D			0x4
+>  #define CN_VAL_V86D_UVESAFB		0x1
+> +#define CN_IDX_BB			0x5
 > 
-> Unfortunately, your patch does not fix this. I still get the same warning.
+>  #define CN_NETLINK_USERS		5
+
+Update this number too.
+While it is less than 32, it does not matter, but just for the record.
+
+> > I even wanted to have private indexes, i.e. those which are supposed to
+> > be used by out-of-the-tree code, and no in-kernel users would ever touch
+> > this numbers.
 > 
+> So which numbers am I suppose to use ... taking account that BB will
+> probably stay for a long time out-of-the-tree ?
 
-This patch works for me:
+You can use whatever VAL number you like:
 
-diff --git a/drivers/net/skge.c b/drivers/net/skge.c
-index 2e26dce..d761296 100644
---- a/drivers/net/skge.c
-+++ b/drivers/net/skge.c
-@@ -1069,7 +1069,6 @@ static void skge_link_up(struct skge_port *skge)
-                    LED_BLK_OFF|LED_SYNC_OFF|LED_ON);
+struct cb_id cn_dst_id[] = {{CN_DST_IDX, 1}, {CN_DST_IDX, 2}, {CN_DST_IDX, 3}};
 
-        netif_carrier_on(skge->netdev);
--       netif_wake_queue(skge->netdev);
+for (i=0; i<ARRAY_SIZE(cn_dst_id); ++i)
+  cn_add_callback(&cn_dst_id[i], "DST", cn_dst_callback_func);
 
-        if (netif_msg_link(skge)) {
-                printk(KERN_INFO PFX
-@@ -1084,7 +1083,6 @@ static void skge_link_down(struct skge_port *skge)
- {
-        skge_write8(skge->hw, SK_REG(skge->port, LNK_LED_REG), LED_OFF);
-        netif_carrier_off(skge->netdev);
--       netif_stop_queue(skge->netdev);
-
-        if (netif_msg_link(skge))
-                printk(KERN_INFO PFX "%s: Link is down.\n", skge->netdev->name);
-@@ -2450,7 +2448,6 @@ static void skge_phy_reset(struct skge_port *skge)
-        int port = skge->port;
-        struct net_device *dev = hw->dev[port];
-
--       netif_stop_queue(skge->netdev);
-        netif_carrier_off(skge->netdev);
-
-        spin_lock_bh(&hw->phy_lock);
-@@ -2640,6 +2637,7 @@ static int skge_up(struct net_device *dev)
-        spin_unlock_irq(&hw->hw_lock);
-
-        napi_enable(&skge->napi);
-+       netif_start_queue(dev);
-        return 0;
-
-  free_rx_ring:
-@@ -2673,8 +2671,6 @@ static int skge_down(struct net_device *dev)
-        if (netif_msg_ifdown(skge))
-                printk(KERN_INFO PFX "%s: disabling interface\n", dev->name);
-
--       netif_stop_queue(dev);
--
-        if (hw->chip_id == CHIP_ID_GENESIS && hw->phy_type == SK_PHY_XMAC)
-                del_timer_sync(&skge->link_timer);
-
-@@ -3863,7 +3859,6 @@ static struct net_device *skge_devinit(struct skge_hw *hw, int port,
-
-        /* device is off until link detection */
-        netif_carrier_off(dev);
--       netif_stop_queue(dev);
-
-        return dev;
- }
-
+So cn_dst_callback_func() will be invoked for
+idx=CN_DST_IDX,val={1,2,3}, you can determine val parameter from the
+provided header and make appropriate decition.
+You can also register multiple different callbacks for each idx.val
+pair of course.
 
 -- 
-Markus
+	Evgeniy Polyakov
