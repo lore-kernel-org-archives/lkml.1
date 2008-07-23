@@ -1,63 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754268AbYGWTc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbYGWTds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754268AbYGWTc2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 15:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbYGWTcT
+	id S1754661AbYGWTds (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 15:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbYGWTdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 15:32:19 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:4290 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753293AbYGWTcT convert rfc822-to-8bit (ORCPT
+	Wed, 23 Jul 2008 15:33:37 -0400
+Received: from trinity.fluff.org ([89.145.97.151]:51897 "EHLO
+	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649AbYGWTdh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 15:32:19 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 23 Jul 2008 19:30:00.0463 (UTC) FILETIME=[7F7851F0:01C8ECFA]
-Content-class: urn:content-classes:message
-Subject: Re: [PATCH] x86: apic: Changing export symbols to *_GPL
-Date: Wed, 23 Jul 2008 15:29:59 -0400
-Message-ID: <Pine.LNX.4.61.0807231525490.30326@chaos.analogic.com>
-In-Reply-To: <20080723184709.ECF218403@erda.amd.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] x86: apic: Changing export symbols to *_GPL
-Thread-Index: Acjs+n+VEyEbBCIcRt6zALb56l6Jfw==
-References: <20080722125315.5d34f2e6@infradead.org> <20080723184709.ECF218403@erda.amd.com>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Robert Richter" <robert.richter@amd.com>
-Cc: "LKML" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-X-TM-AS-Product-Ver: SMEX-8.0.0.1259-5.500.1027-16050.001
-X-TM-AS-Result: No--1.236000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+	Wed, 23 Jul 2008 15:33:37 -0400
+Date: Wed, 23 Jul 2008 20:33:34 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       spi-devel-general@lists.sourceforge.net,
+       LM Sensors <lm-sensors@lm-sensors.org>, mgross@linux.intel.com,
+       Dmitry Torokhov <dtor@mail.ru>, David Brownell <david-b@pacbell.net>,
+       hmh@hmh.eng.br, Jean Delvare <khali@linux-fr.org>,
+       Ben Nizette <bn@niasdigital.com>
+Subject: Re: [spi-devel-general] [Patch 0/4] IndustrialIO subsystem (ADCs, accelerometers etc)
+Message-ID: <20080723193334.GD26938@trinity.fluff.org>
+References: <488763AD.4050400@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <488763AD.4050400@gmail.com>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 23, 2008 at 06:00:29PM +0100, Jonathan Cameron wrote:
+> Dear All,
+> 
+> The need for an industrialio subsystem was discussed in
+> http://lkml.org/lkml/2008/5/20/135
+> 
+> Firstly thanks to all the people who have contributed to the discussion
+> of this in the past.
+> 
+> In brief the intention is provide a kernel subsystem directed towards the
+> handling on sensors (and later related output devices) such as ADC's,
+> accelerometers and many others.
 
-On Wed, 23 Jul 2008, Robert Richter wrote:
+Thinking about this, basically we have an event buffer and management
+system that could live in  drivers/event. It manages the event sources
+and buffering, including tagging the data and buffering it ready for
+consumption.
 
-> This fits better here.
+One thing I'd like to see is that the reading application should be
+able to choose to have events aggregated or not, so that if a few
+events turn up very fast it can choose to take them as one single
+item.
+ 
+> Key features of the subsystem include:
+> 
+> * Provision of sysfs access for direct reading from devices (similar to hwmon
+>   but without the buffering / update rate restrictions)
 
-[Snipped...]
-This question was raised before and simply dismissed.
+Having an update rate and buffering is possibly useful, given that if you
+have say a number of ADC inputs but only one converter, then it is possible
+that there will be some form of resource starvation.
+ 
+> * Provision of chrdevs through which events may be passed to userspace in a
+>   similar fashion to the input subsystem.  These events may be anything from
+>   hardware thresholds set on the sensor itself to sw / hw ring buffer event
+>   notifications (50% full etc).
+> 
+> * Provision of access via chrdevs to hardware ring buffers on devices that
+>   provide them.
+> 
+> * Software ring buffer support to allow semi regular capture of data form the
+>   device.  Typically this will be driven from either datardy events, or from
+>   a periodic timer interrupt (to this end a very simple wrapper for periodic
+>   RTC's is included. This will move to more generic timer interfaces as and when
+>   they become available.  For now available rtc's must be registered with the
+>   subsystem via the industrialio_register_ptimer function form within a board
+>   init.
 
-If somebody wrote a procedure in the kernel that exported
-some symbols. And that person wanted anybody to use that
-symbol, upon what authority does one change "EXPORT_SYMBOL"
-to "EXPORT_SYMBOL_GPL?" This will need to eventually be
-answered.
+-- 
+Ben
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
