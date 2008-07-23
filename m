@@ -1,45 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbYGWRAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754787AbYGWRAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754535AbYGWRAS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 13:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYGWRAE
+	id S1754787AbYGWRAj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 13:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbYGWRAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 13:00:04 -0400
-Received: from kruk.ds2.uw.edu.pl ([193.0.110.20]:57606 "EHLO mail.wijata.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751914AbYGWRAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 13:00:01 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Jul 2008 13:00:01 EDT
-Message-ID: <488761F0.4040906@wijata.com>
-Date: Wed, 23 Jul 2008 18:53:04 +0200
-From: Rafal Wijata <devnull@wijata.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 23 Jul 2008 13:00:30 -0400
+Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:57245 "EHLO
+	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649AbYGWRA2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 13:00:28 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <488763AD.4050400@gmail.com>
+Date: Wed, 23 Jul 2008 18:00:29 +0100
+From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Odd swapping issue
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+To: LKML <linux-kernel@vger.kernel.org>,
+       spi-devel-general@lists.sourceforge.net,
+       LM Sensors <lm-sensors@lm-sensors.org>
+CC: Jean Delvare <khali@linux-fr.org>, Dmitry Torokhov <dtor@mail.ru>,
+       "Hans J. Koch" <hjk@linutronix.de>, hmh@hmh.eng.br,
+       David Brownell <david-b@pacbell.net>, mgross@linux.intel.com,
+       Ben Nizette <bn@niasdigital.com>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: [Patch 0/4] IndustrialIO subsystem (ADCs, accelerometers etc)
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It happened twice recently(within one week), therefore I'm posting here.
+Dear All,
 
-32bit Fedora7, 2.6.23.17-88.fc7PAE, 16G ram, 12G swap, 2*dualXeon
+The need for an industrialio subsystem was discussed in
+http://lkml.org/lkml/2008/5/20/135
 
-My machine went sluggish. Tried to debug it, and observed, that free 
-ram(the unused one) was increasing while swap usage was increasing as 
-well. It stopped after whole swap partition was used. Then it came back 
-normal. Required processes were brought back to ram and server become 
-responsible again.
+Firstly thanks to all the people who have contributed to the discussion
+of this in the past.
 
-Now the most strange thing is that there was 5G free(unused) ram, during 
-those few minutes it growed to 12G! In the very same time swap usage 
-increased from ~4G to 12G.
-This is irrational to me. Can anybody explain? How to prevent?
+In brief the intention is provide a kernel subsystem directed towards the
+handling on sensors (and later related output devices) such as ADC's,
+accelerometers and many others.
 
-vm.swappiness was decreased to 30, to avoid excessive swap usage, but no 
-avail.
+Key features of the subsystem include:
 
-It's application and nfs server/client if it matters. During that 
-"memory sweep" I observed many nfsd processes(kernel threads?) in D state.
+* Provision of sysfs access for direct reading from devices (similar to hwmon
+  but without the buffering / update rate restrictions)
+
+* Provision of chrdevs through which events may be passed to userspace in a
+  similar fashion to the input subsystem.  These events may be anything from
+  hardware thresholds set on the sensor itself to sw / hw ring buffer event
+  notifications (50% full etc).
+
+* Provision of access via chrdevs to hardware ring buffers on devices that
+  provide them.
+
+* Software ring buffer support to allow semi regular capture of data form the
+  device.  Typically this will be driven from either datardy events, or from
+  a periodic timer interrupt (to this end a very simple wrapper for periodic
+  RTC's is included. This will move to more generic timer interfaces as and when
+  they become available.  For now available rtc's must be registered with the
+  subsystem via the industrialio_register_ptimer function form within a board
+  init.
+
+* A set of sample drivers illustrating the main 'classes' of device. By classes
+  I really mean devices that are interfaced with in a similar way.
+
+The subsystem is now in a functional state with a small set of drivers:
+
+Max1363 (supports numerous Maxim i2c ADC's) (tested with max1363 and max1238 chips)
+   - Uses a periodic timer to provide ring buffer mode.
+   - All reads form these devices are scan modes so direct single element access
+     is not provided.
+   - Monitor mode on max1363 is not yet supported (need to do a bit debugging of
+     the board I have so as to be able to test this).
+
+ST LIS3L02DQ - SPI accelerometer.
+   - Uses a datardy interrupt to driver a software ring buffer.
+   - Most functionality of this device is supported.
+
+VTI SCA3000 (tested with an e05)
+   - Hardware ring buffer.
+
+More drivers in preparation.
+
+Next focus will be on cleaning up / implementing a more generic timer framework
+and allowing the system to partly run if not all dependencies are met 
+(particularly availability of timers).
+
+An initial set of patches will be attached to this thread shortly.
+
+--
+Jonathan Cameron
