@@ -1,91 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbYGWCin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYGWCnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754138AbYGWCin (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 22:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbYGWCie
+	id S1754498AbYGWCnA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 22:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbYGWCmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 22:38:34 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3349 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752108AbYGWCid (ORCPT
+	Tue, 22 Jul 2008 22:42:52 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:35253 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752108AbYGWCmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 22:38:33 -0400
-Date: Tue, 22 Jul 2008 22:38:32 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Tomas Styblo <tripie@cpan.org>
-cc: Robert Hancock <hancockr@shaw.ca>, <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>, <usb-storage@lists.one-eyed-alien.net>
-Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device
- 152d:2338
-In-Reply-To: <20080722090331.GC8303@notebook.homenet.local>
-Message-ID: <Pine.LNX.4.44L0.0807222238060.12003-100000@netrider.rowland.org>
+	Tue, 22 Jul 2008 22:42:52 -0400
+Date: Tue, 22 Jul 2008 21:48:04 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+Subject: Re: [RFC] fix kallsyms to allow discrimination of local symbols
+Message-ID: <20080723014804.GA8826@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Frank Ch. Eigler" <fche@redhat.com>,
+	James Bottomley <James.Bottomley@HansenPartnership.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	systemtap@sourceware.org
+References: <1216676595.3433.80.camel@localhost.localdomain> <y0mprp68zg9.fsf@ton.toronto.redhat.com> <1216698788.3433.116.camel@localhost.localdomain> <20080722115101.GB9508@redhat.com> <1216739683.3364.43.camel@localhost.localdomain> <y0mk5fd9a64.fsf@ton.toronto.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <y0mk5fd9a64.fsf@ton.toronto.redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jul 2008, Tomas Styblo wrote:
-
-> * Alan Stern <stern@rowland.harvard.edu> [Tue, 22 Jul 2008]:
-> > On Mon, 21 Jul 2008, Robert Hancock wrote:
-> > > > this message includes a patch that provides a workaround for
-> > > > a silent data corruption bug caused by incorrect error handling in
-> > > > the JMicron JM20337 Hi-Speed USB to SATA & PATA Combo Bridge chipset,
-> > > > USB device id 152d:2338.
-> > 
-> > The two of you should read through
-> > 
-> > 	http://bugzilla.kernel.org/show_bug.cgi?id=9638
-> > 
-> > which concerns this very problem.
+On Tue, Jul 22, 2008 at 12:05:23PM -0400, Frank Ch. Eigler wrote:
+> > You're confusing issues.  I said embedding half a megabyte of symbol
+> > table that the kernel already has is a bad idea full stop.  
 > 
-> I had found this bugreport and read through it before I posted my
-> patch. I don't think this is the same problem. The error messages
-> and the description of the problem are different from what I've
-> been trying to fix.
+> Be that as it may, but it is not appropriate to knowingly bring up a
+> topic that is irrelevant to the patch series you're actually proposing.
+> 
+> > The ultimate think I'm looking to do is to evolve kernel APIs that
+> > makes this practice unnecessary.
+> 
+> If by "this practice" you mean "stap-symbols.h tables", then you're
+> worrying on the wrong area of code (anything in/near kprobes).  I am
+> happy to suggest more appropriate areas to help with that.
 
-Maybe the initial descriptions are.  If you read through the entire
-report, though, you'll see that the underlying problems are exactly
-the same:
+I think there is a certain amount of talking past each other which is
+going on here.
 
-	A READ fails to transfer all the data requested.  The device
-	sends back Check Condition status, but the sense data is all
-	0, indicating that nothing was wrong.  The system does not
-	retry the READ, leading to data corruption.
+Let me see if I can summarize what is going on.  My understanding of
+the situation is as follows:
 
-	A WRITE fails and times out after 30 seconds.  The system
-	tries to reset the device, but the reset fails.
+1) Right now, when trying to resolve the address to install a kprobe,
+Systemtap is using the DWARF information from the vmlinux file and/or
+the module's debuginfo files.
 
-The system doesn't detect the first problem for two reasons: The
-scsi_eh_prep_cmnd routine fails to preserve scmd->underflow, and
-usb-storage fails to check for underflow when the device returns Check
-Condition status.  The Bugzilla report contains fixes for both of
-these, and they solve the problem.
+2) Kprobe can support setting probes based on raw addresses (which is
+what Systemtap is doing now) as well as a text symbol looked up from
+kallsyms plus an offset.  The latter was introduced two years ago, but
+Systemtap does not take advantage of it.
 
-The second problem is harder.  The device is supposed to send a STALL
-to cut the WRITE short -- and a USB trace under Windows seems to
-indicate that it does -- but under Linux no STALL is received.  I
-don't know why not.  But since Linux does not respond in the way the
-device expects, the device crashes.
+3) James is offended by the fact that Systemtap is not utilizing this
+interface, and has offerred up patches which adds the capability of
+using the symbol+offset feature of the kprobes interface.  There seems
+to be some question as to whether his patch has all of the
+functionality of the existing code which determines addresses via
+pawing through DWARF headers (especially where a function may have
+been inlined one or more times) but presumably James' patches could be
+enhanced to deal with this issues, if he hasn't done so already.
 
-> Anyway, I'll send the patch to this person so he can try it. 
-> I guess it won't fix his problem. This patch is much simpler and doesn't 
-> need any delays - I really think this is a different situation.
+Am I missing anything?
 
-It isn't.  And your patch is an ad-hoc correction that doesn't address
-the true underlying reasons for the errors.
+So the main arguments against this seems to be that it by itself this
+doesn't actually reduce any complexity or code in Systemtap because
+there are other places (kernel data segment, user space tracing if it
+ever manages to get merged into mainline, etc.) which needs to be able
+to paw through DWARF headers.
 
-You should also try adding the delay mentioned in the bug report.
-There's an excellent chance it will also prevent your problems.
+James' argument that this Systemtap is cramming over half a megabyte
+is regarded by is somewhat of a red herring with respect to this
+specific patch, since systemtap does not calculate probe addresses at
+runtime.  This 600k or so of symbol tables is being used for something
+else.  (What, exactly?!?)  James clearly in the long term wants to
+make this go away, which seems reasonable.  He views changing how
+kprobes are placed is the first in a series of changes that he would
+like to make.  So perhaps the resistance in accepting his first patch
+troubles him since it appears that Systemtap folks aren't willing to
+take his suggestions about how things should be improved.
 
-> I sometimes experience the problems described by this person, as I
-> noted in the first message with the patch. When these "reset high
-> speed USB device" messages appear, it is usually necessary to
-> disconnect and power off the device.
+May I make a suggestion and not try to come to a conclusion about the
+big picture question for a moment and focus on the very short-term of
+whether it is better that when I implement a probe such as:
 
-Because the device's firmware has crashed.  That's why the reset fails.
+probe module("ext4dev").function("ext4_fill_super")
+{     
+      printk("here am I!\n");
+}
 
-Alan Stern
+This should be done via passing a hard-coded address, or via using the
+kprobes function+offset facility?  It would seem that there are
+advantages to James' patch all by itself, in that it will will work
+even if the debuginfo information for the ext4dev module can't be
+found, since the kallsyms information would be used instead.  It also
+means that the resulting systemtap probe modules will be easier to
+make more kernel independent, since it won't be using a hard-coded
+address, but rather a symbolic name.
 
+So what is the good reason *not* to do things the way James has
+suggested?  The kprobes kallsyms facility has been around for a while
+now.  Is it that we need to make changes?
+
+Maybe if things are focused on somewhat more concrete questions, we
+can make progress.
+
+Regards,
+
+						- Ted
