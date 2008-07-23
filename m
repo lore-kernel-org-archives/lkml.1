@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbYGWMtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbYGWMxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754092AbYGWMtv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 08:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbYGWMtn
+	id S1754206AbYGWMxT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 08:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbYGWMxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 08:49:43 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48587 "EHLO mx2.mail.elte.hu"
+	Wed, 23 Jul 2008 08:53:10 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:44971 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751223AbYGWMtm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 08:49:42 -0400
-Date: Wed, 23 Jul 2008 14:49:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [git pull] x86: declaration fixes - ver3
-Message-ID: <20080723124918.GA7297@elte.hu>
-References: <1216815947.11897.2.camel@jaswinder.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1752684AbYGWMxK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 08:53:10 -0400
+Date: Wed, 23 Jul 2008 16:53:07 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jerome Arbez-Gindre <jeromearbezgindre@gmail.com>
+Cc: linux-kernel@vger.kernel.org, deweerdt@free.fr
+Subject: Re: New IDX in linux/connector.h ?
+Message-ID: <20080723125307.GA12017@2ka.mipt.ru>
+References: <a1d7a2f20807230540l4aa7e3f5i1511a2ea71fed8a9@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1216815947.11897.2.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <a1d7a2f20807230540l4aa7e3f5i1511a2ea71fed8a9@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jerome.
 
-* Jaswinder Singh <jaswinder@infradead.org> wrote:
+On Wed, Jul 23, 2008 at 02:40:29PM +0200, Jerome Arbez-Gindre (jeromearbezgindre@gmail.com) wrote:
+> Would it be possible to declare in linux/connector.h an IDX for the
+> BB, without any restriction on the VAL the BB could use?
 
-> ﻿Hello Ingo,
->  
-> Please pull these patches for x86-tip.
-> 
-> The following changes since commit 1e84911c6c37fd1080ef07039e19c346628b31db:
->   Jaswinder Singh (1):
->         x86: mtrr/main.c declare range_state as static
-> 
-> are available in the git repository at:
-> 
->   git://git.infradead.org/users/jaswinder/linux-2.6-tip.git x86/prototypes-for-tip
-> 
-> Jaswinder Singh (8):
->       x86: apic_XX.c declare functions before they get used
->       x86: vm86_32.c declare functions before they get used
->       x86: mm/init_XX.c declare functions before they get used
->       x86: mm/fault.c declare do_page_fault before they get used
->       x86: mm/ioremap.c declare early_ioremap_debug and early_ioremap_nested as static
->       x86: mm/pageattr.c declare arch_report_meminfo before they get used
->       x86: mm/pgtable_32.c declare set_pmd_pfn before they get used
->       x86: mach-default/setup.c declare no_broadcast before they get used
+Sure. 
+VAL (which is 'value' of course) is a private 'offset' inside given
+index (IDX), so when you register single IDX all corresponding VALs
+belong to the same user.
 
-pulled, thanks Jaswinder.
+And some side notes.
 
-	Ingo
+I even wanted to have private indexes, i.e. those which are supposed to
+be used by out-of-the-tree code, and no in-kernel users would ever touch
+this numbers.
+
+You actually can use your own private numbers as long they do not
+correspond to currently loaded callbacks. Number of users in the header
+is actually a hint, it does not play any role at all as long as number
+of users is smaller than 32 (kernel stack allocates this bitmask by
+default even if number of users/sockets is smaller).
+
+There is also connector's itself own index (-1), used for requesting a
+notifications about new connector users registrations, it can be
+simply enough extended to provide dynamic index assignment.
+
+-- 
+	Evgeniy Polyakov
