@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbYGWAEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755164AbYGWAL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755262AbYGWAEf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 20:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYGWAE1
+	id S1755164AbYGWAL4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 20:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYGWALt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 20:04:27 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59880 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752900AbYGWAE1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 20:04:27 -0400
-Date: Tue, 22 Jul 2008 17:02:16 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: david-b@pacbell.net, linux-kernel@vger.kernel.org,
-       g.liakhovetski@pengutronix.de
-Subject: Re: [patch 2.6.26-rc5] gpio: sysfs interface (updated)
-Message-ID: <20080723000216.GB8203@kroah.com>
-References: <200806121153.36557.david-b@pacbell.net> <20080722162751.e8584d46.akpm@linux-foundation.org> <20080722232824.GA22596@kroah.com> <20080722165056.799223a7.akpm@linux-foundation.org>
+	Tue, 22 Jul 2008 20:11:49 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63222 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751768AbYGWALs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 20:11:48 -0400
+Date: Wed, 23 Jul 2008 01:10:54 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Mikael Pettersson <mikpe@it.uu.se>, Ingo Molnar <mingo@elte.hu>
+cc: Chuck Ebbert <cebbert@redhat.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: PIC, L-APIC and I/O APIC debug information
+In-Reply-To: <18564.38760.212333.375520@harpo.it.uu.se>
+Message-ID: <Pine.LNX.4.55.0807230053460.31850@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0807202226310.24038@cliff.in.clinika.pl>
+ <18563.55832.673541.202465@harpo.it.uu.se> <Pine.LNX.4.55.0807211222250.23386@cliff.in.clinika.pl>
+ <18564.38760.212333.375520@harpo.it.uu.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080722165056.799223a7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 04:50:56PM -0700, Andrew Morton wrote:
-> On Tue, 22 Jul 2008 16:28:24 -0700
-> Greg KH <greg@kroah.com> wrote:
+On Mon, 21 Jul 2008, Mikael Pettersson wrote:
+
+> It's not even remotely C-like, which will cause confusion
+> for anyone or anything trying to read and understand the code.
+
+ Not being C-like sounds like an advantage as the reader would be forced 
+to check what it really means, but I can see what you mean, and the fact 
+we have got worse constructs elsewhere does not look like a terribly good 
+argument either.
+
+> Something like the following looks saner to me, would it work for you?
 > 
-> > On Tue, Jul 22, 2008 at 04:27:51PM -0700, Andrew Morton wrote:
-> > > On Thu, 12 Jun 2008 11:53:36 -0700
-> > > David Brownell <david-b@pacbell.net> wrote:
-> > > 
-> > > > This adds a simple sysfs interface for GPIOs.
-> > > 
-> > > device_create_drvdata() has magically vanished from today's linux-next,
-> > > so this code doesn't compile any more.
-> > > 
-> > > This:
-> > > 
-> > > --- a/drivers/gpio/gpiolib.c~gpio-sysfs-interface-updated-gpio-linux-next-fixes-for-sysfs-support-fix
-> > > +++ a/drivers/gpio/gpiolib.c
-> > > @@ -453,8 +453,8 @@ int gpio_export(unsigned gpio, bool dire
-> > >  	if (status == 0) {
-> > >  		struct device	*dev;
-> > >  
-> > > -		dev = device_create_drvdata(&gpio_class, desc->chip->dev, 0,
-> > > -				desc, "gpio%d", gpio);
-> > > +		dev = device_create(&gpio_class, desc->chip->dev, 0, desc,
-> > > +					"gpio%d", gpio);
-> > 
-> > Should be NULL instead of 0 there, otherwise sparse will complain.
-> 
-> The third arg to device_create is a dev_t, so 0 is correct
+> 	#ifdef debug
+> 	#define apicdebug	/* empty */
+> 	#define __apicinit	/* empty */
+> 	#else
+> 	#define apicdebug	static
+> 	#define __apicinit	__init
+> 	#endif
+> 	...
+> 	apicdebug void __apicinit print_IO_APIC(void)
+> 	{ .. }
 
-Bah, sorry about that, MK_DEV(0,0) would be safer :)
+ Hmm, suddenly out of a single line, quite a lot of stuff has emerged.  I 
+am not convinced and I am now thinking of something else instead.
 
-thanks,
+ However these debugging facilities are not absolutely necessary for the
+essential functionality of the patch, so I will simply remove them for
+reconsideration and send a regenerated patch containing the rest only.
 
-greg k-h
+ Ingo, please drop this one from anywhere you may have it -- I will send a 
+replacement shortly.
+
+  Maciej
