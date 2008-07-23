@@ -1,90 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754448AbYGWOH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbYGWOJD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754448AbYGWOH5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 10:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbYGWOHt
+	id S1754644AbYGWOJD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 10:09:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYGWOIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 10:07:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:34973 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752463AbYGWOHs (ORCPT
+	Wed, 23 Jul 2008 10:08:53 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:48665 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753119AbYGWOIv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 10:07:48 -0400
-Date: Wed, 23 Jul 2008 07:03:12 -0700
-From: Greg KH <greg@kroah.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Greg KH <gregkh@suse.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, ak@linux.intel.com, tiwai@suse.de,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-next@vger.kernel.org
-Subject: Re: [PATCH 72/79] sysdev: Pass the attribute to the low level
-	sysdev show/store function
-Message-ID: <20080723140312.GA15537@kroah.com>
-References: <20080722051805.GA17373@suse.de> <1216703983-21448-72-git-send-email-gregkh@suse.de> <20080722134045.7f09ff29.akpm@linux-foundation.org> <20080722204939.GA3028@suse.de> <20080722140301.2a334f8c.akpm@linux-foundation.org> <20080722211919.GA5669@suse.de> <20080723130435.7a79f7e4.sfr@canb.auug.org.au> <20080723042218.GA6784@suse.de> <20080723090310.GA13534@elte.hu>
+	Wed, 23 Jul 2008 10:08:51 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       ISS StorageDev <iss_storagedev@hp.com>
+CC: "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       "Jens.Axboe@oracle.com" <Jens.Axboe@oracle.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Wed, 23 Jul 2008 14:07:39 +0000
+Subject: RE: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI driver
+Thread-Topic: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI driver
+Thread-Index: AcjsypTzm7pAq2DaQmK4brhN+qxo+AAAT9OQ
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A778826B3D60DE5@GVW0547EXC.americas.hpqcorp.net>
+References: <20080719195150Y.fujita.tomonori@lab.ntt.co.jp>
+	<0F5B06BAB751E047AB5C87D1F77A778826B3D60673@GVW0547EXC.americas.hpqcorp.net>
+ <20080723223940S.tomof@acm.org>
+In-Reply-To: <20080723223940S.tomof@acm.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080723090310.GA13534@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 11:03:10AM +0200, Ingo Molnar wrote:
-> ok, lemme do a bit of merge window flaming here, in defense of Andrew.
-> 
-> This commit history:
-> 
->   commit 4a0b2b4dbe1335b8b9886ba3dc85a145d5d938ed
->   Author:     Andi Kleen <andi@firstfloor.org>
->   AuthorDate: Tue Jul 1 18:48:41 2008 +0200
->   Commit:     Greg Kroah-Hartman <gregkh@suse.de>
->   CommitDate: Mon Jul 21 21:55:02 2008 -0700
-> 
->     sysdev: Pass the attribute to the low level sysdev show/store function
-> 
->   [...]
-> 
->     I converted all users in tree to the new show/store prototype. It's 
->     a single huge patch to avoid unbisectable sections.
-> 
->     Runtime tested: x86-32, x86-64
->     Compiled only: ia64, powerpc
->     Not compile tested/only grep converted: sh, arm, avr32
-> 
-> covers a relatively trivial patch that we'd normally not notice, but it 
-> is ... a ... misrepresentation of the true situation on several levels:
-> 
-> 1) The changelog. The updated patch Andi sent did not declare the other
->    incremental changes (to sched.c) it also included freshly.
 
-Andi's original patch that he sent me _did_ declare that he had updated
-the patch, I didn't change the changelog as it didn't make sense to do
-so.
 
-> 2) The date. This patch did not originate on Jul 1 - if Andi sent a 
->    material update yesterday it should say Jul 21, not Jul 1.
+> -----Original Message-----
+> From: fujita [mailto:tomof@acm.org] On Behalf Of FUJITA Tomonori
+> Sent: Wednesday, July 23, 2008 8:47 AM
+> To: Miller, Mike (OS Dev)
+> Cc: fujita.tomonori@lab.ntt.co.jp;
+> James.Bottomley@HansenPartnership.com; Jens.Axboe@oracle.com;
+> linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: RE: [RFC PATCH] HP (Compaq) Smart Array 5xxx
+> controller SCSI driver
+>
+> On Tue, 22 Jul 2008 14:19:22 +0000
+> "Miller, Mike (OS Dev)" <Mike.Miller@hp.com> wrote:
+>
+> > > -----Original Message-----
+> > > From: FUJITA Tomonori [mailto:fujita.tomonori@lab.ntt.co.jp]
+> > > Sent: Saturday, July 19, 2008 5:52 AM
+> > > To: Miller, Mike (OS Dev)
+> > > Cc: James.Bottomley@HansenPartnership.com;
+> > > Jens.Axboe@oracle.com; linux-scsi@vger.kernel.org;
+> > > linux-kernel@vger.kernel.org
+> > > Subject: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI
+> > > driver
+> > >
+> > > This is a SCSI driver for HP (Compaq) Smart Array 5xxx
+> controllers.
+> > >
+> > > SCSI people can skip the following two paragraphs.
+> > >
+> > > Currently, a driver for HP (Compaq) Smart Array 5xxx
+> controllers is
+> > > implemented as a block device driver, block/cciss.c (aka, cciss).
+> > > But the controller interface is
+> > > SCSI-3 compatible. The specification says, "A controller that
+> > > supports CISS is considered to be a SCSI storage array
+> controller".
+> > > A scsi driver for the controllers was discussed
+> >
+> > Not really. The only resemblance we have to a SCSI
+> controller is the
+> > fact that we hang SCSI, SAS, and SATA drives off the backend. Our
+> > implementation of the SCSI spec is cherry picked for what we need.
+> > That, of course, could be changed.
+>
+> The controllers support mandatory commands at least, as the spec says?
 
-Again, my fault, I kept the original email headers and just updated the
-patch portion.  It's easier for me to do that using quilt, hence the
-lack of the date change.
+As of today our inquiry data doesn't neccesarily match the SCSI-3 spec. But that can be changed.
 
-> 3) The justification. Huge atomic patches are fine and can indeed be 
->    much simpler than a gradual switchover, _iff_ they are done 
->    perfectly. If there's any doubt then they are by far not the only 
->    option to pursue - we've done finegrained API changeovers for years.
+>
+>
+> > > several times.
+> > >
+> > > I think that a SCSI cciss driver can be much simpler (and
+> > > maintainable) than the block cciss driver (the majority
+> of the code
+> > > forging SCSI command can go away, we have the proper
+> sysfs entries
+> > > for free, we can handle scsi tape drives easily
+> >
+> > We already handle tape drives quite easily and one of these days I
+> > hope to satisfy Andrew to the point where he will accept my sysfs
+> > changes.
+>
+> I think that there are other areas that we can improve with a
+> SCSI driver, such as error handling, queue depth management, etc.
 
-This kind of API change is atomic, sorry.  It was tiny enough that it
-didn't justify a big rework (like I did on the recent device_create()
-stuff for example) to get it modified.
+True.
 
-> ... which all we still wouldnt worry much about (the whole change is 
-> relatively trivial), if it had been done more carefully without wrecking 
-> Andrew's workflow in the middle of the merge window.
+>
+>
+> > > etc). It would be helpful for distributions too since they don't
+> > > need stuff specific to cciss (such as udev rules).
+> > >
+> > >
+> > > There isn't any easy migration path for users. So I think that we
+> > > need to keep the block and scsi drivers for cciss for
+> some time (say
+> > > two years).
+> >
+> > Precisely why I am luke warm to this proposal. Who's going to help
+> > customers decide which driver to use?
+>
+> I guess that distributions (with HP) can, as they could with
+> libata vs. ide.
 
-I understand, and I apologize.
+I've had discussions with our partners. They are open to the concept of porting to SCSI. There will be some period of time where there are 2 drivers, however. And as James stated  the udev rules can create the /dev/cciss links so hopefully there will be minimal impact to users.
 
-thanks,
+>
+>
+> > What if a number of customers are happy with the block driver? Who
+> > will decide for them when to switch? What if a customer is
+> using the
+> > block driver and unknowingly upgrades to the SCSI driver? He's dead
+> > the water at best, lost his data at worst.
+>
+> I think that customers don't care about how the driver is
+> implemented. My point is that the SCSI cciss driver could be
+> better than the block one.
 
-greg k-h
+You're probably right here, also.
+
+>
+> As James pointed out, we could provide a migration path; we
+> can change only the driver internal without changing the
+> user-space interfaces:
+>
+> With my SCSI driver (I uploaded a new one), I got the
+> following devices connected with my CCISS adapter:
+>
+> clover:/home/fujita# lsscsi
+> (snip)
+> [3:0:0:0]    disk    HP       LOGICAL VOLUME   1.66  /dev/sde
+> [3:0:0:1]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdf
+> [3:0:0:2]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdg
+> [3:0:0:3]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdh
+>
+> I created symbolic links (neat udev rules can do automatically).
+>
+> clover:/home/fujita# ls -l /dev/cciss/
+> total 0
+> lrwxrwxrwx 1 root root 8 2008-07-23 21:38 c0d0 -> /dev/sde
+> lrwxrwxrwx 1 root root 9 2008-07-23 21:39 c0d0p1 -> /dev/sde1
+> lrwxrwxrwx 1 root root 9 2008-07-23 21:39 c0d0p2 -> /dev/sde2
+> lrwxrwxrwx 1 root root 8 2008-07-23 21:38 c0d1 -> /dev/sdf
+> lrwxrwxrwx 1 root root 8 2008-07-23 21:38 c0d2 -> /dev/sdg
+> lrwxrwxrwx 1 root root 8 2008-07-23 21:38 c0d3 -> /dev/sdh
+>
+> The symbolic links enable users to mount the device as before.
+>
+> hpacucli seems to work (I didn't try all the commands but the
+> point is that we can provide the ioctl compatibility):
+
+Very good. I don't believe most people would have taken the utils into consideration.
+
+>
+> clover:/home/fujita# hpacucli
+> HP Array Configuration Utility CLI 7.80-3.0 Detecting
+> Controllers...Done.
+> Type "help" for a list of supported commands.
+> Type "exit" to close the console.
+>
+> => ctrl all show config
+>
+> Smart Array E200 in Slot 3    (sn: PA6C90L9SV90L0)
+>
+>    array A (SAS, Unused Space: 0 MB)
+>
+>       logicaldrive 1 (68.3 GB, RAID 0, OK)
+>
+>       physicaldrive 1I:1:1 (port 1I:box 1:bay 1, SAS, 72 GB, OK)
+>
+>    array B (SAS, Unused Space: 0 MB)
+>
+>       logicaldrive 2 (68.3 GB, RAID 0, OK)
+>
+>       physicaldrive 1I:1:3 (port 1I:box 1:bay 3, SAS, 72 GB, OK)
+>
+>    array C (SAS, Unused Space: 0 MB)
+>
+>       logicaldrive 3 (68.3 GB, RAID 0, OK)
+>
+>       physicaldrive 1I:1:2 (port 1I:box 1:bay 2, SAS, 72 GB, OK)
+>
+>    array D (SAS, Unused Space: 0 MB)
+>
+>       logicaldrive 4 (68.3 GB, RAID 0, OK)
+>
+>       physicaldrive 1I:1:4 (port 1I:box 1:bay 4, SAS, 72 GB, OK)
+>
+>
+> When HP and distributions think that the scsi driver is
+> ready, they can modify their udev rules for cciss and enable
+> the SCSI driver module instead of the block driver.
+>
+>
+> > > My scsi driver is still in an early stage (I tried to keep the
+> > > changes minimum). I can detect logical units, mount a
+> file system,
+> > > do lots of I/Os, however, there are lots of TODOs in the
+> management
+> > > features.
+> >
+> > Have you taken into consideration any of the HP utilities
+> and management agents? Those must work, period.
+>
+> Yes, I understand that. We will need lots of tests.
+>
+> As I explained, we can provide the compatibility of ioctl and
+> device names. We could avoid breaking the existing tools?
+
+Correct.
+
+>
+> Even though we need lots of tests, I still think that
+> migrating to the SCSI subsystem is the right thing for CCISS
+> in the long term perspective.
+
+I'm afraid I have to agree with you. I've been a steadfast opponent of a SCSI port but in the long run perhaps it is the best thing to do.
+
+>
+>
+> > > If I can get an ACK from HP about the long-term migration
+> of cciss
+> > > to SCSI, I'm happy to keep working on the SCSI cciss driver and
+> > > maintain it until HP takes over the driver.
+> >
+> > We already have a SCSI port of the driver that is at least as
+> > functional as you decribe. But I am against it's release for the
+> > reasons stated above. If we ever decide to release the SCSI port it
+> > should be developed by HP so we can be assured that the utils and
+> > agents work as expected. That doesn't mean we wouldn't
+> leverage some
+> > of your work. ;)
+>
+> If HP releases its SCSI driver, I'm happy to throw my driver
+> away and work on HP SCSI driver. I like to see a driver in
+> development rather than a finished driver; development in
+> mainline rather than private development at a vendor.
+> Everyone can see the progress and try it.
+
+We'll post something sooner rather than later. I've been hesitant to submit unfinished work but I guess having the community provide input along the way is the best way to go.
+
+OK, Tomo, you win!   :)
+
+-- mikem
+
+>
+>
+> Thanks,
+>
