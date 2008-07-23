@@ -1,274 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbYGWOJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbYGWOMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbYGWOJD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 10:09:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYGWOIx
+	id S1754417AbYGWOMm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 10:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYGWOMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 10:08:53 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:48665 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753119AbYGWOIv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 10:08:51 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       ISS StorageDev <iss_storagedev@hp.com>
-CC: "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "Jens.Axboe@oracle.com" <Jens.Axboe@oracle.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 23 Jul 2008 14:07:39 +0000
-Subject: RE: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI driver
-Thread-Topic: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI driver
-Thread-Index: AcjsypTzm7pAq2DaQmK4brhN+qxo+AAAT9OQ
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A778826B3D60DE5@GVW0547EXC.americas.hpqcorp.net>
-References: <20080719195150Y.fujita.tomonori@lab.ntt.co.jp>
-	<0F5B06BAB751E047AB5C87D1F77A778826B3D60673@GVW0547EXC.americas.hpqcorp.net>
- <20080723223940S.tomof@acm.org>
-In-Reply-To: <20080723223940S.tomof@acm.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Wed, 23 Jul 2008 10:12:33 -0400
+Received: from mx2.suse.de ([195.135.220.15]:36516 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753104AbYGWOMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 10:12:32 -0400
+Date: Wed, 23 Jul 2008 16:12:30 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jack Steiner <steiner@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: GRU driver feedback
+Message-ID: <20080723141229.GB13247@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Hi Jack,
 
-> -----Original Message-----
-> From: fujita [mailto:tomof@acm.org] On Behalf Of FUJITA Tomonori
-> Sent: Wednesday, July 23, 2008 8:47 AM
-> To: Miller, Mike (OS Dev)
-> Cc: fujita.tomonori@lab.ntt.co.jp;
-> James.Bottomley@HansenPartnership.com; Jens.Axboe@oracle.com;
-> linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: RE: [RFC PATCH] HP (Compaq) Smart Array 5xxx
-> controller SCSI driver
->
-> On Tue, 22 Jul 2008 14:19:22 +0000
-> "Miller, Mike (OS Dev)" <Mike.Miller@hp.com> wrote:
->
-> > > -----Original Message-----
-> > > From: FUJITA Tomonori [mailto:fujita.tomonori@lab.ntt.co.jp]
-> > > Sent: Saturday, July 19, 2008 5:52 AM
-> > > To: Miller, Mike (OS Dev)
-> > > Cc: James.Bottomley@HansenPartnership.com;
-> > > Jens.Axboe@oracle.com; linux-scsi@vger.kernel.org;
-> > > linux-kernel@vger.kernel.org
-> > > Subject: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI
-> > > driver
-> > >
-> > > This is a SCSI driver for HP (Compaq) Smart Array 5xxx
-> controllers.
-> > >
-> > > SCSI people can skip the following two paragraphs.
-> > >
-> > > Currently, a driver for HP (Compaq) Smart Array 5xxx
-> controllers is
-> > > implemented as a block device driver, block/cciss.c (aka, cciss).
-> > > But the controller interface is
-> > > SCSI-3 compatible. The specification says, "A controller that
-> > > supports CISS is considered to be a SCSI storage array
-> controller".
-> > > A scsi driver for the controllers was discussed
-> >
-> > Not really. The only resemblance we have to a SCSI
-> controller is the
-> > fact that we hang SCSI, SAS, and SATA drives off the backend. Our
-> > implementation of the SCSI spec is cherry picked for what we need.
-> > That, of course, could be changed.
->
-> The controllers support mandatory commands at least, as the spec says?
+Some review of the GRU driver. Hope it helps. Some trivial.
 
-As of today our inquiry data doesn't neccesarily match the SCSI-3 spec. But that can be changed.
+- I would put all the driver into a single patch. It's a logical change,
+  and splitting them out is not really logical. Unless for example you
+  start with a minimally functional driver and build more things on it,
+  I don't think there is any point avoiding the one big patch. You have to
+  look at the whole thing to understand it properly anyway really.
 
->
->
-> > > several times.
-> > >
-> > > I think that a SCSI cciss driver can be much simpler (and
-> > > maintainable) than the block cciss driver (the majority
-> of the code
-> > > forging SCSI command can go away, we have the proper
-> sysfs entries
-> > > for free, we can handle scsi tape drives easily
-> >
-> > We already handle tape drives quite easily and one of these days I
-> > hope to satisfy Andrew to the point where he will accept my sysfs
-> > changes.
->
-> I think that there are other areas that we can improve with a
-> SCSI driver, such as error handling, queue depth management, etc.
+  Although I guess you could leave the kernel API parts in another patch
+  and maybe even leave them out until you have a good user of them...
+  
+- GRU driver -- gru_intr finds mm to fault pages from, does an "atomic pte
+  lookup" which looks up the pte atomically using similar lockless pagetable
+  walk from get_user_pages_fast. This only works because it can guarantee page
+  table existence by disabling interrupts on the CPU where mm is currently
+  running.  It looks like atomic pte lookup can be run on mms which are not
+  presently running on the local CPU. This would have been noticed if it had
+  been using a specialised function in arch/*/mm/gup.c, because it would not
+  have provided an mm_struct parameter ;)
 
-True.
+- Which leads me to my next observation, the GRU TLB fault code _really_ would
+  like to work the same way as the CPU's fault handler, and that is to
+  synchronously enter the kernel and run in process context of the faulting
+  task.  I guess we can't do this because the GRU isn't going to be accessing
+  pages synchronously as the commands are sent to it, right? I guess you could
+  have a kernel thread to handle GRU faults... but that could get into fairness
+  and parallelism issues, and also wouldn't be able to take advantage of
+  lockless pagetable walking either (although maybe they're not such a big deal?
+  I imagine that asking the user process to call into the kernel to process
+  faults isn't optimal either). Is there a completely different approach that
+  can be taken? Ideally we want the 
 
->
->
-> > > etc). It would be helpful for distributions too since they don't
-> > > need stuff specific to cciss (such as udev rules).
-> > >
-> > >
-> > > There isn't any easy migration path for users. So I think that we
-> > > need to keep the block and scsi drivers for cciss for
-> some time (say
-> > > two years).
-> >
-> > Precisely why I am luke warm to this proposal. Who's going to help
-> > customers decide which driver to use?
->
-> I guess that distributions (with HP) can, as they could with
-> libata vs. ide.
+- "options" in non-static scope? Please change. Putting gru in any global
+  symbols should be enough.
 
-I've had discussions with our partners. They are open to the concept of porting to SCSI. There will be some period of time where there are 2 drivers, however. And as James stated  the udev rules can create the /dev/cciss links so hopefully there will be minimal impact to users.
+- gru_prefetch -- no users of this. This isn't intended to fault in a user
+  virtual address, is it? (we already have generic kernel functions to do this).
+  But as it isn't used, it may as well go away. And you have to remember if
+  you need page tables set up then they can be torn down again at any time.
+  Oh, maybe it is for possible vmalloc addresses? If so, then OK but please
+  comment.
 
->
->
-> > What if a number of customers are happy with the block driver? Who
-> > will decide for them when to switch? What if a customer is
-> using the
-> > block driver and unknowingly upgrades to the SCSI driver? He's dead
-> > the water at best, lost his data at worst.
->
-> I think that customers don't care about how the driver is
-> implemented. My point is that the SCSI cciss driver could be
-> better than the block one.
+- start_instruction, wait_instruction_complete etc -- take a void pointer
+  which is actually a pointer to one of a number of structures with a specific
+  first int. Ugly. Don't know what the preferred form is, it's probably 
+  something device writers have to deal with. Wouldn't something like this
+  be better for typing?
 
-You're probably right here, also.
+  typedef unsigned int gru_insn_register_t; /* register with cmd bit as lsb */
+  struct context_configuration_handle {
+	union {
+		gru_insn_register_t insn_reg;
+		struct {
+			unsigned int cmd:1;
+			/* etc */
+		};
+	}
+  };
 
->
-> As James pointed out, we could provide a migration path; we
-> can change only the driver internal without changing the
-> user-space interfaces:
->
-> With my SCSI driver (I uploaded a new one), I got the
-> following devices connected with my CCISS adapter:
->
-> clover:/home/fujita# lsscsi
-> (snip)
-> [3:0:0:0]    disk    HP       LOGICAL VOLUME   1.66  /dev/sde
-> [3:0:0:1]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdf
-> [3:0:0:2]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdg
-> [3:0:0:3]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdh
->
-> I created symbolic links (neat udev rules can do automatically).
->
-> clover:/home/fujita# ls -l /dev/cciss/
-> total 0
-> lrwxrwxrwx 1 root root 8 2008-07-23 21:38 c0d0 -> /dev/sde
-> lrwxrwxrwx 1 root root 9 2008-07-23 21:39 c0d0p1 -> /dev/sde1
-> lrwxrwxrwx 1 root root 9 2008-07-23 21:39 c0d0p2 -> /dev/sde2
-> lrwxrwxrwx 1 root root 8 2008-07-23 21:38 c0d1 -> /dev/sdf
-> lrwxrwxrwx 1 root root 8 2008-07-23 21:38 c0d2 -> /dev/sdg
-> lrwxrwxrwx 1 root root 8 2008-07-23 21:38 c0d3 -> /dev/sdh
->
-> The symbolic links enable users to mount the device as before.
->
-> hpacucli seems to work (I didn't try all the commands but the
-> point is that we can provide the ioctl compatibility):
+  void start_instruction(gru_insn_register_t *reg);
 
-Very good. I don't believe most people would have taken the utils into consideration.
+  Even coding it as a macro would be better because you'd then avoid the
+  void * -> cast and get the type checking.
 
->
-> clover:/home/fujita# hpacucli
-> HP Array Configuration Utility CLI 7.80-3.0 Detecting
-> Controllers...Done.
-> Type "help" for a list of supported commands.
-> Type "exit" to close the console.
->
-> => ctrl all show config
->
-> Smart Array E200 in Slot 3    (sn: PA6C90L9SV90L0)
->
->    array A (SAS, Unused Space: 0 MB)
->
->       logicaldrive 1 (68.3 GB, RAID 0, OK)
->
->       physicaldrive 1I:1:1 (port 1I:box 1:bay 1, SAS, 72 GB, OK)
->
->    array B (SAS, Unused Space: 0 MB)
->
->       logicaldrive 2 (68.3 GB, RAID 0, OK)
->
->       physicaldrive 1I:1:3 (port 1I:box 1:bay 3, SAS, 72 GB, OK)
->
->    array C (SAS, Unused Space: 0 MB)
->
->       logicaldrive 3 (68.3 GB, RAID 0, OK)
->
->       physicaldrive 1I:1:2 (port 1I:box 1:bay 2, SAS, 72 GB, OK)
->
->    array D (SAS, Unused Space: 0 MB)
->
->       logicaldrive 4 (68.3 GB, RAID 0, OK)
->
->       physicaldrive 1I:1:4 (port 1I:box 1:bay 4, SAS, 72 GB, OK)
->
->
-> When HP and distributions think that the scsi driver is
-> ready, they can modify their udev rules for cciss and enable
-> the SCSI driver module instead of the block driver.
->
->
-> > > My scsi driver is still in an early stage (I tried to keep the
-> > > changes minimum). I can detect logical units, mount a
-> file system,
-> > > do lots of I/Os, however, there are lots of TODOs in the
-> management
-> > > features.
-> >
-> > Have you taken into consideration any of the HP utilities
-> and management agents? Those must work, period.
->
-> Yes, I understand that. We will need lots of tests.
->
-> As I explained, we can provide the compatibility of ioctl and
-> device names. We could avoid breaking the existing tools?
+- You're using gru_flush_cache for a lot of things. Is the device not coherent
+  with CPU caches? (in which case, should the DMA api be used instead?) Or is it
+  simply higher performing if you invalidate the CPU cache ahead of time so the
+  GRU probe doesn't have to?
 
-Correct.
+- In gru_fault, the while() should be an if(), it would be much nicer to use a
+  waitqueue or semaphore to allocate gru contexts (and if you actively need to
+  steal a context to prevent starvation, you can use eg down_timeout()).
 
->
-> Even though we need lots of tests, I still think that
-> migrating to the SCSI subsystem is the right thing for CCISS
-> in the long term perspective.
+- You use prefetchw around the place and say it is sometimes required for
+  correctness. Except it would be free to be ignored (say if the CPU didn't
+  have a TLB entry or full prefetch queue, or even the Linux implementatoin
+  could be a noop).
 
-I'm afraid I have to agree with you. I've been a steadfast opponent of a SCSI port but in the long run perhaps it is the best thing to do.
+- In gru_fault, I don't think you've validated the size of the vma, and it
+  definitely seems like you haven't taken offset into the vma into account
+  either. remap_pfn_range etc should probably validate the former because I'm
+  sure this isn't the only driver that might get it wrong. The latter can't
+  really be detected though. Please fix or make it more obviously correct (eg
+  a comment).
 
->
->
-> > > If I can get an ACK from HP about the long-term migration
-> of cciss
-> > > to SCSI, I'm happy to keep working on the SCSI cciss driver and
-> > > maintain it until HP takes over the driver.
-> >
-> > We already have a SCSI port of the driver that is at least as
-> > functional as you decribe. But I am against it's release for the
-> > reasons stated above. If we ever decide to release the SCSI port it
-> > should be developed by HP so we can be assured that the utils and
-> > agents work as expected. That doesn't mean we wouldn't
-> leverage some
-> > of your work. ;)
->
-> If HP releases its SCSI driver, I'm happy to throw my driver
-> away and work on HP SCSI driver. I like to see a driver in
-> development rather than a finished driver; development in
-> mainline rather than private development at a vendor.
-> Everyone can see the progress and try it.
+  - And please make sure in general that this thing properly fixes/rejects
+    nasty code and attempts to crash the kernel. I'm sure it can't be used,
+    for example, write into readonly pages or read from kernel memory etc.
+    (I'm sure you're very concious of this, but humour me! :P) 
 
-We'll post something sooner rather than later. I've been hesitant to submit unfinished work but I guess having the community provide input along the way is the best way to go.
+- I have a rough handle on it, but can you sketch out exactly how it is used,
+  and how the virtual/physical/etc memory activity happens? Unfortunately, in
+  its present state, this is going to have to be something that mm/ developers
+  will have to get an understanding of, and I'm a bit lost when it comes to
+  driver code. (Or have I missed some piece of documentation?) Although there
+  are a lot of comments, most are fairly low level. I want a high level
+  overview and description of important interactions. I agree with Hugh in
+  some respects GRU is special, the bar is a bit higher than the average
+  driver.
 
-OK, Tomo, you win!   :)
+  As far as I understand it A process can use GRU to accelerate some memory and
+  simple transformation operations. This can only occur within the address
+  space of a single mm (and by the looks you have some kernel kva<->kva
+  interfaces there too?)
 
--- mikem
+  OK, and the way for a user to operate the GRU you have provided is to mmap
+  /dev/gru, which gives the process essentially an mmio control page (Oh, it's
+  big, maybe that's more than a control area? Anyway let's call it a control
+  area...).
 
->
->
-> Thanks,
->
+  So the user can stuff some commands into it (that can't possibly take down
+  the machine? Or if they could then /dev/gru is root only? ;)) Such as
+  giving it some user virtual addresses and asking it to copy from one to
+  the other or something much cooler.
+
+  User faults writing to control area, driver steals context (by zapping ptes)
+  from process currently using it, and hands it to us.
+  
+  Then GRU faults on the new virtual address it is being asked to operate on,
+  and raises an interrupt. Interrupt handler finds the process's physical
+  address from virtual and stuffs it into the GRU. The GRU and the process
+  are each now merrily doing their own thing. If the process calls a fork()
+  for example and some virtual addresses need to be write protected, we must
+  also ensure the GRU can't write to these either so we need to invalidate
+  its TLB before we can continue.
+
+  GRU TLB invalidation is done with mmu notifiers... I'll think about this
+  some more because I'll have more comments on mmu notifiers (and probably
+  GRU TLB invalidation).
+
+- Finally: what is it / can it be used for? What sort of performance numbers
+  do you see? This whole TLB and control page scheme presumably is to avoid
+  kernel entry at all costs... the thing is, the GRU is out on the IO bus
+  anyway, and is going to be invalidating the CPU's cache in operation. It's
+  going to need to be working on some pretty big memory areas in order to
+  be a speedup I would have thought. In which case, how much extra overhead
+  is a syscall or two? A syscall register and unregister the memory in
+  question would alleviate the need for the whole TLB scheme, although
+  obviously it would want to be unregistered or care taken with something
+  like fork... So, a nice rationale, please. This is a fair hunk of
+  complexity here :P
+
+Meanwhile, I hope that gives a bit to go on. I'm sorry it has come relatively
+late in the game, but I had a week off a while back then had (have) some
+important work work I'm starting to get a handle on...
+
+Thanks,
+Nick
