@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbYGWMkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbYGWMke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754048AbYGWMkJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 08:40:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYGWMj6
+	id S1752932AbYGWMke (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 08:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbYGWMkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 08:39:58 -0400
-Received: from mail-in-02.arcor-online.net ([151.189.21.42]:47951 "EHLO
-	mail-in-02.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752422AbYGWMj5 (ORCPT
+	Wed, 23 Jul 2008 08:40:22 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:49023 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752394AbYGWMkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 08:39:57 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: request for comment: generic kernel interface for malware vendors
-To: "Rafael C. de Almeida" <almeidaraf@gmail.com>,
-       Eric Paris <eparis@redhat.com>, malware-list@lists.printk.net,
-       linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Wed, 23 Jul 2008 14:43:09 +0200
-References: <aRVce-Em-3@gated-at.bofh.it> <aS7Go-7AK-3@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Wed, 23 Jul 2008 08:40:20 -0400
+X-Greylist: delayed 1638 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Jul 2008 08:40:20 EDT
+Date: Wed, 23 Jul 2008 14:13:01 +0200 (CEST)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [patch 04/14] hpfs: dont call notify_change
+In-Reply-To: <20080722221322.168296561@szeredi.hu>
+Message-ID: <Pine.LNX.4.64.0807231412070.1841@artax.karlin.mff.cuni.cz>
+References: <20080722221259.866628660@szeredi.hu> <20080722221322.168296561@szeredi.hu>
+X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1KLdgU-0001a9-7F@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael C. de Almeida <almeidaraf@gmail.com> wrote:
-> Eric Paris wrote:
+What about down_write on i_alloc_sem --- notify change takes that and your 
+patch bypasses that.
 
->> [Kernel support for malware scanners]
+Mikulas
 
-> I'm a newbie here, so don't take me too serious. But I don't see why
-> that needs a kernel interface, at least from the example on the
-> Documentation directory (patch 9). Seems to me you could just use file
-> permission to deny or allow the access for a certain file. The only
-> thing that would be a little trickier from user-space is to know when a
-> given file is read. So, talpa should do only that or you could take
-> advantage of preload like trickle does for bandwidth shapping.
-
-How do you ensure that the LD_PRELOAD variable stays intact and will be
-honored by all applications - including that commercial one supplying it's
-own libc, by suid-binaries and by programs written in a non-libc-language?
-
+> From: Miklos Szeredi <mszeredi@suse.cz>
+> 
+> hpfs_unlink() calls notify_change() to truncate the file before
+> deleting.  Replace with explicit call to hpfs_notify_change().
+> 
+> This is equivalent, except that:
+>  - security_inode_setattr() is not called before hpfs_notify_change()
+>  - fsnotify_change() is not called after hpfs_notify_change()
+> 
+> The truncation is just an implementation detail, so both the security
+> check and the notification are unnecessary.
+> 
+> Possibly even the ctime modification is wrong?
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> CC: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+> ---
+>  fs/hpfs/namei.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/fs/hpfs/namei.c
+> ===================================================================
+> --- linux-2.6.orig/fs/hpfs/namei.c	2008-07-23 00:10:13.000000000 +0200
+> +++ linux-2.6/fs/hpfs/namei.c	2008-07-23 00:10:22.000000000 +0200
+> @@ -426,7 +426,8 @@ again:
+>  			/*printk("HPFS: truncating file before delete.\n");*/
+>  			newattrs.ia_size = 0;
+>  			newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
+> -			err = notify_change(dentry, &newattrs);
+> +			newattrs.ia_ctime = current_fs_time(inode->i_sb);
+> +			err = hpfs_notify_change(dentry, &newattrs);
+>  			put_write_access(inode);
+>  			if (!err)
+>  				goto again;
+> 
+> --
+> 
