@@ -1,94 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbYGWUZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbYGWU1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbYGWUZd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 16:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbYGWUZU
+	id S1755902AbYGWU1L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 16:27:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754402AbYGWU05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 16:25:20 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:57254 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755052AbYGWUZS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 16:25:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gQ+iIAvHGNqRq9d59fDvPGcqRrifftD7k/HjYGc1UJBjqtBsV2H9XwXfNgbvAwYLAy
-         Uv96FvlKCP08EAfqpHj0pigb/r8l9wZQDOrMCnoNf8oTuPdfoU6vajrBITgE4TUFZDbK
-         lM9ICFJR2U45zwBz7RK9l5CejNcFlxs5dJyls=
-Message-ID: <5a4c581d0807231325v5150ed6qbea2798608a98bd7@mail.gmail.com>
-Date: Wed, 23 Jul 2008 22:25:18 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
-Subject: Re: [Cbe-oss-dev] [regression/bisected] corrupt CD data after media change and delay
-Cc: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
-       linux-scsi@vger.kernel.org,
-       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
-       "Maarten Bressers" <mbres@gentoo.org>, "Daniel Drake" <dsd@gentoo.org>,
-       "Cell Broadband Engine OSS Development" <cbe-oss-dev@ozlabs.org>
-In-Reply-To: <1215956031.4326.4.camel@localhost.localdomain>
+	Wed, 23 Jul 2008 16:26:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48225 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753810AbYGWU05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 16:26:57 -0400
+Message-ID: <488793A1.4040501@redhat.com>
+Date: Wed, 23 Jul 2008 16:25:05 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+CC: Rik van Riel <riel@redhat.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, systemtap@sourceware.org
+Subject: Re: systemtap & backward compatibility, was Re: [RFC] systemtap:
+ begin the process of using proper kernel APIs
+References: <487E8CE4.70105@redhat.com>	 <1216259391.3358.85.camel@localhost.localdomain>	 <1216304290.5515.11.camel@localhost.localdomain>	 <1216313914.5515.25.camel__21144.9282979176$1216314027$gmane$org@localhost.localdomain>	 <y0m7ibkjrcj.fsf@ton.toronto.redhat.com>	 <1216325546.5515.63.camel@localhost.localdomain>	 <20080717202634.GI18295@redhat.com>	 <1216328769.5515.78.camel@localhost.localdomain>	 <20080717213355.GJ18295@redhat.com>	 <20080722140015.37628ea4@bree.surriel.com>	 <20080723150434.GC11191@redhat.com> <1216827187.7257.189.camel@twins>
+In-Reply-To: <1216827187.7257.189.camel@twins>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
-	 <5a4c581d0806180147qf8fc731y527c79bfb73401b2@mail.gmail.com>
-	 <Pine.LNX.4.64.0806181156460.13297@vixen.sonytel.be>
-	 <5a4c581d0806180515g5f24e9d9m85369bfa0a5f2228@mail.gmail.com>
-	 <5a4c581d0806210718m77be63c9l444d8d7d7a5266bd@mail.gmail.com>
-	 <Pine.LNX.4.64.0806221018220.9736@vixen.sonytel.be>
-	 <5a4c581d0806220614seab6598ufa798d8642295495@mail.gmail.com>
-	 <5a4c581d0807111425r72e39528w841e24a9b956c245@mail.gmail.com>
-	 <5a4c581d0807120508m758df950i76fabdb70dfa2d07@mail.gmail.com>
-	 <1215956031.4326.4.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 13, 2008 at 3:33 PM, James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
-> On Sat, 2008-07-12 at 14:08 +0200, Alessandro Suardi wrote:
->> On Fri, Jul 11, 2008 at 11:25 PM, Alessandro Suardi
->> sr0: rw=0, want=3291928, limit=2097151
->> [asuardi@sandman sdlmame0126]$ h | grep siz
->>   958  cat /sys/block/sr0/size
->>  1031  h | grep siz
->> [asuardi@sandman sdlmame0126]$ !958
->> cat /sys/block/sr0/size
->> 6993536
+Hi,
+
+Peter Zijlstra wrote:
+> On Wed, 2008-07-23 at 11:04 -0400, Frank Ch. Eigler wrote:
+>> Hi -
 >>
->> <eject, remount DVD>
+>> I wrote:
 >>
->> [asuardi@sandman sdlmame0126]$ !mount
->> mount -r /cdrom
->> [asuardi@sandman sdlmame0126]$ cat /sys/block/sr0/size
->> 6993536
+>>>> [...] One significant requirement for us is to keep working with
+>>>> older kernels.  [...]
+>> Maybe it's worth elaborating on why the need for backward
+>> compatibility is different for systemtap than for typical kernel-side
+>> code.
 >>
->> <now everything works fine>
+>> The bulk of systemtap is a user-space program, and it does very
+>> user-spacey things like parsing dwarf and invoking compilers, running
+>> network servers.  Soon it will include user-space libraries.  It is so
+>> different from the stuff normally found there that no one has AFAIK
+>> seriously proposed that the entire software be made part of the kernel
+>> git tree.  So it is an ordinary separate user-space package, built by
+>> users and distributors.
 >>
->> Possibly a new bug then - since size is always the same ?
+>> It does happen to *generate* kernel modules.  The way that such a
+>> module must interface with any particular kernel is naturally subject
+>> to the whims & desires of the kernel du jour.  This is why we have a
+>> mass of mechanism to try to automatically speak to each kernel version
+>> as appropriate.
+>>
+>> It is desirable to minimize this mass for obvious reasons.  When a new
+>> upstream kernel comes out with a tasty new feature -- or a less tasty
+>> API rewrite -- we need to extend systemtap to support that too.  We
+>> cannot easily take old support away, because then the same user-space
+>> code base would no longer run against actually installed kernels.
+>>
+>> To draw an analogy, systemtap is somewhat like low-level userspace
+>> code like glibc or syslogd or udevd.  I hope no one would seriously
+>> propose casually committing code to those packages that would make
+>> them unusable on prior kernel versions.  Accepting such a patch would
+>> require their maintainers to fork outright every time a kernel change
+>> occurs.
+>>
+>> Things are good however if the low-level userspace changes are
+>> backward-compatible, so that the new kernel facility is used when
+>> present, but the software does not regress if it is not.  I believe
+>> this is what we need to aim for, even though it puts the bulk of the
+>> burden on systemtap (or glibc, or ...).
+>>
+>> I hope this fills in some of the gaps in the background.
+> 
+> Why does a new version of stap have to work on ancient kernels?
 >
-> It looks like a re-manifestation of Geert's bug.
->
-> You said everything worked in -rc7, and there actually have been no sr
-> changes at all between then and now, so I'm a bit confused as to how it
-> could reappear.  Could you try a bisection search for it (first
-> re-verify -rc7 is OK, just in case that's a false negative).
+> A new gnome version requires a new gtk version, a new kde version
+> requires a new qt etc.. so why does a new stap not require a new kernel?
+> 
+> Why isn't only supporting the last few kernels, say for example as far
+> back as there are -stable series at the moment of release, good enough?
+> 
+> People who insist on running stale kernels are usually the same people
+> who run stale userspace - we call those enterprise people - so why can't
+> they run matching stale version of the kernel and stap?
 
-I have been away a few days - I'll try this weekend rebuilding
- older kernels (I save religiously my .configs for every kernel
- I built in the last, um, five years at least) and give the reboot/
- DVD mount/access sequence a go...
+I agree with you. currently, systemtap is increasingly evolving
+on single source tree. But it is obvious that this developing style
+can't catch up the upstream development.
+I'd like to suggest that we might better branch the tree --
+one is stable tree for old kernel, another aims to merge into upstream.
 
-The good news is that in 2.6.26-git4, -git9, -git10 I have been
- unable to reproduce the issue a single time. Still, I'm willing
- to make a bit more effort in trying to reproduce.
+Thank you,
 
---alessandro
+-- 
+Masami Hiramatsu
 
- "Give me love / Or give me hate
- Give me anything that's not just ok"
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
- (Sophia, 'Weightless')
+e-mail: mhiramat@redhat.com
+
