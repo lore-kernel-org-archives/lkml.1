@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbYGWE3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbYGWEdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753727AbYGWE3S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 00:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYGWE3I
+	id S1753940AbYGWEdS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 00:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbYGWEdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 00:29:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:39084 "EHLO smtps.tip.net.au"
+	Wed, 23 Jul 2008 00:33:07 -0400
+Received: from mx1.suse.de ([195.135.220.2]:44550 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752007AbYGWE3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 00:29:07 -0400
-Date: Wed, 23 Jul 2008 14:28:59 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next: Requirements and process
-Message-Id: <20080723142859.ab9f909d.sfr@canb.auug.org.au>
-In-Reply-To: <20080722153114.e9d44210.randy.dunlap@oracle.com>
-References: <20080503154542.18807e59.sfr@canb.auug.org.au>
-	<20080503160724.6c3e0392.sfr@canb.auug.org.au>
-	<20080722153114.e9d44210.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__23_Jul_2008_14_28_59_+1000_ycQ+39eCxJs3HBNz"
+	id S1752332AbYGWEdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 00:33:06 -0400
+Date: Tue, 22 Jul 2008 21:22:18 -0700
+From: Greg KH <gregkh@suse.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, ak@linux.intel.com, mingo@elte.hu, tiwai@suse.de,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH 72/79] sysdev: Pass the attribute to the low level
+	sysdev show/store function
+Message-ID: <20080723042218.GA6784@suse.de>
+References: <20080722051805.GA17373@suse.de> <1216703983-21448-72-git-send-email-gregkh@suse.de> <20080722134045.7f09ff29.akpm@linux-foundation.org> <20080722204939.GA3028@suse.de> <20080722140301.2a334f8c.akpm@linux-foundation.org> <20080722211919.GA5669@suse.de> <20080723130435.7a79f7e4.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080723130435.7a79f7e4.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__23_Jul_2008_14_28_59_+1000_ycQ+39eCxJs3HBNz
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Jul 23, 2008 at 01:04:35PM +1000, Stephen Rothwell wrote:
+> Hi Greg,
+> 
+> On Tue, 22 Jul 2008 14:19:19 -0700 Greg KH <gregkh@suse.de> wrote:
+> >
+> > Andi any thoughts?
+> 
+> The patch
+> (sysdev-pass-the-attribute-to-the-low-level-sysdev-show-store-function.patch)
+> has existed in the driver-core part of linux-next since July 4, but the
+> kernel/sched.c part only got added yesterday.
 
-Hi Randy,
+That came from the updated version that Andi sent me to fix the sparc64
+build problems the original version had.
 
-On Tue, 22 Jul 2008 15:31:14 -0700 Randy Dunlap <randy.dunlap@oracle.com> w=
-rote:
->
-> > output from "git describe".  Alternatively, you can be based on another
-> > tree in linux-next by using:
-> >=20
-> > # NEXT_BASE <name of a tree in linux-next>
->=20
-> What do we use for BASE or NEXT_BASE if the base tree is linux-next?
-> Just don't use these annotations?
+Stephen, thanks for diging this out.
 
-The name from the Next/Trees file in any linux-next release.  You should
-be very careful doing this if you don't control the other tree, though.
-And you should let me know so that I can order the trees appropriately.
-
-This was mainly added for Greg who has 4 quilt series in linux-next that
-depend on each other.  If you depend on some random tree that changes day
-to day your quilt series may no longer apply cleanly on top of it.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__23_Jul_2008_14_28_59_+1000_ycQ+39eCxJs3HBNz
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiGs4sACgkQjjKRsyhoI8xt1QCgkfudKjNFl0tUnrteGfP5Glu6
-bSUAn0M9TZE5+bKememl99D1PeMaXhel
-=yU8A
------END PGP SIGNATURE-----
-
---Signature=_Wed__23_Jul_2008_14_28_59_+1000_ycQ+39eCxJs3HBNz--
+greg k-h
