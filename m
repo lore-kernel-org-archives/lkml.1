@@ -1,159 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753101AbYGWG7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbYGWHBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753101AbYGWG7S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 02:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbYGWG7G
+	id S1753438AbYGWHBo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 03:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbYGWHBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 02:59:06 -0400
-Received: from smtp-out13.tpgi.com.au ([220.244.226.123]:45107 "EHLO
-	mail13.tpgi.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751137AbYGWG7F (ORCPT
+	Wed, 23 Jul 2008 03:01:37 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:37409 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbYGWHBg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 02:59:05 -0400
-X-Greylist: delayed 528 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Jul 2008 02:59:04 EDT
-X-TPG-Antivirus: Passed
-Subject: kernel crunch to a halt with e1000e driver
-From: Will Trives <will@trivescon.com.au>
-To: linux-kernel@vger.kernel.org
-Cc: e1000-devel@lists.sourceforge.net
-Content-Type: text/plain
-Date: Wed, 23 Jul 2008 16:34:11 +1000
-Message-Id: <1216794851.4074.42.camel@Athas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 23 Jul 2008 03:01:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=OmKXmFmal8k+QcAwQjKf661Cme2C/3jBrsMqVOwjcjJyzXxs2GbATk17x+vpeMwoaY
+         kqR5RtylLtL8AAdf7QLYkUEkASKM4q57OJpn32kBoO1gmm+6axiXZA2qytWl2T2ZPghB
+         GcBdUUPqQL+pYgBhsfdlMrw480TH9X5v3ACOk=
+Message-ID: <74d0deb30807230001x176e375cq9a8060c20596f36f@mail.gmail.com>
+Date: Wed, 23 Jul 2008 09:01:34 +0200
+From: "pHilipp Zabel" <philipp.zabel@gmail.com>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: [patch 44/47] pxamci: fix byte aligned DMA transfers
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Justin Forbes" <jmforbes@linuxtx.org>,
+       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Dave Jones" <davej@redhat.com>,
+       "Chuck Wolber" <chuckw@quantumlinux.com>,
+       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
+       "Michael Krufky" <mkrufky@linuxtv.org>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Domenico Andreoli" <cavokz@gmail.com>, "Willy Tarreau" <w@1wt.eu>,
+       "Rodrigo Rubira Branco" <rbranco@la.checkpoint.com>,
+       "Jake Edge" <jake@lwn.net>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "Pierre Ossman" <drzeus@drzeus.cx>
+In-Reply-To: <20080722231735.GS8282@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080722230208.148102983@mini.kroah.org>
+	 <20080722231342.GA8282@suse.de> <20080722231735.GS8282@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello guys,
+Hi,
 
-Latest linux git tree, noticed the e1000 driver no longer worked with my
-pci express nic. e1000e works but has the following bug...
+On Wed, Jul 23, 2008 at 1:17 AM, Greg KH <gregkh@suse.de> wrote:
+> 2.6.25-stable review patch.  If anyone has any objections, please let us
+> know.
 
-Problem: When system grinds to a halt when unplugging the cord from the
-nic.
+There is an ugly typo in the patch below that was fixed by Karl Beldan:
+http://git.kernel.org/?p=linux/kernel/git/drzeus/mmc.git;a=commit;h=28bbe535df5c461c25eb57affb30e007072429c3
 
-Let me know if you need any more info.
+Not sure how you handle this, maybe this patch should only go in
+together with the other.
 
-Kernel Message:
+> ------------------
+> From: Philipp Zabel <philipp.zabel@gmail.com>
+>
+> commit 97f8571e663c808ad2d01a396627235167291556 upstream
+>
+> The pxa27x DMA controller defaults to 64-bit alignment. This caused
+> the SCR reads to fail (and, depending on card type, error out) when
+> card->raw_scr was not aligned on a 8-byte boundary.
+>
+> For performance reasons all scatter-gather addresses passed to
+> pxamci_request should be aligned on 8-byte boundaries, but if
+> this can't be guaranteed, byte aligned DMA transfers in the
+> have to be enabled in the controller to get correct behaviour.
+>
+> Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+> Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+> Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>
+> ---
+>  drivers/mmc/host/pxamci.c |   13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+>
+> --- a/drivers/mmc/host/pxamci.c
+> +++ b/drivers/mmc/host/pxamci.c
+> @@ -114,6 +114,7 @@ static void pxamci_setup_data(struct pxa
+>        unsigned int nob = data->blocks;
+>        unsigned long long clks;
+>        unsigned int timeout;
+> +       bool dalgn = 0;
+>        u32 dcmd;
+>        int i;
+>
+> @@ -152,6 +153,9 @@ static void pxamci_setup_data(struct pxa
+>                host->sg_cpu[i].dcmd = dcmd | length;
+>                if (length & 31 && !(data->flags & MMC_DATA_READ))
+>                        host->sg_cpu[i].dcmd |= DCMD_ENDIRQEN;
+> +               /* Not aligned to 8-byte boundary? */
+> +               if (sg_dma_address(&data->sg[i]) & 0x7)
+> +                       dalgn = 1;
+>                if (data->flags & MMC_DATA_READ) {
+>                        host->sg_cpu[i].dsadr = host->res->start + MMC_RXFIFO;
+>                        host->sg_cpu[i].dtadr = sg_dma_address(&data->sg[i]);
+> @@ -165,6 +169,15 @@ static void pxamci_setup_data(struct pxa
+>        host->sg_cpu[host->dma_len - 1].ddadr = DDADR_STOP;
+>        wmb();
+>
+> +       /*
+> +        * The PXA27x DMA controller encounters overhead when working with
+> +        * unaligned (to 8-byte boundaries) data, so switch on byte alignment
+> +        * mode only if we have unaligned data.
+> +        */
+> +       if (dalgn)
+> +               DALGN |= (1 << host->dma);
+> +       else
+> +               DALGN &= (1 << host->dma);
+                         ^^^^^ here
 
-ul 23 15:59:28 Athas eth0: Link is Up 1000 Mbps Full Duplex, Flow
-Control: None
-Jul 23 15:59:28 Athas ------------[ cut here ]------------
-Jul 23 15:59:28 Athas kernel BUG at net/core/dev.c:1328!
-Jul 23 15:59:28 Athas invalid opcode: 0000 [1] SMP
-Jul 23 15:59:28 Athas CPU 1
-Jul 23 15:59:28 Athas Modules linked in: xt_MARK ipt_REDIRECT xt_state
-xt_TCPMSS xt_tcpudp iptable_mangle iptable_nat n$
-Jul 23 15:59:28 Athas Pid: 12, comm: events/1 Not tainted 2.6.26 #1
-Jul 23 15:59:28 Athas RIP: 0010:[<ffffffff8038db39>]
-[<ffffffff8038db39>] __netif_schedule+0xa/0x4b
-Jul 23 15:59:28 Athas RSP: 0018:ffff88019fd0fe30  EFLAGS: 00010246
-Jul 23 15:59:28 Athas RAX: ffff88019f6f2b90 RBX: 0000000000000000 RCX:
-ffff88019f6f2b80
-Jul 23 15:59:28 Athas RDX: 00000000ffffffff RSI: 0000000000000286 RDI:
-ffffffff805cfac0
-Jul 23 15:59:28 Athas RBP: ffff88019eddc640 R08: 00000000000013ba R09:
-ffff88019fc66858
-Jul 23 15:59:28 Athas R10: 0000000000000400 R11: 0000000000400000 R12:
-0000000000000000
-Jul 23 15:59:28 Athas R13: 0000000000000000 R14: ffff88019eddc970 R15:
-ffff88019eddc000
-Jul 23 15:59:28 Athas FS:  0000000000000000(0000)
-GS:ffff88019fc09480(0000) knlGS:0000000000000000
-Jul 23 15:59:28 Athas CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-Jul 23 15:59:28 Athas CR2: 00007f74831d6030 CR3: 0000000192a46000 CR4:
-00000000000006e0
-Jul 23 15:59:28 Athas DR0: 0000000000000000 DR1: 0000000000000000 DR2:
-0000000000000000
-Jul 23 15:59:28 Athas DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7:
-0000000000000400
-Jul 23 15:59:28 Athas Process events/1 (pid: 12, threadinfo
-ffff88019fd0e000, task ffff88019fc66820)
-Jul 23 15:59:28 Athas Stack:  0000000000000000 ffffffffa00d66e9
-ffffffff807b0bc0 ffff88019f6f2940
-Jul 23 15:59:28 Athas 0000000000000286 0000000000000000 0000000000000202
-000000009fc62ca0
-Jul 23 15:59:28 Athas ffff88019eddc968 ffff88019fc09880 ffffffffa00d626d
-ffff88019fc09888
-Jul 23 15:59:28 Athas Call Trace:
-Jul 23 15:59:28 Athas [<ffffffffa00d66e9>] ? e1000_watchdog_task
-+0x47c/0x695 [e1000e]
-Jul 23 15:59:28 Athas [<ffffffffa00d626d>] ? e1000_watchdog_task
-+0x0/0x695 [e1000e]
-Jul 23 15:59:28 Athas [<ffffffff8023c8cd>] ? run_workqueue+0x7a/0x100
-Jul 23 15:59:28 Athas [<ffffffff8023cbce>] ? worker_thread+0x96/0xa5
-Jul 23 15:59:28 Athas [<ffffffff8023fcbf>] ? autoremove_wake_function
-+0x0/0x2e
-Jul 23 15:59:28 Athas [<ffffffff8023cb38>] ? worker_thread+0x0/0xa5
-Jul 23 15:59:28 Athas [<ffffffff8023f9b1>] ? kthread+0x47/0x73
-Jul 23 15:59:28 Athas [<ffffffff8022c35f>] ? schedule_tail+0x27/0x5f
-Jul 23 15:59:28 Athas [<ffffffff8020cd99>] ? child_rip+0xa/0x11
-Jul 23 15:59:28 Athas [<ffffffff8023f96a>] ? kthread+0x0/0x73
-Jul 23 15:59:28 Athas [<ffffffff8020cd8f>] ? child_rip+0x0/0x11
-Jul 23 15:59:28 Athas
-Jul 23 15:59:28 Athas
-Jul 23 15:59:28 Athas Code: 00 00 48 63 80 48 e0 ff ff a9 00 00 ff 0f 75
-07 9c 58 f6 c4 02 75 05 e9 9f ff ff ff e9 cb a$
-Jul 23 15:59:28 Athas RIP  [<ffffffff8038db39>] __netif_schedule
-+0xa/0x4b
-Jul 23 15:59:28 Athas RSP <ffff88019fd0fe30>
-Jul 23 15:59:28 Athas ---[ end trace 3accc2d688eaad80 ]---
+>        DDADR(host->dma) = host->sg_dma;
+>        DCSR(host->dma) = DCSR_RUN;
+>  }
+>
+> --
+>
 
-
-Lspci -vv 
-
-2:00.0 Ethernet controller: Intel Corporation 82572EI Gigabit Ethernet
-Controller (Copper) (rev 06)
-        Subsystem: Intel Corporation PRO/1000 PT Desktop Adapter
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr- Stepping- SERR- FastB2B- DisINTx+
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0, Cache Line Size: 32 bytes
-        Interrupt: pin A routed to IRQ 216
-        Region 0: Memory at f8020000 (32-bit, non-prefetchable)
-[size=128K]
-        Region 1: Memory at f8000000 (32-bit, non-prefetchable)
-[size=128K]
-        Region 2: I/O ports at b000 [size=32]
-        [virtual] Expansion ROM at fb300000 [disabled] [size=128K]
-        Capabilities: [c8] Power Management version 2
-                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0
-+,D1-,D2-,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
-        Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+
-Queue=0/0 Enable+
-                Address: 00000000fee0f00c  Data: 41b9
-        Capabilities: [e0] Express (v1) Endpoint, MSI 00
-                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s
-<512ns, L1 <64us
-                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
-                DevCtl: Report errors: Correctable- Non-Fatal- Fatal-
-Unsupported-
-                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
-                        MaxPayload 128 bytes, MaxReadReq 512 bytes
-                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+
-TransPend-
-                LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s,
-Latency L0 <4us, L1 <64us
-                        ClockPM- Suprise- LLActRep- BwNot-
-                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain-
-CommClk+
-                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+
-DLActive- BWMgmt- ABWMgmt-
-        Capabilities: [100] Advanced Error Reporting <?>
-        Capabilities: [140] Device Serial Number 8d-bf-0b-ff-ff-17-15-00
-
-Desg: 
-eth0: (PCI Express:2.5GB/s:Width x1) 00:xx:xx:xx:xx:xx
-eth0: Intel(R) PRO/1000 Network Connection
-eth0: MAC: 1, PHY: 4, PBA No: d50854-001
-
-
-Regards,
-
-Will Trives
-
+regards
+Philipp
