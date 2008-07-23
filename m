@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755164AbYGWAL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYGWANQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755164AbYGWAL4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 20:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYGWALt
+	id S1755351AbYGWANQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 20:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYGWAM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 20:11:49 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63222 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751768AbYGWALs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 20:11:48 -0400
-Date: Wed, 23 Jul 2008 01:10:54 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Mikael Pettersson <mikpe@it.uu.se>, Ingo Molnar <mingo@elte.hu>
-cc: Chuck Ebbert <cebbert@redhat.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: PIC, L-APIC and I/O APIC debug information
-In-Reply-To: <18564.38760.212333.375520@harpo.it.uu.se>
-Message-ID: <Pine.LNX.4.55.0807230053460.31850@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0807202226310.24038@cliff.in.clinika.pl>
- <18563.55832.673541.202465@harpo.it.uu.se> <Pine.LNX.4.55.0807211222250.23386@cliff.in.clinika.pl>
- <18564.38760.212333.375520@harpo.it.uu.se>
+	Tue, 22 Jul 2008 20:12:58 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33326 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752940AbYGWAM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jul 2008 20:12:58 -0400
+Date: Tue, 22 Jul 2008 17:10:43 -0700
+From: Greg KH <gregkh@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [USB boot crash, -git] ecm_do_notify(), list_add corruption.
+	prev->next should be next (ffff88003b8f82f8)
+Message-ID: <20080723001043.GB8477@suse.de>
+References: <20080721223038.GA2051@suse.de> <20080722134042.GA14315@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080722134042.GA14315@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Jul 2008, Mikael Pettersson wrote:
-
-> It's not even remotely C-like, which will cause confusion
-> for anyone or anything trying to read and understand the code.
-
- Not being C-like sounds like an advantage as the reader would be forced 
-to check what it really means, but I can see what you mean, and the fact 
-we have got worse constructs elsewhere does not look like a terribly good 
-argument either.
-
-> Something like the following looks saner to me, would it work for you?
+On Tue, Jul 22, 2008 at 03:40:42PM +0200, Ingo Molnar wrote:
 > 
-> 	#ifdef debug
-> 	#define apicdebug	/* empty */
-> 	#define __apicinit	/* empty */
-> 	#else
-> 	#define apicdebug	static
-> 	#define __apicinit	__init
-> 	#endif
-> 	...
-> 	apicdebug void __apicinit print_IO_APIC(void)
-> 	{ .. }
+> hi Greg, David,
+> 
+> -tip randconfig boot testing just found this USB boot crash regression:
+> 
+> dummy_udc dummy_udc: enabled ep-a (ep1in-bulk) maxpacket 512
+> dummy_udc dummy_udc: enabled ep-b (ep2out-bulk) maxpacket 512
 
- Hmm, suddenly out of a single line, quite a lot of stuff has emerged.  I 
-am not convinced and I am now thinking of something else instead.
+Wierd, if we don't have the hardware, this shouldn't be a problem, right
+David?
 
- However these debugging facilities are not absolutely necessary for the
-essential functionality of the patch, so I will simply remove them for
-reconsideration and send a regenerated patch containing the rest only.
+thanks,
 
- Ingo, please drop this one from anywhere you may have it -- I will send a 
-replacement shortly.
-
-  Maciej
+greg k-h
