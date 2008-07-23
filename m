@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbYGWO5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbYGWO5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754291AbYGWO5L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 10:57:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbYGWO4z
+	id S1754748AbYGWO5g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 10:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYGWO5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 10:56:55 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:10141 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752810AbYGWO4y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 10:56:54 -0400
-Date: Wed, 23 Jul 2008 18:56:50 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Trent Piepho <tpiepho@freescale.com>
-Cc: Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: PIXIS gpio controller and gpio flags
-Message-ID: <20080723145650.GA13792@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080717150422.GC31932@secretlab.ca> <20080717152006.GA26120@polina.dev.rtsoft.ru> <fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com> <Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp> <20080717234201.GA15745@polina.dev.rtsoft.ru> <Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp> <20080718100549.GA28741@polina.dev.rtsoft.ru> <Pine.LNX.4.64.0807191352040.27586@t2.domain.actdsltmp> <20080721175357.GA1773@polina.dev.rtsoft.ru> <Pine.LNX.4.64.0807211340460.26456@t2.domain.actdsltmp>
+	Wed, 23 Jul 2008 10:57:21 -0400
+Received: from r00tworld.com ([212.85.137.21]:39913 "EHLO r00tworld.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753050AbYGWO5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 10:57:20 -0400
+From: pageexec@freemail.hu
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Date: Wed, 23 Jul 2008 16:53:21 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0807211340460.26456@t2.domain.actdsltmp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: [stable] Linux 2.6.25.10 (resume)
+Reply-to: pageexec@freemail.hu
+CC: "Rodrigo Rubira Branco (BSDaemon)" <rbranco@la.checkpoint.com>,
+       Greg KH <gregkh@suse.de>, Alan Cox <alan@redhat.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org, greg@kroah.com,
+       "'Justin Forbes'" <jmforbes@linuxtx.org>,
+       "'Zwane Mwaikambo'" <zwane@arm.linux.org.uk>,
+       "'Theodore Ts'o'" <tytso@mit.edu>,
+       "'Randy Dunlap'" <rdunlap@xenotime.net>,
+       "'Dave Jones'" <davej@redhat.com>,
+       "'Chuck Wolber'" <chuckw@quantumlinux.com>,
+       "'Chris Wedgwood'" <reviews@ml.cw.f00f.org>,
+       "'Michael Krufky'" <mkrufky@linuxtv.org>,
+       "'Chuck Ebbert'" <cebbert@redhat.com>,
+       "'Domenico Andreoli'" <cavokz@gmail.com>, "'Willy Tarreau'" <w@1wt.eu>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, caglar@pardus.org.tr, casey@schaufler-ca.com,
+       spender@grsecurity.net, rodrigo@kernelhacking.com
+Message-ID: <48876201.10516.43E02072@pageexec.freemail.hu>
+In-reply-to: <20080723143125.GB4684@khazad-dum.debian.net>
+References: <20080723042737.GC6784@suse.de>, <48873827.12054.433CA4FB@pageexec.freemail.hu>, <20080723143125.GB4684@khazad-dum.debian.net>
+X-mailer: Pegasus Mail for Windows (4.41)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 23 Jul 2008 16:54:15 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2008 at 02:12:20PM -0700, Trent Piepho wrote:
-> On Mon, 21 Jul 2008, Anton Vorontsov wrote:
-> > On Sat, Jul 19, 2008 at 02:08:01PM -0700, Trent Piepho wrote:
-> >> It doesn't look like you have any way to unset the active low flag.  What if
-> >> I unload the leds-gpio driver (or another gpio user) and then try to use the
-> >> gpio with something else?  The active low flag is stuck on!
-> >
-> > Why would you want to unset the flags? It is specified in the device
-> > tree, and can't be changed. Specifying different flags for the same GPIO
-> > would be an error (plus, Linux forbids shared gpios, so you simply can't
-> > specify one gpio for several devices).
+On 23 Jul 2008 at 11:31, Henrique de Moraes Holschuh wrote:
+
+> On Wed, 23 Jul 2008, pageexec@freemail.hu wrote:
+> > it's apparently not true when foo = "kernel's security model", hence the
+> > suggested change to reflect reality.
 > 
-> You can't use the same gpio for two different things at the same time, but you
-> can load a driver, unload it, and then load another.
+> I heavily suggest using something else than "disclose".  
+> 
+> For the security community, "disclose" doesn't mean you have the source code
+> for the buggy code and the source code for the fix.  It means you have the
+> information that it is a "foo = kernel's security model" bug, and a
+> description of the consequences of the bug for foo (the security model).
+> 
+> This is NOT what "disclose" means for the Linux kernel, right now.  Here,
+> "disclose" means "you know there is a bug, you have the code, you have the
+> bug fix".  But you don't know that "foo = kernel's security bug", or the
+> consequences of the bug for the security model.
 
-Hm.. yeah, this might happen. Now I tend to think that transparent
-active-low handling wasn't that good idea after all. So, something like
-of_gpio_is_active_low(device_node, gpioidx) should be implemented
-instead. This function will parse the gpio's = <> flags. Please speak up
-if you have any better ideas though.
+i think you misunderstood the whole thread here ;). we were explicitly
+talking about bugs where the kernel devs *knew* they were fixing one
+with an impact on security yet they chose not to say so.
+
+determining whether a bug is a security one is a whole different kettle
+of fish, that was not the topic here at all.
+
+IOW, Documentation/SecurityBugs talks about bugs where the security impact
+is known, not about bugs in general where such determination has yet to be
+done.
+
+> So just use another word, or properly qualify WHAT is going to be disclosed,
+> (and in this case, WHAT is not going to be *usually* disclosed).
 
 
-Thanks for bringing this up,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
