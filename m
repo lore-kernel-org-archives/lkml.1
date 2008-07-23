@@ -1,148 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750978AbYGWGcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753101AbYGWG7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750978AbYGWGcZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 02:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750747AbYGWGcQ
+	id S1753101AbYGWG7S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 02:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbYGWG7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 02:32:16 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:32382 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbYGWGcO (ORCPT
+	Wed, 23 Jul 2008 02:59:06 -0400
+Received: from smtp-out13.tpgi.com.au ([220.244.226.123]:45107 "EHLO
+	mail13.tpgi.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751137AbYGWG7F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 02:32:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
-         :mime-version:content-type:content-disposition
-         :content-transfer-encoding:in-reply-to:user-agent:from;
-        b=KIe4gmuHwSV57+4zp3y9cd4j8+EngHKHnIbniS8f6pdE0HShHFgmWrvbBsgrtozbcb
-         UEl6mLuFIiHBl83Mb7EsMl3AXS5Y6W9IOSRq8cHvbNy1LKjH/5Mm/bYVi8xhdgd66qWd
-         GixwgOQRoNbhBOVwF9gYsd8hu1Rj6p16dSXIc=
-Date: Wed, 23 Jul 2008 08:32:24 +0200
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] ide-floppy fix
-Message-ID: <20080723063224.GB17724@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-	stable@kernel.org
-References: <20080715053356.GA18628@gollum.tnic> <200807212103.36804.bzolnier@gmail.com> <20080722052735.GA16054@gollum.tnic> <200807222149.19939.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200807222149.19939.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+	Wed, 23 Jul 2008 02:59:05 -0400
+X-Greylist: delayed 528 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Jul 2008 02:59:04 EDT
+X-TPG-Antivirus: Passed
+Subject: kernel crunch to a halt with e1000e driver
+From: Will Trives <will@trivescon.com.au>
+To: linux-kernel@vger.kernel.org
+Cc: e1000-devel@lists.sourceforge.net
+Content-Type: text/plain
+Date: Wed, 23 Jul 2008 16:34:11 +1000
+Message-Id: <1216794851.4074.42.camel@Athas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 09:49:19PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> On Tuesday 22 July 2008, Borislav Petkov wrote:
-> 
-> [...]
-> 
-> > [    5.879917] ide_generic: please use "probe_mask=0x3f" module parameter for probing all legacy ISA IDE ports
-> > [    5.879997] probe_mask=0x3, i=0x0, io_addr=0x1f0
-> > [    5.880057] ide_generic: I/O resource 0x1F0-0x1F7 not free.
-> > [    5.880115] probe_mask=0x3, i=0x1, io_addr=0x170
-> > [    5.880173] ide_generic: I/O resource 0x170-0x177 not free.
-> > [    5.880246] ide_host_register: loop0: i=0, hwif=00000000
-> > [    5.880299] ide_host_register: loop0: i=1, hwif=00000000
-> > [    5.880357] ide_host_register: loop0: i=2, hwif=00000000
-> > 
-> > and then it goes KABOOM!
-> > 
-> > 
-> > 
-> > I tested both with BLK_DEV_GENERIC on and off and the
-> > error happens only when it is on:
-> > 
-> > --- config.ok   2008-07-22 06:58:48.000000000 +0200
-> > +++ config.b0rked       2008-07-22 06:59:31.000000000 +0200
-> > @@ -1,7 +1,7 @@
-> >  #
-> >  # Automatically generated make config: don't edit
-> >  # Linux kernel version: 2.6.26
-> > -# Tue Jul 22 06:58:28 2008
-> > +# Tue Jul 22 06:59:24 2008
-> >  #
-> >  # CONFIG_64BIT is not set
-> >  CONFIG_X86_32=y
-> > @@ -600,7 +600,7 @@ CONFIG_IDE_PROC_FS=y
-> >  #
-> >  # IDE chipset support/bugfixes
-> >  #
-> > -# CONFIG_IDE_GENERIC is not set
-> > +CONFIG_IDE_GENERIC=y
-> >  # CONFIG_BLK_DEV_PLATFORM is not set
-> >  # CONFIG_BLK_DEV_CMD640 is not set
-> >  # CONFIG_BLK_DEV_IDEPNP is not set
-> > 
-> > I've also attached the .config that breaks the machine. Please take a look in
-> > case i'm missing something.
-> 
-> Thanks, with this config I can reproduce the problem.
-> 
-> > > [ Besides it shouldn't result in phantom hde & hdf devices
-> > >   and ide_generic blowing up on failure. ]
-> > > 
-> > > Have you tried the memset() fix that I proposed
-> > > (pata tree contains the revised patch now)?
-> > 
-> > yep, test runs ontop of your tree from Sunday which already has the fix.
-> 
-> *sigh*
-> 
-> The previous fix was garbage and contained brown-paper-bag bug:
-> 
-> diff -u b/drivers/ide/ide-generic.c b/drivers/ide/ide-generic.c
-> --- b/drivers/ide/ide-generic.c
-> +++ b/drivers/ide/ide-generic.c
-> @@ -114,7 +114,7 @@
->  	printk(KERN_INFO DRV_NAME ": please use \"probe_mask=0x3f\" module "
->  			 "parameter for probing all legacy ISA IDE ports\n");
->  
-> -	memset(hws, 0, MAX_HWIFS);
-> +	memset(hws, 0, sizeof(hw_regs_t *) * MAX_HWIFS);
->  
->  	for (i = 0; i < ARRAY_SIZE(legacy_bases); i++) {
->  		io_addr = legacy_bases[i];
-> 
-> 
-> Now it should be finally fixed.
+Hello guys,
 
-True story. Works here too.
+Latest linux git tree, noticed the e1000 driver no longer worked with my
+pci express nic. e1000e works but has the following bug...
 
-> 
-> > > > One of the possible fixes is adding
-> > > > 
-> > > > depends on !BLK_DEV_GENERIC
-> > > > 
-> > > > after each IDE chipset driver using the generic detection in drivers/ide/Kconfig
-> > > > but it's a not-that-elegant one. Another thing would be using a dummy one like
-> > > > BLK_DEV_IDEDMA_PCI, but I'm not that sure. Will look into it. I'm pretty sure
-> > > > you have a better idea...
-> > > 
-> > > pata_legacy.c has a proper fix which needs porting into ide-generic.c
-> > > (it should be pretty easy thing to do).
-> > 
-> > (is this a hint^^? :))
-> 
-> It has *HINT* written all over it. ;)
+Problem: When system grinds to a halt when unplugging the cord from the
+nic.
 
-Hm, let's see whether there's time during the weekend. I already have something
-stolen from pata_legacy but I'll do some more testing first. By the way, what
-are the chances of exporting those pieces of code from drivers/ata/pata_legacy.c
-and adding the function def into some header instead of duplicating the code into
-ide_generic.c?
+Let me know if you need any more info.
 
--- 
-Regards/Gruﬂ,
-    Boris.
+Kernel Message:
+
+ul 23 15:59:28 Athas eth0: Link is Up 1000 Mbps Full Duplex, Flow
+Control: None
+Jul 23 15:59:28 Athas ------------[ cut here ]------------
+Jul 23 15:59:28 Athas kernel BUG at net/core/dev.c:1328!
+Jul 23 15:59:28 Athas invalid opcode: 0000 [1] SMP
+Jul 23 15:59:28 Athas CPU 1
+Jul 23 15:59:28 Athas Modules linked in: xt_MARK ipt_REDIRECT xt_state
+xt_TCPMSS xt_tcpudp iptable_mangle iptable_nat n$
+Jul 23 15:59:28 Athas Pid: 12, comm: events/1 Not tainted 2.6.26 #1
+Jul 23 15:59:28 Athas RIP: 0010:[<ffffffff8038db39>]
+[<ffffffff8038db39>] __netif_schedule+0xa/0x4b
+Jul 23 15:59:28 Athas RSP: 0018:ffff88019fd0fe30  EFLAGS: 00010246
+Jul 23 15:59:28 Athas RAX: ffff88019f6f2b90 RBX: 0000000000000000 RCX:
+ffff88019f6f2b80
+Jul 23 15:59:28 Athas RDX: 00000000ffffffff RSI: 0000000000000286 RDI:
+ffffffff805cfac0
+Jul 23 15:59:28 Athas RBP: ffff88019eddc640 R08: 00000000000013ba R09:
+ffff88019fc66858
+Jul 23 15:59:28 Athas R10: 0000000000000400 R11: 0000000000400000 R12:
+0000000000000000
+Jul 23 15:59:28 Athas R13: 0000000000000000 R14: ffff88019eddc970 R15:
+ffff88019eddc000
+Jul 23 15:59:28 Athas FS:  0000000000000000(0000)
+GS:ffff88019fc09480(0000) knlGS:0000000000000000
+Jul 23 15:59:28 Athas CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+Jul 23 15:59:28 Athas CR2: 00007f74831d6030 CR3: 0000000192a46000 CR4:
+00000000000006e0
+Jul 23 15:59:28 Athas DR0: 0000000000000000 DR1: 0000000000000000 DR2:
+0000000000000000
+Jul 23 15:59:28 Athas DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7:
+0000000000000400
+Jul 23 15:59:28 Athas Process events/1 (pid: 12, threadinfo
+ffff88019fd0e000, task ffff88019fc66820)
+Jul 23 15:59:28 Athas Stack:  0000000000000000 ffffffffa00d66e9
+ffffffff807b0bc0 ffff88019f6f2940
+Jul 23 15:59:28 Athas 0000000000000286 0000000000000000 0000000000000202
+000000009fc62ca0
+Jul 23 15:59:28 Athas ffff88019eddc968 ffff88019fc09880 ffffffffa00d626d
+ffff88019fc09888
+Jul 23 15:59:28 Athas Call Trace:
+Jul 23 15:59:28 Athas [<ffffffffa00d66e9>] ? e1000_watchdog_task
++0x47c/0x695 [e1000e]
+Jul 23 15:59:28 Athas [<ffffffffa00d626d>] ? e1000_watchdog_task
++0x0/0x695 [e1000e]
+Jul 23 15:59:28 Athas [<ffffffff8023c8cd>] ? run_workqueue+0x7a/0x100
+Jul 23 15:59:28 Athas [<ffffffff8023cbce>] ? worker_thread+0x96/0xa5
+Jul 23 15:59:28 Athas [<ffffffff8023fcbf>] ? autoremove_wake_function
++0x0/0x2e
+Jul 23 15:59:28 Athas [<ffffffff8023cb38>] ? worker_thread+0x0/0xa5
+Jul 23 15:59:28 Athas [<ffffffff8023f9b1>] ? kthread+0x47/0x73
+Jul 23 15:59:28 Athas [<ffffffff8022c35f>] ? schedule_tail+0x27/0x5f
+Jul 23 15:59:28 Athas [<ffffffff8020cd99>] ? child_rip+0xa/0x11
+Jul 23 15:59:28 Athas [<ffffffff8023f96a>] ? kthread+0x0/0x73
+Jul 23 15:59:28 Athas [<ffffffff8020cd8f>] ? child_rip+0x0/0x11
+Jul 23 15:59:28 Athas
+Jul 23 15:59:28 Athas
+Jul 23 15:59:28 Athas Code: 00 00 48 63 80 48 e0 ff ff a9 00 00 ff 0f 75
+07 9c 58 f6 c4 02 75 05 e9 9f ff ff ff e9 cb a$
+Jul 23 15:59:28 Athas RIP  [<ffffffff8038db39>] __netif_schedule
++0xa/0x4b
+Jul 23 15:59:28 Athas RSP <ffff88019fd0fe30>
+Jul 23 15:59:28 Athas ---[ end trace 3accc2d688eaad80 ]---
+
+
+Lspci -vv 
+
+2:00.0 Ethernet controller: Intel Corporation 82572EI Gigabit Ethernet
+Controller (Copper) (rev 06)
+        Subsystem: Intel Corporation PRO/1000 PT Desktop Adapter
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B- DisINTx+
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0, Cache Line Size: 32 bytes
+        Interrupt: pin A routed to IRQ 216
+        Region 0: Memory at f8020000 (32-bit, non-prefetchable)
+[size=128K]
+        Region 1: Memory at f8000000 (32-bit, non-prefetchable)
+[size=128K]
+        Region 2: I/O ports at b000 [size=32]
+        [virtual] Expansion ROM at fb300000 [disabled] [size=128K]
+        Capabilities: [c8] Power Management version 2
+                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0
++,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+
+Queue=0/0 Enable+
+                Address: 00000000fee0f00c  Data: 41b9
+        Capabilities: [e0] Express (v1) Endpoint, MSI 00
+                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s
+<512ns, L1 <64us
+                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
+                DevCtl: Report errors: Correctable- Non-Fatal- Fatal-
+Unsupported-
+                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+                        MaxPayload 128 bytes, MaxReadReq 512 bytes
+                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+
+TransPend-
+                LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s,
+Latency L0 <4us, L1 <64us
+                        ClockPM- Suprise- LLActRep- BwNot-
+                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain-
+CommClk+
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+
+DLActive- BWMgmt- ABWMgmt-
+        Capabilities: [100] Advanced Error Reporting <?>
+        Capabilities: [140] Device Serial Number 8d-bf-0b-ff-ff-17-15-00
+
+Desg: 
+eth0: (PCI Express:2.5GB/s:Width x1) 00:xx:xx:xx:xx:xx
+eth0: Intel(R) PRO/1000 Network Connection
+eth0: MAC: 1, PHY: 4, PBA No: d50854-001
+
+
+Regards,
+
+Will Trives
+
