@@ -1,106 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYGWQtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbYGWQuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754625AbYGWQtd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 12:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbYGWQss
+	id S1754298AbYGWQuh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 12:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYGWQu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 12:48:48 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:49530 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751394AbYGWQsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 12:48:47 -0400
-Date: Wed, 23 Jul 2008 20:52:05 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Mark McLoughlin <markmc@redhat.com>,
-       Oliver Pinter <oliver.pntr@gmail.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: [PATCH 1/2] posix-timers: fix posix_timer_event() vs dequeue_signal() race
-Message-ID: <20080723165205.GA4292@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 23 Jul 2008 12:50:29 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:20442 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751797AbYGWQu2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 12:50:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=1/NQGnXsIIKOSzuK/gWYZZwimyrTat49FEV93h6cXhT9Yl2Tjgpq9KxkLSenuezJAXcRRcUGMgch+q5wQzMsvOk3fz4BkYFNtmrv0VihMUhgEX7cDe15wdVpvxKv8SI335DA1W7w8R6nrzv/hhzQufzCtSj/sUQJ9HsclEUWYtA=  ;
+X-YMail-OSG: aGBzo68VM1lvQKPrdq1ul8hYqx35DQZ25069Yx0hstyTUBVI8vNzxwxQpFvI3n7eo1df.584dniOgKOD_eNkgAtZTn.F55KU4jn60D593_qe5Dv3pbgJsSC7NwSiH906unI-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Clemens Ladisch <clemens@ladisch.de>
+Subject: Re: [patch 2.6.26] /dev/hpet - fixes and cleanup
+Date: Wed, 23 Jul 2008 09:50:25 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>, bob.picco@hp.com,
+       venkatesh.pallipadi@intel.com, Vojtech Pavlik <vojtech@suse.cz>,
+       the arch/x86 maintainers <x86@kernel.org>
+References: <200807221508.56672.david-b@pacbell.net> <4886E164.2070304@ladisch.de> <200807230912.49850.david-b@pacbell.net>
+In-Reply-To: <200807230912.49850.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Message-Id: <200807230950.26160.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The bug was reported and analysed by Mark McLoughlin <markmc@redhat.com>,
-the patch is based on his and Roland's suggestions.
+On Wednesday 23 July 2008, David Brownell wrote:
+> On Wednesday 23 July 2008, Clemens Ladisch wrote:
+> > David Brownell wrote:
+> > >   * Tighten and correct the userspace interface code
+> > >       ...
+> > >       + only open comparators that have an interrupt, and can thus
+> > >         perform "real work"
+> > 
+> > This prevents userspace applications from doing mmap() on /dev/hpet
+> > even if there is no interrupt.
+> 
+> OK, I removed that ... HPET_IE_ON will already fail.
 
-posix_timer_event() always rewrites the pre-allocated siginfo before sending
-the signal. Most of the written info is the same all the time, but memset(0)
-is very wrong. If ->sigq is queued we can race with collect_signal() which
-can fail to find this siginfo looking at .si_signo, or copy_siginfo() can
-copy the wrong .si_code/si_tid/etc.
+This change will be included in the next version of this patch, which
+I'll send after other responses get more of a chance to trickle in.
+(That line already changed because of the hd_task elimination.)
 
-In short, sys_timer_settime() can in fact stop the active timer, or the user
-can receive the siginfo with the wrong .si_xxx values.
-
-Move "memset(->info, 0)" from posix_timer_event() to alloc_posix_timer(),
-change send_sigqueue() to set .si_overrun = 0 when ->sigq is not queued.
-It would be nice to move the whole sigq->info initialization from send to
-create path, but this is not easy to do without uglifying timer_create()
-further.
-
-As Roland rightly pointed out, we need more cleanups/fixes here, see the
-"FIXME" comment in the patch. Hopefully this patch makes sense anyway, and
-it can mask the most bad implications.
-
-Reported-by: Mark McLoughlin <markmc@redhat.com>
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
- posix-timers.c |   17 +++++++++++++----
- signal.c       |    1 +
- 2 files changed, 14 insertions(+), 4 deletions(-)
-
---- 26-rc2/kernel/posix-timers.c~1_PTE_QUEUED	2008-07-20 14:47:53.000000000 +0400
-+++ 26-rc2/kernel/posix-timers.c	2008-07-23 15:04:18.000000000 +0400
-@@ -296,14 +296,22 @@ void do_schedule_next_timer(struct sigin
- 		unlock_timer(timr, flags);
- }
+--- g26.orig/drivers/char/hpet.c	2008-07-23 09:43:59.000000000 -0700
++++ g26/drivers/char/hpet.c	2008-07-23 09:03:34.000000000 -0700
+@@ -189,8 +189,7 @@ static int hpet_open(struct inode *inode
  
--int posix_timer_event(struct k_itimer *timr,int si_private)
-+int posix_timer_event(struct k_itimer *timr, int si_private)
- {
--	memset(&timr->sigq->info, 0, sizeof(siginfo_t));
-+	/*
-+	 * FIXME: if ->sigq is queued we can race with
-+	 * dequeue_signal()->do_schedule_next_timer().
-+	 *
-+	 * If dequeue_signal() sees the "right" value of
-+	 * si_sys_private it calls do_schedule_next_timer().
-+	 * We re-queue ->sigq and drop ->it_lock().
-+	 * do_schedule_next_timer() locks the timer
-+	 * and re-schedules it while ->sigq is pending.
-+	 * Not really bad, but not that we want.
-+	 */
- 	timr->sigq->info.si_sys_private = si_private;
--	/* Send signal to the process that owns this timer.*/
- 
- 	timr->sigq->info.si_signo = timr->it_sigev_signo;
--	timr->sigq->info.si_errno = 0;
- 	timr->sigq->info.si_code = SI_TIMER;
- 	timr->sigq->info.si_tid = timr->it_id;
- 	timr->sigq->info.si_value = timr->it_sigev_value;
-@@ -435,6 +443,7 @@ static struct k_itimer * alloc_posix_tim
- 		kmem_cache_free(posix_timers_cache, tmr);
- 		tmr = NULL;
- 	}
-+	memset(&tmr->sigq->info, 0, sizeof(siginfo_t));
- 	return tmr;
- }
- 
---- 26-rc2/kernel/signal.c~1_PTE_QUEUED	2008-07-06 19:29:27.000000000 +0400
-+++ 26-rc2/kernel/signal.c	2008-07-23 13:55:11.000000000 +0400
-@@ -1310,6 +1310,7 @@ int send_sigqueue(struct sigqueue *q, st
- 		q->info.si_overrun++;
- 		goto out;
- 	}
-+	q->info.si_overrun = 0;
- 
- 	signalfd_notify(t, sig);
- 	pending = group ? &t->signal->shared_pending : &t->pending;
-
+ 	for (devp = NULL, hpetp = hpets; hpetp && !devp; hpetp = hpetp->hp_next)
+ 		for (i = 0; i < hpetp->hp_ntimer; i++)
+-			if (hpetp->hp_dev[i].hd_flags & HPET_OPEN
+-					|| !hpetp->hp_dev[i].hd_hdwirq)
++			if (hpetp->hp_dev[i].hd_flags & HPET_OPEN)
+ 				continue;
+ 			else {
+ 				devp = &hpetp->hp_dev[i];
