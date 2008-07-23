@@ -1,89 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbYGWCtD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYGWCvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754271AbYGWCtD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jul 2008 22:49:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbYGWCsy
+	id S1754669AbYGWCvH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jul 2008 22:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbYGWCu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jul 2008 22:48:54 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:11094 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752012AbYGWCsx (ORCPT
+	Tue, 22 Jul 2008 22:50:56 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35896 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752566AbYGWCuz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jul 2008 22:48:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=LoX5hXMVYu9u+eKo60UWkwOENK47/Snn0OY7CKQ+c5QRwIcXgoTsEoijpn0/ZOjBR+
-         Xmww3+ePwvq/LtvwcCb4PmqTPtmoRTswynqw3hndylI0uMDkX97AITBSVR0d7RQLJVmF
-         VTh2pBESwfxAPA9qcYHEN0Lok6gPPXIStaHis=
-Message-ID: <804dabb00807221948y1317633exc1a2009540b23239@mail.gmail.com>
-Date: Wed, 23 Jul 2008 10:48:52 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: "Randy Dunlap" <rdunlap@xenotime.net>
-Subject: Re: make htmldocs errors
-Cc: KML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080722084211.10d21eb5.rdunlap@xenotime.net>
+	Tue, 22 Jul 2008 22:50:55 -0400
+Date: Wed, 23 Jul 2008 11:48:00 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Subject: Re: memory hotplug: hot-remove fails on lowest chunk in ZONE_MOVABLE
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <1216745719.4871.8.camel@localhost.localdomain>
+References: <1216745719.4871.8.camel@localhost.localdomain>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080723105318.81BC.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <804dabb00807220407x683f0eb2we0b64821b9279e3c@mail.gmail.com>
-	 <20080722084211.10d21eb5.rdunlap@xenotime.net>
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you Randy for the explanation.
+Hi.
 
-Just for your interest, other tree like tracing/for-linus at:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+> I've been testing memory hotplug on s390, on a system that starts w/o
+> memory in ZONE_MOVABLE at first, and then some memory chunks will be
+> added to ZONE_MOVABLE via memory hot-add. Now I observe the following
+> problem:
+> 
+> Memory hot-remove of the lowest memory chunk in ZONE_MOVABLE will fail
+> because of some reserved pages at the beginning of each zone
+> (MIGRATE_RESERVED).
+> 
+> During memory hot-add, setup_per_zone_pages_min() will be called from
+> online_pages() to redistribute/recalculate the reserved page blocks.
+> This will mark some page blocks at the beginning of each zone as
+> MIGRATE_RESERVE. Now, the memory chunk containing these blocks cannot
+> be set offline again, because only MIGRATE_MOVABLE pages can be isolated
+> (offline_pages -> start_isolate_page_range).
+> 
+> So you cannot remove all the memory chunks that have been added via
+> memory hotplug. I'm not sure if I am missing something here, or if this
+> really is a bug. Any thoughts?
 
-has somewhat similar problem too (but different files altogether)...
+I believe you are right. Current hot-remove code is NOT perfect.
+You may remove some sections, but may not other sections,
+because there are some un-removable pages by some reasons
+(not only MIGRATE_RESERVED).
 
-/sda3/ftrace/tracing/for-linus>make htmldocs
-  DOCPROC Documentation/DocBook/debugobjects.xml
-  HTML   Documentation/DocBook/debugobjects.html
-  DOCPROC Documentation/DocBook/deviceiobook.xml
-  HTML   Documentation/DocBook/deviceiobook.html
-  DOCPROC Documentation/DocBook/filesystems.xml
-  HTML   Documentation/DocBook/filesystems.html
-  DOCPROC Documentation/DocBook/gadget.xml
-Error(/sda3/ftrace/tracing/for-linus//drivers/usb/gadget/config.c:132):
-cannot understand prototype: 'struct usb_descriptor_header **__init
-usb_copy_descriptors(struct usb_descriptor_header **src) '
-Error(/sda3/ftrace/tracing/for-linus//drivers/usb/gadget/config.c:183):
-cannot understand prototype: 'struct usb_endpoint_descriptor *__init
-usb_find_endpoint( struct usb_descriptor_header **src,     struct
-usb_descriptor_header **copy,   struct usb_endpoint_descriptor *match
-) '
-Warning(/sda3/ftrace/tracing/for-linus//include/linux/usb/composite.h:129):
-No description found for parameter 'list'
-Warning(/sda3/ftrace/tracing/for-linus//include/linux/usb/composite.h:226):
-No description found for parameter 'list'
-Warning(/sda3/ftrace/tracing/for-linus//include/linux/usb/composite.h:226):
-No description found for parameter 'functions'
-Warning(/sda3/ftrace/tracing/for-linus//include/linux/usb/composite.h:226):
-No description found for parameter 'next_interface_id'
-Warning(/sda3/ftrace/tracing/for-linus//include/linux/usb/composite.h:226):
-No description found for parameter 'highspeed'
-Warning(/sda3/ftrace/tracing/for-linus//include/linux/usb/composite.h:226):
-No description found for parameter 'fullspeed'
-Warning(/sda3/ftrace/tracing/for-linus//include/linux/usb/composite.h:226):
-No description found for parameter 'interface[MAX_CONFIG_INTERFACES]'
-Warning(/sda3/ftrace/tracing/for-linus//include/linux/usb/composite.h:322):
-No description found for parameter 'desc'
-Warning(/sda3/ftrace/tracing/for-linus//include/linux/usb/composite.h:322):
-No description found for parameter 'configs'
-Warning(/sda3/ftrace/tracing/for-linus//include/linux/usb/composite.h:322):
-No description found for parameter 'driver'
-Warning(/sda3/ftrace/tracing/for-linus//include/linux/usb/composite.h:322):
-No description found for parameter 'next_string_id'
-Warning(/sda3/ftrace/tracing/for-linus//include/linux/usb/composite.h:322):
-No description found for parameter 'lock'
-make[1]: *** [Documentation/DocBook/gadget.xml] Error 2
-make: *** [htmldocs] Error 2
+I think MIGRATE_RESERVED pages should be move to MIGRATE_MOVABLE when 
+those pages must be removed, and should recalculate MIGRATE_RESERVED pages.
 
-Thank you.
+Bye.
+
+-- 
+Yasunori Goto 
+
+
