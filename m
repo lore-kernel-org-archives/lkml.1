@@ -1,49 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753092AbYGWHOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbYGWHSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753092AbYGWHOn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 03:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbYGWHOe
+	id S1753435AbYGWHSQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 03:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYGWHSC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 03:14:34 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:4962 "EHLO
-	pd2mo1so-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750718AbYGWHOd (ORCPT
+	Wed, 23 Jul 2008 03:18:02 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:40385 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137AbYGWHSA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 03:14:33 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=-Pabf1b0GW0V_JFh4IkA:9 a=ZiK1Aija60C05RMU05M3ZUmBXJQA:4 a=l9iCJtgIvv4A:10 a=GFZTb6icBPAA:10
-Message-ID: <4886DA32.6080401@sieb.net>
-Date: Wed, 23 Jul 2008 00:13:54 -0700
-From: Samuel Sieb <samuel@sieb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.15) Gecko/20080706 Fedora/1.1.10-1.fc9 SeaMonkey/1.1.10
+	Wed, 23 Jul 2008 03:18:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xrzcCE/RnTSvK4HrMGd/Mqq5ZMDyhZ1hEOYcCgdw4WNcZQ5bDTiIf4F1NWgLkuv6cA
+         RrjIx4oXpjCnADnRYsSjQOW8blrZo/kOC2+u4aJsINBp6l5OsmtHLDTBKe5Z83IECzWP
+         iP8hOxtOLoXfXfwyRTnYAhD8vvylYKbrfz5es=
+Message-ID: <b637ec0b0807230017w39ecd5bapc9a6afe29a39d5f3@mail.gmail.com>
+Date: Wed, 23 Jul 2008 09:17:59 +0200
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Rene Herman" <rene.herman@keyaccess.nl>
+Subject: Re: New conflict message in latest GIT
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>, "Bjorn Helgaas" <bjorn.helgaas@hp.com>
+In-Reply-To: <48863FB4.9080500@keyaccess.nl>
 MIME-Version: 1.0
-To: Juergen Beisert <jbe@pengutronix.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: kernel won't boot on a Cyrix MediaGXm (Geode )
-References: <48841A92.4020301@sieb.net> <200807210828.56821.jbe@pengutronix.de> <48856D32.1070101@sieb.net> <200807221008.27867.jbe@pengutronix.de>
-In-Reply-To: <200807221008.27867.jbe@pengutronix.de>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b637ec0b0807221156x46d550a1h4180d6d624daeeb@mail.gmail.com>
+	 <48863C46.1060704@keyaccess.nl> <48863FB4.9080500@keyaccess.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Juergen Beisert wrote:
-> On Dienstag, 22. Juli 2008, Samuel Sieb wrote:
->> Juergen Beisert wrote:
->>> linux-2.6.25/arch/x86/kernel/cyrix.c, line 151. Disable this line or
->>> change the value 0x04 according to the speed of your CPU. This tweak
->>> helps others with random hangs of their system.
->> I tried various values and various combinations of commenting out lines
->> and the only one that worked for me was to comment out the PCR1 line
->> just above it.  With that line commented out (or both of them), it
->> boots.
-> 
-> Hmm, then your BIOS does know more about your hardware than the kernel. ;-)
-> The PCR1 line enables the incrementor. If disabled the value in PCR0 doesn't 
-> matter.
-> 
-I did some more testing and the end result is that you can't enable the 
-incrementor on this cpu.  I tried values from 0 to 7 for the PCR0 and it 
-always crashed or hung (0 also gave noise all over the screen).  The 
-values set by the BIOS are PCR1: 1 and PCR0: 0.
+hi Rene.
+
+On Tue, Jul 22, 2008 at 10:14 PM, Rene Herman <rene.herman@keyaccess.nl> wrote:
+> On 22-07-08 22:00, Rene Herman wrote:
+>
+>>> Linus' GIT tree 2.6.26-05752-g93ded9b shows this message:
+>
+> There doesn't seem to be a g93ded9b in Linus' tree as of now. What tree are
+> you on and does it perhaps already include the below patch?
+>
+
+Well, this is strange because it should be a clone of Linus' tree. I
+will re-clone it tonight.
+
+> This one:
+>
+> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc8/2.6.26-rc8-mm1/broken-out/pnp-have-quirk_system_pci_resources-include-io-resources.patch
+>
+
+I did not add it manually for sure. By the way, I don't see any ACPI
+related problems with this kernel.
+
+Regards,
+Fabio
+
+
+
+
+
+>>> i801_smbus 0000:00:1f.3: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+>>> ACPI: I/O resource 0000:00:1f.3 [0x18e0-0x18ff] conflicts with ACPI
+>>> region SMBI [0x18e0-0x18ef]
+>>> ACPI: Device needs an ACPI driver
+>>>
+>>> There is no equivalent in 2.6.26 or previous kernels.
+>>
+>> [ snip ]
+>>
+>>> 00:1f.3 SMBus: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family)
+>>
+>> I believe this message in itself needn't be a problem but the code
+>> producing this warning isn't new...
+>>
+>> Bjorn, this reminds me of the:
+>>
+>> pnp-have-quirk_system_pci_resources-include-io-resources.patch
+>>
+>> in Andrew's tree that I need to have my soundcard not fail due to the IO
+>> resource being claimed by PNPACPI. The fact that I needed it was new to
+>> 2.6.26 (but going back to 2.6.25 I all of a sudden also needed it there
+>> which made me conclude that some BIOS reconfig had occured).
+>>
+>> ACPI isn't doing odd things I hope?
+>
+> Rene.
+>
