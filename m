@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYGWLV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbYGWLYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbYGWLV4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 07:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYGWLVr
+	id S1753526AbYGWLYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 07:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbYGWLYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 07:21:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48450 "EHLO mx2.mail.elte.hu"
+	Wed, 23 Jul 2008 07:24:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49653 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752270AbYGWLVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 07:21:46 -0400
-Date: Wed, 23 Jul 2008 13:20:42 +0200
+	id S1750869AbYGWLYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 07:24:09 -0400
+Date: Wed, 23 Jul 2008 13:23:09 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
@@ -25,13 +25,12 @@ Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
        Andreas Schwab <schwab@suse.de>, Johannes Weiner <hannes@saeurebad.de>
 Subject: Re: [PATCH 1/8] cpumask: Replace cpumask_of_cpu with
 	cpumask_of_cpu_ptr
-Message-ID: <20080723112042.GA16420@elte.hu>
-References: <20080715211429.454823000@polaris-admin.engr.sgi.com> <200807181530.10044.rusty@rustcorp.com.au> <48809DEB.5060104@sgi.com> <200807202003.31526.rusty@rustcorp.com.au>
+Message-ID: <20080723112309.GA30519@elte.hu>
+References: <20080715211429.454823000@polaris-admin.engr.sgi.com> <200807181530.10044.rusty@rustcorp.com.au> <48809DEB.5060104@sgi.com> <200807202003.31526.rusty@rustcorp.com.au> <20080723112042.GA16420@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200807202003.31526.rusty@rustcorp.com.au>
+In-Reply-To: <20080723112042.GA16420@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -46,58 +45,32 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> > I wouldn't mind it at all, and since it's almost always calling a 
-> > function that requires a cpumask_t pointer (like the cpu_* ops or 
-> > set_cpus_allowed_ptr) then there shouldn't be too many "pointer 
-> > dereference" penalties.  I'm just always a bit hesitant to make too 
-> > many generic changes since I have only x86 and ia64 machines to test 
-> > with.
+> > The simple version is just a static array of [NR_CPUS] cpumask_t's.  
+> > Do that, with an override for smarter archs?
+> > 
+> > I really REALLY prefer that over the fairly tortuous macros.
 > 
-> The simple version is just a static array of [NR_CPUS] cpumask_t's.  
-> Do that, with an override for smarter archs?
-> 
-> I really REALLY prefer that over the fairly tortuous macros.
+> a fresh commit in -git has exposed the topology.h mess - see the hack 
+> below. We now have diverging versions of topology_core_siblings() 
+> semantics - that sure cannot be right. Mike?
 
-a fresh commit in -git has exposed the topology.h mess - see the hack 
-below. We now have diverging versions of topology_core_siblings() 
-semantics - that sure cannot be right. Mike?
+also i had to do the net/sunrpc/svc.c fixup below.
 
 	Ingo
 
-------->
-commit 695a6b456307455a10059512208e8ed0d376ecd3
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Wed Jul 23 13:19:44 2008 +0200
-
-    topology: work around topology_core_siblings() breakage
-    
-    work around:
-    
-    drivers/net/sfc/efx.c: In function ‘efx_probe_interrupts':
-    drivers/net/sfc/efx.c:845: error: lvalue required as unary ‘&' operand
-    
-    the topology API is a mess right now ...
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/net/sfc/efx.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/net/sfc/efx.c b/drivers/net/sfc/efx.c
-index 45c72ee..1ababfa 100644
---- a/drivers/net/sfc/efx.c
-+++ b/drivers/net/sfc/efx.c
-@@ -842,8 +842,10 @@ static void efx_probe_interrupts(struct efx_nic *efx)
- 			for_each_online_cpu(cpu) {
- 				if (!cpu_isset(cpu, core_mask)) {
- 					++efx->rss_queues;
-+#if 0
- 					cpus_or(core_mask, core_mask,
- 						topology_core_siblings(cpu));
-+#endif
- 				}
- 			}
- 		} else {
-
+diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
+index 5a32cb7..835d274 100644
+--- a/net/sunrpc/svc.c
++++ b/net/sunrpc/svc.c
+@@ -310,7 +310,8 @@ svc_pool_map_set_cpumask(struct task_struct *task, unsigned int pidx)
+ 	switch (m->mode) {
+ 	case SVC_POOL_PERCPU:
+ 	{
+-		set_cpus_allowed_ptr(task, &cpumask_of_cpu(node));
++		cpumask_of_cpu_ptr(cpumask, node);
++		set_cpus_allowed_ptr(task, cpumask);
+ 		break;
+ 	}
+ 	case SVC_POOL_PERNODE:
