@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbYGWUHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbYGWUNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755390AbYGWUHX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 16:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbYGWUHH
+	id S1755461AbYGWUNh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 16:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbYGWUN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 16:07:07 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:18123 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753810AbYGWUHF (ORCPT
+	Wed, 23 Jul 2008 16:13:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43128 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752675AbYGWUN3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 16:07:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=efIjJWXIOwT5ZR9DjNyILNo3R+CKzy4UcGIO571Xdk4Kqxw0jPBDDA49bmD+VoSrcE
-         qZmlsvQ8U7Guiu2xbr7ZeWRB+lQfA7BKosXmNgPjlAA+qEOe0GU1ZbV5NCXeK1+J2MX9
-         qLchI/944+T9PjhlblLwH5Ai9QnEp6L6cU6l0=
-Message-ID: <19f34abd0807231307y191c0ad7tfab4cda57ee88eb@mail.gmail.com>
-Date: Wed, 23 Jul 2008 22:07:04 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       "the arch/x86 maintainers" <x86@kernel.org>
-Subject: recent -git: BUG in free_thread_xstate
-Cc: "Suresh Siddha" <suresh.b.siddha@intel.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 23 Jul 2008 16:13:29 -0400
+Date: Wed, 23 Jul 2008 13:12:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, andi@firstfloor.org,
+       arjan@infradead.org, ebiederm@xmission.com, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: usb debug port early console
+Message-Id: <20080723131218.f03ed672.akpm@linux-foundation.org>
+In-Reply-To: <200807231252.20371.yhlu.kernel@gmail.com>
+References: <200807231252.20371.yhlu.kernel@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 23 Jul 2008 12:52:20 -0700
+Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-I just got this on c010b2f76c3032e48097a6eef291d8593d5d79a6 (-git from
-yesterday):
+> 
+> 
+> based on work from Eric, and add some timeout so don't dead loop when debug device
+> is not installed
+> 
+>
+> ...
+>
+> +static void dbgp_mdelay(int ms)
+> +{
+> +	int i;
+> +	while (ms--) {
+> +		for (i = 0; i < 1000; i++)
+> +			outb(0x1, 0x80);
+> +	}
+> +}
 
-BUG: unable to handle kernel paging request at 00664381
-IP: [<c010b274>] free_thread_xstate+0x4/0x30
-*pde = 00000000
-Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-Pid: 4, comm: ksoftirqd/0 Not tainted (2.6.26-06077-gc010b2f #100)
-EIP: 0060:[<c010b274>] EFLAGS: 00010246 CPU: 0
-EIP is at free_thread_xstate+0x4/0x30
-EAX: 00664001 EBX: f21e0000 ECX: 00000000 EDX: f7872fd0
-ESI: f221df38 EDI: c0833d00 EBP: f7889f4c ESP: f7889f48
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process ksoftirqd/0 (pid: 4, ti=f7888000 task=f7872fd0 task.ti=f7888000)
-Stack: f21e0000 f7889f58 c010b2ad f221cfb0 f7889f64 c01352c9 f221cfb0 f7889f70
-       c0136713 f2b506cc f7889f78 c0138ea7 f7889f90 c01790ff 00000282 c0785aa0
-       00000001 0000000a f7889fac c013cad2 c0838c00 c0838c00 c0838c00 00000246
-Call Trace:
- [<c010b2ad>] ? free_thread_info+0xd/0x20
- [<c01352c9>] ? free_task+0x19/0x30
- [<c0136713>] ? __put_task_struct+0x53/0xb0
- [<c0138ea7>] ? delayed_put_task_struct+0x27/0x30
- [<c01790ff>] ? rcu_process_callbacks+0x6f/0xb0
- [<c013cad2>] ? __do_softirq+0x92/0x110
- [<c013cbf5>] ? do_softirq+0xa5/0xb0
- [<c013cc76>] ? ksoftirqd+0x76/0x180
- [<c013cc00>] ? ksoftirqd+0x0/0x180
- [<c014befc>] ? kthread+0x3c/0x70
- [<c014bec0>] ? kthread+0x0/0x70
- [<c0104d8b>] ? kernel_thread_helper+0x7/0x1c
- =======================
-Code: 04 00 00 00 00 c7 04 24 00 00 04 00 e8 46 84 09 00 a3 dc 07 84 c0 c9 c3 eb
- 0d 90 90 90 90 90 90 90 90 90 90 90 90 90 55 89 e5 53 <8b> 90 80 03 00 00 89 c3
- 85 d2 74 14 a1 dc 07 84 c0 e8 c6 88 09
-EIP: [<c010b274>] free_thread_xstate+0x4/0x30 SS:ESP 0068:f7889f48
-Kernel panic - not syncing: Fatal exception in interrupt
+hm.  port 80 has a guaranteed one microsecond?  Why not
+udelay()/mdelay()/etc?
 
-EIP is at arch/x86/kernel/process.c:36:
+> +static void dbgp_breath(void)
+> +{
+> +	/* Sleep to give the debug port a chance to breathe */
+> +}
 
-        if (tsk->thread.xstate) {
+I expect the compiler will optimise away any calls to this.
 
-This looks related to the recent floating-point changes and maybe RCU,
-adding Ccs.
+>
+> ...
+>
+> --- linux-2.6.orig/arch/x86/kernel/head64.c
+> +++ linux-2.6/arch/x86/kernel/head64.c
+> @@ -72,6 +72,8 @@ static void __init copy_bootdata(char *r
+>  	}
+>  }
+>  
+> +extern void __init enable_debug_console(char *buf);
 
-It seems quite reproducible, so I'll give it a shot with the latest
--git as well.
+Please always pass all patches through scripts/checkpatch.pl.
 
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
