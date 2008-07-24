@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbYGXAXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbYGXAYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756738AbYGXAXg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 20:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbYGXAX2
+	id S1756864AbYGXAYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 20:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbYGXAYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 20:23:28 -0400
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:34299 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754392AbYGXAX1 (ORCPT
+	Wed, 23 Jul 2008 20:24:12 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:47123 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754279AbYGXAYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 20:23:27 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAFRnh0iWZWaT/2dsb2JhbACBWrFJ
-X-IronPort-AV: E=Sophos;i="4.31,241,1215354600"; 
-   d="scan'208";a="165530741"
-Date: Thu, 24 Jul 2008 09:53:24 +0930
-From: Kevin Shanahan <kmshanah@disenchant.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: libata timeout, MCE and kernel panic
-Message-ID: <20080724002324.GK3930@cubit>
-References: <20080723233509.GJ3930@cubit> <20080724004928.226f892a@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080724004928.226f892a@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 23 Jul 2008 20:24:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=U1z/n5oN3meGzqB+zifQ57q3SRWqrr+a4Qm7/du1YIKuebRHZYoVtVGh9OvZjUzf52
+         L2Xo6r9Cpyp/7UaA1qfM/QrLkvdkkyiSoIQowAGmN1wxaY6aBmO+BQcqosgIq0rwzIlJ
+         Gb2qREWFKErxY5lRKHbMcRKATYUlVbISCkcB8=
+Subject: Re: [PATCH] cifs: avoid mixing bool and le16
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Steve French <smfrench@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <524f69650807231719y33e96d02y7b04d1115620aa1d@mail.gmail.com>
+References: <1216857138.30386.33.camel@brick>
+	 <524f69650807231719y33e96d02y7b04d1115620aa1d@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 23 Jul 2008 17:24:11 -0700
+Message-Id: <1216859051.30386.40.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 12:49:28AM +0100, Alan Cox wrote:
-> > recovery was required. It seems the journal recovery combined with the
-> > md device reconstruction was enough to cause an ata command
-> > timeout. After that I saw several MCEs and the kernel paniced.
+On Wed, 2008-07-23 at 19:19 -0500, Steve French wrote:
+> Seems like a cast to bool or an "if ...else" would be clearer than using !!
+> By the way I don't see this warning - is it a newer compiler warning?
 > 
-> An MCE is amachine check, and indicates the hardware detected a problem.
-> Given the sequence of heavy I/O, followed by a timeout and the processors
-> detecting inconsistencies - is your PSU sufficient ?
 
-Hmm, you may be on to something there. This machine was designed with
-two disksoriginally, but due to a hardware failure on another machine
-it's actually running with 5 (off a 450W redundant PSU). I have bigger
-replacement PSUs on the way, so here's hoping that resolves it. Thanks
-for the reply.
+Sorry, sometimes I forget to say sparse warning.  This is with
+__CHECK_ENDIAN__ as well.
 
-Regards,
-Kevin.
+Would you prefer:
+	if (pSMBr->hdr.Flags2 & SMBFLG2_UNICODE)
+		is_unicode = true;
+	else
+		is_unicode = false;
+
+Instead?
+
+Harvey
+
