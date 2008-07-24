@@ -1,168 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbYGXOk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751643AbYGXOmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755733AbYGXOk1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYGXOkS
+	id S1751643AbYGXOmh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:42:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbYGXOmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:40:18 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:24820 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbYGXOkR (ORCPT
+	Thu, 24 Jul 2008 10:42:16 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46432 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751952AbYGXOmO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:40:17 -0400
-X-BigFish: VPS-17(zz1432R98dR936eT62a3L1805Mzz10d3izzz32i6bh87il43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K4IM2L-02-13Y-01
-Date: Thu, 24 Jul 2008 16:39:53 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Barry Kasindorf <barry.kasindorf@amd.com>, Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>, Jason Yeh <jason.yeh@amd.com>
-Subject: Re: [PATCH 11/24] x86/oprofile: Add IBS support for AMD CPUs,
-	model specific code
-Message-ID: <20080724143953.GS17134@erda.amd.com>
-References: <1216753748-11261-1-git-send-email-robert.richter@amd.com> <1216753748-11261-12-git-send-email-robert.richter@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <1216753748-11261-12-git-send-email-robert.richter@amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 24 Jul 2008 14:40:01.0059 (UTC) FILETIME=[2707B730:01C8ED9B]
+	Thu, 24 Jul 2008 10:42:14 -0400
+Message-Id: <20080724141531.178291263@chello.nl>
+References: <20080724140042.408642539@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Thu, 24 Jul 2008 16:01:08 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>
+Subject: [PATCH 26/30] nfs: remove mempools
+Content-Disposition: inline; filename=nfs-no-mempool.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22.07.08 21:08:55, Robert Richter wrote:
-> From: Barry Kasindorf <barry.kasindorf@amd.com>
-> 
-> This patchset supports the new profiling hardware available in the
-> latest AMD CPUs in the oProfile driver.
-> 
-> Signed-off-by: Barry Kasindorf <barry.kasindorf@amd.com>
-> Signed-off-by: Robert Richter <robert.richter@amd.com>
-> ---
->  arch/x86/oprofile/op_model_athlon.c |  257 +++++++++++++++++++++++++++++++++++
->  1 files changed, 257 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/oprofile/op_model_athlon.c b/arch/x86/oprofile/op_model_athlon.c
-> index 40ecb02..229e0b4 100644
+With the introduction of the shared dirty page accounting in .19, NFS should
+not be able to surpise the VM with all dirty pages. Thus it should always be
+able to free some memory. Hence no more need for mempools.
 
-[...]
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ fs/nfs/read.c  |   15 +++------------
+ fs/nfs/write.c |   27 +++++----------------------
+ 2 files changed, 8 insertions(+), 34 deletions(-)
 
-> @@ -181,6 +345,99 @@ static void op_amd_shutdown(struct op_msrs const * const msrs)
->  	}
->  }
->  
-> +static inline void apic_init_ibs_nmi_per_cpu(void *arg)
-> +{
-> +	setup_APIC_eilvt_ibs(0, APIC_EILVT_MSG_NMI, 0);
-> +}
-> +
-> +static inline void apic_clear_ibs_nmi_per_cpu(void *arg)
-> +{
-> +	setup_APIC_eilvt_ibs(0, APIC_EILVT_MSG_FIX, 1);
-> +}
-> +
-> +/*
-> + * initialize the APIC for the IBS interrupts
-> + * if needed on AMD Family10h rev B0 and later
-> + */
-> +static void setup_ibs(void)
-> +{
-> +	struct pci_dev *gh_device = NULL;
-> +	u32 low, high;
-> +	u8 vector;
-> +
-> +	ibs_allowed = boot_cpu_has(X86_FEATURE_IBS);
-> +
-> +	if (!ibs_allowed)
-> +		return;
-> +
-> +	/* This gets the APIC_EILVT_LVTOFF_IBS value */
-> +	vector = setup_APIC_eilvt_ibs(0, 0, 1);
-> +
-> +	/*see if the IBS control register is already set correctly*/
-> +	/*remove this when we know for sure it is done
-> +	  in the kernel init*/
-> +	rdmsr(MSR_AMD64_IBSCTL, low, high);
-> +	if ((low & (IBS_CTL_LVT_OFFSET_VALID_BIT | vector)) !=
-> +		(IBS_CTL_LVT_OFFSET_VALID_BIT | vector)) {
-> +
-> +		/**** Be sure to run loop until NULL is returned to
-> +		decrement reference count on any pci_dev structures
-> +		returned ****/
-> +		while ((gh_device = pci_get_device(PCI_VENDOR_ID_AMD,
-> +			PCI_DEVICE_ID_AMD_10H_NB_MISC, gh_device))
-> +			!= NULL) {
-> +			/* This code may change if we can find a proper
-> +			* way to get at the PCI extended config space */
-> +			pci_write_config_dword(
-> +				gh_device, IBS_LVT_OFFSET_PCI,
-> +				(vector | IBS_CTL_LVT_OFFSET_VALID_BIT));
-> +		}
-> +	}
-> +	on_each_cpu(apic_init_ibs_nmi_per_cpu, NULL, 1, 1);
-> +}
-> +
-> +
-> +/*
-> + * unitialize the APIC for the IBS interrupts if needed on AMD Family10h
-> + * rev B0 and later */
-> +static void clear_ibs_nmi(void)
-> +{
-> +	if (ibs_allowed)
-> +		on_each_cpu(apic_clear_ibs_nmi_per_cpu, NULL, 1, 1);
-> +}
-> +
-> +static void setup_ibs_files(struct super_block *sb, struct dentry *root)
-> +{
-> +	char buf[12];
-> +	struct dentry *dir;
-> +
-> +	if (!ibs_allowed)
-> +		return;
-> +
-> +	/* setup some reasonable defaults */
-> +	ibs_config.max_cnt_fetch = 250000;
-> +	ibs_config.fetch_enabled = 0;
-> +	ibs_config.max_cnt_op = 250000;
-> +	ibs_config.op_enabled = 0;
-> +	ibs_config.dispatched_ops = 1;
-> +	snprintf(buf,  sizeof(buf), "ibs_fetch");
-> +	dir = oprofilefs_mkdir(sb, root, buf);
-> +	oprofilefs_create_ulong(sb, dir, "rand_enable",
-> +				&ibs_config.rand_en);
-> +	oprofilefs_create_ulong(sb, dir, "enable",
-> +		&ibs_config.fetch_enabled);
-> +	oprofilefs_create_ulong(sb, dir, "max_count",
-> +		&ibs_config.max_cnt_fetch);
-> +	snprintf(buf,  sizeof(buf), "ibs_uops");
-
-This should be renamed to "ibs_op" to be close to the register
-specification in the BKDG.
-
--Robert
-
-> +	dir = oprofilefs_mkdir(sb, root, buf);
-> +	oprofilefs_create_ulong(sb, dir, "enable",
-> +		&ibs_config.op_enabled);
-> +	oprofilefs_create_ulong(sb, dir, "max_count",
-> +		&ibs_config.max_cnt_op);
-> +	oprofilefs_create_ulong(sb, dir, "dispatched_ops",
-> +		&ibs_config.dispatched_ops);
-> +}
-> +
->  static int op_amd_init(struct oprofile_operations *ops)
->  {
->  	return 0;
-> -- 
-> 1.5.5.4
-> 
+Index: linux-2.6/fs/nfs/read.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/read.c
++++ linux-2.6/fs/nfs/read.c
+@@ -33,13 +33,10 @@ static const struct rpc_call_ops nfs_rea
+ static const struct rpc_call_ops nfs_read_full_ops;
+ 
+ static struct kmem_cache *nfs_rdata_cachep;
+-static mempool_t *nfs_rdata_mempool;
+-
+-#define MIN_POOL_READ	(32)
+ 
+ struct nfs_read_data *nfs_readdata_alloc(unsigned int pagecount)
+ {
+-	struct nfs_read_data *p = mempool_alloc(nfs_rdata_mempool, GFP_NOFS);
++	struct nfs_read_data *p = kmem_cache_alloc(nfs_rdata_cachep, GFP_NOFS);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -50,7 +47,7 @@ struct nfs_read_data *nfs_readdata_alloc
+ 		else {
+ 			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
+ 			if (!p->pagevec) {
+-				mempool_free(p, nfs_rdata_mempool);
++				kmem_cache_free(nfs_rdata_cachep, p);
+ 				p = NULL;
+ 			}
+ 		}
+@@ -62,7 +59,7 @@ static void nfs_readdata_free(struct nfs
+ {
+ 	if (p && (p->pagevec != &p->page_array[0]))
+ 		kfree(p->pagevec);
+-	mempool_free(p, nfs_rdata_mempool);
++	kmem_cache_free(nfs_rdata_cachep, p);
+ }
+ 
+ void nfs_readdata_release(void *data)
+@@ -614,16 +611,10 @@ int __init nfs_init_readpagecache(void)
+ 	if (nfs_rdata_cachep == NULL)
+ 		return -ENOMEM;
+ 
+-	nfs_rdata_mempool = mempool_create_slab_pool(MIN_POOL_READ,
+-						     nfs_rdata_cachep);
+-	if (nfs_rdata_mempool == NULL)
+-		return -ENOMEM;
+-
+ 	return 0;
+ }
+ 
+ void nfs_destroy_readpagecache(void)
+ {
+-	mempool_destroy(nfs_rdata_mempool);
+ 	kmem_cache_destroy(nfs_rdata_cachep);
+ }
+Index: linux-2.6/fs/nfs/write.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/write.c
++++ linux-2.6/fs/nfs/write.c
+@@ -28,9 +28,6 @@
+ 
+ #define NFSDBG_FACILITY		NFSDBG_PAGECACHE
+ 
+-#define MIN_POOL_WRITE		(32)
+-#define MIN_POOL_COMMIT		(4)
+-
+ /*
+  * Local function declarations
+  */
+@@ -45,12 +42,10 @@ static const struct rpc_call_ops nfs_wri
+ static const struct rpc_call_ops nfs_commit_ops;
+ 
+ static struct kmem_cache *nfs_wdata_cachep;
+-static mempool_t *nfs_wdata_mempool;
+-static mempool_t *nfs_commit_mempool;
+ 
+ struct nfs_write_data *nfs_commitdata_alloc(void)
+ {
+-	struct nfs_write_data *p = mempool_alloc(nfs_commit_mempool, GFP_NOFS);
++	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -63,12 +58,12 @@ void nfs_commit_free(struct nfs_write_da
+ {
+ 	if (p && (p->pagevec != &p->page_array[0]))
+ 		kfree(p->pagevec);
+-	mempool_free(p, nfs_commit_mempool);
++	kmem_cache_free(nfs_wdata_cachep, p);
+ }
+ 
+ struct nfs_write_data *nfs_writedata_alloc(unsigned int pagecount)
+ {
+-	struct nfs_write_data *p = mempool_alloc(nfs_wdata_mempool, GFP_NOFS);
++	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -79,7 +74,7 @@ struct nfs_write_data *nfs_writedata_all
+ 		else {
+ 			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
+ 			if (!p->pagevec) {
+-				mempool_free(p, nfs_wdata_mempool);
++				kmem_cache_free(nfs_wdata_cachep, p);
+ 				p = NULL;
+ 			}
+ 		}
+@@ -91,7 +86,7 @@ static void nfs_writedata_free(struct nf
+ {
+ 	if (p && (p->pagevec != &p->page_array[0]))
+ 		kfree(p->pagevec);
+-	mempool_free(p, nfs_wdata_mempool);
++	kmem_cache_free(nfs_wdata_cachep, p);
+ }
+ 
+ void nfs_writedata_release(void *data)
+@@ -1552,16 +1547,6 @@ int __init nfs_init_writepagecache(void)
+ 	if (nfs_wdata_cachep == NULL)
+ 		return -ENOMEM;
+ 
+-	nfs_wdata_mempool = mempool_create_slab_pool(MIN_POOL_WRITE,
+-						     nfs_wdata_cachep);
+-	if (nfs_wdata_mempool == NULL)
+-		return -ENOMEM;
+-
+-	nfs_commit_mempool = mempool_create_slab_pool(MIN_POOL_COMMIT,
+-						      nfs_wdata_cachep);
+-	if (nfs_commit_mempool == NULL)
+-		return -ENOMEM;
+-
+ 	/*
+ 	 * NFS congestion size, scale with available memory.
+ 	 *
+@@ -1587,8 +1572,6 @@ int __init nfs_init_writepagecache(void)
+ 
+ void nfs_destroy_writepagecache(void)
+ {
+-	mempool_destroy(nfs_commit_mempool);
+-	mempool_destroy(nfs_wdata_mempool);
+ 	kmem_cache_destroy(nfs_wdata_cachep);
+ }
+ 
 
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
 
