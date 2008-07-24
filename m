@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbYGXN6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757157AbYGXN6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755636AbYGXN6H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 09:58:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbYGXN54
+	id S1757157AbYGXN6Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 09:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbYGXN6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 09:57:56 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:65286 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752899AbYGXN5z (ORCPT
+	Thu, 24 Jul 2008 09:58:07 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47314 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755636AbYGXN6F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 09:57:55 -0400
-Date: Thu, 24 Jul 2008 09:57:53 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [patch 08/17] LTTng instrumentation - kernel
-In-Reply-To: <20080715222747.761260243@polymtl.ca>
-Message-ID: <Pine.LNX.4.58.0807240956350.14946@gandalf.stny.rr.com>
-References: <20080715222604.331269462@polymtl.ca> <20080715222747.761260243@polymtl.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 24 Jul 2008 09:58:05 -0400
+Date: Thu, 24 Jul 2008 06:57:56 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH] Input: Enable WM97xx touchscreen sub-drivers by default
+Message-ID: <20080724065756.55954c35@infradead.org>
+In-Reply-To: <1216906867-5058-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1216905308-4723-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<1216906867-5058-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 24 Jul 2008 14:41:07 +0100
+Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
+
+> Currently the support for each WM97xx touchscreen model is compiled
+> out by default, meaning that the default configuration when the
+> driver is built is for it to support no hardware.  This is suboptimal
+> and leads to problems like distribution kernels shipping a
+> non-functional driver.
 
 
-On Tue, 15 Jul 2008, Mathieu Desnoyers wrote:
->
->  /*
->   * Low level drivers may need that to know if they can schedule in
-> @@ -601,6 +603,7 @@ asmlinkage int printk(const char *fmt, .
->  	int r;
->
->  	va_start(args, fmt);
-> +	trace_kernel_printk(__builtin_return_address(0));
+this isn't normally how things are done; Linux is on a "off unless
+selected or unless it breaks booting" policy nowadays...
 
-BTW, ftrace.h has macros that let you use CALLER_ADDR0 for
-__builtin_return_address. It also converts it from a pointer to a long,
-but makes the code look prettier.
+(and distributions don't follow "default" anyway, so don't worry about
+that part)
 
-
->  	r = vprintk(fmt, args);
->  	va_end(args);
->
-> @@ -677,6 +680,9 @@ asmlinkage int vprintk(const char *fmt,
->  	raw_local_irq_save(flags);
->  	this_cpu = smp_processor_id();
->
-> +	trace_kernel_vprintk(__builtin_return_address(0),
-> +		printk_buf, printed_len);
-> +
->  	/*
->  	 * Ouch, printk recursed into itself!
->  	 */
-
--- Steve
-
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
