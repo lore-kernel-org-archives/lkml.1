@@ -1,97 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbYGXSFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbYGXSJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbYGXSFj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 14:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbYGXSFc
+	id S1754152AbYGXSJx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 14:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYGXSJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 14:05:32 -0400
-Received: from mga14.intel.com ([143.182.124.37]:2894 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751815AbYGXSFb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 14:05:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,247,1215414000"; 
-   d="scan'208";a="600703756"
-Date: Thu, 24 Jul 2008 11:04:29 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: x86@kernel.org, andi@firstfloor.org, torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: [patch] x64, fpu: fix possible FPU leakage in error conditions
-Message-ID: <20080724180429.GI14380@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	Thu, 24 Jul 2008 14:09:41 -0400
+Received: from bizon.gios.gov.pl ([212.244.124.8]:56401 "EHLO
+	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752023AbYGXSJk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 14:09:40 -0400
+Date: Thu, 24 Jul 2008 20:00:26 +0200 (CEST)
+From: Krzysztof Oledzki <ole@ans.pl>
+X-X-Sender: ole@bizon.gios.gov.pl
+To: Ingo Molnar <mingo@elte.hu>
+cc: Patrick McHardy <kaber@trash.net>, David Miller <davem@davemloft.net>,
+       herbert@gondor.apana.org.au, w@1wt.eu, davidn@davidnewall.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
+ pointer dereference
+In-Reply-To: <20080724153248.GA25056@elte.hu>
+Message-ID: <Pine.LNX.4.64.0807241944450.1907@bizon.gios.gov.pl>
+References: <20080724060448.GA10203@elte.hu> <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>
+ <20080724.022259.113079007.davem@davemloft.net> <20080724093411.GA12001@elte.hu>
+ <20080724115625.GA23994@elte.hu> <20080724115957.GA25701@elte.hu>
+ <20080724142353.GA400@elte.hu> <48889E57.2000007@trash.net>
+ <20080724153248.GA25056@elte.hu>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-187430788-385197319-1216922426=:1907"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-restore_fpu_checking() calls init_fpu() in error conditions. init_fpu()
-just touches the FPU state in the thread struct and doesn't do anything
-with the live FPU registers. While this is wrong(as our main intention is
-to init the live FPU registers aswell), this was benign
-before the commit 92d140e21f1ce8cf99320afbbcad73879128e6dc.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Post commit 92d140e21f1ce8cf99320afbbcad73879128e6dc, live FPU registers
-may not belong to this process at this error scenario.
+---187430788-385197319-1216922426=:1907
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-In the error condition for restore_fpu_checking() (especially during
-the 64bit signal return), we are doing init_fpu(), which saves the live
-FPU register state (possibly belonging to some other process context) into the
-thread struct (through unlazy_fpu() in init_fpu()). This is wrong and can leak
-the FPU data.
 
-Remove the unlazy_fpu() from the init_fpu(). init_fpu() will now always
-init the FPU data in the thread struct. For the error conditions in
-restore_fpu_checking(), restore the initialized FPU data from the thread
-struct.
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
+On Thu, 24 Jul 2008, Ingo Molnar wrote:
 
-diff --git a/arch/x86/kernel/i387.c b/arch/x86/kernel/i387.c
-index eb9ddd8..f5c2161 100644
---- a/arch/x86/kernel/i387.c
-+++ b/arch/x86/kernel/i387.c
-@@ -98,12 +98,6 @@ void __cpuinit fpu_init(void)
-  */
- int init_fpu(struct task_struct *tsk)
- {
--	if (tsk_used_math(tsk)) {
--		if (HAVE_HWFP && tsk == current)
--			unlazy_fpu(tsk);
--		return 0;
--	}
--
- 	/*
- 	 * Memory allocation at the first usage of the FPU and other state.
- 	 */
-diff --git a/include/asm-x86/i387.h b/include/asm-x86/i387.h
-index 37672f7..38af0ed 100644
---- a/include/asm-x86/i387.h
-+++ b/include/asm-x86/i387.h
-@@ -45,6 +45,12 @@ static inline void tolerant_fwait(void)
- 		     _ASM_EXTABLE(1b, 2b));
- }
- 
-+static inline void restore_fpu(struct i387_fxsave_struct *fx)
-+{
-+	__asm__ __volatile__("rex64/fxrstor (%[fx])"
-+			     :: [fx] "cdaSDb" (fx), "m" (*fx));
-+}
-+
- static inline int restore_fpu_checking(struct i387_fxsave_struct *fx)
- {
- 	int err;
-@@ -62,8 +68,10 @@ static inline int restore_fpu_checking(struct i387_fxsave_struct *fx)
- #else
- 		     : [fx] "cdaSDb" (fx), "m" (*fx), "0" (0));
- #endif
--	if (unlikely(err))
-+	if (unlikely(err)) {
- 		init_fpu(current);
-+		restore_fpu(&current->thread.xstate->fxsave);
-+	}
- 	return err;
- }
- 
+>
+> * Patrick McHardy <kaber@trash.net> wrote:
+>
+>> Ingo Molnar wrote:
+>>> Then i tried both suggested fix patches Patrick sent me (a suggested
+>>> revert and an netfilter/RCU use-after-free fix), but none of them
+>>> solved the crash.
+>>
+>> Just to make sure - the "netfilter/RCU use-after-free fix" was the
+>> patch from Pekka?
+>
+> yes. You can see it in tip/out-of-tree:
+>
+>   http://people.redhat.com/mingo/tip.git/README
+>
+>>> Thus i finally arrived to:
+>>>
+>>>  # good: [ae6134bd] hdlcdrv: Fix CRC calculation.
+>>>  # bad:  [5547cd0d] netfilter: nf_conntrack_sctp: fix sparse warnings
+>>>  # bad:  [280763c6] netfilter: xt_time: fix time's time_mt()'s use of
+>>>  # good: [07a7c10b] netlink: add NLA_PUT_BE64 macro
+>>>  # bad:  [58401573] netfilter: accounting rework: ct_extend + 64bit co
+>>>
+>>> | 584015727a3b88b46602b20077b46cd04f8b4ab3 is first bad commit
+>>> | commit 584015727a3b88b46602b20077b46cd04f8b4ab3
+>>> | Author: Krzysztof Piotr Oledzki <ole@ans.pl>
+>>> | AuthorDate: Mon Jul 21 10:01:34 2008 -0700
+>>> | Commit:     David S. Miller <davem@davemloft.net>
+>>> | CommitDate: Mon Jul 21 10:10:58 2008 -0700
+>>> |
+>>> |    netfilter: accounting rework: ct_extend + 64bit counters (v4)
+>>> [...]
+>>> |     Signed-off-by: Krzysztof Piotr Oledzki <ole@ans.pl>
+>>> |     Signed-off-by: Patrick McHardy <kaber@trash.net>
+>>> |     Signed-off-by: David S. Miller <davem@davemloft.net>
+>>>
+>>> Which i double-checked by reverting that commit from -git as well and
+>>> that solved the crash. Find the tested reverter patch below.
+>>
+>> Thats odd. I don't think anything is wrong with that patch itself, its
+>> more likely that its triggering a bug in ct_extend. You config has a
+>> few helper enabled (FTP, H.323, TFTP) and the crash is when trying to
+>> call the helper functions. Did you actually have traffic of one of
+>> these protocols?
+>
+> no, that's not likely - it's a default distro bootup.
+
+The commit makes ct_extend area to be used *very* frequently. Could you=20
+try to boot your kernel with nf_conntrack.acct=3D0 to disable accounting?
+Does it help?
+
+Best regards,
+
+ =09=09=09=09Krzysztof Ol=EAdzki
+---187430788-385197319-1216922426=:1907--
