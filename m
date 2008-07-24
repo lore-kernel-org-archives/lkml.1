@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760388AbYGXO4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760269AbYGXOzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760388AbYGXO4A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760228AbYGXOzj
+	id S1760269AbYGXOzo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbYGXOzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:55:39 -0400
-Received: from mail.windriver.com ([147.11.1.11]:33795 "EHLO mail.wrs.com"
+	Thu, 24 Jul 2008 10:55:09 -0400
+Received: from sh.osrg.net ([192.16.179.4]:55286 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760221AbYGXOzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:55:38 -0400
-Message-ID: <488897E4.8070806@windriver.com>
-Date: Thu, 24 Jul 2008 09:55:32 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Francis Moreau <francis.moro@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: KGDB fails to pass selft tests on x86-64 (v2.6.26)
-References: <38b2ab8a0807240624v7ec90c50n8105f830d10dddd@mail.gmail.com> <38b2ab8a0807240708j7d6782b7te6123fdd7416ec95@mail.gmail.com> <488891F2.9020509@windriver.com> <19f34abd0807240738h7ac5e716rcfa39d528b07870f@mail.gmail.com>
-In-Reply-To: <19f34abd0807240738h7ac5e716rcfa39d528b07870f@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	id S1758442AbYGXOzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 10:55:08 -0400
+Date: Thu, 24 Jul 2008 23:40:30 +0900
+To: prarit@redhat.com
+Cc: fujita.tomonori@lab.ntt.co.jp, joro@8bytes.org,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       jbarnes@virtuousgeek.org, ed.pollard@ibm.com, epollard@redhat.com
+Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4888925E.8050504@redhat.com>
+References: <20080724123755.GP31439@8bytes.org>
+	<20080724223309C.fujita.tomonori@lab.ntt.co.jp>
+	<4888925E.8050504@redhat.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jul 2008 14:55:34.0306 (UTC) FILETIME=[5349E820:01C8ED9D]
+Message-Id: <20080724234111I.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> On Thu, Jul 24, 2008 at 4:30 PM, Jason Wessel
-> <jason.wessel@windriver.com> wrote:
->   
->> Also, if you plan to use software breakpoints, please make sure to turn
->> off CONFIG_DEBUG_RODATA, else they will not work.   This is a regression
->> which will is on my list of things to take a look at, as time permits.
->>     
->
-> I had a couple of kernels hang during single-stepping self-tests (I
-> think), where it reached 500 and 900 tests respectively before it hung
-> hard (NMI watchdog enabled, but not triggering). Is this related to
-> the RODATA thing?
->
-> This was with a recent (post-v2.6.26) kernel on a real P4.
->
->
->   
+On Thu, 24 Jul 2008 10:31:58 -0400
+Prarit Bhargava <prarit@redhat.com> wrote:
 
-It is not likely that CONFIG_DEBUG_RODATA can have any impact because
-the boot test occurs before the text sections are marked read-only.  A
-hang in this section indicates a conflict where something is spinning
-for a lock in the NMI handler, or the NMI handler re-entered and tried
-to acquire another lock. 
+> 
+> >> But I think Prarit is right with this change. If the interface defines
+> >> this behavior the IOMMU drivers have to implement it. I am just
+> >> wondering that the problem never showed up before. The GART driver is a
+> >> few years old now.
+> >>     
+> >
+> > Yeah, I'm not against fixing IOMMUs to make alloc_consistent return
+> > the reqeuested size aligned memory. My point is that it's not likely
+> > to fix anything. Even with the patch, we hit the above problem because
+> > as I explained, the root cause of the problem is the boundary issue;
+> > we need to fix pci-dma.c
+> >
+> >   
+> 
+> Sorry, I misquoted code up there and was looking for a clear example of 
+> where this would happen.  The issue I'm trying to resolve didn't happen 
+> on the skge -- it was just a convenient piece of code to examine and 
+> point out ;)
 
-In the 2.6.26 time frame I found and fixed at least one defect around
-updating the clock while in the NMI which required that you not do it
-from the NMI context.  It sounds as if there is yet another problem
-along these lines, and of course it is a timing race...
+So please tell us what driver you hit the bug with. Can you give us
+the details?
 
-Jason.
+Thanks,
