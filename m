@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbYGXIV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbYGXI0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbYGXIV2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 04:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbYGXIVQ
+	id S1753368AbYGXI0W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 04:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbYGXI0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 04:21:16 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47920 "EHLO mx1.suse.de"
+	Thu, 24 Jul 2008 04:26:10 -0400
+Received: from 1wt.eu ([62.212.114.60]:1949 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751040AbYGXIVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 04:21:15 -0400
-Date: Thu, 24 Jul 2008 10:21:12 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: "jidong xiao" <jidong.xiao@gmail.com>
-Cc: "Vivek Goyal" <vgoyal@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Crashkernel memory reservation fails with 2.6.26
-Message-ID: <20080724102112.3c15a13f@kopernikus.site>
-In-Reply-To: <20080724101916.61dfa086@kopernikus.site>
-References: <4104961b0807232012r712bd456n26db52bc946efa9a@mail.gmail.com>
-	<20080724101916.61dfa086@kopernikus.site>
-Organization: SUSE LINUX Products GmbH
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+	id S1751307AbYGXI0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 04:26:08 -0400
+Date: Thu, 24 Jul 2008 10:24:53 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Ingo Molnar <mingo@elte.hu>, davem@davemloft.net, davidn@davidnewall.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stefanr@s5r6.in-berlin.de, rjw@sisk.pl
+Subject: Re: [TCP bug, regression] stuck distcc connections in latest -git
+Message-ID: <20080724082453.GA17917@1wt.eu>
+References: <20080724063242.GA9051@elte.hu> <E1KLvds-0001Mc-00@gondolin.me.apana.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1KLvds-0001Mc-00@gondolin.me.apana.org.au>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Bernhard Walle <bwalle@suse.de> [2008-07-24 10:19]:
->
-> * "jidong xiao" <jidong.xiao@gmail.com> [2008-07-24 11:12]:
-> >
-> > Hi,Bernhard/Vivek,
-> > 	I was facing the same issue as raised by Sachin sometime back, see below link:
+On Thu, Jul 24, 2008 at 03:53:40PM +0800, Herbert Xu wrote:
+> Ingo Molnar <mingo@elte.hu> wrote:
 > > 
-> > http://lkml.org/lkml/2008/2/4/193
-> > 
-> > The difference is I am using kernel 2.6.26 while Sachin was using
-> > 2.6.24-rc8-mm1.
-> > 
-> > I saw you were discussing this issue but is there any result?Any
-> > workaround for me?
+> > here's a longer log from the server, with sequences, flags, etc:
 > 
-> Please test http://article.gmane.org/gmane.linux.kernel.kexec/1883.
+> Sorry but which is the server, phoenix?
+> 
+> > 08:28:48.029057 IP (tos 0x0, ttl 64, id 27412, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x8316 (correct), 2272574194:2272574194(0) ack 234561256 win 65535
+> > 08:30:48.049167 IP (tos 0x0, ttl 64, id 14022, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234561256:234561792(536) ack 2272574194 win 5840
+> > 08:30:48.049223 IP (tos 0x0, ttl 64, id 27413, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x80fe (correct), 2272574194:2272574194(0) ack 234561792 win 65535
+> > 08:30:48.049341 IP (tos 0x0, ttl 64, id 14023, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234626648:234627184(536) ack 2272574194 win 5840
+> > 08:30:48.049348 IP (tos 0x0, ttl 64, id 14024, offset 0, flags [DF], proto TCP (6), length 183) dione.39201 > phoenix.distcc: . 234627184:234627327(143) ack 2272574194 win 5840
+> > 08:30:48.049354 IP (tos 0x0, ttl 64, id 27414, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x80fe (correct), 2272574194:2272574194(0) ack 234561792 win 65535
+> > 08:30:48.049359 IP (tos 0x0, ttl 64, id 27415, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x80fe (correct), 2272574194:2272574194(0) ack 234561792 win 65535
+> 
+> No further traffic is generated for this connection?
+> 
+> For a problem like this, you really need to dump on both sides
+> to get the full picture.  Otherwise it's difficult to tell why
+> we have a gap after 234561792 which is never filled in by dione.
 
-Which is http://download.gmane.org/gmane.linux.kernel.kexec/1883/1884
-as plain text, BTW.
+Given the TTLs, it looks to me like both are on the same LAN. Also,
+234561792 is the window trail it seems.
 
+> BTW any reason why you appear to have SACK off?
 
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
+and also MSS is at the lowest value (536), maybe because of numerous
+losses on large segments ?
+
+Willy
+
