@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbYGXMRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbYGXMSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756012AbYGXMRV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYGXMRN
+	id S1756821AbYGXMSX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYGXMSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:17:13 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:57643 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751339AbYGXMRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 08:17:12 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 Jul 2008 08:18:14 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:35283 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753128AbYGXMSN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 08:18:13 -0400
+Date: Thu, 24 Jul 2008 14:18:39 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linux-rt <linux-rt-users@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Michael Ellerman <michael@ellerman.id.au>,
+       Tim Chavez <tinytim@us.ibm.com>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>,
+       Gilles Carry <Gilles.Carry@ext.bull.net>
+Subject: Re: [PATCH 2/2][RT] powerpc - Make the irq reverse mapping radix
+ tree lockless
+Message-ID: <20080724141839.477de30b@bull.net>
+In-Reply-To: <200807242111.35338.nickpiggin@yahoo.com.au>
+References: <20080724122352.3bc76bda@bull.net>
+	<20080724125044.53b604cb@bull.net>
+	<200807242111.35338.nickpiggin@yahoo.com.au>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18568.29372.218800.510498@harpo.it.uu.se>
-Date: Thu, 24 Jul 2008 14:17:00 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net
-Subject: Re: GPIO: Add generic gpio_to_irq call.
-In-Reply-To: <20080724114627.574586848@fluff.org.uk>
-References: <20080724114627.574586848@fluff.org.uk>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Dooks writes:
- > Add gpio_to_irq() implementation allowing the
- > gpio_chip registration to also specify an function
- > to map GPIO offsets into IRQs.
- > 
- > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
- > 
- > Index: linux-2.6.26-quilt3/drivers/gpio/gpiolib.c
- > ===================================================================
- > --- linux-2.6.26-quilt3.orig/drivers/gpio/gpiolib.c	2008-07-18 13:50:32.000000000 +0100
- > +++ linux-2.6.26-quilt3/drivers/gpio/gpiolib.c	2008-07-22 15:20:26.000000000 +0100
- > @@ -339,6 +339,36 @@ const char *gpiochip_is_requested(struct
- >  }
- >  EXPORT_SYMBOL_GPL(gpiochip_is_requested);
- >  
- > +int __gpio_to_irq(unsigned gpio)
- > +{
- > +	struct gpio_chip	*chip;
- > +	struct gpio_desc	*desc = &gpio_desc[gpio];
- > +	unsigned long		flags;
- > +	int			status = -EINVAL;
- > +
- > +	spin_lock_irqsave(&gpio_lock, flags);
- > +
- > +	if (!gpio_is_valid(gpio))
- > +		goto fail;
+On Thu, 24 Jul 2008 21:11:34 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-Please move the &gpio_desc[gpio] expression after the gpio_is_valid(gpio)
-test. Otherwise you risk violating C's pointer rules if the gpio is invalid.
+> On Thursday 24 July 2008 20:50, Sebastien Dugue wrote:
+> > From: Sebastien Dugue <sebastien.dugue@bull.net>
+> > Date: Tue, 22 Jul 2008 11:56:41 +0200
+> > Subject: [PATCH][RT] powerpc - Make the irq reverse mapping radix tree
+> > lockless
+> >
+> >   The radix tree used by interrupt controllers for their irq reverse
+> > mapping (currently only the XICS found on pSeries) have a complex locking
+> > scheme dating back to before the advent of the concurrent radix tree on
+> > preempt-rt.
+> >
+> >   Take advantage of this and of the fact that the items of the tree are
+> > pointers to a static array (irq_map) elements which can never go under us
+> > to simplify the locking.
+> >
+> >   Concurrency between readers and writers are handled by the intrinsic
+> > properties of the concurrent radix tree. Concurrency between the tree
+> > initialization which is done asynchronously with readers and writers access
+> > is handled via an atomic variable (revmap_trees_allocated) set when the
+> > tree has been initialized and checked before any reader or writer access
+> > just like we used to check for tree.gfp_mask != 0 before.
+> 
+> Hmm, RCU radix tree is in mainline too for quite a while. I thought
+> Ben had already converted this code over ages ago...
 
- > +
- > +	chip = desc->chip;
- > +	if (!chip || !chip->to_irq)
- > +		goto fail;
- > +
- > +	gpio -= chip->base;
- > +	if (gpio >= chip->ngpio)
- > +		goto fail;
- > +
- > +	status = chip->to_irq(chip, gpio);
- > +
- > + fail:
- > +	spin_unlock_irqrestore(&gpio_lock, flags);
- > +	if (status)
- > +		pr_debug("%s: gpio-%d status %d\n",
- > +			__func__, gpio, status);
- > +	return status;
- > +}
+  Mainline does not have the concurrent radix tree which this patch
+is based on, but maybe it's overkill and the RCU radix tree is enough.
+Not sure, will have to think about it a bit more.
+
+> 
+> Nothing against the -rt patch, but mainline should probably be updated
+> to use RCU as well?
+> 
+
+  If rcu radix tree is enough, then definitely yes.
+
+  Sebastien.
+
