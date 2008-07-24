@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbYGXThS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753540AbYGXTkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285AbYGXThS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 15:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbYGXThD
+	id S1753540AbYGXTkB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 15:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbYGXTjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 15:37:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46442 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbYGXThB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 15:37:01 -0400
-Date: Thu, 24 Jul 2008 21:35:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Patrick McHardy <kaber@trash.net>,
-       David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
-       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
-	pointer dereference
-Message-ID: <20080724193532.GC1694@elte.hu>
-References: <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu> <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net> <84144f020807240544q507e1b7cv220d1afbae0ee0f0@mail.gmail.com> <48887A71.5010209@trash.net> <1216905812.5897.6.camel@penberg-laptop> <48888434.3030207@trash.net> <1216906476.12021.4.camel@penberg-laptop> <20080724115127.6cfbb616.akpm@linux-foundation.org>
+	Thu, 24 Jul 2008 15:39:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52478 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750744AbYGXTjx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 15:39:53 -0400
+Date: Thu, 24 Jul 2008 12:36:38 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 fixes
+In-Reply-To: <20080724151200.GA19266@elte.hu>
+Message-ID: <alpine.LFD.1.10.0807241233450.3237@nehalem.linux-foundation.org>
+References: <20080724151200.GA19266@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080724115127.6cfbb616.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Thu, 24 Jul 2008 16:34:36 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> 
-> > > >> Your patch introduced a use-after-free and double-free.
-> > > >> krealloc() frees the old pointer, but it is still used
-> > > >> for the ->move operations, then freed again.
-> > > >>
-> > > >> To fix this I think we need a __krealloc() that doesn't
-> > > >> free the old memory, especially since it must not be
-> > > >> freed immediately because it may still be used in a RCU
-> > > >> read side (see the last part in the patch attached to
-> > > >> this mail (based on a kernel without your patch)).
-> > > > 
-> > > > Agreed. Something like this, perhaps?
-> > > > 
-> > > > [PATCH] netfilter: fix double-free and use-after free
-> > > > 
-> > > > As suggested by Patrick McHardy, introduce a __krealloc() that doesn't
-> > > > free the original buffer to fix a double-free and use-after-free bug
-> > > > introduced by me in netfilter that uses RCU.
-> > > > 
-> > > > Reported-by: Patrick McHardy <kaber@trash.net>
-> > > > Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> > > 
-> > > Looks good to me, thanks.
-> > 
-> > Ingo, can you please test this? Andrew, I'm at OLS so can you pick up
-> > the patch in your tree?
-> 
-> Sure.  Or Patrick can do so and it can be merged via the net tree.
-> 
-> Ingo, did this patch actually fix something over there?
 
-not that i know of. I'll do some re-tests tomorrow to make sure.
+On Thu, 24 Jul 2008, Ingo Molnar wrote:
+>
+> Hugh Dickins (1):
+>       x86: BUILD_IRQ say .text to avoid .data.percpu
+> 
+> diff --git a/arch/x86/kernel/irqinit_64.c b/arch/x86/kernel/irqinit_64.c
+> index 0373e88..9414125 100644
+> --- a/arch/x86/kernel/irqinit_64.c
+> +++ b/arch/x86/kernel/irqinit_64.c
+> @@ -43,7 +43,7 @@
+>  
+>  #define BUILD_IRQ(nr)				\
+>  	asmlinkage void IRQ_NAME(nr);		\
+> -	asm("\n.p2align\n"			\
+> +	asm("\n.text\n.p2align\n"		\
+>  	    "IRQ" #nr "_interrupt:\n\t"		\
+>  	    "push $~(" #nr ") ; "		\
+>  	    "jmp common_interrupt");
 
-	Ingo
+I do not think this is a good idea AT ALL.
+
+You need a ".previous" there too, otherwise any random C code that doesn't 
+_happen_ to change segments will now possibly put some random variable in 
+the .text segment.
+
+And yes, dependign on just where the BUILD_IRQ() is, and what is around 
+it, and what compiler version we have, this bug may or may not show. But 
+it's still _wrong_.
+
+I pulled it, will fix up by hand.
+
+		Linus
