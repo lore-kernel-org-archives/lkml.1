@@ -1,62 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbYGXM4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbYGXM5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753405AbYGXM4b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbYGXM4U
+	id S1754100AbYGXM5T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbYGXM5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:56:20 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:46939 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751223AbYGXM4T (ORCPT
+	Thu, 24 Jul 2008 08:57:05 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:41913 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751256AbYGXM5E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 08:56:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=YmH1gDHr4X4XmYhVXOLTAmn5QYApAqZMOLRPj3YZvbIcMIAipfeXAe/+Dz1iGj8cQfbUldQyY/HeHtlzNvAm8kktPTGRLPNao2Yr4Kg5wZRsZI+oDw3pnqJ+B+52eOLmtt4FqZilJXXK3djm+0Zxd/Oy9WyQ9oOwKM1jYxOY3kk=  ;
-X-YMail-OSG: pa.hQcQVM1lKJdxB8wRVoe5bZidmgWmx5iQubgxGPoSFpBs2pHwgHGRwjEDGY_65FCAuWrDmF3lJML8e10dUES.wv39Z7hc.IMUMoJwvYv5Tfks_JY.bTL63T3Tzb9imhLI-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL pointer dereference
-Date: Thu, 24 Jul 2008 22:56:08 +1000
-User-Agent: KMail/1.9.5
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Patrick McHardy <kaber@trash.net>,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de, rjw@sisk.pl,
-       ilpo.jarvinen@helsinki.fi, Dave Jones <davej@redhat.com>,
-       Matt Mackall <mpm@selenic.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-References: <20080724060448.GA10203@elte.hu> <84144f020807240540vbe7ef50uee2cacabe8016546@mail.gmail.com> <20080724125004.GA7426@gondor.apana.org.au>
-In-Reply-To: <20080724125004.GA7426@gondor.apana.org.au>
+	Thu, 24 Jul 2008 08:57:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=eY85pAfvTTbtk10uIsTjUcUx3Tk0fZ1SVUo7zG3gy9vgChWNHTHB5Zhw3DtPkl0fXs
+         V1KQwEhCVMqjd0Tiuqt2x2wGaAbO+8eC0ib7ZkGO1NkJqTZG9PsNnT8EIez6FNoP8o9J
+         oPMn/R6RSb5N2cH8bKmkrVYvZXpKENCDGQf88=
+Message-ID: <36ca99e90807240556j6b409a03s239d781baaadbb99@mail.gmail.com>
+Date: Thu, 24 Jul 2008 14:56:59 +0200
+From: "Bert Wesarg" <bert.wesarg@googlemail.com>
+To: "Mike Travis" <travis@sgi.com>
+Subject: Re: [PATCH 1/1] cpumask: Change cpumask_of_cpu to use cpumask_of_cpu_map
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Rusty Russell" <rusty@rustcorp.com.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Jack Steiner" <steiner@sgi.com>,
+       "Christoph Lameter" <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Len Brown" <len.brown@intel.com>,
+       "Lennert Buytenhek" <kernel@wantstofly.org>,
+       "Dave Jones" <davej@codemonkey.org.uk>, "Paul Jackson" <pj@sgi.com>,
+       "Tony Luck" <tony.luck@intel.com>,
+       "Tigran Aivazian" <tigran@aivazian.fsnet.co.uk>,
+       "Paul Mackerras" <paulus@samba.org>,
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Robert Richter" <robert.richter@amd.com>,
+       "Martin Schwidefsky" <schwidefsky@de.ibm.com>,
+       "Heiko Carstens" <heiko.carstens@de.ibm.com>,
+       "Sam Creasey" <sammy@sammy.net>, "Greg Banks" <gnb@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Adrian Bunk" <bunk@kernel.org>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andreas Schwab" <schwab@suse.de>,
+       "Johannes Weiner" <hannes@saeurebad.de>
+In-Reply-To: <20080723171841.997896000@polaris-admin.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807242256.09107.nickpiggin@yahoo.com.au>
+References: <20080723171841.815234000@polaris-admin.engr.sgi.com>
+	 <20080723171841.997896000@polaris-admin.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 24 July 2008 22:50, Herbert Xu wrote:
-> On Thu, Jul 24, 2008 at 03:40:40PM +0300, Pekka Enberg wrote:
-> > Using ksize() for skbs will crash your kernel for some configurations
-> > because calling that function for memory allocated with
-> > kmem_cache_alloc() is not supported by all the allocators (well,
-> > SLOB).
+Hi,
+
+On Wed, Jul 23, 2008 at 19:18, Mike Travis <travis@sgi.com> wrote:
+> --- linux-2.6.tip.orig/arch/x86/kernel/setup_percpu.c
+> +++ linux-2.6.tip/arch/x86/kernel/setup_percpu.c
+> @@ -80,8 +80,15 @@ static void __init setup_per_cpu_maps(vo
+>  #endif
+>  }
 >
-> So how about fixing the interface so that it can return an error
-> to indicate that the allocator doesn't support it? You're taking
-> away an entire interface just because an underlying implementation
-> that's used by a very small proportion of users doesn't do the
-> right thing.
+> -#ifdef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
+> -cpumask_t *cpumask_of_cpu_map __read_mostly;
+> +#ifdef CONFIG_HAVE_CPUMASK_OF_CPU_MAP_PTR
+> +/*
+> + * Configure an initial cpumask_of_cpu(0) for early users
+> + */
+> +static cpumask_t initial_cpumask_of_cpu_map __initdata = (cpumask_t) { {
+> +       [BITS_TO_LONGS(NR_CPUS)-1] = 1
+> +} };
+This looks weird, first one missing {} pair, which may explain Ingo's
+build error. Second, why do you want to set the last unsigned long to
+one? Shouldn't this be the first?
 
-You could easily add some function which returns a constant error for
-SLOB and ksize for others, because slob typically contains very little
-slack space (unless explicit alignment is asked for).
+Regards
+Bert
 
-OTOH, skb allocation uses kmalloc don't they? So you could still use
-SLOB ksize for that I guess.
+
+> +cpumask_t *cpumask_of_cpu_map __read_mostly =
+> +       (cpumask_t *)&initial_cpumask_of_cpu_map;
+>  EXPORT_SYMBOL(cpumask_of_cpu_map);
+>
