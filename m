@@ -1,42 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbYGXSw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbYGXSyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754537AbYGXSw0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 14:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbYGXSwJ
+	id S1754546AbYGXSyT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 14:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbYGXSyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 14:52:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44752 "EHLO
+	Thu, 24 Jul 2008 14:54:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52139 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754235AbYGXSwI (ORCPT
+	by vger.kernel.org with ESMTP id S1752543AbYGXSyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 14:52:08 -0400
-Date: Thu, 24 Jul 2008 11:48:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Steven Whitehouse <swhiteho@redhat.com>
-cc: Alexander Viro <aviro@redhat.com>, Evgeniy Dushistov <dushistov@mail.ru>,
-       linux-kernel@vger.kernel.org
-Subject: Re: parser: add const to parser token table (resend)
-In-Reply-To: <1216916533.5376.1.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.1.10.0807241147160.3237@nehalem.linux-foundation.org>
-References: <1216916533.5376.1.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 24 Jul 2008 14:54:00 -0400
+Date: Thu, 24 Jul 2008 11:51:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Patrick McHardy <kaber@trash.net>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
+ pointer dereference
+Message-Id: <20080724115127.6cfbb616.akpm@linux-foundation.org>
+In-Reply-To: <1216906476.12021.4.camel@penberg-laptop>
+References: <20080724060448.GA10203@elte.hu>
+	<E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>
+	<20080724.022259.113079007.davem@davemloft.net>
+	<20080724093411.GA12001@elte.hu>
+	<20080724115625.GA23994@elte.hu>
+	<20080724115957.GA25701@elte.hu>
+	<48886FA6.6050908@trash.net>
+	<84144f020807240544q507e1b7cv220d1afbae0ee0f0@mail.gmail.com>
+	<48887A71.5010209@trash.net>
+	<1216905812.5897.6.camel@penberg-laptop>
+	<48888434.3030207@trash.net>
+	<1216906476.12021.4.camel@penberg-laptop>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 24 Jul 2008 16:34:36 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-Btw, the reason I didn't even look at this at first is that there is no 
-such thing as a "parser" in the kernel, so I just dismissed the patch as 
-being to somebody else (ie a sparse thing).
+> > >> Your patch introduced a use-after-free and double-free.
+> > >> krealloc() frees the old pointer, but it is still used
+> > >> for the ->move operations, then freed again.
+> > >>
+> > >> To fix this I think we need a __krealloc() that doesn't
+> > >> free the old memory, especially since it must not be
+> > >> freed immediately because it may still be used in a RCU
+> > >> read side (see the last part in the patch attached to
+> > >> this mail (based on a kernel without your patch)).
+> > > 
+> > > Agreed. Something like this, perhaps?
+> > > 
+> > > [PATCH] netfilter: fix double-free and use-after free
+> > > 
+> > > As suggested by Patrick McHardy, introduce a __krealloc() that doesn't
+> > > free the original buffer to fix a double-free and use-after-free bug
+> > > introduced by me in netfilter that uses RCU.
+> > > 
+> > > Reported-by: Patrick McHardy <kaber@trash.net>
+> > > Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> > 
+> > Looks good to me, thanks.
+> 
+> Ingo, can you please test this? Andrew, I'm at OLS so can you pick up
+> the patch in your tree?
 
-Now, if the subject had been something like
+Sure.  Or Patrick can do so and it can be merged via the net tree.
 
-	UFS: add const to parser token table
-
-I would have realized that it was relevant to my interests
-
-What I'm trying to say is that subject lines matter ;)
-
-		Linus
+Ingo, did this patch actually fix something over there?
