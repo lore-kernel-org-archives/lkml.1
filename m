@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbYGXNev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbYGXNjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755859AbYGXNev (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 09:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbYGXNel
+	id S1755155AbYGXNjP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 09:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbYGXNjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 09:34:41 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:41384 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751680AbYGXNek (ORCPT
+	Thu, 24 Jul 2008 09:39:00 -0400
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:58987 "EHLO
+	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752035AbYGXNi7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 09:34:40 -0400
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
-	pointer dereference
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       herbert@gondor.apana.org.au, w@1wt.eu, davidn@davidnewall.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
-       Dave Jones <davej@redhat.com>
-In-Reply-To: <48888434.3030207@trash.net>
-References: <20080724060448.GA10203@elte.hu>
-	 <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>
-	 <20080724.022259.113079007.davem@davemloft.net>
-	 <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu>
-	 <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net>
-	 <84144f020807240544q507e1b7cv220d1afbae0ee0f0@mail.gmail.com>
-	 <48887A71.5010209@trash.net> <1216905812.5897.6.camel@penberg-laptop>
-	 <48888434.3030207@trash.net>
-Date: Thu, 24 Jul 2008 16:34:36 +0300
-Message-Id: <1216906476.12021.4.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 24 Jul 2008 09:38:59 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <488885FB.5070500@cam.ac.uk>
+Date: Thu, 24 Jul 2008 14:39:07 +0100
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Eric Piel <eric.piel@tremplin-utc.net>,
+       Jonathan Cameron <Jonathan.Cameron@gmail.com>, mgross@linux.intel.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>,
+       David Brownell <david-b@pacbell.net>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Jean Delvare <khali@linux-fr.org>,
+       spi-devel-general@lists.sourceforge.net,
+       Ben Nizette <bn@niasdigital.com>
+Subject: Re: [spi-devel-general] [Patch 0/4] IndustrialIO subsystem (ADCs,
+ accelerometers etc)
+References: <488763AD.4050400@gmail.com> <20080723174801.GC11009@khazad-dum.debian.net> <48884F04.4070403@tremplin-utc.net> <48887201.8090300@cam.ac.uk> <48887783.5000002@tremplin-utc.net> <4888796B.9070003@cam.ac.uk> <20080724092445.ZZRA012@mailhub.coreip.homeip.net>
+In-Reply-To: <20080724092445.ZZRA012@mailhub.coreip.homeip.net>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-24 at 15:31 +0200, Patrick McHardy wrote:
-> Pekka Enberg wrote:
-> > On Thu, 2008-07-24 at 14:49 +0200, Patrick McHardy wrote:
-> >> Pekka Enberg wrote:
-> >>> Hmm, why do you think it's related? It looks like elem->hook() is a
-> >>> NULL pointer but my patch shouldn't make any difference here...
-> >> No, its already in ipv4_confirm, so its most likely helper->help()
-> >> thats NULL, which is contained in an extension.
-> >>
-> >> The reason why I think its this patch is (quoting from an old
-> >> email that I never got a response to):
-> > 
-> > Oh, I'm really sorry about that.
+Dmitry Torokhov wrote:
+> On Thu, Jul 24, 2008 at 01:45:31PM +0100, Jonathan Cameron wrote:
+>>>> At the moment the big missing element of the subsystem is an easy way of
+>>>> querying what is there. (proc interface similar to that for the input
+>>>> subsystem)
+>>> You mean /sys/class/input/, right? Indeed, something inspired by the
+>>> input subsystem should work well.
+>> No, I meant /proc/bus/input/devices which gives machine readable description
+>> of all devices registered with the input subsystem and their capabilities.
+>>
 > 
-> No problem :)
-> 
-> >> ---
-> >> Your patch introduced a use-after-free and double-free.
-> >> krealloc() frees the old pointer, but it is still used
-> >> for the ->move operations, then freed again.
-> >>
-> >> To fix this I think we need a __krealloc() that doesn't
-> >> free the old memory, especially since it must not be
-> >> freed immediately because it may still be used in a RCU
-> >> read side (see the last part in the patch attached to
-> >> this mail (based on a kernel without your patch)).
-> > 
-> > Agreed. Something like this, perhaps?
-> > 
-> > [PATCH] netfilter: fix double-free and use-after free
-> > 
-> > As suggested by Patrick McHardy, introduce a __krealloc() that doesn't
-> > free the original buffer to fix a double-free and use-after-free bug
-> > introduced by me in netfilter that uses RCU.
-> > 
-> > Reported-by: Patrick McHardy <kaber@trash.net>
-> > Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> Looks good to me, thanks.
+> /proc/bus/input is a legacy interface (pre-sysfs). Newer subsystems
+> should try to stay in /sys/.
+Ah, I'd assumed it was there to provide a centralized way of discovering
+what was there.  I guess it's just a matter of scanning your way through
+the contents of /sys/class/input (and equivalent iio) then to find out
+what is present and what is supported by each device.
 
-Ingo, can you please test this? Andrew, I'm at OLS so can you pick up
-the patch in your tree?
+Messier in a sense but guess it will work.
+
+Ah well,
+
+Jonathan
 
