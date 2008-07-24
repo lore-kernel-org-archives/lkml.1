@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbYGXOsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbYGXOrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757521AbYGXOsv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756813AbYGXOnG
+	id S1758159AbYGXOrh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbYGXOmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:43:06 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54702 "EHLO
+	Thu, 24 Jul 2008 10:42:47 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54693 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752609AbYGXOmv (ORCPT
+	with ESMTP id S1756457AbYGXOml (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:42:51 -0400
-Message-Id: <20080724141529.560025894@chello.nl>
+	Thu, 24 Jul 2008 10:42:41 -0400
+Message-Id: <20080724141529.855634756@chello.nl>
 References: <20080724140042.408642539@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Jul 2008 16:00:46 +0200
+Date: Thu, 24 Jul 2008 16:00:50 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
@@ -21,169 +21,74 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Daniel Lezcano <dlezcano@fr.ibm.com>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>
-Subject: [PATCH 04/30] mm: slub: trivial cleanups
-Content-Disposition: inline; filename=cleanup-slub.patch
+Subject: [PATCH 08/30] mm: serialize access to min_free_kbytes
+Content-Disposition: inline; filename=mm-setup_per_zone_pages_min.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some cleanups....
+There is a small race between the procfs caller and the memory hotplug caller
+of setup_per_zone_pages_min(). Not a big deal, but the next patch will add yet
+another caller. Time to close the gap.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/slub_def.h |    7 ++++++-
- mm/slub.c                |   40 ++++++++++++++++++----------------------
- 2 files changed, 24 insertions(+), 23 deletions(-)
+ mm/page_alloc.c |   16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/mm/slub.c
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/mm/slub.c
-+++ linux-2.6/mm/slub.c
-@@ -27,7 +27,7 @@
- /*
-  * Lock order:
-  *   1. slab_lock(page)
-- *   2. slab->list_lock
-+ *   2. node->list_lock
-  *
-  *   The slab_lock protects operations on the object of a particular
-  *   slab and its metadata in the page struct. If the slab lock
-@@ -163,11 +163,11 @@ static struct notifier_block slab_notifi
- #endif
- 
- static enum {
--	DOWN,		/* No slab functionality available */
-+	DOWN = 0,	/* No slab functionality available */
- 	PARTIAL,	/* kmem_cache_open() works but kmalloc does not */
- 	UP,		/* Everything works but does not show up in sysfs */
- 	SYSFS		/* Sysfs up */
--} slab_state = DOWN;
-+} slab_state;
- 
- /* A list of all slab caches on the system */
- static DECLARE_RWSEM(slub_lock);
-@@ -288,21 +288,22 @@ static inline int slab_index(void *p, st
- static inline struct kmem_cache_order_objects oo_make(int order,
- 						unsigned long size)
- {
--	struct kmem_cache_order_objects x = {
--		(order << 16) + (PAGE_SIZE << order) / size
--	};
-+	struct kmem_cache_order_objects x;
-+
-+	x.order = order;
-+	x.objects = (PAGE_SIZE << order) / size;
- 
- 	return x;
- }
- 
- static inline int oo_order(struct kmem_cache_order_objects x)
- {
--	return x.x >> 16;
-+	return x.order;
- }
- 
- static inline int oo_objects(struct kmem_cache_order_objects x)
- {
--	return x.x & ((1 << 16) - 1);
-+	return x.objects;
- }
- 
- #ifdef CONFIG_SLUB_DEBUG
-@@ -1076,8 +1077,7 @@ static struct page *allocate_slab(struct
- 
- 	flags |= s->allocflags;
- 
--	page = alloc_slab_page(flags | __GFP_NOWARN | __GFP_NORETRY, node,
--									oo);
-+	page = alloc_slab_page(flags | __GFP_NOWARN | __GFP_NORETRY, node, oo);
- 	if (unlikely(!page)) {
- 		oo = s->min;
- 		/*
-@@ -1099,8 +1099,7 @@ static struct page *allocate_slab(struct
- 	return page;
- }
- 
--static void setup_object(struct kmem_cache *s, struct page *page,
--				void *object)
-+static void setup_object(struct kmem_cache *s, struct page *page, void *object)
- {
- 	setup_object_debug(s, page, object);
- 	if (unlikely(s->ctor))
-@@ -1157,8 +1156,7 @@ static void __free_slab(struct kmem_cach
- 		void *p;
- 
- 		slab_pad_check(s, page);
--		for_each_object(p, s, page_address(page),
--						page->objects)
-+		for_each_object(p, s, page_address(page), page->objects)
- 			check_object(s, page, p, 0);
- 		__ClearPageSlubDebug(page);
- 	}
-@@ -1224,8 +1222,7 @@ static __always_inline int slab_trylock(
- /*
-  * Management of partially allocated slabs
-  */
--static void add_partial(struct kmem_cache_node *n,
--				struct page *page, int tail)
-+static void add_partial(struct kmem_cache_node *n, struct page *page, int tail)
- {
- 	spin_lock(&n->list_lock);
- 	n->nr_partial++;
-@@ -1251,8 +1248,8 @@ static void remove_partial(struct kmem_c
-  *
-  * Must hold list_lock.
-  */
--static inline int lock_and_freeze_slab(struct kmem_cache_node *n,
--							struct page *page)
-+static inline
-+int lock_and_freeze_slab(struct kmem_cache_node *n, struct page *page)
- {
- 	if (slab_trylock(page)) {
- 		list_del(&page->lru);
-@@ -1799,11 +1796,11 @@ static int slub_nomerge;
-  * slub_max_order specifies the order where we begin to stop considering the
-  * number of objects in a slab as critical. If we reach slub_max_order then
-  * we try to keep the page order as low as possible. So we accept more waste
-- * of space in favor of a small page order.
-+ * of space in favour of a small page order.
-  *
-  * Higher order allocations also allow the placement of more objects in a
-  * slab and thereby reduce object handling overhead. If the user has
-- * requested a higher mininum order then we start with that one instead of
-+ * requested a higher minimum order then we start with that one instead of
-  * the smallest order which will fit the object.
-  */
- static inline int slab_order(int size, int min_objects,
-@@ -1816,8 +1813,7 @@ static inline int slab_order(int size, i
- 	if ((PAGE_SIZE << min_order) / size > 65535)
- 		return get_order(size * 65535) - 1;
- 
--	for (order = max(min_order,
--				fls(min_objects * size - 1) - PAGE_SHIFT);
-+	for (order = max(min_order, fls(min_objects * size - 1) - PAGE_SHIFT);
- 			order <= max_order; order++) {
- 
- 		unsigned long slab_size = PAGE_SIZE << order;
-Index: linux-2.6/include/linux/slub_def.h
-===================================================================
---- linux-2.6.orig/include/linux/slub_def.h
-+++ linux-2.6/include/linux/slub_def.h
-@@ -60,7 +60,12 @@ struct kmem_cache_node {
-  * given order would contain.
-  */
- struct kmem_cache_order_objects {
--	unsigned long x;
-+	union {
-+		u32 x;
-+		struct {
-+			u16 order, objects;
-+		};
-+	};
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -118,6 +118,7 @@ static char * const zone_names[MAX_NR_ZO
+ 	 "Movable",
  };
  
++static DEFINE_SPINLOCK(min_free_lock);
+ int min_free_kbytes = 1024;
+ 
+ unsigned long __meminitdata nr_kernel_pages;
+@@ -4333,12 +4334,12 @@ static void setup_per_zone_lowmem_reserv
+ }
+ 
+ /**
+- * setup_per_zone_pages_min - called when min_free_kbytes changes.
++ * __setup_per_zone_pages_min - called when min_free_kbytes changes.
+  *
+  * Ensures that the pages_{min,low,high} values for each zone are set correctly
+  * with respect to min_free_kbytes.
+  */
+-void setup_per_zone_pages_min(void)
++static void __setup_per_zone_pages_min(void)
+ {
+ 	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
+ 	unsigned long lowmem_pages = 0;
+@@ -4433,6 +4434,15 @@ void setup_per_zone_inactive_ratio(void)
+ 	}
+ }
+ 
++void setup_per_zone_pages_min(void)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&min_free_lock, flags);
++	__setup_per_zone_pages_min();
++	spin_unlock_irqrestore(&min_free_lock, flags);
++}
++
  /*
+  * Initialise min_free_kbytes.
+  *
+@@ -4468,7 +4478,7 @@ static int __init init_per_zone_pages_mi
+ 		min_free_kbytes = 128;
+ 	if (min_free_kbytes > 65536)
+ 		min_free_kbytes = 65536;
+-	setup_per_zone_pages_min();
++	__setup_per_zone_pages_min();
+ 	setup_per_zone_lowmem_reserve();
+ 	setup_per_zone_inactive_ratio();
+ 	return 0;
 
 -- 
 
