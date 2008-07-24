@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbYGXOiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbYGXOil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755079AbYGXOiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750953AbYGXOiA
+	id S1752858AbYGXOil (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbYGXOi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:38:00 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:35028 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750799AbYGXOh7 (ORCPT
+	Thu, 24 Jul 2008 10:38:27 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:51962 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750953AbYGXOi0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:37:59 -0400
-Date: Thu, 24 Jul 2008 22:37:06 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Patrick McHardy <kaber@trash.net>,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de, rjw@sisk.pl,
-       ilpo.jarvinen@helsinki.fi, Dave Jones <davej@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL pointer dereference
-Message-ID: <20080724143706.GA8461@gondor.apana.org.au>
-References: <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au> <20080724.022259.113079007.davem@davemloft.net> <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu> <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net> <20080724122203.GA7187@gondor.apana.org.au> <84144f020807240540vbe7ef50uee2cacabe8016546@mail.gmail.com> <20080724125004.GA7426@gondor.apana.org.au> <1216905109.15519.200.camel@calx>
+	Thu, 24 Jul 2008 10:38:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ma5ykcedXLOPBsVM0j9Tu/GhJR+tI/kbXXC2Q2hWA9ayMOc9RMA0mGAa9pFEPOCWWn
+         Pq7e9IQ1lpn4v2opBRQh3owDGn/YairP1+Mt/Xn7vFTkzjPyTXMAaBay9+TGWIt3NJqe
+         AWNKDiD6l7IgMpgIJ0q4i0IIL/E8PdSP9zCx0=
+Message-ID: <19f34abd0807240738h7ac5e716rcfa39d528b07870f@mail.gmail.com>
+Date: Thu, 24 Jul 2008 16:38:23 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Jason Wessel" <jason.wessel@windriver.com>
+Subject: Re: KGDB fails to pass selft tests on x86-64 (v2.6.26)
+Cc: "Francis Moreau" <francis.moro@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <488891F2.9020509@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1216905109.15519.200.camel@calx>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <38b2ab8a0807240624v7ec90c50n8105f830d10dddd@mail.gmail.com>
+	 <38b2ab8a0807240708j7d6782b7te6123fdd7416ec95@mail.gmail.com>
+	 <488891F2.9020509@windriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 08:11:49AM -0500, Matt Mackall wrote:
+On Thu, Jul 24, 2008 at 4:30 PM, Jason Wessel
+<jason.wessel@windriver.com> wrote:
+> Francis Moreau wrote:
+>> On Thu, Jul 24, 2008 at 3:24 PM, Francis Moreau <francis.moro@gmail.com> wrote:
+>>> So the first thing I did is to enable kgdb support and also the
+>>> kgdb self tests:
+>>>
+>>> CONFIG_HAVE_ARCH_KGDB=y
+>>> CONFIG_KGDB=y
+>>> CONFIG_KGDB_SERIAL_CONSOLE=y
+>>> CONFIG_KGDB_TESTS=y
+>>> # CONFIG_KGDB_TESTS_ON_BOOT is not set
+>>>
+>>> Once compiled I booted this kernel through qemu and got the following:
+>>>
+>> and unfortunately it seems this issue is related to qemu: if I did boot the
+>> kernel without qemu and the self tests passed...
+>>
+>>
+>>
 >
-> You don't honestly expect people to correctly code to such a standard,
-> do you? People will assume that ksize never fails, they will be wrong,
-> and computers will die.
+> It is because the qemu you are using does not support hardware
+> breakpoints.  The tests will warn, but the kernel will continue to boot
+> and tell you that hw breakpoint support doesn't work on your simulated
+> hardware.
+>
+> Also, if you plan to use software breakpoints, please make sure to turn
+> off CONFIG_DEBUG_RODATA, else they will not work.   This is a regression
+> which will is on my list of things to take a look at, as time permits.
 
-If we follow this argument then most of our interfaces would be
-broken.
+I had a couple of kernels hang during single-stepping self-tests (I
+think), where it reached 500 and 900 tests respectively before it hung
+hard (NMI watchdog enabled, but not triggering). Is this related to
+the RODATA thing?
 
-> >  You're taking
-> > away an entire interface just because an underlying implementation
-> > that's used by a very small proportion of users doesn't do the
-> > right thing.
-> 
-> Umm, no. There were very few users to being with, so it was actually a
-> fairly large proportion. And that suggested the interface was a bad
-> idea.
+This was with a recent (post-v2.6.26) kernel on a real P4.
 
-Huh? I'm talking about users of the kernel.  A very small proportion
-of those use SLOB.
 
-Cheers,
+Vegard
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
