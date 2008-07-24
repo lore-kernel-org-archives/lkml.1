@@ -1,56 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759949AbYGXOx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758289AbYGXOyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759949AbYGXOx5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756944AbYGXOor
+	id S1758289AbYGXOyl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757797AbYGXOqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:44:47 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54676 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752816AbYGXOmR (ORCPT
+	Thu, 24 Jul 2008 10:46:24 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:40730 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757843AbYGXOqX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:42:17 -0400
-Message-Id: <20080724141530.197474094@chello.nl>
-References: <20080724140042.408642539@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Thu, 24 Jul 2008 16:00:55 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Thu, 24 Jul 2008 10:46:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=VtHxOxfSv022WVzeenWhFDpqaSDrLJIEAtEstobXGJY3JswLS4Ht1fanpftoWNT/sVOPLiGQ7k0DtJ7jG6dOCLoIqpjo0U6tW0V6cmGthYjRo36xc3DBZ/0H+ze41GE5VN1hTe4x+zRdfTSAzK4+rOSn7Px/A7EfX2J+avJwQos=  ;
+X-YMail-OSG: 2fwHTq8VM1kUVzT7kswaqQhUs4M8Uu4EM6Ke_KnLLKMmDFRJE3Ju7rjnb64_bpNlTV3F8aCKA.6itzmib1VaPPakCS0e55z15uABA41GVncKi9BGbBs14tVVllbaVm4JrN4-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 26/30] nfs: remove mempools
+Date: Fri, 25 Jul 2008 00:46:09 +1000
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
        Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>
-Cc: James Morris <jmorris@namei.org>
-Subject: [PATCH 13/30] selinux: tag avc cache alloc as non-critical
-Content-Disposition: inline; filename=mm-selinux-emergency.patch
-X-Bad-Reply: References but no 'Re:' in Subject.
+       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>
+References: <20080724140042.408642539@chello.nl> <20080724141531.178291263@chello.nl>
+In-Reply-To: <20080724141531.178291263@chello.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807250046.10392.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Failing to allocate a cache entry will only harm performance not correctness.
-Do not consume valuable reserve pages for something like that.
+On Friday 25 July 2008 00:01, Peter Zijlstra wrote:
+> With the introduction of the shared dirty page accounting in .19, NFS
+> should not be able to surpise the VM with all dirty pages. Thus it should
+> always be able to free some memory. Hence no more need for mempools.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: James Morris <jmorris@namei.org>
----
- security/selinux/avc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+It seems like a very backward step to me to go from a hard guarantee
+to some heuristic that could break for someone in some particular
+setup.
 
-Index: linux-2.6/security/selinux/avc.c
-===================================================================
---- linux-2.6.orig/security/selinux/avc.c
-+++ linux-2.6/security/selinux/avc.c
-@@ -334,7 +334,7 @@ static struct avc_node *avc_alloc_node(v
- {
- 	struct avc_node *node;
- 
--	node = kmem_cache_zalloc(avc_node_cachep, GFP_ATOMIC);
-+	node = kmem_cache_zalloc(avc_node_cachep, GFP_ATOMIC|__GFP_NOMEMALLOC);
- 	if (!node)
- 		goto out;
- 
+Filling with dirty pages isn't the only way to exaust free reclaimable
+memory remember, it can also happen maybe due to mlock or kernel
+allocations.
 
--- 
+Is there pressing reason to remove them?
 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  fs/nfs/read.c  |   15 +++------------
+>  fs/nfs/write.c |   27 +++++----------------------
+>  2 files changed, 8 insertions(+), 34 deletions(-)
+>
+> Index: linux-2.6/fs/nfs/read.c
+> ===================================================================
+> --- linux-2.6.orig/fs/nfs/read.c
+> +++ linux-2.6/fs/nfs/read.c
+> @@ -33,13 +33,10 @@ static const struct rpc_call_ops nfs_rea
+>  static const struct rpc_call_ops nfs_read_full_ops;
+>
+>  static struct kmem_cache *nfs_rdata_cachep;
+> -static mempool_t *nfs_rdata_mempool;
+> -
+> -#define MIN_POOL_READ	(32)
+>
+>  struct nfs_read_data *nfs_readdata_alloc(unsigned int pagecount)
+>  {
+> -	struct nfs_read_data *p = mempool_alloc(nfs_rdata_mempool, GFP_NOFS);
+> +	struct nfs_read_data *p = kmem_cache_alloc(nfs_rdata_cachep, GFP_NOFS);
+>
+>  	if (p) {
+>  		memset(p, 0, sizeof(*p));
+> @@ -50,7 +47,7 @@ struct nfs_read_data *nfs_readdata_alloc
+>  		else {
+>  			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
+>  			if (!p->pagevec) {
+> -				mempool_free(p, nfs_rdata_mempool);
+> +				kmem_cache_free(nfs_rdata_cachep, p);
+>  				p = NULL;
+>  			}
+>  		}
+> @@ -62,7 +59,7 @@ static void nfs_readdata_free(struct nfs
+>  {
+>  	if (p && (p->pagevec != &p->page_array[0]))
+>  		kfree(p->pagevec);
+> -	mempool_free(p, nfs_rdata_mempool);
+> +	kmem_cache_free(nfs_rdata_cachep, p);
+>  }
+>
+>  void nfs_readdata_release(void *data)
+> @@ -614,16 +611,10 @@ int __init nfs_init_readpagecache(void)
+>  	if (nfs_rdata_cachep == NULL)
+>  		return -ENOMEM;
+>
+> -	nfs_rdata_mempool = mempool_create_slab_pool(MIN_POOL_READ,
+> -						     nfs_rdata_cachep);
+> -	if (nfs_rdata_mempool == NULL)
+> -		return -ENOMEM;
+> -
+>  	return 0;
+>  }
+>
+>  void nfs_destroy_readpagecache(void)
+>  {
+> -	mempool_destroy(nfs_rdata_mempool);
+>  	kmem_cache_destroy(nfs_rdata_cachep);
+>  }
+> Index: linux-2.6/fs/nfs/write.c
+> ===================================================================
+> --- linux-2.6.orig/fs/nfs/write.c
+> +++ linux-2.6/fs/nfs/write.c
+> @@ -28,9 +28,6 @@
+>
+>  #define NFSDBG_FACILITY		NFSDBG_PAGECACHE
+>
+> -#define MIN_POOL_WRITE		(32)
+> -#define MIN_POOL_COMMIT		(4)
+> -
+>  /*
+>   * Local function declarations
+>   */
+> @@ -45,12 +42,10 @@ static const struct rpc_call_ops nfs_wri
+>  static const struct rpc_call_ops nfs_commit_ops;
+>
+>  static struct kmem_cache *nfs_wdata_cachep;
+> -static mempool_t *nfs_wdata_mempool;
+> -static mempool_t *nfs_commit_mempool;
+>
+>  struct nfs_write_data *nfs_commitdata_alloc(void)
+>  {
+> -	struct nfs_write_data *p = mempool_alloc(nfs_commit_mempool, GFP_NOFS);
+> +	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
+>
+>  	if (p) {
+>  		memset(p, 0, sizeof(*p));
+> @@ -63,12 +58,12 @@ void nfs_commit_free(struct nfs_write_da
+>  {
+>  	if (p && (p->pagevec != &p->page_array[0]))
+>  		kfree(p->pagevec);
+> -	mempool_free(p, nfs_commit_mempool);
+> +	kmem_cache_free(nfs_wdata_cachep, p);
+>  }
+>
+>  struct nfs_write_data *nfs_writedata_alloc(unsigned int pagecount)
+>  {
+> -	struct nfs_write_data *p = mempool_alloc(nfs_wdata_mempool, GFP_NOFS);
+> +	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
+>
+>  	if (p) {
+>  		memset(p, 0, sizeof(*p));
+> @@ -79,7 +74,7 @@ struct nfs_write_data *nfs_writedata_all
+>  		else {
+>  			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
+>  			if (!p->pagevec) {
+> -				mempool_free(p, nfs_wdata_mempool);
+> +				kmem_cache_free(nfs_wdata_cachep, p);
+>  				p = NULL;
+>  			}
+>  		}
+> @@ -91,7 +86,7 @@ static void nfs_writedata_free(struct nf
+>  {
+>  	if (p && (p->pagevec != &p->page_array[0]))
+>  		kfree(p->pagevec);
+> -	mempool_free(p, nfs_wdata_mempool);
+> +	kmem_cache_free(nfs_wdata_cachep, p);
+>  }
+>
+>  void nfs_writedata_release(void *data)
+> @@ -1552,16 +1547,6 @@ int __init nfs_init_writepagecache(void)
+>  	if (nfs_wdata_cachep == NULL)
+>  		return -ENOMEM;
+>
+> -	nfs_wdata_mempool = mempool_create_slab_pool(MIN_POOL_WRITE,
+> -						     nfs_wdata_cachep);
+> -	if (nfs_wdata_mempool == NULL)
+> -		return -ENOMEM;
+> -
+> -	nfs_commit_mempool = mempool_create_slab_pool(MIN_POOL_COMMIT,
+> -						      nfs_wdata_cachep);
+> -	if (nfs_commit_mempool == NULL)
+> -		return -ENOMEM;
+> -
+>  	/*
+>  	 * NFS congestion size, scale with available memory.
+>  	 *
+> @@ -1587,8 +1572,6 @@ int __init nfs_init_writepagecache(void)
+>
+>  void nfs_destroy_writepagecache(void)
+>  {
+> -	mempool_destroy(nfs_commit_mempool);
+> -	mempool_destroy(nfs_wdata_mempool);
+>  	kmem_cache_destroy(nfs_wdata_cachep);
+>  }
