@@ -1,71 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbYGXRvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbYGXRwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbYGXRvf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 13:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbYGXRv1
+	id S1754137AbYGXRwA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 13:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYGXRvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 13:51:27 -0400
-Received: from xenotime.net ([66.160.160.81]:56231 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751810AbYGXRv0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 13:51:26 -0400
-Date: Thu, 24 Jul 2008 10:51:25 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: Patrizio Bassi <patrizio.bassi@gmail.com>
-cc: "Randy.Dunlap" <rdunlap@xenotime.net>,
-       "Kernel," <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.26 vanilla paravirt config issue
-In-Reply-To: <742b1fb30807241045q21592679xe32f59b7ab77be21@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0807241047290.3283@shark.he.net>
-References: <4888B8CD.1030501@gmail.com>  <Pine.LNX.4.64.0807241041000.3283@shark.he.net>
- <742b1fb30807241045q21592679xe32f59b7ab77be21@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 24 Jul 2008 13:51:46 -0400
+Received: from waste.org ([66.93.16.53]:55070 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751414AbYGXRvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 13:51:45 -0400
+Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
+	pointer dereference
+From: Matt Mackall <mpm@selenic.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Patrick McHardy <kaber@trash.net>,
+       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de, rjw@sisk.pl,
+       ilpo.jarvinen@helsinki.fi, Dave Jones <davej@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <20080724143706.GA8461@gondor.apana.org.au>
+References: <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>
+	 <20080724.022259.113079007.davem@davemloft.net>
+	 <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu>
+	 <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net>
+	 <20080724122203.GA7187@gondor.apana.org.au>
+	 <84144f020807240540vbe7ef50uee2cacabe8016546@mail.gmail.com>
+	 <20080724125004.GA7426@gondor.apana.org.au>
+	 <1216905109.15519.200.camel@calx>
+	 <20080724143706.GA8461@gondor.apana.org.au>
+Content-Type: text/plain
+Date: Thu, 24 Jul 2008 12:47:19 -0500
+Message-Id: <1216921639.15519.239.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Jul 2008, Patrizio Bassi wrote:
 
-> 2008/7/24 Randy.Dunlap <rdunlap@xenotime.net>:
+On Thu, 2008-07-24 at 22:37 +0800, Herbert Xu wrote:
+> On Thu, Jul 24, 2008 at 08:11:49AM -0500, Matt Mackall wrote:
 > >
-> > On Thu, 24 Jul 2008, Patrizio Bassi wrote:
-> >
-> > > Hi All
-> > >
-> > > on my amd64 profile i cannot disable PARAVIRT option.
-> > >
-> > > even if i disable all i still get in my .config:
-> > >
-> > > # CONFIG_X86_ES7000 is not set
-> > > # CONFIG_X86_RDC321X is not set
-> > > CONFIG_X86_VSMP=y
-> > > # CONFIG_PARAVIRT_GUEST is not set
-> > > CONFIG_PARAVIRT=y    <<<<-------------------------------- issue
-> > > # CONFIG_MEMTEST_BOOTPARAM is not set
-> > > # CONFIG_M386 is not set
-> > >
-> > > how to disable it? i guess it's a config bug.
-> >
-> > Nope.  You have CONFIG_X86_VSMP enabled, which selects PARAVIRT:
-> >
-> > config X86_VSMP
-> >        bool "Support for ScaleMP vSMP"
-> >        select PARAVIRT
-> >        depends on X86_64
-> >
-> > > CC me i'm not subscribed.
+> > You don't honestly expect people to correctly code to such a standard,
+> > do you? People will assume that ksize never fails, they will be wrong,
+> > and computers will die.
 > 
-> Oh thanks, so this means ScaleMP support can be enabled only with paravirt?
+> If we follow this argument then most of our interfaces would be
+> broken.
 
-Yes.
+Let's try this again: did you know that ksize could fail depending on
+kernel configuration? Most of us would answer no. That suggests the API
+is bad. This ranks 12 on Rusty's spectrum of user-friendly APIs:
 
-> At the moment i don't understand the need, maybe i should study some
-> documentation, do you have any pointer?
+http://ozlabs.org/~rusty/ols-2003-keynote/img51.html
 
-No, I don't recall seeing any docs for it.
-You could try www.scalemp.com .
+> > >  You're taking
+> > > away an entire interface just because an underlying implementation
+> > > that's used by a very small proportion of users doesn't do the
+> > > right thing.
+> > 
+> > Umm, no. There were very few users to being with, so it was actually a
+> > fairly large proportion. And that suggested the interface was a bad
+> > idea.
+> 
+> Huh? I'm talking about users of the kernel.  A very small proportion
+> of those use SLOB.
+
+Ahh. I see what you're saying. You may be right about that, or you may
+be wrong: I don't know which of the millions of mass market embedded
+Linux devices out there are using it.
+
+And of course I argue that SLOB did do the right thing, which was only
+allowing ksize on kmalloced objects. It's an accident of implementation
+that kmalloc and kmem_cache_alloc use the same underlying allocator. It
+has not been true at all points in the past, it's not true for some
+users in the present, and it may not be true for most users in the
+future. Thus, it's a bad idea to try to use ksize on something that
+wasn't kmalloced.
+
+If you have an argument for reintroducing ksize based on an actual use
+case, let's please move on to (or back to) it so that we can have some
+substance to this discussion.
 
 -- 
-~Randy
+Mathematics is the supreme nostalgia of our time.
+
