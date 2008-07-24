@@ -1,118 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbYGXPOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbYGXPPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758760AbYGXPOc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 11:14:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756994AbYGXPOI
+	id S1758221AbYGXPPW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 11:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbYGXPPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 11:14:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46823 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755768AbYGXPOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 11:14:06 -0400
-Date: Thu, 24 Jul 2008 17:13:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] core kernel fixes
-Message-ID: <20080724151356.GA19686@elte.hu>
+	Thu, 24 Jul 2008 11:15:07 -0400
+Received: from ik-out-1112.google.com ([66.249.90.180]:12523 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751716AbYGXPPF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 11:15:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:content-transfer-encoding:user-agent;
+        b=kx3F2FAVo/uNeG7a983R1Ccst6JlJwUQu3I5uVBoWvG9u4Yc/nTaMlOkQXApmaSS5I
+         U6CWwODRX5QIAMI4P6NmQ4oBuZG8/gicdSrsNTIWOXOYBip/Q6YJKG2YeAtK0Ilc3OXE
+         gCEbhMQNfaGmfhvZKw5cCaaHDRYg+yBCV4akc=
+Date: Thu, 24 Jul 2008 16:13:25 +0100
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, jdike@addtoit.com, alan@redhat.com
+Subject: [Resend Patch] uml: fix a build error about tty
+Message-ID: <20080724151325.GP2993@hack.voiplan.pt>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please pull the latest core kernel fixes git tree from:
+This patch fixed this error:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
-
-Thanks,
-
-	Ingo
-
------------------->
-Andrew Morton (1):
-      arch/mips/kernel/stacktrace.c: Heiko can't type
-
-Heiko Carstens (1):
-      fix core/stacktrace changes on avr32, mips, sh
-
-Mike Travis (1):
-      kthread: reduce stack pressure in create_kthread and kthreadd
+  CC      arch/um/drivers/line.o
+  /home/wangcong/Projects/linux-2.6/arch/um/drivers/line.c: In
+function ‘line_write_interrupt’:
+/home/wangcong/Projects/linux-2.6/arch/um/drivers/line.c:366: error:
+‘struct tty_ldisc’ has no member named ‘write_wakeup’
+/home/wangcong/Projects/linux-2.6/arch/um/drivers/line.c:367: error:
+‘struct tty_ldisc’ has no member named ‘write_wakeup’
 
 
- arch/avr32/kernel/stacktrace.c |    1 +
- arch/mips/kernel/stacktrace.c  |    1 +
- arch/sh/kernel/stacktrace.c    |    1 +
- kernel/kthread.c               |    4 ++--
- 4 files changed, 5 insertions(+), 2 deletions(-)
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
+Cc: jdike@addtoit.com
+Acked-by: Alan Cox <alan@redhat.com>
 
-diff --git a/arch/avr32/kernel/stacktrace.c b/arch/avr32/kernel/stacktrace.c
-index f4bdb44..c09f0d8 100644
---- a/arch/avr32/kernel/stacktrace.c
-+++ b/arch/avr32/kernel/stacktrace.c
-@@ -10,6 +10,7 @@
- #include <linux/sched.h>
- #include <linux/stacktrace.h>
- #include <linux/thread_info.h>
-+#include <linux/module.h>
+---
+diff --git a/arch/um/drivers/line.c b/arch/um/drivers/line.c
+index 5047490..d741f35 100644
+--- a/arch/um/drivers/line.c
++++ b/arch/um/drivers/line.c
+@@ -362,19 +362,7 @@ static irqreturn_t line_write_interrupt(int irq, void *data)
+ 	if (tty == NULL)
+ 		return IRQ_NONE;
  
- register unsigned long current_frame_pointer asm("r7");
- 
-diff --git a/arch/mips/kernel/stacktrace.c b/arch/mips/kernel/stacktrace.c
-index 5eb4681..0632e2a 100644
---- a/arch/mips/kernel/stacktrace.c
-+++ b/arch/mips/kernel/stacktrace.c
-@@ -7,6 +7,7 @@
-  */
- #include <linux/sched.h>
- #include <linux/stacktrace.h>
-+#include <linux/module.h>
- #include <asm/stacktrace.h>
- 
- /*
-diff --git a/arch/sh/kernel/stacktrace.c b/arch/sh/kernel/stacktrace.c
-index 1b2ae35..54d1f61 100644
---- a/arch/sh/kernel/stacktrace.c
-+++ b/arch/sh/kernel/stacktrace.c
-@@ -12,6 +12,7 @@
- #include <linux/sched.h>
- #include <linux/stacktrace.h>
- #include <linux/thread_info.h>
-+#include <linux/module.h>
- #include <asm/ptrace.h>
- 
- /*
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index ac3fb73..6111c27 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -106,7 +106,7 @@ static void create_kthread(struct kthread_create_info *create)
- 		 */
- 		sched_setscheduler(create->result, SCHED_NORMAL, &param);
- 		set_user_nice(create->result, KTHREAD_NICE_LEVEL);
--		set_cpus_allowed(create->result, CPU_MASK_ALL);
-+		set_cpus_allowed_ptr(create->result, CPU_MASK_ALL_PTR);
- 	}
- 	complete(&create->done);
+-	if (test_bit(TTY_DO_WRITE_WAKEUP, &tty->flags) &&
+-	   (tty->ldisc.write_wakeup != NULL))
+-		(tty->ldisc.write_wakeup)(tty);
+-
+-	/*
+-	 * BLOCKING mode
+-	 * In blocking mode, everything sleeps on tty->write_wait.
+-	 * Sleeping in the console driver would break non-blocking
+-	 * writes.
+-	 */
+-
+-	if (waitqueue_active(&tty->write_wait))
+-		wake_up_interruptible(&tty->write_wait);
++	tty_wakeup(tty);
+ 	return IRQ_HANDLED;
  }
-@@ -233,7 +233,7 @@ int kthreadd(void *unused)
- 	set_task_comm(tsk, "kthreadd");
- 	ignore_signals(tsk);
- 	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
--	set_cpus_allowed(tsk, CPU_MASK_ALL);
-+	set_cpus_allowed_ptr(tsk, CPU_MASK_ALL_PTR);
- 
- 	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
  
