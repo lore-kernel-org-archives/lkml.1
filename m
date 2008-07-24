@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbYGXMEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757130AbYGXMFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757357AbYGXMEW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbYGXMD7
+	id S1757130AbYGXMFa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbYGXMFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:03:59 -0400
-Received: from stinky.trash.net ([213.144.137.162]:34412 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473AbYGXMDy (ORCPT
+	Thu, 24 Jul 2008 08:05:17 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:28358 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752372AbYGXMFP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 08:03:54 -0400
-Message-ID: <48886FA6.6050908@trash.net>
-Date: Thu, 24 Jul 2008 14:03:50 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
+	Thu, 24 Jul 2008 08:05:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YUi6qfkHYWIkP2O3wADWTIgvqi0B8bRCNdVCobATG/VVdoeIWRbpR8DX4wDK2F1Zxf
+         RyJvcGRvZhjumj2+HMG81k9ZNeHk7gQgVE7tfmcG3cbUnGcsosSkj2ACIJqkqBtuwZz/
+         N+LcuJy1bwGqvzvzEFJg8fkX0bYQpK/3fuTLE=
+Date: Thu, 24 Jul 2008 16:05:12 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() smp-safe
+Message-ID: <20080724120512.GA21804@lenovo>
+References: <48885DDC.9010003@fujitsu-siemens.com> <20080724111631.GA3432@lenovo> <48886E6D.1030005@fujitsu-siemens.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au, w@1wt.eu,
-       davidn@davidnewall.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de, rjw@sisk.pl,
-       ilpo.jarvinen@helsinki.fi, Dave Jones <davej@redhat.com>
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
- pointer dereference
-References: <20080724060448.GA10203@elte.hu> <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au> <20080724.022259.113079007.davem@davemloft.net> <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu> <20080724115957.GA25701@elte.hu>
-In-Reply-To: <20080724115957.GA25701@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48886E6D.1030005@fujitsu-siemens.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
->> here's a new type of crash a -tip testbox triggered today:
+[Martin Wilck - Thu, Jul 24, 2008 at 01:58:37PM +0200]
+> Cyrill Gorcunov wrote:
+>
+>> Hi, but what if SMI flood happens? We could stuck here forever, don't we?
 >>
->> BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
->> IP: [<0000000000000000>] 0x0
->> PGD 0 
->> Oops: 0010 [1] PREEMPT 
->> CPU 0 
->> Pid: 5331, comm: ssh Not tainted 2.6.26 #21613
->> RIP: 0010:[<0000000000000000>]  [<0000000000000000>] 0x0
->> RSP: 0018:ffff88003b959a70  EFLAGS: 00010217
->> RAX: ffff88003b9ba91c RBX: ffff88003b9baac0 RCX: 0000000000000002
->> RDX: ffff88003b9baac0 RSI: 0000000000000014 RDI: ffff88003b9ba3d8
->> RBP: ffff88003b959a98 R08: ffff88003e434130 R09: ffff88003b9598b8
->> R10: 0000000000002000 R11: 00000000d85507ac R12: ffff88003b9ba3d8
->> R13: 0000000000000002 R14: ffff88003e06a020 R15: 0000000000000000
->> FS:  00007fb2b7806780(0000) GS:ffffffff80c1c180(0000) knlGS:0000000000000000
->> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
->> CR2: 0000000000000000 CR3: 000000003b9e8000 CR4: 00000000000006a0
->> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->> Process ssh (pid: 5331, threadinfo ffff88003b958000, task ffff88003b99a000)
->> Stack:  ffffffff80777f25 ffff88003b959a98 ffffffff80c24170 ffff88003b959b28
->>  0000000000000004 ffff88003b959ae8 ffffffff80733107 ffff88003b959ab8
->>  ffff88003b9ba3d8 ffffffff80c1ed60 0000000000000004 ffff88003b9ba3d8
->> Call Trace:
->>  [<ffffffff80777f25>] ? ipv4_confirm+0x8d/0x122
->>  [<ffffffff80733107>] nf_iterate+0x43/0xa5
+>>                 - Cyrill -
+>
+>
+> Yes, if the SMI flood never ends. But you wouldn't want to work on such  
+> a system anyway (with the current kernel code, your APIC timer would  
+> most probably be miscalibrated, which can have the weirdest effects).
+>
+> Anyway, we can add a maximum iteration count to the patch so that there  
+> is no risk of getting stuck.
+>
+> Martin
+>
+> -- 
+> Martin Wilck
+> PRIMERGY System Software Engineer
+> FSC IP ESP DEV 6
+>
+> Fujitsu Siemens Computers GmbH
+> Heinz-Nixdorf-Ring 1
+> 33106 Paderborn
+> Germany
+>
+> Tel:			++49 5251 8 15113
+> Fax:			++49 5251 8 20209
+> Email:			mailto:martin.wilck@fujitsu-siemens.com
+> Internet:		http://www.fujitsu-siemens.com
+> Company Details:	http://www.fujitsu-siemens.com/imprint.html
+>
 
-Does reverting 31d8519c fix this?
+yes, it will issue some effects but it's better then stuck there.
+More over in 'case of SMI flood with current patch you don't get
+error message printed i think so you better add max iteration
+counter so user will see on console (or whatever) that he is got
+problems.
+		- Cyrill -
