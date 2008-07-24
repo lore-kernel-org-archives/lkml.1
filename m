@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbYGXX4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbYGXX5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756398AbYGXX4V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 19:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYGXX4N
+	id S1756972AbYGXX5d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 19:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbYGXX5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 19:56:13 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:51845 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752087AbYGXX4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 19:56:13 -0400
-Date: Fri, 25 Jul 2008 02:55:49 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Steven Whitehouse <swhiteho@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [2.6 patch] fix fs/nfs/nfsroot.c compilation
-Message-ID: <20080724235549.GB19310@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 24 Jul 2008 19:57:22 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:63629 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751149AbYGXX5W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 19:57:22 -0400
+Date: Thu, 24 Jul 2008 16:56:02 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: dipankar@in.ibm.com, akpm <akpm@linux-foundation.org>
+Subject: [PATCH] rcu: fix synchronize_rcu() so that kernel-doc works
+Message-Id: <20080724165602.efdd8a96.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following compile error caused by
-commit f9247273cb69ba101877e946d2d83044409cc8c5
-(UFS: add const to parser token tabl):
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-<--  snip  -->
+Fix RCU's synchronize_cpu() so that it looks like a C function, enabling
+it to be recognized as a function with kernel-doc annotation.
 
-...
-  CC      fs/nfs/nfsroot.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/fs/nfs/nfsroot.c:130: error: tokens causes a section type conflict
-make[3]: *** [fs/nfs/nfsroot.o] Error 1
+Warning(linux-2.6.26-git11//kernel/rcupdate.c:81): No description found for parameter 'synchronize_rcu'
+Warning(linux-2.6.26-git11//kernel/rcupdate.c:81): No description found for parameter 'call_rcu'
 
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
-75623185c608ee0d223a0076ea8237edcb8ac18f 
-diff --git a/fs/nfs/nfsroot.c b/fs/nfs/nfsroot.c
-index 46763d1..8478fc2 100644
---- a/fs/nfs/nfsroot.c
-+++ b/fs/nfs/nfsroot.c
-@@ -127,7 +127,7 @@ enum {
- 	Opt_err
- };
- 
--static match_table_t __initdata tokens = {
-+static match_table_t __initconst tokens = {
- 	{Opt_port, "port=%u"},
- 	{Opt_rsize, "rsize=%u"},
- 	{Opt_wsize, "wsize=%u"},
+ kernel/rcupdate.c |    1 +
+ 1 file changed, 1 insertion(+)
 
+--- linux-2.6.26-git11.orig/kernel/rcupdate.c
++++ linux-2.6.26-git11/kernel/rcupdate.c
+@@ -77,6 +77,7 @@ void wakeme_after_rcu(struct rcu_head  *
+  * sections are delimited by rcu_read_lock() and rcu_read_unlock(),
+  * and may be nested.
+  */
++void synchronize_rcu(void);
+ synchronize_rcu_xxx(synchronize_rcu, call_rcu)
+ EXPORT_SYMBOL_GPL(synchronize_rcu);
+ 
