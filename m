@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbYGXOwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759740AbYGXOxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759547AbYGXOwl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756268AbYGXOmh
+	id S1759740AbYGXOxX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbYGXOoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:42:37 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46451 "EHLO
+	Thu, 24 Jul 2008 10:44:32 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46443 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751643AbYGXOmc (ORCPT
+	with ESMTP id S1753486AbYGXOmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:42:32 -0400
-Message-Id: <20080724141531.486682621@chello.nl>
+	Thu, 24 Jul 2008 10:42:22 -0400
+Message-Id: <20080724141530.060638861@chello.nl>
 References: <20080724140042.408642539@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Jul 2008 16:01:12 +0200
+Date: Thu, 24 Jul 2008 16:00:53 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
@@ -21,65 +21,61 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Daniel Lezcano <dlezcano@fr.ibm.com>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>
-Subject: [PATCH 30/30] nfs: fix various memory recursions possible with swap over NFS.
-Content-Disposition: inline; filename=nfs-alloc-recursions.patch
+Subject: [PATCH 11/30] mm: __GFP_MEMALLOC
+Content-Disposition: inline; filename=mm-page_alloc-GFP_EMERGENCY.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GFP_NOFS is not enough, since swap traffic is IO, hence fall back to GFP_NOIO.
+__GFP_MEMALLOC will allow the allocation to disregard the watermarks, 
+much like PF_MEMALLOC.
+
+It allows one to pass along the memalloc state in object related allocation
+flags as opposed to task related flags, such as sk->sk_allocation.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- fs/nfs/pagelist.c |    2 +-
- fs/nfs/write.c    |    6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ include/linux/gfp.h |    3 ++-
+ mm/page_alloc.c     |    4 +++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/fs/nfs/write.c
+Index: linux-2.6/include/linux/gfp.h
 ===================================================================
---- linux-2.6.orig/fs/nfs/write.c
-+++ linux-2.6/fs/nfs/write.c
-@@ -45,7 +45,7 @@ static struct kmem_cache *nfs_wdata_cach
+--- linux-2.6.orig/include/linux/gfp.h
++++ linux-2.6/include/linux/gfp.h
+@@ -43,6 +43,7 @@ struct vm_area_struct;
+ #define __GFP_REPEAT	((__force gfp_t)0x400u)	/* See above */
+ #define __GFP_NOFAIL	((__force gfp_t)0x800u)	/* See above */
+ #define __GFP_NORETRY	((__force gfp_t)0x1000u)/* See above */
++#define __GFP_MEMALLOC  ((__force gfp_t)0x2000u)/* Use emergency reserves */
+ #define __GFP_COMP	((__force gfp_t)0x4000u)/* Add compound page metadata */
+ #define __GFP_ZERO	((__force gfp_t)0x8000u)/* Return zeroed page on success */
+ #define __GFP_NOMEMALLOC ((__force gfp_t)0x10000u) /* Don't use emergency reserves */
+@@ -88,7 +89,7 @@ struct vm_area_struct;
+ /* Control page allocator reclaim behavior */
+ #define GFP_RECLAIM_MASK (__GFP_WAIT|__GFP_HIGH|__GFP_IO|__GFP_FS|\
+ 			__GFP_NOWARN|__GFP_REPEAT|__GFP_NOFAIL|\
+-			__GFP_NORETRY|__GFP_NOMEMALLOC)
++			__GFP_NORETRY|__GFP_MEMALLOC|__GFP_NOMEMALLOC)
  
- struct nfs_write_data *nfs_commitdata_alloc(void)
- {
--	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
-+	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOIO);
- 
- 	if (p) {
- 		memset(p, 0, sizeof(*p));
-@@ -63,7 +63,7 @@ void nfs_commit_free(struct nfs_write_da
- 
- struct nfs_write_data *nfs_writedata_alloc(unsigned int pagecount)
- {
--	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
-+	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOIO);
- 
- 	if (p) {
- 		memset(p, 0, sizeof(*p));
-@@ -72,7 +72,7 @@ struct nfs_write_data *nfs_writedata_all
- 		if (pagecount <= ARRAY_SIZE(p->page_array))
- 			p->pagevec = p->page_array;
- 		else {
--			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
-+			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOIO);
- 			if (!p->pagevec) {
- 				kmem_cache_free(nfs_wdata_cachep, p);
- 				p = NULL;
-Index: linux-2.6/fs/nfs/pagelist.c
+ /* Control allocation constraints */
+ #define GFP_CONSTRAINT_MASK (__GFP_HARDWALL|__GFP_THISNODE)
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/fs/nfs/pagelist.c
-+++ linux-2.6/fs/nfs/pagelist.c
-@@ -27,7 +27,7 @@ static inline struct nfs_page *
- nfs_page_alloc(void)
- {
- 	struct nfs_page	*p;
--	p = kmem_cache_alloc(nfs_page_cachep, GFP_KERNEL);
-+	p = kmem_cache_alloc(nfs_page_cachep, GFP_NOIO);
- 	if (p) {
- 		memset(p, 0, sizeof(*p));
- 		INIT_LIST_HEAD(&p->wb_list);
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -1452,7 +1452,9 @@ int gfp_to_alloc_flags(gfp_t gfp_mask)
+ 		alloc_flags |= ALLOC_HARDER;
+ 
+ 	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+-		if (!in_irq() && (p->flags & PF_MEMALLOC))
++		if (gfp_mask & __GFP_MEMALLOC)
++			alloc_flags |= ALLOC_NO_WATERMARKS;
++		else if (!in_irq() && (p->flags & PF_MEMALLOC))
+ 			alloc_flags |= ALLOC_NO_WATERMARKS;
+ 		else if (!in_interrupt() &&
+ 				unlikely(test_thread_flag(TIF_MEMDIE)))
 
 -- 
 
