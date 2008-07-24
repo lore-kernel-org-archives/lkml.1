@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757130AbYGXMFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756520AbYGXMJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757130AbYGXMFa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbYGXMFR
+	id S1756520AbYGXMJY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYGXMJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:05:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:28358 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbYGXMFP (ORCPT
+	Thu, 24 Jul 2008 08:09:16 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:37821 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751696AbYGXMJQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 08:05:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YUi6qfkHYWIkP2O3wADWTIgvqi0B8bRCNdVCobATG/VVdoeIWRbpR8DX4wDK2F1Zxf
-         RyJvcGRvZhjumj2+HMG81k9ZNeHk7gQgVE7tfmcG3cbUnGcsosSkj2ACIJqkqBtuwZz/
-         N+LcuJy1bwGqvzvzEFJg8fkX0bYQpK/3fuTLE=
-Date: Thu, 24 Jul 2008 16:05:12 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() smp-safe
-Message-ID: <20080724120512.GA21804@lenovo>
-References: <48885DDC.9010003@fujitsu-siemens.com> <20080724111631.GA3432@lenovo> <48886E6D.1030005@fujitsu-siemens.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48886E6D.1030005@fujitsu-siemens.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 24 Jul 2008 08:09:16 -0400
+Subject: Re: 22bb1be4d27... breaks hal (and NM)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Jean Tourrilhes <jt@hpl.hp.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1216900631.7257.321.camel@twins>
+References: <20080724115805.5466c217@mjolnir.drzeus.cx>
+	 <1216899520.13587.49.camel@johannes.berg> <1216900631.7257.321.camel@twins>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-KipZdDiOwxQBs3VOuP+c"
+Date: Thu, 24 Jul 2008 14:08:09 +0200
+Message-Id: <1216901290.13587.54.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Martin Wilck - Thu, Jul 24, 2008 at 01:58:37PM +0200]
-> Cyrill Gorcunov wrote:
->
->> Hi, but what if SMI flood happens? We could stuck here forever, don't we?
->>
->>                 - Cyrill -
->
->
-> Yes, if the SMI flood never ends. But you wouldn't want to work on such  
-> a system anyway (with the current kernel code, your APIC timer would  
-> most probably be miscalibrated, which can have the weirdest effects).
->
-> Anyway, we can add a maximum iteration count to the patch so that there  
-> is no risk of getting stuck.
->
-> Martin
->
-> -- 
-> Martin Wilck
-> PRIMERGY System Software Engineer
-> FSC IP ESP DEV 6
->
-> Fujitsu Siemens Computers GmbH
-> Heinz-Nixdorf-Ring 1
-> 33106 Paderborn
-> Germany
->
-> Tel:			++49 5251 8 15113
-> Fax:			++49 5251 8 20209
-> Email:			mailto:martin.wilck@fujitsu-siemens.com
-> Internet:		http://www.fujitsu-siemens.com
-> Company Details:	http://www.fujitsu-siemens.com/imprint.html
->
 
-yes, it will issue some effects but it's better then stuck there.
-More over in 'case of SMI flood with current patch you don't get
-error message printed i think so you better add max iteration
-counter so user will see on console (or whatever) that he is got
-problems.
-		- Cyrill -
+--=-KipZdDiOwxQBs3VOuP+c
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2008-07-24 at 13:57 +0200, Peter Zijlstra wrote:
+
+> So you're not considering HAL as shipped by most (if not all) distros as
+> anyone?
+>=20
+> If everybody would act like that, the next kernel wouldn't even manage
+> to get rudimentary user-space up and running. Like we already changed
+> all those systemcalls in glibc-head, who needs this kernel to boot on
+> your old stuff anyway..
+>=20
+> Common,.. this is rediculous.
+
+What the hell is wrong with you guys? I used to think it's accepted
+practice to introduce a config option you can change away from the
+default if you already know you are using new software that doesn't need
+it, and if you are clueless just don't fucking touch the default until I
+decide it's time to flip the default/remove the option because distros
+are shipping new versions of the dependent software.
+
+johannes
+
+--=-KipZdDiOwxQBs3VOuP+c
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJIiHCmAAoJEKVg1VMiehFYpJMQAI+5+Llx7f89zQDTqvPUWQnn
+bvf2h9OTncMHY1DhAQh6l4H20rn5se16blwtBBK/L2PC3F5LylMqm64GMB83bBgo
+wjnudYqBO2NpPCXwTUexubBFsiatuFKp21gU8dbgo+9F+vSgbgDxoHySOJhqLZ5r
+LLgfDyya7u8rjIUXoLFuyOQD4gTZFfDjZ0DLSymst8uVnHCj1X/Wmy8hmjvon8+0
+Do/eyJrf394pGJFPtkKpSwaj4uZBNIf4Z7eH3oj1pTP7e5PoiubmedefRJ17ziU8
+/F2HrEy91E2YPkjBbckLSd73oUcxTO8tZR/gut2Zp+sU0q1CizQc82VYDU/n5agb
+pz+Q4icuQCb5zDTVIq4aVYRRfWKuZ9SyFQrc1CcrTKzgK8NITTDINJGuEoMASwJH
+u+5EPhMBzpENCoxc6QilJ35yZkd+xo3Wh5fQM3Wmv1gcuJLr4+IH7uwUuCqL4Epp
+LfoBryfAgFYtfaHPHHeP8Qz9IegKPoDZNeYSLWnS9Yy4KgopYDeItmbeVX4XtuTy
+tKIa/rn+GSj99i6LCbWyRWBlYvtyTes1uE69CJ9smaaHITu5GjNs1PkgUnGewbfE
+Agu3066BBqg41CzjygJl5C27ARyZxwpsqlgT/Bvk4yZwKxkWyj7fVoc0+g31UaF5
+Br5xFBXBhso1QfGjgL34
+=7AjK
+-----END PGP SIGNATURE-----
+
+--=-KipZdDiOwxQBs3VOuP+c--
+
