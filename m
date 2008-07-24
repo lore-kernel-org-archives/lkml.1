@@ -1,511 +1,752 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbYGXTlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbYGXTl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbYGXTlN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 15:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbYGXTkx
+	id S1754907AbYGXTl3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 15:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYGXTk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 15:40:53 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:54783 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750991AbYGXTkv (ORCPT
+	Thu, 24 Jul 2008 15:40:56 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:63999 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751533AbYGXTkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 15:40:51 -0400
+	Thu, 24 Jul 2008 15:40:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
-         :message-id:content-type:content-transfer-encoding;
-        b=Aua1TPM+JDH4/m9KwYrlCUkqDCgySJY+jWgkcUWapVUJ15XJ06yTfOwkgRhJGCFW/F
-         ethTSl+YVVJY1GvnnubfZ6j7L2C2Z5oP0w09blYeIh5dyXVZcy8xxB96r9/dKrtBgDHc
-         PF15CGTmKQ9Nwzuj2lUWmHPR7ZQP6Rb8ZWUjU=
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=XgEf849XqXDm6LLjynb+Ac8E5NN8mTJNnCaSkSq1ux+IY/MoRC1DqZriFnCnSNlAfY
+         eoSWuXngmbRjW0F99X376SHg48iOZwcSkVVosamk16kwEIq7nk6x8hy9uj6Xf549UEP2
+         d8ZESNK9yUaMSI9JCFhmngf3qRTjkOPV9Pi3o=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 1/4] move HDIO_* ioctls support from <linux/hdreg.h> to <linux/hdio_ioctls.h>
-Date: Thu, 24 Jul 2008 21:35:02 +0200
+Subject: [PATCH 2/4] ide: use <linux/hdio_ioctls.h> instead of <linux/hdreg.h>
+Date: Thu, 24 Jul 2008 21:35:48 +0200
 User-Agent: KMail/1.9.9
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200807242135.02363.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807242135.48368.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Include <linux/ata.h> directly in <linux/ide.h>
+  instead of through <linux/hdreg.h>.
+
+* Include <linux/hdio_ioctls.h> when needed.
+
+* Remove <linux/hdreg.h> includes.
+
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
-* against previous ATA_ID_*, ATA_CMD_* and ATA_* patchsets
-* yes, this one also lacks proper description aka patch #0/0
-  but it is the last one so it is not worth doing it now ;)
+ drivers/ide/arm/icside.c       |    1 -
+ drivers/ide/arm/palm_bk3710.c  |    1 -
+ drivers/ide/ide-disk.c         |    1 +
+ drivers/ide/ide-floppy.c       |    1 +
+ drivers/ide/ide-io.c           |    1 +
+ drivers/ide/ide-iops.c         |    1 -
+ drivers/ide/ide-lib.c          |    1 -
+ drivers/ide/ide-proc.c         |    1 -
+ drivers/ide/ide-taskfile.c     |    2 +-
+ drivers/ide/ide-timings.c      |    1 -
+ drivers/ide/ide.c              |    1 +
+ drivers/ide/legacy/ali14xx.c   |    1 -
+ drivers/ide/legacy/buddha.c    |    1 -
+ drivers/ide/legacy/dtc2278.c   |    1 -
+ drivers/ide/legacy/falconide.c |    1 -
+ drivers/ide/legacy/gayle.c     |    1 -
+ drivers/ide/legacy/ht6560b.c   |    1 -
+ drivers/ide/legacy/ide-cs.c    |    1 -
+ drivers/ide/legacy/macide.c    |    1 -
+ drivers/ide/legacy/q40ide.c    |    2 --
+ drivers/ide/legacy/qd65xx.c    |    1 -
+ drivers/ide/legacy/umc8672.c   |    1 -
+ drivers/ide/pci/aec62xx.c      |    1 -
+ drivers/ide/pci/alim15x3.c     |    1 -
+ drivers/ide/pci/atiixp.c       |    1 -
+ drivers/ide/pci/cmd640.c       |    1 -
+ drivers/ide/pci/cmd64x.c       |    1 -
+ drivers/ide/pci/cs5520.c       |    1 -
+ drivers/ide/pci/cs5530.c       |    1 -
+ drivers/ide/pci/delkin_cb.c    |    1 -
+ drivers/ide/pci/generic.c      |    1 -
+ drivers/ide/pci/hpt34x.c       |    1 -
+ drivers/ide/pci/hpt366.c       |    1 -
+ drivers/ide/pci/it8213.c       |    1 -
+ drivers/ide/pci/it821x.c       |    1 -
+ drivers/ide/pci/jmicron.c      |    1 -
+ drivers/ide/pci/ns87415.c      |    1 -
+ drivers/ide/pci/opti621.c      |    1 -
+ drivers/ide/pci/pdc202xx_new.c |    1 -
+ drivers/ide/pci/pdc202xx_old.c |    1 -
+ drivers/ide/pci/piix.c         |    1 -
+ drivers/ide/pci/rz1000.c       |    1 -
+ drivers/ide/pci/sc1200.c       |    1 -
+ drivers/ide/pci/scc_pata.c     |    1 -
+ drivers/ide/pci/serverworks.c  |    1 -
+ drivers/ide/pci/sgiioc4.c      |    1 -
+ drivers/ide/pci/siimage.c      |    1 -
+ drivers/ide/pci/sis5513.c      |    1 -
+ drivers/ide/pci/sl82c105.c     |    1 -
+ drivers/ide/pci/slc90e66.c     |    1 -
+ drivers/ide/pci/triflex.c      |    1 -
+ drivers/ide/pci/trm290.c       |    1 -
+ drivers/scsi/ide-scsi.c        |    1 -
+ include/linux/ide.h            |    2 +-
+ 54 files changed, 6 insertions(+), 51 deletions(-)
 
- include/linux/Kbuild        |    1 
- include/linux/hdio_ioctls.h |  213 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/hdreg.h       |  211 -------------------------------------------
- 3 files changed, 215 insertions(+), 210 deletions(-)
-
-Index: b/include/linux/Kbuild
+Index: b/drivers/ide/arm/icside.c
 ===================================================================
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -210,6 +210,7 @@ unifdef-y += fs.h
- unifdef-y += gameport.h
- unifdef-y += generic_serial.h
- unifdef-y += hayesesp.h
-+unifdef-y += hdio_ioctls.h
- unifdef-y += hdlcdrv.h
- unifdef-y += hdlc.h
- unifdef-y += hdreg.h
-Index: b/include/linux/hdio_ioctls.h
+--- a/drivers/ide/arm/icside.c
++++ b/drivers/ide/arm/icside.c
+@@ -10,7 +10,6 @@
+ #include <linux/slab.h>
+ #include <linux/blkdev.h>
+ #include <linux/errno.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/device.h>
+Index: b/drivers/ide/arm/palm_bk3710.c
 ===================================================================
---- /dev/null
-+++ b/include/linux/hdio_ioctls.h
-@@ -0,0 +1,213 @@
-+#ifndef __LINUX_HDIO_IOCTLS_H
-+#define __LINUX_HDIO_IOCTLS_H
-+
-+#include <linux/types.h>
-+
-+/*
-+ * Command Header sizes for IOCTL commands
-+ */
-+
-+#define HDIO_DRIVE_CMD_HDR_SIZE		(4 * sizeof(__u8))
-+#define HDIO_DRIVE_HOB_HDR_SIZE		(8 * sizeof(__u8))
-+#define HDIO_DRIVE_TASK_HDR_SIZE	(8 * sizeof(__u8))
-+
-+#define IDE_DRIVE_TASK_NO_DATA		0
-+#ifndef __KERNEL__
-+#define IDE_DRIVE_TASK_INVALID		-1
-+#define IDE_DRIVE_TASK_SET_XFER		1
-+#define IDE_DRIVE_TASK_IN		2
-+#define IDE_DRIVE_TASK_OUT		3
-+#endif
-+#define IDE_DRIVE_TASK_RAW_WRITE	4
-+
-+/*
-+ * Define standard taskfile in/out register
-+ */
-+#define IDE_TASKFILE_STD_IN_FLAGS	0xFE
-+#define IDE_HOB_STD_IN_FLAGS		0x3C
-+#ifndef __KERNEL__
-+#define IDE_TASKFILE_STD_OUT_FLAGS	0xFE
-+#define IDE_HOB_STD_OUT_FLAGS		0x3C
-+
-+typedef unsigned char task_ioreg_t;
-+typedef unsigned long sata_ioreg_t;
-+#endif
-+
-+typedef union ide_reg_valid_s {
-+	unsigned all				: 16;
-+	struct {
-+		unsigned data			: 1;
-+		unsigned error_feature		: 1;
-+		unsigned sector			: 1;
-+		unsigned nsector		: 1;
-+		unsigned lcyl			: 1;
-+		unsigned hcyl			: 1;
-+		unsigned select			: 1;
-+		unsigned status_command		: 1;
-+
-+		unsigned data_hob		: 1;
-+		unsigned error_feature_hob	: 1;
-+		unsigned sector_hob		: 1;
-+		unsigned nsector_hob		: 1;
-+		unsigned lcyl_hob		: 1;
-+		unsigned hcyl_hob		: 1;
-+		unsigned select_hob		: 1;
-+		unsigned control_hob		: 1;
-+	} b;
-+} ide_reg_valid_t;
-+
-+typedef struct ide_task_request_s {
-+	__u8		io_ports[8];
-+	__u8		hob_ports[8]; /* bytes 6 and 7 are unused */
-+	ide_reg_valid_t	out_flags;
-+	ide_reg_valid_t	in_flags;
-+	int		data_phase;
-+	int		req_cmd;
-+	unsigned long	out_size;
-+	unsigned long	in_size;
-+} ide_task_request_t;
-+
-+typedef struct ide_ioctl_request_s {
-+	ide_task_request_t	*task_request;
-+	unsigned char		*out_buffer;
-+	unsigned char		*in_buffer;
-+} ide_ioctl_request_t;
-+
-+struct hd_drive_cmd_hdr {
-+	__u8 command;
-+	__u8 sector_number;
-+	__u8 feature;
-+	__u8 sector_count;
-+};
-+
-+#ifndef __KERNEL__
-+typedef struct hd_drive_task_hdr {
-+	__u8 data;
-+	__u8 feature;
-+	__u8 sector_count;
-+	__u8 sector_number;
-+	__u8 low_cylinder;
-+	__u8 high_cylinder;
-+	__u8 device_head;
-+	__u8 command;
-+} task_struct_t;
-+
-+typedef struct hd_drive_hob_hdr {
-+	__u8 data;
-+	__u8 feature;
-+	__u8 sector_count;
-+	__u8 sector_number;
-+	__u8 low_cylinder;
-+	__u8 high_cylinder;
-+	__u8 device_head;
-+	__u8 control;
-+} hob_struct_t;
-+#endif
-+
-+#define TASKFILE_NO_DATA		0x0000
-+
-+#define TASKFILE_IN			0x0001
-+#define TASKFILE_MULTI_IN		0x0002
-+
-+#define TASKFILE_OUT			0x0004
-+#define TASKFILE_MULTI_OUT		0x0008
-+#define TASKFILE_IN_OUT			0x0010
-+
-+#define TASKFILE_IN_DMA			0x0020
-+#define TASKFILE_OUT_DMA		0x0040
-+#define TASKFILE_IN_DMAQ		0x0080
-+#define TASKFILE_OUT_DMAQ		0x0100
-+
-+#ifndef __KERNEL__
-+#define TASKFILE_P_IN			0x0200
-+#define TASKFILE_P_OUT			0x0400
-+#define TASKFILE_P_IN_DMA		0x0800
-+#define TASKFILE_P_OUT_DMA		0x1000
-+#define TASKFILE_P_IN_DMAQ		0x2000
-+#define TASKFILE_P_OUT_DMAQ		0x4000
-+#define TASKFILE_48			0x8000
-+#define TASKFILE_INVALID		0x7fff
-+#endif
-+
-+struct hd_geometry {
-+      unsigned char heads;
-+      unsigned char sectors;
-+      unsigned short cylinders;
-+      unsigned long start;
-+};
-+
-+/* hd/ide ctl's that pass (arg) ptrs to user space are numbered 0x030n/0x031n */
-+#define HDIO_GETGEO		0x0301	/* get device geometry */
-+#define HDIO_GET_UNMASKINTR	0x0302	/* get current unmask setting */
-+#define HDIO_GET_MULTCOUNT	0x0304	/* get current IDE blockmode setting */
-+#define HDIO_GET_QDMA		0x0305	/* get use-qdma flag */
-+
-+#define HDIO_SET_XFER		0x0306  /* set transfer rate via proc */
-+
-+#define HDIO_OBSOLETE_IDENTITY	0x0307	/* OBSOLETE, DO NOT USE: returns 142 bytes */
-+#define HDIO_GET_KEEPSETTINGS	0x0308	/* get keep-settings-on-reset flag */
-+#define HDIO_GET_32BIT		0x0309	/* get current io_32bit setting */
-+#define HDIO_GET_NOWERR		0x030a	/* get ignore-write-error flag */
-+#define HDIO_GET_DMA		0x030b	/* get use-dma flag */
-+#define HDIO_GET_NICE		0x030c	/* get nice flags */
-+#define HDIO_GET_IDENTITY	0x030d	/* get IDE identification info */
-+#define HDIO_GET_WCACHE		0x030e	/* get write cache mode on|off */
-+#define HDIO_GET_ACOUSTIC	0x030f	/* get acoustic value */
-+#define	HDIO_GET_ADDRESS	0x0310	/* */
-+
-+#define HDIO_GET_BUSSTATE	0x031a	/* get the bus state of the hwif */
-+#define HDIO_TRISTATE_HWIF	0x031b	/* execute a channel tristate */
-+#define HDIO_DRIVE_RESET	0x031c	/* execute a device reset */
-+#define HDIO_DRIVE_TASKFILE	0x031d	/* execute raw taskfile */
-+#define HDIO_DRIVE_TASK		0x031e	/* execute task and special drive command */
-+#define HDIO_DRIVE_CMD		0x031f	/* execute a special drive command */
-+#define HDIO_DRIVE_CMD_AEB	HDIO_DRIVE_TASK
-+
-+/* hd/ide ctl's that pass (arg) non-ptr values are numbered 0x032n/0x033n */
-+#define HDIO_SET_MULTCOUNT	0x0321	/* change IDE blockmode */
-+#define HDIO_SET_UNMASKINTR	0x0322	/* permit other irqs during I/O */
-+#define HDIO_SET_KEEPSETTINGS	0x0323	/* keep ioctl settings on reset */
-+#define HDIO_SET_32BIT		0x0324	/* change io_32bit flags */
-+#define HDIO_SET_NOWERR		0x0325	/* change ignore-write-error flag */
-+#define HDIO_SET_DMA		0x0326	/* change use-dma flag */
-+#define HDIO_SET_PIO_MODE	0x0327	/* reconfig interface to new speed */
-+#ifndef __KERNEL__
-+#define HDIO_SCAN_HWIF		0x0328	/* register and (re)scan interface */
-+#define HDIO_UNREGISTER_HWIF	0x032a  /* unregister interface */
-+#endif
-+#define HDIO_SET_NICE		0x0329	/* set nice flags */
-+#define HDIO_SET_WCACHE		0x032b	/* change write cache enable-disable */
-+#define HDIO_SET_ACOUSTIC	0x032c	/* change acoustic behavior */
-+#define HDIO_SET_BUSSTATE	0x032d	/* set the bus state of the hwif */
-+#define HDIO_SET_QDMA		0x032e	/* change use-qdma flag */
-+#define HDIO_SET_ADDRESS	0x032f	/* change lba addressing modes */
-+
-+/* bus states */
-+enum {
-+	BUSSTATE_OFF = 0,
-+	BUSSTATE_ON,
-+	BUSSTATE_TRISTATE
-+};
-+
-+/* hd/ide ctl's that pass (arg) ptrs to user space are numbered 0x033n/0x033n */
-+/* 0x330 is reserved - used to be HDIO_GETGEO_BIG */
-+/* 0x331 is reserved - used to be HDIO_GETGEO_BIG_RAW */
-+/* 0x338 is reserved - used to be HDIO_SET_IDE_SCSI */
-+/* 0x339 is reserved - used to be HDIO_SET_SCSI_IDE */
-+
-+#define __NEW_HD_DRIVE_ID
-+
-+/*
-+ * IDE "nice" flags. These are used on a per drive basis to determine
-+ * when to be nice and give more bandwidth to the other devices which
-+ * share the same IDE bus.
-+ */
-+#define IDE_NICE_DSC_OVERLAP	(0)	/* per the DSC overlap protocol */
-+#define IDE_NICE_ATAPI_OVERLAP	(1)	/* not supported yet */
-+#define IDE_NICE_1		(3)	/* when probably won't affect us much */
-+#ifndef __KERNEL__
-+#define IDE_NICE_0		(2)	/* when sure that it won't affect us */
-+#define IDE_NICE_2		(4)	/* when we know it's on our expense */
-+#endif
-+
-+#endif	/* __LINUX_HDIO_IOCTLS_H */
-Index: b/include/linux/hdreg.h
+--- a/drivers/ide/arm/palm_bk3710.c
++++ b/drivers/ide/arm/palm_bk3710.c
+@@ -27,7 +27,6 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/ioport.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/delay.h>
+ #include <linux/init.h>
+Index: b/drivers/ide/ide-disk.c
 ===================================================================
---- a/include/linux/hdreg.h
-+++ b/include/linux/hdreg.h
-@@ -5,133 +5,7 @@
- #include <linux/ata.h>
- #endif /* __KERNEL__ */
+--- a/drivers/ide/ide-disk.c
++++ b/drivers/ide/ide-disk.c
+@@ -34,6 +34,7 @@
+ #define _IDE_DISK
  
--#include <linux/types.h>
--
--/*
-- * Command Header sizes for IOCTL commands
-- */
--
--#define HDIO_DRIVE_CMD_HDR_SIZE		(4 * sizeof(__u8))
--#define HDIO_DRIVE_HOB_HDR_SIZE		(8 * sizeof(__u8))
--#define HDIO_DRIVE_TASK_HDR_SIZE	(8 * sizeof(__u8))
--
--#define IDE_DRIVE_TASK_NO_DATA		0
--#ifndef __KERNEL__
--#define IDE_DRIVE_TASK_INVALID		-1
--#define IDE_DRIVE_TASK_SET_XFER		1
--#define IDE_DRIVE_TASK_IN		2
--#define IDE_DRIVE_TASK_OUT		3
--#endif
--#define IDE_DRIVE_TASK_RAW_WRITE	4
--
--/*
-- * Define standard taskfile in/out register
-- */
--#define IDE_TASKFILE_STD_IN_FLAGS	0xFE
--#define IDE_HOB_STD_IN_FLAGS		0x3C
--#ifndef __KERNEL__
--#define IDE_TASKFILE_STD_OUT_FLAGS	0xFE
--#define IDE_HOB_STD_OUT_FLAGS		0x3C
--
--typedef unsigned char task_ioreg_t;
--typedef unsigned long sata_ioreg_t;
--#endif
--
--typedef union ide_reg_valid_s {
--	unsigned all				: 16;
--	struct {
--		unsigned data			: 1;
--		unsigned error_feature		: 1;
--		unsigned sector			: 1;
--		unsigned nsector		: 1;
--		unsigned lcyl			: 1;
--		unsigned hcyl			: 1;
--		unsigned select			: 1;
--		unsigned status_command		: 1;
--
--		unsigned data_hob		: 1;
--		unsigned error_feature_hob	: 1;
--		unsigned sector_hob		: 1;
--		unsigned nsector_hob		: 1;
--		unsigned lcyl_hob		: 1;
--		unsigned hcyl_hob		: 1;
--		unsigned select_hob		: 1;
--		unsigned control_hob		: 1;
--	} b;
--} ide_reg_valid_t;
--
--typedef struct ide_task_request_s {
--	__u8		io_ports[8];
--	__u8		hob_ports[8]; /* bytes 6 and 7 are unused */
--	ide_reg_valid_t	out_flags;
--	ide_reg_valid_t	in_flags;
--	int		data_phase;
--	int		req_cmd;
--	unsigned long	out_size;
--	unsigned long	in_size;
--} ide_task_request_t;
--
--typedef struct ide_ioctl_request_s {
--	ide_task_request_t	*task_request;
--	unsigned char		*out_buffer;
--	unsigned char		*in_buffer;
--} ide_ioctl_request_t;
--
--struct hd_drive_cmd_hdr {
--	__u8 command;
--	__u8 sector_number;
--	__u8 feature;
--	__u8 sector_count;
--};
--
--#ifndef __KERNEL__
--typedef struct hd_drive_task_hdr {
--	__u8 data;
--	__u8 feature;
--	__u8 sector_count;
--	__u8 sector_number;
--	__u8 low_cylinder;
--	__u8 high_cylinder;
--	__u8 device_head;
--	__u8 command;
--} task_struct_t;
--
--typedef struct hd_drive_hob_hdr {
--	__u8 data;
--	__u8 feature;
--	__u8 sector_count;
--	__u8 sector_number;
--	__u8 low_cylinder;
--	__u8 high_cylinder;
--	__u8 device_head;
--	__u8 control;
--} hob_struct_t;
--#endif
--
--#define TASKFILE_NO_DATA		0x0000
--
--#define TASKFILE_IN			0x0001
--#define TASKFILE_MULTI_IN		0x0002
--
--#define TASKFILE_OUT			0x0004
--#define TASKFILE_MULTI_OUT		0x0008
--#define TASKFILE_IN_OUT			0x0010
--
--#define TASKFILE_IN_DMA			0x0020
--#define TASKFILE_OUT_DMA		0x0040
--#define TASKFILE_IN_DMAQ		0x0080
--#define TASKFILE_OUT_DMAQ		0x0100
--
--#ifndef __KERNEL__
--#define TASKFILE_P_IN			0x0200
--#define TASKFILE_P_OUT			0x0400
--#define TASKFILE_P_IN_DMA		0x0800
--#define TASKFILE_P_OUT_DMA		0x1000
--#define TASKFILE_P_IN_DMAQ		0x2000
--#define TASKFILE_P_OUT_DMAQ		0x4000
--#define TASKFILE_48			0x8000
--#define TASKFILE_INVALID		0x7fff
--#endif
+ #include <linux/ide.h>
 +#include <linux/hdio_ioctls.h>
  
- #ifndef __KERNEL__
- /* ATA/ATAPI Commands pre T13 Spec */
-@@ -322,77 +196,7 @@ typedef struct hd_drive_hob_hdr {
- #define SECURITY_ERASE_UNIT		0xBD
- #define SECURITY_FREEZE_LOCK		0xBE
- #define SECURITY_DISABLE_PASSWORD	0xBF
--#endif /* __KERNEL__ */
--
--struct hd_geometry {
--      unsigned char heads;
--      unsigned char sectors;
--      unsigned short cylinders;
--      unsigned long start;
--};
--
--/* hd/ide ctl's that pass (arg) ptrs to user space are numbered 0x030n/0x031n */
--#define HDIO_GETGEO		0x0301	/* get device geometry */
--#define HDIO_GET_UNMASKINTR	0x0302	/* get current unmask setting */
--#define HDIO_GET_MULTCOUNT	0x0304	/* get current IDE blockmode setting */
--#define HDIO_GET_QDMA		0x0305	/* get use-qdma flag */
--
--#define HDIO_SET_XFER		0x0306  /* set transfer rate via proc */
--
--#define HDIO_OBSOLETE_IDENTITY	0x0307	/* OBSOLETE, DO NOT USE: returns 142 bytes */
--#define HDIO_GET_KEEPSETTINGS	0x0308	/* get keep-settings-on-reset flag */
--#define HDIO_GET_32BIT		0x0309	/* get current io_32bit setting */
--#define HDIO_GET_NOWERR		0x030a	/* get ignore-write-error flag */
--#define HDIO_GET_DMA		0x030b	/* get use-dma flag */
--#define HDIO_GET_NICE		0x030c	/* get nice flags */
--#define HDIO_GET_IDENTITY	0x030d	/* get IDE identification info */
--#define HDIO_GET_WCACHE		0x030e	/* get write cache mode on|off */
--#define HDIO_GET_ACOUSTIC	0x030f	/* get acoustic value */
--#define	HDIO_GET_ADDRESS	0x0310	/* */
--
--#define HDIO_GET_BUSSTATE	0x031a	/* get the bus state of the hwif */
--#define HDIO_TRISTATE_HWIF	0x031b	/* execute a channel tristate */
--#define HDIO_DRIVE_RESET	0x031c	/* execute a device reset */
--#define HDIO_DRIVE_TASKFILE	0x031d	/* execute raw taskfile */
--#define HDIO_DRIVE_TASK		0x031e	/* execute task and special drive command */
--#define HDIO_DRIVE_CMD		0x031f	/* execute a special drive command */
--#define HDIO_DRIVE_CMD_AEB	HDIO_DRIVE_TASK
--
--/* hd/ide ctl's that pass (arg) non-ptr values are numbered 0x032n/0x033n */
--#define HDIO_SET_MULTCOUNT	0x0321	/* change IDE blockmode */
--#define HDIO_SET_UNMASKINTR	0x0322	/* permit other irqs during I/O */
--#define HDIO_SET_KEEPSETTINGS	0x0323	/* keep ioctl settings on reset */
--#define HDIO_SET_32BIT		0x0324	/* change io_32bit flags */
--#define HDIO_SET_NOWERR		0x0325	/* change ignore-write-error flag */
--#define HDIO_SET_DMA		0x0326	/* change use-dma flag */
--#define HDIO_SET_PIO_MODE	0x0327	/* reconfig interface to new speed */
--#ifndef __KERNEL__
--#define HDIO_SCAN_HWIF		0x0328	/* register and (re)scan interface */
--#define HDIO_UNREGISTER_HWIF	0x032a  /* unregister interface */
--#endif
--#define HDIO_SET_NICE		0x0329	/* set nice flags */
--#define HDIO_SET_WCACHE		0x032b	/* change write cache enable-disable */
--#define HDIO_SET_ACOUSTIC	0x032c	/* change acoustic behavior */
--#define HDIO_SET_BUSSTATE	0x032d	/* set the bus state of the hwif */
--#define HDIO_SET_QDMA		0x032e	/* change use-qdma flag */
--#define HDIO_SET_ADDRESS	0x032f	/* change lba addressing modes */
--
--/* bus states */
--enum {
--	BUSSTATE_OFF = 0,
--	BUSSTATE_ON,
--	BUSSTATE_TRISTATE
--};
--
--/* hd/ide ctl's that pass (arg) ptrs to user space are numbered 0x033n/0x033n */
--/* 0x330 is reserved - used to be HDIO_GETGEO_BIG */
--/* 0x331 is reserved - used to be HDIO_GETGEO_BIG_RAW */
--/* 0x338 is reserved - used to be HDIO_SET_IDE_SCSI */
--/* 0x339 is reserved - used to be HDIO_SET_SCSI_IDE */
+ #include <asm/byteorder.h>
+ #include <asm/irq.h>
+Index: b/drivers/ide/ide-floppy.c
+===================================================================
+--- a/drivers/ide/ide-floppy.c
++++ b/drivers/ide/ide-floppy.c
+@@ -31,6 +31,7 @@
+ #include <linux/slab.h>
+ #include <linux/cdrom.h>
+ #include <linux/ide.h>
++#include <linux/hdio_ioctls.h>
+ #include <linux/bitops.h>
+ #include <linux/mutex.h>
  
--#define __NEW_HD_DRIVE_ID
--
--#ifndef __KERNEL__
- /*
-  * Structure returned by HDIO_GET_IDENTITY, as per ANSI NCITS ATA6 rev.1b spec.
-  *
-@@ -647,17 +451,4 @@ struct hd_driveid {
- };
- #endif /* __KERNEL__ */
+Index: b/drivers/ide/ide-io.c
+===================================================================
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -40,6 +40,7 @@
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+ #include <linux/ide.h>
++#include <linux/hdio_ioctls.h>
+ #include <linux/completion.h>
+ #include <linux/reboot.h>
+ #include <linux/cdrom.h>
+Index: b/drivers/ide/ide-iops.c
+===================================================================
+--- a/drivers/ide/ide-iops.c
++++ b/drivers/ide/ide-iops.c
+@@ -18,7 +18,6 @@
+ #include <linux/slab.h>
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/bitops.h>
+ #include <linux/nmi.h>
+Index: b/drivers/ide/ide-lib.c
+===================================================================
+--- a/drivers/ide/ide-lib.c
++++ b/drivers/ide/ide-lib.c
+@@ -2,7 +2,6 @@
+ #include <linux/string.h>
+ #include <linux/kernel.h>
+ #include <linux/interrupt.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/bitops.h>
  
--/*
-- * IDE "nice" flags. These are used on a per drive basis to determine
-- * when to be nice and give more bandwidth to the other devices which
-- * share the same IDE bus.
-- */
--#define IDE_NICE_DSC_OVERLAP	(0)	/* per the DSC overlap protocol */
--#define IDE_NICE_ATAPI_OVERLAP	(1)	/* not supported yet */
--#define IDE_NICE_1		(3)	/* when probably won't affect us much */
--#ifndef __KERNEL__
--#define IDE_NICE_0		(2)	/* when sure that it won't affect us */
--#define IDE_NICE_2		(4)	/* when we know it's on our expense */
--#endif
+Index: b/drivers/ide/ide-proc.c
+===================================================================
+--- a/drivers/ide/ide-proc.c
++++ b/drivers/ide/ide-proc.c
+@@ -23,7 +23,6 @@
+ #include <linux/mm.h>
+ #include <linux/pci.h>
+ #include <linux/ctype.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/seq_file.h>
+ 
+Index: b/drivers/ide/ide-taskfile.c
+===================================================================
+--- a/drivers/ide/ide-taskfile.c
++++ b/drivers/ide/ide-taskfile.c
+@@ -16,8 +16,8 @@
+ #include <linux/errno.h>
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
++#include <linux/hdio_ioctls.h>
+ #include <linux/scatterlist.h>
+ 
+ #include <asm/uaccess.h>
+Index: b/drivers/ide/ide-timings.c
+===================================================================
+--- a/drivers/ide/ide-timings.c
++++ b/drivers/ide/ide-timings.c
+@@ -22,7 +22,6 @@
+  */
+ 
+ #include <linux/kernel.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/module.h>
+ 
+Index: b/drivers/ide/ide.c
+===================================================================
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -58,6 +58,7 @@
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/ide.h>
++#include <linux/hdio_ioctls.h>
+ #include <linux/completion.h>
+ #include <linux/device.h>
+ 
+Index: b/drivers/ide/legacy/ali14xx.c
+===================================================================
+--- a/drivers/ide/legacy/ali14xx.c
++++ b/drivers/ide/legacy/ali14xx.c
+@@ -43,7 +43,6 @@
+ #include <linux/mm.h>
+ #include <linux/ioport.h>
+ #include <linux/blkdev.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/legacy/buddha.c
+===================================================================
+--- a/drivers/ide/legacy/buddha.c
++++ b/drivers/ide/legacy/buddha.c
+@@ -20,7 +20,6 @@
+ #include <linux/mm.h>
+ #include <linux/interrupt.h>
+ #include <linux/blkdev.h>
+-#include <linux/hdreg.h>
+ #include <linux/zorro.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+Index: b/drivers/ide/legacy/dtc2278.c
+===================================================================
+--- a/drivers/ide/legacy/dtc2278.c
++++ b/drivers/ide/legacy/dtc2278.c
+@@ -10,7 +10,6 @@
+ #include <linux/mm.h>
+ #include <linux/ioport.h>
+ #include <linux/blkdev.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/legacy/falconide.c
+===================================================================
+--- a/drivers/ide/legacy/falconide.c
++++ b/drivers/ide/legacy/falconide.c
+@@ -13,7 +13,6 @@
+ #include <linux/mm.h>
+ #include <linux/interrupt.h>
+ #include <linux/blkdev.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/legacy/gayle.c
+===================================================================
+--- a/drivers/ide/legacy/gayle.c
++++ b/drivers/ide/legacy/gayle.c
+@@ -12,7 +12,6 @@
+ #include <linux/mm.h>
+ #include <linux/interrupt.h>
+ #include <linux/blkdev.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ #include <linux/zorro.h>
+Index: b/drivers/ide/legacy/ht6560b.c
+===================================================================
+--- a/drivers/ide/legacy/ht6560b.c
++++ b/drivers/ide/legacy/ht6560b.c
+@@ -24,7 +24,6 @@
+ #include <linux/mm.h>
+ #include <linux/ioport.h>
+ #include <linux/blkdev.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/legacy/ide-cs.c
+===================================================================
+--- a/drivers/ide/legacy/ide-cs.c
++++ b/drivers/ide/legacy/ide-cs.c
+@@ -38,7 +38,6 @@
+ #include <linux/timer.h>
+ #include <linux/ioport.h>
+ #include <linux/ide.h>
+-#include <linux/hdreg.h>
+ #include <linux/major.h>
+ #include <linux/delay.h>
+ #include <asm/io.h>
+Index: b/drivers/ide/legacy/macide.c
+===================================================================
+--- a/drivers/ide/legacy/macide.c
++++ b/drivers/ide/legacy/macide.c
+@@ -15,7 +15,6 @@
+ #include <linux/mm.h>
+ #include <linux/interrupt.h>
+ #include <linux/blkdev.h>
+-#include <linux/hdreg.h>
+ #include <linux/delay.h>
+ #include <linux/ide.h>
+ 
+Index: b/drivers/ide/legacy/q40ide.c
+===================================================================
+--- a/drivers/ide/legacy/q40ide.c
++++ b/drivers/ide/legacy/q40ide.c
+@@ -14,8 +14,6 @@
+ #include <linux/mm.h>
+ #include <linux/interrupt.h>
+ #include <linux/blkdev.h>
+-#include <linux/hdreg.h>
 -
- #endif	/* _LINUX_HDREG_H */
+ #include <linux/ide.h>
+ 
+     /*
+Index: b/drivers/ide/legacy/qd65xx.c
+===================================================================
+--- a/drivers/ide/legacy/qd65xx.c
++++ b/drivers/ide/legacy/qd65xx.c
+@@ -27,7 +27,6 @@
+ #include <linux/mm.h>
+ #include <linux/ioport.h>
+ #include <linux/blkdev.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ #include <asm/system.h>
+Index: b/drivers/ide/legacy/umc8672.c
+===================================================================
+--- a/drivers/ide/legacy/umc8672.c
++++ b/drivers/ide/legacy/umc8672.c
+@@ -45,7 +45,6 @@
+ #include <linux/mm.h>
+ #include <linux/ioport.h>
+ #include <linux/blkdev.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/pci/aec62xx.c
+===================================================================
+--- a/drivers/ide/pci/aec62xx.c
++++ b/drivers/ide/pci/aec62xx.c
+@@ -7,7 +7,6 @@
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/pci.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/pci/alim15x3.c
+===================================================================
+--- a/drivers/ide/pci/alim15x3.c
++++ b/drivers/ide/pci/alim15x3.c
+@@ -31,7 +31,6 @@
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ #include <linux/dmi.h>
+Index: b/drivers/ide/pci/atiixp.c
+===================================================================
+--- a/drivers/ide/pci/atiixp.c
++++ b/drivers/ide/pci/atiixp.c
+@@ -7,7 +7,6 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/pci/cmd640.c
+===================================================================
+--- a/drivers/ide/pci/cmd640.c
++++ b/drivers/ide/pci/cmd640.c
+@@ -103,7 +103,6 @@
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/delay.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/pci/cmd64x.c
+===================================================================
+--- a/drivers/ide/pci/cmd64x.c
++++ b/drivers/ide/pci/cmd64x.c
+@@ -13,7 +13,6 @@
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/pci.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/pci/cs5520.c
+===================================================================
+--- a/drivers/ide/pci/cs5520.c
++++ b/drivers/ide/pci/cs5520.c
+@@ -35,7 +35,6 @@
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+-#include <linux/hdreg.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/ide.h>
+Index: b/drivers/ide/pci/cs5530.c
+===================================================================
+--- a/drivers/ide/pci/cs5530.c
++++ b/drivers/ide/pci/cs5530.c
+@@ -15,7 +15,6 @@
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+-#include <linux/hdreg.h>
+ #include <linux/pci.h>
+ #include <linux/init.h>
+ #include <linux/ide.h>
+Index: b/drivers/ide/pci/delkin_cb.c
+===================================================================
+--- a/drivers/ide/pci/delkin_cb.c
++++ b/drivers/ide/pci/delkin_cb.c
+@@ -19,7 +19,6 @@
+ 
+ #include <linux/types.h>
+ #include <linux/module.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
+Index: b/drivers/ide/pci/generic.c
+===================================================================
+--- a/drivers/ide/pci/generic.c
++++ b/drivers/ide/pci/generic.c
+@@ -22,7 +22,6 @@
+ #include <linux/types.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+-#include <linux/hdreg.h>
+ #include <linux/pci.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+Index: b/drivers/ide/pci/hpt34x.c
+===================================================================
+--- a/drivers/ide/pci/hpt34x.c
++++ b/drivers/ide/pci/hpt34x.c
+@@ -27,7 +27,6 @@
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/ioport.h>
+-#include <linux/hdreg.h>
+ #include <linux/interrupt.h>
+ #include <linux/pci.h>
+ #include <linux/init.h>
+Index: b/drivers/ide/pci/hpt366.c
+===================================================================
+--- a/drivers/ide/pci/hpt366.c
++++ b/drivers/ide/pci/hpt366.c
+@@ -122,7 +122,6 @@
+ #include <linux/kernel.h>
+ #include <linux/delay.h>
+ #include <linux/blkdev.h>
+-#include <linux/hdreg.h>
+ #include <linux/interrupt.h>
+ #include <linux/pci.h>
+ #include <linux/init.h>
+Index: b/drivers/ide/pci/it8213.c
+===================================================================
+--- a/drivers/ide/pci/it8213.c
++++ b/drivers/ide/pci/it8213.c
+@@ -10,7 +10,6 @@
+ #include <linux/types.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/pci/it821x.c
+===================================================================
+--- a/drivers/ide/pci/it821x.c
++++ b/drivers/ide/pci/it821x.c
+@@ -63,7 +63,6 @@
+ #include <linux/types.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/pci/jmicron.c
+===================================================================
+--- a/drivers/ide/pci/jmicron.c
++++ b/drivers/ide/pci/jmicron.c
+@@ -8,7 +8,6 @@
+ #include <linux/types.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/pci/ns87415.c
+===================================================================
+--- a/drivers/ide/pci/ns87415.c
++++ b/drivers/ide/pci/ns87415.c
+@@ -11,7 +11,6 @@
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/interrupt.h>
+-#include <linux/hdreg.h>
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+ #include <linux/ide.h>
+Index: b/drivers/ide/pci/opti621.c
+===================================================================
+--- a/drivers/ide/pci/opti621.c
++++ b/drivers/ide/pci/opti621.c
+@@ -85,7 +85,6 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ 
+ #include <asm/io.h>
+Index: b/drivers/ide/pci/pdc202xx_new.c
+===================================================================
+--- a/drivers/ide/pci/pdc202xx_new.c
++++ b/drivers/ide/pci/pdc202xx_new.c
+@@ -19,7 +19,6 @@
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/delay.h>
+-#include <linux/hdreg.h>
+ #include <linux/pci.h>
+ #include <linux/init.h>
+ #include <linux/ide.h>
+Index: b/drivers/ide/pci/pdc202xx_old.c
+===================================================================
+--- a/drivers/ide/pci/pdc202xx_old.c
++++ b/drivers/ide/pci/pdc202xx_old.c
+@@ -13,7 +13,6 @@
+ #include <linux/kernel.h>
+ #include <linux/delay.h>
+ #include <linux/blkdev.h>
+-#include <linux/hdreg.h>
+ #include <linux/pci.h>
+ #include <linux/init.h>
+ #include <linux/ide.h>
+Index: b/drivers/ide/pci/piix.c
+===================================================================
+--- a/drivers/ide/pci/piix.c
++++ b/drivers/ide/pci/piix.c
+@@ -48,7 +48,6 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/pci/rz1000.c
+===================================================================
+--- a/drivers/ide/pci/rz1000.c
++++ b/drivers/ide/pci/rz1000.c
+@@ -16,7 +16,6 @@
+ #include <linux/types.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+-#include <linux/hdreg.h>
+ #include <linux/pci.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+Index: b/drivers/ide/pci/sc1200.c
+===================================================================
+--- a/drivers/ide/pci/sc1200.c
++++ b/drivers/ide/pci/sc1200.c
+@@ -14,7 +14,6 @@
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+-#include <linux/hdreg.h>
+ #include <linux/pci.h>
+ #include <linux/init.h>
+ #include <linux/ide.h>
+Index: b/drivers/ide/pci/scc_pata.c
+===================================================================
+--- a/drivers/ide/pci/scc_pata.c
++++ b/drivers/ide/pci/scc_pata.c
+@@ -26,7 +26,6 @@
+ #include <linux/module.h>
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/pci/serverworks.c
+===================================================================
+--- a/drivers/ide/pci/serverworks.c
++++ b/drivers/ide/pci/serverworks.c
+@@ -32,7 +32,6 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/pci/sgiioc4.c
+===================================================================
+--- a/drivers/ide/pci/sgiioc4.c
++++ b/drivers/ide/pci/sgiioc4.c
+@@ -22,7 +22,6 @@
+ #include <linux/types.h>
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+-#include <linux/hdreg.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/ioport.h>
+Index: b/drivers/ide/pci/siimage.c
+===================================================================
+--- a/drivers/ide/pci/siimage.c
++++ b/drivers/ide/pci/siimage.c
+@@ -39,7 +39,6 @@
+ #include <linux/types.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ #include <linux/io.h>
+Index: b/drivers/ide/pci/sis5513.c
+===================================================================
+--- a/drivers/ide/pci/sis5513.c
++++ b/drivers/ide/pci/sis5513.c
+@@ -47,7 +47,6 @@
+ #include <linux/types.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+-#include <linux/hdreg.h>
+ #include <linux/pci.h>
+ #include <linux/init.h>
+ #include <linux/ide.h>
+Index: b/drivers/ide/pci/sl82c105.c
+===================================================================
+--- a/drivers/ide/pci/sl82c105.c
++++ b/drivers/ide/pci/sl82c105.c
+@@ -17,7 +17,6 @@
+ #include <linux/types.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+-#include <linux/hdreg.h>
+ #include <linux/pci.h>
+ #include <linux/ide.h>
+ 
+Index: b/drivers/ide/pci/slc90e66.c
+===================================================================
+--- a/drivers/ide/pci/slc90e66.c
++++ b/drivers/ide/pci/slc90e66.c
+@@ -11,7 +11,6 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+-#include <linux/hdreg.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+ 
+Index: b/drivers/ide/pci/triflex.c
+===================================================================
+--- a/drivers/ide/pci/triflex.c
++++ b/drivers/ide/pci/triflex.c
+@@ -28,7 +28,6 @@
+ #include <linux/types.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+-#include <linux/hdreg.h>
+ #include <linux/pci.h>
+ #include <linux/ide.h>
+ #include <linux/init.h>
+Index: b/drivers/ide/pci/trm290.c
+===================================================================
+--- a/drivers/ide/pci/trm290.c
++++ b/drivers/ide/pci/trm290.c
+@@ -135,7 +135,6 @@
+ #include <linux/interrupt.h>
+ #include <linux/blkdev.h>
+ #include <linux/init.h>
+-#include <linux/hdreg.h>
+ #include <linux/pci.h>
+ #include <linux/ide.h>
+ 
+Index: b/drivers/scsi/ide-scsi.c
+===================================================================
+--- a/drivers/scsi/ide-scsi.c
++++ b/drivers/scsi/ide-scsi.c
+@@ -40,7 +40,6 @@
+ #include <linux/ioport.h>
+ #include <linux/blkdev.h>
+ #include <linux/errno.h>
+-#include <linux/hdreg.h>
+ #include <linux/slab.h>
+ #include <linux/ide.h>
+ #include <linux/scatterlist.h>
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -8,7 +8,7 @@
+ 
+ #include <linux/init.h>
+ #include <linux/ioport.h>
+-#include <linux/hdreg.h>
++#include <linux/ata.h>
+ #include <linux/blkdev.h>
+ #include <linux/proc_fs.h>
+ #include <linux/interrupt.h>
