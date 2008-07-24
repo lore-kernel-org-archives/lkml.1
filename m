@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751935AbYGXAye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751684AbYGXBDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751935AbYGXAye (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 20:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbYGXAyB
+	id S1751684AbYGXBDW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 21:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYGXBDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 20:54:01 -0400
-Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:40957 "HELO
-	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750894AbYGXAx7 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 20:53:59 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=lf9uaerpeaGYQkr7Le/t+f490fS+ZjZxRUe4B8GPiWAvcdQvwI9R9Sr77ca0J0PZfqx07uqsV5dZC0MNhXpDimBqRYW0pxaqY4hgymnij7JR5apQv5SsGQodRCzq1IuHljaQA46EgNEICWRFgSEg81iqdr+fVm/KZQNzniQtXvY=  ;
-X-YMail-OSG: GXh7Pn4VM1kRWABzz6H66Y5PHCG7VpskxOHBp7OLz3Bkijd_44S5rhRvWRXXcW7b6zolPFIX0PZmMFX9TdfDCMQMm1O379a4tf0vR39mCcdcC6JANSuW020d7YH1m31wTWg-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: 7eggert@gmx.de
-Subject: Re: [RFC] schedule_timeout_range()
-Date: Thu, 24 Jul 2008 10:53:49 +1000
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, arjan@infradead.org,
-       David Woodhouse <dwmw2@infradead.org>
-References: <aSgqr-EJ-15@gated-at.bofh.it> <aShPs-4IY-1@gated-at.bofh.it> <E1KLct4-0001Wx-O9@be1.7eggert.dyndns.org>
-In-Reply-To: <E1KLct4-0001Wx-O9@be1.7eggert.dyndns.org>
+	Wed, 23 Jul 2008 21:03:09 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64331 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750836AbYGXBDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 21:03:08 -0400
+Message-ID: <4887D46C.80304@cn.fujitsu.com>
+Date: Thu, 24 Jul 2008 09:01:32 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200807241053.49304.nickpiggin@yahoo.com.au>
+To: David Miller <davem@davemloft.net>
+CC: markus@trippelsdorf.de, ag@alessandroguido.name,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] skge: resolve tx multiqueue bug
+References: <20080723101827.GA2236@gentoox2.trippelsdorf.de>	<20080723140347.GA2245@gentoox2.trippelsdorf.de>	<48874C6A.1020604@cn.fujitsu.com> <20080723.153000.172383135.davem@davemloft.net>
+In-Reply-To: <20080723.153000.172383135.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 July 2008 21:52, Bodo Eggert wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > The only thing I dislike about explicit times is that when a driver or
-> > someone doesn't _really_ know how much to specify. Do you say 10s, 100s?
-> > It shouldn't be arbitrary, but we should have a few constants I think.
->
-> You'd replace "Should I use 10 or 100 seconds?" with "Should I use
-> TIMEOUT_10_SEC or TIMEOUT_100_SEC?", while replacing "I want 40 seconds!"
-> with "Danmed, I want 40 seconds, but that's not an option!".
->
-> BTW: If you don't know about which timeout you should use, you should think
-> about mowing the lawn instead. ¢¢
+David Miller said the following on 2008-7-24 6:30:
+> From: Wang Chen <wangchen@cn.fujitsu.com>
+> Date: Wed, 23 Jul 2008 23:21:14 +0800
+> 
+>> Markus Trippelsdorf said the following on 2008-7-23 22:03:
+>>> On Wed, Jul 23, 2008 at 12:18:27PM +0200, Markus Trippelsdorf wrote:
+>>>> On Wed, Jul 23, 2008 at 04:50:13PM +0800, Wang Chen wrote:
+>>>>> Markus Trippelsdorf said the following on 2008-7-23 13:40:
+>>>>>> On Tue, Jul 22, 2008 at 11:54:26AM +0200, Alessandro Guido wrote:
+>>>>>>> Got a WARNING this morning (2.6.26-05752-g93ded9b) and I think it's related.
+>>>>>> Same thing here (latest git):
+>>>>>>
+>>>>>> skge eth1: enabling interface
+>>>>>> skge eth1: disabling interface
+>>>>>> ------------[ cut here ]------------
+>>>>>> WARNING: at net/core/dev.c:1344 __netif_schedule+0x24/0x6d()
+>>>>>> Pid: 1904, comm: ip Not tainted 2.6.26-06077-gc010b2f #33
+>>>>>>  [<ffffffff8020b3eb>] system_call_after_swapgs+0x7b/0x80
+>>>> ...
+>>>>>> ---[ end trace 92936ef183e09876 ]---
+>>>>>> skge eth1: enabling interface
+>>>>>> skge eth1: Link is up at 100 Mbps, full duplex, flow control both
+>>>>>>
+>>>>> Markus, please try this.
+>>>>>
+>>>>> - Add netif_start_queue() in ->open()
+>>>>> - netif_carrier_*() is enough, remove netif_*_queue()
+>>>> Unfortunately, your patch does not fix this. I still get the same warning.
+>>>>
+>>> This patch works for me:
+>> Your patch works for me too. So I think it's better than mine. :)
+>>
+>> Tested-by: Wang Chen <wangchen@cn.fujitsu.com>
+>>
+>> Dave, since Markus and me tested this patch, would you please apply it?
+> 
+> I can't, it's whitespace damaged.  All the tabs are turned into spaces,
+> also there is no signoff from Markus.
+> 
 
-It's not always that simple. If you code drivers or network protocols,
-it might seem easy, but a lot of the VM for example is riddled with
-rather arbitrary heuristics. Suppose we do slab cache reaping at 1HZ
-(for no really good reason)... what I want to do with that guy is to
-get maximum power savings when the CPU is idle, however I don't want to
-wait infinitely long because that's leaving work to do when the CPU
-finally does wake up, and it also ties up memory. I want the minimum
-timeout that gives maximum power saving (say, within 99.9% of theoretical
-maximum).
-
-Can you tell me how to achieve this, or do you have lawn to mow too? ;)
-
-OK, today we probably just add a few seconds of slop and forget about it,
-but actually in future if we might want to power down most of the system
-between key strokes, we might want 10s of seconds of sleep time.
+OK. So let it be, since you removed the warning from __netif_schedule().
+I will wait for your netif_tx_{free,unfreeze}() :)
 
