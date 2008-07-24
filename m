@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbYGXMe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbYGXMhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756866AbYGXMe4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYGXMeq
+	id S1755473AbYGXMhd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYGXMhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:34:46 -0400
-Received: from mail9.hitachi.co.jp ([133.145.228.44]:48082 "EHLO
-	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752384AbYGXMep (ORCPT
+	Thu, 24 Jul 2008 08:37:24 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:33899 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751643AbYGXMhX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 08:34:45 -0400
-X-AuditID: 0ac90648-aaaa0ba000004920-1a-488876dfae80
-Message-ID: <488876D3.80004@hitachi.com>
-Date: Thu, 24 Jul 2008 21:34:27 +0900
+	Thu, 24 Jul 2008 08:37:23 -0400
+X-AuditID: 0ac90650-ade2eba000003664-e1-488877819627
+Message-ID: <48887776.4080504@hitachi.com>
+Date: Thu, 24 Jul 2008 21:37:10 +0900
 From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
     Gecko/20030624 Netscape/7.1 (ax)
@@ -23,7 +23,9 @@ Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
        jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu, adilger@clusterfs.com,
        snitzer@gmail.com, tglx@linutronix.de, yumiko.sugita.yf@hitachi.com,
        satoshi.oshima.fk@hitachi.com
-Subject: [PATCH 0/4] ext3/jbd: possible filesystem corruption fixes (take 3)
+Subject: [PATCH 1/4] jbd: abort when failed to log metadata buffers
+References: <488876D3.80004@hitachi.com>
+In-Reply-To: <488876D3.80004@hitachi.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 X-Brightmail-Tracker: AAAAAA==
@@ -31,42 +33,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch set is the take 3 of fixing error handling problem in
-ext3/JBD.  The previous discussion can be found here:
-http://kerneltrap.org/mailarchive/linux-kernel/2008/6/2/2002094
+If we failed to write metadata buffers to the journal space and
+succeeded to write the commit record, stale data can be written
+back to the filesystem as metadata in the recovery phase.
 
-Problem
-=======
-Currently some error checkings are missing, so the journal cannot abort
-correctly.  This can cause a filesystem corruption.  Missing error
-checkings are:
+To avoid this, when we failed to write out metadata buffers,
+abort the journal before writing the commit record.
 
-(1) error check for the metadata writes to the journal before the
-    commit (addressed by PATCH 1/4)
-(2) error check for checkpointing and replay (addressed by PATCH 2/4
-    and 3/4)
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Acked-by: Jan Kara <jack@suse.cz>
+---
+ fs/jbd/commit.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-PATCH 2/4 makes another problem worse; replaying old journaled
-metadata can overwrite the latest metadata on the filesystem and
-break its consistency.  This is fixed by PATCH 4/4.
-
-
-Changes since Take 2
-====================
-[PATCH x/x]
-o file data error handling fixes were separated to other patch set
-
-[PATCH 3/4]
-o fix return value handlings (trivial)
-
-[PATCH 4/4]
-o newly added to prevent unjournaled metadata buffers from being
-  written to the filesystem on abort
-
-Regards,
--- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
+Index: linux-2.6.26-rc8-mm1/fs/jbd/commit.c
+===================================================================
+--- linux-2.6.26-rc8-mm1.orig/fs/jbd/commit.c
++++ linux-2.6.26-rc8-mm1/fs/jbd/commit.c
+@@ -762,6 +762,9 @@ wait_for_iobuf:
+ 		/* AKPM: bforget here */
+ 	}
+ 
++	if (err)
++		journal_abort(journal, err);
++
+ 	jbd_debug(3, "JBD: commit phase 6\n");
+ 
+ 	if (journal_write_commit_record(journal, commit_transaction))
 
 
