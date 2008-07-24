@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747AbYGXUhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbYGXUjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753747AbYGXUhV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 16:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYGXUhH
+	id S1754225AbYGXUjg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 16:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbYGXUj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 16:37:07 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:55531 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751244AbYGXUhG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 16:37:06 -0400
-Date: Thu, 24 Jul 2008 22:36:36 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: torvalds@osdl.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Please pull ACPI updates
-Message-ID: <20080724203636.GA22485@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 24 Jul 2008 20:36:31.0603 (UTC) FILETIME=[F4C9B430:01C8EDCC]
+	Thu, 24 Jul 2008 16:39:27 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:55329 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751027AbYGXUj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 16:39:26 -0400
+Date: Thu, 24 Jul 2008 22:39:20 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
+Message-ID: <20080724223920.1f4dd753@mjolnir.drzeus.cx>
+In-Reply-To: <488877C8.9020706@jp.fujitsu.com>
+References: <20080724134737.4b91f30d@mjolnir.drzeus.cx>
+	<488877C8.9020706@jp.fujitsu.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-10963-1216931965-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Linus,
+--=_freyr.drzeus.cx-10963-1216931965-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Please pull ACPI updates from 
+On Thu, 24 Jul 2008 21:38:32 +0900
+Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-acpi-2.6.git release-2.6.27
+> Hi Pierre,
+> (Added linux-pci to CC)
+>=20
+> Pierre Ossman wrote:
+> > Somewhere post 2.6.26, pciehp started whining about not being able to
+> > claim the slot and error code -17. It suggested adding
+> > "pciehp_slot_with_bus", which actually helped. Still, having a kernel
+> > parameter should just be a temporary fix.
+>=20
+> The "pciehp_slot_with_bus" option is a workaround for the platforms
+> that assign the same physical slot number to multiple slots. If your
+> system has PCI chassis and it supports Chassis Number registers,
+> maybe one of the solution is using chassis number + slot number as a
+> slot name. But I don't have any idea other than "pciehp_slot_with_bus"
+> if your system doesn't support chassis number.
+>=20
 
-which contains
+The what now? :)
 
-Andi Kleen (5):
-      Revert "Fix FADT parsing"
-      Revert "dock: bay: Don't call acpi_walk_namespace() when ACPI is disabled."
-      Merge branch 'merge' into release-2.6.27
-      Revert "ACPI: don't walk tables if ACPI was disabled"
-      Merge branch 'for-upstream/acpi-test' of git://repo.or.cz/linux-2.6/linux-acpi-2.6/ibm-acpi-2.6 into release-2.6.27
+This is a laptop with a single expressport that worked fine up until
+this merge window. What changed and why is it no longer possible to
+support this hardware without a kernel parameter?
 
-Bjorn Helgaas (1):
-      ACPI: stop complaints about interrupt link End Tags and blank IRQ descriptors
+Rgds
+--=20
+     -- Pierre Ossman
 
-Henrique de Moraes Holschuh (7):
-      ACPI: thinkpad-acpi: minor refactor on radio switch init
-      ACPI: thinkpad-acpi: consolidate wlsw notification function
-      ACPI: thinkpad-acpi: prepare for bluetooth and wwan rfkill support
-      ACPI: thinkpad-acpi: WLSW overrides other rfkill switches
-      ACPI: thinkpad-acpi: add bluetooth and WWAN rfkill support
-      ACPI: thinkpad-acpi: bump up version to 0.21
-      ACPI: thinkpad-acpi: don't misdetect in get_thinkpad_model_data() on -ENOMEM
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-Ingo Molnar (1):
-      acpi: fix crash in core ACPI code, triggered by CONFIG_ACPI_PCI_SLOT=y
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-Zhao Yakui (2):
-      ACPI: Ignore _BQC object when registering backlight device
-      ACPI : Set FAN device to correct state in boot phase
+--=_freyr.drzeus.cx-10963-1216931965-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
- Documentation/laptops/thinkpad-acpi.txt |   26 ++-
- drivers/acpi/namespace/nsnames.c        |    8 +
- drivers/acpi/pci_link.c                 |   31 ++-
- drivers/acpi/tables/tbfadt.c            |   17 +-
- drivers/acpi/thermal.c                  |   43 +++
- drivers/acpi/utilities/utalloc.c        |    4 +
- drivers/acpi/video.c                    |   14 +-
- drivers/misc/Kconfig                    |    2 +
- drivers/misc/thinkpad_acpi.c            |  475 ++++++++++++++++++++++---------
- 9 files changed, 446 insertions(+), 174 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkiI6HwACgkQ7b8eESbyJLhHtgCgxO+Gouh56FMuuyfb2ZYGaFX8
+nPsAoLH9m9S4k0lNVwOHfcqXU/fTZR1a
+=ryDO
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-10963-1216931965-0001-2--
