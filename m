@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbYGXNpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbYGXNs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756693AbYGXNpc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 09:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbYGXNpY
+	id S1755938AbYGXNs5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 09:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbYGXNss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 09:45:24 -0400
-Received: from kruk.ds2.uw.edu.pl ([193.0.110.20]:50912 "EHLO mail.wijata.com"
+	Thu, 24 Jul 2008 09:48:48 -0400
+Received: from sh.osrg.net ([192.16.179.4]:57496 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751223AbYGXNpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 09:45:24 -0400
-Message-ID: <48888770.70702@wijata.com>
-Date: Thu, 24 Jul 2008 15:45:20 +0200
-From: "Rafal Wijata (NULL)" <devnull@wijata.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Odd swapping issue
-In-Reply-To: <488761F0.4040906@wijata.com>
-References: <488761F0.4040906@wijata.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1751990AbYGXNsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 09:48:47 -0400
+Date: Thu, 24 Jul 2008 22:44:03 +0900
+To: scameron@beardog.cca.cpqcorp.net
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, mike.miller@hp.com
+Subject: Re: HP (Compaq) Smart Array 5xxx controller SCSI driver
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080724133012.GH8833@beardog.cca.cpqcorp.net>
+References: <20080722175729.GC8833@beardog.cca.cpqcorp.net>
+	<20080724101953R.fujita.tomonori@lab.ntt.co.jp>
+	<20080724133012.GH8833@beardog.cca.cpqcorp.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080724224438B.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK, things are little more clear now I suppose.
+On Thu, 24 Jul 2008 08:30:12 -0500
+scameron@beardog.cca.cpqcorp.net wrote:
 
-I tried (just for fun) echo 8 > /proc/sys/vm/nr_hugepages
-and it happened again, and no hugepages were allocated of course.
+> On Thu, Jul 24, 2008 at 10:32:45AM +0900, FUJITA Tomonori wrote:
+> > CC'ed linux-scsi, why did you drop it?
+> 
+> You mean my SCSI cciss driver?  For a few reasons:
 
-But this brought the following to my mind.
+Ah, I just meant that you dropped linux-scsi mailing list in the
+previous mail though I sent my first RFC mail to linux-kernel and
+linux-scsi.
 
-Since it's nfs server/client, and the nfs is rather heavily utilized(at 
-least sometimes), maybe nfsd tasks were unable to find long enough lowmem 
-chunk. How can we get such ram? By sweeping pages out to swap, isn't it?
 
-Now the question is, if Linux actually has such feature like blind swapping 
-out if lowmem is too fragmented to find requested size?
-Can anybody confirm or negate?
+> With help from udev it is less disruptive, but I'm still unsure
+> about how smoothly such a change will fit in with the installation 
+> process of various distributions.
 
-Next, I was thinking then I could run 64bit system, but I don't want to 
-reinstall it. Anybody knows if it's possible to have installed 32bit OS, but 
-run 64bit kernel alone(no 64bit glibc or anything else)?
+They need to make sure that udev cciss rules match with the kernel
+configuration but I don't think it's difficult.
 
-Thanx in advance.
+
+> As for the patches I mentioned which were previously ignored
+> for improving how the current cciss SCSI code handled hot 
+> plogging, if you're curious about that, check here:
+> 
+> http://marc.info/?l=linux-scsi&m=120213565000426&w=4
+> 
+> A change like that becomes more important if logical drives
+> are exposed through the scsi layer.
+
+We need to think about the best way to map (expose) logical and
+physical drivers to SCSI luns. As I wrote before, I'm interested in
+how HP SCSI driver does.
