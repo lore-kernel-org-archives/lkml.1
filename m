@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757637AbYGXMlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbYGXMm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757637AbYGXMlu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbYGXMlk
+	id S1757452AbYGXMm5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYGXMmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:41:40 -0400
-Received: from mail9.hitachi.co.jp ([133.145.228.44]:49645 "EHLO
-	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbYGXMlj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 08:41:39 -0400
-X-AuditID: 0ac90648-aaaa0ba000004920-22-488878803b51
-Message-ID: <4888787A.7000903@hitachi.com>
-Date: Thu, 24 Jul 2008 21:41:30 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Thu, 24 Jul 2008 08:42:46 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:54926 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751950AbYGXMmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 08:42:45 -0400
+Date: Thu, 24 Jul 2008 15:42:25 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Jean Tourrilhes <jt@hpl.hp.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC: 2.6 patch] clarify the WIRELESS_EXT_SYSFS help text
+Message-ID: <20080724124225.GD32109@cs181140183.pp.htv.fi>
+References: <20080724115805.5466c217@mjolnir.drzeus.cx> <1216899520.13587.49.camel@johannes.berg>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org, sct@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
-       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu, adilger@clusterfs.com,
-       snitzer@gmail.com, tglx@linutronix.de, yumiko.sugita.yf@hitachi.com,
-       satoshi.oshima.fk@hitachi.com
-Subject: [PATCH 4/4] jbd: don't dirty original metadata buffer on abort
-References: <488876D3.80004@hitachi.com>
-In-Reply-To: <488876D3.80004@hitachi.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1216899520.13587.49.camel@johannes.berg>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, original metadata buffers are dirtied when they are
-unfiled whether the journal has aborted or not.  Eventually these
-buffers will be written-back to the filesystem by pdflush.  This
-means some metadata buffers are written to the filesystem without
-journaling if the journal aborts.  So if both journal abort and
-system crash happen at the same time, the filesystem would become
-inconsistent state.  Additionally, replaying journaled metadata
-can overwrite the latest metadata on the filesystem partly.
-Because, if the journal aborts, journaled metadata are preserved
-and replayed during the next mount not to lose uncheckpointed
-metadata.  This would also break the consistency of the filesystem.
+On Thu, Jul 24, 2008 at 01:38:40PM +0200, Johannes Berg wrote:
+> On Thu, 2008-07-24 at 11:58 +0200, Pierre Ossman wrote:
+> > From commit 22bb1be4d27...:
+> > 
+> > "The /sys/class/net/*/wireless/ direcory is, as far as I know, not used
+> > by anyone."
+> > 
+> > Can't have been much of an investigation as HAL uses these to determine
+> > if a card is a wireless one. Without this option, you cannot get
+> > wireless support in NetworkManager, stranding most laptops.
+> 
+> Bzzzzt. You suck. Go check again. Hint: try hal's git tree.
 
-This patch prevents original metadata buffers from being dirtied
-on abort by clearing BH_JBDDirty flag from those buffers.  Thus,
-no metadata buffers are written to the filesystem without journaling.
+Can everyone agree on the patch below?
 
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
----
- fs/jbd/commit.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+> johannes
 
-Index: linux-2.6.26-rc8-mm1/fs/jbd/commit.c
-===================================================================
---- linux-2.6.26-rc8-mm1.orig/fs/jbd/commit.c
-+++ linux-2.6.26-rc8-mm1/fs/jbd/commit.c
-@@ -518,9 +518,10 @@ void journal_commit_transaction(journal_
- 		jh = commit_transaction->t_buffers;
+cu
+Adrian
+
+
+<--  snip  -->
+
+
+Current Hal uses the CONFIG_WIRELESS_EXT_SYSFS files, so don't claim 
+there were no known users and recommend to enable the option.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+b685f62718b947264657c298e5ee5b2149200f68 
+diff --git a/net/wireless/Kconfig b/net/wireless/Kconfig
+index ab015c6..e582432 100644
+--- a/net/wireless/Kconfig
++++ b/net/wireless/Kconfig
+@@ -39,4 +39,4 @@ config WIRELESS_EXT_SYSFS
+ 	  files in /sys/class/net/*/wireless/. The same information
+ 	  is available via the ioctls as well.
  
- 		/* If we're in abort mode, we just un-journal the buffer and
--		   release it for background writing. */
-+		   release it. */
- 
- 		if (is_journal_aborted(journal)) {
-+			clear_buffer_jbddirty(jh2bh(jh));
- 			JBUFFER_TRACE(jh, "journal is aborting: refile");
- 			journal_refile_buffer(journal, jh);
- 			/* If that was the last one, we need to clean up
-@@ -855,6 +856,8 @@ restart_loop:
- 		if (buffer_jbddirty(bh)) {
- 			JBUFFER_TRACE(jh, "add to new checkpointing trans");
- 			__journal_insert_checkpoint(jh, commit_transaction);
-+			if (is_journal_aborted(journal))
-+				clear_buffer_jbddirty(bh);
- 			JBUFFER_TRACE(jh, "refile for checkpoint writeback");
- 			__journal_refile_buffer(jh);
- 			jbd_unlock_bh_state(bh);
-
-
+-	  Say Y if you have programs using it (we don't know of any).
++	  If unsure, say Y.
