@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbYGXX2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbYGXX2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756348AbYGXX2P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 19:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbYGXX1y
+	id S1756593AbYGXX2q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 19:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756162AbYGXX15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 19:27:54 -0400
-Received: from gw.goop.org ([64.81.55.164]:38201 "EHLO mail.goop.org"
+	Thu, 24 Jul 2008 19:27:57 -0400
+Received: from gw.goop.org ([64.81.55.164]:38207 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755957AbYGXX1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 19:27:51 -0400
-Message-ID: <48890FF2.9070005@goop.org>
-Date: Thu, 24 Jul 2008 16:27:46 -0700
+	id S1755966AbYGXX1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 19:27:55 -0400
+Message-ID: <48890FF8.8020406@goop.org>
+Date: Thu, 24 Jul 2008 16:27:52 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
+CC: "viets@work.de" <viets@work.de>, Andi Kleen <andi@firstfloor.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] memparse(): constify argument
+Subject: [PATCH 2/3] xen-balloon: fix up sysfs issues
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -25,40 +25,80 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-memparse()'s first argument can be const, so it should be.
+1. Set the class so it doesn't clash with the normal memory class
+2. Fix up the sysfs show functions to match the new prototype
+3. Clean up use of memparse
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: viets@work.de
+Cc: Andi Kleen <andi@firstfloor.org>
 ---
- include/linux/kernel.h |    2 +-
- lib/cmdline.c          |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/xen/balloon.c |   27 ++++++++++++---------------
+ 1 file changed, 12 insertions(+), 15 deletions(-)
 
 ===================================================================
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -174,7 +174,7 @@
+--- a/drivers/xen/balloon.c
++++ b/drivers/xen/balloon.c
+@@ -60,7 +60,7 @@
  
- extern int get_option(char **str, int *pint);
- extern char *get_options(const char *str, int nints, int *ints);
--extern unsigned long long memparse(char *ptr, char **retptr);
-+extern unsigned long long memparse(const char *ptr, char **retptr);
+ #define PAGES2KB(_p) ((_p)<<(PAGE_SHIFT-10))
  
- extern int core_kernel_text(unsigned long addr);
- extern int __kernel_text_address(unsigned long addr);
-===================================================================
---- a/lib/cmdline.c
-+++ b/lib/cmdline.c
-@@ -126,9 +126,9 @@
-  *	megabyte, or one gigabyte, respectively.
-  */
+-#define BALLOON_CLASS_NAME "memory"
++#define BALLOON_CLASS_NAME "xen_memory"
  
--unsigned long long memparse (char *ptr, char **retptr)
-+unsigned long long memparse(const char *ptr, char **retptr)
+ struct balloon_stats {
+ 	/* We aim for 'current allocation' == 'target allocation'. */
+@@ -588,12 +587,13 @@
+ }
+ 
+ 
+-#define BALLOON_SHOW(name, format, args...)			\
+-	static ssize_t show_##name(struct sys_device *dev,	\
+-				   char *buf)			\
+-	{							\
+-		return sprintf(buf, format, ##args);		\
+-	}							\
++#define BALLOON_SHOW(name, format, args...)				\
++	static ssize_t show_##name(struct sys_device *dev,		\
++				   struct sysdev_attribute *attr,	\
++				   char *buf)				\
++	{								\
++		return sprintf(buf, format, ##args);			\
++	}								\
+ 	static SYSDEV_ATTR(name, S_IRUGO, show_##name, NULL)
+ 
+ BALLOON_SHOW(current_kb, "%lu\n", PAGES2KB(balloon_stats.current_pages));
+@@ -604,7 +604,8 @@
+ 	     (balloon_stats.hard_limit!=~0UL) ? PAGES2KB(balloon_stats.hard_limit) : 0);
+ BALLOON_SHOW(driver_kb, "%lu\n", PAGES2KB(balloon_stats.driver_pages));
+ 
+-static ssize_t show_target_kb(struct sys_device *dev, char *buf)
++static ssize_t show_target_kb(struct sys_device *dev, struct sysdev_attribute *attr,
++			      char *buf)
  {
--	unsigned long long ret = simple_strtoull (ptr, retptr, 0);
-+	unsigned long long ret = simple_strtoull(ptr, retptr, 0);
+ 	return sprintf(buf, "%lu\n", PAGES2KB(balloon_stats.target_pages));
+ }
+@@ -614,19 +615,14 @@
+ 			       const char *buf,
+ 			       size_t count)
+ {
+-	char memstring[64], *endchar;
++	char *endchar;
+ 	unsigned long long target_bytes;
  
- 	switch (**retptr) {
- 	case 'G':
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 
+-	if (count <= 1)
+-		return -EBADMSG; /* runt */
+-	if (count > sizeof(memstring))
+-		return -EFBIG;   /* too long */
+-	strcpy(memstring, buf);
++	target_bytes = memparse(buf, &endchar);
+ 
+-	target_bytes = memparse(memstring, &endchar);
+ 	balloon_set_new_target(target_bytes >> PAGE_SHIFT);
+ 
+ 	return count;
 
 
