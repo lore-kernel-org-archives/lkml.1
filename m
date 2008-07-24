@@ -1,65 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754380AbYGXTJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYGXTMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754380AbYGXTJb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 15:09:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYGXTJV
+	id S1754534AbYGXTMj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 15:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbYGXTM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 15:09:21 -0400
-Received: from iabervon.org ([66.92.72.58]:50154 "EHLO iabervon.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752605AbYGXTJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 15:09:20 -0400
-Date: Thu, 24 Jul 2008 15:09:18 -0400 (EDT)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Jack Howarth <howarth@bromo.msbb.uc.edu>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: merging branches remotely with git?
-In-Reply-To: <20080724173030.GA7609@bromo.msbb.uc.edu>
-Message-ID: <alpine.LNX.1.00.0807241453470.19665@iabervon.org>
-References: <20080724173030.GA7609@bromo.msbb.uc.edu>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+	Thu, 24 Jul 2008 15:12:29 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:57394 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752669AbYGXTM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 15:12:27 -0400
+Message-ID: <4888D412.9060208@sgi.com>
+Date: Thu, 24 Jul 2008 12:12:18 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>,
+       Lennert Buytenhek <kernel@wantstofly.org>,
+       Dave Jones <davej@codemonkey.org.uk>, Paul Jackson <pj@sgi.com>,
+       Tony Luck <tony.luck@intel.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Sam Creasey <sammy@sammy.net>, Greg Banks <gnb@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Adrian Bunk <bunk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Andreas Schwab <schwab@suse.de>, Johannes Weiner <hannes@saeurebad.de>
+Subject: Re: [PATCH 1/1] cpumask: Change cpumask_of_cpu to use	cpumask_of_cpu_map
+References: <20080723171841.815234000@polaris-admin.engr.sgi.com> <20080723171841.997896000@polaris-admin.engr.sgi.com> <20080724114622.GA8516@elte.hu> <4888B7B8.9060100@sgi.com>
+In-Reply-To: <4888B7B8.9060100@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Jul 2008, Jack Howarth wrote:
-
->     I am trying to do a local merge of the linus-kernel git and
-> the my-wireless-testing git. Is this possible? I have cloned both
-> locally with...
+Mike Travis wrote:
+> Ingo Molnar wrote:
+>> found a build failure with your patch:
+>>
+>> init/main.c:493: error: array index in non-array initializer
+>> init/main.c:493: error: (near initialization for 'cpumask_of_cpu_map[0]')
+>> init/main.c:494: warning: missing braces around initializer
+>> init/main.c:494: warning: (near initialization for 'cpumask_of_cpu_map[0].bits')
+>>
+>> with this config:
+>>
+>> http://redhat.com/~mingo/misc/config-Thu_Jul_24_13_44_56_CEST_2008.bad
+>>
+>> 	Ingo
 > 
-> git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-> git clone git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/my-wireless-testing.git
+> Hmm, it does not fail for me...
 > 
-> I thought from the git documentation that I was supposed to be able to
-> create a merge automatically with...
+> 12> gcc --version
+> gcc (GCC) 4.2.4
+> Copyright (C) 2007 Free Software Foundation, Inc.
+> This is free software; see the source for copying conditions.  There is NO
+> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 > 
-> git merge git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/my-wireless-testing.git
->
-> however this reports...
+> There are a number of warnings but none of the files are related to this patch.
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git - not something we can merge
-> 
-> Any advice on how this can be done would be appreciated.
+> (I'm still on hold until our sys admin gets back from vacation to install
+> gcc-4.2.3.)
 
-In the my-wireless-testing directory:
+It does not fail on gcc-4.2.3 either... ?
 
-git pull git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+(btw, I'm merging Rusty's changes into this patch so the issue should be moot soon.)
 
-or:
-
-git pull ../linux-2.6.git (which gets it from the other clone you made).
-
-"git merge" is for merging branches you have (copies of) in the same 
-repository. There's also "git fetch" for getting local copies of branches 
-(and tags) elsewhere, and "git pull" does a "fetch" and a "merge", with 
-the ability to put the information only in a temporary location in 
-between.
-
-What part of the documentation confused you? It probably needs to be 
-clarified.
-
-	-Daniel
-*This .sig left intentionally blank*
+Thanks,
+Mike
