@@ -1,41 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbYGXRxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbYGXRxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753888AbYGXRxR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 13:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbYGXRxE
+	id S1754605AbYGXRxl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 13:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbYGXRx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 13:53:04 -0400
-Received: from gate.crashing.org ([63.228.1.57]:34207 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751739AbYGXRxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 13:53:03 -0400
-Date: Thu, 24 Jul 2008 21:50:32 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Jochen Friedrich <jochen@scram.de>
-Cc: wim@iguana.be, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       "Kernel, Linux" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] watchdog: delete unused driver mpc8xx_wdt.c
-Message-ID: <20080724215032.0d940f0f@vitb-lp.dev.rtsoft.ru>
-In-Reply-To: <488857CD.6080007@scram.de>
-References: <488857CD.6080007@scram.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 8bit
+	Thu, 24 Jul 2008 13:53:28 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49863 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752136AbYGXRx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 13:53:27 -0400
+X-Authenticated: #6028172
+X-Provags-ID: V01U2FsdGVkX1+fx0o3OHKfY++JSoZljqAJ8tl+MEviBbMjZ0zfch
+	YWC1OEqhVlDUL9
+Message-ID: <4888C1A1.8050102@gmx.de>
+Date: Thu, 24 Jul 2008 19:53:37 +0200
+From: Dieter Ries <clip2@gmx.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080622)
+MIME-Version: 1.0
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org,
+       jgarzik@pobox.com, netdev@vger.kernel.org, jeffrey.t.kirsher@intel.com,
+       e1000-devel@lists.sourceforge.net, Patrick McHardy <kaber@trash.net>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Current Git: BUG: unable to handle kernel paging request at 0000000001a40ca0
+References: <488750AA.20707@gmx.de>	 <19f34abd0807231046o4b194409w7d0e28a7cd745afa@mail.gmail.com>	 <48877200.9040608@gmx.de> <4887A860.6070607@gmx.de>	 <19f34abd0807231500m3d780d90i39626023e0685369@mail.gmail.com>	 <48882687.7020508@gmx.de> <84144f020807240649ra4ef475x9f19f1474678ea2f@mail.gmail.com>
+In-Reply-To: <84144f020807240649ra4ef475x9f19f1474678ea2f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-В Thu, 24 Jul 2008 12:22:05 +0200
-Jochen Friedrich <jochen@scram.de> пишет:
+Pekka Enberg schrieb:
+> Hi Dieter,
 
-> The watchdog driver mpc8xx_wdt.c was a device interface to
-> arch/ppc/syslib/m8xx_wdt.c for MPC8xx hardware. Now that ARCH=ppc is
-> gone, this driver is of no more use. For ARCH=powerpc, MPC8xx hardware
-> is supported by mpc8xxx_wdt.c.
+Hi,
+
 > 
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> On Thu, Jul 24, 2008 at 9:51 AM, Dieter Ries <clip2@gmx.de> wrote:
+>> I think I managed to catch one of those:
+>>
+>>
+>> general protection fault: 0000 [1] SMP
+>> CPU 0
+>> Modules linked in:
+>> Pid: 0, comm: swapper Not tainted 2.6.26-06373-gcaf076e #49
+>> RIP: 0010:[<ffffffff805e08f9>]  [<ffffffff805e08f9>]
+>> nf_nat_move_storage+0x21/0x7a
+>> RSP: 0018:ffffffff8091ab80  EFLAGS: 00010206
+>> RAX: ffffffff805e08d8 RBX: ffff88007d1fb948 RCX: 000000000000006b
+>> RDX: ffff88007d175e10 RSI: ffff88007d175e7b RDI: ffff88007d1fb948
+>> RBP: ffffffff8091aba0 R08: 0000000000000000 R09: ffff88007d175e90
+>> R10: ffffe20000000008 R11: ffff88007d175e10 R12: 59d2c3ffff88007d
+>> R13: ffff88007d175e7b R14: 00000000000000a0 R15: 0000000000000001
+>> FS:  0000000000000000(0000) GS:ffffffff8089ee80(0000) knlGS:0000000000000000
+>> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+>> CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
+>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>> Process swapper (pid: 0, threadinfo ffffffff808b0000, task ffffffff80842340)
+>> Stack:  0000000000000002 ffff88007d3d2000 ffff88007d1fb948 0000000000000070
+>>  ffffffff8091abf0 ffffffff8059d3c4 ffffffff8091ac40 0000000100000001
+>>  ffffffff809e3658 ffff88007d3d2000 0000000000000002 ffff88007f9f6500
+>> Call Trace:
+>>  <IRQ>  [<ffffffff8059d3c4>] __nf_ct_ext_add+0x15f/0x1f7
+>>  [<ffffffff805e762c>] nf_nat_fn+0x84/0x152
+>>  [<ffffffff805e77d8>] nf_nat_in+0x2f/0x71
+>>  [<ffffffff805953d8>] nf_iterate+0x48/0x85
+>>  [<ffffffff805b19c0>] ? ip_rcv_finish+0x0/0x35d
+>>  [<ffffffff80595478>] nf_hook_slow+0x63/0xcb
+>>  [<ffffffff805b19c0>] ? ip_rcv_finish+0x0/0x35d
+>>  [<ffffffff8028fe7c>] ? __slab_alloc+0x413/0x4bd
+>>  [<ffffffff805b21b8>] ip_rcv+0x257/0x297
+>>  [<ffffffff80581461>] netif_receive_skb+0x1f1/0x263
+>>  [<ffffffff80495b34>] e1000_receive_skb+0x46/0x5d
+>>  [<ffffffff8049830b>] e1000_clean_rx_irq+0x20e/0x2a6
+>>  [<ffffffff8024cce8>] ? getnstimeofday+0x3f/0xa0
+>>  [<ffffffff804952ce>] e1000_clean+0x6d/0x218
+>>  [<ffffffff8024ad39>] ? hrtimer_get_next_event+0xa8/0xb8
+>>  [<ffffffff80583569>] net_rx_action+0xa9/0x17c
+>>  [<ffffffff80239b51>] __do_softirq+0x65/0xd5
+>>  [<ffffffff8020c5dc>] call_softirq+0x1c/0x28
+>>  [<ffffffff8020dd0a>] do_softirq+0x39/0x77
+>>  [<ffffffff80239aab>] irq_exit+0x44/0x85
+>>  [<ffffffff8020dff5>] do_IRQ+0x147/0x16a
+>>  [<ffffffff8020b8a1>] ret_from_intr+0x0/0xa
+> 
+> Dieter, can you please try this patch:
+> 
+> http://lkml.org/lkml/2008/7/24/186
+> 
+> Patrick, it looks like this could be the same bug Ingo is hitting?
+> 
 
-Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
+it looks like it is fixed with the patch. But I (still/now) have the 
+following Warning:
 
--Vitaly
+
+WARNING: at net/core/dev.c:1344 __netif_schedule+0x31/0x79()
+Modules linked in:
+Pid: 9, comm: events/0 Not tainted 2.6.26-06371-g338b9bb-dirty #51
+
+Call Trace:
+  [<ffffffff80234c3a>] warn_on_slowpath+0x5d/0x92
+  [<ffffffff8023dc24>] ? lock_timer_base+0x2b/0x4f
+  [<ffffffff8023dde1>] ? __mod_timer+0xc6/0xd8
+  [<ffffffff8026820a>] ? ftrace_record_ip+0x211/0x262
+  [<ffffffff8020b1e4>] ? mcount_call+0x5/0x31
+  [<ffffffff805802bf>] __netif_schedule+0x31/0x79
+  [<ffffffff80498890>] e1000_watchdog_task+0x47d/0x695
+  [<ffffffff80498413>] ? e1000_watchdog_task+0x0/0x695
+  [<ffffffff80244454>] run_workqueue+0x81/0x10a
+  [<ffffffff80244e46>] worker_thread+0xdd/0xea
+  [<ffffffff80247b3d>] ? autoremove_wake_function+0x0/0x3d
+  [<ffffffff80244d69>] ? worker_thread+0x0/0xea
+  [<ffffffff80247a0a>] kthread+0x4e/0x7c
+  [<ffffffff8020c279>] child_rip+0xa/0x11
+  [<ffffffff802479bc>] ? kthread+0x0/0x7c
+  [<ffffffff8020c26f>] ? child_rip+0x0/0x11
+
+---[ end trace a344035e20d497ce ]---
+
+but this is work in progress I guess.
+
+Thanks for support!
+
+cu
+Dieter
