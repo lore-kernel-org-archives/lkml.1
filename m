@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbYGXCnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbYGXDCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752084AbYGXCnN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 22:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYGXCm7
+	id S1752163AbYGXDCv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 23:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYGXDCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 22:42:59 -0400
-Received: from [209.191.84.64] ([209.191.84.64]:40121 "HELO
-	smtp111.mail.mud.yahoo.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with SMTP id S1751095AbYGXCm6 (ORCPT
+	Wed, 23 Jul 2008 23:02:42 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:43532 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958AbYGXDCm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 22:42:58 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=bCj1vyG2qskBSwWEkbJ1LRTsNt/jqWgPEBnZ4F21pBJVPxPOZrBJzDZvKyOkBdg+G2NfykL8cnE13BSI8oL//lZjI3beSOxgA/DqoRH9jO1ve+zL79hzD0rkz7KgoRa9BItzIrFbStxlYIxCPiT84/7UsNsyzO+R1Y/pMuWkjww=  ;
-X-YMail-OSG: xI1me.IVM1lPnGNWvEo5zRBex4BNlrRiLqIul2M71tK8WvmZbZsiMxPgIKNIvp9AINdzIuT.aj0.8uHn4aIEqoy9F_VwNXemRdjhMeeIgiXeOdFtxWS9m0rSmHxoyKZOvN8-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: GRU driver feedback
-Date: Thu, 24 Jul 2008 12:41:50 +1000
-User-Agent: KMail/1.9.5
-Cc: Jack Steiner <steiner@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20080723141229.GB13247@wotan.suse.de>
-In-Reply-To: <20080723141229.GB13247@wotan.suse.de>
+	Wed, 23 Jul 2008 23:02:42 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, andi@firstfloor.org, arjan@infradead.org,
+       ebiederm@xmission.com, greg@kroah.com, linux-kernel@vger.kernel.org
+References: <200807231252.20371.yhlu.kernel@gmail.com>
+	<20080723131218.f03ed672.akpm@linux-foundation.org>
+Date: Wed, 23 Jul 2008 19:56:07 -0700
+In-Reply-To: <20080723131218.f03ed672.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Wed, 23 Jul 2008 13:12:18 -0700")
+Message-ID: <m17ibcf0s8.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807241241.50299.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.0536]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.5 XM_Body_Dirty_Words Contains a dirty word
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] x86: usb debug port early console
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 24 July 2008 00:12, Nick Piggin wrote:
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-> Meanwhile, I hope that gives a bit to go on. I'm sorry it has come
-> relatively late in the game, but I had a week off a while back then had
-> (have) some important work work I'm starting to get a handle on...
+> On Wed, 23 Jul 2008 12:52:20 -0700
+> Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 >
-> Thanks,
-> Nick
+>> 
+>> 
+>> based on work from Eric, and add some timeout so don't dead loop when debug
+> device
+>> is not installed
+>> 
+>>
+>> ...
+>>
+>> +static void dbgp_mdelay(int ms)
+>> +{
+>> +	int i;
+>> +	while (ms--) {
+>> +		for (i = 0; i < 1000; i++)
+>> +			outb(0x1, 0x80);
+>> +	}
+>> +}
+>
+> hm.  port 80 has a guaranteed one microsecond? 
 
-Couple of other things I noticed today before I launch into the mmu
-notifier and TLB invalidate code proper.
+It usually longer, but it is in the 1 microsecond ballpark, accurate
+enough to be a usable delay before we have anything else.
 
-- gru_invalidate_range_end -- atomic_dec can filter into wake_up_all, past
-  the spin_lock in __wake_up, and past the loading of the list of tasks. So
-  you can lose a wakeup I believe (not on x86, but on ia64 with release
-  ordering spinlocks it would be possible). atomic_dec_and_test should do
-  the trick, and you might also want to consider memory ordering of the
-  atomic_inc (haven't really looked, but it seems quite suspicious to allow
-  it be reordered).
+> Why not udelay()/mdelay()/etc?
 
-- you seem to be using cache flushes and memory barriers in different ways
-  but each to push out things to the GRU device. For example start_instruction
-  does a wmb() then a store, then a CPU cache flush.
+This code runs ages before udelay and mdelay work.  Certainly before
+calibrate delay is called, so the normal kernel delay routines don't
+come anywhere close and an out to port 0x80 comes.
 
-  I'm lost as to how the mmio protocol actually works (not the low level
-  protocol, but exactly what cache attributes are used, and how the CPU
-  pushes things to the device and vice versa).
+>> +static void dbgp_breath(void)
+>> +{
+>> +	/* Sleep to give the debug port a chance to breathe */
+>> +}
+>
+> I expect the compiler will optimise away any calls to this.
 
-  For example, if you are using wmb(), this I think implies you are using
-  UC or WC memory to map the device, in which case I don't see why you need
-  the gru_flush_cache (which would suggest WB memory). Is this documented
-  somewhere?
+It is documentation that is if it might be a good idea to not hit the
+hardware there.
 
+Eric
