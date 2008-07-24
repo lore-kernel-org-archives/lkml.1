@@ -1,36 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbYGXMUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbYGXMUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbYGXMUI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:20:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbYGXMTz
+	id S1757310AbYGXMUc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbYGXMT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:19:55 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:48136 "EHLO bagnes.atmel.com"
+	Thu, 24 Jul 2008 08:19:56 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:48137 "EHLO bagnes.atmel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751431AbYGXMTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752010AbYGXMTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Jul 2008 08:19:54 -0400
 From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 To: Pierre Ossman <drzeus-list@drzeus.cx>
 Cc: linux-kernel@vger.kernel.org,
        Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: [PATCH v3 1/3] mmc: Export internal host state through debugfs
-Date: Thu, 24 Jul 2008 14:18:57 +0200
-Message-Id: <1216901939-4187-1-git-send-email-haavard.skinnemoen@atmel.com>
+Subject: [PATCH v3 2/3] mmc: Add per-card debugfs support
+Date: Thu, 24 Jul 2008 14:18:58 +0200
+Message-Id: <1216901939-4187-2-git-send-email-haavard.skinnemoen@atmel.com>
 X-Mailer: git-send-email 1.5.6.2
-X-OriginalArrivalTime: 24 Jul 2008 12:19:41.0619 (UTC) FILETIME=[8CA72030:01C8ED87]
+In-Reply-To: <1216901939-4187-1-git-send-email-haavard.skinnemoen@atmel.com>
+References: <1216901939-4187-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-OriginalArrivalTime: 24 Jul 2008 12:19:41.0651 (UTC) FILETIME=[8CAC0230:01C8ED87]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When CONFIG_DEBUG_FS is set, create a few files under /sys/kernel/debug
-containing information about an mmc host's internal state. Currently,
-just a single file is created, "ios", which contains information about
-the current operating parameters for the bus (clock speed, bus width,
-etc.)
+For each card successfully added to the bus, create a subdirectory under
+the host's debugfs root with information about the card.
 
-Host drivers can add additional files and directories under the host's
-root directory by passing the debugfs_root field in struct mmc_host as
-the 'parent' parameter to debugfs_create_*.
+At the moment, only a single file is added to the card directory for
+all cards: "state". It reflects the "state" field in struct mmc_card,
+indicating whether the card is present, readonly, etc.
+
+For MMC and SD cards (not SDIO), another file is added: "status".
+Reading this file will ask the card about its current status and
+return it. This can be useful if the card just refuses to respond to
+any commands, which might indicate that the card state is not what the
+MMC core thinks it is (due to a missing stop command, for example.)
 
 Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 
@@ -38,255 +43,149 @@ Changes since v2:
   * Don't rely on the compiler to optimize out unused code
 
 Changes since v1:
-  * Fold with the ios patch
-  * Remove MMC_DEBUG_FS config option and inline dummy functions
-  * Use debugfs_remove_recursive to clean up. This allows us to remove
-    lots of struct dentry fields from struct mmc_host and struct
-    mmc_ios.
-  * Move debugfs functionality into a separate file, debugfs.c
-  * Convert "ios" directory to a single file containing all the
-    information.
+  * move card debugfs stuff into debugfs.c
+  * add "state" file corresponding to the "state" field in struct
+    mmc_card.
+  * only create the "status" file if the card is an MMC or SD memory
+    card since SDIO doesn't support the SEND_STATUS command.
 ---
- drivers/mmc/core/Makefile  |    1 +
- drivers/mmc/core/core.h    |    4 +
- drivers/mmc/core/debugfs.c |  164 ++++++++++++++++++++++++++++++++++++++++++++
- drivers/mmc/core/host.c    |    8 ++
- include/linux/mmc/host.h   |    2 +
- 5 files changed, 179 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mmc/core/debugfs.c
+ drivers/mmc/core/bus.c     |    8 ++++++
+ drivers/mmc/core/core.h    |    3 ++
+ drivers/mmc/core/debugfs.c |   61 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/mmc/card.h   |    2 +
+ 4 files changed, 74 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/mmc/core/Makefile b/drivers/mmc/core/Makefile
-index 19a1a25..889e5f8 100644
---- a/drivers/mmc/core/Makefile
-+++ b/drivers/mmc/core/Makefile
-@@ -12,3 +12,4 @@ mmc_core-y			:= core.o bus.o host.o \
- 				   sdio.o sdio_ops.o sdio_bus.o \
- 				   sdio_cis.o sdio_io.o sdio_irq.o
+diff --git a/drivers/mmc/core/bus.c b/drivers/mmc/core/bus.c
+index fd95b18..0d9b2d6 100644
+--- a/drivers/mmc/core/bus.c
++++ b/drivers/mmc/core/bus.c
+@@ -252,6 +252,10 @@ int mmc_add_card(struct mmc_card *card)
+ 	if (ret)
+ 		return ret;
  
-+mmc_core-$(CONFIG_DEBUG_FS)	+= debugfs.o
++#ifdef CONFIG_DEBUG_FS
++	mmc_add_card_debugfs(card);
++#endif
++
+ 	mmc_card_set_present(card);
+ 
+ 	return 0;
+@@ -263,6 +267,10 @@ int mmc_add_card(struct mmc_card *card)
+  */
+ void mmc_remove_card(struct mmc_card *card)
+ {
++#ifdef CONFIG_DEBUG_FS
++	mmc_remove_card_debugfs(card);
++#endif
++
+ 	if (mmc_card_present(card)) {
+ 		if (mmc_host_is_spi(card->host)) {
+ 			printk(KERN_INFO "%s: SPI card removed\n",
 diff --git a/drivers/mmc/core/core.h b/drivers/mmc/core/core.h
-index cdb332b..745da98 100644
+index 745da98..c819eff 100644
 --- a/drivers/mmc/core/core.h
 +++ b/drivers/mmc/core/core.h
-@@ -52,5 +52,9 @@ int mmc_attach_sdio(struct mmc_host *host, u32 ocr);
+@@ -56,5 +56,8 @@ extern int use_spi_crc;
+ void mmc_add_host_debugfs(struct mmc_host *host);
+ void mmc_remove_host_debugfs(struct mmc_host *host);
  
- extern int use_spi_crc;
- 
-+/* Debugfs information for hosts and cards */
-+void mmc_add_host_debugfs(struct mmc_host *host);
-+void mmc_remove_host_debugfs(struct mmc_host *host);
++void mmc_add_card_debugfs(struct mmc_card *card);
++void mmc_remove_card_debugfs(struct mmc_card *card);
 +
  #endif
  
 diff --git a/drivers/mmc/core/debugfs.c b/drivers/mmc/core/debugfs.c
-new file mode 100644
-index 0000000..133c6e5
---- /dev/null
+index 133c6e5..1237bb4 100644
+--- a/drivers/mmc/core/debugfs.c
 +++ b/drivers/mmc/core/debugfs.c
-@@ -0,0 +1,164 @@
-+/*
-+ * Debugfs support for hosts and cards
-+ *
-+ * Copyright (C) 2008 Atmel Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+#include <linux/debugfs.h>
-+#include <linux/fs.h>
-+#include <linux/seq_file.h>
-+#include <linux/stat.h>
+@@ -12,9 +12,11 @@
+ #include <linux/seq_file.h>
+ #include <linux/stat.h>
+ 
++#include <linux/mmc/card.h>
+ #include <linux/mmc/host.h>
+ 
+ #include "core.h"
++#include "mmc_ops.h"
+ 
+ /* The debugfs functions are optimized away when CONFIG_DEBUG_FS isn't set. */
+ static int mmc_ios_show(struct seq_file *s, void *data)
+@@ -162,3 +164,62 @@ void mmc_remove_host_debugfs(struct mmc_host *host)
+ {
+ 	debugfs_remove_recursive(host->debugfs_root);
+ }
 +
-+#include <linux/mmc/host.h>
-+
-+#include "core.h"
-+
-+/* The debugfs functions are optimized away when CONFIG_DEBUG_FS isn't set. */
-+static int mmc_ios_show(struct seq_file *s, void *data)
++static int mmc_dbg_card_status_get(void *data, u64 *val)
 +{
-+	static const char *vdd_str[] = {
-+		[8]	= "2.0",
-+		[9]	= "2.1",
-+		[10]	= "2.2",
-+		[11]	= "2.3",
-+		[12]	= "2.4",
-+		[13]	= "2.5",
-+		[14]	= "2.6",
-+		[15]	= "2.7",
-+		[16]	= "2.8",
-+		[17]	= "2.9",
-+		[18]	= "3.0",
-+		[19]	= "3.1",
-+		[20]	= "3.2",
-+		[21]	= "3.3",
-+		[22]	= "3.4",
-+		[23]	= "3.5",
-+		[24]	= "3.6",
-+	};
-+	struct mmc_host	*host = s->private;
-+	struct mmc_ios	*ios = &host->ios;
-+	const char *str;
++	struct mmc_card	*card = data;
++	u32		status;
++	int		ret;
 +
-+	seq_printf(s, "clock:\t\t%u Hz\n", ios->clock);
-+	seq_printf(s, "vdd:\t\t%u ", ios->vdd);
-+	if ((1 << ios->vdd) & MMC_VDD_165_195)
-+		seq_printf(s, "(1.65 - 1.95 V)\n");
-+	else if (ios->vdd < (ARRAY_SIZE(vdd_str) - 1)
-+			&& vdd_str[ios->vdd] && vdd_str[ios->vdd + 1])
-+		seq_printf(s, "(%s ~ %s V)\n", vdd_str[ios->vdd],
-+				vdd_str[ios->vdd + 1]);
-+	else
-+		seq_printf(s, "(invalid)\n");
++	mmc_claim_host(card->host);
 +
-+	switch (ios->bus_mode) {
-+	case MMC_BUSMODE_OPENDRAIN:
-+		str = "open drain";
-+		break;
-+	case MMC_BUSMODE_PUSHPULL:
-+		str = "push-pull";
-+		break;
-+	default:
-+		str = "invalid";
-+		break;
-+	}
-+	seq_printf(s, "bus mode:\t%u (%s)\n", ios->bus_mode, str);
++	ret = mmc_send_status(data, &status);
++	if (!ret)
++		*val = status;
 +
-+	switch (ios->chip_select) {
-+	case MMC_CS_DONTCARE:
-+		str = "don't care";
-+		break;
-+	case MMC_CS_HIGH:
-+		str = "active high";
-+		break;
-+	case MMC_CS_LOW:
-+		str = "active low";
-+		break;
-+	default:
-+		str = "invalid";
-+		break;
-+	}
-+	seq_printf(s, "chip select:\t%u (%s)\n", ios->chip_select, str);
++	mmc_release_host(card->host);
 +
-+	switch (ios->power_mode) {
-+	case MMC_POWER_OFF:
-+		str = "off";
-+		break;
-+	case MMC_POWER_UP:
-+		str = "up";
-+		break;
-+	case MMC_POWER_ON:
-+		str = "on";
-+		break;
-+	default:
-+		str = "invalid";
-+		break;
-+	}
-+	seq_printf(s, "power mode:\t%u (%s)\n", ios->power_mode, str);
-+	seq_printf(s, "bus width:\t%u (%u bits)\n",
-+			ios->bus_width, 1 << ios->bus_width);
-+
-+	switch (ios->timing) {
-+	case MMC_TIMING_LEGACY:
-+		str = "legacy";
-+		break;
-+	case MMC_TIMING_MMC_HS:
-+		str = "mmc high-speed";
-+		break;
-+	case MMC_TIMING_SD_HS:
-+		str = "sd high-speed";
-+		break;
-+	default:
-+		str = "invalid";
-+		break;
-+	}
-+	seq_printf(s, "timing spec:\t%u (%s)\n", ios->timing, str);
-+
-+	return 0;
++	return ret;
 +}
++DEFINE_SIMPLE_ATTRIBUTE(mmc_dbg_card_status_fops, mmc_dbg_card_status_get,
++		NULL, "%08llx\n");
 +
-+static int mmc_ios_open(struct inode *inode, struct file *file)
++void mmc_add_card_debugfs(struct mmc_card *card)
 +{
-+	return single_open(file, mmc_ios_show, inode->i_private);
-+}
++	struct mmc_host	*host = card->host;
++	struct dentry	*root;
 +
-+static const struct file_operations mmc_ios_fops = {
-+	.open		= mmc_ios_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
++	if (!host->debugfs_root)
++		return;
 +
-+void mmc_add_host_debugfs(struct mmc_host *host)
-+{
-+	struct dentry *root;
-+
-+	root = debugfs_create_dir(mmc_hostname(host), NULL);
++	root = debugfs_create_dir(mmc_card_id(card), host->debugfs_root);
 +	if (IS_ERR(root))
 +		/* Don't complain -- debugfs just isn't enabled */
 +		return;
 +	if (!root)
 +		/* Complain -- debugfs is enabled, but it failed to
 +		 * create the directory. */
-+		goto err_root;
++		goto err;
 +
-+	host->debugfs_root = root;
++	card->debugfs_root = root;
 +
-+	if (!debugfs_create_file("ios", S_IRUSR, root, host, &mmc_ios_fops))
-+		goto err_ios;
++	if (!debugfs_create_x32("state", S_IRUSR, root, &card->state))
++		goto err;
++
++	if (mmc_card_mmc(card) || mmc_card_sd(card))
++		if (!debugfs_create_file("status", S_IRUSR, root, card,
++					&mmc_dbg_card_status_fops))
++			goto err;
 +
 +	return;
 +
-+err_ios:
++err:
 +	debugfs_remove_recursive(root);
-+	host->debugfs_root = NULL;
-+err_root:
-+	dev_err(&host->class_dev, "failed to initialize debugfs\n");
++	card->debugfs_root = NULL;
++	dev_err(&card->dev, "failed to initialize debugfs\n");
 +}
 +
-+void mmc_remove_host_debugfs(struct mmc_host *host)
++void mmc_remove_card_debugfs(struct mmc_card *card)
 +{
-+	debugfs_remove_recursive(host->debugfs_root);
++	debugfs_remove_recursive(card->debugfs_root);
 +}
-diff --git a/drivers/mmc/core/host.c b/drivers/mmc/core/host.c
-index 1d795c5..6da80fd 100644
---- a/drivers/mmc/core/host.c
-+++ b/drivers/mmc/core/host.c
-@@ -127,6 +127,10 @@ int mmc_add_host(struct mmc_host *host)
- 	if (err)
- 		return err;
- 
-+#ifdef CONFIG_DEBUG_FS
-+	mmc_add_host_debugfs(host);
-+#endif
+diff --git a/include/linux/mmc/card.h b/include/linux/mmc/card.h
+index 0d508ac..ee6e822 100644
+--- a/include/linux/mmc/card.h
++++ b/include/linux/mmc/card.h
+@@ -111,6 +111,8 @@ struct mmc_card {
+ 	unsigned		num_info;	/* number of info strings */
+ 	const char		**info;		/* info strings */
+ 	struct sdio_func_tuple	*tuples;	/* unknown common tuples */
 +
- 	mmc_start_host(host);
- 
- 	return 0;
-@@ -146,6 +150,10 @@ void mmc_remove_host(struct mmc_host *host)
- {
- 	mmc_stop_host(host);
- 
-+#ifdef CONFIG_DEBUG_FS
-+	mmc_remove_host_debugfs(host);
-+#endif
-+
- 	device_del(&host->class_dev);
- 
- 	led_trigger_unregister_simple(host->led);
-diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-index 10a2080..9c288c9 100644
---- a/include/linux/mmc/host.h
-+++ b/include/linux/mmc/host.h
-@@ -157,6 +157,8 @@ struct mmc_host {
- 	struct led_trigger	*led;		/* activity led */
- #endif
- 
 +	struct dentry		*debugfs_root;
-+
- 	unsigned long		private[0] ____cacheline_aligned;
  };
  
+ #define mmc_card_mmc(c)		((c)->type == MMC_TYPE_MMC)
 -- 
 1.5.6.2
 
