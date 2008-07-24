@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYGXNQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYGXNRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbYGXNQM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 09:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYGXNPz
+	id S1754572AbYGXNRr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 09:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbYGXNRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 09:15:55 -0400
-Received: from waste.org ([66.93.16.53]:41725 "EHLO waste.org"
+	Thu, 24 Jul 2008 09:17:38 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:48938 "EHLO bagnes.atmel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751379AbYGXNPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 09:15:54 -0400
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
-	pointer dereference
-From: Matt Mackall <mpm@selenic.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Patrick McHardy <kaber@trash.net>,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de, rjw@sisk.pl,
-       ilpo.jarvinen@helsinki.fi, Dave Jones <davej@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <20080724125004.GA7426@gondor.apana.org.au>
-References: <20080724060448.GA10203@elte.hu>
-	 <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>
-	 <20080724.022259.113079007.davem@davemloft.net>
-	 <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu>
-	 <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net>
-	 <20080724122203.GA7187@gondor.apana.org.au>
-	 <84144f020807240540vbe7ef50uee2cacabe8016546@mail.gmail.com>
-	 <20080724125004.GA7426@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Thu, 24 Jul 2008 08:11:49 -0500
-Message-Id: <1216905109.15519.200.camel@calx>
+	id S1751552AbYGXNRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 09:17:37 -0400
+Date: Thu, 24 Jul 2008 15:09:11 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Jaswinder Singh <jaswinder@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       kernelnewbies <kernelnewbies@nl.linux.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 4/22] avr32: Introducing asm/syscalls.h
+Message-ID: <20080724150911.5bf4372b@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <1216596035.3679.95.camel@jaswinder.satnam>
+References: <1216592500.3679.14.camel@jaswinder.satnam>
+	<1216592798.3679.22.camel@jaswinder.satnam>
+	<1216592879.3679.24.camel@jaswinder.satnam>
+	<1216593035.3679.27.camel@jaswinder.satnam>
+	<1216596035.3679.95.camel@jaswinder.satnam>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 24 Jul 2008 13:09:53.0926 (UTC) FILETIME=[9020B260:01C8ED8E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jaswinder Singh <jaswinder@infradead.org> wrote:
+> +asmlinkage int sys_fork(struct pt_regs);
 
-On Thu, 2008-07-24 at 20:50 +0800, Herbert Xu wrote:
-> On Thu, Jul 24, 2008 at 03:40:40PM +0300, Pekka Enberg wrote:
-> >
-> > Using ksize() for skbs will crash your kernel for some configurations
-> > because calling that function for memory allocated with
-> > kmem_cache_alloc() is not supported by all the allocators (well,
-> > SLOB).
-> 
-> So how about fixing the interface so that it can return an error
-> to indicate that the allocator doesn't support it?
+This should be "struct pt_regs *"
 
-You don't honestly expect people to correctly code to such a standard,
-do you? People will assume that ksize never fails, they will be wrong,
-and computers will die.
+> +asmlinkage int sys_clone(unsigned long, unsigned long,
+> +			 unsigned long, unsigned long,
+> +			 struct pt_regs *);
+> +asmlinkage int sys_vfork(struct pt_regs);
 
->  You're taking
-> away an entire interface just because an underlying implementation
-> that's used by a very small proportion of users doesn't do the
-> right thing.
+Same thing here.
 
-Umm, no. There were very few users to being with, so it was actually a
-fairly large proportion. And that suggested the interface was a bad
-idea.
+Other than that, looks good to me.
 
--- 
-Mathematics is the supreme nostalgia of our time.
-
+Haavard
