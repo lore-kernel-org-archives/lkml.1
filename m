@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbYGXNPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYGXNQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754262AbYGXNPY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 09:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYGXNPL
+	id S1754839AbYGXNQM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 09:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYGXNPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 09:15:11 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:35753 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751268AbYGXNPK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 09:15:10 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] Input: Enable WM97xx touchscreen sub-drivers by default
-Date: Thu, 24 Jul 2008 14:15:08 +0100
-Message-Id: <1216905308-4723-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.5.6.3
+	Thu, 24 Jul 2008 09:15:55 -0400
+Received: from waste.org ([66.93.16.53]:41725 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751379AbYGXNPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 09:15:54 -0400
+Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
+	pointer dereference
+From: Matt Mackall <mpm@selenic.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Patrick McHardy <kaber@trash.net>,
+       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de, rjw@sisk.pl,
+       ilpo.jarvinen@helsinki.fi, Dave Jones <davej@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <20080724125004.GA7426@gondor.apana.org.au>
+References: <20080724060448.GA10203@elte.hu>
+	 <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>
+	 <20080724.022259.113079007.davem@davemloft.net>
+	 <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu>
+	 <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net>
+	 <20080724122203.GA7187@gondor.apana.org.au>
+	 <84144f020807240540vbe7ef50uee2cacabe8016546@mail.gmail.com>
+	 <20080724125004.GA7426@gondor.apana.org.au>
+Content-Type: text/plain
+Date: Thu, 24 Jul 2008 08:11:49 -0500
+Message-Id: <1216905109.15519.200.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the support for each WM97xx touchscreen model is compiled out
-by default, meaning that the default configuration when the driver is
-built is for it to support no hardware.  This is suboptimal and leads to
-problems like distribution kernels shipping a non-functional driver.
 
-Change the default to support all controllers and update the help text
-to reflect this.
+On Thu, 2008-07-24 at 20:50 +0800, Herbert Xu wrote:
+> On Thu, Jul 24, 2008 at 03:40:40PM +0300, Pekka Enberg wrote:
+> >
+> > Using ksize() for skbs will crash your kernel for some configurations
+> > because calling that function for memory allocated with
+> > kmem_cache_alloc() is not supported by all the allocators (well,
+> > SLOB).
+> 
+> So how about fixing the interface so that it can return an error
+> to indicate that the allocator doesn't support it?
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/input/touchscreen/Kconfig |   21 +++++++++------------
- 1 files changed, 9 insertions(+), 12 deletions(-)
+You don't honestly expect people to correctly code to such a standard,
+do you? People will assume that ksize never fails, they will be wrong,
+and computers will die.
 
-diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
-index e573665..f3933f0 100644
---- a/drivers/input/touchscreen/Kconfig
-+++ b/drivers/input/touchscreen/Kconfig
-@@ -237,29 +237,26 @@ config TOUCHSCREEN_WM97XX
- config TOUCHSCREEN_WM9705
- 	bool "WM9705 Touchscreen interface support"
- 	depends on TOUCHSCREEN_WM97XX
-+	default y
- 	help
--	  Say Y here if you have a Wolfson Microelectronics WM9705
--	  touchscreen controller connected to your system.
--
--	  If unsure, say N.
-+	  Say Y here if to enable support for the Wolfson Microelectronics
-+	  WM9705 touchscreen controller.
- 
- config TOUCHSCREEN_WM9712
- 	bool "WM9712 Touchscreen interface support"
- 	depends on TOUCHSCREEN_WM97XX
-+	default y
- 	help
--	  Say Y here if you have a Wolfson Microelectronics WM9712
--	  touchscreen controller connected to your system.
--
--	  If unsure, say N.
-+	  Say Y here if to enable support for the Wolfson Microelectronics
-+	  WM9712 touchscreen controller.
- 
- config TOUCHSCREEN_WM9713
- 	bool "WM9713 Touchscreen interface support"
- 	depends on TOUCHSCREEN_WM97XX
-+	default y
- 	help
--	  Say Y here if you have a Wolfson Microelectronics WM9713 touchscreen
--	  controller connected to your system.
--
--	  If unsure, say N.
-+	  Say Y here if to enable support for the Wolfson Microelectronics
-+	  WM9713 touchscreen controller.
- 
- config TOUCHSCREEN_WM97XX_MAINSTONE
- 	tristate "WM97xx Mainstone accelerated touch"
+>  You're taking
+> away an entire interface just because an underlying implementation
+> that's used by a very small proportion of users doesn't do the
+> right thing.
+
+Umm, no. There were very few users to being with, so it was actually a
+fairly large proportion. And that suggested the interface was a bad
+idea.
+
 -- 
-1.5.6.3
+Mathematics is the supreme nostalgia of our time.
 
