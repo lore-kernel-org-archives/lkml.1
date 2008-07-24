@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbYGYAF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbYGYAIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755411AbYGYAF1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 20:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYGYAFP
+	id S1756369AbYGYAIy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 20:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbYGYAIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 20:05:15 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:42422 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbYGYAFN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 20:05:13 -0400
-Date: Thu, 24 Jul 2008 20:04:32 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: ACPI OSI disaster on latest HP laptops - critical temperature
- shutdown
-In-reply-to: <200807241727.41715.trenn@suse.de>
-X-X-Sender: lenb@localhost.localdomain
-To: Thomas Renninger <trenn@suse.de>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       Christian Kornacker <ckornacker@suse.de>
-Message-id: <alpine.LFD.1.10.0807241952270.6098@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <200807241727.41715.trenn@suse.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 24 Jul 2008 20:08:46 -0400
+Received: from postel.suug.ch ([194.88.212.233]:33980 "EHLO postel.suug.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752350AbYGYAIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 20:08:45 -0400
+X-Greylist: delayed 1393 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Jul 2008 20:08:45 EDT
+Date: Fri, 25 Jul 2008 01:45:53 +0200
+From: Thomas Graf <tgraf@suug.ch>
+To: Ranjit Manomohan <ranjitm@google.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, lizf@cn.fujitsu.com,
+       kaber@trash.net, menage@google.com
+Subject: Re: [PATCH] Traffic control cgroups subsystem
+Message-ID: <20080724234553.GC20815@postel.suug.ch>
+References: <Pine.LNX.4.64.0807221041210.1091@ranjit.corp.google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0807221041210.1091@ranjit.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas,
+* Ranjit Manomohan <ranjitm@google.com> 2008-07-22 10:44
+> The implementation consists of two parts:
+> 
+> 1) A resource controller (cgroup_tc) that is used to associate packets from
+>    a particular task belonging to a cgroup with a traffic control class id (
+>    tc_classid). This tc_classid is propagated to all sockets created by 
+>    tasks
+>    in the cgroup and will be used for classifying packets at the link layer.
+> 
+> 2) A modified traffic control classifier (cls_flow) that can classify 
+> packets
+>    based on the tc_classid field in the socket to specific destination 
+>    classes.
+> 
+> An example of the use of this resource controller would be to limit
+> the traffic from all tasks from a file_server cgroup to 100Mbps. We could
+> achieve this by doing:
+> 
+> # make a cgroup of file transfer processes and assign it a uniqe classid
+> # of 0x10 - this will be used lated to direct packets.
+> mkdir -p /dev/cgroup
+> mount -t cgroup tc -otc /dev/cgroup
+> mkdir /dev/cgroup/file_transfer
+> echo 0x10 > /dev/cgroup/file_transfer/tc.classid
+> echo $PID_OF_FILE_XFER_PROCESS > /dev/cgroup/file_transfer/tasks
+> 
+> # Now create a HTB class that rate limits traffic to 100mbits and attach
+> # a filter to direct all traffic from cgroup file_transfer to this new 
+> class.
+> tc qdisc add dev eth0 root handle 1: htb
+> tc class add dev eth0 parent 1: classid 1:10 htb rate 100mbit ceil 100mbit
+> tc filter add dev eth0 parent 1: handle 800 protocol ip prio 1 flow map key 
+> cgroup-classid baseclass 1:10
 
-re: OSI(Windows...)
+It might have been easier to simply write a classifier which maps pids
+to classes. The interface could be as simple as two nested attributes,
+ADD_MAPS, REMOVE_MAPS which both take lists of pid->class mappings to
+either add or remove from the classifier.
 
-Linux will continue to claim OSI compatibility with Windows
-until the day when the majority of Linux systems
-have passed a Linux compatibility test rather than
-a Windows compatibility test.
+I have been working on this over the past 2 weeks, it includes the
+classifier as just stated, a cgroup module which sends notifications
+about events as netlink messages and a daemon which creates qdiscs,
+classes and filters on the fly according to the configured distribution.
+It works both ingress (with some tricks) and egress.
 
-Re: OSI(Linux)
-
-I've looked at O(100) DSDT's that look at OSI(Linux),
-and all but serveral systems from two vendors do it by mistake.
-They simply copied it from the bugged Intel reference code.
-
-OSI(Linux) will _never_ be restored to Linux, ever.
-
-re: the HP BIOS bug at hand.
-
-Linux deletes the entire thermal zone when we see this.
-(arguably, we could have just disabled the CRT
-and kept the rest of the thermal zone).
-If HP cared about testing Linux on this laptop
-and had tools such that they could actually
-test Linux compatiblity, it would be pretty clear
-from user-space that their thermal zone was missing.
-
-thanks,
--Len
-
-
-
+IMHO, there is no point in a cgroup interface if the user has to create
+qdiscs, classes and filters manually anyway.
