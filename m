@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752909AbYGXVHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbYGXVUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752909AbYGXVHc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 17:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYGXVHY
+	id S1753111AbYGXVUA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 17:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbYGXVTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 17:07:24 -0400
-Received: from outbound-mail-20.bluehost.com ([69.89.20.235]:38597 "HELO
-	outbound-mail-20.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751655AbYGXVHY (ORCPT
+	Thu, 24 Jul 2008 17:19:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53141 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751703AbYGXVTs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 17:07:24 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=uf/STVvvVmy/IWIE3y9kgCvhbQ344ysO4rBFNpevldd4ECQwt80GOoFESE5M5+VqVEyLI6Gtld1fCezujwTEYs1C8Fye0ob06Jo30/ucvMcqd/v4FQk5SUuGg2PurI7S;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
-Date: Thu, 24 Jul 2008 14:07:18 -0700
-User-Agent: KMail/1.9.9
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-References: <20080724134737.4b91f30d@mjolnir.drzeus.cx> <488877C8.9020706@jp.fujitsu.com> <20080724223920.1f4dd753@mjolnir.drzeus.cx>
-In-Reply-To: <20080724223920.1f4dd753@mjolnir.drzeus.cx>
+	Thu, 24 Jul 2008 17:19:48 -0400
+Date: Thu, 24 Jul 2008 14:13:42 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Patrick McHardy <kaber@trash.net>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       w@1wt.eu, davidn@davidnewall.com, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
+ pointer dereference
+In-Reply-To: <48887A71.5010209@trash.net>
+Message-ID: <alpine.LFD.1.10.0807241407410.8109@nehalem.linux-foundation.org>
+References: <20080724060448.GA10203@elte.hu>  <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>  <20080724.022259.113079007.davem@davemloft.net>  <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu>  <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net>
+ <84144f020807240544q507e1b7cv220d1afbae0ee0f0@mail.gmail.com> <48887A71.5010209@trash.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807241407.18543.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, July 24, 2008 1:39 pm Pierre Ossman wrote:
-> On Thu, 24 Jul 2008 21:38:32 +0900
->
-> Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
-> > Hi Pierre,
-> > (Added linux-pci to CC)
-> >
-> > Pierre Ossman wrote:
-> > > Somewhere post 2.6.26, pciehp started whining about not being able to
-> > > claim the slot and error code -17. It suggested adding
-> > > "pciehp_slot_with_bus", which actually helped. Still, having a kernel
-> > > parameter should just be a temporary fix.
-> >
-> > The "pciehp_slot_with_bus" option is a workaround for the platforms
-> > that assign the same physical slot number to multiple slots. If your
-> > system has PCI chassis and it supports Chassis Number registers,
-> > maybe one of the solution is using chassis number + slot number as a
-> > slot name. But I don't have any idea other than "pciehp_slot_with_bus"
-> > if your system doesn't support chassis number.
->
-> The what now? :)
->
-> This is a laptop with a single expressport that worked fine up until
-> this merge window. What changed and why is it no longer possible to
-> support this hardware without a kernel parameter?
 
-Yeah we're being a bit more careful about registering hotplug slots these 
-days.  The fact that you got a conflict message indicates that more than one 
-driver is trying to bind to that PCIe port and handle hotplug for it.  I 
-guess acpiphp must already be loaded?
 
-Jesse
+On Thu, 24 Jul 2008, Patrick McHardy wrote:
+> 
+> To fix this I think we need a __krealloc() that doesn't
+> free the old memory, especially since it must not be
+> freed immediately because it may still be used in a RCU
+> read side (see the last part in the patch attached to
+> this mail (based on a kernel without your patch)).
+
+Hmm. Don't you need to fix some of the ordering of the initialization too?
+
+If there are possible readers that happen in parallel with changing this 
+thing, don't you need to protect the update of "ext->len" against the 
+actual changes? And the readers should probably have a read barrier 
+between checking "len" and actually looking at the values? Finally, why do 
+the "ct->ext" dereference thing, when we know it has to be equal to "new"?
+
+ie something like this on the writing side (in _addition_ to both the 
+patches already seen), but I didn't do the reading side (ie there are no 
+"smp_rmb()"'s on the reading side)
+
+And no, I don't know the code, so I don't know who/what can read those 
+things with RCU, so maybe there is some reason why the actual data doesn't 
+need protecting. But I somehow doubt it.
+
+		Linus
+
+---
+ net/netfilter/nf_conntrack_extend.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/net/netfilter/nf_conntrack_extend.c b/net/netfilter/nf_conntrack_extend.c
+index 3469bc7..135e095 100644
+--- a/net/netfilter/nf_conntrack_extend.c
++++ b/net/netfilter/nf_conntrack_extend.c
+@@ -115,10 +115,11 @@ void *__nf_ct_ext_add(struct nf_conn *ct, enum nf_ct_ext_id id, gfp_t gfp)
+ 		ct->ext = new;
+ 	}
+ 
+-	ct->ext->offset[id] = newoff;
+-	ct->ext->len = newlen;
+-	memset((void *)ct->ext + newoff, 0, newlen - newoff);
+-	return (void *)ct->ext + newoff;
++	new->offset[id] = newoff;
++	memset((void *)new + newoff, 0, newlen - newoff);
++	smp_wmb();
++	new->len = newlen;
++	return (void *)new + newoff;
+ }
+ EXPORT_SYMBOL(__nf_ct_ext_add);
+ 
