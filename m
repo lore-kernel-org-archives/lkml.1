@@ -1,163 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbYGXKdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYGXKdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755424AbYGXKdU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 06:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYGXKdK
+	id S1755525AbYGXKdq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 06:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbYGXKdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 06:33:10 -0400
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:49994 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752662AbYGXKdJ (ORCPT
+	Thu, 24 Jul 2008 06:33:37 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:61537 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752397AbYGXKdf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 06:33:09 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <48885A6B.6080905@cam.ac.uk>
-Date: Thu, 24 Jul 2008 11:33:15 +0100
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
+	Thu, 24 Jul 2008 06:33:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=FWs/jDGeZxqye0LYyZWc/UcrA2+7aAq1P0fynFMc81E40sPK1GM/RM2lEfHxBLqNFZ
+         6i9pdTGze3C2owFvnK+hoO/DCH95HCnBc0XOP+zdKl59FteQd9RLu2x5l9EgK/ihuTx5
+         5zVmloFiFEHb9ubrsZkysYDUNA0ZMHmDYMMnk=
+Message-ID: <74d0deb30807240333l565eaf24uf695ce8d01597090@mail.gmail.com>
+Date: Thu, 24 Jul 2008 12:33:34 +0200
+From: "pHilipp Zabel" <philipp.zabel@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [stable] [patch 44/47] pxamci: fix byte aligned DMA transfers
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Greg KH" <gregkh@suse.de>, "Theodore Ts'o" <tytso@mit.edu>,
+       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
+       "Justin Forbes" <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
+       "Domenico Andreoli" <cavokz@gmail.com>, akpm@linux-foundation.org,
+       "Randy Dunlap" <rdunlap@xenotime.net>, "Willy Tarreau" <w@1wt.eu>,
+       "Chuck Wolber" <chuckw@quantumlinux.com>, alan@lxorguk.ukuu.org.uk,
+       "Chuck Ebbert" <cebbert@redhat.com>, "Dave Jones" <davej@redhat.com>,
+       "Jake Edge" <jake@lwn.net>, "Michael Krufky" <mkrufky@linuxtv.org>,
+       stable@kernel.org, "Rodrigo Rubira Branco" <rbranco@la.checkpoint.com>,
+       "Pierre Ossman" <drzeus@drzeus.cx>
+In-Reply-To: <20080723203250.GA26454@kroah.com>
 MIME-Version: 1.0
-To: Ben Dooks <ben-linux@fluff.org>
-CC: Jonathan Cameron <Jonathan.Cameron@gmail.com>, mgross@linux.intel.com,
-       Dmitry Torokhov <dtor@mail.ru>, LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>,
-       David Brownell <david-b@pacbell.net>, hmh@hmh.eng.br,
-       Jean Delvare <khali@linux-fr.org>,
-       spi-devel-general@lists.sourceforge.net,
-       Ben Nizette <bn@niasdigital.com>
-Subject: Re: [spi-devel-general] [Patch 1/4] Industrialio Core
-References: <488763AD.4050400@gmail.com> <488765A5.3040703@gmail.com> <20080723194230.GE26938@trinity.fluff.org>
-In-Reply-To: <20080723194230.GE26938@trinity.fluff.org>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080722230208.148102983@mini.kroah.org>
+	 <20080722231342.GA8282@suse.de> <20080722231735.GS8282@suse.de>
+	 <74d0deb30807230001x176e375cq9a8060c20596f36f@mail.gmail.com>
+	 <20080723201258.GA26156@kroah.com>
+	 <alpine.LFD.1.10.0807231322250.4754@woody.linux-foundation.org>
+	 <20080723203250.GA26454@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben,
+On Wed, Jul 23, 2008 at 10:32 PM, Greg KH <greg@kroah.com> wrote:
+> On Wed, Jul 23, 2008 at 01:24:12PM -0700, Linus Torvalds wrote:
+>>
+>>
+>> On Wed, 23 Jul 2008, Greg KH wrote:
+>>
+>> > On Wed, Jul 23, 2008 at 09:01:34AM +0200, pHilipp Zabel wrote:
+>> > >
+>> > > There is an ugly typo in the patch below that was fixed by Karl Beldan:
+>> > > http://git.kernel.org/?p=linux/kernel/git/drzeus/mmc.git;a=commit;h=28bbe535df5c461c25eb57affb30e007072429c3
+>> > >
+>> > > Not sure how you handle this, maybe this patch should only go in
+>> > > together with the other.
+>> >
+>> > As the above mentioned patch isn't in Linus's tree yet, I can't take it.
+>> >
+>> > Care to send it to stable@kernel.org when it does go in?  Or is this
+>> > current patch just broken without it and not worth adding at all?
+>>
+>> Hmm. I think it's commit 4fe16897c59882420d66f2d503106653d026ed6c
+>> upstream. I don't know why it has a different SHA1 in the mmc tree, but I
+>> assume that it's because the MMC tree has rebased at some point. Ugh.
 
-Firstly thanks for taking a look at this.
+Thank you, I think when I wrote my mail it wasn't pulled yet.
 
-Ben Dooks wrote:
->> +/* The actual event being pushed ot userspace */
->> +struct iio_event_data {
->> +	int id;
->> +	s64 timestamp;
->> +};
-> 
-> So is this an header for an event? Where is the data in this, this
-> is confusing... Also, should we have a framework to produce an
-> key/pair data, so that an single event can export multiple values
-> from one event...
-> 
-> ie:
-> 
-> struct event_header {
-> 	unsigned int 	id;
-> 	unsigned int	nr_data;	/* number of event_data after */
-> 	s64		timestamp;
-> 
-> struct event {
-> 	struct event_header	header;
-> 	struct event_data	data[0];
-> };
- 
-At the current time at least the purpose of events in this subsystem is rather
-different from those in say the input system.  So far they have all
-corresponded to things that don't actually have any data associated with them.
+> Ah, thanks, I missed that.
+>
+> Hm, that is added post 2.6.26, so I'll add this fixup patch to the
+> .25-stable tree, and also add this one to the .26-stable queue.
 
-The list so far is:
-Ring bufer 50% full, Ring buffer 75% full (due to the support for escalating
-events, only the highest of these will ever be in the queue).
+Ok, thank you.
 
-Motion detected, device dependent on whether this is for specific axis.
+> Philipp, is that correct, or does this original one also need to get
+> added to the .26-stable queue as well?
 
-Thresholds breached.
+AFAICT, the original one (97f8571e663c808ad2d01a396627235167291556) is
+post-26, too.
 
-Tap detection (common on accelerometers)
+Both should be applied together. Although it is unlikely that with the
+broken patch MMC accesses will accidentally clear the DALGN bits of
+other running (unaligned) DMA chains (I'm not aware of any drivers
+using unaligned DMA), the PXA27x developer manual says that this "must
+not" be done. If it would result in memory corruption or lockups, I
+don't know.
 
-Anyhow I did originally start our with a similar layout to you have suggested
-(based in input subsystem) but removed it for now as it is currently unecessary.
-
- 
-> the naming of these structures is rather long.
-> 
->> +/* Requires high resolution timers */
->> +/*  TODO - provide alternative if not available? */
->> +static inline s64 iio_get_time_ns(void)
->> +{
->> +	struct timespec ts;
->> +	ktime_get_ts(&ts);
->> +	return timespec_to_ns(&ts);
->> +}
-> 
-> do we really need something that accurate? we should at-least have
-> the option to remove the timestamp or choose something of lower
-> accuracy?
-
-Not necessarily, hence the TODO.  I've been wondering about using an approach
-similar to the 'scan' modes seen in the max1363 driver in which the time stamp
-will simply be another 'input' recorded to the ring buffer as necessary.  Within
-the event structure, this is certainly something that needs to be configurable.
-
->> +
->> +#define INIT_IIO_SW_RING_BUFFER(ring, _bytes_per_datum, _length) {	\
->> +		INIT_IIO_RING_BUFFER(&(ring)->buf,			\
->> +				     _bytes_per_datum,			\
->> +				     _length);				\
->> +		(ring)->read_p = 0;					\
->> +		(ring)->write_p = 0;					\
->> +		(ring)->last_written_p = 0;				\
->> +		(ring)->data = kmalloc(_length*(ring)->buf.size,	\
->> +				       GFP_KERNEL);			\
->> +		(ring)->use_count = 0;					\
->> +		(ring)->use_lock = __SPIN_LOCK_UNLOCKED((ring)->use_lock); \
->> +	}
-> 
-> these should be inlined functions.
-Oops, I'll clean them up. Thanks for pointing that out.
->> +
->> +int iio_request_sw_ring_buffer(int bytes_per_datum,
->> +			       int length,
->> +			       struct iio_sw_ring_buffer **ring,
->> +			       int id,
->> +			       struct module *owner,
->> +			       struct device *dev);
->> +
-> 
-> how about tying this to a driver, where you already know the owner
-> and the dev?
-Good point.
-
->> +
->> +struct iio_work_cont {
->> +	struct work_struct ws;
->> +	struct work_struct ws_nocheck;
->> +	int address;
->> +	int mask;
->> +	void *st;
->> +};
->> +#define INIT_IIO_WORK_CONT(cont, _checkfunc, _nocheckfunc, _add, _mask, _st)\
->> +	do {								\
->> +	INIT_WORK(&(cont)->ws, _checkfunc);				\
->> +	INIT_WORK(&(cont)->ws_nocheck, _nocheckfunc);			\
->> +	(cont)->address = _add;						\
->> +	(cont)->mask = _mask;						\
->> +	(cont)->st = _st;						\
->> +	} while (0)
-> 
-> more nasty macros.
-Yes, definitely need to get rid of most of them.
-[ring buffer code]
-> Nice idea, I just don't get what is actually going on in
-> here. This needs more planning.
-
-I definitely should have put together some more explanatory documents explaining
-the aims and approach taken for the ring buffer handling. I'll get some initial
-stuff writen and posted here shortly.
-
-Thanks for taking a look and your suggestions,
-
---
-Jonathan Cameron
+regards
+Philipp
