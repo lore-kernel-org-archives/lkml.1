@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbYGXAUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbYGXAW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbYGXAUd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 20:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbYGXAUZ
+	id S1756214AbYGXAW4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 20:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbYGXAWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 20:20:25 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:2395 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754068AbYGXAUY (ORCPT
+	Wed, 23 Jul 2008 20:22:48 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:5325 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753047AbYGXAWs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 20:20:24 -0400
+	Wed, 23 Jul 2008 20:22:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gVwmRTv7qEsyfpeeIXyHTYbK7OyhQKNn5DL+j0aBI7i2c3l8Y6kvqxqEg1xqHyTIdr
-         ju7gCQZdPcJQ076UhuPAsWoZVStiHvKNUZjKkaOQg15agk+RwVUpwAq9s8iQBb6m9PsI
-         ALxuTo9891n3RRAK9RRTxpAs+Ij7qOUTs0nnM=
-Message-ID: <524f69650807231719y33e96d02y7b04d1115620aa1d@mail.gmail.com>
-Date: Wed, 23 Jul 2008 19:19:34 -0500
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=ufHAKlsMIHb5vL52CY3ZhYO8rBy2x/FuOSpyno907I7dzaOf5TVXAduCoWycqQPvqI
+         LWc/cJp+AE0YlvkWmlWfnpnqOx+bEo6E1cGe/9B/AtuGE+2Jv815ECHf1ZJCMW16dEvd
+         ivBz1oapR3S8FK3d5pSYoRVAtMATLkU0YlB4s=
+Message-ID: <524f69650807231722q74269919s4fcf95d51d438ff4@mail.gmail.com>
+Date: Wed, 23 Jul 2008 19:22:47 -0500
 From: "Steve French" <smfrench@gmail.com>
-To: "Harvey Harrison" <harvey.harrison@gmail.com>
-Subject: Re: [PATCH] cifs: avoid mixing bool and le16
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1216857138.30386.33.camel@brick>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: new sparse warnings
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1216857138.30386.33.camel@brick>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Seems like a cast to bool or an "if ...else" would be clearer than using !!
-By the way I don't see this warning - is it a newer compiler warning?
+Any idea what the new sparse "context imbalance" warnings are?  Is
+this a bug in sparse?
 
-On Wed, Jul 23, 2008 at 6:52 PM, Harvey Harrison
-<harvey.harrison@gmail.com> wrote:
-> fs/cifs/cifssmb.c:3917:13: warning: incorrect type in assignment (different base types)
-> fs/cifs/cifssmb.c:3917:13:    expected bool [unsigned] [usertype] is_unicode
-> fs/cifs/cifssmb.c:3917:13:    got restricted __le16
->
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  fs/cifs/cifssmb.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
-> index 4511b70..56f1a71 100644
-> --- a/fs/cifs/cifssmb.c
-> +++ b/fs/cifs/cifssmb.c
-> @@ -3914,7 +3914,7 @@ parse_DFS_referrals(TRANSACTION2_GET_DFS_REFER_RSP *pSMBr,
->        bool is_unicode;
->        struct dfs_referral_level_3 *ref;
->
-> -       is_unicode = pSMBr->hdr.Flags2 & SMBFLG2_UNICODE;
-> +       is_unicode = !!(pSMBr->hdr.Flags2 & SMBFLG2_UNICODE);
->        *num_of_nodes = le16_to_cpu(pSMBr->NumberOfReferrals);
->
->        if (*num_of_nodes < 1) {
-> --
-> 1.5.6.4.570.g052e
->
->
->
->
+stevef@smf-t60p:~/kernels/cifs-2.6-devel> make modules C=1
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    scripts/checksyscalls.sh
+  CHECK   fs/cifs/cifssmb.c
+fs/cifs/cifssmb.c:134:2: warning: context imbalance in
+'mark_open_files_invalid': wrong count at exit
+fs/cifs/cifssmb.c:134:2:    context 'lock': wanted 0, got 1
+fs/cifs/cifssmb.c:5191:9: warning: context imbalance in
+'CIFSSMBNotify': wrong count at exit
+fs/cifs/cifssmb.c:5191:9:    context 'lock': wanted 0, got 1
+  CC [M]  fs/cifs/cifssmb.o
 
+The functions it is complaining about don't seem to have a "context
+imbalance" see e.g.the one near line 134 of fs/cifs/cifssmb.c
+
+static void mark_open_files_invalid(struct cifsTconInfo *pTcon)
+{
+        struct cifsFileInfo *open_file = NULL;
+        struct list_head *tmp;
+        struct list_head *tmp1;
+
+/* list all files open on tree connection and mark them invalid */
+        write_lock(&GlobalSMBSeslock);
+        list_for_each_safe(tmp, tmp1, &pTcon->openFileList) {
+                open_file = list_entry(tmp, struct cifsFileInfo, tlist);
+                if (open_file)
+                        open_file->invalidHandle = true;
+        }
+        write_unlock(&GlobalSMBSeslock);
+}
 
 
 -- 
