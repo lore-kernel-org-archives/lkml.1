@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbYGXOaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755082AbYGXOcK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755491AbYGXOaj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbYGXOaR
+	id S1755082AbYGXOcK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:32:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYGXOb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:30:17 -0400
-Received: from mail.windriver.com ([147.11.1.11]:44150 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752617AbYGXOaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:30:16 -0400
-Message-ID: <488891F2.9020509@windriver.com>
-Date: Thu, 24 Jul 2008 09:30:10 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Thu, 24 Jul 2008 10:31:57 -0400
+Received: from hu-out-0506.google.com ([72.14.214.225]:18939 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752177AbYGXOb4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 10:31:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=EIBSt4Nq8iI3mL1BsqZa5SHwsg8CIUO3YQWVMcZV3qH+i/18xOO7Lbwos+xtPWffSS
+         ec4NBoNGWPTBbHpVZenC+Wkq4mENioUV8yQm30KbIhQqxrm6Dy+pioVJBMC6LGazZYwk
+         d9eDULh4eIfXbpTXPS5+HpWDnJUFD4Nr847/A=
+Date: Thu, 24 Jul 2008 18:31:51 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe
+Message-ID: <20080724143151.GA32422@lenovo>
+References: <48885DDC.9010003@fujitsu-siemens.com> <20080724111631.GA3432@lenovo> <48886E6D.1030005@fujitsu-siemens.com> <20080724120512.GA21804@lenovo> <488889B6.9070707@fujitsu-siemens.com>
 MIME-Version: 1.0
-To: Francis Moreau <francis.moro@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: KGDB fails to pass selft tests on x86-64 (v2.6.26)
-References: <38b2ab8a0807240624v7ec90c50n8105f830d10dddd@mail.gmail.com> <38b2ab8a0807240708j7d6782b7te6123fdd7416ec95@mail.gmail.com>
-In-Reply-To: <38b2ab8a0807240708j7d6782b7te6123fdd7416ec95@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jul 2008 14:30:11.0730 (UTC) FILETIME=[C7C33F20:01C8ED99]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <488889B6.9070707@fujitsu-siemens.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francis Moreau wrote:
-> On Thu, Jul 24, 2008 at 3:24 PM, Francis Moreau <francis.moro@gmail.com> wrote:
->   
->> I wanted to give kgdb a try on a v2.6.26 kernel. My cpu is an
->> x86-64.
->>
->> So the first thing I did is to enable kgdb support and also the
->> kgdb self tests:
->>
->> CONFIG_HAVE_ARCH_KGDB=y
->> CONFIG_KGDB=y
->> CONFIG_KGDB_SERIAL_CONSOLE=y
->> CONFIG_KGDB_TESTS=y
->> # CONFIG_KGDB_TESTS_ON_BOOT is not set
->>
->> Once compiled I booted this kernel through qemu and got the following:
->>
->>     
+[Martin Wilck - Thu, Jul 24, 2008 at 03:55:02PM +0200]
+> Cyrill Gorcunov wrote:
 >
-> and unfortunately it seems this issue is related to qemu: if I did boot the
-> kernel without qemu and the self tests passed...
+>> yes, it will issue some effects but it's better then stuck there.
+>> More over in 'case of SMI flood with current patch you don't get
+>> error message printed i think so you better add max iteration
+>> counter so user will see on console (or whatever) that he is got
+>> problems.
+>>                 - Cyrill -
 >
+> I disagree. If you have a system that generates SMIs in this extreme  
+> frequency, you're better off stuck than running on such an unstable  
+> system. The user _will_ see messages on the console if this happens.  
+> Note that apparently there are few people who have trouble with this. We  
+> did see problems, but never had more than 1 SMI disturbing the  
+> calibration procedure.
 >
->   
+> Anyway, here is another patch that defines max iteration counts. I  
+> haven't added a "Signed-off:" line, because I prefer the original 
+> version.
+>
+> Martin
+>
 
-It is because the qemu you are using does not support hardware
-breakpoints.  The tests will warn, but the kernel will continue to boot
-and tell you that hw breakpoint support doesn't work on your simulated
-hardware.
+yes, Martin, it'll be written on console (just forgot it's not interrupt
+driven). I've Cc'ed Maciej in previous message so we should better wait
+for his opinion I think. For me the almost ideal solution could be like -
+lets user to choose what he wants. I mean you even could add some boot
+param to specify behaviour on a such case like panic on SMI flood during
+calibration. yes - if we got smi flood we have serious troubles anyway but
+i don't think that being just stuck is good choise. And that is why I do like
+much more _this_ patch. Anyway - thanks!
 
-Also, if you plan to use software breakpoints, please make sure to turn
-off CONFIG_DEBUG_RODATA, else they will not work.   This is a regression
-which will is on my list of things to take a look at, as time permits.
-
-Cheers,
-Jason.
+		- Cyrill -
