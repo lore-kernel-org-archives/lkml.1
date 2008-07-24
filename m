@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756239AbYGXMeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbYGXMe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756239AbYGXMeH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbYGXMd4
+	id S1756866AbYGXMe4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYGXMeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:33:56 -0400
-Received: from mk-outboundfilter-6-a-2.mail.uk.tiscali.com ([212.74.114.16]:18605
-	"EHLO mk-outboundfilter-6-a-2.mail.uk.tiscali.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751990AbYGXMdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 08:33:55 -0400
-X-Trace: 5949795/mk-outboundfilter-6.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6
-X-SBRS: None
-X-RemoteIP: 195.149.44.6
-X-IP-MAIL-FROM: alistair@devzero.co.uk
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAFwTiEjDlSwG/2dsb2JhbACBWrAA
-X-IronPort-AV: E=Sophos;i="4.31,246,1215385200"; 
-   d="scan'208";a="5949795"
-X-IP-Direction: IN
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 22bb1be4d27... breaks hal (and NM)
-Date: Thu, 24 Jul 2008 13:33:52 +0100
-User-Agent: KMail/1.9.9
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Pierre Ossman <drzeus-list@drzeus.cx>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Jean Tourrilhes <jt@hpl.hp.com>, LKML <linux-kernel@vger.kernel.org>
-References: <20080724115805.5466c217@mjolnir.drzeus.cx> <1216900631.7257.321.camel@twins> <20080724051113.fa14f7ec.akpm@linux-foundation.org>
-In-Reply-To: <20080724051113.fa14f7ec.akpm@linux-foundation.org>
+	Thu, 24 Jul 2008 08:34:46 -0400
+Received: from mail9.hitachi.co.jp ([133.145.228.44]:48082 "EHLO
+	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752384AbYGXMep (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 08:34:45 -0400
+X-AuditID: 0ac90648-aaaa0ba000004920-1a-488876dfae80
+Message-ID: <488876D3.80004@hitachi.com>
+Date: Thu, 24 Jul 2008 21:34:27 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: akpm@linux-foundation.org, sct@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
+       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu, adilger@clusterfs.com,
+       snitzer@gmail.com, tglx@linutronix.de, yumiko.sugita.yf@hitachi.com,
+       satoshi.oshima.fk@hitachi.com
+Subject: [PATCH 0/4] ext3/jbd: possible filesystem corruption fixes (take 3)
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807241333.52206.alistair@devzero.co.uk>
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 24 July 2008 13:11:13 Andrew Morton wrote:
-> : +	  Say Y if you have programs using it (we don't know of any).
+This patch set is the take 3 of fixing error handling problem in
+ext3/JBD.  The previous discussion can be found here:
+http://kerneltrap.org/mailarchive/linux-kernel/2008/6/2/2002094
 
-Probably would have been less confusing if the Kconfig message actually lined 
-up with the note about older HALs in feature-removal-schedule.txt. Saying "we 
-don't know of any" seems inaccurate. This should really be something 
-like "old HAL versions" or perhaps even better "HAL <= X.Y.Z".
+Problem
+=======
+Currently some error checkings are missing, so the journal cannot abort
+correctly.  This can cause a filesystem corruption.  Missing error
+checkings are:
 
-I'm sure distributors will have the common sense to stop enabling the option 
-in the future. In the mean time, removing the deceptive summary would 
-hopefully avoid such bug reports.
+(1) error check for the metadata writes to the journal before the
+    commit (addressed by PATCH 1/4)
+(2) error check for checkpointing and replay (addressed by PATCH 2/4
+    and 3/4)
 
+PATCH 2/4 makes another problem worse; replaying old journaled
+metadata can overwrite the latest metadata on the filesystem and
+break its consistency.  This is fixed by PATCH 4/4.
+
+
+Changes since Take 2
+====================
+[PATCH x/x]
+o file data error handling fixes were separated to other patch set
+
+[PATCH 3/4]
+o fix return value handlings (trivial)
+
+[PATCH 4/4]
+o newly added to prevent unjournaled metadata buffers from being
+  written to the filesystem on abort
+
+Regards,
 -- 
-Cheers,
-Alistair.
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
+
+
