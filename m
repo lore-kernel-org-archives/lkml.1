@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757377AbYGXMjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbYGXMke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757377AbYGXMjn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbYGXMjb
+	id S1756605AbYGXMke (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYGXMkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:39:31 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:43556 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754243AbYGXMja (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 08:39:30 -0400
-Message-ID: <488877C8.9020706@jp.fujitsu.com>
-Date: Thu, 24 Jul 2008 21:38:32 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
-References: <20080724134737.4b91f30d@mjolnir.drzeus.cx>
-In-Reply-To: <20080724134737.4b91f30d@mjolnir.drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Jul 2008 08:40:19 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:46136 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752826AbYGXMkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 08:40:18 -0400
+Date: Thu, 24 Jul 2008 16:43:49 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       rui.zhang@intel.com, harbour@sfinx.od.ua, pavel@ucw.cz, rjw@sisk.pl
+Subject: Re: + pm-introduce-new-interfaces-schedule_work_on-and-queue_work_on.patch added to -mm tree
+Message-ID: <20080724124349.GA182@tv-sign.ru>
+References: <200807111846.m6BIkeTj031024@imap1.linux-foundation.org> <20080712162149.GD603@tv-sign.ru> <20080722161900.GA17601@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080722161900.GA17601@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pierre,
-(Added linux-pci to CC)
+On 07/22, Gautham R Shenoy wrote:
+>
+> On Sat, Jul 12, 2008 at 08:21:49PM +0400, Oleg Nesterov wrote:
+> >
+> > So, this is used in http://bugzilla.kernel.org/attachment.cgi?id=16707
+> >
+> > 	--- linux-2.6.orig/kernel/power/poweroff.c	2008-06-30 16:01:35.000000000 +0800
+> > 	+++ linux-2.6/kernel/power/poweroff.c	2008-07-03 10:50:05.000000000 +0800
+> > 	@@ -25,7 +25,8 @@
+> > 	 
+> > 	 static void handle_poweroff(int key, struct tty_struct *tty)
+> > 	 {
+> > 	-	schedule_work(&poweroff_work);
+> > 	+	/* run sysrq poweroff on boot cpu */
+> > 	+	schedule_work_on(first_cpu(cpu_online_map), &poweroff_work);
+> > 	 }
+> > 	 
+> > 	 static struct sysrq_key_op	sysrq_poweroff_op = {
+> >
+> > A couple of silly questions, I don't understand the low-level details.
+> >
+> > This patch (and kernel_power_off() afaics) assumes that the boot cpu
+> > can't be cpu_down()'ed. Is it true in general? For example, grep shows
+> > that arch/s390/kernel/smp.c:topology_init()->smp_add_present_cpu()
+> > sets ->hotpluggable = 1 for all present CPUs?
+>
+> I tried this on a Power system sometime back and I was able to
+> offline CPU0.
 
-Pierre Ossman wrote:
-> Somewhere post 2.6.26, pciehp started whining about not being able to
-> claim the slot and error code -17. It suggested adding
-> "pciehp_slot_with_bus", which actually helped. Still, having a kernel
-> parameter should just be a temporary fix.
+This means that
 
-The "pciehp_slot_with_bus" option is a workaround for the platforms
-that assign the same physical slot number to multiple slots. If your
-system has PCI chassis and it supports Chassis Number registers,
-maybe one of the solution is using chassis number + slot number as a
-slot name. But I don't have any idea other than "pciehp_slot_with_bus"
-if your system doesn't support chassis number.
+	pm-schedule-sysrq-poweroff-on-boot-cpu.patch
 
-Do you have any idea?
+is not 100% right. It is still possible to hang/deadlock if we race
+with cpu_down(first_cpu(cpu_online_map)).
 
-Thanks,
-Kenji Kaneshige
+The bug is mostly theoretical, but perhaps should be fixed anyway,
+handle_poweroff() can use kthread_run().
 
+Oleg.
 
