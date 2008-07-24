@@ -1,38 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbYGXIRE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751509AbYGXISG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752412AbYGXIRE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 04:17:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYGXIQs
+	id S1751509AbYGXISG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 04:18:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbYGXIRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 04:16:48 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49982 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751040AbYGXIQr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 04:16:47 -0400
-Message-ID: <48883A44.2040601@s5r6.in-berlin.de>
-Date: Thu, 24 Jul 2008 10:16:04 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Thu, 24 Jul 2008 04:17:51 -0400
+Received: from ozlabs.org ([203.10.76.45]:46190 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751279AbYGXIRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 04:17:51 -0400
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Robert Richter <robert.richter@amd.com>
-CC: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: apic: Changing export symbols to *_GPL
-References: <20080722125315.5d34f2e6@infradead.org> <20080723184709.ECF218403@erda.amd.com> <Pine.LNX.4.61.0807231525490.30326@chaos.analogic.com> <20080723200119.GI17134@erda.amd.com>
-In-Reply-To: <20080723200119.GI17134@erda.amd.com>
-Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Subject: [RFC,PATCH] scripts/package: add powerpc images to tarball
+Message-Id: <1216887460.306306.238738123378.1.gpush@pingu>
+To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Thu, 24 Jul 2008 18:17:40 +1000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Richter wrote:
-> This corrects a patch _I_ introduced before in my OProfile patch
-> series.
+Currently, tarball builds for powerpc kernels don't have any boot
+images (other than vmlinux) present.
 
-Subject/changelog of the correcting patch could mention this.
--- 
-Stefan Richter
--=====-==--- -=== ==---
-http://arcgraph.de/sr/
+Add support for powerpc builds in the buildtar script, to include
+a few default images.
+
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+
+---
+RFC: any requests for more/less boot images?
+
+---
+ scripts/package/buildtar |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/scripts/package/buildtar b/scripts/package/buildtar
+index 28574ae..85e5563 100644
+--- a/scripts/package/buildtar
++++ b/scripts/package/buildtar
+@@ -72,6 +72,16 @@ case "${ARCH}" in
+ 	x86|i386|x86_64)
+ 		[ -f "${objtree}/arch/x86/boot/bzImage" ] && cp -v -- "${objtree}/arch/x86/boot/bzImage" "${tmpdir}/boot/vmlinuz-${KERNELRELEASE}"
+ 		;;
++	powerpc)
++		for img in zImage zImage.pseries zImage.iseries \
++				dtbImage dtbImage.ps3
++		do
++			imgpath=arch/powerpc/boot/${img}
++			[ -f "${objtree}/${imgpath}" ] || continue
++			cp -v -- "${objtree}/${imgpath}" \
++				"${tmpdir}/boot/${img}-${KERNELRELEASE}"
++		done
++		;;
+ 	alpha)
+ 		[ -f "${objtree}/arch/alpha/boot/vmlinux.gz" ] && cp -v -- "${objtree}/arch/alpha/boot/vmlinux.gz" "${tmpdir}/boot/vmlinuz-${KERNELRELEASE}"
+ 		;;
