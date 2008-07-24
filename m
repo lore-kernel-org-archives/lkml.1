@@ -1,77 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbYGXL6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYGXMBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbYGXL6o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 07:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbYGXL6g
+	id S1755987AbYGXMBV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYGXMBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 07:58:36 -0400
-Received: from dgate20.fujitsu-siemens.com ([80.70.172.51]:32076 "EHLO
-	dgate20.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751760AbYGXL6g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 07:58:36 -0400
-DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
-  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
-   Received:Received:Message-ID:Date:From:Organization:
-   User-Agent:MIME-Version:To:CC:Subject:References:
-   In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=FNcYbzlqMx2/JN0tKCZFUotG7MXiDxwCYxJt6lOUSK1jZRSZGHy/teju
-   4cDSglm+8SHKucZ1wL8BK6eJP2HKtUTRx3Lou6bzu65BPKIvWTH7VoQOu
-   RHs0RyEOpg5IjXh;
-X-SBRSScore: None
-X-IronPort-AV: E=Sophos;i="4.31,245,1215381600"; 
-   d="scan'208";a="21057288"
-X-IronPort-AV: E=Sophos;i="4.31,245,1215381600"; 
-   d="scan'208";a="36308935"
-Message-ID: <48886E6D.1030005@fujitsu-siemens.com>
-Date: Thu, 24 Jul 2008 13:58:37 +0200
-From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Organization: Fujitsu Siemens Computers
-User-Agent: Thunderbird 2.0.0.15pre (X11/20080508)
+	Thu, 24 Jul 2008 08:01:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47001 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752247AbYGXMBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 08:01:07 -0400
+Date: Thu, 24 Jul 2008 13:59:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, w@1wt.eu, davidn@davidnewall.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
+	pointer dereference
+Message-ID: <20080724115957.GA25701@elte.hu>
+References: <20080724060448.GA10203@elte.hu> <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au> <20080724.022259.113079007.davem@davemloft.net> <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu>
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() smp-safe
-References: <48885DDC.9010003@fujitsu-siemens.com> <20080724111631.GA3432@lenovo>
-In-Reply-To: <20080724111631.GA3432@lenovo>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080724115625.GA23994@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
 
-> Hi, but what if SMI flood happens? We could stuck here forever, don't we?
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> here's a new type of crash a -tip testbox triggered today:
 > 
->                 - Cyrill -
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+> IP: [<0000000000000000>] 0x0
+> PGD 0 
+> Oops: 0010 [1] PREEMPT 
+> CPU 0 
+> Pid: 5331, comm: ssh Not tainted 2.6.26 #21613
+> RIP: 0010:[<0000000000000000>]  [<0000000000000000>] 0x0
+> RSP: 0018:ffff88003b959a70  EFLAGS: 00010217
+> RAX: ffff88003b9ba91c RBX: ffff88003b9baac0 RCX: 0000000000000002
+> RDX: ffff88003b9baac0 RSI: 0000000000000014 RDI: ffff88003b9ba3d8
+> RBP: ffff88003b959a98 R08: ffff88003e434130 R09: ffff88003b9598b8
+> R10: 0000000000002000 R11: 00000000d85507ac R12: ffff88003b9ba3d8
+> R13: 0000000000000002 R14: ffff88003e06a020 R15: 0000000000000000
+> FS:  00007fb2b7806780(0000) GS:ffffffff80c1c180(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 0000000000000000 CR3: 000000003b9e8000 CR4: 00000000000006a0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process ssh (pid: 5331, threadinfo ffff88003b958000, task ffff88003b99a000)
+> Stack:  ffffffff80777f25 ffff88003b959a98 ffffffff80c24170 ffff88003b959b28
+>  0000000000000004 ffff88003b959ae8 ffffffff80733107 ffff88003b959ab8
+>  ffff88003b9ba3d8 ffffffff80c1ed60 0000000000000004 ffff88003b9ba3d8
+> Call Trace:
+>  [<ffffffff80777f25>] ? ipv4_confirm+0x8d/0x122
+>  [<ffffffff80733107>] nf_iterate+0x43/0xa5
+>  [<ffffffff8074bbb2>] ? ip_finish_output+0x0/0x62
+>  [<ffffffff807331cd>] nf_hook_slow+0x64/0xcb
+>  [<ffffffff8074bbb2>] ? ip_finish_output+0x0/0x62
+>  [<ffffffff8074b63b>] nf_hook_thresh+0x1e/0x20
+>  [<ffffffff8074bd44>] ip_output+0xb3/0xc9
+>  [<ffffffff8074a27e>] dst_output+0xb/0xd
+>  [<ffffffff8074b6ef>] ip_local_out+0x1e/0x22
+>  [<ffffffff8074c75c>] ip_queue_xmit+0x2a6/0x321
+>  [<ffffffff80241961>] ? sub_preempt_count+0x2d/0x40
+>  [<ffffffff8028f239>] ? slob_alloc+0x11b/0x248
+>  [<ffffffff8075b85a>] tcp_transmit_skb+0x5ec/0x61b
+>  [<ffffffff807122b6>] ? kmalloc+0xc/0xe
+>  [<ffffffff8075d7ae>] tcp_connect+0x2a4/0x344
+>  [<ffffffff80760cf1>] tcp_v4_connect+0x3cd/0x425
+>  [<ffffffff8076bc7d>] inet_stream_connect+0x9a/0x24d
+>  [<ffffffff80292988>] ? fget_light+0x38/0x85
+>  [<ffffffff8070c60c>] sys_connect+0x68/0x8b
+>  [<ffffffff8025dfab>] ? up_read+0x9/0xb
+>  [<ffffffff8023727c>] ? do_page_fault+0x55f/0x92f
+>  [<ffffffff8022479a>] system_call_fastpath+0x16/0x1b
 
+here's the full bootlog:
 
-Yes, if the SMI flood never ends. But you wouldn't want to work on such 
-a system anyway (with the current kernel code, your APIC timer would 
-most probably be miscalibrated, which can have the weirdest effects).
+ http://redhat.com/~mingo/misc/crash-Thu_Jul_24_13_23_34_CEST_2008.log
 
-Anyway, we can add a maximum iteration count to the patch so that there 
-is no risk of getting stuck.
+kernel is latest -git, v2.6.26-6371-g338b9bb.
 
-Martin
-
--- 
-Martin Wilck
-PRIMERGY System Software Engineer
-FSC IP ESP DEV 6
-
-Fujitsu Siemens Computers GmbH
-Heinz-Nixdorf-Ring 1
-33106 Paderborn
-Germany
-
-Tel:			++49 5251 8 15113
-Fax:			++49 5251 8 20209
-Email:			mailto:martin.wilck@fujitsu-siemens.com
-Internet:		http://www.fujitsu-siemens.com
-Company Details:	http://www.fujitsu-siemens.com/imprint.html
+	Ingo
