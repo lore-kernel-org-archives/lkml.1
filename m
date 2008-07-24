@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbYGXOse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbYGXOry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758533AbYGXOse (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756762AbYGXOnB
+	id S1757370AbYGXOry (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756693AbYGXOmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:43:01 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54696 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756368AbYGXOmm (ORCPT
+	Thu, 24 Jul 2008 10:42:53 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46463 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756648AbYGXOmv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:42:42 -0400
-Message-Id: <20080724141530.420643154@chello.nl>
+	Thu, 24 Jul 2008 10:42:51 -0400
+Message-Id: <20080724141529.924040910@chello.nl>
 References: <20080724140042.408642539@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Jul 2008 16:00:58 +0200
+Date: Thu, 24 Jul 2008 16:00:51 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
@@ -21,174 +21,235 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Daniel Lezcano <dlezcano@fr.ibm.com>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>
-Subject: [PATCH 16/30] net: sk_allocation() - concentrate socket related allocations
-Content-Disposition: inline; filename=net-sk_allocation.patch
+Subject: [PATCH 09/30] mm: emergency pool
+Content-Disposition: inline; filename=mm-page_alloc-emerg.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce sk_allocation(), this function allows to inject sock specific
-flags to each sock related allocation.
+Provide means to reserve a specific amount of pages.
+
+The emergency pool is separated from the min watermark because ALLOC_HARDER
+and ALLOC_HIGH modify the watermark in a relative way and thus do not ensure
+a strict minimum.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/net/sock.h    |    5 +++++
- net/ipv4/tcp.c        |    3 ++-
- net/ipv4/tcp_output.c |   12 +++++++-----
- net/ipv6/tcp_ipv6.c   |   17 ++++++++++++-----
- 4 files changed, 26 insertions(+), 11 deletions(-)
+ include/linux/mmzone.h |    6 ++-
+ mm/page_alloc.c        |   84 +++++++++++++++++++++++++++++++++++++++++++------
+ mm/vmstat.c            |    6 +--
+ 3 files changed, 82 insertions(+), 14 deletions(-)
 
-Index: linux-2.6/net/ipv4/tcp_output.c
+Index: linux-2.6/include/linux/mmzone.h
 ===================================================================
---- linux-2.6.orig/net/ipv4/tcp_output.c
-+++ linux-2.6/net/ipv4/tcp_output.c
-@@ -2088,7 +2088,8 @@ void tcp_send_fin(struct sock *sk)
- 	} else {
- 		/* Socket is locked, keep trying until memory is available. */
- 		for (;;) {
--			skb = alloc_skb_fclone(MAX_TCP_HEADER, GFP_KERNEL);
-+			skb = alloc_skb_fclone(MAX_TCP_HEADER,
-+					       sk_allocation(sk, GFP_KERNEL));
- 			if (skb)
- 				break;
- 			yield();
-@@ -2114,7 +2115,7 @@ void tcp_send_active_reset(struct sock *
- 	struct sk_buff *skb;
+--- linux-2.6.orig/include/linux/mmzone.h
++++ linux-2.6/include/linux/mmzone.h
+@@ -265,7 +265,10 @@ enum zone_type {
  
- 	/* NOTE: No TCP options attached and we never retransmit this. */
--	skb = alloc_skb(MAX_TCP_HEADER, priority);
-+	skb = alloc_skb(MAX_TCP_HEADER, sk_allocation(sk, priority));
- 	if (!skb) {
- 		NET_INC_STATS(LINUX_MIB_TCPABORTFAILED);
- 		return;
-@@ -2183,7 +2184,8 @@ struct sk_buff *tcp_make_synack(struct s
- 	__u8 *md5_hash_location;
- #endif
+ struct zone {
+ 	/* Fields commonly accessed by the page allocator */
+-	unsigned long		pages_min, pages_low, pages_high;
++	unsigned long		pages_high;	/* we stop kswapd */
++	unsigned long		pages_low;	/* we wake up kswapd */
++	unsigned long		pages_min;	/* we enter direct reclaim */
++	unsigned long		pages_emerg;	/* emergency pool */
+ 	/*
+ 	 * We don't know if the memory that we're going to allocate will be freeable
+ 	 * or/and it will be released eventually, so to avoid totally wasting several
+@@ -751,6 +754,7 @@ int sysctl_min_unmapped_ratio_sysctl_han
+ 			struct file *, void __user *, size_t *, loff_t *);
+ int sysctl_min_slab_ratio_sysctl_handler(struct ctl_table *, int,
+ 			struct file *, void __user *, size_t *, loff_t *);
++int adjust_memalloc_reserve(int pages);
  
--	skb = sock_wmalloc(sk, MAX_TCP_HEADER + 15, 1, GFP_ATOMIC);
-+	skb = sock_wmalloc(sk, MAX_TCP_HEADER + 15, 1,
-+			sk_allocation(sk, GFP_ATOMIC));
- 	if (skb == NULL)
- 		return NULL;
- 
-@@ -2441,7 +2443,7 @@ void tcp_send_ack(struct sock *sk)
- 	 * tcp_transmit_skb() will set the ownership to this
- 	 * sock.
- 	 */
--	buff = alloc_skb(MAX_TCP_HEADER, GFP_ATOMIC);
-+	buff = alloc_skb(MAX_TCP_HEADER, sk_allocation(sk, GFP_ATOMIC));
- 	if (buff == NULL) {
- 		inet_csk_schedule_ack(sk);
- 		inet_csk(sk)->icsk_ack.ato = TCP_ATO_MIN;
-@@ -2476,7 +2478,7 @@ static int tcp_xmit_probe_skb(struct soc
- 	struct sk_buff *skb;
- 
- 	/* We don't queue it, tcp_transmit_skb() sets ownership. */
--	skb = alloc_skb(MAX_TCP_HEADER, GFP_ATOMIC);
-+	skb = alloc_skb(MAX_TCP_HEADER, sk_allocation(sk, GFP_ATOMIC));
- 	if (skb == NULL)
- 		return -1;
- 
-Index: linux-2.6/include/net/sock.h
+ extern int numa_zonelist_order_handler(struct ctl_table *, int,
+ 			struct file *, void __user *, size_t *, loff_t *);
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/include/net/sock.h
-+++ linux-2.6/include/net/sock.h
-@@ -435,6 +435,11 @@ static inline int sock_flag(struct sock 
- 	return test_bit(flag, &sk->sk_flags);
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -120,6 +120,8 @@ static char * const zone_names[MAX_NR_ZO
+ 
+ static DEFINE_SPINLOCK(min_free_lock);
+ int min_free_kbytes = 1024;
++static DEFINE_MUTEX(var_free_mutex);
++int var_free_kbytes;
+ 
+ unsigned long __meminitdata nr_kernel_pages;
+ unsigned long __meminitdata nr_all_pages;
+@@ -1235,7 +1237,7 @@ int zone_watermark_ok(struct zone *z, in
+ 	if (alloc_flags & ALLOC_HARDER)
+ 		min -= min / 4;
+ 
+-	if (free_pages <= min + z->lowmem_reserve[classzone_idx])
++	if (free_pages <= min+z->lowmem_reserve[classzone_idx]+z->pages_emerg)
+ 		return 0;
+ 	for (o = 0; o < order; o++) {
+ 		/* At the next order, this order's pages become unavailable */
+@@ -1558,7 +1560,7 @@ __alloc_pages_internal(gfp_t gfp_mask, u
+ 	struct reclaim_state reclaim_state;
+ 	struct task_struct *p = current;
+ 	int do_retry;
+-	int alloc_flags;
++	int alloc_flags = 0;
+ 	unsigned long did_some_progress;
+ 	unsigned long pages_reclaimed = 0;
+ 
+@@ -1724,8 +1726,8 @@ nofail_alloc:
+ nopage:
+ 	if (!(gfp_mask & __GFP_NOWARN) && printk_ratelimit()) {
+ 		printk(KERN_WARNING "%s: page allocation failure."
+-			" order:%d, mode:0x%x\n",
+-			p->comm, order, gfp_mask);
++			" order:%d, mode:0x%x, alloc_flags:0x%x, pflags:0x%x\n",
++			p->comm, order, gfp_mask, alloc_flags, p->flags);
+ 		dump_stack();
+ 		show_mem();
+ 	}
+@@ -2008,9 +2010,9 @@ void show_free_areas(void)
+ 			"\n",
+ 			zone->name,
+ 			K(zone_page_state(zone, NR_FREE_PAGES)),
+-			K(zone->pages_min),
+-			K(zone->pages_low),
+-			K(zone->pages_high),
++			K(zone->pages_emerg + zone->pages_min),
++			K(zone->pages_emerg + zone->pages_low),
++			K(zone->pages_emerg + zone->pages_high),
+ 			K(zone_page_state(zone, NR_ACTIVE_ANON)),
+ 			K(zone_page_state(zone, NR_INACTIVE_ANON)),
+ 			K(zone_page_state(zone, NR_ACTIVE_FILE)),
+@@ -4284,7 +4286,7 @@ static void calculate_totalreserve_pages
+ 			}
+ 
+ 			/* we treat pages_high as reserved pages. */
+-			max += zone->pages_high;
++			max += zone->pages_high + zone->pages_emerg;
+ 
+ 			if (max > zone->present_pages)
+ 				max = zone->present_pages;
+@@ -4341,7 +4343,8 @@ static void setup_per_zone_lowmem_reserv
+  */
+ static void __setup_per_zone_pages_min(void)
+ {
+-	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
++	unsigned pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
++	unsigned pages_emerg = var_free_kbytes >> (PAGE_SHIFT - 10);
+ 	unsigned long lowmem_pages = 0;
+ 	struct zone *zone;
+ 	unsigned long flags;
+@@ -4353,11 +4356,13 @@ static void __setup_per_zone_pages_min(v
+ 	}
+ 
+ 	for_each_zone(zone) {
+-		u64 tmp;
++		u64 tmp, tmp_emerg;
+ 
+ 		spin_lock_irqsave(&zone->lru_lock, flags);
+ 		tmp = (u64)pages_min * zone->present_pages;
+ 		do_div(tmp, lowmem_pages);
++		tmp_emerg = (u64)pages_emerg * zone->present_pages;
++		do_div(tmp_emerg, lowmem_pages);
+ 		if (is_highmem(zone)) {
+ 			/*
+ 			 * __GFP_HIGH and PF_MEMALLOC allocations usually don't
+@@ -4376,12 +4381,14 @@ static void __setup_per_zone_pages_min(v
+ 			if (min_pages > 128)
+ 				min_pages = 128;
+ 			zone->pages_min = min_pages;
++			zone->pages_emerg = 0;
+ 		} else {
+ 			/*
+ 			 * If it's a lowmem zone, reserve a number of pages
+ 			 * proportionate to the zone's size.
+ 			 */
+ 			zone->pages_min = tmp;
++			zone->pages_emerg = tmp_emerg;
+ 		}
+ 
+ 		zone->pages_low   = zone->pages_min + (tmp >> 2);
+@@ -4443,6 +4450,63 @@ void setup_per_zone_pages_min(void)
+ 	spin_unlock_irqrestore(&min_free_lock, flags);
  }
  
-+static inline gfp_t sk_allocation(struct sock *sk, gfp_t gfp_mask)
++static void __adjust_memalloc_reserve(int pages)
 +{
-+	return gfp_mask;
++	var_free_kbytes += pages << (PAGE_SHIFT - 10);
++	BUG_ON(var_free_kbytes < 0);
++	setup_per_zone_pages_min();
 +}
 +
- static inline void sk_acceptq_removed(struct sock *sk)
- {
- 	sk->sk_ack_backlog--;
-Index: linux-2.6/net/ipv6/tcp_ipv6.c
-===================================================================
---- linux-2.6.orig/net/ipv6/tcp_ipv6.c
-+++ linux-2.6/net/ipv6/tcp_ipv6.c
-@@ -580,7 +580,8 @@ static int tcp_v6_md5_do_add(struct sock
- 	} else {
- 		/* reallocate new list if current one is full. */
- 		if (!tp->md5sig_info) {
--			tp->md5sig_info = kzalloc(sizeof(*tp->md5sig_info), GFP_ATOMIC);
-+			tp->md5sig_info = kzalloc(sizeof(*tp->md5sig_info),
-+					sk_allocation(sk, GFP_ATOMIC));
- 			if (!tp->md5sig_info) {
- 				kfree(newkey);
- 				return -ENOMEM;
-@@ -593,7 +594,8 @@ static int tcp_v6_md5_do_add(struct sock
- 		}
- 		if (tp->md5sig_info->alloced6 == tp->md5sig_info->entries6) {
- 			keys = kmalloc((sizeof (tp->md5sig_info->keys6[0]) *
--				       (tp->md5sig_info->entries6 + 1)), GFP_ATOMIC);
-+				       (tp->md5sig_info->entries6 + 1)),
-+				       sk_allocation(sk, GFP_ATOMIC));
- 
- 			if (!keys) {
- 				tcp_free_md5sig_pool();
-@@ -717,7 +719,8 @@ static int tcp_v6_parse_md5_keys (struct
- 		struct tcp_sock *tp = tcp_sk(sk);
- 		struct tcp_md5sig_info *p;
- 
--		p = kzalloc(sizeof(struct tcp_md5sig_info), GFP_KERNEL);
-+		p = kzalloc(sizeof(struct tcp_md5sig_info),
-+				   sk_allocation(sk, GFP_KERNEL));
- 		if (!p)
- 			return -ENOMEM;
- 
-@@ -920,6 +923,7 @@ static void tcp_v6_send_reset(struct soc
- #ifdef CONFIG_TCP_MD5SIG
- 	struct tcp_md5sig_key *key;
- #endif
-+	gfp_t gfp_mask = GFP_ATOMIC;
- 
- 	if (th->rst)
- 		return;
-@@ -937,13 +941,16 @@ static void tcp_v6_send_reset(struct soc
- 		tot_len += TCPOLEN_MD5SIG_ALIGNED;
- #endif
- 
-+	if (sk)
-+		gfp_mask = sk_allocation(skb->sk, gfp_mask);
++static int test_reserve_limits(void)
++{
++	struct zone *zone;
++	int node;
 +
- 	/*
- 	 * We need to grab some memory, and put together an RST,
- 	 * and then put it into the queue to be sent.
- 	 */
- 
- 	buff = alloc_skb(MAX_HEADER + sizeof(struct ipv6hdr) + tot_len,
--			 GFP_ATOMIC);
-+			 sk_allocation(sk, GFP_ATOMIC));
- 	if (buff == NULL)
- 		return;
- 
-@@ -1032,7 +1039,7 @@ static void tcp_v6_send_ack(struct sk_bu
- #endif
- 
- 	buff = alloc_skb(MAX_HEADER + sizeof(struct ipv6hdr) + tot_len,
--			 GFP_ATOMIC);
-+			 gfp_mask);
- 	if (buff == NULL)
- 		return;
- 
-Index: linux-2.6/net/ipv4/tcp.c
++	for_each_zone(zone)
++		wakeup_kswapd(zone, 0);
++
++	for_each_online_node(node) {
++		struct page *page = alloc_pages_node(node, GFP_KERNEL, 0);
++		if (!page)
++			return -ENOMEM;
++
++		__free_page(page);
++	}
++
++	return 0;
++}
++
++/**
++ *	adjust_memalloc_reserve - adjust the memalloc reserve
++ *	@pages: number of pages to add
++ *
++ *	It adds a number of pages to the memalloc reserve; if
++ *	the number was positive it kicks reclaim into action to
++ *	satisfy the higher watermarks.
++ *
++ *	returns -ENOMEM when it failed to satisfy the watermarks.
++ */
++int adjust_memalloc_reserve(int pages)
++{
++	int err = 0;
++
++	mutex_lock(&var_free_mutex);
++	__adjust_memalloc_reserve(pages);
++	if (pages > 0) {
++		err = test_reserve_limits();
++		if (err) {
++			__adjust_memalloc_reserve(-pages);
++			goto unlock;
++		}
++	}
++	printk(KERN_DEBUG "Emergency reserve: %d\n", var_free_kbytes);
++
++unlock:
++	mutex_unlock(&var_free_mutex);
++	return err;
++}
++EXPORT_SYMBOL_GPL(adjust_memalloc_reserve);
++
+ /*
+  * Initialise min_free_kbytes.
+  *
+Index: linux-2.6/mm/vmstat.c
 ===================================================================
---- linux-2.6.orig/net/ipv4/tcp.c
-+++ linux-2.6/net/ipv4/tcp.c
-@@ -637,7 +637,8 @@ struct sk_buff *sk_stream_alloc_skb(stru
- 	/* The TCP header must be at least 32-bit aligned.  */
- 	size = ALIGN(size, 4);
- 
--	skb = alloc_skb_fclone(size + sk->sk_prot->max_header, gfp);
-+	skb = alloc_skb_fclone(size + sk->sk_prot->max_header,
-+			       sk_allocation(sk, gfp));
- 	if (skb) {
- 		if (sk_wmem_schedule(sk, skb->truesize)) {
- 			/*
+--- linux-2.6.orig/mm/vmstat.c
++++ linux-2.6/mm/vmstat.c
+@@ -785,9 +785,9 @@ static void zoneinfo_show_print(struct s
+ 		   "\n        spanned  %lu"
+ 		   "\n        present  %lu",
+ 		   zone_page_state(zone, NR_FREE_PAGES),
+-		   zone->pages_min,
+-		   zone->pages_low,
+-		   zone->pages_high,
++		   zone->pages_emerg + zone->pages_min,
++		   zone->pages_emerg + zone->pages_low,
++		   zone->pages_emerg + zone->pages_high,
+ 		   zone->pages_scanned,
+ 		   zone->lru[LRU_ACTIVE_ANON].nr_scan,
+ 		   zone->lru[LRU_INACTIVE_ANON].nr_scan,
 
 -- 
 
