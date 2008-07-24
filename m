@@ -1,119 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYGXUIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbYGXUJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbYGXUIe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 16:08:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbYGXUII
+	id S1753118AbYGXUJi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 16:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYGXUJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 16:08:08 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39019 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751623AbYGXUIH (ORCPT
+	Thu, 24 Jul 2008 16:09:30 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:30384 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbYGXUJ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 16:08:07 -0400
-Date: Thu, 24 Jul 2008 22:07:30 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Andi Kleen <andi@firstfloor.org>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Oops in sched_mc_power_savings_store
-Message-ID: <20080724200730.GF20882@one.firstfloor.org>
-References: <20080724115121.GA28269@parisc-linux.org>
-Mime-Version: 1.0
+	Thu, 24 Jul 2008 16:09:29 -0400
+X-IronPort-AV: E=Sophos;i="4.31,248,1215388800"; 
+   d="scan'208";a="57313476"
+From: Roland Dreier <rdreier@cisco.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Grant Coady <gcoady.lk@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: how much stuff is no longer "EXPERIMENTAL"?
+References: <alpine.LFD.1.10.0807241114000.4119@localhost.localdomain>
+	<h2ih845fmasm3coi3qapmqkknj0ghp6k7t@4ax.com>
+	<alpine.LFD.1.10.0807241606240.6474@localhost.localdomain>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 24 Jul 2008 13:09:27 -0700
+In-Reply-To: <alpine.LFD.1.10.0807241606240.6474@localhost.localdomain>
+	(Robert P. J. Day's message of "Thu, 24 Jul 2008 16:06:30 -0400
+	(EDT)")
+Message-ID: <adar69jvybs.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080724115121.GA28269@parisc-linux.org>
-User-Agent: Mutt/1.4.2.1i
+X-OriginalArrivalTime: 24 Jul 2008 20:09:27.0356 (UTC) FILETIME=[2CA947C0:01C8EDC9]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 05:51:22AM -0600, Matthew Wilcox wrote:
-> 
-> I have no idea how you guys intended this to work, but here's the
-> debugging work I've done so far.
-> 
-> [   89.210171] Call Trace:
-> [   89.210182]  [<c011c0b3>] ? sched_mc_power_savings_store+0x0/0x4a
-> [   89.210198]  [<c02908c0>] ? sysdev_class_store+0x38/0x40
-> [   89.210213]  [<c01a0b51>] ? sysfs_write_file+0xb9/0xe4
-> 
-> sched_mc_power_savings_store isn't a class attribute, it's a plain
-> attribute.  So the prototypes are different.  This is why we try to load
-> from address 2 -- it's actually the length parameter.
-> 
-> I don't know how our typing system let this one through.  I don't know if
-> you want to fix this by adding an extra argument to the class_attribute
-> show and store methods.  I don't know if sched_mc_power_savings_store
-> was intended to be a class attribute or not.
-
-Seems like a latent problem. The attributes were just declared wrong.
-Longer term we should probably add the sysdev attributes to the class
-too, but right now here's a minimal fix. Does it solve your problem?
-Thanks,
-
--Andi
----
-
-
-commit a2ab909933f8c8623282979dfa64f3e358bdb9fc
-Author: Andi Kleen <ak@linux.intel.com>
-Date:   Thu Jul 24 21:57:40 2008 +0200
-
-    Make scheduler sysfs attributes sysdev class devices
-    
-    They are really class devices, but were incorrectly declared. This leads
-    to crashes with the recent changes that makes non normal sysdevs
-    use a different prototype.
-    
-    Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 6acf749..24358ca 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7641,34 +7641,34 @@ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
- }
- 
- #ifdef CONFIG_SCHED_MC
--static ssize_t sched_mc_power_savings_show(struct sys_device *dev,
--				struct sysdev_attribute *attr, char *page)
-+static ssize_t sched_mc_power_savings_show(struct sysdev_class *class,
-+					   char *page)
- {
- 	return sprintf(page, "%u\n", sched_mc_power_savings);
- }
--static ssize_t sched_mc_power_savings_store(struct sys_device *dev,
--					    struct sysdev_attribute *attr,
-+static ssize_t sched_mc_power_savings_store(struct sysdev_class *class,
- 					    const char *buf, size_t count)
- {
- 	return sched_power_savings_store(buf, count, 0);
- }
--static SYSDEV_ATTR(sched_mc_power_savings, 0644, sched_mc_power_savings_show,
--		   sched_mc_power_savings_store);
-+static SYSDEV_CLASS_ATTR(sched_mc_power_savings, 0644, 
-+			 sched_mc_power_savings_show,
-+		         sched_mc_power_savings_store);
- #endif
- 
- #ifdef CONFIG_SCHED_SMT
--static ssize_t sched_smt_power_savings_show(struct sys_device *dev,
--				struct sysdev_attribute *attr, char *page)
-+static ssize_t sched_smt_power_savings_show(struct sysdev_class *dev,
-+					    char *page)
- {
- 	return sprintf(page, "%u\n", sched_smt_power_savings);
- }
--static ssize_t sched_smt_power_savings_store(struct sys_device *dev,
--					     struct sysdev_attribute *attr,
-+static ssize_t sched_smt_power_savings_store(struct sysdev_class *dev,
- 					     const char *buf, size_t count)
- {
- 	return sched_power_savings_store(buf, count, 1);
- }
--static SYSDEV_ATTR(sched_smt_power_savings, 0644, sched_smt_power_savings_show,
-+static SYSDEV_CLASS_ATTR(sched_smt_power_savings, 0644, 
-+		   sched_smt_power_savings_show,
- 		   sched_smt_power_savings_store);
- #endif
- 
+I think INFINIBAND_IPOIB_CM is no long EXPERIMENTAL.  I'll remove the tag.
