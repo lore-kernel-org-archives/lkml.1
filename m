@@ -1,95 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbYGXGxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752718AbYGXHAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753876AbYGXGxY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 02:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbYGXGxQ
+	id S1752718AbYGXHAj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 03:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYGXHAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 02:53:16 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:20593 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751149AbYGXGxP (ORCPT
+	Thu, 24 Jul 2008 03:00:24 -0400
+Received: from dhcp-077-248-068-247.chello.nl ([77.248.68.247]:60895 "EHLO
+	scorpion77.cjb.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbYGXHAX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 02:53:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
-         :mime-version:content-type:content-disposition
-         :content-transfer-encoding:in-reply-to:user-agent:from;
-        b=iPQdzx23MoKKWXgZz+CgBdsLC2wUmkRbyfGe7ybM97DmosL0DV4+4znByMsYBgNfzx
-         eB34w3COssAwDukbQK5aeRzgWPoiMWASU7FoughmhFae5r+fGq3tXHG0dh3D9RErHMKU
-         tcIKlNytoOWdfxWJMCA9DxJVHgB9z0xdhFSG8=
-Date: Thu, 24 Jul 2008 08:53:29 +0200
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [lockdep warning] INFO: inconsistent lock state,
-	serial8250_interrupt(), &port_lock_key
-Message-ID: <20080724065329.GE17724@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com, Ingo Molnar <mingo@elte.hu>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <20080723093332.GA22109@elte.hu> <20080723093604.GA29817@elte.hu>
+	Thu, 24 Jul 2008 03:00:23 -0400
+X-Greylist: delayed 1305 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Jul 2008 03:00:23 EDT
+Message-ID: <28993.213.197.214.77.1216881506.squirrel@scorpion77.cjb.net>
+In-Reply-To: <20080723220107.3d26e30a@lxorguk.ukuu.org.uk>
+References: <vi85j5-uig.ln1@scorpion77.cjb.net> <4880237A.7070002@kernel.org>
+    <200807232219.47760.jeroen@scorpion77.cjb.net>
+    <20080723220107.3d26e30a@lxorguk.ukuu.org.uk>
+Date: Thu, 24 Jul 2008 08:38:26 +0200 (CEST)
+Subject: Re: non functional pata dvd drive under 2.6.25.6
+From: "Jeroen Beerstra" <jb@scorpion77.cjb.net>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Cc: "Jeroen Beerstra" <jeroen@scorpion77.cjb.net>, "Tejun Heo" <tj@kernel.org>,
+       linux-kernel@vger.kernel.org,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.8-4.0.1.el4.XOS.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+Content-Type: text/plain;charset=utf-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080723093604.GA29817@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+X-Priority: 3 (Normal)
+Importance: Normal
+X-AntiVirus-By: Clam Antivirus 0.92.1
+X-AntiSpam-By: Spamassassin 3.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 11:36:04AM +0200, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > =================================
-> > [ INFO: inconsistent lock state ]
-> > 2.6.26-tip-06509-gb4ebc67-dirty #13600
-> > ---------------------------------
-> 
-> the upstream component of that is: v2.6.26-6077-gc010b2f
-> 
-> i.e. my suspicion is that this got introduced via the recent tty 
-> changes.
 
-Hi,
+> On Wed, 23 Jul 2008 22:19:47 +0200
+> Jeroen Beerstra <jeroen@scorpion77.cjb.net> wrote:
+>
+>> Hello Tejun,
+>>
+>> Op Friday 18 July 2008 07:00:42 schreef u:
+>> > Hello, Jeroen.
+>> >
+>> > [cc'ing linux-ide]
+>> >
+>> > Hmmm... the problem could be caused by hald polling for media
+>> presence.
+>> >  Does "hal-disable-polling /dev/srX" make any difference?
+>> > hal-disable-polling setting is persistent so if your drive goes
+>> bonkers
+>> > quickly after boot, you can disable polling, reboot and see whether
+>> > anything is different.  Also, please post the result of "lspci -nn"
+>> and
+>> > "hdparm -I /dev/srX" && please try 2.6.26.
+>> >
+>> > Thanks.
+>>
+>> I'm pretty sure about that since the hald process I'm refering to points
+>> to
+>> the 'faulty' drive. However simply booting with noapic seems to fix all
+>> of my
+>> problems.
+>
+> There are lots of similar reports. I don't know what broke the APIC code
+> but it doesn't appear any of these are libata bugs.
+>
+> Alan
+>
 
-i hit the same warning here. How about the following fix (this is at least what
-i think happens):
---
+As soon as I have my system back and running again I will test the patch
+that was attached to the rh bugzilla report, perhaps that will make things
+a bit clearer.
 
-serial8250_startup() might unconditionally enable irqs after releasing
-&up->port.lock while we're still servicing an interrupt.
-
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-
---
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 27f34a9..55eca08 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1874,7 +1874,7 @@ static int serial8250_startup(struct uart_port *port)
- 		 * the interrupt is enabled.  Delays are necessary to
- 		 * allow register changes to become visible.
- 		 */
--		spin_lock(&up->port.lock);
-+		spin_lock_irqsave(&up->port.lock, flags);
- 		if (up->port.flags & UPF_SHARE_IRQ)
- 			disable_irq_nosync(up->port.irq);
- 
-@@ -1890,7 +1890,7 @@ static int serial8250_startup(struct uart_port *port)
- 
- 		if (up->port.flags & UPF_SHARE_IRQ)
- 			enable_irq(up->port.irq);
--		spin_unlock(&up->port.lock);
-+		spin_unlock_irqrestore(&up->port.lock, flags);
- 
- 		/*
- 		 * If the interrupt is not reasserted, setup a timer to
-
--- 
-Regards/Gruﬂ,
-    Boris.
+Jeroen
