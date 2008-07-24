@@ -1,102 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757724AbYGXOtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757790AbYGXOuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757724AbYGXOtf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756823AbYGXOnL
+	id S1757790AbYGXOuV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756922AbYGXOn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:43:11 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46475 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753643AbYGXOm4 (ORCPT
+	Thu, 24 Jul 2008 10:43:26 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:48697 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756914AbYGXOnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:42:56 -0400
-Message-Id: <20080724141529.785703247@chello.nl>
-References: <20080724140042.408642539@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Thu, 24 Jul 2008 16:00:49 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>
-Subject: [PATCH 07/30] mm: allow PF_MEMALLOC from softirq context
-Content-Disposition: inline; filename=mm-PF_MEMALLOC-softirq.patch
-X-Bad-Reply: References but no 'Re:' in Subject.
+	Thu, 24 Jul 2008 10:43:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:content-transfer-encoding:user-agent;
+        b=Da5LepGYR/N8338gWg1GT0JvaeuHpIzgEp3n4xOmu1tGJjg2h9m1SmTb4n4fiddenn
+         jh7j8Wcdndd3Rw+nqR86QD/FkPd5ryDG9+kSHRR48x2+eGNGi27PSTykodXN372TBG/4
+         ut7AM9Hy/gUkR5xdOsV9dkQPbmiU18hkIhjt8=
+Date: Thu, 24 Jul 2008 15:41:48 +0100
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: rusty@rustcorp.com.au
+Subject: [Patch] kernel/module.c: fix a build warning
+Message-ID: <20080724144148.GM2993@hack.voiplan.pt>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow PF_MEMALLOC to be set in softirq context. 
 
-This is needed to allow network softirq packet processing to make use of
-PF_MEMALLOC.
+This patch fixed the warning:
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+  CC      kernel/module.o
+  /home/wangcong/Projects/linux-2.6/kernel/module.c:332: warning:
+‘lookup_symbol’ defined but not used
+
+
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
+Cc: rusty@rustcorp.com.au
+
 ---
- include/linux/sched.h |    7 +++++++
- kernel/softirq.c      |    3 +++
- mm/page_alloc.c       |    7 ++++---
- 3 files changed, 14 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -1449,9 +1449,10 @@ int gfp_to_alloc_flags(gfp_t gfp_mask)
- 		alloc_flags |= ALLOC_HARDER;
- 
- 	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
--		if (!in_interrupt() &&
--		    ((p->flags & PF_MEMALLOC) ||
--		     unlikely(test_thread_flag(TIF_MEMDIE))))
-+		if (!in_irq() && (p->flags & PF_MEMALLOC))
-+			alloc_flags |= ALLOC_NO_WATERMARKS;
-+		else if (!in_interrupt() &&
-+				unlikely(test_thread_flag(TIF_MEMDIE)))
- 			alloc_flags |= ALLOC_NO_WATERMARKS;
- 	}
- 
-Index: linux-2.6/kernel/softirq.c
-===================================================================
---- linux-2.6.orig/kernel/softirq.c
-+++ linux-2.6/kernel/softirq.c
-@@ -213,6 +213,8 @@ asmlinkage void __do_softirq(void)
- 	__u32 pending;
- 	int max_restart = MAX_SOFTIRQ_RESTART;
- 	int cpu;
-+	unsigned long pflags = current->flags;
-+	current->flags &= ~PF_MEMALLOC;
- 
- 	pending = local_softirq_pending();
- 	account_system_vtime(current);
-@@ -251,6 +253,7 @@ restart:
- 
- 	account_system_vtime(current);
- 	_local_bh_enable();
-+	tsk_restore_flags(current, pflags, PF_MEMALLOC);
+diff --git a/kernel/module.c b/kernel/module.c
+index d8b5605..d861bd5 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -325,18 +325,6 @@ static unsigned long find_symbol(const char *name,
+ 	return -ENOENT;
  }
  
- #ifndef __ARCH_HAS_DO_SOFTIRQ
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -1533,6 +1533,13 @@ static inline void put_task_struct(struc
- #define tsk_used_math(p) ((p)->flags & PF_USED_MATH)
- #define used_math() tsk_used_math(current)
+-/* lookup symbol in given range of kernel_symbols */
+-static const struct kernel_symbol *lookup_symbol(const char *name,
+-	const struct kernel_symbol *start,
+-	const struct kernel_symbol *stop)
+-{
+-	const struct kernel_symbol *ks = start;
+-	for (; ks < stop; ks++)
+-		if (strcmp(ks->name, name) == 0)
+-			return ks;
+-	return NULL;
+-}
+-
+ /* Search for module by name: must hold module_mutex. */
+ static struct module *find_module(const char *name)
+ {
+@@ -1703,6 +1691,19 @@ static void setup_modinfo(struct module *mod, Elf_Shdr *sechdrs,
+ }
  
-+static inline void tsk_restore_flags(struct task_struct *p,
-+				     unsigned long pflags, unsigned long mask)
+ #ifdef CONFIG_KALLSYMS
++
++/* lookup symbol in given range of kernel_symbols */
++static const struct kernel_symbol *lookup_symbol(const char *name,
++	const struct kernel_symbol *start,
++	const struct kernel_symbol *stop)
 +{
-+	p->flags &= ~mask;
-+	p->flags |= pflags & mask;
++	const struct kernel_symbol *ks = start;
++	for (; ks < stop; ks++)
++		if (strcmp(ks->name, name) == 0)
++			return ks;
++	return NULL;
 +}
 +
- #ifdef CONFIG_SMP
- extern int set_cpus_allowed_ptr(struct task_struct *p,
- 				const cpumask_t *new_mask);
-
--- 
-
+ static int is_exported(const char *name, const struct module *mod)
+ {
+ 	if (!mod && lookup_symbol(name, __start___ksymtab, __stop___ksymtab))
