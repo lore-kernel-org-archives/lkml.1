@@ -1,70 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbYGXWJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbYGXWMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754589AbYGXWJc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 18:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYGXWJV
+	id S1754417AbYGXWMQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 18:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYGXWME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 18:09:21 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56996
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751149AbYGXWJU (ORCPT
+	Thu, 24 Jul 2008 18:12:04 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:32360 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751287AbYGXWMC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 18:09:20 -0400
-Date: Thu, 24 Jul 2008 15:09:20 -0700 (PDT)
-Message-Id: <20080724.150920.120141367.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: kaber@trash.net, penberg@cs.helsinki.fi, mingo@elte.hu,
-       herbert@gondor.apana.org.au, w@1wt.eu, davidn@davidnewall.com,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de, rjw@sisk.pl,
-       ilpo.jarvinen@helsinki.fi, davej@redhat.com
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
- pointer dereference
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0807241407410.8109@nehalem.linux-foundation.org>
-References: <84144f020807240544q507e1b7cv220d1afbae0ee0f0@mail.gmail.com>
-	<48887A71.5010209@trash.net>
-	<alpine.LFD.1.10.0807241407410.8109@nehalem.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 24 Jul 2008 18:12:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=DYUA2bmW/LFBz3MH61BDq5D/ARXZf+KQXF2Wwq3FL1I+hZEgXg8GUAwuGIDvLzeQms
+         Es6B1l0p5Se1+SUUKDZTwwD3GRLYzJyhAmTmBolZKt4jv2oHU2C2Sxgaep0WODSLXF+t
+         uwEtiWE2B/aIyNXIcc/Ruo6JnHu3Hcw2JnpV0=
+Subject: [patch, rfc: 1/2] sched, hotplug: safe use of rq->migration_thread
+	and find_busiest_queue()
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 25 Jul 2008 00:11:57 +0200
+Message-Id: <1216937517.5368.11.camel@earth>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 24 Jul 2008 14:13:42 -0700 (PDT)
 
-> Finally, why do the "ct->ext" dereference thing, when we know it has
-> to be equal to "new"?
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: sched, hotplug: safe use of rq->migration_thread
+and find_busiest_queue()
 
-Actually in the old code this precondition didn't hold, which explains
-how it is.
+---
 
-The old code looked like:
+    sched, hotplug: safe use of rq->migration_thread and find_busiest_queue()
+    
+    (1) make usre rq->migration_thread is valid when we access it in set_cpus_allowed_ptr()
+    after releasing the rq-lock;
+    
+    (2) in load_balance() and load_balance_idle()
+    
+    ensure that we don't get 'busiest' which can disappear as a result of cpu_down()
+    while we are manipulating it. For this goal, we choose 'busiest' only amongst
+    'cpu_active_map' cpus.
+    
+    load_balance() and load_balance_idle() get called with preemption being disabled
+    so synchronize_sched() in cpu_down() should get us synced.
+    
+    IOW, as soon as synchronize_sched() has been done in cpu_down(cpu), the run-queue for
+    can't be manipulated/accessed by the load-balancer.
+    
+    Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
 
-	if (newlen >= ksize(ct->ext)) {
-		new = kmalloc(newlen, gfp);
-		if (!new)
-			return NULL;
- ...
-		ct->ext = new;
-	}
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 6acf749..b4ccc8b 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3409,7 +3409,14 @@ static int load_balance(int this_cpu, struct rq *this_rq,
+ 	struct rq *busiest;
+ 	unsigned long flags;
+ 
+-	cpus_setall(*cpus);
++	/*
++	 * Ensure that we don't get 'busiest' which can disappear
++	 * as a result of cpu_down() while we are manipulating it.
++	 *
++	 * load_balance() gets called with preemption being disabled
++	 * so synchronize_sched() in cpu_down() should get us synced.
++	 */
++	*cpus = cpu_active_map;
+ 
+ 	/*
+ 	 * When power savings policy is enabled for the parent domain, idle
+@@ -3571,7 +3578,14 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
+ 	int sd_idle = 0;
+ 	int all_pinned = 0;
+ 
+-	cpus_setall(*cpus);
++	/*
++	 * Ensure that we don't get 'busiest' which can disappear
++	 * as a result of cpu_down() while we are manipulating it.
++	 *
++	 * load_balance_newidle() gets called with preemption being disabled
++	 * so synchronize_sched() in cpu_down() should get us synced.
++	 */
++	*cpus = cpu_active_map;
+ 
+ 	/*
+ 	 * When power savings policy is enabled for the parent domain, idle
+@@ -5764,9 +5778,14 @@ int set_cpus_allowed_ptr(struct task_struct *p, const cpumask_t *new_mask)
+ 		goto out;
+ 
+ 	if (migrate_task(p, any_online_cpu(*new_mask), &req)) {
+-		/* Need help from migration thread: drop lock and wait. */
++		/* Need to wait for migration thread (might exit: take ref). */
++		struct task_struct *mt = rq->migration_thread;
++
++		get_task_struct(mt);
+ 		task_rq_unlock(rq, &flags);
+-		wake_up_process(rq->migration_thread);
++		wake_up_process(mt);
++		put_task_struct(mt);
++
+ 		wait_for_completion(&req.done);
+ 		tlb_migrate_finish(p->mm);
+ 		return 0;
 
-	ct->ext->offset[id] = newoff;
-	ct->ext->len = newlen;
-	memset((void *)ct->ext + newoff, 0, newlen - newoff);
-	return (void *)ct->ext + newoff;
 
-and in that context 'new' is only assigned in the "newlen >=" guarded
-code block.
-
-Anyways, it does seem that we should indeed only update the
-new larger length only after we've initialized the contents.
-
-Note that we could make krealloc() and friends clear out the trailing
-bits of the new buffer, and therefore the caller wouldn't even need to
-be mindful of such things.
-
-I don't know if that's desirable in general, probably it isn't.
