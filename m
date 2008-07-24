@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753076AbYGXPMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757581AbYGXPNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753076AbYGXPMa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 11:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYGXPMV
+	id S1757581AbYGXPNS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 11:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYGXPNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 11:12:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56681 "EHLO mx2.mail.elte.hu"
+	Thu, 24 Jul 2008 11:13:06 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56912 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752374AbYGXPMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 11:12:20 -0400
-Date: Thu, 24 Jul 2008 17:12:00 +0200
+	id S1753108AbYGXPNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 11:13:04 -0400
+Date: Thu, 24 Jul 2008 17:12:41 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [git pull] x86 fixes
-Message-ID: <20080724151200.GA19266@elte.hu>
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [git pull] scheduler fixes
+Message-ID: <20080724151241.GA19461@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,99 +34,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest x86 fixes git tree from:
+Please pull the latest sched-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
 
 Thanks,
 
 	Ingo
 
 ------------------>
-Hugh Dickins (1):
-      x86: BUILD_IRQ say .text to avoid .data.percpu
+Ingo Molnar (1):
+      sched: fix hrtick & generic-ipi dependency
 
-Jeremy Fitzhardinge (2):
-      x86: call early_cpu_init at the same point
-      xen: don't use sysret for sysexit32
-
-Vegard Nossum (1):
-      x86: fix header export, asm-x86/processor-flags.h, CONFIG_* leaks
+Peter Zijlstra (1):
+      sched: clean up compiler warning
 
 
- arch/x86/kernel/irqinit_64.c      |    2 +-
- arch/x86/kernel/setup.c           |    5 +----
- arch/x86/xen/xen-asm_64.S         |    2 +-
- include/asm-x86/processor-flags.h |    2 ++
- 4 files changed, 5 insertions(+), 6 deletions(-)
+ kernel/Kconfig.hz |    2 +-
+ kernel/sched_rt.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/irqinit_64.c b/arch/x86/kernel/irqinit_64.c
-index 0373e88..9414125 100644
---- a/arch/x86/kernel/irqinit_64.c
-+++ b/arch/x86/kernel/irqinit_64.c
-@@ -43,7 +43,7 @@
+diff --git a/kernel/Kconfig.hz b/kernel/Kconfig.hz
+index 2a202a8..382dd5a 100644
+--- a/kernel/Kconfig.hz
++++ b/kernel/Kconfig.hz
+@@ -55,4 +55,4 @@ config HZ
+ 	default 1000 if HZ_1000
  
- #define BUILD_IRQ(nr)				\
- 	asmlinkage void IRQ_NAME(nr);		\
--	asm("\n.p2align\n"			\
-+	asm("\n.text\n.p2align\n"		\
- 	    "IRQ" #nr "_interrupt:\n\t"		\
- 	    "push $~(" #nr ") ; "		\
- 	    "jmp common_interrupt");
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index b4aacb9..b520dae 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -597,11 +597,11 @@ void __init setup_arch(char **cmdline_p)
- 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
- 	visws_early_detect();
- 	pre_setup_arch_hook();
--	early_cpu_init();
- #else
- 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
- #endif
+ config SCHED_HRTICK
+-	def_bool HIGH_RES_TIMERS
++	def_bool HIGH_RES_TIMERS && USE_GENERIC_SMP_HELPERS
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 147004c..93ac8ee 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -253,7 +253,7 @@ static int do_balance_runtime(struct rt_rq *rt_rq)
  
-+	early_cpu_init();
- 	early_ioremap_init();
- 
- 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
-@@ -665,9 +665,6 @@ void __init setup_arch(char **cmdline_p)
- 	bss_resource.start = virt_to_phys(&__bss_start);
- 	bss_resource.end = virt_to_phys(&__bss_stop)-1;
- 
--#ifdef CONFIG_X86_64
--	early_cpu_init();
--#endif
- 	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
- 	*cmdline_p = command_line;
- 
-diff --git a/arch/x86/xen/xen-asm_64.S b/arch/x86/xen/xen-asm_64.S
-index 4038cbf..7f58304 100644
---- a/arch/x86/xen/xen-asm_64.S
-+++ b/arch/x86/xen/xen-asm_64.S
-@@ -173,7 +173,7 @@ ENTRY(xen_sysexit)
- 	pushq $__USER32_CS
- 	pushq %rdx
- 
--	pushq $VGCF_in_syscall
-+	pushq $0
- 1:	jmp hypercall_iret
- ENDPATCH(xen_sysexit)
- RELOC(xen_sysexit, 1b+1)
-diff --git a/include/asm-x86/processor-flags.h b/include/asm-x86/processor-flags.h
-index 092b39b..eff2ecd 100644
---- a/include/asm-x86/processor-flags.h
-+++ b/include/asm-x86/processor-flags.h
-@@ -88,10 +88,12 @@
- #define CX86_ARR_BASE	0xc4
- #define CX86_RCR_BASE	0xdc
- 
-+#ifdef __KERNEL__
- #ifdef CONFIG_VM86
- #define X86_VM_MASK	X86_EFLAGS_VM
- #else
- #define X86_VM_MASK	0 /* No VM86 support */
- #endif
-+#endif
- 
- #endif	/* __ASM_I386_PROCESSOR_FLAGS_H */
+ 		diff = iter->rt_runtime - iter->rt_time;
+ 		if (diff > 0) {
+-			do_div(diff, weight);
++			diff = div_u64((u64)diff, weight);
+ 			if (rt_rq->rt_runtime + diff > rt_period)
+ 				diff = rt_period - rt_rq->rt_runtime;
+ 			iter->rt_runtime -= diff;
