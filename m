@@ -1,150 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbYGXLwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbYGXLvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757067AbYGXLwB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 07:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756672AbYGXLvl
+	id S1756885AbYGXLvs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 07:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755546AbYGXLvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 07:51:41 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:64655 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756736AbYGXLvk (ORCPT
+	Thu, 24 Jul 2008 07:51:39 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:36133 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755284AbYGXLvi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 07:51:40 -0400
-Date: Thu, 24 Jul 2008 12:51:39 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net
-Subject: Re: GPIO: Add generic gpio_to_irq call.
-Message-ID: <20080724115139.GC8301@fluff.org.uk>
-References: <20080724114627.574586848@fluff.org.uk>
+	Thu, 24 Jul 2008 07:51:38 -0400
+Date: Thu, 24 Jul 2008 05:51:22 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andi Kleen <andi@firstfloor.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Oops in sched_mc_power_savings_store
+Message-ID: <20080724115121.GA28269@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080724114627.574586848@fluff.org.uk>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 12:46:27PM +0100, Ben Dooks wrote:
-> Add gpio_to_irq() implementation allowing the
-> gpio_chip registration to also specify an function
-> to map GPIO offsets into IRQs.
-> 
-> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-> 
-> Index: linux-2.6.26-quilt3/drivers/gpio/gpiolib.c
-> ===================================================================
-> --- linux-2.6.26-quilt3.orig/drivers/gpio/gpiolib.c	2008-07-18 13:50:32.000000000 +0100
-> +++ linux-2.6.26-quilt3/drivers/gpio/gpiolib.c	2008-07-22 15:20:26.000000000 +0100
-> @@ -339,6 +339,36 @@ const char *gpiochip_is_requested(struct
->  }
->  EXPORT_SYMBOL_GPL(gpiochip_is_requested);
->  
-> +int __gpio_to_irq(unsigned gpio)
-> +{
-> +	struct gpio_chip	*chip;
-> +	struct gpio_desc	*desc = &gpio_desc[gpio];
-> +	unsigned long		flags;
-> +	int			status = -EINVAL;
-> +
-> +	spin_lock_irqsave(&gpio_lock, flags);
-> +
-> +	if (!gpio_is_valid(gpio))
-> +		goto fail;
-> +
-> +	chip = desc->chip;
-> +	if (!chip || !chip->to_irq)
-> +		goto fail;
-> +
-> +	gpio -= chip->base;
-> +	if (gpio >= chip->ngpio)
-> +		goto fail;
-> +
-> +	status = chip->to_irq(chip, gpio);
 
-hmm, this should have a check for chip->to_irq
-being non-null before it.
+I have no idea how you guys intended this to work, but here's the
+debugging work I've done so far.
 
-> +
-> + fail:
-> +	spin_unlock_irqrestore(&gpio_lock, flags);
-> +	if (status)
-> +		pr_debug("%s: gpio-%d status %d\n",
-> +			__func__, gpio, status);
-> +	return status;
-> +}
-> +EXPORT_SYMBOL_GPL(__gpio_to_irq);
->  
->  /* Drivers MUST set GPIO direction before making get/set calls.  In
->   * some cases this is done in early boot, before IRQs are enabled.
-> Index: linux-2.6.26-quilt3/include/asm-generic/gpio.h
-> ===================================================================
-> --- linux-2.6.26-quilt3.orig/include/asm-generic/gpio.h	2008-07-18 13:50:32.000000000 +0100
-> +++ linux-2.6.26-quilt3/include/asm-generic/gpio.h	2008-07-22 15:21:05.000000000 +0100
-> @@ -40,6 +40,7 @@ struct module;
->   * @dbg_show: optional routine to show contents in debugfs; default code
->   *	will be used when this is omitted, but custom code can show extra
->   *	state (such as pullup/pulldown configuration).
-> + * @to_irq: convert gpio offset to IRQ number.
->   * @base: identifies the first GPIO number handled by this chip; or, if
->   *	negative during registration, requests dynamic ID allocation.
->   * @ngpio: the number of GPIOs handled by this controller; the last GPIO
-> @@ -71,6 +72,9 @@ struct gpio_chip {
->  						unsigned offset, int value);
->  	void			(*dbg_show)(struct seq_file *s,
->  						struct gpio_chip *chip);
-> +	int			(*to_irq)(struct gpio_chip *chip,
-> +					  unsigned offset);
-> +
->  	int			base;
->  	u16			ngpio;
->  	unsigned		can_sleep:1;
-> @@ -97,6 +101,7 @@ extern int gpio_direction_output(unsigne
->  extern int gpio_get_value_cansleep(unsigned gpio);
->  extern void gpio_set_value_cansleep(unsigned gpio, int value);
->  
-> +extern int __gpio_to_irq(unsigned gpio);
->  
->  /* A platform's <asm/gpio.h> code may want to inline the I/O calls when
->   * the GPIO is constant and refers to some always-present controller,
-> Index: linux-2.6.26-quilt3/Documentation/gpio.txt
-> ===================================================================
-> --- linux-2.6.26-quilt3.orig/Documentation/gpio.txt	2008-07-22 15:22:08.000000000 +0100
-> +++ linux-2.6.26-quilt3/Documentation/gpio.txt	2008-07-22 15:27:14.000000000 +0100
-> @@ -273,8 +273,9 @@ some GPIOs can't be used as IRQs.)  It i
->  number that wasn't set up as an input using gpio_direction_input(), or
->  to use an IRQ number that didn't originally come from gpio_to_irq().
->  
-> -These two mapping calls are expected to cost on the order of a single
-> -addition or subtraction.  They're not allowed to sleep.
-> +These two mapping calls are expected to cost on between the order of a
-> +single addition or subtraction to obtaining an spinlock and using the
-> +to_irq method of the relevant gpio chip. They're not allowed to sleep.
->  
->  Non-error values returned from gpio_to_irq() can be passed to request_irq()
->  or free_irq().  They will often be stored into IRQ resources for platform
-> @@ -400,6 +401,7 @@ They may also want to provide a custom v
->  Trivial implementations of those functions can directly use framework
->  code, which always dispatches through the gpio_chip:
->  
-> +  #define gpio_to_irq	        __gpio_to_irq
->    #define gpio_get_value	__gpio_get_value
->    #define gpio_set_value	__gpio_set_value
->    #define gpio_cansleep		__gpio_cansleep
-> 
-> -- 
-> Ben (ben@fluff.org, http://www.fluff.org/)
-> 
->   'a smiley only costs 4 bytes'
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+[   89.210171] Call Trace:
+[   89.210182]  [<c011c0b3>] ? sched_mc_power_savings_store+0x0/0x4a
+[   89.210198]  [<c02908c0>] ? sysdev_class_store+0x38/0x40
+[   89.210213]  [<c01a0b51>] ? sysfs_write_file+0xb9/0xe4
+
+sched_mc_power_savings_store isn't a class attribute, it's a plain
+attribute.  So the prototypes are different.  This is why we try to load
+from address 2 -- it's actually the length parameter.
+
+I don't know how our typing system let this one through.  I don't know if
+you want to fix this by adding an extra argument to the class_attribute
+show and store methods.  I don't know if sched_mc_power_savings_store
+was intended to be a class attribute or not.
 
 -- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
