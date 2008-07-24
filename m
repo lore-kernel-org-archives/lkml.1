@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbYGXXU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbYGXX1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755689AbYGXXU2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 19:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYGXXUR
+	id S1756099AbYGXX1b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 19:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755937AbYGXX1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 19:20:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41470 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751268AbYGXXUQ (ORCPT
+	Thu, 24 Jul 2008 19:27:10 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:46108 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755916AbYGXX1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 19:20:16 -0400
-Date: Thu, 24 Jul 2008 16:16:34 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-cc: "x86@kernel.org" <x86@kernel.org>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] x64, fpu: fix possible FPU leakage in error conditions
-In-Reply-To: <20080724230658.GP14380@linux-os.sc.intel.com>
-Message-ID: <alpine.LFD.1.10.0807241616241.8109@nehalem.linux-foundation.org>
-References: <20080724180429.GI14380@linux-os.sc.intel.com> <alpine.LFD.1.10.0807241122260.3237@nehalem.linux-foundation.org> <20080724185053.GJ14380@linux-os.sc.intel.com> <alpine.LFD.1.10.0807241154260.3237@nehalem.linux-foundation.org>
- <20080724202728.GL14380@linux-os.sc.intel.com> <alpine.LFD.1.10.0807241330210.15524@nehalem.linux-foundation.org> <20080724212351.GM14380@linux-os.sc.intel.com> <alpine.LFD.1.10.0807241431180.8109@nehalem.linux-foundation.org> <20080724222523.GN14380@linux-os.sc.intel.com>
- <alpine.LFD.1.10.0807241532240.8109@nehalem.linux-foundation.org> <20080724230658.GP14380@linux-os.sc.intel.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 24 Jul 2008 19:27:08 -0400
+Subject: Re: [PATCH -next] kmemcheck: include module.h to prevent warnings
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, vegardno@ifi.uio.no,
+       akpm <akpm@linux-foundation.org>
+In-Reply-To: <20080724160932.cdcf4927.randy.dunlap@oracle.com>
+References: <20080724160932.cdcf4927.randy.dunlap@oracle.com>
+Date: Fri, 25 Jul 2008 02:27:03 +0300
+Message-Id: <1216942023.12392.17.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 24 Jul 2008, Suresh Siddha wrote:
+On Thu, 2008-07-24 at 16:09 -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> BTW, while you are at it, please move save_i387() aswell, to be consistent
-> and clean.
+> kmemcheck/shadow.c needs to include <linux/module.h> to prevent
+> the following warnings:
+> 
+> linux-next-20080724/arch/x86/mm/kmemcheck/shadow.c:64: warning : data definition has no type or storage class
+> linux-next-20080724/arch/x86/mm/kmemcheck/shadow.c:64: warning : type defaults to 'int' in declaration of 'EXPORT_SYMBOL_GPL'
+> linux-next-20080724/arch/x86/mm/kmemcheck/shadow.c:64: warning : parameter names (without types) in function declaration
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Ack. Will do.
+Looks good to me.
 
-		Linus
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+
+> ---
+>  arch/x86/mm/kmemcheck/shadow.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- linux-next-20080724.orig/arch/x86/mm/kmemcheck/shadow.c
+> +++ linux-next-20080724/arch/x86/mm/kmemcheck/shadow.c
+> @@ -1,5 +1,6 @@
+>  #include <linux/kmemcheck.h>
+>  #include <linux/mm.h>
+> +#include <linux/module.h>
+>  
+>  #include <asm/page.h>
+>  #include <asm/pgtable.h>
+> 
+> 
+> ---
+> ~Randy
+> Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+> http://linuxplumbersconf.org/
+
