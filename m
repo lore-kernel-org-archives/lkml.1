@@ -1,30 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754439AbYGXJcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbYGXJdB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754439AbYGXJcY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 05:32:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbYGXJcL
+	id S1754754AbYGXJdB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 05:33:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYGXJcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 05:32:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52669
+	Thu, 24 Jul 2008 05:32:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52678
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751309AbYGXJcK (ORCPT
+	by vger.kernel.org with ESMTP id S1751378AbYGXJct (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 05:32:10 -0400
-Date: Thu, 24 Jul 2008 02:32:10 -0700 (PDT)
-Message-Id: <20080724.023210.229338550.davem@davemloft.net>
-To: peterz@infradead.org
-Cc: jarkao2@gmail.com, Larry.Finger@lwfinger.net, kaber@trash.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, mingo@redhat.com,
-       nickpiggin@yahoo.com.au, paulmck@linux.vnet.ibm.com
-Subject: Re: Kernel WARNING: at net/core/dev.c:1330
- __netif_schedule+0x2c/0x98()
+	Thu, 24 Jul 2008 05:32:49 -0400
+Date: Thu, 24 Jul 2008 02:32:49 -0700 (PDT)
+Message-Id: <20080724.023249.151928972.davem@davemloft.net>
+To: fabio.comolli@gmail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: WARNING: at net/core/dev.c:1330 __netif_schedule+0x23/0x77()
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1216891625.7257.261.camel@twins>
-References: <1216890648.7257.258.camel@twins>
-	<20080724.022040.23129457.davem@davemloft.net>
-	<1216891625.7257.261.camel@twins>
+In-Reply-To: <b637ec0b0807240230x16cd8912t4d742ef647b0807d@mail.gmail.com>
+References: <b637ec0b0807221205j4d212486r32785626caa44617@mail.gmail.com>
+	<b637ec0b0807240230x16cd8912t4d742ef647b0807d@mail.gmail.com>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -33,19 +27,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Zijlstra <peterz@infradead.org>
-Date: Thu, 24 Jul 2008 11:27:05 +0200
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+Date: Thu, 24 Jul 2008 11:30:28 +0200
 
-> Well, not only lockdep, taking a very large number of locks is expensive
-> as well.
+> [ Added netdev to CC: list]
 
-Right now it would be on the order of 16 or 32 for
-real hardware.
-
-Much less than the scheduler currently takes on some
-of my systems, so currently you are the pot calling the
-kettle black. :-)
-
-USHORT_MAX is just the upper hard limit imposed by the
-software interface merely as a side effect of storing
-the queue number of the SKB as a u16.
+Just ignore, this warning is going away.
