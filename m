@@ -1,152 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbYGXPjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbYGXPlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754916AbYGXPjS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 11:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYGXPjG
+	id S1754888AbYGXPlT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 11:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYGXPlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 11:39:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:37661 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750883AbYGXPjE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 11:39:04 -0400
-Date: Thu, 24 Jul 2008 11:39:02 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [patch 02/17] Kernel Tracepoints
-In-Reply-To: <20080715222746.361289615@polymtl.ca>
-Message-ID: <Pine.LNX.4.58.0807241136420.14946@gandalf.stny.rr.com>
-References: <20080715222604.331269462@polymtl.ca> <20080715222746.361289615@polymtl.ca>
+	Thu, 24 Jul 2008 11:41:09 -0400
+Received: from www.tglx.de ([62.245.132.106]:45112 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751830AbYGXPlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 11:41:08 -0400
+Date: Thu, 24 Jul 2008 17:38:17 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: "Hans J. Koch" <hjk@linutronix.de>,
+       Jonathan Cameron <Jonathan.Cameron@gmail.com>, mgross@linux.intel.com,
+       Dmitry Torokhov <dtor@mail.ru>, LKML <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>,
+       David Brownell <david-b@pacbell.net>, hmh@hmh.eng.br,
+       Jean Delvare <khali@linux-fr.org>,
+       spi-devel-general@lists.sourceforge.net,
+       Ben Nizette <bn@niasdigital.com>
+Subject: Re: [spi-devel-general] [Patch 0/4] IndustrialIO subsystem (ADCs,
+	accelerometers etc)
+Message-ID: <20080724153816.GE2254@local>
+References: <488763AD.4050400@gmail.com> <20080723191918.GC26938@trinity.fluff.org> <20080724074124.GB2254@local> <20080724100144.GA8301@fluff.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080724100144.GA8301@fluff.org.uk>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jul 24, 2008 at 11:01:44AM +0100, Ben Dooks wrote:
+> On Thu, Jul 24, 2008 at 09:41:25AM +0200, Hans J. Koch wrote:
+> > On Wed, Jul 23, 2008 at 08:19:18PM +0100, Ben Dooks wrote:
+> > > On Wed, Jul 23, 2008 at 06:00:29PM +0100, Jonathan Cameron wrote:
+> > > > Dear All,
+> > > > 
+> > > > The need for an industrialio subsystem was discussed in
+> > > > http://lkml.org/lkml/2008/5/20/135
+> > > 
+> > > The name is really bad, this sounds like something for doing large
+> > > scale industrial process control.
+> > 
+> > Well, it says "Industrial I/O". To me, this means it handles I/O devices
+> > typically found in industrial applications.
+> 
+> Yes, industrial is generally process control of manufacturing
+> processes which in my view is making this sound like it is limiting
+> the field of operations.
 
+OK, I agree.
 
+> 
+> All the applications we would currently need are things like
+> handheld PDA type devices which are hardly 'industrial' or small
+> consumer measurement systems.
 
-On Tue, 15 Jul 2008, Mathieu Desnoyers wrote:
-> Index: linux-2.6-lttng/kernel/tracepoint.c
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6-lttng/kernel/tracepoint.c	2008-07-15 17:35:00.000000000 -0400
+Well, though the _use_ of such devices might not be "industrial",
+_technically_ they are very similar to embedded systems found in
+automation or other industrial equipment.
 
-[...]
+Many of these devices (all that have mmappable memory) can be handled
+with a UIO driver, but for the rest (mostly stuff connected to serial
+busses), it's important to have a subsystem in the kernel. I really
+don't care too much about its name. BTW, before UIO was first published,
+its internal name was "Industrial I/O" ;-)
 
-> +/*
-> + * Tracepoint hash table, containing the active tracepoints.
-> + * Protected by tracepoints_mutex.
-> + */
-> +#define TRACEPOINT_HASH_BITS 6
-> +#define TRACEPOINT_TABLE_SIZE (1 << TRACEPOINT_HASH_BITS)
-> +
+Thanks,
+Hans
 
-[...]
-
-> +/*
-> + * Get tracepoint if the tracepoint is present in the tracepoint hash table.
-> + * Must be called with tracepoints_mutex held.
-> + * Returns NULL if not present.
-> + */
-> +static struct tracepoint_entry *get_tracepoint(const char *name)
-> +{
-> +	struct hlist_head *head;
-> +	struct hlist_node *node;
-> +	struct tracepoint_entry *e;
-> +	u32 hash = jhash(name, strlen(name), 0);
-> +
-> +	head = &tracepoint_table[hash & ((1 << TRACEPOINT_HASH_BITS)-1)];
-
-Wouldn't it look nicer to have: (TRACEPOINT_TABLE_SIZE - 1) ?
-
-  hash & (
-> +	hlist_for_each_entry(e, node, head, hlist) {
-> +		if (!strcmp(name, e->name))
-> +			return e;
-> +	}
-> +	return NULL;
-> +}
-> +
-> +/*
-> + * Add the tracepoint to the tracepoint hash table. Must be called with
-> + * tracepoints_mutex held.
-> + */
-> +static struct tracepoint_entry *add_tracepoint(const char *name)
-> +{
-> +	struct hlist_head *head;
-> +	struct hlist_node *node;
-> +	struct tracepoint_entry *e;
-> +	size_t name_len = strlen(name) + 1;
-> +	u32 hash = jhash(name, name_len-1, 0);
-> +
-> +	head = &tracepoint_table[hash & ((1 << TRACEPOINT_HASH_BITS)-1)];
-
-here too.
-
-> +	hlist_for_each_entry(e, node, head, hlist) {
-> +		if (!strcmp(name, e->name)) {
-> +			printk(KERN_NOTICE
-> +				"tracepoint %s busy\n", name);
-> +			return ERR_PTR(-EEXIST);	/* Already there */
-> +		}
-> +	}
-> +	/*
-> +	 * Using kmalloc here to allocate a variable length element. Could
-> +	 * cause some memory fragmentation if overused.
-> +	 */
-> +	e = kmalloc(sizeof(struct tracepoint_entry) + name_len, GFP_KERNEL);
-> +	if (!e)
-> +		return ERR_PTR(-ENOMEM);
-> +	memcpy(&e->name[0], name, name_len);
-> +	e->funcs = NULL;
-> +	e->refcount = 0;
-> +	e->rcu_pending = 0;
-> +	hlist_add_head(&e->hlist, head);
-> +	return e;
-> +}
-> +
-> +/*
-> + * Remove the tracepoint from the tracepoint hash table. Must be called with
-> + * mutex_lock held.
-> + */
-> +static int remove_tracepoint(const char *name)
-> +{
-> +	struct hlist_head *head;
-> +	struct hlist_node *node;
-> +	struct tracepoint_entry *e;
-> +	int found = 0;
-> +	size_t len = strlen(name) + 1;
-> +	u32 hash = jhash(name, len-1, 0);
-> +
-> +	head = &tracepoint_table[hash & ((1 << TRACEPOINT_HASH_BITS)-1)];
-
-here too.
-
-> +	hlist_for_each_entry(e, node, head, hlist) {
-> +		if (!strcmp(name, e->name)) {
-> +			found = 1;
-> +			break;
-> +		}
-> +	}
-> +	if (!found)
-> +		return -ENOENT;
-> +	if (e->refcount)
-> +		return -EBUSY;
-> +	hlist_del(&e->hlist);
-> +	/* Make sure the call_rcu has been executed */
-> +	if (e->rcu_pending)
-> +		rcu_barrier();
-> +	kfree(e);
-> +	return 0;
-> +}
-
--- Steve
