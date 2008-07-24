@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751817AbYGXBFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbYGXB1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751817AbYGXBFZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 21:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYGXBFO
+	id S1751571AbYGXB1N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 21:27:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbYGXB06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 21:05:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49179 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750826AbYGXBFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 21:05:13 -0400
+	Wed, 23 Jul 2008 21:26:58 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:46336 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750836AbYGXB05 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 21:26:57 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=PVljGMN0psAKTcUXArSxZjPLSgD+WjgqnTJVUVtHUQqJ2TIOOlk8VeivPmQdleMxJtEN9VAYgLNdG2ZnFbfbkmyZz1n2F+fezqzEjlqSCsN+zZ6TrUGRazYRTC8bblxcdbGDyq4r5+mTsKeZkM+U2TKg3wCzznrvkHoVdp1irIc=  ;
+X-YMail-OSG: DPg4L0YVM1lG7E7_74Yb.AQZLHprQ5DPWcvQPIk6fCMj3uYnh55WnwipDAvpiEl_3MVlZnAj_adxTs_WxcAiM3E.V0omvGmjfDjMgWmSJVMDqPAUx.W16TLvFtK.hBeNsss-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Alex Nixon (Intern)" <Alex.Nixon@eu.citrix.com>
+Subject: Re: Large increase in context switch rate
+Date: Thu, 24 Jul 2008 11:26:48 +1000
+User-Agent: KMail/1.9.5
+Cc: "Andi Kleen" <andi@firstfloor.org>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Peter Zijlstra" <peterz@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ian Campbell" <Ian.Campbell@eu.citrix.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+References: <487E43D9.7080703@goop.org> <87mykgrxtv.fsf@basil.nowhere.org> <0E902970173AF84089673FA54B7FE78A329073@lonpexch01.citrite.net>
+In-Reply-To: <0E902970173AF84089673FA54B7FE78A329073@lonpexch01.citrite.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexander Viro <aviro@redhat.com>, Eric Paris <eparis@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] x86_64 ia32 syscall audit fast-path
-In-Reply-To: Linus Torvalds's message of  Wednesday, 23 July 2008 17:22:55 -0700 <alpine.LFD.1.10.0807231718020.21274@nehalem.linux-foundation.org>
-X-Fcc: ~/Mail/linus
-References: <20080707065615.77BD9154246@magilla.localdomain>
-	<20080707065742.7C119154246@magilla.localdomain>
-	<alpine.LFD.1.10.0807070927090.11076@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0807070937520.11076@woody.linux-foundation.org>
-	<20080708000233.E8EF3154244@magilla.localdomain>
-	<20080718113615.GD6875@elte.hu>
-	<20080721235419.CA3BA1541A5@magilla.localdomain>
-	<alpine.LFD.1.10.0807231718020.21274@nehalem.linux-foundation.org>
-Emacs: it's all fun and games, until somebody tries to edit a file.
-Message-Id: <20080724010435.D642915421D@magilla.localdomain>
-Date: Wed, 23 Jul 2008 18:04:35 -0700 (PDT)
+Content-Disposition: inline
+Message-Id: <200807241126.48364.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops!  Duh.  I replaced the same GIT branch with a rebased set that uses
-#ifdef CONFIG_AUDITSYSCALL.  No changes to the code you tested, only that
-it compiles away to exactly no difference when audit is compiled out.
+On Wednesday 23 July 2008 19:34, Alex Nixon (Intern) wrote:
+> > -----Original Message-----
+> > From: Andi Kleen [mailto:andi@firstfloor.org]
+> > Sent: 17 July 2008 22:43
+> > To: Jeremy Fitzhardinge
+> > Cc: Alex Nixon (Intern); Peter Zijlstra; Ingo Molnar; Linux
+> > Kernel Mailing List; Ian Campbell
+> > Subject: Re: Large increase in context switch rate
+> >
+> > Jeremy Fitzhardinge <jeremy@goop.org> writes:
+> > > OK, but that still doesn't account for the relatively large increase
+> > > from 2.6.18 -> 2.6.26.  You're using HZ=100 in both cases,
+> >
+> > I presume.
+> >
+> > > The other variable is NOHZ and highres timers.  You could
+> >
+> > try turning
+> >
+> > > those off in 2.6.26.  Also, CONFIG_PREEMPT could well make a
+> > > difference.  2.6.18-xen doesn't support CONFIG_PREEMPT at all, but
+> > > pvops(-xen) does.
+> >
+> > If it's that easily reproducible you could just bisect it?
+> >
+> > -Andi
+>
+> I've bisected down to commit ba52de123d454b57369f291348266d86f4b35070 -
+> [PATCH] inode-diet.  Before that kernbench consistently reports about
+> 35k context switches (total), and after that commit about 53k.  The
+> benchmarks are being run on a tmpfs.  I've verified the results on a
+> different machine, albeit with an almost identical setup (the same
+> kernels and debian distro, kernbench version, and benchmarking a build
+> of the same source).
+>
+> Seems to be a mystery why that patch is (seemingly) the culprit...anyone
+> have any ideas?  Maybe there's some other variable I'm not keeping
+> constant?
 
-The following changes since commit 20b7997e8abdf338dcc27fb4f1333c4973a7f113:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../drzeus/mmc
+Weird. It could possibly be triggering some different userspace behaviour
+if blocksize reporting has changed anywhere. strace might help there.
 
-are available in the git repository at:
+Interesting if you could post the top results of profile=schedule for
+a kernel with and without the patch.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-roland.git x86/auditsc
-
-Roland McGrath (4):
-      x86_64: remove bogus optimization in sysret_signal
-      x86_64 syscall audit fast-path
-      x86_64 ia32 syscall audit fast-path
-      i386 syscall audit fast-path
-
- arch/x86/ia32/ia32entry.S  |   91 ++++++++++++++++++++++++++++++++++++++++++--
- arch/x86/kernel/entry_32.S |   55 +++++++++++++++++++++++++-
- arch/x86/kernel/entry_64.S |   55 ++++++++++++++++++++++++--
- kernel/auditsc.c           |    3 +-
- 4 files changed, 192 insertions(+), 12 deletions(-)
-
-
-Thanks,
-Roland
