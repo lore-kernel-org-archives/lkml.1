@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760269AbYGXOzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbYGXPBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760269AbYGXOzo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbYGXOzJ
+	id S1754413AbYGXPBG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 11:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbYGXPAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:55:09 -0400
-Received: from sh.osrg.net ([192.16.179.4]:55286 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758442AbYGXOzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:55:08 -0400
-Date: Thu, 24 Jul 2008 23:40:30 +0900
-To: prarit@redhat.com
-Cc: fujita.tomonori@lab.ntt.co.jp, joro@8bytes.org,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       jbarnes@virtuousgeek.org, ed.pollard@ibm.com, epollard@redhat.com
-Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4888925E.8050504@redhat.com>
-References: <20080724123755.GP31439@8bytes.org>
-	<20080724223309C.fujita.tomonori@lab.ntt.co.jp>
-	<4888925E.8050504@redhat.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080724234111I.fujita.tomonori@lab.ntt.co.jp>
+	Thu, 24 Jul 2008 11:00:52 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:5770 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751184AbYGXPAv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 11:00:51 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       "scameron@beardog.cca.cpqcorp.net" <scameron@beardog.cca.cpqcorp.net>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Date: Thu, 24 Jul 2008 15:00:00 +0000
+Subject: RE: HP (Compaq) Smart Array 5xxx controller SCSI driver
+Thread-Topic: HP (Compaq) Smart Array 5xxx controller SCSI driver
+Thread-Index: Acjtk/4nB7hhZd7qRYaRtd5SFhRjzAACYr3w
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A778826B3DD7474@GVW0547EXC.americas.hpqcorp.net>
+References: <20080722175729.GC8833@beardog.cca.cpqcorp.net>
+	<20080724101953R.fujita.tomonori@lab.ntt.co.jp>
+	<20080724133012.GH8833@beardog.cca.cpqcorp.net>
+ <20080724224438B.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080724224438B.fujita.tomonori@lab.ntt.co.jp>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Jul 2008 10:31:58 -0400
-Prarit Bhargava <prarit@redhat.com> wrote:
 
-> 
-> >> But I think Prarit is right with this change. If the interface defines
-> >> this behavior the IOMMU drivers have to implement it. I am just
-> >> wondering that the problem never showed up before. The GART driver is a
-> >> few years old now.
-> >>     
+> > As for the patches I mentioned which were previously ignored for
+> > improving how the current cciss SCSI code handled hot plogging, if
+> > you're curious about that, check here:
 > >
-> > Yeah, I'm not against fixing IOMMUs to make alloc_consistent return
-> > the reqeuested size aligned memory. My point is that it's not likely
-> > to fix anything. Even with the patch, we hit the above problem because
-> > as I explained, the root cause of the problem is the boundary issue;
-> > we need to fix pci-dma.c
+> > http://marc.info/?l=linux-scsi&m=120213565000426&w=4
 > >
-> >   
-> 
-> Sorry, I misquoted code up there and was looking for a clear example of 
-> where this would happen.  The issue I'm trying to resolve didn't happen 
-> on the skge -- it was just a convenient piece of code to examine and 
-> point out ;)
+> > A change like that becomes more important if logical drives are
+> > exposed through the scsi layer.
+>
+> We need to think about the best way to map (expose) logical
+> and physical drivers to SCSI luns. As I wrote before, I'm
+> interested in how HP SCSI driver does.
 
-So please tell us what driver you hit the bug with. Can you give us
-the details?
+We don't neccesarily want or need to expose the physical disks. The only exception is disks that are not part of a logical volume. If the disks are part of a logical volume but exposed the user may shoot themselves in the foot by destroying the firmware metadata.
 
-Thanks,
+-- mikem
