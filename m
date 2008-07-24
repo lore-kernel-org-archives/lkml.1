@@ -1,55 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbYGXL5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbYGXL5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756817AbYGXL5a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 07:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYGXL5W
+	id S1757134AbYGXL5q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 07:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756823AbYGXL5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 07:57:22 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36964 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbYGXL5V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 07:57:21 -0400
-Subject: Re: 22bb1be4d27... breaks hal (and NM)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Pierre Ossman <drzeus-list@drzeus.cx>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Jean Tourrilhes <jt@hpl.hp.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1216899520.13587.49.camel@johannes.berg>
-References: <20080724115805.5466c217@mjolnir.drzeus.cx>
-	 <1216899520.13587.49.camel@johannes.berg>
-Content-Type: text/plain
-Date: Thu, 24 Jul 2008 13:57:11 +0200
-Message-Id: <1216900631.7257.321.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Jul 2008 07:57:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36852 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756719AbYGXL53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 07:57:29 -0400
+Date: Thu, 24 Jul 2008 13:56:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, w@1wt.eu, davidn@davidnewall.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
+       Dave Jones <davej@redhat.com>
+Subject: [regression] nf_iterate(), BUG: unable to handle kernel NULL
+	pointer dereference
+Message-ID: <20080724115625.GA23994@elte.hu>
+References: <20080724060448.GA10203@elte.hu> <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au> <20080724.022259.113079007.davem@davemloft.net> <20080724093411.GA12001@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080724093411.GA12001@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-24 at 13:38 +0200, Johannes Berg wrote:
-> On Thu, 2008-07-24 at 11:58 +0200, Pierre Ossman wrote:
-> > From commit 22bb1be4d27...:
-> > 
-> > "The /sys/class/net/*/wireless/ direcory is, as far as I know, not used
-> > by anyone."
-> > 
-> > Can't have been much of an investigation as HAL uses these to determine
-> > if a card is a wireless one. Without this option, you cannot get
-> > wireless support in NetworkManager, stranding most laptops.
-> 
-> Bzzzzt. You suck. Go check again. Hint: try hal's git tree.
 
-So you're not considering HAL as shipped by most (if not all) distros as
-anyone?
+here's a new type of crash a -tip testbox triggered today:
 
-If everybody would act like that, the next kernel wouldn't even manage
-to get rudimentary user-space up and running. Like we already changed
-all those systemcalls in glibc-head, who needs this kernel to boot on
-your old stuff anyway..
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+IP: [<0000000000000000>] 0x0
+PGD 0 
+Oops: 0010 [1] PREEMPT 
+CPU 0 
+Pid: 5331, comm: ssh Not tainted 2.6.26 #21613
+RIP: 0010:[<0000000000000000>]  [<0000000000000000>] 0x0
+RSP: 0018:ffff88003b959a70  EFLAGS: 00010217
+RAX: ffff88003b9ba91c RBX: ffff88003b9baac0 RCX: 0000000000000002
+RDX: ffff88003b9baac0 RSI: 0000000000000014 RDI: ffff88003b9ba3d8
+RBP: ffff88003b959a98 R08: ffff88003e434130 R09: ffff88003b9598b8
+R10: 0000000000002000 R11: 00000000d85507ac R12: ffff88003b9ba3d8
+R13: 0000000000000002 R14: ffff88003e06a020 R15: 0000000000000000
+FS:  00007fb2b7806780(0000) GS:ffffffff80c1c180(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000000 CR3: 000000003b9e8000 CR4: 00000000000006a0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process ssh (pid: 5331, threadinfo ffff88003b958000, task ffff88003b99a000)
+Stack:  ffffffff80777f25 ffff88003b959a98 ffffffff80c24170 ffff88003b959b28
+ 0000000000000004 ffff88003b959ae8 ffffffff80733107 ffff88003b959ab8
+ ffff88003b9ba3d8 ffffffff80c1ed60 0000000000000004 ffff88003b9ba3d8
+Call Trace:
+ [<ffffffff80777f25>] ? ipv4_confirm+0x8d/0x122
+ [<ffffffff80733107>] nf_iterate+0x43/0xa5
+ [<ffffffff8074bbb2>] ? ip_finish_output+0x0/0x62
+ [<ffffffff807331cd>] nf_hook_slow+0x64/0xcb
+ [<ffffffff8074bbb2>] ? ip_finish_output+0x0/0x62
+ [<ffffffff8074b63b>] nf_hook_thresh+0x1e/0x20
+ [<ffffffff8074bd44>] ip_output+0xb3/0xc9
+ [<ffffffff8074a27e>] dst_output+0xb/0xd
+ [<ffffffff8074b6ef>] ip_local_out+0x1e/0x22
+ [<ffffffff8074c75c>] ip_queue_xmit+0x2a6/0x321
+ [<ffffffff80241961>] ? sub_preempt_count+0x2d/0x40
+ [<ffffffff8028f239>] ? slob_alloc+0x11b/0x248
+ [<ffffffff8075b85a>] tcp_transmit_skb+0x5ec/0x61b
+ [<ffffffff807122b6>] ? kmalloc+0xc/0xe
+ [<ffffffff8075d7ae>] tcp_connect+0x2a4/0x344
+ [<ffffffff80760cf1>] tcp_v4_connect+0x3cd/0x425
+ [<ffffffff8076bc7d>] inet_stream_connect+0x9a/0x24d
+ [<ffffffff80292988>] ? fget_light+0x38/0x85
+ [<ffffffff8070c60c>] sys_connect+0x68/0x8b
+ [<ffffffff8025dfab>] ? up_read+0x9/0xb
+ [<ffffffff8023727c>] ? do_page_fault+0x55f/0x92f
+ [<ffffffff8022479a>] system_call_fastpath+0x16/0x1b
 
-Common,.. this is rediculous.
+with this config:
 
+  http://redhat.com/~mingo/misc/config-Thu_Jul_24_13_23_34_CEST_2008.bad
+
+i'll try a bisection.
+
+	Ingo
