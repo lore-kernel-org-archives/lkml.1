@@ -1,42 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbYGXUep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747AbYGXUhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430AbYGXUep (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 16:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbYGXUee
+	id S1753747AbYGXUhV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 16:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYGXUhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 16:34:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57089 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751663AbYGXUed (ORCPT
+	Thu, 24 Jul 2008 16:37:07 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:55531 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751244AbYGXUhG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 16:34:33 -0400
-Date: Thu, 24 Jul 2008 13:30:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-cc: "x86@kernel.org" <x86@kernel.org>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] x64, fpu: fix possible FPU leakage in error conditions
-In-Reply-To: <20080724202728.GL14380@linux-os.sc.intel.com>
-Message-ID: <alpine.LFD.1.10.0807241330210.15524@nehalem.linux-foundation.org>
-References: <20080724180429.GI14380@linux-os.sc.intel.com> <alpine.LFD.1.10.0807241122260.3237@nehalem.linux-foundation.org> <20080724185053.GJ14380@linux-os.sc.intel.com> <alpine.LFD.1.10.0807241154260.3237@nehalem.linux-foundation.org>
- <20080724202728.GL14380@linux-os.sc.intel.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 24 Jul 2008 16:37:06 -0400
+Date: Thu, 24 Jul 2008 22:36:36 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: torvalds@osdl.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Please pull ACPI updates
+Message-ID: <20080724203636.GA22485@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 24 Jul 2008 20:36:31.0603 (UTC) FILETIME=[F4C9B430:01C8EDCC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Linus,
 
-On Thu, 24 Jul 2008, Suresh Siddha wrote:
->
-> Only the first init_fpu() can fail (memory allocation failure). But here,
-> it is def not the first time.
+Please pull ACPI updates from 
 
-Ahh. Agreed. I missed that. But yes, clear_fpu() is still preferable, I 
-think.
+  git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-acpi-2.6.git release-2.6.27
 
-		Linus
+which contains
+
+Andi Kleen (5):
+      Revert "Fix FADT parsing"
+      Revert "dock: bay: Don't call acpi_walk_namespace() when ACPI is disabled."
+      Merge branch 'merge' into release-2.6.27
+      Revert "ACPI: don't walk tables if ACPI was disabled"
+      Merge branch 'for-upstream/acpi-test' of git://repo.or.cz/linux-2.6/linux-acpi-2.6/ibm-acpi-2.6 into release-2.6.27
+
+Bjorn Helgaas (1):
+      ACPI: stop complaints about interrupt link End Tags and blank IRQ descriptors
+
+Henrique de Moraes Holschuh (7):
+      ACPI: thinkpad-acpi: minor refactor on radio switch init
+      ACPI: thinkpad-acpi: consolidate wlsw notification function
+      ACPI: thinkpad-acpi: prepare for bluetooth and wwan rfkill support
+      ACPI: thinkpad-acpi: WLSW overrides other rfkill switches
+      ACPI: thinkpad-acpi: add bluetooth and WWAN rfkill support
+      ACPI: thinkpad-acpi: bump up version to 0.21
+      ACPI: thinkpad-acpi: don't misdetect in get_thinkpad_model_data() on -ENOMEM
+
+Ingo Molnar (1):
+      acpi: fix crash in core ACPI code, triggered by CONFIG_ACPI_PCI_SLOT=y
+
+Zhao Yakui (2):
+      ACPI: Ignore _BQC object when registering backlight device
+      ACPI : Set FAN device to correct state in boot phase
+
+ Documentation/laptops/thinkpad-acpi.txt |   26 ++-
+ drivers/acpi/namespace/nsnames.c        |    8 +
+ drivers/acpi/pci_link.c                 |   31 ++-
+ drivers/acpi/tables/tbfadt.c            |   17 +-
+ drivers/acpi/thermal.c                  |   43 +++
+ drivers/acpi/utilities/utalloc.c        |    4 +
+ drivers/acpi/video.c                    |   14 +-
+ drivers/misc/Kconfig                    |    2 +
+ drivers/misc/thinkpad_acpi.c            |  475 ++++++++++++++++++++++---------
+ 9 files changed, 446 insertions(+), 174 deletions(-)
