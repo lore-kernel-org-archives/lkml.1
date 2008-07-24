@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYGXN0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbYGXNa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbYGXN0n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 09:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYGXN0d
+	id S1754987AbYGXNa2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 09:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYGXNaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 09:26:33 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:62049 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751860AbYGXN0c (ORCPT
+	Thu, 24 Jul 2008 09:30:15 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:3774 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752826AbYGXNaN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 09:26:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xqbJR9DcPGW20QEbH28Vw/KnUpUhascl6pC+rTJi6IJTlzNp4FAiEPjLSALB2G94Wx
-         5WbkY9n3V63pTvQ2Q/8/hY7g1U+1YUztnXVOCzDEn4POw24LYjvwetRNwice9TwJXBQt
-         lIFKfxrj4V8+zVbM7ZlFP5al3xliuE9kptVsc=
-Date: Thu, 24 Jul 2008 09:26:24 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: Eric Piel <eric.piel@tremplin-utc.net>,
-       Jonathan Cameron <Jonathan.Cameron@gmail.com>, mgross@linux.intel.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>,
-       David Brownell <david-b@pacbell.net>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Jean Delvare <khali@linux-fr.org>,
-       spi-devel-general@lists.sourceforge.net,
-       Ben Nizette <bn@niasdigital.com>
-Subject: Re: [spi-devel-general] [Patch 0/4] IndustrialIO subsystem (ADCs,
-	accelerometers etc)
-Message-ID: <20080724092445.ZZRA012@mailhub.coreip.homeip.net>
-References: <488763AD.4050400@gmail.com> <20080723174801.GC11009@khazad-dum.debian.net> <48884F04.4070403@tremplin-utc.net> <48887201.8090300@cam.ac.uk> <48887783.5000002@tremplin-utc.net> <4888796B.9070003@cam.ac.uk>
-MIME-Version: 1.0
+	Thu, 24 Jul 2008 09:30:13 -0400
+Date: Thu, 24 Jul 2008 08:30:12 -0500
+From: scameron@beardog.cca.cpqcorp.net
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       scameron@beardog.cca.cpqcorp.net, mike.miller@hp.com
+Subject: Re: HP (Compaq) Smart Array 5xxx controller SCSI driver
+Message-ID: <20080724133012.GH8833@beardog.cca.cpqcorp.net>
+References: <20080722175729.GC8833@beardog.cca.cpqcorp.net> <20080724101953R.fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4888796B.9070003@cam.ac.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080724101953R.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.9i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 01:45:31PM +0100, Jonathan Cameron wrote:
-> >>
-> >> At the moment the big missing element of the subsystem is an easy way of
-> >> querying what is there. (proc interface similar to that for the input
-> >> subsystem)
-> > You mean /sys/class/input/, right? Indeed, something inspired by the
-> > input subsystem should work well.
-> No, I meant /proc/bus/input/devices which gives machine readable description
-> of all devices registered with the input subsystem and their capabilities.
-> 
+On Thu, Jul 24, 2008 at 10:32:45AM +0900, FUJITA Tomonori wrote:
+> CC'ed linux-scsi, why did you drop it?
 
-/proc/bus/input is a legacy interface (pre-sysfs). Newer subsystems
-should try to stay in /sys/.
+You mean my SCSI cciss driver?  For a few reasons:
 
--- 
-Dmitry
+At the time, it was just kind of a learning exercise, and I
+didn't see it as supplanting the existing driver.  I didn't know
+enough about udev to know that a smooth transition process
+was perhaps possible, and it seemed very disruptive.  And,
+seeing as how I work for HP, it isn't exactly within my
+authority to just decide by myself the course the driver
+development should take.  Paradoxically, if a person works
+for a company that has nothing to do with the driver, one
+has more freedom to do whatever one wants with the code.
+
+With help from udev it is less disruptive, but I'm still unsure
+about how smoothly such a change will fit in with the installation 
+process of various distributions.
+
+I will see if management here will let me send you the patches 
+from when I last looked at this, which was a little over a year ago.
+(2.6.20 timeframe), not necessarily to use as is, but in case
+maybe it helps to see how somebody else proceeded. 
+
+As for the patches I mentioned which were previously ignored
+for improving how the current cciss SCSI code handled hot 
+plogging, if you're curious about that, check here:
+
+http://marc.info/?l=linux-scsi&m=120213565000426&w=4
+
+A change like that becomes more important if logical drives
+are exposed through the scsi layer.
+
+-- steve
+
