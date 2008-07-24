@@ -1,83 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbYGXVcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbYGXViO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754049AbYGXVcl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 17:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbYGXVcd
+	id S1753297AbYGXViO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 17:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbYGXVh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 17:32:33 -0400
-Received: from saeurebad.de ([85.214.36.134]:45714 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751594AbYGXVcc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 17:32:32 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org, lomp0101@gmx.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Bug 11046] New: Kernel bug in mm/bootmem.c on Sparc machines
-References: <20080706132049.4019e09f.akpm@linux-foundation.org>
-	<20080723.202533.114601491.davem@davemloft.net>
-	<20080723203836.e0c14568.akpm@linux-foundation.org>
-	<20080723.204247.114065226.davem@davemloft.net>
-Date: Thu, 24 Jul 2008 23:32:06 +0200
-In-Reply-To: <20080723.204247.114065226.davem@davemloft.net> (David Miller's
-	message of "Wed, 23 Jul 2008 20:42:47 -0700 (PDT)")
-Message-ID: <873alz55pl.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 24 Jul 2008 17:37:58 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:31473 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751849AbYGXVh6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 17:37:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=kTdeLC7Ma0PC8JpF30GGDUOYSrY66QL5Gda2NHKkAUvTVTf0/6Tvf7BEFI5DZTSc7Q
+         3EszNd5CbgAmxGoWmdgrIScEfq+Viqk0AIfam05sYOAFElL4kN0dgPAcSYZHb3voYn5u
+         WStli/+2zw1Jj5jI518MyTfKYDxY0IGxCQFgA=
+Message-ID: <5a4c581d0807241437o19b2ad8fha715f7dda5e61119@mail.gmail.com>
+Date: Thu, 24 Jul 2008 23:37:57 +0200
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Subject: Re: 22bb1be4d27... breaks hal (and NM)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "Pierre Ossman" <drzeus-list@drzeus.cx>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "Jean Tourrilhes" <jt@hpl.hp.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4888E253.1020401@shaw.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <fa.M1pe2GT5+zpRaz/wfP7Zjo6SOMU@ifi.uio.no>
+	 <fa.oiNbP36FW/6wru8zoq8SWBE4P+Y@ifi.uio.no>
+	 <fa.iZfkeomZo5PN4BBKKgjtHjkkGnw@ifi.uio.no>
+	 <fa.cRAFIbCK4bQBxVGv6jJ9s6e4C4M@ifi.uio.no> <4888E253.1020401@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Jul 24, 2008 at 10:13 PM, Robert Hancock <hancockr@shaw.ca> wrote:
+> Andrew Morton wrote:
+>>
+>> : +config WIRELESS_EXT_SYSFS
+>> : +     bool "Wireless extensions sysfs files"
+>> : +     default y
+>> : +     depends on WIRELESS_EXT && SYSFS
+>> : +     help
+>> : +       This option enables the deprecated wireless statistics
+>> : +       files in /sys/class/net/*/wireless/. The same information
+>> : +       is available via the ioctls as well.
+>> : +
+>> : +       Say Y if you have programs using it (we don't know of any).
+>> :
+>> So if you've enabled CONFIG_WIRELESS_EXT_SYSFS (and it correctly has
+>> default y) then things should continue to work OK.  And the deprecation
+>> date of 2010 sounds reasonable.  In fact generous, for us...
+>>
+>> So where's the problem?
+>
+> The Kconfig message implies that nobody uses the files. It needs to be
+> updated to state that older versions of HAL do use them (and ideally what
+> version this was changed).
 
-David Miller <davem@davemloft.net> writes:
+I was also lured by the Kconfig text, so I changed the default, but
+ have noticed no breakage so far.
 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: Wed, 23 Jul 2008 20:38:36 -0700
->
->> So if we're going to change it in 2.6.26, we'll need a separate patch.
->
-> Here is the 2.6.26 version:
->
-> bootmem: Allow zero length reserve and free.
->
-> It's either this or all the call sites explicitly check
-> when such a case is possible and sometimes expected.
->
-> Signed-off-by: David S. Miller <davem@davemloft.net>
->
-> diff --git a/mm/bootmem.c b/mm/bootmem.c
-> index 8d9f60e..e540f7a 100644
-> --- a/mm/bootmem.c
-> +++ b/mm/bootmem.c
-> @@ -153,7 +153,8 @@ static void __init reserve_bootmem_core(bootmem_data_t *bdata,
->  	unsigned long sidx, eidx;
->  	unsigned long i;
->  
-> -	BUG_ON(!size);
-> +	if (!size)
-> +		return;
->  
->  	/* out of range */
->  	if (addr + size < bdata->node_boot_start ||
-> @@ -187,7 +188,8 @@ static void __init free_bootmem_core(bootmem_data_t *bdata, unsigned long addr,
->  	unsigned long sidx, eidx;
->  	unsigned long i;
->  
-> -	BUG_ON(!size);
-> +	if (!size)
-> +		return;
->  
->  	/* out range */
->  	if (addr + size < bdata->node_boot_start ||
+[asuardi@sandman linux-2.6.26-git11]$ grep WIRELESS_EXT .config
+CONFIG_WIRELESS_EXT=y
+# CONFIG_WIRELESS_EXT_SYSFS is not set
+[asuardi@sandman linux-2.6.26-git11]$ rpm -q hal
+hal-0.5.11-2.fc9.i386
 
-Sorry, Dave, I missed that before: there is still the BUG_ON() in
-can_reserve_bootmem_core(), which should just return 0 instead.
+Is it because Fedora 9 hal is new enough or because I didn't do anything
+ to trigger the breakage ? Just curious.
 
-Other than that, yes, Andrew, this introduces the same behaviour the
-bootmem rewrite.
+--alessandro
 
-	Hannes
+ "Give me love / Or give me hate
+ Give me anything that's not just ok"
+
+ (Sophia, 'Weightless')
