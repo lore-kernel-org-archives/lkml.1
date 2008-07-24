@@ -1,88 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbYGXNlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbYGXNmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbYGXNlU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 09:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYGXNlK
+	id S1755950AbYGXNmj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 09:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbYGXNmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 09:41:10 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:58094 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751014AbYGXNlJ (ORCPT
+	Thu, 24 Jul 2008 09:42:31 -0400
+Received: from dgate10.fujitsu-siemens.com ([80.70.172.49]:48131 "EHLO
+	dgate10.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751643AbYGXNmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 09:41:09 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] Input: Enable WM97xx touchscreen sub-drivers by default
-Date: Thu, 24 Jul 2008 14:41:07 +0100
-Message-Id: <1216906867-5058-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1216905308-4723-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1216905308-4723-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	Thu, 24 Jul 2008 09:42:31 -0400
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
+  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
+   Received:Received:Message-ID:Date:From:Organization:
+   User-Agent:MIME-Version:To:CC:Subject:References:
+   In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=OUUv0gjUjnUSz3kVuV3gmVosjrHQpk4IqeYokC+PMZIYfLx1gDzbBqGI
+   pMK4SSUp4HBsGwNFAZFmROi9QbUhtyrvwaZAiivXOEzKMfoijcznW2OzU
+   FbhYGTABP7JLGNy;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.31,245,1215381600"; 
+   d="scan'208";a="23408036"
+X-IronPort-AV: E=Sophos;i="4.31,245,1215381600"; 
+   d="scan'208";a="36319246"
+Message-ID: <488886C8.3020904@fujitsu-siemens.com>
+Date: Thu, 24 Jul 2008 15:42:32 +0200
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Organization: Fujitsu Siemens Computers
+User-Agent: Thunderbird 2.0.0.15pre (X11/20080508)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>
+Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe
+References: <48885DDC.9010003@fujitsu-siemens.com> <48888444.1020305@zytor.com>
+In-Reply-To: <48888444.1020305@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the support for each WM97xx touchscreen model is compiled out
-by default, meaning that the default configuration when the driver is
-built is for it to support no hardware.  This is suboptimal and leads to
-problems like distribution kernels shipping a non-functional driver.
+H. Peter Anvin wrote:
 
-Change the default to support all controllers and update the help text
-to reflect this.
+> The other thing we may want to consider is doing multiple runs of the
+> calibration loop.  I suspect we'd get a more accurate result running,
+> say, 9 loops of the 1/9 the current duration and looking either for the
+> best result or the median (NOT the mean.)
+> 
+>         -hpa
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
+We considered that. However I think if you know what result to expect 
+(here: TICK_COUNT + a few cycles) it is both easier and safer to compare 
+against the expected value than to do statistics. SMI protection is all 
+about outliers (thus, the median is a good suggestion but I'd say it 
+would be over-enigineered).
 
-Resubmit, after proofreading.
+Martin
 
- drivers/input/touchscreen/Kconfig |   21 +++++++++------------
- 1 files changed, 9 insertions(+), 12 deletions(-)
+PS: I am sorry for the stupid, misleading typo (SMi -> smp) in the mail 
+subject.
 
-diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
-index e573665..7606120 100644
---- a/drivers/input/touchscreen/Kconfig
-+++ b/drivers/input/touchscreen/Kconfig
-@@ -237,29 +237,26 @@ config TOUCHSCREEN_WM97XX
- config TOUCHSCREEN_WM9705
- 	bool "WM9705 Touchscreen interface support"
- 	depends on TOUCHSCREEN_WM97XX
-+	default y
- 	help
--	  Say Y here if you have a Wolfson Microelectronics WM9705
--	  touchscreen controller connected to your system.
--
--	  If unsure, say N.
-+	  Say Y here to enable support for the Wolfson Microelectronics
-+	  WM9705 touchscreen controller.
- 
- config TOUCHSCREEN_WM9712
- 	bool "WM9712 Touchscreen interface support"
- 	depends on TOUCHSCREEN_WM97XX
-+	default y
- 	help
--	  Say Y here if you have a Wolfson Microelectronics WM9712
--	  touchscreen controller connected to your system.
--
--	  If unsure, say N.
-+	  Say Y here to enable support for the Wolfson Microelectronics
-+	  WM9712 touchscreen controller.
- 
- config TOUCHSCREEN_WM9713
- 	bool "WM9713 Touchscreen interface support"
- 	depends on TOUCHSCREEN_WM97XX
-+	default y
- 	help
--	  Say Y here if you have a Wolfson Microelectronics WM9713 touchscreen
--	  controller connected to your system.
--
--	  If unsure, say N.
-+	  Say Y here to enable support for the Wolfson Microelectronics
-+	  WM9713 touchscreen controller.
- 
- config TOUCHSCREEN_WM97XX_MAINSTONE
- 	tristate "WM97xx Mainstone accelerated touch"
 -- 
-1.5.6.3
+Martin Wilck
+PRIMERGY System Software Engineer
+FSC IP ESP DEV 6
 
+Fujitsu Siemens Computers GmbH
+Heinz-Nixdorf-Ring 1
+33106 Paderborn
+Germany
+
+Tel:			++49 5251 8 15113
+Fax:			++49 5251 8 20209
+Email:			mailto:martin.wilck@fujitsu-siemens.com
+Internet:		http://www.fujitsu-siemens.com
+Company Details:	http://www.fujitsu-siemens.com/imprint.html
