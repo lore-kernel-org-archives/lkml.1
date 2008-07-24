@@ -1,147 +1,316 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbYGXOy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759620AbYGXOxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760131AbYGXOy5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759555AbYGXOwn
+	id S1759620AbYGXOxB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:53:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbYGXOmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:52:43 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:24730 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759550AbYGXOwm (ORCPT
+	Thu, 24 Jul 2008 10:42:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46435 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752609AbYGXOmP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:52:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=a/ZiBCLURqrXGz5Vu2ty6YrGXxYbk22Pzc3bGciubC6Xf59mmFgxgxMAf5SffvVP/Z
-         HbisVw/USzmxyWw7qi4+azSHAbaIqMBB/I7Lop6NGPdQ4CYlXFFM013jHj5oocNBM80b
-         4dfYOgidYN3Hn9JaNwD2IBnWgFihQo0TKhFY0=
-Message-ID: <b647ffbd0807240752r6edc73c1m6bf63a6124504365@mail.gmail.com>
-Date: Thu, 24 Jul 2008 16:52:41 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: latest -git: kernel BUG at arch/x86/kernel/microcode.c:142!
-Cc: "the arch/x86 maintainers" <x86@kernel.org>,
-       "Mike Travis" <travis@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Max Krasnyanskiy" <maxk@qualcomm.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Gregory Haskins" <ghaskins@novell.com>, pj@sgi.com,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <19f34abd0807240702i349777e5y6f57c19c51dff60f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0807240348n4c31e6el7358d3fc4d10e392@mail.gmail.com>
-	 <19f34abd0807240702i349777e5y6f57c19c51dff60f@mail.gmail.com>
+	Thu, 24 Jul 2008 10:42:15 -0400
+Message-Id: <20080724141530.344513717@chello.nl>
+References: <20080724140042.408642539@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Thu, 24 Jul 2008 16:00:57 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>
+Subject: [PATCH 15/30] net: packet split receive api
+Content-Disposition: inline; filename=net-ps_rx.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/24 Vegard Nossum <vegard.nossum@gmail.com>:
-> On Thu, Jul 24, 2008 at 12:48 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->> Hi,
->>
->> I just got this when doing CPU hotplug:
->>
->> ------------[ cut here ]------------
->> kernel BUG at arch/x86/kernel/microcode.c:142!
->> invalid opcode: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
->>
->> Pid: 4140, comm: bash Not tainted (2.6.26-06371-g338b9bb-dirty #14)
->> EIP: 0060:[<c0117f1e>] EFLAGS: 00210202 CPU: 0
->> EIP is at __mc_sysdev_add+0x1ee/0x200
->> EAX: 00000000 EBX: c1f61028 ECX: 01798000 EDX: c081ac80
->> ESI: 00000001 EDI: 00000001 EBP: f5bcbe24 ESP: f5bcbdcc
->>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
->> Process bash (pid: 4140, ti=f5bca000 task=f4066f90 task.ti=f5bca000)
->> Stack: 00000000 f5bcbe24 c028300b 00000001 000000d0 c06d8dc3 f73f77d0 00000000
->>       00000000 00000014 00000000 00000000 c0829254 f4f0fa00 f6e950f0 00200282
->>       f6d5180c 00000002 00000003 00000002 00000001 c1f61028 f5bcbe2c c0117f3a
->> Call Trace:
->>  [<c028300b>] ? kobject_uevent_env+0xdb/0x380
->>  [<c0117f3a>] ? mc_sysdev_add+0xa/0x10
->>  [<c05875fa>] ? mc_cpu_callback+0x1ea/0x240
->>  [<c014db67>] ? notifier_call_chain+0x37/0x70
->>  [<c014dbd9>] ? __raw_notifier_call_chain+0x19/0x20
->>  [<c014dbfa>] ? raw_notifier_call_chain+0x1a/0x20
->>  [<c0589477>] ? _cpu_up+0xa7/0x100
->>  [<c0589519>] ? cpu_up+0x49/0x80
->>  [<c056a3d8>] ? store_online+0x58/0x80
->>  [<c056a380>] ? store_online+0x0/0x80
->>  [<c02ff57c>] ? sysdev_store+0x2c/0x40
->>  [<c01de412>] ? sysfs_write_file+0xa2/0x100
->>  [<c01a0386>] ? vfs_write+0x96/0x130
->>  [<c01de370>] ? sysfs_write_file+0x0/0x100
->>  [<c01a08cd>] ? sys_write+0x3d/0x70
->>  [<c0103f5b>] ? sysenter_do_call+0x12/0x3f
->>  =======================
->> Code: 4d d8 c7 01 00 00 00 00 b8 00 1a 6f c0 e8 fb 46 47 00 8d 55 f0
->> 64 a1 00 90 7c c0 e8 0d 75 01 00 8b 45 d4 83 c4 4c 5b 5e 5f 5d c3 <0f>
->> 0b eb fe 8d b4 26 00 00 00 00 8d bc 27 00 00 00 00 55 31 d2
->> EIP: [<c0117f1e>] __mc_sysdev_add+0x1ee/0x200 SS:ESP 0068:f5bcbdcc
->> ---[ end trace 8c86c730d90bf362 ]---
->>
->> It's this one:
->>
->>        /* We should bind the task to the CPU */
->>        BUG_ON(raw_smp_processor_id() != cpu_num);
->>
->> Maybe related to recently merged per-cpu changes? (Yesterday's tests ran fine.)
->>
->> It seems 100% reproducible, so I'll start bisecting it.
->
-> Ahha, after many hours of hitting various unrelated crashes,
-> miscompiles, etc. I finally arrive at this commit:
->
-> commit e761b7725234276a802322549cee5255305a0930
-> Author: Max Krasnyansky <maxk@qualcomm.com>
-> Date:   Tue Jul 15 04:43:49 2008 -0700
+Add some packet-split receive hooks.
 
-Yeah, there seems to be a funny situation here :-) I'd expect it to be
-100% reproduceable with CONFIG_MICROCODE=y.
+For one this allows to do NUMA node affine page allocs. Later on these hooks
+will be extended to do emergency reserve allocations for fragments.
 
-cpu_up() -> raw_notifier_call_chain(CPU_ONLINE, ...) ->
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ drivers/net/bnx2.c             |    8 +++-----
+ drivers/net/e1000/e1000_main.c |    8 ++------
+ drivers/net/e1000e/netdev.c    |    7 ++-----
+ drivers/net/igb/igb_main.c     |    8 ++------
+ drivers/net/ixgbe/ixgbe_main.c |   10 +++-------
+ drivers/net/sky2.c             |   16 ++++++----------
+ include/linux/skbuff.h         |   23 +++++++++++++++++++++++
+ net/core/skbuff.c              |   20 ++++++++++++++++++++
+ 8 files changed, 61 insertions(+), 39 deletions(-)
 
-(microcode's part)
-
-mc_cpu_callback() -> mc_sysdev_add() -> microcode_init_cpu()
-
-and here we have:
-
-        set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
-        mutex_lock(&microcode_mutex);
-        collect_cpu_info(cpu);
-
-this code expects that after set_cpus_allowed_ptr() has been
-completed, it will continue running on "cpu"
-
-that's why BUG_ON(raw_smp_processor_id() != cpu_num);
-
-the funny thing is that (1) it doesn't check for an error (otherwise
-it would see an error)
-and (2) cpu_active_map does _not_ yet have a bit for 'cpu' at this moment.
-
-so migrate_task() will forward a migration request to migration_thread
-(because 'current' is on-the-queue/running at this point and we can't
-migrate it immediatelly -- current gets blocked inside migrate_task()
-waiting for request's completion)
-
-it all will end up in migration_thread() -> __migrate_task()
-which does a test for cpu_active(dest_cpu) and bails out.
-
-summary, with cpu_active_map as it's being used now this microcode's
-scheme (the fact that it expects to be migrated onto 'cpu' while its
-cpu_up(cpu) is not completely finished) doesn't work.
-
-note, I've only taken a quick look so I don't make any judgements,
-(good-bad)design-wise. But it's quite a funny use-case of
-cpu-hotplug-notifications and CPU_ONLINE in particular :-)
-
+Index: linux-2.6/drivers/net/e1000/e1000_main.c
+===================================================================
+--- linux-2.6.orig/drivers/net/e1000/e1000_main.c
++++ linux-2.6/drivers/net/e1000/e1000_main.c
+@@ -4492,12 +4492,8 @@ e1000_clean_rx_irq_ps(struct e1000_adapt
+ 			pci_unmap_page(pdev, ps_page_dma->ps_page_dma[j],
+ 					PAGE_SIZE, PCI_DMA_FROMDEVICE);
+ 			ps_page_dma->ps_page_dma[j] = 0;
+-			skb_fill_page_desc(skb, j, ps_page->ps_page[j], 0,
+-			                   length);
++			skb_add_rx_frag(skb, j, ps_page->ps_page[j], 0, length);
+ 			ps_page->ps_page[j] = NULL;
+-			skb->len += length;
+-			skb->data_len += length;
+-			skb->truesize += length;
+ 		}
+ 
+ 		/* strip the ethernet crc, problem is we're using pages now so
+@@ -4705,7 +4701,7 @@ e1000_alloc_rx_buffers_ps(struct e1000_a
+ 			if (j < adapter->rx_ps_pages) {
+ 				if (likely(!ps_page->ps_page[j])) {
+ 					ps_page->ps_page[j] =
+-						alloc_page(GFP_ATOMIC);
++						netdev_alloc_page(netdev);
+ 					if (unlikely(!ps_page->ps_page[j])) {
+ 						adapter->alloc_rx_buff_failed++;
+ 						goto no_buffers;
+Index: linux-2.6/include/linux/skbuff.h
+===================================================================
+--- linux-2.6.orig/include/linux/skbuff.h
++++ linux-2.6/include/linux/skbuff.h
+@@ -824,6 +824,9 @@ static inline void skb_fill_page_desc(st
+ 	skb_shinfo(skb)->nr_frags = i + 1;
+ }
+ 
++extern void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page,
++			    int off, int size);
++
+ #define SKB_PAGE_ASSERT(skb) 	BUG_ON(skb_shinfo(skb)->nr_frags)
+ #define SKB_FRAG_ASSERT(skb) 	BUG_ON(skb_shinfo(skb)->frag_list)
+ #define SKB_LINEAR_ASSERT(skb)  BUG_ON(skb_is_nonlinear(skb))
+@@ -1238,6 +1241,26 @@ static inline struct sk_buff *netdev_all
+ 	return __netdev_alloc_skb(dev, length, GFP_ATOMIC);
+ }
+ 
++extern struct page *__netdev_alloc_page(struct net_device *dev, gfp_t gfp_mask);
++
++/**
++ *	netdev_alloc_page - allocate a page for ps-rx on a specific device
++ *	@dev: network device to receive on
++ *
++ * 	Allocate a new page node local to the specified device.
++ *
++ * 	%NULL is returned if there is no free memory.
++ */
++static inline struct page *netdev_alloc_page(struct net_device *dev)
++{
++	return __netdev_alloc_page(dev, GFP_ATOMIC);
++}
++
++static inline void netdev_free_page(struct net_device *dev, struct page *page)
++{
++	__free_page(page);
++}
++
+ /**
+  *	skb_clone_writable - is the header of a clone writable
+  *	@skb: buffer to check
+Index: linux-2.6/net/core/skbuff.c
+===================================================================
+--- linux-2.6.orig/net/core/skbuff.c
++++ linux-2.6/net/core/skbuff.c
+@@ -263,6 +263,26 @@ struct sk_buff *__netdev_alloc_skb(struc
+ 	return skb;
+ }
+ 
++struct page *__netdev_alloc_page(struct net_device *dev, gfp_t gfp_mask)
++{
++	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
++	struct page *page;
++
++	page = alloc_pages_node(node, gfp_mask, 0);
++	return page;
++}
++EXPORT_SYMBOL(__netdev_alloc_page);
++
++void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page, int off,
++		int size)
++{
++	skb_fill_page_desc(skb, i, page, off, size);
++	skb->len += size;
++	skb->data_len += size;
++	skb->truesize += size;
++}
++EXPORT_SYMBOL(skb_add_rx_frag);
++
+ /**
+  *	dev_alloc_skb - allocate an skbuff for receiving
+  *	@length: length to allocate
+Index: linux-2.6/drivers/net/sky2.c
+===================================================================
+--- linux-2.6.orig/drivers/net/sky2.c
++++ linux-2.6/drivers/net/sky2.c
+@@ -1343,7 +1343,7 @@ static struct sk_buff *sky2_rx_alloc(str
+ 	}
+ 
+ 	for (i = 0; i < sky2->rx_nfrags; i++) {
+-		struct page *page = alloc_page(GFP_ATOMIC);
++		struct page *page = netdev_alloc_page(sky2->netdev);
+ 
+ 		if (!page)
+ 			goto free_partial;
+@@ -2217,8 +2217,8 @@ static struct sk_buff *receive_copy(stru
+ }
+ 
+ /* Adjust length of skb with fragments to match received data */
+-static void skb_put_frags(struct sk_buff *skb, unsigned int hdr_space,
+-			  unsigned int length)
++static void skb_put_frags(struct sky2_port *sky2, struct sk_buff *skb,
++			  unsigned int hdr_space, unsigned int length)
+ {
+ 	int i, num_frags;
+ 	unsigned int size;
+@@ -2235,15 +2235,11 @@ static void skb_put_frags(struct sk_buff
+ 
+ 		if (length == 0) {
+ 			/* don't need this page */
+-			__free_page(frag->page);
++			netdev_free_page(sky2->netdev, frag->page);
+ 			--skb_shinfo(skb)->nr_frags;
+ 		} else {
+ 			size = min(length, (unsigned) PAGE_SIZE);
+-
+-			frag->size = size;
+-			skb->data_len += size;
+-			skb->truesize += size;
+-			skb->len += size;
++			skb_add_rx_frag(skb, i, frag->page, 0, size);
+ 			length -= size;
+ 		}
+ 	}
+@@ -2270,7 +2266,7 @@ static struct sk_buff *receive_new(struc
+ 	sky2_rx_map_skb(sky2->hw->pdev, re, hdr_space);
+ 
+ 	if (skb_shinfo(skb)->nr_frags)
+-		skb_put_frags(skb, hdr_space, length);
++		skb_put_frags(sky2, skb, hdr_space, length);
+ 	else
+ 		skb_put(skb, length);
+ 	return skb;
+Index: linux-2.6/drivers/net/bnx2.c
+===================================================================
+--- linux-2.6.orig/drivers/net/bnx2.c
++++ linux-2.6/drivers/net/bnx2.c
+@@ -2466,7 +2466,7 @@ bnx2_alloc_rx_page(struct bnx2 *bp, stru
+ 	struct sw_pg *rx_pg = &rxr->rx_pg_ring[index];
+ 	struct rx_bd *rxbd =
+ 		&rxr->rx_pg_desc_ring[RX_RING(index)][RX_IDX(index)];
+-	struct page *page = alloc_page(GFP_ATOMIC);
++	struct page *page = netdev_alloc_page(bp->dev);
+ 
+ 	if (!page)
+ 		return -ENOMEM;
+@@ -2491,7 +2491,7 @@ bnx2_free_rx_page(struct bnx2 *bp, struc
+ 	pci_unmap_page(bp->pdev, pci_unmap_addr(rx_pg, mapping), PAGE_SIZE,
+ 		       PCI_DMA_FROMDEVICE);
+ 
+-	__free_page(page);
++	netdev_free_page(bp->dev, page);
+ 	rx_pg->page = NULL;
+ }
+ 
+@@ -2816,9 +2816,7 @@ bnx2_rx_skb(struct bnx2 *bp, struct bnx2
+ 			}
+ 
+ 			frag_size -= frag_len;
+-			skb->data_len += frag_len;
+-			skb->truesize += frag_len;
+-			skb->len += frag_len;
++			skb_add_rx_frag(skb, i, rx_pg->page, 0, frag_len);
+ 
+ 			pg_prod = NEXT_RX_BD(pg_prod);
+ 			pg_cons = RX_PG_RING_IDX(NEXT_RX_BD(pg_cons));
+Index: linux-2.6/drivers/net/e1000e/netdev.c
+===================================================================
+--- linux-2.6.orig/drivers/net/e1000e/netdev.c
++++ linux-2.6/drivers/net/e1000e/netdev.c
+@@ -257,7 +257,7 @@ static void e1000_alloc_rx_buffers_ps(st
+ 				continue;
+ 			}
+ 			if (!ps_page->page) {
+-				ps_page->page = alloc_page(GFP_ATOMIC);
++				ps_page->page = netdev_alloc_page(netdev);
+ 				if (!ps_page->page) {
+ 					adapter->alloc_rx_buff_failed++;
+ 					goto no_buffers;
+@@ -816,11 +816,8 @@ static bool e1000_clean_rx_irq_ps(struct
+ 			pci_unmap_page(pdev, ps_page->dma, PAGE_SIZE,
+ 				       PCI_DMA_FROMDEVICE);
+ 			ps_page->dma = 0;
+-			skb_fill_page_desc(skb, j, ps_page->page, 0, length);
++			skb_add_rx_frag(skb, j, ps_page->page, 0, length);
+ 			ps_page->page = NULL;
+-			skb->len += length;
+-			skb->data_len += length;
+-			skb->truesize += length;
+ 		}
+ 
+ copydone:
+Index: linux-2.6/drivers/net/igb/igb_main.c
+===================================================================
+--- linux-2.6.orig/drivers/net/igb/igb_main.c
++++ linux-2.6/drivers/net/igb/igb_main.c
+@@ -3526,13 +3526,9 @@ static bool igb_clean_rx_irq_adv(struct 
+ 			pci_unmap_page(pdev, buffer_info->page_dma,
+ 				PAGE_SIZE, PCI_DMA_FROMDEVICE);
+ 			buffer_info->page_dma = 0;
+-			skb_fill_page_desc(skb, j, buffer_info->page,
+-						0, length);
++			skb_add_rx_frag(skb, j, buffer_info->page, 0, length);
+ 			buffer_info->page = NULL;
+ 
+-			skb->len += length;
+-			skb->data_len += length;
+-			skb->truesize += length;
+ 			rx_desc->wb.upper.status_error = 0;
+ 			if (staterr & E1000_RXD_STAT_EOP)
+ 				break;
+@@ -3634,7 +3630,7 @@ static void igb_alloc_rx_buffers_adv(str
+ 		rx_desc = E1000_RX_DESC_ADV(*rx_ring, i);
+ 
+ 		if (adapter->rx_ps_hdr_size && !buffer_info->page) {
+-			buffer_info->page = alloc_page(GFP_ATOMIC);
++			buffer_info->page = netdev_alloc_page(netdev);
+ 			if (!buffer_info->page) {
+ 				adapter->alloc_rx_buff_failed++;
+ 				goto no_buffers;
+Index: linux-2.6/drivers/net/ixgbe/ixgbe_main.c
+===================================================================
+--- linux-2.6.orig/drivers/net/ixgbe/ixgbe_main.c
++++ linux-2.6/drivers/net/ixgbe/ixgbe_main.c
+@@ -486,7 +486,7 @@ static void ixgbe_alloc_rx_buffers(struc
+ 
+ 		if (!rx_buffer_info->page &&
+ 				(adapter->flags & IXGBE_FLAG_RX_PS_ENABLED)) {
+-			rx_buffer_info->page = alloc_page(GFP_ATOMIC);
++			rx_buffer_info->page = netdev_alloc_page(netdev);
+ 			if (!rx_buffer_info->page) {
+ 				adapter->alloc_rx_page_failed++;
+ 				goto no_buffers;
+@@ -607,13 +607,9 @@ static bool ixgbe_clean_rx_irq(struct ix
+ 			pci_unmap_page(pdev, rx_buffer_info->page_dma,
+ 				       PAGE_SIZE, PCI_DMA_FROMDEVICE);
+ 			rx_buffer_info->page_dma = 0;
+-			skb_fill_page_desc(skb, skb_shinfo(skb)->nr_frags,
+-					   rx_buffer_info->page, 0, upper_len);
++			skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags,
++					rx_buffer_info->page, 0, upper_len);
+ 			rx_buffer_info->page = NULL;
+-
+-			skb->len += upper_len;
+-			skb->data_len += upper_len;
+-			skb->truesize += upper_len;
+ 		}
+ 
+ 		i++;
 
 -- 
-Best regards,
-Dmitry Adamushko
+
