@@ -1,209 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbYGXOzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760388AbYGXO4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758449AbYGXOzX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759964AbYGXOyA
+	id S1760388AbYGXO4A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760228AbYGXOzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:54:00 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:47072 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759955AbYGXOx7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:53:59 -0400
-Subject: Re: [PATCH 26/30] nfs: remove mempools
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>
-In-Reply-To: <200807250046.10392.nickpiggin@yahoo.com.au>
-References: <20080724140042.408642539@chello.nl>
-	 <20080724141531.178291263@chello.nl>
-	 <200807250046.10392.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Thu, 24 Jul 2008 16:53:01 +0200
-Message-Id: <1216911181.7257.340.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 24 Jul 2008 10:55:39 -0400
+Received: from mail.windriver.com ([147.11.1.11]:33795 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760221AbYGXOzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 10:55:38 -0400
+Message-ID: <488897E4.8070806@windriver.com>
+Date: Thu, 24 Jul 2008 09:55:32 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+MIME-Version: 1.0
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Francis Moreau <francis.moro@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: KGDB fails to pass selft tests on x86-64 (v2.6.26)
+References: <38b2ab8a0807240624v7ec90c50n8105f830d10dddd@mail.gmail.com> <38b2ab8a0807240708j7d6782b7te6123fdd7416ec95@mail.gmail.com> <488891F2.9020509@windriver.com> <19f34abd0807240738h7ac5e716rcfa39d528b07870f@mail.gmail.com>
+In-Reply-To: <19f34abd0807240738h7ac5e716rcfa39d528b07870f@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Jul 2008 14:55:34.0306 (UTC) FILETIME=[5349E820:01C8ED9D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-25 at 00:46 +1000, Nick Piggin wrote:
-> On Friday 25 July 2008 00:01, Peter Zijlstra wrote:
-> > With the introduction of the shared dirty page accounting in .19, NFS
-> > should not be able to surpise the VM with all dirty pages. Thus it should
-> > always be able to free some memory. Hence no more need for mempools.
-> 
-> It seems like a very backward step to me to go from a hard guarantee
-> to some heuristic that could break for someone in some particular
-> setup.
-> 
-> Filling with dirty pages isn't the only way to exaust free reclaimable
-> memory remember, it can also happen maybe due to mlock or kernel
-> allocations.
-> 
-> Is there pressing reason to remove them?
+Vegard Nossum wrote:
+> On Thu, Jul 24, 2008 at 4:30 PM, Jason Wessel
+> <jason.wessel@windriver.com> wrote:
+>   
+>> Also, if you plan to use software breakpoints, please make sure to turn
+>> off CONFIG_DEBUG_RODATA, else they will not work.   This is a regression
+>> which will is on my list of things to take a look at, as time permits.
+>>     
+>
+> I had a couple of kernels hang during single-stepping self-tests (I
+> think), where it reached 500 and 900 tests respectively before it hung
+> hard (NMI watchdog enabled, but not triggering). Is this related to
+> the RODATA thing?
+>
+> This was with a recent (post-v2.6.26) kernel on a real P4.
+>
+>
+>   
 
-There was some funny interaction between mempools and PF_MEMALLOC as
-used to write out swap pages iirc.
+It is not likely that CONFIG_DEBUG_RODATA can have any impact because
+the boot test occurs before the text sections are marked read-only.  A
+hang in this section indicates a conflict where something is spinning
+for a lock in the NMI handler, or the NMI handler re-entered and tried
+to acquire another lock. 
 
-Specifially, the mempool would strip it and not provide memory even
-though we needed it.
+In the 2.6.26 time frame I found and fixed at least one defect around
+updating the clock while in the NMI which required that you not do it
+from the NMI context.  It sounds as if there is yet another problem
+along these lines, and of course it is a timing race...
 
-I've never hit a deadlock due to this patch in my testing, although
-admittedly there might be a hole in my testing.
-
-I can either 'fix' mempools, or replace it with the reserve framework
-introduced earlier in this patch-set.
-
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > ---
-> >  fs/nfs/read.c  |   15 +++------------
-> >  fs/nfs/write.c |   27 +++++----------------------
-> >  2 files changed, 8 insertions(+), 34 deletions(-)
-> >
-> > Index: linux-2.6/fs/nfs/read.c
-> > ===================================================================
-> > --- linux-2.6.orig/fs/nfs/read.c
-> > +++ linux-2.6/fs/nfs/read.c
-> > @@ -33,13 +33,10 @@ static const struct rpc_call_ops nfs_rea
-> >  static const struct rpc_call_ops nfs_read_full_ops;
-> >
-> >  static struct kmem_cache *nfs_rdata_cachep;
-> > -static mempool_t *nfs_rdata_mempool;
-> > -
-> > -#define MIN_POOL_READ	(32)
-> >
-> >  struct nfs_read_data *nfs_readdata_alloc(unsigned int pagecount)
-> >  {
-> > -	struct nfs_read_data *p = mempool_alloc(nfs_rdata_mempool, GFP_NOFS);
-> > +	struct nfs_read_data *p = kmem_cache_alloc(nfs_rdata_cachep, GFP_NOFS);
-> >
-> >  	if (p) {
-> >  		memset(p, 0, sizeof(*p));
-> > @@ -50,7 +47,7 @@ struct nfs_read_data *nfs_readdata_alloc
-> >  		else {
-> >  			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
-> >  			if (!p->pagevec) {
-> > -				mempool_free(p, nfs_rdata_mempool);
-> > +				kmem_cache_free(nfs_rdata_cachep, p);
-> >  				p = NULL;
-> >  			}
-> >  		}
-> > @@ -62,7 +59,7 @@ static void nfs_readdata_free(struct nfs
-> >  {
-> >  	if (p && (p->pagevec != &p->page_array[0]))
-> >  		kfree(p->pagevec);
-> > -	mempool_free(p, nfs_rdata_mempool);
-> > +	kmem_cache_free(nfs_rdata_cachep, p);
-> >  }
-> >
-> >  void nfs_readdata_release(void *data)
-> > @@ -614,16 +611,10 @@ int __init nfs_init_readpagecache(void)
-> >  	if (nfs_rdata_cachep == NULL)
-> >  		return -ENOMEM;
-> >
-> > -	nfs_rdata_mempool = mempool_create_slab_pool(MIN_POOL_READ,
-> > -						     nfs_rdata_cachep);
-> > -	if (nfs_rdata_mempool == NULL)
-> > -		return -ENOMEM;
-> > -
-> >  	return 0;
-> >  }
-> >
-> >  void nfs_destroy_readpagecache(void)
-> >  {
-> > -	mempool_destroy(nfs_rdata_mempool);
-> >  	kmem_cache_destroy(nfs_rdata_cachep);
-> >  }
-> > Index: linux-2.6/fs/nfs/write.c
-> > ===================================================================
-> > --- linux-2.6.orig/fs/nfs/write.c
-> > +++ linux-2.6/fs/nfs/write.c
-> > @@ -28,9 +28,6 @@
-> >
-> >  #define NFSDBG_FACILITY		NFSDBG_PAGECACHE
-> >
-> > -#define MIN_POOL_WRITE		(32)
-> > -#define MIN_POOL_COMMIT		(4)
-> > -
-> >  /*
-> >   * Local function declarations
-> >   */
-> > @@ -45,12 +42,10 @@ static const struct rpc_call_ops nfs_wri
-> >  static const struct rpc_call_ops nfs_commit_ops;
-> >
-> >  static struct kmem_cache *nfs_wdata_cachep;
-> > -static mempool_t *nfs_wdata_mempool;
-> > -static mempool_t *nfs_commit_mempool;
-> >
-> >  struct nfs_write_data *nfs_commitdata_alloc(void)
-> >  {
-> > -	struct nfs_write_data *p = mempool_alloc(nfs_commit_mempool, GFP_NOFS);
-> > +	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
-> >
-> >  	if (p) {
-> >  		memset(p, 0, sizeof(*p));
-> > @@ -63,12 +58,12 @@ void nfs_commit_free(struct nfs_write_da
-> >  {
-> >  	if (p && (p->pagevec != &p->page_array[0]))
-> >  		kfree(p->pagevec);
-> > -	mempool_free(p, nfs_commit_mempool);
-> > +	kmem_cache_free(nfs_wdata_cachep, p);
-> >  }
-> >
-> >  struct nfs_write_data *nfs_writedata_alloc(unsigned int pagecount)
-> >  {
-> > -	struct nfs_write_data *p = mempool_alloc(nfs_wdata_mempool, GFP_NOFS);
-> > +	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
-> >
-> >  	if (p) {
-> >  		memset(p, 0, sizeof(*p));
-> > @@ -79,7 +74,7 @@ struct nfs_write_data *nfs_writedata_all
-> >  		else {
-> >  			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
-> >  			if (!p->pagevec) {
-> > -				mempool_free(p, nfs_wdata_mempool);
-> > +				kmem_cache_free(nfs_wdata_cachep, p);
-> >  				p = NULL;
-> >  			}
-> >  		}
-> > @@ -91,7 +86,7 @@ static void nfs_writedata_free(struct nf
-> >  {
-> >  	if (p && (p->pagevec != &p->page_array[0]))
-> >  		kfree(p->pagevec);
-> > -	mempool_free(p, nfs_wdata_mempool);
-> > +	kmem_cache_free(nfs_wdata_cachep, p);
-> >  }
-> >
-> >  void nfs_writedata_release(void *data)
-> > @@ -1552,16 +1547,6 @@ int __init nfs_init_writepagecache(void)
-> >  	if (nfs_wdata_cachep == NULL)
-> >  		return -ENOMEM;
-> >
-> > -	nfs_wdata_mempool = mempool_create_slab_pool(MIN_POOL_WRITE,
-> > -						     nfs_wdata_cachep);
-> > -	if (nfs_wdata_mempool == NULL)
-> > -		return -ENOMEM;
-> > -
-> > -	nfs_commit_mempool = mempool_create_slab_pool(MIN_POOL_COMMIT,
-> > -						      nfs_wdata_cachep);
-> > -	if (nfs_commit_mempool == NULL)
-> > -		return -ENOMEM;
-> > -
-> >  	/*
-> >  	 * NFS congestion size, scale with available memory.
-> >  	 *
-> > @@ -1587,8 +1572,6 @@ int __init nfs_init_writepagecache(void)
-> >
-> >  void nfs_destroy_writepagecache(void)
-> >  {
-> > -	mempool_destroy(nfs_commit_mempool);
-> > -	mempool_destroy(nfs_wdata_mempool);
-> >  	kmem_cache_destroy(nfs_wdata_cachep);
-> >  }
-
+Jason.
