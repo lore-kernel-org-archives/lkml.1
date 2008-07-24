@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbYGXUM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755121AbYGXUN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753136AbYGXUM7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 16:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYGXUMr
+	id S1755121AbYGXUN2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 16:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbYGXUNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 16:12:47 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43938 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751610AbYGXUMq (ORCPT
+	Thu, 24 Jul 2008 16:13:16 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:56296 "EHLO
+	pd6mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752679AbYGXUNO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 16:12:46 -0400
-Date: Thu, 24 Jul 2008 20:54:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [build failure] hp-plus.c: (.text+0xd7c1a): undefined reference
- to `ei_close'
-Message-ID: <20080724205441.3465f4d4@lxorguk.ukuu.org.uk>
-In-Reply-To: <4888D631.8040401@garzik.org>
-References: <20080721.233512.128618365.anemo@mba.ocn.ne.jp>
-	<20080721191519.GA15843@elte.hu>
-	<20080721214258.787a67ca@lxorguk.ukuu.org.uk>
-	<20080722072334.GA25241@elte.hu>
-	<48865899.3030209@garzik.org>
-	<20080723104520.GA20672@elte.hu>
-	<20080724052603.GA8744@elte.hu>
-	<20080724100615.764bac36@lxorguk.ukuu.org.uk>
-	<4888D631.8040401@garzik.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 24 Jul 2008 16:13:14 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=_o6xf00tTMQv3HhadDoA:9 a=vfXOTUosYJvBRihhNqmzyuToiPYA:4 a=umgxVUcCkn4A:10 a=r8049craAYIA:10
+Message-ID: <4888E253.1020401@shaw.ca>
+Date: Thu, 24 Jul 2008 14:13:07 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Pierre Ossman <drzeus-list@drzeus.cx>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Jean Tourrilhes <jt@hpl.hp.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 22bb1be4d27... breaks hal (and NM)
+References: <fa.M1pe2GT5+zpRaz/wfP7Zjo6SOMU@ifi.uio.no> <fa.oiNbP36FW/6wru8zoq8SWBE4P+Y@ifi.uio.no> <fa.iZfkeomZo5PN4BBKKgjtHjkkGnw@ifi.uio.no> <fa.cRAFIbCK4bQBxVGv6jJ9s6e4C4M@ifi.uio.no>
+In-Reply-To: <fa.cRAFIbCK4bQBxVGv6jJ9s6e4C4M@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> My apologies.  FWIW, from my point of view the same patch(es) kept 
-> getting fixed and updated and going around in circles, so I kept 
-> waiting.  Since it was was a net-next issue (until now), I lowered the 
-> priority and waited to let you guys (you, Andrew, Randy mainly) sort 
-> things out.
+Andrew Morton wrote:
+> : +config WIRELESS_EXT_SYSFS
+> : +	bool "Wireless extensions sysfs files"
+> : +	default y
+> : +	depends on WIRELESS_EXT && SYSFS
+> : +	help
+> : +	  This option enables the deprecated wireless statistics
+> : +	  files in /sys/class/net/*/wireless/. The same information
+> : +	  is available via the ioctls as well.
+> : +
+> : +	  Say Y if you have programs using it (we don't know of any).
+> : 
 > 
-> So far the only remaining patch I have outstanding and needing to be 
-> applied is from Atsushi-san via Ingo (message id 
-> <20080723104520.GA20672@elte.hu>)...  is that the last of it?
+> So if you've enabled CONFIG_WIRELESS_EXT_SYSFS (and it correctly has
+> default y) then things should continue to work OK.  And the deprecation
+> date of 2010 sounds reasonable.  In fact generous, for us...
+> 
+> So where's the problem?
 
-I've got a reference tree that I will regenerate and diff against the
-upstream GIT tree to check. It looks like some of the ei_ to eip_ changes
-have gone for a walk.
-
-Its on my TODO list and now IT821x is working again the panic mode stuff
-is over I hope
-
-Alan
+The Kconfig message implies that nobody uses the files. It needs to be 
+updated to state that older versions of HAL do use them (and ideally 
+what version this was changed).
