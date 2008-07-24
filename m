@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770AbYGXUKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbYGXULj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754770AbYGXUKF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 16:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYGXUJw
+	id S1753715AbYGXULj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 16:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYGXULa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 16:09:52 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:10294 "EHLO
-	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752669AbYGXUJv (ORCPT
+	Thu, 24 Jul 2008 16:11:30 -0400
+Received: from outbound-mail-20.bluehost.com ([69.89.20.235]:49659 "HELO
+	outbound-mail-20.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751244AbYGXULa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 16:09:51 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=VwQbUJbxAAAA:8 a=W0vUJOdyAAAA:8 a=T23D4YVb3yIYC1stDXsA:9 a=MKTcJ0-pWt__mAhpj1cA:7 a=iu5F8vHTZZNCfamWSNEHl23Rz0sA:4 a=P3kf5HlC9JQA:10 a=ET-sLiBBsbUA:10
-Message-ID: <4888E188.4050708@shaw.ca>
-Date: Thu, 24 Jul 2008 14:09:44 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Thu, 24 Jul 2008 16:11:30 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=MIHnZUwEbSanWtuLhgAXJKoWRxfWdyMa1YIEKoVmmcehte/vXvwolfrll4R7x3gVFP/aWqqFmERfJBArRRWU5Hb4VHxsNq4rGviy8XccSGYgBzy5ztbBG9kRzVYNOEwa;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH PROPOSAL] libata/pci: Move D3 hack handling from libata into PCI
+Date: Thu, 24 Jul 2008 13:11:24 -0700
+User-Agent: KMail/1.9.9
+Cc: jeff@garzik.org, greg@kroah.com, linux-kernel@vger.kernel.org
+References: <20080724171838.591f6a31@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080724171838.591f6a31@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: filipe.brandenburger@idilia.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Recommendation on an eSATA card well supported by Linux with
- built-in drivers and that supports hot plug
-References: <fa.jn2UBng193xTV9fhfIdhKpQQKRo@ifi.uio.no>
-In-Reply-To: <fa.jn2UBng193xTV9fhfIdhKpQQKRo@ifi.uio.no>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807241311.24384.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Filipe Brandenburger wrote:
-> I'm looking for a good eSATA card that is supported by Linux, preferrently using built-in drivers (no need to compile the modules from the vendor), or at least that the vendor's drivers are packaged with dkms or something similar that makes it easy on kernel upgrades.
-> 
-> It's essential that the card supports hot-plugging, because we want to use it to plug backup drives and have them rotated. We are testing an eSATA drive from LaCie (if you have other recommendations on other vendors for eSATA external drives which have >2TB drives, I would appreciate them as well).
-> 
-> I tested the Adaptec eSATA II RAID 1225SA, but just to get the module to compile right it was a huge PITA, and I still didn't get it to recognize our LaCie drive (still not sure why). Instead of spending more time making that crap work, I would rather buy a different card, but then I would try to get one that works well with Linux out-of-the-box.
-> 
-> I looked at feature support of drivers, and it seems to me that the "ahci" driver seems to be the most complete of them, also being a standard interface. It supports the ICH6 chip from Intel and several others, however googling for it I couldn't find any eSATA card that would have this chip or use this driver. Do you know any eSATA card that uses the "ahci" driver? Will it support hot-plugging well?
+On Thursday, July 24, 2008 9:18 am Alan Cox wrote:
+> Libata has some hacks to deal with certain controllers going silly in D3
+> state. The right way to handle this is to keep a PCI device flag for such
+> devices. That can then be generalised for no ATA devices with power
+> problems.
+>
+> Signed-off-by: Alan Cox <alan@redhat.com>
 
-Most AHCI controllers are built into chipsets, but I know that JMicron 
-has some chips which can be found on add-in cards which are AHCI.
+Looks pretty reasonable to me; do you want me to take the drivers/ata bits 
+along with the PCI stuff?
 
-> 
-> Other than the "ahci" driver, it seems to me that the "sata_sil24" driver seems to be the next best thing, with support for hot-plugging, etc. The card I have apparently does use it, but its PCI device id is 0244 which is not recognized by the driver as it is (apparently if the driver is patched to include this id it works with the card.) Is there a way to "force" the driver to recognize this PCI id other than recompiling it? And, is this driver really that good and does it support hot-plugging? Could someone recommend another card that would be supported out-of-the-box by this driver?
+Btw, what happens to these devices in D3hot?  Do they behave like they're in 
+D3cold or something and require a reset?  Or do they otherwise kill the bus 
+somehow?
 
-It looks like device id 0244 was just added to the driver this month:
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=464b3286b4aa459059c6fda85ba55185fd21d9fc
-
-As far as I'm aware this driver works well, though I have no personal 
-experience with it..
-
-> 
-> I don't need RAID support on the card, it really does not matter to me as I won't be using it.
-> 
-> Any advice and recommendations will be much appreciated.
-> 
-> Thank you very much!
-> 
-> Filipe
-> 
-> (Please CC me on your answer if at all possible.)
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+Thanks,
+Jesse
