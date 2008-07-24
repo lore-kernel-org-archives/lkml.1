@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043AbYGXIts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbYGXJGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753043AbYGXIts (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 04:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbYGXItl
+	id S1753136AbYGXJGV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 05:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYGXJGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 04:49:41 -0400
-Received: from mga12.intel.com ([143.182.124.36]:7770 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751349AbYGXItk (ORCPT
+	Thu, 24 Jul 2008 05:06:06 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:60488 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751302AbYGXJGF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 04:49:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,245,1215414000"; 
-   d="scan'208";a="24207354"
-Message-ID: <4888421D.4090805@linux.intel.com>
-Date: Thu, 24 Jul 2008 01:49:33 -0700
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Adrian Bunk <bunk@kernel.org>, ambx1@neo.rr.com,
-       Rene Herman <rene.herman@gmail.com>, linux-kernel@vger.kernel.org,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [2.6 patch] make pnp_build_option() static
-References: <20080722172021.GN14846@cs181140183.pp.htv.fi> <200807231300.42905.bjorn.helgaas@hp.com>
-In-Reply-To: <200807231300.42905.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Jul 2008 05:06:05 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: mingo@elte.hu (Ingo Molnar)
+Subject: Re: [TCP bug, regression] stuck distcc connections in latest -git
+Cc: w@1wt.eu, davem@davemloft.net, davidn@davidnewall.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi
+Organization: Core
+In-Reply-To: <20080724060448.GA10203@elte.hu>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>
+Date: Thu, 24 Jul 2008 17:05:19 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> On Tuesday 22 July 2008 11:20:21 am Adrian Bunk wrote:
->> pnp_build_optionq() can now become static.
->>
->> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Ingo Molnar <mingo@elte.hu> wrote:
+>
+> the client (running 2.6.24) does periodic 120 seconds retransmits:
 > 
-> Acked-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> 
-> PNP patches have been going through the ACPI tree lately.
-> I copied Andi and Len.
+> 07:40:48.255452 IP dione.39201 > phoenix.distcc: . 1608:2144(536) ack 1 win 584007:40:48.255547 IP phoenix.distcc > dione.39201: . ack 2144 win 65535
+> 07:40:48.255564 IP dione.39201 > phoenix.distcc: . 67143:67679(536) ack 1 win 5840
+> 07:40:48.255648 IP phoenix.distcc > dione.39201: . ack 2144 win 65535
+> 07:42:48.255440 IP dione.39201 > phoenix.distcc: . 2144:2680(536) ack 1 win 5840
+> 07:42:48.255559 IP phoenix.distcc > dione.39201: . ack 2680 win 65535
+> 07:42:48.255570 IP dione.39201 > phoenix.distcc: . 67679:68215(536) ack 1 win 5840
+> 07:42:48.255659 IP phoenix.distcc > dione.39201: . ack 2680 win 65535
+> 07:44:48.255436 IP dione.39201 > phoenix.distcc: . 2680:3216(536) ack 1 win 584007:44:48.255570 IP phoenix.distcc > dione.39201: . ack 3216 win 65535
+> 07:44:48.255585 IP dione.39201 > phoenix.distcc: . 68215:68751(536) ack 1 win 5840
+> 07:44:48.255669 IP phoenix.distcc > dione.39201: . ack 3216 win 65535
 
-Looks good thanks. I'm currently a bit behind with patches because
-I'm at OLS and still focussing on patches for .27 only, but I'll
-process all the post .27 patches soon.
+OK, something's seriously screwed up on dione's kernel.  Could
+you please disable syncookies (which should enable SACK for you)
+and see if the problem goes away?
 
--Andi
+I think our Reno code may have been broken.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
