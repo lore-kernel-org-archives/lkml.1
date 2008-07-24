@@ -1,84 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbYGXUXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbYGXU1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754550AbYGXUXp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 16:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbYGXUXh
+	id S1753176AbYGXU1S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 16:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbYGXU1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 16:23:37 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:60375 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751552AbYGXUXg (ORCPT
+	Thu, 24 Jul 2008 16:27:07 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35474 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751937AbYGXU1G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 16:23:36 -0400
-Subject: Re: [RFC: 2.6 patch] clarify the WIRELESS_EXT_SYSFS help text
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Pierre Ossman <drzeus-list@drzeus.cx>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Jean Tourrilhes <jt@hpl.hp.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080724124225.GD32109@cs181140183.pp.htv.fi>
-References: <20080724115805.5466c217@mjolnir.drzeus.cx>
-	 <1216899520.13587.49.camel@johannes.berg>
-	 <20080724124225.GD32109@cs181140183.pp.htv.fi>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-PHeGUzR+bhTTVwC2uIbv"
-Date: Thu, 24 Jul 2008 22:21:44 +0200
-Message-Id: <1216930904.13587.94.camel@johannes.berg>
+	Thu, 24 Jul 2008 16:27:06 -0400
+Date: Thu, 24 Jul 2008 22:26:34 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: Andi Kleen <andi@firstfloor.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: bad dereference in sched_mc_power_savings_store()
+Message-ID: <20080724202634.GH20882@one.firstfloor.org>
+References: <20080724120217.163a03f3@mjolnir.drzeus.cx>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080724120217.163a03f3@mjolnir.drzeus.cx>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jul 24, 2008 at 12:02:17PM +0200, Pierre Ossman wrote:
+> I get the following with yesterdays kernel:
 
---=-PHeGUzR+bhTTVwC2uIbv
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This patch should fix it.
 
-Sure, since we don't know what the next release will be there's little
-point in trying to predict it, this patch is fine with me.
+-andi
 
-> Current Hal uses the CONFIG_WIRELESS_EXT_SYSFS files, so don't claim=20
-> there were no known users and recommend to enable the option.
->=20
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Acked-by: Johannes Berg <johannes@sipsolutions.net>
+commit a2ab909933f8c8623282979dfa64f3e358bdb9fc
+Author: Andi Kleen <ak@gargoyle.(none)>
+Date:   Thu Jul 24 21:57:40 2008 +0200
 
->=20
-> b685f62718b947264657c298e5ee5b2149200f68=20
-> diff --git a/net/wireless/Kconfig b/net/wireless/Kconfig
-> index ab015c6..e582432 100644
-> --- a/net/wireless/Kconfig
-> +++ b/net/wireless/Kconfig
-> @@ -39,4 +39,4 @@ config WIRELESS_EXT_SYSFS
->  	  files in /sys/class/net/*/wireless/. The same information
->  	  is available via the ioctls as well.
-> =20
-> -	  Say Y if you have programs using it (we don't know of any).
-> +	  If unsure, say Y.
->=20
+    Make scheduler sysfs attributes sysdev class devices
+    
+    They are really class devices, but were incorrectly declared. This leads
+    to crashes with the recent changes that makes non normal sysdevs
+    use a different prototype.
+    
+    Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
---=-PHeGUzR+bhTTVwC2uIbv
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJIiORUAAoJEKVg1VMiehFYQvwQAJ8Y8VnaUP4h4v3x304SAdJ3
-qbyPaPOCABE8ovadDoGYaOCslPdtY4P/vQ4FRlrmPU3Hu24F/cOB1JLpqDm249re
-/Foo2Bxh8nYeXqfqvC0NYpb7CtJyJwRAeN5ExUhfGYCO3THFPgQVTmUnuI/TpJeg
-1552sIT31N5qnECR9Dj67V3R4qJJeTYG8y7UMvdu+4zj4xs5idw263BdSrmbFw9W
-bz+W51Q6j3qhn2cO+4dn22WWE5IltkcqbVEYcZbjreGYMStdJfG672fdEzKFioaU
-QAMKSuVYbkkTDcuO0gBMNvtm23+tC3mpVyAk+e8oYXFbBEqlj4UUXXQlr+jiGPjQ
-ZocG9IKtNXYEpwKpSmjr068zhq8sh58G38LROQYyCksu9TNNRLcwThqijDueLeDK
-ZlaAWmp2jR0/edE//KFYlxvI45MDONGUQTDdiIbAYC4ql/n0zor4KoCZsCsf2sSn
-gP29/965rdfte07dlaGFsnU3tHjW1eofboyIdxhKPeFEnN7/y9bWvQ7Dymjz7Ybn
-z2IQB9jiuGb2z7dp1zMW5MD4cY8wRzXpB1eaJGdWYdik+Bevgs+PgR9SWSIb67u5
-aYnOXhuhrVJeLs81S1FHw5bx8rIm5YyKHE8TYybdtwLcUXGau4QWo+6SNm6pAtz8
-iq0wzFEkZ4bHgVUNtwdk
-=J1rb
------END PGP SIGNATURE-----
-
---=-PHeGUzR+bhTTVwC2uIbv--
-
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 6acf749..24358ca 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7641,34 +7641,34 @@ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+ }
+ 
+ #ifdef CONFIG_SCHED_MC
+-static ssize_t sched_mc_power_savings_show(struct sys_device *dev,
+-				struct sysdev_attribute *attr, char *page)
++static ssize_t sched_mc_power_savings_show(struct sysdev_class *class,
++					   char *page)
+ {
+ 	return sprintf(page, "%u\n", sched_mc_power_savings);
+ }
+-static ssize_t sched_mc_power_savings_store(struct sys_device *dev,
+-					    struct sysdev_attribute *attr,
++static ssize_t sched_mc_power_savings_store(struct sysdev_class *class,
+ 					    const char *buf, size_t count)
+ {
+ 	return sched_power_savings_store(buf, count, 0);
+ }
+-static SYSDEV_ATTR(sched_mc_power_savings, 0644, sched_mc_power_savings_show,
+-		   sched_mc_power_savings_store);
++static SYSDEV_CLASS_ATTR(sched_mc_power_savings, 0644, 
++			 sched_mc_power_savings_show,
++		         sched_mc_power_savings_store);
+ #endif
+ 
+ #ifdef CONFIG_SCHED_SMT
+-static ssize_t sched_smt_power_savings_show(struct sys_device *dev,
+-				struct sysdev_attribute *attr, char *page)
++static ssize_t sched_smt_power_savings_show(struct sysdev_class *dev,
++					    char *page)
+ {
+ 	return sprintf(page, "%u\n", sched_smt_power_savings);
+ }
+-static ssize_t sched_smt_power_savings_store(struct sys_device *dev,
+-					     struct sysdev_attribute *attr,
++static ssize_t sched_smt_power_savings_store(struct sysdev_class *dev,
+ 					     const char *buf, size_t count)
+ {
+ 	return sched_power_savings_store(buf, count, 1);
+ }
+-static SYSDEV_ATTR(sched_smt_power_savings, 0644, sched_smt_power_savings_show,
++static SYSDEV_CLASS_ATTR(sched_smt_power_savings, 0644, 
++		   sched_smt_power_savings_show,
+ 		   sched_smt_power_savings_store);
+ #endif
+ 
