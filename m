@@ -1,84 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbYGXOil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbYGXOk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752858AbYGXOil (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbYGXOi1
+	id S1755733AbYGXOk1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYGXOkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:38:27 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:51962 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750953AbYGXOi0 (ORCPT
+	Thu, 24 Jul 2008 10:40:18 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:24820 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751329AbYGXOkR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:38:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ma5ykcedXLOPBsVM0j9Tu/GhJR+tI/kbXXC2Q2hWA9ayMOc9RMA0mGAa9pFEPOCWWn
-         Pq7e9IQ1lpn4v2opBRQh3owDGn/YairP1+Mt/Xn7vFTkzjPyTXMAaBay9+TGWIt3NJqe
-         AWNKDiD6l7IgMpgIJ0q4i0IIL/E8PdSP9zCx0=
-Message-ID: <19f34abd0807240738h7ac5e716rcfa39d528b07870f@mail.gmail.com>
-Date: Thu, 24 Jul 2008 16:38:23 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Jason Wessel" <jason.wessel@windriver.com>
-Subject: Re: KGDB fails to pass selft tests on x86-64 (v2.6.26)
-Cc: "Francis Moreau" <francis.moro@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <488891F2.9020509@windriver.com>
+	Thu, 24 Jul 2008 10:40:17 -0400
+X-BigFish: VPS-17(zz1432R98dR936eT62a3L1805Mzz10d3izzz32i6bh87il43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0K4IM2L-02-13Y-01
+Date: Thu, 24 Jul 2008 16:39:53 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Barry Kasindorf <barry.kasindorf@amd.com>, Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>, Jason Yeh <jason.yeh@amd.com>
+Subject: Re: [PATCH 11/24] x86/oprofile: Add IBS support for AMD CPUs,
+	model specific code
+Message-ID: <20080724143953.GS17134@erda.amd.com>
+References: <1216753748-11261-1-git-send-email-robert.richter@amd.com> <1216753748-11261-12-git-send-email-robert.richter@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-References: <38b2ab8a0807240624v7ec90c50n8105f830d10dddd@mail.gmail.com>
-	 <38b2ab8a0807240708j7d6782b7te6123fdd7416ec95@mail.gmail.com>
-	 <488891F2.9020509@windriver.com>
+In-Reply-To: <1216753748-11261-12-git-send-email-robert.richter@amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 24 Jul 2008 14:40:01.0059 (UTC) FILETIME=[2707B730:01C8ED9B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 4:30 PM, Jason Wessel
-<jason.wessel@windriver.com> wrote:
-> Francis Moreau wrote:
->> On Thu, Jul 24, 2008 at 3:24 PM, Francis Moreau <francis.moro@gmail.com> wrote:
->>> So the first thing I did is to enable kgdb support and also the
->>> kgdb self tests:
->>>
->>> CONFIG_HAVE_ARCH_KGDB=y
->>> CONFIG_KGDB=y
->>> CONFIG_KGDB_SERIAL_CONSOLE=y
->>> CONFIG_KGDB_TESTS=y
->>> # CONFIG_KGDB_TESTS_ON_BOOT is not set
->>>
->>> Once compiled I booted this kernel through qemu and got the following:
->>>
->> and unfortunately it seems this issue is related to qemu: if I did boot the
->> kernel without qemu and the self tests passed...
->>
->>
->>
->
-> It is because the qemu you are using does not support hardware
-> breakpoints.  The tests will warn, but the kernel will continue to boot
-> and tell you that hw breakpoint support doesn't work on your simulated
-> hardware.
->
-> Also, if you plan to use software breakpoints, please make sure to turn
-> off CONFIG_DEBUG_RODATA, else they will not work.   This is a regression
-> which will is on my list of things to take a look at, as time permits.
+On 22.07.08 21:08:55, Robert Richter wrote:
+> From: Barry Kasindorf <barry.kasindorf@amd.com>
+> 
+> This patchset supports the new profiling hardware available in the
+> latest AMD CPUs in the oProfile driver.
+> 
+> Signed-off-by: Barry Kasindorf <barry.kasindorf@amd.com>
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> ---
+>  arch/x86/oprofile/op_model_athlon.c |  257 +++++++++++++++++++++++++++++++++++
+>  1 files changed, 257 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/oprofile/op_model_athlon.c b/arch/x86/oprofile/op_model_athlon.c
+> index 40ecb02..229e0b4 100644
 
-I had a couple of kernels hang during single-stepping self-tests (I
-think), where it reached 500 and 900 tests respectively before it hung
-hard (NMI watchdog enabled, but not triggering). Is this related to
-the RODATA thing?
+[...]
 
-This was with a recent (post-v2.6.26) kernel on a real P4.
+> @@ -181,6 +345,99 @@ static void op_amd_shutdown(struct op_msrs const * const msrs)
+>  	}
+>  }
+>  
+> +static inline void apic_init_ibs_nmi_per_cpu(void *arg)
+> +{
+> +	setup_APIC_eilvt_ibs(0, APIC_EILVT_MSG_NMI, 0);
+> +}
+> +
+> +static inline void apic_clear_ibs_nmi_per_cpu(void *arg)
+> +{
+> +	setup_APIC_eilvt_ibs(0, APIC_EILVT_MSG_FIX, 1);
+> +}
+> +
+> +/*
+> + * initialize the APIC for the IBS interrupts
+> + * if needed on AMD Family10h rev B0 and later
+> + */
+> +static void setup_ibs(void)
+> +{
+> +	struct pci_dev *gh_device = NULL;
+> +	u32 low, high;
+> +	u8 vector;
+> +
+> +	ibs_allowed = boot_cpu_has(X86_FEATURE_IBS);
+> +
+> +	if (!ibs_allowed)
+> +		return;
+> +
+> +	/* This gets the APIC_EILVT_LVTOFF_IBS value */
+> +	vector = setup_APIC_eilvt_ibs(0, 0, 1);
+> +
+> +	/*see if the IBS control register is already set correctly*/
+> +	/*remove this when we know for sure it is done
+> +	  in the kernel init*/
+> +	rdmsr(MSR_AMD64_IBSCTL, low, high);
+> +	if ((low & (IBS_CTL_LVT_OFFSET_VALID_BIT | vector)) !=
+> +		(IBS_CTL_LVT_OFFSET_VALID_BIT | vector)) {
+> +
+> +		/**** Be sure to run loop until NULL is returned to
+> +		decrement reference count on any pci_dev structures
+> +		returned ****/
+> +		while ((gh_device = pci_get_device(PCI_VENDOR_ID_AMD,
+> +			PCI_DEVICE_ID_AMD_10H_NB_MISC, gh_device))
+> +			!= NULL) {
+> +			/* This code may change if we can find a proper
+> +			* way to get at the PCI extended config space */
+> +			pci_write_config_dword(
+> +				gh_device, IBS_LVT_OFFSET_PCI,
+> +				(vector | IBS_CTL_LVT_OFFSET_VALID_BIT));
+> +		}
+> +	}
+> +	on_each_cpu(apic_init_ibs_nmi_per_cpu, NULL, 1, 1);
+> +}
+> +
+> +
+> +/*
+> + * unitialize the APIC for the IBS interrupts if needed on AMD Family10h
+> + * rev B0 and later */
+> +static void clear_ibs_nmi(void)
+> +{
+> +	if (ibs_allowed)
+> +		on_each_cpu(apic_clear_ibs_nmi_per_cpu, NULL, 1, 1);
+> +}
+> +
+> +static void setup_ibs_files(struct super_block *sb, struct dentry *root)
+> +{
+> +	char buf[12];
+> +	struct dentry *dir;
+> +
+> +	if (!ibs_allowed)
+> +		return;
+> +
+> +	/* setup some reasonable defaults */
+> +	ibs_config.max_cnt_fetch = 250000;
+> +	ibs_config.fetch_enabled = 0;
+> +	ibs_config.max_cnt_op = 250000;
+> +	ibs_config.op_enabled = 0;
+> +	ibs_config.dispatched_ops = 1;
+> +	snprintf(buf,  sizeof(buf), "ibs_fetch");
+> +	dir = oprofilefs_mkdir(sb, root, buf);
+> +	oprofilefs_create_ulong(sb, dir, "rand_enable",
+> +				&ibs_config.rand_en);
+> +	oprofilefs_create_ulong(sb, dir, "enable",
+> +		&ibs_config.fetch_enabled);
+> +	oprofilefs_create_ulong(sb, dir, "max_count",
+> +		&ibs_config.max_cnt_fetch);
+> +	snprintf(buf,  sizeof(buf), "ibs_uops");
 
+This should be renamed to "ibs_op" to be close to the register
+specification in the BKDG.
 
-Vegard
+-Robert
+
+> +	dir = oprofilefs_mkdir(sb, root, buf);
+> +	oprofilefs_create_ulong(sb, dir, "enable",
+> +		&ibs_config.op_enabled);
+> +	oprofilefs_create_ulong(sb, dir, "max_count",
+> +		&ibs_config.max_cnt_op);
+> +	oprofilefs_create_ulong(sb, dir, "dispatched_ops",
+> +		&ibs_config.dispatched_ops);
+> +}
+> +
+>  static int op_amd_init(struct oprofile_operations *ops)
+>  {
+>  	return 0;
+> -- 
+> 1.5.5.4
+> 
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
