@@ -1,39 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751816AbYGXBaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751830AbYGXBdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751816AbYGXBaM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 21:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbYGXB37
+	id S1751830AbYGXBdU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 21:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbYGXBdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 21:29:59 -0400
-Received: from bromo.msbb.uc.edu ([129.137.3.146]:60211 "HELO
-	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750836AbYGXB37 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 21:29:59 -0400
-Date: Wed, 23 Jul 2008 21:29:57 -0400
-From: Jack Howarth <howarth@bromo.msbb.uc.edu>
-To: linux-kernel@vger.kernel.org
-Subject: 2.2.6-git9, ath_pci and suspend
-Message-ID: <20080724012957.GA23873@bromo.msbb.uc.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 23 Jul 2008 21:33:09 -0400
+Received: from sh.osrg.net ([192.16.179.4]:42050 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751112AbYGXBdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 21:33:08 -0400
+Date: Thu, 24 Jul 2008 10:32:42 +0900
+To: Mike.Miller@hp.com
+Cc: fujita.tomonori@lab.ntt.co.jp, iss_storagedev@hp.com,
+       James.Bottomley@HansenPartnership.com, Jens.Axboe@oracle.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: RE: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI driver
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A778826B3D60DE5@GVW0547EXC.americas.hpqcorp.net>
+References: <0F5B06BAB751E047AB5C87D1F77A778826B3D60673@GVW0547EXC.americas.hpqcorp.net>
+	<20080723223940S.tomof@acm.org>
+	<0F5B06BAB751E047AB5C87D1F77A778826B3D60DE5@GVW0547EXC.americas.hpqcorp.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080724095325F.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-   I have been having issues with the madwifi svn drivers since
-I upgraded to the 2.6.26 kernel series. The problem I've been seeing
-is that the connection sometime becomes disrupted and when the 
-NetworkManager attempts to reconnect it always asks for the WPA2
-secret but never successfully reconnects. This issue appears to be
-common and the solution that works here is to create a suspend_modules
-file in /etc/pm/config.d containing the line...
+On Wed, 23 Jul 2008 14:07:39 +0000
+"Miller, Mike (OS Dev)" <Mike.Miller@hp.com> wrote:
 
-SUSPEND_MODULES='ath_pci'
+> > > > If I can get an ACK from HP about the long-term migration
+> > of cciss
+> > > > to SCSI, I'm happy to keep working on the SCSI cciss driver and
+> > > > maintain it until HP takes over the driver.
+> > >
+> > > We already have a SCSI port of the driver that is at least as
+> > > functional as you decribe. But I am against it's release for the
+> > > reasons stated above. If we ever decide to release the SCSI port it
+> > > should be developed by HP so we can be assured that the utils and
+> > > agents work as expected. That doesn't mean we wouldn't
+> > leverage some
+> > > of your work. ;)
+> >
+> > If HP releases its SCSI driver, I'm happy to throw my driver
+> > away and work on HP SCSI driver. I like to see a driver in
+> > development rather than a finished driver; development in
+> > mainline rather than private development at a vendor.
+> > Everyone can see the progress and try it.
+> 
+> We'll post something sooner rather than later.
 
-This change has fixed the issue here on my MacBook Pro with Fedora 9 x86_64.
-Does anyone know what changed with the suspend code in 2.6.26 that could
-be causing this problem.
-               Jack
+Nice! When are you likely to release the driver?
+
+One thing that I'm interested in is how you map CCISS logical and
+physical units to SCSI logical unit numbers. During writing a patch,
+I've been thinking about what's the best way for users.
+
+
+> I've been hesitant to submit unfinished work but I guess having the
+> community provide input along the way is the best way to go.
+
+Yeah, I'm happy to polish the driver even if I can't compile it.
+
+
+> OK, Tomo, you win!   :)
+
+Thanks a lot for agreeing to move the CCISS driver to SCSI!
+
+I know that there are several other people who are really pleased with
+the decision.
