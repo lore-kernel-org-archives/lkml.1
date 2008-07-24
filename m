@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbYGXMXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbYGXM2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757436AbYGXMXB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:23:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbYGXMWs
+	id S1755498AbYGXM2o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYGXM2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:22:48 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:38190 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751431AbYGXMWr (ORCPT
+	Thu, 24 Jul 2008 08:28:36 -0400
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:59723 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752384AbYGXM2f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 08:22:47 -0400
-Date: Thu, 24 Jul 2008 20:22:03 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>, w@1wt.eu,
-       davidn@davidnewall.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de, rjw@sisk.pl,
-       ilpo.jarvinen@helsinki.fi, Dave Jones <davej@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL pointer dereference
-Message-ID: <20080724122203.GA7187@gondor.apana.org.au>
-References: <20080724060448.GA10203@elte.hu> <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au> <20080724.022259.113079007.davem@davemloft.net> <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu> <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net>
+	Thu, 24 Jul 2008 08:28:35 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <48887576.1040901@cam.ac.uk>
+Date: Thu, 24 Jul 2008 13:28:38 +0100
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
 MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: "Hans J. Koch" <hjk@linutronix.de>, mgross@linux.intel.com, hmh@hmh.eng.br,
+       Dmitry Torokhov <dtor@mail.ru>, LKML <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>,
+       David Brownell <david-b@pacbell.net>,
+       Jonathan Cameron <Jonathan.Cameron@gmail.com>,
+       Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>,
+       spi-devel-general@lists.sourceforge.net,
+       Ben Nizette <bn@niasdigital.com>
+Subject: Re: [spi-devel-general] [Patch 0/4] IndustrialIO subsystem (ADCs,
+ accelerometers etc)
+References: <488763AD.4050400@gmail.com>	<20080723191918.GC26938@trinity.fluff.org>	<20080724074124.GB2254@local> <20080724101957.75bf03e0@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080724101957.75bf03e0@lxorguk.ukuu.org.uk>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48886FA6.6050908@trash.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 02:03:50PM +0200, Patrick McHardy wrote:
->
-> Does reverting 31d8519c fix this?
+Alan Cox wrote:
+>> hwmon is designed for slow I/O. It won't handle an ADC that does a few
+>> megasamples/sec.
+> 
+> At that rate I would assume you want a memory mapped ring buffer or
+> similar not a sysfs style interface ?
+Agreed, this isn't going to do megsamps per second either (at least not
+without a fair bit faster processor  / memory than available in embedded
+architectures).  If you want to go at those rates you'll need something
+with a hardware ring buffer or an intermediate chip to provide said
+buffering whilst not trying to run a general purpose os at the same time.
 
-Regardless of whether this is the problem, banning ksize because
-it can be abused is like banning cars because they can kill people.
+I am considering adding a 'burst' mode which would use up any available
+i2c / spi hardware buffers to get somewhere nearer to those sort of speeds.
 
-For example, Ethernet skbs are 1500 bytes long, so using ksize
-we could potentially use the left-over memory for temporary storage.
-Without it all this memory goes to waste.  On a machine that's
-doing a lot of networking this could save a signifcant amount
-of memory.
+One of the most important elements of this subsystem is indeed a ring
+buffer architecture, currently not mmapped. I'm still trying to work out
+how to make that work without blocking the ring filling on interrupts.
+Currently I can only seem to get around this by doing copies of ring
+to mmapped locations and having some dirty bit type marking of regions
+that don't contain valid data.  I guess suitable userspace libraries
+could hide this mess though.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+For the few ksps range the current chrdev interface is adequate if not
+ideal.
+
+The ring achitecture is one of the areas that probably needs most work.
+
+Thanks,
+--
+Jonathan Cameron
