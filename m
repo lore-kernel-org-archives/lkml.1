@@ -1,74 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbYGXPlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbYGXPlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754888AbYGXPlT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 11:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYGXPlJ
+	id S1757296AbYGXPlf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 11:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbYGXPlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 11:41:09 -0400
-Received: from www.tglx.de ([62.245.132.106]:45112 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751830AbYGXPlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 11:41:08 -0400
-Date: Thu, 24 Jul 2008 17:38:17 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: "Hans J. Koch" <hjk@linutronix.de>,
-       Jonathan Cameron <Jonathan.Cameron@gmail.com>, mgross@linux.intel.com,
-       Dmitry Torokhov <dtor@mail.ru>, LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>,
-       David Brownell <david-b@pacbell.net>, hmh@hmh.eng.br,
-       Jean Delvare <khali@linux-fr.org>,
-       spi-devel-general@lists.sourceforge.net,
-       Ben Nizette <bn@niasdigital.com>
-Subject: Re: [spi-devel-general] [Patch 0/4] IndustrialIO subsystem (ADCs,
-	accelerometers etc)
-Message-ID: <20080724153816.GE2254@local>
-References: <488763AD.4050400@gmail.com> <20080723191918.GC26938@trinity.fluff.org> <20080724074124.GB2254@local> <20080724100144.GA8301@fluff.org.uk>
+	Thu, 24 Jul 2008 11:41:23 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:9074 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755125AbYGXPlV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 11:41:21 -0400
+X-IronPort-AV: E=Sophos;i="4.31,247,1215388800"; 
+   d="scan'208";a="89710807"
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 24 Jul 2008 08:41:04 -0700
+Message-ID: <adazlo7war3.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080724100144.GA8301@fluff.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-OriginalArrivalTime: 24 Jul 2008 15:41:05.0261 (UTC) FILETIME=[AF1091D0:01C8EDA3]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 11:01:44AM +0100, Ben Dooks wrote:
-> On Thu, Jul 24, 2008 at 09:41:25AM +0200, Hans J. Koch wrote:
-> > On Wed, Jul 23, 2008 at 08:19:18PM +0100, Ben Dooks wrote:
-> > > On Wed, Jul 23, 2008 at 06:00:29PM +0100, Jonathan Cameron wrote:
-> > > > Dear All,
-> > > > 
-> > > > The need for an industrialio subsystem was discussed in
-> > > > http://lkml.org/lkml/2008/5/20/135
-> > > 
-> > > The name is really bad, this sounds like something for doing large
-> > > scale industrial process control.
-> > 
-> > Well, it says "Industrial I/O". To me, this means it handles I/O devices
-> > typically found in industrial applications.
-> 
-> Yes, industrial is generally process control of manufacturing
-> processes which in my view is making this sound like it is limiting
-> the field of operations.
+Linus, please pull from
 
-OK, I agree.
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-> 
-> All the applications we would currently need are things like
-> handheld PDA type devices which are hardly 'industrial' or small
-> consumer measurement systems.
+This tree is also available from kernel.org mirrors at:
 
-Well, though the _use_ of such devices might not be "industrial",
-_technically_ they are very similar to embedded systems found in
-automation or other industrial equipment.
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-Many of these devices (all that have mmappable memory) can be handled
-with a UIO driver, but for the rest (mostly stuff connected to serial
-busses), it's important to have a subsystem in the kernel. I really
-don't care too much about its name. BTW, before UIO was first published,
-its internal name was "Industrial I/O" ;-)
+This will get the some more RDMA/InfiniBand changes for 2.6.27, all of
+which have been in linux-next:
 
-Thanks,
-Hans
+Amir Vadai (1):
+      RDMA/cma: Add RDMA_CM_EVENT_TIMEWAIT_EXIT event
 
+Dotan Barak (1):
+      RDMA/iwcm: Remove IB_ACCESS_LOCAL_WRITE from remote QP attributes
+
+Jack Morgenstein (2):
+      mlx4_core: Add module parameter to enable QoS support
+      mlx4_code: Add missing FW status return code
+
+Joachim Fenkes (2):
+      IB/ehca: Filter PATH_MIG events if QP was never armed
+      IB/ehca: Use default value for Local CA ACK Delay if FW returns 0
+
+Julia Lawall (1):
+      IB/ehca: Release mutex in error path of alloc_small_queue_page()
+
+Or Gerlitz (3):
+      RDMA/cma: Add RDMA_CM_EVENT_ADDR_CHANGE event
+      IB/iser: Add support for RDMA_CM_EVENT_ADDR_CHANGE event
+      IPoIB: Include err code in trace message for ib_sa_path_rec_get() failures
+
+Ralph Campbell (1):
+      IB/sa_query: Check if sm_ah is NULL in ib_sa_remove_one()
+
+Roland Dreier (7):
+      IB/mlx4: Rename struct mlx4_lso_seg to mlx4_wqe_lso_seg
+      mlx4_core: Keep free count for MTT buddy allocator
+      IB/mthca: Keep free count for MTT buddy allocator
+      IB/mlx4: Add support for memory management extensions and local DMA L_Key
+      mlx4_core: Improve error message when not enough UAR pages are available
+      MAINTAINERS: Remove Glenn Streiff from NetEffect entry
+      Merge branches 'bkl-removal', 'cma', 'ehca', 'for-2.6.27', 'mlx4', 'mthca' and 'nes' into for-linus
+
+ MAINTAINERS                               |    2 -
+ drivers/infiniband/core/cma.c             |   99 ++++++++++++++++++++++++++++-
+ drivers/infiniband/core/iwcm.c            |    3 +-
+ drivers/infiniband/core/sa_query.c        |    3 +-
+ drivers/infiniband/hw/ehca/ehca_classes.h |    1 +
+ drivers/infiniband/hw/ehca/ehca_hca.c     |    4 +-
+ drivers/infiniband/hw/ehca/ehca_irq.c     |    4 +
+ drivers/infiniband/hw/ehca/ehca_qp.c      |    2 +
+ drivers/infiniband/hw/ehca/ipz_pt_fn.c    |    1 +
+ drivers/infiniband/hw/mlx4/cq.c           |   12 ++++
+ drivers/infiniband/hw/mlx4/main.c         |   11 +++
+ drivers/infiniband/hw/mlx4/mlx4_ib.h      |   15 +++++
+ drivers/infiniband/hw/mlx4/mr.c           |   70 ++++++++++++++++++++
+ drivers/infiniband/hw/mlx4/qp.c           |   74 ++++++++++++++++++++--
+ drivers/infiniband/hw/mthca/mthca_dev.h   |    1 +
+ drivers/infiniband/hw/mthca/mthca_mr.c    |   26 +++++---
+ drivers/infiniband/ulp/ipoib/ipoib_main.c |    2 +-
+ drivers/infiniband/ulp/iser/iser_verbs.c  |    1 +
+ drivers/net/mlx4/cmd.c                    |    3 +
+ drivers/net/mlx4/fw.c                     |   18 +++--
+ drivers/net/mlx4/fw.h                     |    2 +-
+ drivers/net/mlx4/main.c                   |    2 +
+ drivers/net/mlx4/mlx4.h                   |    1 +
+ drivers/net/mlx4/mr.c                     |   49 +++++++++++----
+ drivers/net/mlx4/pd.c                     |    7 ++
+ include/linux/mlx4/device.h               |   10 +++
+ include/linux/mlx4/qp.h                   |   18 ++++--
+ include/rdma/rdma_cm.h                    |    4 +-
+ 28 files changed, 396 insertions(+), 49 deletions(-)
