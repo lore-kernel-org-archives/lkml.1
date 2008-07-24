@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbYGXPKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbYGXPL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758625AbYGXPKw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 11:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYGXPKn
+	id S1756193AbYGXPL7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 11:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbYGXPLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 11:10:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43236 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752009AbYGXPKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 11:10:42 -0400
-Message-ID: <4888959D.6090907@redhat.com>
-Date: Thu, 24 Jul 2008 10:45:49 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Thu, 24 Jul 2008 11:11:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42242 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752033AbYGXPLt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 11:11:49 -0400
+Date: Thu, 24 Jul 2008 08:05:43 -0700
+From: Greg KH <greg@kroah.com>
+To: pHilipp Zabel <philipp.zabel@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <w@1wt.eu>,
+       Chuck Wolber <chuckw@quantumlinux.com>, alan@lxorguk.ukuu.org.uk,
+       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
+       Jake Edge <jake@lwn.net>, Michael Krufky <mkrufky@linuxtv.org>,
+       stable@kernel.org, Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: [stable] [patch 44/47] pxamci: fix byte aligned DMA transfers
+Message-ID: <20080724150543.GA10549@kroah.com>
+References: <20080722230208.148102983@mini.kroah.org> <20080722231342.GA8282@suse.de> <20080722231735.GS8282@suse.de> <74d0deb30807230001x176e375cq9a8060c20596f36f@mail.gmail.com> <20080723201258.GA26156@kroah.com> <alpine.LFD.1.10.0807231322250.4754@woody.linux-foundation.org> <20080723203250.GA26454@kroah.com> <74d0deb30807240333l565eaf24uf695ce8d01597090@mail.gmail.com>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: joro@8bytes.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       jbarnes@virtuousgeek.org, ed.pollard@ibm.com, epollard@redhat.com
-Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
-References: <488854DB.60307@redhat.com>	<20080724193457S.fujita.tomonori@lab.ntt.co.jp>	<20080724123755.GP31439@8bytes.org> <20080724223309C.fujita.tomonori@lab.ntt.co.jp> <4888925E.8050504@redhat.com>
-In-Reply-To: <4888925E.8050504@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <74d0deb30807240333l565eaf24uf695ce8d01597090@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jul 24, 2008 at 12:33:34PM +0200, pHilipp Zabel wrote:
+> Both should be applied together. Although it is unlikely that with the
+> broken patch MMC accesses will accidentally clear the DALGN bits of
+> other running (unaligned) DMA chains (I'm not aware of any drivers
+> using unaligned DMA), the PXA27x developer manual says that this "must
+> not" be done. If it would result in memory corruption or lockups, I
+> don't know.
 
->>>  
->>
->> Yeah, I'm not against fixing IOMMUs to make alloc_consistent return
->> the reqeuested size aligned memory. My point is that it's not likely
->> to fix anything. Even with the patch, we hit the above problem because
->> as I explained, the root cause of the problem is the boundary issue;
->> we need to fix pci-dma.c
->>
->>   
->
-> Sorry, I misquoted code up there and was looking for a clear example 
-> of where this would happen.  The issue I'm trying to resolve didn't 
-> happen on the skge -- it was just a convenient piece of code to 
-> examine and point out ;)
->
+Ok, I'll add them both to the .26 queue as well.
 
-Here's a case where USB has problems:
+thanks for the information,
 
- BIOS-e820: 0000000000000000 - 000000000009f400 (usable)
- BIOS-e820: 000000000009f400 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 00000000f57f6800 (reserved)
- BIOS-e820: 00000000f57f6800 - 00000000f5800000 (ACPI data)
- BIOS-e820: 00000000f5800000 - 00000000fdc00000 (reserved)
- BIOS-e820: 00000000fdc00000 - 00000000fdc01000 (reserved)
- BIOS-e820: 00000000fdc10000 - 00000000fdc01000 (reserved)
- BIOS-e820: 00000000fdc20000 - 00000000fdc01000 (reserved)
- BIOS-e820: 00000000fdc30000 - 00000000fdc01000 (reserved)
- BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
- BIOS-e820: 00000000fec10000 - 00000000fec20000 (reserved)
- BIOS-e820: 00000000fec20000 - 00000000fec30000 (reserved)
- BIOS-e820: 00000000fee00000 - 00000000fee10000 (reserved)
- BIOS-e820: 00000000fee10000 - 00000000ff800000 (reserved)
- BIOS-e820: 00000000ff800000 - 0000000100000000 (reserved)
- BIOS-e820: 0000000100000000 - 00000017fffff000 (usable)
-
-I haven't tracked down what pci_alloc_consistent went wrong in 
-usb-storage yet ... it seemed irrelevant because GART was broken.
-
-P.
+greg k-h
