@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756895AbYGXXsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbYGXX4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756895AbYGXXsN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 19:48:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbYGXXr5
+	id S1756398AbYGXX4V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 19:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYGXX4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 19:47:57 -0400
-Received: from vms042pub.verizon.net ([206.46.252.42]:63412 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbYGXXr5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 19:47:57 -0400
-Date: Thu, 24 Jul 2008 19:47:04 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [ANNOUNCE] ACPI BIOS Guideline for Linux
-In-reply-to: <200807241732.23412.trenn@suse.de>
-X-X-Sender: lenb@localhost.localdomain
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-acpi@vger.kernel.org, Andi Kleen <ak@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.1.10.0807241937500.6098@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <200807241732.23412.trenn@suse.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 24 Jul 2008 19:56:13 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:51845 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752087AbYGXX4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 19:56:13 -0400
+Date: Fri, 25 Jul 2008 02:55:49 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Steven Whitehouse <swhiteho@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [2.6 patch] fix fs/nfs/nfsroot.c compilation
+Message-ID: <20080724235549.GB19310@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is not an ACPI specification violation that Linux
-(and ACPICA) claim compatibility with the interfaces
-advertised by one or multiple versions of Windows.
+This patch fixes the following compile error caused by
+commit f9247273cb69ba101877e946d2d83044409cc8c5
+(UFS: add const to parser token tabl):
 
-Yes, there are be cases where BIOS vendors will want
-to know if the running version of Linux supports,
-or does not support, an interface/feature.
+<--  snip  -->
 
-We (the Linux community that maintain Linux/ACPI) are
-eager to support them in this.  However, the interface
-needs to be sufficiently defined so that we know when
-to _not_ advertise that feature.
+...
+  CC      fs/nfs/nfsroot.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/fs/nfs/nfsroot.c:130: error: tokens causes a section type conflict
+make[3]: *** [fs/nfs/nfsroot.o] Error 1
 
-eg. There are proposals for
+<--  snip  -->
 
-_OSI("Linux-Needs ATI S3 video re-POST")
-_OSI("Linux-Needs NVIDIA S3 video re-POST")
-_OSI("Linux-Native IPMI Support")
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-and we'd compile these into Linux based on the capabilities
-of the build.  I'm sure that these would not be perfect --
-as the BIOS would probably query these at _INI time before
-the (likely loadable module) drivers that influence these
-features would be loaded.  So we'd probably have to build
-them into the core based on the assumption that the driver
-built with the core will actually get loaded.
+---
+75623185c608ee0d223a0076ea8237edcb8ac18f 
+diff --git a/fs/nfs/nfsroot.c b/fs/nfs/nfsroot.c
+index 46763d1..8478fc2 100644
+--- a/fs/nfs/nfsroot.c
++++ b/fs/nfs/nfsroot.c
+@@ -127,7 +127,7 @@ enum {
+ 	Opt_err
+ };
+ 
+-static match_table_t __initdata tokens = {
++static match_table_t __initconst tokens = {
+ 	{Opt_port, "port=%u"},
+ 	{Opt_rsize, "rsize=%u"},
+ 	{Opt_wsize, "wsize=%u"},
 
-But this is the kind of Linux-specific OSI string we can advertise,
-and choose not to advertise -- depending on the build.
-
-thanks,
--Len
