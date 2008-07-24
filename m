@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbYGXLgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbYGXLkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754990AbYGXLgR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 07:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbYGXLgF
+	id S1755161AbYGXLkP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 07:40:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYGXLkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 07:36:05 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:35916 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752183AbYGXLgE (ORCPT
+	Thu, 24 Jul 2008 07:40:04 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:43004 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212AbYGXLkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 07:36:04 -0400
-X-Sasl-enc: xyf4YsvsGoOYSmLLWVxPyPAWud5+n9pCQu6w96HTzfIq 1216899360
-Message-ID: <4888691D.5090307@ladisch.de>
-Date: Thu, 24 Jul 2008 13:35:57 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-CC: lkml <linux-kernel@vger.kernel.org>, bob.picco@hp.com,
-       venkatesh.pallipadi@intel.com, Vojtech Pavlik <vojtech@suse.cz>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [patch 2.6.26] /dev/hpet - fixes and cleanup
-References: <200807221508.56672.david-b@pacbell.net> <4886E164.2070304@ladisch.de> <200807230912.49850.david-b@pacbell.net>
-In-Reply-To: <200807230912.49850.david-b@pacbell.net>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Jul 2008 07:40:03 -0400
+Subject: Re: 22bb1be4d27... breaks hal (and NM)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Jean Tourrilhes <jt@hpl.hp.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080724115805.5466c217@mjolnir.drzeus.cx>
+References: <20080724115805.5466c217@mjolnir.drzeus.cx>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-9LSTArbNWi01dX/HSDZs"
+Date: Thu, 24 Jul 2008 13:38:40 +0200
+Message-Id: <1216899520.13587.49.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell wrote:
-> I didn't find any software using /dev/hpet, except for
-> the example in Documentation/hpet.txt ... presumably I
-> was looking in the wrong place. I'd surely have retched
-> at anything mmapping hardware registers though.  ;)
 
-http://subversion.jackaudio.org/jack/trunk/jack/config/os/gnu-linux/time.c
+--=-9LSTArbNWi01dX/HSDZs
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> > This seems to be the only part of the userspace interface that is
-> > used in practice.  Because of the availability of POSIX timers, it might
-> > make sense to deprecate the HPET ioctl interface.
->
-> I'll leave that part up to someone else.  If POSIX timers
-> are a sufficient userspace interface, great ... then that
-> mmap son't really be needed either!
+On Thu, 2008-07-24 at 11:58 +0200, Pierre Ossman wrote:
+> From commit 22bb1be4d27...:
+>=20
+> "The /sys/class/net/*/wireless/ direcory is, as far as I know, not used
+> by anyone."
+>=20
+> Can't have been much of an investigation as HAL uses these to determine
+> if a card is a wireless one. Without this option, you cannot get
+> wireless support in NetworkManager, stranding most laptops.
 
-The idea is to be able to get a high-precision timer value without doing
-a syscall.  (Whether the syscall overhead actually matters in a specific
-application is another question.)
+Bzzzzt. You suck. Go check again. Hint: try hal's git tree.
 
+johannes
 
-Regards,
-Clemens
+--=-9LSTArbNWi01dX/HSDZs
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJIiGm9AAoJEKVg1VMiehFYQIwQAJ+0xPEhYncyNSx29+Vq1nfy
+5L1HDmIbbUdOW8h7Ca54h5EqRaeTwV7DMEJLse3ca4x+DtziggfahL+yucDEE+I8
+MK6wQvbJ65gI/n7GzVB2/lbbc5NEVi2ADaDsWPRXXPgSbsT0do8VU69FnXyDpWqg
+NxmXau7bm5h801IfTyYRDrTqRyiP1bQ5QZd0XUbRxlyGYU44dXK31FjgtlD3Yi0x
+FQHmgAswTiAMlbIbLmkNCf1Wp+AsZicU3+N6+RibqwPHi8AGd8pTFpxnjbGikRQj
+XjIFz79LG9dDtQzOEfFKYfZfWu8l/tMhHldrU7vhmBISEfAJAEupWZ7sXqCGfGdb
+zByp2jnePI7plnYWQfTL/aY/BRTmBx+Az+bDHxhtcNOSm2AJXkiRxbfZHr7mskUx
+XciT56ZOtGSeORGLFS0jjcK7ETOxs9sSR/n2x75IolEiB/+GXyoqQj4a+T1FtlEW
+yb/S4jVLxACCVk4vKxBpjLG7UXSaGK6G7EAiZ6cf3grMoKFjNYsEH28dAjBkKEvu
+sipvxaY0d0RwlI97LXgmLk/k2QfP2IvwcUo625n9QAq6o4qLhmYBc756haDedlqF
+rYmIoo3gXAe75v98LC2G8OJB3gLdk+wrZHyKQtN3nxnITwutgSAaDwvecWGQs5Qa
+wVwC7/E7q27GdKpSElrv
+=YfaU
+-----END PGP SIGNATURE-----
+
+--=-9LSTArbNWi01dX/HSDZs--
+
