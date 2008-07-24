@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754447AbYGXOgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbYGXOiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754447AbYGXOgs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbYGXOgk
+	id S1755079AbYGXOiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750953AbYGXOiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:36:40 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:10223 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751826AbYGXOgj (ORCPT
+	Thu, 24 Jul 2008 10:38:00 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:35028 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750799AbYGXOh7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:36:39 -0400
-X-BigFish: VPS-14(zz1432R98dR936eT62a3Lzz10d3izzz32i6bh87il63h)
-X-Spam-TCS-SCL: 2:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K4ILWI-02-0XP-01
-Date: Thu, 24 Jul 2008 16:36:14 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Maynard Johnson <maynardj@us.ibm.com>
-CC: Barry Kasindorf <barry.kasindorf@amd.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-Subject: Re: [PATCH 11/24] x86/oprofile: Add IBS support for AMD CPUs,
-	model specific code
-Message-ID: <20080724143613.GR17134@erda.amd.com>
-References: <1216753748-11261-1-git-send-email-robert.richter@amd.com> <1216753748-11261-12-git-send-email-robert.richter@amd.com> <48888E7C.7040504@us.ibm.com>
+	Thu, 24 Jul 2008 10:37:59 -0400
+Date: Thu, 24 Jul 2008 22:37:06 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Patrick McHardy <kaber@trash.net>,
+       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de, rjw@sisk.pl,
+       ilpo.jarvinen@helsinki.fi, Dave Jones <davej@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL pointer dereference
+Message-ID: <20080724143706.GA8461@gondor.apana.org.au>
+References: <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au> <20080724.022259.113079007.davem@davemloft.net> <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu> <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net> <20080724122203.GA7187@gondor.apana.org.au> <84144f020807240540vbe7ef50uee2cacabe8016546@mail.gmail.com> <20080724125004.GA7426@gondor.apana.org.au> <1216905109.15519.200.camel@calx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48888E7C.7040504@us.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 24 Jul 2008 14:36:21.0802 (UTC) FILETIME=[A457C0A0:01C8ED9A]
+In-Reply-To: <1216905109.15519.200.camel@calx>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24.07.08 09:15:24, Maynard Johnson wrote:
-> Robert Richter wrote:
->> From: Barry Kasindorf <barry.kasindorf@amd.com>
->> This patchset supports the new profiling hardware available in the
->> latest AMD CPUs in the oProfile driver.
->> Signed-off-by: Barry Kasindorf <barry.kasindorf@amd.com>
->> Signed-off-by: Robert Richter <robert.richter@amd.com>
->> ---
->>  arch/x86/oprofile/op_model_athlon.c |  257 
->> +++++++++++++++++++++++++++++++++++
->>  1 files changed, 257 insertions(+), 0 deletions(-)
->> diff --git a/arch/x86/oprofile/op_model_athlon.c 
->> b/arch/x86/oprofile/op_model_athlon.c
->> index 40ecb02..229e0b4 100644
->> --- a/arch/x86/oprofile/op_model_athlon.c
->> +++ b/arch/x86/oprofile/op_model_athlon.c
->> @@ -9,9 +9,13 @@
->>   * @author Philippe Elie
->>   * @author Graydon Hoare
->>   * @author Robert Richter <robert.richter@amd.com>
->> + * @author Barry Kasindorf
->>  */
-> [snip]
->> +
->> +struct op_ibs_config {
->> +	unsigned long op_enabled;
->> +	unsigned long fetch_enabled;
->> +	unsigned long max_cnt_fetch;
->> +	unsigned long max_cnt_op;
->> +	unsigned long rand_en;
->> +	unsigned long dispatched_ops;
-> I don't see dispatched_ops being used either by your kernel driver changes 
-> or by the userspace changes submitted by Jason.
+On Thu, Jul 24, 2008 at 08:11:49AM -0500, Matt Mackall wrote:
+>
+> You don't honestly expect people to correctly code to such a standard,
+> do you? People will assume that ksize never fails, they will be wrong,
+> and computers will die.
 
-This is a RevC feature. I think there is a revision check needed and
-thus Barry did not yet implement it.
+If we follow this argument then most of our interfaces would be
+broken.
 
--Robert
+> >  You're taking
+> > away an entire interface just because an underlying implementation
+> > that's used by a very small proportion of users doesn't do the
+> > right thing.
+> 
+> Umm, no. There were very few users to being with, so it was actually a
+> fairly large proportion. And that suggested the interface was a bad
+> idea.
 
+Huh? I'm talking about users of the kernel.  A very small proportion
+of those use SLOB.
+
+Cheers,
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
