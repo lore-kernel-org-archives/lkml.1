@@ -1,85 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbYGXM5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbYGXNBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbYGXM5T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbYGXM5F
+	id S1753535AbYGXNBW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 09:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYGXNBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:57:05 -0400
-Received: from wx-out-0506.google.com ([66.249.82.237]:41913 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751256AbYGXM5E (ORCPT
+	Thu, 24 Jul 2008 09:01:10 -0400
+Received: from casper.infradead.org ([85.118.1.10]:41772 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751444AbYGXNBI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 08:57:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=eY85pAfvTTbtk10uIsTjUcUx3Tk0fZ1SVUo7zG3gy9vgChWNHTHB5Zhw3DtPkl0fXs
-         V1KQwEhCVMqjd0Tiuqt2x2wGaAbO+8eC0ib7ZkGO1NkJqTZG9PsNnT8EIez6FNoP8o9J
-         oPMn/R6RSb5N2cH8bKmkrVYvZXpKENCDGQf88=
-Message-ID: <36ca99e90807240556j6b409a03s239d781baaadbb99@mail.gmail.com>
-Date: Thu, 24 Jul 2008 14:56:59 +0200
-From: "Bert Wesarg" <bert.wesarg@googlemail.com>
-To: "Mike Travis" <travis@sgi.com>
-Subject: Re: [PATCH 1/1] cpumask: Change cpumask_of_cpu to use cpumask_of_cpu_map
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Rusty Russell" <rusty@rustcorp.com.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Jack Steiner" <steiner@sgi.com>,
-       "Christoph Lameter" <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Len Brown" <len.brown@intel.com>,
-       "Lennert Buytenhek" <kernel@wantstofly.org>,
-       "Dave Jones" <davej@codemonkey.org.uk>, "Paul Jackson" <pj@sgi.com>,
-       "Tony Luck" <tony.luck@intel.com>,
-       "Tigran Aivazian" <tigran@aivazian.fsnet.co.uk>,
-       "Paul Mackerras" <paulus@samba.org>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-       "Robert Richter" <robert.richter@amd.com>,
-       "Martin Schwidefsky" <schwidefsky@de.ibm.com>,
-       "Heiko Carstens" <heiko.carstens@de.ibm.com>,
-       "Sam Creasey" <sammy@sammy.net>, "Greg Banks" <gnb@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Adrian Bunk" <bunk@kernel.org>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andreas Schwab" <schwab@suse.de>,
-       "Johannes Weiner" <hannes@saeurebad.de>
-In-Reply-To: <20080723171841.997896000@polaris-admin.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 24 Jul 2008 09:01:08 -0400
+Subject: Re: [RFC: 2.6 patch] clarify the WIRELESS_EXT_SYSFS help text
+From: Peter Zijlstra <peterz@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Pierre Ossman <drzeus-list@drzeus.cx>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Jean Tourrilhes <jt@hpl.hp.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080724124225.GD32109@cs181140183.pp.htv.fi>
+References: <20080724115805.5466c217@mjolnir.drzeus.cx>
+	 <1216899520.13587.49.camel@johannes.berg>
+	 <20080724124225.GD32109@cs181140183.pp.htv.fi>
+Content-Type: text/plain
+Date: Thu, 24 Jul 2008 14:54:48 +0200
+Message-Id: <1216904088.7257.328.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080723171841.815234000@polaris-admin.engr.sgi.com>
-	 <20080723171841.997896000@polaris-admin.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 2008-07-24 at 15:42 +0300, Adrian Bunk wrote:
+> On Thu, Jul 24, 2008 at 01:38:40PM +0200, Johannes Berg wrote:
+> > On Thu, 2008-07-24 at 11:58 +0200, Pierre Ossman wrote:
+> > > From commit 22bb1be4d27...:
+> > > 
+> > > "The /sys/class/net/*/wireless/ direcory is, as far as I know, not used
+> > > by anyone."
+> > > 
+> > > Can't have been much of an investigation as HAL uses these to determine
+> > > if a card is a wireless one. Without this option, you cannot get
+> > > wireless support in NetworkManager, stranding most laptops.
+> > 
+> > Bzzzzt. You suck. Go check again. Hint: try hal's git tree.
+> 
+> Can everyone agree on the patch below?
+> 
+> > johannes
+> 
+> cu
+> Adrian
+> 
+> 
+> <--  snip  -->
+> 
+> 
+> Current Hal uses the CONFIG_WIRELESS_EXT_SYSFS files, so don't claim 
+> there were no known users and recommend to enable the option.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> b685f62718b947264657c298e5ee5b2149200f68 
+> diff --git a/net/wireless/Kconfig b/net/wireless/Kconfig
+> index ab015c6..e582432 100644
+> --- a/net/wireless/Kconfig
+> +++ b/net/wireless/Kconfig
+> @@ -39,4 +39,4 @@ config WIRELESS_EXT_SYSFS
+>  	  files in /sys/class/net/*/wireless/. The same information
+>  	  is available via the ioctls as well.
+>  
+> -	  Say Y if you have programs using it (we don't know of any).
+> +	  If unsure, say Y.
 
-On Wed, Jul 23, 2008 at 19:18, Mike Travis <travis@sgi.com> wrote:
-> --- linux-2.6.tip.orig/arch/x86/kernel/setup_percpu.c
-> +++ linux-2.6.tip/arch/x86/kernel/setup_percpu.c
-> @@ -80,8 +80,15 @@ static void __init setup_per_cpu_maps(vo
->  #endif
->  }
->
-> -#ifdef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
-> -cpumask_t *cpumask_of_cpu_map __read_mostly;
-> +#ifdef CONFIG_HAVE_CPUMASK_OF_CPU_MAP_PTR
-> +/*
-> + * Configure an initial cpumask_of_cpu(0) for early users
-> + */
-> +static cpumask_t initial_cpumask_of_cpu_map __initdata = (cpumask_t) { {
-> +       [BITS_TO_LONGS(NR_CPUS)-1] = 1
-> +} };
-This looks weird, first one missing {} pair, which may explain Ingo's
-build error. Second, why do you want to set the last unsigned long to
-one? Shouldn't this be the first?
+Maybe also add:
 
-Regards
-Bert
+   "HAL <= 0.5.11 depends on this feature."
 
+Where I hope I got the version number right :-)
 
-> +cpumask_t *cpumask_of_cpu_map __read_mostly =
-> +       (cpumask_t *)&initial_cpumask_of_cpu_map;
->  EXPORT_SYMBOL(cpumask_of_cpu_map);
->
