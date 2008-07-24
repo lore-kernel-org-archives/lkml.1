@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbYGXAW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbYGXAXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbYGXAW4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 20:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbYGXAWs
+	id S1756738AbYGXAXg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 20:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbYGXAX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 20:22:48 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:5325 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753047AbYGXAWs (ORCPT
+	Wed, 23 Jul 2008 20:23:28 -0400
+Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:34299 "EHLO
+	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754392AbYGXAX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 20:22:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=ufHAKlsMIHb5vL52CY3ZhYO8rBy2x/FuOSpyno907I7dzaOf5TVXAduCoWycqQPvqI
-         LWc/cJp+AE0YlvkWmlWfnpnqOx+bEo6E1cGe/9B/AtuGE+2Jv815ECHf1ZJCMW16dEvd
-         ivBz1oapR3S8FK3d5pSYoRVAtMATLkU0YlB4s=
-Message-ID: <524f69650807231722q74269919s4fcf95d51d438ff4@mail.gmail.com>
-Date: Wed, 23 Jul 2008 19:22:47 -0500
-From: "Steve French" <smfrench@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: new sparse warnings
+	Wed, 23 Jul 2008 20:23:27 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EAFRnh0iWZWaT/2dsb2JhbACBWrFJ
+X-IronPort-AV: E=Sophos;i="4.31,241,1215354600"; 
+   d="scan'208";a="165530741"
+Date: Thu, 24 Jul 2008 09:53:24 +0930
+From: Kevin Shanahan <kmshanah@disenchant.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: libata timeout, MCE and kernel panic
+Message-ID: <20080724002324.GK3930@cubit>
+References: <20080723233509.GJ3930@cubit> <20080724004928.226f892a@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080724004928.226f892a@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Any idea what the new sparse "context imbalance" warnings are?  Is
-this a bug in sparse?
+On Thu, Jul 24, 2008 at 12:49:28AM +0100, Alan Cox wrote:
+> > recovery was required. It seems the journal recovery combined with the
+> > md device reconstruction was enough to cause an ata command
+> > timeout. After that I saw several MCEs and the kernel paniced.
+> 
+> An MCE is amachine check, and indicates the hardware detected a problem.
+> Given the sequence of heavy I/O, followed by a timeout and the processors
+> detecting inconsistencies - is your PSU sufficient ?
 
-stevef@smf-t60p:~/kernels/cifs-2.6-devel> make modules C=1
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  CHECK   fs/cifs/cifssmb.c
-fs/cifs/cifssmb.c:134:2: warning: context imbalance in
-'mark_open_files_invalid': wrong count at exit
-fs/cifs/cifssmb.c:134:2:    context 'lock': wanted 0, got 1
-fs/cifs/cifssmb.c:5191:9: warning: context imbalance in
-'CIFSSMBNotify': wrong count at exit
-fs/cifs/cifssmb.c:5191:9:    context 'lock': wanted 0, got 1
-  CC [M]  fs/cifs/cifssmb.o
+Hmm, you may be on to something there. This machine was designed with
+two disksoriginally, but due to a hardware failure on another machine
+it's actually running with 5 (off a 450W redundant PSU). I have bigger
+replacement PSUs on the way, so here's hoping that resolves it. Thanks
+for the reply.
 
-The functions it is complaining about don't seem to have a "context
-imbalance" see e.g.the one near line 134 of fs/cifs/cifssmb.c
-
-static void mark_open_files_invalid(struct cifsTconInfo *pTcon)
-{
-        struct cifsFileInfo *open_file = NULL;
-        struct list_head *tmp;
-        struct list_head *tmp1;
-
-/* list all files open on tree connection and mark them invalid */
-        write_lock(&GlobalSMBSeslock);
-        list_for_each_safe(tmp, tmp1, &pTcon->openFileList) {
-                open_file = list_entry(tmp, struct cifsFileInfo, tlist);
-                if (open_file)
-                        open_file->invalidHandle = true;
-        }
-        write_unlock(&GlobalSMBSeslock);
-}
-
-
--- 
-Thanks,
-
-Steve
+Regards,
+Kevin.
