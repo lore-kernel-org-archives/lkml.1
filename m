@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbYGXKeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYGXKht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755714AbYGXKeW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 06:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYGXKeM
+	id S1754892AbYGXKht (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 06:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbYGXKhl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 06:34:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42766 "EHLO mx3.mail.elte.hu"
+	Thu, 24 Jul 2008 06:37:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38053 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751990AbYGXKeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 06:34:10 -0400
-Date: Thu, 24 Jul 2008 12:33:57 +0200
+	id S1751629AbYGXKhk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 06:37:40 -0400
+Date: Thu, 24 Jul 2008 12:37:24 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       heukelum@fastmail.fm, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: x86_64, dwarf2: push pushes 8 bytes and popf pops 8
-Message-ID: <20080724103357.GF28817@elte.hu>
-References: <20080722161416.GA17699@mailshack.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: PIC, L-APIC and I/O APIC debug information
+Message-ID: <20080724103724.GG28817@elte.hu>
+References: <Pine.LNX.4.55.0807202226310.24038@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080722161416.GA17699@mailshack.com>
+In-Reply-To: <Pine.LNX.4.55.0807202226310.24038@cliff.in.clinika.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,12 +35,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alexander van Heukelum <heukelum@mailshack.com> wrote:
+* Maciej W. Rozycki <macro@linux-mips.org> wrote:
 
-> The CFI_ADJUST_CFA_OFFSET dwarf2 annotation of a push/popf pair in 
-> ret_from_fork wrongly used a value of 4. It should have been 8. Fix 
-> that.
+>  Dump all the PIC, local APIC and I/O APIC information at the 
+> fs_initcall() level, which is after ACPI (if used) has initialised PCI 
+> information, making the point of invocation consistent across MP-table 
+> and ACPI platforms.  Remove explicit calls to print_IO_APIC() from 
+> elsewhere.  Make the interface of all the functions involved 
+> consistent between 32-bit and 64-bit versions and make them all static 
+> by default by the means of a New-and-Improved(TM) __apicdebuginit() 
+> macro.
+> 
+>  Note that like print_IO_APIC() all these only output anything if 
+> "apic=debug" has been passed to the kernel through the command line.
 
-applied to tip/x86/debug - thanks Alexander.
+applied to tip/x86/apic, thanks Maciej.
 
 	Ingo
