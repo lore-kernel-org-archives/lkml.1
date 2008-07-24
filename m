@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbYGXOwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757801AbYGXOuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757313AbYGXOwF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:52:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbYGXOnn
+	id S1757801AbYGXOuo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750953AbYGXOm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:43:43 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46466 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753076AbYGXOmw (ORCPT
+	Thu, 24 Jul 2008 10:42:56 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54699 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756534AbYGXOmn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:42:52 -0400
-Message-Id: <20080724141530.942450703@chello.nl>
+	Thu, 24 Jul 2008 10:42:43 -0400
+Message-Id: <20080724141530.650688493@chello.nl>
 References: <20080724140042.408642539@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Jul 2008 16:01:05 +0200
+Date: Thu, 24 Jul 2008 16:01:01 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
@@ -21,198 +21,453 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Daniel Lezcano <dlezcano@fr.ibm.com>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>
-Subject: [PATCH 23/30] netvm: skb processing
-Content-Disposition: inline; filename=netvm.patch
+Subject: [PATCH 19/30] netvm: hook skb allocation to reserves
+Content-Disposition: inline; filename=netvm-skbuff-reserve.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to make sure emergency packets receive all memory needed to proceed
-ensure processing of emergency SKBs happens under PF_MEMALLOC.
+Change the skb allocation api to indicate RX usage and use this to fall back to
+the reserve when needed. SKBs allocated from the reserve are tagged in
+skb->emergency.
 
-Use the (new) sk_backlog_rcv() wrapper to ensure this for backlog processing.
+Teach all other skb ops about emergency skbs and the reserve accounting.
 
-Skip taps, since those are user-space again.
+Use the (new) packet split API to allocate and track fragment pages from the
+emergency reserve. Do this using an atomic counter in page->index. This is
+needed because the fragments have a different sharing semantic than that
+indicated by skb_shinfo()->dataref. 
+
+Note that the decision to distinguish between regular and emergency SKBs allows
+the accounting overhead to be limited to the later kind.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/net/sock.h |    5 ++++
- net/core/dev.c     |   59 +++++++++++++++++++++++++++++++++++++++++++++++------
- net/core/sock.c    |   16 ++++++++++++++
- 3 files changed, 74 insertions(+), 6 deletions(-)
+ include/linux/mm_types.h |    1 
+ include/linux/skbuff.h   |   25 +++++++--
+ net/core/skbuff.c        |  129 +++++++++++++++++++++++++++++++++++++----------
+ 3 files changed, 124 insertions(+), 31 deletions(-)
 
-Index: linux-2.6/net/core/dev.c
+Index: linux-2.6/include/linux/skbuff.h
 ===================================================================
---- linux-2.6.orig/net/core/dev.c
-+++ linux-2.6/net/core/dev.c
-@@ -2008,6 +2008,30 @@ out:
- }
+--- linux-2.6.orig/include/linux/skbuff.h
++++ linux-2.6/include/linux/skbuff.h
+@@ -317,7 +317,8 @@ struct sk_buff {
+ #ifdef CONFIG_IPV6_NDISC_NODETYPE
+ 	__u8			ndisc_nodetype:2;
  #endif
+-	/* 14 bit hole */
++	__u8 			emergency:1;
++	/* 13 bit hole */
  
-+/*
-+ * Filter the protocols for which the reserves are adequate.
-+ *
-+ * Before adding a protocol make sure that it is either covered by the existing
-+ * reserves, or add reserves covering the memory need of the new protocol's
-+ * packet processing.
-+ */
-+static int skb_emergency_protocol(struct sk_buff *skb)
+ #ifdef CONFIG_NET_DMA
+ 	dma_cookie_t		dma_cookie;
+@@ -348,10 +349,22 @@ struct sk_buff {
+ 
+ #include <asm/system.h>
+ 
++#define SKB_ALLOC_FCLONE	0x01
++#define SKB_ALLOC_RX		0x02
++
++static inline bool skb_emergency(const struct sk_buff *skb)
++{
++#ifdef CONFIG_NETVM
++	return unlikely(skb->emergency);
++#else
++	return false;
++#endif
++}
++
+ extern void kfree_skb(struct sk_buff *skb);
+ extern void	       __kfree_skb(struct sk_buff *skb);
+ extern struct sk_buff *__alloc_skb(unsigned int size,
+-				   gfp_t priority, int fclone, int node);
++				   gfp_t priority, int flags, int node);
+ static inline struct sk_buff *alloc_skb(unsigned int size,
+ 					gfp_t priority)
+ {
+@@ -361,7 +374,7 @@ static inline struct sk_buff *alloc_skb(
+ static inline struct sk_buff *alloc_skb_fclone(unsigned int size,
+ 					       gfp_t priority)
+ {
+-	return __alloc_skb(size, priority, 1, -1);
++	return __alloc_skb(size, priority, SKB_ALLOC_FCLONE, -1);
+ }
+ 
+ extern struct sk_buff *skb_morph(struct sk_buff *dst, struct sk_buff *src);
+@@ -1211,7 +1224,8 @@ static inline void __skb_queue_purge(str
+ static inline struct sk_buff *__dev_alloc_skb(unsigned int length,
+ 					      gfp_t gfp_mask)
+ {
+-	struct sk_buff *skb = alloc_skb(length + NET_SKB_PAD, gfp_mask);
++	struct sk_buff *skb =
++		__alloc_skb(length + NET_SKB_PAD, gfp_mask, SKB_ALLOC_RX, -1);
+ 	if (likely(skb))
+ 		skb_reserve(skb, NET_SKB_PAD);
+ 	return skb;
+@@ -1242,6 +1256,7 @@ static inline struct sk_buff *netdev_all
+ }
+ 
+ extern struct page *__netdev_alloc_page(struct net_device *dev, gfp_t gfp_mask);
++extern void __netdev_free_page(struct net_device *dev, struct page *page);
+ 
+ /**
+  *	netdev_alloc_page - allocate a page for ps-rx on a specific device
+@@ -1258,7 +1273,7 @@ static inline struct page *netdev_alloc_
+ 
+ static inline void netdev_free_page(struct net_device *dev, struct page *page)
+ {
+-	__free_page(page);
++	__netdev_free_page(dev, page);
+ }
+ 
+ /**
+Index: linux-2.6/net/core/skbuff.c
+===================================================================
+--- linux-2.6.orig/net/core/skbuff.c
++++ linux-2.6/net/core/skbuff.c
+@@ -179,23 +179,29 @@ EXPORT_SYMBOL(skb_truesize_bug);
+  *	%GFP_ATOMIC.
+  */
+ struct sk_buff *__alloc_skb(unsigned int size, gfp_t gfp_mask,
+-			    int fclone, int node)
++			    int flags, int node)
+ {
+ 	struct kmem_cache *cache;
+ 	struct skb_shared_info *shinfo;
+ 	struct sk_buff *skb;
+ 	u8 *data;
++	int emergency = 0;
++	int memalloc = sk_memalloc_socks();
+ 
+-	cache = fclone ? skbuff_fclone_cache : skbuff_head_cache;
++	size = SKB_DATA_ALIGN(size);
++	cache = (flags & SKB_ALLOC_FCLONE)
++		? skbuff_fclone_cache : skbuff_head_cache;
++
++	if (memalloc && (flags & SKB_ALLOC_RX))
++		gfp_mask |= __GFP_MEMALLOC;
+ 
+ 	/* Get the HEAD */
+ 	skb = kmem_cache_alloc_node(cache, gfp_mask & ~__GFP_DMA, node);
+ 	if (!skb)
+ 		goto out;
+ 
+-	size = SKB_DATA_ALIGN(size);
+-	data = kmalloc_node_track_caller(size + sizeof(struct skb_shared_info),
+-			gfp_mask, node);
++	data = kmalloc_reserve(size + sizeof(struct skb_shared_info),
++			gfp_mask, node, &net_skb_reserve, &emergency);
+ 	if (!data)
+ 		goto nodata;
+ 
+@@ -205,6 +211,7 @@ struct sk_buff *__alloc_skb(unsigned int
+ 	 * the tail pointer in struct sk_buff!
+ 	 */
+ 	memset(skb, 0, offsetof(struct sk_buff, tail));
++	skb->emergency = emergency;
+ 	skb->truesize = size + sizeof(struct sk_buff);
+ 	atomic_set(&skb->users, 1);
+ 	skb->head = data;
+@@ -221,7 +228,7 @@ struct sk_buff *__alloc_skb(unsigned int
+ 	shinfo->ip6_frag_id = 0;
+ 	shinfo->frag_list = NULL;
+ 
+-	if (fclone) {
++	if (flags & SKB_ALLOC_FCLONE) {
+ 		struct sk_buff *child = skb + 1;
+ 		atomic_t *fclone_ref = (atomic_t *) (child + 1);
+ 
+@@ -229,6 +236,7 @@ struct sk_buff *__alloc_skb(unsigned int
+ 		atomic_set(fclone_ref, 1);
+ 
+ 		child->fclone = SKB_FCLONE_UNAVAILABLE;
++		child->emergency = skb->emergency;
+ 	}
+ out:
+ 	return skb;
+@@ -257,7 +265,7 @@ struct sk_buff *__netdev_alloc_skb(struc
+ 	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
+ 	struct sk_buff *skb;
+ 
+-	skb = __alloc_skb(length + NET_SKB_PAD, gfp_mask, 0, node);
++	skb = __alloc_skb(length + NET_SKB_PAD, gfp_mask, SKB_ALLOC_RX, node);
+ 	if (likely(skb)) {
+ 		skb_reserve(skb, NET_SKB_PAD);
+ 		skb->dev = dev;
+@@ -270,11 +278,19 @@ struct page *__netdev_alloc_page(struct 
+ 	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
+ 	struct page *page;
+ 
+-	page = alloc_pages_node(node, gfp_mask, 0);
++	page = alloc_pages_reserve(node, gfp_mask | __GFP_MEMALLOC, 0,
++			&net_skb_reserve, NULL);
++
+ 	return page;
+ }
+ EXPORT_SYMBOL(__netdev_alloc_page);
+ 
++void __netdev_free_page(struct net_device *dev, struct page *page)
++{
++	free_pages_reserve(page, 0, &net_skb_reserve, page->reserve);
++}
++EXPORT_SYMBOL(__netdev_free_page);
++
+ void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page, int off,
+ 		int size)
+ {
+@@ -282,6 +298,27 @@ void skb_add_rx_frag(struct sk_buff *skb
+ 	skb->len += size;
+ 	skb->data_len += size;
+ 	skb->truesize += size;
++
++#ifdef CONFIG_NETVM
++	/*
++	 * In the rare case that skb_emergency() != page->reserved we'll
++	 * skew the accounting slightly, but since its only a 'small' constant
++	 * shift its ok.
++	 */
++	if (skb_emergency(skb)) {
++		/*
++		 * We need to track fragment pages so that we properly
++		 * release their reserve in skb_put_page().
++		 */
++		atomic_set(&page->frag_count, 1);
++	} else if (unlikely(page->reserve)) {
++		/*
++		 * Release the reserve now, because normal skbs don't
++		 * do the emergency accounting.
++		 */
++		mem_reserve_pages_charge(&net_skb_reserve, -1);
++	}
++#endif
+ }
+ EXPORT_SYMBOL(skb_add_rx_frag);
+ 
+@@ -333,21 +370,38 @@ static void skb_clone_fraglist(struct sk
+ 		skb_get(list);
+ }
+ 
++static void skb_get_page(struct sk_buff *skb, struct page *page)
++{
++	get_page(page);
++	if (skb_emergency(skb))
++		atomic_inc(&page->frag_count);
++}
++
++static void skb_put_page(struct sk_buff *skb, struct page *page)
++{
++	if (skb_emergency(skb) && atomic_dec_and_test(&page->frag_count))
++		mem_reserve_pages_charge(&net_skb_reserve, -1);
++	put_page(page);
++}
++
+ static void skb_release_data(struct sk_buff *skb)
+ {
+ 	if (!skb->cloned ||
+ 	    !atomic_sub_return(skb->nohdr ? (1 << SKB_DATAREF_SHIFT) + 1 : 1,
+ 			       &skb_shinfo(skb)->dataref)) {
++
+ 		if (skb_shinfo(skb)->nr_frags) {
+ 			int i;
+-			for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
+-				put_page(skb_shinfo(skb)->frags[i].page);
++			for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
++				skb_put_page(skb,
++					     skb_shinfo(skb)->frags[i].page);
++			}
+ 		}
+ 
+ 		if (skb_shinfo(skb)->frag_list)
+ 			skb_drop_fraglist(skb);
+ 
+-		kfree(skb->head);
++		kfree_reserve(skb->head, &net_skb_reserve, skb_emergency(skb));
+ 	}
+ }
+ 
+@@ -468,6 +522,7 @@ static void __copy_skb_header(struct sk_
+ #if defined(CONFIG_IP_VS) || defined(CONFIG_IP_VS_MODULE)
+ 	new->ipvs_property	= old->ipvs_property;
+ #endif
++	new->emergency		= old->emergency;
+ 	new->protocol		= old->protocol;
+ 	new->mark		= old->mark;
+ 	__nf_copy(new, old);
+@@ -556,6 +611,9 @@ struct sk_buff *skb_clone(struct sk_buff
+ 		n->fclone = SKB_FCLONE_CLONE;
+ 		atomic_inc(fclone_ref);
+ 	} else {
++		if (skb_emergency(skb))
++			gfp_mask |= __GFP_MEMALLOC;
++
+ 		n = kmem_cache_alloc(skbuff_head_cache, gfp_mask);
+ 		if (!n)
+ 			return NULL;
+@@ -587,6 +645,14 @@ static void copy_skb_header(struct sk_bu
+ 	skb_shinfo(new)->gso_type = skb_shinfo(old)->gso_type;
+ }
+ 
++static inline int skb_alloc_rx_flag(const struct sk_buff *skb)
 +{
 +	if (skb_emergency(skb))
-+		switch (skb->protocol) {
-+		case __constant_htons(ETH_P_ARP):
-+		case __constant_htons(ETH_P_IP):
-+		case __constant_htons(ETH_P_IPV6):
-+		case __constant_htons(ETH_P_8021Q):
-+			break;
++		return SKB_ALLOC_RX;
 +
-+		default:
-+			return 0;
-+		}
-+
-+	return 1;
++	return 0;
 +}
 +
  /**
-  *	netif_receive_skb - process receive buffer from network
-  *	@skb: buffer to process
-@@ -2029,10 +2053,23 @@ int netif_receive_skb(struct sk_buff *sk
- 	struct net_device *orig_dev;
- 	int ret = NET_RX_DROP;
- 	__be16 type;
-+	unsigned long pflags = current->flags;
-+
-+	/* Emergency skb are special, they should
-+	 *  - be delivered to SOCK_MEMALLOC sockets only
-+	 *  - stay away from userspace
-+	 *  - have bounded memory usage
-+	 *
-+	 * Use PF_MEMALLOC as a poor mans memory pool - the grouping kind.
-+	 * This saves us from propagating the allocation context down to all
-+	 * allocation sites.
-+	 */
-+	if (skb_emergency(skb))
-+		current->flags |= PF_MEMALLOC;
- 
- 	/* if we've gotten here through NAPI, check netpoll */
- 	if (netpoll_receive_skb(skb))
--		return NET_RX_DROP;
-+		goto out;
- 
- 	if (!skb->tstamp.tv64)
- 		net_timestamp(skb);
-@@ -2043,7 +2080,7 @@ int netif_receive_skb(struct sk_buff *sk
- 	orig_dev = skb_bond(skb);
- 
- 	if (!orig_dev)
--		return NET_RX_DROP;
-+		goto out;
- 
- 	__get_cpu_var(netdev_rx_stat).total++;
- 
-@@ -2062,6 +2099,9 @@ int netif_receive_skb(struct sk_buff *sk
- 	}
- #endif
- 
-+	if (skb_emergency(skb))
-+		goto skip_taps;
-+
- 	list_for_each_entry_rcu(ptype, &ptype_all, list) {
- 		if (!ptype->dev || ptype->dev == skb->dev) {
- 			if (pt_prev)
-@@ -2070,19 +2110,23 @@ int netif_receive_skb(struct sk_buff *sk
- 		}
- 	}
- 
-+skip_taps:
- #ifdef CONFIG_NET_CLS_ACT
- 	skb = handle_ing(skb, &pt_prev, &ret, orig_dev);
- 	if (!skb)
--		goto out;
-+		goto unlock;
- ncls:
- #endif
- 
-+	if (!skb_emergency_protocol(skb))
-+		goto drop;
-+
- 	skb = handle_bridge(skb, &pt_prev, &ret, orig_dev);
- 	if (!skb)
--		goto out;
-+		goto unlock;
- 	skb = handle_macvlan(skb, &pt_prev, &ret, orig_dev);
- 	if (!skb)
--		goto out;
-+		goto unlock;
- 
- 	type = skb->protocol;
- 	list_for_each_entry_rcu(ptype,
-@@ -2098,6 +2142,7 @@ ncls:
- 	if (pt_prev) {
- 		ret = pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
- 	} else {
-+drop:
- 		kfree_skb(skb);
- 		/* Jamal, now you will not able to escape explaining
- 		 * me how you were going to use this. :-)
-@@ -2105,8 +2150,10 @@ ncls:
- 		ret = NET_RX_DROP;
- 	}
- 
--out:
-+unlock:
- 	rcu_read_unlock();
-+out:
-+	tsk_restore_flags(current, pflags, PF_MEMALLOC);
- 	return ret;
- }
- 
-Index: linux-2.6/include/net/sock.h
-===================================================================
---- linux-2.6.orig/include/net/sock.h
-+++ linux-2.6/include/net/sock.h
-@@ -521,8 +521,13 @@ static inline void sk_add_backlog(struct
- 	skb->next = NULL;
- }
- 
-+extern int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb);
-+
- static inline int sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
+  *	skb_copy	-	create private copy of an sk_buff
+  *	@skb: buffer to copy
+@@ -607,15 +673,17 @@ static void copy_skb_header(struct sk_bu
+ struct sk_buff *skb_copy(const struct sk_buff *skb, gfp_t gfp_mask)
  {
-+	if (skb_emergency(skb))
-+		return __sk_backlog_rcv(sk, skb);
-+
- 	return sk->sk_backlog_rcv(sk, skb);
- }
- 
-Index: linux-2.6/net/core/sock.c
-===================================================================
---- linux-2.6.orig/net/core/sock.c
-+++ linux-2.6/net/core/sock.c
-@@ -313,6 +313,22 @@ int sk_clear_memalloc(struct sock *sk)
- 	return set;
- }
- EXPORT_SYMBOL_GPL(sk_clear_memalloc);
-+
-+int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
-+{
-+	int ret;
-+	unsigned long pflags = current->flags;
-+
-+	/* these should have been dropped before queueing */
-+	BUG_ON(!sk_has_memalloc(sk));
-+
-+	current->flags |= PF_MEMALLOC;
-+	ret = sk->sk_backlog_rcv(sk, skb);
-+	tsk_restore_flags(current, pflags, PF_MEMALLOC);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(__sk_backlog_rcv);
+ 	int headerlen = skb->data - skb->head;
++	int size;
+ 	/*
+ 	 *	Allocate the copy buffer
+ 	 */
+ 	struct sk_buff *n;
+ #ifdef NET_SKBUFF_DATA_USES_OFFSET
+-	n = alloc_skb(skb->end + skb->data_len, gfp_mask);
++	size = skb->end + skb->data_len;
+ #else
+-	n = alloc_skb(skb->end - skb->head + skb->data_len, gfp_mask);
++	size = skb->end - skb->head + skb->data_len;
  #endif
++	n = __alloc_skb(size, gfp_mask, skb_alloc_rx_flag(skb), -1);
+ 	if (!n)
+ 		return NULL;
  
- static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
+@@ -650,12 +718,14 @@ struct sk_buff *pskb_copy(struct sk_buff
+ 	/*
+ 	 *	Allocate the copy buffer
+ 	 */
++	int size;
+ 	struct sk_buff *n;
+ #ifdef NET_SKBUFF_DATA_USES_OFFSET
+-	n = alloc_skb(skb->end, gfp_mask);
++	size = skb->end;
+ #else
+-	n = alloc_skb(skb->end - skb->head, gfp_mask);
++	size = skb->end - skb->head;
+ #endif
++	n = __alloc_skb(size, gfp_mask, skb_alloc_rx_flag(skb), -1);
+ 	if (!n)
+ 		goto out;
+ 
+@@ -674,8 +744,9 @@ struct sk_buff *pskb_copy(struct sk_buff
+ 		int i;
+ 
+ 		for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
+-			skb_shinfo(n)->frags[i] = skb_shinfo(skb)->frags[i];
+-			get_page(skb_shinfo(n)->frags[i].page);
++			skb_frag_t *frag = &skb_shinfo(skb)->frags[i];
++			skb_shinfo(n)->frags[i] = *frag;
++			skb_get_page(n, frag->page);
+ 		}
+ 		skb_shinfo(n)->nr_frags = i;
+ 	}
+@@ -723,7 +794,11 @@ int pskb_expand_head(struct sk_buff *skb
+ 
+ 	size = SKB_DATA_ALIGN(size);
+ 
+-	data = kmalloc(size + sizeof(struct skb_shared_info), gfp_mask);
++	if (skb_emergency(skb))
++		gfp_mask |= __GFP_MEMALLOC;
++
++	data = kmalloc_reserve(size + sizeof(struct skb_shared_info),
++			gfp_mask, -1, &net_skb_reserve, NULL);
+ 	if (!data)
+ 		goto nodata;
+ 
+@@ -738,7 +813,7 @@ int pskb_expand_head(struct sk_buff *skb
+ 	       sizeof(struct skb_shared_info));
+ 
+ 	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
+-		get_page(skb_shinfo(skb)->frags[i].page);
++		skb_get_page(skb, skb_shinfo(skb)->frags[i].page);
+ 
+ 	if (skb_shinfo(skb)->frag_list)
+ 		skb_clone_fraglist(skb);
+@@ -817,8 +892,8 @@ struct sk_buff *skb_copy_expand(const st
+ 	/*
+ 	 *	Allocate the copy buffer
+ 	 */
+-	struct sk_buff *n = alloc_skb(newheadroom + skb->len + newtailroom,
+-				      gfp_mask);
++	struct sk_buff *n = __alloc_skb(newheadroom + skb->len + newtailroom,
++					gfp_mask, skb_alloc_rx_flag(skb), -1);
+ 	int oldheadroom = skb_headroom(skb);
+ 	int head_copy_len, head_copy_off;
+ 	int off;
+@@ -1007,7 +1082,7 @@ drop_pages:
+ 		skb_shinfo(skb)->nr_frags = i;
+ 
+ 		for (; i < nfrags; i++)
+-			put_page(skb_shinfo(skb)->frags[i].page);
++			skb_put_page(skb, skb_shinfo(skb)->frags[i].page);
+ 
+ 		if (skb_shinfo(skb)->frag_list)
+ 			skb_drop_fraglist(skb);
+@@ -1176,7 +1251,7 @@ pull_pages:
+ 	k = 0;
+ 	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
+ 		if (skb_shinfo(skb)->frags[i].size <= eat) {
+-			put_page(skb_shinfo(skb)->frags[i].page);
++			skb_put_page(skb, skb_shinfo(skb)->frags[i].page);
+ 			eat -= skb_shinfo(skb)->frags[i].size;
+ 		} else {
+ 			skb_shinfo(skb)->frags[k] = skb_shinfo(skb)->frags[i];
+@@ -1956,6 +2031,7 @@ static inline void skb_split_no_header(s
+ 			skb_shinfo(skb1)->frags[k] = skb_shinfo(skb)->frags[i];
+ 
+ 			if (pos < len) {
++				struct page *page = skb_shinfo(skb)->frags[i].page;
+ 				/* Split frag.
+ 				 * We have two variants in this case:
+ 				 * 1. Move all the frag to the second
+@@ -1964,7 +2040,7 @@ static inline void skb_split_no_header(s
+ 				 *    where splitting is expensive.
+ 				 * 2. Split is accurately. We make this.
+ 				 */
+-				get_page(skb_shinfo(skb)->frags[i].page);
++				skb_get_page(skb1, page);
+ 				skb_shinfo(skb1)->frags[0].page_offset += len - pos;
+ 				skb_shinfo(skb1)->frags[0].size -= len - pos;
+ 				skb_shinfo(skb)->frags[i].size	= len - pos;
+@@ -2294,7 +2370,8 @@ struct sk_buff *skb_segment(struct sk_bu
+ 		if (hsize > len || !sg)
+ 			hsize = len;
+ 
+-		nskb = alloc_skb(hsize + doffset + headroom, GFP_ATOMIC);
++		nskb = __alloc_skb(hsize + doffset + headroom, GFP_ATOMIC,
++				   skb_alloc_rx_flag(skb), -1);
+ 		if (unlikely(!nskb))
+ 			goto err;
+ 
+@@ -2339,7 +2416,7 @@ struct sk_buff *skb_segment(struct sk_bu
+ 			BUG_ON(i >= nfrags);
+ 
+ 			*frag = skb_shinfo(skb)->frags[i];
+-			get_page(frag->page);
++			skb_get_page(nskb, frag->page);
+ 			size = frag->size;
+ 
+ 			if (pos < offset) {
+Index: linux-2.6/include/linux/mm_types.h
+===================================================================
+--- linux-2.6.orig/include/linux/mm_types.h
++++ linux-2.6/include/linux/mm_types.h
+@@ -74,6 +74,7 @@ struct page {
+ 		pgoff_t index;		/* Our offset within mapping. */
+ 		void *freelist;		/* SLUB: freelist req. slab lock */
+ 		int reserve;		/* page_alloc: page is a reserve page */
++		atomic_t frag_count;	/* skb fragment use count */
+ 	};
+ 	struct list_head lru;		/* Pageout list, eg. active_list
+ 					 * protected by zone->lru_lock !
 
 -- 
 
