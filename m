@@ -1,193 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbYGXNXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752443AbYGXNYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753876AbYGXNXt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 09:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYGXNXj
+	id S1752443AbYGXNYF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 09:24:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbYGXNXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 09:23:39 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45528 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751256AbYGXNXi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 09:23:38 -0400
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
-	pointer dereference
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       herbert@gondor.apana.org.au, w@1wt.eu, davidn@davidnewall.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
-       Dave Jones <davej@redhat.com>
-In-Reply-To: <48887A71.5010209@trash.net>
-References: <20080724060448.GA10203@elte.hu>
-	 <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>
-	 <20080724.022259.113079007.davem@davemloft.net>
-	 <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu>
-	 <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net>
-	 <84144f020807240544q507e1b7cv220d1afbae0ee0f0@mail.gmail.com>
-	 <48887A71.5010209@trash.net>
-Date: Thu, 24 Jul 2008 16:23:32 +0300
-Message-Id: <1216905812.5897.6.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 24 Jul 2008 09:23:43 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35347 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752751AbYGXNXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 09:23:42 -0400
+X-Authenticated: #2218979
+X-Provags-ID: V01U2FsdGVkX18v8vEP6+Iv1mvm3KOGSWmZas4fbcj1cPiSgtatkL
+	6iJdlDco7rvjqS
+Message-ID: <4888825A.1080503@gmx.de>
+Date: Thu, 24 Jul 2008 15:23:38 +0200
+From: Thomas Kunze <thommycheck@gmx.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>, thommycheck@gmx.de,
+       david-b@packbell.net
+Subject: mmc_test with mmc_spi
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.78
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-24 at 14:49 +0200, Patrick McHardy wrote:
-> Pekka Enberg wrote:
-> > On Thu, Jul 24, 2008 at 3:03 PM, Patrick McHardy <kaber@trash.net> wrote:
-> >> Ingo Molnar wrote:
-> >>> * Ingo Molnar <mingo@elte.hu> wrote:
-> >>>
-> >>>> here's a new type of crash a -tip testbox triggered today:
-> >>>>
-> >>>> BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
-> >>>> IP: [<0000000000000000>] 0x0
-> >>>> ...
-> >>>> Call Trace:
-> >>>>  [<ffffffff80777f25>] ? ipv4_confirm+0x8d/0x122
-> >>>>  [<ffffffff80733107>] nf_iterate+0x43/0xa5
-> >> Does reverting 31d8519c fix this?
-> > 
-> > Hmm, why do you think it's related? It looks like elem->hook() is a
-> > NULL pointer but my patch shouldn't make any difference here...
-> 
-> No, its already in ipv4_confirm, so its most likely helper->help()
-> thats NULL, which is contained in an extension.
-> 
-> The reason why I think its this patch is (quoting from an old
-> email that I never got a response to):
+Hi Pierre,
 
-Oh, I'm really sorry about that.
+I wrote a small hack to be able to use the mmc_test driver on mmc-spi host. You or somebody else might find it useful.
+All test but "Correct xfer_size at write (start failure)", "Correct xfer_size at read (start failure)" and "Correct xfer_size 
+at write (midway failure)" passed.
+I'm not sure what these tests try to do and how they do it, so I don't know if my modifcations of mmc_test, my spi driver or the 
+mmc-spi driver are responsible.
 
-> ---
-> Your patch introduced a use-after-free and double-free.
-> krealloc() frees the old pointer, but it is still used
-> for the ->move operations, then freed again.
-> 
-> To fix this I think we need a __krealloc() that doesn't
-> free the old memory, especially since it must not be
-> freed immediately because it may still be used in a RCU
-> read side (see the last part in the patch attached to
-> this mail (based on a kernel without your patch)).
+It would be great if you could provide some insight.
 
-Agreed. Something like this, perhaps?
+Regards,
+Thomas
 
-[PATCH] netfilter: fix double-free and use-after free
-
-As suggested by Patrick McHardy, introduce a __krealloc() that doesn't
-free the original buffer to fix a double-free and use-after-free bug
-introduced by me in netfilter that uses RCU.
-
-Reported-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
-
-diff --git a/include/linux/slab.h b/include/linux/slab.h
-index 9aa90a6..be6f1d4 100644
---- a/include/linux/slab.h
-+++ b/include/linux/slab.h
-@@ -96,6 +96,7 @@ int kmem_ptr_validate(struct kmem_cache *cachep, const void *ptr);
- /*
-  * Common kmalloc functions provided by all allocators
-  */
-+void * __must_check __krealloc(const void *, size_t, gfp_t);
- void * __must_check krealloc(const void *, size_t, gfp_t);
- void kfree(const void *);
- size_t ksize(const void *);
-diff --git a/mm/util.c b/mm/util.c
-index 8f18683..6ef9e99 100644
---- a/mm/util.c
-+++ b/mm/util.c
-@@ -68,25 +68,22 @@ void *kmemdup(const void *src, size_t len, gfp_t gfp)
- EXPORT_SYMBOL(kmemdup);
+--
+diff --git a/drivers/mmc/card/mmc_test.c b/drivers/mmc/card/mmc_test.c
+index d6b9b48..2366150 100644
+--- a/drivers/mmc/card/mmc_test.c
++++ b/drivers/mmc/card/mmc_test.c
+@@ -44,7 +44,7 @@ static int mmc_test_set_blksize(struct mmc_test_card *test, unsigned size)
  
- /**
-- * krealloc - reallocate memory. The contents will remain unchanged.
-+ * __krealloc - like krealloc() but don't free @p.
-  * @p: object to reallocate memory for.
-  * @new_size: how many bytes of memory are required.
-  * @flags: the type of memory to allocate.
-  *
-- * The contents of the object pointed to are preserved up to the
-- * lesser of the new and old sizes.  If @p is %NULL, krealloc()
-- * behaves exactly like kmalloc().  If @size is 0 and @p is not a
-- * %NULL pointer, the object pointed to is freed.
-+ * This function is like krealloc() except it never frees the originally
-+ * allocated buffer. Use this if you don't want to free the buffer immediately
-+ * like, for example, with RCU.
-  */
--void *krealloc(const void *p, size_t new_size, gfp_t flags)
-+void *__krealloc(const void *p, size_t new_size, gfp_t flags)
- {
- 	void *ret;
- 	size_t ks = 0;
- 
--	if (unlikely(!new_size)) {
--		kfree(p);
-+	if (unlikely(!new_size))
- 		return ZERO_SIZE_PTR;
--	}
- 
- 	if (p)
- 		ks = ksize(p);
-@@ -95,10 +92,37 @@ void *krealloc(const void *p, size_t new_size, gfp_t flags)
- 		return (void *)p;
- 
- 	ret = kmalloc_track_caller(new_size, flags);
--	if (ret && p) {
-+	if (ret && p)
- 		memcpy(ret, p, ks);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(__krealloc);
-+
-+/**
-+ * krealloc - reallocate memory. The contents will remain unchanged.
-+ * @p: object to reallocate memory for.
-+ * @new_size: how many bytes of memory are required.
-+ * @flags: the type of memory to allocate.
-+ *
-+ * The contents of the object pointed to are preserved up to the
-+ * lesser of the new and old sizes.  If @p is %NULL, krealloc()
-+ * behaves exactly like kmalloc().  If @size is 0 and @p is not a
-+ * %NULL pointer, the object pointed to is freed.
-+ */
-+void *krealloc(const void *p, size_t new_size, gfp_t flags)
-+{
-+	void *ret;
-+
-+	if (unlikely(!new_size)) {
- 		kfree(p);
-+		return ZERO_SIZE_PTR;
+ 	cmd.opcode = MMC_SET_BLOCKLEN;
+ 	cmd.arg = size;
+-	cmd.flags = MMC_RSP_R1 | MMC_CMD_AC;
++	cmd.flags = MMC_RSP_SPI_R1;
+ 	ret = mmc_wait_for_cmd(test->card->host, &cmd, 0);
+ 	if (ret)
+ 		return ret;
+@@ -70,14 +70,14 @@ static void mmc_test_prepare_mrq(struct mmc_test_card *test,
  	}
-+
-+	ret = __krealloc(p, new_size, flags);
-+	if (ret && p != ret)
-+		kfree(p);
-+
- 	return ret;
+ 
+ 	mrq->cmd->arg = dev_addr;
+-	mrq->cmd->flags = MMC_RSP_R1 | MMC_CMD_ADTC;
++	mrq->cmd->flags = MMC_RSP_SPI_R1;
+ 
+ 	if (blocks == 1)
+ 		mrq->stop = NULL;
+ 	else {
+ 		mrq->stop->opcode = MMC_STOP_TRANSMISSION;
+ 		mrq->stop->arg = 0;
+-		mrq->stop->flags = MMC_RSP_R1B | MMC_CMD_AC;
++		mrq->stop->flags = MMC_RSP_SPI_R1;
+ 	}
+ 
+ 	mrq->data->blksz = blksz;
+@@ -103,7 +103,7 @@ static int mmc_test_wait_busy(struct mmc_test_card *test)
+ 
+ 		cmd.opcode = MMC_SEND_STATUS;
+ 		cmd.arg = test->card->rca << 16;
+-		cmd.flags = MMC_RSP_R1 | MMC_CMD_AC;
++		cmd.flags = MMC_RSP_SPI_R2;
+ 
+ 		ret = mmc_wait_for_cmd(test->card->host, &cmd, 0);
+ 		if (ret)
+@@ -155,10 +155,10 @@ static int mmc_test_buffer_transfer(struct mmc_test_card *test,
+ 	if (data.error)
+ 		return data.error;
+ 
+-	ret = mmc_test_wait_busy(test);
++/*	ret = mmc_test_wait_busy(test);
+ 	if (ret)
+ 		return ret;
+-
++*/
+ 	return 0;
  }
- EXPORT_SYMBOL(krealloc);
-diff --git a/net/netfilter/nf_conntrack_extend.c b/net/netfilter/nf_conntrack_extend.c
-index 3469bc7..c956ef7 100644
---- a/net/netfilter/nf_conntrack_extend.c
-+++ b/net/netfilter/nf_conntrack_extend.c
-@@ -95,7 +95,7 @@ void *__nf_ct_ext_add(struct nf_conn *ct, enum nf_ct_ext_id id, gfp_t gfp)
- 	newlen = newoff + t->len;
- 	rcu_read_unlock();
  
--	new = krealloc(ct->ext, newlen, gfp);
-+	new = __krealloc(ct->ext, newlen, gfp);
- 	if (!new)
- 		return NULL;
+@@ -240,7 +240,7 @@ static void mmc_test_prepare_broken_mrq(struct mmc_test_card *test,
+ 			MMC_WRITE_BLOCK : MMC_READ_SINGLE_BLOCK;
+ 		mrq->stop = NULL;
+ 	} else {
+-		mrq->cmd->opcode = MMC_SEND_STATUS;
++		mrq->cmd->opcode = MMC_SEND_CID;
+ 		mrq->cmd->arg = test->card->rca << 16;
+ 	}
+ }
+@@ -333,7 +333,7 @@ static int mmc_test_simple_transfer(struct mmc_test_card *test,
  
-
-
+ 	mmc_wait_for_req(test->card->host, &mrq);
+ 
+-	mmc_test_wait_busy(test);
++	//mmc_test_wait_busy(test);
+ 
+ 	return mmc_test_check_result(test, &mrq);
+ }
+@@ -367,7 +367,7 @@ static int mmc_test_broken_transfer(struct mmc_test_card *test,
+ 
+ 	mmc_wait_for_req(test->card->host, &mrq);
+ 
+-	mmc_test_wait_busy(test);
++	//mmc_test_wait_busy(test);
+ 
+ 	return mmc_test_check_broken_result(test, &mrq);
+ }
 
