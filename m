@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbYGXXQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbYGXXU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842AbYGXXQe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 19:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbYGXXQ0
+	id S1755689AbYGXXU2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 19:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYGXXUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 19:16:26 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:15634 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755380AbYGXXQZ (ORCPT
+	Thu, 24 Jul 2008 19:20:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41470 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751268AbYGXXUQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 19:16:25 -0400
-Date: Thu, 24 Jul 2008 16:09:32 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: vegardno@ifi.uio.no, penberg@cs.helsinki.fi,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH -next] kmemcheck: include module.h to prevent warnings
-Message-Id: <20080724160932.cdcf4927.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 24 Jul 2008 19:20:16 -0400
+Date: Thu, 24 Jul 2008 16:16:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+cc: "x86@kernel.org" <x86@kernel.org>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] x64, fpu: fix possible FPU leakage in error conditions
+In-Reply-To: <20080724230658.GP14380@linux-os.sc.intel.com>
+Message-ID: <alpine.LFD.1.10.0807241616241.8109@nehalem.linux-foundation.org>
+References: <20080724180429.GI14380@linux-os.sc.intel.com> <alpine.LFD.1.10.0807241122260.3237@nehalem.linux-foundation.org> <20080724185053.GJ14380@linux-os.sc.intel.com> <alpine.LFD.1.10.0807241154260.3237@nehalem.linux-foundation.org>
+ <20080724202728.GL14380@linux-os.sc.intel.com> <alpine.LFD.1.10.0807241330210.15524@nehalem.linux-foundation.org> <20080724212351.GM14380@linux-os.sc.intel.com> <alpine.LFD.1.10.0807241431180.8109@nehalem.linux-foundation.org> <20080724222523.GN14380@linux-os.sc.intel.com>
+ <alpine.LFD.1.10.0807241532240.8109@nehalem.linux-foundation.org> <20080724230658.GP14380@linux-os.sc.intel.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-kmemcheck/shadow.c needs to include <linux/module.h> to prevent
-the following warnings:
-
-linux-next-20080724/arch/x86/mm/kmemcheck/shadow.c:64: warning : data definition has no type or storage class
-linux-next-20080724/arch/x86/mm/kmemcheck/shadow.c:64: warning : type defaults to 'int' in declaration of 'EXPORT_SYMBOL_GPL'
-linux-next-20080724/arch/x86/mm/kmemcheck/shadow.c:64: warning : parameter names (without types) in function declaration
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- arch/x86/mm/kmemcheck/shadow.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-next-20080724.orig/arch/x86/mm/kmemcheck/shadow.c
-+++ linux-next-20080724/arch/x86/mm/kmemcheck/shadow.c
-@@ -1,5 +1,6 @@
- #include <linux/kmemcheck.h>
- #include <linux/mm.h>
-+#include <linux/module.h>
- 
- #include <asm/page.h>
- #include <asm/pgtable.h>
 
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+On Thu, 24 Jul 2008, Suresh Siddha wrote:
+> 
+> BTW, while you are at it, please move save_i387() aswell, to be consistent
+> and clean.
+
+Ack. Will do.
+
+		Linus
