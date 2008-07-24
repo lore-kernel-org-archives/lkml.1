@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbYGXHdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbYGXHez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752713AbYGXHdg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 03:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbYGXHd1
+	id S1753265AbYGXHez (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 03:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbYGXHem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 03:33:27 -0400
-Received: from mail164.messagelabs.com ([216.82.253.131]:6260 "EHLO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750894AbYGXHd1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 03:33:27 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-13.tower-164.messagelabs.com!1216884803!6363799!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.14]
-Date: Thu, 24 Jul 2008 09:33:19 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: <linux-kernel@vger.kernel.org>
-CC: David Brownell <david-b@pacbell.net>,
-       Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>,
-       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: [PATCH] add might_sleep() to all implementations of gpio_free
-Message-ID: <20080724073319.GA12289@digi.com>
-References: <200807230916.48056.david-b@pacbell.net> <1216884515-12084-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+	Thu, 24 Jul 2008 03:34:42 -0400
+Received: from 1wt.eu ([62.212.114.60]:1940 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750883AbYGXHem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 03:34:42 -0400
+Date: Thu, 24 Jul 2008 09:33:14 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       David Newall <davidn@davidnewall.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [TCP bug, regression] stuck distcc connections in latest -git
+Message-ID: <20080724073313.GA16604@1wt.eu>
+References: <20080721184616.GA8442@elte.hu> <20080722112133.GA6575@elte.hu> <4885E482.5020502@davidnewall.com> <20080722135723.GA23077@elte.hu> <4885F496.3010305@davidnewall.com> <20080722153443.GB18757@elte.hu> <20080722211256.GB29189@1wt.eu> <20080723082643.GA992@elte.hu> <20080724060448.GA10203@elte.hu> <20080724063242.GA9051@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1216884515-12084-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 24 Jul 2008 07:33:19.0861 (UTC) FILETIME=[8B86EA50:01C8ED5F]
+In-Reply-To: <20080724063242.GA9051@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, Jul 24, 2008 at 08:32:42AM +0200, Ingo Molnar wrote:
+> 
+> here's a longer log from the server, with sequences, flags, etc:
 
-Uwe Kleine-König wrote:
-> According to Documentation gpio_free should only be called from task
-> context.  To make this more explicit add a might_sleep.
-I just now noticed that I forgot to include my changes to
-arch/blackfin/kernel/bfin_gpio.c in my patch.
-Will fix that when/if resending the patch.
+good. The sequence numbers from dione to phoenix are bouncing back and
+forth because a big data chunk was lost, so dione is alternatively
+sending and old segment (retransmit) which, when ACKed, allows it to
+slide the window forward and send one more chunk from the window tip.
 
-Best regards
-Uwe
+> 08:06:47.809947 IP (tos 0x0, ttl 64, id 13998, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234555110:234555646(536) ack 2272574194 win 5840
+> 08:06:47.809974 IP (tos 0x0, ttl 64, id 27389, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x9900 (correct), 2272574194:2272574194(0) ack 234555646 win 65535
+> 08:06:47.810051 IP (tos 0x0, ttl 64, id 13999, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234620645:234621181(536) ack 2272574194 win 5840
+> 08:06:47.810065 IP (tos 0x0, ttl 64, id 27390, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x9900 (correct), 2272574194:2272574194(0) ack 234555646 win 65535
+> 08:08:47.829813 IP (tos 0x0, ttl 64, id 14000, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234555646:234556182(536) ack 2272574194 win 5840
+> 08:08:47.829909 IP (tos 0x0, ttl 64, id 27391, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x96e8 (correct), 2272574194:2272574194(0) ack 234556182 win 65535
+> 08:08:47.830009 IP (tos 0x0, ttl 64, id 14001, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234621181:234621717(536) ack 2272574194 win 5840
+(...)
+> 08:30:48.049167 IP (tos 0x0, ttl 64, id 14022, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234561256:234561792(536) ack 2272574194 win 5840
+> 08:30:48.049223 IP (tos 0x0, ttl 64, id 27413, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x80fe (correct), 2272574194:2272574194(0) ack 234561792 win 65535
+> 08:30:48.049341 IP (tos 0x0, ttl 64, id 14023, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234626648:234627184(536) ack 2272574194 win 5840
+> 08:30:48.049348 IP (tos 0x0, ttl 64, id 14024, offset 0, flags [DF], proto TCP (6), length 183) dione.39201 > phoenix.distcc: . 234627184:234627327(143) ack 2272574194 win 5840
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+here it looks like dione believes it does not have the chunk starting
+at 234561792. Maybe it moved its window too far ? It only sends the
+tip of the window.
+
+> 08:30:48.049354 IP (tos 0x0, ttl 64, id 27414, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x80fe (correct), 2272574194:2272574194(0) ack 234561792 win 65535
+> 08:30:48.049359 IP (tos 0x0, ttl 64, id 27415, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x80fe (correct), 2272574194:2272574194(0) ack 234561792 win 65535
+
+And phoenix insists on getting what is missing from the window.
+
+So dione is wrong here.
+
+Regards,
+Willy
+
