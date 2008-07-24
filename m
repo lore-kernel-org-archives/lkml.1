@@ -1,69 +1,778 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbYGXHez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752604AbYGXHhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753265AbYGXHez (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 03:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbYGXHem
+	id S1752604AbYGXHhj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 03:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbYGXHha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 03:34:42 -0400
-Received: from 1wt.eu ([62.212.114.60]:1940 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750883AbYGXHem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 03:34:42 -0400
-Date: Thu, 24 Jul 2008 09:33:14 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       David Newall <davidn@davidnewall.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [TCP bug, regression] stuck distcc connections in latest -git
-Message-ID: <20080724073313.GA16604@1wt.eu>
-References: <20080721184616.GA8442@elte.hu> <20080722112133.GA6575@elte.hu> <4885E482.5020502@davidnewall.com> <20080722135723.GA23077@elte.hu> <4885F496.3010305@davidnewall.com> <20080722153443.GB18757@elte.hu> <20080722211256.GB29189@1wt.eu> <20080723082643.GA992@elte.hu> <20080724060448.GA10203@elte.hu> <20080724063242.GA9051@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080724063242.GA9051@elte.hu>
-User-Agent: Mutt/1.5.11
+	Thu, 24 Jul 2008 03:37:30 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:51814 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750856AbYGXHh2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 03:37:28 -0400
+Message-ID: <4888311E.9010005@euromail.se>
+Date: Thu, 24 Jul 2008 09:37:02 +0200
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dmitry.torokhov@gmail.com, robfitz@273k.net, akpm@osdl.org,
+       jikos@jikos.cz, vojtech@suse.cz, dmonakhov@openvz.org
+CC: johannes@sipsolutions.net
+Subject: [PATCH] bcm5974-0.58: name changes, open/close and suspend/resume
+ serialized
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.35.11
+X-Scan-Result: No virus found in message 1KLvO8-0000Nv-5T.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1KLvO8-0000Nv-5T 499a36b34b717abc26f739917fd561c6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 08:32:42AM +0200, Ingo Molnar wrote:
-> 
-> here's a longer log from the server, with sequences, flags, etc:
+BCM5974: This driver adds support for the multitouch trackpad on the new
+Apple Macbook Air and Macbook Pro Penryn laptops. It replaces the
+appletouch driver on those computers, and integrates well with the
+synaptics driver of the Xorg system.
 
-good. The sequence numbers from dione to phoenix are bouncing back and
-forth because a big data chunk was lost, so dione is alternatively
-sending and old segment (retransmit) which, when ACKed, allows it to
-slide the window forward and send one more chunk from the window tip.
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+---
 
-> 08:06:47.809947 IP (tos 0x0, ttl 64, id 13998, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234555110:234555646(536) ack 2272574194 win 5840
-> 08:06:47.809974 IP (tos 0x0, ttl 64, id 27389, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x9900 (correct), 2272574194:2272574194(0) ack 234555646 win 65535
-> 08:06:47.810051 IP (tos 0x0, ttl 64, id 13999, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234620645:234621181(536) ack 2272574194 win 5840
-> 08:06:47.810065 IP (tos 0x0, ttl 64, id 27390, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x9900 (correct), 2272574194:2272574194(0) ack 234555646 win 65535
-> 08:08:47.829813 IP (tos 0x0, ttl 64, id 14000, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234555646:234556182(536) ack 2272574194 win 5840
-> 08:08:47.829909 IP (tos 0x0, ttl 64, id 27391, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x96e8 (correct), 2272574194:2272574194(0) ack 234556182 win 65535
-> 08:08:47.830009 IP (tos 0x0, ttl 64, id 14001, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234621181:234621717(536) ack 2272574194 win 5840
-(...)
-> 08:30:48.049167 IP (tos 0x0, ttl 64, id 14022, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234561256:234561792(536) ack 2272574194 win 5840
-> 08:30:48.049223 IP (tos 0x0, ttl 64, id 27413, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x80fe (correct), 2272574194:2272574194(0) ack 234561792 win 65535
-> 08:30:48.049341 IP (tos 0x0, ttl 64, id 14023, offset 0, flags [DF], proto TCP (6), length 576) dione.39201 > phoenix.distcc: . 234626648:234627184(536) ack 2272574194 win 5840
-> 08:30:48.049348 IP (tos 0x0, ttl 64, id 14024, offset 0, flags [DF], proto TCP (6), length 183) dione.39201 > phoenix.distcc: . 234627184:234627327(143) ack 2272574194 win 5840
+This is version bcm5974-0.58. Changes since 0.57 are in short:
 
-here it looks like dione believes it does not have the chunk starting
-at 234561792. Maybe it moved its window too far ? It only sends the
-tip of the window.
+  * Name changes; use usbhid definitions, rename atp to bcm5974
+  * Input syncing moved to report functions, event type setup broken out
+  * Traffic functions added for open/close and suspend/resume logic
+  * Open/close and suspend/resume transition logic corrected
+  * Open/close serialized with respect to suspend/resume
 
-> 08:30:48.049354 IP (tos 0x0, ttl 64, id 27414, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x80fe (correct), 2272574194:2272574194(0) ack 234561792 win 65535
-> 08:30:48.049359 IP (tos 0x0, ttl 64, id 27415, offset 0, flags [DF], proto TCP (6), length 40) phoenix.distcc > dione.39201: ., cksum 0x80fe (correct), 2272574194:2272574194(0) ack 234561792 win 65535
+Thanks to Dmitry Torokhov for reviewing and clearing up the resume functionality,
+and Alan Stern for the resume error state handling.
 
-And phoenix insists on getting what is missing from the window.
+This patch is against linux-next v2.6.26-9281-gb475aa5.
 
-So dione is wrong here.
+diff --git a/drivers/input/mouse/Kconfig b/drivers/input/mouse/Kconfig
+index 7bbea09..956cc4f 100644
+--- a/drivers/input/mouse/Kconfig
++++ b/drivers/input/mouse/Kconfig
+@@ -130,6 +130,29 @@ config MOUSE_APPLETOUCH
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called appletouch.
 
-Regards,
-Willy
++config MOUSE_BCM5974
++	tristate "Apple USB BCM5974 Multitouch trackpad support"
++	depends on USB_ARCH_HAS_HCD
++	depends on USB
++	help
++	  Say Y here if you have an Apple USB BCM5974 Multitouch
++	  trackpad.
++	
++	  The BCM5974 is the multitouch trackpad found in the Macbook
++	  Air (JAN2008) and Macbook Pro Penryn (FEB2008) laptops.
++	
++	  It is also found in the IPhone (2007) and Ipod Touch (2008).
++	
++	  This driver provides multitouch functionality together with
++	  the synaptics X11 driver.
++	
++	  The interface is currently identical to the appletouch interface,
++	  for further information, see
++	  <file:Documentation/input/appletouch.txt>.
++	
++	  To compile this driver as a module, choose M here: the
++	  module will be called bcm5974.
++
+ config MOUSE_INPORT
+ 	tristate "InPort/MS/ATIXL busmouse"
+ 	depends on ISA
+diff --git a/drivers/input/mouse/Makefile b/drivers/input/mouse/Makefile
+index 9e6e363..d4d2025 100644
+--- a/drivers/input/mouse/Makefile
++++ b/drivers/input/mouse/Makefile
+@@ -6,6 +6,7 @@
 
+ obj-$(CONFIG_MOUSE_AMIGA)	+= amimouse.o
+ obj-$(CONFIG_MOUSE_APPLETOUCH)	+= appletouch.o
++obj-$(CONFIG_MOUSE_BCM5974)	+= bcm5974.o
+ obj-$(CONFIG_MOUSE_ATARI)	+= atarimouse.o
+ obj-$(CONFIG_MOUSE_RISCPC)	+= rpcmouse.o
+ obj-$(CONFIG_MOUSE_INPORT)	+= inport.o
+diff --git a/drivers/input/mouse/bcm5974.c b/drivers/input/mouse/bcm5974.c
+new file mode 100644
+index 0000000..55c1f60
+--- /dev/null
++++ b/drivers/input/mouse/bcm5974.c
+@@ -0,0 +1,673 @@
++/*
++ * Apple USB BCM5974 (Macbook Air and Penryn Macbook Pro) multitouch driver
++ *
++ * Copyright (C) 2008	   Henrik Rydberg (rydberg@euromail.se)
++ *
++ * The USB initialization and package decoding was made by
++ * Scott Shawcroft as part of the touchd user-space driver project:
++ * Copyright (C) 2008	   Scott Shawcroft (scott.shawcroft@gmail.com)
++ *
++ * The BCM5974 driver is based on the appletouch driver:
++ * Copyright (C) 2001-2004 Greg Kroah-Hartman (greg@kroah.com)
++ * Copyright (C) 2005      Johannes Berg (johannes@sipsolutions.net)
++ * Copyright (C) 2005	   Stelian Pop (stelian@popies.net)
++ * Copyright (C) 2005	   Frank Arnold (frank@scirocco-5v-turbo.de)
++ * Copyright (C) 2005	   Peter Osterlund (petero2@telia.com)
++ * Copyright (C) 2005	   Michael Hanselmann (linux-kernel@hansmi.ch)
++ * Copyright (C) 2006	   Nicolas Boichat (nicolas@boichat.ch)
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/module.h>
++#include <linux/usb/input.h>
++#include <linux/hid.h>
++#include <linux/mutex.h>
++
++#define USB_VENDOR_ID_APPLE		0x05ac
++
++/* MacbookAir, aka wellspring */
++#define USB_DEVICE_ID_APPLE_WELLSPRING_ANSI	0x0223
++#define USB_DEVICE_ID_APPLE_WELLSPRING_ISO	0x0224
++#define USB_DEVICE_ID_APPLE_WELLSPRING_JIS	0x0225
++/* MacbookProPenryn, aka wellspring2 */
++#define USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI	0x0230
++#define USB_DEVICE_ID_APPLE_WELLSPRING2_ISO	0x0231
++#define USB_DEVICE_ID_APPLE_WELLSPRING2_JIS	0x0232
++
++#define BCM5974_DEVICE(prod) {					\
++	.match_flags = (USB_DEVICE_ID_MATCH_DEVICE |		\
++			USB_DEVICE_ID_MATCH_INT_CLASS |		\
++			USB_DEVICE_ID_MATCH_INT_PROTOCOL),	\
++	.idVendor = USB_VENDOR_ID_APPLE,			\
++	.idProduct = (prod),					\
++	.bInterfaceClass = USB_INTERFACE_CLASS_HID,		\
++	.bInterfaceProtocol = USB_INTERFACE_PROTOCOL_MOUSE	\
++}
++
++/* table of devices that work with this driver */
++static const struct usb_device_id bcm5974_table [] = {
++	/* MacbookAir1.1 */
++	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING_ANSI),
++	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING_ISO),
++	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING_JIS),
++	/* MacbookProPenryn */
++	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI),
++	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING2_ISO),
++	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING2_JIS),
++	/* Terminating entry */
++	{}
++};
++MODULE_DEVICE_TABLE(usb, bcm5974_table);
++
++MODULE_AUTHOR("Henrik Rydberg");
++MODULE_DESCRIPTION("Apple USB BCM5974 multitouch driver");
++MODULE_LICENSE("GPL");
++
++#define dprintk(level, format, a...)\
++	{ if (debug >= level) printk(KERN_DEBUG format, ##a); }
++
++static int debug = 1;
++module_param(debug, int, 0644);
++MODULE_PARM_DESC(debug, "Activate debugging output");
++
++/* button data structure */
++struct bt_data {
++	u8 unknown1;		/* constant */
++	u8 button;		/* left button */
++	u8 rel_x;		/* relative x coordinate */
++	u8 rel_y;		/* relative y coordinate */
++};
++
++/* trackpad header structure */
++struct tp_header {
++	u8 unknown1[16];	/* constants, timers, etc */
++	u8 fingers;		/* number of fingers on trackpad */
++	u8 unknown2[9];		/* constants, timers, etc */
++};
++
++/* trackpad finger structure */
++struct tp_finger {
++	__le16 origin;		/* left/right origin? */
++	__le16 abs_x;		/* absolute x coodinate */
++	__le16 abs_y;		/* absolute y coodinate */
++	__le16 rel_x;		/* relative x coodinate */
++	__le16 rel_y;		/* relative y coodinate */
++	__le16 size_major;	/* finger size, major axis? */
++	__le16 size_minor;	/* finger size, minor axis? */
++	__le16 orientation;	/* 16384 when point, else 15 bit angle */
++	__le16 force_major;	/* trackpad force, major axis? */
++	__le16 force_minor;	/* trackpad force, minor axis? */
++	__le16 unused[3];	/* zeros */
++	__le16 multi;		/* one finger: varies, more fingers: constant */
++};
++
++/* trackpad data structure, empirically at least ten fingers */
++struct tp_data {
++	struct tp_header header;
++	struct tp_finger finger[16];
++};
++
++/* device-specific parameters */
++struct bcm5974_param {
++	int dim;		/* logical dimension */
++	int fuzz;		/* logical noise value */
++	int devmin;		/* device minimum reading */
++	int devmax;		/* device maximum reading */
++};
++
++/* device-specific configuration */
++struct bcm5974_config {
++	int ansi, iso, jis;	/* the product id of this device */
++	int bt_ep;		/* the endpoint of the button interface */
++	int bt_datalen;		/* data length of the button interface */
++	int tp_ep;		/* the endpoint of the trackpad interface */
++	int tp_datalen;		/* data length of the trackpad interface */
++	struct bcm5974_param p;	/* finger pressure limits */
++	struct bcm5974_param w;	/* finger width limits */
++	struct bcm5974_param x;	/* horizontal limits */
++	struct bcm5974_param y;	/* vertical limits */
++};
++
++/* logical device structure */
++struct bcm5974 {
++	char phys[64];
++	struct usb_device *udev;	/* usb device */
++	struct input_dev *input;	/* input dev */
++	struct bcm5974_config cfg;	/* device configuration */
++	struct mutex mutex;		/* serialize access to open/suspend */
++	int opened;			/* >0: opened, else closed */
++	int manually_suspended;		/* >0: manually suspended */
++	struct urb *bt_urb;		/* button usb request block */
++	struct bt_data *bt_data;	/* button transferred data */
++	struct urb *tp_urb;		/* trackpad usb request block */
++	struct tp_data *tp_data;	/* trackpad transferred data */
++};
++
++/* logical dimensions */
++#define DIM_PRESSURE	256		/* maximum finger pressure */
++#define DIM_WIDTH	16		/* maximum finger width */
++#define DIM_X		1280		/* maximum trackpad x value */
++#define DIM_Y		800		/* maximum trackpad y value */
++
++/* logical signal quality */
++#define SN_PRESSURE	45		/* pressure signal-to-noise ratio */
++#define SN_WIDTH	100		/* width signal-to-noise ratio */
++#define SN_COORD	250		/* coordinate signal-to-noise ratio */
++
++/* device constants */
++static const struct bcm5974_config bcm5974_config_table[] = {
++	{
++		USB_DEVICE_ID_APPLE_WELLSPRING_ANSI,
++		USB_DEVICE_ID_APPLE_WELLSPRING_ISO,
++		USB_DEVICE_ID_APPLE_WELLSPRING_JIS,
++		0x84, sizeof(struct bt_data),
++		0x81, sizeof(struct tp_data),
++		{ DIM_PRESSURE, DIM_PRESSURE / SN_PRESSURE, 0, 256 },
++		{ DIM_WIDTH, DIM_WIDTH / SN_WIDTH, 0, 2048 },
++		{ DIM_X, DIM_X / SN_COORD, -4824, 5342 },
++		{ DIM_Y, DIM_Y / SN_COORD, -172, 5820 }
++	},
++	{
++		USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI,
++		USB_DEVICE_ID_APPLE_WELLSPRING2_ISO,
++		USB_DEVICE_ID_APPLE_WELLSPRING2_JIS,
++		0x84, sizeof(struct bt_data),
++		0x81, sizeof(struct tp_data),
++		{ DIM_PRESSURE, DIM_PRESSURE / SN_PRESSURE, 0, 256 },
++		{ DIM_WIDTH, DIM_WIDTH / SN_WIDTH, 0, 2048 },
++		{ DIM_X, DIM_X / SN_COORD, -4824, 4824 },
++		{ DIM_Y, DIM_Y / SN_COORD, -172, 4290 }
++	},
++	{}
++};
++
++/* return the device-specific configuration by device */
++static const struct bcm5974_config *bcm5974_get_config(struct usb_device *udev)
++{
++	u16 id = le16_to_cpu(udev->descriptor.idProduct);
++	const struct bcm5974_config *cfg;
++	for (cfg = bcm5974_config_table; cfg->ansi; ++cfg)
++		if (cfg->ansi == id || cfg->iso == id || cfg->jis == id)
++			return cfg;
++	return bcm5974_config_table;
++}
++
++/* convert 16-bit little endian to signed integer */
++static inline int raw2int(__le16 x)
++{
++	return (signed short)le16_to_cpu(x);
++}
++
++/* scale device data to logical dimensions (asserts devmin < devmax) */
++static inline int int2scale(const struct bcm5974_param *p, int x)
++{
++	return x * p->dim / (p->devmax - p->devmin);
++}
++
++/* all logical value ranges are [0,dim). */
++static inline int int2bound(const struct bcm5974_param *p, int x)
++{
++	int s = int2scale(p, x);
++	return s < 0 ? 0 : s >= p->dim ? p->dim - 1 : s;
++}
++
++/* setup which logical events to report */
++static void setup_events_to_report(struct input_dev *input_dev,
++	const struct bcm5974_config *cfg)
++{
++	set_bit(EV_ABS, input_dev->evbit);
++	input_set_abs_params(input_dev, ABS_PRESSURE,
++		0, cfg->p.dim, cfg->p.fuzz, 0);
++	input_set_abs_params(input_dev, ABS_TOOL_WIDTH,
++		0, cfg->w.dim, cfg->w.fuzz, 0);
++	input_set_abs_params(input_dev, ABS_X,
++		0, cfg->x.dim, cfg->x.fuzz, 0);
++	input_set_abs_params(input_dev, ABS_Y,
++		0, cfg->y.dim, cfg->y.fuzz, 0);
++
++	set_bit(EV_KEY, input_dev->evbit);
++	set_bit(BTN_TOOL_FINGER, input_dev->keybit);
++	set_bit(BTN_TOOL_DOUBLETAP, input_dev->keybit);
++	set_bit(BTN_TOOL_TRIPLETAP, input_dev->keybit);
++	set_bit(BTN_LEFT, input_dev->keybit);
++}
++
++/* report button data as logical button state */
++static int report_bt_state(struct bcm5974 *dev, int size)
++{
++	if (size != sizeof(struct bt_data))
++		return -EIO;
++
++	input_report_key(dev->input, BTN_LEFT, dev->bt_data->button);
++	input_sync(dev->input);
++
++	return 0;
++}
++
++/* report trackpad data as logical trackpad state */
++static int report_tp_state(struct bcm5974 *dev, int size)
++{
++	const struct bcm5974_config *c = &dev->cfg;
++	const struct tp_finger *f = dev->tp_data->finger;
++	const int fingers = (size - 26) / 28;
++	int p, w, x, y, n;
++
++	if (size < 26 || (size - 26) % 28 != 0)
++		return -EIO;
++
++	if (!fingers) {
++		input_report_abs(dev->input, ABS_PRESSURE, 0);
++		input_report_key(dev->input, BTN_TOOL_FINGER, false);
++		input_report_key(dev->input, BTN_TOOL_DOUBLETAP, false);
++		input_report_key(dev->input, BTN_TOOL_TRIPLETAP, false);
++		input_sync(dev->input);
++		return 0;
++	}
++
++	p = raw2int(f->force_major);
++	w = raw2int(f->size_major);
++	x = raw2int(f->abs_x);
++	y = raw2int(f->abs_y);
++	n = p > 0 ? fingers : 0;
++
++	dprintk(9, "bcm5974: p: %+05d w: %+05d x: %+05d y: %+05d n: %d\n",
++		p, w, x, y, n);
++
++	input_report_abs(dev->input, ABS_PRESSURE, int2bound(&c->p, p));
++	input_report_abs(dev->input, ABS_TOOL_WIDTH, int2bound(&c->w, w));
++	input_report_abs(dev->input, ABS_X, int2bound(&c->x, x - c->x.devmin));
++	input_report_abs(dev->input, ABS_Y, int2bound(&c->y, c->y.devmax - y));
++	input_report_key(dev->input, BTN_TOOL_FINGER, n == 1);
++	input_report_key(dev->input, BTN_TOOL_DOUBLETAP, n == 2);
++	input_report_key(dev->input, BTN_TOOL_TRIPLETAP, n > 2);
++	input_sync(dev->input);
++	return 0;
++}
++
++/* Wellspring initialization constants */
++#define BCM5974_WELLSPRING_MODE_READ_REQUEST_ID		1
++#define BCM5974_WELLSPRING_MODE_WRITE_REQUEST_ID	9
++#define BCM5974_WELLSPRING_MODE_REQUEST_VALUE		0x300
++#define BCM5974_WELLSPRING_MODE_REQUEST_INDEX		0
++#define BCM5974_WELLSPRING_MODE_VENDOR_VALUE		0x01
++
++static int bcm5974_wellspring_mode(struct bcm5974 *dev)
++{
++	char *data = kmalloc(8, GFP_KERNEL);
++	int error = 0, size;
++
++	if (!data) {
++		err("bcm5974: out of memory");
++		error = -ENOMEM;
++		goto error;
++	}
++
++	/* read configuration */
++	size = usb_control_msg(dev->udev, usb_rcvctrlpipe(dev->udev, 0),
++		BCM5974_WELLSPRING_MODE_READ_REQUEST_ID,
++		USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
++		BCM5974_WELLSPRING_MODE_REQUEST_VALUE,
++		BCM5974_WELLSPRING_MODE_REQUEST_INDEX, data, 8, 5000);
++
++	if (size != 8) {
++		err("bcm5974: could not read from device");
++		error = -EIO;
++		goto error;
++	}
++
++	/* apply the mode switch */
++	data[0] = BCM5974_WELLSPRING_MODE_VENDOR_VALUE;
++
++	/* write configuration */
++	size = usb_control_msg(dev->udev, usb_sndctrlpipe(dev->udev, 0),
++		BCM5974_WELLSPRING_MODE_WRITE_REQUEST_ID,
++		USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
++		BCM5974_WELLSPRING_MODE_REQUEST_VALUE,
++		BCM5974_WELLSPRING_MODE_REQUEST_INDEX, data, 8, 5000);
++
++	if (size != 8) {
++		err("bcm5974: could not write to device");
++		error = -EIO;
++		goto error;
++	}
++
++	dprintk(2, "bcm5974: switched to wellspring mode.\n");
++
++	kfree(data);
++	return 0;
++
++error:
++	kfree(data);
++	return error;
++}
++
++static void irq_button(struct urb *urb)
++{
++	struct bcm5974 *dev = urb->context;
++	int error;
++
++	switch (urb->status) {
++	case 0:
++		break;
++	case -EOVERFLOW:
++	case -ECONNRESET:
++	case -ENOENT:
++	case -ESHUTDOWN:
++		dbg("bcm5974: button urb shutting down: %d", urb->status);
++		return;
++	default:
++		dbg("bcm5974: button urb status: %d", urb->status);
++		goto exit;
++	}
++
++	if (report_bt_state(dev, dev->bt_urb->actual_length))
++		dprintk(1, "bcm5974: bad button package, length: %d\n",
++			dev->bt_urb->actual_length);
++
++exit:
++	error = usb_submit_urb(dev->bt_urb, GFP_ATOMIC);
++	if (error)
++		err("bcm5974: button urb failed: %d", error);
++}
++
++static void irq_trackpad(struct urb *urb)
++{
++	struct bcm5974 *dev = urb->context;
++	int error;
++
++	switch (urb->status) {
++	case 0:
++		break;
++	case -EOVERFLOW:
++	case -ECONNRESET:
++	case -ENOENT:
++	case -ESHUTDOWN:
++		dbg("bcm5974: trackpad urb shutting down: %d", urb->status);
++		return;
++	default:
++		dbg("bcm5974: trackpad urb status: %d", urb->status);
++		goto exit;
++	}
++
++	/* control response ignored */
++	if (dev->tp_urb->actual_length == 2)
++		goto exit;
++
++	if (report_tp_state(dev, dev->tp_urb->actual_length))
++		dprintk(1, "bcm5974: bad trackpad package, length: %d\n",
++			dev->tp_urb->actual_length);
++
++exit:
++	error = usb_submit_urb(dev->tp_urb, GFP_ATOMIC);
++	if (error)
++		err("bcm5974: trackpad urb failed: %d", error);
++}
++
++/*
++ * The Wellspring trackpad, like many recent Apple trackpads, share
++ * the usb device with the keyboard. Since keyboards are usually
++ * handled by the HID system, the device ends up being handled by two
++ * modules. Setting up the device therefore becomes slightly
++ * complicated. To enable multitouch features, a mode switch is
++ * required, which is usually applied via the control interface of the
++ * device.  It can be argued where this switch should take place. In
++ * some drivers, like appletouch, the switch is made during
++ * probe. However, the hid module may also alter the state of the
++ * device, resulting in trackpad malfunction under certain
++ * circumstances. To get around this problem, there is at least one
++ * example that utilizes the USB_QUIRK_RESET_RESUME quirk in order to
++ * recieve a reset_resume request rather than the normal resume.
++ * Since the implementation of reset_resume is equal to mode switch
++ * plus start_traffic, it seems easier to always do the switch when
++ * starting traffic on the device.
++ */
++static int start_traffic(struct bcm5974 *dev)
++{
++	if (bcm5974_wellspring_mode(dev)) {
++		dprintk(1, "bcm5974: mode switch failed\n");
++		goto error;
++	}
++	if (usb_submit_urb(dev->bt_urb, GFP_KERNEL))
++		goto error;
++	if (usb_submit_urb(dev->tp_urb, GFP_KERNEL))
++		goto err_kill_bt;
++
++	return 0;
++err_kill_bt:
++	usb_kill_urb(dev->bt_urb);
++error:
++	return -EIO;
++}
++
++static void pause_traffic(struct bcm5974 *dev)
++{
++	usb_kill_urb(dev->tp_urb);
++	usb_kill_urb(dev->bt_urb);
++}
++
++/*
++ * The code below implements open/close and manual suspend/resume.
++ * All functions may be called in random order.
++ *
++ * Opening a suspended device fails with EACCES - permission denied.
++ *
++ * Failing a resume leaves the device resumed but closed.
++ */
++static int bcm5974_open(struct input_dev *input)
++{
++	struct bcm5974 *dev = input_get_drvdata(input);
++	int error = 0;
++
++	mutex_lock(&dev->mutex);
++	if (dev->manually_suspended)
++		error = -EACCES;
++	else if (!dev->opened)
++		error = start_traffic(dev);
++	dev->opened = !error;
++	mutex_unlock(&dev->mutex);
++
++	return error;
++}
++
++static void bcm5974_close(struct input_dev *input)
++{
++	struct bcm5974 *dev = input_get_drvdata(input);
++
++	mutex_lock(&dev->mutex);
++	if (!dev->manually_suspended)
++		pause_traffic(dev);
++	dev->opened = 0;
++	mutex_unlock(&dev->mutex);
++}
++
++static int bcm5974_suspend(struct usb_interface *iface, pm_message_t message)
++{
++	struct bcm5974 *dev = usb_get_intfdata(iface);
++
++	if (dev) {
++		mutex_lock(&dev->mutex);
++		if (dev->opened && !dev->manually_suspended)
++			pause_traffic(dev);
++		dev->manually_suspended++;
++		mutex_unlock(&dev->mutex);
++	}
++
++	return 0;
++}
++
++static int bcm5974_resume(struct usb_interface *iface)
++{
++	struct bcm5974 *dev = usb_get_intfdata(iface);
++	int error = 0;
++
++	if (dev) {
++		mutex_lock(&dev->mutex);
++		if (dev->manually_suspended)
++			dev->manually_suspended--;
++		if (dev->opened && !dev->manually_suspended)
++			error = start_traffic(dev);
++		if (error)
++			dev->opened = 0;
++		mutex_unlock(&dev->mutex);
++	}
++
++	return error;
++}
++
++static int bcm5974_probe(struct usb_interface *iface,
++		     const struct usb_device_id *id)
++{
++	struct usb_device *udev = interface_to_usbdev(iface);
++	const struct bcm5974_config *cfg;
++	struct bcm5974 *dev;
++	struct input_dev *input_dev;
++	int error = -ENOMEM;
++
++	/* find the product index */
++	cfg = bcm5974_get_config(udev);
++
++	/* allocate memory for our device state and initialize it */
++	dev = kzalloc(sizeof(struct bcm5974), GFP_KERNEL);
++	input_dev = input_allocate_device();
++	if (!dev || !input_dev) {
++		err("bcm5974: out of memory");
++		goto err_free_devs;
++	}
++
++	dev->udev = udev;
++	dev->input = input_dev;
++	dev->cfg = *cfg;
++	mutex_init(&dev->mutex);
++
++	/* setup urbs */
++	dev->bt_urb = usb_alloc_urb(0, GFP_KERNEL);
++	if (!dev->bt_urb)
++		goto err_free_devs;
++
++	dev->tp_urb = usb_alloc_urb(0, GFP_KERNEL);
++	if (!dev->tp_urb)
++		goto err_free_bt_urb;
++
++	dev->bt_data = usb_buffer_alloc(dev->udev,
++		dev->cfg.bt_datalen, GFP_KERNEL,
++		&dev->bt_urb->transfer_dma);
++	if (!dev->bt_data)
++		goto err_free_urb;
++
++	dev->tp_data = usb_buffer_alloc(dev->udev,
++		dev->cfg.tp_datalen, GFP_KERNEL,
++		&dev->tp_urb->transfer_dma);
++	if (!dev->tp_data)
++		goto err_free_bt_buffer;
++
++	usb_fill_int_urb(dev->bt_urb, udev,
++		usb_rcvintpipe(udev, cfg->bt_ep),
++		dev->bt_data, dev->cfg.bt_datalen,
++		irq_button, dev, 1);
++
++	usb_fill_int_urb(dev->tp_urb, udev,
++		usb_rcvintpipe(udev, cfg->tp_ep),
++		dev->tp_data, dev->cfg.tp_datalen,
++		irq_trackpad, dev, 1);
++
++	/* create bcm5974 device */
++	usb_make_path(udev, dev->phys, sizeof(dev->phys));
++	strlcat(dev->phys, "/input0", sizeof(dev->phys));
++
++	input_dev->name = "bcm5974";
++	input_dev->phys = dev->phys;
++	usb_to_input_id(dev->udev, &input_dev->id);
++	input_dev->dev.parent = &iface->dev;
++
++	input_set_drvdata(input_dev, dev);
++
++	input_dev->open = bcm5974_open;
++	input_dev->close = bcm5974_close;
++
++	setup_events_to_report(input_dev, cfg);
++
++	error = input_register_device(dev->input);
++	if (error)
++		goto err_free_buffer;
++
++	/* save our data pointer in this interface device */
++	usb_set_intfdata(iface, dev);
++
++	return 0;
++
++err_free_buffer:
++	usb_buffer_free(dev->udev, dev->cfg.tp_datalen,
++		dev->tp_data, dev->tp_urb->transfer_dma);
++err_free_bt_buffer:
++	usb_buffer_free(dev->udev, dev->cfg.bt_datalen,
++		dev->bt_data, dev->bt_urb->transfer_dma);
++err_free_urb:
++	usb_free_urb(dev->tp_urb);
++err_free_bt_urb:
++	usb_free_urb(dev->bt_urb);
++err_free_devs:
++	usb_set_intfdata(iface, NULL);
++	input_free_device(input_dev);
++	kfree(dev);
++	return error;
++}
++
++static void bcm5974_disconnect(struct usb_interface *iface)
++{
++	struct bcm5974 *dev = usb_get_intfdata(iface);
++
++	usb_set_intfdata(iface, NULL);
++
++	input_unregister_device(dev->input);
++	usb_buffer_free(dev->udev, dev->cfg.tp_datalen,
++		dev->tp_data, dev->tp_urb->transfer_dma);
++	usb_buffer_free(dev->udev, dev->cfg.bt_datalen,
++		dev->bt_data, dev->bt_urb->transfer_dma);
++	usb_free_urb(dev->tp_urb);
++	usb_free_urb(dev->bt_urb);
++	kfree(dev);
++
++	printk(KERN_INFO "bcm5974: disconnected\n");
++}
++
++static struct usb_driver bcm5974_driver = {
++	.name = "bcm5974",
++	.probe = bcm5974_probe,
++	.disconnect = bcm5974_disconnect,
++	.suspend = bcm5974_suspend,
++	.resume = bcm5974_resume,
++	.reset_resume = bcm5974_resume,
++	.id_table = bcm5974_table,
++};
++
++static int __init bcm5974_init(void)
++{
++	return usb_register(&bcm5974_driver);
++}
++
++static void __exit bcm5974_exit(void)
++{
++	usb_deregister(&bcm5974_driver);
++}
++
++module_init(bcm5974_init);
++module_exit(bcm5974_exit);
++
