@@ -1,89 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYGXUE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753713AbYGXUIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbYGXUE2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 16:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbYGXUED
+	id S1753713AbYGXUIT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 16:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbYGXUIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 16:04:03 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:4923 "EHLO
-	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753526AbYGXUEB (ORCPT
+	Thu, 24 Jul 2008 16:08:07 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:57409 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557AbYGXUIG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 16:04:01 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=ZBoxELfd66lUOLupKHEA:9 a=G1kx7nUvTcNFvVpvuPgA:7 a=TkoGrY2U7QABDhVntCZ_Y_zNSHwA:4 a=V0udAT3DthYA:10 a=z7OazWlR7xUA:10
-Message-ID: <4888E011.4000406@shaw.ca>
-Date: Thu, 24 Jul 2008 14:03:29 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Thu, 24 Jul 2008 16:08:06 -0400
+Date: Thu, 24 Jul 2008 16:06:30 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Grant Coady <gcoady.lk@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: how much stuff is no longer "EXPERIMENTAL"?
+In-Reply-To: <h2ih845fmasm3coi3qapmqkknj0ghp6k7t@4ax.com>
+Message-ID: <alpine.LFD.1.10.0807241606240.6474@localhost.localdomain>
+References: <alpine.LFD.1.10.0807241114000.4119@localhost.localdomain> <h2ih845fmasm3coi3qapmqkknj0ghp6k7t@4ax.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Alex <arghness@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: DMA with PCIe and very large DMA transfers
-References: <fa.vod1UTmCwWWvRyGIk08cgMVx/H4@ifi.uio.no>
-In-Reply-To: <fa.vod1UTmCwWWvRyGIk08cgMVx/H4@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex wrote:
-> Are there any examples (or just documentation) on providing DMA for
-> PCIe devices? I have read the DMA-mapping.txt document but wasn't sure
-> if this was all relevant to PCIe. For example, pci_set_dma_mask talks
-> about driving pins on the PCI bus, but PCIe doesn't work in quite the
-> same way. Perhaps these calls have no effect in this case (similar to
-> the PCI latency timers) but I just wondered.
+On Fri, 25 Jul 2008, Grant Coady wrote:
 
-Not sure where you saw that reference, but there's no difference with 
-respect to DMA mapping with PCI vs. PCI Express.
+> On Thu, 24 Jul 2008 11:14:22 -0400 (EDT), "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
 
-> 
-> I'm also interested in knowing if any drivers perform very large DMA
-> transfers. I'm putting together a driver for a specialist high-speed
-> data acquisition device that typically might need a DMA buffer of
-> 100-500MB (ouch!) in the low 32 bit address space (or possibly 36 bit
-> address space, but I'm not sure if this is possible to allocate
-> without allocating as much as possible and then discarding?) but only
-> supports a very limited number of scatter/gather entries (between 1
-> and 4). The particular use-case for this is a ring buffer with
-> registers in IO memory that are used to keep track of read/write
-> pointers in the buffer. The device writes to the DMA memory when there
-> is space in the ring buffer i.e. the DMA transfer is only from device
-> to host.
-> 
-> I would like to perform the DMA straight from device to user-space
-> (probably via mmap), which I think requires a consistent/coherent
-> rather than streaming DMA so that I may read from the ring buffer
-> while the DMA may still be active (although not active in that section
-> of the buffer).
-> 
-> I assume that to allocate that much memory in physical contiguous
-> addresses will require a driver to be loaded as soon as possible at
-> startup. I was thinking about trying to grab a lot of high-order pages
-> and try and make them one contiguous block - is that feasible?
+> >  how about a concerted effort to remove inappropriate EXPERIMENTAL
+> >dependencies from the Kconfig files?  there must be a truckload of
+> >stuff that has long since matured beyond EXPERIMENTAL status that is
+> >still tagged that way.
+>
+> I sent a patch to remove EXPERIMENTAL on a three year old driver
+> couple months ago, it got Acked by maintainer, hwmon/adm9240.  But I
+> dunno if the patch is queued somewhere or lost.
 
-For a block of memory that big, you may need to reserve some memory at 
-boot time for use by the device. I don't really have any details on how 
-to do that, though.
+at last count, there were 437 config selections that were tagged as
+EXPERIMENTAL.  i find it hard to believe that there's that much
+legitimately experimental content in the source tree.  surely *some*
+of that is suitably mature such that that dependency can be dropped.
 
-> Browsing the archives, I found references to early allocation for
-> large buffers, but no direct links to existing examples or recommended
-> techniques on how to stitch pages together in to a single buffer. Is
-> there a platform independent way to ensure cache coherency with
-> allocated pages like this (i.e. not allocated with
-> pci_alloc_consistent / dma_alloc_coherent)?
-> 
-> I suppose that anything which takes a large chunk of physical memory
-> at startup isn't very recommended, but this is for a specialist device
-> and the host machine will probably be dedicated to using it.
-> 
-> As an aside, my module, driver and device are under the pci bus in
-> sysfs - should be PCIe device be showing under the pci_express bus?
-> This appears to be the PCIe Port Bus Driver and only has the aer
-> driver listed under it. I can't find any other drivers in the kernel
-> source that use it (I'm currently running 2.6.21).
+rday
+--
 
-Most parts of the kernel don't care whether devices are PCI or PCI-E, so 
-this is presumably why.
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
