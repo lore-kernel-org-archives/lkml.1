@@ -1,37 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbYGXUDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbYGXUEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754594AbYGXUDu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 16:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYGXUDl
+	id S1753241AbYGXUEL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 16:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbYGXUDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 16:03:41 -0400
-Received: from ns2.suse.de ([195.135.220.15]:41233 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750744AbYGXUDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 16:03:41 -0400
-Date: Thu, 24 Jul 2008 12:57:22 -0700
-From: Greg KH <gregkh@suse.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] isd200: use ATA_* defines instead of *_STAT and
-	*_ERR ones
-Message-ID: <20080724195722.GA9859@suse.de>
-References: <200807242123.42923.bzolnier@gmail.com>
+	Thu, 24 Jul 2008 16:03:51 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53877 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754546AbYGXUDu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 16:03:50 -0400
+Date: Thu, 24 Jul 2008 16:03:16 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] ext4 bugfixes
+Message-ID: <20080724200316.GA11862@infradead.org>
+References: <E1KIbeO-0001yQ-N4@closure.thunk.org> <20080715043718.GA30017@infradead.org> <20080715124652.GB16704@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200807242123.42923.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080715124652.GB16704@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 09:23:42PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+On Tue, Jul 15, 2008 at 08:46:52AM -0400, Theodore Tso wrote:
+> On Tue, Jul 15, 2008 at 12:37:18AM -0400, Christoph Hellwig wrote:
+> > And for this one I haven't even heard back on my review comments.  None
+> > of them is a merge blocker so it's not critical, but I find it quite odd
+> > that the pull request is coming before even replying to the review
+> > comments.
+> 
+> Can you resend your e-mail, please?  I can't seem to find it in my
+> inbox.  Thanks!!
 
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+It was just a paragraph in the mail also commenting on the previously
+core parts:
 
-thanks,
+> Also the code still deals with the !buffer_mapped and no buffers on page
+> cases all over which isn't needed anymore with ->page_mkwrite
+> implemented.
+> Similarly the !get_block case in mpage_da_writepages doesn't make any
+> sense - it's never used and if people would want to use
+> generic_writepages they could trivially just call it directly.
 
-greg k-h
+I've got a comment from Jan that the no buffers case can still happen,
+so that can be removed.
+
+Any chance you could also look into the kerneldoc comments for the newly
+exported fs/mpage.c routines as commented on the updated patch?
