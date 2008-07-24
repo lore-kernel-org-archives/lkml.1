@@ -1,158 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbYGXQuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbYGXQxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753546AbYGXQuY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 12:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYGXQuL
+	id S1754025AbYGXQxZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 12:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbYGXQxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 12:50:11 -0400
-Received: from mga14.intel.com ([143.182.124.37]:63907 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751016AbYGXQuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 12:50:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,247,1215414000"; 
-   d="scan'208";a="24392388"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C8EDAD.52089C68"
-Subject: [PATCH] acpi - Add support for AddressRangeUnusuable ACPI memory type
-Date: Thu, 24 Jul 2008 09:49:57 -0700
-Message-ID: <D936D925018D154694D8A362EEB0892004FC7099@orsmsx416.amr.corp.intel.com>
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] acpi - Add support for AddressRangeUnusuable ACPI memory type
-Thread-Index: AcjtrU31ixShJhX5SeCWQIKDlr/hkg==
-From: "Cihula, Joseph" <joseph.cihula@intel.com>
-To: <linux-kernel@vger.kernel.org>, <x86@kernel.org>
-Cc: "Kleen, Andi" <andi.kleen@intel.com>, "Wang, Shane" <shane.wang@intel.com>,
-       "Wei, Gang" <gang.wei@intel.com>, "Brown, Len" <len.brown@intel.com>
-X-OriginalArrivalTime: 24 Jul 2008 16:50:04.0714 (UTC) FILETIME=[525EF8A0:01C8EDAD]
+	Thu, 24 Jul 2008 12:53:15 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:38004 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750917AbYGXQxO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 12:53:14 -0400
+Subject: Re: [PATCH] block: fix q->max_segment_size checking in
+	blk_recalc_rq_segments about VMERGE
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-parisc@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0807241232040.9412@devserv.devel.redhat.com>
+References: <1216520228.3376.33.camel@localhost.localdomain>
+	 <20080719.210737.197246608.davem@davemloft.net>
+	 <1216565545.4199.10.camel@localhost.localdomain>
+	 <20080720.102302.137955996.davem@davemloft.net>
+	 <1216575211.4199.35.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0807241103190.1545@devserv.devel.redhat.com>
+	 <1216913314.4524.25.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0807241232040.9412@devserv.devel.redhat.com>
+Content-Type: text/plain
+Date: Thu, 24 Jul 2008 12:52:51 -0400
+Message-Id: <1216918371.4524.38.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Thu, 2008-07-24 at 12:34 -0400, Mikulas Patocka wrote:
+> On Thu, 24 Jul 2008, James Bottomley wrote:
+> 
+> > On Thu, 2008-07-24 at 11:07 -0400, Mikulas Patocka wrote:
+> > > So try to #define BIO_VMERGE_BOUNDARY 0 for Pa-Risc and tell us what 
+> > > performance degradation do you see (and what driver do you use and what is 
+> > > the I/O pattern).
+> > > 
+> > > If you show something specific, we can consider that --- but you haven't 
+> > > yet told us anything, except generic talk.
+> > 
+> > You keep ignoring inconvenient facts.  For about the third time:
+> > 
+> > I run a test bed for sg_tables (large chaining of requests).  This runs
+> > on parisc using virtual merging (has to because the final physical table
+> > size can't go over the sg list of the SCSI card).  If I turn off virtual
+> > merging I can no longer test sg_tables in vanilla kernels.
+> > 
+> > James
+> 
+> What sg_tables test do you mean? What does the test do? Why couldn't you 
+> run the test if BIO_VMERGE_BOUNDARY is 0? Normal I/O obviously can work 
+> with BIO_VMERGE_BOUNDARY 0, the kernel will just send more smaller 
 
-------_=_NextPart_001_01C8EDAD.52089C68
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Look, if you don't really understand what I'm doing, it's not really my
+job to educate you.  The sg_table discussions are on marc.info, mainly
+on the SCSI lists; just look for 'sg chaining' in the header (need to
+use google site ... marc's search is bad).
 
-Add support for the E820_UNUSABLE memory type, which is defined in
-Revision 3.0b (Oct. 10, 2006) of the ACPI Specification on p. 394 Table
-14-1:
-	AddressRangeUnusuable
-	This range of address contains memory in which errors have been
-detected. This range must not be used by the OSPM.
+You can complain if the code is impacting you ... but I believe I've
+optimised it so it isn't.  Your basic problem amounts to you not liking
+me doing something that has no impact on you ... I'm afraid that's what
+freedom leads to (shocking, I know).
 
-This patch applies cleanly to 2.6.26.
+James
 
-Signed-off-by:  Joseph Cihula <joseph.cihula@intel.com>
-Signed-off-by:  Shane Wang <shane.wang@intel.com>
-Signed-off-by:  Gang Wei <gang.wei@intel.com>
 
---- linux-2.6.26/arch/x86/kernel/e820_32.c	2008-07-13
-14:51:29.000000000 -0700
-+++ linux-2.6.26-acpi/arch/x86/kernel/e820_32.c	2008-07-23
-13:25:44.000000000 -0700
-@@ -198,6 +198,7 @@
- 		case E820_RAM:	res->name =3D "System RAM"; break;
- 		case E820_ACPI:	res->name =3D "ACPI Tables"; break;
- 		case E820_NVS:	res->name =3D "ACPI Non-volatile Storage";
-break;
-+		case E820_UNUSABLE:     res->name =3D "Unusable memory";
-break;
- 		default:	res->name =3D "reserved";
- 		}
- 		res->start =3D e820.map[i].addr;
-@@ -604,6 +605,9 @@
- 		case E820_NVS:
- 				printk("(ACPI NVS)\n");
- 				break;
-+		case E820_UNUSABLE:
-+				printk("(unusable)\n");
-+				break;
- 		default:	printk("type %u\n", e820.map[i].type);
- 				break;
- 		}
---- linux-2.6.26/arch/x86/kernel/e820_64.c	2008-07-13
-14:51:29.000000000 -0700
-+++ linux-2.6.26-acpi/arch/x86/kernel/e820_64.c	2008-07-23
-13:27:29.000000000 -0700
-@@ -336,6 +336,7 @@
- 		case E820_RAM:	res->name =3D "System RAM"; break;
- 		case E820_ACPI:	res->name =3D "ACPI Tables"; break;
- 		case E820_NVS:	res->name =3D "ACPI Non-volatile Storage";
-break;
-+		case E820_UNUSABLE:     res->name =3D "Unusable memory";
-break;
- 		default:	res->name =3D "reserved";
- 		}
- 		res->start =3D e820.map[i].addr;
-@@ -495,6 +496,9 @@
- 		case E820_NVS:
- 			printk(KERN_CONT "(ACPI NVS)\n");
- 			break;
-+ 		case E820_UNUSABLE:
-+			printk("(unusable)\n");
-+			break;
- 		default:
- 			printk(KERN_CONT "type %u\n", e820.map[i].type);
- 			break;
---- linux-2.6.26/include/asm-x86/e820.h	2008-07-13 14:51:29.000000000
--0700
-+++ linux-2.6.26-acpi/include/asm-x86/e820.h	2008-07-23
-13:25:44.000000000 -0700
-@@ -8,6 +8,7 @@
- #define E820_RESERVED	2
- #define E820_ACPI	3
- #define E820_NVS	4
-+#define E820_UNUSABLE	5
-=20
- #ifndef __ASSEMBLY__
- struct e820entry {
- <<linux-acpi-2.6.26.patch>>=20
-
-------_=_NextPart_001_01C8EDAD.52089C68
-Content-Type: application/octet-stream;
-	name="linux-acpi-2.6.26.patch"
-Content-Transfer-Encoding: base64
-Content-Description: linux-acpi-2.6.26.patch
-Content-Disposition: attachment;
-	filename="linux-acpi-2.6.26.patch"
-
-LS0tIGxpbnV4LTIuNi4yNi9hcmNoL3g4Ni9rZXJuZWwvZTgyMF8zMi5jCTIwMDgtMDctMTMgMTQ6
-NTE6MjkuMDAwMDAwMDAwIC0wNzAwCisrKyBsaW51eC0yLjYuMjYtYWNwaS9hcmNoL3g4Ni9rZXJu
-ZWwvZTgyMF8zMi5jCTIwMDgtMDctMjMgMTM6MjU6NDQuMDAwMDAwMDAwIC0wNzAwCkBAIC0xOTgs
-NiArMTk4LDcgQEAKIAkJY2FzZSBFODIwX1JBTToJcmVzLT5uYW1lID0gIlN5c3RlbSBSQU0iOyBi
-cmVhazsKIAkJY2FzZSBFODIwX0FDUEk6CXJlcy0+bmFtZSA9ICJBQ1BJIFRhYmxlcyI7IGJyZWFr
-OwogCQljYXNlIEU4MjBfTlZTOglyZXMtPm5hbWUgPSAiQUNQSSBOb24tdm9sYXRpbGUgU3RvcmFn
-ZSI7IGJyZWFrOworCQljYXNlIEU4MjBfVU5VU0FCTEU6ICAgICByZXMtPm5hbWUgPSAiVW51c2Fi
-bGUgbWVtb3J5IjsgYnJlYWs7CiAJCWRlZmF1bHQ6CXJlcy0+bmFtZSA9ICJyZXNlcnZlZCI7CiAJ
-CX0KIAkJcmVzLT5zdGFydCA9IGU4MjAubWFwW2ldLmFkZHI7CkBAIC02MDQsNiArNjA1LDkgQEAK
-IAkJY2FzZSBFODIwX05WUzoKIAkJCQlwcmludGsoIihBQ1BJIE5WUylcbiIpOwogCQkJCWJyZWFr
-OworCQljYXNlIEU4MjBfVU5VU0FCTEU6CisJCQkJcHJpbnRrKCIodW51c2FibGUpXG4iKTsKKwkJ
-CQlicmVhazsKIAkJZGVmYXVsdDoJcHJpbnRrKCJ0eXBlICV1XG4iLCBlODIwLm1hcFtpXS50eXBl
-KTsKIAkJCQlicmVhazsKIAkJfQotLS0gbGludXgtMi42LjI2L2FyY2gveDg2L2tlcm5lbC9lODIw
-XzY0LmMJMjAwOC0wNy0xMyAxNDo1MToyOS4wMDAwMDAwMDAgLTA3MDAKKysrIGxpbnV4LTIuNi4y
-Ni1hY3BpL2FyY2gveDg2L2tlcm5lbC9lODIwXzY0LmMJMjAwOC0wNy0yMyAxMzoyNzoyOS4wMDAw
-MDAwMDAgLTA3MDAKQEAgLTMzNiw2ICszMzYsNyBAQAogCQljYXNlIEU4MjBfUkFNOglyZXMtPm5h
-bWUgPSAiU3lzdGVtIFJBTSI7IGJyZWFrOwogCQljYXNlIEU4MjBfQUNQSToJcmVzLT5uYW1lID0g
-IkFDUEkgVGFibGVzIjsgYnJlYWs7CiAJCWNhc2UgRTgyMF9OVlM6CXJlcy0+bmFtZSA9ICJBQ1BJ
-IE5vbi12b2xhdGlsZSBTdG9yYWdlIjsgYnJlYWs7CisJCWNhc2UgRTgyMF9VTlVTQUJMRTogICAg
-IHJlcy0+bmFtZSA9ICJVbnVzYWJsZSBtZW1vcnkiOyBicmVhazsKIAkJZGVmYXVsdDoJcmVzLT5u
-YW1lID0gInJlc2VydmVkIjsKIAkJfQogCQlyZXMtPnN0YXJ0ID0gZTgyMC5tYXBbaV0uYWRkcjsK
-QEAgLTQ5NSw2ICs0OTYsOSBAQAogCQljYXNlIEU4MjBfTlZTOgogCQkJcHJpbnRrKEtFUk5fQ09O
-VCAiKEFDUEkgTlZTKVxuIik7CiAJCQlicmVhazsKKyAJCWNhc2UgRTgyMF9VTlVTQUJMRToKKwkJ
-CXByaW50aygiKHVudXNhYmxlKVxuIik7CisJCQlicmVhazsKIAkJZGVmYXVsdDoKIAkJCXByaW50
-ayhLRVJOX0NPTlQgInR5cGUgJXVcbiIsIGU4MjAubWFwW2ldLnR5cGUpOwogCQkJYnJlYWs7Ci0t
-LSBsaW51eC0yLjYuMjYvaW5jbHVkZS9hc20teDg2L2U4MjAuaAkyMDA4LTA3LTEzIDE0OjUxOjI5
-LjAwMDAwMDAwMCAtMDcwMAorKysgbGludXgtMi42LjI2LWFjcGkvaW5jbHVkZS9hc20teDg2L2U4
-MjAuaAkyMDA4LTA3LTIzIDEzOjI1OjQ0LjAwMDAwMDAwMCAtMDcwMApAQCAtOCw2ICs4LDcgQEAK
-ICNkZWZpbmUgRTgyMF9SRVNFUlZFRAkyCiAjZGVmaW5lIEU4MjBfQUNQSQkzCiAjZGVmaW5lIEU4
-MjBfTlZTCTQKKyNkZWZpbmUgRTgyMF9VTlVTQUJMRQk1CiAKICNpZm5kZWYgX19BU1NFTUJMWV9f
-CiBzdHJ1Y3QgZTgyMGVudHJ5IHsK
-
-------_=_NextPart_001_01C8EDAD.52089C68--
