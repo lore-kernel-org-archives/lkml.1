@@ -1,81 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756520AbYGXMJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbYGXMKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756520AbYGXMJY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYGXMJQ
+	id S1756949AbYGXMKS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbYGXMKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:09:16 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:37821 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751696AbYGXMJQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 08:09:16 -0400
-Subject: Re: 22bb1be4d27... breaks hal (and NM)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Pierre Ossman <drzeus-list@drzeus.cx>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Jean Tourrilhes <jt@hpl.hp.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1216900631.7257.321.camel@twins>
-References: <20080724115805.5466c217@mjolnir.drzeus.cx>
-	 <1216899520.13587.49.camel@johannes.berg> <1216900631.7257.321.camel@twins>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-KipZdDiOwxQBs3VOuP+c"
-Date: Thu, 24 Jul 2008 14:08:09 +0200
-Message-Id: <1216901290.13587.54.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 24 Jul 2008 08:10:05 -0400
+Received: from saeurebad.de ([85.214.36.134]:41272 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753441AbYGXMKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 08:10:04 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, lomp0101@gmx.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bug 11046] New: Kernel bug in mm/bootmem.c on Sparc machines
+References: <bug-11046-27@http.bugzilla.kernel.org/>
+	<20080706132049.4019e09f.akpm@linux-foundation.org>
+	<20080723.202533.114601491.davem@davemloft.net>
+	<20080723203836.e0c14568.akpm@linux-foundation.org>
+Date: Thu, 24 Jul 2008 14:09:38 +0200
+In-Reply-To: <20080723203836.e0c14568.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Wed, 23 Jul 2008 20:38:36 -0700")
+Message-ID: <877ibb7abh.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---=-KipZdDiOwxQBs3VOuP+c
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-On Thu, 2008-07-24 at 13:57 +0200, Peter Zijlstra wrote:
+> On Wed, 23 Jul 2008 20:25:33 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+>
+>> From: Andrew Morton <akpm@linux-foundation.org>
+>> Date: Sun, 6 Jul 2008 13:20:49 -0700
+>> 
+>> > On Sun,  6 Jul 2008 13:02:28 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+>> > 
+>> > > http://bugzilla.kernel.org/show_bug.cgi?id=11046
+>>  ...
+>> > > Here is the BUG:
+>> > > 
+>> > > [    0.000000] PROMLIB: Sun IEEE Boot Prom 'OBP 4.11.5 2003/11/12 10:40'
+>> > > [    0.000000] PROMLIB: Root node compatible: 
+>> > > [    0.000000] Linux version 2.6.25.10 (root@sparc1) (gcc version 4.1.2
+>> > > 20061115 (prerelease) (Debian 4.1.1-21)) #5 SMP Sun Jul 6 21:05:42 CEST 2008
+>> > > [    0.000000] console [earlyprom0] enabled
+>> > > [    0.000000] ARCH: SUN4U
+>> > > [    0.000000] Ethernet address: 00:03:ba:7a:f3:d6
+>> > > [    0.000000] Kernel: Using 2 locked TLB entries for main kernel image.
+>> > > [    0.000000] Remapping the kernel... done.
+>> > > [    0.000000] kernel BUG at mm/bootmem.c:125!
+>> 
+>> This can only happen if you attach a zero-sized initrd to the kernel.
+>> 
+>> I see platforms like x86 sometimes have explicit checks for a zero
+>> size to guard reserve_bootmem() and similar calls, but if that's what
+>> callers are all going to do doesn't it make better sense for
+>> reserve_bootmem_core() to just return instead of BUG on a zero size
+>> argument?
+>
+> Sounds logical.
+>
+> Johannes just rewrote the bootmem code, but from a quick read it
+> appears that this behaviour has been retained.
 
-> So you're not considering HAL as shipped by most (if not all) distros as
-> anyone?
->=20
-> If everybody would act like that, the next kernel wouldn't even manage
-> to get rudimentary user-space up and running. Like we already changed
-> all those systemcalls in glibc-head, who needs this kernel to boot on
-> your old stuff anyway..
->=20
-> Common,.. this is rediculous.
+In the new version, zero sized ranges are okay for reservation and
+freeing.  It still bugs on allocation, though.
 
-What the hell is wrong with you guys? I used to think it's accepted
-practice to introduce a config option you can change away from the
-default if you already know you are using new software that doesn't need
-it, and if you are clueless just don't fucking touch the default until I
-decide it's time to flip the default/remove the option because distros
-are shipping new versions of the dependent software.
+> So if we're going to change it in 2.6.26, we'll need a separate patch.
 
-johannes
-
---=-KipZdDiOwxQBs3VOuP+c
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJIiHCmAAoJEKVg1VMiehFYpJMQAI+5+Llx7f89zQDTqvPUWQnn
-bvf2h9OTncMHY1DhAQh6l4H20rn5se16blwtBBK/L2PC3F5LylMqm64GMB83bBgo
-wjnudYqBO2NpPCXwTUexubBFsiatuFKp21gU8dbgo+9F+vSgbgDxoHySOJhqLZ5r
-LLgfDyya7u8rjIUXoLFuyOQD4gTZFfDjZ0DLSymst8uVnHCj1X/Wmy8hmjvon8+0
-Do/eyJrf394pGJFPtkKpSwaj4uZBNIf4Z7eH3oj1pTP7e5PoiubmedefRJ17ziU8
-/F2HrEy91E2YPkjBbckLSd73oUcxTO8tZR/gut2Zp+sU0q1CizQc82VYDU/n5agb
-pz+Q4icuQCb5zDTVIq4aVYRRfWKuZ9SyFQrc1CcrTKzgK8NITTDINJGuEoMASwJH
-u+5EPhMBzpENCoxc6QilJ35yZkd+xo3Wh5fQM3Wmv1gcuJLr4+IH7uwUuCqL4Epp
-LfoBryfAgFYtfaHPHHeP8Qz9IegKPoDZNeYSLWnS9Yy4KgopYDeItmbeVX4XtuTy
-tKIa/rn+GSj99i6LCbWyRWBlYvtyTes1uE69CJ9smaaHITu5GjNs1PkgUnGewbfE
-Agu3066BBqg41CzjygJl5C27ARyZxwpsqlgT/Bvk4yZwKxkWyj7fVoc0+g31UaF5
-Br5xFBXBhso1QfGjgL34
-=7AjK
------END PGP SIGNATURE-----
-
---=-KipZdDiOwxQBs3VOuP+c--
-
+	Hannes
