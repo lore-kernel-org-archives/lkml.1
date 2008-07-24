@@ -1,91 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbYGXLbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbYGXLgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754907AbYGXLbp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 07:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYGXLbh
+	id S1754990AbYGXLgR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 07:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbYGXLgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 07:31:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40560 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751788AbYGXLbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 07:31:36 -0400
-Date: Thu, 24 Jul 2008 13:31:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix pte_flags() to only return flags, fix lguest
-	(updated)
-Message-ID: <20080724113122.GB23262@elte.hu>
-References: <200807221431.58991.rusty@rustcorp.com.au> <200807221540.47161.rusty@rustcorp.com.au> <20080722090432.GD2065@elte.hu> <200807231059.20810.rusty@rustcorp.com.au>
+	Thu, 24 Jul 2008 07:36:05 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:35916 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752183AbYGXLgE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 07:36:04 -0400
+X-Sasl-enc: xyf4YsvsGoOYSmLLWVxPyPAWud5+n9pCQu6w96HTzfIq 1216899360
+Message-ID: <4888691D.5090307@ladisch.de>
+Date: Thu, 24 Jul 2008 13:35:57 +0200
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
+To: David Brownell <david-b@pacbell.net>
+CC: lkml <linux-kernel@vger.kernel.org>, bob.picco@hp.com,
+       venkatesh.pallipadi@intel.com, Vojtech Pavlik <vojtech@suse.cz>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [patch 2.6.26] /dev/hpet - fixes and cleanup
+References: <200807221508.56672.david-b@pacbell.net> <4886E164.2070304@ladisch.de> <200807230912.49850.david-b@pacbell.net>
+In-Reply-To: <200807230912.49850.david-b@pacbell.net>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807231059.20810.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Brownell wrote:
+> I didn't find any software using /dev/hpet, except for
+> the example in Documentation/hpet.txt ... presumably I
+> was looking in the wrong place. I'd surely have retched
+> at anything mmapping hardware registers though.  ;)
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+http://subversion.jackaudio.org/jack/trunk/jack/config/os/gnu-linux/time.c
 
-> On Tuesday 22 July 2008 19:04:32 Ingo Molnar wrote:
-> > i'm wondering. My randconfig tests boot up an lguest enabled kernel
-> > every 30 minutes or so:
-> >
-> >  config-Mon_Jul_21_19_05_54_CEST_2008.good:CONFIG_LGUEST=y
-> >  config-Mon_Jul_21_19_43_13_CEST_2008.good:CONFIG_LGUEST=y
-> >  config-Mon_Jul_21_19_47_40_CEST_2008.good:CONFIG_LGUEST=y
-> >  config-Mon_Jul_21_20_37_41_CEST_2008.good:CONFIG_LGUEST=y
-> >  config-Mon_Jul_21_22_11_42_CEST_2008.good:CONFIG_LGUEST=y
-> >  config-Mon_Jul_21_22_16_59_CEST_2008.good:CONFIG_LGUEST=y
-> >  config-Mon_Jul_21_22_32_22_CEST_2008.good:CONFIG_LGUEST=y
-> >  config-Mon_Jul_21_23_25_55_CEST_2008.good:CONFIG_LGUEST=y
-> >  config-Mon_Jul_21_23_51_29_CEST_2008.good:CONFIG_LGUEST=y
-> >
-> > Would it be possible to have some really stupid lguest self-test which
-> > would complain spectacularly in the host kernel if it fails to reach
-> > some minimal user-space?
-> >
-> > Something that could be self-contained within a single bzImage. (i.e. it
-> > would contain a minimalistic image of some sort with a very minimalistic
-> > userspace component as well - or something like that)
-> 
-> Well, adding "make -C Documentation/lguest" to the build is a good start (this 
-> finds those "e820.h not longer includable from userspace" bugs).
-> 
-> Secondly, if you put the resulting Documentation/lguest/lguest somewhere on 
-> your booting test machine, it can just do something like
-> 
-> 	./lguest 64 /boot/vmlinuz-`uname -r` | grep 'VFS: Unable to mount root'
+> > This seems to be the only part of the userspace interface that is
+> > used in practice.  Because of the availability of POSIX timers, it might
+> > make sense to deprecate the HPET ioctl interface.
+>
+> I'll leave that part up to someone else.  If POSIX timers
+> are a sufficient userspace interface, great ... then that
+> mmap son't really be needed either!
 
-stupid question: what's the easiest way to filter out the case where 
-there's not sufficient kernel support in the bzImage to actually run 
-lguest?
+The idea is to be able to get a high-precision timer value without doing
+a syscall.  (Whether the syscall overhead actually matters in a specific
+application is another question.)
 
-I.e. if i extend the "is this bzImage working fine" check with the above 
-lguest bootup test - with the expectation of it getting down to the 
-"VFS: Unable to mount root" message [success case], how do i filter out 
-the case where it doesnt get to that message not due to some lguest 
-breakage, but because there's not enough lguest support there.
 
-> Won't quite test userspace, but it's easy and will get the worst breakage.
-> If we want to be more ambitious, I'd suggest a tiny initrd with a 
-> statically-linked /hello_world to test userspace:
-> 
-> 	./lguest --initrd=/boot/hello_world.initrd 64 /boot/vmlinuz-`uname -r` \
-> 		rdinit=/hello_world | grep 'Hello world'
-> 
-> I can create one (and test the example) for you if you're interested?
-
-that would be great ...
-
-	Ingo
+Regards,
+Clemens
