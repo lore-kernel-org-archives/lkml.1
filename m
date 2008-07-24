@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbYGXIhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043AbYGXIts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133AbYGXIhE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 04:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYGXIgu
+	id S1753043AbYGXIts (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 04:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbYGXItl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 04:36:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37867
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751288AbYGXIgt (ORCPT
+	Thu, 24 Jul 2008 04:49:41 -0400
+Received: from mga12.intel.com ([143.182.124.36]:7770 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751349AbYGXItk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 04:36:49 -0400
-Date: Thu, 24 Jul 2008 01:36:49 -0700 (PDT)
-Message-Id: <20080724.013649.22662901.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: herbert@gondor.apana.org.au, w@1wt.eu, davidn@davidnewall.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stefanr@s5r6.in-berlin.de, rjw@sisk.pl
-Subject: Re: [TCP bug, regression] stuck distcc connections in latest -git
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080724082730.GA29046@elte.hu>
-References: <20080724063242.GA9051@elte.hu>
-	<E1KLvds-0001Mc-00@gondolin.me.apana.org.au>
-	<20080724082730.GA29046@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 24 Jul 2008 04:49:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,245,1215414000"; 
+   d="scan'208";a="24207354"
+Message-ID: <4888421D.4090805@linux.intel.com>
+Date: Thu, 24 Jul 2008 01:49:33 -0700
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Adrian Bunk <bunk@kernel.org>, ambx1@neo.rr.com,
+       Rene Herman <rene.herman@gmail.com>, linux-kernel@vger.kernel.org,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [2.6 patch] make pnp_build_option() static
+References: <20080722172021.GN14846@cs181140183.pp.htv.fi> <200807231300.42905.bjorn.helgaas@hp.com>
+In-Reply-To: <200807231300.42905.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 24 Jul 2008 10:27:30 +0200
-
-> * Herbert Xu <herbert@gondor.apana.org.au> wrote:
+Bjorn Helgaas wrote:
+> On Tuesday 22 July 2008 11:20:21 am Adrian Bunk wrote:
+>> pnp_build_optionq() can now become static.
+>>
+>> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > 
-> > BTW any reason why you appear to have SACK off?
+> Acked-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 > 
-> default distro setup, Fedora 9 and Fedora 8. No extra tweaking that i'm 
-> aware of.
+> PNP patches have been going through the ACPI tree lately.
+> I copied Andi and Len.
 
-It's probably a side effect of their turning on syncookies in /etc/sysctl.conf :-/
+Looks good thanks. I'm currently a bit behind with patches because
+I'm at OLS and still focussing on patches for .27 only, but I'll
+process all the post .27 patches soon.
 
-I thought we added code that would allow enabling those options
-even with syncookies enabled?  There is code in net/ipv4/syncookies.c
-function cookie_check_timestamp() to handle this.
-
-Of course this is a recent addition, so if either side doesn't
-have that change.
+-Andi
