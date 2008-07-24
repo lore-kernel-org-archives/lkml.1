@@ -1,89 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbYGXKng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbYGXKoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbYGXKng (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 06:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520AbYGXKnV
+	id S1755580AbYGXKoi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 06:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbYGXKo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 06:43:21 -0400
-Received: from ns.miraclelinux.com ([219.118.163.66]:38707 "EHLO
-	mail.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754243AbYGXKnU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 06:43:20 -0400
-Message-ID: <48885A7F.80106@miraclelinux.com>
-Date: Thu, 24 Jul 2008 19:33:35 +0900
-From: Hirofumi Nakagawa <hnakagawa@miraclelinux.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: linux-kernel@vger.kernel.org, menage@google.com
-Subject: Re: [RFC][PATCH][0/3] introduce rlimit cgroup
-References: <488722DF.9080003@miraclelinux.com> <20080724150557.8697.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-In-Reply-To: <20080724150557.8697.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 24 Jul 2008 06:44:27 -0400
+Received: from sh.osrg.net ([192.16.179.4]:53762 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751978AbYGXKo0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 06:44:26 -0400
+Date: Thu, 24 Jul 2008 19:34:35 +0900
+To: prarit@redhat.com
+Cc: joro@8bytes.org, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       jbarnes@virtuousgeek.org, ed.pollard@ibm.com, epollard@redhat.com
+Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <488854DB.60307@redhat.com>
+References: <4887C2F7.6040506@redhat.com>
+	<20080724074655.GM31439@8bytes.org>
+	<488854DB.60307@redhat.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2008.7.24.103109
+Message-Id: <20080724193457S.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi Nakagawa-san,
+On Thu, 24 Jul 2008 06:09:31 -0400
+Prarit Bhargava <prarit@redhat.com> wrote:
+
 > 
->> Hello,
->>
->> I think existing rlimit interface isn't useful.
 > 
-> Why it isn't useful?
- > Please explain your motivation.
- >
-
-Hi Kosaki-san,
-
-I am sorry about lacking of explaination in my previous post.
-I think setrlimit system call interface isn't useful.
-Because it cannot set rlimit from other process.
-
->> So I created rlimit interface on cgroup.
->> Do you think this is a proper way todo it? (or Is there any similar methods already?)
->
-> your rlimit controller is merely setting process rlimit to each task in the group.
->
-
-To set rlimit from other processes is my original intention.
-For I do not see a way to do it, please let me know if there were any exists.
-
- > So, it isn't almost people required action.
-
-What is most people required action?
-
-> At least, I don't think useful.
+> Joerg Roedel wrote:
+> > On Wed, Jul 23, 2008 at 07:47:03PM -0400, Prarit Bhargava wrote:
+> >   
+> >>>> Interesting. Have you experienced any problems because of that
+> >>>> misbehavior in the GART code? AMD IOMMU currently also violates this
+> >>>> requirement. I will send a patch to fix that there too.
+> >>>>    
+> >>>>         
+> >>>  
+> >>>       
+> >> Joerg,  yes I can see misbehavior caused by this code.  O/w I wouldn't 
+> >> be spending my time fixing it :) :)
+> >>
+> >> See below ....
+> >>
+> >>     
+> >>> IIRC, only PARISC and POWER IOMMUs follow the above rule. So I also
+> >>> wondered what problem he hit.
+> >>>  
+> >>>       
+> >> I wonder if IBM's Calgary IOMMU needs this fix? ... I've added Ed 
+> >> Pollard to find out.
+> >>
+> >> On big memory footprint (16G or above) systems it is possible that the 
+> >> e820 map reserves most of the lower 4G of memory for system use*.  So 
+> >> it's possible that the 4G region is almost completely reserved at boot 
+> >> time and so the kernel starts using the IOMMU for DMA (see 
+> >> dma_alloc_coherent()).  The addresses returned are not properly aligned, 
+> >> and this causes serious problems for some drivers that require a 
+> >> physical aligned address for the device.
+> >>     
+> >
+> > Do you have a list of driver which require this? 
 > 
->> # cat /dev/cgroup/rlimit.limits
->> Number  Limit                  Soft Limit       Hard Limit       Unit
->> 0       Max cpu time           unlimited        unlimited         ms
->> 1       Max file size          unlimited        unlimited         bytes
->> 2       Max data size          unlimited        unlimited         bytes
->> 3       Max stack size         8388608          unlimited         bytes
->> 4       Max core file size     0                unlimited         bytes
->> 5       Max resident set       unlimited        unlimited         bytes
->> 6       Max processes          16300            16300             processes
->> 7       Max open files         1024             1024              files
->> 8       Max locked memory      32768            32768             bytes
->> 9       Max address space      unlimited        unlimited         bytes
->> 10      Max file locks         unlimited        unlimited         locks
->> 11      Max pending signals    16300            16300             signals
->> 12      Max msgqueue size      819200           819200           bytes
->> 13      Max nice priority       0                0
->> 14      Max realtime priority   0                0
->> 15      Max realtime timeout    unlimited        unlimited        us
->> # echo "1 100000000 200000000" > /dev/cgroup/rlimit.limits
->> # cat /proc/zero > /tmp/hoge
+> No, I don't have a list. :(
 > 
-> in general, A complex setting file is thought as ugly.
-> Why can't separate it?
+> But it seems that the skge driver suffers from this because this code 
+> exists in the driver:
+
+seems? You hit the bug with this driver, right?
+
+
+>         skge->mem = pci_alloc_consistent(hw->pdev, skge->mem_size, 
+> &skge->dma);
+>         if (!skge->mem)
+>                 return -ENOMEM;
 > 
+>         BUG_ON(skge->dma & 7);
+> 
+>         if ((u64)skge->dma >> 32 != ((u64) skge->dma + skge->mem_size) 
+>  >> 32) {
+>                 printk(KERN_ERR PFX "pci_alloc_consistent region crosses 
+> 4G boundary\n");
+>                 err = -EINVAL;
+>                 goto free_pci_mem;
+>         }
+> 
+> 
+> If pci_alloc_consistent did the "right" thing, we should *never* see 
+> that warning message.
 
-I agree.
+Well, I think that this is not releated with the pci_alloc_consistent
+alignment problem that you talk about.
 
-thanks.
+I think that the driver tries to avoid 4GB boundary crossing
+problem. You can find some work to avoid this, for example:
 
+http://www.ussg.iu.edu/hypermail/linux/kernel/0712.0/2206.html
+
+pci_device_add() has the following code to avoid this:
+
+pci_set_dma_seg_boundary(dev, 0xffffffff);
+
+I suspect that the problem you talk about, alloc_consistent doesn't
+return the reqeuested size aligned memory, breaks anything.
+
+
+> In theory, any 32-bit device attempting to request larger than PAGE_SIZE 
+> DMA memory on a system where no memory is available below 4G should show 
+> this problem.
+> 
+> > I would like to
+> > reproduce this issue. Does it also happen when you start the kernel with
+> > iommu=force (GART should then be used for all DMA remapping) too?
+> >   
+> 
+> Yes, this happens if you specify iommu=force on the command line.
+> 
+> P.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
