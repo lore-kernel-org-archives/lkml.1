@@ -1,131 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbYGXRxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbYGXR4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754605AbYGXRxl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 13:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbYGXRx2
+	id S1753964AbYGXR4U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 13:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbYGXR4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 13:53:28 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49863 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752136AbYGXRx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 13:53:27 -0400
-X-Authenticated: #6028172
-X-Provags-ID: V01U2FsdGVkX1+fx0o3OHKfY++JSoZljqAJ8tl+MEviBbMjZ0zfch
-	YWC1OEqhVlDUL9
-Message-ID: <4888C1A1.8050102@gmx.de>
-Date: Thu, 24 Jul 2008 19:53:37 +0200
-From: Dieter Ries <clip2@gmx.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080622)
+	Thu, 24 Jul 2008 13:56:11 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:52430 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751832AbYGXR4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 13:56:10 -0400
+Message-ID: <4888C232.4090906@sgi.com>
+Date: Thu, 24 Jul 2008 10:56:02 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com, netdev@vger.kernel.org, jeffrey.t.kirsher@intel.com,
-       e1000-devel@lists.sourceforge.net, Patrick McHardy <kaber@trash.net>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Current Git: BUG: unable to handle kernel paging request at 0000000001a40ca0
-References: <488750AA.20707@gmx.de>	 <19f34abd0807231046o4b194409w7d0e28a7cd745afa@mail.gmail.com>	 <48877200.9040608@gmx.de> <4887A860.6070607@gmx.de>	 <19f34abd0807231500m3d780d90i39626023e0685369@mail.gmail.com>	 <48882687.7020508@gmx.de> <84144f020807240649ra4ef475x9f19f1474678ea2f@mail.gmail.com>
-In-Reply-To: <84144f020807240649ra4ef475x9f19f1474678ea2f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>,
+       Lennert Buytenhek <kernel@wantstofly.org>,
+       Dave Jones <davej@codemonkey.org.uk>, Paul Jackson <pj@sgi.com>,
+       Tony Luck <tony.luck@intel.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Sam Creasey <sammy@sammy.net>, Greg Banks <gnb@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Adrian Bunk <bunk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Andreas Schwab <schwab@suse.de>, Johannes Weiner <hannes@saeurebad.de>
+Subject: Re: [PATCH 1/1] cpumask: Change cpumask_of_cpu to use cpumask_of_cpu_map
+References: <20080723171841.815234000@polaris-admin.engr.sgi.com> <20080723171841.997896000@polaris-admin.engr.sgi.com> <200807241245.17239.rusty@rustcorp.com.au>
+In-Reply-To: <200807241245.17239.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg schrieb:
-> Hi Dieter,
+Rusty Russell wrote:
+> On Thursday 24 July 2008 03:18:42 Mike Travis wrote:
+>>     Note that the declaration of cpumask_of_cpu_map[] is initialized
+>>     so that cpumask_of_cpu(0) is defined early.  This assumes that
+>>     cpu 0 is the boot cpu.
+> 
+> Hi Mike,
+> 
+>    Make this statically initialized please.  That almost guarantees there'll
+> be no problems.  It's a little tricky to do, but possible.  Patch below
+> tested on 32 bit x86 only.
 
-Hi,
+I thought about it, but it didn't seem to be worth the effort.  One problem
+though, the cpumask bits are such that the LSB of the last word is cpu 0.
+So your initializer sets it up in reverse order.  I'll see if I can't
+figure out how to invert it (very tricky coding btw... ;-)
+
+There was another version of cpumask_of_cpu() that used a percpu variable
+for each cpumask_t but I'm not sure where that went.  It still required a run
+time initializer though (except that cpumask_of_cpu(0) was available early.)
+
+static const cpumask_t cpumask_map[] = {
+ { .bits = { 1UL << (0) } }, { .bits = { 1UL << (1) } }, { .bits = { 1UL << (2) } }, { .bits = { 1UL << (3) } },
+
+ { .bits = { 1UL << (4) } }, { .bits = { 1UL << (5) } }, { .bits = { 1UL << (6) } }, { .bits = { 1UL << (7) } },
+
+
+ { .bits = { 1UL << (8) } }, { .bits = { 1UL << (9) } }, { .bits = { 1UL << (10) } }, { .bits = { 1UL << (11) } },
+ { .bits = { 1UL << (12) } }, { .bits = { 1UL << (13) } }, { .bits = { 1UL << (14) } }, { .bits = { 1UL << (15) } },
+
+
+ { .bits = { 1UL << (16) } }, { .bits = { 1UL << (17) } }, { .bits = { 1UL << (18) } }, { .bits = { 1UL << (19) } },
+ { .bits = { 1UL << (20) } }, { .bits = { 1UL << (21) } }, { .bits = { 1UL << (22) } }, { .bits = { 1UL << (23) } },
+ { .bits = { 1UL << (24) } }, { .bits = { 1UL << (25) } }, { .bits = { 1UL << (26) } }, { .bits = { 1UL << (27) } },
+ { .bits = { 1UL << (28) } }, { .bits = { 1UL << (29) } }, { .bits = { 1UL << (30) } }, { .bits = { 1UL << (31) } },
+# 533 ".../linux-2.6.tip/kernel/cpu.c"
+ { .bits = { 1UL << (32) } }, { .bits = { 1UL << (33) } }, { .bits = { 1UL << (34) } }, { .bits = { 1UL << (35) } },
+ { .bits = { 1UL << (36) } }, { .bits = { 1UL << (37) } }, { .bits = { 1UL << (38) } }, { .bits = { 1UL << (39) } },
+ { .bits = { 1UL << (40) } }, { .bits = { 1UL << (41) } }, { .bits = { 1UL << (42) } }, { .bits = { 1UL << (43) } },
+ { .bits = { 1UL << (44) } }, { .bits = { 1UL << (45) } }, { .bits = { 1UL << (46) } }, { .bits = { 1UL << (47) } },
+ { .bits = { 1UL << (48) } }, { .bits = { 1UL << (49) } }, { .bits = { 1UL << (50) } }, { .bits = { 1UL << (51) } },
+ { .bits = { 1UL << (52) } }, { .bits = { 1UL << (53) } }, { .bits = { 1UL << (54) } }, { .bits = { 1UL << (55) } },
+ { .bits = { 1UL << (56) } }, { .bits = { 1UL << (57) } }, { .bits = { 1UL << (58) } }, { .bits = { 1UL << (59) } },
+ { .bits = { 1UL << (60) } }, { .bits = { 1UL << (61) } }, { .bits = { 1UL << (62) } }, { .bits = { 1UL << (63) } },
 
 > 
-> On Thu, Jul 24, 2008 at 9:51 AM, Dieter Ries <clip2@gmx.de> wrote:
->> I think I managed to catch one of those:
+>> Based on linux-2.6.tip/master at the following commit:
 >>
+>>     commit a099a9b18ab434594bb01ed920e8c58574203fa9
+>>     Merge: 9b4ae4d... f3b51d7...
+>>     Author: Ingo Molnar <mingo@elte.hu>
+>>     Date:   Tue Jul 22 15:43:36 2008 +0200
 >>
->> general protection fault: 0000 [1] SMP
->> CPU 0
->> Modules linked in:
->> Pid: 0, comm: swapper Not tainted 2.6.26-06373-gcaf076e #49
->> RIP: 0010:[<ffffffff805e08f9>]  [<ffffffff805e08f9>]
->> nf_nat_move_storage+0x21/0x7a
->> RSP: 0018:ffffffff8091ab80  EFLAGS: 00010206
->> RAX: ffffffff805e08d8 RBX: ffff88007d1fb948 RCX: 000000000000006b
->> RDX: ffff88007d175e10 RSI: ffff88007d175e7b RDI: ffff88007d1fb948
->> RBP: ffffffff8091aba0 R08: 0000000000000000 R09: ffff88007d175e90
->> R10: ffffe20000000008 R11: ffff88007d175e10 R12: 59d2c3ffff88007d
->> R13: ffff88007d175e7b R14: 00000000000000a0 R15: 0000000000000001
->> FS:  0000000000000000(0000) GS:ffffffff8089ee80(0000) knlGS:0000000000000000
->> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
->> CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
->> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->> Process swapper (pid: 0, threadinfo ffffffff808b0000, task ffffffff80842340)
->> Stack:  0000000000000002 ffff88007d3d2000 ffff88007d1fb948 0000000000000070
->>  ffffffff8091abf0 ffffffff8059d3c4 ffffffff8091ac40 0000000100000001
->>  ffffffff809e3658 ffff88007d3d2000 0000000000000002 ffff88007f9f6500
->> Call Trace:
->>  <IRQ>  [<ffffffff8059d3c4>] __nf_ct_ext_add+0x15f/0x1f7
->>  [<ffffffff805e762c>] nf_nat_fn+0x84/0x152
->>  [<ffffffff805e77d8>] nf_nat_in+0x2f/0x71
->>  [<ffffffff805953d8>] nf_iterate+0x48/0x85
->>  [<ffffffff805b19c0>] ? ip_rcv_finish+0x0/0x35d
->>  [<ffffffff80595478>] nf_hook_slow+0x63/0xcb
->>  [<ffffffff805b19c0>] ? ip_rcv_finish+0x0/0x35d
->>  [<ffffffff8028fe7c>] ? __slab_alloc+0x413/0x4bd
->>  [<ffffffff805b21b8>] ip_rcv+0x257/0x297
->>  [<ffffffff80581461>] netif_receive_skb+0x1f1/0x263
->>  [<ffffffff80495b34>] e1000_receive_skb+0x46/0x5d
->>  [<ffffffff8049830b>] e1000_clean_rx_irq+0x20e/0x2a6
->>  [<ffffffff8024cce8>] ? getnstimeofday+0x3f/0xa0
->>  [<ffffffff804952ce>] e1000_clean+0x6d/0x218
->>  [<ffffffff8024ad39>] ? hrtimer_get_next_event+0xa8/0xb8
->>  [<ffffffff80583569>] net_rx_action+0xa9/0x17c
->>  [<ffffffff80239b51>] __do_softirq+0x65/0xd5
->>  [<ffffffff8020c5dc>] call_softirq+0x1c/0x28
->>  [<ffffffff8020dd0a>] do_softirq+0x39/0x77
->>  [<ffffffff80239aab>] irq_exit+0x44/0x85
->>  [<ffffffff8020dff5>] do_IRQ+0x147/0x16a
->>  [<ffffffff8020b8a1>] ret_from_intr+0x0/0xa
+>>     Merge branch 'out-of-tree'
 > 
-> Dieter, can you please try this patch:
+> This is two-steps forward one step back.  Have Ingo drop the original
+> patches, and roll together into a single change.  That should be much
+> clearer.  I know it's a PITA.
 > 
-> http://lkml.org/lkml/2008/7/24/186
+> Thanks,
+> Rusty.
 > 
-> Patrick, it looks like this could be the same bug Ingo is hitting?
+> Make cpumask_of_cpu_map generic
 > 
+> If an arch doesn't define cpumask_of_cpu_map, create a generic
+> statically-initialized one for them.  This allows removal of the buggy
+> cpumask_of_cpu() macro (&cpumask_of_cpu() gives address of
+> out-of-scope var).
+> 
+> An arch with NR_CPUS of 4096 probably wants to allocate this itself
+> based on the actual number of CPUs, since otherwise they're using 2MB
+> of rodata (1024 cpus means 128k).  That's what
+> CONFIG_HAVE_CPUMASK_OF_CPU_MAP is for (only x86/64 does so at the
+> moment).
+> 
+> In future as we support more CPUs, we'll need to resort to a
+> get_cpu_map()/put_cpu_map() allocation scheme.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> diff -r 95e128369c3c include/linux/cpumask.h
+> --- a/include/linux/cpumask.h	Thu Jul 24 11:16:27 2008 +1000
+> +++ b/include/linux/cpumask.h	Thu Jul 24 12:33:45 2008 +1000
+> @@ -226,23 +226,8 @@ int __next_cpu(int n, const cpumask_t *s
+>  #define next_cpu(n, src)	({ (void)(src); 1; })
+>  #endif
+>  
+> -#ifdef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
+> -extern cpumask_t *cpumask_of_cpu_map;
+> +extern const cpumask_t *cpumask_of_cpu_map;
+>  #define cpumask_of_cpu(cpu)    (cpumask_of_cpu_map[cpu])
+> -
+> -#else
+> -#define cpumask_of_cpu(cpu)						\
+> -(*({									\
+> -	typeof(_unused_cpumask_arg_) m;					\
+> -	if (sizeof(m) == sizeof(unsigned long)) {			\
+> -		m.bits[0] = 1UL<<(cpu);					\
+> -	} else {							\
+> -		cpus_clear(m);						\
+> -		cpu_set((cpu), m);					\
+> -	}								\
+> -	&m;								\
+> -}))
+> -#endif
+>  
+>  #define CPU_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(NR_CPUS)
+>  
+> diff -r 95e128369c3c kernel/cpu.c
+> --- a/kernel/cpu.c	Thu Jul 24 11:16:27 2008 +1000
+> +++ b/kernel/cpu.c	Thu Jul 24 12:33:45 2008 +1000
+> @@ -428,3 +428,112 @@ out:
+>  #endif /* CONFIG_PM_SLEEP_SMP */
+>  
+>  #endif /* CONFIG_SMP */
+> +
+> +#ifndef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
+> +/* 64 bits of zeros, for initializers. */
+> +#if BITS_PER_LONG == 32
+> +#define Z64 0, 0
+> +#else
+> +#define Z64 0
+> +#endif
+> +
+> +/* Initializer macros. */
+> +#define CMI0(n) { .bits = { 1UL << (n) } }
+> +#define CMI(n, ...) { .bits = { __VA_ARGS__, 1UL << ((n) % BITS_PER_LONG) } }
+> +
+> +#define CMI8(n, ...)						\
+> +	CMI((n), __VA_ARGS__), CMI((n)+1, __VA_ARGS__),		\
+> +	CMI((n)+2, __VA_ARGS__), CMI((n)+3, __VA_ARGS__),	\
+> +	CMI((n)+4, __VA_ARGS__), CMI((n)+5, __VA_ARGS__),	\
+> +	CMI((n)+6, __VA_ARGS__), CMI((n)+7, __VA_ARGS__)
+> +
+> +#if BITS_PER_LONG == 32
+> +#define CMI64(n, ...)							\
+> +	CMI8((n), __VA_ARGS__), CMI8((n)+8, __VA_ARGS__),		\
+> +	CMI8((n)+16, __VA_ARGS__), CMI8((n)+24, __VA_ARGS__),		\
+> +	CMI8((n)+32, 0, __VA_ARGS__), CMI8((n)+40, 0, __VA_ARGS__),	\
+> +	CMI8((n)+48, 0, __VA_ARGS__), CMI8((n)+56, 0, __VA_ARGS__)
+> +#else
+> +#define CMI64(n, ...)							\
+> +	CMI8((n), __VA_ARGS__), CMI8((n)+8, __VA_ARGS__),		\
+> +	CMI8((n)+16, __VA_ARGS__), CMI8((n)+24, __VA_ARGS__),		\
+> +	CMI8((n)+32, __VA_ARGS__), CMI8((n)+40, __VA_ARGS__),	\
+> +	CMI8((n)+48, __VA_ARGS__), CMI8((n)+56, __VA_ARGS__)
+> +#endif
+> +
+> +#define CMI256(n, ...)							\
+> +	CMI64((n), __VA_ARGS__), CMI64((n)+64, Z64, __VA_ARGS__),	\
+> +	CMI64((n)+128, Z64, Z64, __VA_ARGS__),				\
+> +	CMI64((n)+192, Z64, Z64, Z64, __VA_ARGS__)
+> +#define Z256 Z64, Z64, Z64, Z64
+> +
+> +#define CMI1024(n, ...)					\
+> +	CMI256((n), __VA_ARGS__),			\
+> +	CMI256((n)+256, Z256, __VA_ARGS__),		\
+> +	CMI256((n)+512, Z256, Z256, __VA_ARGS__),	\
+> +	CMI256((n)+768, Z256, Z256, Z256, __VA_ARGS__)
+> +#define Z1024 Z256, Z256, Z256, Z256
+> +
+> +/* We want this statically initialized, just to be safe.  We try not
+> + * to waste too much space, either. */
+> +static const cpumask_t cpumask_map[] = {
+> +	CMI0(0), CMI0(1), CMI0(2), CMI0(3),
+> +#if NR_CPUS > 4
+> +	CMI0(4), CMI0(5), CMI0(6), CMI0(7), 
+> +#endif
+> +#if NR_CPUS > 8
+> +	CMI0(8), CMI0(9), CMI0(10), CMI0(11), 
+> +	CMI0(12), CMI0(13), CMI0(14), CMI0(15), 
+> +#endif
+> +#if NR_CPUS > 16
+> +	CMI0(16), CMI0(17), CMI0(18), CMI0(19), 
+> +	CMI0(20), CMI0(21), CMI0(22), CMI0(23),
+> +	CMI0(24), CMI0(25), CMI0(26), CMI0(27),
+> +	CMI0(28), CMI0(29), CMI0(30), CMI0(31),
+> +#endif
+> +#if NR_CPUS > 32
+> +#if BITS_PER_LONG == 32
+> +	CMI(32, 0), CMI(33, 0), CMI(34, 0), CMI(35, 0), 
+> +	CMI(36, 0), CMI(37, 0), CMI(38, 0), CMI(39, 0),
+> +	CMI(40, 0), CMI(41, 0), CMI(42, 0), CMI(43, 0),
+> +	CMI(44, 0), CMI(45, 0), CMI(46, 0), CMI(47, 0),
+> +	CMI(48, 0), CMI(49, 0), CMI(50, 0), CMI(51, 0), 
+> +	CMI(52, 0), CMI(53, 0), CMI(54, 0), CMI(55, 0),
+> +	CMI(56, 0), CMI(57, 0), CMI(58, 0), CMI(59, 0),
+> +	CMI(60, 0), CMI(61, 0), CMI(62, 0), CMI(63, 0),
+> +#else
+> +	CMI0(32), CMI0(33), CMI0(34), CMI0(35), 
+> +	CMI0(36), CMI0(37), CMI0(38), CMI0(39),
+> +	CMI0(40), CMI0(41), CMI0(42), CMI0(43),
+> +	CMI0(44), CMI0(45), CMI0(46), CMI0(47),
+> +	CMI0(48), CMI0(49), CMI0(50), CMI0(51), 
+> +	CMI0(52), CMI0(53), CMI0(54), CMI0(55),
+> +	CMI0(56), CMI0(57), CMI0(58), CMI0(59),
+> +	CMI0(60), CMI0(61), CMI0(62), CMI0(63),
+> +#endif /* BITS_PER_LONG == 64 */
+> +#endif
+> +#if NR_CPUS > 64
+> +	CMI64(64, Z64),
+> +#endif
+> +#if NR_CPUS > 128
+> +	CMI64(128, Z64, Z64), CMI64(192, Z64, Z64, Z64),
+> +#endif
+> +#if NR_CPUS > 256
+> +	CMI256(256, Z256),
+> +#endif
+> +#if NR_CPUS > 512
+> +	CMI256(512, Z256, Z256), CMI256(768, Z256, Z256, Z256),
+> +#endif
+> +#if NR_CPUS > 1024
+> +	CMI1024(1024, Z1024),
+> +#endif
+> +#if NR_CPUS > 2048
+> +	CMI1024(2048, Z1024, Z1024), CMI1024(3072, Z1024, Z1024, Z1024), 
+> +#endif
+> +#if NR_CPUS > 4096
+> +#error NR_CPUS too big.  Fix initializers or set CONFIG_HAVE_CPUMASK_OF_CPU_MAP
+> +#endif
+> +};
+> +
+> +const cpumask_t *cpumask_of_cpu_map = cpumask_map;
+> +#endif /* !CONFIG_HAVE_CPUMASK_OF_CPU_MAP */
 
-it looks like it is fixed with the patch. But I (still/now) have the 
-following Warning:
-
-
-WARNING: at net/core/dev.c:1344 __netif_schedule+0x31/0x79()
-Modules linked in:
-Pid: 9, comm: events/0 Not tainted 2.6.26-06371-g338b9bb-dirty #51
-
-Call Trace:
-  [<ffffffff80234c3a>] warn_on_slowpath+0x5d/0x92
-  [<ffffffff8023dc24>] ? lock_timer_base+0x2b/0x4f
-  [<ffffffff8023dde1>] ? __mod_timer+0xc6/0xd8
-  [<ffffffff8026820a>] ? ftrace_record_ip+0x211/0x262
-  [<ffffffff8020b1e4>] ? mcount_call+0x5/0x31
-  [<ffffffff805802bf>] __netif_schedule+0x31/0x79
-  [<ffffffff80498890>] e1000_watchdog_task+0x47d/0x695
-  [<ffffffff80498413>] ? e1000_watchdog_task+0x0/0x695
-  [<ffffffff80244454>] run_workqueue+0x81/0x10a
-  [<ffffffff80244e46>] worker_thread+0xdd/0xea
-  [<ffffffff80247b3d>] ? autoremove_wake_function+0x0/0x3d
-  [<ffffffff80244d69>] ? worker_thread+0x0/0xea
-  [<ffffffff80247a0a>] kthread+0x4e/0x7c
-  [<ffffffff8020c279>] child_rip+0xa/0x11
-  [<ffffffff802479bc>] ? kthread+0x0/0x7c
-  [<ffffffff8020c26f>] ? child_rip+0x0/0x11
-
----[ end trace a344035e20d497ce ]---
-
-but this is work in progress I guess.
-
-Thanks for support!
-
-cu
-Dieter
