@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752281AbYGXBhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752051AbYGXBkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752281AbYGXBhb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jul 2008 21:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbYGXBhI
+	id S1752051AbYGXBkX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jul 2008 21:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbYGXBkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jul 2008 21:37:08 -0400
-Received: from sh.osrg.net ([192.16.179.4]:42115 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751505AbYGXBhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jul 2008 21:37:07 -0400
-Date: Thu, 24 Jul 2008 10:32:45 +0900
-To: scameron@beardog.cca.cpqcorp.net
-Cc: linux-scsi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       mike.miller@hp.com, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: HP (Compaq) Smart Array 5xxx controller SCSI driver
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080723155005.GF8833@beardog.cca.cpqcorp.net>
-References: <20080722175537.GB8833@beardog.cca.cpqcorp.net>
-	<20080723155005.GF8833@beardog.cca.cpqcorp.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 23 Jul 2008 21:40:12 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:62265 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbYGXBkK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jul 2008 21:40:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lGEn+OwxDG1CqdW6+eHup1nD/fnrIDl+eB4wHPfxS/WtjEplD2kpXmh3sfHjXty+vC
+         UHBIJDUbfjqgmTWmxpjqq/dS72O9XqauUoWts5CfP1d/q7zlxorVHNp62ypLqILsY+J7
+         Y7Q+U802vN+sNHLieDD0Es1Fj1gLmijnhI4r4=
+Message-ID: <524f69650807231839g399f57a8ied548d81eefdbebd@mail.gmail.com>
+Date: Wed, 23 Jul 2008 20:39:37 -0500
+From: "Steve French" <smfrench@gmail.com>
+To: "Harvey Harrison" <harvey.harrison@gmail.com>,
+       "Shirish Pargaonkar" <shirishpargaonkar@gmail.com>
+Subject: Re: cifs: suggestions for a few more sparse warnings
+Cc: "Jeff Layton" <jlayton@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1216860920.30386.55.camel@brick>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080724103322Q.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
+References: <1216860920.30386.55.camel@brick>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC'ed linux-scsi.
+On Wed, Jul 23, 2008 at 7:55 PM, Harvey Harrison
+<harvey.harrison@gmail.com> wrote:
+> Here's a patch for some of the other warnings, but the cifsacl.c bit
+> needs a comment I think.
+>
+> Harvey
+>
+> diff --git a/fs/cifs/cifsacl.c b/fs/cifs/cifsacl.c
+> index 34902cf..70f0ef5 100644
+> --- a/fs/cifs/cifsacl.c
+> +++ b/fs/cifs/cifsacl.c
+> @@ -169,8 +169,7 @@ static void copy_sec_desc(const struct cifs_ntsd *pntsd,
+>        for (i = 0; i < 6; i++)
+>                ngroup_sid_ptr->authority[i] = group_sid_ptr->authority[i];
+>        for (i = 0; i < 5; i++)
+> -               ngroup_sid_ptr->sub_auth[i] =
+> -                               cpu_to_le32(group_sid_ptr->sub_auth[i]);
+> +               cpu_to_le32s(&group_sid_ptr->sub_auth[i]);
+>
+>        return;
+>  }
 
-On Wed, 23 Jul 2008 10:50:05 -0500
-scameron@beardog.cca.cpqcorp.net wrote:
+No - the cifsacl one looks like just a bug - there should not be an
+endian conversion here.
 
-> 
-> Fujita Tomonori wrote:
-> > I created symbolic links (neat udev rules can do automatically).
-> > 
-> > clover:/home/fujita# ls -l /dev/cciss/
-> > total 0
-> > lrwxrwxrwx 1 root root 8 2008-07-23 21:38 c0d0 -> /dev/sde
-> > lrwxrwxrwx 1 root root 9 2008-07-23 21:39 c0d0p1 -> /dev/sde1
-> > lrwxrwxrwx 1 root root 9 2008-07-23 21:39 c0d0p2 -> /dev/sde2
-> > lrwxrwxrwx 1 root root 8 2008-07-23 21:38 c0d1 -> /dev/sdf
-> > lrwxrwxrwx 1 root root 8 2008-07-23 21:38 c0d2 -> /dev/sdg
-> > lrwxrwxrwx 1 root root 8 2008-07-23 21:38 c0d3 -> /dev/sdh
-> > 
-> > The symbolic links enable users to mount the device as before.
-> > 
-> > hpacucli seems to work (I didn't try all the commands but the point is
-> > that we can provide the ioctl compatibility): 
-> 
-> That's pretty neat, I'm surprised that works.  Obviously
-> you've got the needed ioctls already done. 
+Shirish,
+Would you verify?
 
-I've not finished ioctls but my driver supports it partly.
+-- 
+Thanks,
 
-
-> I bet if you deleted all the logical drives it wouldn't work
-> anymore (because /dev/cciss/c0d0 -> /dev/sde would disappear.)
-
-Yeah, right. As you know, cciss doesn't have a global character device
-for it so the tools don't work if no logical device exists.
-
-
-> A way around that would be to present a device to the linux
-> kernel with 8-byte LUN address of all zeroes mapped to some
-> bus/target/lun.  When the SCSI scan happens and the inquiry
-> is sent down to this address, the RAID controller will respond.
-> Then let sg bind to that, and get ACU to use the sg device.
-> (I hope it's clear what I'm saying.)
-> 
-> I don't know if the udev rules can be made smart enough to
-> point /dev/cciss/c0d0 at the sg device if there are no 
-
-udev rules can execute external programs. So you can make udev rules
-do whatever you want.
-
-
-> logical drives, and at the first logical drive if there 
-> is at least one.   In the longer term, ACU would have to 
-> be changed to use that sg device always rather than using
-> /dev/cciss/c0d0.
-> 
-> In the cciss driver, we always present /dev/cciss/c0d0
-> whether there are any logical drives or not for this reason,
-> a rather clunky solution.
-
-Ideally, I think that the best solution is exporting a RAID device so
-that the management tools can access to hardware via it (as other SCSI
-drivers do). But we need the compatibility here. So I'm not sure. I'll
-follow Mike's decision.
+Steve
