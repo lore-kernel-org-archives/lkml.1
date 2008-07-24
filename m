@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbYGXJg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754376AbYGXJiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754832AbYGXJg5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 05:36:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbYGXJgr
+	id S1754376AbYGXJiy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 05:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbYGXJiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 05:36:47 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:49881 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751492AbYGXJgq (ORCPT
+	Thu, 24 Jul 2008 05:38:46 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:4730 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751710AbYGXJip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 05:36:46 -0400
-Date: Thu, 24 Jul 2008 12:36:44 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: Ingo Molnar <mingo@elte.hu>, w@1wt.eu, davem@davemloft.net,
-       davidn@davidnewall.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de, rjw@sisk.pl,
-       ilpo.jarvinen@helsinki.fi
-Subject: Re: [TCP bug, regression] stuck distcc connections in latest -git
-In-Reply-To: <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>
-Message-ID: <Pine.LNX.4.64.0807241233130.24801@wrl-59.cs.helsinki.fi>
-References: <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 Jul 2008 05:38:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=MNej1/1fyn1nK23axT0CaBAb7yJfZ16E/F7P8B7Ow8M7rGdnSSqI/tD5wEjV4e1rMx
+         odXPz32D+QfZMkNu/XMir6QW5jGhqscz9eQyhG1KFtnngz6yE9yw1fCslubAFE1yagdu
+         eMxQIUX6It4bRFSutzZXvKbt18n33gEZJzYAc=
+Message-ID: <a1d7a2f20807240238r58b6e866u719806447476ac43@mail.gmail.com>
+Date: Thu, 24 Jul 2008 11:38:45 +0200
+From: "Jerome Arbez-Gindre" <jeromearbezgindre@gmail.com>
+To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
+Subject: [patch] Add a BlackBoard user to connector
+Cc: linux-kernel@vger.kernel.org, deweerdt@free.fr
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Jul 2008, Herbert Xu wrote:
+Hello Evgeniy,
 
-> Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > the client (running 2.6.24) does periodic 120 seconds retransmits:
-> > 
-> > 07:40:48.255452 IP dione.39201 > phoenix.distcc: . 1608:2144(536) ack 1 win 584007:40:48.255547 IP phoenix.distcc > dione.39201: . ack 2144 win 65535
-> > 07:40:48.255564 IP dione.39201 > phoenix.distcc: . 67143:67679(536) ack 1 win 5840
-> > 07:40:48.255648 IP phoenix.distcc > dione.39201: . ack 2144 win 65535
-> > 07:42:48.255440 IP dione.39201 > phoenix.distcc: . 2144:2680(536) ack 1 win 5840
-> > 07:42:48.255559 IP phoenix.distcc > dione.39201: . ack 2680 win 65535
-> > 07:42:48.255570 IP dione.39201 > phoenix.distcc: . 67679:68215(536) ack 1 win 5840
-> > 07:42:48.255659 IP phoenix.distcc > dione.39201: . ack 2680 win 65535
-> > 07:44:48.255436 IP dione.39201 > phoenix.distcc: . 2680:3216(536) ack 1 win 584007:44:48.255570 IP phoenix.distcc > dione.39201: . ack 3216 win 65535
-> > 07:44:48.255585 IP dione.39201 > phoenix.distcc: . 68215:68751(536) ack 1 win 5840
-> > 07:44:48.255669 IP phoenix.distcc > dione.39201: . ack 3216 win 65535
->
-> OK, something's seriously screwed up on dione's kernel.  Could
-> you please disable syncookies (which should enable SACK for you)
-> and see if the problem goes away?
+Here's an updated patch.
 
-This looks like the FRTO bugs we fixed in 2.6.25.7, afaik, 2.6.24.y wasn't 
-anymore updated at that time so it's a bit obsolete...
+Add a BlackBoard user to connector. BlackBoard is part of the TSP
+GPL sampling framework (http://savannah.nongnu.org/p/tsp)
 
 
--- 
- i.
+Signed-off-by: Jerome Arbez-Gindre <jeromearbezgindre@gmail.com>
+
+diff --git a/include/linux/connector.h b/include/linux/connector.h
+index 96a89d3..d7ac97a 100644
+--- a/include/linux/connector.h
++++ b/include/linux/connector.h
+@@ -38,8 +38,9 @@
+ #define CN_W1_VAL                      0x1
+ #define CN_IDX_V86D                    0x4
+ #define CN_VAL_V86D_UVESAFB            0x1
++#define CN_IDX_BB                      0x5
+
+-#define CN_NETLINK_USERS               5
++#define CN_NETLINK_USERS               6
+
+ /*
+ * Maximum connector's message size.
