@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbYGXRal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbYGXRl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752791AbYGXRal (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 13:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYGXRac
+	id S1753160AbYGXRl4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 13:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbYGXRls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 13:30:32 -0400
-Received: from bromo.msbb.uc.edu ([129.137.3.146]:51828 "HELO
-	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751117AbYGXRac (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 13:30:32 -0400
-Date: Thu, 24 Jul 2008 13:30:30 -0400
-From: Jack Howarth <howarth@bromo.msbb.uc.edu>
-To: linux-kernel@vger.kernel.org
-Subject: merging branches remotely with git?
-Message-ID: <20080724173030.GA7609@bromo.msbb.uc.edu>
+	Thu, 24 Jul 2008 13:41:48 -0400
+Received: from xenotime.net ([66.160.160.81]:50735 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751529AbYGXRlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 13:41:47 -0400
+Date: Thu, 24 Jul 2008 10:41:46 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: Patrizio Bassi <patrizio.bassi@gmail.com>
+cc: "Kernel, " <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.26 vanilla paravirt config issue
+In-Reply-To: <4888B8CD.1030501@gmail.com>
+Message-ID: <Pine.LNX.4.64.0807241041000.3283@shark.he.net>
+References: <4888B8CD.1030501@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    I am trying to do a local merge of the linus-kernel git and
-the my-wireless-testing git. Is this possible? I have cloned both
-locally with...
+On Thu, 24 Jul 2008, Patrizio Bassi wrote:
 
-git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-git clone git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/my-wireless-testing.git
+> Hi All
+> 
+> on my amd64 profile i cannot disable PARAVIRT option.
+> 
+> even if i disable all i still get in my .config:
+> 
+> # CONFIG_X86_ES7000 is not set
+> # CONFIG_X86_RDC321X is not set
+> CONFIG_X86_VSMP=y
+> # CONFIG_PARAVIRT_GUEST is not set
+> CONFIG_PARAVIRT=y    <<<<-------------------------------- issue
+> # CONFIG_MEMTEST_BOOTPARAM is not set
+> # CONFIG_M386 is not set
+> 
+> how to disable it? i guess it's a config bug.
 
-I thought from the git documentation that I was supposed to be able to
-create a merge automatically with...
+Nope.  You have CONFIG_X86_VSMP enabled, which selects PARAVIRT:
 
-git merge git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/my-wireless-testing.git
+config X86_VSMP
+	bool "Support for ScaleMP vSMP"
+	select PARAVIRT
+	depends on X86_64
 
-however this reports...
+> CC me i'm not subscribed.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git - not something we can merge
-
-Any advice on how this can be done would be appreciated.
-                  Jack
+-- 
+~Randy
