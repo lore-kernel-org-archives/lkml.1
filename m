@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbYGXULj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbYGXUMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753715AbYGXULj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 16:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYGXULa
+	id S1754235AbYGXUMW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 16:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbYGXUMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 16:11:30 -0400
-Received: from outbound-mail-20.bluehost.com ([69.89.20.235]:49659 "HELO
-	outbound-mail-20.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751244AbYGXULa (ORCPT
+	Thu, 24 Jul 2008 16:12:14 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:57773 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751552AbYGXUMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 16:11:30 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=MIHnZUwEbSanWtuLhgAXJKoWRxfWdyMa1YIEKoVmmcehte/vXvwolfrll4R7x3gVFP/aWqqFmERfJBArRRWU5Hb4VHxsNq4rGviy8XccSGYgBzy5ztbBG9kRzVYNOEwa;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH PROPOSAL] libata/pci: Move D3 hack handling from libata into PCI
-Date: Thu, 24 Jul 2008 13:11:24 -0700
-User-Agent: KMail/1.9.9
-Cc: jeff@garzik.org, greg@kroah.com, linux-kernel@vger.kernel.org
-References: <20080724171838.591f6a31@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080724171838.591f6a31@lxorguk.ukuu.org.uk>
+	Thu, 24 Jul 2008 16:12:13 -0400
+Date: Thu, 24 Jul 2008 16:10:49 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Roland Dreier <rdreier@cisco.com>
+cc: Grant Coady <gcoady.lk@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: how much stuff is no longer "EXPERIMENTAL"?
+In-Reply-To: <adar69jvybs.fsf@cisco.com>
+Message-ID: <alpine.LFD.1.10.0807241609220.6529@localhost.localdomain>
+References: <alpine.LFD.1.10.0807241114000.4119@localhost.localdomain> <h2ih845fmasm3coi3qapmqkknj0ghp6k7t@4ax.com> <alpine.LFD.1.10.0807241606240.6474@localhost.localdomain> <adar69jvybs.fsf@cisco.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807241311.24384.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, July 24, 2008 9:18 am Alan Cox wrote:
-> Libata has some hacks to deal with certain controllers going silly in D3
-> state. The right way to handle this is to keep a PCI device flag for such
-> devices. That can then be generalised for no ATA devices with power
-> problems.
->
-> Signed-off-by: Alan Cox <alan@redhat.com>
+On Thu, 24 Jul 2008, Roland Dreier wrote:
 
-Looks pretty reasonable to me; do you want me to take the drivers/ata bits 
-along with the PCI stuff?
+> I think INFINIBAND_IPOIB_CM is no long EXPERIMENTAL.  I'll remove the tag.
 
-Btw, what happens to these devices in D3hot?  Do they behave like they're in 
-D3cold or something and require a reset?  Or do they otherwise kill the bus 
-somehow?
+cool.  i think we need a new attribution tag here.  i'm thinking
 
-Thanks,
-Jesse
+  Nagged-incessantly-until-we-fixed-it-by:  Robert P. J. Day    :-)
+
+rday
+--
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
