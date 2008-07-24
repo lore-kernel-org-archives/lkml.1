@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbYGXUMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbYGXUM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754235AbYGXUMW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 16:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbYGXUMO
+	id S1753136AbYGXUM7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 16:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYGXUMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 16:12:14 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:57773 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751552AbYGXUMN (ORCPT
+	Thu, 24 Jul 2008 16:12:47 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43938 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751610AbYGXUMq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 16:12:13 -0400
-Date: Thu, 24 Jul 2008 16:10:49 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Roland Dreier <rdreier@cisco.com>
-cc: Grant Coady <gcoady.lk@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: how much stuff is no longer "EXPERIMENTAL"?
-In-Reply-To: <adar69jvybs.fsf@cisco.com>
-Message-ID: <alpine.LFD.1.10.0807241609220.6529@localhost.localdomain>
-References: <alpine.LFD.1.10.0807241114000.4119@localhost.localdomain> <h2ih845fmasm3coi3qapmqkknj0ghp6k7t@4ax.com> <alpine.LFD.1.10.0807241606240.6474@localhost.localdomain> <adar69jvybs.fsf@cisco.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Thu, 24 Jul 2008 16:12:46 -0400
+Date: Thu, 24 Jul 2008 20:54:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [build failure] hp-plus.c: (.text+0xd7c1a): undefined reference
+ to `ei_close'
+Message-ID: <20080724205441.3465f4d4@lxorguk.ukuu.org.uk>
+In-Reply-To: <4888D631.8040401@garzik.org>
+References: <20080721.233512.128618365.anemo@mba.ocn.ne.jp>
+	<20080721191519.GA15843@elte.hu>
+	<20080721214258.787a67ca@lxorguk.ukuu.org.uk>
+	<20080722072334.GA25241@elte.hu>
+	<48865899.3030209@garzik.org>
+	<20080723104520.GA20672@elte.hu>
+	<20080724052603.GA8744@elte.hu>
+	<20080724100615.764bac36@lxorguk.ukuu.org.uk>
+	<4888D631.8040401@garzik.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Jul 2008, Roland Dreier wrote:
+> My apologies.  FWIW, from my point of view the same patch(es) kept 
+> getting fixed and updated and going around in circles, so I kept 
+> waiting.  Since it was was a net-next issue (until now), I lowered the 
+> priority and waited to let you guys (you, Andrew, Randy mainly) sort 
+> things out.
+> 
+> So far the only remaining patch I have outstanding and needing to be 
+> applied is from Atsushi-san via Ingo (message id 
+> <20080723104520.GA20672@elte.hu>)...  is that the last of it?
 
-> I think INFINIBAND_IPOIB_CM is no long EXPERIMENTAL.  I'll remove the tag.
+I've got a reference tree that I will regenerate and diff against the
+upstream GIT tree to check. It looks like some of the ei_ to eip_ changes
+have gone for a walk.
 
-cool.  i think we need a new attribution tag here.  i'm thinking
+Its on my TODO list and now IT821x is working again the panic mode stuff
+is over I hope
 
-  Nagged-incessantly-until-we-fixed-it-by:  Robert P. J. Day    :-)
-
-rday
---
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+Alan
