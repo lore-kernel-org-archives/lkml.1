@@ -1,100 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754325AbYGXVto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754258AbYGXVvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754325AbYGXVto (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 17:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYGXVtd
+	id S1754258AbYGXVvn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 17:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbYGXVvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 17:49:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33345 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751552AbYGXVtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 17:49:32 -0400
-Date: Thu, 24 Jul 2008 17:49:14 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@devserv.devel.redhat.com
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-parisc@vger.kernel.org
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in blk_recalc_rq_segments
- about VMERGE
-In-Reply-To: <1216918371.4524.38.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0807241727320.12036@devserv.devel.redhat.com>
-References: <1216520228.3376.33.camel@localhost.localdomain> 
- <20080719.210737.197246608.davem@davemloft.net>  <1216565545.4199.10.camel@localhost.localdomain>
-  <20080720.102302.137955996.davem@davemloft.net>  <1216575211.4199.35.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0807241103190.1545@devserv.devel.redhat.com> 
- <1216913314.4524.25.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0807241232040.9412@devserv.devel.redhat.com>
- <1216918371.4524.38.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 24 Jul 2008 17:51:35 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:41950 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751716AbYGXVvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 17:51:35 -0400
+Date: Thu, 24 Jul 2008 23:51:27 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
+Message-ID: <20080724235127.40bd0ac9@mjolnir.drzeus.cx>
+In-Reply-To: <200807241407.18543.jbarnes@virtuousgeek.org>
+References: <20080724134737.4b91f30d@mjolnir.drzeus.cx>
+	<488877C8.9020706@jp.fujitsu.com>
+	<20080724223920.1f4dd753@mjolnir.drzeus.cx>
+	<200807241407.18543.jbarnes@virtuousgeek.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-11446-1216936293-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Jul 2008, James Bottomley wrote:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> On Thu, 2008-07-24 at 12:34 -0400, Mikulas Patocka wrote:
-> > On Thu, 24 Jul 2008, James Bottomley wrote:
-> > 
-> > > On Thu, 2008-07-24 at 11:07 -0400, Mikulas Patocka wrote:
-> > > > So try to #define BIO_VMERGE_BOUNDARY 0 for Pa-Risc and tell us what 
-> > > > performance degradation do you see (and what driver do you use and what is 
-> > > > the I/O pattern).
-> > > > 
-> > > > If you show something specific, we can consider that --- but you haven't 
-> > > > yet told us anything, except generic talk.
-> > > 
-> > > You keep ignoring inconvenient facts.  For about the third time:
-> > > 
-> > > I run a test bed for sg_tables (large chaining of requests).  This runs
-> > > on parisc using virtual merging (has to because the final physical table
-> > > size can't go over the sg list of the SCSI card).  If I turn off virtual
-> > > merging I can no longer test sg_tables in vanilla kernels.
-> > > 
-> > > James
-> > 
-> > What sg_tables test do you mean? What does the test do? Why couldn't you 
-> > run the test if BIO_VMERGE_BOUNDARY is 0? Normal I/O obviously can work 
-> > with BIO_VMERGE_BOUNDARY 0, the kernel will just send more smaller 
-> 
-> Look, if you don't really understand what I'm doing, it's not really my
-> job to educate you.  The sg_table discussions are on marc.info, mainly
-> on the SCSI lists; just look for 'sg chaining' in the header (need to
-> use google site ... marc's search is bad).
-> 
-> You can complain if the code is impacting you ... but I believe I've
-> optimised it so it isn't.  Your basic problem amounts to you not liking
-> me doing something that has no impact on you ... I'm afraid that's what
-> freedom leads to (shocking, I know).
-> 
-> James
+--=_freyr.drzeus.cx-11446-1216936293-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Chaining of sg_tables is used for drivers with big sg tables --- and 
-vmerge counting is used for drivers with small sg tables. So what do they 
-have in common?
+On Thu, 24 Jul 2008 14:07:18 -0700
+Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 
-Summary, what I mean:
+> On Thursday, July 24, 2008 1:39 pm Pierre Ossman wrote:
+> >
+> > This is a laptop with a single expressport that worked fine up until
+> > this merge window. What changed and why is it no longer possible to
+> > support this hardware without a kernel parameter?
+>=20
+> Yeah we're being a bit more careful about registering hotplug slots these=
+=20
+> days.  The fact that you got a conflict message indicates that more than =
+one=20
+> driver is trying to bind to that PCIe port and handle hotplug for it.  I=
+=20
+> guess acpiphp must already be loaded?
+>=20
 
-* in blk-merge.c, you have 85 lines, that is 16% of the size of the file, 
-devoted to counting of hw_segments
+Nope. Only pciehp is builtin, and acpiphp is not loaded. Anything
+non-hotplug related that can block stuff?
 
-* it is only used on two architectures, one already outdated (alpha), the 
-other being discontinued (pa-risc). On all the other architectures, 
-hw_segments == phys_segments
+Anyway, the port seems to work even with that warning present though
+(sorry for not testing that properly earlier). Stray warnings is still
+not pleasant though, so I can do some more testing if you have some
+ideas.
 
-* it is prone to bugs and hard to maintain, because the same value must be 
-calculated in blk-merge.c and in architectural iommu functions --- if the 
-value differs, you create too long request, corrupt kernel memory and 
-crash (happened on sparc64). Anyone changing blk-merge in the future will 
-risk breaking something on the architectures that use BIO_VMERGE_BOUNDARY 
---- and because these architectures are so rare, the bug will go unnoticed 
-for long time --- like in the case of sparc64.
+Rgds
+--=20
+     -- Pierre Ossman
 
-* you are just talking how this code is important for performance without 
-showing any single proof that it really is (temporarily disable 
-hw_segments accounting by defining BIO_VMERGE_BOUNDARY 0 and get the 
-numbers).
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-Mikulas
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-11446-1216936293-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkiI+WIACgkQ7b8eESbyJLjaeACcD4VTVh86FsHmom5GFRhnQhy1
+W9AAn0xPAQBQ/HRtWbN6Mf1VrJk7h0BT
+=lwj3
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-11446-1216936293-0001-2--
