@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750975AbYGXHAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbYGXHHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750975AbYGXHAy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 03:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbYGXHA1
+	id S1752424AbYGXHHw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 03:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbYGXHHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 03:00:27 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51488 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751414AbYGXHAZ (ORCPT
+	Thu, 24 Jul 2008 03:07:46 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:50259 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750817AbYGXHHq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 03:00:25 -0400
-Subject: Re: Kernel WARNING: at net/core/dev.c:1330
-	__netif_schedule+0x2c/0x98()
-From: Peter Zijlstra <peterz@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: jarkao2@gmail.com, Larry.Finger@lwfinger.net, kaber@trash.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, mingo@redhat.com
-In-Reply-To: <20080723.131441.200166513.davem@davemloft.net>
-References: <1216806614.7257.152.camel@twins>
-	 <20080723101352.GD4561@ff.dom.local> <1216810696.7257.175.camel@twins>
-	 <20080723.131441.200166513.davem@davemloft.net>
-Content-Type: text/plain
-Date: Thu, 24 Jul 2008 09:00:23 +0200
-Message-Id: <1216882823.7257.229.camel@twins>
+	Thu, 24 Jul 2008 03:07:46 -0400
+Message-Id: <4888467F.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Thu, 24 Jul 2008 08:08:15 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Joerg Roedel" <joro@8bytes.org>
+Cc: <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>, <tglx@linutronix.de>,
+       <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [PATCH] i386: improve double fault handling
+References: <4880A912.76E4.0078.0@novell.com>
+ <20080723214320.GC13662@8bytes.org>
+In-Reply-To: <20080723214320.GC13662@8bytes.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-23 at 13:14 -0700, David Miller wrote:
-> From: Peter Zijlstra <peterz@infradead.org>
-> Date: Wed, 23 Jul 2008 12:58:16 +0200
-> 
-> > So I guess my question is, is netif_tx_lock() here to stay, or is the
-> > right fix to convert all those drivers to use __netif_tx_lock() which
-> > locks only a single queue?
-> 
-> It's staying.
-> 
-> It's trying to block all potential calls into the ->hard_start_xmit()
-> method of the driver, and the only reliable way to do that is to take
-> all the TX queue locks.  And in one form or another, we're going to
-> have this "grab/release all the TX queue locks" construct.
-> 
-> I find it interesting that this cannot be simply described to lockdep
-> :-)
+>>> Joerg Roedel <joro@8bytes.org> 23.07.08 23:43 >>>
+>On Fri, Jul 18, 2008 at 01:30:42PM +0100, Jan Beulich wrote:
+>> Make the double fault handler use CPU-specific stacks. Add some
+>> abstraction to simplify future change of other exception handlers to go
+>> through task gates.
+>
+>What is the benefit of exception handlers going through task gates?
+>Hardware task switches are not very well supported in virtualization
+>(e.g. its has issues in KVM and is also not in Xen for a long time).
 
-If you think its OK to take USHORT_MAX locks at once, I'm afraid we'll
-have to agree to disagree :-/
+The main goal is to get to a different stack. While at present this is done
+only for the double fault, I think generally NMI and MCE should also do
+so, as they may be caused by a stack access (see x86-64, which runs
+them on IST stacks), and hence continuing to run on that same stack
+may not allow the exception to be handled.
 
-Thing is, lockdep wants to be able to describe the locking hierarchy
-with classes, and each class needs to be in static storage for various
-reasons.
-
-So if you make a locking hierarchy that is USHORT_MAX deep, you need at
-least that amount of static classes.
-
-Also, you'll run into the fact that lockdep will only track like 48 held
-locks, after that it self terminates.
-
-I'm aware of only 2 sites in the kernel that break this limit. The
-down-side of stretching this limit is that deep lock chains come with
-costs (esp so on -rt), so I'm not particularly eager to grow this - it
-might give the impresssion its a good idea to have very long lock
-chains.
+Jan
 
