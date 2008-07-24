@@ -1,124 +1,526 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbYGXMDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbYGXMDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756832AbYGXMDS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYGXMDH
+	id S1757186AbYGXMDf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbYGXMDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:03:07 -0400
-Received: from mail.windriver.com ([147.11.1.11]:44237 "EHLO mail.wrs.com"
+	Thu, 24 Jul 2008 08:03:13 -0400
+Received: from mail.windriver.com ([147.11.1.11]:44344 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753018AbYGXMDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 08:03:06 -0400
+	id S1754050AbYGXMDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 08:03:11 -0400
 From: Jason Wessel <jason.wessel@windriver.com>
 To: ralf@linux-mips.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] mips kgdb support rev 2
-Date: Thu, 24 Jul 2008 07:02:53 -0500
-Message-Id: <1216900975-9869-1-git-send-email-jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH 2/2] kgdb, mips: add arch support for the kernel's kgdb core
+Date: Thu, 24 Jul 2008 07:02:55 -0500
+Message-Id: <1216900975-9869-3-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.5.5.1
-X-OriginalArrivalTime: 24 Jul 2008 12:02:56.0748 (UTC) FILETIME=[35B3FAC0:01C8ED85]
+In-Reply-To: <1216900975-9869-2-git-send-email-jason.wessel@windriver.com>
+References: <1216900975-9869-1-git-send-email-jason.wessel@windriver.com>
+ <1216900975-9869-2-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 24 Jul 2008 12:03:02.0873 (UTC) FILETIME=[395A9490:01C8ED85]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is rev 2 of the kgdb support.  Based on comments from Ralf, I elected
-to switch to die notification and entirely remove the trap_low, which
-was not getting dynamically unregistered in the first place after kgdb
-was unconfigured.
+The new kgdb architecture specific handler registers and unregisters
+dynamically for exceptions depending on when you configure a kgdb I/O
+driver.
 
-This greatly simplified the kgdb implementation for mips, and allowed for
-the deprecation of a couple more headers and a large chunk of assembly
-code.
+Aside from initializing the exceptions earlier in the boot process,
+kgdb should have no impact on a device when it is compiled in so long
+as an I/O module is not configured for use.
 
-Jason.
+There have been quite a number of contributors during the existence of
+this patch (see arch/mips/kernel/kgdb.c).  Most recently Jason
+re-wrote the mips kgdb logic to use the die notification handlers.
 
-The following changes since commit 338b9bb3adac0d2c5a1e180491d9b001d624c402:
-  Linus Torvalds (1):
-        Merge branch 'x86/auditsc' of git://git.kernel.org/.../frob/linux-2.6-roland
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git kgdb-next
-
-Jason Wessel (2):
-      kgdb, mips: Remove existing kgdb implementation
-      kgdb, mips: add arch support for the kernel's kgdb core
-
- arch/mips/Kconfig                          |    7 +-
- arch/mips/Kconfig.debug                    |   22 -
- arch/mips/au1000/Kconfig                   |    1 -
- arch/mips/au1000/common/Makefile           |    1 -
- arch/mips/au1000/common/dbg_io.c           |  109 ---
- arch/mips/basler/excite/Makefile           |    1 -
- arch/mips/basler/excite/excite_dbg_io.c    |  121 ---
- arch/mips/basler/excite/excite_irq.c       |    7 -
- arch/mips/basler/excite/excite_setup.c     |    4 +-
- arch/mips/configs/db1000_defconfig         |    1 -
- arch/mips/configs/db1100_defconfig         |    1 -
- arch/mips/configs/db1200_defconfig         |    1 -
- arch/mips/configs/db1500_defconfig         |    1 -
- arch/mips/configs/db1550_defconfig         |    1 -
- arch/mips/configs/excite_defconfig         |    1 -
- arch/mips/configs/ip27_defconfig           |    1 -
- arch/mips/configs/msp71xx_defconfig        |    2 -
- arch/mips/configs/mtx1_defconfig           |    1 -
- arch/mips/configs/pb1100_defconfig         |    1 -
- arch/mips/configs/pb1500_defconfig         |    1 -
- arch/mips/configs/pb1550_defconfig         |    1 -
- arch/mips/configs/pnx8550-jbs_defconfig    |    4 +-
- arch/mips/configs/pnx8550-stb810_defconfig |    4 +-
- arch/mips/configs/rbtx49xx_defconfig       |    1 -
- arch/mips/configs/sb1250-swarm_defconfig   |    1 -
- arch/mips/configs/yosemite_defconfig       |    2 -
- arch/mips/emma2rh/markeins/platform.c      |    1 -
- arch/mips/emma2rh/markeins/setup.c         |    1 -
- arch/mips/kernel/Makefile                  |    2 +-
- arch/mips/kernel/gdb-low.S                 |  394 ----------
- arch/mips/kernel/gdb-stub.c                | 1155 ----------------------------
- arch/mips/kernel/irq.c                     |   30 +-
- arch/mips/kernel/kgdb.c                    |  256 ++++++
- arch/mips/kernel/traps.c                   |   21 +
- arch/mips/mti-malta/Makefile               |    1 -
- arch/mips/mti-malta/malta-init.c           |   54 --
- arch/mips/mti-malta/malta-kgdb.c           |  133 ----
- arch/mips/mti-malta/malta-setup.c          |    4 -
- arch/mips/nxp/pnx8550/common/Makefile      |    1 -
- arch/mips/nxp/pnx8550/common/gdb_hook.c    |  109 ---
- arch/mips/nxp/pnx8550/common/int.c         |    1 -
- arch/mips/nxp/pnx8550/common/proc.c        |    1 -
- arch/mips/nxp/pnx8550/common/setup.c       |   12 -
- arch/mips/pmc-sierra/msp71xx/msp_serial.c  |   73 --
- arch/mips/pmc-sierra/yosemite/Makefile     |    1 -
- arch/mips/pmc-sierra/yosemite/dbg_io.c     |  180 -----
- arch/mips/pmc-sierra/yosemite/irq.c        |    9 -
- arch/mips/sgi-ip22/ip22-setup.c            |   25 -
- arch/mips/sgi-ip27/Makefile                |    1 -
- arch/mips/sgi-ip27/ip27-dbgio.c            |   60 --
- arch/mips/sibyte/bcm1480/irq.c             |   80 --
- arch/mips/sibyte/cfe/setup.c               |   14 -
- arch/mips/sibyte/sb1250/irq.c              |   60 --
- arch/mips/sibyte/swarm/Makefile            |    1 -
- arch/mips/sibyte/swarm/dbg_io.c            |   76 --
- arch/mips/txx9/Kconfig                     |    2 -
- arch/mips/txx9/generic/Makefile            |    1 -
- arch/mips/txx9/generic/dbgio.c             |   48 --
- arch/mips/txx9/jmr3927/Makefile            |    1 -
- arch/mips/txx9/jmr3927/kgdb_io.c           |  105 ---
- include/asm-mips/gdb-stub.h                |  215 ------
- include/asm-mips/kdebug.h                  |   14 +-
- include/asm-mips/kgdb.h                    |   54 ++
- 63 files changed, 362 insertions(+), 3132 deletions(-)
- delete mode 100644 arch/mips/au1000/common/dbg_io.c
- delete mode 100644 arch/mips/basler/excite/excite_dbg_io.c
- delete mode 100644 arch/mips/kernel/gdb-low.S
- delete mode 100644 arch/mips/kernel/gdb-stub.c
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+---
+ arch/mips/Kconfig         |    1 +
+ arch/mips/kernel/Makefile |    1 +
+ arch/mips/kernel/irq.c    |   15 +++
+ arch/mips/kernel/kgdb.c   |  256 +++++++++++++++++++++++++++++++++++++++++++++
+ arch/mips/kernel/traps.c  |   21 ++++
+ include/asm-mips/kdebug.h |   14 +++-
+ include/asm-mips/kgdb.h   |   54 ++++++++++
+ 7 files changed, 361 insertions(+), 1 deletions(-)
  create mode 100644 arch/mips/kernel/kgdb.c
- delete mode 100644 arch/mips/mti-malta/malta-kgdb.c
- delete mode 100644 arch/mips/nxp/pnx8550/common/gdb_hook.c
- delete mode 100644 arch/mips/pmc-sierra/yosemite/dbg_io.c
- delete mode 100644 arch/mips/sgi-ip27/ip27-dbgio.c
- delete mode 100644 arch/mips/sibyte/swarm/dbg_io.c
- delete mode 100644 arch/mips/txx9/generic/dbgio.c
- delete mode 100644 arch/mips/txx9/jmr3927/kgdb_io.c
- delete mode 100644 include/asm-mips/gdb-stub.h
  create mode 100644 include/asm-mips/kgdb.h
+
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 2c75ff3..22f6c43 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -3,6 +3,7 @@ config MIPS
+ 	default y
+ 	select HAVE_IDE
+ 	select HAVE_OPROFILE
++	select HAVE_ARCH_KGDB
+ 	# Horrible source of confusion.  Die, die, die ...
+ 	select EMBEDDED
+ 	select RTC_LIB
+diff --git a/arch/mips/kernel/Makefile b/arch/mips/kernel/Makefile
+index 73ff048..706f939 100644
+--- a/arch/mips/kernel/Makefile
++++ b/arch/mips/kernel/Makefile
+@@ -71,6 +71,7 @@ obj-$(CONFIG_MIPS32_COMPAT)	+= linux32.o ptrace32.o signal32.o
+ obj-$(CONFIG_MIPS32_N32)	+= binfmt_elfn32.o scall64-n32.o signal_n32.o
+ obj-$(CONFIG_MIPS32_O32)	+= binfmt_elfo32.o scall64-o32.o
+ 
++obj-$(CONFIG_KGDB)		+= kgdb.o
+ obj-$(CONFIG_PROC_FS)		+= proc.o
+ 
+ obj-$(CONFIG_64BIT)		+= cpu-bugs64.o
+diff --git a/arch/mips/kernel/irq.c b/arch/mips/kernel/irq.c
+index 8acba08..4b4007b 100644
+--- a/arch/mips/kernel/irq.c
++++ b/arch/mips/kernel/irq.c
+@@ -21,11 +21,16 @@
+ #include <linux/sched.h>
+ #include <linux/seq_file.h>
+ #include <linux/kallsyms.h>
++#include <linux/kgdb.h>
+ 
+ #include <asm/atomic.h>
+ #include <asm/system.h>
+ #include <asm/uaccess.h>
+ 
++#ifdef CONFIG_KGDB
++int kgdb_early_setup;
++#endif
++
+ static unsigned long irq_map[NR_IRQS / BITS_PER_LONG];
+ 
+ int allocate_irqno(void)
+@@ -130,8 +135,18 @@ void __init init_IRQ(void)
+ {
+ 	int i;
+ 
++#ifdef CONFIG_KGDB
++	if (kgdb_early_setup)
++		return;
++#endif
++
+ 	for (i = 0; i < NR_IRQS; i++)
+ 		set_irq_noprobe(i);
+ 
+ 	arch_init_irq();
++
++#ifdef CONFIG_KGDB
++	if (!kgdb_early_setup)
++		kgdb_early_setup = 1;
++#endif
+ }
+diff --git a/arch/mips/kernel/kgdb.c b/arch/mips/kernel/kgdb.c
+new file mode 100644
+index 0000000..3f23b2e
+--- /dev/null
++++ b/arch/mips/kernel/kgdb.c
+@@ -0,0 +1,256 @@
++/*
++ * arch/mips/kernel/kgdb.c
++ *
++ *  Originally written by Glenn Engel, Lake Stevens Instrument Division
++ *
++ *  Contributed by HP Systems
++ *
++ *  Modified for Linux/MIPS (and MIPS in general) by Andreas Busse
++ *  Send complaints, suggestions etc. to <andy@waldorf-gmbh.de>
++ *
++ *  Copyright (C) 1995 Andreas Busse
++ *
++ *  Copyright (C) 2003 MontaVista Software Inc.
++ *  Author: Jun Sun, jsun@mvista.com or jsun@junsun.net
++ *
++ *  Copyright (C) 2004-2005 MontaVista Software Inc.
++ *  Author: Manish Lachwani, mlachwani@mvista.com or manish@koffee-break.com
++ *
++ *  Copyright (C) 2007-2008 Wind River Systems, Inc.
++ *  Author/Maintainer: Jason Wessel, jason.wessel@windriver.com
++ *
++ *  This file is licensed under the terms of the GNU General Public License
++ *  version 2. This program is licensed "as is" without any warranty of any
++ *  kind, whether express or implied.
++ */
++
++#include <linux/ptrace.h>		/* for linux pt_regs struct */
++#include <linux/kgdb.h>
++#include <linux/kdebug.h>
++#include <asm/cacheflush.h>
++
++static struct hard_trap_info {
++	unsigned char tt;	/* Trap type code for MIPS R3xxx and R4xxx */
++	unsigned char signo;	/* Signal that we map this trap into */
++} hard_trap_info[] = {
++	{ 6, SIGBUS },		/* instruction bus error */
++	{ 7, SIGBUS },		/* data bus error */
++	{ 9, SIGTRAP },		/* break */
++/*	{ 11, SIGILL },	*/	/* CPU unusable */
++	{ 12, SIGFPE },		/* overflow */
++	{ 13, SIGTRAP },	/* trap */
++	{ 14, SIGSEGV },	/* virtual instruction cache coherency */
++	{ 15, SIGFPE },		/* floating point exception */
++	{ 23, SIGSEGV },	/* watch */
++	{ 31, SIGSEGV },	/* virtual data cache coherency */
++	{ 0, 0}			/* Must be last */
++};
++
++/* Save the normal trap handlers for user-mode traps. */
++void *saved_vectors[32];
++
++static void kgdb_call_nmi_hook(void *ignored)
++{
++	kgdb_nmicallback(raw_smp_processor_id(), (void *)0);
++}
++
++void kgdb_roundup_cpus(unsigned long flags)
++{
++	local_irq_enable();
++	smp_call_function(kgdb_call_nmi_hook, NULL, NULL);
++	local_irq_disable();
++}
++
++static int compute_signal(int tt)
++{
++	struct hard_trap_info *ht;
++
++	for (ht = hard_trap_info; ht->tt && ht->signo; ht++)
++		if (ht->tt == tt)
++			return ht->signo;
++
++	return SIGHUP;		/* default for things we don't know about */
++}
++
++void pt_regs_to_gdb_regs(unsigned long *gdb_regs, struct pt_regs *regs)
++{
++	int reg;
++#if (KGDB_GDB_REG_SIZE == 32)
++	u32 *ptr = (u32 *)gdb_regs;
++#else
++	u64 *ptr = (u64 *)gdb_regs;
++#endif
++
++	for (reg = 0; reg < 32; reg++)
++		*(ptr++) = regs->regs[reg];
++
++	*(ptr++) = regs->cp0_status;
++	*(ptr++) = regs->lo;
++	*(ptr++) = regs->hi;
++	*(ptr++) = regs->cp0_badvaddr;
++	*(ptr++) = regs->cp0_cause;
++	*(ptr++) = regs->cp0_epc;
++
++	return;
++}
++
++void gdb_regs_to_pt_regs(unsigned long *gdb_regs, struct pt_regs *regs)
++{
++
++	int reg;
++#if (KGDB_GDB_REG_SIZE == 32)
++	const u32 *ptr = (u32 *)gdb_regs;
++#else
++	const u64 *ptr = (u64 *)gdb_regs;
++#endif
++
++	for (reg = 0; reg < 32; reg++)
++		regs->regs[reg] = *(ptr++);
++
++	regs->cp0_status = *(ptr++);
++	regs->lo = *(ptr++);
++	regs->hi = *(ptr++);
++	regs->cp0_badvaddr = *(ptr++);
++	regs->cp0_cause = *(ptr++);
++	regs->cp0_epc = *(ptr++);
++
++	return;
++}
++
++/*
++ * Similar to regs_to_gdb_regs() except that process is sleeping and so
++ * we may not be able to get all the info.
++ */
++void sleeping_thread_to_gdb_regs(unsigned long *gdb_regs, struct task_struct *p)
++{
++	int reg;
++	struct thread_info *ti = task_thread_info(p);
++	unsigned long ksp = (unsigned long)ti + THREAD_SIZE - 32;
++	struct pt_regs *regs = (struct pt_regs *)ksp - 1;
++#if (KGDB_GDB_REG_SIZE == 32)
++	u32 *ptr = (u32 *)gdb_regs;
++#else
++	u64 *ptr = (u64 *)gdb_regs;
++#endif
++
++	for (reg = 0; reg < 16; reg++)
++		*(ptr++) = regs->regs[reg];
++
++	/* S0 - S7 */
++	for (reg = 16; reg < 24; reg++)
++		*(ptr++) = regs->regs[reg];
++
++	for (reg = 24; reg < 28; reg++)
++		*(ptr++) = 0;
++
++	/* GP, SP, FP, RA */
++	for (reg = 28; reg < 32; reg++)
++		*(ptr++) = regs->regs[reg];
++
++	*(ptr++) = regs->cp0_status;
++	*(ptr++) = regs->lo;
++	*(ptr++) = regs->hi;
++	*(ptr++) = regs->cp0_badvaddr;
++	*(ptr++) = regs->cp0_cause;
++	*(ptr++) = regs->cp0_epc;
++
++	return;
++}
++
++/*
++ * Calls linux_debug_hook before the kernel dies. If KGDB is enabled,
++ * then try to fall into the debugger
++ */
++static int kgdb_mips_notify(struct notifier_block *self, unsigned long cmd,
++			    void *ptr)
++{
++	struct die_args *args = (struct die_args *)ptr;
++	struct pt_regs *regs = args->regs;
++	int trap = (regs->cp0_cause & 0x7c) >> 2;
++
++	if (fixup_exception(regs))
++		return NOTIFY_DONE;
++
++	/* Userpace events, ignore. */
++	if (user_mode(regs))
++		return NOTIFY_DONE;
++
++	if (atomic_read(&kgdb_active) != -1)
++		kgdb_nmicallback(smp_processor_id(), regs);
++
++	if (kgdb_handle_exception(trap, compute_signal(trap), 0, regs))
++		return NOTIFY_DONE;
++
++	if (atomic_read(&kgdb_setting_breakpoint))
++		if ((trap == 9) && (regs->cp0_epc == (unsigned long)breakinst))
++			regs->cp0_epc += 4;
++
++	/* In SMP mode, __flush_cache_all does IPI */
++	local_irq_enable();
++	__flush_cache_all();
++
++	return NOTIFY_STOP;
++}
++
++static struct notifier_block kgdb_notifier = {
++	.notifier_call = kgdb_mips_notify,
++};
++
++/*
++ * Handle the 's' and 'c' commands
++ */
++int kgdb_arch_handle_exception(int vector, int signo, int err_code,
++			       char *remcom_in_buffer, char *remcom_out_buffer,
++			       struct pt_regs *regs)
++{
++	char *ptr;
++	unsigned long address;
++	int cpu = smp_processor_id();
++
++	switch (remcom_in_buffer[0]) {
++	case 's':
++	case 'c':
++		/* handle the optional parameter */
++		ptr = &remcom_in_buffer[1];
++		if (kgdb_hex2long(&ptr, &address))
++			regs->cp0_epc = address;
++
++		atomic_set(&kgdb_cpu_doing_single_step, -1);
++		if (remcom_in_buffer[0] == 's')
++			if (kgdb_contthread)
++				atomic_set(&kgdb_cpu_doing_single_step, cpu);
++
++		return 0;
++	}
++
++	return -1;
++}
++
++struct kgdb_arch arch_kgdb_ops = {
++#ifdef CONFIG_CPU_LITTLE_ENDIAN
++	.gdb_bpt_instr = {0xd},
++#else /* ! CONFIG_CPU_LITTLE_ENDIAN */
++	.gdb_bpt_instr = {0x00, 0x00, 0x00, 0x0d},
++#endif
++};
++
++/*
++ * We use kgdb_early_setup so that functions we need to call now don't
++ * cause trouble when called again later.
++ */
++int kgdb_arch_init(void)
++{
++	register_die_notifier(&kgdb_notifier);
++	return 0;
++}
++
++/**
++ *	kgdb_arch_exit - Perform any architecture specific uninitalization.
++ *
++ *	This function will handle the uninitalization of any architecture
++ *	specific callbacks, for dynamic registration and unregistration.
++ */
++void kgdb_arch_exit(void)
++{
++	unregister_die_notifier(&kgdb_notifier);
++}
+diff --git a/arch/mips/kernel/traps.c b/arch/mips/kernel/traps.c
+index b8ea4e9..426cced 100644
+--- a/arch/mips/kernel/traps.c
++++ b/arch/mips/kernel/traps.c
+@@ -23,6 +23,8 @@
+ #include <linux/bootmem.h>
+ #include <linux/interrupt.h>
+ #include <linux/ptrace.h>
++#include <linux/kgdb.h>
++#include <linux/kdebug.h>
+ 
+ #include <asm/bootinfo.h>
+ #include <asm/branch.h>
+@@ -425,6 +427,10 @@ asmlinkage void do_be(struct pt_regs *regs)
+ 	printk(KERN_ALERT "%s bus error, epc == %0*lx, ra == %0*lx\n",
+ 	       data ? "Data" : "Instruction",
+ 	       field, regs->cp0_epc, field, regs->regs[31]);
++	if (notify_die(DIE_OOPS, "bus error", regs, SIGBUS, 0, 0)
++	    == NOTIFY_STOP)
++		return;
++
+ 	die_if_kernel("Oops", regs);
+ 	force_sig(SIGBUS, current);
+ }
+@@ -623,6 +629,9 @@ asmlinkage void do_fpe(struct pt_regs *regs, unsigned long fcr31)
+ {
+ 	siginfo_t info;
+ 
++	if (notify_die(DIE_FP, "FP exception", regs, SIGFPE, 0, 0)
++	    == NOTIFY_STOP)
++		return;
+ 	die_if_kernel("FP exception in kernel code", regs);
+ 
+ 	if (fcr31 & FPU_CSR_UNI_X) {
+@@ -682,6 +691,9 @@ static void do_trap_or_bp(struct pt_regs *regs, unsigned int code,
+ 	siginfo_t info;
+ 	char b[40];
+ 
++	if (notify_die(DIE_TRAP, str, regs, code, 0, 0) == NOTIFY_STOP)
++		return;
++
+ 	/*
+ 	 * A short test says that IRIX 5.3 sends SIGTRAP for all trap
+ 	 * insns, even for trap and break codes that indicate arithmetic
+@@ -762,6 +774,10 @@ asmlinkage void do_ri(struct pt_regs *regs)
+ 	unsigned int opcode = 0;
+ 	int status = -1;
+ 
++	if (notify_die(DIE_RI, "RI Fault", regs, SIGSEGV, 0, 0)
++	    == NOTIFY_STOP)
++		return;
++
+ 	die_if_kernel("Reserved instruction in kernel code", regs);
+ 
+ 	if (unlikely(compute_return_epc(regs) < 0))
+@@ -1537,6 +1553,11 @@ void __init trap_init(void)
+ 	extern char except_vec4;
+ 	unsigned long i;
+ 
++#if defined(CONFIG_KGDB)
++	if (kgdb_early_setup)
++		return;	/* Already done */
++#endif
++
+ 	if (cpu_has_veic || cpu_has_vint)
+ 		ebase = (unsigned long) alloc_bootmem_low_pages(0x200 + VECTORSPACING*64);
+ 	else
+diff --git a/include/asm-mips/kdebug.h b/include/asm-mips/kdebug.h
+index 6ece1b0..5bf62aa 100644
+--- a/include/asm-mips/kdebug.h
++++ b/include/asm-mips/kdebug.h
+@@ -1 +1,13 @@
+-#include <asm-generic/kdebug.h>
++#ifndef _ASM_MIPS_KDEBUG_H
++#define _ASM_MIPS_KDEBUG_H
++
++#include <linux/notifier.h>
++
++enum die_val {
++	DIE_OOPS = 1,
++	DIE_FP,
++	DIE_TRAP,
++	DIE_RI,
++};
++
++#endif /* _ASM_MIPS_KDEBUG_H */
+diff --git a/include/asm-mips/kgdb.h b/include/asm-mips/kgdb.h
+new file mode 100644
+index 0000000..0e0ed89
+--- /dev/null
++++ b/include/asm-mips/kgdb.h
+@@ -0,0 +1,54 @@
++#ifdef __KERNEL__
++#ifndef _ASM_KGDB_H_
++#define _ASM_KGDB_H_
++
++#include <asm/sgidefs.h>
++
++#ifndef __ASSEMBLY__
++#if (_MIPS_ISA == _MIPS_ISA_MIPS1) || (_MIPS_ISA == _MIPS_ISA_MIPS2) || \
++	(_MIPS_ISA == _MIPS_ISA_MIPS32)
++
++#define KGDB_GDB_REG_SIZE 32
++
++#elif (_MIPS_ISA == _MIPS_ISA_MIPS3) || (_MIPS_ISA == _MIPS_ISA_MIPS4) || \
++	(_MIPS_ISA == _MIPS_ISA_MIPS64)
++
++#ifdef CONFIG_32BIT
++#define KGDB_GDB_REG_SIZE 32
++#else /* CONFIG_CPU_32BIT */
++#define KGDB_GDB_REG_SIZE 64
++#endif
++#else
++#error "Need to set KGDB_GDB_REG_SIZE for MIPS ISA"
++#endif /* _MIPS_ISA */
++
++#define BUFMAX			2048
++#if (KGDB_GDB_REG_SIZE == 32)
++#define NUMREGBYTES		(90*sizeof(u32))
++#define NUMCRITREGBYTES		(12*sizeof(u32))
++#else
++#define NUMREGBYTES		(90*sizeof(u64))
++#define NUMCRITREGBYTES		(12*sizeof(u64))
++#endif
++#define BREAK_INSTR_SIZE	4
++static inline void arch_kgdb_breakpoint(void)
++{
++	__asm__ __volatile__(
++		".globl breakinst\n\t"
++		".set\tnoreorder\n\t"
++		"nop\n"
++		"breakinst:\tbreak\n\t"
++		"nop\n\t"
++		".set\treorder");
++}
++#define CACHE_FLUSH_IS_SAFE	0
++
++extern int kgdb_early_setup;
++extern void *saved_vectors[32];
++extern void handle_exception(struct pt_regs *regs);
++extern void trap_low(void);
++extern void breakinst(void);
++
++#endif				/* !__ASSEMBLY__ */
++#endif				/* _ASM_KGDB_H_ */
++#endif				/* __KERNEL__ */
+-- 
+1.5.5.1
+
