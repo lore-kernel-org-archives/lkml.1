@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751624AbYGXKC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbYGXKDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751624AbYGXKC7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 06:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbYGXKCu
+	id S1755245AbYGXKDr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 06:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbYGXKDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 06:02:50 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:63939 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750744AbYGXKCt (ORCPT
+	Thu, 24 Jul 2008 06:03:35 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:37247 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751704AbYGXKDe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 06:02:49 -0400
-Date: Thu, 24 Jul 2008 11:01:44 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: Ben Dooks <ben-linux@fluff.org>,
-       Jonathan Cameron <Jonathan.Cameron@gmail.com>, mgross@linux.intel.com,
-       Dmitry Torokhov <dtor@mail.ru>, LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>,
-       David Brownell <david-b@pacbell.net>, hmh@hmh.eng.br,
-       Jean Delvare <khali@linux-fr.org>,
-       spi-devel-general@lists.sourceforge.net,
-       Ben Nizette <bn@niasdigital.com>
-Subject: Re: [spi-devel-general] [Patch 0/4] IndustrialIO subsystem (ADCs,
-	accelerometers etc)
-Message-ID: <20080724100144.GA8301@fluff.org.uk>
-References: <488763AD.4050400@gmail.com> <20080723191918.GC26938@trinity.fluff.org> <20080724074124.GB2254@local>
+	Thu, 24 Jul 2008 06:03:34 -0400
+Date: Thu, 24 Jul 2008 13:03:33 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Ingo Molnar <mingo@elte.hu>
+cc: Herbert Xu <herbert@gondor.apana.org.au>, w@1wt.eu,
+       David Miller <davem@davemloft.net>, davidn@davidnewall.com,
+       torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       stefanr@s5r6.in-berlin.de, rjw@sisk.pl
+Subject: Re: [TCP bug, regression] stuck distcc connections in latest -git
+In-Reply-To: <Pine.LNX.4.64.0807241233130.24801@wrl-59.cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0807241253150.24801@wrl-59.cs.helsinki.fi>
+References: <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>
+ <Pine.LNX.4.64.0807241233130.24801@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080724074124.GB2254@local>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1464026672-1216893813=:24801"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 09:41:25AM +0200, Hans J. Koch wrote:
-> On Wed, Jul 23, 2008 at 08:19:18PM +0100, Ben Dooks wrote:
-> > On Wed, Jul 23, 2008 at 06:00:29PM +0100, Jonathan Cameron wrote:
-> > > Dear All,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---696208474-1464026672-1216893813=:24801
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+
+On Thu, 24 Jul 2008, Ilpo Järvinen wrote:
+
+> On Thu, 24 Jul 2008, Herbert Xu wrote:
+> 
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > >
+> > > the client (running 2.6.24) does periodic 120 seconds retransmits:
 > > > 
-> > > The need for an industrialio subsystem was discussed in
-> > > http://lkml.org/lkml/2008/5/20/135
-> > 
-> > The name is really bad, this sounds like something for doing large
-> > scale industrial process control.
+> > > 07:40:48.255452 IP dione.39201 > phoenix.distcc: . 1608:2144(536) ack 1 win 584007:40:48.255547 IP phoenix.distcc > dione.39201: . ack 2144 win 65535
+> > > 07:40:48.255564 IP dione.39201 > phoenix.distcc: . 67143:67679(536) ack 1 win 5840
+> > > 07:40:48.255648 IP phoenix.distcc > dione.39201: . ack 2144 win 65535
+> > > 07:42:48.255440 IP dione.39201 > phoenix.distcc: . 2144:2680(536) ack 1 win 5840
+> > > 07:42:48.255559 IP phoenix.distcc > dione.39201: . ack 2680 win 65535
+> > > 07:42:48.255570 IP dione.39201 > phoenix.distcc: . 67679:68215(536) ack 1 win 5840
+> > > 07:42:48.255659 IP phoenix.distcc > dione.39201: . ack 2680 win 65535
+> > > 07:44:48.255436 IP dione.39201 > phoenix.distcc: . 2680:3216(536) ack 1 win 584007:44:48.255570 IP phoenix.distcc > dione.39201: . ack 3216 win 65535
+> > > 07:44:48.255585 IP dione.39201 > phoenix.distcc: . 68215:68751(536) ack 1 win 5840
+> > > 07:44:48.255669 IP phoenix.distcc > dione.39201: . ack 3216 win 65535
+> >
+> > OK, something's seriously screwed up on dione's kernel.  Could
+> > you please disable syncookies (which should enable SACK for you)
+> > and see if the problem goes away?
 > 
-> Well, it says "Industrial I/O". To me, this means it handles I/O devices
-> typically found in industrial applications.
+> This looks like the FRTO bugs we fixed in 2.6.25.7, afaik, 2.6.24.y wasn't 
+> anymore updated at that time so it's a bit obsolete...
 
-Yes, industrial is generally process control of manufacturing
-processes which in my view is making this sound like it is limiting
-the field of operations.
+But there might be something very interesting on the opposite end change 
+that is pointed out by this behavior, since one needs considerable amount 
+of losses in the outstanding window to triggers long delays (the bug was 
+that FRTO never fallback to go-back-n retransmissions, so one RTO was 
+necessary per loss), like you found out there's slow progress made and the 
+situation can resolve (by a big cumulative ACK once all losses are 
+cleared). Would the receiver for some reason not accept the new data 
+segment that FRTO sends after getting the ACK of the retransmissions,
+the RTO loop would continue forever with FRTO bug (unless userland tears 
+the connection down).
 
-All the applications we would currently need are things like
-handheld PDA type devices which are hardly 'industrial' or small
-consumer measurement systems.
-
-> >  
-> > > Firstly thanks to all the people who have contributed to the discussion
-> > > of this in the past.
-> > > 
-> > > In brief the intention is provide a kernel subsystem directed towards the
-> > > handling on sensors (and later related output devices) such as ADC's,
-> > > accelerometers and many others.
-> > 
-> > We've already got an perfectly good hwmon framework, do we really need
-> > to do this again?
-> 
-> hwmon is designed for slow I/O. It won't handle an ADC that does a few
-> megasamples/sec.
-> 
-> Thanks,
-> Hans
 
 -- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+ i.
+---696208474-1464026672-1216893813=:24801--
