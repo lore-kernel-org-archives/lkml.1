@@ -1,201 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758289AbYGXOyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbYGXOy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758289AbYGXOyl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 10:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757797AbYGXOqY
+	id S1760131AbYGXOy5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 10:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759555AbYGXOwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 10:46:24 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:40730 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757843AbYGXOqX (ORCPT
+	Thu, 24 Jul 2008 10:52:43 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:24730 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759550AbYGXOwm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 10:46:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=VtHxOxfSv022WVzeenWhFDpqaSDrLJIEAtEstobXGJY3JswLS4Ht1fanpftoWNT/sVOPLiGQ7k0DtJ7jG6dOCLoIqpjo0U6tW0V6cmGthYjRo36xc3DBZ/0H+ze41GE5VN1hTe4x+zRdfTSAzK4+rOSn7Px/A7EfX2J+avJwQos=  ;
-X-YMail-OSG: 2fwHTq8VM1kUVzT7kswaqQhUs4M8Uu4EM6Ke_KnLLKMmDFRJE3Ju7rjnb64_bpNlTV3F8aCKA.6itzmib1VaPPakCS0e55z15uABA41GVncKi9BGbBs14tVVllbaVm4JrN4-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 26/30] nfs: remove mempools
-Date: Fri, 25 Jul 2008 00:46:09 +1000
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>
-References: <20080724140042.408642539@chello.nl> <20080724141531.178291263@chello.nl>
-In-Reply-To: <20080724141531.178291263@chello.nl>
+	Thu, 24 Jul 2008 10:52:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=a/ZiBCLURqrXGz5Vu2ty6YrGXxYbk22Pzc3bGciubC6Xf59mmFgxgxMAf5SffvVP/Z
+         HbisVw/USzmxyWw7qi4+azSHAbaIqMBB/I7Lop6NGPdQ4CYlXFFM013jHj5oocNBM80b
+         4dfYOgidYN3Hn9JaNwD2IBnWgFihQo0TKhFY0=
+Message-ID: <b647ffbd0807240752r6edc73c1m6bf63a6124504365@mail.gmail.com>
+Date: Thu, 24 Jul 2008 16:52:41 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Subject: Re: latest -git: kernel BUG at arch/x86/kernel/microcode.c:142!
+Cc: "the arch/x86 maintainers" <x86@kernel.org>,
+       "Mike Travis" <travis@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Max Krasnyanskiy" <maxk@qualcomm.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Gregory Haskins" <ghaskins@novell.com>, pj@sgi.com,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <19f34abd0807240702i349777e5y6f57c19c51dff60f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807250046.10392.nickpiggin@yahoo.com.au>
+References: <19f34abd0807240348n4c31e6el7358d3fc4d10e392@mail.gmail.com>
+	 <19f34abd0807240702i349777e5y6f57c19c51dff60f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 July 2008 00:01, Peter Zijlstra wrote:
-> With the introduction of the shared dirty page accounting in .19, NFS
-> should not be able to surpise the VM with all dirty pages. Thus it should
-> always be able to free some memory. Hence no more need for mempools.
+2008/7/24 Vegard Nossum <vegard.nossum@gmail.com>:
+> On Thu, Jul 24, 2008 at 12:48 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>> Hi,
+>>
+>> I just got this when doing CPU hotplug:
+>>
+>> ------------[ cut here ]------------
+>> kernel BUG at arch/x86/kernel/microcode.c:142!
+>> invalid opcode: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+>>
+>> Pid: 4140, comm: bash Not tainted (2.6.26-06371-g338b9bb-dirty #14)
+>> EIP: 0060:[<c0117f1e>] EFLAGS: 00210202 CPU: 0
+>> EIP is at __mc_sysdev_add+0x1ee/0x200
+>> EAX: 00000000 EBX: c1f61028 ECX: 01798000 EDX: c081ac80
+>> ESI: 00000001 EDI: 00000001 EBP: f5bcbe24 ESP: f5bcbdcc
+>>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+>> Process bash (pid: 4140, ti=f5bca000 task=f4066f90 task.ti=f5bca000)
+>> Stack: 00000000 f5bcbe24 c028300b 00000001 000000d0 c06d8dc3 f73f77d0 00000000
+>>       00000000 00000014 00000000 00000000 c0829254 f4f0fa00 f6e950f0 00200282
+>>       f6d5180c 00000002 00000003 00000002 00000001 c1f61028 f5bcbe2c c0117f3a
+>> Call Trace:
+>>  [<c028300b>] ? kobject_uevent_env+0xdb/0x380
+>>  [<c0117f3a>] ? mc_sysdev_add+0xa/0x10
+>>  [<c05875fa>] ? mc_cpu_callback+0x1ea/0x240
+>>  [<c014db67>] ? notifier_call_chain+0x37/0x70
+>>  [<c014dbd9>] ? __raw_notifier_call_chain+0x19/0x20
+>>  [<c014dbfa>] ? raw_notifier_call_chain+0x1a/0x20
+>>  [<c0589477>] ? _cpu_up+0xa7/0x100
+>>  [<c0589519>] ? cpu_up+0x49/0x80
+>>  [<c056a3d8>] ? store_online+0x58/0x80
+>>  [<c056a380>] ? store_online+0x0/0x80
+>>  [<c02ff57c>] ? sysdev_store+0x2c/0x40
+>>  [<c01de412>] ? sysfs_write_file+0xa2/0x100
+>>  [<c01a0386>] ? vfs_write+0x96/0x130
+>>  [<c01de370>] ? sysfs_write_file+0x0/0x100
+>>  [<c01a08cd>] ? sys_write+0x3d/0x70
+>>  [<c0103f5b>] ? sysenter_do_call+0x12/0x3f
+>>  =======================
+>> Code: 4d d8 c7 01 00 00 00 00 b8 00 1a 6f c0 e8 fb 46 47 00 8d 55 f0
+>> 64 a1 00 90 7c c0 e8 0d 75 01 00 8b 45 d4 83 c4 4c 5b 5e 5f 5d c3 <0f>
+>> 0b eb fe 8d b4 26 00 00 00 00 8d bc 27 00 00 00 00 55 31 d2
+>> EIP: [<c0117f1e>] __mc_sysdev_add+0x1ee/0x200 SS:ESP 0068:f5bcbdcc
+>> ---[ end trace 8c86c730d90bf362 ]---
+>>
+>> It's this one:
+>>
+>>        /* We should bind the task to the CPU */
+>>        BUG_ON(raw_smp_processor_id() != cpu_num);
+>>
+>> Maybe related to recently merged per-cpu changes? (Yesterday's tests ran fine.)
+>>
+>> It seems 100% reproducible, so I'll start bisecting it.
+>
+> Ahha, after many hours of hitting various unrelated crashes,
+> miscompiles, etc. I finally arrive at this commit:
+>
+> commit e761b7725234276a802322549cee5255305a0930
+> Author: Max Krasnyansky <maxk@qualcomm.com>
+> Date:   Tue Jul 15 04:43:49 2008 -0700
 
-It seems like a very backward step to me to go from a hard guarantee
-to some heuristic that could break for someone in some particular
-setup.
+Yeah, there seems to be a funny situation here :-) I'd expect it to be
+100% reproduceable with CONFIG_MICROCODE=y.
 
-Filling with dirty pages isn't the only way to exaust free reclaimable
-memory remember, it can also happen maybe due to mlock or kernel
-allocations.
+cpu_up() -> raw_notifier_call_chain(CPU_ONLINE, ...) ->
 
-Is there pressing reason to remove them?
+(microcode's part)
 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  fs/nfs/read.c  |   15 +++------------
->  fs/nfs/write.c |   27 +++++----------------------
->  2 files changed, 8 insertions(+), 34 deletions(-)
->
-> Index: linux-2.6/fs/nfs/read.c
-> ===================================================================
-> --- linux-2.6.orig/fs/nfs/read.c
-> +++ linux-2.6/fs/nfs/read.c
-> @@ -33,13 +33,10 @@ static const struct rpc_call_ops nfs_rea
->  static const struct rpc_call_ops nfs_read_full_ops;
->
->  static struct kmem_cache *nfs_rdata_cachep;
-> -static mempool_t *nfs_rdata_mempool;
-> -
-> -#define MIN_POOL_READ	(32)
->
->  struct nfs_read_data *nfs_readdata_alloc(unsigned int pagecount)
->  {
-> -	struct nfs_read_data *p = mempool_alloc(nfs_rdata_mempool, GFP_NOFS);
-> +	struct nfs_read_data *p = kmem_cache_alloc(nfs_rdata_cachep, GFP_NOFS);
->
->  	if (p) {
->  		memset(p, 0, sizeof(*p));
-> @@ -50,7 +47,7 @@ struct nfs_read_data *nfs_readdata_alloc
->  		else {
->  			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
->  			if (!p->pagevec) {
-> -				mempool_free(p, nfs_rdata_mempool);
-> +				kmem_cache_free(nfs_rdata_cachep, p);
->  				p = NULL;
->  			}
->  		}
-> @@ -62,7 +59,7 @@ static void nfs_readdata_free(struct nfs
->  {
->  	if (p && (p->pagevec != &p->page_array[0]))
->  		kfree(p->pagevec);
-> -	mempool_free(p, nfs_rdata_mempool);
-> +	kmem_cache_free(nfs_rdata_cachep, p);
->  }
->
->  void nfs_readdata_release(void *data)
-> @@ -614,16 +611,10 @@ int __init nfs_init_readpagecache(void)
->  	if (nfs_rdata_cachep == NULL)
->  		return -ENOMEM;
->
-> -	nfs_rdata_mempool = mempool_create_slab_pool(MIN_POOL_READ,
-> -						     nfs_rdata_cachep);
-> -	if (nfs_rdata_mempool == NULL)
-> -		return -ENOMEM;
-> -
->  	return 0;
->  }
->
->  void nfs_destroy_readpagecache(void)
->  {
-> -	mempool_destroy(nfs_rdata_mempool);
->  	kmem_cache_destroy(nfs_rdata_cachep);
->  }
-> Index: linux-2.6/fs/nfs/write.c
-> ===================================================================
-> --- linux-2.6.orig/fs/nfs/write.c
-> +++ linux-2.6/fs/nfs/write.c
-> @@ -28,9 +28,6 @@
->
->  #define NFSDBG_FACILITY		NFSDBG_PAGECACHE
->
-> -#define MIN_POOL_WRITE		(32)
-> -#define MIN_POOL_COMMIT		(4)
-> -
->  /*
->   * Local function declarations
->   */
-> @@ -45,12 +42,10 @@ static const struct rpc_call_ops nfs_wri
->  static const struct rpc_call_ops nfs_commit_ops;
->
->  static struct kmem_cache *nfs_wdata_cachep;
-> -static mempool_t *nfs_wdata_mempool;
-> -static mempool_t *nfs_commit_mempool;
->
->  struct nfs_write_data *nfs_commitdata_alloc(void)
->  {
-> -	struct nfs_write_data *p = mempool_alloc(nfs_commit_mempool, GFP_NOFS);
-> +	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
->
->  	if (p) {
->  		memset(p, 0, sizeof(*p));
-> @@ -63,12 +58,12 @@ void nfs_commit_free(struct nfs_write_da
->  {
->  	if (p && (p->pagevec != &p->page_array[0]))
->  		kfree(p->pagevec);
-> -	mempool_free(p, nfs_commit_mempool);
-> +	kmem_cache_free(nfs_wdata_cachep, p);
->  }
->
->  struct nfs_write_data *nfs_writedata_alloc(unsigned int pagecount)
->  {
-> -	struct nfs_write_data *p = mempool_alloc(nfs_wdata_mempool, GFP_NOFS);
-> +	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
->
->  	if (p) {
->  		memset(p, 0, sizeof(*p));
-> @@ -79,7 +74,7 @@ struct nfs_write_data *nfs_writedata_all
->  		else {
->  			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
->  			if (!p->pagevec) {
-> -				mempool_free(p, nfs_wdata_mempool);
-> +				kmem_cache_free(nfs_wdata_cachep, p);
->  				p = NULL;
->  			}
->  		}
-> @@ -91,7 +86,7 @@ static void nfs_writedata_free(struct nf
->  {
->  	if (p && (p->pagevec != &p->page_array[0]))
->  		kfree(p->pagevec);
-> -	mempool_free(p, nfs_wdata_mempool);
-> +	kmem_cache_free(nfs_wdata_cachep, p);
->  }
->
->  void nfs_writedata_release(void *data)
-> @@ -1552,16 +1547,6 @@ int __init nfs_init_writepagecache(void)
->  	if (nfs_wdata_cachep == NULL)
->  		return -ENOMEM;
->
-> -	nfs_wdata_mempool = mempool_create_slab_pool(MIN_POOL_WRITE,
-> -						     nfs_wdata_cachep);
-> -	if (nfs_wdata_mempool == NULL)
-> -		return -ENOMEM;
-> -
-> -	nfs_commit_mempool = mempool_create_slab_pool(MIN_POOL_COMMIT,
-> -						      nfs_wdata_cachep);
-> -	if (nfs_commit_mempool == NULL)
-> -		return -ENOMEM;
-> -
->  	/*
->  	 * NFS congestion size, scale with available memory.
->  	 *
-> @@ -1587,8 +1572,6 @@ int __init nfs_init_writepagecache(void)
->
->  void nfs_destroy_writepagecache(void)
->  {
-> -	mempool_destroy(nfs_commit_mempool);
-> -	mempool_destroy(nfs_wdata_mempool);
->  	kmem_cache_destroy(nfs_wdata_cachep);
->  }
+mc_cpu_callback() -> mc_sysdev_add() -> microcode_init_cpu()
+
+and here we have:
+
+        set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+        mutex_lock(&microcode_mutex);
+        collect_cpu_info(cpu);
+
+this code expects that after set_cpus_allowed_ptr() has been
+completed, it will continue running on "cpu"
+
+that's why BUG_ON(raw_smp_processor_id() != cpu_num);
+
+the funny thing is that (1) it doesn't check for an error (otherwise
+it would see an error)
+and (2) cpu_active_map does _not_ yet have a bit for 'cpu' at this moment.
+
+so migrate_task() will forward a migration request to migration_thread
+(because 'current' is on-the-queue/running at this point and we can't
+migrate it immediatelly -- current gets blocked inside migrate_task()
+waiting for request's completion)
+
+it all will end up in migration_thread() -> __migrate_task()
+which does a test for cpu_active(dest_cpu) and bails out.
+
+summary, with cpu_active_map as it's being used now this microcode's
+scheme (the fact that it expects to be migrated onto 'cpu' while its
+cpu_up(cpu) is not completely finished) doesn't work.
+
+note, I've only taken a quick look so I don't make any judgements,
+(good-bad)design-wise. But it's quite a funny use-case of
+cpu-hotplug-notifications and CPU_ONLINE in particular :-)
+
+
+-- 
+Best regards,
+Dmitry Adamushko
