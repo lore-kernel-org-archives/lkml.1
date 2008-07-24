@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbYGXP3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbYGXP3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754805AbYGXP3J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 11:29:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYGXP2y
+	id S1755405AbYGXP3e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 11:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYGXP3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 11:28:54 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:43183 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752662AbYGXP2w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 11:28:52 -0400
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in
-	blk_recalc_rq_segments about VMERGE
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-parisc@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0807241103190.1545@devserv.devel.redhat.com>
-References: <1216520228.3376.33.camel@localhost.localdomain>
-	 <20080719.210737.197246608.davem@davemloft.net>
-	 <1216565545.4199.10.camel@localhost.localdomain>
-	 <20080720.102302.137955996.davem@davemloft.net>
-	 <1216575211.4199.35.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0807241103190.1545@devserv.devel.redhat.com>
-Content-Type: text/plain
-Date: Thu, 24 Jul 2008 11:28:34 -0400
-Message-Id: <1216913314.4524.25.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 24 Jul 2008 11:29:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47745 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753113AbYGXP3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 11:29:20 -0400
+Message-ID: <48889C2C.6030309@redhat.com>
+Date: Thu, 24 Jul 2008 11:13:48 -0400
+From: Prarit Bhargava <prarit@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: joro@8bytes.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       jbarnes@virtuousgeek.org, ed.pollard@ibm.com, epollard@redhat.com
+Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
+References: <20080724123755.GP31439@8bytes.org>	<20080724223309C.fujita.tomonori@lab.ntt.co.jp>	<4888925E.8050504@redhat.com> <20080724234111I.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080724234111I.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-24 at 11:07 -0400, Mikulas Patocka wrote:
-> So try to #define BIO_VMERGE_BOUNDARY 0 for Pa-Risc and tell us what 
-> performance degradation do you see (and what driver do you use and what is 
-> the I/O pattern).
-> 
-> If you show something specific, we can consider that --- but you haven't 
-> yet told us anything, except generic talk.
 
-You keep ignoring inconvenient facts.  For about the third time:
+> So please tell us what driver you hit the bug with. Can you give us
+> the details?
+>
+>   
 
-I run a test bed for sg_tables (large chaining of requests).  This runs
-on parisc using virtual merging (has to because the final physical table
-size can't go over the sg list of the SCSI card).  If I turn off virtual
-merging I can no longer test sg_tables in vanilla kernels.
+Sorry Fujita,  I had to re-install and reboot the system to get those 
+details.
 
-James
+The cciss driver is the one that really went haywire for me on the large 
+system.
 
+It does two greater than PAGE_SIZE pci_alloc_consistent() calls -- one 
+with 0x3a800 and the other with 0x4800.  Both calls seem to complete but 
+my cciss was completely hosed.  I couldn't access it at all :(
 
+The tg3 (which alloc's 0x8000 and 0x4000) actually worked but the 
+network wasn't working very well.
+
+P.
+
+> Thanks,
+>   
