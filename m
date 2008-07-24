@@ -1,73 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYGXRLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbYGXRMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbYGXRLj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 13:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYGXRLc
+	id S1754124AbYGXRMt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 13:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYGXRMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 13:11:32 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:49792 "EHLO relay.sgi.com"
+	Thu, 24 Jul 2008 13:12:42 -0400
+Received: from mailbox2.myri.com ([64.172.73.26]:2020 "EHLO myri.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751600AbYGXRLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 13:11:31 -0400
-Message-ID: <4888B7B8.9060100@sgi.com>
-Date: Thu, 24 Jul 2008 10:11:20 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	id S1751647AbYGXRMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 13:12:41 -0400
+Message-ID: <4888B7FD.6000402@myri.com>
+Date: Thu, 24 Jul 2008 19:12:29 +0200
+From: Brice Goglin <brice@myri.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>,
-       Lennert Buytenhek <kernel@wantstofly.org>,
-       Dave Jones <davej@codemonkey.org.uk>, Paul Jackson <pj@sgi.com>,
-       Tony Luck <tony.luck@intel.com>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Robert Richter <robert.richter@amd.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Sam Creasey <sammy@sammy.net>, Greg Banks <gnb@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Adrian Bunk <bunk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Andreas Schwab <schwab@suse.de>, Johannes Weiner <hannes@saeurebad.de>
-Subject: Re: [PATCH 1/1] cpumask: Change cpumask_of_cpu to use	cpumask_of_cpu_map
-References: <20080723171841.815234000@polaris-admin.engr.sgi.com> <20080723171841.997896000@polaris-admin.engr.sgi.com> <20080724114622.GA8516@elte.hu>
-In-Reply-To: <20080724114622.GA8516@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Regression: myri10ge driver in 2.6.26
+References: <20080722150438.GK4359@ics.muni.cz> <48865B04.6030707@myri.com> <488664A0.3040407@myri.com> <20080723080638.GL4359@ics.muni.cz> <4886E932.1010206@myri.com> <20080723125426.GN4359@ics.muni.cz> <488791DB.5090204@myri.com> <20080724134300.GB4559@ics.muni.cz>
+In-Reply-To: <20080724134300.GB4559@ics.muni.cz>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> found a build failure with your patch:
-> 
-> init/main.c:493: error: array index in non-array initializer
-> init/main.c:493: error: (near initialization for 'cpumask_of_cpu_map[0]')
-> init/main.c:494: warning: missing braces around initializer
-> init/main.c:494: warning: (near initialization for 'cpumask_of_cpu_map[0].bits')
-> 
-> with this config:
-> 
-> http://redhat.com/~mingo/misc/config-Thu_Jul_24_13_44_56_CEST_2008.bad
-> 
-> 	Ingo
+Lukas Hejtmanek wrote:
+> On Wed, Jul 23, 2008 at 10:17:31PM +0200, Brice Goglin wrote:
+>   
+>> Does this help ?
+>>     
+>
+> it looks good now.
+>   
 
-Hmm, it does not fail for me...
 
-12> gcc --version
-gcc (GCC) 4.2.4
-Copyright (C) 2007 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+Ok, sent to stable@ as well. Sorry for the mess.
 
-There are a number of warnings but none of the files are related to this patch.
+Brice
 
-(I'm still on hold until our sys admin gets back from vacation to install
-gcc-4.2.3.)
-
-Thanks,
-Mike
