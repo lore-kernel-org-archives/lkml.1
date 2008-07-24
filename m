@@ -1,69 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbYGXMke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYGXMku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756605AbYGXMke (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 08:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYGXMkT
+	id S1757142AbYGXMku (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 08:40:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757268AbYGXMka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 08:40:19 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:46136 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752826AbYGXMkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 08:40:18 -0400
-Date: Thu, 24 Jul 2008 16:43:49 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       rui.zhang@intel.com, harbour@sfinx.od.ua, pavel@ucw.cz, rjw@sisk.pl
-Subject: Re: + pm-introduce-new-interfaces-schedule_work_on-and-queue_work_on.patch added to -mm tree
-Message-ID: <20080724124349.GA182@tv-sign.ru>
-References: <200807111846.m6BIkeTj031024@imap1.linux-foundation.org> <20080712162149.GD603@tv-sign.ru> <20080722161900.GA17601@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080722161900.GA17601@in.ibm.com>
-User-Agent: Mutt/1.5.11
+	Thu, 24 Jul 2008 08:40:30 -0400
+Received: from mail9.hitachi.co.jp ([133.145.228.44]:49337 "EHLO
+	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757238AbYGXMk2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 08:40:28 -0400
+X-AuditID: 0ac90648-abea2ba000004920-24-4888783abc3d
+Message-ID: <4888782E.2050102@hitachi.com>
+Date: Thu, 24 Jul 2008 21:40:14 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
+MIME-Version: 1.0
+To: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
+       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu, snitzer@gmail.com,
+       tglx@linutronix.de, yumiko.sugita.yf@hitachi.com,
+       satoshi.oshima.fk@hitachi.com
+Subject: [PATCH 3/4] ext3: abort ext3 if the journal has aborted
+References: <488876D3.80004@hitachi.com>
+In-Reply-To: <488876D3.80004@hitachi.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/22, Gautham R Shenoy wrote:
->
-> On Sat, Jul 12, 2008 at 08:21:49PM +0400, Oleg Nesterov wrote:
-> >
-> > So, this is used in http://bugzilla.kernel.org/attachment.cgi?id=16707
-> >
-> > 	--- linux-2.6.orig/kernel/power/poweroff.c	2008-06-30 16:01:35.000000000 +0800
-> > 	+++ linux-2.6/kernel/power/poweroff.c	2008-07-03 10:50:05.000000000 +0800
-> > 	@@ -25,7 +25,8 @@
-> > 	 
-> > 	 static void handle_poweroff(int key, struct tty_struct *tty)
-> > 	 {
-> > 	-	schedule_work(&poweroff_work);
-> > 	+	/* run sysrq poweroff on boot cpu */
-> > 	+	schedule_work_on(first_cpu(cpu_online_map), &poweroff_work);
-> > 	 }
-> > 	 
-> > 	 static struct sysrq_key_op	sysrq_poweroff_op = {
-> >
-> > A couple of silly questions, I don't understand the low-level details.
-> >
-> > This patch (and kernel_power_off() afaics) assumes that the boot cpu
-> > can't be cpu_down()'ed. Is it true in general? For example, grep shows
-> > that arch/s390/kernel/smp.c:topology_init()->smp_add_present_cpu()
-> > sets ->hotpluggable = 1 for all present CPUs?
->
-> I tried this on a Power system sometime back and I was able to
-> offline CPU0.
+If the journal has aborted due to a checkpointing failure, we
+have to keep the contents of the journal space.  ext3_put_super()
+detects the journal abort, then it invokes ext3_abort() to make
+the filesystem read only and keep needs_recovery flag.
 
-This means that
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Acked-by: Jan Kara <jack@suse.cz>
+---
+ fs/ext3/ioctl.c |   12 ++++++++----
+ fs/ext3/super.c |   11 +++++++++--
+ 2 files changed, 17 insertions(+), 6 deletions(-)
 
-	pm-schedule-sysrq-poweroff-on-boot-cpu.patch
+Index: linux-2.6.26-rc8-mm1/fs/ext3/ioctl.c
+===================================================================
+--- linux-2.6.26-rc8-mm1.orig/fs/ext3/ioctl.c
++++ linux-2.6.26-rc8-mm1/fs/ext3/ioctl.c
+@@ -239,7 +239,7 @@ setrsvsz_out:
+ 	case EXT3_IOC_GROUP_EXTEND: {
+ 		ext3_fsblk_t n_blocks_count;
+ 		struct super_block *sb = inode->i_sb;
+-		int err;
++		int err, err2;
+ 
+ 		if (!capable(CAP_SYS_RESOURCE))
+ 			return -EPERM;
+@@ -254,8 +254,10 @@ setrsvsz_out:
+ 		}
+ 		err = ext3_group_extend(sb, EXT3_SB(sb)->s_es, n_blocks_count);
+ 		journal_lock_updates(EXT3_SB(sb)->s_journal);
+-		journal_flush(EXT3_SB(sb)->s_journal);
++		err2 = journal_flush(EXT3_SB(sb)->s_journal);
+ 		journal_unlock_updates(EXT3_SB(sb)->s_journal);
++		if (err == 0)
++			err = err2;
+ group_extend_out:
+ 		mnt_drop_write(filp->f_path.mnt);
+ 		return err;
+@@ -263,7 +265,7 @@ group_extend_out:
+ 	case EXT3_IOC_GROUP_ADD: {
+ 		struct ext3_new_group_data input;
+ 		struct super_block *sb = inode->i_sb;
+-		int err;
++		int err, err2;
+ 
+ 		if (!capable(CAP_SYS_RESOURCE))
+ 			return -EPERM;
+@@ -280,8 +282,10 @@ group_extend_out:
+ 
+ 		err = ext3_group_add(sb, &input);
+ 		journal_lock_updates(EXT3_SB(sb)->s_journal);
+-		journal_flush(EXT3_SB(sb)->s_journal);
++		err2 = journal_flush(EXT3_SB(sb)->s_journal);
+ 		journal_unlock_updates(EXT3_SB(sb)->s_journal);
++		if (err == 0)
++			err = err2;
+ group_add_out:
+ 		mnt_drop_write(filp->f_path.mnt);
+ 		return err;
+Index: linux-2.6.26-rc8-mm1/fs/ext3/super.c
+===================================================================
+--- linux-2.6.26-rc8-mm1.orig/fs/ext3/super.c
++++ linux-2.6.26-rc8-mm1/fs/ext3/super.c
+@@ -393,7 +393,8 @@ static void ext3_put_super (struct super
+ 	int i;
+ 
+ 	ext3_xattr_put_super(sb);
+-	journal_destroy(sbi->s_journal);
++	if (journal_destroy(sbi->s_journal) < 0)
++		ext3_abort(sb, __func__, "Couldn't clean up the journal");
+ 	if (!(sb->s_flags & MS_RDONLY)) {
+ 		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
+ 		es->s_state = cpu_to_le16(sbi->s_mount_state);
+@@ -2388,7 +2389,13 @@ static void ext3_write_super_lockfs(stru
+ 
+ 		/* Now we set up the journal barrier. */
+ 		journal_lock_updates(journal);
+-		journal_flush(journal);
++
++		/*
++		 * We don't want to clear needs_recovery flag when we failed
++		 * to flush the journal.
++		 */
++		if (journal_flush(journal) < 0)
++			return;
+ 
+ 		/* Journal blocked and flushed, clear needs_recovery flag. */
+ 		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
 
-is not 100% right. It is still possible to hang/deadlock if we race
-with cpu_down(first_cpu(cpu_online_map)).
-
-The bug is mostly theoretical, but perhaps should be fixed anyway,
-handle_poweroff() can use kthread_run().
-
-Oleg.
 
