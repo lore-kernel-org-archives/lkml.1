@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbYGXUEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYGXUE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753241AbYGXUEL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 16:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbYGXUDv
+	id S1755454AbYGXUE2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 16:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbYGXUED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 16:03:51 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53877 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754546AbYGXUDu (ORCPT
+	Thu, 24 Jul 2008 16:04:03 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:4923 "EHLO
+	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753526AbYGXUEB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 16:03:50 -0400
-Date: Thu, 24 Jul 2008 16:03:16 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] ext4 bugfixes
-Message-ID: <20080724200316.GA11862@infradead.org>
-References: <E1KIbeO-0001yQ-N4@closure.thunk.org> <20080715043718.GA30017@infradead.org> <20080715124652.GB16704@mit.edu>
+	Thu, 24 Jul 2008 16:04:01 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=ZBoxELfd66lUOLupKHEA:9 a=G1kx7nUvTcNFvVpvuPgA:7 a=TkoGrY2U7QABDhVntCZ_Y_zNSHwA:4 a=V0udAT3DthYA:10 a=z7OazWlR7xUA:10
+Message-ID: <4888E011.4000406@shaw.ca>
+Date: Thu, 24 Jul 2008 14:03:29 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080715124652.GB16704@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Alex <arghness@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: DMA with PCIe and very large DMA transfers
+References: <fa.vod1UTmCwWWvRyGIk08cgMVx/H4@ifi.uio.no>
+In-Reply-To: <fa.vod1UTmCwWWvRyGIk08cgMVx/H4@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 08:46:52AM -0400, Theodore Tso wrote:
-> On Tue, Jul 15, 2008 at 12:37:18AM -0400, Christoph Hellwig wrote:
-> > And for this one I haven't even heard back on my review comments.  None
-> > of them is a merge blocker so it's not critical, but I find it quite odd
-> > that the pull request is coming before even replying to the review
-> > comments.
+Alex wrote:
+> Are there any examples (or just documentation) on providing DMA for
+> PCIe devices? I have read the DMA-mapping.txt document but wasn't sure
+> if this was all relevant to PCIe. For example, pci_set_dma_mask talks
+> about driving pins on the PCI bus, but PCIe doesn't work in quite the
+> same way. Perhaps these calls have no effect in this case (similar to
+> the PCI latency timers) but I just wondered.
+
+Not sure where you saw that reference, but there's no difference with 
+respect to DMA mapping with PCI vs. PCI Express.
+
 > 
-> Can you resend your e-mail, please?  I can't seem to find it in my
-> inbox.  Thanks!!
+> I'm also interested in knowing if any drivers perform very large DMA
+> transfers. I'm putting together a driver for a specialist high-speed
+> data acquisition device that typically might need a DMA buffer of
+> 100-500MB (ouch!) in the low 32 bit address space (or possibly 36 bit
+> address space, but I'm not sure if this is possible to allocate
+> without allocating as much as possible and then discarding?) but only
+> supports a very limited number of scatter/gather entries (between 1
+> and 4). The particular use-case for this is a ring buffer with
+> registers in IO memory that are used to keep track of read/write
+> pointers in the buffer. The device writes to the DMA memory when there
+> is space in the ring buffer i.e. the DMA transfer is only from device
+> to host.
+> 
+> I would like to perform the DMA straight from device to user-space
+> (probably via mmap), which I think requires a consistent/coherent
+> rather than streaming DMA so that I may read from the ring buffer
+> while the DMA may still be active (although not active in that section
+> of the buffer).
+> 
+> I assume that to allocate that much memory in physical contiguous
+> addresses will require a driver to be loaded as soon as possible at
+> startup. I was thinking about trying to grab a lot of high-order pages
+> and try and make them one contiguous block - is that feasible?
 
-It was just a paragraph in the mail also commenting on the previously
-core parts:
+For a block of memory that big, you may need to reserve some memory at 
+boot time for use by the device. I don't really have any details on how 
+to do that, though.
 
-> Also the code still deals with the !buffer_mapped and no buffers on page
-> cases all over which isn't needed anymore with ->page_mkwrite
-> implemented.
-> Similarly the !get_block case in mpage_da_writepages doesn't make any
-> sense - it's never used and if people would want to use
-> generic_writepages they could trivially just call it directly.
+> Browsing the archives, I found references to early allocation for
+> large buffers, but no direct links to existing examples or recommended
+> techniques on how to stitch pages together in to a single buffer. Is
+> there a platform independent way to ensure cache coherency with
+> allocated pages like this (i.e. not allocated with
+> pci_alloc_consistent / dma_alloc_coherent)?
+> 
+> I suppose that anything which takes a large chunk of physical memory
+> at startup isn't very recommended, but this is for a specialist device
+> and the host machine will probably be dedicated to using it.
+> 
+> As an aside, my module, driver and device are under the pci bus in
+> sysfs - should be PCIe device be showing under the pci_express bus?
+> This appears to be the PCIe Port Bus Driver and only has the aer
+> driver listed under it. I can't find any other drivers in the kernel
+> source that use it (I'm currently running 2.6.21).
 
-I've got a comment from Jan that the no buffers case can still happen,
-so that can be removed.
-
-Any chance you could also look into the kerneldoc comments for the newly
-exported fs/mpage.c routines as commented on the updated patch?
+Most parts of the kernel don't care whether devices are PCI or PCI-E, so 
+this is presumably why.
