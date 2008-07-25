@@ -1,71 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbYGYUfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbYGYUmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756577AbYGYUfc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 16:35:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbYGYUfQ
+	id S1753073AbYGYUmQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 16:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYGYUl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 16:35:16 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:41136 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751739AbYGYUfP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 16:35:15 -0400
-Date: Sat, 26 Jul 2008 00:35:13 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [0/3] POHMELFS high performance network filesystem. IPv6 support, documentation update.
-Message-ID: <20080725203512.GA10873@2ka.mipt.ru>
-References: <20080725190134.GA30685@2ka.mipt.ru> <20080725194033.GA16133@shareable.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080725194033.GA16133@shareable.org>
-User-Agent: Mutt/1.5.9i
+	Fri, 25 Jul 2008 16:41:59 -0400
+Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:7654 "EHLO
+	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751223AbYGYUl6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 16:41:58 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkcBAMPWiUhbsgtC/2dsb2JhbAAIsBk
+Message-ID: <488A3A8A.7000603@belbone.be>
+Date: Fri, 25 Jul 2008 22:41:46 +0200
+From: =?ISO-8859-1?Q?C=E9dric_Godin?= <cedric@belbone.be>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080626)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Alan Stern <stern@rowland.harvard.edu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       SCSI Kernel <linux-scsi@vger.kernel.org>
+Subject: [SCSI] can't plug Nokia 5300 anymore (bisected)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jamie.
+resending because wrong address of lkml and cc scsi list
 
-On Fri, Jul 25, 2008 at 08:40:34PM +0100, Jamie Lokier (jamie@shareable.org) wrote:
-> Consider this:
-> 
->    1. Client A reads FILE, and registers its interest in FILE.
->          (Contents are not interesting, e.g. 'Hello_sister')
->    2. Client B does "echo Some_message > /mnt/file".
->        - Truncates the file, sending truncate message to server.
->        - "Writing happes during writeback"...?
->    3. Client B sends a message by back-channel to client A (e.g. ssh command).
->    4. Client A reads FILE again.
-> 
-> Does client A always see 'Some_message' when it reads the file in step 4?
-> That's what I'd call coherence.
+Hello,
 
-If 4. happens after writeback of the client B, then it will see the new
-content, otherwise it will see empty page. There are no locks (even
-implicit like what is expected in POSIX in exactly this case) in
-POHMELFS so far.
+since 2 or 3 -git kernels (Linus tree)  I have a problem with my laptop 
+and its connection through USB to a nokia 5300 gsm.
 
-> For that, the first truncate or write operation on client B must wait
-> until a synchronous invalidate request goes to the server, then the
-> server sends to all interested clients (A) and waits for a reply, then
-> reply to B, and only then can B return from the open()/write() system call.
-> 
-> And when client A reads the file in step 4, it must send a synchronous
-> message to the server which must ask B to write the delayed writeback
-> data immediately, and until then, the reply to A will be delayed.
-> 
-> Is that right?
+The logs show me a endless loop (until i unplug my USB cable) of 
+following messages :
 
-It _can_ be done that way. But I'm still thinking on how the really
-scalable locking (this is a locking mechanism, just implicit) should be
-implemented. It is possible to send a message on every write_begin,
-which will invalidate appropriate message and every _read_ from that
-area will require all writers to flush theirs data. It will be kind of
-ME(O)SI cache coherency CPU protocol. It is simple task in current
-design, but I'm not yet convinced myself that this is a really scalable
-approach. So, there are no locks in POHMELFS _yet_.
+Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
+Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
+Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
+Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
+Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
+Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
+Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
+Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
+Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
+Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
 
--- 
-	Evgeniy Polyakov
+I bisected the kernel and found the following commit as result :
+
+427e59f09fdba387547106de7bab980b7fff77be is first bad commit
+commit 427e59f09fdba387547106de7bab980b7fff77be
+Author: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date:   Sat Mar 8 18:24:17 2008 -0600
+
+   [SCSI] make use of the residue value
+
+   USB sometimes doesn't return an error but instead returns a residue
+   value indicating part (or all) of the command wasn't completed.  So if
+   the driver _done() error processing indicates the command was fully
+   processed, subtract off the residue so that this USB error gets
+   propagated.
+
+   Cc: Alan Stern <stern@rowland.harvard.edu>
+   Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+
+:040000 040000 d3bad84ebe1bc231e8e7d6267907ca62fd4d0dcd 
+c85f8cb8bd4910724f0101e41054555980727e16 M      drivers
+
+
+When reverting it with 2.6.26-06077-gc010b2f , everything is back to normal.
+
+
+
+The git bisect sequence is the following one :
+
+git-bisect start 'drivers/scsi'
+# bad: [c010b2f76c3032e48097a6eef291d8593d5d79a6] Merge 
+git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
+git-bisect bad c010b2f76c3032e48097a6eef291d8593d5d79a6
+# good: [bce7f793daec3e65ec5c5705d2457b81fe7b5725] Linux 2.6.26
+git-bisect good bce7f793daec3e65ec5c5705d2457b81fe7b5725
+# good: [a5db33411ae762e597bfcde6bb9d0c8c2ea9c0eb] BUG_ON on kernel 
+misbehavior on A100U2W driver
+git-bisect good a5db33411ae762e597bfcde6bb9d0c8c2ea9c0eb
+# bad: [30e9ba9f2001f45960507f1963551311a67d0209] [SCSI] iscsi_tcp: 
+Enable any size command
+git-bisect bad 30e9ba9f2001f45960507f1963551311a67d0209
+# bad: [b40977d95fb3a1898ace6a7d97e4ed1a33a440a4] [SCSI] iser: fix 
+handling of scsi cmnds during recovery.
+git-bisect bad b40977d95fb3a1898ace6a7d97e4ed1a33a440a4
+# bad: [427e59f09fdba387547106de7bab980b7fff77be] [SCSI] make use of the 
+residue value
+git-bisect bad 427e59f09fdba387547106de7bab980b7fff77be
+# good: [f6dd337ee4c440f29a873da3779eb3af44bd1623] [SCSI] scsi_dh: add 
+hp sw device handler
+git-bisect good f6dd337ee4c440f29a873da3779eb3af44bd1623
+# good: [13a17fdeedbb156463a9a007378366ec0a0c30ef] [SCSI] aacraid: 
+linit.c make aac_show_serial_number static
+git-bisect good 13a17fdeedbb156463a9a007378366ec0a0c30ef
+# good: [19c4158bcdf42ee3b2394342caf14f8471d2c78e] [SCSI] SCSI: remove 
+dev->power.power_state from mesh driver
+git-bisect good 19c4158bcdf42ee3b2394342caf14f8471d2c78e
+
+It's my first bisect so if i have done something wrong, don't hesitate 
+to shout.
+
+Cedric
+
+
+
