@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbYGYHvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbYGYHxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbYGYHvg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 03:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYGYHv1
+	id S1753974AbYGYHxi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 03:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYGYHxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 03:51:27 -0400
-Received: from gate.crashing.org ([63.228.1.57]:46109 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751908AbYGYHv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 03:51:27 -0400
-Subject: Re: sfx.c driver build failure
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Michael Brown <mbrown@fensystems.co.uk>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Jeff Garzik <jgarzik@pobox.com>
-In-Reply-To: <Pine.LNX.4.62.0807250831440.8217@dolphin.home>
-References: <1216966559.11188.85.camel@pasglop>
-	 <Pine.LNX.4.62.0807250831440.8217@dolphin.home>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 25 Jul 2008 17:50:57 +1000
-Message-Id: <1216972257.11188.96.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Fri, 25 Jul 2008 03:53:30 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:20735 "EHLO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751457AbYGYHxa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 03:53:30 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-4.tower-164.messagelabs.com!1216972408!10857159!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.14]
+Date: Fri, 25 Jul 2008 09:53:24 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: David Brownell <david-b@pacbell.net>
+CC: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2.6.26-git] genirq:  better warning on irqchip->set_type() failure
+Message-ID: <20080725075324.GB24021@digi.com>
+References: <200807241750.25507.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <200807241750.25507.david-b@pacbell.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 25 Jul 2008 07:53:24.0893 (UTC) FILETIME=[8431F4D0:01C8EE2B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-25 at 08:35 +0100, Michael Brown wrote:
-> On Fri, 25 Jul 2008, Benjamin Herrenschmidt wrote:
-> > The sfx driver (which happens to be part of some of our test configs) 
-> > fails to build in current Linus tree on powerpc with this error:
-> > 
-> > /home/benh/kernels/linux-powerpc/drivers/net/sfc/efx.c: In function 每每efx_probe_interrupts每每:
-> > /home/benh/kernels/linux-powerpc/drivers/net/sfc/efx.c:845: error: lvalue required as unary 每每&每每 oper
-> > and
+David Brownell wrote:
+> From: David Brownell <dbrownell@users.sourceforge.net>
 > 
-> I'm not the maintainer of that code; I wrote the original version, but 
-> it's now maintained by Solarflare.
+> While I'm glad to finally see the hole fixed whereby passing an
+> invalid IRQ trigger type to request_irq() would be ignored, the
+> current diagnostic isn't quite useful.  Fixed by also listing
+> the trigger type which was rejected.
 > 
-> I don't see anything on that line that ought to be architecture-specific.  
-> Could you send me the preprocessed efx.c from your powerpc build?
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Acked-by: Uwe Kleine-K鰊ig <Uwe.Kleine-Koenig@digi.com>
+ 
+Best regards and thanks
+Uwe
 
-Apparently, it's a know generic breakage of the topology stuff,
-it's beeing sorted out.
-
-Cheers,
-Ben.
-
-
+-- 
+Uwe Kleine-K鰊ig, Software Engineer
+Digi International GmbH Branch Breisach, K黤erstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
