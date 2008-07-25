@@ -1,116 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbYGYVLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbYGYVLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756707AbYGYVLb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 17:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYGYVLB
+	id S1756896AbYGYVLp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 17:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbYGYVLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 17:11:01 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:43490 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751816AbYGYVK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 17:10:59 -0400
-Date: Fri, 25 Jul 2008 14:10:35 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: gerald.schaefer@de.ibm.com
-Cc: schwidefsky@de.ibm.com, LKML <linux-kernel@vger.kernel.org>,
-       agl@us.ibm.com
-Subject: s390 hugetlb oops with libhugetlbfs test-suite
-Message-ID: <20080725211035.GA19738@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-Operating-System: Linux 2.6.26-rc9-00132-g9df2fe9 (x86_64)
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 25 Jul 2008 17:11:20 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:58863 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755735AbYGYVLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 17:11:18 -0400
+Message-Id: <20080725211117.800839000@polaris-admin.engr.sgi.com>
+References: <20080725211117.586723000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 25 Jul 2008 14:11:18 -0700
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Hugh Dickins <hugh@veritas.com>, Jack Steiner <steiner@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/4] x86_64: Cleanup early setup_percpu references
+Content-Disposition: inline; filename=cleanup_percpu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gerald,
+  * Ruggedize some calls in setup_percpu.c to prevent mishaps
+    in early calls, particularly for non-critical functions.
 
-Having noticed that the hugetlbfs code recently got an update to work on s390,
-I decided to port the libhugetlbfs test-suite to work on s390. The current
-development snapshot is available at
-http://libhugetlbfs.ozlabs.org/snapshots/libhugetlbfs-dev-20080724.tar.gz.  You
-will need a patch [1] to build on s390, but it should roughly work otherwise.
-The specific testcase that causes the oops is counters. The bit set in the
-flags is PG_Reserved, I think.
+  * Cleanup DEBUG_PER_CPU_MAPS usages and some comments.
 
-Bad page state in process 'counters'
-page:000003e040000000 flags:0x0000000000000400 mapping:0000000000000000 mapcount
-:0 count:0
-Trying to fix it up, but a reboot is needed
-Backtrace:
-CPU: 3 Not tainted 2.6.26-autokern1 #1
-Process counters (pid: 5578, task: 000000003f3ca958, ksp: 000000003f1bbc08)
-0000000000000005 000000003f1bb920 0000000000000002 0000000000000000
-       000000003f1bb9c0 000000003f1bb938 000000003f1bb938 000000000003cfe2
-       0000000000000000 0000000000000400 0000000000000000 000000000000000b
-       0000000000000008 0000000000000000 000000003f1bb920 000000003f1bb998
-       000000000024a780 0000000000016b0a 000000003f1bb920 000000003f1bb970
-Call Trace:
-(Ý<0000000000016a6c>¨ show_trace+0xdc/0xec)
- Ý<000000000007a38a>¨ bad_page+0x96/0xc8
- Ý<000000000007b11c>¨ free_hot_cold_page+0x9c/0x1e4
- Ý<0000000000099e4a>¨ __unmap_hugepage_range+0x38a/0x3cc
- Ý<0000000000099edc>¨ unmap_hugepage_range+0x50/0x78
- Ý<00000000000877d6>¨ unmap_vmas+0x14e/0xb34
- Ý<000000000008c6f2>¨ exit_mmap+0x14a/0x2f8
- Ý<00000000000397dc>¨ mmput+0x60/0x110
- Ý<00000000000401b4>¨ do_exit+0x264/0x7f4
- Ý<00000000000407d6>¨ do_group_exit+0x92/0xc0
- Ý<000000000004b558>¨ get_signal_to_deliver+0x344/0x36c
- Ý<000000000001d746>¨ do_signal+0xe2/0x878
- Ý<0000000000023b7a>¨ sysc_sigpending+0xe/0x22
- Ý<000000000040123a>¨ 0x40123a
+Based on linux-2.6.tip/master with following patches applied:
 
-[1]
+	cpumask: Make cpumask_of_cpu_map generic
+	cpumask: Put cpumask_of_cpu_map in the initdata section
+	cpumask: Change cpumask_of_cpu_ptr to use new cpumask_of_cpu
 
-libhugetlbfs: Add basic s390x support
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86/kernel/setup_percpu.c |   66 +++++++++++++++++++++++++++++------------
+ 1 file changed, 47 insertions(+), 19 deletions(-)
 
-The tests/Makefile change is needed until the signal check can be added
-for s390.
-
-diff --git a/Makefile b/Makefile
-index f1f83fa..59fdb47 100644
---- a/Makefile
-+++ b/Makefile
-@@ -63,6 +63,13 @@ CC64 = gcc -m64
- LIB64 = lib64
- CFLAGS += -DNO_ELFLINK
- else
-+ifeq ($(ARCH),s390x)
-+CC64 = gcc -m64
-+CC32 = gcc -m31
-+LIB64 = lib64
-+LIB32 = lib
-+CFLAGS += -DNO_ELFLINK
-+else
- $(error "Unrecognized architecture ($(ARCH))")
- endif
- endif
-@@ -70,6 +77,7 @@ endif
- endif
- endif
- endif
-+endif
+--- linux-2.6.tip.orig/arch/x86/kernel/setup_percpu.c
++++ linux-2.6.tip/arch/x86/kernel/setup_percpu.c
+@@ -15,6 +15,12 @@
+ #include <asm/apicdef.h>
+ #include <asm/highmem.h>
  
- ifdef CC32
- OBJDIRS += obj32
-diff --git a/tests/Makefile b/tests/Makefile
-index b723db7..ebd7fb8 100644
---- a/tests/Makefile
-+++ b/tests/Makefile
-@@ -2,7 +2,7 @@ PREFIX = /usr/local
++#ifdef CONFIG_DEBUG_PER_CPU_MAPS
++# define DBG(x...) printk(KERN_DEBUG x)
++#else
++# define DBG(x...)
++#endif
++
+ #ifdef CONFIG_X86_LOCAL_APIC
+ unsigned int num_processors;
+ unsigned disabled_cpus __cpuinitdata;
+@@ -27,31 +33,39 @@ EXPORT_SYMBOL(boot_cpu_physical_apicid);
+ physid_mask_t phys_cpu_present_map;
+ #endif
  
- LIB_TESTS = gethugepagesize test_root find_path unlinked_fd misalign \
- 	readback truncate shared private fork-cow empty_mounts large_mounts \
--	meminfo_nohuge ptrace-write-hugepage icache-hygiene slbpacaflush \
-+	meminfo_nohuge ptrace-write-hugepage slbpacaflush \
- 	chunk-overcommit mprotect alloc-instantiate-race mlock \
- 	truncate_reserve_wraparound truncate_sigbus_versus_oom \
- 	map_high_truncate_2 truncate_above_4GB direct \
+-/* map cpu index to physical APIC ID */
++/*
++ * Map cpu index to physical APIC ID
++ */
+ DEFINE_EARLY_PER_CPU(u16, x86_cpu_to_apicid, BAD_APICID);
+ DEFINE_EARLY_PER_CPU(u16, x86_bios_cpu_apicid, BAD_APICID);
+ EXPORT_EARLY_PER_CPU_SYMBOL(x86_cpu_to_apicid);
+ EXPORT_EARLY_PER_CPU_SYMBOL(x86_bios_cpu_apicid);
+ 
+ #if defined(CONFIG_NUMA) && defined(CONFIG_X86_64)
+-#define	X86_64_NUMA	1
++#define	X86_64_NUMA	1	/* (used later) */
+ 
+-/* map cpu index to node index */
++/*
++ * Map cpu index to node index
++ */
+ DEFINE_EARLY_PER_CPU(int, x86_cpu_to_node_map, NUMA_NO_NODE);
+ EXPORT_EARLY_PER_CPU_SYMBOL(x86_cpu_to_node_map);
+ 
+-/* which logical CPUs are on which nodes */
++/*
++ * Which logical CPUs are on which nodes
++ */
+ cpumask_t *node_to_cpumask_map;
+ EXPORT_SYMBOL(node_to_cpumask_map);
+ 
+-/* setup node_to_cpumask_map */
++/*
++ * Setup node_to_cpumask_map
++ */
+ static void __init setup_node_to_cpumask_map(void);
+ 
+ #else
+ static inline void setup_node_to_cpumask_map(void) { }
+ #endif
+ 
+-#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_X86_SMP)
++#ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
+ /*
+  * Copy data used in early init routines from the initial arrays to the
+  * per cpu data areas.  These arrays then become expendable and the
+@@ -90,11 +104,16 @@ static void __init setup_per_cpu_maps(vo
+ static void __init setup_cpumask_of_cpu(void)
+ {
+ 	int i;
++	cpumask_t *new_map;
+ 
+ 	/* alloc_bootmem zeroes memory */
+-	cpumask_of_cpu_map = alloc_bootmem_low(sizeof(cpumask_t) * nr_cpu_ids);
++	new_map = alloc_bootmem_low(sizeof(cpumask_t) * nr_cpu_ids);
++	DBG("cpumask_of_cpu_map at %p\n", new_map);
++
+ 	for (i = 0; i < nr_cpu_ids; i++)
+-		cpu_set(i, cpumask_of_cpu_map[i]);
++		cpu_set(i, new_map[i]);
++
++	cpumask_of_cpu_map = (const cpumask_t *)new_map;
+ }
+ #else
+ static inline void setup_cpumask_of_cpu(void) { }
+@@ -189,9 +208,10 @@ void __init setup_per_cpu_areas(void)
+ 		per_cpu_offset(cpu) = ptr - __per_cpu_start;
+ 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
+ 
++		DBG("PERCPU: cpu %4d %p\n", cpu, ptr);
+ 	}
+ 
+-	printk(KERN_DEBUG "NR_CPUS: %d, nr_cpu_ids: %d, nr_node_ids %d\n",
++	printk(KERN_INFO "NR_CPUS: %d, nr_cpu_ids: %d, nr_node_ids: %d\n",
+ 		NR_CPUS, nr_cpu_ids, nr_node_ids);
+ 
+ 	/* Setup percpu data maps */
+@@ -213,6 +233,7 @@ void __init setup_per_cpu_areas(void)
+  * Requires node_possible_map to be valid.
+  *
+  * Note: node_to_cpumask() is not valid until after this is done.
++ * (Use CONFIG_DEBUG_PER_CPU_MAPS to check this.)
+  */
+ static void __init setup_node_to_cpumask_map(void)
+ {
+@@ -228,6 +249,7 @@ static void __init setup_node_to_cpumask
+ 
+ 	/* allocate the map */
+ 	map = alloc_bootmem_low(nr_node_ids * sizeof(cpumask_t));
++	DBG("node_to_cpumask_map at %p for %d nodes\n", map, nr_node_ids);
+ 
+ 	pr_debug(KERN_DEBUG "Node to cpumask map at %p for %d nodes\n",
+ 		 map, nr_node_ids);
+@@ -240,17 +262,23 @@ void __cpuinit numa_set_node(int cpu, in
+ {
+ 	int *cpu_to_node_map = early_per_cpu_ptr(x86_cpu_to_node_map);
+ 
+-	if (cpu_pda(cpu) && node != NUMA_NO_NODE)
+-		cpu_pda(cpu)->nodenumber = node;
+-
+-	if (cpu_to_node_map)
++	/* early setting, no percpu area yet */
++	if (cpu_to_node_map) {
+ 		cpu_to_node_map[cpu] = node;
++		return;
++	}
+ 
+-	else if (per_cpu_offset(cpu))
+-		per_cpu(x86_cpu_to_node_map, cpu) = node;
++#ifdef CONFIG_DEBUG_PER_CPU_MAPS
++	if (cpu >= nr_cpu_ids || !per_cpu_offset(cpu)) {
++		printk(KERN_ERR "numa_set_node: invalid cpu# (%d)\n", cpu);
++		dump_stack();
++		return;
++	}
++#endif
++	per_cpu(x86_cpu_to_node_map, cpu) = node;
+ 
+-	else
+-		pr_debug("Setting node for non-present cpu %d\n", cpu);
++	if (node != NUMA_NO_NODE)
++		cpu_pda(cpu)->nodenumber = node;
+ }
+ 
+ void __cpuinit numa_clear_node(int cpu)
+@@ -267,7 +295,7 @@ void __cpuinit numa_add_cpu(int cpu)
+ 
+ void __cpuinit numa_remove_cpu(int cpu)
+ {
+-	cpu_clear(cpu, node_to_cpumask_map[cpu_to_node(cpu)]);
++	cpu_clear(cpu, node_to_cpumask_map[early_cpu_to_node(cpu)]);
+ }
+ 
+ #else /* CONFIG_DEBUG_PER_CPU_MAPS */
+@@ -277,7 +305,7 @@ void __cpuinit numa_remove_cpu(int cpu)
+  */
+ static void __cpuinit numa_set_cpumask(int cpu, int enable)
+ {
+-	int node = cpu_to_node(cpu);
++	int node = early_cpu_to_node(cpu);
+ 	cpumask_t *mask;
+ 	char buf[64];
+ 
 
 -- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
