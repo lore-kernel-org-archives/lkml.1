@@ -1,33 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbYGYLjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752480AbYGYLkC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbYGYLjq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 07:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYGYLjh
+	id S1752480AbYGYLkC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 07:40:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbYGYLjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 07:39:37 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37276 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751893AbYGYLjg (ORCPT
+	Fri, 25 Jul 2008 07:39:43 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:6017 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753307AbYGYLjm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 07:39:36 -0400
-Subject: Re: Large increase in context switch rate
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alex Nixon <alex.nixon@citrix.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Alex Nixon (Intern)" <Alex.Nixon@eu.citrix.com>,
-       Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ian Campbell <Ian.Campbell@eu.citrix.com>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-In-Reply-To: <4889B9AE.3050108@citrix.com>
-References: <487E43D9.7080703@goop.org> <87mykgrxtv.fsf@basil.nowhere.org>
-	 <0E902970173AF84089673FA54B7FE78A329073@lonpexch01.citrite.net>
-	 <200807241126.48364.nickpiggin@yahoo.com.au>  <4889B9AE.3050108@citrix.com>
+	Fri, 25 Jul 2008 07:39:42 -0400
+X-SourceIP: 62.163.52.83
+Subject: Re: [patch, rfc: 1/2] sched, hotplug: safe use of
+	rq->migration_thread and find_busiest_queue()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1216937517.5368.11.camel@earth>
+References: <1216937517.5368.11.camel@earth>
 Content-Type: text/plain
-Date: Fri, 25 Jul 2008 13:39:23 +0200
-Message-Id: <1216985963.7257.373.camel@twins>
+Date: Fri, 25 Jul 2008 13:39:46 +0200
+Message-Id: <1216985986.7257.375.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -35,62 +30,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-25 at 12:31 +0100, Alex Nixon wrote:
-> >> I've bisected down to commit ba52de123d454b57369f291348266d86f4b35070 -
-> >> [PATCH] inode-diet.  Before that kernbench consistently reports about
-> >> 35k context switches (total), and after that commit about 53k.  The
-> >> benchmarks are being run on a tmpfs.  I've verified the results on a
-> >> different machine, albeit with an almost identical setup (the same
-> >> kernels and debian distro, kernbench version, and benchmarking a build
-> >> of the same source).
-> >>
-> >> Seems to be a mystery why that patch is (seemingly) the culprit...
+On Fri, 2008-07-25 at 00:11 +0200, Dmitry Adamushko wrote:
+> From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+> Subject: sched, hotplug: safe use of rq->migration_thread
+> and find_busiest_queue()
 > 
-> The relevant changeset had caused the blocksize to default to 1024 (as opposed
-> to 4096) - as a result there was a large increase in the time spent waiting on
-> pipes.
-> 
-> Instead of re-adding the line taken out of fs/pipe.c by Theodore I opted instead
-> to change the default block size for pseudo-filesystems to PAGE_SIZE, to try
-> avoid making pipe.c inconsistent with Theodore's new approach.
-> 
-> The performance penalty from these extra context switches is fairly small, but 
-> is magnified when virtualization is involved, hence the desire to keep it lower
-> if possible.
-> 
-> 
-> From 4b568a72fc42b52279507eb4d1339e0637ae719a Mon Sep 17 00:00:00 2001
-> From: Alex Nixon <t_alexn@alexn-desktop.(none)>
-> Date: Fri, 25 Jul 2008 11:26:44 +0100
-> Subject: [PATCH] VFS: increase pseudo-filesystem block size to PAGE_SIZE.
-> 
-> Changeset ba52de123d454b57369f291348266d86f4b35070 caused the block size used
-> by pseudo-filesystems to decrease from PAGE_SIZE to 1024 leading to a doubling
-> of the number of context switches during a kernbench run.
-
-Cool - makes sense. I'd ack it, but I know less than nothing about this
-code, so I won't...
-
-Still, good hunting on your part!
-
-> Signed-off-by: Alex Nixon <Alex.Nixon@citrix.com>
 > ---
->  fs/libfs.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/fs/libfs.c b/fs/libfs.c
-> index baeb71e..1add676 100644
-> --- a/fs/libfs.c
-> +++ b/fs/libfs.c
-> @@ -216,8 +216,8 @@ int get_sb_pseudo(struct file_system_type *fs_type, char *name,
+>     sched, hotplug: safe use of rq->migration_thread and find_busiest_queue()
+>     
+>     (1) make usre rq->migration_thread is valid when we access it in set_cpus_allowed_ptr()
+>     after releasing the rq-lock;
+>     
+>     (2) in load_balance() and load_balance_idle()
+>     
+>     ensure that we don't get 'busiest' which can disappear as a result of cpu_down()
+>     while we are manipulating it. For this goal, we choose 'busiest' only amongst
+>     'cpu_active_map' cpus.
+>     
+>     load_balance() and load_balance_idle() get called with preemption being disabled
+>     so synchronize_sched() in cpu_down() should get us synced.
+>     
+>     IOW, as soon as synchronize_sched() has been done in cpu_down(cpu), the run-queue for
+>     can't be manipulated/accessed by the load-balancer.
+>     
+>     Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 6acf749..b4ccc8b 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -3409,7 +3409,14 @@ static int load_balance(int this_cpu, struct rq *this_rq,
+>  	struct rq *busiest;
+>  	unsigned long flags;
 >  
->  	s->s_flags = MS_NOUSER;
->  	s->s_maxbytes = ~0ULL;
-> -	s->s_blocksize = 1024;
-> -	s->s_blocksize_bits = 10;
-> +	s->s_blocksize = PAGE_SIZE;
-> +	s->s_blocksize_bits = PAGE_SHIFT;
->  	s->s_magic = magic;
->  	s->s_op = ops ? ops : &simple_super_operations;
->  	s->s_time_gran = 1;
+> -	cpus_setall(*cpus);
+> +	/*
+> +	 * Ensure that we don't get 'busiest' which can disappear
+> +	 * as a result of cpu_down() while we are manipulating it.
+> +	 *
+> +	 * load_balance() gets called with preemption being disabled
+> +	 * so synchronize_sched() in cpu_down() should get us synced.
+> +	 */
+> +	*cpus = cpu_active_map;
+
+This is going to be painful on -rt... there it can be preempted. I guess
+we can put get_online_cpus() around it or something..
+
+>  	/*
+>  	 * When power savings policy is enabled for the parent domain, idle
+> @@ -3571,7 +3578,14 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
+>  	int sd_idle = 0;
+>  	int all_pinned = 0;
+>  
+> -	cpus_setall(*cpus);
+> +	/*
+> +	 * Ensure that we don't get 'busiest' which can disappear
+> +	 * as a result of cpu_down() while we are manipulating it.
+> +	 *
+> +	 * load_balance_newidle() gets called with preemption being disabled
+> +	 * so synchronize_sched() in cpu_down() should get us synced.
+> +	 */
+> +	*cpus = cpu_active_map;
+>  
+>  	/*
+>  	 * When power savings policy is enabled for the parent domain, idle
+> @@ -5764,9 +5778,14 @@ int set_cpus_allowed_ptr(struct task_struct *p, const cpumask_t *new_mask)
+>  		goto out;
+>  
+>  	if (migrate_task(p, any_online_cpu(*new_mask), &req)) {
+> -		/* Need help from migration thread: drop lock and wait. */
+> +		/* Need to wait for migration thread (might exit: take ref). */
+> +		struct task_struct *mt = rq->migration_thread;
+> +
+> +		get_task_struct(mt);
+>  		task_rq_unlock(rq, &flags);
+> -		wake_up_process(rq->migration_thread);
+> +		wake_up_process(mt);
+> +		put_task_struct(mt);
+> +
+>  		wait_for_completion(&req.done);
+>  		tlb_migrate_finish(p->mm);
+>  		return 0;
+> 
+> 
 
