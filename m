@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753315AbYGYPD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753744AbYGYPGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753315AbYGYPD7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 11:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbYGYPDu
+	id S1753744AbYGYPGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 11:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYGYPGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 11:03:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:38266 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbYGYPDt (ORCPT
+	Fri, 25 Jul 2008 11:06:05 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50990 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750930AbYGYPGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 11:03:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=DpCLpZ0hh/UYC/6HKhjRZsl1RdArOYpn1mHgye3Rp8gKooHheyP0XbBHLVY7xiYtb1
-         cH15DVV3cViKcKENF9+PYuIyABVRAvVrfD/Lqo32l6y5fHn6ph4iTUGmmLtjPQ7JSol8
-         IqOnhIvBukctd1iNiOjBHaBoW/4Ax2roUpkK4=
-Message-ID: <19f34abd0807250803y2992aff8g369ce7f6b802708@mail.gmail.com>
-Date: Fri, 25 Jul 2008 17:03:48 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Larry Finger" <Larry.Finger@lwfinger.net>
-Subject: Re: Kernel BUG in 2.6.26-git series
-Cc: LKML <linux-kernel@vger.kernel.org>, "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <4889E538.5010007@lwfinger.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 25 Jul 2008 11:06:04 -0400
+Date: Fri, 25 Jul 2008 15:48:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: please revert commit 53f1b1433da7eac2607a4a0898a221a4485fd732
+ (rtc: push the BKL down into the driver ioctl method)
+Message-ID: <20080725154846.20d2cda8@lxorguk.ukuu.org.uk>
+In-Reply-To: <b6a2187b0807250726n77a0cd6eqb97b817fddc343b9@mail.gmail.com>
+References: <b6a2187b0807250726n77a0cd6eqb97b817fddc343b9@mail.gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4889E538.5010007@lwfinger.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 4:37 PM, Larry Finger <Larry.Finger@lwfinger.net> wrote:
-> In the current git pulls from Linus's tree, I get a kernel BUG if
-> CONFIG_SCHED_SMT is defined. It does not always appear, but when it does, it
-> is late in the bootup sequence. Perhaps there is a timing issue. This is an
-> x86_64 system on an HP dv2815nr notebook with and AMD Turion X2 CPU. My
-> distro is openSUSE 11.0.
->
-> kernel: BUG: unable to handle kernel NULL pointer dereference at
-> 000000000000002
-> kernel: IP: [<ffffffff80231aec>] sched_mc_power_savings_store+0x13/0x41
+On Fri, 25 Jul 2008 22:26:38 +0800
+"Jeff Chua" <jeff.chua.linux@gmail.com> wrote:
 
-Maybe LKML is slow and somebody else replied to this before me, but I
-know how much I hate to discover that I've been bisecting something
-that was fixed a week ago in another tree, so here's a link you might
-try :-)
+> 53f1b1433da7eac2607a4a0898a221a4485fd732 is first bad commit
+> commit 53f1b1433da7eac2607a4a0898a221a4485fd732
+> Author: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Date:   Wed Jul 23 21:30:32 2008 -0700
+> 
+>     rtc: push the BKL down into the driver ioctl method
+> 
+> 
+> This commit is breaking vmware-6.0.4. Upon booting linux (guest) on
+> vmware, the whole vmware environment crashed
 
-http://lkml.org/lkml/2008/7/24/398
+Having reviewed the patch and the trace I believe you need to take this
+up with vmware. All the patch does is slightly alter where the locking is
+done. I suspect vmware are blindly calling into the rtc_fops ioctl method
+directly in which case they just got burned.
 
+One way to check this would be to add a .ioctl method back which was
+simply
 
-Vegard
+rtc_test_ioctl(...)
+{
+	printk("VMWare caught with pants down\n");
+}
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+if it prints that instead of or while crashing you know who is guilty.
+
+Alan
