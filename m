@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbYGYIkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYGYImZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755316AbYGYIkX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 04:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbYGYIkK
+	id S1755325AbYGYImZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 04:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbYGYImQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 04:40:10 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:39770 "EHLO smtp6.pp.htv.fi"
+	Fri, 25 Jul 2008 04:42:16 -0400
+Received: from gate.crashing.org ([63.228.1.57]:51300 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750927AbYGYIkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 04:40:08 -0400
-Date: Fri, 25 Jul 2008 11:39:43 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrea Righi <righi.andrea@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: PAGE_ALIGN() compile breakage
-Message-ID: <20080725083943.GC19310@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1752208AbYGYImP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 04:42:15 -0400
+Subject: Re: [PATCH 2/2][RT] powerpc - Make the irq reverse mapping radix
+	tree lockless
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux-rt <linux-rt-users@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Michael Ellerman <michael@ellerman.id.au>,
+       Tim Chavez <tinytim@us.ibm.com>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>,
+       Gilles Carry <Gilles.Carry@ext.bull.net>
+In-Reply-To: <20080725103601.2dbcd7e8@bull.net>
+References: <20080724122352.3bc76bda@bull.net>
+	 <20080724125044.53b604cb@bull.net>
+	 <200807242111.35338.nickpiggin@yahoo.com.au>
+	 <20080724141839.477de30b@bull.net> <1216972177.7257.351.camel@twins>
+	 <1216974440.11188.100.camel@pasglop>  <20080725103601.2dbcd7e8@bull.net>
+Content-Type: text/plain
+Date: Fri, 25 Jul 2008 18:40:21 +1000
+Message-Id: <1216975221.11188.102.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 27ac792ca0b0a1e7e65f20342260650516c95864
-(PAGE_ALIGN(): correctly handle 64-bit values on 32-bit architectures)
-causes on some architectures (e.g. avr32 and mips) compile errors
-like the following in some configurations starting with:
+On Fri, 2008-07-25 at 10:36 +0200, Sebastien Dugue wrote:
+> On Fri, 25 Jul 2008 18:27:20 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> > On Fri, 2008-07-25 at 09:49 +0200, Peter Zijlstra wrote:
+> > > 
+> > > 
+> > > The only advantage of the concurrent radix tree over this model is that
+> > > it can potentially do multiple modification operations at the same time.
+> > 
+> > Yup, we do not need that for the irq revmap... concurrent lookup is all we need.
+> > 
+> 
+>   Shouldn't we care about concurrent insertion and deletion in the tree? I agree
+> that concern might be a bit artificial but in theory that can happen.
 
-<--  snip  -->
+Yes, we just need to protect it with a big hammer, like a spinlock, it's
+not a performance critical code path.
 
-...
-  CC      init/main.o
-In file included from 
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/utsname.h:35,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:20:
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/sched.h: In function 'arch_pick_mmap_layout':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/sched.h:2149: error: implicit declaration of function 'PAGE_ALIGN'
-make[2]: *** [init/main.o] Error 1
+Ben.
 
-<--  snip  -->
-
-and more nasty problems follow later.
-
-My suggestion is to:
-- revert commit 27ac792ca0b0a1e7e65f20342260650516c95864 and then
-- fix all PAGE_ALIGN() instances without moving them.
-
-Unifying code is a good thing, but in this case it is not worth the 
-trouble it causes by poking into the heart of our headers mess.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
