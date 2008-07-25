@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbYGYMmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbYGYMwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755815AbYGYMmB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 08:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYGYMlw
+	id S1755214AbYGYMwS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 08:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYGYMwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 08:41:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57952 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752585AbYGYMlv (ORCPT
+	Fri, 25 Jul 2008 08:52:08 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:53188 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752775AbYGYMwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 08:41:51 -0400
-Date: Fri, 25 Jul 2008 05:41:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Adrian Bunk <bunk@kernel.org>, Andrea Righi <righi.andrea@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: __weak vs ifdef
-Message-Id: <20080725054142.372f1c03.akpm@linux-foundation.org>
-In-Reply-To: <20080725122454.GE6701@parisc-linux.org>
-References: <20080725083943.GC19310@cs181140183.pp.htv.fi>
-	<20080725015537.564e3397.akpm@linux-foundation.org>
-	<20080725091455.GD19310@cs181140183.pp.htv.fi>
-	<20080725092748.GF19310@cs181140183.pp.htv.fi>
-	<20080725023455.dde3eb27.akpm@linux-foundation.org>
-	<20080725122454.GE6701@parisc-linux.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 25 Jul 2008 08:52:07 -0400
+Message-ID: <4889CC4B.1090406@s5r6.in-berlin.de>
+Date: Fri, 25 Jul 2008 14:51:23 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+CC: Grant Coady <gcoady.lk@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: how much stuff is no longer "EXPERIMENTAL"?
+References: <alpine.LFD.1.10.0807241114000.4119@localhost.localdomain> <h2ih845fmasm3coi3qapmqkknj0ghp6k7t@4ax.com> <alpine.LFD.1.10.0807241606240.6474@localhost.localdomain>
+In-Reply-To: <alpine.LFD.1.10.0807241606240.6474@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Jul 2008 06:24:54 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
+Robert P. J. Day wrote:
+> at last count, there were 437 config selections that were tagged as
+> EXPERIMENTAL.
 
-> On Fri, Jul 25, 2008 at 02:34:55AM -0700, Andrew Morton wrote:
-> > We should make arch_pick_mmap_layout __weak and nuke that ifdef.
-> 
-> I strongly disagree.  I find it makes it harder to follow code flow
-> when __weak functions are involved.  Ifdefs are ugly, no question, but
-> they're easier to grep for, see when they'll be defined and know which of
-> the arch_pick_mmap_layout() functions will be called.  __weak certainly
-> has its uses (eg the sys_ni_syscall is great) but I find it's becoming
-> overused.
-> 
-> My basic point here is that __weak makes the code easier to write but
-> harder to read, and we're supposed to be optimising for easier to read.
-> 
+drivers/ieee1394/Kconfig and drivers/firewire/Kconfig contain three
+dependencies on EXPERIMENTAL which are up to date.
 
-If you see
-
-void __weak arch_foo(...)
-
-and can't immediately work out what's going on then converting it to an
-ifdef maze won't save you.
-
+So now you have got only 434 dependencies left to look at. :-)
+-- 
+Stefan Richter
+-=====-==--- -=== ==--=
+http://arcgraph.de/sr/
