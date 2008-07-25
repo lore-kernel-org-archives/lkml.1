@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYGYIo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbYGYIpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbYGYIo7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 04:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYGYIou
+	id S1755886AbYGYIpg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 04:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbYGYIp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 04:44:50 -0400
-Received: from li26-190.members.linode.com ([67.18.89.190]:54453 "EHLO
-	notebook.homenet.local" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752687AbYGYIot (ORCPT
+	Fri, 25 Jul 2008 04:45:26 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:54295 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752309AbYGYIpX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 04:44:49 -0400
-Date: Fri, 25 Jul 2008 10:44:47 +0200
-From: Tomas Styblo <tripie@cpan.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net
-Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix -
-	device 152d:2338
-Message-ID: <20080725084447.GA15483@notebook.homenet.local>
-References: <Pine.LNX.4.44L0.0807222238060.12003-100000@netrider.rowland.org> <4887BCB9.2000103@shaw.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4887BCB9.2000103@shaw.ca>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 25 Jul 2008 04:45:23 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: airlied@linux.ie
+Cc: Andrew Morton <akpm@linux-foundation.org>, dri-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1 repost #1] DRM: don't enable irqs in locking
+Date: Fri, 25 Jul 2008 10:42:49 +0200
+Message-Id: <1216975369-6749-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.6.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Robert Hancock <hancockr@shaw.ca> [Thu, 24 Jul 2008]:
->>> Anyway, I'll send the patch to this person so he can try it. I guess it 
->>> won't fix his problem. This patch is much simpler and doesn't need any 
->>> delays - I really think this is a different situation.
->>
->> It isn't.  And your patch is an ad-hoc correction that doesn't address
->> the true underlying reasons for the errors.
->
-> Tomas, you should try the patch listed in that bug report (well, except 
-> maybe the part that's actually adding the JMicron unusual devices entry) 
-> and see if that fixes the problem.
+drm_lock_take(); and drm_lock_free(); are called from
+drm_locked_tasklet_func(); which disables interrupts when grabbing its
+spinlock.
 
-I'll try that patch next week - but I have no confidence in the
-reliability of fixing the problem by inserting random delays. All
-I have wanted to achieve is to detect the errors and thus prevent
-the silent data corruption. 
+Don't allow these locking functions to re-enable interrupts when
+the tasklet expects them disabled. I.e. use spin_lock_irqsave instead of
+spin_lock_bh (with their unlock opposites).
 
-I don't really mind those sporadic forced resets since they cause
-no data corruption, at least in my setup. My simple patch
-accomplishes the goal of preventing data corruption more reliably,
-I think.
+We will get such a warnings otherwise:
+------------[ cut here ]------------
+WARNING: at kernel/softirq.c:136 local_bh_enable_ip+0x8b/0xb0()
+Modules linked in: arc4 ecb crypto_blkcipher cryptomgr crypto_algapi ath5k usbhid mac80211 ohci1394 hid led_class floppy cfg80211 ff_memless ieee1394 rtc_cmos evdev [last unloaded: freq_table]
+Pid: 0, comm: swapper Not tainted 2.6.26-rc8-mm1_64 #427
 
+Call Trace:
+ <IRQ>  [<ffffffff8023813f>] warn_on_slowpath+0x5f/0x90
+[...]
+ [<ffffffff8023e1fb>] local_bh_enable_ip+0x8b/0xb0
+ [<ffffffff8055b2cf>] _spin_unlock_bh+0xf/0x20
+ [<ffffffff803b0bd1>] drm_lock_take+0x81/0xe0
+ [<ffffffff803b006b>] drm_locked_tasklet_func+0x4b/0xb0
+ [<ffffffff8023daf9>] tasklet_hi_action+0x69/0xf0
+ [<ffffffff8023e3e4>] __do_softirq+0x84/0xf0
+[stack snipped]
 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: David Airlie <airlied@linux.ie>
+---
+ drivers/gpu/drm/drm_lock.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/gpu/drm/drm_lock.c b/drivers/gpu/drm/drm_lock.c
+index 0998723..79943e4 100644
+--- a/drivers/gpu/drm/drm_lock.c
++++ b/drivers/gpu/drm/drm_lock.c
+@@ -196,10 +196,11 @@ int drm_unlock(struct drm_device *dev, void *data, struct drm_file *file_priv)
+ int drm_lock_take(struct drm_lock_data *lock_data,
+ 		  unsigned int context)
+ {
++	unsigned long flags;
+ 	unsigned int old, new, prev;
+ 	volatile unsigned int *lock = &lock_data->hw_lock->lock;
+ 
+-	spin_lock_bh(&lock_data->spinlock);
++	spin_lock_irqsave(&lock_data->spinlock, flags);
+ 	do {
+ 		old = *lock;
+ 		if (old & _DRM_LOCK_HELD)
+@@ -211,7 +212,7 @@ int drm_lock_take(struct drm_lock_data *lock_data,
+ 		}
+ 		prev = cmpxchg(lock, old, new);
+ 	} while (prev != old);
+-	spin_unlock_bh(&lock_data->spinlock);
++	spin_unlock_irqrestore(&lock_data->spinlock, flags);
+ 
+ 	if (_DRM_LOCKING_CONTEXT(old) == context) {
+ 		if (old & _DRM_LOCK_HELD) {
+@@ -270,17 +271,18 @@ static int drm_lock_transfer(struct drm_lock_data *lock_data,
+  */
+ int drm_lock_free(struct drm_lock_data *lock_data, unsigned int context)
+ {
++	unsigned long flags;
+ 	unsigned int old, new, prev;
+ 	volatile unsigned int *lock = &lock_data->hw_lock->lock;
+ 
+-	spin_lock_bh(&lock_data->spinlock);
++	spin_lock_irqsave(&lock_data->spinlock, flags);
+ 	if (lock_data->kernel_waiters != 0) {
+ 		drm_lock_transfer(lock_data, 0);
+ 		lock_data->idle_has_lock = 1;
+-		spin_unlock_bh(&lock_data->spinlock);
++		spin_unlock_irqrestore(&lock_data->spinlock, flags);
+ 		return 1;
+ 	}
+-	spin_unlock_bh(&lock_data->spinlock);
++	spin_unlock_irqrestore(&lock_data->spinlock, flags);
+ 
+ 	do {
+ 		old = *lock;
 -- 
-Tomas Styblo <tripie@cpan.org>
+1.5.6.2
+
