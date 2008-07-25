@@ -1,60 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYGYK55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbYGYK6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754429AbYGYK55 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 06:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYGYK5q
+	id S1752623AbYGYK6R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 06:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbYGYK54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 06:57:46 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:45974 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbYGYK5p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 06:57:45 -0400
-Subject: Re: [PATCH 30/30] nfs: fix various memory recursions possible with
-	swap over NFS.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>
-In-Reply-To: <20080725194517.86BB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080724140042.408642539@chello.nl>
-	 <20080724141531.486682621@chello.nl>
-	 <20080725194517.86BB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Fri, 25 Jul 2008 12:57:52 +0200
-Message-Id: <1216983472.7257.365.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Jul 2008 06:57:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46403 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754069AbYGYK5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 06:57:55 -0400
+Date: Fri, 25 Jul 2008 12:57:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [patch] mm/hugetlb.c: fix build failure
+Message-ID: <20080725105741.GA24336@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-25 at 19:46 +0900, KOSAKI Motohiro wrote:
-> > GFP_NOFS is not enough, since swap traffic is IO, hence fall back to GFP_NOIO.
-> 
-> this comment imply turn on GFP_NOIO, but the code is s/NOFS/NOIO/. why?
+    
+on !CONFIG_SYSCTL on x86 with latest -git i get:
+    
+     mm/hugetlb.c: In function 'decrement_hugepage_resv_vma':
+     mm/hugetlb.c:83: error: 'reserve' undeclared (first use in this function)
+     mm/hugetlb.c:83: error: (Each undeclared identifier is reported only once
+     mm/hugetlb.c:83: error: for each function it appears in.)
+    
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ mm/hugetlb.c |   22 +++++++++++-----------
+ 1 files changed, 11 insertions(+), 11 deletions(-)
 
-Does the misunderstanding stem from the use of 'enough'?
-
-GFP_NOFS is _more_ permissive than GFP_NOIO in that it will initiate IO,
-just not of any filesystem data.
-
-The problem is that previuosly NOFS was correct because that avoids
-recursion into the NFS code, it now is not, because also IO (swap) can
-lead to this recursion.
-
-Therefore we must tighten the restriction and use NOIO.
-
-> >  struct nfs_write_data *nfs_commitdata_alloc(void)
-> >  {
-> > -	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
-> > +	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOIO);
-> 
-> 
-> 
-> 
-
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 41341c4..a8bf4ab 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1026,6 +1026,17 @@ static void __init report_hugepages(void)
+ 	}
+ }
+ 
++static unsigned int cpuset_mems_nr(unsigned int *array)
++{
++	int node;
++	unsigned int nr = 0;
++
++	for_each_node_mask(node, cpuset_current_mems_allowed)
++		nr += array[node];
++
++	return nr;
++}
++
+ #ifdef CONFIG_SYSCTL
+ #ifdef CONFIG_HIGHMEM
+ static void try_to_free_low(struct hstate *h, unsigned long count)
+@@ -1375,17 +1386,6 @@ static int __init hugetlb_default_setup(char *s)
+ }
+ __setup("default_hugepagesz=", hugetlb_default_setup);
+ 
+-static unsigned int cpuset_mems_nr(unsigned int *array)
+-{
+-	int node;
+-	unsigned int nr = 0;
+-
+-	for_each_node_mask(node, cpuset_current_mems_allowed)
+-		nr += array[node];
+-
+-	return nr;
+-}
+-
+ int hugetlb_sysctl_handler(struct ctl_table *table, int write,
+ 			   struct file *file, void __user *buffer,
+ 			   size_t *length, loff_t *ppos)
