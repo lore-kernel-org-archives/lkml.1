@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbYGYCDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbYGYCGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754957AbYGYCDa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 22:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYGYCDU
+	id S1754916AbYGYCGV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 22:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYGYCGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 22:03:20 -0400
-Received: from mga03.intel.com ([143.182.124.21]:26339 "EHLO mga03.intel.com"
+	Thu, 24 Jul 2008 22:06:13 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:32845 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752840AbYGYCDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 22:03:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,250,1215414000"; 
-   d="scan'208";a="600783505"
-Subject: Re: [ipw3945-devel] [PATCH] iwlwifi: Enable packet injection for
-	iwl4965
-From: Zhu Yi <yi.zhu@intel.com>
-To: =?ISO-8859-1?Q?St=E9phane?= Jourdois <stephane@jourdois.fr>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       ipw3945-devel <ipw3945-devel@lists.sourceforge.net>
-In-Reply-To: <4886235F.6010407@jourdois.fr>
-References: <69e28c910807181205m6dd0cdcek83f9717bf1ac9dcc@mail.gmail.com>
-	 <69e28c910807220454q7c8371e1m11b1015ed8398758@mail.gmail.com>
-	 <4885DDC4.2060609@googlemail.com>  <4886235F.6010407@jourdois.fr>
-Content-Type: text/plain; charset=GB2312
-Organization: Intel Corp.
-Date: Fri, 25 Jul 2008 09:58:53 +0800
-Message-Id: <1216951133.2705.227.camel@debian.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	id S1751249AbYGYCGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 22:06:12 -0400
+Date: Thu, 24 Jul 2008 19:06:09 -0700
+From: Chris McDermott <lcm@linux.vnet.ibm.com>
+To: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] fix IBM Summit based systems' phys_cpu_present_map on
+	32-bit kernels
+Message-ID: <20080725020609.GB11800@us.ibm.com>
+Mail-Followup-To: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Operating-System: Linux 2.6.22-15-generic
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-22 at 20:13 +0200, St¨¦phane Jourdois wrote:
-> but this commit is for iwl3945, not iwl4965.
-> The patch for iwl4965 is currently not in any git tree.
 
-We are waiting for more "confirmed success" response before merging it.
+x86 kernels on IBM Summit based systems will only online 1 CPU because the
+phys_cpu_present_map is not set up correctly. Patch below applied to 
+2.6.26-git10.
 
-Thanks,
--yi
+thanks,
 
+Chris McDermott <lcm@linux.vnet.ibm.com>
+
+
+Signed-off-by: Chris McDermott <lcm@linux.vnet.ibm.com>
+Tested-by: Tim Pepper <lnxninga@linux.vnet.ibm.com>
+
+
+--- a/include/asm-x86/mach-summit/mach_apic.h	2008-07-24 18:06:39.000000000 -0700
++++ b/include/asm-x86/mach-summit/mach_apic.h	2008-07-24 18:09:29.000000000 -0700
+@@ -122,7 +122,7 @@ static inline physid_mask_t ioapic_phys_
+ 
+ static inline physid_mask_t apicid_to_cpu_present(int apicid)
+ {
+-	return physid_mask_of_physid(0);
++	return physid_mask_of_physid(apicid);
+ }
+ 
+ static inline void setup_portio_remap(void)
