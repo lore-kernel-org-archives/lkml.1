@@ -1,47 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbYGYLTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbYGYLTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbYGYLTf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 07:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbYGYLTK
+	id S1753840AbYGYLTw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 07:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754618AbYGYLTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 07:19:10 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:43837 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752753AbYGYLTI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 07:19:08 -0400
-Date: Fri, 25 Jul 2008 05:18:51 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Alex Chiang <achiang@hp.com>, Pierre Ossman <drzeus-list@drzeus.cx>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
-Message-ID: <20080725111851.GB6701@parisc-linux.org>
-References: <200807241407.18543.jbarnes@virtuousgeek.org> <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org> <20080725044234.GA18511@ldl.fc.hp.com> <488966DE.8020307@jp.fujitsu.com>
+	Fri, 25 Jul 2008 07:19:18 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40468 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754080AbYGYLTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 07:19:16 -0400
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Linux - Novell
+To: Len Brown <lenb@kernel.org>
+Subject: Re: ACPI OSI disaster on latest HP laptops - critical temperature shutdown
+Date: Fri, 25 Jul 2008 13:19:11 +0200
+User-Agent: KMail/1.9.9
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       "linux-acpi" <linux-acpi@vger.kernel.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@linux.intel.com>,
+       Christian Kornacker <ckornacker@suse.de>
+References: <200807241727.41715.trenn@suse.de> <alpine.LFD.1.10.0807241952270.6098@localhost.localdomain>
+In-Reply-To: <alpine.LFD.1.10.0807241952270.6098@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <488966DE.8020307@jp.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200807251319.12786.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 02:38:38PM +0900, Kenji Kaneshige wrote:
-> >The hard part is figuring out a convention that we can all agree
-> >on. ;) I've no strong feelings here, but of the options
-> >presented, I lean towards "2a", "2b" or "2-1", "2-2".
-> >
-> 
-> Only my hope is I don't want to look "2a" or "2-1" on normal platform.
-> It should be "2" on normal platform.
+On Friday 25 July 2008 02:04:32 Len Brown wrote:
+> Thomas,
+>
+> re: OSI(Windows...)
+>
+> Linux will continue to claim OSI compatibility with Windows
+> until the day when the majority of Linux systems
+> have passed a Linux compatibility test rather than
+> a Windows compatibility test.
+And to try that out we need the acpi_osi=windows_false boot
+param I sent recently. So will you accept that one?
 
-Yes, the first slot will be "2", the second slot "2a" or "2-1" or
-whatever we decide.  I don't have a strong feeling about the name.
+Also we need this documented.
+Will you accept a Documentation/acpi/known_osi_vendor_hooks.txt
+file. Like that we get an idea of what kind of features come
+in through which Windows version and more important, what kind of
+ugly Windows bug workarounds exist (the latter will probably be more).
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> Re: OSI(Linux)
+>
+> I've looked at O(100) DSDT's that look at OSI(Linux),
+> and all but serveral systems from two vendors do it by mistake.
+> They simply copied it from the bugged Intel reference code.
+>
+> OSI(Linux) will _never_ be restored to Linux, ever.
+But it should not have been removed without announcing it half a
+year before. It silently moved distributions and vendors into a
+situation where they cannot support Linux and Windows with
+the same BIOS anymore.
+
+_OSI is mainly not used for interfaces/features in
+reality (as you stated in the other mail), but to workaround very
+specific Windows version bugs.
+
+While the mainline kernel stays transparent to _OSI you
+advise distributions to exactly not do that and provide e.g.
+a "SLE 11" or "RHEL X" _OSI string to be able to
+support the system on Linux and Windows, is that correct?
+Or do you advise them to provide two separate BIOSes?
+The last option, "do not implement Windows version bug
+fixes" we cannot influence.
+I do not see more options with the current implementation.
+
+> re: the HP BIOS bug at hand.
+>
+> Linux deletes the entire thermal zone when we see this.
+OpenSUSE 11.0 (2.6.25) and SLES10-SP2 (2.6.16) shut down when
+the thermal driver is loaded. Probably every kernel in every
+distribution out there currently is doing that.
+> (arguably, we could have just disabled the CRT
+> and kept the rest of the thermal zone).
+> If HP cared about testing Linux on this laptop
+> and had tools such that they could actually
+> test Linux compatiblity, it would be pretty clear
+> from user-space that their thermal zone was missing.
+
+Len, this is not about the thermal zone, it is just
+a real-world example of something I told you will happen
+if Linux stays _OSI transparent with Windows.
+
+This is about that they have to provide a BIOS hot-fix for
+VISTA or VISTA SP and thus breaking Linux because there
+is no way to distinguish anymore.
+Windows 2007 likely will have that fixed and they provide
+a sane _CRT trip point again.
+This is an example of Windows versions workarounds that could
+get much more complex, like initializing HW differently or
+whatever.
+_OSI is used by vendors as a convenient possibility to
+adjust/workaround Windows bugs in their BIOSes, without
+the need to pay Millions to Microsoft to fix their things.
+
+
+          Thomas
