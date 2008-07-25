@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbYGYCGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbYGYCL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754916AbYGYCGV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 22:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYGYCGN
+	id S1755036AbYGYCL7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 22:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbYGYCLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 22:06:13 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:32845 "EHLO e1.ny.us.ibm.com"
+	Thu, 24 Jul 2008 22:11:52 -0400
+Received: from ozlabs.org ([203.10.76.45]:48124 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751249AbYGYCGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 22:06:12 -0400
-Date: Thu, 24 Jul 2008 19:06:09 -0700
-From: Chris McDermott <lcm@linux.vnet.ibm.com>
-To: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] fix IBM Summit based systems' phys_cpu_present_map on
-	32-bit kernels
-Message-ID: <20080725020609.GB11800@us.ibm.com>
-Mail-Followup-To: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+	id S1751884AbYGYCLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 22:11:51 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] Label kthread_create() with printf attribute tag.
+Date: Fri, 25 Jul 2008 12:11:09 +1000
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Operating-System: Linux 2.6.22-15-generic
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200807251211.09433.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Obvious misc patch been in my queue (& linux-next) for over a cycle.
 
-x86 kernels on IBM Summit based systems will only online 1 CPU because the
-phys_cpu_present_map is not set up correctly. Patch below applied to 
-2.6.26-git10.
+Linus please apply.
 
-thanks,
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ include/linux/kthread.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Chris McDermott <lcm@linux.vnet.ibm.com>
-
-
-Signed-off-by: Chris McDermott <lcm@linux.vnet.ibm.com>
-Tested-by: Tim Pepper <lnxninga@linux.vnet.ibm.com>
-
-
---- a/include/asm-x86/mach-summit/mach_apic.h	2008-07-24 18:06:39.000000000 -0700
-+++ b/include/asm-x86/mach-summit/mach_apic.h	2008-07-24 18:09:29.000000000 -0700
-@@ -122,7 +122,7 @@ static inline physid_mask_t ioapic_phys_
+diff -r 9b5082037972 include/linux/kthread.h
+--- a/include/linux/kthread.h	Mon Apr 07 17:06:45 2008 +1000
++++ b/include/linux/kthread.h	Mon Apr 07 17:07:09 2008 +1000
+@@ -6,7 +6,8 @@
  
- static inline physid_mask_t apicid_to_cpu_present(int apicid)
- {
--	return physid_mask_of_physid(0);
-+	return physid_mask_of_physid(apicid);
- }
+ struct task_struct *kthread_create(int (*threadfn)(void *data),
+ 				   void *data,
+-				   const char namefmt[], ...);
++				   const char namefmt[], ...)
++	__attribute__((format(printf, 3, 4)));
  
- static inline void setup_portio_remap(void)
+ /**
+  * kthread_run - create and wake a thread.
