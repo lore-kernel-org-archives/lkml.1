@@ -1,87 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbYGYIC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbYGYIFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753723AbYGYIC3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 04:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYGYICE
+	id S1754425AbYGYIFY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 04:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYGYIE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 04:02:04 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36710 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751855AbYGYICD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 04:02:03 -0400
-X-Authenticated: #6028172
-X-Provags-ID: V01U2FsdGVkX1+UqtZSAgiUEt7p4qXRom144JmysxZxP63yTNbWui
-	wlbm0oIVeXoF16
-Message-ID: <4889887B.1080206@gmx.de>
-Date: Fri, 25 Jul 2008 10:02:03 +0200
-From: Dieter Ries <clip2@gmx.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080622)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Patrick McHardy <kaber@trash.net>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
-       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
-       Dave Jones <davej@redhat.com>, vegard.nossum@gmail.com
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
- pointer dereference
-References: <20080724060448.GA10203@elte.hu>	 <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>	 <20080724.022259.113079007.davem@davemloft.net>	 <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu>	 <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net>	 <84144f020807240544q507e1b7cv220d1afbae0ee0f0@mail.gmail.com>	 <48887A71.5010209@trash.net> <1216905812.5897.6.camel@penberg-laptop>	 <48888434.3030207@trash.net> <1216906476.12021.4.camel@penberg-laptop>	 <20080724115127.6cfbb616.akpm@linux-foundation.org> <1216925744.12392.1.camel@penberg-laptop>
-In-Reply-To: <1216925744.12392.1.camel@penberg-laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.58
+	Fri, 25 Jul 2008 04:04:57 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:43756 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751885AbYGYIEz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 04:04:55 -0400
+To: nickpiggin@yahoo.com.au
+Cc: a.p.zijlstra@chello.nl, kamezawa.hiroyu@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] fix task dirty balancing
+In-Reply-To: Your message of "Fri, 25 Jul 2008 01:08:50 +1000"
+	<200807250108.50824.nickpiggin@yahoo.com.au>
+References: <200807250108.50824.nickpiggin@yahoo.com.au>
+X-Mailer: Cue version 0.8 (080625-0732/takashi)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20080725080454.C76EB5A53@siro.lan>
+Date: Fri, 25 Jul 2008 17:04:54 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg schrieb:
-> On Thu, 2008-07-24 at 11:51 -0700, Andrew Morton wrote:
->> On Thu, 24 Jul 2008 16:34:36 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
->>
->>>>>> Your patch introduced a use-after-free and double-free.
->>>>>> krealloc() frees the old pointer, but it is still used
->>>>>> for the ->move operations, then freed again.
->>>>>>
->>>>>> To fix this I think we need a __krealloc() that doesn't
->>>>>> free the old memory, especially since it must not be
->>>>>> freed immediately because it may still be used in a RCU
->>>>>> read side (see the last part in the patch attached to
->>>>>> this mail (based on a kernel without your patch)).
->>>>> Agreed. Something like this, perhaps?
->>>>>
->>>>> [PATCH] netfilter: fix double-free and use-after free
->>>>>
->>>>> As suggested by Patrick McHardy, introduce a __krealloc() that doesn't
->>>>> free the original buffer to fix a double-free and use-after-free bug
->>>>> introduced by me in netfilter that uses RCU.
->>>>>
->>>>> Reported-by: Patrick McHardy <kaber@trash.net>
->>>>> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
->>>> Looks good to me, thanks.
->>> Ingo, can you please test this? Andrew, I'm at OLS so can you pick up
->>> the patch in your tree?
->> Sure.  Or Patrick can do so and it can be merged via the net tree.
->>
->> Ingo, did this patch actually fix something over there?
-> 
-> Apparently it didn't but it did fix Dieter's problem:
-> 
-> http://lkml.org/lkml/2008/7/24/337
-> 
-> Dieter, can we add a Tested-by tag from you to this patch?
-> 
+hi,
 
-Yes, it definitely fixed my issue and I have not encountered 
-                            further problems with the patch. The machine 
-is running fine with it.
+> Hi,
+> 
+> On Thursday 24 July 2008 10:27, YAMAMOTO Takashi wrote:
+> 
+> > ok, i removed the cleanup part because i don't want to participate in
+> > this kind of discussion.
+> > is the following patch ok for you? 
+> 
+> Thanks, it looks good. I don't think we need to export task_dirty_inc,
+> as buffer.c cannot be built as a module. But otherwise,
+> 
+> Acked-by: Nick Piggin <npiggin@suse.de>
+> 
+> It would be nice to get this into 2.6.27.
 
-Do I have to explicitly add my
-Tested-by: Dieter Ries <clip2@gmx.de>
-tag somewhere (if yes, where?) or is this enough for you?
+thanks for your review.  i removed the unnecessary export.
+
+YAMAMOTO Takashi
 
 
-cu
-Dieter
+Signed-off-by: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+---
+
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 4ffb5bb..3a89d58 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -708,27 +708,29 @@ EXPORT_SYMBOL(mark_buffer_dirty_inode);
+ static int __set_page_dirty(struct page *page,
+ 		struct address_space *mapping, int warn)
+ {
+-	if (unlikely(!mapping))
+-		return !TestSetPageDirty(page);
+ 
+ 	if (TestSetPageDirty(page))
+ 		return 0;
+ 
+-	spin_lock_irq(&mapping->tree_lock);
+-	if (page->mapping) {	/* Race with truncate? */
+-		WARN_ON_ONCE(warn && !PageUptodate(page));
++	if (likely(mapping)) {
++		spin_lock_irq(&mapping->tree_lock);
++		if (page->mapping) {	/* Race with truncate? */
++			WARN_ON_ONCE(warn && !PageUptodate(page));
+ 
+-		if (mapping_cap_account_dirty(mapping)) {
+-			__inc_zone_page_state(page, NR_FILE_DIRTY);
+-			__inc_bdi_stat(mapping->backing_dev_info,
+-					BDI_RECLAIMABLE);
+-			task_io_account_write(PAGE_CACHE_SIZE);
++			if (mapping_cap_account_dirty(mapping)) {
++				__inc_zone_page_state(page, NR_FILE_DIRTY);
++				__inc_bdi_stat(mapping->backing_dev_info,
++						BDI_RECLAIMABLE);
++				task_io_account_write(PAGE_CACHE_SIZE);
++			}
++			radix_tree_tag_set(&mapping->page_tree,
++					page_index(page), PAGECACHE_TAG_DIRTY);
+ 		}
+-		radix_tree_tag_set(&mapping->page_tree,
+-				page_index(page), PAGECACHE_TAG_DIRTY);
++		spin_unlock_irq(&mapping->tree_lock);
++		__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+ 	}
+-	spin_unlock_irq(&mapping->tree_lock);
+-	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
++
++	task_dirty_inc(current);
+ 
+ 	return 1;
+ }
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index a4eeb3c..33fd91a 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1167,6 +1167,7 @@ extern int filemap_fault(struct vm_area_struct *, struct vm_fault *);
+ 
+ /* mm/page-writeback.c */
+ int write_one_page(struct page *page, int wait);
++void task_dirty_inc(struct task_struct *tsk);
+ 
+ /* readahead.c */
+ #define VM_MAX_READAHEAD	128	/* kbytes */
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 29b1d1e..e710481 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -176,7 +176,7 @@ void bdi_writeout_inc(struct backing_dev_info *bdi)
+ }
+ EXPORT_SYMBOL_GPL(bdi_writeout_inc);
+ 
+-static inline void task_dirty_inc(struct task_struct *tsk)
++void task_dirty_inc(struct task_struct *tsk)
+ {
+ 	prop_inc_single(&vm_dirties, &tsk->dirties);
+ }
+@@ -1074,8 +1074,13 @@ int __set_page_dirty_no_writeback(struct page *page)
+  */
+ int __set_page_dirty_nobuffers(struct page *page)
+ {
+-	if (!TestSetPageDirty(page)) {
+-		struct address_space *mapping = page_mapping(page);
++	struct address_space *mapping;
++
++	if (TestSetPageDirty(page))
++		return 0;
++
++	mapping = page_mapping(page);
++	if (likely(mapping)) {
+ 		struct address_space *mapping2;
+ 
+ 		if (!mapping)
+@@ -1100,9 +1105,11 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 			/* !PageAnon && !swapper_space */
+ 			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+ 		}
+-		return 1;
+ 	}
+-	return 0;
++
++	task_dirty_inc(current);
++
++	return 1;
+ }
+ EXPORT_SYMBOL(__set_page_dirty_nobuffers);
+ 
+@@ -1122,7 +1129,7 @@ EXPORT_SYMBOL(redirty_page_for_writepage);
+  * If the mapping doesn't provide a set_page_dirty a_op, then
+  * just fall through and assume that it wants buffer_heads.
+  */
+-static int __set_page_dirty(struct page *page)
++int set_page_dirty(struct page *page)
+ {
+ 	struct address_space *mapping = page_mapping(page);
+ 
+@@ -1140,14 +1147,6 @@ static int __set_page_dirty(struct page *page)
+ 	}
+ 	return 0;
+ }
+-
+-int set_page_dirty(struct page *page)
+-{
+-	int ret = __set_page_dirty(page);
+-	if (ret)
+-		task_dirty_inc(current);
+-	return ret;
+-}
+ EXPORT_SYMBOL(set_page_dirty);
+ 
+ /*
