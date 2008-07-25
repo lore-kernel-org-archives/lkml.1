@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYGYUzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbYGYVDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902AbYGYUzw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 16:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbYGYUzo
+	id S1752727AbYGYVDN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 17:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYGYVC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 16:55:44 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:32929 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750991AbYGYUzo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 16:55:44 -0400
-Message-ID: <488A3D95.20108@zytor.com>
-Date: Fri, 25 Jul 2008 16:54:45 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 25 Jul 2008 17:02:58 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:32905 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750991AbYGYVC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 17:02:57 -0400
+Date: Sat, 26 Jul 2008 00:02:30 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: lkml <linux-kernel@vger.kernel.org>, hpa <hpa@zytor.com>
+Subject: Re: [PATCH] documentation: move mtrr.txt to Doc/x86/ subdir
+Message-ID: <20080725210230.GB9301@cs181140183.pp.htv.fi>
+References: <20080722094837.addac52a.rdunlap@xenotime.net>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: joerg.roedel@amd.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] introduce lower_32_bits() macro
-References: <1216998747-16896-1-git-send-email-joerg.roedel@amd.com>	<4889FA03.6010708@zytor.com> <20080725134759.ae19b883.akpm@linux-foundation.org>
-In-Reply-To: <20080725134759.ae19b883.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080722094837.addac52a.rdunlap@xenotime.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->>>   */
->>>  #define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
->>>  
->>> +/**
->>> + * lower_32_bits - return bits 0-31 of a number
->>> + * @n: the number we're accessing
->>> + */
->>> +#define lower_32_bits(n) ((n) & 0xffffffffULL)
->>> +
->> NAK.  These are assymmetric with regards to type, which is the *last* 
->> thing we want.
+On Tue, Jul 22, 2008 at 09:48:37AM -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> Yes, it will convert a 32-bit expression into a 64-bit one.
+> Move mtrr.txt to the Documentation/x86/ subdirectory.
+> Add 00-INDEX to the Documentation/x86/ subdirectory.
 > 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  Documentation/00-INDEX     |    2 
+>  Documentation/mtrr.txt     |  305 ---------------------------------------------
+>  Documentation/x86/00-INDEX |    4 
+>  Documentation/x86/mtrr.txt |  305 +++++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 309 insertions(+), 307 deletions(-)
+>...
 
-Sort of.  upper_32_bits() takes a 32- or 64-bit expression, and delivers 
-the upper 32 bits *as a 32-bit number*.  An equivalent expression would be:
+Please also update the path in arch/x86/Kconfig
 
-	((u32)((u64)(n) >> 32))
+> ~Randy
 
-... which might actually produce better code, for all I know.
+cu
+Adrian
 
-Logically speaking, if we have a lower_32_bits() macro, it should also 
-produce a 32-bit type as result.
+-- 
 
-	-hpa
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
