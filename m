@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbYGYM6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbYGYM7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753981AbYGYM6u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 08:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755678AbYGYM6i
+	id S1754239AbYGYM7K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 08:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYGYM6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 08:58:38 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:42634 "EHLO
-	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755291AbYGYM6h (ORCPT
+	Fri, 25 Jul 2008 08:58:45 -0400
+Received: from mail-va3.bigfish.com ([216.32.180.115]:1436 "EHLO
+	mail209-va3-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756117AbYGYM6o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 08:58:37 -0400
-X-BigFish: VPS4(zzzz10d3izzz32i43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0K4KC17-04-X3B-01
+	Fri, 25 Jul 2008 08:58:44 -0400
+X-BigFish: VPS11(z1039ozzz10d3izzz32i43j)
+X-FB-SS: 13,
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
+X-WSS-ID: 0K4KC18-04-X3D-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: mingo@redhat.com, tglx@linutronix.de
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       bhavna.sarathy@amd.com, robert.richter@amd.com,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] add iommu_num_pages helper function
-Date: Fri, 25 Jul 2008 14:57:58 +0200
-Message-ID: <1216990680-1227-2-git-send-email-joerg.roedel@amd.com>
+Cc: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       bhavna.sarathy@amd.com, robert.richter@amd.com
+Subject: [PATCH 0/3] IOMMU: move page number calculation to generic code
+Date: Fri, 25 Jul 2008 14:57:57 +0200
+Message-Id: <1216990680-1227-1-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1216990680-1227-1-git-send-email-joerg.roedel@amd.com>
-References: <1216990680-1227-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 25 Jul 2008 12:58:00.0309 (UTC) FILETIME=[11312250:01C8EE56]
-MIME-Version: 1.0
-Content-Type: text/plain
+X-OriginalArrivalTime: 25 Jul 2008 12:58:00.0294 (UTC) FILETIME=[112ED860:01C8EE56]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Calculating the number of pages from given address and length numbers is a task
-required in multiple IOMMU implementations. So implement this as a generic
-function into the IOMMU helper code.
+This small patch series introduces a generic iommu_num_pages function into the
+IOMMU helper code. This function can be used to calculate the number of pages
+an IOMMU has to map for a specific mapping request.
 
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- include/linux/iommu-helper.h |    1 +
- lib/iommu-helper.c           |    8 ++++++++
- 2 files changed, 9 insertions(+), 0 deletions(-)
+The patchset converts the x86 IOMMU implementations for AMD IOMMU and the GART
+to use this function.
 
-diff --git a/include/linux/iommu-helper.h b/include/linux/iommu-helper.h
-index c975caf..f8598f5 100644
---- a/include/linux/iommu-helper.h
-+++ b/include/linux/iommu-helper.h
-@@ -8,3 +8,4 @@ extern unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
- 				      unsigned long align_mask);
- extern void iommu_area_free(unsigned long *map, unsigned long start,
- 			    unsigned int nr);
-+extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
-diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-index a3b8d4c..889ddce 100644
---- a/lib/iommu-helper.c
-+++ b/lib/iommu-helper.c
-@@ -80,3 +80,11 @@ void iommu_area_free(unsigned long *map, unsigned long start, unsigned int nr)
- 	}
- }
- EXPORT_SYMBOL(iommu_area_free);
-+
-+unsigned long iommu_num_pages(unsigned long addr, unsigned long len)
-+{
-+	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
-+
-+	return size >> PAGE_SHIFT;
-+}
-+EXPORT_SYMBOL(iommu_num_pages);
--- 
-1.5.3.7
+Other IOMMU implementations are not changed because I can't test them.
+
+diffstat:
+
+ arch/x86/kernel/amd_iommu.c   |   13 +++++--------
+ arch/x86/kernel/pci-gart_64.c |   11 ++++-------
+ include/linux/iommu-helper.h  |    1 +
+ lib/iommu-helper.c            |    8 ++++++++
+ 4 files changed, 18 insertions(+), 15 deletions(-)
+
 
 
