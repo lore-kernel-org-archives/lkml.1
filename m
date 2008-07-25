@@ -1,123 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbYGYIxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYGYIyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755314AbYGYIxr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 04:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYGYIxj
+	id S1755958AbYGYIyY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 04:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYGYIyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 04:53:39 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58215 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752639AbYGYIxi (ORCPT
+	Fri, 25 Jul 2008 04:54:14 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:11210 "EHLO
+	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752712AbYGYIyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 04:53:38 -0400
-Subject: [PATCH] mips: Introducing asm/syscalls.h
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: Ralf Baechle <ralf@linux-mips.org>, linux-mips <linux-mips@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 25 Jul 2008 14:22:28 +0530
-Message-Id: <1216975948.26114.3.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Fri, 25 Jul 2008 04:54:13 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=i61rNrnOdaKKzolZ6X0A:9 a=09lU-PcosJvIWvJ5T93S5oaFQaUA:4 a=tNCvaO9EbNoA:10 a=CDgK0yFw8z8A:10
+Message-ID: <488994AE.7040004@shaw.ca>
+Date: Fri, 25 Jul 2008 02:54:06 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Tomas Styblo <tripie@cpan.org>
+CC: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net
+Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix -	device
+ 152d:2338
+References: <Pine.LNX.4.44L0.0807222238060.12003-100000@netrider.rowland.org> <4887BCB9.2000103@shaw.ca> <20080725084447.GA15483@notebook.homenet.local>
+In-Reply-To: <20080725084447.GA15483@notebook.homenet.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Declaring arch-dependent syscalls for mips architecture
-This patch only depends on mips.
+Tomas Styblo wrote:
+> * Robert Hancock <hancockr@shaw.ca> [Thu, 24 Jul 2008]:
+>>>> Anyway, I'll send the patch to this person so he can try it. I guess it 
+>>>> won't fix his problem. This patch is much simpler and doesn't need any 
+>>>> delays - I really think this is a different situation.
+>>> It isn't.  And your patch is an ad-hoc correction that doesn't address
+>>> the true underlying reasons for the errors.
+>> Tomas, you should try the patch listed in that bug report (well, except 
+>> maybe the part that's actually adding the JMicron unusual devices entry) 
+>> and see if that fixes the problem.
+> 
+> I'll try that patch next week - but I have no confidence in the
+> reliability of fixing the problem by inserting random delays. All
+> I have wanted to achieve is to detect the errors and thus prevent
+> the silent data corruption. 
+> 
+> I don't really mind those sporadic forced resets since they cause
+> no data corruption, at least in my setup. My simple patch
+> accomplishes the goal of preventing data corruption more reliably,
+> I think.
 
-Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
----
- arch/mips/kernel/signal.c   |    2 +-
- arch/mips/kernel/syscall.c  |    2 +-
- include/asm-mips/syscalls.h |   49 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 51 insertions(+), 2 deletions(-)
- create mode 100644 include/asm-mips/syscalls.h
-
-diff --git a/arch/mips/kernel/signal.c b/arch/mips/kernel/signal.c
-index a4e106c..98f9c20 100644
---- a/arch/mips/kernel/signal.c
-+++ b/arch/mips/kernel/signal.c
-@@ -26,7 +26,7 @@
- #include <linux/bitops.h>
- #include <asm/cacheflush.h>
- #include <asm/fpu.h>
--#include <asm/sim.h>
-+#include <asm/syscalls.h>
- #include <asm/ucontext.h>
- #include <asm/cpu-features.h>
- #include <asm/war.h>
-diff --git a/arch/mips/kernel/syscall.c b/arch/mips/kernel/syscall.c
-index 343015a..81c44a1 100644
---- a/arch/mips/kernel/syscall.c
-+++ b/arch/mips/kernel/syscall.c
-@@ -35,7 +35,7 @@
- #include <asm/cacheflush.h>
- #include <asm/asm-offsets.h>
- #include <asm/signal.h>
--#include <asm/sim.h>
-+#include <asm/syscalls.h>
- #include <asm/shmparam.h>
- #include <asm/sysmips.h>
- #include <asm/uaccess.h>
-diff --git a/include/asm-mips/syscalls.h b/include/asm-mips/syscalls.h
-new file mode 100644
-index 0000000..415a69b
---- /dev/null
-+++ b/include/asm-mips/syscalls.h
-@@ -0,0 +1,49 @@
-+/*
-+ * syscalls.h - Linux syscall interfaces (arch-specific)
-+ *
-+ * Copyright (c) 2008 Jaswinder Singh
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
-+
-+#ifndef _ASM_MIPS_SYSCALLS_H
-+#define _ASM_MIPS_SYSCALLS_H
-+
-+#include <linux/compiler.h>
-+#include <linux/linkage.h>
-+#include <linux/types.h>
-+#include <linux/signal.h>
-+#include <linux/ptrace.h>
-+#include <asm/sim.h>
-+
-+/* kernel/signal.c */
-+#ifdef CONFIG_TRAD_SIGNALS
-+asmlinkage int sys_sigsuspend(nabi_no_regargs struct pt_regs);
-+asmlinkage int sys_sigaction(int, const struct sigaction __user *,
-+			     struct sigaction __user *);
-+asmlinkage void sys_sigreturn(nabi_no_regargs struct pt_regs);
-+#endif
-+
-+asmlinkage int sys_rt_sigsuspend(nabi_no_regargs struct pt_regs);
-+asmlinkage int sys_sigaltstack(nabi_no_regargs struct pt_regs);
-+asmlinkage void sys_rt_sigreturn(nabi_no_regargs struct pt_regs);
-+
-+/* kernel/syscalls.c */
-+asmlinkage unsigned long old_mmap(unsigned long, unsigned long,
-+				  int, int, int, off_t);
-+
-+asmlinkage unsigned long sys_mmap2(unsigned long, unsigned long,
-+				   unsigned long, unsigned long,
-+				   unsigned long, unsigned long);
-+asmlinkage int sys_execve(nabi_no_regargs struct pt_regs);
-+struct old_utsname;
-+asmlinkage int sys_uname(struct old_utsname __user *);
-+struct oldold_utsname;
-+asmlinkage int sys_olduname(struct oldold_utsname __user *);
-+asmlinkage int sys_set_thread_area(unsigned long);
-+asmlinkage int sys_ipc(unsigned int, int, int,
-+		       unsigned long, void __user *, long);
-+asmlinkage int sys_cachectl(char *, int, int);
-+
-+#endif /* _ASM_MIPS_SYSCALLS_H */
--- 
-1.5.5.1
-
-
-
+I agree, that's why I mentioned to leave out the part that adds the 
+unusual devices entry which actually enables the random delays. There's 
+another part of the patch which fixes underflow detection, which might 
+have the same effect as your patch.
