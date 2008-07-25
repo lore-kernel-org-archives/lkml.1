@@ -1,694 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751151AbYGYHfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbYGYHgF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751151AbYGYHfE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 03:35:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbYGYHdc
+	id S1755210AbYGYHgF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 03:36:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYGYHfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 03:33:32 -0400
-Received: from qb-out-0506.google.com ([72.14.204.235]:3628 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754521AbYGYHd3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 03:33:29 -0400
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v3 4/4] powerpc/mpc5200: Add mpc5200-spi (non-PSC) device
-	driver
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       spi-devel-general@lists.sourceforge.net,
-       dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org,
-       jonsmirl@gmail.com
-Date: Fri, 25 Jul 2008 03:33:26 -0400
-Message-ID: <20080725073326.8485.99210.stgit@trillian.secretlab.ca>
-In-Reply-To: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
-References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Jul 2008 03:35:53 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:48203 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752193AbYGYHfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 03:35:52 -0400
+Date: Fri, 25 Jul 2008 17:35:39 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for July 25
+Message-Id: <20080725173539.b9bd8144.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__25_Jul_2008_17_35_39_+1000_nsrvxkfZD0_aphPa"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Grant Likely <grant.likely@secretlab.ca>
+--Signature=_Fri__25_Jul_2008_17_35_39_+1000_nsrvxkfZD0_aphPa
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Adds support for the dedicated SPI device on the Freescale MPC5200(b)
-SoC.
+Hi all,
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Changes since next-20080724:
 
- drivers/spi/Kconfig             |    8 +
- drivers/spi/Makefile            |    1 
- drivers/spi/mpc52xx_spi.c       |  595 +++++++++++++++++++++++++++++++++++++++
- include/linux/spi/mpc52xx_spi.h |   10 +
- 4 files changed, 614 insertions(+), 0 deletions(-)
+Temporarily dropped tree: acpi (it is being moved to a new tree and is
+just accumulating conflicts against Linus' tree).
 
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index 2303521..68e4a4a 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -116,6 +116,14 @@ config SPI_LM70_LLP
- 	  which interfaces to an LM70 temperature sensor using
- 	  a parallel port.
- 
-+config SPI_MPC52xx
-+	tristate "Freescale MPC52xx SPI (non-PSC) controller support"
-+	depends on PPC_MPC52xx && SPI
-+	select SPI_MASTER_OF
-+	help
-+	  This drivers supports the MPC52xx SPI controller in master SPI
-+	  mode.
-+
- config SPI_MPC52xx_PSC
- 	tristate "Freescale MPC52xx PSC SPI controller"
- 	depends on PPC_MPC52xx && EXPERIMENTAL
-diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
-index 7fca043..340b878 100644
---- a/drivers/spi/Makefile
-+++ b/drivers/spi/Makefile
-@@ -22,6 +22,7 @@ obj-$(CONFIG_SPI_PXA2XX)		+= pxa2xx_spi.o
- obj-$(CONFIG_SPI_OMAP_UWIRE)		+= omap_uwire.o
- obj-$(CONFIG_SPI_OMAP24XX)		+= omap2_mcspi.o
- obj-$(CONFIG_SPI_MPC52xx_PSC)		+= mpc52xx_psc_spi.o
-+obj-$(CONFIG_SPI_MPC52xx)		+= mpc52xx_spi.o
- obj-$(CONFIG_SPI_MPC83xx)		+= spi_mpc83xx.o
- obj-$(CONFIG_SPI_S3C24XX_GPIO)		+= spi_s3c24xx_gpio.o
- obj-$(CONFIG_SPI_S3C24XX)		+= spi_s3c24xx.o
-diff --git a/drivers/spi/mpc52xx_spi.c b/drivers/spi/mpc52xx_spi.c
-new file mode 100644
-index 0000000..453690f
---- /dev/null
-+++ b/drivers/spi/mpc52xx_spi.c
-@@ -0,0 +1,595 @@
-+/*
-+ * MPC52xx SPI master driver.
-+ * Copyright (C) 2008 Secret Lab Technologies Ltd.
-+ *
-+ * This is the driver for the MPC5200's dedicated SPI device (not for a
-+ * PSC in SPI mode)
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/of_platform.h>
-+#include <linux/interrupt.h>
-+#include <linux/delay.h>
-+#include <linux/spi/spi.h>
-+#include <linux/spi/mpc52xx_spi.h>
-+#include <linux/of_spi.h>
-+#include <linux/io.h>
-+#include <asm/time.h>
-+#include <asm/mpc52xx.h>
-+
-+MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
-+MODULE_DESCRIPTION("MPC52xx SPI (non-PSC) Driver");
-+MODULE_LICENSE("GPL");
-+
-+/* Register offsets */
-+#define SPI_CTRL1	0x00
-+#define SPI_CTRL1_SPIE		(1 << 7)
-+#define SPI_CTRL1_SPE		(1 << 6)
-+#define SPI_CTRL1_MSTR		(1 << 4)
-+#define SPI_CTRL1_CPOL		(1 << 3)
-+#define SPI_CTRL1_CPHA		(1 << 2)
-+#define SPI_CTRL1_SSOE		(1 << 1)
-+#define SPI_CTRL1_LSBFE		(1 << 0)
-+
-+#define SPI_CTRL2	0x01
-+#define SPI_BRR		0x04
-+
-+#define SPI_STATUS	0x05
-+#define SPI_STATUS_SPIF		(1 << 7)
-+#define SPI_STATUS_WCOL		(1 << 6)
-+#define SPI_STATUS_MODF		(1 << 4)
-+
-+#define SPI_DATA	0x09
-+#define SPI_PORTDATA	0x0d
-+#define SPI_DATADIR	0x10
-+
-+/* FSM state return values */
-+#define FSM_STOP	0
-+#define FSM_POLL	1
-+#define FSM_CONTINUE	2
-+
-+/* Driver internal data */
-+struct mpc52xx_spi {
-+	struct spi_master *master;
-+	u32 sysclk;
-+	void __iomem *regs;
-+	int irq0;	/* MODF irq */
-+	int irq1;	/* SPIF irq */
-+	int ipb_freq;
-+
-+	/* Statistics */
-+	int msg_count;
-+	int wcol_count;
-+	int wcol_ticks;
-+	u32 wcol_tx_timestamp;
-+	int modf_count;
-+	int byte_count;
-+
-+	/* Hooks for platform modification of behaviour */
-+	void (*premessage)(struct spi_message *m, void *context);
-+	void *premessage_context;
-+
-+	struct list_head queue;		/* queue of pending messages */
-+	spinlock_t lock;
-+	struct work_struct work;
-+
-+
-+	/* Details of current transfer (length, and buffer pointers) */
-+	struct spi_message *message;	/* current message */
-+	struct spi_transfer *transfer;	/* current transfer */
-+	int (*state)(int irq, struct mpc52xx_spi *ms, u8 status, u8 data);
-+	int len;
-+	int timestamp;
-+	u8 *rx_buf;
-+	const u8 *tx_buf;
-+	int cs_change;
-+};
-+
-+/*
-+ * CS control function
-+ */
-+static void mpc52xx_spi_chipsel(struct mpc52xx_spi *ms, int value)
-+{
-+	if (value)
-+		writeb(0, ms->regs + SPI_PORTDATA); /* Assert SS pin */
-+	else
-+		writeb(0x08, ms->regs + SPI_PORTDATA); /* Deassert SS pin */
-+}
-+
-+/*
-+ * Start a new transfer.  This is called both by the idle state
-+ * for the first transfer in a message, and by the wait state when the
-+ * previous transfer in a message is complete.
-+ */
-+static void mpc52xx_spi_start_transfer(struct mpc52xx_spi *ms)
-+{
-+	ms->rx_buf = ms->transfer->rx_buf;
-+	ms->tx_buf = ms->transfer->tx_buf;
-+	ms->len = ms->transfer->len;
-+
-+	/* Activate the chip select */
-+	if (ms->cs_change)
-+		mpc52xx_spi_chipsel(ms, 1);
-+	ms->cs_change = ms->transfer->cs_change;
-+
-+	/* Write out the first byte */
-+	ms->wcol_tx_timestamp = get_tbl();
-+	if (ms->tx_buf)
-+		writeb(*ms->tx_buf++, ms->regs + SPI_DATA);
-+	else
-+		writeb(0, ms->regs + SPI_DATA);
-+}
-+
-+/* Forward declaration of state handlers */
-+static int mpc52xx_spi_fsmstate_transfer(int irq, struct mpc52xx_spi *ms,
-+					 u8 status, u8 data);
-+static int mpc52xx_spi_fsmstate_wait(int irq, struct mpc52xx_spi *ms,
-+				     u8 status, u8 data);
-+
-+/*
-+ * IDLE state
-+ *
-+ * No transfers are in progress; if another transfer is pending then retrieve
-+ * it and kick it off.  Otherwise, stop processing the state machine
-+ */
-+static int
-+mpc52xx_spi_fsmstate_idle(int irq, struct mpc52xx_spi *ms, u8 status, u8 data)
-+{
-+	struct spi_message *m;
-+	struct spi_device *spi;
-+	int spr, sppr;
-+	u8 ctrl1;
-+
-+	if (status && (irq != NO_IRQ))
-+		dev_err(&ms->master->dev, "spurious irq, status=0x%.2x\n",
-+			status);
-+
-+	/* Check if there is another transfer waiting */
-+	if (list_empty(&ms->queue))
-+		return FSM_STOP;
-+
-+	/* Get the next message */
-+	spin_lock(&ms->lock);
-+
-+	/* Call the pre-message hook with a pointer to the next
-+	 * message.  The pre-message hook may enqueue a new message for
-+	 * changing the chip select value to the head of the queue */
-+	m = list_first_entry(&ms->queue, struct spi_message, queue);
-+	if (ms->premessage)
-+		ms->premessage(m, ms->premessage_context);
-+
-+	/* reget the head of the queue (the premessage hook may have enqueued
-+	 * something before it.) and drop the spinlock */
-+	ms->message = list_first_entry(&ms->queue, struct spi_message, queue);
-+	list_del_init(&ms->message->queue);
-+	spin_unlock(&ms->lock);
-+
-+	/* Setup the controller parameters */
-+	ctrl1 = SPI_CTRL1_SPIE | SPI_CTRL1_SPE | SPI_CTRL1_MSTR;
-+	spi = ms->message->spi;
-+	if (spi->mode & SPI_CPHA)
-+		ctrl1 |= SPI_CTRL1_CPHA;
-+	if (spi->mode & SPI_CPOL)
-+		ctrl1 |= SPI_CTRL1_CPOL;
-+	if (spi->mode & SPI_LSB_FIRST)
-+		ctrl1 |= SPI_CTRL1_LSBFE;
-+	writeb(ctrl1, ms->regs + SPI_CTRL1);
-+
-+	/* Setup the controller speed */
-+	/* minimum divider is '2'.  Also, add '1' to force rounding up. */
-+	sppr = ((ms->ipb_freq / ms->message->spi->max_speed_hz) + 1) >> 1;
-+	spr = 0;
-+	if (sppr < 1)
-+		sppr = 1;
-+	while (((sppr - 1) & ~0x7) != 0) {
-+		sppr = (sppr + 1) >> 1; /* add '1' to force rounding up */
-+		spr++;
-+	}
-+	sppr--;		/* sppr quantity in register is offset by 1 */
-+	if (spr > 7) {
-+		/* Don't overrun limits of SPI baudrate register */
-+		spr = 7;
-+		sppr = 7;
-+	}
-+	writeb(sppr << 4 | spr, ms->regs + SPI_BRR); /* Set speed */
-+
-+	ms->cs_change = 1;
-+	ms->transfer = container_of(ms->message->transfers.next,
-+				    struct spi_transfer, transfer_list);
-+
-+	mpc52xx_spi_start_transfer(ms);
-+	ms->state = mpc52xx_spi_fsmstate_transfer;
-+
-+#if defined(VERBOSE_DEBUG)
-+	dev_info(&ms->master->dev, "msg:%p, max_speed:%i, brr:%.2x\n",
-+		 ms->message, ms->message->spi->max_speed_hz,
-+		 readb(ms->regs + SPI_BRR));
-+#endif
-+
-+	return FSM_CONTINUE;
-+}
-+
-+/*
-+ * TRANSFER state
-+ *
-+ * In the middle of a transfer.  If the SPI core has completed processing
-+ * a byte, then read out the received data and write out the next byte
-+ * (unless this transfer is finished; in which case go on to the wait
-+ * state)
-+ */
-+static int mpc52xx_spi_fsmstate_transfer(int irq, struct mpc52xx_spi *ms,
-+					 u8 status, u8 data)
-+{
-+	if (!status)
-+		return ms->irq0 == NO_IRQ ? FSM_POLL : FSM_STOP;
-+
-+	if (status & SPI_STATUS_WCOL) {
-+		/* The SPI device is stoopid.  At slower speeds, it may raise
-+		 * the SPIF flag before the state machine is actually finished.
-+		 * which causes a collision (internal to the state machine
-+		 * only).  The manual recommends inserting a delay between
-+		 * receving the interrupt and sending the next byte, but
-+		 * it can also be worked around simply by retrying the
-+		 * transfer which is what we do here. */
-+		ms->wcol_count++;
-+		ms->wcol_ticks += get_tbl() - ms->wcol_tx_timestamp;
-+		ms->wcol_tx_timestamp = get_tbl();
-+		data = 0;
-+		if (ms->tx_buf)
-+			data = *(ms->tx_buf-1);
-+		writeb(data, ms->regs + SPI_DATA); /* try again */
-+		return FSM_CONTINUE;
-+	} else if (status & SPI_STATUS_MODF) {
-+		ms->modf_count++;
-+		dev_err(&ms->master->dev, "mod fault\n");
-+		mpc52xx_spi_chipsel(ms, 0);
-+		ms->message->status = -EIO;
-+		if (ms->message->complete)
-+			ms->message->complete(ms->message->context);
-+		ms->state = mpc52xx_spi_fsmstate_idle;
-+		return FSM_CONTINUE;
-+	}
-+
-+	/* Read data out of the spi device */
-+	ms->byte_count++;
-+	if (ms->rx_buf)
-+		*ms->rx_buf++ = data;
-+
-+	/* Is the transfer complete? */
-+	ms->len--;
-+	if (ms->len == 0) {
-+		ms->timestamp = get_tbl();
-+		ms->timestamp += ms->transfer->delay_usecs * tb_ticks_per_usec;
-+		ms->state = mpc52xx_spi_fsmstate_wait;
-+		return FSM_CONTINUE;
-+	}
-+
-+	/* Write out the next byte */
-+	ms->wcol_tx_timestamp = get_tbl();
-+	if (ms->tx_buf)
-+		writeb(*ms->tx_buf++, ms->regs + SPI_DATA);
-+	else
-+		writeb(0, ms->regs + SPI_DATA);
-+
-+	return FSM_CONTINUE;
-+}
-+
-+/*
-+ * WAIT state
-+ *
-+ * A transfer has completed; need to wait for the delay period to complete
-+ * before starting the next transfer
-+ */
-+static int
-+mpc52xx_spi_fsmstate_wait(int irq, struct mpc52xx_spi *ms, u8 status, u8 data)
-+{
-+	if (status && irq != NO_IRQ)
-+		dev_err(&ms->master->dev, "spurious irq, status=0x%.2x\n",
-+			status);
-+
-+	if (((int)get_tbl()) - ms->timestamp < 0)
-+		return FSM_POLL;
-+
-+	ms->message->actual_length += ms->transfer->len;
-+
-+	/* Check if there is another transfer in this message.  If there
-+	 * aren't then deactivate CS, notify sender, and drop back to idle
-+	 * to start the next message. */
-+	if (ms->transfer->transfer_list.next == &ms->message->transfers) {
-+		ms->msg_count++;
-+		mpc52xx_spi_chipsel(ms, 0);
-+		ms->message->status = 0;
-+		if (ms->message->complete)
-+			ms->message->complete(ms->message->context);
-+		ms->state = mpc52xx_spi_fsmstate_idle;
-+		return FSM_CONTINUE;
-+	}
-+
-+	/* There is another transfer; kick it off */
-+
-+	if (ms->cs_change)
-+		mpc52xx_spi_chipsel(ms, 0);
-+
-+	ms->transfer = container_of(ms->transfer->transfer_list.next,
-+				    struct spi_transfer, transfer_list);
-+	mpc52xx_spi_start_transfer(ms);
-+	ms->state = mpc52xx_spi_fsmstate_transfer;
-+	return FSM_CONTINUE;
-+}
-+
-+/*
-+ * IRQ handler
-+ */
-+static irqreturn_t mpc52xx_spi_irq(int irq, void *_ms)
-+{
-+	struct mpc52xx_spi *ms = _ms;
-+	int rc = FSM_CONTINUE;
-+	u8 status, data;
-+
-+	while (rc == FSM_CONTINUE) {
-+		/* Interrupt cleared by read of STATUS followed by
-+		 * read of DATA registers*/
-+		status = readb(ms->regs + SPI_STATUS);
-+		data = readb(ms->regs + SPI_DATA); /* clear status */
-+		rc = ms->state(irq, ms, status, data);
-+	}
-+
-+	if (rc == FSM_POLL)
-+		schedule_work(&ms->work);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/*
-+ * Workqueue method of running the state machine
-+ */
-+static void mpc52xx_spi_wq(struct work_struct *work)
-+{
-+	struct mpc52xx_spi *ms = container_of(work, struct mpc52xx_spi, work);
-+	mpc52xx_spi_irq(NO_IRQ, ms);
-+}
-+
-+/*
-+ * spi_master callbacks
-+ */
-+
-+static int mpc52xx_spi_setup(struct spi_device *spi)
-+{
-+	return 0;
-+}
-+
-+static int mpc52xx_spi_transfer(struct spi_device *spi, struct spi_message *m)
-+{
-+	struct mpc52xx_spi *ms = spi_master_get_devdata(spi->master);
-+	unsigned long flags;
-+
-+	m->actual_length = 0;
-+	m->status = -EINPROGRESS;
-+
-+	spin_lock_irqsave(&ms->lock, flags);
-+	list_add_tail(&m->queue, &ms->queue);
-+	spin_unlock_irqrestore(&ms->lock, flags);
-+	schedule_work(&ms->work);
-+
-+	return 0;
-+}
-+
-+/*
-+ * Hook to modify premessage hook
-+ */
-+void mpc52xx_spi_set_premessage_hook(struct spi_master *master,
-+				     void (*hook)(struct spi_message *m,
-+						  void *context),
-+				     void *hook_context)
-+{
-+	struct mpc52xx_spi *ms = spi_master_get_devdata(master);
-+	ms->premessage = hook;
-+	ms->premessage_context = hook_context;
-+}
-+EXPORT_SYMBOL(mpc52xx_spi_set_premessage_hook);
-+
-+/*
-+ * SysFS files
-+ */
-+static int
-+*mpc52xx_spi_sysfs_get_counter(struct mpc52xx_spi *ms, const char *name)
-+{
-+	if (strcmp(name, "msg_count") == 0)
-+		return &ms->msg_count;
-+	if (strcmp(name, "byte_count") == 0)
-+		return &ms->byte_count;
-+	if (strcmp(name, "wcol_count") == 0)
-+		return &ms->wcol_count;
-+	if (strcmp(name, "wcol_ticks") == 0)
-+		return &ms->wcol_ticks;
-+	if (strcmp(name, "modf_count") == 0)
-+		return &ms->modf_count;
-+	return NULL;
-+}
-+
-+static ssize_t mpc52xx_spi_show_count(struct device *dev,
-+				      struct device_attribute *attr,
-+				      char *buf)
-+{
-+	struct spi_master *master = container_of(dev, struct spi_master, dev);
-+	struct mpc52xx_spi *ms = spi_master_get_devdata(master);
-+	int *counter;
-+
-+	counter = mpc52xx_spi_sysfs_get_counter(ms, attr->attr.name);
-+	if (!counter)
-+		return sprintf(buf, "error\n");
-+	return sprintf(buf, "%d\n", *counter);
-+}
-+
-+static ssize_t mpc52xx_spi_set_count(struct device *dev,
-+				     struct device_attribute *attr,
-+				     const char *buf, size_t count)
-+{
-+	struct spi_master *master = container_of(dev, struct spi_master, dev);
-+	struct mpc52xx_spi *ms = spi_master_get_devdata(master);
-+	int *counter;
-+	int value = simple_strtoul(buf, NULL, 0);
-+
-+	counter = mpc52xx_spi_sysfs_get_counter(ms, attr->attr.name);
-+	if (counter)
-+		*counter = value;
-+	return count;
-+}
-+
-+DEVICE_ATTR(msg_count, 0644, mpc52xx_spi_show_count, mpc52xx_spi_set_count);
-+DEVICE_ATTR(byte_count, 0644, mpc52xx_spi_show_count, mpc52xx_spi_set_count);
-+DEVICE_ATTR(wcol_count, 0644, mpc52xx_spi_show_count, mpc52xx_spi_set_count);
-+DEVICE_ATTR(wcol_ticks, 0644, mpc52xx_spi_show_count, mpc52xx_spi_set_count);
-+DEVICE_ATTR(modf_count, 0644, mpc52xx_spi_show_count, mpc52xx_spi_set_count);
-+
-+/*
-+ * OF Platform Bus Binding
-+ */
-+static int __devinit mpc52xx_spi_of_probe(struct of_device *op,
-+					  const struct of_device_id *match)
-+{
-+	struct spi_master *master;
-+	struct mpc52xx_spi *ms;
-+	void __iomem *regs;
-+	const u32 *prop;
-+	int rc, len;
-+
-+	/* MMIO registers */
-+	dev_dbg(&op->dev, "probing mpc5200 SPI device\n");
-+	regs = of_iomap(op->node, 0);
-+	if (!regs)
-+		return -ENODEV;
-+
-+	/* initialize the device */
-+	writeb(SPI_CTRL1_SPIE | SPI_CTRL1_SPE | SPI_CTRL1_MSTR, regs+SPI_CTRL1);
-+	writeb(0x0, regs + SPI_CTRL2);
-+	writeb(0xe, regs + SPI_DATADIR);	/* Set output pins */
-+	writeb(0x8, regs + SPI_PORTDATA);	/* Deassert /SS signal */
-+
-+	/* Clear the status register and re-read it to check for a MODF
-+	 * failure.  This driver cannot currently handle multiple masters
-+	 * on the SPI bus.  This fault will also occur if the SPI signals
-+	 * are not connected to any pins (port_config setting) */
-+	readb(regs + SPI_STATUS);
-+	readb(regs + SPI_DATA);
-+	if (readb(regs + SPI_STATUS) & SPI_STATUS_MODF) {
-+		dev_err(&op->dev, "mode fault; is port_config correct?\n");
-+		return -EIO;
-+	}
-+
-+	dev_dbg(&op->dev, "allocating spi_master struct\n");
-+	master = spi_alloc_master(&op->dev, sizeof *ms);
-+	if (!master)
-+		return -ENOMEM;
-+	master->bus_num = -1;
-+	master->num_chipselect = 1;
-+	prop = of_get_property(op->node, "num-slaves", &len);
-+	if (prop && len >= sizeof(*prop))
-+		master->num_chipselect = *prop;
-+
-+	master->setup = mpc52xx_spi_setup;
-+	master->transfer = mpc52xx_spi_transfer;
-+	dev_set_drvdata(&op->dev, master);
-+
-+	ms = spi_master_get_devdata(master);
-+	ms->master = master;
-+	ms->regs = regs;
-+	ms->irq0 = irq_of_parse_and_map(op->node, 0);
-+	ms->irq1 = irq_of_parse_and_map(op->node, 1);
-+	ms->state = mpc52xx_spi_fsmstate_idle;
-+	ms->ipb_freq = mpc52xx_find_ipb_freq(op->node);
-+	spin_lock_init(&ms->lock);
-+	INIT_LIST_HEAD(&ms->queue);
-+	INIT_WORK(&ms->work, mpc52xx_spi_wq);
-+
-+	dev_dbg(&op->dev, "registering spi_master struct\n");
-+	rc = spi_register_master(master);
-+	if (rc < 0)
-+		goto err_register;
-+
-+	/* Decide if interrupts can be used */
-+	if ((ms->irq0 != NO_IRQ) && (ms->irq1 != NO_IRQ)) {
-+		rc = request_irq(ms->irq0, mpc52xx_spi_irq, IRQF_SAMPLE_RANDOM,
-+				  "mpc5200-spi-modf", ms);
-+		rc |= request_irq(ms->irq1, mpc52xx_spi_irq, IRQF_SAMPLE_RANDOM,
-+				  "mpc5200-spi-spiF", ms);
-+		if (rc) {
-+			free_irq(ms->irq0, ms);
-+			free_irq(ms->irq1, ms);
-+			ms->irq0 = ms->irq1 = NO_IRQ;
-+			dev_info(&op->dev, "using polled mode\n");
-+		}
-+	} else {
-+		/* operate in polled mode */
-+		ms->irq0 = ms->irq1 = NO_IRQ;
-+		dev_info(&op->dev, "using polled mode\n");
-+	}
-+
-+	/* Create SysFS files */
-+	rc = device_create_file(&ms->master->dev, &dev_attr_msg_count);
-+	rc |= device_create_file(&ms->master->dev, &dev_attr_byte_count);
-+	rc |= device_create_file(&ms->master->dev, &dev_attr_wcol_count);
-+	rc |= device_create_file(&ms->master->dev, &dev_attr_wcol_ticks);
-+	rc |= device_create_file(&ms->master->dev, &dev_attr_modf_count);
-+	if (rc)
-+		dev_info(&ms->master->dev, "error creating sysfs files\n");
-+
-+	dev_info(&ms->master->dev, "registered MPC5200 SPI bus\n");
-+
-+	of_register_spi_devices(master, op->node);
-+
-+	return rc;
-+
-+ err_register:
-+	dev_err(&ms->master->dev, "initialization failed\n");
-+	spi_master_put(master);
-+	return rc;
-+}
-+
-+static void __devexit mpc52xx_spi_of_remove(struct of_device *op)
-+{
-+	struct spi_master *master = dev_get_drvdata(&op->dev);
-+	struct mpc52xx_spi *ms = spi_master_get_devdata(master);
-+
-+	device_remove_file(&ms->master->dev, &dev_attr_msg_count);
-+	device_remove_file(&ms->master->dev, &dev_attr_byte_count);
-+	device_remove_file(&ms->master->dev, &dev_attr_wcol_count);
-+	device_remove_file(&ms->master->dev, &dev_attr_wcol_ticks);
-+	device_remove_file(&ms->master->dev, &dev_attr_modf_count);
-+
-+	free_irq(ms->irq0, ms);
-+	free_irq(ms->irq1, ms);
-+
-+	spi_unregister_master(master);
-+	spi_master_put(master);
-+	iounmap(ms->regs);
-+}
-+
-+static struct of_device_id mpc52xx_spi_of_match[] __devinitdata = {
-+	{ .compatible = "fsl,mpc5200-spi", },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, mpc52xx_psc_spi_of_match);
-+
-+static struct of_platform_driver mpc52xx_spi_of_driver = {
-+	.owner = THIS_MODULE,
-+	.name = "mpc52xx-spi",
-+	.match_table = mpc52xx_spi_of_match,
-+	.probe = mpc52xx_spi_of_probe,
-+	.remove = __exit_p(mpc52xx_spi_of_remove),
-+};
-+
-+static int __init mpc52xx_spi_init(void)
-+{
-+	return of_register_platform_driver(&mpc52xx_spi_of_driver);
-+}
-+module_init(mpc52xx_spi_init);
-+
-+static void __exit mpc52xx_spi_exit(void)
-+{
-+	of_unregister_platform_driver(&mpc52xx_spi_of_driver);
-+}
-+module_exit(mpc52xx_spi_exit);
-+
-diff --git a/include/linux/spi/mpc52xx_spi.h b/include/linux/spi/mpc52xx_spi.h
-new file mode 100644
-index 0000000..d1004cf
---- /dev/null
-+++ b/include/linux/spi/mpc52xx_spi.h
-@@ -0,0 +1,10 @@
-+
-+#ifndef INCLUDE_MPC5200_SPI_H
-+#define INCLUDE_MPC5200_SPI_H
-+
-+extern void mpc52xx_spi_set_premessage_hook(struct spi_master *master,
-+					    void (*hook)(struct spi_message *m,
-+							 void *context),
-+					    void *hook_context);
-+
-+#endif
+The cris tree is fetchable again.
 
+Linus' tree required a build fix (that has been applied upstream already).
+
+The sched tree lost its conflict.
+
+The ide tree lost its build fix patch.
+
+The inifinband tree gained a conflict against Linus' tree.
+
+The vfs tree gained a conflict against Linus' tree.
+
+The arm tree lost its conflict.
+
+The semaphore tree lost its conflict.
+
+The semaphore-removal tree lost all its conflicts.
+
+The ubifs tree lost all its conflicts.
+
+I have also applied the following patches for known problems:
+
+	Move update_mmu_cache() declaration from tlbflush.h to pgtable.h
+		(a powerpc fix)
+
+The sparc(32) defconfig build fails.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 105 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+CONFLICT (content): Merge conflict in drivers/dca/dca-sysfs.c
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in drivers/pci/dmar.c
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/kernel-doc
+Merging avr32/avr32-arch
+Merging v4l-dvb/stable
+Merging s390/features
+Merging sh/master
+Merging jfs/next
+Merging kbuild/master
+CONFLICT (content): Merge conflict in Makefile
+CONFLICT (content): Merge conflict in include/Kbuild
+Created commit 4dd0ad2: Revert "kconfig: normalize int/hex values"
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+CONFLICT (content): Merge conflict in include/linux/mlx4/qp.h
+Merging acpi/test
+CONFLICT (rename/modify): Merge conflict in arch/x86/mm/srat_32.c
+CONFLICT (content): Merge conflict in Documentation/ABI/testing/sysfs-firmw=
+are-acpi
+CONFLICT (content): Merge conflict in arch/x86/kernel/acpi/sleep.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/process.c
+CONFLICT (content): Merge conflict in drivers/acpi/executer/exdump.c
+CONFLICT (content): Merge conflict in drivers/acpi/hardware/hwgpe.c
+CONFLICT (content): Merge conflict in drivers/acpi/processor_throttling.c
+CONFLICT (content): Merge conflict in drivers/acpi/scan.c
+CONFLICT (content): Merge conflict in drivers/acpi/sleep/main.c
+CONFLICT (content): Merge conflict in drivers/acpi/system.c
+CONFLICT (content): Merge conflict in drivers/acpi/video.c
+CONFLICT (content): Merge conflict in drivers/char/apm-emulation.c
+CONFLICT (content): Merge conflict in drivers/misc/Kconfig
+CONFLICT (add/add): Merge conflict in drivers/misc/compal-laptop.c
+CONFLICT (content): Merge conflict in drivers/misc/fujitsu-laptop.c
+CONFLICT (content): Merge conflict in drivers/pci/pci.c
+CONFLICT (content): Merge conflict in drivers/pci/pci.h
+CONFLICT (content): Merge conflict in include/acpi/acconfig.h
+CONFLICT (content): Merge conflict in include/acpi/acexcep.h
+CONFLICT (content): Merge conflict in include/acpi/acmacros.h
+CONFLICT (content): Merge conflict in include/acpi/acpi_bus.h
+CONFLICT (content): Merge conflict in include/acpi/actbl1.h
+CONFLICT (content): Merge conflict in include/acpi/actypes.h
+CONFLICT (content): Merge conflict in include/linux/ioport.h
+$ git reset --hard
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging hwmon/testing
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ia64/test
+Merging tests/master
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging ocfs2/linux-next
+Merging quilt/m68k
+Merging powerpc/next
+Merging ext4/next
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging sparc/master
+Merging galak/powerpc-next
+Merging mtd/master
+CONFLICT (content): Merge conflict in arch/arm/mach-at91/board-yl-9200.c
+CONFLICT (delete/modify): drivers/mtd/maps/mtx-1_flash.c deleted in HEAD an=
+d modified in mtd/master. Version mtd/master of drivers/mtd/maps/mtx-1_flas=
+h.c left in tree.
+$ git rm drivers/mtd/maps/mtx-1_flash.c
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+CONFLICT (content): Merge conflict in fs/pipe.c
+Merging sound/master
+Merging arm/devel
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in kernel/stop_machine.c
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+Merging bkl-removal/bkl-removal
+Merging trivial/next
+CONFLICT (content): Merge conflict in include/linux/securebits.h
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
+Merging pcmcia/master
+Merging battery/master
+CONFLICT (content): Merge conflict in drivers/power/Kconfig
+CONFLICT (content): Merge conflict in drivers/power/Makefile
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging m68knommu/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging cris/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in kernel/sysctl.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mips/mips-for-linux-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (add/add): Merge conflict in drivers/gpu/Makefile
+CONFLICT (add/add): Merge conflict in drivers/gpu/drm/i830/Makefile
+CONFLICT (content): Merge conflict in include/Kbuild
+CONFLICT (add/add): Merge conflict in include/drm/Kbuild
+Merging voltage/reg-for-linus
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Applying Move update_mmu_cache() declaration from tlbflush.h to pgtable.h
+
+--Signature=_Fri__25_Jul_2008_17_35_39_+1000_nsrvxkfZD0_aphPa
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiJgksACgkQjjKRsyhoI8xYPACfcdArn35up4NO0EoUTXXziHbC
+9pQAn2XpooqddISB0uI2WcXY3hwtTjw/
+=2Pv9
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__25_Jul_2008_17_35_39_+1000_nsrvxkfZD0_aphPa--
