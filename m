@@ -1,114 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbYGYRap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753431AbYGYReO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754114AbYGYRap (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 13:30:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbYGYRad
+	id S1753431AbYGYReO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 13:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbYGYRd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 13:30:33 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56760 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751440AbYGYRac convert rfc822-to-8bit (ORCPT
+	Fri, 25 Jul 2008 13:33:59 -0400
+Received: from mail.uni-paderborn.de ([131.234.142.9]:39263 "EHLO
+	mail.uni-paderborn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750878AbYGYRd6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 13:30:32 -0400
-Date: Fri, 25 Jul 2008 18:09:35 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeff Garzik <jeff@garzik.org>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
-       jgarzik@redhat.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [build failure] hp-plus.c: (.text+0xd7c1a): undefined reference
- to `ei_close'
-Message-ID: <20080725180935.5bd02bf5@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080724052603.GA8744@elte.hu>
-References: <20080721.233512.128618365.anemo@mba.ocn.ne.jp>
-	<20080721191519.GA15843@elte.hu>
-	<20080721214258.787a67ca@lxorguk.ukuu.org.uk>
-	<20080722072334.GA25241@elte.hu>
-	<48865899.3030209@garzik.org>
-	<20080723104520.GA20672@elte.hu>
-	<20080724052603.GA8744@elte.hu>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 25 Jul 2008 13:33:58 -0400
+X-Greylist: delayed 1726 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Jul 2008 13:33:58 EDT
+From: Nicolai =?iso-8859-1?q?H=E4hnle?= <prefect@upb.de>
+To: dri-devel@lists.sourceforge.net
+Subject: Re: X "Hangs" with RS690 + 2.6.26
+Date: Fri, 25 Jul 2008 19:04:55 +0200
+User-Agent: KMail/1.9.9
+Cc: Jerome Glisse <glisse@freedesktop.org>,
+       Jonathan McDowell <noodles@earth.li>, linux-kernel@vger.kernel.org
+References: <20080725094334.GC30002@earth.li> <20080725121259.757499a9.glisse@freedesktop.org>
+In-Reply-To: <20080725121259.757499a9.glisse@freedesktop.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1842095.2DVN5FiVKJ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200807251905.04488.prefect@upb.de>
+X-IMT-Spam-Score: 0.0 ()
+X-PMX-Version: 5.4.2.338381, Antispam-Engine: 2.6.0.325393, Antispam-Data: 2008.7.25.164600
+X-IMT-Authenticated-Sender: uid=prefect,ou=People,o=upb,c=de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Jul 2008 07:26:03 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+--nextPart1842095.2DVN5FiVKJ
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> 
-> not sure it's known but despite all the fixes i still get:
-> 
->  drivers/built-in.o: In function `ne_drv_resume':
->  ne.c:(.text+0x146ba4): undefined reference to `NS8390_init'
->  drivers/built-in.o: In function `ne_block_output':
->  ne.c:(.text+0x146e00): undefined reference to `NS8390_init'
+Am Freitag 25 Juli 2008 12:12:59 schrieb Jerome Glisse:
+> This looks like usual engine lockup followed by CP lockup so
+> that DMA buffer age never get written and we run out of DMA
+> buffer thus freelist failing in infinite loop.
+>
+> I think we now know all the reason why we lockup, while a
+> fix could be made for old ioctl we believe the best plan is
+> to work on new ioctl with this fix in mind.
 
-This should do the trick. I can't test it currently as that configuration
-now fails to build with mm errors in current git head..
+I can't help but feel uneasy with that kind of plan. After all, do "we"=20
+*really* know what's going on? I always had the impression that we only kne=
+w=20
+things along the lines of "perhaps it's better to submit 3D stuff in indire=
+ct=20
+buffers".
 
-mm/hugetlb.c: In function ‘hugetlb_acct_memory’: mm/hugetlb.c:1507:
-error: implicit declaration of function ‘cpuset_mems_nr’
+If you *really* know what causes the lockups, could you please document tha=
+t?=20
+As in, what's the actual command processor sequence that is to blame? I kno=
+w =20
+that running e.g. a Nexuiz demo + glxgears window above it is apparently a=
+=20
+100% guaranteed lockup on my system (R420).
 
-8390: Fix various compile errors
+If you could share your progress in tracking down the sources of the lockup=
+s,=20
+I'd happily try to write a patch against the current system.
 
-From: Alan Cox <alan@redhat.com>
+cu,
+Nicolai
 
-Some of the original patches got lost along the way, so sort out the
-remaining stuff
----
+--nextPart1842095.2DVN5FiVKJ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
- drivers/net/Makefile |    2 +-
- drivers/net/ne.c     |    6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQBIigfA1iBctzupxNIRAqnIAJ92n7zxXjWHynd0wfBpCePHm9yjwQCgkjWn
+TCEngGbygPDEOgpDVAdg01o=
+=jWeE
+-----END PGP SIGNATURE-----
 
-diff --git a/drivers/net/Makefile b/drivers/net/Makefile
-index 7629c90..f66b79b 100644
---- a/drivers/net/Makefile
-+++ b/drivers/net/Makefile
-@@ -111,7 +111,7 @@ obj-$(CONFIG_EL2) += 3c503.o 8390p.o
- obj-$(CONFIG_NE2000) += ne.o 8390p.o
- obj-$(CONFIG_NE2_MCA) += ne2.o 8390p.o
- obj-$(CONFIG_HPLAN) += hp.o 8390p.o
--obj-$(CONFIG_HPLAN_PLUS) += hp-plus.o 8390p.o
-+obj-$(CONFIG_HPLAN_PLUS) += hp-plus.o 8390.o
- obj-$(CONFIG_ULTRA) += smc-ultra.o 8390.o
- obj-$(CONFIG_ULTRAMCA) += smc-mca.o 8390.o
- obj-$(CONFIG_ULTRA32) += smc-ultra32.o 8390.o
-diff --git a/drivers/net/ne.c b/drivers/net/ne.c
-index 2fec612..4a8a4b1 100644
---- a/drivers/net/ne.c
-+++ b/drivers/net/ne.c
-@@ -536,7 +536,7 @@ static int __init ne_probe1(struct net_device *dev, unsigned long ioaddr)
- #ifdef CONFIG_NET_POLL_CONTROLLER
- 	dev->poll_controller = eip_poll;
- #endif
--	NS8390_init(dev, 0);
-+	NS8390p_init(dev, 0);
- 
- 	ret = register_netdev(dev);
- 	if (ret)
-@@ -794,7 +794,7 @@ retry:
- 		if (time_after(jiffies, dma_start + 2*HZ/100)) {		/* 20ms */
- 			printk(KERN_WARNING "%s: timeout waiting for Tx RDC.\n", dev->name);
- 			ne_reset_8390(dev);
--			NS8390_init(dev,1);
-+			NS8390p_init(dev,1);
- 			break;
- 		}
- 
-@@ -855,7 +855,7 @@ static int ne_drv_resume(struct platform_device *pdev)
- 
- 	if (netif_running(dev)) {
- 		ne_reset_8390(dev);
--		NS8390_init(dev, 1);
-+		NS8390p_init(dev, 1);
- 		netif_device_attach(dev);
- 	}
- 	return 0;
+--nextPart1842095.2DVN5FiVKJ--
