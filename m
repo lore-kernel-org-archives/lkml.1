@@ -1,80 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751933AbYGYQRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbYGYQRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751933AbYGYQRc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 12:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYGYQRW
+	id S1754124AbYGYQRr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 12:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbYGYQR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 12:17:22 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:56317 "EHLO
-	WA4EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751286AbYGYQRV (ORCPT
+	Fri, 25 Jul 2008 12:17:28 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:26652 "EHLO
+	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751860AbYGYQR1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 12:17:21 -0400
-X-BigFish: VPS5(zz1cddkzz10d3izzz32i66h)
+	Fri, 25 Jul 2008 12:17:27 -0400
+X-BigFish: VPS7(zz1cddkzz10d3izzz32i43j66h)
 X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0K4KL8I-02-OZN-01
-Message-ID: <20080725162002.543350440@amd.com>
+X-WSS-ID: 0K4KL8I-01-GGQ-01
+Message-ID: <20080725162003.105244040@amd.com>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Fri, 25 Jul 2008 18:17:26 +0200
+Date: Fri, 25 Jul 2008 18:17:29 +0200
 From: Peter Oruba <peter.oruba@amd.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
 CC: LKML <linux-kernel@vger.kernel.org>, Peter Oruba <peter.oruba@amd.com>
-Subject: [patch 3/9] [PATCH 3/9] x86: Moved per CPU microcode structure declaration to header file.
+Subject: [patch 6/9] [PATCH 6/9] x86: Add AMD specific declarations.
 References: <20080725161723.636932280@amd.com>
 Content-Disposition: inline;
-	filename="0003-x86-Moved-per-CPU-microcode-structure-declaration-t.patch"
-X-OriginalArrivalTime: 25 Jul 2008 16:17:08.0526 (UTC) FILETIME=[E2E25CE0:01C8EE71]
+	filename="0006-x86-Add-AMD-specific-declarations.patch"
+X-OriginalArrivalTime: 25 Jul 2008 16:17:08.0635 (UTC) FILETIME=[E2F2FEB0:01C8EE71]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This structure will be later used by other modules as well and
-needs therfore to be moved out to a header file.
+Added AMD specific declarations to header file.
 
 Signed-off-by: Peter Oruba <peter.oruba@amd.com>
 ---
- arch/x86/kernel/microcode.c |    8 +-------
- include/asm-x86/microcode.h |    8 ++++++++
- 2 files changed, 9 insertions(+), 7 deletions(-)
+ include/asm-x86/microcode.h |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
-index 406261a..d3bc0e8 100644
---- a/arch/x86/kernel/microcode.c
-+++ b/arch/x86/kernel/microcode.c
-@@ -125,13 +125,7 @@ static DEFINE_SPINLOCK(microcode_update_lock);
- /* no concurrent ->write()s are allowed on /dev/cpu/microcode */
- static DEFINE_MUTEX(microcode_mutex);
- 
--static struct ucode_cpu_info {
--	int valid;
--	unsigned int sig;
--	unsigned int pf;
--	unsigned int rev;
--	struct microcode *mc;
--} ucode_cpu_info[NR_CPUS];
-+static struct ucode_cpu_info ucode_cpu_info[NR_CPUS];
- 
- static void collect_cpu_info(int cpu_num)
- {
 diff --git a/include/asm-x86/microcode.h b/include/asm-x86/microcode.h
-index 1519ef0..d34a1fc 100644
+index ef77c6f..4e94172 100644
 --- a/include/asm-x86/microcode.h
 +++ b/include/asm-x86/microcode.h
-@@ -29,3 +29,11 @@ struct extended_sigtable {
- 	unsigned int            reserved[3];
+@@ -30,6 +30,35 @@ struct extended_sigtable {
  	struct extended_signature sigs[0];
  };
-+
-+struct ucode_cpu_info {
-+	int valid;
-+	unsigned int sig;
-+	unsigned int pf;
-+	unsigned int rev;
-+	struct microcode *mc;
+ 
++struct equiv_cpu_entry {
++	unsigned int installed_cpu;
++	unsigned int fixed_errata_mask;
++	unsigned int fixed_errata_compare;
++	unsigned int equiv_cpu;
 +};
++
++struct microcode_header_amd {
++	unsigned int  data_code;
++	unsigned int  patch_id;
++	unsigned char mc_patch_data_id[2];
++	unsigned char mc_patch_data_len;
++	unsigned char init_flag;
++	unsigned int  mc_patch_data_checksum;
++	unsigned int  nb_dev_id;
++	unsigned int  sb_dev_id;
++	unsigned char processor_rev_id[2];
++	unsigned char nb_rev_id;
++	unsigned char sb_rev_id;
++	unsigned char bios_api_rev;
++	unsigned char reserved1[3];
++	unsigned int  match_reg[8];
++};
++
++struct microcode_amd {
++	struct microcode_header_amd hdr;
++	unsigned int mpb[0];
++};
++
+ struct ucode_cpu_info {
+ 	int valid;
+ 	unsigned int sig;
+@@ -37,5 +66,6 @@ struct ucode_cpu_info {
+ 	unsigned int rev;
+ 	union {
+ 		struct microcode_intel *mc_intel;
++		struct microcode_amd *mc_amd;
+ 	} mc;
+ };
 -- 
 1.5.4.5
 
