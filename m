@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbYGYQVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752972AbYGYQZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754550AbYGYQVh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 12:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYGYQV3
+	id S1752972AbYGYQZs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 12:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYGYQZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 12:21:29 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:5932 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751021AbYGYQV2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 12:21:28 -0400
-Message-ID: <fa686aa40807250921v73bec21cya6b4cd494f12f2e8@mail.gmail.com>
-Date: Fri, 25 Jul 2008 12:21:27 -0400
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [PATCH v3 1/4] of: adapt of_find_i2c_driver() to be usable by SPI also
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       spi-devel-general@lists.sourceforge.net,
-       dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org
-In-Reply-To: <9e4733910807250840n48c6ae79l27af4f320b5b1df1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 25 Jul 2008 12:25:40 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:50785 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751056AbYGYQZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 12:25:39 -0400
+Date: Sat, 26 Jul 2008 01:27:31 +0900 (JST)
+Message-Id: <20080726.012731.122621958.anemo@mba.ocn.ne.jp>
+To: geert@linux-m68k.org
+Cc: ralf@linux-mips.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [patch 29/29] initrd: Fix virtual/physical mix-up in overwrite
+ test
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <Pine.LNX.4.64.0807242032430.701@anakin>
+References: <20080717191758.556975996@mail.of.borg>
+	<20080725.003526.39154055.anemo@mba.ocn.ne.jp>
+	<Pine.LNX.4.64.0807242032430.701@anakin>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
-	 <20080725073311.8485.16226.stgit@trillian.secretlab.ca>
-	 <9e4733910807250840n48c6ae79l27af4f320b5b1df1@mail.gmail.com>
-X-Google-Sender-Auth: 4dd3b111abe6d7ba
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 11:40 AM, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On 7/25/08, Grant Likely <grant.likely@secretlab.ca> wrote:
->> From: Grant Likely <grant.likely@secretlab.ca>
->>
->>  + * At the moment, a single table is used for all bus types because it is
->>  + * assumed that the data size is small and that the compatible values
->>  + * should already be distinct enough to differentiate between SPI, I2C
->>  + * and other devices.
->
-> Maybe add a section recommending to update the alias list in the linux
-> device driver before adding entries here? This table should be a last
-> resort. I'm not even sure this table should exist, what would be a
-> case where we would need to make an entry here instead of fixing the
-> device driver by adding an alias name?
+On Thu, 24 Jul 2008 20:49:27 +0200 (CEST), Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > Because an argument of mips virt_to_phys() is an pointer and
+> > initrd_start is unsigned long.  It seems most (all?) arch's
+> > virt_to_phys() casts its argument to unsigned long internally.  Should
+> > mips follow?
+> 
+> Alternatively, as initrd_start is really a virtual kernel address,
+> perhaps it should be changed from unsigned long to void * instead?
+> 
+> It's cast to `void *' in several place. arch/xtensa/kernel/setup.c even
+> has `extern void *initrd_start' to fool around this?
 
-In principle I agree.  However, this patch is simply porting the i2c
-specific code to something that can be used by both SPI and I2C.  I
-don't want to rework the actual mechanism in this particular patch.  I
-can submit an additional patch to change this along with reworking
-some of the behavior that needs to be improved.
+I agree it would make code cleaner, but the conversion might be
+somewhat hard.
 
->>  + * First method is to lookup the compatible value in of_modalias_table.
->>  + * Second is to look for a "linux,<modalias>" entry in the compatible list
->>  + * and used that for modalias.  Third is to strip off the manufacturer
->>  + * prefix from the first compatible entry and use the remainder as modalias
->
-> I also think this is a problem. Embedding the name of Linux device
-> drivers into device firmware makes it almost impossible to rename the
-> device driver.  Again, what is a case where generic part numbers can't
-> be listed in the alias section of the linux device driver?
->
-> Even eeprom was just fixed to take generic part numbers (at24).
+If we converted initrd_start (and initrd_end) to void *, we should
+also convert INITRD_START, free_initrd_mem(), some other arch specific
+local/global variables and printk format strings.  Also code like
+"initrd_start & PAGE_MASK" should be changed too...
 
-Again, I agree, but this change is very much a stop gap measure to get
-things working in a sane way without having to create bad device tree
-bindings (device tree bindings are hard to change, code is not).  I've
-been considering posting a patch to remove this clause from the
-functions, but that needs to be reviewed separately from this change.
+Is it worth to do?
 
-Thanks,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+---
+Atsushi Nemoto
