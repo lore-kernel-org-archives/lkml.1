@@ -1,60 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbYGYJMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbYGYJPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754303AbYGYJMj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 05:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbYGYJM3
+	id S1755884AbYGYJPa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 05:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYGYJPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 05:12:29 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:13000 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755935AbYGYJM2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 05:12:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=DN+cWOur+/Gcfbj8Ab1z1QX96+KgIUTTlHowUPrZQyCfPrJkTIJuQkwc3AH83sKu/5
-         RV0J7/s2Ws2zBstepPTZq3fBLDC+i1B4HX0IFoUxEbXvEZlJUAEaRaafxRCKPUfzRatE
-         pTXJihuXhd14lxPGdZZMkTrkbryp1nWVOxh2o=
-Message-ID: <aec7e5c30807250212p323a281cu484b8789215f328b@mail.gmail.com>
-Date: Fri, 25 Jul 2008 18:12:28 +0900
-From: "Magnus Damm" <magnus.damm@gmail.com>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Subject: Re: [PATCH 00/06] uio: Various minor changes
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org
-In-Reply-To: <20080718154624.GE3284@local>
+	Fri, 25 Jul 2008 05:15:21 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:41466 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752330AbYGYJPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 05:15:20 -0400
+Date: Fri, 25 Jul 2008 12:14:55 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andrea Righi <righi.andrea@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: PAGE_ALIGN() compile breakage
+Message-ID: <20080725091455.GD19310@cs181140183.pp.htv.fi>
+References: <20080725083943.GC19310@cs181140183.pp.htv.fi> <20080725015537.564e3397.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20080718050402.16250.25213.sendpatchset@rx1.opensource.se>
-	 <20080718154624.GE3284@local>
+In-Reply-To: <20080725015537.564e3397.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hans,
+On Fri, Jul 25, 2008 at 01:55:37AM -0700, Andrew Morton wrote:
+> On Fri, 25 Jul 2008 11:39:43 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > Commit 27ac792ca0b0a1e7e65f20342260650516c95864
+> > (PAGE_ALIGN(): correctly handle 64-bit values on 32-bit architectures)
+> > causes on some architectures (e.g. avr32 and mips) compile errors
+> > like the following in some configurations starting with:
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> >   CC      init/main.o
+> > In file included from 
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/utsname.h:35,
+> >                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:20:
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/sched.h: In function 'arch_pick_mmap_layout':
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/sched.h:2149: error: implicit declaration of function 'PAGE_ALIGN'
+> > make[2]: *** [init/main.o] Error 1
+> > 
+> 
+> pls test:
+> 
+> diff -puN include/linux/sched.h~a include/linux/sched.h
+> --- a/include/linux/sched.h~a
+> +++ a/include/linux/sched.h
+> @@ -2139,16 +2139,7 @@ static inline void set_task_cpu(struct t
+>  
+>  #endif /* CONFIG_SMP */
+>  
+> -#ifdef HAVE_ARCH_PICK_MMAP_LAYOUT
+>  extern void arch_pick_mmap_layout(struct mm_struct *mm);
+> -#else
+> -static inline void arch_pick_mmap_layout(struct mm_struct *mm)
+> -{
+> -	mm->mmap_base = TASK_UNMAPPED_BASE;
+> -	mm->get_unmapped_area = arch_get_unmapped_area;
+> -	mm->unmap_area = arch_unmap_area;
+> -}
+> -#endif
+>  
+>  #ifdef CONFIG_TRACING
+>  extern void
+> diff -puN mm/mmap.c~a mm/mmap.c
+> --- a/mm/mmap.c~a
+> +++ a/mm/mmap.c
+> @@ -2268,3 +2268,12 @@ int install_special_mapping(struct mm_st
+>  
+>  	return 0;
+>  }
+> +
+> +#ifndef HAVE_ARCH_PICK_MMAP_LAYOUT
+> +void arch_pick_mmap_layout(struct mm_struct *mm)
+> +{
+> +	mm->mmap_base = TASK_UNMAPPED_BASE;
+> +	mm->get_unmapped_area = arch_get_unmapped_area;
+> +	mm->unmap_area = arch_unmap_area;
+> +}
+> +#endif
 
-On Sat, Jul 19, 2008 at 12:46 AM, Hans J. Koch <hjk@linutronix.de> wrote:
-> On Fri, Jul 18, 2008 at 02:04:02PM +0900, Magnus Damm wrote:
->> Hi everyone,
->>
->> Here comes a few UIO changes that I've had in my queue for a while.
->
-> Hi Magnus,
-> thanks a lot for your patches. I'll have a look at them ASAP, but it'll
-> take a few days. I'm busy moving to a new house ATM...
+Nice, this seems to fix the problem.
 
-No problem. There is nothing in this series that must be included in
-2.6.27 in my opinion, so take your time.
+> > and more nasty problems follow later.
+> > 
+> > My suggestion is to:
+> > - revert commit 27ac792ca0b0a1e7e65f20342260650516c95864 and then
+> > - fix all PAGE_ALIGN() instances without moving them.
+> 
+> Every time this patch blew up (and it did it often), fixing it resulted
+> in overall improvements.
+> 
+> > Unifying code is a good thing, but in this case it is not worth the 
+> > trouble it causes by poking into the heart of our headers mess.
+> 
+> Well.   If we leave it a mess, it'll stay a mess.
 
-I do however wish to have the uio_pdrv_genirq driver included in
-2.6.27. I've seen the uio_pdrv driver and the irqcontrol patches in
-linux-2.6.git, but the uio_pdrv_genirq driver is still missing...
-Should I repost?
+An interesting question is whether the PAGE_ALIGN() move makes the mess 
+bigger or smaller.
 
-Thanks for your help,
+Ideally, all headers should be self-contained. IOW, they should #include 
+everything they use.
 
-/ magnus
+But TASK_UNMAPPED_BASE in asm/processor.h on some architectures uses 
+PAGE_ALIGN() that got moved from asm/page.h to linux/mm.h .
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
