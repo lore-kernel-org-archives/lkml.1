@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYGYLUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbYGYLU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbYGYLUk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 07:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYGYLU3
+	id S1756800AbYGYLU5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 07:20:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbYGYLUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 07:20:29 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54673 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751820AbYGYLU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 07:20:28 -0400
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Linux - Novell
-To: Len Brown <lenb@kernel.org>
-Subject: Re: [ANNOUNCE] ACPI BIOS Guideline for Linux
-Date: Fri, 25 Jul 2008 13:20:24 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-acpi@vger.kernel.org, Andi Kleen <ak@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200807241732.23412.trenn@suse.de> <alpine.LFD.1.10.0807241937500.6098@localhost.localdomain>
-In-Reply-To: <alpine.LFD.1.10.0807241937500.6098@localhost.localdomain>
+	Fri, 25 Jul 2008 07:20:42 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35887 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755821AbYGYLUk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 07:20:40 -0400
+Date: Fri, 25 Jul 2008 20:15:52 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 30/30] nfs: fix various memory recursions possible with swap over NFS.
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>
+In-Reply-To: <1216983472.7257.365.camel@twins>
+References: <20080725194517.86BB.KOSAKI.MOTOHIRO@jp.fujitsu.com> <1216983472.7257.365.camel@twins>
+Message-Id: <20080725201324.86BE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807251320.26213.trenn@suse.de>
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 July 2008 01:47:04 Len Brown wrote:
-> It is not an ACPI specification violation that Linux
-> (and ACPICA) claim compatibility with the interfaces
-> advertised by one or multiple versions of Windows.
->
-> Yes, there are be cases where BIOS vendors will want
-> to know if the running version of Linux supports,
-> or does not support, an interface/feature.
+> On Fri, 2008-07-25 at 19:46 +0900, KOSAKI Motohiro wrote:
+> > > GFP_NOFS is not enough, since swap traffic is IO, hence fall back to GFP_NOIO.
+> > 
+> > this comment imply turn on GFP_NOIO, but the code is s/NOFS/NOIO/. why?
+> 
+> Does the misunderstanding stem from the use of 'enough'?
+> 
+> GFP_NOFS is _more_ permissive than GFP_NOIO in that it will initiate IO,
+> just not of any filesystem data.
+> 
 
-> We (the Linux community that maintain Linux/ACPI) are
-> eager to support them in this.  However, the interface
-> needs to be sufficiently defined so that we know when
-> to _not_ advertise that feature.
->
-> eg. There are proposals for
->
-> _OSI("Linux-Needs ATI S3 video re-POST")
-> _OSI("Linux-Needs NVIDIA S3 video re-POST")
-> _OSI("Linux-Native IPMI Support")
 
-Great!
-Please add me to CC as soon as you agreed to something and
-I'll pick those up.
+> The problem is that previuosly NOFS was correct because that avoids
+> recursion into the NFS code, it now is not, because also IO (swap) can
+> lead to this recursion.
 
-Thanks,
 
-       Thomas
+Thanks nicer explain.
+So, I hope add above 3 line to patch description.
+
+
+
+Cheers!
+
+
