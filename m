@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089AbYGYRMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbYGYROg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754089AbYGYRMo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 13:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYGYRMe
+	id S1754504AbYGYROg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 13:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYGYRO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 13:12:34 -0400
-Received: from web53310.mail.re2.yahoo.com ([206.190.49.100]:43958 "HELO
-	web53310.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751652AbYGYRMd (ORCPT
+	Fri, 25 Jul 2008 13:14:26 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:59393 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751605AbYGYROY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 13:12:33 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Jul 2008 13:12:33 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=pSc9cLnWC6l6obJ6Wfni4/+ydUFT55qyZpVyZEgZ17Kn0dnKM39W0eDqXe7xIdxKONAe2ZPMFvsr2TId1R3PZcjALvQ9ZAj1aQkea1kL1IVHimrcrRw/H3dikzNA4ROcTXQISgOYpkmtrpO5ybbKNQLeQEDLh5weT/4mqypgbSI=;
-X-Mailer: YahooMailWebService/0.7.218
-Date: Fri, 25 Jul 2008 10:05:52 -0700 (PDT)
-From: Alberto Gonzalez <luis6674@yahoo.com>
-Reply-To: luis6674@yahoo.com
-Subject: How to disable group scheduler correctly?
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <842240.12654.qm@web53310.mail.re2.yahoo.com>
+	Fri, 25 Jul 2008 13:14:24 -0400
+Subject: Re: [PATCH 2/5] drivers/scsi/aic94xx/: replace __FUNCTION__ with
+	__func__
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: rae l <crquan@gmail.com>
+Cc: djwong@us.ibm.com, linux-scsi@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Harvey Harrison <harvey.harrison@gmail.com>
+In-Reply-To: <91b13c310807251008o361bc39drfb6aa227cd9fd2f9@mail.gmail.com>
+References: <1216954114-31949-1-git-send-email-crquan@gmail.com>
+	 <20080725164253.GA7355@tree.beaverton.ibm.com>
+	 <91b13c310807251008o361bc39drfb6aa227cd9fd2f9@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 25 Jul 2008 13:14:01 -0400
+Message-Id: <1217006041.15288.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sat, 2008-07-26 at 01:08 +0800, rae l wrote:
+> On Sat, Jul 26, 2008 at 12:42 AM, Darrick J. Wong <djwong@us.ibm.com> wrote:
+> > On Fri, Jul 25, 2008 at 10:48:33AM +0800, Denis ChengRq wrote:
+> >> Signed-off-by: Denis ChengRq <crquan@gmail.com>
+> >
+> > No justification or changelog?
+> I think no more explanation needed, the subject is definite.
+> 
+> and no justification happened here, (there are justifications otherwhere)
+> 
+> >> -             __FUNCTION__)
+> >> +             __func__)
+> >
+> > include/linux/kernel.h:503:#define __FUNCTION__ (__func__)
+> This solution is not completely,
+> 
+> >
+> > I assume you're trying to kill this?
+> Eventually we will need a replace in the whole tree:
+> 
+> grep -RsInw __FUNCTION__ . |xargs sed -i -e 's/__FUNCTION__/__func__/g'
 
-Could anyone tell me which options to enable/disable to have the scheduler behavior as it was before 2.6.25 (i.e, completely disable the group scheduler)? There seems to be a lot of confusion [1] about which options to set or not set, so it would be nice if anyone could give the exact ones.
+Actually, we already have such a maintained patch by Harvey Harrison, so
+we don't really need another.
 
-Thanks.
+Since nearly every other subsystem has done this, I was thinking we
+could do it around -rc1 which should cause the minimal disruption.
 
-[1] For example, in Arch Linux the group scheduler was first enabled in 2.6.25, but due to latency issues it was quickly disabled. But after that, the following report claims to have problems with everything *GROUP* disabled and that you need to enable CGROUPS to solve them (the report links to similar reports on Gentoo and Ubuntu, so it seems the confusion is quite general):
-
-http://bugs.archlinux.org/task/10512
-
+James
 
 
-      
