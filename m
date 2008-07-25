@@ -1,96 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbYGYC17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbYGYCco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754523AbYGYC17 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 22:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYGYC1t
+	id S1754936AbYGYCco (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 22:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYGYCcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 22:27:49 -0400
-Received: from sh.osrg.net ([192.16.179.4]:34986 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751268AbYGYC1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 22:27:48 -0400
-Date: Fri, 25 Jul 2008 11:26:27 +0900
-To: mpatocka@redhat.com
-Cc: James.Bottomley@HansenPartnership.com, davem@davemloft.net,
-       fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-parisc@vger.kernel.org
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in
- blk_recalc_rq_segments about VMERGE
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <Pine.LNX.4.64.0807241727320.12036@devserv.devel.redhat.com>
-References: <Pine.LNX.4.64.0807241232040.9412@devserv.devel.redhat.com>
-	<1216918371.4524.38.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0807241727320.12036@devserv.devel.redhat.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 24 Jul 2008 22:32:32 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:32564 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752251AbYGYCcb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 22:32:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=PBn6ZI+hd79dEuiL0JEBKce4tnAAIt5XnUU8CQKQaUMW2DUQbaz1BLILVViendaQhy
+         JMTqXDA8caENU/H0ihWsiiM4W/FplIJTL31+H4pQTTFep3zyirxlcRudMOJqYSANBB1p
+         jav1V69ft9629m39T905pyqjXjAtDXDe9pdEM=
+Message-ID: <9f281e550807241932w7b0a5a25rd04aecb0a69e9363@mail.gmail.com>
+Date: Fri, 25 Jul 2008 10:32:30 +0800
+From: "jianhai yang" <jianhai@gmail.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Is there any patch for this problem?
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080725112711H.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Jul 2008 17:49:14 -0400 (EDT)
-Mikulas Patocka <mpatocka@redhat.com> wrote:
-
-> On Thu, 24 Jul 2008, James Bottomley wrote:
-> 
-> > On Thu, 2008-07-24 at 12:34 -0400, Mikulas Patocka wrote:
-> > > On Thu, 24 Jul 2008, James Bottomley wrote:
-> > > 
-> > > > On Thu, 2008-07-24 at 11:07 -0400, Mikulas Patocka wrote:
-> > > > > So try to #define BIO_VMERGE_BOUNDARY 0 for Pa-Risc and tell us what 
-> > > > > performance degradation do you see (and what driver do you use and what is 
-> > > > > the I/O pattern).
-> > > > > 
-> > > > > If you show something specific, we can consider that --- but you haven't 
-> > > > > yet told us anything, except generic talk.
-> > > > 
-> > > > You keep ignoring inconvenient facts.  For about the third time:
-> > > > 
-> > > > I run a test bed for sg_tables (large chaining of requests).  This runs
-> > > > on parisc using virtual merging (has to because the final physical table
-> > > > size can't go over the sg list of the SCSI card).  If I turn off virtual
-> > > > merging I can no longer test sg_tables in vanilla kernels.
-> > > > 
-> > > > James
-> > > 
-> > > What sg_tables test do you mean? What does the test do? Why couldn't you 
-> > > run the test if BIO_VMERGE_BOUNDARY is 0? Normal I/O obviously can work 
-> > > with BIO_VMERGE_BOUNDARY 0, the kernel will just send more smaller 
-> > 
-> > Look, if you don't really understand what I'm doing, it's not really my
-> > job to educate you.  The sg_table discussions are on marc.info, mainly
-> > on the SCSI lists; just look for 'sg chaining' in the header (need to
-> > use google site ... marc's search is bad).
-> > 
-> > You can complain if the code is impacting you ... but I believe I've
-> > optimised it so it isn't.  Your basic problem amounts to you not liking
-> > me doing something that has no impact on you ... I'm afraid that's what
-> > freedom leads to (shocking, I know).
-> > 
-> > James
-> 
-> Chaining of sg_tables is used for drivers with big sg tables --- and 
-> vmerge counting is used for drivers with small sg tables. So what do they 
-> have in common?
-
-VMERGE enables you to handle a large request even with drivers with
-small sg tables.
+I am using PPP currently, but sometimes the process "pppd" becomes
+UNINTERRUPTIBLE while the serial port is still active. My kernel is
+linux-2.6.21.
+For now I have got the short message from "dmesg" as bellow:
 
 
-> Summary, what I mean:
-> 
-> * in blk-merge.c, you have 85 lines, that is 16% of the size of the file, 
-> devoted to counting of hw_segments
-> 
-> * it is only used on two architectures, one already outdated (alpha), the 
-> other being discontinued (pa-risc). On all the other architectures, 
-> hw_segments == phys_segments
+[ 1398.270000] [<c00b05f8>] (raw_notifier_call_chain+0x0/0x14) from
+[<c025b3c8>] (unregister_netdevice+0x1a0/0x294)
+[ 1398.270000] [<c025b228>] (unregister_netdevice+0x0/0x294) from
+[<c025b4dc>] (unregister_netdev+0x20/0x28)
+[ 1398.270000]  r6 = C159C800  r5 = C1B5F400  r4 = C1B5F400
+[ 1398.270000] [<c025b4bc>] (unregister_netdev+0x0/0x28) from
+[<c01ea1f4>] (ppp_shutdown_interface+0x7c/0xc8)
+[ 1398.270000]  r4 = C0EEC000
+[ 1398.270000] [<c01ea178>] (ppp_shutdown_interface+0x0/0xc8) from
+[<c01ea5a0>] (ppp_release+0x44/0x9c)
+[ 1398.270000]  r7 = C13D7238  r6 = C13AB638  r5 = 00000008  r4 = C159C800
+[ 1398.270000] [<c01ea55c>] (ppp_release+0x0/0x9c) from [<c00ec010>]
+(__fput+0xb8/0x1b4)
+[ 1398.270000]  r4 = C1674840
+[ 1398.270000] [<c00ebf58>] (__fput+0x0/0x1b4) from [<c00ec274>]
+(fput+0x34/0x38)
+[ 1398.270000]  r8 = 00000001  r7 = C202DDE0  r6 = 00000000  r5 = C07EC380
+[ 1398.270000]  r4 = C1674840
+[ 1398.270000] [<c00ec240>] (fput+0x0/0x38) from [<c00e9054>]
+(filp_close+0x78/0x84)
+[ 1398.270000] [<c00e8fdc>] (filp_close+0x0/0x84) from [<c00a32c4>]
+(put_files_struct+0x88/0xe0)
+[ 1398.270000]  r6 = 000000D4  r5 = 0000077F  r4 = C07EC380
+[ 1398.270000] [<c00a323c>] (put_files_struct+0x0/0xe0) from
+[<c00a486c>] (do_exit+0x248/0x90c)
+[ 1398.270000]  r8 = 00000009  r7 = 00000001  r6 = C0EEDFB0  r5 = C07EB320
+[ 1398.270000]  r4 = C07EC380
+[ 1398.270000] [<c00a4624>] (do_exit+0x0/0x90c) from [<c00a4ff4>]
+(do_group_exit+0xc4/0xcc)
+[ 1398.270000] [<c00a4f30>] (do_group_exit+0x0/0xcc) from [<c00af814>]
+(get_signal_to_deliver+0x3e0/0x42c)
+[ 1398.270000]  r4 = C3581B54
+[ 1398.270000] [<c00af434>] (get_signal_to_deliver+0x0/0x42c) from
+[<c0080a48>] (do_signal+0x64/0x4d4)
+[ 1398.270000] [<c00809e4>] (do_signal+0x0/0x4d4) from [<c0080ee4>]
+(do_notify_resume+0x2c/0x30)
+[ 1398.270000] [<c0080eb8>] (do_notify_resume+0x0/0x30) from
+[<c007dd0c>] (work_pending+0x1c/0x20)
+[ 1398.270000] Code: e1a0c00d e92dd810 e24cb004 e24dd004 (e5904014)
+[ 1398.810000] Fixing recursive fault but reboot is needed!
 
-BTW, alpha IOMMU can't handle VMERGE. But the IOMMU has the code to
-handle VMERGE so one-line patch can fix the IOMMU.
+
+Thanks a lot!
 
 
-As I said before, can we leave this to Jens, keeping or removing
-VMERGE? Seems that I see the same arguments again and again.
+
+Best Regards!
+                                                  Jianhai Yang.
