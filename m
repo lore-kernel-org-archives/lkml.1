@@ -1,148 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbYGYUpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbYGYUrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752188AbYGYUpQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 16:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbYGYUo7
+	id S1756369AbYGYUrV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 16:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbYGYUrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 16:44:59 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:53056 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756198AbYGYUo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 16:44:57 -0400
-Date: Fri, 25 Jul 2008 22:44:53 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/cpufreq/cpufreq.c: Adjust error handling code
- involving cpufreq_cpu_put
-Message-ID: <Pine.LNX.4.64.0807252243510.1602@ask.diku.dk>
+	Fri, 25 Jul 2008 16:47:07 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:63320 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750854AbYGYUrG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 16:47:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=sGR7+naXlA+WIDLeQUcCIsZH+98pc/3tHFCiv+qaU8ZdcoDgmgcABzKPgZB1Pclz0w
+         LovK24gNadUGEZ6aKgtwGdppGIm0T8sCI7bJIuMetgo8s9SLUetjcpnT7mvj81Xw6OKT
+         DTWKvg9+3zkm6d3SwGhnsnmBDh8/bsCd9L5oM=
+Message-ID: <86802c440807251347x424b14d4j663928922a507d9a@mail.gmail.com>
+Date: Fri, 25 Jul 2008 13:47:05 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>, "Ayaz Abdulla" <aabdulla@nvidia.com>
+Subject: forcedeth mac reversed again via kexec
+Cc: nedev <netdev@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+mac address ordering get reversed again by kexec path in second kernel
+in current linus tree
+it is ck804 system
 
-After calling cpufreq_cpu_get, error handling code should call
-cpufreq_cpu_put.
-
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
-
-// <smpl>
-@r@
-expression x,E;
-statement S;
-position p1,p2,p3;
-@@
-
-(
-if ((x = cpufreq_cpu_get@p1(...)) == NULL || ...) S
-|
-x = cpufreq_cpu_get@p1(...)
-... when != x
-if (x == NULL || ...) S
-)
-<...
-if@p3 (...) { ... when != cpufreq_cpu_put(x)
-                  when != if (x) { ... cpufreq_cpu_put(x); ...}
-    return@p2 ...;
-}
-...>
-(
-return x;
-|
-return 0;
-|
-x = E
-|
-E = x
-|
-cpufreq_cpu_put(x)
-)
-
-@exists@
-position r.p1,r.p2,r.p3;
-expression x;
-int ret != 0;
-statement S;
-@@
-
-* x = cpufreq_cpu_get@p1(...)
-  <...
-* if@p3 (...)
-  S
-  ...>
-* return@p2 \(NULL\|ret\);
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/cpufreq/cpufreq.c     |   24 +++++++++++++------
- 1 files changed, 16 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 8d6a3ff..d4de015 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1464,20 +1464,22 @@ int cpufreq_driver_target(struct cpufreq_policy *policy,
- 			  unsigned int target_freq,
- 			  unsigned int relation)
- {
--	int ret;
-+	int ret = -EINVAL;
- 
- 	policy = cpufreq_cpu_get(policy->cpu);
- 	if (!policy)
--		return -EINVAL;
-+		goto no_policy;
- 
- 	if (unlikely(lock_policy_rwsem_write(policy->cpu)))
--		return -EINVAL;
-+		goto fail;
- 
- 	ret = __cpufreq_driver_target(policy, target_freq, relation);
- 
- 	unlock_policy_rwsem_write(policy->cpu);
- 
-+fail:
- 	cpufreq_cpu_put(policy);
-+no_policy:
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(cpufreq_driver_target);
-@@ -1714,13 +1716,17 @@ int cpufreq_update_policy(unsigned int cpu)
- {
- 	struct cpufreq_policy *data = cpufreq_cpu_get(cpu);
- 	struct cpufreq_policy policy;
--	int ret = 0;
-+	int ret;
- 
--	if (!data)
--		return -ENODEV;
-+	if (!data) {
-+		ret = -ENODEV;
-+		goto no_policy;
-+	}
- 
--	if (unlikely(lock_policy_rwsem_write(cpu)))
--		return -EINVAL;
-+	if (unlikely(lock_policy_rwsem_write(cpu))) {
-+		ret = -EINVAL;
-+		goto fail;
-+	}
- 
- 	dprintk("updating policy for CPU %u\n", cpu);
- 	memcpy(&policy, data, sizeof(struct cpufreq_policy));
-@@ -1747,7 +1753,9 @@ int cpufreq_update_policy(unsigned int cpu)
- 
- 	unlock_policy_rwsem_write(cpu);
- 
-+fail:
- 	cpufreq_cpu_put(data);
-+no_policy:
- 	return ret;
- }
- EXPORT_SYMBOL(cpufreq_update_policy);
+YH
