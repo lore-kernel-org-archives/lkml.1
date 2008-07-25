@@ -1,53 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388AbYGYTeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYGYTds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756388AbYGYTeV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 15:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYGYTeH
+	id S1756032AbYGYTds (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 15:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbYGYTda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 15:34:07 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:26670 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750991AbYGYTeF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 15:34:05 -0400
-Message-ID: <fa686aa40807251234n74e4cd75yd6313fa394533625@mail.gmail.com>
-Date: Fri, 25 Jul 2008 15:34:03 -0400
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH v3 2/4] spi: split up spi_new_device() to allow two stage registration.
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-       jonsmirl@gmail.com
-In-Reply-To: <200807251200.45321.david-b@pacbell.net>
+	Fri, 25 Jul 2008 15:33:30 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:50395 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752526AbYGYTd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 15:33:29 -0400
+Date: Fri, 25 Jul 2008 21:33:25 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: miklos@szeredi.hu, fuse-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] fs/suse/inode.c: Add missing fuse_request_alloc
+Message-ID: <Pine.LNX.4.64.0807252131280.1602@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
-	 <20080725073316.8485.84001.stgit@trillian.secretlab.ca>
-	 <200807251200.45321.david-b@pacbell.net>
-X-Google-Sender-Auth: 1b0002cdcbe8e054
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 3:00 PM, David Brownell <david-b@pacbell.net> wrote:
-> On Friday 25 July 2008, Grant Likely wrote:
->>
->> This change is in preparation for adding an OF device tree parser to
->> generate spi_devices based on data in the device tree.
->>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->
-> Given the comment fixes noted above and below:
->
->
-> Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+From: Julia Lawall <julia@diku.dk>
 
-Cool, I'll get all this fixed.  Thanks.
+The error handling code for the second call to fuse_request_alloc should
+include freeing the result of the first one.
 
-g.
+The semantic match that finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+// <smpl>
+@r@
+expression x,E;
+statement S;
+position p1,p2,p3;
+@@
+
+(
+if ((x = fuse_request_alloc@p1(...)) == NULL || ...) S
+|
+x = fuse_request_alloc@p1(...)
+... when != x
+if (x == NULL || ...) S
+)
+<...
+if@p3 (...) { ... when != fuse_request_free(x)
+    return@p2 ...;
+}
+...>
+(
+return x;
+|
+return 0;
+|
+x = E
+|
+E = x
+|
+fuse_request_free(x)
+)
+
+@exists@
+position r.p1,r.p2,r.p3;
+expression x;
+int ret != 0;
+statement S;
+@@
+
+* x = fuse_request_alloc@p1(...)
+  <...
+* if@p3 (...)
+  S
+  ...>
+* return@p2 \(NULL\|ret\);
+
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ fs/fuse/inode.c               |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
+index 3141690..ae1d4fd 100644
+--- a/fs/fuse/inode.c
++++ b/fs/fuse/inode.c
+@@ -690,7 +690,7 @@ static int fuse_fill_super(struct super_block *sb, void *data, int silent)
+ 	if (is_bdev) {
+ 		fc->destroy_req = fuse_request_alloc();
+ 		if (!fc->destroy_req)
+-			goto err_put_root;
++			goto err_free_init_req;
+ 	}
+ 
+ 	mutex_lock(&fuse_mutex);
+@@ -720,6 +720,7 @@ static int fuse_fill_super(struct super_block *sb, void *data, int silent)
+ 
+  err_unlock:
+ 	mutex_unlock(&fuse_mutex);
++ err_free_init_req:
+ 	fuse_request_free(init_req);
+  err_put_root:
+ 	dput(root_dentry);
