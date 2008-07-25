@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbYGYSOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYGYSOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbYGYSOi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 14:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbYGYSO3
+	id S1755046AbYGYSOw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 14:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYGYSOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 14:14:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57811 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751151AbYGYSO3 (ORCPT
+	Fri, 25 Jul 2008 14:14:35 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57747 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752096AbYGYSOe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 14:14:29 -0400
-Date: Fri, 25 Jul 2008 11:10:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       akpm <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] Please pull from powerpc.git merge branch
-In-Reply-To: <1216973590.11188.99.camel@pasglop>
-Message-ID: <alpine.LFD.1.10.0807251108320.5249@nehalem.linux-foundation.org>
-References: <1216973590.11188.99.camel@pasglop>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 25 Jul 2008 14:14:34 -0400
+Message-ID: <488A17EC.2000107@zytor.com>
+Date: Fri, 25 Jul 2008 14:14:04 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] byteorder: force in-place endian conversion to always
+ evaluate args
+References: <1217003621.5971.4.camel@brick>
+In-Reply-To: <1217003621.5971.4.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 25 Jul 2008, Benjamin Herrenschmidt wrote:
+Harvey Harrison wrote:
+> David Miller reported breakage in ide when the in-place byteorder helpers
+> were used as the macros do not always evaluate their args which led to
+> an infinite loop.
 > 
-> ﻿git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+> Just make them functions to ensure they always do so.
 
-Ok, I got a conflict in arch/powerpc/platforms/52xx/Kconfig, you should 
-check that I fixed it up right and send me follow-up patches if required.
+> -#define __cpu_to_be64s(x) do {} while (0)
 
-		Linus
+For what it's worth, the way to write a macro like this:
+
+#define __cpu_to_be64s(x) ((void)(x))
+
+	-hpa
