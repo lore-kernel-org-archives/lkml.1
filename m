@@ -1,72 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbYGYOj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbYGYOqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753400AbYGYOj2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 10:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbYGYOjT
+	id S1752848AbYGYOqV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 10:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYGYOqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 10:39:19 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:20982 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237AbYGYOjS (ORCPT
+	Fri, 25 Jul 2008 10:46:12 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:37278 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbYGYOqM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 10:39:18 -0400
-Subject: RE: HP (Compaq) Smart Array 5xxx controller SCSI driver
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       "scameron@beardog.cca.cpqcorp.net" <scameron@beardog.cca.cpqcorp.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A778826B3DD7474@GVW0547EXC.americas.hpqcorp.net>
-References: <20080722175729.GC8833@beardog.cca.cpqcorp.net>
-	 <20080724101953R.fujita.tomonori@lab.ntt.co.jp>
-	 <20080724133012.GH8833@beardog.cca.cpqcorp.net>
-	 <20080724224438B.fujita.tomonori@lab.ntt.co.jp>
-	 <0F5B06BAB751E047AB5C87D1F77A778826B3DD7474@GVW0547EXC.americas.hpqcorp.net>
-Content-Type: text/plain
-Date: Thu, 24 Jul 2008 13:47:48 -0400
-Message-Id: <1216921668.13842.6.camel@boris.fwe.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 25 Jul 2008 10:46:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=BMZFHFNfokoAPPS5ct4x0a1hzib3JyemQEC88oIaN3jqJWQr/B64pZXRmsyv4d78ns
+         wuePAPgAjCR+AOloKyoPjsl2/1Qe4BNqRqJDRkS5GctMc9P68IFh7zltgDlg+ea+E4Dp
+         hNW1b1Oqnsutff6ME3cua+Pwf9asD2uDP0EGg=
+Message-ID: <9e4733910807250746g436307d7sbbf799b73a9f2c67@mail.gmail.com>
+Date: Fri, 25 Jul 2008 10:46:11 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 0/4 REPOST] OF infrastructure for SPI devices
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       spi-devel-general@lists.sourceforge.net,
+       dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org
+In-Reply-To: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-24 at 15:00 +0000, Miller, Mike (OS Dev) wrote:
-> > > As for the patches I mentioned which were previously ignored for
-> > > improving how the current cciss SCSI code handled hot plogging, if
-> > > you're curious about that, check here:
-> > >
-> > > http://marc.info/?l=linux-scsi&m=120213565000426&w=4
-> > >
-> > > A change like that becomes more important if logical drives are
-> > > exposed through the scsi layer.
-> >
-> > We need to think about the best way to map (expose) logical
-> > and physical drivers to SCSI luns. As I wrote before, I'm
-> > interested in how HP SCSI driver does.
-> 
-> We don't neccesarily want or need to expose the physical disks. The
-> only exception is disks that are not part of a logical volume. If the
-> disks are part of a logical volume but exposed the user may shoot
-> themselves in the foot by destroying the firmware metadata.
+On 7/25/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> I don't know what to do with these patches.  I'd really like to see them
+>  in .27, and now that akpm has cleared his queue, the prerequisite patch
+>  has been merged so they are ready to go in.  However, even though there
+>  has been favourable reception on the SPI and linuxppc lists for these
+>  changes I don't have any acks from anybody yet.
 
-Exposing the underlying disks can be useful for things such as:
+I have compatible hardware but it has an MMC card socket hooked up. I
+haven't figured out yet how to get this driver hooked to the MMC
+subsystem and make the file system on the card work.  (I've been
+working on ALSA).
 
-      * Finding out what is in a logical drive.
-      * Checking and updating disk firmware.
-      * Running smartctrl tests on disks
+I believe I need this:
+http://lkml.org/lkml/2008/6/5/209
 
-> -- mikem
+Then I need to get everything hooked together. Point me in the right
+direction and I can help with testing.
+
+
+>
+>  David, can you please reply on if you are okay with these patches
+>  getting merged?  If so, do you want me to merge them via my tree, or
+>  do you want to pick them up?
+>
+>  Thanks,
+>  g.
+>
+>  --
+>  Grant Likely, B.Sc. P.Eng.
+>  Secret Lab Technologies Ltd.
+>
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
--- 
-Andrew Patterson
-Hewlett-Packard
+>  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>  the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  Please read the FAQ at  http://www.tux.org/lkml/
+>
 
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
