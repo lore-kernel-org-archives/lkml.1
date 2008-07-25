@@ -1,81 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbYGYCVD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYGYCZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbYGYCVD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 22:21:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYGYCUx
+	id S1754818AbYGYCZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 22:25:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbYGYCZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 22:20:53 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:50284 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753153AbYGYCUw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 22:20:52 -0400
-Date: Fri, 25 Jul 2008 04:20:48 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Altobelli <david.altobelli@hp.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Let HP iLO driver depend on PCI
-Message-ID: <20080725022048.GB5179@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 24 Jul 2008 22:25:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49027 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751268AbYGYCZt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 22:25:49 -0400
+Date: Thu, 24 Jul 2008 22:25:10 -0400
+From: Rik van Riel <riel@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, akpm@linux-foundation.org
+Subject: PERF: performance tests with the split LRU VM in -mm
+Message-ID: <20080724222510.3bbbbedc@bree.surriel.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] Let HP iLO driver depend on PCI
+In order to get the performance of the split LRU VM (in -mm) better,
+I have performed several performance tests with the following kernels:
+- 2.6.26                                                    "2.6.26"
+- 2.6.26-rc8-mm1                                            "-mm"
+- 2.6.26-rc8-mm1 w/ "evict streaming IO cache first" patch  "stream"
+      Patch at: http://lkml.org/lkml/2008/7/15/465
+- 2.6.26-rc8-mm1 w/ "fix swapout on sequential IO" patch    "noforce"
+      Patch at: http://marc.info/?l=linux-mm&m=121683855132630&w=2
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+I have run the performance tests on a Dell pe1950 system
+with 2 quad-core CPUs, 16GB of RAM and a hardware RAID 1
+array of 146GB disks.
 
-"HP iLO driver" causes this on s390:
+The tests are fairly simple, but took a fair amount of time to
+run due to the size of the data set involved (full disk for dd,
+55GB innodb file for the database tests).
 
-drivers/misc/hpilo.c: In function 'doorbell_set':
-drivers/misc/hpilo.c:147: error: implicit declaration of function 'iowrite8'
-drivers/misc/hpilo.c: In function 'ilo_ccb_close':
-drivers/misc/hpilo.c:204: error: implicit declaration of function 'iowrite32'
-drivers/misc/hpilo.c:204: error: implicit declaration of function 'ioread32'
-drivers/misc/hpilo.c:222: error: implicit declaration of function 'memset_io'
-drivers/misc/hpilo.c:225: error: implicit declaration of function 'pci_free_consistent'
-drivers/misc/hpilo.c: In function 'ilo_ccb_open':
-drivers/misc/hpilo.c:244: error: implicit declaration of function 'pci_alloc_consistent'
-drivers/misc/hpilo.c:245: warning: assignment makes pointer from integer without a cast
-drivers/misc/hpilo.c:296: error: implicit declaration of function 'memcpy_toio'
-drivers/misc/hpilo.c: In function 'ilo_unmap_device':
-drivers/misc/hpilo.c:575: error: implicit declaration of function 'pci_iounmap'
-drivers/misc/hpilo.c: In function 'ilo_map_device':
-drivers/misc/hpilo.c:585: error: implicit declaration of function 'pci_iomap'
-drivers/misc/hpilo.c:585: warning: assignment makes pointer from integer without a cast
-drivers/misc/hpilo.c:592: warning: assignment makes pointer from integer without a cast
-drivers/misc/hpilo.c:599: warning: assignment makes pointer from integer without a cast
-make[2]: *** [drivers/misc/hpilo.o] Error 1
 
-Just let it depend on PCI.
+  TEST 1: dd if=/dev/sda of=/dev/null bs=1M
 
-Cc: David Altobelli <david.altobelli@hp.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
+kernel  speed    swap used
 
-Sent already two weeks ago to Greg because it caused the same
-build bug on linux-next.
+2.6.26  111MB/s  500kB
+-mm     110MB/s  59MB     (ouch, system noticably slower)
+noforce	111MB/s  128kB
+stream  108MB/s  0        (slight regression, not sure why yet)
 
- drivers/misc/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+This patch shows that the split LRU VM in -mm has a problem
+with large streaming IOs: the working set gets pushed out of
+memory, which makes doing anything else during the big streaming
+IO kind of painful.
 
-Index: linux-2.6/drivers/misc/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/misc/Kconfig
-+++ linux-2.6/drivers/misc/Kconfig
-@@ -425,6 +425,7 @@ config SGI_XP
- config HP_ILO
- 	tristate "Channel interface driver for HP iLO/iLO2 processor"
- 	default n
-+	depends on PCI
- 	help
- 	  The channel interface driver allows applications to communicate
- 	  with iLO/iLO2 management processors present on HP ProLiant
+However, either of the two patches posted fixes that problem,
+though at a slight performance penalty for the "stream" patch.
+
+
+  TEST 2: sysbench & linear query
+
+In this test, I run sysbench in parallel with "SELECT COUNT(*) FROM sbtest;"
+on a 240,000,000 row sysbench database.  In the first columns, MySQL has
+been started up with its default memory allocation; the second set of
+results has innodb_buffer_pool_size=12G, allocating 75% of system memory
+as innodb buffer.   The sysbench performance number is the number of
+transactions per second (tps), while the linear query simply has its
+time measured.
+
+         default memory        12GB innodb buffer
+kernel   tps   SELECT COUNT    tps   SELECT COUNT   swapped out
+
+2.6.26   100   42 min 6 sec    142   1 hour 20 min  5GB (constant swap IO!)
+-mm      109   33 min 25 sec   210   22 min 26 sec  <70MB
+noforce  101   34 min 48 sec   207   22 min 16 sec  <70MB
+stream   111   32 min 5 sec    209   22 min 22 sec  <70MB
+
+These results show that increasing the database buffer helps
+sysbench performance, even in 2.6.26 which is constantly swapping
+the database buffer in and out. However, the large linear query
+really suffers in the upstream VM.
+
+The upstream VM constantly swaps mysql innodb buffer in and
+out, with the amount of swap space in use hovering about half
+full (5GB).  This probably indicates that the kernel keeps
+cycling mysql in and out of swap, freeing up swap space at
+swapin time.
+
+Neither of the patches I proposed for -mm seem to make much of
+a performance difference for this test, but they do solve the
+interactivity problem during large streaming IO.
+
+The split LRU VM in the -mm kernel really improves the performance
+of databases in the presence of streaming IO, which is a real
+performance issue for Linux users at the moment.
