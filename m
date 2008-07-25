@@ -1,227 +1,558 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbYGYBWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbYGYBWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757407AbYGYBWR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 21:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbYGYBVc
+	id S1757504AbYGYBWg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 21:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbYGYBVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 21:21:32 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:56515 "EHLO relay.sgi.com"
+	Thu, 24 Jul 2008 21:21:33 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:38693 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753307AbYGYBVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753602AbYGYBVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Jul 2008 21:21:30 -0400
-Message-Id: <20080725012129.605480000@polaris-admin.engr.sgi.com>
+Message-Id: <20080725012129.989063000@polaris-admin.engr.sgi.com>
 References: <20080725012128.805332000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Jul 2008 18:21:29 -0700
+Date: Thu, 24 Jul 2008 18:21:31 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Jack Steiner <steiner@sgi.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] cpumask: Make cpumask_of_cpu_map generic
-Content-Disposition: inline; filename=rusty-patch
+Subject: [PATCH 3/3] cpumask: Change cpumask_of_cpu_ptr to use new cpumask_of_cpu
+Content-Disposition: inline; filename=add-generic-cpumask_of_cpu_map
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If an arch doesn't define cpumask_of_cpu_map, create a generic
-statically-initialized one for them.  This allows removal of the buggy
-cpumask_of_cpu() macro (&cpumask_of_cpu() gives address of
-out-of-scope var).
-
-An arch with NR_CPUS of 4096 probably wants to allocate this itself
-based on the actual number of CPUs, since otherwise they're using 2MB
-of rodata (1024 cpus means 128k).  That's what
-CONFIG_HAVE_CPUMASK_OF_CPU_MAP is for (only x86/64 does so at the
-moment).
-
-In future as we support more CPUs, we'll need to resort to a
-get_cpu_map()/put_cpu_map() allocation scheme.
+  * Replace previous instances of the cpumask_of_cpu_ptr* macros
+    with a the new (lvalue capable) generic cpumask_of_cpu().
 
 Based on linux-2.6.tip/master.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
-Note: 8 warnings from checkpatch.pl:
+ arch/x86/kernel/acpi/cstate.c                    |    3 +--
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c       |   10 +++-------
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c        |   15 +++++----------
+ arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c |   12 ++++--------
+ arch/x86/kernel/cpu/cpufreq/speedstep-ich.c      |    3 +--
+ arch/x86/kernel/cpu/intel_cacheinfo.c            |    3 +--
+ arch/x86/kernel/ldt.c                            |    6 ++----
+ arch/x86/kernel/microcode.c                      |   17 +++++------------
+ arch/x86/kernel/reboot.c                         |   11 +++--------
+ drivers/acpi/processor_throttling.c              |   11 +++--------
+ drivers/firmware/dcdbas.c                        |    3 +--
+ drivers/misc/sgi-xp/xpc_main.c                   |    3 +--
+ kernel/stop_machine.c                            |    3 +--
+ kernel/time/tick-common.c                        |    8 +++-----
+ kernel/trace/trace_sysprof.c                     |    4 +---
+ lib/smp_processor_id.c                           |    5 +----
+ net/sunrpc/svc.c                                 |    3 +--
+ 17 files changed, 37 insertions(+), 83 deletions(-)
 
-    "ERROR: Macros with complex values should be enclosed in parenthesis"
----
- include/linux/cpumask.h |   41 +-----------------
- kernel/cpu.c            |  109 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 112 insertions(+), 38 deletions(-)
-
---- linux-2.6.tip.orig/include/linux/cpumask.h
-+++ linux-2.6.tip/include/linux/cpumask.h
-@@ -62,15 +62,7 @@
-  * int next_cpu_nr(cpu, mask)		Next cpu past 'cpu', or nr_cpu_ids
-  *
-  * cpumask_t cpumask_of_cpu(cpu)	Return cpumask with bit 'cpu' set
-- *ifdef CONFIG_HAS_CPUMASK_OF_CPU
-- * cpumask_of_cpu_ptr_declare(v)	Declares cpumask_t *v
-- * cpumask_of_cpu_ptr_next(v, cpu)	Sets v = &cpumask_of_cpu_map[cpu]
-- * cpumask_of_cpu_ptr(v, cpu)		Combines above two operations
-- *else
-- * cpumask_of_cpu_ptr_declare(v)	Declares cpumask_t _v and *v = &_v
-- * cpumask_of_cpu_ptr_next(v, cpu)	Sets _v = cpumask_of_cpu(cpu)
-- * cpumask_of_cpu_ptr(v, cpu)		Combines above two operations
-- *endif
-+ *					(can be used as an lvalue)
-  * CPU_MASK_ALL				Initializer - all bits set
-  * CPU_MASK_NONE			Initializer - no bits set
-  * unsigned long *cpus_addr(mask)	Array of unsigned long's in mask
-@@ -274,36 +266,9 @@ static inline void __cpus_shift_left(cpu
+--- linux-2.6.tip.orig/arch/x86/kernel/acpi/cstate.c
++++ linux-2.6.tip/arch/x86/kernel/acpi/cstate.c
+@@ -73,7 +73,6 @@ int acpi_processor_ffh_cstate_probe(unsi
+ 	struct cpuinfo_x86 *c = &cpu_data(cpu);
+ 
+ 	cpumask_t saved_mask;
+-	cpumask_of_cpu_ptr(new_mask, cpu);
+ 	int retval;
+ 	unsigned int eax, ebx, ecx, edx;
+ 	unsigned int edx_part;
+@@ -92,7 +91,7 @@ int acpi_processor_ffh_cstate_probe(unsi
+ 
+ 	/* Make sure we are running on right CPU */
+ 	saved_mask = current->cpus_allowed;
+-	retval = set_cpus_allowed_ptr(current, new_mask);
++	retval = set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+ 	if (retval)
+ 		return -1;
+ 
+--- linux-2.6.tip.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ linux-2.6.tip/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@ -200,12 +200,10 @@ static void drv_read(struct drv_cmd *cmd
+ static void drv_write(struct drv_cmd *cmd)
+ {
+ 	cpumask_t saved_mask = current->cpus_allowed;
+-	cpumask_of_cpu_ptr_declare(cpu_mask);
+ 	unsigned int i;
+ 
+ 	for_each_cpu_mask_nr(i, cmd->mask) {
+-		cpumask_of_cpu_ptr_next(cpu_mask, i);
+-		set_cpus_allowed_ptr(current, cpu_mask);
++		set_cpus_allowed_ptr(current, &cpumask_of_cpu(i));
+ 		do_drv_write(cmd);
+ 	}
+ 
+@@ -269,12 +267,11 @@ static unsigned int get_measured_perf(un
+ 	} aperf_cur, mperf_cur;
+ 
+ 	cpumask_t saved_mask;
+-	cpumask_of_cpu_ptr(cpu_mask, cpu);
+ 	unsigned int perf_percent;
+ 	unsigned int retval;
+ 
+ 	saved_mask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, cpu_mask);
++	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+ 	if (get_cpu() != cpu) {
+ 		/* We were not able to run on requested processor */
+ 		put_cpu();
+@@ -340,7 +337,6 @@ static unsigned int get_measured_perf(un
+ 
+ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+ {
+-	cpumask_of_cpu_ptr(cpu_mask, cpu);
+ 	struct acpi_cpufreq_data *data = per_cpu(drv_data, cpu);
+ 	unsigned int freq;
+ 	unsigned int cached_freq;
+@@ -353,7 +349,7 @@ static unsigned int get_cur_freq_on_cpu(
+ 	}
+ 
+ 	cached_freq = data->freq_table[data->acpi_data->state].frequency;
+-	freq = extract_freq(get_cur_val(cpu_mask), data);
++	freq = extract_freq(get_cur_val(&cpumask_of_cpu(cpu)), data);
+ 	if (freq != cached_freq) {
+ 		/*
+ 		 * The dreaded BIOS frequency change behind our back.
+--- linux-2.6.tip.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ linux-2.6.tip/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -479,12 +479,11 @@ static int core_voltage_post_transition(
+ static int check_supported_cpu(unsigned int cpu)
+ {
+ 	cpumask_t oldmask;
+-	cpumask_of_cpu_ptr(cpu_mask, cpu);
+ 	u32 eax, ebx, ecx, edx;
+ 	unsigned int rc = 0;
+ 
+ 	oldmask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, cpu_mask);
++	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+ 
+ 	if (smp_processor_id() != cpu) {
+ 		printk(KERN_ERR PFX "limiting to cpu %u failed\n", cpu);
+@@ -1017,7 +1016,6 @@ static int transition_frequency_pstate(s
+ static int powernowk8_target(struct cpufreq_policy *pol, unsigned targfreq, unsigned relation)
+ {
+ 	cpumask_t oldmask;
+-	cpumask_of_cpu_ptr(cpu_mask, pol->cpu);
+ 	struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
+ 	u32 checkfid;
+ 	u32 checkvid;
+@@ -1032,7 +1030,7 @@ static int powernowk8_target(struct cpuf
+ 
+ 	/* only run on specific CPU from here on */
+ 	oldmask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, cpu_mask);
++	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pol->cpu));
+ 
+ 	if (smp_processor_id() != pol->cpu) {
+ 		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
+@@ -1107,7 +1105,6 @@ static int __cpuinit powernowk8_cpu_init
+ {
+ 	struct powernow_k8_data *data;
+ 	cpumask_t oldmask;
+-	cpumask_of_cpu_ptr_declare(newmask);
+ 	int rc;
+ 
+ 	if (!cpu_online(pol->cpu))
+@@ -1159,8 +1156,7 @@ static int __cpuinit powernowk8_cpu_init
+ 
+ 	/* only run on specific CPU from here on */
+ 	oldmask = current->cpus_allowed;
+-	cpumask_of_cpu_ptr_next(newmask, pol->cpu);
+-	set_cpus_allowed_ptr(current, newmask);
++	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pol->cpu));
+ 
+ 	if (smp_processor_id() != pol->cpu) {
+ 		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
+@@ -1182,7 +1178,7 @@ static int __cpuinit powernowk8_cpu_init
+ 	set_cpus_allowed_ptr(current, &oldmask);
+ 
+ 	if (cpu_family == CPU_HW_PSTATE)
+-		pol->cpus = *newmask;
++		pol->cpus = cpumask_of_cpu(pol->cpu);
+ 	else
+ 		pol->cpus = per_cpu(cpu_core_map, pol->cpu);
+ 	data->available_cores = &(pol->cpus);
+@@ -1248,7 +1244,6 @@ static unsigned int powernowk8_get (unsi
+ {
+ 	struct powernow_k8_data *data;
+ 	cpumask_t oldmask = current->cpus_allowed;
+-	cpumask_of_cpu_ptr(newmask, cpu);
+ 	unsigned int khz = 0;
+ 	unsigned int first;
+ 
+@@ -1258,7 +1253,7 @@ static unsigned int powernowk8_get (unsi
+ 	if (!data)
+ 		return -EINVAL;
+ 
+-	set_cpus_allowed_ptr(current, newmask);
++	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+ 	if (smp_processor_id() != cpu) {
+ 		printk(KERN_ERR PFX
+ 			"limiting to CPU %d failed in powernowk8_get\n", cpu);
+--- linux-2.6.tip.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
++++ linux-2.6.tip/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+@@ -417,10 +417,9 @@ static unsigned int get_cur_freq(unsigne
+ 	unsigned l, h;
+ 	unsigned clock_freq;
+ 	cpumask_t saved_mask;
+-	cpumask_of_cpu_ptr(new_mask, cpu);
+ 
+ 	saved_mask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, new_mask);
++	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+ 	if (smp_processor_id() != cpu)
+ 		return 0;
+ 
+@@ -678,15 +677,12 @@ static int centrino_target (struct cpufr
+ 		 * Best effort undo..
+ 		 */
+ 
+-		if (!cpus_empty(*covered_cpus)) {
+-			cpumask_of_cpu_ptr_declare(new_mask);
+-
++		if (!cpus_empty(*covered_cpus))
+ 			for_each_cpu_mask_nr(j, *covered_cpus) {
+-				cpumask_of_cpu_ptr_next(new_mask, j);
+-				set_cpus_allowed_ptr(current, new_mask);
++				set_cpus_allowed_ptr(current,
++						     &cpumask_of_cpu(j));
+ 				wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
+ 			}
+-		}
+ 
+ 		tmp = freqs.new;
+ 		freqs.new = freqs.old;
+--- linux-2.6.tip.orig/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
++++ linux-2.6.tip/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
+@@ -244,8 +244,7 @@ static unsigned int _speedstep_get(const
+ 
+ static unsigned int speedstep_get(unsigned int cpu)
+ {
+-	cpumask_of_cpu_ptr(newmask, cpu);
+-	return _speedstep_get(newmask);
++	return _speedstep_get(&cpumask_of_cpu(cpu));
  }
  
+ /**
+--- linux-2.6.tip.orig/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ linux-2.6.tip/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -516,7 +516,6 @@ static int __cpuinit detect_cache_attrib
+ 	unsigned long		j;
+ 	int			retval;
+ 	cpumask_t		oldmask;
+-	cpumask_of_cpu_ptr(newmask, cpu);
  
--#ifdef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
--extern cpumask_t *cpumask_of_cpu_map;
-+/* cpumask_of_cpu_map[] is in kernel/cpu.c */
-+extern const cpumask_t *cpumask_of_cpu_map;
- #define cpumask_of_cpu(cpu)	(cpumask_of_cpu_map[cpu])
--#define	cpumask_of_cpu_ptr(v, cpu)					\
--		const cpumask_t *v = &cpumask_of_cpu(cpu)
--#define	cpumask_of_cpu_ptr_declare(v)					\
--		const cpumask_t *v
--#define cpumask_of_cpu_ptr_next(v, cpu)					\
--					v = &cpumask_of_cpu(cpu)
--#else
--#define cpumask_of_cpu(cpu)						\
--({									\
--	typeof(_unused_cpumask_arg_) m;					\
--	if (sizeof(m) == sizeof(unsigned long)) {			\
--		m.bits[0] = 1UL<<(cpu);					\
--	} else {							\
--		cpus_clear(m);						\
--		cpu_set((cpu), m);					\
--	}								\
--	m;								\
--})
--#define	cpumask_of_cpu_ptr(v, cpu) 					\
--		cpumask_t _##v = cpumask_of_cpu(cpu);			\
--		const cpumask_t *v = &_##v
--#define	cpumask_of_cpu_ptr_declare(v)					\
--		cpumask_t _##v;						\
--		const cpumask_t *v = &_##v
--#define cpumask_of_cpu_ptr_next(v, cpu)					\
--					_##v = cpumask_of_cpu(cpu)
--#endif
+ 	if (num_cache_leaves == 0)
+ 		return -ENOENT;
+@@ -527,7 +526,7 @@ static int __cpuinit detect_cache_attrib
+ 		return -ENOMEM;
  
- #define CPU_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(NR_CPUS)
+ 	oldmask = current->cpus_allowed;
+-	retval = set_cpus_allowed_ptr(current, newmask);
++	retval = set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+ 	if (retval)
+ 		goto out;
  
---- linux-2.6.tip.orig/kernel/cpu.c
-+++ linux-2.6.tip/kernel/cpu.c
-@@ -456,3 +456,112 @@ out:
- #endif /* CONFIG_PM_SLEEP_SMP */
+--- linux-2.6.tip.orig/arch/x86/kernel/ldt.c
++++ linux-2.6.tip/arch/x86/kernel/ldt.c
+@@ -65,12 +65,10 @@ static int alloc_ldt(mm_context_t *pc, i
  
- #endif /* CONFIG_SMP */
-+
-+#ifndef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
-+/* 64 bits of zeros, for initializers. */
-+#if BITS_PER_LONG == 32
-+#define Z64 0, 0
-+#else
-+#define Z64 0
-+#endif
-+
-+/* Initializer macros. */
-+#define CMI0(n) { .bits = { 1UL << (n) } }
-+#define CMI(n, ...) { .bits = { __VA_ARGS__, 1UL << ((n) % BITS_PER_LONG) } }
-+
-+#define CMI8(n, ...)						\
-+	CMI((n), __VA_ARGS__), CMI((n)+1, __VA_ARGS__),		\
-+	CMI((n)+2, __VA_ARGS__), CMI((n)+3, __VA_ARGS__),	\
-+	CMI((n)+4, __VA_ARGS__), CMI((n)+5, __VA_ARGS__),	\
-+	CMI((n)+6, __VA_ARGS__), CMI((n)+7, __VA_ARGS__)
-+
-+#if BITS_PER_LONG == 32
-+#define CMI64(n, ...)							\
-+	CMI8((n), __VA_ARGS__), CMI8((n)+8, __VA_ARGS__),		\
-+	CMI8((n)+16, __VA_ARGS__), CMI8((n)+24, __VA_ARGS__),		\
-+	CMI8((n)+32, 0, __VA_ARGS__), CMI8((n)+40, 0, __VA_ARGS__),	\
-+	CMI8((n)+48, 0, __VA_ARGS__), CMI8((n)+56, 0, __VA_ARGS__)
-+#else
-+#define CMI64(n, ...)							\
-+	CMI8((n), __VA_ARGS__), CMI8((n)+8, __VA_ARGS__),		\
-+	CMI8((n)+16, __VA_ARGS__), CMI8((n)+24, __VA_ARGS__),		\
-+	CMI8((n)+32, __VA_ARGS__), CMI8((n)+40, __VA_ARGS__),	\
-+	CMI8((n)+48, __VA_ARGS__), CMI8((n)+56, __VA_ARGS__)
-+#endif
-+
-+#define CMI256(n, ...)							\
-+	CMI64((n), __VA_ARGS__), CMI64((n)+64, Z64, __VA_ARGS__),	\
-+	CMI64((n)+128, Z64, Z64, __VA_ARGS__),				\
-+	CMI64((n)+192, Z64, Z64, Z64, __VA_ARGS__)
-+#define Z256 Z64, Z64, Z64, Z64
-+
-+#define CMI1024(n, ...)					\
-+	CMI256((n), __VA_ARGS__),			\
-+	CMI256((n)+256, Z256, __VA_ARGS__),		\
-+	CMI256((n)+512, Z256, Z256, __VA_ARGS__),	\
-+	CMI256((n)+768, Z256, Z256, Z256, __VA_ARGS__)
-+#define Z1024 Z256, Z256, Z256, Z256
-+
-+/* We want this statically initialized, just to be safe.  We try not
-+ * to waste too much space, either. */
-+static const cpumask_t cpumask_map[] = {
-+	CMI0(0), CMI0(1), CMI0(2), CMI0(3),
-+#if NR_CPUS > 4
-+	CMI0(4), CMI0(5), CMI0(6), CMI0(7),
-+#endif
-+#if NR_CPUS > 8
-+	CMI0(8), CMI0(9), CMI0(10), CMI0(11),
-+	CMI0(12), CMI0(13), CMI0(14), CMI0(15),
-+#endif
-+#if NR_CPUS > 16
-+	CMI0(16), CMI0(17), CMI0(18), CMI0(19),
-+	CMI0(20), CMI0(21), CMI0(22), CMI0(23),
-+	CMI0(24), CMI0(25), CMI0(26), CMI0(27),
-+	CMI0(28), CMI0(29), CMI0(30), CMI0(31),
-+#endif
-+#if NR_CPUS > 32
-+#if BITS_PER_LONG == 32
-+	CMI(32, 0), CMI(33, 0), CMI(34, 0), CMI(35, 0),
-+	CMI(36, 0), CMI(37, 0), CMI(38, 0), CMI(39, 0),
-+	CMI(40, 0), CMI(41, 0), CMI(42, 0), CMI(43, 0),
-+	CMI(44, 0), CMI(45, 0), CMI(46, 0), CMI(47, 0),
-+	CMI(48, 0), CMI(49, 0), CMI(50, 0), CMI(51, 0),
-+	CMI(52, 0), CMI(53, 0), CMI(54, 0), CMI(55, 0),
-+	CMI(56, 0), CMI(57, 0), CMI(58, 0), CMI(59, 0),
-+	CMI(60, 0), CMI(61, 0), CMI(62, 0), CMI(63, 0),
-+#else
-+	CMI0(32), CMI0(33), CMI0(34), CMI0(35),
-+	CMI0(36), CMI0(37), CMI0(38), CMI0(39),
-+	CMI0(40), CMI0(41), CMI0(42), CMI0(43),
-+	CMI0(44), CMI0(45), CMI0(46), CMI0(47),
-+	CMI0(48), CMI0(49), CMI0(50), CMI0(51),
-+	CMI0(52), CMI0(53), CMI0(54), CMI0(55),
-+	CMI0(56), CMI0(57), CMI0(58), CMI0(59),
-+	CMI0(60), CMI0(61), CMI0(62), CMI0(63),
-+#endif /* BITS_PER_LONG == 64 */
-+#endif
-+#if NR_CPUS > 64
-+	CMI64(64, Z64),
-+#endif
-+#if NR_CPUS > 128
-+	CMI64(128, Z64, Z64), CMI64(192, Z64, Z64, Z64),
-+#endif
-+#if NR_CPUS > 256
-+	CMI256(256, Z256),
-+#endif
-+#if NR_CPUS > 512
-+	CMI256(512, Z256, Z256), CMI256(768, Z256, Z256, Z256),
-+#endif
-+#if NR_CPUS > 1024
-+	CMI1024(1024, Z1024),
-+#endif
-+#if NR_CPUS > 2048
-+	CMI1024(2048, Z1024, Z1024), CMI1024(3072, Z1024, Z1024, Z1024),
-+#endif
-+#if NR_CPUS > 4096
-+#error NR_CPUS too big.  Fix initializers or set CONFIG_HAVE_CPUMASK_OF_CPU_MAP
-+#endif
-+};
-+
-+const cpumask_t *cpumask_of_cpu_map = cpumask_map;
-+#endif /* !CONFIG_HAVE_CPUMASK_OF_CPU_MAP */
+ 	if (reload) {
+ #ifdef CONFIG_SMP
+-		cpumask_of_cpu_ptr_declare(mask);
+-
+ 		preempt_disable();
+ 		load_LDT(pc);
+-		cpumask_of_cpu_ptr_next(mask, smp_processor_id());
+-		if (!cpus_equal(current->mm->cpu_vm_mask, *mask))
++		if (!cpus_equal(current->mm->cpu_vm_mask,
++				cpumask_of_cpu(smp_processor_id())))
+ 			smp_call_function(flush_ldt, current->mm, 1);
+ 		preempt_enable();
+ #else
+--- linux-2.6.tip.orig/arch/x86/kernel/microcode.c
++++ linux-2.6.tip/arch/x86/kernel/microcode.c
+@@ -388,7 +388,6 @@ static int do_microcode_update (void)
+ 	void *new_mc = NULL;
+ 	int cpu;
+ 	cpumask_t old;
+-	cpumask_of_cpu_ptr_declare(newmask);
+ 
+ 	old = current->cpus_allowed;
+ 
+@@ -405,8 +404,7 @@ static int do_microcode_update (void)
+ 
+ 			if (!uci->valid)
+ 				continue;
+-			cpumask_of_cpu_ptr_next(newmask, cpu);
+-			set_cpus_allowed_ptr(current, newmask);
++			set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+ 			error = get_maching_microcode(new_mc, cpu);
+ 			if (error < 0)
+ 				goto out;
+@@ -576,7 +574,6 @@ static int apply_microcode_check_cpu(int
+ 	struct cpuinfo_x86 *c = &cpu_data(cpu);
+ 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+ 	cpumask_t old;
+-	cpumask_of_cpu_ptr(newmask, cpu);
+ 	unsigned int val[2];
+ 	int err = 0;
+ 
+@@ -585,7 +582,7 @@ static int apply_microcode_check_cpu(int
+ 		return 0;
+ 
+ 	old = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, newmask);
++	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+ 
+ 	/* Check if the microcode we have in memory matches the CPU */
+ 	if (c->x86_vendor != X86_VENDOR_INTEL || c->x86 < 6 ||
+@@ -623,12 +620,11 @@ static int apply_microcode_check_cpu(int
+ static void microcode_init_cpu(int cpu, int resume)
+ {
+ 	cpumask_t old;
+-	cpumask_of_cpu_ptr(newmask, cpu);
+ 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+ 
+ 	old = current->cpus_allowed;
+ 
+-	set_cpus_allowed_ptr(current, newmask);
++	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+ 	mutex_lock(&microcode_mutex);
+ 	collect_cpu_info(cpu);
+ 	if (uci->valid && system_state == SYSTEM_RUNNING && !resume)
+@@ -661,13 +657,10 @@ static ssize_t reload_store(struct sys_d
+ 	if (end == buf)
+ 		return -EINVAL;
+ 	if (val == 1) {
+-		cpumask_t old;
+-		cpumask_of_cpu_ptr(newmask, cpu);
+-
+-		old = current->cpus_allowed;
++		cpumask_t old = current->cpus_allowed;
+ 
+ 		get_online_cpus();
+-		set_cpus_allowed_ptr(current, newmask);
++		set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+ 
+ 		mutex_lock(&microcode_mutex);
+ 		if (uci->valid)
+--- linux-2.6.tip.orig/arch/x86/kernel/reboot.c
++++ linux-2.6.tip/arch/x86/kernel/reboot.c
+@@ -414,25 +414,20 @@ void native_machine_shutdown(void)
+ 
+ 	/* The boot cpu is always logical cpu 0 */
+ 	int reboot_cpu_id = 0;
+-	cpumask_of_cpu_ptr(newmask, reboot_cpu_id);
+ 
+ #ifdef CONFIG_X86_32
+ 	/* See if there has been given a command line override */
+ 	if ((reboot_cpu != -1) && (reboot_cpu < NR_CPUS) &&
+-		cpu_online(reboot_cpu)) {
++		cpu_online(reboot_cpu))
+ 		reboot_cpu_id = reboot_cpu;
+-		cpumask_of_cpu_ptr_next(newmask, reboot_cpu_id);
+-	}
+ #endif
+ 
+ 	/* Make certain the cpu I'm about to reboot on is online */
+-	if (!cpu_online(reboot_cpu_id)) {
++	if (!cpu_online(reboot_cpu_id))
+ 		reboot_cpu_id = smp_processor_id();
+-		cpumask_of_cpu_ptr_next(newmask, reboot_cpu_id);
+-	}
+ 
+ 	/* Make certain I only run on the appropriate processor */
+-	set_cpus_allowed_ptr(current, newmask);
++	set_cpus_allowed_ptr(current, &cpumask_of_cpu(reboot_cpu_id));
+ 
+ 	/* O.K Now that I'm on the appropriate processor,
+ 	 * stop all of the others.
+--- linux-2.6.tip.orig/drivers/acpi/processor_throttling.c
++++ linux-2.6.tip/drivers/acpi/processor_throttling.c
+@@ -827,7 +827,6 @@ static int acpi_processor_get_throttling
+ static int acpi_processor_get_throttling(struct acpi_processor *pr)
+ {
+ 	cpumask_t saved_mask;
+-	cpumask_of_cpu_ptr_declare(new_mask);
+ 	int ret;
+ 
+ 	if (!pr)
+@@ -839,8 +838,7 @@ static int acpi_processor_get_throttling
+ 	 * Migrate task to the cpu pointed by pr.
+ 	 */
+ 	saved_mask = current->cpus_allowed;
+-	cpumask_of_cpu_ptr_next(new_mask, pr->id);
+-	set_cpus_allowed_ptr(current, new_mask);
++	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pr->id));
+ 	ret = pr->throttling.acpi_processor_get_throttling(pr);
+ 	/* restore the previous state */
+ 	set_cpus_allowed_ptr(current, &saved_mask);
+@@ -989,7 +987,6 @@ static int acpi_processor_set_throttling
+ int acpi_processor_set_throttling(struct acpi_processor *pr, int state)
+ {
+ 	cpumask_t saved_mask;
+-	cpumask_of_cpu_ptr_declare(new_mask);
+ 	int ret = 0;
+ 	unsigned int i;
+ 	struct acpi_processor *match_pr;
+@@ -1028,8 +1025,7 @@ int acpi_processor_set_throttling(struct
+ 	 * it can be called only for the cpu pointed by pr.
+ 	 */
+ 	if (p_throttling->shared_type == DOMAIN_COORD_TYPE_SW_ANY) {
+-		cpumask_of_cpu_ptr_next(new_mask, pr->id);
+-		set_cpus_allowed_ptr(current, new_mask);
++		set_cpus_allowed_ptr(current, &cpumask_of_cpu(pr->id));
+ 		ret = p_throttling->acpi_processor_set_throttling(pr,
+ 						t_state.target_state);
+ 	} else {
+@@ -1060,8 +1056,7 @@ int acpi_processor_set_throttling(struct
+ 				continue;
+ 			}
+ 			t_state.cpu = i;
+-			cpumask_of_cpu_ptr_next(new_mask, i);
+-			set_cpus_allowed_ptr(current, new_mask);
++			set_cpus_allowed_ptr(current, &cpumask_of_cpu(i));
+ 			ret = match_pr->throttling.
+ 				acpi_processor_set_throttling(
+ 				match_pr, t_state.target_state);
+--- linux-2.6.tip.orig/drivers/firmware/dcdbas.c
++++ linux-2.6.tip/drivers/firmware/dcdbas.c
+@@ -254,7 +254,6 @@ static ssize_t host_control_on_shutdown_
+ static int smi_request(struct smi_cmd *smi_cmd)
+ {
+ 	cpumask_t old_mask;
+-	cpumask_of_cpu_ptr(new_mask, 0);
+ 	int ret = 0;
+ 
+ 	if (smi_cmd->magic != SMI_CMD_MAGIC) {
+@@ -265,7 +264,7 @@ static int smi_request(struct smi_cmd *s
+ 
+ 	/* SMI requires CPU 0 */
+ 	old_mask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, new_mask);
++	set_cpus_allowed_ptr(current, &cpumask_of_cpu(0));
+ 	if (smp_processor_id() != 0) {
+ 		dev_dbg(&dcdbas_pdev->dev, "%s: failed to get CPU 0\n",
+ 			__func__);
+--- linux-2.6.tip.orig/drivers/misc/sgi-xp/xpc_main.c
++++ linux-2.6.tip/drivers/misc/sgi-xp/xpc_main.c
+@@ -229,11 +229,10 @@ xpc_hb_checker(void *ignore)
+ 	int last_IRQ_count = 0;
+ 	int new_IRQ_count;
+ 	int force_IRQ = 0;
+-	cpumask_of_cpu_ptr(cpumask, XPC_HB_CHECK_CPU);
+ 
+ 	/* this thread was marked active by xpc_hb_init() */
+ 
+-	set_cpus_allowed_ptr(current, cpumask);
++	set_cpus_allowed_ptr(current, &cpumask_of_cpu(XPC_HB_CHECK_CPU));
+ 
+ 	/* set our heartbeating to other partitions into motion */
+ 	xpc_hb_check_timeout = jiffies + (xpc_hb_check_interval * HZ);
+--- linux-2.6.tip.orig/kernel/stop_machine.c
++++ linux-2.6.tip/kernel/stop_machine.c
+@@ -33,9 +33,8 @@ static int stopmachine(void *cpu)
+ {
+ 	int irqs_disabled = 0;
+ 	int prepared = 0;
+-	cpumask_of_cpu_ptr(cpumask, (int)(long)cpu);
+ 
+-	set_cpus_allowed_ptr(current, cpumask);
++	set_cpus_allowed_ptr(current, &cpumask_of_cpu((int)(long)cpu));
+ 
+ 	/* Ack: we are alive */
+ 	smp_mb(); /* Theoretically the ack = 0 might not be on this CPU yet. */
+--- linux-2.6.tip.orig/kernel/time/tick-common.c
++++ linux-2.6.tip/kernel/time/tick-common.c
+@@ -196,12 +196,10 @@ static int tick_check_new_device(struct 
+ 	struct tick_device *td;
+ 	int cpu, ret = NOTIFY_OK;
+ 	unsigned long flags;
+-	cpumask_of_cpu_ptr_declare(cpumask);
+ 
+ 	spin_lock_irqsave(&tick_device_lock, flags);
+ 
+ 	cpu = smp_processor_id();
+-	cpumask_of_cpu_ptr_next(cpumask, cpu);
+ 	if (!cpu_isset(cpu, newdev->cpumask))
+ 		goto out_bc;
+ 
+@@ -209,7 +207,7 @@ static int tick_check_new_device(struct 
+ 	curdev = td->evtdev;
+ 
+ 	/* cpu local device ? */
+-	if (!cpus_equal(newdev->cpumask, *cpumask)) {
++	if (!cpus_equal(newdev->cpumask, cpumask_of_cpu(cpu))) {
+ 
+ 		/*
+ 		 * If the cpu affinity of the device interrupt can not
+@@ -222,7 +220,7 @@ static int tick_check_new_device(struct 
+ 		 * If we have a cpu local device already, do not replace it
+ 		 * by a non cpu local device
+ 		 */
+-		if (curdev && cpus_equal(curdev->cpumask, *cpumask))
++		if (curdev && cpus_equal(curdev->cpumask, cpumask_of_cpu(cpu)))
+ 			goto out_bc;
+ 	}
+ 
+@@ -254,7 +252,7 @@ static int tick_check_new_device(struct 
+ 		curdev = NULL;
+ 	}
+ 	clockevents_exchange_device(curdev, newdev);
+-	tick_setup_device(td, newdev, cpu, cpumask);
++	tick_setup_device(td, newdev, cpu, &cpumask_of_cpu(cpu));
+ 	if (newdev->features & CLOCK_EVT_FEAT_ONESHOT)
+ 		tick_oneshot_notify();
+ 
+--- linux-2.6.tip.orig/kernel/trace/trace_sysprof.c
++++ linux-2.6.tip/kernel/trace/trace_sysprof.c
+@@ -213,9 +213,7 @@ static void start_stack_timers(void)
+ 	int cpu;
+ 
+ 	for_each_online_cpu(cpu) {
+-		cpumask_of_cpu_ptr(new_mask, cpu);
+-
+-		set_cpus_allowed_ptr(current, new_mask);
++		set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+ 		start_stack_timer(cpu);
+ 	}
+ 	set_cpus_allowed_ptr(current, &saved_mask);
+--- linux-2.6.tip.orig/lib/smp_processor_id.c
++++ linux-2.6.tip/lib/smp_processor_id.c
+@@ -11,7 +11,6 @@ notrace unsigned int debug_smp_processor
+ {
+ 	unsigned long preempt_count = preempt_count();
+ 	int this_cpu = raw_smp_processor_id();
+-	cpumask_of_cpu_ptr_declare(this_mask);
+ 
+ 	if (likely(preempt_count))
+ 		goto out;
+@@ -23,9 +22,7 @@ notrace unsigned int debug_smp_processor
+ 	 * Kernel threads bound to a single CPU can safely use
+ 	 * smp_processor_id():
+ 	 */
+-	cpumask_of_cpu_ptr_next(this_mask, this_cpu);
+-
+-	if (cpus_equal(current->cpus_allowed, *this_mask))
++	if (cpus_equal(current->cpus_allowed, cpumask_of_cpu(this_cpu)))
+ 		goto out;
+ 
+ 	/*
+--- linux-2.6.tip.orig/net/sunrpc/svc.c
++++ linux-2.6.tip/net/sunrpc/svc.c
+@@ -310,8 +310,7 @@ svc_pool_map_set_cpumask(struct task_str
+ 	switch (m->mode) {
+ 	case SVC_POOL_PERCPU:
+ 	{
+-		cpumask_of_cpu_ptr(cpumask, node);
+-		set_cpus_allowed_ptr(task, cpumask);
++		set_cpus_allowed_ptr(task, &cpumask_of_cpu(node));
+ 		break;
+ 	}
+ 	case SVC_POOL_PERNODE:
 
 -- 
