@@ -1,89 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYGYDzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbYGYD5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbYGYDzS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 23:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYGYDzE
+	id S1754824AbYGYD5p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 23:57:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbYGYD5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 23:55:04 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:49538 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752224AbYGYDzB (ORCPT
+	Thu, 24 Jul 2008 23:57:36 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:4547 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752224AbYGYD5f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 23:55:01 -0400
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in
-	blk_recalc_rq_segments about VMERGE
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: David Miller <davem@davemloft.net>
-Cc: mpatocka@redhat.com, fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-parisc@vger.kernel.org
-In-Reply-To: <20080724.145336.41899163.davem@davemloft.net>
-References: <Pine.LNX.4.64.0807241232040.9412@devserv.devel.redhat.com>
-	 <1216918371.4524.38.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0807241727320.12036@devserv.devel.redhat.com>
-	 <20080724.145336.41899163.davem@davemloft.net>
-Content-Type: text/plain
-Date: Thu, 24 Jul 2008 23:47:50 -0400
-Message-Id: <1216957670.4524.87.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Jul 2008 23:57:35 -0400
+Date: Thu, 24 Jul 2008 23:57:32 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: David Brownell <david-b@pacbell.net>
+cc: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
+       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [USB boot crash, -git] ecm_do_notify(), list_add corruption.
+ prev->next should be next (ffff88003b8f82f8)
+In-Reply-To: <200807240040.21006.david-b@pacbell.net>
+Message-ID: <Pine.LNX.4.44L0.0807240931220.3494-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-24 at 14:53 -0700, David Miller wrote:
-> From: Mikulas Patocka <mpatocka@redhat.com>
-> Date: Thu, 24 Jul 2008 17:49:14 -0400 (EDT)
+On Thu, 24 Jul 2008, David Brownell wrote:
+
+> 	I modified dummy_hcd to print messages whenever a request
+> 	was queued to an endpoint, or acompletion was issued.
+> 	If the endpoint queue was empty at that time, it's shown.
+...
+> ep-c: queue req c10980e0 (q empty)
 > 
-> > * it is prone to bugs and hard to maintain, because the same value must be 
-> > calculated in blk-merge.c and in architectural iommu functions --- if the 
-> > value differs, you create too long request, corrupt kernel memory and 
-> > crash (happened on sparc64). Anyone changing blk-merge in the future will 
-> > risk breaking something on the architectures that use BIO_VMERGE_BOUNDARY 
-> > --- and because these architectures are so rare, the bug will go unnoticed 
-> > for long time --- like in the case of sparc64.
+> 	Here's where it starts to go squirrely...
+> 	
+> 	You would EXPECT to see a completion callback here since
+> 	that's what dummy_queue() says to do:  write this small
+> 	packet into a FIFO (just like Real Hardware would) and
+> 	wait for the host to collect it.
 > 
-> I completely agree with this point.
+> 	Note that the emulated FIFO is represented by a request
+> 	object ... one that *never* seems to get a completion
+> 	issued for it.  That seems very wrong...
 
-So you think the parametrisation in the block layer is the wrong way to
-approach the problem?  On this argument your next patch should be
-removing physical merging as well because it also relies on a
-parametrisation model of how the device builds the sg list.
+I think I see the problem.  Starting at line 533, we have:
 
-> This VMERGE stuff is now a non-trivial maintainence burdon because
-> anyone who wants to hack on the block layer has to be mindful of
-> VMERGE but is very unlikely to have access to a system that it can
-> even be tested on.
+	/* implement an emulated single-request FIFO */
+	if (ep->desc && (ep->desc->bEndpointAddress & USB_DIR_IN) &&
+			list_empty (&dum->fifo_req.queue) &&
+			list_empty (&ep->queue) &&
+			_req->length <= FIFO_SIZE) {
+		req = &dum->fifo_req;
+		req->req = *_req;
+		req->req.buf = dum->fifo_buf;
+		memcpy (dum->fifo_buf, _req->buf, _req->length);
+		req->req.context = dum;
+		req->req.complete = fifo_complete;
 
-I'm sorry sparc broke, really I am ... but you changed your iommu code
-from one with a working vmerge to one without and failed to turn off
-vmerging.  Partly it wasn't noticed because at 2*PAGE_SIZE you have a
-strange vmerge boundary, so it's harder to notice.   However, I can't
-extrapolate that just because this happened on sparc it will inevitably
-happen on all other architectures.
+		spin_unlock (&dum->lock);
+		_req->actual = _req->length;
+		_req->status = 0;
+		_req->complete (_ep, _req);
+		spin_lock (&dum->lock);
+	}
+	list_add_tail (&req->queue, &ep->queue);
+	spin_unlock_irqrestore (&dum->lock, flags);
 
-> And the answer isn't "James Bottomly will test your changes for you",
-> because that simply doesn't scale.
+The list_add_tail() gets called at the wrong time if the completion
+routine resubmits.  It should look more like this:
 
-Actually, parisc will test your code we have a PAGE_SIZE vmerge
-boundary, so the effect is much more noticeable.
+		list_add_tail (&req->queue, &ep->queue);
+		spin_unlock (&dum->lock);
+		_req->actual = _req->length;
+		_req->status = 0;
+		_req->complete (_ep, _req);
+		spin_lock (&dum->lock);
+	} else {
+		list_add_tail (&req->queue, &ep->queue);
+	}
+	spin_unlock_irqrestore (&dum->lock, flags);
 
-> I still say we should definitely remove the VMERGE code.  It's not
-> worth the maintainence hassle just for some SG chaining test rig
-> on some obscure platform.
+Can you make the necessary change and try it out?
 
-OK ... well you've had your say and so have I.  The code in question is
-the responsibility of a particular maintainer ... we'll let him decide.
-
-> I really only hear one person who really wants this code around any
-> more.  Is that the Linux way? :-) Can't he patch it into his tree when
-> he needs it or write an alternative way to stress the SG chaining
-> code?  He has the source, right? :-)))
-
-You're advocating an out of tree patch as a solution?  I didn't know
-you'd been appointed RHEL maintainer ;-)
-
-James
-
+Alan Stern
 
