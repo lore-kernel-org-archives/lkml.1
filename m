@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757849AbYGYXMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbYGYXNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757849AbYGYXMp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 19:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757266AbYGYXMb
+	id S1758025AbYGYXNy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 19:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbYGYXNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 19:12:31 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33527 "EHLO mx2.suse.de"
+	Fri, 25 Jul 2008 19:13:42 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33666 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757724AbYGYXMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 19:12:30 -0400
-Date: Fri, 25 Jul 2008 16:07:31 -0700
+	id S1755960AbYGYXNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 19:13:41 -0400
+Date: Fri, 25 Jul 2008 16:07:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Herbert Xu <herbert@gondor.apana.org.au>,
+       Gerrit Renker <gerrit@erg.abdn.ac.uk>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 6/9] pppoe: Unshare skb before anything else
-Message-ID: <20080725230731.GG1612@suse.de>
+Subject: [patch 9/9] udplite: Protection against coverage value wrap-around
+Message-ID: <20080725230738.GJ1612@suse.de>
 References: <20080725225425.193966072@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0006-pppoe-Unshare-skb-before-anything-else.patch"
+Content-Disposition: inline; filename="0009-udplite-Protection-against-coverage-value-wrap-arou.patch"
 In-Reply-To: <20080725230644.GA1612@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,38 +40,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Gerrit Renker <gerrit@erg.abdn.ac.uk>
 
-[ Upstream commit bc6cffd177f9266af38dba96a2cea06c1e7ff932 ]
+[ Upstream commit 47112e25da41d9059626033986dc3353e101f815 ]
 
-We need to unshare the skb first as otherwise pskb_may_pull may
-write to a shared skb which could be bad.
+This patch clamps the cscov setsockopt values to a maximum of 0xFFFF.
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Setsockopt values greater than 0xffff can cause an unwanted
+wrap-around.  Further, IPv6 jumbograms are not supported (RFC 3838,
+3.5), so that values greater than 0xffff are not even useful.
+
+Further changes: fixed a typo in the documentation.
+
+[ Add USHORT_MAX from upstream to linux/kernel.h -DaveM ]
+
+Signed-off-by: Gerrit Renker <gerrit@erg.abdn.ac.uk>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/pppoe.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ Documentation/networking/udplite.txt |    2 +-
+ include/linux/kernel.h               |    1 +
+ net/ipv4/udp.c                       |    4 ++++
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
---- a/drivers/net/pppoe.c
-+++ b/drivers/net/pppoe.c
-@@ -432,12 +432,12 @@ static int pppoe_disc_rcv(struct sk_buff
- 	if (dev->nd_net != &init_net)
- 		goto abort;
+--- a/Documentation/networking/udplite.txt
++++ b/Documentation/networking/udplite.txt
+@@ -148,7 +148,7 @@
+         getsockopt(sockfd, SOL_SOCKET, SO_NO_CHECK, &value, ...);
  
--	if (!pskb_may_pull(skb, sizeof(struct pppoe_hdr)))
--		goto abort;
--
- 	if (!(skb = skb_share_check(skb, GFP_ATOMIC)))
- 		goto out;
+   is meaningless (as in TCP). Packets with a zero checksum field are
+-  illegal (cf. RFC 3828, sec. 3.1) will be silently discarded.
++  illegal (cf. RFC 3828, sec. 3.1) and will be silently discarded.
  
-+	if (!pskb_may_pull(skb, sizeof(struct pppoe_hdr)))
-+		goto abort;
-+
- 	ph = pppoe_hdr(skb);
- 	if (ph->code != PADT_CODE)
- 		goto abort;
+   4) Fragmentation
+ 
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -20,6 +20,7 @@
+ extern const char linux_banner[];
+ extern const char linux_proc_banner[];
+ 
++#define USHORT_MAX	((u16)(~0U))
+ #define INT_MAX		((int)(~0U>>1))
+ #define INT_MIN		(-INT_MAX - 1)
+ #define UINT_MAX	(~0U)
+--- a/net/ipv4/udp.c
++++ b/net/ipv4/udp.c
+@@ -1325,6 +1325,8 @@ int udp_lib_setsockopt(struct sock *sk, 
+ 			return -ENOPROTOOPT;
+ 		if (val != 0 && val < 8) /* Illegal coverage: use default (8) */
+ 			val = 8;
++		else if (val > USHORT_MAX)
++			val = USHORT_MAX;
+ 		up->pcslen = val;
+ 		up->pcflag |= UDPLITE_SEND_CC;
+ 		break;
+@@ -1337,6 +1339,8 @@ int udp_lib_setsockopt(struct sock *sk, 
+ 			return -ENOPROTOOPT;
+ 		if (val != 0 && val < 8) /* Avoid silly minimal values.       */
+ 			val = 8;
++		else if (val > USHORT_MAX)
++			val = USHORT_MAX;
+ 		up->pcrlen = val;
+ 		up->pcflag |= UDPLITE_RECV_CC;
+ 		break;
 
 -- 
