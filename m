@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYGYUTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbYGYU1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbYGYUTc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 16:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYGYUTY
+	id S1753139AbYGYU1F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 16:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYGYU0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 16:19:24 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:58735 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750827AbYGYUTX (ORCPT
+	Fri, 25 Jul 2008 16:26:54 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:30504 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751223AbYGYU0x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 16:19:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=Xy0YYTlSnXJo3rFjS6sRt3V2+wF1l3MsEkK2Fu+QsTd9moyil2ioqPrf33qkbljl+Q
-         Wi0r0n6SQG80oLCiPLmAmpzeqsVniRu4924JGu7B1/43rPTS62KU3dStqzhEU3TYq0TE
-         V9mQBeQF8Ccl2Yo+MidkYGGbC21OFO0ycrY2w=
-Subject: [PATCH] sys_paccept definition missing __user annotation
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Content-Type: text/plain
-Date: Fri, 25 Jul 2008 13:19:22 -0700
-Message-Id: <1217017162.5971.28.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 25 Jul 2008 16:26:53 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=UQ+t+Wr1inTDcuGa04xW56lFrL5ti6n040VZDfBqrKFRHhfTsk2N40uZfrNGb0m/z2TN2z9Vlk3A6w34nnUwXVXSgS1vbCn9grPZ92L9tkmW/rzi+CWhxKvu/sN4rhvAgWe8bJ3gZgAScSXLcJVmGSYSIJ+NUq/RoC8uAOyMpaY=  ;
+X-YMail-OSG: 6br4onwVM1lKUlhhdhDT5x1gSLt_TKgTohlwMJmcU_uxAdbrWjTWEiUPCb9vOv1y16h.ychXnwkjpPFo2_SFaViIYMTemDEdvRXzIWOQHxb6611tlR.OR_h3rox3OGxIc.E-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org
+Subject: [patch 2.6.26-git] pm selftest:  rtc paranoia
+Date: Fri, 25 Jul 2008 13:26:51 -0700
+User-Agent: KMail/1.9.9
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807251326.51987.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduced by:
-aaca0bdca573f3f51ea03139f9c7289541e7bca3 flag parameters: paccept
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-net/socket.c:1515:17: error: symbol 'sys_paccept' redeclared with different type (originally declared at include/linux/syscalls.h:413) - incompatible argument 4 (different address spaces)
+Cope with a quirk of some RTCs (notably ACPI ones) which
+aren't guaranteed to implement oneshot behavior when they
+woke the system from sleeep:  forcibly disable the alarm,
+just in case.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
- include/linux/syscalls.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/power/main.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 06f2bf7..d6ff145 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -411,7 +411,7 @@ asmlinkage long sys_bind(int, struct sockaddr __user *, int);
- asmlinkage long sys_connect(int, struct sockaddr __user *, int);
- asmlinkage long sys_accept(int, struct sockaddr __user *, int __user *);
- asmlinkage long sys_paccept(int, struct sockaddr __user *, int __user *,
--			    const sigset_t *, size_t, int);
-+			    const __user sigset_t *, size_t, int);
- asmlinkage long sys_getsockname(int, struct sockaddr __user *, int __user *);
- asmlinkage long sys_getpeername(int, struct sockaddr __user *, int __user *);
- asmlinkage long sys_send(int, void __user *, size_t, unsigned);
--- 
-1.6.0.rc0.182.gb96c7
-
-
-
+--- a/kernel/power/main.c	2008-07-22 16:38:32.000000000 -0700
++++ b/kernel/power/main.c	2008-07-22 16:39:15.000000000 -0700
+@@ -635,6 +635,13 @@ static void __init test_wakealarm(struct
+ 	}
+ 	if (status < 0)
+ 		printk(err_suspend, status);
++
++	/* Some platforms can't detect that the alarm triggered the
++	 * wakeup, or (accordingly) disable it after it afterwards.
++	 * It's supposed to give oneshot behavior; cope.
++	 */
++	alm.enabled = false;
++	rtc_set_alarm(rtc, &alm);
+ }
+ 
+ static int __init has_wakealarm(struct device *dev, void *name_ptr)
