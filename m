@@ -1,84 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbYGYRzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752849AbYGYSKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753780AbYGYRzv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 13:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbYGYRzn
+	id S1752849AbYGYSKS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 14:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYGYSKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 13:55:43 -0400
-Received: from gw.goop.org ([64.81.55.164]:50716 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751317AbYGYRzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 13:55:42 -0400
-Message-ID: <488A1398.7020004@goop.org>
-Date: Fri, 25 Jul 2008 10:55:36 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 25 Jul 2008 14:10:04 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:33621 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750858AbYGYSKD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 14:10:03 -0400
+Date: Fri, 25 Jul 2008 11:03:51 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: akpm@linux-foundation.org, torvalds@linux-founcation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] hugetlb: fix CONFIG_SYSCTL=n build
+Message-ID: <20080725180351.GA11616@us.ibm.com>
+References: <20080721.233512.128618365.anemo@mba.ocn.ne.jp> <20080721191519.GA15843@elte.hu> <20080721214258.787a67ca@lxorguk.ukuu.org.uk> <20080722072334.GA25241@elte.hu> <48865899.3030209@garzik.org> <20080723104520.GA20672@elte.hu> <20080724052603.GA8744@elte.hu> <20080725180935.5bd02bf5@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: How to get a sense of VM pressure
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080725180935.5bd02bf5@lxorguk.ukuu.org.uk>
+X-Operating-System: Linux 2.6.26-rc9-00132-g9df2fe9 (x86_64)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm thinking about ways to improve the Xen balloon driver.  This is the 
-driver which allows the guest domain to expand or contract by either 
-asking for more memory from the hypervisor, or giving unneeded memory 
-back.  From the kernel's perspective, it simply looks like a driver 
-which allocates and frees pages; when it allocates memory it gives the 
-underlying physical page back to the hypervisor.  And conversely, when 
-it gets a page from the hypervisor, it glues it under a given pfn and 
-releases that page back to the kernel for reuse.
+On 25.07.2008 [18:09:35 +0100], Alan Cox wrote:
+> On Thu, 24 Jul 2008 07:26:03 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > not sure it's known but despite all the fixes i still get:
+> > 
+> >  drivers/built-in.o: In function `ne_drv_resume':
+> >  ne.c:(.text+0x146ba4): undefined reference to `NS8390_init'
+> >  drivers/built-in.o: In function `ne_block_output':
+> >  ne.c:(.text+0x146e00): undefined reference to `NS8390_init'
+> 
+> This should do the trick. I can't test it currently as that configuration
+> now fails to build with mm errors in current git head..
+> 
+> mm/hugetlb.c: In function ???hugetlb_acct_memory???: mm/hugetlb.c:1507:
+> error: implicit declaration of function ???cpuset_mems_nr???
 
-At the moment it's very dumb, and is pure mechanism.  It's told how much 
-memory to target, and it either allocates or frees memory until the 
-target is reached.  Unfortunately, that means if it's asked to shrink to 
-an unreasonably small size, it will do so without question, killing the 
-domain in a thrash-storm in the process.
+When moving the intialization functions around, I did not remove the
+dependency of some helpers on CONFIG_SYSCTL. This led to a large chunk
+of code being elided even though it is needed to build hugetlb.o.
 
-There are several problems:
+Fixes a build failure reported by Alan Cox:
 
-   1. it doesn't know what a reasonable lower limit is, and
-   2. it doesn't moderate the rate of shrinkage to give the rest of the
-      VM time to adjust to having less memory (by paging out, dropping
-      inactive, etc)
+mm/hugetlb.c: In function ‘hugetlb_acct_memory’: mm/hugetlb.c:1507:
+error: implicit declaration of function ‘cpuset_mems_nr’
 
-And possibly the third point is that the only mechanism it has for 
-applying memory pressure to the system is by allocating memory.  It 
-allocates with (GFP_HIGHUSER | __GFP_NOWARN | __GFP_NORETRY | 
-__GFP_NOMEMALLOC), trying not to steal memory away from things that 
-really need it.  But in practice, it can still easy drive the machine 
-into a massive unrecoverable swap storm.
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 
-So I guess what I need is some measurement of "memory use" which is 
-perhaps akin to a system-wide RSS; a measure of the number of pages 
-being actively used, that if non-resident would cause a large amount of 
-paging.  If you shrink the domain down to that number of pages + some 
-padding (x%?), then the system will run happily in a stable state.  If 
-that number increases, then the system will need new memory soon, to 
-stop it from thrashing.  And if that number goes way below the domain's 
-actual memory allocation, then it has "too much" memory.
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 41341c4..3be79dc 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1026,7 +1026,6 @@ static void __init report_hugepages(void)
+ 	}
+ }
+ 
+-#ifdef CONFIG_SYSCTL
+ #ifdef CONFIG_HIGHMEM
+ static void try_to_free_low(struct hstate *h, unsigned long count)
+ {
+@@ -1386,6 +1385,7 @@ static unsigned int cpuset_mems_nr(unsigned int *array)
+ 	return nr;
+ }
+ 
++#ifdef CONFIG_SYSCTL
+ int hugetlb_sysctl_handler(struct ctl_table *table, int write,
+ 			   struct file *file, void __user *buffer,
+ 			   size_t *length, loff_t *ppos)
 
-Is this what "Active" accounts for?  Is Active just active 
-usermode/pagecache pages, or does it also include kernel allocations?  
-Presumably Inactive Clean memory can be freed very easily with little 
-impact on the system, Inactive Dirty memory isn't needed but needs IO to 
-free; is there some way to measure how big each class of memory is?
-
-If you wanted to apply gentle memory pressure on the system to attempt 
-to accelerate freeing memory, how would you go about doing that?  Would 
-simply allocating memory at a controlled rate achieve it?
-
-I guess it also gets more complex when you bring nodes and zones into 
-the picture.  Does it mean that this computation would need to be done 
-per node+zone rather than system-wide?
-
-Or is there some better way to implement all this?
-
-Thanks,
-    J
+-- 
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
