@@ -1,89 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbYGYD5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752762AbYGYEap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754824AbYGYD5p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 23:57:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbYGYD5g
+	id S1752762AbYGYEap (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 00:30:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbYGYEah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 23:57:36 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:4547 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752224AbYGYD5f (ORCPT
+	Fri, 25 Jul 2008 00:30:37 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:44278 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750730AbYGYEag (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 23:57:35 -0400
-Date: Thu, 24 Jul 2008 23:57:32 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: David Brownell <david-b@pacbell.net>
-cc: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
-       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [USB boot crash, -git] ecm_do_notify(), list_add corruption.
- prev->next should be next (ffff88003b8f82f8)
-In-Reply-To: <200807240040.21006.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.44L0.0807240931220.3494-100000@netrider.rowland.org>
+	Fri, 25 Jul 2008 00:30:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=aeQZDasqnQSasiElOkM9ulz8O9oMQgIoJwRXL9bOuNeZNd416aI9V2u5+KqP1G7bAp
+         47AOcvu7r9fNVncIk0nEnkwZVmLfRtUHyGGzIUk5WIp3O/CWMQwyytoCAt1S9C7LRMXv
+         A/KpRuk5X/MofbTsHAZRFIXRVMJFlwT1NOYFk=
+Message-ID: <fd145f7d0807242130p602610b0qc57ef4cf32c9ffa@mail.gmail.com>
+Date: Thu, 24 Jul 2008 21:30:35 -0700
+From: "Jeffrey Baker" <jwbaker@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.24 + ICH8M + high SATA load == death
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Jul 2008, David Brownell wrote:
+On 2.6.24 with a SATA controller: Intel Corporation 82801HBM/HEM
+(ICH8M/ICH8M-E) SATA AHCI Controller (rev 03) and a   Vendor: ATA
+Model: SAMSUNG MCBQE32G Rev: PS10 flash disk, I get this error when
+doing 32 parallel runs of pgbench:
 
-> 	I modified dummy_hcd to print messages whenever a request
-> 	was queued to an endpoint, or acompletion was issued.
-> 	If the endpoint queue was empty at that time, it's shown.
-...
-> ep-c: queue req c10980e0 (q empty)
-> 
-> 	Here's where it starts to go squirrely...
-> 	
-> 	You would EXPECT to see a completion callback here since
-> 	that's what dummy_queue() says to do:  write this small
-> 	packet into a FIFO (just like Real Hardware would) and
-> 	wait for the host to collect it.
-> 
-> 	Note that the emulated FIFO is represented by a request
-> 	object ... one that *never* seems to get a completion
-> 	issued for it.  That seems very wrong...
+ata1.00: exception Emask 0x10 SAct 0x0 SErr 0x50000 action 0xa frozen
+ata1.00: irq_stat 0x00400001, PHY RDY changed
+ata1: SError: { PHYRdyChg CommWake }
+ata1.00: cmd c8/00:10:67:38:97/00:00:00:00:00/e1 tag 0 dma 8192 in
+         res 50/00:00:76:38:97/00:00:00:00:00/e1 Emask 0x10 (ATA bus error)
+ata1.00: status: { DRDY }
 
-I think I see the problem.  Starting at line 533, we have:
+Afterwards the machine was in some kind of bad state where it would do
+only about 1MB/s to the disk, and I had to power it off.
 
-	/* implement an emulated single-request FIFO */
-	if (ep->desc && (ep->desc->bEndpointAddress & USB_DIR_IN) &&
-			list_empty (&dum->fifo_req.queue) &&
-			list_empty (&ep->queue) &&
-			_req->length <= FIFO_SIZE) {
-		req = &dum->fifo_req;
-		req->req = *_req;
-		req->req.buf = dum->fifo_buf;
-		memcpy (dum->fifo_buf, _req->buf, _req->length);
-		req->req.context = dum;
-		req->req.complete = fifo_complete;
+Basically I have no idea what any of that gibberish means.  Note that
+this device is about 80 times faster than the spinning disk it
+replaced, so it may be stressing parts of the software that are not
+normally stressed.  Note also that it could just be crap hardware.  I
+don't really know.  However, I do note that someone recently posted a
+very similar error using Western Digital disks and the same SATA
+controller.  I don't think the problem is cables, since this is a
+laptop.  Any advice welcome.
 
-		spin_unlock (&dum->lock);
-		_req->actual = _req->length;
-		_req->status = 0;
-		_req->complete (_ep, _req);
-		spin_lock (&dum->lock);
-	}
-	list_add_tail (&req->queue, &ep->queue);
-	spin_unlock_irqrestore (&dum->lock, flags);
-
-The list_add_tail() gets called at the wrong time if the completion
-routine resubmits.  It should look more like this:
-
-		list_add_tail (&req->queue, &ep->queue);
-		spin_unlock (&dum->lock);
-		_req->actual = _req->length;
-		_req->status = 0;
-		_req->complete (_ep, _req);
-		spin_lock (&dum->lock);
-	} else {
-		list_add_tail (&req->queue, &ep->queue);
-	}
-	spin_unlock_irqrestore (&dum->lock, flags);
-
-Can you make the necessary change and try it out?
-
-Alan Stern
-
+-jwb
