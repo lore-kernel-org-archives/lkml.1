@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbYGYJlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756384AbYGYJmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756735AbYGYJlv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 05:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbYGYJlj
+	id S1756384AbYGYJmO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 05:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756712AbYGYJls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 05:41:39 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:60855 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750706AbYGYJli (ORCPT
+	Fri, 25 Jul 2008 05:41:48 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46003 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756682AbYGYJlr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 05:41:38 -0400
-Date: Fri, 25 Jul 2008 11:41:31 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Altobelli <david.altobelli@hp.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Let HP iLO driver depend on PCI
-Message-ID: <20080725094131.GA4436@osiris.boeblingen.de.ibm.com>
-References: <20080725022048.GB5179@osiris.boeblingen.de.ibm.com> <20080724215652.24e4e550.akpm@linux-foundation.org> <20080725153502.283aae1f.sfr@canb.auug.org.au> <20080724231519.b4553fa1.akpm@linux-foundation.org>
+	Fri, 25 Jul 2008 05:41:47 -0400
+Date: Fri, 25 Jul 2008 18:39:43 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 11/30] mm: __GFP_MEMALLOC
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>
+In-Reply-To: <1216978535.7257.356.camel@twins>
+References: <20080725180305.86A9.KOSAKI.MOTOHIRO@jp.fujitsu.com> <1216978535.7257.356.camel@twins>
+Message-Id: <20080725183835.86AC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080724231519.b4553fa1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 11:15:19PM -0700, Andrew Morton wrote:
-> On Fri, 25 Jul 2008 15:35:02 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> 
-> > Hi Andrew,
+> On Fri, 2008-07-25 at 18:29 +0900, KOSAKI Motohiro wrote:
+> > Hi Peter,
 > > 
-> > On Thu, 24 Jul 2008 21:56:52 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > >
-> > > Three weeks and nobody did an allmodconfig build on linux-next for s390
-> > > or m68k (at least).
+> > > __GFP_MEMALLOC will allow the allocation to disregard the watermarks, 
+> > > much like PF_MEMALLOC.
+> > > 
+> > > It allows one to pass along the memalloc state in object related allocation
+> > > flags as opposed to task related flags, such as sk->sk_allocation.
 > > 
-> > http://kisskb.ellerman.id.au/kisskb/branch/9/
+> > Is this properly name?
+> > page alloc is always "mem alloc".
 > > 
+> > you wrote comment as "Use emergency reserves" and 
+> > this flag works to turn on ALLOC_NO_WATERMARKS.
+> > 
+> > then, __GFP_NO_WATERMARK or __GFP_EMERGENCY are better?
 > 
-> Wow, lots of red.
+> We've been through this pick a better name thing several times :-/
 > 
-> May I revise my comment?  Three weeks and nobody did anything about the
-> failing allmodconfig builds on linux-next and s390 (at least).
+> Yes I agree, __GFP_MEMALLOC is a misnomer, however its consistent with
+> PF_MEMALLOC and __GFP_NOMEMALLOC - of which people know the semantics.
+> 
+> Creating a new name with similar semantics can only serve to confuse.
 
-Not true. I sent patches for all (s390) build failures two weeks ago.
-Nobody cared. Patch for this specific build failure is available
-here http://marc.info/?l=linux-next&m=121577361309086&w=2 .
+Ah, understand.
+Thanks.
 
-> Is anyone actively monitoring that page and doing the requisite culprit-poking?
+Agreed to __GFP_MEMALLOC.
 
-Where to send patches to? And who takes care they get integrated before
-the merge window opens?
+> 
+> So unless enough people think its worth renaming all of them, I think
+> we're better off with this name.
+
+
+
