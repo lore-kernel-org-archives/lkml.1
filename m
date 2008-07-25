@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbYGYSb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbYGYSem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754482AbYGYSb3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 14:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbYGYSbV
+	id S1754646AbYGYSem (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 14:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYGYSed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 14:31:21 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:32867 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbYGYSbU (ORCPT
+	Fri, 25 Jul 2008 14:34:33 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:7017 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692AbYGYSec (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 14:31:20 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Fri, 25 Jul 2008 20:31:02 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [git pull] FireWire updates
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.276cff1d88ff801f@s5r6.in-berlin.de>
+	Fri, 25 Jul 2008 14:34:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ottnUQet1cmbbPtxbChOd/obMDi3LGoQSZVNnYBJmlSpZehWLU0T6JJ9oLt9aDGc4W
+         ex9yPWZphByx3wYkdjyl441VuIwmwLaBp6nroALhyqxGZ0iCNcdYA7hnVs0Ze3TeJBTx
+         BWaPIWb1K89G2QeIZNQP+XIbH+5RiLu8sQpMs=
+Message-ID: <488A1CB6.5090707@gmail.com>
+Date: Fri, 25 Jul 2008 20:34:30 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: PAGE_ALIGN() compile breakage
+References: <20080725083943.GC19310@cs181140183.pp.htv.fi>	<20080725015537.564e3397.akpm@linux-foundation.org>	<20080725091455.GD19310@cs181140183.pp.htv.fi> <20080725022547.a05ea755.akpm@linux-foundation.org>
+In-Reply-To: <20080725022547.a05ea755.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+Andrew Morton wrote:
+> On Fri, 25 Jul 2008 12:14:55 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+> 
+>> Ideally, all headers should be self-contained. IOW, they should #include 
+>> everything they use.
+> 
+> Yup.  And the core reason for our headers mess is that the headers do
+> too much stuff, and cnosequently demand a large dependency trail.
+> 
+>> But TASK_UNMAPPED_BASE in asm/processor.h on some architectures uses 
+>> PAGE_ALIGN() that got moved from asm/page.h to linux/mm.h .
+> 
+> Probably mm.h should be split up - put the simple things (usually
+> declarations) into one "early" header file and leave the more
+> heavyweight things (usually implementations) in mm.h.
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+IMHO splitting mm.h is probably the best solution. If I'm not wrong
+Paul (CCed) already suggested to move the stuff like PAGE_ALIGN() outside
+mm.h the first time I submitted this patch.
 
-to receive a few FireWire subsystem fixes.
+In this way we could even include the "lightweight" mm.h (mm_define.h??)
+in all the asm-*/page.h, preserving also the backward compatibility.
 
-JiSheng Zhang (1):
-      firewire: queue the right number of data
-
-Stefan Richter (7):
-      firewire: fix race of bus reset with request transmission
-      firewire: fully initialize fw_transaction before marking it pending
-      firewire: small fw_fill_request cleanup
-      firewire: warn on unfinished transactions during card removal
-      firewire: fw-ohci: TSB43AB22/A dualbuffer workaround
-      firewire: avoid memleak after phy config transmit failure
-      firewire: state userland requirements in Kconfig help
-
- drivers/firewire/Kconfig          |    9 +++-
- drivers/firewire/fw-card.c        |    2 +-
- drivers/firewire/fw-cdev.c        |    6 +-
- drivers/firewire/fw-ohci.c        |   37 +++++++++-----
- drivers/firewire/fw-topology.c    |    2 -
- drivers/firewire/fw-transaction.c |   79 +++++++++++------------------
- include/linux/pci_ids.h           |    1 +
- 7 files changed, 66 insertions(+), 70 deletions(-)
-
-Thanks,
--- 
-Stefan Richter
--=====-==--- -=== ==--=
-http://arcgraph.de/sr/
-
+-Andrea
