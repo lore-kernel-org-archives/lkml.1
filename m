@@ -1,61 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbYGYSNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbYGYSOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754320AbYGYSNP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 14:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYGYSM7
+	id S1754251AbYGYSOi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 14:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbYGYSO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 14:12:59 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:59568 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751151AbYGYSM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 14:12:59 -0400
-Message-ID: <488A17A9.804@sgi.com>
-Date: Fri, 25 Jul 2008 11:12:57 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 25 Jul 2008 14:14:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57811 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751151AbYGYSO3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 14:14:29 -0400
+Date: Fri, 25 Jul 2008 11:10:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       akpm <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] Please pull from powerpc.git merge branch
+In-Reply-To: <1216973590.11188.99.camel@pasglop>
+Message-ID: <alpine.LFD.1.10.0807251108320.5249@nehalem.linux-foundation.org>
+References: <1216973590.11188.99.camel@pasglop>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F30C.8020800@zytor.com> <4874F909.7060503@goop.org> <4889F5FA.1050908@sgi.com> <4889FA96.1000701@goop.org> <488A0375.4050605@sgi.com> <488A064E.1040407@goop.org>
-In-Reply-To: <488A064E.1040407@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Mike Travis wrote:
->> Jeremy Fitzhardinge wrote:
->>  
->>> Mike Travis wrote:
->>>    
->>>> FYI, I think it was a combination of errors that was causing my
->>>> problems.
->>>> In any case, I've successfully compiled and booted Ingo's pesky config
->>>> config-Tue_Jul__1_16_48_45_CEST_2008.bad with gcc's 4.2.0, 4.2.3 and
->>>> 4.2.4
->>>> on both Intel and AMD boxes.  (As well as a variety of other configs.)
->>>>         
->>> Good.  What compilers have you tested?  Will it work over the complete
->>> supported range?
->>>     
->>
->> The oldest gcc I have available is 3.4.3 (and I just tried that one and
->> it worked.)  So that one and the ones listed above I've verified using
->> Ingo's test config.  (All other testing I'm using 4.2.3.)
->>   
-> 
-> OK.  I've got a range of toolchains on various test machines around
-> here, so I'll give it a spin.  Are your most recent changes in tip.git yet?
-> 
->    J
 
 
-Almost there...
+On Fri, 25 Jul 2008, Benjamin Herrenschmidt wrote:
+> 
+> ﻿git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Ok, I got a conflict in arch/powerpc/platforms/52xx/Kconfig, you should 
+check that I fixed it up right and send me follow-up patches if required.
+
+		Linus
