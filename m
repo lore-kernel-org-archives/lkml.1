@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756913AbYGYVur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbYGYVxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756913AbYGYVur (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 17:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756798AbYGYVu3
+	id S1756287AbYGYVxQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 17:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYGYVxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 17:50:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51925 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756787AbYGYVu1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 17:50:27 -0400
-Date: Fri, 25 Jul 2008 14:50:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: david-b@pacbell.net, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [patch 2.6.26-git] pm selftest:  rtc paranoia
-Message-Id: <20080725145023.8a18c988.akpm@linux-foundation.org>
-In-Reply-To: <20080725144946.5e1b78c8.akpm@linux-foundation.org>
-References: <200807251326.51987.david-b@pacbell.net>
-	<20080725144946.5e1b78c8.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Jul 2008 17:53:00 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:42901 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751668AbYGYVxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 17:53:00 -0400
+Date: Fri, 25 Jul 2008 14:52:51 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org, mingo@elte.hu,
+       randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RESEND] hugetlb: fix CONFIG_SYSCTL=n build
+Message-ID: <20080725215251.GA20574@us.ibm.com>
+References: <20080721.233512.128618365.anemo@mba.ocn.ne.jp> <20080721191519.GA15843@elte.hu> <20080721214258.787a67ca@lxorguk.ukuu.org.uk> <20080722072334.GA25241@elte.hu> <48865899.3030209@garzik.org> <20080723104520.GA20672@elte.hu> <20080724052603.GA8744@elte.hu> <20080725180935.5bd02bf5@lxorguk.ukuu.org.uk> <20080725203351.GA18407@us.ibm.com> <20080725142921.2238dc5a.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080725142921.2238dc5a.akpm@linux-foundation.org>
+X-Operating-System: Linux 2.6.26-rc9-00132-g9df2fe9 (x86_64)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Jul 2008 14:49:46 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> >  	}
-> >  	if (status < 0)
-> >  		printk(err_suspend, status);
-> > +
-> > +	/* Some platforms can't detect that the alarm triggered the
-> > +	 * wakeup, or (accordingly) disable it after it afterwards.
-> > +	 * It's supposed to give oneshot behavior; cope.
-> > +	 */
-> > +	alm.enabled = false;
-> > +	rtc_set_alarm(rtc, &alm);
-> >  }
-> >  
-> >  static int __init has_wakealarm(struct device *dev, void *name_ptr)
+On 25.07.2008 [14:29:21 -0700], Andrew Morton wrote:
+> On Fri, 25 Jul 2008 13:33:51 -0700
+> Nishanth Aravamudan <nacc@us.ibm.com> wrote:
 > 
-> I assume this fixes some reported bug?  Any references?
+> > [resending with Linus' address fixed]
+> > 
+> > On 25.07.2008 [18:09:35 +0100], Alan Cox wrote:
+> > > On Thu, 24 Jul 2008 07:26:03 +0200
+> > > Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > 
+> > > > not sure it's known but despite all the fixes i still get:
+> > > > 
+> > > >  drivers/built-in.o: In function `ne_drv_resume':
+> > > >  ne.c:(.text+0x146ba4): undefined reference to `NS8390_init'
+> > > >  drivers/built-in.o: In function `ne_block_output':
+> > > >  ne.c:(.text+0x146e00): undefined reference to `NS8390_init'
+> > > 
+> > > This should do the trick. I can't test it currently as that configuration
+> > > now fails to build with mm errors in current git head..
+> > > 
+> > > mm/hugetlb.c: In function ???hugetlb_acct_memory???: mm/hugetlb.c:1507:
+> > > error: implicit declaration of function ???cpuset_mems_nr???
 > 
-> Is this needed in 2.6.26.x?  2.6.25.x?
+> Remind me to give a wedgie to the next gcc developer I meet.
 
-oh.  pm-selftest is new.  Ignore me.
+This may have been C&P error on my part, sorry about that.
+
+> > When moving the intialization functions around, I did not remove the
+> > dependency of some helpers on CONFIG_SYSCTL. This led to a large chunk
+> > of code being elided even though it is needed to build hugetlb.o.
+> > 
+> > Fixes a build failure reported by Alan Cox:
+> > 
+> > mm/hugetlb.c: In function ______hugetlb_acct_memory______: mm/hugetlb.c:1507:
+> > error: implicit declaration of function ______cpuset_mems_nr______
+> 
+> And the next one.
+> 
+> LANG=C stomps this silliness.
+
+Yep, I've fixed the configuration of this box (I hope).
+
+Thanks,
+Nish
+
+-- 
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
