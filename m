@@ -1,46 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYGYSOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYGYSPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbYGYSOw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 14:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYGYSOf
+	id S1754822AbYGYSPv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 14:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbYGYSPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 14:14:35 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57747 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752096AbYGYSOe (ORCPT
+	Fri, 25 Jul 2008 14:15:43 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34407 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751496AbYGYSPn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 14:14:34 -0400
-Message-ID: <488A17EC.2000107@zytor.com>
-Date: Fri, 25 Jul 2008 14:14:04 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] byteorder: force in-place endian conversion to always
- evaluate args
-References: <1217003621.5971.4.camel@brick>
-In-Reply-To: <1217003621.5971.4.camel@brick>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Jul 2008 14:15:43 -0400
+Date: Fri, 25 Jul 2008 20:15:14 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: Kernel BUG in 2.6.26-git series
+Message-ID: <20080725181514.GL20882@one.firstfloor.org>
+References: <4889E538.5010007@lwfinger.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4889E538.5010007@lwfinger.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
-> David Miller reported breakage in ide when the in-place byteorder helpers
-> were used as the macros do not always evaluate their args which led to
-> an infinite loop.
-> 
-> Just make them functions to ensure they always do so.
+On Fri, Jul 25, 2008 at 09:37:44AM -0500, Larry Finger wrote:
+> In the current git pulls from Linus's tree, I get a kernel BUG if 
+> CONFIG_SCHED_SMT is defined. It does not always appear, but when it does, 
+> it is late in the bootup sequence. Perhaps there is a timing issue. This is 
+> an x86_64 system on an HP dv2815nr notebook with and AMD Turion X2 CPU. My 
+> distro is openSUSE 11.0.
 
-> -#define __cpu_to_be64s(x) do {} while (0)
+A couple of people ran into that. It was a latent bug triggered by
+some changes of mine. Here's the patch.
 
-For what it's worth, the way to write a macro like this:
+-Andi
 
-#define __cpu_to_be64s(x) ((void)(x))
 
-	-hpa
+commit a2ab909933f8c8623282979dfa64f3e358bdb9fc
+Author: Andi Kleen <ak@gargoyle.(none)>
+Date:   Thu Jul 24 21:57:40 2008 +0200
+
+    Make scheduler sysfs attributes sysdev class devices
+    
+    They are really class devices, but were incorrectly declared. This leads
+    to crashes with the recent changes that makes non normal sysdevs
+    use a different prototype.
+    
+    Signed-off-by: Andi Kleen <ak@linux.intel.com>
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 6acf749..24358ca 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7641,34 +7641,34 @@ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+ }
+ 
+ #ifdef CONFIG_SCHED_MC
+-static ssize_t sched_mc_power_savings_show(struct sys_device *dev,
+-				struct sysdev_attribute *attr, char *page)
++static ssize_t sched_mc_power_savings_show(struct sysdev_class *class,
++					   char *page)
+ {
+ 	return sprintf(page, "%u\n", sched_mc_power_savings);
+ }
+-static ssize_t sched_mc_power_savings_store(struct sys_device *dev,
+-					    struct sysdev_attribute *attr,
++static ssize_t sched_mc_power_savings_store(struct sysdev_class *class,
+ 					    const char *buf, size_t count)
+ {
+ 	return sched_power_savings_store(buf, count, 0);
+ }
+-static SYSDEV_ATTR(sched_mc_power_savings, 0644, sched_mc_power_savings_show,
+-		   sched_mc_power_savings_store);
++static SYSDEV_CLASS_ATTR(sched_mc_power_savings, 0644, 
++			 sched_mc_power_savings_show,
++		         sched_mc_power_savings_store);
+ #endif
+ 
+ #ifdef CONFIG_SCHED_SMT
+-static ssize_t sched_smt_power_savings_show(struct sys_device *dev,
+-				struct sysdev_attribute *attr, char *page)
++static ssize_t sched_smt_power_savings_show(struct sysdev_class *dev,
++					    char *page)
+ {
+ 	return sprintf(page, "%u\n", sched_smt_power_savings);
+ }
+-static ssize_t sched_smt_power_savings_store(struct sys_device *dev,
+-					     struct sysdev_attribute *attr,
++static ssize_t sched_smt_power_savings_store(struct sysdev_class *dev,
+ 					     const char *buf, size_t count)
+ {
+ 	return sched_power_savings_store(buf, count, 1);
+ }
+-static SYSDEV_ATTR(sched_smt_power_savings, 0644, sched_smt_power_savings_show,
++static SYSDEV_CLASS_ATTR(sched_smt_power_savings, 0644, 
++		   sched_smt_power_savings_show,
+ 		   sched_smt_power_savings_store);
+ #endif
+ 
