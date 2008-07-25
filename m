@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753020AbYGYGw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbYGYHHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753020AbYGYGw1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 02:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbYGYGwU
+	id S1753318AbYGYHHx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 03:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbYGYHHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 02:52:20 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48212 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750706AbYGYGwU (ORCPT
+	Fri, 25 Jul 2008 03:07:45 -0400
+Received: from relay03.mail-hub.dodo.com.au ([123.2.6.238]:40066 "EHLO
+	relay03.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751477AbYGYHHo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 02:52:20 -0400
-Subject: [git pull] x86: patches for tip/x86/prototypes
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=utf8
-Date: Fri, 25 Jul 2008 12:21:09 +0530
-Message-Id: <1216968669.18082.6.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Fri, 25 Jul 2008 03:07:44 -0400
+From: Grant Coady <grant_lkml@dodo.com.au>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.25.12, 2.6.26-git11: Is this odd NFS behaviour?
+Date: Fri, 25 Jul 2008 17:07:25 +1000
+Organization: http://bugsplatter.mine.nu/
+Reply-To: Grant Coady <gcoady.lk@gmail.com>
+Message-ID: <40ui84lotn5qihetlgeu2km5vu6jtrd971@4ax.com>
+X-Mailer: Forte Agent 2.0/32.652
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-﻿Hello Ingo,
+G'day,
 
-Please pull these patches for tip/x86/prototypes.
+I'm editing a script on a box running 2.6.25.12 and exported on NFS, 
+I'm testing the script on another two boxes, one running 2.6.25.12 
+and the other 2.6.26-git11.
 
-I have also verify that these are merge-able with tip/master and working.
+Sometimes I save the edit file and the test boxes don't see the file 
+change, so I have to save the file again.  I'm using vim 7.0 if it 
+matters.
 
-﻿The following changes since commit 71e3b818431957371c7f69fa1c576d4a403c1478:
-  Jaswinder Singh (1):
-        x86: mach-default/setup.c declare no_broadcast before they get used
+All boxes are connected to localnet and I'm working through PuTTY 
+terminals on a WinXP desktop box.  (Three linux boxes headless).
 
-are available in the git repository at:
+There were times when I saved and quit the edit file, had to reopen 
+it and save-quit again for the test boxes to see the changes.
 
-  git://git.infradead.org/users/jaswinder/linux-2.6-tip.git x86/prototypes-for-tip
+nfs exports:
+grant@deltree:~$ cat /etc/exports
+# See exports(5) for a description.
+# This file contains a list of all directories exported to other computers.
+# It is used by rpc.nfsd and rpc.mountd.
 
-Jaswinder Singh (6):
-      x86_64: Declare new_utsname in asm-x86/syscalls.h
-      X86_32: declare pt_regs_access as unsigned long
-      X86_SMP: smp.c declare functions before they get used
-      X86_SMP: smpboot.c declare idle_thread_array and smp_b_stepping as static
-      X86_SMP: ipi.c declare functions before they get used
-      X86_SMP: tlb_XX.c declare smp_invalidate_interrupt before they get used
+/home/common            192.168.1.0/24(sync,rw,no_root_squash,subtree_check)
+/home/mirror            192.168.1.0/24(sync,ro,no_root_squash,subtree_check)
+#
 
- arch/x86/kernel/ipi.c      |    3 ++-
- arch/x86/kernel/ptrace.c   |    2 +-
- arch/x86/kernel/smpboot.c  |    4 ++--
- include/asm-x86/hw_irq.h   |   10 ++++++++++
- include/asm-x86/syscalls.h |    2 +-
- 5 files changed, 16 insertions(+), 5 deletions(-)
+test box:
+grant@black:~$ cat /etc/fstab
+...
+deltree:/home/common    /home/common    nfs     hard,intr
+deltree:/home/mirror    /home/mirror    nfs     hard,intr
 
+File is on the /home/common nfs rw export.
+Is this something I'm doing wrong or something odd with the kernel?
 
+config + dmesg from:
+  http://bugsplatter.mine.nu/test/boxen/black/
+  http://bugsplatter.mine.nu/test/boxen/deltree/
+
+And where did the nfsd TCP option go in -git11?  Does it matter?
+
+Thanks,
+Grant.
