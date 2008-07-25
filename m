@@ -1,98 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYGYCZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbYGYC17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818AbYGYCZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 22:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbYGYCZu
+	id S1754523AbYGYC17 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 22:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYGYC1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 22:25:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49027 "EHLO mx1.redhat.com"
+	Thu, 24 Jul 2008 22:27:49 -0400
+Received: from sh.osrg.net ([192.16.179.4]:34986 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751268AbYGYCZt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 22:25:49 -0400
-Date: Thu, 24 Jul 2008 22:25:10 -0400
-From: Rik van Riel <riel@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: PERF: performance tests with the split LRU VM in -mm
-Message-ID: <20080724222510.3bbbbedc@bree.surriel.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	id S1751268AbYGYC1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 22:27:48 -0400
+Date: Fri, 25 Jul 2008 11:26:27 +0900
+To: mpatocka@redhat.com
+Cc: James.Bottomley@HansenPartnership.com, davem@davemloft.net,
+       fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-parisc@vger.kernel.org
+Subject: Re: [PATCH] block: fix q->max_segment_size checking in
+ blk_recalc_rq_segments about VMERGE
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <Pine.LNX.4.64.0807241727320.12036@devserv.devel.redhat.com>
+References: <Pine.LNX.4.64.0807241232040.9412@devserv.devel.redhat.com>
+	<1216918371.4524.38.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0807241727320.12036@devserv.devel.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080725112711H.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to get the performance of the split LRU VM (in -mm) better,
-I have performed several performance tests with the following kernels:
-- 2.6.26                                                    "2.6.26"
-- 2.6.26-rc8-mm1                                            "-mm"
-- 2.6.26-rc8-mm1 w/ "evict streaming IO cache first" patch  "stream"
-      Patch at: http://lkml.org/lkml/2008/7/15/465
-- 2.6.26-rc8-mm1 w/ "fix swapout on sequential IO" patch    "noforce"
-      Patch at: http://marc.info/?l=linux-mm&m=121683855132630&w=2
+On Thu, 24 Jul 2008 17:49:14 -0400 (EDT)
+Mikulas Patocka <mpatocka@redhat.com> wrote:
 
-I have run the performance tests on a Dell pe1950 system
-with 2 quad-core CPUs, 16GB of RAM and a hardware RAID 1
-array of 146GB disks.
+> On Thu, 24 Jul 2008, James Bottomley wrote:
+> 
+> > On Thu, 2008-07-24 at 12:34 -0400, Mikulas Patocka wrote:
+> > > On Thu, 24 Jul 2008, James Bottomley wrote:
+> > > 
+> > > > On Thu, 2008-07-24 at 11:07 -0400, Mikulas Patocka wrote:
+> > > > > So try to #define BIO_VMERGE_BOUNDARY 0 for Pa-Risc and tell us what 
+> > > > > performance degradation do you see (and what driver do you use and what is 
+> > > > > the I/O pattern).
+> > > > > 
+> > > > > If you show something specific, we can consider that --- but you haven't 
+> > > > > yet told us anything, except generic talk.
+> > > > 
+> > > > You keep ignoring inconvenient facts.  For about the third time:
+> > > > 
+> > > > I run a test bed for sg_tables (large chaining of requests).  This runs
+> > > > on parisc using virtual merging (has to because the final physical table
+> > > > size can't go over the sg list of the SCSI card).  If I turn off virtual
+> > > > merging I can no longer test sg_tables in vanilla kernels.
+> > > > 
+> > > > James
+> > > 
+> > > What sg_tables test do you mean? What does the test do? Why couldn't you 
+> > > run the test if BIO_VMERGE_BOUNDARY is 0? Normal I/O obviously can work 
+> > > with BIO_VMERGE_BOUNDARY 0, the kernel will just send more smaller 
+> > 
+> > Look, if you don't really understand what I'm doing, it's not really my
+> > job to educate you.  The sg_table discussions are on marc.info, mainly
+> > on the SCSI lists; just look for 'sg chaining' in the header (need to
+> > use google site ... marc's search is bad).
+> > 
+> > You can complain if the code is impacting you ... but I believe I've
+> > optimised it so it isn't.  Your basic problem amounts to you not liking
+> > me doing something that has no impact on you ... I'm afraid that's what
+> > freedom leads to (shocking, I know).
+> > 
+> > James
+> 
+> Chaining of sg_tables is used for drivers with big sg tables --- and 
+> vmerge counting is used for drivers with small sg tables. So what do they 
+> have in common?
 
-The tests are fairly simple, but took a fair amount of time to
-run due to the size of the data set involved (full disk for dd,
-55GB innodb file for the database tests).
+VMERGE enables you to handle a large request even with drivers with
+small sg tables.
 
 
-  TEST 1: dd if=/dev/sda of=/dev/null bs=1M
+> Summary, what I mean:
+> 
+> * in blk-merge.c, you have 85 lines, that is 16% of the size of the file, 
+> devoted to counting of hw_segments
+> 
+> * it is only used on two architectures, one already outdated (alpha), the 
+> other being discontinued (pa-risc). On all the other architectures, 
+> hw_segments == phys_segments
 
-kernel  speed    swap used
-
-2.6.26  111MB/s  500kB
--mm     110MB/s  59MB     (ouch, system noticably slower)
-noforce	111MB/s  128kB
-stream  108MB/s  0        (slight regression, not sure why yet)
-
-This patch shows that the split LRU VM in -mm has a problem
-with large streaming IOs: the working set gets pushed out of
-memory, which makes doing anything else during the big streaming
-IO kind of painful.
-
-However, either of the two patches posted fixes that problem,
-though at a slight performance penalty for the "stream" patch.
+BTW, alpha IOMMU can't handle VMERGE. But the IOMMU has the code to
+handle VMERGE so one-line patch can fix the IOMMU.
 
 
-  TEST 2: sysbench & linear query
-
-In this test, I run sysbench in parallel with "SELECT COUNT(*) FROM sbtest;"
-on a 240,000,000 row sysbench database.  In the first columns, MySQL has
-been started up with its default memory allocation; the second set of
-results has innodb_buffer_pool_size=12G, allocating 75% of system memory
-as innodb buffer.   The sysbench performance number is the number of
-transactions per second (tps), while the linear query simply has its
-time measured.
-
-         default memory        12GB innodb buffer
-kernel   tps   SELECT COUNT    tps   SELECT COUNT   swapped out
-
-2.6.26   100   42 min 6 sec    142   1 hour 20 min  5GB (constant swap IO!)
--mm      109   33 min 25 sec   210   22 min 26 sec  <70MB
-noforce  101   34 min 48 sec   207   22 min 16 sec  <70MB
-stream   111   32 min 5 sec    209   22 min 22 sec  <70MB
-
-These results show that increasing the database buffer helps
-sysbench performance, even in 2.6.26 which is constantly swapping
-the database buffer in and out. However, the large linear query
-really suffers in the upstream VM.
-
-The upstream VM constantly swaps mysql innodb buffer in and
-out, with the amount of swap space in use hovering about half
-full (5GB).  This probably indicates that the kernel keeps
-cycling mysql in and out of swap, freeing up swap space at
-swapin time.
-
-Neither of the patches I proposed for -mm seem to make much of
-a performance difference for this test, but they do solve the
-interactivity problem during large streaming IO.
-
-The split LRU VM in the -mm kernel really improves the performance
-of databases in the presence of streaming IO, which is a real
-performance issue for Linux users at the moment.
+As I said before, can we leave this to Jens, keeping or removing
+VMERGE? Seems that I see the same arguments again and again.
