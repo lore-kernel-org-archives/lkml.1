@@ -1,48 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYGYMZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbYGYM3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbYGYMZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 08:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYGYMZM
+	id S1754759AbYGYM3e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 08:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYGYM3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 08:25:12 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:38387 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752712AbYGYMZL (ORCPT
+	Fri, 25 Jul 2008 08:29:25 -0400
+Received: from dgate20.fujitsu-siemens.com ([80.70.172.51]:51863 "EHLO
+	dgate20.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752655AbYGYM3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 08:25:11 -0400
-Date: Fri, 25 Jul 2008 06:24:54 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Andrea Righi <righi.andrea@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: __weak vs ifdef
-Message-ID: <20080725122454.GE6701@parisc-linux.org>
-References: <20080725083943.GC19310@cs181140183.pp.htv.fi> <20080725015537.564e3397.akpm@linux-foundation.org> <20080725091455.GD19310@cs181140183.pp.htv.fi> <20080725092748.GF19310@cs181140183.pp.htv.fi> <20080725023455.dde3eb27.akpm@linux-foundation.org>
+	Fri, 25 Jul 2008 08:29:25 -0400
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
+  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
+   Received:Received:Message-ID:Date:From:Organization:
+   User-Agent:MIME-Version:To:CC:Subject:References:
+   In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=fqcXAbQVtz86iDzGxlJRSCOQOyHej7G2k6tsw6gvBT8Y4pudxuPdFm3H
+   CBeTi2A9zbWELnZF8ihgCEvmcUN9A/1rri8pTr8ZfHNVauZdr9jYh1/1s
+   9g98DNXqyDSrzFN;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.31,252,1215381600"; 
+   d="scan'208";a="21211284"
+X-IronPort-AV: E=Sophos;i="4.31,252,1215381600"; 
+   d="scan'208";a="32947002"
+Message-ID: <4889C723.7050402@fujitsu-siemens.com>
+Date: Fri, 25 Jul 2008 14:29:23 +0200
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Organization: Fujitsu Siemens Computers
+User-Agent: Thunderbird 2.0.0.15pre (X11/20080508)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080725023455.dde3eb27.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take
+ 2)
+References: <48885DDC.9010003@fujitsu-siemens.com> <20080724111631.GA3432@lenovo> <48886E6D.1030005@fujitsu-siemens.com> <20080724120512.GA21804@lenovo> <488889B6.9070707@fujitsu-siemens.com> <20080724143151.GA32422@lenovo> <20080724150116.GC32422@lenovo> <48889C14.4070408@fujitsu-siemens.com> <4889968E.6020000@fujitsu-siemens.com> <20080725100844.GA16698@lenovo>
+In-Reply-To: <20080725100844.GA16698@lenovo>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 02:34:55AM -0700, Andrew Morton wrote:
-> We should make arch_pick_mmap_layout __weak and nuke that ifdef.
+Cyrill Gorcunov wrote:
 
-I strongly disagree.  I find it makes it harder to follow code flow
-when __weak functions are involved.  Ifdefs are ugly, no question, but
-they're easier to grep for, see when they'll be defined and know which of
-the arch_pick_mmap_layout() functions will be called.  __weak certainly
-has its uses (eg the sys_ni_syscall is great) but I find it's becoming
-overused.
+> Hi Martin, what about the patch below - I simplified it a bit.
+> Actually we have to handle 32bit mode as well I think.
 
-My basic point here is that __weak makes the code easier to write but
-harder to read, and we're supposed to be optimising for easier to read.
+Yes.
+
+> Anyway,
+> take a look. I don't really mind against your patch but we better
+> should wait until Maciej could take a look (he will be able in
+> a week or maybe a bit later).
+> 
+
+> +       for (i = 0; i < MAX_ITER; i++) {
+> +               rdtscll(tsc0);
+> +               *apic = apic_read(APIC_TMCCT);
+> +               rdtscll(tsc1);
+> +               diff = tsc1 - tsc0;
+> +               if (diff < MAX_DIFFERENCE) {
+> +                       *tsc = tsc0 + diff / 2;
+> +                       return 0;
+> +               }
+> +       }
+ > +
+ > +       return -EIO ;
+
+This is wrong - you need to set *tsc also in the -EIO case, otherwise 
+the function can return total bogus.
+
+I have to say that my simplified patch failed to do the calibration 
+correctly on our test system (the original patch worked well). Please 
+stay tuned, we are investigating this currently.
+
+Martin
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Martin Wilck
+PRIMERGY System Software Engineer
+FSC IP ESP DEV 6
+
+Fujitsu Siemens Computers GmbH
+Heinz-Nixdorf-Ring 1
+33106 Paderborn
+Germany
+
+Tel:			++49 5251 8 15113
+Fax:			++49 5251 8 20209
+Email:			mailto:martin.wilck@fujitsu-siemens.com
+Internet:		http://www.fujitsu-siemens.com
+Company Details:	http://www.fujitsu-siemens.com/imprint.html
