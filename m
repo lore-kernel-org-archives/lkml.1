@@ -1,95 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbYGYKmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbYGYKmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755123AbYGYKmU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 06:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbYGYKmE
+	id S1756940AbYGYKmt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 06:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbYGYKmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 06:42:04 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51984 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753189AbYGYKmC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 06:42:02 -0400
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
-	pointer dereference
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Dieter Ries <clip2@gmx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Patrick McHardy <kaber@trash.net>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
-       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
-       Dave Jones <davej@redhat.com>, vegard.nossum@gmail.com
-In-Reply-To: <4889887B.1080206@gmx.de>
-References: <20080724060448.GA10203@elte.hu>
-	 <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>
-	 <20080724.022259.113079007.davem@davemloft.net>
-	 <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu>
-	 <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net>
-	 <84144f020807240544q507e1b7cv220d1afbae0ee0f0@mail.gmail.com>
-	 <48887A71.5010209@trash.net> <1216905812.5897.6.camel@penberg-laptop>
-	 <48888434.3030207@trash.net> <1216906476.12021.4.camel@penberg-laptop>
-	 <20080724115127.6cfbb616.akpm@linux-foundation.org>
-	 <1216925744.12392.1.camel@penberg-laptop>  <4889887B.1080206@gmx.de>
-Date: Fri, 25 Jul 2008 13:41:56 +0300
-Message-Id: <1216982516.5896.0.camel@penberg-laptop>
+	Fri, 25 Jul 2008 06:42:40 -0400
+Received: from ns.firmix.at ([62.141.48.66]:2707 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753765AbYGYKmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 06:42:39 -0400
+Subject: Re: how much stuff is no longer "EXPERIMENTAL"?
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Grant Coady <gcoady.lk@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <4889615D.9020706@nortel.com>
+References: <alpine.LFD.1.10.0807241114000.4119@localhost.localdomain>
+	 <h2ih845fmasm3coi3qapmqkknj0ghp6k7t@4ax.com>
+	 <alpine.LFD.1.10.0807241606240.6474@localhost.localdomain>
+	 <20080724211141.4fa557ca@lxorguk.ukuu.org.uk> <4889615D.9020706@nortel.com>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Fri, 25 Jul 2008 12:41:55 +0200
+Message-Id: <1216982515.17267.108.camel@spike.firmix.at>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.342 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.342 required=5
+X-Spam-Score: -2.342 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-25 at 10:02 +0200, Dieter Ries wrote:
-> Pekka Enberg schrieb:
-> > On Thu, 2008-07-24 at 11:51 -0700, Andrew Morton wrote:
-> >> On Thu, 24 Jul 2008 16:34:36 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> >>
-> >>>>>> Your patch introduced a use-after-free and double-free.
-> >>>>>> krealloc() frees the old pointer, but it is still used
-> >>>>>> for the ->move operations, then freed again.
-> >>>>>>
-> >>>>>> To fix this I think we need a __krealloc() that doesn't
-> >>>>>> free the old memory, especially since it must not be
-> >>>>>> freed immediately because it may still be used in a RCU
-> >>>>>> read side (see the last part in the patch attached to
-> >>>>>> this mail (based on a kernel without your patch)).
-> >>>>> Agreed. Something like this, perhaps?
-> >>>>>
-> >>>>> [PATCH] netfilter: fix double-free and use-after free
-> >>>>>
-> >>>>> As suggested by Patrick McHardy, introduce a __krealloc() that doesn't
-> >>>>> free the original buffer to fix a double-free and use-after-free bug
-> >>>>> introduced by me in netfilter that uses RCU.
-> >>>>>
-> >>>>> Reported-by: Patrick McHardy <kaber@trash.net>
-> >>>>> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> >>>> Looks good to me, thanks.
-> >>> Ingo, can you please test this? Andrew, I'm at OLS so can you pick up
-> >>> the patch in your tree?
-> >> Sure.  Or Patrick can do so and it can be merged via the net tree.
-> >>
-> >> Ingo, did this patch actually fix something over there?
+On Fri, 2008-07-25 at 01:15 -0400, Chris Friesen wrote:
+> Alan Cox wrote:
+> >> legitimately experimental content in the source tree.  surely *some*
+> >> of that is suitably mature such that that dependency can be dropped.
 > > 
-> > Apparently it didn't but it did fix Dieter's problem:
-> > 
-> > http://lkml.org/lkml/2008/7/24/337
-> > 
-> > Dieter, can we add a Tested-by tag from you to this patch?
-> > 
+> > What is the connection between age of code and experimental status ?
 > 
-> Yes, it definitely fixed my issue and I have not encountered 
->                             further problems with the patch. The machine 
-> is running fine with it.
-> 
-> Do I have to explicitly add my
-> Tested-by: Dieter Ries <clip2@gmx.de>
-> tag somewhere (if yes, where?) or is this enough for you?
+> Is it reasonable for in-tree code to remain "experimental" indefinately?
 
-No, that's fine. The people who are merging the patch can pick it up.
-Thanks a lot for your help!
+Or until death. E.g. "devfs" went directly from "experimental" to
+"obsolete".
 
-		Pekka
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
+
 
