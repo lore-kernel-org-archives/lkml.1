@@ -1,58 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753778AbYGYQ7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbYGYRCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753778AbYGYQ7P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 12:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbYGYQ67
+	id S1752912AbYGYRCu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 13:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYGYRCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 12:58:59 -0400
-Received: from gw.goop.org ([64.81.55.164]:40911 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751373AbYGYQ66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 12:58:58 -0400
-Message-ID: <488A064E.1040407@goop.org>
-Date: Fri, 25 Jul 2008 09:58:54 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 25 Jul 2008 13:02:42 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:47437 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751028AbYGYRCl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 13:02:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ldFWTixYRSA80m2q/oT/L6Zc0t01JH2RwYJG12VE6x2xYAJfJmJUO4fUMkkPEZ5PIu
+         aEsvR7HfG9/WooZiG40kA/MmP/hr8qtkO6jJPGPvNAJ0/KRvr9g/x34LaMR7ZGNOLrQH
+         Ir0zdaWUubavNrzrxluXwzrbAx0tvYq13c1CU=
+Message-ID: <9e4733910807251002w7da115e5r53600f1cf4e3891@mail.gmail.com>
+Date: Fri, 25 Jul 2008 13:02:41 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 1/4] of: adapt of_find_i2c_driver() to be usable by SPI also
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       spi-devel-general@lists.sourceforge.net,
+       dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org
+In-Reply-To: <fa686aa40807250921v73bec21cya6b4cd494f12f2e8@mail.gmail.com>
 MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
-References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F30C.8020800@zytor.com> <4874F909.7060503@goop.org> <4889F5FA.1050908@sgi.com> <4889FA96.1000701@goop.org> <488A0375.4050605@sgi.com>
-In-Reply-To: <488A0375.4050605@sgi.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+	 <20080725073311.8485.16226.stgit@trillian.secretlab.ca>
+	 <9e4733910807250840n48c6ae79l27af4f320b5b1df1@mail.gmail.com>
+	 <fa686aa40807250921v73bec21cya6b4cd494f12f2e8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Jeremy Fitzhardinge wrote:
->   
->> Mike Travis wrote:
->>     
->>> FYI, I think it was a combination of errors that was causing my problems.
->>> In any case, I've successfully compiled and booted Ingo's pesky config
->>> config-Tue_Jul__1_16_48_45_CEST_2008.bad with gcc's 4.2.0, 4.2.3 and
->>> 4.2.4
->>> on both Intel and AMD boxes.  (As well as a variety of other configs.)
->>>   
->>>       
->> Good.  What compilers have you tested?  Will it work over the complete
->> supported range?
->>     
+On 7/25/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Fri, Jul 25, 2008 at 11:40 AM, Jon Smirl <jonsmirl@gmail.com> wrote:
+>  > On 7/25/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+>  >> From: Grant Likely <grant.likely@secretlab.ca>
+>  >>
 >
-> The oldest gcc I have available is 3.4.3 (and I just tried that one and
-> it worked.)  So that one and the ones listed above I've verified using
-> Ingo's test config.  (All other testing I'm using 4.2.3.)
->   
+> >>  + * At the moment, a single table is used for all bus types because it is
+>  >>  + * assumed that the data size is small and that the compatible values
+>  >>  + * should already be distinct enough to differentiate between SPI, I2C
+>  >>  + * and other devices.
+>  >
+>  > Maybe add a section recommending to update the alias list in the linux
+>  > device driver before adding entries here? This table should be a last
+>  > resort. I'm not even sure this table should exist, what would be a
+>  > case where we would need to make an entry here instead of fixing the
+>  > device driver by adding an alias name?
+>
+>
+> In principle I agree.  However, this patch is simply porting the i2c
+>  specific code to something that can be used by both SPI and I2C.  I
+>  don't want to rework the actual mechanism in this particular patch.  I
+>  can submit an additional patch to change this along with reworking
+>  some of the behavior that needs to be improved.
+>
+>
+>  >>  + * First method is to lookup the compatible value in of_modalias_table.
+>  >>  + * Second is to look for a "linux,<modalias>" entry in the compatible list
+>  >>  + * and used that for modalias.  Third is to strip off the manufacturer
+>  >>  + * prefix from the first compatible entry and use the remainder as modalias
+>  >
+>  > I also think this is a problem. Embedding the name of Linux device
+>  > drivers into device firmware makes it almost impossible to rename the
+>  > device driver.  Again, what is a case where generic part numbers can't
+>  > be listed in the alias section of the linux device driver?
+>  >
+>  > Even eeprom was just fixed to take generic part numbers (at24).
+>
+>
+> Again, I agree, but this change is very much a stop gap measure to get
+>  things working in a sane way without having to create bad device tree
+>  bindings (device tree bindings are hard to change, code is not).  I've
+>  been considering posting a patch to remove this clause from the
+>  functions, but that needs to be reviewed separately from this change.
 
-OK.  I've got a range of toolchains on various test machines around 
-here, so I'll give it a spin.  Are your most recent changes in tip.git yet?
+Isn't putting "compatible="linux,modalias"" into your device tree a
+really bad idea?
 
-    J
+>
+>  Thanks,
+>
+> g.
+>
+>  --
+>  Grant Likely, B.Sc., P.Eng.
+>  Secret Lab Technologies Ltd.
+>
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
