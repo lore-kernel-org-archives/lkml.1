@@ -1,93 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbYGYS0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbYGYS0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755499AbYGYS0A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 14:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbYGYSZv
+	id S1754091AbYGYS0X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 14:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYGYSZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 14:25:51 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:51413 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751586AbYGYSZu (ORCPT
+	Fri, 25 Jul 2008 14:25:58 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:38417 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755397AbYGYSZ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 14:25:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=U8rORREblx+RQBucCh/0YungLyXLVlfb2eGw0BfhuBZH8PM/KtKgmVxRJ2nEX26ywO
-         W2y6+VNt0V/uYNseP9opJT68KtRTrYVmz2KNDj2i7ojwByczUdqD9SYb0fbs/CmU3VVN
-         0QkP2MA47FOzUfHWXtqM0JCVfzcXK6AtRszW8=
-Subject: Re: [PATCH] byteorder: force in-place endian conversion to always
-	evaluate args
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Nish Aravamudan <nish.aravamudan@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <29495f1d0807251122q1f757fbcwd7d793081915957a@mail.gmail.com>
-References: <1217003621.5971.4.camel@brick>
-	 <29495f1d0807251122q1f757fbcwd7d793081915957a@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 25 Jul 2008 11:25:47 -0700
-Message-Id: <1217010347.5971.24.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 25 Jul 2008 14:25:56 -0400
+Message-ID: <488A1A99.2070609@euromail.se>
+Date: Fri, 25 Jul 2008 20:25:29 +0200
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       robfitz@273k.net, akpm@osdl.org, jikos@jikos.cz, vojtech@suse.cz,
+       dmonakhov@openvz.org, johannes@sipsolutions.net
+Subject: Re: [PATCH] bcm5974-0.58: name changes, open/close and	suspend/resume
+ serialized
+References: <4888311E.9010005@euromail.se> <20080725154250.GA1861@anvil.corenet.prv>
+In-Reply-To: <20080725154250.GA1861@anvil.corenet.prv>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.35.11
+X-Scan-Result: No virus found in message 1KMRzF-0002Oc-5Y.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1KMRzF-0002Oc-5Y 6f01e3f0db051c12054ac1df6db64f24
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-25 at 11:22 -0700, Nish Aravamudan wrote:
-> On 7/25/08, Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> > David Miller reported breakage in ide when the in-place byteorder helpers
-> >  were used as the macros do not always evaluate their args which led to
-> >  an infinite loop.
-> >
-> >  Just make them functions to ensure they always do so.
-> >
-> >  Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> >  ---
-> >   include/linux/byteorder/big_endian.h    |   60 ++++++++++++++++++++++++------
-> >   include/linux/byteorder/little_endian.h |   60 ++++++++++++++++++++++++------
-> >   2 files changed, 96 insertions(+), 24 deletions(-)
-> >
-> >  diff --git a/include/linux/byteorder/big_endian.h b/include/linux/byteorder/big_endian.h
-> >  index 961ed4b..b53ccd0 100644
-> >  --- a/include/linux/byteorder/big_endian.h
-> >  +++ b/include/linux/byteorder/big_endian.h
-> >  @@ -88,18 +88,54 @@ static inline __u16 __be16_to_cpup(const __be16 *p)
-> >   {
-> >         return (__force __u16)*p;
-> >   }
-> >  -#define __cpu_to_le64s(x) __swab64s((x))
-> >  -#define __le64_to_cpus(x) __swab64s((x))
-> >  -#define __cpu_to_le32s(x) __swab32s((x))
-> >  -#define __le32_to_cpus(x) __swab32s((x))
-> >  -#define __cpu_to_le16s(x) __swab16s((x))
-> >  -#define __le16_to_cpus(x) __swab16s((x))
-> >  -#define __cpu_to_be64s(x) do {} while (0)
-> >  -#define __be64_to_cpus(x) do {} while (0)
-> >  -#define __cpu_to_be32s(x) do {} while (0)
-> >  -#define __be32_to_cpus(x) do {} while (0)
-> >  -#define __cpu_to_be16s(x) do {} while (0)
-> >  -#define __be16_to_cpus(x) do {} while (0)
-> >  +
-> >  +static inline void __cpu_to_le64s(__u64 *p)
-> >  +{
-> >  +       __swab64s(x);
-> >  +}
+Hello Dmitry,
 > 
-> Shouldn't all the x's in the function bodies be p's? And I thought
-> David already posted a macro version of this change along the lines of
-> hpa's reply?
+> Thank you for the changes.  You don't have to track whether device is
+> manually suspended or not - usb_submit_urb will fail and that is it.
+> 
 
-*sigh*
+Perfect.
 
-Yes they should, I sent the wrong mbox after this failed to compile
-and fixed it.
+> Attached are 2 patches. First cleans suspend state tracking as it is not
+> really needed and does some formatting and other minor changes and 2nd
+> implements runtime pm for the device. Could you please try them and if
+> everything still works I will apply the driver.
 
-Cheers,
+Patch 1:
 
-Harvey
+  Looking good, just a few comments:
+
+  * I notice that clamp_val is new since 2.6.24.3
+  * Regarding the open-fails comment: is EACCES correct?
+
+Patch 2:
+
+  Perfect.
+
+Thank you so much, Dmitry - it's a GO!
+
+Henrik
 
