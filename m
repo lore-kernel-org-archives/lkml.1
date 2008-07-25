@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbYGYPaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbYGYPeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbYGYPaz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 11:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYGYPaX
+	id S1752560AbYGYPeq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 11:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYGYPei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 11:30:23 -0400
-Received: from ti-out-0910.google.com ([209.85.142.189]:61458 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752350AbYGYPaU (ORCPT
+	Fri, 25 Jul 2008 11:34:38 -0400
+Received: from smtp201.iad.emailsrvr.com ([207.97.245.201]:50974 "EHLO
+	smtp201.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751349AbYGYPeh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 11:30:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:cc:message-id:mime-version:content-type
-         :content-transfer-encoding:x-mailer;
-        b=NJAQ4ILxy91Z5KKPZWa5SOZ+bLztt12xRf0PDNZHhxw4EZnKfHNTMuh8mkfA/jeAgR
-         8S1Ut9JynNna+tmK95XHhRK4tJAB/U6EIhwOs5Uyy4Ypsi9tcYTvjiOIz5IPHpME0zN+
-         y3DTr7RjPPbKsjpV7vp/+kH6G4Z0DN6kQ0YYM=
-Date: Fri, 25 Jul 2008 23:30:18 +0800
-From: Huang Weiyi <weiyi.huang@gmail.com>
-To: a.zummo@towertech.it, p_gortmaker@yahoo.com
-Subject: drivers/char/rtc.c: Removed duplicated include
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
-Message-Id: <20080725230642.9143.WEIYI.HUANG@gmail.com>
+	Fri, 25 Jul 2008 11:34:37 -0400
+Message-ID: <4889F28B.6000307@idilia.com>
+Date: Fri, 25 Jul 2008 11:34:35 -0400
+From: Filipe Brandenburger <filipe.brandenburger@idilia.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+Subject: Re: Recommendation on an eSATA card well supported by Linux with
+ built-in drivers and that supports hot plug
+References: <fa.jn2UBng193xTV9fhfIdhKpQQKRo@ifi.uio.no> <4888E188.4050708@shaw.ca> <488900E2.4000208@zytor.com>
+In-Reply-To: <488900E2.4000208@zytor.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.24.02 [en]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Removed duplicated include file <linux/smp_lock.h> in
-drivers/char/rtc.c.
+H. Peter Anvin wrote:
+> Robert Hancock wrote:
+>> Most AHCI controllers are built into chipsets, but I know that JMicron
+>> has some chips which can be found on add-in cards which are AHCI.
+> 
+> They work, and they're cheap.
 
-Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+That's great, I actually stumbled upon them. I believe AHCI is really
+the way to go, open standard, excellent support in kernel, probably will
+live very long.
 
-diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
-index dbefbb3..985a917 100644
---- a/drivers/char/rtc.c
-+++ b/drivers/char/rtc.c
-@@ -78,7 +78,6 @@
- #include <linux/wait.h>
- #include <linux/bcd.h>
- #include <linux/delay.h>
--#include <linux/smp_lock.h>
- #include <linux/uaccess.h>
+However, I'm having a hard time finding a brand that uses these chips. I
+see that apparently there is one called "VIBE" that uses it, but I got
+this information from an online store and I didn't even find the
+vendor's website...
 
- #include <asm/current.h>
+Would you be also so kind as to recommend an actual eSATA card that uses
+the JMicron chip? Preferrably one that you have and use on a daily basis.
 
+Excuse me if the subject matter has gone way off-topic for this list,
+however the advice is being great.
 
+Thanks,
+Filipe
