@@ -1,86 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbYGYNgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYGYNjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756523AbYGYNgS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 09:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbYGYNgI
+	id S1756079AbYGYNjr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 09:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYGYNji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 09:36:08 -0400
-Received: from sh.osrg.net ([192.16.179.4]:46014 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753540AbYGYNgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 09:36:05 -0400
-Date: Fri, 25 Jul 2008 22:34:57 +0900
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       bhavna.sarathy@amd.com, robert.richter@amd.com
-Subject: Re: [PATCH] add iommu_num_pages helper function
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080725132121.GZ7493@amd.com>
-References: <1216990680-1227-2-git-send-email-joerg.roedel@amd.com>
-	<20080725221553Q.fujita.tomonori@lab.ntt.co.jp>
-	<20080725132121.GZ7493@amd.com>
+	Fri, 25 Jul 2008 09:39:38 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:42727 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752423AbYGYNji (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 09:39:38 -0400
+X-SourceIP: 62.163.52.83
+Subject: Re: [patch, rfc: 2/2] sched, hotplug: ensure a task is on the
+	valid cpu after set_cpus_allowed_ptr()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <b647ffbd0807250620k2e7caa47pa81388c808d9eda7@mail.gmail.com>
+References: <1216937730.5368.16.camel@earth>
+	 <1216989649.7257.381.camel@twins>
+	 <b647ffbd0807250620k2e7caa47pa81388c808d9eda7@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 25 Jul 2008 15:39:44 +0200
+Message-Id: <1216993184.7257.388.camel@twins>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080725223533A.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Jul 2008 15:21:21 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> On Fri, Jul 25, 2008 at 10:15:06PM +0900, FUJITA Tomonori wrote:
-> > On Fri, 25 Jul 2008 14:57:58 +0200
-> > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > 
-> > > Calculating the number of pages from given address and length numbers is a task
-> > > required in multiple IOMMU implementations. So implement this as a generic
-> > > function into the IOMMU helper code.
-> > > 
-> > > Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > > ---
-> > >  include/linux/iommu-helper.h |    1 +
-> > >  lib/iommu-helper.c           |    8 ++++++++
-> > >  2 files changed, 9 insertions(+), 0 deletions(-)
-> > 
-> > Thanks. I planed to work on this after rc1. You beat me. :)
-> > 
-> >  
-> > > diff --git a/include/linux/iommu-helper.h b/include/linux/iommu-helper.h
-> > > index c975caf..f8598f5 100644
-> > > --- a/include/linux/iommu-helper.h
-> > > +++ b/include/linux/iommu-helper.h
-> > > @@ -8,3 +8,4 @@ extern unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
-> > >  				      unsigned long align_mask);
-> > >  extern void iommu_area_free(unsigned long *map, unsigned long start,
-> > >  			    unsigned int nr);
-> > > +extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
-> > > diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-> > > index a3b8d4c..889ddce 100644
-> > > --- a/lib/iommu-helper.c
-> > > +++ b/lib/iommu-helper.c
-> > > @@ -80,3 +80,11 @@ void iommu_area_free(unsigned long *map, unsigned long start, unsigned int nr)
-> > >  	}
-> > >  }
-> > >  EXPORT_SYMBOL(iommu_area_free);
-> > > +
-> > > +unsigned long iommu_num_pages(unsigned long addr, unsigned long len)
-> > > +{
-> > > +	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
-> > > +
-> > > +	return size >> PAGE_SHIFT;
-> > > +}
-> > > +EXPORT_SYMBOL(iommu_num_pages);
-> > 
-> > This doesn't work since PAGE_SIZE != IOMMU_PAGE_SIZE on the majority
-> > of architectures.
+On Fri, 2008-07-25 at 15:20 +0200, Dmitry Adamushko wrote:
+> 2008/7/25 Peter Zijlstra <a.p.zijlstra@chello.nl>:
+> > On Fri, 2008-07-25 at 00:15 +0200, Dmitry Adamushko wrote:
+> >>
+> >> From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+> >> Subject: sched, hotplug: ensure a task is on the valid cpu after
+> >> set_cpus_allowed_ptr()
+> >>
+> >> ---
+> >>     sched, hotplug: ensure a task is on the valid cpu after set_cpus_allowed_ptr()
+> >>
+> >>     The 'new_mask' may not include task_cpu(p) so we migrate 'p' on another 'cpu'.
+> >>     In case it can't be placed on this 'cpu' immediately, we submit a request
+> >>     to the migration thread and wait for its completion.
+> >>
+> >>     Now, by the moment this request gets handled by the migration_thread,
+> >>     'cpu' may well be offline/non-active. As a result, 'p' continues
+> >>     running on its old cpu which is not in the 'new_mask'.
+> >>
+> >>     Fix it: ensure 'p' ends up on a valid cpu.
+> >>
+> >>     Theoreticaly (but unlikely), we may get an endless loop if someone cpu_down()'s
+> >>     a new cpu we have choosen on each iteration.
+> >>
+> >>     Alternatively, we may introduce a special type of request to migration_thread,
+> >>     namely "move_to_any_allowed_cpu" (e.g. by specifying dest_cpu == -1).
+> >>
+> >>     Note, any_active_cpu() instead of any_online_cpu() would be better here.
+> >
+> > Hrmm,.. this is all growing into something of a mess.. defeating the
+> > whole purpose of introducing that cpu_active_map stuff.
+> >
+> > Would the suggested SRCU logic simplify all this?
 > 
-> A quick grep in include/ tells me that only powerpc is declaring
-> IOMMU_PAGE_SIZE by now.
+> Ah, wait a second.
+> 
+> sched_setaffinity() -> set_cpus_allowed_ptr() is ok vs. cpu_down() as
+> it does use get_online_cpus(). So none of the cpus can become offline
+> while we are in set_cpus_allowed_ptr().
+> 
+> but there are numerous calls to set_cpus_allowed_ptr() from other
+> places and not all of them seem to call get_online_cpus()...
+> 
+> yeah, I should check this issue again..
+> 
+> btw., indeed all these different sync. cases are a bit of mess.
 
-Ah, I just meant the I/O size of IOMMUs.
+Will ponder it a bit more, but my brain can't seem to let go of SRCU
+now.. I'll go concentrate on making the swap-over-nfs patches prettier,
+maybe that will induce a brainwave ;-)
 
-This macro doesn't work for IA64, POWER, and SPARC.
+> ---
+> 
+> btw., I was wondering about this change:
+> 
+> ba42059fbd0aa1ac91b582412b5fedb1258f241f
+> 
+> sched: hrtick_enabled() should use cpu_active()
+> 
+> Peter pointed out that hrtick_enabled() should use cpu_active().
+
+What exactly were you wondering about?
+
+It seemed a good idea to stop starting hrtimers before we migrate them
+to another cpu (one of the things done later in cpu_down), thereby
+avoiding spurious fires on remote cpus.
+
