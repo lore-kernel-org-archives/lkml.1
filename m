@@ -1,48 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbYGYSyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYGYSzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754398AbYGYSyT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 14:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbYGYSyL
+	id S1755341AbYGYSzZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 14:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYGYSzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 14:54:11 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:62208 "EHLO
-	pd2mo1so-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750916AbYGYSyK (ORCPT
+	Fri, 25 Jul 2008 14:55:09 -0400
+Received: from wx-out-0506.google.com ([66.249.82.232]:12418 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751833AbYGYSzI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 14:54:10 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=fVVHpIHWo-DTsCsL0RMA:9 a=BoiX-O4SB7XdSx7zASsA:7 a=-wCh8GUbplzI_yFPw2YLYuLd3gUA:4 a=5OxXCWZL5BMA:10 a=bwVuZ38C_bkA:10
-Message-ID: <488A214C.3060605@shaw.ca>
-Date: Fri, 25 Jul 2008 12:54:04 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Fri, 25 Jul 2008 14:55:08 -0400
+Message-ID: <fa686aa40807251155i399f8ab0x931e1f44dd6fd82a@mail.gmail.com>
+Date: Fri, 25 Jul 2008 14:55:07 -0400
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [git pull] Please pull from powerpc.git merge branch
+Cc: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "linuxppc-dev list" <linuxppc-dev@ozlabs.org>,
+       akpm <akpm@linux-foundation.org>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0807251108320.5249@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: Udo van den Heuvel <udovdh@xs4all.nl>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: What to do with `kswapd0: page allocation failure. ` ?
-References: <fa.ajQey35b1AZPlS1/p6joOoTWhU4@ifi.uio.no>
-In-Reply-To: <fa.ajQey35b1AZPlS1/p6joOoTWhU4@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <1216973590.11188.99.camel@pasglop>
+	 <alpine.LFD.1.10.0807251108320.5249@nehalem.linux-foundation.org>
+X-Google-Sender-Auth: cf000b3ebffd9aa9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m6PItTfq021685
 
-Udo van den Heuvel wrote:
-> Hello,
-> 
-> Found a few of these logged. See below.
-> What are they? Harmfull? Bug?
-> 
-> Kind regards,
-> Udo
-> 
-> Jul 20 18:39:03 testboard kernel: kswapd0: page allocation failure.
-> order:2, mode:0x20
-
-It's not really harmful, it just means the kernel was momentarily unable 
-to allocate memory to handle an incoming network packet. That packet 
-will get dropped, but the system should recover.
-
-Not sure why it's allocating an order 2 chunk though, that is 16KB. Are 
-you using jumbo frames on the network?
+On Fri, Jul 25, 2008 at 2:10 PM, Linus Torvalds<torvalds@linux-foundation.org> wrote:>>> On Fri, 25 Jul 2008, Benjamin Herrenschmidt wrote:>>>> ï»¿git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge>> Ok, I got a conflict in arch/powerpc/platforms/52xx/Kconfig, you should> check that I fixed it up right and send me follow-up patches if required.
+Okay, I'll do that
+g.
+-- Grant Likely, B.Sc., P.Eng.Secret Lab Technologies Ltd.ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
