@@ -1,112 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbYGYUI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYGYUKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbYGYUI2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 16:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755737AbYGYUIP
+	id S1755929AbYGYUKS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 16:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYGYUKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 16:08:15 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:43651 "EHLO mgw2.diku.dk"
+	Fri, 25 Jul 2008 16:10:04 -0400
+Received: from chimx.wms.com ([208.46.59.21]:5469 "EHLO chimx.wms.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755532AbYGYUIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 16:08:13 -0400
-Date: Fri, 25 Jul 2008 22:08:09 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] fs/nfsd/export.c: Adjust error handling code involving
- auth_domain_put
-Message-ID: <Pine.LNX.4.64.0807252207160.1602@ask.diku.dk>
+	id S1751343AbYGYUKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 16:10:03 -0400
+X-Greylist: delayed 910 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Jul 2008 16:10:03 EDT
+Date: Fri, 25 Jul 2008 14:54:37 -0500
+From: Chris Fester <cfester@wms.com>
+To: linux-kernel@vger.kernel.org
+Subject: ROMFS error reading 0 byte files
+Message-ID: <20080725195437.GA15807@kaboom.dhcp.chi.wms.com>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 25 Jul 2008 19:54:52.0618 (UTC) FILETIME=[4DB09AA0:01C8EE90]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Hi,
 
-Once clp is assigned, it never becomes NULL, so we can make a label for it
-in the error handling code.  Because the call to path_lookup follows the
-call to auth_domain_find, its error handling code should jump to this new
-label.
+I've been poking around at a problem I've been having with the
+latest kernels and romfs.  The symptom is getting an Input/output
+error when reading a zero length file:
 
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+# find . -size 0
+./usr/lib/gconv/gconv-modules.cache
+# cat ./usr/lib/gconv/gconv-modules.cache 
+cat: ./usr/lib/gconv/gconv-modules.cache: Input/output error
 
-// <smpl>
-@r@
-expression x,E;
-statement S;
-position p1,p2,p3;
-@@
+The problem seems to have occurred somewhere between 2.6.22 and
+2.6.23.  Not much changed in the romfs code then, but the
+mm/filemap.c had a bit of changes.  Personally I saw this problem
+with Debian Lenny kernels 2.6.24 and 2.6.25.  Looking at the
+kernel.org source I suspect the problem is still in 2.6.26.
 
-(
-if ((x = auth_domain_find@p1(...)) == NULL || ...) S
-|
-x = auth_domain_find@p1(...)
-... when != x
-if (x == NULL || ...) S
-)
-<...
-if@p3 (...) { ... when != auth_domain_put(x)
-                  when != if (x) { ... auth_domain_put(x); ...}
-    return@p2 ...;
-}
-...>
-(
-return x;
-|
-return 0;
-|
-x = E
-|
-E = x
-|
-auth_domain_put(x)
-)
+I'm not a filesystem or mm expert, but I would like to get a good
+solution going... if it means I get more familiar with mm and 
+filesystems then so be it.  :)
 
-@exists@
-position r.p1,r.p2,r.p3;
-expression x;
-int ret != 0;
-statement S;
-@@
+Matt Waddel proposed this patch back in November of 2007 on the
+uclinux-dev mail list:
 
-* x = auth_domain_find@p1(...)
-  <...
-* if@p3 (...)
-  S
-  ...>
-* return@p2 \(NULL\|ret\);
-// </smpl>
+diff --git a/fs/romfs/inode.c b/fs/romfs/inode.c
+index dae7945..ed04d73 100644
+--- a/fs/romfs/inode.c
++++ b/fs/romfs/inode.c
+@@ -430,7 +430,7 @@ romfs_readpage(struct file *file, struct page * page)
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+		/* 32 bit warning -- but not for us :) */
+		offset = page_offset(page);
+-		if (offset < i_size_read(inode)) {
++		if (offset <= i_size_read(inode)) {
+			avail = inode->i_size-offset;
+			readlen = min_t(unsigned long, avail, PAGE_SIZE);
+			if (romfs_copyfrom(inode, buf, ROMFS_I(inode)->i_dataoffset+offset, readlen) == readlen) {
 
----
- fs/nfsd/export.c              |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+I mailed Matt recently and he's been using this patch for a while now
+with no failures.
 
-diff --git a/fs/nfsd/export.c b/fs/nfsd/export.c
-index 33bfcf0..9dc036f 100644
---- a/fs/nfsd/export.c
-+++ b/fs/nfsd/export.c
-@@ -1023,7 +1023,7 @@ exp_export(struct nfsctl_export *nxp)
- 	/* Look up the dentry */
- 	err = path_lookup(nxp->ex_path, 0, &nd);
- 	if (err)
--		goto out_unlock;
-+		goto out_put_clp;
- 	err = -EINVAL;
- 
- 	exp = exp_get_by_name(clp, nd.path.mnt, nd.path.dentry, NULL);
-@@ -1090,9 +1090,9 @@ finish:
- 		exp_put(exp);
- 	if (fsid_key && !IS_ERR(fsid_key))
- 		cache_put(&fsid_key->h, &svc_expkey_cache);
--	if (clp)
--		auth_domain_put(clp);
- 	path_put(&nd.path);
-+out_put_clp:
-+	auth_domain_put(clp);
- out_unlock:
- 	exp_writeunlock();
- out:
+I'm not sure if this patch is the best solution.  I was looking at 
+cramfs's inode.c:cramfs_readpage, and it looks like it's structured
+a little more optimally in the 0 length case.  
+
+For reference to the original discussion, see the uclinux-dev mail list:
+http://mailman.uclinux.org/pipermail/uclinux-dev/2007-December/044836.html
+
+Since the maintainer for romfs seems to have moved on, could someone with
+vfs knowledge please direct me on what I should do next?  The company I
+work for uses romfs extensively in their products.  So far they've been
+lucky because the newest kernel being used is 2.6.18.  But there's 
+rumblings to upgrade to a newer kernel, and I'd like to be prepared with
+a good solid fix in mainline rather than patching.
+
+Thanks in advance for any help!
+Chris Fester
+
