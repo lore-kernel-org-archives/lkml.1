@@ -1,106 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752247AbYGYN4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753142AbYGYN51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752247AbYGYN4i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 09:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbYGYN4a
+	id S1753142AbYGYN51 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 09:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbYGYN5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 09:56:30 -0400
-Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:62889 "EHLO
-	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750854AbYGYN4a (ORCPT
+	Fri, 25 Jul 2008 09:57:18 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:54272 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750934AbYGYN5R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 09:56:30 -0400
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       bhavna.sarathy@amd.com, robert.richter@amd.com
-Subject: Re: [PATCH] add iommu_num_pages helper function
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080725134159.GA7493@amd.com>
-References: <20080725132121.GZ7493@amd.com>
-	<20080725223533A.fujita.tomonori@lab.ntt.co.jp>
-	<20080725134159.GA7493@amd.com>
+	Fri, 25 Jul 2008 09:57:17 -0400
+Subject: [GIT PULL] Voltage and Current regulator framework
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       pHilipp Zabel <philipp.zabel@gmail.com>,
+       Mike Rapoport <mike@compulab.co.il>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>
+Content-Type: text/plain
+Date: Fri, 25 Jul 2008 14:57:14 +0100
+Message-Id: <1216994234.31838.114.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080725225724J.fujita.tomonori@lab.ntt.co.jp>
-Date: Fri, 25 Jul 2008 22:57:24 +0900
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Jul 2008 15:41:59 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+Linus,
 
-> On Fri, Jul 25, 2008 at 10:34:57PM +0900, FUJITA Tomonori wrote:
-> > On Fri, 25 Jul 2008 15:21:21 +0200
-> > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > 
-> > > On Fri, Jul 25, 2008 at 10:15:06PM +0900, FUJITA Tomonori wrote:
-> > > > On Fri, 25 Jul 2008 14:57:58 +0200
-> > > > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > > > 
-> > > > > Calculating the number of pages from given address and length numbers is a task
-> > > > > required in multiple IOMMU implementations. So implement this as a generic
-> > > > > function into the IOMMU helper code.
-> > > > > 
-> > > > > Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > > > > ---
-> > > > >  include/linux/iommu-helper.h |    1 +
-> > > > >  lib/iommu-helper.c           |    8 ++++++++
-> > > > >  2 files changed, 9 insertions(+), 0 deletions(-)
-> > > > 
-> > > > Thanks. I planed to work on this after rc1. You beat me. :)
-> > > > 
-> > > >  
-> > > > > diff --git a/include/linux/iommu-helper.h b/include/linux/iommu-helper.h
-> > > > > index c975caf..f8598f5 100644
-> > > > > --- a/include/linux/iommu-helper.h
-> > > > > +++ b/include/linux/iommu-helper.h
-> > > > > @@ -8,3 +8,4 @@ extern unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
-> > > > >  				      unsigned long align_mask);
-> > > > >  extern void iommu_area_free(unsigned long *map, unsigned long start,
-> > > > >  			    unsigned int nr);
-> > > > > +extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
-> > > > > diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-> > > > > index a3b8d4c..889ddce 100644
-> > > > > --- a/lib/iommu-helper.c
-> > > > > +++ b/lib/iommu-helper.c
-> > > > > @@ -80,3 +80,11 @@ void iommu_area_free(unsigned long *map, unsigned long start, unsigned int nr)
-> > > > >  	}
-> > > > >  }
-> > > > >  EXPORT_SYMBOL(iommu_area_free);
-> > > > > +
-> > > > > +unsigned long iommu_num_pages(unsigned long addr, unsigned long len)
-> > > > > +{
-> > > > > +	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
-> > > > > +
-> > > > > +	return size >> PAGE_SHIFT;
-> > > > > +}
-> > > > > +EXPORT_SYMBOL(iommu_num_pages);
-> > > > 
-> > > > This doesn't work since PAGE_SIZE != IOMMU_PAGE_SIZE on the majority
-> > > > of architectures.
-> > > 
-> > > A quick grep in include/ tells me that only powerpc is declaring
-> > > IOMMU_PAGE_SIZE by now.
-> > 
-> > Ah, I just meant the I/O size of IOMMUs.
-> > 
-> > This macro doesn't work for IA64, POWER, and SPARC.
-> 
-> Is there any other architecture independent way to find out the page
-> size the IOMMU is using? If yes I can rework that patchset.
+Please pull the voltage and current regulator framework along with
+the bq24022 regulator driver.
 
-There isn't now, I think.
+This framework is designed to provide a generic interface to voltage and
+current regulators within the Linux 2.6 kernel. It's intended to provide
+voltage and current control to client or consumer drivers and also
+provide status information to user space applications through a sysfs
+interface.
 
+The intention is to allow systems to dynamically control regulator
+output in order to save power and prolong battery life. This applies to
+both voltage regulators (where voltage output is controllable) and
+current sinks (where current output is controllable).
 
-> If not, I suggest that we (you?) introduce one in a follow-on patch
-> series and fix the iommu_num_pages function then.
+This framework has been in Andrews mm tree and Linux-next without
+incident.
 
-That's fine by me. Or I could try to find a solution and submit new
-patchset with your AMD and GART patches.
+Thanks!
 
-BTW, I prefer to push this patchset via -mm rather than x86 since
-after all we need to clean up all the IOMMUs.
+Liam
+
+====
+
+The following changes since commit fb2e405fc1fc8b20d9c78eaa1c7fd5a297efde43:
+  Adrian Bunk (1):
+        fix fs/nfs/nfsroot.c compilation
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git reg-for-linus
+
+Liam Girdwood (11):
+      regulator: consumer device interface
+      regulator: regulator driver interface
+      regulator: machine driver interface
+      regulator: regulator framework core
+      regulator: core kbuild files
+      regulator: documentation - overview
+      regulator: documentation - consumer interface
+      regulator: documentation - regulator driver
+      regulator: documentation - machine
+      regulator: documentation - ABI
+      regulator: maintainers - add maintainers for regulator framework.
+
+Mark Brown (3):
+      regulator: fixed regulator interface
+      regulator: add support for fixed regulators.
+      regulator: regulator test harness
+
+Philipp Zabel (1):
+      regulator: TI bq24022 Li-Ion Charger driver
+
+ Documentation/ABI/testing/sysfs-class-regulator |  315 ++++
+ Documentation/power/regulator/consumer.txt      |  182 +++
+ Documentation/power/regulator/machine.txt       |  101 ++
+ Documentation/power/regulator/overview.txt      |  171 ++
+ Documentation/power/regulator/regulator.txt     |   30 +
+ MAINTAINERS                                     |    9 +
+ arch/arm/Kconfig                                |    2 +
+ drivers/Makefile                                |    1 +
+ drivers/regulator/Kconfig                       |   59 +
+ drivers/regulator/Makefile                      |   12 +
+ drivers/regulator/bq24022.c                     |  167 ++
+ drivers/regulator/core.c                        | 1903 +++++++++++++++++++++++
+ drivers/regulator/fixed.c                       |  129 ++
+ drivers/regulator/virtual.c                     |  345 ++++
+ include/linux/regulator/bq24022.h               |   21 +
+ include/linux/regulator/consumer.h              |  284 ++++
+ include/linux/regulator/driver.h                |   99 ++
+ include/linux/regulator/fixed.h                 |   22 +
+ include/linux/regulator/machine.h               |  104 ++
+ 19 files changed, 3956 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-regulator
+ create mode 100644 Documentation/power/regulator/consumer.txt
+ create mode 100644 Documentation/power/regulator/machine.txt
+ create mode 100644 Documentation/power/regulator/overview.txt
+ create mode 100644 Documentation/power/regulator/regulator.txt
+ create mode 100644 drivers/regulator/Kconfig
+ create mode 100644 drivers/regulator/Makefile
+ create mode 100644 drivers/regulator/bq24022.c
+ create mode 100644 drivers/regulator/core.c
+ create mode 100644 drivers/regulator/fixed.c
+ create mode 100644 drivers/regulator/virtual.c
+ create mode 100644 include/linux/regulator/bq24022.h
+ create mode 100644 include/linux/regulator/consumer.h
+ create mode 100644 include/linux/regulator/driver.h
+ create mode 100644 include/linux/regulator/fixed.h
+ create mode 100644 include/linux/regulator/machine.h
+
