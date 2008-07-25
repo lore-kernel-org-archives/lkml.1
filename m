@@ -1,113 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbYGYFqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbYGYFuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753476AbYGYFqS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 01:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbYGYFqI
+	id S1754126AbYGYFuj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 01:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbYGYFu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 01:46:08 -0400
-Received: from mail.gmx.net ([213.165.64.20]:41355 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750729AbYGYFqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 01:46:07 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+r7CQ0dvGrbAb/nooAI8pKzDRn66XJBuS1XCAeI/
-	1qG1x3Ny40bfGc
-Subject: Re: [oops] sysdev: Pass the attribute to the low level sysdev
-	show/store function
-From: Mike Galbraith <efault@gmx.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080724202711.GI20882@one.firstfloor.org>
-References: <1216898844.5564.7.camel@marge.simson.net>
-	 <20080724202711.GI20882@one.firstfloor.org>
-Content-Type: text/plain
-Date: Fri, 25 Jul 2008 07:45:57 +0200
-Message-Id: <1216964757.5601.1.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Fri, 25 Jul 2008 01:50:29 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:65084 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750753AbYGYFu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 01:50:28 -0400
+Message-ID: <48896943.7090902@cn.fujitsu.com>
+Date: Fri, 25 Jul 2008 13:48:51 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Jeff Garzik <jgarzik@redhat.com>
+CC: "David S. Miller" <davem@davemloft.net>, torvalds@linux-foundation.org,
+       NETDEV <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@redhat.com>
+Subject: Re: [build error] ERROR: "NS8390_init" [drivers/net/ne.ko] undefined!
+References: <4889437A.5060907@cn.fujitsu.com>
+In-Reply-To: <4889437A.5060907@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-24 at 22:27 +0200, Andi Kleen wrote:
-> On Thu, Jul 24, 2008 at 01:27:24PM +0200, Mike Galbraith wrote:
-> > Greetings,
-> > 
-> > Oops below bisects to..
-> 
-> This patch should fix it.
+Jeff
 
-Confirmed, and thanks.
+commit "net 8390p: fix interface usage"(f0084a36d4d7) fixed some drivers which
+use wrong API of NS8390p.
+But ne.c seems didn't be fixed completely.
+I've got the following build err:
+---
+Kernel: arch/x86/boot/bzImage is ready  (#21)
+  Building modules, stage 2.
+  MODPOST 423 modules
+ERROR: "NS8390_init" [drivers/net/ne.ko] undefined!
+WARNING: modpost: Found 2 section mismatch(es).
+To see full details build your kernel with:
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
+---
 
-	-Mike
+Signed-off-by: Wang Chen <wangchen@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Cox <alan@redhat.com>
+---
+diff --git a/drivers/net/ne.c b/drivers/net/ne.c
+index 2fec612..4a8a4b1 100644
+--- a/drivers/net/ne.c
++++ b/drivers/net/ne.c
+@@ -536,7 +536,7 @@ static int __init ne_probe1(struct net_device *dev, unsigned long ioaddr)
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+ 	dev->poll_controller = eip_poll;
+ #endif
+-	NS8390_init(dev, 0);
++	NS8390p_init(dev, 0);
+ 
+ 	ret = register_netdev(dev);
+ 	if (ret)
+@@ -794,7 +794,7 @@ retry:
+ 		if (time_after(jiffies, dma_start + 2*HZ/100)) {		/* 20ms */
+ 			printk(KERN_WARNING "%s: timeout waiting for Tx RDC.\n", dev->name);
+ 			ne_reset_8390(dev);
+-			NS8390_init(dev,1);
++			NS8390p_init(dev,1);
+ 			break;
+ 		}
+ 
+@@ -855,7 +855,7 @@ static int ne_drv_resume(struct platform_device *pdev)
+ 
+ 	if (netif_running(dev)) {
+ 		ne_reset_8390(dev);
+-		NS8390_init(dev, 1);
++		NS8390p_init(dev, 1);
+ 		netif_device_attach(dev);
+ 	}
+ 	return 0;
 
-> 
-> -Andi
-> 
-> 
-> commit a2ab909933f8c8623282979dfa64f3e358bdb9fc
-> Author: Andi Kleen <ak@gargoyle.(none)>
-> Date:   Thu Jul 24 21:57:40 2008 +0200
-> 
->     Make scheduler sysfs attributes sysdev class devices
->     
->     They are really class devices, but were incorrectly declared. This leads
->     to crashes with the recent changes that makes non normal sysdevs
->     use a different prototype.
->     
->     Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 6acf749..24358ca 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -7641,34 +7641,34 @@ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
->  }
->  
->  #ifdef CONFIG_SCHED_MC
-> -static ssize_t sched_mc_power_savings_show(struct sys_device *dev,
-> -				struct sysdev_attribute *attr, char *page)
-> +static ssize_t sched_mc_power_savings_show(struct sysdev_class *class,
-> +					   char *page)
->  {
->  	return sprintf(page, "%u\n", sched_mc_power_savings);
->  }
-> -static ssize_t sched_mc_power_savings_store(struct sys_device *dev,
-> -					    struct sysdev_attribute *attr,
-> +static ssize_t sched_mc_power_savings_store(struct sysdev_class *class,
->  					    const char *buf, size_t count)
->  {
->  	return sched_power_savings_store(buf, count, 0);
->  }
-> -static SYSDEV_ATTR(sched_mc_power_savings, 0644, sched_mc_power_savings_show,
-> -		   sched_mc_power_savings_store);
-> +static SYSDEV_CLASS_ATTR(sched_mc_power_savings, 0644, 
-> +			 sched_mc_power_savings_show,
-> +		         sched_mc_power_savings_store);
->  #endif
->  
->  #ifdef CONFIG_SCHED_SMT
-> -static ssize_t sched_smt_power_savings_show(struct sys_device *dev,
-> -				struct sysdev_attribute *attr, char *page)
-> +static ssize_t sched_smt_power_savings_show(struct sysdev_class *dev,
-> +					    char *page)
->  {
->  	return sprintf(page, "%u\n", sched_smt_power_savings);
->  }
-> -static ssize_t sched_smt_power_savings_store(struct sys_device *dev,
-> -					     struct sysdev_attribute *attr,
-> +static ssize_t sched_smt_power_savings_store(struct sysdev_class *dev,
->  					     const char *buf, size_t count)
->  {
->  	return sched_power_savings_store(buf, count, 1);
->  }
-> -static SYSDEV_ATTR(sched_smt_power_savings, 0644, sched_smt_power_savings_show,
-> +static SYSDEV_CLASS_ATTR(sched_smt_power_savings, 0644, 
-> +		   sched_smt_power_savings_show,
->  		   sched_smt_power_savings_store);
->  #endif
->  
+
 
