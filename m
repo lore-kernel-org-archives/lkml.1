@@ -1,164 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYGYINl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbYGYIUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbYGYINl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 04:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYGYINZ
+	id S1754078AbYGYIUF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 04:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbYGYITt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 04:13:25 -0400
-Received: from gate.crashing.org ([63.228.1.57]:57941 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752251AbYGYINX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 04:13:23 -0400
-Subject: [git pull] Please pull from powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       akpm <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 25 Jul 2008 18:13:10 +1000
-Message-Id: <1216973590.11188.99.camel@pasglop>
+	Fri, 25 Jul 2008 04:19:49 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48296 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752193AbYGYITs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 04:19:48 -0400
+Subject: [PATCH] avr32: Introducing asm/syscalls.h
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 25 Jul 2008 13:48:38 +0530
+Message-Id: <1216973918.26114.1.camel@jaswinder.satnam>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus !
+Declaring arch-dependent syscalls for avr32 architecture
 
-Here's what should be the last batch of 'features' for powerpc for
-this merge window, unless I missed something.
+Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
+---
+ arch/avr32/kernel/process.c   |    1 +
+ arch/avr32/kernel/signal.c    |    1 +
+ arch/avr32/kernel/sys_avr32.c |    1 +
+ arch/avr32/mm/cache.c         |    1 +
+ include/asm-avr32/syscalls.h  |   39 +++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 43 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-avr32/syscalls.h
 
-The binfmt_elf change is the one discussed earlier, acked by
-Andrew, just slightly rebased on top of another binfmt_elf
-patch that went in in the meantime.
-
-﻿git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Cheers,
-Ben.
-
- Documentation/powerpc/booting-without-of.txt    |   57 +
- arch/powerpc/kernel/cputable.c                  |   11 
- arch/powerpc/kernel/entry_32.S                  |    6 
- arch/powerpc/kernel/iommu.c                     |   28 +
- arch/powerpc/kernel/lparcfg.c                   |  386 ++++++---
- arch/powerpc/kernel/process.c                   |   46 +
- arch/powerpc/kernel/prom_init.c                 |    9 
- arch/powerpc/kernel/ptrace.c                    |   72 +-
- arch/powerpc/kernel/signal.c                    |    6 
- arch/powerpc/kernel/sysfs.c                     |    3 
- arch/powerpc/kernel/traps.c                     |   16 
- arch/powerpc/kernel/vio.c                       | 1033 +++++++++++++++++++++++
- arch/powerpc/kernel/vmlinux.lds.S               |    2 
- arch/powerpc/mm/fault.c                         |   25 -
- arch/powerpc/platforms/52xx/Kconfig             |    2 
- arch/powerpc/platforms/cell/iommu.c             |   16 
- arch/powerpc/platforms/cell/spufs/sched.c       |   35 +
- arch/powerpc/platforms/cell/spufs/sputrace.c    |    3 
- arch/powerpc/platforms/iseries/iommu.c          |    3 
- arch/powerpc/platforms/pasemi/iommu.c           |    3 
- arch/powerpc/platforms/pseries/Kconfig          |   23 +
- arch/powerpc/platforms/pseries/Makefile         |    1 
- arch/powerpc/platforms/pseries/cmm.c            |  468 ++++++++++
- arch/powerpc/platforms/pseries/iommu.c          |   42 +
- arch/powerpc/platforms/pseries/plpar_wrappers.h |   10 
- arch/powerpc/platforms/pseries/setup.c          |   71 ++
- arch/powerpc/sysdev/dart_iommu.c                |    3 
- drivers/net/ibmveth.c                           |  189 +++-
- drivers/net/ibmveth.h                           |    5 
- drivers/of/of_i2c.c                             |    2 
- drivers/scsi/ibmvscsi/ibmvfc.c                  |   15 
- drivers/scsi/ibmvscsi/ibmvscsi.c                |   45 +
- drivers/scsi/ibmvscsi/ibmvscsi.h                |    2 
- fs/binfmt_elf.c                                 |   28 +
- include/asm-powerpc/cputable.h                  |    2 
- include/asm-powerpc/elf.h                       |    8 
- include/asm-powerpc/firmware.h                  |    3 
- include/asm-powerpc/hvcall.h                    |   23 -
- include/asm-powerpc/lppaca.h                    |    5 
- include/asm-powerpc/machdep.h                   |    2 
- include/asm-powerpc/mpc52xx_psc.h               |   40 +
- include/asm-powerpc/pgtable.h                   |   13 
- include/asm-powerpc/syscalls.h                  |    1 
- include/asm-powerpc/systbl.h                    |    6 
- include/asm-powerpc/system.h                    |    2 
- include/asm-powerpc/tlbflush.h                  |   11 
- include/asm-powerpc/unistd.h                    |    8 
- include/asm-powerpc/vio.h                       |   27 +
- include/linux/auxvec.h                          |    6 
- 49 files changed, 2546 insertions(+), 277 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/cmm.c
-
-Andre Detsch (2):
-      powerpc/spufs: fix aff_mutex and cbe_spu_info[n].list_mutex deadlock
-      powerpc/spufs: better placement of spu affinity reference context
-
-Benjamin Herrenschmidt (1):
-      Move update_mmu_cache() declaration from tlbflush.h to pgtable.h
-
-Brian King (4):
-      powerpc/pseries: Utilities to set firmware page state
-      powerpc/pseries: Add collaborative memory manager
-      powerpc/pseries: Add CMO paging statistics
-      ibmvfc: Add support for collaborative memory overcommit
-
-Grant Likely (3):
-      powerpc/mpc5200: Make mpc5200 GPIO driver select the GENERIC_GPIO config
-      powerpc/mpc5200: add PSC SICR bit definitions
-      of-bindings: Add binding documentation for SPI busses and devices
-
-Jon Smirl (2):
-      powerpc/mpc5200: Add AC97 register definitions for the MPC52xx PSC
-      powerpc/mpc5200: Remove fsl-soc.c from mpc5200 build, it is not needed.
-
-Luis Machado (1):
-      powerpc: BookE hardware watchpoint support
-
-Mark Nelson (1):
-      powerpc/cell: Fixed IOMMU mapping uses weak ordering for a pcie endpoint
-
-Milton Miller (1):
-      powerpc/spufs: correct kcalloc usage
-
-Nathan Fontenot (5):
-      powerpc/pseries: Remove extraneous error reporting for hcall failures in lparcfg
-      powerpc/pseries: Add memory entitlement capabilities to /proc/ppc64/lparcfg
-      powerpc/pseries: Verify CMO memory entitlement updates with virtual I/O
-      powerpc/pseries: Update arch vector to indicate support for CMO
-      powerpc/pseries: Remove kmalloc call in handling writes to lparcfg
-
-Nathan Fotenot (1):
-      powerpc/pseries: Split processor entitlement retrieval and gathering to helper routines
-
-Nathan Lynch (2):
-      ELF loader support for auxvec base platform string
-      powerpc: Enable AT_BASE_PLATFORM aux vector
-
-Robert Jennings (6):
-      powerpc/pseries: Split retrieval of processor entitlement data into a helper routine
-      powerpc/pseries: Enable CMO feature during platform setup
-      powerpc/pseries: iommu enablement for CMO
-      powerpc/pseries: vio bus support for CMO
-      ibmveth: enable driver for CMO
-      ibmvscsi: driver enablement for CMO
-
-Santiago Leon (1):
-      ibmveth: Automatically enable larger rx buffer pools for larger mtu
-
-Segher Boessenkool (1):
-      powerpc: Fix compile error with binutils 2.15
-
-Stephen Rothwell (1):
-      powerpc: Fallout from sysdev API changes
-
-Tony Breeds (1):
-      powerpc: Wireup new syscalls
-
-Wolfram Sang (1):
-      powerpc/mpc5200: Fix wrong 'no interrupt' handling in of_i2c
+diff --git a/arch/avr32/kernel/process.c b/arch/avr32/kernel/process.c
+index ff820a9..3feb59e 100644
+--- a/arch/avr32/kernel/process.c
++++ b/arch/avr32/kernel/process.c
+@@ -17,6 +17,7 @@
+ 
+ #include <asm/sysreg.h>
+ #include <asm/ocd.h>
++#include <asm/syscalls.h>
+ 
+ #include <asm/arch/pm.h>
+ 
+diff --git a/arch/avr32/kernel/signal.c b/arch/avr32/kernel/signal.c
+index c5b11f9..803d7be 100644
+--- a/arch/avr32/kernel/signal.c
++++ b/arch/avr32/kernel/signal.c
+@@ -19,6 +19,7 @@
+ 
+ #include <asm/uaccess.h>
+ #include <asm/ucontext.h>
++#include <asm/syscalls.h>
+ 
+ #define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
+ 
+diff --git a/arch/avr32/kernel/sys_avr32.c b/arch/avr32/kernel/sys_avr32.c
+index 8e8911e..5d2daea 100644
+--- a/arch/avr32/kernel/sys_avr32.c
++++ b/arch/avr32/kernel/sys_avr32.c
+@@ -13,6 +13,7 @@
+ 
+ #include <asm/mman.h>
+ #include <asm/uaccess.h>
++#include <asm/syscalls.h>
+ 
+ asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+ 			  unsigned long prot, unsigned long flags,
+diff --git a/arch/avr32/mm/cache.c b/arch/avr32/mm/cache.c
+index 15a4e5e..24a74d1 100644
+--- a/arch/avr32/mm/cache.c
++++ b/arch/avr32/mm/cache.c
+@@ -13,6 +13,7 @@
+ #include <asm/cachectl.h>
+ #include <asm/processor.h>
+ #include <asm/uaccess.h>
++#include <asm/syscalls.h>
+ 
+ /*
+  * If you attempt to flush anything more than this, you need superuser
+diff --git a/include/asm-avr32/syscalls.h b/include/asm-avr32/syscalls.h
+new file mode 100644
+index 0000000..483d666
+--- /dev/null
++++ b/include/asm-avr32/syscalls.h
+@@ -0,0 +1,39 @@
++/*
++ * syscalls.h - Linux syscall interfaces (arch-specific)
++ *
++ * Copyright (c) 2008 Jaswinder Singh
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#ifndef _ASM_AVR32_SYSCALLS_H
++#define _ASM_AVR32_SYSCALLS_H
++
++#include <linux/compiler.h>
++#include <linux/linkage.h>
++#include <linux/types.h>
++#include <linux/signal.h>
++
++/* kernel/process.c */
++asmlinkage int sys_fork(struct pt_regs *);
++asmlinkage int sys_clone(unsigned long, unsigned long,
++			 unsigned long, unsigned long,
++			 struct pt_regs *);
++asmlinkage int sys_vfork(struct pt_regs *);
++asmlinkage int sys_execve(char __user *, char __user *__user *,
++			  char __user *__user *, struct pt_regs *);
++
++/* kernel/signal.c */
++asmlinkage int sys_sigaltstack(const stack_t __user *, stack_t __user *,
++			       struct pt_regs *);
++asmlinkage int sys_rt_sigreturn(struct pt_regs *);
++
++/* kernel/sys_avr32.c */
++asmlinkage long sys_mmap2(unsigned long, unsigned long, unsigned long,
++			  unsigned long, unsigned long, off_t);
++
++/* mm/cache.c */
++asmlinkage int sys_cacheflush(int, void __user *, size_t);
++
++#endif /* _ASM_AVR32_SYSCALLS_H */
+-- 
+1.5.5.1
 
 
 
