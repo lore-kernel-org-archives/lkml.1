@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbYGYTNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbYGYTRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756556AbYGYTNB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 15:13:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756174AbYGYTMu
+	id S1756674AbYGYTRZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 15:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbYGYTRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 15:12:50 -0400
-Received: from outbound-mail-40.bluehost.com ([69.89.20.194]:41643 "HELO
-	outbound-mail-40.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756166AbYGYTMt (ORCPT
+	Fri, 25 Jul 2008 15:17:14 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:45788 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755170AbYGYTRM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 15:12:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=Vz+SFmwi6murSSj9RHBi2/VXol8YFliGg87AFzB5h4CsLMc3XJIum6jeNBBp7pe0udCGaFnt2yH20x9jMUUVBBPRuDxjuVMmbELfdkHczm1jv61lTe+8LQBSUz8FthjQ;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: PCI: MSI interrupts masked using prohibited method
-Date: Fri, 25 Jul 2008 12:12:41 -0700
-User-Agent: KMail/1.9.9
-Cc: David Vrabel <david.vrabel@csr.com>, Michal Schmidt <mschmidt@redhat.com>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <4860D09D.4060801@csr.com> <488A015D.4040107@csr.com> <20080725165655.GC17093@parisc-linux.org>
-In-Reply-To: <20080725165655.GC17093@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807251212.41980.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+	Fri, 25 Jul 2008 15:17:12 -0400
+Subject: Re: Kernel WARNING: at net/core/dev.c:1330
+	__netif_schedule+0x2c/0x98()
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Ingo Oeser <netdev@axxeo.de>, David Miller <davem@davemloft.net>,
+       peterz@infradead.org, Larry.Finger@lwfinger.net, kaber@trash.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, mingo@redhat.com
+In-Reply-To: <20080725183622.GA3107@ami.dom.local> (sfid-20080725_203602_626786_F66C7AF2)
+References: <1216806614.7257.152.camel@twins>
+	 <1216810696.7257.175.camel@twins>
+	 <20080723.131441.200166513.davem@davemloft.net>
+	 <200807251904.37302.netdev@axxeo.de>  <20080725183622.GA3107@ami.dom.local>
+	 (sfid-20080725_203602_626786_F66C7AF2)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-pVCCsOfpIeDJt6eU6WLf"
+Date: Fri, 25 Jul 2008 21:16:24 +0200
+Message-Id: <1217013384.4758.5.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, July 25, 2008 9:56 am Matthew Wilcox wrote:
-> On Fri, Jul 25, 2008 at 05:37:49PM +0100, David Vrabel wrote:
-> > The spec says that system software should enable MSI before setting
-> > message address and data (PCI 3.0 section 6.8.3.1 MSI configuration).
-> > The kernel doesn't do this.
->
-> I think you meant "disable"?  I can't find anything in 6.8.3.1 of 3.0
-> that refers to this.
->
-> > I really don't think we should be enabling/disabling MSI while
-> > interrupts might be being generated.  There are cases where interrupts
-> > will be lost.  Consider PCIe where we might end up with a situation
-> > where MSI is disabled and then enabled sufficiently quickly that no
-> > periodic line interrupt message is sent by the device.
->
-> I don't think there's a difference here between PCIe and conventional
-> PCI.  A device raising a line based interrupt is perfectly equivalent to
-> a device sending an INTx message.
->
-> > The message address and data should only be modified while the vector is
-> > masked (to avoid the aforementioned 'tearing').  This means that setting
-> > IRQ affinity cannot be done on devices without per-vector mask bits.  I
-> > don't think this is a problem.
->
-> I agree.  I think it's fine to have this limitation.
->
-> > In vague psuedo-code, set_affinity() should be something like this:
-> >
-> > int did_mask = msi_mask_vector();
-> > if (!did_mask) {
-> >     return -ENOTSUPP;
-> > }
-> > /* fiddle with address and mask now */
-> > msi_unmask_vector();
->
-> Yes, something like that.
 
-Yeah, that reflects what we actually support...
+--=-pVCCsOfpIeDJt6eU6WLf
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-David, can you resend your "don't mask MSIs using the MSI enable bit" patch 
-against the latest bits so I can apply it?  Did you also want to hack up the 
-above for the affinity code?
+On Fri, 2008-07-25 at 20:36 +0200, Jarek Poplawski wrote:
+> On Fri, Jul 25, 2008 at 07:04:36PM +0200, Ingo Oeser wrote:
+> ...
+> > I'm sure as hell, I miss sth. but can't it be done by this pseudo-code:
+>=20
+> ...And I really doubt it can't be done like this.
 
-Thanks,
-Jesse
+Umm, of course it cannot, because then we'd have to take the mutex in
+the TX path, which we cannot. We cannot have another lock in the TX
+path, what's so hard to understand about? We need to be able to lock all
+queues to lock out multiple tx paths at once in some (really) slow paths
+but not have any extra lock overhead for the tx path, especially not a
+single lock.
+
+johannes
+
+--=-pVCCsOfpIeDJt6eU6WLf
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJIiiaFAAoJEKVg1VMiehFYvkAP/0z708i0JT8taivKX4WwMk1a
+VfLcG2FS/EaXdtFpAZfBkVS5BI3X75E+0tK3KHyBqn+9kuH2g1fxla6YSf/dRK7j
+wTXJU6uQYKxVGthG409YmraEqU44AypRT7jnNEk9met7VVQGZTrBkYrh8A+ZhVuL
+S0Uc4yvKbGAnpMs4hYdhgon9NPaCvExEBqb7I1N/wH7HuqntWviN17QkCPJhG7iu
+IN/j5ML2t/7t9HFp//qQq5LQABEvkRfjYKndhdmmKpEnMnzKa2XYdVLazHhT1Lpp
+xqTKtjxSvET17qJ/WhljOYq7NB5qZIama1LigvzH6MZOGbRT9AeWwhUv2u3NU7DG
+yw0F6Ep7650PT5Z08n8HBsOF1w+kuMdlDzajAzlAYAWtXoMQx8IXZR2SlAPM1WWv
+s6TwmiC0kS5c/R9RBOmHj5qR+Px1GjjOR1LrjL+ZXZj0cT4Evmb428KK+bXU9y3Q
+XAn1kbixEbEA9MoMztOl440XAmLf1BeHOXhxXdqbc291/W5XOY9Ad/6HyIbkSgGn
+2vZAgMp4T53x9vh8qZx1wrj5nRIIttMor/jwL9ilwAvJHYmY6IDMIK6rEQw5AZCN
+x1KOSbEz9WWEYSKWaoemYsxbBeihNfsbBeW1tOCQn/6iRb5mTo0k4lwXbqWhEeSu
+dl+MkMp12Ab+IuLcox6d
+=EPkt
+-----END PGP SIGNATURE-----
+
+--=-pVCCsOfpIeDJt6eU6WLf--
+
