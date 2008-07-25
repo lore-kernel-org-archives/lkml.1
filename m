@@ -1,115 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbYGYUmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754933AbYGYUnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753073AbYGYUmQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 16:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYGYUl7
+	id S1754933AbYGYUnj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 16:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYGYUnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 16:41:59 -0400
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:7654 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751223AbYGYUl6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 16:41:58 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkcBAMPWiUhbsgtC/2dsb2JhbAAIsBk
-Message-ID: <488A3A8A.7000603@belbone.be>
-Date: Fri, 25 Jul 2008 22:41:46 +0200
-From: =?ISO-8859-1?Q?C=E9dric_Godin?= <cedric@belbone.be>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080626)
+	Fri, 25 Jul 2008 16:43:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:46730 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750827AbYGYUnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 16:43:31 -0400
+Message-ID: <488A3AEE.4040302@goop.org>
+Date: Fri, 25 Jul 2008 13:43:26 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Alan Stern <stern@rowland.harvard.edu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       SCSI Kernel <linux-scsi@vger.kernel.org>
-Subject: [SCSI] can't plug Nokia 5300 anymore (bisected)
+To: Mike Travis <travis@sgi.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org>	<486AA72B.6010401@goop.org> <486AC9D9.9030506@zytor.com>	<486AD6BD.9080600@sgi.com> <486ADD67.1020809@sgi.com>	<486ADD9F.3000305@zytor.com> <486C062C.3090408@sgi.com>	<m1wsk3r3g6.fsf@frodo.ebiederm.org> <48724FB4.3090305@sgi.com>	<m17ibxxytj.fsf@frodo.ebiederm.org> <4873B016.8010404@sgi.com> <m1r6a4c5im.fsf@frodo.ebiederm.org> <4873FD00.1060101@goop.org> <488A3236.5070404@sgi.com> <488A33BC.3040406@goop.org> <488A38E4.7000206@sgi.com>
+In-Reply-To: <488A38E4.7000206@sgi.com>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-resending because wrong address of lkml and cc scsi list
+Mike Travis wrote:
+> Is this for the boot cpu (0), or for all cpus?  For the boot cpu, I have
+> this now in arch/x86/kernel/setup_percpu.c:
+>
+> +#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
+> +
+> +/* Initialize percpu offset for boot cpu (0) */
+> +unsigned long __per_cpu_offset[NR_CPUS] __read_mostly = {
+> +       [0] = (unsigned long)__per_cpu_load
+> +};
+> +#else
+>  unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
+> +#endif
+>
+> So this should apply as well to the xen startup?
+>   
 
-Hello,
-
-since 2 or 3 -git kernels (Linus tree)  I have a problem with my laptop 
-and its connection through USB to a nokia 5300 gsm.
-
-The logs show me a endless loop (until i unplug my USB cable) of 
-following messages :
-
-Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
-Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
-Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
-Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
-Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
-Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
-Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
-Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
-Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
-Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
-
-I bisected the kernel and found the following commit as result :
-
-427e59f09fdba387547106de7bab980b7fff77be is first bad commit
-commit 427e59f09fdba387547106de7bab980b7fff77be
-Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-Date:   Sat Mar 8 18:24:17 2008 -0600
-
-   [SCSI] make use of the residue value
-
-   USB sometimes doesn't return an error but instead returns a residue
-   value indicating part (or all) of the command wasn't completed.  So if
-   the driver _done() error processing indicates the command was fully
-   processed, subtract off the residue so that this USB error gets
-   propagated.
-
-   Cc: Alan Stern <stern@rowland.harvard.edu>
-   Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-
-:040000 040000 d3bad84ebe1bc231e8e7d6267907ca62fd4d0dcd 
-c85f8cb8bd4910724f0101e41054555980727e16 M      drivers
+If it's just a static initialization, then it should be fine.  But some 
+equivalent of your head_64.S changes are needed to actually set things up?
 
 
-When reverting it with 2.6.26-06077-gc010b2f , everything is back to normal.
+>> xen_cpu_up() needs to do whatever initialization needed for a new cpu's
+>> percpu area (presumably whatever do_boot_cpu() does).
+>>
+>>     
+>
+> Does the startup include executing arch/x86/kernel/head_64.S:startup_64() ?
+> I see arch/x86/xen/xen-head.S:startup_xen() so I'm guessing not?
+>   
 
+No, it doesn't.  It bypasses all that startup code.  Aside from the few 
+instructions in xen-head.S, xen_start_kernel() is the first thing to get 
+run.
 
+But when bringing up a secondary cpu, where does the new percpu memory 
+actually get allocated?
 
-The git bisect sequence is the following one :
+> For the real startup, I do the following two things.  But I'm not comfortable
+> enough with xen to think I'll get it right putting this in xen-head.S.
+>   
 
-git-bisect start 'drivers/scsi'
-# bad: [c010b2f76c3032e48097a6eef291d8593d5d79a6] Merge 
-git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
-git-bisect bad c010b2f76c3032e48097a6eef291d8593d5d79a6
-# good: [bce7f793daec3e65ec5c5705d2457b81fe7b5725] Linux 2.6.26
-git-bisect good bce7f793daec3e65ec5c5705d2457b81fe7b5725
-# good: [a5db33411ae762e597bfcde6bb9d0c8c2ea9c0eb] BUG_ON on kernel 
-misbehavior on A100U2W driver
-git-bisect good a5db33411ae762e597bfcde6bb9d0c8c2ea9c0eb
-# bad: [30e9ba9f2001f45960507f1963551311a67d0209] [SCSI] iscsi_tcp: 
-Enable any size command
-git-bisect bad 30e9ba9f2001f45960507f1963551311a67d0209
-# bad: [b40977d95fb3a1898ace6a7d97e4ed1a33a440a4] [SCSI] iser: fix 
-handling of scsi cmnds during recovery.
-git-bisect bad b40977d95fb3a1898ace6a7d97e4ed1a33a440a4
-# bad: [427e59f09fdba387547106de7bab980b7fff77be] [SCSI] make use of the 
-residue value
-git-bisect bad 427e59f09fdba387547106de7bab980b7fff77be
-# good: [f6dd337ee4c440f29a873da3779eb3af44bd1623] [SCSI] scsi_dh: add 
-hp sw device handler
-git-bisect good f6dd337ee4c440f29a873da3779eb3af44bd1623
-# good: [13a17fdeedbb156463a9a007378366ec0a0c30ef] [SCSI] aacraid: 
-linit.c make aac_show_serial_number static
-git-bisect good 13a17fdeedbb156463a9a007378366ec0a0c30ef
-# good: [19c4158bcdf42ee3b2394342caf14f8471d2c78e] [SCSI] SCSI: remove 
-dev->power.power_state from mesh driver
-git-bisect good 19c4158bcdf42ee3b2394342caf14f8471d2c78e
+Yes, it needn't be in the asm code.  I'll work out what to do.  Looks 
+like I just need to do an appropriate wrmsr(MSR_GS_BASE, ).
 
-It's my first bisect so if i have done something wrong, don't hesitate 
-to shout.
-
-Cedric
-
-
-
+    J
