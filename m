@@ -1,112 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755164AbYGYTBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbYGYTC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755164AbYGYTBv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 15:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbYGYTBe
+	id S1755909AbYGYTC1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 15:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYGYTCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 15:01:34 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:56871 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751704AbYGYTBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 15:01:32 -0400
-Date: Fri, 25 Jul 2008 23:01:34 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [0/3] POHMELFS high performance network filesystem. IPv6 support, documentation update.
-Message-ID: <20080725190134.GA30685@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 25 Jul 2008 15:02:11 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:38474 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753896AbYGYTCJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 15:02:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Tq+HLP9s1CMW1XBB/OHrVD8JYUJVZpxIBeUefUSWrPF3b1LEn33wysw/ARWGKgoe3zKtT8oahgfq2+3tOOUsuLUSLh6TwQgZ1FH3AkVbTqJJrm4eO7Mg3tccLaDj+zvbx8K01mrKYno7xEulGY7IAAs+o1dwIuKZr3wCkQj3McQ=  ;
+X-YMail-OSG: BpFS4HEVM1l7oN7tB7Cd6mXEaHVbz8BgDtCP.VbbtmRp3gi4QlPxcFadWoQ7_u9i34C_bG5c_cUwP1Yx8.laoOOP1VChwz31TQm_ddNXZw--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Uwe =?iso-8859-1?q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+Subject: Re: [patch 2.6.26-git] genirq:  better warning on irqchip->set_type() failure
+Date: Fri, 25 Jul 2008 12:02:07 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200807241750.25507.david-b@pacbell.net> <20080725075324.GB24021@digi.com>
+In-Reply-To: <20080725075324.GB24021@digi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Message-Id: <200807251202.07599.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-I'm pleased to announce POHMEL high performance network parallel distributed filesystem.
-POHMELFS stands for Parallel Optimized Host Message Exchange Layered File System.
+While I'm glad to finally see the hole fixed whereby passing an
+invalid IRQ trigger type to request_irq() would be ignored, the
+current diagnostic isn't quite useful.  Fixed by also listing
+the trigger type which was rejected.
 
-Development status can be tracked in filesystem section [1].
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Acked-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+---
+Minor change:  cast trigger mode to int, one compiler warned.
 
-This is a high performance network filesystem with local coherent cache of data
-and metadata. Its main goal is distributed parallel processing of data.
-System supports strong transaction model with failover recovery, allows to 
-encrypt/hash whole data channel and perform read load balancing and
-write to multiple servers in parallel.
+ kernel/irq/manage.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-This release was fully made by external developers.
-Great thanks to Adam Langley <agl@imperialviolet.org> for his documentation
-update and Varun Chandramohan <varunc@linux.vnet.ibm.com> for the server
-IPv6 support.
-
-Currenyly work is being concentrated on the distributed facilities of
-the POHMELFS [6].
-
-Short changelog:
- * Documentation update by Adam Langley <agl@imperialviolet.org>, short
-	notes after talk with Pavel Machek.
- * server and configuration utility IPv6 support (kernel part works
-	without changes)
-
-Basic POHMELFS features:
- * Local coherent (notes [2]) cache for data and metadata).
- * Completely async processing of all events (hard and symlinks are the only 
-    	exceptions) including object creation and data reading/writing.
- * Flexible object architecture optimized for network processing. Ability to
-    	create long pathes to object and remove arbitrary huge directoris in 
-	single network command.
- * High performance is one of the main design goals.
- * Very fast and scalable multithreaded userspace server. Being in userspace
-    	it works with any underlying filesystem and still is much faster than
-	async ni-kernel NFS one.
- * Client is able to switch between different servers (if one goes down,
-	client automatically reconnects to second and so on).
- * Transactions support. Full failover for all operations. Resending
-	transactions to different servers on timeout or error.
- * Strong encryption and/or hashing of the data channel with
- 	autoconfiguration of the server/client supported crypto algorithms.
-
-Roadmap includes:
- * Server redundancy extensions (ability to store data in multiple locations
-	according to regexp rules, like '*.txt' in /root1 and '*.jpg' in /root1
-	and /root2.
- * Async writing of the data from receiving kernel thread into userspace
-	pages via copy_to_user() (check development tracking blog for results).
- * Client dynamical server reconfiguration: ability to add/remove servers
-	from working set by server command (as part of development distributed
-	server facilities).
- * Generic parallel distributed server algorithms.
-
-One can grab sources from archive or git [2] or check homepage [3].
-
-Thank you.
-
-1. POHMELFS development status.
-http://tservice.net.ru/~s0mbre/blog/devel/fs/index.html
-
-2. Source archive.
-http://tservice.net.ru/~s0mbre/archive/pohmelfs/
-Git tree.
-http://tservice.net.ru/~s0mbre/archive/pohmelfs/pohmelfs.git/
-
-3. POHMELFS homepage.
-http://tservice.net.ru/~s0mbre/old/?section=projects&item=pohmelfs
-
-4. POHMELFS vs NFS benchmark [iozone results are coming].
-Plain async NFS vs sha1+cbc(aes) POHMELFS
-http://tservice.net.ru/~s0mbre/blog/devel/fs/2008_07_07.html
-Plain filesystems.
-http://tservice.net.ru/~s0mbre/blog/devel/fs/2008_06_25.html
-
-5. Cache-coherency notes.
-http://tservice.net.ru/~s0mbre/blog/devel/fs/2008_05_17.html
-
-6. Distributed POHMELFS design notes.
-http://tservice.net.ru/~s0mbre/blog/devel/fs/2008_07_22.html
-
-Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-
--- 
-	Evgeniy Polyakov
+--- a/kernel/irq/manage.c	2008-07-25 02:07:05.000000000 -0700
++++ b/kernel/irq/manage.c	2008-07-25 02:08:13.000000000 -0700
+@@ -326,7 +326,8 @@ static int __irq_set_trigger(struct irq_
+ 	ret = chip->set_type(irq, flags & IRQF_TRIGGER_MASK);
+ 
+ 	if (ret)
+-		pr_err("setting flow type for irq %u failed (%pF)\n",
++		pr_err("setting trigger mode %d for irq %u failed (%pF)\n",
++				(int)(flags & IRQF_TRIGGER_MASK),
+ 				irq, chip->set_type);
+ 
+ 	return ret;
