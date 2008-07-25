@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbYGYTkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbYGYTzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755181AbYGYTkt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 15:40:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYGYTkg
+	id S1753252AbYGYTzq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 15:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbYGYTzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 15:40:36 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:51997 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751239AbYGYTkf (ORCPT
+	Fri, 25 Jul 2008 15:55:38 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:45439 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750943AbYGYTzh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 15:40:35 -0400
-Date: Fri, 25 Jul 2008 20:40:34 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [0/3] POHMELFS high performance network filesystem. IPv6 support, documentation update.
-Message-ID: <20080725194033.GA16133@shareable.org>
-References: <20080725190134.GA30685@2ka.mipt.ru>
+	Fri, 25 Jul 2008 15:55:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=VEUM0ZBLzEICN3UAKfV0vP7SwiKtg3kT8waRiIbGsx9f1psJE5flZN4LBFuZzUdtQV9ga+ItnYnfSwajUdJGQOEh3YRYcJT4c+PbltjEgfW59Xl1Pfe7Ixn5eBpgFAvCzXdHS9gdBfhO6YEUGJUy3uW2/fxr8QbqBPoBvGTGadk=  ;
+X-YMail-OSG: M7aEhrQVM1ktrdq0MMxY16OBdoQ9UC7j3HHfT7xe7oNpOP3QQvtfszTxa47AWBM56d54MONSyb14hyM4xcjaKXC8zt285L_fDgV0IX6PfGDjssaIavkcj4NdmO53R3JRHz4-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Clemens Ladisch <clemens@ladisch.de>
+Subject: Re: [patch 2.6.26] /dev/hpet - fixes and cleanup
+Date: Fri, 25 Jul 2008 12:55:35 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>, bob.picco@hp.com,
+       venkatesh.pallipadi@intel.com, Vojtech Pavlik <vojtech@suse.cz>,
+       the arch/x86 maintainers <x86@kernel.org>
+References: <200807221508.56672.david-b@pacbell.net> <200807230912.49850.david-b@pacbell.net> <4888691D.5090307@ladisch.de>
+In-Reply-To: <4888691D.5090307@ladisch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080725190134.GA30685@2ka.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200807251255.35675.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 24 July 2008, Clemens Ladisch wrote:
+> David Brownell wrote:
 
->From the design notes,
-> POHMELFS got full data and metadata cache coherency support.
->
-> It was rather simple task due to async event processing support.
->
-> Each time client creates, reads or writes object to server,
-> information about its interest is stored on server. When any other
-> client updates the same object (like changing attributes or writes
-> data), all interested clients get notifications with new data (new
-> attributes, or in case of writing possibly new size and flag, which
-> page has to be fetched from the server, since it is not valid
-> anymore). Writing happens during writeback as before, so commands like
-> "echo Some_message > /mnt/file" immediately syncs size of the file to
-> zero and after some time writes there actual data, when system will
-> decide to start writeback.
+> > > This seems to be the only part of the userspace interface that is
+> > > used in practice.  Because of the availability of POSIX timers, it might
+> > > make sense to deprecate the HPET ioctl interface.
+> >
+> > I'll leave that part up to someone else.  If POSIX timers
+> > are a sufficient userspace interface, great ... then that
+> > mmap son't really be needed either!
+> 
+> The idea is to be able to get a high-precision timer value without doing
+> a syscall.  (Whether the syscall overhead actually matters in a specific
+> application is another question.)
 
-I'm just going by what the notes say, which don't seem very clear.
+On x86_64 the vsyscall stuff should kick in for gettimeofday()
+when HPET is in use, eliminating the need for /dev/hpet mmapping.
 
-Consider this:
-
-   1. Client A reads FILE, and registers its interest in FILE.
-         (Contents are not interesting, e.g. 'Hello_sister')
-   2. Client B does "echo Some_message > /mnt/file".
-       - Truncates the file, sending truncate message to server.
-       - "Writing happes during writeback"...?
-   3. Client B sends a message by back-channel to client A (e.g. ssh command).
-   4. Client A reads FILE again.
-
-Does client A always see 'Some_message' when it reads the file in step 4?
-That's what I'd call coherence.
-
-For that, the first truncate or write operation on client B must wait
-until a synchronous invalidate request goes to the server, then the
-server sends to all interested clients (A) and waits for a reply, then
-reply to B, and only then can B return from the open()/write() system call.
-
-And when client A reads the file in step 4, it must send a synchronous
-message to the server which must ask B to write the delayed writeback
-data immediately, and until then, the reply to A will be delayed.
-
-Is that right?
-
-Thanks,
--- Jamie
+I don't really know vsyscalls ... but if that could be done on
+i386 systems, the last argument for /dev/hpet would seem gone...
