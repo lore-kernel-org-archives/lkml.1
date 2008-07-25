@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbYGYB0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbYGYB3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbYGYB0v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 21:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbYGYB0m
+	id S1755583AbYGYB3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 21:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbYGYB3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 21:26:42 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:39207 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751932AbYGYB0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 21:26:42 -0400
-Date: Thu, 24 Jul 2008 20:26:34 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Mike Travis <travis@sgi.com>
-Cc: bert.wesarg@googlemail.com, mingo@elte.hu, rusty@rustcorp.com.au,
-       akpm@linux-foundation.org, hpa@zytor.com, steiner@sgi.com,
-       cl@linux-foundation.org, linux-kernel@vger.kernel.org,
-       len.brown@intel.com, kernel@wantstofly.org, davej@codemonkey.org.uk,
-       tony.luck@intel.com, tigran@aivazian.fsnet.co.uk, paulus@samba.org,
-       benh@kernel.crashing.org, robert.richter@amd.com,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, sammy@sammy.net,
-       gnb@sgi.com, ebiederm@xmission.com, bunk@kernel.org, tglx@linutronix.de,
-       schwab@suse.de, hannes@saeurebad.de
-Subject: Re: [PATCH 1/1] cpumask: Change cpumask_of_cpu to use
- cpumask_of_cpu_map
-Message-Id: <20080724202634.bc1bcc86.pj@sgi.com>
-In-Reply-To: <48891DDF.7090903@sgi.com>
-References: <20080723171841.815234000@polaris-admin.engr.sgi.com>
-	<20080723171841.997896000@polaris-admin.engr.sgi.com>
-	<36ca99e90807240556j6b409a03s239d781baaadbb99@mail.gmail.com>
-	<4888B89E.9010708@sgi.com>
-	<48891DDF.7090903@sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Jul 2008 21:29:01 -0400
+Received: from saeurebad.de ([85.214.36.134]:47041 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752000AbYGYB3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 21:29:00 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: crypto stuff broken in -mm?
+References: <87ljzwh3j3.fsf@saeurebad.de>
+	<20080724074306.GA5071@gondor.apana.org.au>
+Date: Fri, 25 Jul 2008 03:28:35 +0200
+In-Reply-To: <20080724074306.GA5071@gondor.apana.org.au> (Herbert Xu's message
+	of "Thu, 24 Jul 2008 15:43:06 +0800")
+Message-ID: <874p6eg3b0.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike wrote:
-> the bit layout
+Herbert Xu <herbert@gondor.apana.org.au> writes:
 
-See the comments near the top of lib/bitmap.c, ending with
-the following lines, for documentation of the bitmap layout.
+> On Sun, Jul 20, 2008 at 05:24:48PM +0000, Johannes Weiner wrote:
+>> 
+>> I can not access my encrypted partitions with -mm while they work with
+>> mainline.
+>> 
+>> For both trees I have similar configs, I didn't change anything relative
+>> to this subsystem:
+>
+> I can't reproduce this problem here.  I've created an encrypted
+> volume with 2.6.23 and it still decrypts correctly with the latest
+> upstream Linux kernel which has all the crypto updates.
+>
+> So it looks like one of the other patches in mm that's causing
+> this.  Please try backing out any device mapper related changes
+> and see if things improve.
 
- * The byte ordering of bitmaps is more natural on little
- * endian architectures.  See the big-endian headers
- * include/asm-ppc64/bitops.h and include/asm-s390/bitops.h
- * for the best explanations of this ordering.
+It works with next-20080724.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+	Hannes
