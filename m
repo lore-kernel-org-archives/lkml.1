@@ -1,182 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYGYJCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbYGYJEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbYGYJCS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 05:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbYGYJCG
+	id S1756019AbYGYJEQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 05:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbYGYJD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 05:02:06 -0400
-Received: from dgate20.fujitsu-siemens.com ([80.70.172.51]:27274 "EHLO
-	dgate20.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752687AbYGYJCF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 05:02:05 -0400
-DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
-  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
-   Received:Received:Message-ID:Date:From:Organization:
-   User-Agent:MIME-Version:To:CC:Subject:References:
-   In-Reply-To:Content-Type;
-  b=MbR0k9zfRPLIx9pACgrLIJ0K+C6nvuDWVw7Bq/XqXSghF9F5UB7OH1UW
-   ooFqQszmA429txh+n8aRM7kHteeV0Af9OfmBvHTiQeZvEVZsuN3ouXwcS
-   COW8UlXHAcf3OXs;
-X-SBRSScore: None
-X-IronPort-AV: E=Sophos;i="4.31,252,1215381600"; 
-   d="diff'?scan'208";a="21177649"
-X-IronPort-AV: E=Sophos;i="4.31,251,1215381600"; 
-   d="diff'?scan'208";a="32935004"
-Message-ID: <4889968E.6020000@fujitsu-siemens.com>
-Date: Fri, 25 Jul 2008 11:02:06 +0200
-From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Organization: Fujitsu Siemens Computers
-User-Agent: Thunderbird 2.0.0.15pre (X11/20080508)
-MIME-Version: 1.0
-To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-CC: Cyrill Gorcunov <gorcunov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take
- 2)
-References: <48885DDC.9010003@fujitsu-siemens.com> <20080724111631.GA3432@lenovo> <48886E6D.1030005@fujitsu-siemens.com> <20080724120512.GA21804@lenovo> <488889B6.9070707@fujitsu-siemens.com> <20080724143151.GA32422@lenovo> <20080724150116.GC32422@lenovo> <48889C14.4070408@fujitsu-siemens.com>
-In-Reply-To: <48889C14.4070408@fujitsu-siemens.com>
-Content-Type: multipart/mixed;
- boundary="------------080705040003040700010305"
+	Fri, 25 Jul 2008 05:03:59 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54820 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754258AbYGYJD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 05:03:58 -0400
+Date: Fri, 25 Jul 2008 11:04:38 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Gabor Gombas <gombasg@sztaki.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Solid freezes with 2.6.25
+Message-ID: <20080725110438.463d0f04@halley.suse.de>
+In-Reply-To: <20080725085206.GA6669@boogie.lpds.sztaki.hu>
+References: <20080428092513.495378af.akpm@linux-foundation.org>
+	<20080429175419.6c8a0ebf@strauss.suse.de>
+	<20080430133824.GC18711@boogie.lpds.sztaki.hu>
+	<20080430165131.7426d5d3@strauss.suse.de>
+	<20080507114343.GB5583@boogie.lpds.sztaki.hu>
+	<20080507144520.17e9902a@strauss.suse.de>
+	<20080507134223.GB4278@boogie.lpds.sztaki.hu>
+	<20080512142146.2a32793c@kopernikus.site>
+	<20080513143917.GC17309@boogie.lpds.sztaki.hu>
+	<20080615171140.GG22313@boogie.lpds.sztaki.hu>
+	<20080725085206.GA6669@boogie.lpds.sztaki.hu>
+Organization: SUSE Linux Products GmbH
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080705040003040700010305
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+* Gabor Gombas [2008-07-25 10:52]:
+>
+> On Sun, Jun 15, 2008 at 07:11:41PM +0200, Gabor Gombas wrote:
+> > On Tue, May 13, 2008 at 04:39:29PM +0200, Gabor Gombas wrote:
+> > > On Mon, May 12, 2008 at 02:21:46PM +0200, Bernhard Walle wrote:
+> > > 
+> > > > Well, can you try if that really not happens without
+> > > > CONFIG_HPET_EMULATE_RTC? The question is if that 64 interrupts per second really
+> > > > cause a machine hang ...
+> > > 
+> > > I'll try when I have a little time...
+> > 
+> > Ok, it took much more time than I'd have liked, but now I'm having:
+> > 
+> > $ uname -a
+> > Linux boogie 2.6.25 #3 SMP Thu Jun 12 13:32:35 CEST 2008 x86_64 GNU/Linux
+> > $ grep EMULATE_RTC /boot/config-2.6.25
+> > # CONFIG_HPET_EMULATE_RTC is not set
+> > $ uptime
+> >  19:07:17 up 3 days,  4:07, 12 users,  load average: 0.14, 0.31, 0.20
+> > 
+> > So I'd say it works.
+> 
+> FYI, the bug is still present in 2.6.26. I also got the same hang on a
+> Dell PowerEdge 850 using a Debian-provided kernel (based on 2.6.25.6);
+> that is the 3rd distinct HW configuration that hangs.
 
-I wrote:
+Did you try that patch?
 
-> This patch fixes this by two separate measures:
->   a) make sure that no significant interruption occurs between APIC and
->      TSC reads
->   b) make sure that the measurement loop isn't significantly longer
->      than originally intended.
+-------------- 8< ---------------------------------------------------
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-Here is a new, simplified version of our patch that only uses measure a).
-We verified that this is sufficient for accurate calibration.
+Resolve http://bugzilla.kernel.org/show_bug.cgi?id=11051 and other bugs
+related to the way the HPET glue code in rtc-cmos was incomplete and
+inconsistent:
 
-If we fail to determine the start or end time of the calibration 
-correctly 10 times in a row, we will print a critical error message and 
-go on. One might as well argue that this should cause a kernel panic (it 
-is impossible to run on the CPU for only a few cycles without being 
-interrupted by an SMI!), but Cyrill probably won't agree.
+ * Switch the approach so that the basic driver code flow isn't
+   changed by having HPET ... instead, just have HPET shadow the
+   RTC_CONTROL irq enables and RTC_FREQ_SELECT data.  It's only
+   coping with IRQ thievery, after all.
 
-Martin
+ * Do that consistently (!!) to avoid problems when the HPET code
+   is out of sync with the real RTC intent.  Examples include:
 
+   - cmos_procfs(), which now reports correct data
+
+   - cmos_irq_set_state() ... also removing the previous PIE_{ON,OFF}
+     ioctl support so only one code path manages "periodic" IRQs
+
+   - cmos_do_shutdown() ... currently a "just in case" change.
+
+   - cmos_suspend() and cmos_resume() ... also handling a bug that
+     was specific to HPET's IRQ thievery, where the alarm wasn't
+     disabled after waking the system
+
+ * Always call that HPET code under the RTC spinlock (it doesn't do
+   its own locking)
+-------------- >8 ---------------------------------------------------
+
+
+Bernhard
 -- 
-Martin Wilck
-PRIMERGY System Software Engineer
-FSC IP ESP DEV 6
-
-Fujitsu Siemens Computers GmbH
-Heinz-Nixdorf-Ring 1
-33106 Paderborn
-Germany
-
-Tel:			++49 5251 8 15113
-Fax:			++49 5251 8 20209
-Email:			mailto:martin.wilck@fujitsu-siemens.com
-Internet:		http://www.fujitsu-siemens.com
-Company Details:	http://www.fujitsu-siemens.com/imprint.html
-
---------------080705040003040700010305
-Content-Type: text/x-patch;
- name="calibrate_APIC_clock-4.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="calibrate_APIC_clock-4.diff"
-
-[PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take 2)
-
-Non-maskable asynchronous events (e.g. SMIs) which occur during the APIC 
-timer calibration can cause timer miscalibrations, sometimes by large amounts. 
-This patch fixes this by making sure that no significant interruption occurs 
-between APIC and TSC reads. SMIs may still occur at some stage in the 
-calibration loop, causing the loop to last longer than intended. This 
-doesn't matter though, as long as the start and end values are both 
-taken simultaneously.
-
-Signed-off-by: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Signed-off-by: Gerhard Wichert <gerhard.wichert@fujitsu-siemens.com>
-
---- arch/x86/kernel/apic_64.c	2008-07-25 10:45:09.000000000 +0200
-+++ arch/x86/kernel/apic_64.c.new	2008-07-25 10:45:19.000000000 +0200
-@@ -300,6 +300,31 @@ static void setup_APIC_timer(void)
- }
- 
- /*
-+ * Helper function for calibrate_APIC_clock(): Make sure that
-+ * APIC TMCTT and TSC are read at the same time, to reasonable
-+ * accuracy. On any sane system, the retry loop won't need more
-+ * than a single retry, given that the rdtsc/apic_read/rdtsc
-+ * sequence won't take more than a few cycles.
-+ */
-+
-+#define MAX_DIFFERENCE 1000UL
-+#define MAX_ITER 10
-+static inline int
-+__read_tsc_and_apic(unsigned long *tsc, unsigned *apic)
-+{
-+	unsigned long tsc0, tsc1, diff;
-+	int i = 0;
-+	do {
-+		rdtscll(tsc0);
-+		*apic = apic_read(APIC_TMCCT);
-+		rdtscll(tsc1);
-+		diff = tsc1 - tsc0;
-+	} while (diff > MAX_DIFFERENCE && ++i < MAX_ITER); 
-+	*tsc = tsc0 + (diff >> 1);
-+	return diff > MAX_DIFFERENCE ? -EIO : 0;
-+}
-+
-+/*
-  * In this function we calibrate APIC bus clocks to the external
-  * timer. Unfortunately we cannot use jiffies and the timer irq
-  * to calibrate, since some later bootup code depends on getting
-@@ -318,7 +343,7 @@ static void __init calibrate_APIC_clock(
- {
- 	unsigned apic, apic_start;
- 	unsigned long tsc, tsc_start;
--	int result;
-+	int result, err_start, err;
- 
- 	local_irq_disable();
- 
-@@ -331,23 +356,25 @@ static void __init calibrate_APIC_clock(
- 	 */
- 	__setup_APIC_LVTT(250000000, 0, 0);
- 
--	apic_start = apic_read(APIC_TMCCT);
- #ifdef CONFIG_X86_PM_TIMER
- 	if (apic_calibrate_pmtmr && pmtmr_ioport) {
-+		apic_start = apic_read(APIC_TMCCT);
- 		pmtimer_wait(5000);  /* 5ms wait */
- 		apic = apic_read(APIC_TMCCT);
- 		result = (apic_start - apic) * 1000L / 5;
- 	} else
- #endif
- 	{
--		rdtscll(tsc_start);
-+		err_start = __read_tsc_and_apic(&tsc_start, &apic_start);
- 
- 		do {
--			apic = apic_read(APIC_TMCCT);
--			rdtscll(tsc);
-+			err = __read_tsc_and_apic(&tsc, &apic);
- 		} while ((tsc - tsc_start) < TICK_COUNT &&
- 				(apic_start - apic) < TICK_COUNT);
- 
-+		if (err_start || err)
-+			printk(KERN_CRIT "calibrate_APIC_clock: SMI flood - "
-+				"the APIC timer calibration may be wrong!\n");
- 		result = (apic_start - apic) * 1000L * tsc_khz /
- 					(tsc - tsc_start);
- 	}
-
---------------080705040003040700010305--
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
