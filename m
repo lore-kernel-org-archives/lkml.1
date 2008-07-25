@@ -1,119 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752480AbYGYLkC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbYGYLlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752480AbYGYLkC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 07:40:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbYGYLjn
+	id S1755794AbYGYLlN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 07:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbYGYLk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 07:39:43 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:6017 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753307AbYGYLjm (ORCPT
+	Fri, 25 Jul 2008 07:40:57 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:56896 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751963AbYGYLk5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 07:39:42 -0400
-X-SourceIP: 62.163.52.83
-Subject: Re: [patch, rfc: 1/2] sched, hotplug: safe use of
-	rq->migration_thread and find_busiest_queue()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1216937517.5368.11.camel@earth>
-References: <1216937517.5368.11.camel@earth>
-Content-Type: text/plain
-Date: Fri, 25 Jul 2008 13:39:46 +0200
-Message-Id: <1216985986.7257.375.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Jul 2008 07:40:57 -0400
+Date: Fri, 25 Jul 2008 05:40:40 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>, Alex Chiang <achiang@hp.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
+Message-ID: <20080725114040.GC6701@parisc-linux.org>
+References: <20080724134737.4b91f30d@mjolnir.drzeus.cx> <200807241407.18543.jbarnes@virtuousgeek.org> <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org> <4889948D.7020408@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4889948D.7020408@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-25 at 00:11 +0200, Dmitry Adamushko wrote:
-> From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-> Subject: sched, hotplug: safe use of rq->migration_thread
-> and find_busiest_queue()
-> 
-> ---
-> 
->     sched, hotplug: safe use of rq->migration_thread and find_busiest_queue()
->     
->     (1) make usre rq->migration_thread is valid when we access it in set_cpus_allowed_ptr()
->     after releasing the rq-lock;
->     
->     (2) in load_balance() and load_balance_idle()
->     
->     ensure that we don't get 'busiest' which can disappear as a result of cpu_down()
->     while we are manipulating it. For this goal, we choose 'busiest' only amongst
->     'cpu_active_map' cpus.
->     
->     load_balance() and load_balance_idle() get called with preemption being disabled
->     so synchronize_sched() in cpu_down() should get us synced.
->     
->     IOW, as soon as synchronize_sched() has been done in cpu_down(cpu), the run-queue for
->     can't be manipulated/accessed by the load-balancer.
->     
->     Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+On Fri, Jul 25, 2008 at 05:53:33PM +0900, Kenji Kaneshige wrote:
+> IIRC, pciehp uses bridge's secondary bus number for slot name, and
+> PCI express downstream port can have only one hotplug slot. I think
+> this is why with_bus prameter makes difference.
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Ahh, I overlooked that last night.
 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 6acf749..b4ccc8b 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -3409,7 +3409,14 @@ static int load_balance(int this_cpu, struct rq *this_rq,
->  	struct rq *busiest;
->  	unsigned long flags;
->  
-> -	cpus_setall(*cpus);
-> +	/*
-> +	 * Ensure that we don't get 'busiest' which can disappear
-> +	 * as a result of cpu_down() while we are manipulating it.
-> +	 *
-> +	 * load_balance() gets called with preemption being disabled
-> +	 * so synchronize_sched() in cpu_down() should get us synced.
-> +	 */
-> +	*cpus = cpu_active_map;
+> But it doesn't work on the system that has multiple pci segments.
 
-This is going to be painful on -rt... there it can be preempted. I guess
-we can put get_online_cpus() around it or something..
+Yes, we still have the problem that pciehp does not include the 'chassis
+number' as part of the name.  I no longer have easy access to any
+systems with multiple chassis.  Do your systems have devices which
+implement the PCI_CAP_ID_SLOTID capcbility?  (as root) lspci -vvv will
+report it:
 
->  	/*
->  	 * When power savings policy is enabled for the parent domain, idle
-> @@ -3571,7 +3578,14 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
->  	int sd_idle = 0;
->  	int all_pinned = 0;
->  
-> -	cpus_setall(*cpus);
-> +	/*
-> +	 * Ensure that we don't get 'busiest' which can disappear
-> +	 * as a result of cpu_down() while we are manipulating it.
-> +	 *
-> +	 * load_balance_newidle() gets called with preemption being disabled
-> +	 * so synchronize_sched() in cpu_down() should get us synced.
-> +	 */
-> +	*cpus = cpu_active_map;
->  
->  	/*
->  	 * When power savings policy is enabled for the parent domain, idle
-> @@ -5764,9 +5778,14 @@ int set_cpus_allowed_ptr(struct task_struct *p, const cpumask_t *new_mask)
->  		goto out;
->  
->  	if (migrate_task(p, any_online_cpu(*new_mask), &req)) {
-> -		/* Need help from migration thread: drop lock and wait. */
-> +		/* Need to wait for migration thread (might exit: take ref). */
-> +		struct task_struct *mt = rq->migration_thread;
-> +
-> +		get_task_struct(mt);
->  		task_rq_unlock(rq, &flags);
-> -		wake_up_process(rq->migration_thread);
-> +		wake_up_process(mt);
-> +		put_task_struct(mt);
-> +
->  		wait_for_completion(&req.done);
->  		tlb_migrate_finish(p->mm);
->  		return 0;
-> 
-> 
+  printf("Slot ID: %d slots, First%c, chassis %02x\n",
+         esr & PCI_SID_ESR_NSLOTS,
+         FLAG(esr, PCI_SID_ESR_FIC),
+         chs);
 
+> In addition, shpchp
+> also has with_bus option, but it doesn't work because shpc controller
+> can have multiple slots on the bridge's secondary bus. Anyway, as
+> you mentioned, using bus number for slot name is obviously not good
+> idea, and your idea (e.g. "2-1", "2-2") looks much better.
+
+Thanks!
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
