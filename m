@@ -1,106 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755440AbYGYMku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbYGYMmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755440AbYGYMku (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 08:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYGYMkm
+	id S1755815AbYGYMmB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 08:42:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYGYMlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 08:40:42 -0400
-Received: from viefep31-int.chello.at ([62.179.121.49]:61230 "EHLO
-	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750927AbYGYMkl (ORCPT
+	Fri, 25 Jul 2008 08:41:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57952 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752585AbYGYMlv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 08:40:41 -0400
-Subject: Re: [patch, rfc: 2/2] sched, hotplug: ensure a task is on the
-	valid cpu after set_cpus_allowed_ptr()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1216937730.5368.16.camel@earth>
-References: <1216937730.5368.16.camel@earth>
-Content-Type: text/plain
-Date: Fri, 25 Jul 2008 14:40:49 +0200
-Message-Id: <1216989649.7257.381.camel@twins>
+	Fri, 25 Jul 2008 08:41:51 -0400
+Date: Fri, 25 Jul 2008 05:41:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Adrian Bunk <bunk@kernel.org>, Andrea Righi <righi.andrea@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: __weak vs ifdef
+Message-Id: <20080725054142.372f1c03.akpm@linux-foundation.org>
+In-Reply-To: <20080725122454.GE6701@parisc-linux.org>
+References: <20080725083943.GC19310@cs181140183.pp.htv.fi>
+	<20080725015537.564e3397.akpm@linux-foundation.org>
+	<20080725091455.GD19310@cs181140183.pp.htv.fi>
+	<20080725092748.GF19310@cs181140183.pp.htv.fi>
+	<20080725023455.dde3eb27.akpm@linux-foundation.org>
+	<20080725122454.GE6701@parisc-linux.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-25 at 00:15 +0200, Dmitry Adamushko wrote:
-> 	
-> From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-> Subject: sched, hotplug: ensure a task is on the valid cpu after
-> set_cpus_allowed_ptr()
-> 
-> ---
->     sched, hotplug: ensure a task is on the valid cpu after set_cpus_allowed_ptr()
->     
->     The 'new_mask' may not include task_cpu(p) so we migrate 'p' on another 'cpu'.
->     In case it can't be placed on this 'cpu' immediately, we submit a request
->     to the migration thread and wait for its completion.
->     
->     Now, by the moment this request gets handled by the migration_thread,
->     'cpu' may well be offline/non-active. As a result, 'p' continues
->     running on its old cpu which is not in the 'new_mask'.
->     
->     Fix it: ensure 'p' ends up on a valid cpu.
->     
->     Theoreticaly (but unlikely), we may get an endless loop if someone cpu_down()'s
->     a new cpu we have choosen on each iteration.
->     
->     Alternatively, we may introduce a special type of request to migration_thread,
->     namely "move_to_any_allowed_cpu" (e.g. by specifying dest_cpu == -1).
->     
->     Note, any_active_cpu() instead of any_online_cpu() would be better here.
+On Fri, 25 Jul 2008 06:24:54 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
 
-Hrmm,.. this is all growing into something of a mess.. defeating the
-whole purpose of introducing that cpu_active_map stuff.
+> On Fri, Jul 25, 2008 at 02:34:55AM -0700, Andrew Morton wrote:
+> > We should make arch_pick_mmap_layout __weak and nuke that ifdef.
+> 
+> I strongly disagree.  I find it makes it harder to follow code flow
+> when __weak functions are involved.  Ifdefs are ugly, no question, but
+> they're easier to grep for, see when they'll be defined and know which of
+> the arch_pick_mmap_layout() functions will be called.  __weak certainly
+> has its uses (eg the sys_ni_syscall is great) but I find it's becoming
+> overused.
+> 
+> My basic point here is that __weak makes the code easier to write but
+> harder to read, and we're supposed to be optimising for easier to read.
+> 
 
-Would the suggested SRCU logic simplify all this?
+If you see
 
->     Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index b4ccc8b..c3bd78a 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -5774,21 +5774,23 @@ int set_cpus_allowed_ptr(struct task_struct *p, const cpumask_t *new_mask)
->  	}
->  
->  	/* Can the task run on the task's current CPU? If so, we're done */
-> -	if (cpu_isset(task_cpu(p), *new_mask))
-> -		goto out;
-> +	while (!cpu_isset(task_cpu(p), p->cpus_allowed)) {
-> +		int cpu = any_online_cpu(p->cpus_allowed);
->  
-> -	if (migrate_task(p, any_online_cpu(*new_mask), &req)) {
-> -		/* Need to wait for migration thread (might exit: take ref). */
-> -		struct task_struct *mt = rq->migration_thread;
-> +		if (migrate_task(p, cpu, &req)) {
-> +			/* Need to wait for migration thread (might exit: take ref). */
-> +			struct task_struct *mt = rq->migration_thread;
->  
-> -		get_task_struct(mt);
-> -		task_rq_unlock(rq, &flags);
-> -		wake_up_process(mt);
-> -		put_task_struct(mt);
-> +			get_task_struct(mt);
-> +			task_rq_unlock(rq, &flags);
-> +			wake_up_process(mt);
-> +			put_task_struct(mt);
->  
-> -		wait_for_completion(&req.done);
-> -		tlb_migrate_finish(p->mm);
-> -		return 0;
-> +			wait_for_completion(&req.done);
-> +			tlb_migrate_finish(p->mm);
-> +
-> +			rq = task_rq_lock(p, &flags);
-> +		}
->  	}
->  out:
->  	task_rq_unlock(rq, &flags);
-> 
-> 
+void __weak arch_foo(...)
+
+and can't immediately work out what's going on then converting it to an
+ifdef maze won't save you.
 
