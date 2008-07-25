@@ -1,90 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbYGYUGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbYGYUIL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755270AbYGYUGZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 16:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbYGYUGR
+	id S1755446AbYGYUIL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 16:08:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYGYUH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 16:06:17 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:53556 "EHLO relay.sgi.com"
+	Fri, 25 Jul 2008 16:07:58 -0400
+Received: from namei.org ([69.55.235.186]:44085 "EHLO us.intercode.com.au"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751270AbYGYUGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 16:06:16 -0400
-Message-ID: <488A3236.5070404@sgi.com>
-Date: Fri, 25 Jul 2008 13:06:14 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	id S1750827AbYGYUH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 16:07:57 -0400
+Date: Sat, 26 Jul 2008 06:06:43 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Howells <dhowells@redhat.com>, Al Viro <viro@ftp.linux.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: [GIT] New Credentials API (preliminary patches for 2.6.27)
+Message-ID: <Xine.LNX.4.64.0807260543320.24288@us.intercode.com.au>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org>	<486AA72B.6010401@goop.org> <486AC9D9.9030506@zytor.com>	<486AD6BD.9080600@sgi.com> <486ADD67.1020809@sgi.com>	<486ADD9F.3000305@zytor.com> <486C062C.3090408@sgi.com>	<m1wsk3r3g6.fsf@frodo.ebiederm.org> <48724FB4.3090305@sgi.com>	<m17ibxxytj.fsf@frodo.ebiederm.org> <4873B016.8010404@sgi.com> <m1r6a4c5im.fsf@frodo.ebiederm.org> <4873FD00.1060101@goop.org>
-In-Reply-To: <4873FD00.1060101@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-...
-> Last time it was doing this, it was a result of a triple-fault caused by
-> loading %ds with an all-zero gdt.  I modified Xen to dump the CPU state
-> on triple-faults, so it was easy to pinpoint.  I can do that again if it
-> helps.
-> 
->    J
+A new credentials framework has been developed by David Howells.  The code 
+has been through several iterations of posting and review, and is 
+considered by various folk to be ready to merge into linux-next.
 
-Hi Jeremy,
+The problem is that these changes touch a lot of code and it will be 
+difficult to manage the volume of merge conflicts.  I tried doing so 
+myself for a couple of weeks and there was non-trivial churn virtually 
+each day.
 
-There are two question marks for my patchset.  The first is in
+It seems that this can be managed more readily if the API changes are 
+merged upstream first as no-ops, as this is where most of the conflicts 
+were happening.  The following patchset implements the no-op API changes, 
+as well as a fix to the use of PF_SUPERPRIV which was part of the larger 
+patchset but should also go in sooner rather than later.
 
-arch/x86/xen/smp.c:xen_cpu_up()
+Please pull.
 
-287 #ifdef CONFIG_X86_64
-288         /* Allocate node local memory for AP pdas */
-289         WARN_ON(cpu == 0);
-290         if (cpu > 0) {
-291                 rc = get_local_pda(cpu);
-292                 if (rc)
-293                         return rc;
-294         }
-295 #endif
+The following changes since commit fb2e405fc1fc8b20d9c78eaa1c7fd5a297efde43:
+  Adrian Bunk (1):
+        fix fs/nfs/nfsroot.c compilation
 
-and the second is at:
+are available in the git repository at:
 
-arch/x86/xen/enlighten.c:xen_start_kernel()
+  git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6 for-linus
 
-1748 #ifdef CONFIG_X86_64
-1749         /* Disable until direct per-cpu data access. */
-1750         have_vcpu_info_placement = 0;
-1751         x86_64_init_pda();
-1752 #endif
+David Howells (7):
+      Fix setting of PF_SUPERPRIV by __capable()
+      KEYS: Disperse linux/key_ui.h
+      KEYS: Alter use of key instantiation link-to-keyring argument
+      CRED: Neuter sys_capset()
+      CRED: Constify the kernel_cap_t arguments to the capset LSM hooks
+      CRED: Change current->fs[ug]id to current_fs[ug]id()
+      CRED: Wrap most current->e?[ug]id and some task->e?[ug]id
 
-I believe with the pda folded into the percpu area, get_local_pda()
-and x86_64_init_pda() have been removed, so these are no longer
-required, yes?
+ arch/ia64/kernel/mca_drv.c                |    2 +-
+ arch/ia64/kernel/perfmon.c                |   23 ++--
+ arch/ia64/kernel/signal.c                 |    4 +-
+ arch/mips/kernel/mips-mt-fpaff.c          |    5 +-
+ arch/parisc/kernel/signal.c               |    2 +-
+ arch/powerpc/mm/fault.c                   |    2 +-
+ arch/powerpc/platforms/cell/spufs/inode.c |    4 +-
+ arch/s390/hypfs/inode.c                   |    4 +-
+ arch/x86/mm/fault.c                       |    2 +-
+ drivers/block/loop.c                      |    6 +-
+ drivers/char/tty_audit.c                  |    6 +-
+ drivers/gpu/drm/drm_fops.c                |    2 +-
+ drivers/isdn/capi/capifs.c                |    4 +-
+ drivers/media/video/cpia.c                |    2 +-
+ drivers/net/tun.c                         |    4 +-
+ drivers/net/wan/sbni.c                    |    9 +-
+ drivers/usb/core/devio.c                  |    8 +-
+ drivers/usb/core/inode.c                  |    4 +-
+ fs/9p/fid.c                               |    2 +-
+ fs/9p/vfs_inode.c                         |    4 +-
+ fs/9p/vfs_super.c                         |    4 +-
+ fs/affs/inode.c                           |    4 +-
+ fs/affs/super.c                           |    4 +-
+ fs/anon_inodes.c                          |    4 +-
+ fs/attr.c                                 |    4 +-
+ fs/autofs/inode.c                         |    4 +-
+ fs/autofs4/inode.c                        |    4 +-
+ fs/autofs4/waitq.c                        |    4 +-
+ fs/bfs/dir.c                              |    4 +-
+ fs/cifs/cifs_fs_sb.h                      |    2 +-
+ fs/cifs/cifsproto.h                       |    2 +-
+ fs/cifs/connect.c                         |    4 +-
+ fs/cifs/dir.c                             |   12 +-
+ fs/cifs/inode.c                           |    8 +-
+ fs/cifs/ioctl.c                           |    2 +-
+ fs/cifs/misc.c                            |    4 +-
+ fs/coda/cache.c                           |    6 +-
+ fs/coda/upcall.c                          |    4 +-
+ fs/devpts/inode.c                         |    4 +-
+ fs/dquot.c                                |    4 +-
+ fs/ecryptfs/messaging.c                   |   18 ++-
+ fs/ecryptfs/miscdev.c                     |   20 ++-
+ fs/exec.c                                 |   18 +-
+ fs/ext2/balloc.c                          |    2 +-
+ fs/ext2/ialloc.c                          |    4 +-
+ fs/ext3/balloc.c                          |    2 +-
+ fs/ext3/ialloc.c                          |    4 +-
+ fs/ext4/balloc.c                          |    3 +-
+ fs/ext4/ialloc.c                          |    4 +-
+ fs/fat/file.c                             |    2 +-
+ fs/fat/inode.c                            |    4 +-
+ fs/fcntl.c                                |    2 +-
+ fs/fuse/dev.c                             |    4 +-
+ fs/gfs2/inode.c                           |   10 +-
+ fs/hfs/inode.c                            |    4 +-
+ fs/hfs/super.c                            |    4 +-
+ fs/hfsplus/inode.c                        |    4 +-
+ fs/hfsplus/options.c                      |    4 +-
+ fs/hpfs/namei.c                           |   24 ++--
+ fs/hpfs/super.c                           |    4 +-
+ fs/hugetlbfs/inode.c                      |   16 +-
+ fs/inotify_user.c                         |    2 +-
+ fs/ioprio.c                               |    4 +-
+ fs/jffs2/fs.c                             |    4 +-
+ fs/jfs/jfs_inode.c                        |    4 +-
+ fs/locks.c                                |    2 +-
+ fs/minix/bitmap.c                         |    4 +-
+ fs/namei.c                                |   10 +-
+ fs/namespace.c                            |    2 +-
+ fs/ncpfs/ioctl.c                          |   91 +++++------
+ fs/nfsd/vfs.c                             |    6 +-
+ fs/ocfs2/dlm/dlmfs.c                      |    8 +-
+ fs/ocfs2/namei.c                          |    4 +-
+ fs/open.c                                 |   12 +--
+ fs/pipe.c                                 |    4 +-
+ fs/posix_acl.c                            |    4 +-
+ fs/proc/proc_sysctl.c                     |    2 +-
+ fs/quota.c                                |    4 +-
+ fs/ramfs/inode.c                          |    4 +-
+ fs/reiserfs/namei.c                       |    4 +-
+ fs/smbfs/dir.c                            |    4 +-
+ fs/smbfs/inode.c                          |    2 +-
+ fs/smbfs/proc.c                           |    2 +-
+ fs/sysv/ialloc.c                          |    4 +-
+ fs/ubifs/budget.c                         |    2 +-
+ fs/ubifs/dir.c                            |    4 +-
+ fs/udf/ialloc.c                           |    4 +-
+ fs/udf/namei.c                            |    2 +-
+ fs/ufs/ialloc.c                           |    4 +-
+ fs/xfs/linux-2.6/xfs_cred.h               |    2 +-
+ fs/xfs/linux-2.6/xfs_linux.h              |    4 +-
+ fs/xfs/xfs_acl.c                          |    6 +-
+ fs/xfs/xfs_attr.c                         |    2 +-
+ fs/xfs/xfs_inode.c                        |    4 +-
+ fs/xfs/xfs_vnodeops.c                     |    8 +-
+ include/keys/keyring-type.h               |   31 ++++
+ include/linux/capability.h                |   15 ++-
+ include/linux/cred.h                      |   50 ++++++
+ include/linux/fs.h                        |    2 +-
+ include/linux/key-ui.h                    |   66 --------
+ include/linux/key.h                       |   18 +-
+ include/linux/keyctl.h                    |    4 +-
+ include/linux/sched.h                     |    1 +
+ include/linux/security.h                  |   99 +++++++-----
+ include/net/scm.h                         |    4 +-
+ ipc/mqueue.c                              |    6 +-
+ ipc/shm.c                                 |    5 +-
+ ipc/util.c                                |   18 ++-
+ kernel/acct.c                             |    7 +-
+ kernel/auditsc.c                          |    6 +-
+ kernel/capability.c                       |  248 +++++------------------------
+ kernel/cgroup.c                           |    9 +-
+ kernel/futex.c                            |    8 +-
+ kernel/futex_compat.c                     |    3 +-
+ kernel/kmod.c                             |    2 +-
+ kernel/ptrace.c                           |   20 ++-
+ kernel/sched.c                            |   11 +-
+ kernel/signal.c                           |   15 +-
+ kernel/sys.c                              |   16 +-
+ kernel/sysctl.c                           |    2 +-
+ kernel/timer.c                            |    8 +-
+ kernel/user_namespace.c                   |    2 +-
+ mm/mempolicy.c                            |    7 +-
+ mm/migrate.c                              |    7 +-
+ mm/oom_kill.c                             |    6 +-
+ mm/shmem.c                                |    8 +-
+ net/9p/client.c                           |    2 +-
+ net/ax25/af_ax25.c                        |    2 +-
+ net/ax25/ax25_route.c                     |    2 +-
+ net/core/dev.c                            |    8 +-
+ net/core/scm.c                            |    8 +-
+ net/ipv6/ip6_flowlabel.c                  |    2 +-
+ net/netrom/af_netrom.c                    |    4 +-
+ net/rose/af_rose.c                        |    4 +-
+ net/socket.c                              |    4 +-
+ net/sunrpc/auth.c                         |    4 +-
+ net/unix/af_unix.c                        |   11 +-
+ security/capability.c                     |    3 +-
+ security/commoncap.c                      |   80 +++++----
+ security/keys/internal.h                  |   38 ++++-
+ security/keys/key.c                       |    2 +-
+ security/keys/keyctl.c                    |  120 +++++++++------
+ security/keys/keyring.c                   |    1 +
+ security/keys/process_keys.c              |   88 +++++++----
+ security/keys/request_key.c               |   83 +++++++----
+ security/keys/request_key_auth.c          |    7 +-
+ security/root_plug.c                      |    3 +-
+ security/security.c                       |   25 ++--
+ security/selinux/hooks.c                  |   37 +++--
+ security/smack/smack_lsm.c                |   49 ++++--
+ 150 files changed, 960 insertions(+), 904 deletions(-)
+ create mode 100644 include/keys/keyring-type.h
+ create mode 100644 include/linux/cred.h
+ delete mode 100644 include/linux/key-ui.h
 
-Also, arch/x86/kernel/acpi/sleep.c:acpi_save_state_mem() sets up
-the startup code address with:
 
-102         initial_code = (unsigned long)wakeup_long64;
-103         saved_magic = 0x123456789abcdef0;
-
-Should the pda and gdt_page address also be setup as is done in
-smpboot.c:do_boot_cpu():
-
-(CONFIG_X86_64)
- 801         initial_pda = (unsigned long)get_cpu_pda(cpu);
- 802 #endif
- 803         early_gdt_descr.address = (unsigned long)get_cpu_gdt_table(cpu);
- 804         initial_code = (unsigned long)start_secondary;
-
-
-Thanks!
-Mike
+-- 
+James Morris
+<jmorris@namei.org>
