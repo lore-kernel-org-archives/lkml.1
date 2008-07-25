@@ -1,161 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752485AbYGYPjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbYGYPk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752485AbYGYPjs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 11:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbYGYPjk
+	id S1753382AbYGYPk1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 11:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYGYPkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 11:39:40 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:47980 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751287AbYGYPjj (ORCPT
+	Fri, 25 Jul 2008 11:40:13 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:41596 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750878AbYGYPkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 11:39:39 -0400
+	Fri, 25 Jul 2008 11:40:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=PHcleH6VW/bamghJIC6rWnvowISPOIEttU3F3YnZiVYE3cC6JH6Fv8bqMf0hMUId/A
-         RWVGCdEWA7bcbqeZlN6ttP8Web3CCmpnp+nOX4IRDjyQuZDgnHzL8PWvWDMGOoQL5w3f
-         Nl4PUcrM5iR7E6GoUEqzWBZWQ9GIJK6ZGPEK4=
-Date: Fri, 25 Jul 2008 19:39:34 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take 3)
-Message-ID: <20080725153934.GE28466@lenovo>
-References: <48889C14.4070408@fujitsu-siemens.com> <4889968E.6020000@fujitsu-siemens.com> <20080725100844.GA16698@lenovo> <4889C723.7050402@fujitsu-siemens.com> <20080725125950.GA28466@lenovo> <4889D767.5050709@fujitsu-siemens.com> <20080725134831.GB28466@lenovo> <4889DCA4.4010800@fujitsu-siemens.com> <20080725150104.GD28466@lenovo> <4889ED91.7050800@fujitsu-siemens.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=i/q9g7iwQW9DgNMGliEc/e8BBcg9LS8lW6dud1KnRJqwZ5rgppYO3v156dVzCVuzjr
+         tliekAt+sCdPoRoE+f0AFnNFzHdRmTSNL7FAvcOZGhXIL6IyiTm5BKzmrma0pZBHOVQk
+         D8F4ZIv29x4PDCfUdyRc5jeTjOBa9EuN+HqhM=
+Message-ID: <9e4733910807250840n48c6ae79l27af4f320b5b1df1@mail.gmail.com>
+Date: Fri, 25 Jul 2008 11:40:09 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 1/4] of: adapt of_find_i2c_driver() to be usable by SPI also
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       spi-devel-general@lists.sourceforge.net,
+       dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org
+In-Reply-To: <20080725073311.8485.16226.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4889ED91.7050800@fujitsu-siemens.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+	 <20080725073311.8485.16226.stgit@trillian.secretlab.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Martin Wilck - Fri, Jul 25, 2008 at 05:13:21PM +0200]
-> Cyrill Gorcunov wrote:
->> Martin, it seems you forgot to attach the patch :) 
+On 7/25/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
 >
-> I am sorry, here it is. Thanks :)
+>  SPI has a similar problem as I2C in that it needs to determine an
+>  appropriate modalias value for each device node.  This patch adapts
+>  the of_i2c of_find_i2c_driver() function to be usable by of_spi also.
 >
-> Martin
+>  Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>  ---
 >
-> -- 
-> Martin Wilck
-> PRIMERGY System Software Engineer
-> FSC IP ESP DEV 6
+>   drivers/of/base.c   |   88 +++++++++++++++++++++++++++++++++++++++++++++++++++
+>   drivers/of/of_i2c.c |   64 ++-----------------------------------
+>   include/linux/of.h  |    1 +
+>   3 files changed, 92 insertions(+), 61 deletions(-)
 >
-> Fujitsu Siemens Computers GmbH
-> Heinz-Nixdorf-Ring 1
-> 33106 Paderborn
-> Germany
->
-> Tel:			++49 5251 8 15113
-> Fax:			++49 5251 8 20209
-> Email:			mailto:martin.wilck@fujitsu-siemens.com
-> Internet:		http://www.fujitsu-siemens.com
-> Company Details:	http://www.fujitsu-siemens.com/imprint.html
+>  diff --git a/drivers/of/base.c b/drivers/of/base.c
+>  index 23ffb7c..ad8ac1a 100644
+>  --- a/drivers/of/base.c
+>  +++ b/drivers/of/base.c
+>  @@ -385,3 +385,91 @@ struct device_node *of_find_matching_node(struct device_node *from,
+>         return np;
+>   }
+>   EXPORT_SYMBOL(of_find_matching_node);
+>  +
+>  +/**
+>  + * of_modalias_table: Table of explicit compatible ==> modalias mappings
+>  + *
+>  + * This table allows particulare compatible property values to be mapped
+>  + * to modalias strings.  This is useful for busses which do not directly
+>  + * understand the OF device tree but are populated based on data contained
+>  + * within the device tree.  SPI and I2C are the two current users of this
+>  + * table.
+>  + *
+>  + * In most cases, devices do not need to be listed in this table because
+>  + * the modalias value can be derived directly from the compatible table.
+>  + * However, if for any reason a value cannot be derived, then this table
+>  + * provides a method to override the implicit derivation.
+>  + *
+>  + * At the moment, a single table is used for all bus types because it is
+>  + * assumed that the data size is small and that the compatible values
+>  + * should already be distinct enough to differentiate between SPI, I2C
+>  + * and other devices.
 
-| [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take 3)
-| 
-| Non-maskable asynchronous events (e.g. SMIs) which occur during the APIC 
-| timer calibration can cause timer miscalibrations, sometimes by large amounts. 
-| This patch fixes this by making sure that no significant interruption occurs 
-| between APIC and TSC reads. SMIs may still occur at some stage in the 
-| calibration loop, causing the loop to last longer than intended. This 
-| doesn't matter though, as long as the start and end values are both 
-| taken simultaneously.
-| 
-| Changed wrt take 2: Use max. possible start value for the APIC timer 
-| to avoid underflow.
-| 
-| Signed-off-by: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-| Signed-off-by: Gerhard Wichert <gerhard.wichert@fujitsu-siemens.com>
-| 
-| --- arch/x86/kernel/apic_64.c	2008-07-25 15:39:51.000000000 +0200
-| +++ arch/x86/kernel/apic_64.c.new	2008-07-25 15:55:08.000000000 +0200
-| @@ -300,6 +300,31 @@ static void setup_APIC_timer(void)
-|  }
-|  
-|  /*
-| + * Helper function for calibrate_APIC_clock(): Make sure that
-| + * APIC TMCTT and TSC are read at the same time, to reasonable
-| + * accuracy. On any sane system, the retry loop won't need more
-| + * than a single retry, given that the rdtsc/apic_read/rdtsc
-| + * sequence won't take more than a few cycles.
-| + */
-| +
-| +#define MAX_DIFFERENCE 1000UL
-| +#define MAX_ITER 10
-| +static inline int
-| +__read_tsc_and_apic(unsigned long *tsc, unsigned *apic)
-| +{
-| +	unsigned long tsc0, tsc1, diff;
-| +	int i = 0;
-| +	do {
-| +		rdtscll(tsc0);
-| +		*apic = apic_read(APIC_TMCCT);
-| +		rdtscll(tsc1);
-| +		diff = tsc1 - tsc0;
-| +	} while (diff > MAX_DIFFERENCE && ++i < MAX_ITER); 
-| +	*tsc = tsc0 + (diff >> 1);
-| +	return diff > MAX_DIFFERENCE ? -EIO : 0;
-| +}
-| +
-| +/*
-|   * In this function we calibrate APIC bus clocks to the external
-|   * timer. Unfortunately we cannot use jiffies and the timer irq
-|   * to calibrate, since some later bootup code depends on getting
-| @@ -318,7 +343,7 @@ static void __init calibrate_APIC_clock(
-|  {
-|  	unsigned apic, apic_start;
-|  	unsigned long tsc, tsc_start;
-| -	int result;
-| +	int result, err_start, err;
-|  
-|  	local_irq_disable();
-|  
-| @@ -329,25 +354,27 @@ static void __init calibrate_APIC_clock(
-|  	 *
-|  	 * No interrupt enable !
-|  	 */
-| -	__setup_APIC_LVTT(250000000, 0, 0);
-| +	__setup_APIC_LVTT(0xffffffff, 0, 0);
-|  
-| -	apic_start = apic_read(APIC_TMCCT);
-|  #ifdef CONFIG_X86_PM_TIMER
-|  	if (apic_calibrate_pmtmr && pmtmr_ioport) {
-| +		apic_start = apic_read(APIC_TMCCT);
-|  		pmtimer_wait(5000);  /* 5ms wait */
-|  		apic = apic_read(APIC_TMCCT);
-|  		result = (apic_start - apic) * 1000L / 5;
-|  	} else
-|  #endif
-|  	{
-| -		rdtscll(tsc_start);
-| +		err_start = __read_tsc_and_apic(&tsc_start, &apic_start);
-|  
-|  		do {
-| -			apic = apic_read(APIC_TMCCT);
-| -			rdtscll(tsc);
-| +			err = __read_tsc_and_apic(&tsc, &apic);
-|  		} while ((tsc - tsc_start) < TICK_COUNT &&
-|  				(apic_start - apic) < TICK_COUNT);
-|  
-| +		if (err_start || err)
-| +			printk(KERN_CRIT "calibrate_APIC_clock: SMI flood - "
-| +				"the APIC timer calibration may be wrong!\n");
-|  		result = (apic_start - apic) * 1000L * tsc_khz /
-|  					(tsc - tsc_start);
-|  	}
+Maybe add a section recommending to update the alias list in the linux
+device driver before adding entries here? This table should be a last
+resort. I'm not even sure this table should exist, what would be a
+case where we would need to make an entry here instead of fixing the
+device driver by adding an alias name?
 
-Thanks, Martin! Patch looks good for me (actually I would better
-wait for Maciej opinion since I'm not that specialist in this area).
-Thanks!
+The list of alias part numbers really belong in the devices drivers,
+not some global table that has to always be kept in memory.
 
-		- Cyrill -
+>  + */
+>  +struct of_modalias_table {
+>  +       char *of_device;
+>  +       char *modalias;
+>  +};
+>  +static struct of_modalias_table of_modalias_table[] = {
+>  +       /* Empty for now; add entries as needed */
+>  +};
+>  +
+>  +/**
+>  + * of_modalias_node - Lookup appropriate modalias for a device node
+>  + * @node:      pointer to a device tree node
+>  + * @modalias:  Pointer to buffer that modalias value will be copied into
+>  + * @len:       Length of modalias value
+>  + *
+>  + * Based on the value of the compatible property, this routine will determine
+>  + * an appropriate modalias value for a particular device tree node.  Three
+>  + * separate methods are used to derive a modalias value.
+>  + *
+>  + * First method is to lookup the compatible value in of_modalias_table.
+>  + * Second is to look for a "linux,<modalias>" entry in the compatible list
+>  + * and used that for modalias.  Third is to strip off the manufacturer
+>  + * prefix from the first compatible entry and use the remainder as modalias
+
+I also think this is a problem. Embedding the name of Linux device
+drivers into device firmware makes it almost impossible to rename the
+device driver.  Again, what is a case where generic part numbers can't
+be listed in the alias section of the linux device driver?
+
+Even eeprom was just fixed to take generic part numbers (at24).
+
+>  + *
+>  + * This routine returns 0 on success
+>  + */
+>  +int of_modalias_node(struct device_node *node, char *modalias, int len)
+>  +{
+>  +       int i, cplen;
+>  +       const char *compatible;
+>  +       const char *p;
+>  +
+>  +       /* 1. search for exception list entry */
+>  +       for (i = 0; i < ARRAY_SIZE(of_modalias_table); i++) {
+>  +               compatible = of_modalias_table[i].of_device;
+>  +               if (!of_device_is_compatible(node, compatible))
+>  +                       continue;
+>  +               strlcpy(modalias, of_modalias_table[i].modalias, len);
+>  +               return 0;
+>  +       }
+>  +
+>  +       compatible = of_get_property(node, "compatible", &cplen);
+>  +       if (!compatible)
+>  +               return -ENODEV;
+>  +
+>  +       /* 2. search for linux,<modalias> entry */
+>  +       p = compatible;
+>  +       while (cplen > 0) {
+>  +               if (!strncmp(p, "linux,", 6)) {
+>  +                       p += 6;
+>  +                       strlcpy(modalias, p, len);
+>  +                       return 0;
+>  +               }
+>  +
+>  +               i = strlen(p) + 1;
+>  +               p += i;
+>  +               cplen -= i;
+>  +       }
+>  +
+>  +       /* 3. take first compatible entry and strip manufacturer */
+>  +       p = strchr(compatible, ',');
+>  +       if (!p)
+>  +               return -ENODEV;
+>  +       p++;
+>  +       strlcpy(modalias, p, len);
+>  +       return 0;
+>  +}
+>  +EXPORT_SYMBOL_GPL(of_modalias_node);
+>  +
+>  diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+>  index 344e1b0..6a98dc8 100644
+>  --- a/drivers/of/of_i2c.c
+>  +++ b/drivers/of/of_i2c.c
+>  @@ -16,62 +16,6 @@
+>   #include <linux/of_i2c.h>
+>   #include <linux/module.h>
+>
+>  -struct i2c_driver_device {
+>  -       char    *of_device;
+>  -       char    *i2c_type;
+>  -};
+>  -
+>  -static struct i2c_driver_device i2c_devices[] = {
+>  -};
+>  -
+>  -static int of_find_i2c_driver(struct device_node *node,
+>  -                             struct i2c_board_info *info)
+>  -{
+>  -       int i, cplen;
+>  -       const char *compatible;
+>  -       const char *p;
+>  -
+>  -       /* 1. search for exception list entry */
+>  -       for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
+>  -               if (!of_device_is_compatible(node, i2c_devices[i].of_device))
+>  -                       continue;
+>  -               if (strlcpy(info->type, i2c_devices[i].i2c_type,
+>  -                           I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+>  -                       return -ENOMEM;
+>  -
+>  -               return 0;
+>  -       }
+>  -
+>  -       compatible = of_get_property(node, "compatible", &cplen);
+>  -       if (!compatible)
+>  -               return -ENODEV;
+>  -
+>  -       /* 2. search for linux,<i2c-type> entry */
+>  -       p = compatible;
+>  -       while (cplen > 0) {
+>  -               if (!strncmp(p, "linux,", 6)) {
+>  -                       p += 6;
+>  -                       if (strlcpy(info->type, p,
+>  -                                   I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+>  -                               return -ENOMEM;
+>  -                       return 0;
+>  -               }
+>  -
+>  -               i = strlen(p) + 1;
+>  -               p += i;
+>  -               cplen -= i;
+>  -       }
+>  -
+>  -       /* 3. take fist compatible entry and strip manufacturer */
+>  -       p = strchr(compatible, ',');
+>  -       if (!p)
+>  -               return -ENODEV;
+>  -       p++;
+>  -       if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+>  -               return -ENOMEM;
+>  -       return 0;
+>  -}
+>  -
+>   void of_register_i2c_devices(struct i2c_adapter *adap,
+>                              struct device_node *adap_node)
+>   {
+>  @@ -83,6 +27,9 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+>                 const u32 *addr;
+>                 int len;
+>
+>  +               if (of_modalias_node(node, info.type, sizeof(info.type)) < 0)
+>  +                       continue;
+>  +
+>                 addr = of_get_property(node, "reg", &len);
+>                 if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
+>                         printk(KERN_ERR
+>  @@ -92,11 +39,6 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+>
+>                 info.irq = irq_of_parse_and_map(node, 0);
+>
+>  -               if (of_find_i2c_driver(node, &info) < 0) {
+>  -                       irq_dispose_mapping(info.irq);
+>  -                       continue;
+>  -               }
+>  -
+>                 info.addr = *addr;
+>
+>                 request_module(info.type);
+>  diff --git a/include/linux/of.h b/include/linux/of.h
+>  index 59a61bd..79886ad 100644
+>  --- a/include/linux/of.h
+>  +++ b/include/linux/of.h
+>  @@ -70,5 +70,6 @@ extern int of_n_addr_cells(struct device_node *np);
+>   extern int of_n_size_cells(struct device_node *np);
+>   extern const struct of_device_id *of_match_node(
+>         const struct of_device_id *matches, const struct device_node *node);
+>  +extern int of_modalias_node(struct device_node *node, char *modalias, int len);
+>
+>   #endif /* _LINUX_OF_H */
+>
+>
+>  --
+>  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>  the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
