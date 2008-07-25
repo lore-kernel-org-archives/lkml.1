@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbYGYIqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755803AbYGYIr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755783AbYGYIqV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 04:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYGYIqN
+	id S1755803AbYGYIr1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 04:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYGYIrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 04:46:13 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:36192 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752678AbYGYIqM (ORCPT
+	Fri, 25 Jul 2008 04:47:09 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:48425 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752687AbYGYIrF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 04:46:12 -0400
-Date: Fri, 25 Jul 2008 09:46:07 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: David Miller <davem@davemloft.net>
-Cc: ben-linux@fluff.org, bzolnier@gmail.com, harvey.harrison@gmail.com,
-       linux-ide@kernel.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: recent IDE regression
-Message-ID: <20080725084607.GQ26938@trinity.fluff.org>
-References: <20080724.233831.193691312.davem@davemloft.net> <20080725083448.GE8301@fluff.org.uk> <20080725.014252.193706389.davem@davemloft.net>
+	Fri, 25 Jul 2008 04:47:05 -0400
+Date: Fri, 25 Jul 2008 10:47:30 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: benh@kernel.crashing.org
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux-rt <linux-rt-users@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Michael Ellerman <michael@ellerman.id.au>,
+       Tim Chavez <tinytim@us.ibm.com>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>,
+       Gilles Carry <Gilles.Carry@ext.bull.net>
+Subject: Re: [PATCH 2/2][RT] powerpc - Make the irq reverse mapping radix
+ tree lockless
+Message-ID: <20080725104730.2211e057@bull.net>
+In-Reply-To: <1216975221.11188.102.camel@pasglop>
+References: <20080724122352.3bc76bda@bull.net>
+	<20080724125044.53b604cb@bull.net>
+	<200807242111.35338.nickpiggin@yahoo.com.au>
+	<20080724141839.477de30b@bull.net>
+	<1216972177.7257.351.camel@twins>
+	<1216974440.11188.100.camel@pasglop>
+	<20080725103601.2dbcd7e8@bull.net>
+	<1216975221.11188.102.camel@pasglop>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080725.014252.193706389.davem@davemloft.net>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 01:42:52AM -0700, David Miller wrote:
-> From: Ben Dooks <ben-linux@fluff.org>
-> Date: Fri, 25 Jul 2008 09:34:48 +0100
+On Fri, 25 Jul 2008 18:40:21 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Fri, 2008-07-25 at 10:36 +0200, Sebastien Dugue wrote:
+> > On Fri, 25 Jul 2008 18:27:20 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > 
+> > > On Fri, 2008-07-25 at 09:49 +0200, Peter Zijlstra wrote:
+> > > > 
+> > > > 
+> > > > The only advantage of the concurrent radix tree over this model is that
+> > > > it can potentially do multiple modification operations at the same time.
+> > > 
+> > > Yup, we do not need that for the irq revmap... concurrent lookup is all we need.
+> > > 
+> > 
+> >   Shouldn't we care about concurrent insertion and deletion in the tree? I agree
+> > that concern might be a bit artificial but in theory that can happen.
 > 
-> > On Thu, Jul 24, 2008 at 11:38:31PM -0700, David Miller wrote:
-> > > diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
-> > > index 07da5fb..8aae917 100644
-> > > --- a/drivers/ide/ide-iops.c
-> > > +++ b/drivers/ide/ide-iops.c
-> > > @@ -510,10 +510,8 @@ void ide_fixstring (u8 *s, const int bytecount, const int byteswap)
-> > >  
-> > >  	if (byteswap) {
-> > >  		/* convert from big-endian to host byte order */
-> > > -		for (p = end ; p != s;) {
-> > > -			unsigned short *pp = (unsigned short *) (p -= 2);
-> > > -			*pp = ntohs(*pp);
-> > > -		}
-> > > +		for (p = end ; p != s;)
-> > > +			be16_to_cpus((u16 *)(p -= 2));
-> > 
-> > personally, i would much prefer to see the loop being less evil
-> > like:
-> > 
-> > 	for (p = s; p < end; p += 2)
-> > 		be16_to_cpus((u16 *)p);
-> > 
-> > is there an architecture/compiler combo which really makes this
-> > evil worthwile? on arm (gcc 4.2), both evaluate to the same number of
-> > instructions.
-> 
-> Regardless of what we want to do with this ugly loop, the endianness
-> macros should be fixed to consistently evaluate their arguments
-> once just like real function calls do.
+> Yes, we just need to protect it with a big hammer, like a spinlock, it's
+> not a performance critical code path.
 
-Yes, I wasn't saying the macro fixes are not worthwile. I would also
-like to see the loop being fixed to not perpetrate this nasty code
-any further.
+  Agreed. Will look into this in the next few days.
 
--- 
-Ben
+  Thanks,
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
-
+  Sebastien.
