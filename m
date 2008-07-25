@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbYGYN3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbYGYNdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169AbYGYN3g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 09:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbYGYN31
+	id S1756214AbYGYNdb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 09:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYGYNdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 09:29:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51967 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752712AbYGYN30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 09:29:26 -0400
-Date: Fri, 25 Jul 2008 15:29:18 +0200
-From: Michal Schmidt <mschmidt@redhat.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: David Vrabel <david.vrabel@csr.com>, Matthew Wilcox <matthew@wil.cx>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: PCI: MSI interrupts masked using prohibited method
-Message-ID: <20080725152918.43bf3100@brian.englab.brq.redhat.com>
-In-Reply-To: <200807221052.26879.jbarnes@virtuousgeek.org>
-References: <4860D09D.4060801@csr.com>
-	<48807166.9010006@csr.com>
-	<20080722155629.1160635e@brian.englab.brq.redhat.com>
-	<200807221052.26879.jbarnes@virtuousgeek.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 25 Jul 2008 09:33:22 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:9538 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752832AbYGYNdW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 09:33:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xHS5UBCINVQWl9W/9z/LmrBjEpYZeSTXJMWGUEapCwulT3CPqxSX9Xg1le83OAXIN3
+         oSujdfnJEXz5lDRlfaASCFeAEOFzzKHSDVH3aLMMSrNITyy6J37tBDq/6ZV8e1+0rfMW
+         uzkHLLPBnaeVW1wP4Lp2S+EbxlO7GJ0hMhFws=
+Message-ID: <728201270807250633vcaf8ac2r3be1d37736283385@mail.gmail.com>
+Date: Fri, 25 Jul 2008 08:33:10 -0500
+From: "Ram Gupta" <ram.gupta5@gmail.com>
+To: "Paul Menage" <menage@google.com>
+Subject: Re: [RFC][PATCH][0/3] introduce rlimit cgroup
+Cc: "Hirofumi Nakagawa" <hnakagawa@miraclelinux.com>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <6599ad830807242305w2895905dgcd91fe3a430806dc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <488722DF.9080003@miraclelinux.com>
+	 <20080724150557.8697.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <48885A7F.80106@miraclelinux.com>
+	 <6599ad830807242305w2895905dgcd91fe3a430806dc@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jul 2008 10:52:26 -0700
-Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+I understand that there might be some cases where it is useful to
+allow some process to set rlimits of other processes (e.g. some
+launcher process might want to control resources of all the
+applications being launched by it). But this has to be a very special
+case or this process needs to have special permission to do that
+otherwise there will be a lot of problems as a side effect.
 
-> On Tuesday, July 22, 2008 6:56 am Michal Schmidt wrote:
-> > This breaks the setting of SMP affinity for MSI interrupts :-(
-> > With the patch, writes to /proc/irq/<n>/smp_affinity are ignored
-> > for an MSI interrupt.
-> 
-> It should only break it for devices that don't provide a mask bit.
-> But given that we can't really mask generically on those devices,
-> maybe that's ok given that it fixes the other problems mentioned in
-> this thread...
+Ram
 
-I looked a bit more into why exactly it breaks. The device for which
-MSI IRQ affinity breaks is a "Broadcom Corporation NetXtreme II BCM5708
-Gigabit Ethernet" (14e4:164c rev 12) in HP DL360 G5.
-
-The interesting thing is that I can see Destination ID bits of MSI
-Message Address change correctly in lspci output. But the interrupt is
-still delivered load-balanced to all CPUs even though the Destination
-ID identifies the single CPU I asked for. It seems the device only
-takes the new Message Address setting into account when the MSI Enable
-bit in the Message Control register is changed from 0 to 1. I tested
-this by setting the MSI enable bit to 0 and then immediately back to 1
-at the end of io_apic_64.c:set_msi_irq_affinity().
-
-Is this a permitted behaviour for the device? I couldn't find anything
-in the PCI specification that would mentioned it.
-
-Later I tested it with a different device which does not have maskbits
-either (an Intel Ethernet controller). For this device MSI IRQ
-migration works without problems and no hackery with the MSI enable bit
-was necessary.
-
-Michal
+On Fri, Jul 25, 2008 at 1:05 AM, Paul Menage <menage@google.com> wrote:
+>>
+>> To set rlimit from other processes is my original intention.
+>> For I do not see a way to do it, please let me know if there were any
+>> exists.
+>
+> No, there's no way to do that currently. I'm not sure if it's
+> generally safe to update the rlimit for another process.
+>
+> If we're trying to use rlimits in a cgroup context then some rlimits
+> (e.g. max nice priority) ought to apply as additional caps on the
+> processes in the cgroup (e.g. if you set a max nice priority of 1 on a
+> cgroup, that ought to override any per-process settings) whereas
+> others (e.g. locked memory, open files, num processes) ought to apply
+> as an aggregate limit on the cgroup (so the sum of all open files
+> across the cgroup shouldn't be able to exceed the cgroup's "open
+> files" limit). E.g. see Balbir's memrlimit control groups patches that
+> are currently in -mm.
+>
+> What concrete problem are you trying to solve here?
+>
+> Paul
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
