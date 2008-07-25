@@ -1,48 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbYGYRjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbYGYRwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753247AbYGYRjO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 13:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYGYRi7
+	id S1752795AbYGYRwc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 13:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYGYRwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 13:38:59 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:38385 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751021AbYGYRi7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 13:38:59 -0400
-Date: Fri, 25 Jul 2008 23:08:42 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Alberto Gonzalez <luis6674@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: How to disable group scheduler correctly?
-Message-ID: <20080725173842.GA7048@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <842240.12654.qm@web53310.mail.re2.yahoo.com>
+	Fri, 25 Jul 2008 13:52:22 -0400
+Received: from mail.axxeo.de ([82.100.226.146]:40683 "EHLO mail.axxeo.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750858AbYGYRwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 13:52:21 -0400
+X-Greylist: delayed 2832 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Jul 2008 13:52:20 EDT
+From: Ingo Oeser <netdev@axxeo.de>
+Organization: Axxeo GmbH
+To: David Miller <davem@davemloft.net>
+Subject: Re: Kernel WARNING: at net/core/dev.c:1330 __netif_schedule+0x2c/0x98()
+Date: Fri, 25 Jul 2008 19:04:36 +0200
+User-Agent: KMail/1.9.1
+Cc: peterz@infradead.org, jarkao2@gmail.com, Larry.Finger@lwfinger.net,
+       kaber@trash.net, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       mingo@redhat.com
+References: <1216806614.7257.152.camel@twins> <1216810696.7257.175.camel@twins> <20080723.131441.200166513.davem@davemloft.net>
+In-Reply-To: <20080723.131441.200166513.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <842240.12654.qm@web53310.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200807251904.37302.netdev@axxeo.de>
+X-Spam-Score: -4.4 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 10:05:52AM -0700, Alberto Gonzalez wrote:
-> Hello,
+Hi David,
 
-Hi Alberto
-
+David Miller schrieb:
+> From: Peter Zijlstra <peterz@infradead.org>
+> Date: Wed, 23 Jul 2008 12:58:16 +0200
 > 
-> Could anyone tell me which options to enable/disable to have the scheduler behavior as it was before 2.6.25 (i.e, completely disable the group scheduler)? There seems to be a lot of confusion [1] about which options to set or not set, so it would be nice if anyone could give the exact ones.
+> > So I guess my question is, is netif_tx_lock() here to stay, or is the
+> > right fix to convert all those drivers to use __netif_tx_lock() which
+> > locks only a single queue?
 > 
+> It's staying.
+> 
+> It's trying to block all potential calls into the ->hard_start_xmit()
+> method of the driver, and the only reliable way to do that is to take
+> all the TX queue locks.  And in one form or another, we're going to
+> have this "grab/release all the TX queue locks" construct.
+> 
+> I find it interesting that this cannot be simply described to lockdep
+> :-)
 
-To switch off group scheduling completely, please set CONFIG_GROUP_SCHED
-to off.
+I'm sure as hell, I miss sth. but can't it be done by this pseudo-code:
 
-If you wish to have cgroup based group scheduling, you need to
-set CONFIG_CGROUP_SCHED on (and if required CONFIG_FAIR_GROUP_SCHED for
-CFS group scheduling and CONFIG_RT_GROUP_SCHED for RT group scheduling)
+netif_tx_lock(device)
+{
+	mutex_lock(device->queue_entry_mutex);
+	foreach_queue_entries(queue, device->queues)
+	{
+		spin_lock(queue->tx_lock);
+		set_noop_tx_handler(queue);
+		spin_unlock(queue->tx_lock);
+	}
+	mutex_unlock(device->queue_entry_mutex);
+}
 
--- 
-regards,
-Dhaval
+netif_tx_unlock(device)
+{
+	mutex_lock(device->queue_entry_mutex);
+	foreach_queue_entries(queue, device->queues)
+	{
+		spin_lock(queue->tx_lock);
+		set_useful_tx_handler(queue);
+		spin_unlock(queue->tx_lock);
+	}
+	mutex_unlock(device->queue_entry_mutex);
+}
+
+Then protect use of the queues by queue->tx_lock in transmit path.
+The first setup of the queue doesn't need to be protected, since no-one
+knows the device. The final cleanup of the device doesn't need to be
+protected either, because netif_tx_lock() and netif_tx_unlock() should
+not be called after entering the final cleanup.
+
+Some VM locking works this way...
+
+
+Best Regards
+
+Ingo Oeser
