@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbYGYDDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756969AbYGYDEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbYGYDDm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 23:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbYGYDDa
+	id S1756969AbYGYDEA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 23:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755484AbYGYDDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 23:03:30 -0400
-Received: from waste.org ([66.93.16.53]:52965 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751243AbYGYDD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 23:03:29 -0400
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
-	pointer dereference
-From: Matt Mackall <mpm@selenic.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Patrick McHardy <kaber@trash.net>,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de, rjw@sisk.pl,
-       ilpo.jarvinen@helsinki.fi, Dave Jones <davej@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <20080725013958.GA14200@gondor.apana.org.au>
-References: <20080724093411.GA12001@elte.hu>
-	 <20080724115625.GA23994@elte.hu> <20080724115957.GA25701@elte.hu>
-	 <48886FA6.6050908@trash.net> <20080724122203.GA7187@gondor.apana.org.au>
-	 <84144f020807240540vbe7ef50uee2cacabe8016546@mail.gmail.com>
-	 <20080724125004.GA7426@gondor.apana.org.au>
-	 <1216905109.15519.200.camel@calx>
-	 <20080724143706.GA8461@gondor.apana.org.au>
-	 <1216921639.15519.239.camel@calx>
-	 <20080725013958.GA14200@gondor.apana.org.au>
+	Thu, 24 Jul 2008 23:03:45 -0400
+Received: from homer.mvista.com ([63.81.120.158]:7918 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755458AbYGYDDo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 23:03:44 -0400
+Subject: Re: [PATCH 2/2[ Traffic control cgroups subsystem
+From: Daniel Walker <dwalker@mvista.com>
+To: Ranjit Manomohan <ranjitm@google.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, lizf@cn.fujitsu.com,
+       menage@google.com, kaber@trash.net, akpm@linux-foundation.org
+In-Reply-To: <Pine.LNX.4.64.0807241635460.30437@ranjit.corp.google.com>
+References: <Pine.LNX.4.64.0807241635460.30437@ranjit.corp.google.com>
 Content-Type: text/plain
-Date: Thu, 24 Jul 2008 21:59:33 -0500
-Message-Id: <1216954773.15519.261.camel@calx>
+Date: Thu, 24 Jul 2008 23:02:17 -0400
+Message-Id: <1216954937.22487.1.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-07-24 at 16:37 -0700, Ranjit Manomohan wrote:
 
-On Fri, 2008-07-25 at 09:39 +0800, Herbert Xu wrote:
-> On Thu, Jul 24, 2008 at 12:47:19PM -0500, Matt Mackall wrote:
-> >
-> > Let's try this again: did you know that ksize could fail depending on
-> > kernel configuration? Most of us would answer no. That suggests the API
-> > is bad. This ranks 12 on Rusty's spectrum of user-friendly APIs:
-> 
-> I think you misunderstood my argument.  I never suggested changing
-> the existing ksize interface to return an error onto unsuspecting
-> users.  I suggested creating a new interface that is explicitly
-> designed to return an error if the underlying implementation
-> is unable to support this.
 
-I think that could probably be made to work. Perhaps something like:
+> +/* Delete one filter entry */
+> +static int cgroup_delete(struct tcf_proto *tp, unsigned long arg)
+> +{
+> +	struct cgroup_head *head = (struct cgroup_head *) tp->root;
+> +	struct cgroup_filter *t, *f = (struct cgroup_filter *) arg;
+> +
+> +	list_for_each_entry(t, &head->flist, link)
+> +		if (t == f) {
+> +			tcf_tree_lock(tp);
+> +			list_del(&t->link);
 
-size_t kmalloc_extra(void *); /* how many extra bytes in this kmalloc?
-*/
+Doesn't the above need to be a "_safe" list operation since your
+deleting the element?
 
-Which, if it didn't work, could return a nice safe 0. We could argue
-about signedness a bit, but I think this would always be safe.
-
-This will also work with all our current kmalloc implementations. The
-trouble was calling ksize() on kmem_cache_alloc objects, which happens
-to work with SLAB and SLOB.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+Daniel
 
