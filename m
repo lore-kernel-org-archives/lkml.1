@@ -1,99 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYGYNjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbYGYNkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756079AbYGYNjr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 09:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYGYNji
+	id S1756682AbYGYNkh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 09:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYGYNk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 09:39:38 -0400
-Received: from viefep20-int.chello.at ([62.179.121.40]:42727 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752423AbYGYNji (ORCPT
+	Fri, 25 Jul 2008 09:40:28 -0400
+Received: from dgate20.fujitsu-siemens.com ([80.70.172.51]:35015 "EHLO
+	dgate20.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752537AbYGYNk2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 09:39:38 -0400
-X-SourceIP: 62.163.52.83
-Subject: Re: [patch, rfc: 2/2] sched, hotplug: ensure a task is on the
-	valid cpu after set_cpus_allowed_ptr()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <b647ffbd0807250620k2e7caa47pa81388c808d9eda7@mail.gmail.com>
-References: <1216937730.5368.16.camel@earth>
-	 <1216989649.7257.381.camel@twins>
-	 <b647ffbd0807250620k2e7caa47pa81388c808d9eda7@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 25 Jul 2008 15:39:44 +0200
-Message-Id: <1216993184.7257.388.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 25 Jul 2008 09:40:28 -0400
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
+  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
+   Received:Received:Message-ID:Date:From:Organization:
+   User-Agent:MIME-Version:To:CC:Subject:References:
+   In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=aXPKCZN8dY5uXpIdAMlTzK/YWrslA8Im6wTicv09QZItByYEJXwb3Tjs
+   gnPLXEUwrO7bWhd7XuWpkgvRcdn7VBTHm17vrO2/N9ZcfDs31bvtVPioq
+   xnHRapFOmXvtn+A;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.31,252,1215381600"; 
+   d="scan'208";a="21222489"
+X-IronPort-AV: E=Sophos;i="4.31,252,1215381600"; 
+   d="scan'208";a="36376271"
+Message-ID: <4889D767.5050709@fujitsu-siemens.com>
+Date: Fri, 25 Jul 2008 15:38:47 +0200
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Organization: Fujitsu Siemens Computers
+User-Agent: Thunderbird 2.0.0.15pre (X11/20080508)
+MIME-Version: 1.0
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take
+ 2)
+References: <20080724111631.GA3432@lenovo> <48886E6D.1030005@fujitsu-siemens.com> <20080724120512.GA21804@lenovo> <488889B6.9070707@fujitsu-siemens.com> <20080724143151.GA32422@lenovo> <20080724150116.GC32422@lenovo> <48889C14.4070408@fujitsu-siemens.com> <4889968E.6020000@fujitsu-siemens.com> <20080725100844.GA16698@lenovo> <4889C723.7050402@fujitsu-siemens.com> <20080725125950.GA28466@lenovo>
+In-Reply-To: <20080725125950.GA28466@lenovo>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-25 at 15:20 +0200, Dmitry Adamushko wrote:
-> 2008/7/25 Peter Zijlstra <a.p.zijlstra@chello.nl>:
-> > On Fri, 2008-07-25 at 00:15 +0200, Dmitry Adamushko wrote:
-> >>
-> >> From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-> >> Subject: sched, hotplug: ensure a task is on the valid cpu after
-> >> set_cpus_allowed_ptr()
-> >>
-> >> ---
-> >>     sched, hotplug: ensure a task is on the valid cpu after set_cpus_allowed_ptr()
-> >>
-> >>     The 'new_mask' may not include task_cpu(p) so we migrate 'p' on another 'cpu'.
-> >>     In case it can't be placed on this 'cpu' immediately, we submit a request
-> >>     to the migration thread and wait for its completion.
-> >>
-> >>     Now, by the moment this request gets handled by the migration_thread,
-> >>     'cpu' may well be offline/non-active. As a result, 'p' continues
-> >>     running on its old cpu which is not in the 'new_mask'.
-> >>
-> >>     Fix it: ensure 'p' ends up on a valid cpu.
-> >>
-> >>     Theoreticaly (but unlikely), we may get an endless loop if someone cpu_down()'s
-> >>     a new cpu we have choosen on each iteration.
-> >>
-> >>     Alternatively, we may introduce a special type of request to migration_thread,
-> >>     namely "move_to_any_allowed_cpu" (e.g. by specifying dest_cpu == -1).
-> >>
-> >>     Note, any_active_cpu() instead of any_online_cpu() would be better here.
-> >
-> > Hrmm,.. this is all growing into something of a mess.. defeating the
-> > whole purpose of introducing that cpu_active_map stuff.
-> >
-> > Would the suggested SRCU logic simplify all this?
-> 
-> Ah, wait a second.
-> 
-> sched_setaffinity() -> set_cpus_allowed_ptr() is ok vs. cpu_down() as
-> it does use get_online_cpus(). So none of the cpus can become offline
-> while we are in set_cpus_allowed_ptr().
-> 
-> but there are numerous calls to set_cpus_allowed_ptr() from other
-> places and not all of them seem to call get_online_cpus()...
-> 
-> yeah, I should check this issue again..
-> 
-> btw., indeed all these different sync. cases are a bit of mess.
+I wrote:
 
-Will ponder it a bit more, but my brain can't seem to let go of SRCU
-now.. I'll go concentrate on making the swap-over-nfs patches prettier,
-maybe that will induce a brainwave ;-)
+> I have to say that my simplified patch failed to do the calibration
+> correctly on our test system (the original patch worked well). Please
+> stay tuned, we are investigating this currently.
 
-> ---
-> 
-> btw., I was wondering about this change:
-> 
-> ba42059fbd0aa1ac91b582412b5fedb1258f241f
-> 
-> sched: hrtick_enabled() should use cpu_active()
-> 
-> Peter pointed out that hrtick_enabled() should use cpu_active().
+Please forget that. It was observed on an old "enterprise" kernel with 
+which we are currently testing the backported patch with, and it was due 
+to the fact that the initial counter value on that kernel was divided by 
+APIC_DIVISOR (=16). The resulting initial counter value was too low in a 
+"SMI flood" case, the counter could overlap. APIC_DIVISOR is no longer 
+used in the current kernel.
 
-What exactly were you wondering about?
+Martin
 
-It seemed a good idea to stop starting hrtimers before we migrate them
-to another cpu (one of the things done later in cpu_down), thereby
-avoiding spurious fires on remote cpus.
+-- 
+Martin Wilck
+PRIMERGY System Software Engineer
+FSC IP ESP DEV 6
 
+Fujitsu Siemens Computers GmbH
+Heinz-Nixdorf-Ring 1
+33106 Paderborn
+Germany
+
+Tel:			++49 5251 8 15113
+Fax:			++49 5251 8 20209
+Email:			mailto:martin.wilck@fujitsu-siemens.com
+Internet:		http://www.fujitsu-siemens.com
+Company Details:	http://www.fujitsu-siemens.com/imprint.html
