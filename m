@@ -1,133 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756162AbYGYIyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbYGYIzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756162AbYGYIyi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 04:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYGYIy1
+	id S1755979AbYGYIzJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 04:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbYGYIys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 04:54:27 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:12685 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755976AbYGYIy0 (ORCPT
+	Fri, 25 Jul 2008 04:54:48 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44074 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753097AbYGYIyq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 04:54:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Lv1aJUHRvNIq+RP3AriaGCi0N0rgP/GgI4Xelih88B7pn1+mTHbfMVCr2KYdHCxKvj
-         5K0Q6i6pbDDIjGdCA+MSl39xd6uNVp3ofRBcCwzGudhux5/M9HcD057lzGA44JC27Ru/
-         a7QY21vMN9ZNkfPybz0+o3Q4QO9qXpReNMLo4=
-Message-ID: <21d7e9970807250154q4a1958f5k45f62408e97ae3c7@mail.gmail.com>
-Date: Fri, 25 Jul 2008 18:54:25 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: [PATCH 1/1 repost #1] DRM: don't enable irqs in locking
-Cc: airlied@linux.ie, "Andrew Morton" <akpm@linux-foundation.org>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       "=?ISO-8859-1?Q?Thomas_Hellstr=F6m?=" <thomas@tungstengraphics.com>
-In-Reply-To: <1216975369-6749-1-git-send-email-jirislaby@gmail.com>
+	Fri, 25 Jul 2008 04:54:46 -0400
+Message-ID: <4889948D.7020408@jp.fujitsu.com>
+Date: Fri, 25 Jul 2008 17:53:33 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Pierre Ossman <drzeus-list@drzeus.cx>, Alex Chiang <achiang@hp.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
+References: <20080724134737.4b91f30d@mjolnir.drzeus.cx> <200807241407.18543.jbarnes@virtuousgeek.org> <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org>
+In-Reply-To: <20080725032909.GA6701@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1216975369-6749-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 6:42 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> drm_lock_take(); and drm_lock_free(); are called from
-> drm_locked_tasklet_func(); which disables interrupts when grabbing its
-> spinlock.
->
-> Don't allow these locking functions to re-enable interrupts when
-> the tasklet expects them disabled. I.e. use spin_lock_irqsave instead of
-> spin_lock_bh (with their unlock opposites).
+Matthew Wilcox wrote:
+> On Fri, Jul 25, 2008 at 01:29:16AM +0200, Pierre Ossman wrote:
+>> On Thu, 24 Jul 2008 17:08:27 -0600
+>> Alex Chiang <achiang@hp.com> wrote:
+>>
+>>> Sorry for one more round-trip, but could you turn on debugging
+>>> for pciehp as well?
+>>>
+>> Same thing, with debugging:
+> 
+> I have a laptop with a similar problem (though I don't have pciehp
+> enabled, so I didn't notice it).  Obviously, we need to fix this.
+> 
+> There is no question in my mind that firmware has programmed the slot
+> numbers incorrectly.  Here's the evidence from lspci -vvv:
+> 
+> 00:1c.0 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 1 (rev 03)
+>         Capabilities: [40] Express (v1) Root Port (Slot+), MSI 00
+>                 SltCap: AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+ Surpise+
+>                         Slot #  2, PowerLimit 6.500000; Interlock- NoCompl-
+> 00:1c.4 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 5 (rev 03)
+>         Capabilities: [40] Express (v1) Root Port (Slot+), MSI 00
+>                 SltCap: AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+ Surpise+
+>                         Slot #  2, PowerLimit 6.500000; Interlock- NoCompl-
+> 
+> I don't think anyone can credibly argue that this is correct.  They're
+> both PCIe devices, they're both both indicating that they have a slot
+> (maybe if I get my screwdriver out, I can see if there's really a slot
+> ...), they're on the same bus (so I don't know how the with_bus
+> parameter makes any difference).
+> 
 
-Hmm this has bounced through 2-3 variations.. Thomas any ideas what
-the final correct answer is?
+FYI:
 
-Dave.
+IIRC, pciehp uses bridge's secondary bus number for slot name, and
+PCI express downstream port can have only one hotplug slot. I think
+this is why with_bus prameter makes difference. But it doesn't work
+on the system that has multiple pci segments. In addition, shpchp
+also has with_bus option, but it doesn't work because shpc controller
+can have multiple slots on the bridge's secondary bus. Anyway, as
+you mentioned, using bus number for slot name is obviously not good
+idea, and your idea (e.g. "2-1", "2-2") looks much better.
 
->
-> We will get such a warnings otherwise:
-> ------------[ cut here ]------------
-> WARNING: at kernel/softirq.c:136 local_bh_enable_ip+0x8b/0xb0()
-> Modules linked in: arc4 ecb crypto_blkcipher cryptomgr crypto_algapi ath5k usbhid mac80211 ohci1394 hid led_class floppy cfg80211 ff_memless ieee1394 rtc_cmos evdev [last unloaded: freq_table]
-> Pid: 0, comm: swapper Not tainted 2.6.26-rc8-mm1_64 #427
->
-> Call Trace:
->  <IRQ>  [<ffffffff8023813f>] warn_on_slowpath+0x5f/0x90
-> [...]
->  [<ffffffff8023e1fb>] local_bh_enable_ip+0x8b/0xb0
->  [<ffffffff8055b2cf>] _spin_unlock_bh+0xf/0x20
->  [<ffffffff803b0bd1>] drm_lock_take+0x81/0xe0
->  [<ffffffff803b006b>] drm_locked_tasklet_func+0x4b/0xb0
->  [<ffffffff8023daf9>] tasklet_hi_action+0x69/0xf0
->  [<ffffffff8023e3e4>] __do_softirq+0x84/0xf0
-> [stack snipped]
->
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: David Airlie <airlied@linux.ie>
-> ---
->  drivers/gpu/drm/drm_lock.c |   12 +++++++-----
->  1 files changed, 7 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/gpu/drm/drm_lock.c b/drivers/gpu/drm/drm_lock.c
-> index 0998723..79943e4 100644
-> --- a/drivers/gpu/drm/drm_lock.c
-> +++ b/drivers/gpu/drm/drm_lock.c
-> @@ -196,10 +196,11 @@ int drm_unlock(struct drm_device *dev, void *data, struct drm_file *file_priv)
->  int drm_lock_take(struct drm_lock_data *lock_data,
->                  unsigned int context)
->  {
-> +       unsigned long flags;
->        unsigned int old, new, prev;
->        volatile unsigned int *lock = &lock_data->hw_lock->lock;
->
-> -       spin_lock_bh(&lock_data->spinlock);
-> +       spin_lock_irqsave(&lock_data->spinlock, flags);
->        do {
->                old = *lock;
->                if (old & _DRM_LOCK_HELD)
-> @@ -211,7 +212,7 @@ int drm_lock_take(struct drm_lock_data *lock_data,
->                }
->                prev = cmpxchg(lock, old, new);
->        } while (prev != old);
-> -       spin_unlock_bh(&lock_data->spinlock);
-> +       spin_unlock_irqrestore(&lock_data->spinlock, flags);
->
->        if (_DRM_LOCKING_CONTEXT(old) == context) {
->                if (old & _DRM_LOCK_HELD) {
-> @@ -270,17 +271,18 @@ static int drm_lock_transfer(struct drm_lock_data *lock_data,
->  */
->  int drm_lock_free(struct drm_lock_data *lock_data, unsigned int context)
->  {
-> +       unsigned long flags;
->        unsigned int old, new, prev;
->        volatile unsigned int *lock = &lock_data->hw_lock->lock;
->
-> -       spin_lock_bh(&lock_data->spinlock);
-> +       spin_lock_irqsave(&lock_data->spinlock, flags);
->        if (lock_data->kernel_waiters != 0) {
->                drm_lock_transfer(lock_data, 0);
->                lock_data->idle_has_lock = 1;
-> -               spin_unlock_bh(&lock_data->spinlock);
-> +               spin_unlock_irqrestore(&lock_data->spinlock, flags);
->                return 1;
->        }
-> -       spin_unlock_bh(&lock_data->spinlock);
-> +       spin_unlock_irqrestore(&lock_data->spinlock, flags);
->
->        do {
->                old = *lock;
-> --
-> 1.5.6.2
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Thanks,
+Kenji Kaneshige
+
+
+
+
+> I've always hated that with_bus parameter.  I don't like it being a
+> parameter and I don't like the names it produces.
+> 
+> Part of the problem is the kobject API.  It really hates you trying to
+> register a duplicate name and won't just return -EEXIST and let you try
+> a new name.  Instead it prints an ugly warning and dumps stack.  See
+> kobject_add_internal() in lib/kobject.c.
+> 
+> So we need a way to find if there's already a slot of this name.  I
+> don't see a kobject routine to do that.  Maybe we can do it internally
+> to the pci slot code.
+> 
+> Then we need to pick a new name for the kobject if it does collide.
+> My suggestion is that the second time we find an object named "2", we
+> call it "2dup1" (the third time "2dup2", etc.)  Other opinions I've
+> seen include "2a", "2b", ... or "2-1", "2-2", ... or "2-brokenfw1",
+> "2-brokenfw2".
+> 
+> I'm at OLS this week, so no patch from me.
+> 
+
+
