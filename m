@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbYGYSL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbYGYSNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022AbYGYSL1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 14:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYGYSLT
+	id S1754320AbYGYSNP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 14:13:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYGYSM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 14:11:19 -0400
-Received: from ti-out-0910.google.com ([209.85.142.191]:13503 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751496AbYGYSLS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 14:11:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Wb3nZIYaWgiSa2YCSzbGERBNELxSj/hAb9IZweViz/fn4Vb0K63kuLrjzt7zUOIcpa
-         cBy2oO2n8/z6s0c61a3oyHjv4O1D6PnNhYGz4xffwQj58BQmfA0P1iTcYYRS/j5MXvRn
-         KCdrVDxZihGD2EuQBwxWpPG54gg/7Zy5zBzsw=
-From: Denis ChengRq <crquan@gmail.com>
-To: Jens Axboe <axboe@kernel.dk>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] bio: make use of bvec_nr_vecs
-Date: Sat, 26 Jul 2008 02:11:13 +0800
-Message-Id: <1217009473-25878-1-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.5.6.3
+	Fri, 25 Jul 2008 14:12:59 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:59568 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751151AbYGYSM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 14:12:59 -0400
+Message-ID: <488A17A9.804@sgi.com>
+Date: Fri, 25 Jul 2008 11:12:57 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F30C.8020800@zytor.com> <4874F909.7060503@goop.org> <4889F5FA.1050908@sgi.com> <4889FA96.1000701@goop.org> <488A0375.4050605@sgi.com> <488A064E.1040407@goop.org>
+In-Reply-To: <488A064E.1040407@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since introduced in 7ba1ba12eee, it should be made use of.
+Jeremy Fitzhardinge wrote:
+> Mike Travis wrote:
+>> Jeremy Fitzhardinge wrote:
+>>  
+>>> Mike Travis wrote:
+>>>    
+>>>> FYI, I think it was a combination of errors that was causing my
+>>>> problems.
+>>>> In any case, I've successfully compiled and booted Ingo's pesky config
+>>>> config-Tue_Jul__1_16_48_45_CEST_2008.bad with gcc's 4.2.0, 4.2.3 and
+>>>> 4.2.4
+>>>> on both Intel and AMD boxes.  (As well as a variety of other configs.)
+>>>>         
+>>> Good.  What compilers have you tested?  Will it work over the complete
+>>> supported range?
+>>>     
+>>
+>> The oldest gcc I have available is 3.4.3 (and I just tried that one and
+>> it worked.)  So that one and the ones listed above I've verified using
+>> Ingo's test config.  (All other testing I'm using 4.2.3.)
+>>   
+> 
+> OK.  I've got a range of toolchains on various test machines around
+> here, so I'll give it a spin.  Are your most recent changes in tip.git yet?
+> 
+>    J
 
-Signed-off-by: Denis ChengRq <crquan@gmail.com>
----
-Additionally, I think it maybe better if inlined in <linux/bio.h>
 
- fs/bio.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
-
-diff --git a/fs/bio.c b/fs/bio.c
-index 88322b0..7ed91d3 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -77,11 +77,8 @@ struct bio_vec *bvec_alloc_bs(gfp_t gfp_mask, int nr, unsigned long *idx, struct
- 	 */
- 
- 	bvl = mempool_alloc(bs->bvec_pools[*idx], gfp_mask);
--	if (bvl) {
--		struct biovec_slab *bp = bvec_slabs + *idx;
--
--		memset(bvl, 0, bp->nr_vecs * sizeof(struct bio_vec));
--	}
-+	if (bvl)
-+		memset(bvl, 0, bvec_nr_vecs(*idx) * sizeof(struct bio_vec));
- 
- 	return bvl;
- }
-@@ -149,7 +146,7 @@ struct bio *bio_alloc_bioset(gfp_t gfp_mask, int nr_iovecs, struct bio_set *bs)
- 				goto out;
- 			}
- 			bio->bi_flags |= idx << BIO_POOL_OFFSET;
--			bio->bi_max_vecs = bvec_slabs[idx].nr_vecs;
-+			bio->bi_max_vecs = bvec_nr_vecs(idx);
- 		}
- 		bio->bi_io_vec = bvl;
- 	}
--- 
-1.5.6.3
-
+Almost there...
