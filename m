@@ -1,40 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbYGYKzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYGYK55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753331AbYGYKzT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 06:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYGYKzE
+	id S1754429AbYGYK55 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 06:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYGYK5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 06:55:04 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60372
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751477AbYGYKzD (ORCPT
+	Fri, 25 Jul 2008 06:57:46 -0400
+Received: from viefep32-int.chello.at ([62.179.121.50]:45974 "EHLO
+	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbYGYK5p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 06:55:03 -0400
-Date: Fri, 25 Jul 2008 03:55:01 -0700 (PDT)
-Message-Id: <20080725.035501.47770769.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: pupilla@hotmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: ipsec: ipcomp - Decompress into frags if necessary
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080725104603.GA17974@gondor.apana.org.au>
-References: <20080725074328.GB16747@gondor.apana.org.au>
-	<20080725.025801.229691344.davem@davemloft.net>
-	<20080725104603.GA17974@gondor.apana.org.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 25 Jul 2008 06:57:45 -0400
+Subject: Re: [PATCH 30/30] nfs: fix various memory recursions possible with
+	swap over NFS.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>
+In-Reply-To: <20080725194517.86BB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080724140042.408642539@chello.nl>
+	 <20080724141531.486682621@chello.nl>
+	 <20080725194517.86BB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Fri, 25 Jul 2008 12:57:52 +0200
+Message-Id: <1216983472.7257.365.camel@twins>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Fri, 25 Jul 2008 18:46:03 +0800
-
-> On Fri, Jul 25, 2008 at 02:58:01AM -0700, David Miller wrote:
-> > So perhaps it wants a WARN_ON :-)
+On Fri, 2008-07-25 at 19:46 +0900, KOSAKI Motohiro wrote:
+> > GFP_NOFS is not enough, since swap traffic is IO, hence fall back to GFP_NOIO.
 > 
-> There is one :)
+> this comment imply turn on GFP_NOIO, but the code is s/NOFS/NOIO/. why?
 
-Indeed, I even read that thing as I was composing my original
-reply, hehe.
+Does the misunderstanding stem from the use of 'enough'?
+
+GFP_NOFS is _more_ permissive than GFP_NOIO in that it will initiate IO,
+just not of any filesystem data.
+
+The problem is that previuosly NOFS was correct because that avoids
+recursion into the NFS code, it now is not, because also IO (swap) can
+lead to this recursion.
+
+Therefore we must tighten the restriction and use NOIO.
+
+> >  struct nfs_write_data *nfs_commitdata_alloc(void)
+> >  {
+> > -	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
+> > +	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOIO);
+> 
+> 
+> 
+> 
+
