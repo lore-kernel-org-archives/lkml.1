@@ -1,91 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbYGYSg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747AbYGYSo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbYGYSg0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 14:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbYGYSgE
+	id S1753747AbYGYSo4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 14:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYGYSos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 14:36:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51302 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752269AbYGYSgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 14:36:00 -0400
-Date: Fri, 25 Jul 2008 20:35:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] mm/hugetlb.c: fix build failure
-Message-ID: <20080725183549.GA23562@elte.hu>
-References: <20080725105741.GA24336@elte.hu>
+	Fri, 25 Jul 2008 14:44:48 -0400
+Received: from wx-out-0506.google.com ([66.249.82.227]:11572 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751408AbYGYSor (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 14:44:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=mMqmMScdk08mlfqkWlQcKYsRdyBbZ1oT0DWY0xTSLNNYYl36QOSHdO97sNKrli2Fzu
+         jFJGxfiC3QkTPMagwwbv8WHiH1pvnq5rvzAaurA4bMww7YARI5d1BRmz9Q3uOzzEc8sj
+         OikLQ0zzXOkawg2chINbitoRcXBam30aT74g4=
+Date: Fri, 25 Jul 2008 14:37:56 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Henrik Rydberg <rydberg@euromail.se>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       robfitz@273k.net, akpm@osdl.org, jikos@jikos.cz, vojtech@suse.cz,
+       dmonakhov@openvz.org, johannes@sipsolutions.net
+Subject: Re: [PATCH] bcm5974-0.58: name changes, open/close and
+	suspend/resume serialized
+Message-ID: <20080725143015.ZZRA012@mailhub.coreip.homeip.net>
+References: <4888311E.9010005@euromail.se> <20080725154250.GA1861@anvil.corenet.prv> <488A1A99.2070609@euromail.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080725105741.GA24336@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <488A1A99.2070609@euromail.se>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jul 25, 2008 at 08:25:29PM +0200, Henrik Rydberg wrote:
+> Hello Dmitry,
+> > 
+> > Thank you for the changes.  You don't have to track whether device is
+> > manually suspended or not - usb_submit_urb will fail and that is it.
+> > 
+> 
+> Perfect.
+> 
+> > Attached are 2 patches. First cleans suspend state tracking as it is not
+> > really needed and does some formatting and other minor changes and 2nd
+> > implements runtime pm for the device. Could you please try them and if
+> > everything still works I will apply the driver.
+> 
+> Patch 1:
+> 
+>   Looking good, just a few comments:
+> 
+>   * I notice that clamp_val is new since 2.6.24.3
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Probably, I am not sure...
 
-> on !CONFIG_SYSCTL on x86 with latest -git i get:
->     
->      mm/hugetlb.c: In function 'decrement_hugepage_resv_vma':
->      mm/hugetlb.c:83: error: 'reserve' undeclared (first use in this function)
->      mm/hugetlb.c:83: error: (Each undeclared identifier is reported only once
->      mm/hugetlb.c:83: error: for each function it appears in.)
+>   * Regarding the open-fails comment: is EACCES correct?
 
-the above build error came from a bisection run, the fix i sent was for 
-this build error:
+We don't return EACCESS anymore, I don't think. We will return what
+bcm5974_start_traffic returns which in turn returns result of
+usb_submit_urb and the likes.
 
-  mm/hugetlb.c: In function ‘hugetlb_acct_memory': mm/hugetlb.c:1507:
-  error: implicit declaration of function ‘cpuset_mems_nr'
+I don't think returning -EACCESS was proper - it usually indicates
+permisison issues, not the fact that the hardware is unavailable.
 
-but i also get a second hugetlb build failure on 64-bit x86:
+> 
+> Patch 2:
+> 
+>   Perfect.
+> 
+> Thank you so much, Dmitry - it's a GO!
+> 
 
-  arch/x86/mm/built-in.o: In function `setup_hugepagesz':
-  hugetlbpage.c:(.init.text+0xb49): undefined reference to `hugetlb_add_hstate'
+Great, thank you!
 
-fixed by the patch below.
-
-	Ingo
-
----------------->
->From 3a13a39219ac145913e51dfddc7c4d912586c15f Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 25 Jul 2008 20:45:52 +0200
-Subject: [PATCH] hugetlbfs: fix build failure on 64-bit x86
-
-fix:
-
- arch/x86/mm/built-in.o: In function `setup_hugepagesz':
- hugetlbpage.c:(.init.text+0xb49): undefined reference to `hugetlb_add_hstate'
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/hugetlbpage.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
-index 8f307d9..977d185 100644
---- a/arch/x86/mm/hugetlbpage.c
-+++ b/arch/x86/mm/hugetlbpage.c
-@@ -425,7 +425,7 @@ hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 
- #endif /*HAVE_ARCH_HUGETLB_UNMAPPED_AREA*/
- 
--#ifdef CONFIG_X86_64
-+#if defined(CONFIG_X86_64) && defined(CONFIG_SYSCTL)
- static __init int setup_hugepagesz(char *opt)
- {
- 	unsigned long ps = memparse(opt, &opt);
+-- 
+Dmitry
