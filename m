@@ -1,49 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbYGYKlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbYGYKmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756629AbYGYKlW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 06:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYGYKlO
+	id S1755123AbYGYKmU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 06:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbYGYKmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 06:41:14 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:63023 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753189AbYGYKlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 06:41:13 -0400
-Date: Fri, 25 Jul 2008 12:39:30 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: akpm@linux-foundation.org
-Cc: Ben Nizette <bn@niasdigital.com>, righi.andrea@gmail.com,
-       kernel <kernel@avr32linux.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] Uninline arch_pick_mmap_layout
-Message-ID: <20080725123930.5f7db738@siona.local>
-In-Reply-To: <1216981682-32026-1-git-send-email-haavard.skinnemoen@atmel.com>
-References: <1216946517.4004.306.camel@moss.renham>
-	<1216981682-32026-1-git-send-email-haavard.skinnemoen@atmel.com>
-Organization: Atmel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Fri, 25 Jul 2008 06:42:04 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:51984 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753189AbYGYKmC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 06:42:02 -0400
+Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
+	pointer dereference
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Dieter Ries <clip2@gmx.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Patrick McHardy <kaber@trash.net>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
+       Dave Jones <davej@redhat.com>, vegard.nossum@gmail.com
+In-Reply-To: <4889887B.1080206@gmx.de>
+References: <20080724060448.GA10203@elte.hu>
+	 <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>
+	 <20080724.022259.113079007.davem@davemloft.net>
+	 <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu>
+	 <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net>
+	 <84144f020807240544q507e1b7cv220d1afbae0ee0f0@mail.gmail.com>
+	 <48887A71.5010209@trash.net> <1216905812.5897.6.camel@penberg-laptop>
+	 <48888434.3030207@trash.net> <1216906476.12021.4.camel@penberg-laptop>
+	 <20080724115127.6cfbb616.akpm@linux-foundation.org>
+	 <1216925744.12392.1.camel@penberg-laptop>  <4889887B.1080206@gmx.de>
+Date: Fri, 25 Jul 2008 13:41:56 +0300
+Message-Id: <1216982516.5896.0.camel@penberg-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Jul 2008 10:39:29.0102 (UTC) FILETIME=[B75396E0:01C8EE42]
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Jul 2008 12:28:02 +0200
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-
-> So instead of shuffling includes around, just move the definition of
-> arch_pick_mmap_layout() into fs/exec.c. Some architectures, e.g. x86,
-> already define it out-of-line.
+On Fri, 2008-07-25 at 10:02 +0200, Dieter Ries wrote:
+> Pekka Enberg schrieb:
+> > On Thu, 2008-07-24 at 11:51 -0700, Andrew Morton wrote:
+> >> On Thu, 24 Jul 2008 16:34:36 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> >>
+> >>>>>> Your patch introduced a use-after-free and double-free.
+> >>>>>> krealloc() frees the old pointer, but it is still used
+> >>>>>> for the ->move operations, then freed again.
+> >>>>>>
+> >>>>>> To fix this I think we need a __krealloc() that doesn't
+> >>>>>> free the old memory, especially since it must not be
+> >>>>>> freed immediately because it may still be used in a RCU
+> >>>>>> read side (see the last part in the patch attached to
+> >>>>>> this mail (based on a kernel without your patch)).
+> >>>>> Agreed. Something like this, perhaps?
+> >>>>>
+> >>>>> [PATCH] netfilter: fix double-free and use-after free
+> >>>>>
+> >>>>> As suggested by Patrick McHardy, introduce a __krealloc() that doesn't
+> >>>>> free the original buffer to fix a double-free and use-after-free bug
+> >>>>> introduced by me in netfilter that uses RCU.
+> >>>>>
+> >>>>> Reported-by: Patrick McHardy <kaber@trash.net>
+> >>>>> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> >>>> Looks good to me, thanks.
+> >>> Ingo, can you please test this? Andrew, I'm at OLS so can you pick up
+> >>> the patch in your tree?
+> >> Sure.  Or Patrick can do so and it can be merged via the net tree.
+> >>
+> >> Ingo, did this patch actually fix something over there?
+> > 
+> > Apparently it didn't but it did fix Dieter's problem:
+> > 
+> > http://lkml.org/lkml/2008/7/24/337
+> > 
+> > Dieter, can we add a Tested-by tag from you to this patch?
+> > 
 > 
-> Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+> Yes, it definitely fixed my issue and I have not encountered 
+>                             further problems with the patch. The machine 
+> is running fine with it.
+> 
+> Do I have to explicitly add my
+> Tested-by: Dieter Ries <clip2@gmx.de>
+> tag somewhere (if yes, where?) or is this enough for you?
 
-Heh, ok. So we have four patches fixing this regression now. I didn't
-read all my mail before posting; sorry about that.
+No, that's fine. The people who are merging the patch can pick it up.
+Thanks a lot for your help!
 
-The patches which have already been added to -mm look essentially
-identical to mine, so feel free to ignore my patch.
+		Pekka
 
-Haavard
