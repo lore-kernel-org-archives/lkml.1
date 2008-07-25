@@ -1,70 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbYGYL2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbYGYLjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361AbYGYL2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 07:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYGYL2I
+	id S1754715AbYGYLjq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 07:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYGYLjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 07:28:08 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:5694 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751942AbYGYL2H (ORCPT
+	Fri, 25 Jul 2008 07:39:37 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37276 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751893AbYGYLjg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 07:28:07 -0400
-Date: Fri, 25 Jul 2008 15:28:04 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-Cc: Jan Engelhardt <jengelh@medozas.de>, LKML <linux-kernel@vger.kernel.org>,
-       spi-devel-general@lists.sourceforge.net,
-       LM Sensors <lm-sensors@lm-sensors.org>,
-       Jean Delvare <khali@linux-fr.org>, Dmitry Torokhov <dtor@mail.ru>,
-       "Hans J. Koch" <hjk@linutronix.de>, hmh@hmh.eng.br,
-       David Brownell <david-b@pacbell.net>, mgross@linux.intel.com,
-       Ben Nizette <bn@niasdigital.com>
-Subject: Re: [Patch 0/4] IndustrialIO subsystem (ADCs, accelerometers etc)
-Message-ID: <20080725112804.GA7843@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <488763AD.4050400@gmail.com> <alpine.LNX.1.10.0807250025080.11551@fbirervta.pbzchgretzou.qr> <4889B524.5010602@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <4889B524.5010602@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 25 Jul 2008 07:39:36 -0400
+Subject: Re: Large increase in context switch rate
+From: Peter Zijlstra <peterz@infradead.org>
+To: Alex Nixon <alex.nixon@citrix.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Alex Nixon (Intern)" <Alex.Nixon@eu.citrix.com>,
+       Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ian Campbell <Ian.Campbell@eu.citrix.com>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+In-Reply-To: <4889B9AE.3050108@citrix.com>
+References: <487E43D9.7080703@goop.org> <87mykgrxtv.fsf@basil.nowhere.org>
+	 <0E902970173AF84089673FA54B7FE78A329073@lonpexch01.citrite.net>
+	 <200807241126.48364.nickpiggin@yahoo.com.au>  <4889B9AE.3050108@citrix.com>
+Content-Type: text/plain
+Date: Fri, 25 Jul 2008 13:39:23 +0200
+Message-Id: <1216985963.7257.373.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 12:12:36PM +0100, Jonathan Cameron wrote:
-> Jan Engelhardt wrote:
-> > On Wednesday 2008-07-23 19:00, Jonathan Cameron wrote:
-> >
-> >   
-> >> Dear All,
+On Fri, 2008-07-25 at 12:31 +0100, Alex Nixon wrote:
+> >> I've bisected down to commit ba52de123d454b57369f291348266d86f4b35070 -
+> >> [PATCH] inode-diet.  Before that kernbench consistently reports about
+> >> 35k context switches (total), and after that commit about 53k.  The
+> >> benchmarks are being run on a tmpfs.  I've verified the results on a
+> >> different machine, albeit with an almost identical setup (the same
+> >> kernels and debian distro, kernbench version, and benchmarking a build
+> >> of the same source).
 > >>
-> >> The need for an industrialio subsystem was discussed in
-> >> http://lkml.org/lkml/2008/5/20/135
-> >>
-> >> Firstly thanks to all the people who have contributed to the discussion
-> >> of this in the past.
-> >>
-> >> In brief the intention is provide a kernel subsystem directed towards the
-> >> handling on sensors (and later related output devices) such as ADC's,
-> >> accelerometers and many others.
-> >>     
-> >
-> > Could this be done using UIO instead?
-> >   
-> No, this lot is directed towards devices that use serial buses such as
-> i2c  and SPI
-[...]
+> >> Seems to be a mystery why that patch is (seemingly) the culprit...
+> 
+> The relevant changeset had caused the blocksize to default to 1024 (as opposed
+> to 4096) - as a result there was a large increase in the time spent waiting on
+> pipes.
+> 
+> Instead of re-adding the line taken out of fs/pipe.c by Theodore I opted instead
+> to change the default block size for pseudo-filesystems to PAGE_SIZE, to try
+> avoid making pipe.c inconsistent with Theodore's new approach.
+> 
+> The performance penalty from these extra context switches is fairly small, but 
+> is magnified when virtualization is involved, hence the desire to keep it lower
+> if possible.
+> 
+> 
+> From 4b568a72fc42b52279507eb4d1339e0637ae719a Mon Sep 17 00:00:00 2001
+> From: Alex Nixon <t_alexn@alexn-desktop.(none)>
+> Date: Fri, 25 Jul 2008 11:26:44 +0100
+> Subject: [PATCH] VFS: increase pseudo-filesystem block size to PAGE_SIZE.
+> 
+> Changeset ba52de123d454b57369f291348266d86f4b35070 caused the block size used
+> by pseudo-filesystems to decrease from PAGE_SIZE to 1024 leading to a doubling
+> of the number of context switches during a kernbench run.
 
-There is spidev driver to do SPI in userspace. But no, it does not mean
-that we can always use UIO. For example, we can't use UIO when we want to
-process IRQs (think touchscreen pen-down irq), or better, we anyway will
-need to write UIO-kernel helper for this.
+Cool - makes sense. I'd ack it, but I know less than nothing about this
+code, so I won't...
 
-So, sometimes it's just more convenient to do things in kernel.
+Still, good hunting on your part!
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> Signed-off-by: Alex Nixon <Alex.Nixon@citrix.com>
+> ---
+>  fs/libfs.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/fs/libfs.c b/fs/libfs.c
+> index baeb71e..1add676 100644
+> --- a/fs/libfs.c
+> +++ b/fs/libfs.c
+> @@ -216,8 +216,8 @@ int get_sb_pseudo(struct file_system_type *fs_type, char *name,
+>  
+>  	s->s_flags = MS_NOUSER;
+>  	s->s_maxbytes = ~0ULL;
+> -	s->s_blocksize = 1024;
+> -	s->s_blocksize_bits = 10;
+> +	s->s_blocksize = PAGE_SIZE;
+> +	s->s_blocksize_bits = PAGE_SHIFT;
+>  	s->s_magic = magic;
+>  	s->s_op = ops ? ops : &simple_super_operations;
+>  	s->s_time_gran = 1;
+
