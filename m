@@ -1,124 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753783AbYGYHoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbYGYHq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753783AbYGYHoM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 03:44:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbYGYHnz
+	id S1754703AbYGYHq3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 03:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbYGYHqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 03:43:55 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:46947 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750927AbYGYHny (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 03:43:54 -0400
-Date: Fri, 25 Jul 2008 15:43:28 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: pupilla@hotmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: ipsec: ipcomp - Decompress into frags if necessary
-Message-ID: <20080725074328.GB16747@gondor.apana.org.au>
-References: <20080723.234556.98132946.davem@davemloft.net> <E1KM0Wl-0001zC-00@gondolin.me.apana.org.au> <20080725074109.GA16747@gondor.apana.org.au>
+	Fri, 25 Jul 2008 03:46:20 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57433 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751594AbYGYHqT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 03:46:19 -0400
+Message-ID: <48898461.4070603@cn.fujitsu.com>
+Date: Fri, 25 Jul 2008 15:44:33 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080725074109.GA16747@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] flag parameters: fix compile error of sys_epoll_create1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 03:41:09PM +0800, Herbert Xu wrote:
->
-> Here is the first part:
+  GEN     .version
+  CHK     include/linux/compile.h
+  UPD     include/linux/compile.h
+  CC      init/version.o
+  LD      init/built-in.o
+  LD      vmlinux
+arch/x86/kernel/built-in.o: In function `sys_call_table':
+(.rodata+0x8a4): undefined reference to `sys_epoll_create1'
+make: *** [vmlinux] Error 1
 
-And finally:
+Signed-off-by: Wang Chen <wangchen@cn.fujitsu.com>
+Cc: Ulrich Drepper <drepper@redhat.com>
+Cc: Davide Libenzi <davidel@xmailserver.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-arch@vger.kernel.org>
+---
+diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+index bd66ac5..55eca15 100644
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -57,6 +57,7 @@ cond_syscall(compat_sys_set_robust_list);
+ cond_syscall(sys_get_robust_list);
+ cond_syscall(compat_sys_get_robust_list);
+ cond_syscall(sys_epoll_create);
++cond_syscall(sys_epoll_create1);
+ cond_syscall(sys_epoll_ctl);
+ cond_syscall(sys_epoll_wait);
+ cond_syscall(sys_epoll_pwait);
 
-ipsec: ipcomp - Decompress into frags if necessary
 
-When decompressing extremely large packets allocating them through
-kmalloc is prone to failure.  Therefore it's better to use page
-frags instead.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-
-diff --git a/net/xfrm/xfrm_ipcomp.c b/net/xfrm/xfrm_ipcomp.c
-index b51e804..800f669 100644
---- a/net/xfrm/xfrm_ipcomp.c
-+++ b/net/xfrm/xfrm_ipcomp.c
-@@ -17,6 +17,7 @@
- 
- #include <linux/crypto.h>
- #include <linux/err.h>
-+#include <linux/gfp.h>
- #include <linux/list.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-@@ -49,6 +50,7 @@ static int ipcomp_decompress(struct xfrm_state *x, struct sk_buff *skb)
- 	u8 *scratch = *per_cpu_ptr(ipcomp_scratches, cpu);
- 	struct crypto_comp *tfm = *per_cpu_ptr(ipcd->tfms, cpu);
- 	int err = crypto_comp_decompress(tfm, start, plen, scratch, &dlen);
-+	int len;
- 
- 	if (err)
- 		goto out;
-@@ -58,13 +60,47 @@ static int ipcomp_decompress(struct xfrm_state *x, struct sk_buff *skb)
- 		goto out;
- 	}
- 
--	err = pskb_expand_head(skb, 0, dlen - plen, GFP_ATOMIC);
--	if (err)
--		goto out;
-+	len = dlen - plen;
-+	if (len > skb_tailroom(skb))
-+		len = skb_tailroom(skb);
-+
-+	skb->truesize += len;
-+	__skb_put(skb, len);
-+
-+	len += plen;
-+	skb_copy_to_linear_data(skb, scratch, len);
-+
-+	while ((scratch += len, dlen -= len) > 0) {
-+		skb_frag_t *frag;
-+
-+		err = -EMSGSIZE;
-+		if (WARN_ON(skb_shinfo(skb)->nr_frags >= MAX_SKB_FRAGS))
-+			goto out;
-+
-+		frag = skb_shinfo(skb)->frags + skb_shinfo(skb)->nr_frags;
-+		frag->page = alloc_page(GFP_ATOMIC);
-+
-+		err = -ENOMEM;
-+		if (!frag->page)
-+			goto out;
-+
-+		len = PAGE_SIZE;
-+		if (dlen < len)
-+			len = dlen;
-+
-+		memcpy(page_address(frag->page), scratch, len);
-+
-+		frag->page_offset = 0;
-+		frag->size = len;
-+		skb->truesize += len;
-+		skb->data_len += len;
-+		skb->len += len;
-+
-+		skb_shinfo(skb)->nr_frags++;
-+	}
-+
-+	err = 0;
- 
--	skb->truesize += dlen - plen;
--	__skb_put(skb, dlen - plen);
--	skb_copy_to_linear_data(skb, scratch, dlen);
- out:
- 	put_cpu();
- 	return err;
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
