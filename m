@@ -1,77 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbYGYBRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbYGYBSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757229AbYGYBRU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 21:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbYGYBRI
+	id S1754293AbYGYBSp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 21:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbYGYBSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 21:17:08 -0400
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:36547 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752818AbYGYBRH (ORCPT
+	Thu, 24 Jul 2008 21:18:35 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:6102 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753041AbYGYBSc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 21:17:07 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=GwLpP0rK5oql5KugTp/lmkSv/isl1HsofThLcDOuHFU8Fho63O2ll7sZizwKUQLA3p7oSmKfWEiUGZmHxD8G9j+NNZ669QzZx1YQwnCG0fPJzQi6DlBx6erHlw2fH1zn/ea6yRbkjMCGoXB6HKLqFTW18ld5rWn7HtFrLYY1uwE=  ;
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-Subject: Re: [patch 2.6.26] gpio: pcf857x handle pca9500 and pca9501
-Date: Thu, 24 Jul 2008 18:17:04 -0700
-User-Agent: KMail/1.9.9
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-References: <4888A8E5.6050700@gmail.com>
-In-Reply-To: <4888A8E5.6050700@gmail.com>
+	Thu, 24 Jul 2008 21:18:32 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=xz3GLXG8GrvsrT6+8sxmLImGDOy6LicO5xuZGvyTPbOvb+KEq7DD1slKgARR1eAyc
+	LJSuIPnQrrwAbaeTP6Sew==
+Message-ID: <6599ad830807241818k5cb288e2l3e62a01c2f102913@mail.gmail.com>
+Date: Thu, 24 Jul 2008 21:18:21 -0400
+From: "Paul Menage" <menage@google.com>
+To: "Thomas Graf" <tgraf@suug.ch>
+Subject: Re: [PATCH] Traffic control cgroups subsystem
+Cc: "Ranjit Manomohan" <ranjitm@google.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, lizf@cn.fujitsu.com, kaber@trash.net
+In-Reply-To: <20080724234553.GC20815@postel.suug.ch>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807241817.04624.david-b@pacbell.net>
+References: <Pine.LNX.4.64.0807221041210.1091@ranjit.corp.google.com>
+	 <20080724234553.GC20815@postel.suug.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 24 July 2008, Jonathan Cameron wrote:
-> These two chips have two elements (on different i2c addresses),
-> the first is a clone of the pcf8574 and the second 2kBit eeprom.
+On Thu, Jul 24, 2008 at 7:45 PM, Thomas Graf <tgraf@suug.ch> wrote:
+>
+> It might have been easier to simply write a classifier which maps pids
+> to classes. The interface could be as simple as two nested attributes,
+> ADD_MAPS, REMOVE_MAPS which both take lists of pid->class mappings to
+> either add or remove from the classifier.
 
-That is, NXP documents say it's a pcf8582 eeprom, which
-is software-compatible with what Linux calls a 24c02 chip.
+You mean as processes fork/exit or move between cgroups you have to
+update the pid->class mappings in the kernel's filter? That sounds way
+too fragile to me.
 
-It'd be worth sending a patch so drivers/i2c/chips/at24.c
-can handle those EEPROMs ...
+>
+> I have been working on this over the past 2 weeks, it includes the
+> classifier as just stated, a cgroup module which sends notifications
+> about events
 
+What types of events? We discussed how to send cgroup notifications to
+userspace in the containers mini-summit on Tuesday. Netlink was one of
+the options discussed, but suffers from the problem that netlink
+sockets are tied to a particular network namespaces. The solution that
+seemed most favoured was to have pollable cgroup control files that
+represent events (and optionally support event data via a fifo).
 
-> Seems easiest to support these separately so main query about
-> this patch is should the device naming reflect this dual 
-> functionality. 
-> 
-> I've been using the pcf857x driver with a 9500 for several
-> months without problems and just want this in to clean up
-> a confusing element in a board config. 
+> as netlink messages and a daemon which creates qdiscs,
+> classes and filters on the fly according to the configured distribution.
 
-Hmm, well I don't really see a way around having two entries
-in the relevant boards' i2c board info ... so this patch just
-ensures that *one* entry can list the actual part.
+> It works both ingress (with some tricks) and egress.
+>
+> IMHO, there is no point in a cgroup interface if the user has to create
+> qdiscs, classes and filters manually anyway.
+>
 
-I'm curious why you added this chp to the pcf857x driver
-rather than to the at24 driver ... since it's quite obvious
-from docs that the chip is pcf8574-compatible, but only the
-pca9500 lists the EEPROM compatibility.
+The user can use whatever middleware they want (e.g. your daemon,
+libcg, etc) to set up qdiscs and classes. I don't think that requiring
+any particular userspace implementation is the right way to go. The
+point of this patch was to provide a minimal way to tag
+sockets/packets as belonging to a particular cgroup, in order to make
+use of the existing traffic controll APIs.
 
-I guess given my druthers I'd update Kconfig for both drivers
-to mention these parts (and their need for two drivers), plus
-add them to the at24 driver (rather than pcf857x) purely because
-the docs are, overall, more clear about the GPIO compatibility
-than about the EEPROM.
-
-- Dave
-
- 
-> As the Kconfig title for these is getting a bit long and the
-> datasheet for these starts with stating they are pcf957x
-> compatible so I haven't changed it. 
-
-Right; helptext can have a sentence.
+Paul
