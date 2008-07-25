@@ -1,111 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbYGYUoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbYGYUpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755855AbYGYUoz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 16:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYGYUor
+	id S1752188AbYGYUpQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 16:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbYGYUo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 16:44:47 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:64675 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343AbYGYUoq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 16:44:46 -0400
-Date: Fri, 25 Jul 2008 13:38:12 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-X-X-Sender: xyzzy@t2.domain.actdsltmp
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-cc: Grant Likely <grant.likely@secretlab.ca>,
-       Richard Purdie <rpurdie@rpsys.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kumar Gala <galak@kernel.crashing.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
-In-Reply-To: <20080718100549.GA28741@polina.dev.rtsoft.ru>
-Message-ID: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
-References: <Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp>
- <20080717041531.GA27243@secretlab.ca> <20080717140519.GA32617@polina.dev.rtsoft.ru>
- <20080717141335.GA2219@polina.dev.rtsoft.ru> <20080717150422.GC31932@secretlab.ca>
- <20080717152006.GA26120@polina.dev.rtsoft.ru>
- <fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
- <Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
- <20080717234201.GA15745@polina.dev.rtsoft.ru> <Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
- <20080718100549.GA28741@polina.dev.rtsoft.ru>
+	Fri, 25 Jul 2008 16:44:59 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:53056 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756198AbYGYUo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 16:44:57 -0400
+Date: Fri, 25 Jul 2008 22:44:53 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/cpufreq/cpufreq.c: Adjust error handling code
+ involving cpufreq_cpu_put
+Message-ID: <Pine.LNX.4.64.0807252243510.1602@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are my patches for the OF bindings.  The first is just a tiny change to
-the leds code to silence a warning.  The second is the real patch.
+From: Julia Lawall <julia@diku.dk>
 
-The leds-gpio driver gets two sub-options in Kconfig, one for platform
-device support and one for openfirmware platform device support.
+After calling cpufreq_cpu_get, error handling code should call
+cpufreq_cpu_put.
 
-There is support for setting an LED trigger.  I didn't include support for
-active-low or initial brightness, but I think those would be good features
-to add.  See below for more on that.
+The semantic match that finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-Since each device node can describe multiple leds, I used "gpio-leds"
-instead of "gpio-led" for the compatible property.
+// <smpl>
+@r@
+expression x,E;
+statement S;
+position p1,p2,p3;
+@@
 
-Examples of the dts syntax:
-
-leds {
-         compatible = "gpio-leds";
-         hdd {
-                 label = "IDE activity";
-                 gpios = <&mcu_pio 0 0>;
-                 function = "ide-disk";
-         };
-};
-
-run-control {
-         compatible = "gpio-leds";
-         red {
-                 gpios = <&mpc8572 6 0>;
-         };
-         green {
-                 gpios = <&mpc8572 7 0>;
-         };
+(
+if ((x = cpufreq_cpu_get@p1(...)) == NULL || ...) S
+|
+x = cpufreq_cpu_get@p1(...)
+... when != x
+if (x == NULL || ...) S
+)
+<...
+if@p3 (...) { ... when != cpufreq_cpu_put(x)
+                  when != if (x) { ... cpufreq_cpu_put(x); ...}
+    return@p2 ...;
 }
+...>
+(
+return x;
+|
+return 0;
+|
+x = E
+|
+E = x
+|
+cpufreq_cpu_put(x)
+)
 
+@exists@
+position r.p1,r.p2,r.p3;
+expression x;
+int ret != 0;
+statement S;
+@@
 
-On Fri, 18 Jul 2008, Anton Vorontsov wrote:
-> Later I tried to use aliases for default-trigger.
->
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057244.html
+* x = cpufreq_cpu_get@p1(...)
+  <...
+* if@p3 (...)
+  S
+  ...>
+* return@p2 \(NULL\|ret\);
+// </smpl>
 
-I doesn't seem to me that the alias method will work very well.  If I want
-an LED that starts on, I need to add code to the kernel to support an
-"led-on-while-kernel-boots" alias?  And if I want red & green leds to flash
-while booting, I need to add aliases "led-flashing-while-kernel-boots-1" and
-"led-flashing-while-kernel-boots-2", since you can't assign two leds to the
-same alias?
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-> As for linux,default-brightness... we don't need this since now we
-> have default-on trigger.
+---
+ drivers/cpufreq/cpufreq.c     |   24 +++++++++++++------
+ 1 files changed, 16 insertions(+), 8 deletions(-)
 
-Except we can't use triggers....
-
-There is an issue with the default-on trigger, besides requiring led
-triggers be turned on and the extra code that needs.  It causes the led to
-have a glitch in it.  Suppose the LED is already on from reset or the boot
-loader.  When the gpio is allocated, it's allocated with an initial value of
-off.  Then, later, it's turned back on when the trigger runs.  But say the
-trigger doesn't run?
-
-Here's a real example.  I have an LED that comes on the board powers on.  It
-was supposed to turn off when the kernel has finished booting.  But suppose
-the kernel panics between the gpio getting lowered when the led is added and
-the trigger turning it back on?  Now the LED is off and it appears the
-problem happened after the kernel finished booting, but really it happened
-during the kernel boot.  In an embedded system with no console, that's quite
-a bit of misinformation.  It can be entirely avoided by changing just three
-lines of code with the leds-gpio driver to add an option to start the led
-on.
-
-It could also be the case that the gpio the led is on also triggers some
-other piece of hardware.  An alarm that's on the same line as a fault led
-for example.  The glitch created by the default-on trigger could be
-unacceptable in that case.
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 8d6a3ff..d4de015 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1464,20 +1464,22 @@ int cpufreq_driver_target(struct cpufreq_policy *policy,
+ 			  unsigned int target_freq,
+ 			  unsigned int relation)
+ {
+-	int ret;
++	int ret = -EINVAL;
+ 
+ 	policy = cpufreq_cpu_get(policy->cpu);
+ 	if (!policy)
+-		return -EINVAL;
++		goto no_policy;
+ 
+ 	if (unlikely(lock_policy_rwsem_write(policy->cpu)))
+-		return -EINVAL;
++		goto fail;
+ 
+ 	ret = __cpufreq_driver_target(policy, target_freq, relation);
+ 
+ 	unlock_policy_rwsem_write(policy->cpu);
+ 
++fail:
+ 	cpufreq_cpu_put(policy);
++no_policy:
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_driver_target);
+@@ -1714,13 +1716,17 @@ int cpufreq_update_policy(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *data = cpufreq_cpu_get(cpu);
+ 	struct cpufreq_policy policy;
+-	int ret = 0;
++	int ret;
+ 
+-	if (!data)
+-		return -ENODEV;
++	if (!data) {
++		ret = -ENODEV;
++		goto no_policy;
++	}
+ 
+-	if (unlikely(lock_policy_rwsem_write(cpu)))
+-		return -EINVAL;
++	if (unlikely(lock_policy_rwsem_write(cpu))) {
++		ret = -EINVAL;
++		goto fail;
++	}
+ 
+ 	dprintk("updating policy for CPU %u\n", cpu);
+ 	memcpy(&policy, data, sizeof(struct cpufreq_policy));
+@@ -1747,7 +1753,9 @@ int cpufreq_update_policy(unsigned int cpu)
+ 
+ 	unlock_policy_rwsem_write(cpu);
+ 
++fail:
+ 	cpufreq_cpu_put(data);
++no_policy:
+ 	return ret;
+ }
+ EXPORT_SYMBOL(cpufreq_update_policy);
