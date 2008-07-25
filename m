@@ -1,437 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYGYQT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYGYQTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbYGYQT3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 12:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbYGYQRh
+	id S1755483AbYGYQTn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 12:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbYGYQSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 12:17:37 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:26979 "EHLO
-	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753444AbYGYQRc (ORCPT
+	Fri, 25 Jul 2008 12:18:23 -0400
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:47858 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753869AbYGYQSV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 12:17:32 -0400
-X-BigFish: VPS5(zz1cddkzz10d3izzz32i66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0K4KL8J-02-OZO-01
-Message-ID: <20080725162003.347794240@amd.com>
-User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Fri, 25 Jul 2008 18:17:31 +0200
-From: Peter Oruba <peter.oruba@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
-CC: LKML <linux-kernel@vger.kernel.org>, Peter Oruba <peter.oruba@amd.com>
-Subject: [patch 8/9] [PATCH 8/9] x86: Major refactoring.
-References: <20080725161723.636932280@amd.com>
-Content-Disposition: inline; filename="0008-x86-Major-refactoring.patch"
-X-OriginalArrivalTime: 25 Jul 2008 16:17:08.0729 (UTC) FILETIME=[E3015690:01C8EE71]
+	Fri, 25 Jul 2008 12:18:21 -0400
+Message-ID: <4889FCCC.1010708@lwfinger.net>
+Date: Fri, 25 Jul 2008 11:18:20 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: Kernel BUG in 2.6.26-git series
+References: <4889E538.5010007@lwfinger.net> <19f34abd0807250803y2992aff8g369ce7f6b802708@mail.gmail.com>
+In-Reply-To: <19f34abd0807250803y2992aff8g369ce7f6b802708@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Refactored code by introducing a two-module solution. There is one
-general module in which vendor specific modules can hook into.
-However, that is exclusive, there is only one vendor specific module
-allowed at a time. A CPU vendor check makes sure only the corect
-module for the underlying system gets called. Functinally in terms
-of patch loading itself there are no changes. This refactoring
-provides a basis for future implementations of other vendors'
-patch loaders.
+Vegard Nossum wrote:
+> On Fri, Jul 25, 2008 at 4:37 PM, Larry Finger <Larry.Finger@lwfinger.net> wrote:
+>> In the current git pulls from Linus's tree, I get a kernel BUG if
+>> CONFIG_SCHED_SMT is defined. It does not always appear, but when it does, it
+>> is late in the bootup sequence. Perhaps there is a timing issue. This is an
+>> x86_64 system on an HP dv2815nr notebook with and AMD Turion X2 CPU. My
+>> distro is openSUSE 11.0.
+>>
+>> kernel: BUG: unable to handle kernel NULL pointer dereference at
+>> 000000000000002
+>> kernel: IP: [<ffffffff80231aec>] sched_mc_power_savings_store+0x13/0x41
+> 
+> Maybe LKML is slow and somebody else replied to this before me, but I
+> know how much I hate to discover that I've been bisecting something
+> that was fixed a week ago in another tree, so here's a link you might
+> try :-)
 
-Signed-off-by: Peter Oruba <peter.oruba@amd.com>
----
- arch/x86/Kconfig                  |   24 +++++++++--
- arch/x86/kernel/Makefile          |    4 +-
- arch/x86/kernel/microcode.c       |   80 +++++++++++++++++++++---------------
- arch/x86/kernel/microcode_intel.c |   54 ++++++++++++++++++++-----
- 4 files changed, 112 insertions(+), 50 deletions(-)
+That patch fixes my problem as well. I scanned the LKML archive just before 
+submitting my E-mail, but I missed your thread.
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 03980cb..ece1e27 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -782,7 +782,7 @@ config X86_REBOOTFIXUPS
- 	  Say N otherwise.
- 
- config MICROCODE
--	tristate "/dev/cpu/microcode - Intel IA32 CPU microcode support"
-+	tristate "/dev/cpu/microcode - microcode support"
- 	select FW_LOADER
- 	---help---
- 	  If you say Y here, you will be able to update the microcode on
-@@ -791,14 +791,28 @@ config MICROCODE
- 	  actual microcode binary data itself which is not shipped with the
- 	  Linux kernel.
- 
--	  For latest news and information on obtaining all the required
--	  ingredients for this driver, check:
--	  <http://www.urbanmyth.org/microcode/>.
-+	  This option selects the general module only, you need to select
-+	  at least one vendor specific module as well.
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called microcode.
- 
--config MICROCODE_OLD_INTERFACE
-+config MICROCODE_INTEL
-+       tristate "Intel microcode patch loading support"
-+       depends on MICROCODE
-+       select FW_LOADER
-+       --help---
-+         This options enables microcode patch loading support for Intel
-+         processors.
-+
-+         For latest news and information on obtaining all the required
-+         Intel ingredients for this driver, check:
-+         <http://www.urbanmyth.org/microcode/>.
-+
-+         This driver is only available as a module: the module
-+         will be called microcode_intel.  
-+
-+   config MICROCODE_OLD_INTERFACE
- 	def_bool y
- 	depends on MICROCODE
- 
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index abb32ae..f2f9f6d 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -51,8 +51,8 @@ obj-$(CONFIG_X86_BIOS_REBOOT)	+= reboot.o
- obj-$(CONFIG_MCA)		+= mca_32.o
- obj-$(CONFIG_X86_MSR)		+= msr.o
- obj-$(CONFIG_X86_CPUID)		+= cpuid.o
--obj-$(CONFIG_MICROCODE)		+= ucode.o
--ucode-objs                      := microcode.o microcode_intel.o
-+obj-$(CONFIG_MICROCODE)		+= microcode.o
-+obj-$(CONFIG_MICROCODE_INTEL)	+= microcode_intel.o
- obj-$(CONFIG_PCI)		+= early-quirks.o
- apm-y				:= apm_32.o
- obj-$(CONFIG_APM)		+= apm.o
-diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
-index 72b899c..f6414bc 100644
---- a/arch/x86/kernel/microcode.c
-+++ b/arch/x86/kernel/microcode.c
-@@ -99,25 +99,22 @@ MODULE_DESCRIPTION("Microcode Update Driver");
- MODULE_AUTHOR("Tigran Aivazian <tigran@aivazian.fsnet.co.uk>");
- MODULE_LICENSE("GPL");
- 
--#define MICROCODE_VERSION 	"1.14a"
-+#define MICROCODE_VERSION 	"2.00"
- 
--/* no concurrent ->write()s are allowed on /dev/cpu/microcode */
--DEFINE_MUTEX(microcode_mutex);
-+struct microcode_ops *microcode_ops;
- 
--struct ucode_cpu_info ucode_cpu_info[NR_CPUS];
-+/* no concurrent ->write()s are allowed on /dev/cpu/microcode */
-+static DEFINE_MUTEX(microcode_mutex);
-+EXPORT_SYMBOL_GPL(microcode_mutex);
- 
--extern long get_next_ucode(void **mc, long offset);
--extern int microcode_sanity_check(void *mc);
--extern int get_matching_microcode(void *mc, int cpu);
--extern void collect_cpu_info(int cpu_num);
--extern int cpu_request_microcode(int cpu);
--extern void microcode_fini_cpu(int cpu);
--extern void apply_microcode(int cpu);
--extern int apply_microcode_check_cpu(int cpu);
-+static struct ucode_cpu_info ucode_cpu_info[NR_CPUS];
-+EXPORT_SYMBOL_GPL(ucode_cpu_info);
- 
- #ifdef CONFIG_MICROCODE_OLD_INTERFACE
--void __user *user_buffer;	/* user area microcode data buffer */
--unsigned int user_buffer_size;	/* it's size */
-+static void __user *user_buffer;	/* user area microcode data buffer */
-+EXPORT_SYMBOL_GPL(user_buffer);
-+static unsigned int user_buffer_size;	/* it's size */
-+EXPORT_SYMBOL_GPL(user_buffer_size);
- 
- static int do_microcode_update (void)
- {
-@@ -129,8 +126,8 @@ static int do_microcode_update (void)
- 
- 	old = current->cpus_allowed;
- 
--	while ((cursor = get_next_ucode(&new_mc, cursor)) > 0) {
--		error = microcode_sanity_check(new_mc);
-+	while ((cursor = microcode_ops->get_next_ucode(&new_mc, cursor)) > 0) {
-+		error = microcode_ops->microcode_sanity_check(new_mc);
- 		if (error)
- 			goto out;
- 		/*
-@@ -143,11 +140,12 @@ static int do_microcode_update (void)
- 			if (!uci->valid)
- 				continue;
- 			set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
--			error = get_matching_microcode(new_mc, cpu);
-+			error = microcode_ops->get_matching_microcode(new_mc,
-+								      cpu);
- 			if (error < 0)
- 				goto out;
- 			if (error == 1)
--				apply_microcode(cpu);
-+				microcode_ops->apply_microcode(cpu);
- 		}
- 		vfree(new_mc);
- 	}
-@@ -230,7 +228,8 @@ MODULE_ALIAS_MISCDEV(MICROCODE_MINOR);
- #endif
- 
- /* fake device for request_firmware */
--struct platform_device *microcode_pdev;
-+static struct platform_device *microcode_pdev;
-+EXPORT_SYMBOL_GPL(microcode_pdev);
- 
- static void microcode_init_cpu(int cpu, int resume)
- {
-@@ -241,9 +240,9 @@ static void microcode_init_cpu(int cpu, int resume)
- 
- 	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
- 	mutex_lock(&microcode_mutex);
--	collect_cpu_info(cpu);
-+	microcode_ops->collect_cpu_info(cpu);
- 	if (uci->valid && system_state == SYSTEM_RUNNING && !resume)
--		cpu_request_microcode(cpu);
-+		microcode_ops->cpu_request_microcode(cpu);
- 	mutex_unlock(&microcode_mutex);
- 	set_cpus_allowed_ptr(current, &old);
- }
-@@ -268,7 +267,7 @@ static ssize_t reload_store(struct sys_device *dev, const char *buf, size_t sz)
- 
- 		mutex_lock(&microcode_mutex);
- 		if (uci->valid)
--			err = cpu_request_microcode(cpu);
-+			err = microcode_ops->cpu_request_microcode(cpu);
- 		mutex_unlock(&microcode_mutex);
- 		put_online_cpus();
- 		set_cpus_allowed_ptr(current, &old);
-@@ -341,7 +340,7 @@ static int mc_sysdev_remove(struct sys_device *sys_dev)
- 		return 0;
- 
- 	pr_debug("microcode: CPU%d removed\n", cpu);
--	microcode_fini_cpu(cpu);
-+	microcode_ops->microcode_fini_cpu(cpu);
- 	sysfs_remove_group(&sys_dev->kobj, &mc_attr_group);
- 	return 0;
- }
-@@ -354,7 +353,7 @@ static int mc_sysdev_resume(struct sys_device *dev)
- 		return 0;
- 	pr_debug("microcode: CPU%d resumed\n", cpu);
- 	/* only CPU 0 will apply ucode here */
--	apply_microcode(0);
-+	microcode_ops->apply_microcode(0);
- 	return 0;
- }
- 
-@@ -374,7 +373,7 @@ mc_cpu_callback(struct notifier_block *nb, unsigned long action, void *hcpu)
- 	switch (action) {
- 	case CPU_UP_CANCELED_FROZEN:
- 		/* The CPU refused to come up during a system resume */
--		microcode_fini_cpu(cpu);
-+		microcode_ops->microcode_fini_cpu(cpu);
- 		break;
- 	case CPU_ONLINE:
- 	case CPU_DOWN_FAILED:
-@@ -382,9 +381,9 @@ mc_cpu_callback(struct notifier_block *nb, unsigned long action, void *hcpu)
- 		break;
- 	case CPU_ONLINE_FROZEN:
- 		/* System-wide resume is in progress, try to apply microcode */
--		if (apply_microcode_check_cpu(cpu)) {
-+		if (microcode_ops->apply_microcode_check_cpu(cpu)) {
- 			/* The application of microcode failed */
--			microcode_fini_cpu(cpu);
-+			microcode_ops->microcode_fini_cpu(cpu);
- 			__mc_sysdev_add(sys_dev, 1);
- 			break;
- 		}
-@@ -408,12 +407,17 @@ static struct notifier_block __refdata mc_cpu_notifier = {
- 	.notifier_call = mc_cpu_callback,
- };
- 
--static int __init microcode_init (void)
-+static int microcode_init(void *opaque, struct module *module)
- {
-+	struct microcode_ops *ops = (struct microcode_ops *)opaque;
- 	int error;
- 
--	printk(KERN_INFO
--		"IA-32 Microcode Update Driver: v" MICROCODE_VERSION " <tigran@aivazian.fsnet.co.uk>\n");
-+	if (microcode_ops) {
-+		printk(KERN_ERR "microcode: already loaded the other module\n");
-+		return -EEXIST;
-+	}
-+
-+	microcode_ops = ops;
- 
- 	error = microcode_dev_init();
- 	if (error)
-@@ -435,8 +439,15 @@ static int __init microcode_init (void)
- 	}
- 
- 	register_hotcpu_notifier(&mc_cpu_notifier);
-+
-+	printk(KERN_INFO
-+	       "Microcode Update Driver: v" MICROCODE_VERSION
-+	       " <tigran@aivazian.fsnet.co.uk>"
-+	       " <peter.oruba@amd.com>\n");
-+
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(microcode_init);
- 
- static void __exit microcode_exit (void)
- {
-@@ -449,7 +460,10 @@ static void __exit microcode_exit (void)
- 	put_online_cpus();
- 
- 	platform_device_unregister(microcode_pdev);
--}
- 
--module_init(microcode_init)
--module_exit(microcode_exit)
-+	microcode_ops = NULL;
-+
-+	printk(KERN_INFO
-+	       "Microcode Update Driver: v" MICROCODE_VERSION " removed.\n");
-+}
-+EXPORT_SYMBOL_GPL(microcode_exit);
-diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
-index 4754137..dd2133b 100644
---- a/arch/x86/kernel/microcode_intel.c
-+++ b/arch/x86/kernel/microcode_intel.c
-@@ -119,6 +119,10 @@ MODULE_LICENSE("GPL");
- 
- #define exttable_size(et) ((et)->count * EXT_SIGNATURE_SIZE + EXT_HEADER_SIZE)
- 
-+
-+extern int microcode_init(void *opaque, struct module *module);
-+extern void microcode_exit(void);
-+
- /* serialize access to the physical write to MSR 0x79 */
- static DEFINE_SPINLOCK(microcode_update_lock);
- 
-@@ -127,7 +131,7 @@ extern struct mutex microcode_mutex;
- 
- extern struct ucode_cpu_info ucode_cpu_info[NR_CPUS];
- 
--void collect_cpu_info(int cpu_num)
-+static void collect_cpu_info(int cpu_num)
- {
- 	struct cpuinfo_x86 *c = &cpu_data(cpu_num);
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu_num;
-@@ -175,7 +179,7 @@ static inline int microcode_update_match(int cpu_num,
- 	return 1;
- }
- 
--int microcode_sanity_check(void *mc)
-+static int microcode_sanity_check(void *mc)
- {
- 	struct microcode_header_intel *mc_header = mc;
- 	struct extended_sigtable *ext_header = NULL;
-@@ -259,7 +263,7 @@ int microcode_sanity_check(void *mc)
-  * return 1 - found update
-  * return < 0 - error
-  */
--int get_matching_microcode(void *mc, int cpu)
-+static int get_matching_microcode(void *mc, int cpu)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 	struct microcode_header_intel *mc_header = mc;
-@@ -288,7 +292,8 @@ int get_matching_microcode(void *mc, int cpu)
- 	return 0;
- find:
- 	pr_debug("microcode: CPU%d found a matching microcode update with"
--		 " version 0x%x (current=0x%x)\n", cpu, mc_header->rev, uci->rev);
-+		 " version 0x%x (current=0x%x)\n",
-+		 cpu, mc_header->rev, uci->rev);
- 	new_mc = vmalloc(total_size);
- 	if (!new_mc) {
- 		printk(KERN_ERR "microcode: error! Can not allocate memory\n");
-@@ -303,7 +308,7 @@ find:
- 	return 1;
- }
- 
--void apply_microcode(int cpu)
-+static void apply_microcode(int cpu)
- {
- 	unsigned long flags;
- 	unsigned int val[2];
-@@ -347,7 +352,7 @@ void apply_microcode(int cpu)
- extern void __user *user_buffer;        /* user area microcode data buffer */
- extern unsigned int user_buffer_size;   /* it's size */
- 
--long get_next_ucode(void **mc, long offset)
-+static long get_next_ucode(void **mc, long offset)
- {
- 	struct microcode_header_intel mc_header;
- 	unsigned long total_size;
-@@ -406,7 +411,7 @@ static long get_next_ucode_from_buffer(void **mc, const u8 *buf,
- /* fake device for request_firmware */
- extern struct platform_device *microcode_pdev;
- 
--int cpu_request_microcode(int cpu)
-+static int cpu_request_microcode(int cpu)
- {
- 	char name[30];
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
-@@ -455,7 +460,7 @@ int cpu_request_microcode(int cpu)
- 	return error;
- }
- 
--int apply_microcode_check_cpu(int cpu)
-+static int apply_microcode_check_cpu(int cpu)
- {
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
-@@ -503,13 +508,42 @@ int apply_microcode_check_cpu(int cpu)
- 	return err;
- }
- 
--void microcode_fini_cpu(int cpu)
-+static void microcode_fini_cpu(int cpu)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
- 	mutex_lock(&microcode_mutex);
- 	uci->valid = 0;
--	kfree(uci->mc.mc_intel);
-+	vfree(uci->mc.mc_intel);
- 	uci->mc.mc_intel = NULL;
- 	mutex_unlock(&microcode_mutex);
- }
-+
-+static struct microcode_ops microcode_intel_ops = {
-+	.get_next_ucode                   = get_next_ucode,
-+	.get_matching_microcode           = get_matching_microcode,
-+	.microcode_sanity_check           = microcode_sanity_check,
-+	.apply_microcode_check_cpu        = apply_microcode_check_cpu,
-+	.cpu_request_microcode            = cpu_request_microcode,
-+	.collect_cpu_info                 = collect_cpu_info,
-+	.apply_microcode                  = apply_microcode,
-+	.microcode_fini_cpu               = microcode_fini_cpu,
-+};
-+
-+static int __init microcode_intel_module_init(void)
-+{
-+	struct cpuinfo_x86 *c = &cpu_data(get_cpu());
-+
-+	if (c->x86_vendor == X86_VENDOR_INTEL)
-+		return microcode_init(&microcode_intel_ops, THIS_MODULE);
-+	else
-+		return -ENODEV;
-+}
-+
-+static void __exit microcode_intel_module_exit(void)
-+{
-+	microcode_exit();
-+}
-+
-+module_init(microcode_intel_module_init)
-+module_exit(microcode_intel_module_exit)
--- 
-1.5.4.5
+Thanks,
 
-
-
-
+Larry
