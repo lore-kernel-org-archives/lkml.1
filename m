@@ -1,37 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbYGYP5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbYGYQB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807AbYGYP5j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 11:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYGYP5T
+	id S1752716AbYGYQB1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 12:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYGYQBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 11:57:19 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34793 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751100AbYGYP5R (ORCPT
+	Fri, 25 Jul 2008 12:01:19 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:31889 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751100AbYGYQBS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 11:57:17 -0400
-Message-ID: <4889F78B.9090202@zytor.com>
-Date: Fri, 25 Jul 2008 11:55:55 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 25 Jul 2008 12:01:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jWCMquhg64sbuKGW+sTgcjHiljf+dJU96w/UL0kLqTl7nU1Dh/wNtJG8C2z1OklopQ
+         MeJWXZAMnUVpA6onXo67IbuUg3wzNVFWFs+gNR014bbsrHQozbIJwKrPb7rH2t9bZ28Q
+         2awB/3nz3mTFNJr9Lit/f/1Psg2mCRtF8/bGk=
+Message-ID: <69e28c910807250901q1f5924ambeb30a15e785b05a@mail.gmail.com>
+Date: Fri, 25 Jul 2008 18:01:16 +0200
+From: "=?ISO-8859-1?Q?Stefanik_G=E1bor?=" <netrolller.3d@gmail.com>
+To: "Larry Finger" <Larry.Finger@lwfinger.net>
+Subject: Re: WLAN regression before this morning
+Cc: free_beer_for_all@yahoo.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <4889F7D6.4010706@lwfinger.net>
 MIME-Version: 1.0
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-CC: lkml <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: please revert commit 53f1b1433da7eac2607a4a0898a221a4485fd732
- (rtc: push the BKL down into the driver ioctl method)
-References: <b6a2187b0807250726n77a0cd6eqb97b817fddc343b9@mail.gmail.com>
-In-Reply-To: <b6a2187b0807250726n77a0cd6eqb97b817fddc343b9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <761713.15647.qm@web46115.mail.sp1.yahoo.com>
+	 <4889F7D6.4010706@lwfinger.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Chua wrote:
-> This commit is breaking vmware-6.0.4. Upon booting linux (guest) on
-> vmware, the whole vmware environment crashed.
+On Fri, Jul 25, 2008 at 5:57 PM, Larry Finger <Larry.Finger@lwfinger.net> wrote:
+> I too have a problem with wireless in the current 2.6.26-gitX kernels. If
+> you have done the git pull, you can try bisecting to find the problem. Use
+> 'git bisect good v2.6.26' to mark a known good point. If you don't wish to
+> take the time bisecting, then issue a 'git checkout v2.6.26'. That should
+> give you a kernel that works.
+>
+> Larry
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-Quality hypervisor we have there...
+I am also seeing problems - although I can connect to networks (with
+zd1211rw, ath5k & sometimes with b43), it disconnects after about 2
+minutes with a sudden "Removed STA"/"Destroyed STA" pair (no "assume
+out of range" or anything). However, if I use wpa_supplicant to
+connect to wepped networks (rather than just "iwconfig wlan0 essid
+<ESSID> key s:<ASCII key>"), the problem goes away, and the connection
+is stable for hours.
 
-	-hpa
+-- 
+Vista: [V]iruses, [I]ntruders, [S]pyware, [T]rojans and [A]dware. :-)
