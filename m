@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbYGYH0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYGYH3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753310AbYGYH0z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 03:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYGYH0r
+	id S1754019AbYGYH3Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 03:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYGYH3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 03:26:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59218 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750927AbYGYH0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 03:26:46 -0400
-Date: Fri, 25 Jul 2008 09:26:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, ecashin@coraid.com,
-       axboe@suse.de, mike.miller@hp.com, a.p.zijlstra@chello.nl, rjw@sisk.pl
-Subject: Re: [lockdep warning] AOE / networking: aoenet_xmit:
-	noop_qdisc.q.lock, INFO: inconsistent lock state at 0000000000000370
-Message-ID: <20080725072624.GA21824@elte.hu>
-References: <20080721.134608.75595942.davem@davemloft.net> <20080725062009.GA6476@elte.hu> <20080724.232521.193699299.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080724.232521.193699299.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 25 Jul 2008 03:29:05 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:42098 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbYGYH3F convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 03:29:05 -0400
+Subject: [GIT PULL] UBI updates for 2.6.27
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 25 Jul 2008 10:25:04 +0300
+Message-Id: <1216970704.24495.102.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 25 Jul 2008 07:28:36.0882 (UTC) FILETIME=[0D457F20:01C8EE28]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-* David Miller <davem@davemloft.net> wrote:
+please pull from
 
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Fri, 25 Jul 2008 08:20:09 +0200
-> 
-> > not sure whether it got reported already, but -tip testing triggered 
-> > this new ATA over Ethernet lockdep warning on latest -git:
-> 
-> Thanks for the report, does this fix it?
+git://git.infradead.org/~dedekind/ubi-2.6.git linux-next
 
-i've tested it and the warning went away - thanks David!
+to receive the following updates:
 
-Tested-by: Ingo Molnar <mingo@elte.hu>
+Artem Bityutskiy (18):
+      UBI: add a comment
+      UBI: fix memory leak
+      UBI: do not forget to free internal volumes
+      UBI: fix memory leak on error path
+      UBI: fix LEB locking
+      UBI: add ubi_sync() interface
+      UBI: improve mkvol request validation
+      UBI: fix error message
+      UBI: amend commentaries
+      UBI: fix and re-work debugging stuff
+      UBI: implement multiple volumes rename
+      UBI: rework scrubbing messages
+      UBI: bugfix - do not torture PEB needlessly
+      UBI: fix checkpatch.pl errors and warnings
+      UBI: fix kernel-doc errors and warnings
+      UBI: remove pre-sqnum images support
+      UBI: fix gcc warning
+      UBI: always start the background thread
 
-	Ingo
+Bruce Leonard (1):
+      UBI: fix 64-bit calculations
+
+Kyungmin Park (2):
+      UBI: fix buffer padding
+      UBI: avoid unnecessary division operations
+
+ drivers/mtd/ubi/build.c     |   99 +++++++++++++-----
+ drivers/mtd/ubi/cdev.c      |  234 +++++++++++++++++++++++++++++++++++++++----
+ drivers/mtd/ubi/debug.c     |  158 +++++++++++++++--------------
+ drivers/mtd/ubi/debug.h     |   74 +++++++++-----
+ drivers/mtd/ubi/eba.c       |   77 ++++----------
+ drivers/mtd/ubi/gluebi.c    |   16 ++--
+ drivers/mtd/ubi/io.c        |   48 +++++----
+ drivers/mtd/ubi/kapi.c      |   50 +++++++---
+ drivers/mtd/ubi/misc.c      |    2 +-
+ drivers/mtd/ubi/scan.c      |  136 +++++++++----------------
+ drivers/mtd/ubi/scan.h      |   21 ++--
+ drivers/mtd/ubi/ubi-media.h |   38 +++----
+ drivers/mtd/ubi/ubi.h       |   75 ++++++++++-----
+ drivers/mtd/ubi/upd.c       |   32 ++++---
+ drivers/mtd/ubi/vmt.c       |  148 +++++++++++++++++----------
+ drivers/mtd/ubi/vtbl.c      |   88 +++++++++++++---
+ drivers/mtd/ubi/wl.c        |  208 +++++++++++++++++++-------------------
+ include/linux/mtd/ubi.h     |    5 +-
+ include/mtd/ubi-user.h      |   76 ++++++++++++--
+ 19 files changed, 987 insertions(+), 598 deletions(-)
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
