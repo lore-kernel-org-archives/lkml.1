@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbYGYX0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbYGYX1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbYGYX0z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 19:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYGYX0r
+	id S1756861AbYGYX1T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 19:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756208AbYGYX1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 19:26:47 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:45156 "EHLO smtp4.pp.htv.fi"
+	Fri, 25 Jul 2008 19:27:00 -0400
+Received: from gw.goop.org ([64.81.55.164]:43794 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752136AbYGYX0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 19:26:46 -0400
-Date: Sat, 26 Jul 2008 02:26:18 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org
-Subject: virtio header BSD licencing
-Message-ID: <20080725232618.GC9301@cs181140183.pp.htv.fi>
+	id S1752183AbYGYX07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 19:26:59 -0400
+Message-ID: <488A613E.50305@goop.org>
+Date: Fri, 25 Jul 2008 16:26:54 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Mike Travis <travis@sgi.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Hugh Dickins <hugh@veritas.com>, Jack Steiner <steiner@sgi.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] x86_64: Optimize percpu accesses
+References: <20080725211117.586723000@polaris-admin.engr.sgi.com>
+In-Reply-To: <20080725211117.586723000@polaris-admin.engr.sgi.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rusty,
+Mike Travis wrote:
+> This patchset provides the following:
+>
+>   * x86_64: Cleanup setup_percpu by fixing some minor potential
+>     problems as well as add some debugging aids.
+>
+>   * x86_64: Rebase per cpu variables to zero
+>
+>     Rebase per cpu variables to zero in preparation for the following
+>     patch to fold the pda into the per cpu area.
+>
+>   * x86_64: Fold pda into per cpu area
+>
+>     Declare the pda as a per cpu variable. This will allow the per cpu
+>     variables to be accessible on the x86_64 using %gs as the base of
+>     the percpu areas for each cpu:
+>
+> 	%gs:per_cpu_xxxx
+>
+>   * x86_64: Reference zero-based percpu variables offset from gs
+>
+>     Actually implement the above operation for __get_cpu_var() and
+>     __put_cpu_var().  Since this is now a single instruction, we
+>     can remove the non-preemptible versions of x86_read_percpu()
+>     and x86_write_percpu().
+>   
 
-commit 674bfc23c585b34c42263d73fb51710d49762a23
-(virtio: clarify that ABI is usable by any implementations)
-added the following to the top of some headers:
+No, I think you've misunderstood these calls.
 
-  /* This header is BSD licensed so anyone can use the definitions to implement
-   * compatible drivers/servers. */
+get_cpu_var(x) evaluates to an lvalue of this cpu's 'x'.  It disables 
+preemption, in the same manner as get_cpu().
 
-What is "BSD licensed"?
-- 4 clause BSD license?
-- 3 clause BSD license?
-- 2 clause BSD license?
-- some other variant?
+put_cpu_var(x) does nothing more than re-enable preemption, to pair with 
+get_cpu_var().
 
-Please put a proper licence text there.
+__get_cpu_var(x) is the same as get_cpu_var, but it assumes that 
+preemption is already disabled.  There is no __put_cpu_var().
 
-TIA
-Adrian
+The important point is that an expression like "__get_cpu_var(x) = foo" 
+does not evaluate to a single instruction, and is not preempt or 
+interrupt -atomic.  That's the reason x86_X_percpu() exist, since 
+they're a single instruction in an asm.  However, with %gs: based 
+addressing they can be easily unified.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+    J
