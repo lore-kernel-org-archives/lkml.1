@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYGYSYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbYGYSZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbYGYSYE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 14:24:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbYGYSXx
+	id S1755303AbYGYSZY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 14:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYGYSZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 14:23:53 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:15110 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750858AbYGYSXx (ORCPT
+	Fri, 25 Jul 2008 14:25:14 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43814 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbYGYSZN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 14:23:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=tWAZpUGV2heXh2WN6X2bciM7nJzUDruMWI+0IR9wPY7h0qkMQ98whl/pMx7HOdnrKV
-         Hk9tHLFGy8q+D8rJzQV8cgNruk6//D839U2qscPxC5X8Yq/AaZRZY7lhLnmFnRL4GIDL
-         I+K/zLYrxIsyUrqg9Cnhop5WYgdpt8Dk8Z2Vg=
-Message-ID: <29495f1d0807251123j44ff95f5q3a84616d8bdffdf0@mail.gmail.com>
-Date: Fri, 25 Jul 2008 11:23:52 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: cpuset build error: cpuset_mems_nr() missing
-Cc: pj@sgi.com, menage@google.com, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080725112146.1cf70319.randy.dunlap@oracle.com>
+	Fri, 25 Jul 2008 14:25:13 -0400
+Date: Fri, 25 Jul 2008 19:25:10 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Steve French <smfrench@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cifs: avoid mixing bool and le16
+Message-ID: <20080725182510.GL28946@ZenIV.linux.org.uk>
+References: <1216857138.30386.33.camel@brick>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080725112146.1cf70319.randy.dunlap@oracle.com>
+In-Reply-To: <1216857138.30386.33.camel@brick>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/25/08, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->
->  When SYSCTL=n, PROC_FS=n:
->
->  linux-next-20080725/mm/hugetlb.c:1507: error: implicit declaration of function 'cpuset_mems_nr'
->  make[2]: *** [mm/hugetlb.o] Error 1
->
->
->  Alan mentioned this in another mail thread and I believe he said that the problem
->  is also in mainline... but I haven't checked that.
+On Wed, Jul 23, 2008 at 04:52:18PM -0700, Harvey Harrison wrote:
+> fs/cifs/cifssmb.c:3917:13: warning: incorrect type in assignment (different base types)
+> fs/cifs/cifssmb.c:3917:13:    expected bool [unsigned] [usertype] is_unicode
+> fs/cifs/cifssmb.c:3917:13:    got restricted __le16
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-Fix posted a little while ago:
-http://marc.info/?l=linux-kernel&m=121700986003238&w=2
+It's a sparse bug - the thing doesn't treat conversions to bool right.
 
-Thanks,
-Nish
+FWIW, if you want an obviously broken case, consider
+
+char a[2 * (bool)2 - 1];
+
+It *should* turn into
+
+char a[1];
+
+What happens instead is that bool is treated as 1-bit unsigned integer
+type, resulting in char a[-1].
+
+So we need to fix that crap; the real rules are simple - conversion of
+any arithmetic or pointer type to _Bool behaves as if we had v != 0;
+same as for if/while/do/for conditions.
