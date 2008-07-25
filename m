@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbYGYQqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbYGYQrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754262AbYGYQqq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 12:46:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbYGYQqi
+	id S1755049AbYGYQrB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 12:47:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbYGYQqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 12:46:38 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:56956 "EHLO
-	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751810AbYGYQqh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 12:46:37 -0400
-X-BigFish: VPS5(zz1cddkzz10d3izzz32i66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0K4KMKU-02-Q8G-01
-Message-ID: <20080725164733.923922160@amd.com>
-User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Fri, 25 Jul 2008 18:44:35 +0200
-From: Peter Oruba <peter.oruba@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
-CC: LKML <linux-kernel@vger.kernel.org>, Peter Oruba <peter.oruba@amd.com>
-Subject: [PATCH] x86: Add entry to MAINTAINERS file
-References: <20080725161723.636932280@amd.com>
-Content-Disposition: inline;
-	filename="0001-x86-Add-entry-to-MAINTAINERS-file.patch"
-X-OriginalArrivalTime: 25 Jul 2008 16:46:11.0629 (UTC) FILETIME=[F1DAC5D0:01C8EE75]
+	Fri, 25 Jul 2008 12:46:48 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:48199 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754661AbYGYQqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 12:46:47 -0400
+Message-ID: <488A0375.4050605@sgi.com>
+Date: Fri, 25 Jul 2008 09:46:45 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [RFC 00/15] x86_64: Optimize percpu accesses
+References: <20080709165129.292635000@polaris-admin.engr.sgi.com> <4874F30C.8020800@zytor.com> <4874F909.7060503@goop.org> <4889F5FA.1050908@sgi.com> <4889FA96.1000701@goop.org>
+In-Reply-To: <4889FA96.1000701@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add an entry to the MAINTAINERS file for AMD CPU microcode
-patch loading support.
+Jeremy Fitzhardinge wrote:
+> Mike Travis wrote:
+>> FYI, I think it was a combination of errors that was causing my problems.
+>> In any case, I've successfully compiled and booted Ingo's pesky config
+>> config-Tue_Jul__1_16_48_45_CEST_2008.bad with gcc's 4.2.0, 4.2.3 and
+>> 4.2.4
+>> on both Intel and AMD boxes.  (As well as a variety of other configs.)
+>>   
+> 
+> Good.  What compilers have you tested?  Will it work over the complete
+> supported range?
 
-Signed-off-by: Peter Oruba <peter.oruba@amd.com>
----
- MAINTAINERS |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+The oldest gcc I have available is 3.4.3 (and I just tried that one and
+it worked.)  So that one and the ones listed above I've verified using
+Ingo's test config.  (All other testing I'm using 4.2.3.)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index df3fa0e..da77c18 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -384,6 +384,11 @@ M:	joerg.roedel@amd.com
- L:	iommu@lists.linux-foundation.org
- S:	Supported
- 
-+AMD MICROCODE UPDATE SUPPORT
-+P:      Peter Oruba
-+M:      peter.oruba@amd.com
-+S:      Supported
-+
- AMS (Apple Motion Sensor) DRIVER
- P:	Stelian Pop
- M:	stelian@popies.net
--- 
-1.5.4.5
-
-
-
+> 
+>> I think Hugh's change adding "text" to the BUILD_IRQ macro might also
+>> have
+>> helped, since interrupts seemed to have always been involved in the
+>> panics.
+>> That might explain the variable-ness of the gcc version's.
+> 
+> Yes, indeed.  That was a nasty one, and will be very sensitive to the
+> exact order gcc decided to emit things.
+> 
+>    J
 
