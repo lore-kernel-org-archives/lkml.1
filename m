@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbYGYPBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753315AbYGYPD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753278AbYGYPBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 11:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbYGYPBK
+	id S1753315AbYGYPD7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 11:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbYGYPDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 11:01:10 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:43729 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750706AbYGYPBJ (ORCPT
+	Fri, 25 Jul 2008 11:03:50 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:38266 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbYGYPDt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 11:01:09 -0400
+	Fri, 25 Jul 2008 11:03:49 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=dsNDVawwR1E5alpuRN/af2HVEZxsyv8JSKFPkT1wUUjn9D9qtDJ51ck7SBzDoiB+CV
-         8ixOwXvogrHmjIo8GHUp9g4q2y/Uzg2/AUsu8DGLGXJuV9/opSDUDd6f+ISt0E+GvV2H
-         dhVkF5OfvWPRZ16xGUObZ4ClCAXMJyM7Jzbu8=
-Date: Fri, 25 Jul 2008 19:01:04 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take 3)
-Message-ID: <20080725150104.GD28466@lenovo>
-References: <20080724143151.GA32422@lenovo> <20080724150116.GC32422@lenovo> <48889C14.4070408@fujitsu-siemens.com> <4889968E.6020000@fujitsu-siemens.com> <20080725100844.GA16698@lenovo> <4889C723.7050402@fujitsu-siemens.com> <20080725125950.GA28466@lenovo> <4889D767.5050709@fujitsu-siemens.com> <20080725134831.GB28466@lenovo> <4889DCA4.4010800@fujitsu-siemens.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DpCLpZ0hh/UYC/6HKhjRZsl1RdArOYpn1mHgye3Rp8gKooHheyP0XbBHLVY7xiYtb1
+         cH15DVV3cViKcKENF9+PYuIyABVRAvVrfD/Lqo32l6y5fHn6ph4iTUGmmLtjPQ7JSol8
+         IqOnhIvBukctd1iNiOjBHaBoW/4Ax2roUpkK4=
+Message-ID: <19f34abd0807250803y2992aff8g369ce7f6b802708@mail.gmail.com>
+Date: Fri, 25 Jul 2008 17:03:48 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Larry Finger" <Larry.Finger@lwfinger.net>
+Subject: Re: Kernel BUG in 2.6.26-git series
+Cc: LKML <linux-kernel@vger.kernel.org>, "Andi Kleen" <andi@firstfloor.org>
+In-Reply-To: <4889E538.5010007@lwfinger.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4889DCA4.4010800@fujitsu-siemens.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <4889E538.5010007@lwfinger.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Martin Wilck - Fri, Jul 25, 2008 at 04:01:08PM +0200]
-> Cyrill Gorcunov wrote:
+On Fri, Jul 25, 2008 at 4:37 PM, Larry Finger <Larry.Finger@lwfinger.net> wrote:
+> In the current git pulls from Linus's tree, I get a kernel BUG if
+> CONFIG_SCHED_SMT is defined. It does not always appear, but when it does, it
+> is late in the bootup sequence. Perhaps there is a timing issue. This is an
+> x86_64 system on an HP dv2815nr notebook with and AMD Turion X2 CPU. My
+> distro is openSUSE 11.0.
 >
->> Martin, if I understood you right - this means your patch is not
->> needed? 
->
-> The patch would still be needed. Just the reported failure of my  
-> simplified patch on the old kernel would not have occurred in the  
-> current kernel. IOW, the patch is fine for the current kernel, but not  
-> for the old one.
->
->> Actually on 64bit mode APIC_DIVISOR is a bit hidden in
->> __setup_APIC_LVTT - you may see it as APIC_TDR_DIV_16 while setting
->> up divisor register. I was proposing patch for that but it leaded
->> to potetntial overflow (thanks Ingo for catching) so we leave it as
->> is. Maybe I miss something?
->
-> The problem was not that the divisor 16 was used for the counter speed  
-> (APIC_TDR_DIV_16), but that the old code set the counter start value to  
-> (250000000/16) rather than just 250000000. That means the counter will  
-> underflow earlier.
->
-> I am attaching a "take 3" patch which minimizes the risk of an underflow  
-> by using the maximum possible initial value for the APIC timer.
->
-> Martin
->
+> kernel: BUG: unable to handle kernel NULL pointer dereference at
+> 000000000000002
+> kernel: IP: [<ffffffff80231aec>] sched_mc_power_savings_store+0x13/0x41
 
-Martin, it seems you forgot to attach the patch :) (since it was
-continious tense I thought I would see patch in minute but...
-it was not eventually apeeared :)
+Maybe LKML is slow and somebody else replied to this before me, but I
+know how much I hate to discover that I've been bisecting something
+that was fixed a week ago in another tree, so here's a link you might
+try :-)
 
-		- Cyrill -
+http://lkml.org/lkml/2008/7/24/398
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
