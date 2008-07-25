@@ -1,96 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755440AbYGYM6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbYGYM6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755440AbYGYM6a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 08:58:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbYGYM6U
+	id S1753981AbYGYM6u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 08:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755678AbYGYM6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 08:58:20 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:43593 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752963AbYGYM6T (ORCPT
+	Fri, 25 Jul 2008 08:58:38 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:42634 "EHLO
+	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755291AbYGYM6h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 08:58:19 -0400
-X-BigFish: VPS4(zzzz10d3izzz32i43j64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0K4KC0N-03-IBO-01
+	Fri, 25 Jul 2008 08:58:37 -0400
+X-BigFish: VPS4(zzzz10d3izzz32i43j65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0K4KC17-04-X3B-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: mingo@redhat.com, tglx@linutronix.de
 CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
        bhavna.sarathy@amd.com, robert.richter@amd.com,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH] AMD IOMMU: replace to_pages macro with iommu_num_pages
-Date: Fri, 25 Jul 2008 14:57:59 +0200
-Message-ID: <1216990680-1227-3-git-send-email-joerg.roedel@amd.com>
+       Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] add iommu_num_pages helper function
+Date: Fri, 25 Jul 2008 14:57:58 +0200
+Message-ID: <1216990680-1227-2-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1216990680-1227-1-git-send-email-joerg.roedel@amd.com>
 References: <1216990680-1227-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 25 Jul 2008 12:58:00.0329 (UTC) FILETIME=[11342F90:01C8EE56]
+X-OriginalArrivalTime: 25 Jul 2008 12:58:00.0309 (UTC) FILETIME=[11312250:01C8EE56]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the to_pages macro from AMD IOMMU code and calls the generic
-iommu_num_pages function instead.
+Calculating the number of pages from given address and length numbers is a task
+required in multiple IOMMU implementations. So implement this as a generic
+function into the IOMMU helper code.
 
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kernel/amd_iommu.c |   13 +++++--------
- 1 files changed, 5 insertions(+), 8 deletions(-)
+ include/linux/iommu-helper.h |    1 +
+ lib/iommu-helper.c           |    8 ++++++++
+ 2 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 7469740..22d7d05 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -29,9 +29,6 @@
- 
- #define CMD_SET_TYPE(cmd, t) ((cmd)->data[1] |= ((t) << 28))
- 
--#define to_pages(addr, size) \
--	 (round_up(((addr) & ~PAGE_MASK) + (size), PAGE_SIZE) >> PAGE_SHIFT)
--
- #define EXIT_LOOP_COUNT 10000000
- 
- static DEFINE_RWLOCK(amd_iommu_devtable_lock);
-@@ -185,7 +182,7 @@ static int iommu_flush_pages(struct amd_iommu *iommu, u16 domid,
- 		u64 address, size_t size)
- {
- 	int s = 0;
--	unsigned pages = to_pages(address, size);
-+	unsigned pages = iommu_num_pages(address, size);
- 
- 	address &= PAGE_MASK;
- 
-@@ -557,8 +554,8 @@ static struct dma_ops_domain *dma_ops_domain_alloc(struct amd_iommu *iommu,
- 	if (iommu->exclusion_start &&
- 	    iommu->exclusion_start < dma_dom->aperture_size) {
- 		unsigned long startpage = iommu->exclusion_start >> PAGE_SHIFT;
--		int pages = to_pages(iommu->exclusion_start,
--				iommu->exclusion_length);
-+		int pages = iommu_num_pages(iommu->exclusion_start,
-+					    iommu->exclusion_length);
- 		dma_ops_reserve_addresses(dma_dom, startpage, pages);
+diff --git a/include/linux/iommu-helper.h b/include/linux/iommu-helper.h
+index c975caf..f8598f5 100644
+--- a/include/linux/iommu-helper.h
++++ b/include/linux/iommu-helper.h
+@@ -8,3 +8,4 @@ extern unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
+ 				      unsigned long align_mask);
+ extern void iommu_area_free(unsigned long *map, unsigned long start,
+ 			    unsigned int nr);
++extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
+diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
+index a3b8d4c..889ddce 100644
+--- a/lib/iommu-helper.c
++++ b/lib/iommu-helper.c
+@@ -80,3 +80,11 @@ void iommu_area_free(unsigned long *map, unsigned long start, unsigned int nr)
  	}
- 
-@@ -767,7 +764,7 @@ static dma_addr_t __map_single(struct device *dev,
- 	unsigned int pages;
- 	int i;
- 
--	pages = to_pages(paddr, size);
-+	pages = iommu_num_pages(paddr, size);
- 	paddr &= PAGE_MASK;
- 
- 	address = dma_ops_alloc_addresses(dev, dma_dom, pages);
-@@ -802,7 +799,7 @@ static void __unmap_single(struct amd_iommu *iommu,
- 	if ((dma_addr == 0) || (dma_addr + size > dma_dom->aperture_size))
- 		return;
- 
--	pages = to_pages(dma_addr, size);
-+	pages = iommu_num_pages(dma_addr, size);
- 	dma_addr &= PAGE_MASK;
- 	start = dma_addr;
- 
+ }
+ EXPORT_SYMBOL(iommu_area_free);
++
++unsigned long iommu_num_pages(unsigned long addr, unsigned long len)
++{
++	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
++
++	return size >> PAGE_SHIFT;
++}
++EXPORT_SYMBOL(iommu_num_pages);
 -- 
 1.5.3.7
 
