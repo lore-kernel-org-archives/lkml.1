@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752592AbYGYUyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYGYUzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752592AbYGYUyi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 16:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbYGYUya
+	id S1753902AbYGYUzw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 16:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbYGYUzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 16:54:30 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:45749 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750827AbYGYUy3 (ORCPT
+	Fri, 25 Jul 2008 16:55:44 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:32929 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbYGYUzo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 16:54:29 -0400
-X-IronPort-AV: E=Sophos;i="4.31,253,1215388800"; 
-   d="scan'208";a="69277966"
-From: Roland Dreier <rdreier@cisco.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, joerg.roedel@amd.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] introduce lower_32_bits() macro
-References: <1216998747-16896-1-git-send-email-joerg.roedel@amd.com>
-	<4889FA03.6010708@zytor.com>
-	<20080725134759.ae19b883.akpm@linux-foundation.org>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 25 Jul 2008 13:54:28 -0700
-In-Reply-To: <20080725134759.ae19b883.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Fri, 25 Jul 2008 13:47:59 -0700")
-Message-ID: <ada63qtvg57.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Fri, 25 Jul 2008 16:55:44 -0400
+Message-ID: <488A3D95.20108@zytor.com>
+Date: Fri, 25 Jul 2008 16:54:45 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 Jul 2008 20:54:28.0571 (UTC) FILETIME=[A11FBAB0:01C8EE98]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: joerg.roedel@amd.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] introduce lower_32_bits() macro
+References: <1216998747-16896-1-git-send-email-joerg.roedel@amd.com>	<4889FA03.6010708@zytor.com> <20080725134759.ae19b883.akpm@linux-foundation.org>
+In-Reply-To: <20080725134759.ae19b883.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > There's some readability benefit.  Sometimes it is hard to understand
- > why some random open-coded cast was used.  But I seem to recall that
- > there was another reason why we decided we needed this.  I forget, and
- > so apparently did the changelog author ;)
+Andrew Morton wrote:
+>>>   */
+>>>  #define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
+>>>  
+>>> +/**
+>>> + * lower_32_bits - return bits 0-31 of a number
+>>> + * @n: the number we're accessing
+>>> + */
+>>> +#define lower_32_bits(n) ((n) & 0xffffffffULL)
+>>> +
+>> NAK.  These are assymmetric with regards to type, which is the *last* 
+>> thing we want.
+> 
+> Yes, it will convert a 32-bit expression into a 64-bit one.
+> 
 
-The guy who added the macro explained it in a comment ;)
+Sort of.  upper_32_bits() takes a 32- or 64-bit expression, and delivers 
+the upper 32 bits *as a 32-bit number*.  An equivalent expression would be:
 
- * A basic shift-right of a 64- or 32-bit quantity.  Use this to suppress
- * the "right shift count >= width of type" warning when that quantity is
- * 32-bits.
+	((u32)((u64)(n) >> 32))
 
- - R.
+... which might actually produce better code, for all I know.
+
+Logically speaking, if we have a lower_32_bits() macro, it should also 
+produce a 32-bit type as result.
+
+	-hpa
+
