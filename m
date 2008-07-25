@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbYGYXNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbYGYXNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbYGYXNy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 19:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbYGYXNm
+	id S1757975AbYGYXNd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 19:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757436AbYGYXNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 19:13:42 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33666 "EHLO mx2.suse.de"
+	Fri, 25 Jul 2008 19:13:20 -0400
+Received: from mx1.suse.de ([195.135.220.2]:58491 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755960AbYGYXNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 19:13:41 -0400
-Date: Fri, 25 Jul 2008 16:07:38 -0700
+	id S1756713AbYGYXNR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 19:13:17 -0400
+Date: Fri, 25 Jul 2008 16:07:36 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Gerrit Renker <gerrit@erg.abdn.ac.uk>,
+       Steffen Klassert <steffen.klassert@secunet.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 9/9] udplite: Protection against coverage value wrap-around
-Message-ID: <20080725230738.GJ1612@suse.de>
+Subject: [patch 8/9] xfrm: fix fragmentation for ipv4 xfrm tunnel
+Message-ID: <20080725230736.GI1612@suse.de>
 References: <20080725225425.193966072@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0009-udplite-Protection-against-coverage-value-wrap-arou.patch"
+Content-Disposition: inline; filename="0008-xfrm-fix-fragmentation-for-ipv4-xfrm-tunnel.patch"
 In-Reply-To: <20080725230644.GA1612@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,70 +41,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Gerrit Renker <gerrit@erg.abdn.ac.uk>
+From: Steffen Klassert <steffen.klassert@secunet.com>
 
-[ Upstream commit 47112e25da41d9059626033986dc3353e101f815 ]
+[ Upstream commit fe833fca2eac6b3d3ad5e35f44ad4638362f1da8 ]
 
-This patch clamps the cscov setsockopt values to a maximum of 0xFFFF.
+When generating the ip header for the transformed packet we just copy
+the frag_off field of the ip header from the original packet to the ip
+header of the new generated packet. If we receive a packet as a chain
+of fragments, all but the last of the new generated packets have the
+IP_MF flag set. We have to mask the frag_off field to only keep the
+IP_DF flag from the original packet. This got lost with git commit
+36cf9acf93e8561d9faec24849e57688a81eb9c5 ("[IPSEC]: Separate
+inner/outer mode processing on output")
 
-Setsockopt values greater than 0xffff can cause an unwanted
-wrap-around.  Further, IPv6 jumbograms are not supported (RFC 3838,
-3.5), so that values greater than 0xffff are not even useful.
-
-Further changes: fixed a typo in the documentation.
-
-[ Add USHORT_MAX from upstream to linux/kernel.h -DaveM ]
-
-Signed-off-by: Gerrit Renker <gerrit@erg.abdn.ac.uk>
+Signed-off-by: Steffen Klassert <steffen.klassert@secunet.com>
+Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Documentation/networking/udplite.txt |    2 +-
- include/linux/kernel.h               |    1 +
- net/ipv4/udp.c                       |    4 ++++
- 3 files changed, 6 insertions(+), 1 deletion(-)
+ net/ipv4/xfrm4_mode_tunnel.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/Documentation/networking/udplite.txt
-+++ b/Documentation/networking/udplite.txt
-@@ -148,7 +148,7 @@
-         getsockopt(sockfd, SOL_SOCKET, SO_NO_CHECK, &value, ...);
+--- a/net/ipv4/xfrm4_mode_tunnel.c
++++ b/net/ipv4/xfrm4_mode_tunnel.c
+@@ -52,7 +52,7 @@ static int xfrm4_mode_tunnel_output(stru
+ 		IP_ECN_clear(top_iph);
  
-   is meaningless (as in TCP). Packets with a zero checksum field are
--  illegal (cf. RFC 3828, sec. 3.1) will be silently discarded.
-+  illegal (cf. RFC 3828, sec. 3.1) and will be silently discarded.
+ 	top_iph->frag_off = (flags & XFRM_STATE_NOPMTUDISC) ?
+-			    0 : XFRM_MODE_SKB_CB(skb)->frag_off;
++		0 : (XFRM_MODE_SKB_CB(skb)->frag_off & htons(IP_DF));
+ 	ip_select_ident(top_iph, dst->child, NULL);
  
-   4) Fragmentation
- 
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -20,6 +20,7 @@
- extern const char linux_banner[];
- extern const char linux_proc_banner[];
- 
-+#define USHORT_MAX	((u16)(~0U))
- #define INT_MAX		((int)(~0U>>1))
- #define INT_MIN		(-INT_MAX - 1)
- #define UINT_MAX	(~0U)
---- a/net/ipv4/udp.c
-+++ b/net/ipv4/udp.c
-@@ -1325,6 +1325,8 @@ int udp_lib_setsockopt(struct sock *sk, 
- 			return -ENOPROTOOPT;
- 		if (val != 0 && val < 8) /* Illegal coverage: use default (8) */
- 			val = 8;
-+		else if (val > USHORT_MAX)
-+			val = USHORT_MAX;
- 		up->pcslen = val;
- 		up->pcflag |= UDPLITE_SEND_CC;
- 		break;
-@@ -1337,6 +1339,8 @@ int udp_lib_setsockopt(struct sock *sk, 
- 			return -ENOPROTOOPT;
- 		if (val != 0 && val < 8) /* Avoid silly minimal values.       */
- 			val = 8;
-+		else if (val > USHORT_MAX)
-+			val = USHORT_MAX;
- 		up->pcrlen = val;
- 		up->pcflag |= UDPLITE_RECV_CC;
- 		break;
+ 	top_iph->ttl = dst_metric(dst->child, RTAX_HOPLIMIT);
 
 -- 
