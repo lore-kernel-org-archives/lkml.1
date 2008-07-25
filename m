@@ -1,101 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbYGYIzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbYGYI4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979AbYGYIzJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 04:55:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbYGYIys
+	id S1756015AbYGYI4Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 04:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbYGYI4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 04:54:48 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44074 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753097AbYGYIyq (ORCPT
+	Fri, 25 Jul 2008 04:56:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59974 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752423AbYGYI4P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 04:54:46 -0400
-Message-ID: <4889948D.7020408@jp.fujitsu.com>
-Date: Fri, 25 Jul 2008 17:53:33 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Pierre Ossman <drzeus-list@drzeus.cx>, Alex Chiang <achiang@hp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
-References: <20080724134737.4b91f30d@mjolnir.drzeus.cx> <200807241407.18543.jbarnes@virtuousgeek.org> <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org>
-In-Reply-To: <20080725032909.GA6701@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 25 Jul 2008 04:56:15 -0400
+Date: Fri, 25 Jul 2008 01:55:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrea Righi <righi.andrea@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: PAGE_ALIGN() compile breakage
+Message-Id: <20080725015537.564e3397.akpm@linux-foundation.org>
+In-Reply-To: <20080725083943.GC19310@cs181140183.pp.htv.fi>
+References: <20080725083943.GC19310@cs181140183.pp.htv.fi>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Fri, Jul 25, 2008 at 01:29:16AM +0200, Pierre Ossman wrote:
->> On Thu, 24 Jul 2008 17:08:27 -0600
->> Alex Chiang <achiang@hp.com> wrote:
->>
->>> Sorry for one more round-trip, but could you turn on debugging
->>> for pciehp as well?
->>>
->> Same thing, with debugging:
+On Fri, 25 Jul 2008 11:39:43 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+
+> Commit 27ac792ca0b0a1e7e65f20342260650516c95864
+> (PAGE_ALIGN(): correctly handle 64-bit values on 32-bit architectures)
+> causes on some architectures (e.g. avr32 and mips) compile errors
+> like the following in some configurations starting with:
 > 
-> I have a laptop with a similar problem (though I don't have pciehp
-> enabled, so I didn't notice it).  Obviously, we need to fix this.
+> <--  snip  -->
 > 
-> There is no question in my mind that firmware has programmed the slot
-> numbers incorrectly.  Here's the evidence from lspci -vvv:
-> 
-> 00:1c.0 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 1 (rev 03)
->         Capabilities: [40] Express (v1) Root Port (Slot+), MSI 00
->                 SltCap: AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+ Surpise+
->                         Slot #  2, PowerLimit 6.500000; Interlock- NoCompl-
-> 00:1c.4 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 5 (rev 03)
->         Capabilities: [40] Express (v1) Root Port (Slot+), MSI 00
->                 SltCap: AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+ Surpise+
->                         Slot #  2, PowerLimit 6.500000; Interlock- NoCompl-
-> 
-> I don't think anyone can credibly argue that this is correct.  They're
-> both PCIe devices, they're both both indicating that they have a slot
-> (maybe if I get my screwdriver out, I can see if there's really a slot
-> ...), they're on the same bus (so I don't know how the with_bus
-> parameter makes any difference).
+> ...
+>   CC      init/main.o
+> In file included from 
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/utsname.h:35,
+>                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:20:
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/sched.h: In function 'arch_pick_mmap_layout':
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/sched.h:2149: error: implicit declaration of function 'PAGE_ALIGN'
+> make[2]: *** [init/main.o] Error 1
 > 
 
-FYI:
+pls test:
 
-IIRC, pciehp uses bridge's secondary bus number for slot name, and
-PCI express downstream port can have only one hotplug slot. I think
-this is why with_bus prameter makes difference. But it doesn't work
-on the system that has multiple pci segments. In addition, shpchp
-also has with_bus option, but it doesn't work because shpc controller
-can have multiple slots on the bridge's secondary bus. Anyway, as
-you mentioned, using bus number for slot name is obviously not good
-idea, and your idea (e.g. "2-1", "2-2") looks much better.
+diff -puN include/linux/sched.h~a include/linux/sched.h
+--- a/include/linux/sched.h~a
++++ a/include/linux/sched.h
+@@ -2139,16 +2139,7 @@ static inline void set_task_cpu(struct t
+ 
+ #endif /* CONFIG_SMP */
+ 
+-#ifdef HAVE_ARCH_PICK_MMAP_LAYOUT
+ extern void arch_pick_mmap_layout(struct mm_struct *mm);
+-#else
+-static inline void arch_pick_mmap_layout(struct mm_struct *mm)
+-{
+-	mm->mmap_base = TASK_UNMAPPED_BASE;
+-	mm->get_unmapped_area = arch_get_unmapped_area;
+-	mm->unmap_area = arch_unmap_area;
+-}
+-#endif
+ 
+ #ifdef CONFIG_TRACING
+ extern void
+diff -puN mm/mmap.c~a mm/mmap.c
+--- a/mm/mmap.c~a
++++ a/mm/mmap.c
+@@ -2268,3 +2268,12 @@ int install_special_mapping(struct mm_st
+ 
+ 	return 0;
+ }
++
++#ifndef HAVE_ARCH_PICK_MMAP_LAYOUT
++void arch_pick_mmap_layout(struct mm_struct *mm)
++{
++	mm->mmap_base = TASK_UNMAPPED_BASE;
++	mm->get_unmapped_area = arch_get_unmapped_area;
++	mm->unmap_area = arch_unmap_area;
++}
++#endif
+_
 
-Thanks,
-Kenji Kaneshige
-
-
-
-
-> I've always hated that with_bus parameter.  I don't like it being a
-> parameter and I don't like the names it produces.
 > 
-> Part of the problem is the kobject API.  It really hates you trying to
-> register a duplicate name and won't just return -EEXIST and let you try
-> a new name.  Instead it prints an ugly warning and dumps stack.  See
-> kobject_add_internal() in lib/kobject.c.
+> and more nasty problems follow later.
 > 
-> So we need a way to find if there's already a slot of this name.  I
-> don't see a kobject routine to do that.  Maybe we can do it internally
-> to the pci slot code.
-> 
-> Then we need to pick a new name for the kobject if it does collide.
-> My suggestion is that the second time we find an object named "2", we
-> call it "2dup1" (the third time "2dup2", etc.)  Other opinions I've
-> seen include "2a", "2b", ... or "2-1", "2-2", ... or "2-brokenfw1",
-> "2-brokenfw2".
-> 
-> I'm at OLS this week, so no patch from me.
-> 
+> My suggestion is to:
+> - revert commit 27ac792ca0b0a1e7e65f20342260650516c95864 and then
+> - fix all PAGE_ALIGN() instances without moving them.
 
+Every time this patch blew up (and it did it often), fixing it resulted
+in overall improvements.
 
+> Unifying code is a good thing, but in this case it is not worth the 
+> trouble it causes by poking into the heart of our headers mess.
+
+Well.   If we leave it a mess, it'll stay a mess.
