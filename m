@@ -1,99 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbYGYJ2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYGYJ3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755835AbYGYJ2X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 05:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYGYJ2O
+	id S1756111AbYGYJ3s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 05:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYGYJ3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 05:28:14 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:42032 "EHLO smtp6.pp.htv.fi"
+	Fri, 25 Jul 2008 05:29:37 -0400
+Received: from postel.suug.ch ([194.88.212.233]:43986 "EHLO postel.suug.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752712AbYGYJ2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 05:28:12 -0400
-Date: Fri, 25 Jul 2008 12:27:48 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andrea Righi <righi.andrea@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: PAGE_ALIGN() compile breakage
-Message-ID: <20080725092748.GF19310@cs181140183.pp.htv.fi>
-References: <20080725083943.GC19310@cs181140183.pp.htv.fi> <20080725015537.564e3397.akpm@linux-foundation.org> <20080725091455.GD19310@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1752474AbYGYJ3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 05:29:36 -0400
+Date: Fri, 25 Jul 2008 11:29:54 +0200
+From: Thomas Graf <tgraf@suug.ch>
+To: Ranjit Manomohan <ranjitm@google.com>, Paul Menage <menage@google.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, lizf@cn.fujitsu.com,
+       kaber@trash.net
+Subject: Re: [PATCH] Traffic control cgroups subsystem
+Message-ID: <20080725092954.GE20815@postel.suug.ch>
+References: <Pine.LNX.4.64.0807221041210.1091@ranjit.corp.google.com> <20080724234553.GC20815@postel.suug.ch> <6599ad830807241818k5cb288e2l3e62a01c2f102913@mail.gmail.com> <Pine.LNX.4.64.0807221041210.1091@ranjit.corp.google.com> <20080724234553.GC20815@postel.suug.ch> <166fe7950807241816y6bbcc17evc934524a4511f4ae@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080725091455.GD19310@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <6599ad830807241818k5cb288e2l3e62a01c2f102913@mail.gmail.com> <166fe7950807241816y6bbcc17evc934524a4511f4ae@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 12:14:55PM +0300, Adrian Bunk wrote:
-> On Fri, Jul 25, 2008 at 01:55:37AM -0700, Andrew Morton wrote:
->...
-> > pls test:
-> > 
-> > diff -puN include/linux/sched.h~a include/linux/sched.h
-> > --- a/include/linux/sched.h~a
-> > +++ a/include/linux/sched.h
-> > @@ -2139,16 +2139,7 @@ static inline void set_task_cpu(struct t
-> >  
-> >  #endif /* CONFIG_SMP */
-> >  
-> > -#ifdef HAVE_ARCH_PICK_MMAP_LAYOUT
-> >  extern void arch_pick_mmap_layout(struct mm_struct *mm);
-> > -#else
-> > -static inline void arch_pick_mmap_layout(struct mm_struct *mm)
-> > -{
-> > -	mm->mmap_base = TASK_UNMAPPED_BASE;
-> > -	mm->get_unmapped_area = arch_get_unmapped_area;
-> > -	mm->unmap_area = arch_unmap_area;
-> > -}
-> > -#endif
-> >  
-> >  #ifdef CONFIG_TRACING
-> >  extern void
-> > diff -puN mm/mmap.c~a mm/mmap.c
-> > --- a/mm/mmap.c~a
-> > +++ a/mm/mmap.c
-> > @@ -2268,3 +2268,12 @@ int install_special_mapping(struct mm_st
-> >  
-> >  	return 0;
-> >  }
-> > +
-> > +#ifndef HAVE_ARCH_PICK_MMAP_LAYOUT
-> > +void arch_pick_mmap_layout(struct mm_struct *mm)
-> > +{
-> > +	mm->mmap_base = TASK_UNMAPPED_BASE;
-> > +	mm->get_unmapped_area = arch_get_unmapped_area;
-> > +	mm->unmap_area = arch_unmap_area;
-> > +}
-> > +#endif
-> 
-> Nice, this seems to fix the problem.
->...
+* Ranjit Manomohan <ranjitm@google.com> 2008-07-24 18:16
+> I will send a follow up patch that handles ingress as well which
+> should be a fairly simple addition to the current scheme.
 
-Further testing revealed that you should choose a file that also gets 
-compiled on MMU-less architectures:
+It is not that simple, neither dst nor socket has been looked up
+where netfilter gives the possibility to build a queue using ifb.
+I chose to shape just before the skb is put on the socket queue
+but that also required some tricks and has to be done for every
+protocol separately.
 
-<--  snip  -->
+> IMO it may
+> be preferable not to tie the implementation to any specific dependency
+> in user space leaving it maximum flexibility. Our cluster management
+> component sets up these rules depending upon the configuration and we
+> have this scheme working in our clusters for quite some time with no
+> issues.
 
-...
-  LD      vmlinux
-fs/built-in.o: In function `flush_old_exec':
-(.text+0x6ae8): undefined reference to `arch_pick_mmap_layout'
-fs/built-in.o: In function `flush_old_exec':
-(.text+0x6cf0): undefined reference to `arch_pick_mmap_layout'
-make[1]: *** [vmlinux] Error 1
+I never even mentioned a dependency on anything. Whether such a daemon
+is being run or not is up to the user. It is absolutely irrelevant what
+your cluster management component does unless you open up the code.
 
-<--  snip  -->
+> In my view it is a trade off to allow more flexibility in the
+> configuration. I would think someone configuring the current tc setup
+> in Linux is already pretty knowledgeable about its working and can do
+> this extra step without much difficulty.
 
-cu
-Adrian
+The one does not exclude the other but even with good documentation,
+configuring or adapting tc configurations is a heavy task for many
+users and will prevent many from using this feature. Having a daemon
+create and modify a tc tree does not hinder the experienced user from
+making custom modifications.
 
--- 
+> That said I will look for your alternative implementation to compare
+> the benefits.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Thanks, I will post my patches as soon as the next feature window opens.
 
+* Paul Menage <menage@google.com> 2008-07-24 21:18
+> You mean as processes fork/exit or move between cgroups you have to
+> update the pid->class mappings in the kernel's filter? That sounds way
+> too fragile to me.
+
+No, not at all. The classifier registers as cgroup subsystem and updates
+the mappings automatically if the pid has been added by the user.
+
+> What types of events? We discussed how to send cgroup notifications to
+> userspace in the containers mini-summit on Tuesday. Netlink was one of
+> the options discussed, but suffers from the problem that netlink
+> sockets are tied to a particular network namespaces. The solution that
+> seemed most favoured was to have pollable cgroup control files that
+> represent events (and optionally support event data via a fifo).
+
+Currently I broadcast on all namespaces by iterating over them but I may
+remove them again altogether. I only use the notifications to decide
+wehther a cgroup has at least one task at the moment.
+
+> The user can use whatever middleware they want (e.g. your daemon,
+> libcg, etc) to set up qdiscs and classes. I don't think that requiring
+> any particular userspace implementation is the right way to go. The
+> point of this patch was to provide a minimal way to tag
+> sockets/packets as belonging to a particular cgroup, in order to make
+> use of the existing traffic controll APIs.
+
+This patch certainly does have value. Since it won't be a problem for
+people to use one over another I see no problem it multiple solutions
+to coexist.
