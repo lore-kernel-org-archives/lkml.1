@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753366AbYGYGQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752753AbYGYGRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753366AbYGYGQi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 02:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbYGYGQ3
+	id S1752753AbYGYGRV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 02:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYGYGRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 02:16:29 -0400
-Received: from gate.crashing.org ([63.228.1.57]:60439 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751477AbYGYGQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 02:16:29 -0400
-Subject: sfx.c driver build failure
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Michael Brown <mbrown@fensystems.co.uk>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Jeff Garzik <jgarzik@pobox.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 25 Jul 2008 16:15:59 +1000
-Message-Id: <1216966559.11188.85.camel@pasglop>
+	Fri, 25 Jul 2008 02:17:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40469 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751773AbYGYGRM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 02:17:12 -0400
+Date: Thu, 24 Jul 2008 23:15:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       David Altobelli <david.altobelli@hp.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Let HP iLO driver depend on PCI
+Message-Id: <20080724231519.b4553fa1.akpm@linux-foundation.org>
+In-Reply-To: <20080725153502.283aae1f.sfr@canb.auug.org.au>
+References: <20080725022048.GB5179@osiris.boeblingen.de.ibm.com>
+	<20080724215652.24e4e550.akpm@linux-foundation.org>
+	<20080725153502.283aae1f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael !
+On Fri, 25 Jul 2008 15:35:02 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-The sfx driver (which happens to be part of some of our test configs)
-fails to build in current Linus tree on powerpc with this error:
+> Hi Andrew,
+> 
+> On Thu, 24 Jul 2008 21:56:52 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > Three weeks and nobody did an allmodconfig build on linux-next for s390
+> > or m68k (at least).
+> 
+> http://kisskb.ellerman.id.au/kisskb/branch/9/
+> 
 
-/home/benh/kernels/linux-powerpc/drivers/net/sfc/efx.c: In function ‘efx_probe_interrupts’:
-/home/benh/kernels/linux-powerpc/drivers/net/sfc/efx.c:845: error: lvalue required as unary ‘&’ oper
-and
+Wow, lots of red.
 
-Cheers,
-Ben.
+May I revise my comment?  Three weeks and nobody did anything about the
+failing allmodconfig builds on linux-next and s390 (at least).
 
+Is anyone actively monitoring that page and doing the requisite culprit-poking?
 
