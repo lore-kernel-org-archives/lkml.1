@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbYGYOPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbYGYOPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752751AbYGYOPW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 10:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYGYOPH
+	id S1753235AbYGYOPq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 10:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYGYOPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 10:15:07 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:40734 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751223AbYGYOPF (ORCPT
+	Fri, 25 Jul 2008 10:15:35 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:46065 "EHLO
+	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750894AbYGYOPe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 10:15:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=p7/RQTJB3F3xdi8cZx76O74oD3LJ7ymPYtV8KWL3UIpngOF6EHgXMCALgJ50cXSg2/
-         UG/6vulFZg4hx4EjtCLEB8BFPk94MjJuDpR78EwrQn0xggg3SSzYuT1A7LiYwqP7/2HS
-         dgvrFkHcl/V6ZRyun/26iokRuvA7mAmRCdv+c=
-Date: Fri, 25 Jul 2008 18:15:02 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take 3)
-Message-ID: <20080725141502.GC28466@lenovo>
-References: <20080724143151.GA32422@lenovo> <20080724150116.GC32422@lenovo> <48889C14.4070408@fujitsu-siemens.com> <4889968E.6020000@fujitsu-siemens.com> <20080725100844.GA16698@lenovo> <4889C723.7050402@fujitsu-siemens.com> <20080725125950.GA28466@lenovo> <4889D767.5050709@fujitsu-siemens.com> <20080725134831.GB28466@lenovo> <4889DCA4.4010800@fujitsu-siemens.com>
+	Fri, 25 Jul 2008 10:15:34 -0400
+X-BigFish: VPS-29(zz1503M1432R98dR1805M936fQ873fnzz10d3izzz32i6bh43j65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0K4KFKV-03-LNP-01
+Date: Fri, 25 Jul 2008 16:14:25 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       robert.richter@amd.com
+Subject: Re: [PATCH] add iommu_num_pages helper function
+Message-ID: <20080725141425.GB7493@amd.com>
+References: <20080725132121.GZ7493@amd.com> <20080725223533A.fujita.tomonori@lab.ntt.co.jp> <20080725134159.GA7493@amd.com> <20080725225724J.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <4889DCA4.4010800@fujitsu-siemens.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080725225724J.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 25 Jul 2008 14:14:25.0925 (UTC) FILETIME=[BE6E9B50:01C8EE60]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Martin Wilck - Fri, Jul 25, 2008 at 04:01:08PM +0200]
-> Cyrill Gorcunov wrote:
->
->> Martin, if I understood you right - this means your patch is not
->> needed? 
->
-> The patch would still be needed. Just the reported failure of my  
-> simplified patch on the old kernel would not have occurred in the  
-> current kernel. IOW, the patch is fine for the current kernel, but not  
-> for the old one.
->
->> Actually on 64bit mode APIC_DIVISOR is a bit hidden in
->> __setup_APIC_LVTT - you may see it as APIC_TDR_DIV_16 while setting
->> up divisor register. I was proposing patch for that but it leaded
->> to potetntial overflow (thanks Ingo for catching) so we leave it as
->> is. Maybe I miss something?
->
-> The problem was not that the divisor 16 was used for the counter speed  
-> (APIC_TDR_DIV_16), but that the old code set the counter start value to  
-> (250000000/16) rather than just 250000000. That means the counter will  
-> underflow earlier.
->
-> I am attaching a "take 3" patch which minimizes the risk of an underflow  
-> by using the maximum possible initial value for the APIC timer.
->
-> Martin
->
-> -- 
-> Martin Wilck
-> PRIMERGY System Software Engineer
-> FSC IP ESP DEV 6
->
-> Fujitsu Siemens Computers GmbH
-> Heinz-Nixdorf-Ring 1
-> 33106 Paderborn
-> Germany
->
-> Tel:			++49 5251 8 15113
-> Fax:			++49 5251 8 20209
-> Email:			mailto:martin.wilck@fujitsu-siemens.com
-> Internet:		http://www.fujitsu-siemens.com
-> Company Details:	http://www.fujitsu-siemens.com/imprint.html
+On Fri, Jul 25, 2008 at 10:57:24PM +0900, FUJITA Tomonori wrote:
+> On Fri, 25 Jul 2008 15:41:59 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > 
+> > Is there any other architecture independent way to find out the page
+> > size the IOMMU is using? If yes I can rework that patchset.
+> 
+> There isn't now, I think.
 >
 
-ah, ok, thanks
+Ok.
 
-		- Cyrill -
+> 
+> > If not, I suggest that we (you?) introduce one in a follow-on patch
+> > series and fix the iommu_num_pages function then.
+> 
+> That's fine by me. Or I could try to find a solution and submit new
+> patchset with your AMD and GART patches.
+
+Thats also possible. But I prefer to fix that incrementally and merge
+this first step.
+
+> BTW, I prefer to push this patchset via -mm rather than x86 since
+> after all we need to clean up all the IOMMUs.
+
+Push it through -mm would make sense since it touches generic code in
+lib/. On the other side in x86 we would avoid merge conflicts with
+updates in AMD IOMMU and GART code.
+
+Joerg
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
