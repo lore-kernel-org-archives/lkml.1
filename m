@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbYGYPwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752247AbYGYP50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752755AbYGYPwS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 11:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbYGYPwF
+	id S1752247AbYGYP50 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 11:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbYGYP5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 11:52:05 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:52334 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750807AbYGYPwD (ORCPT
+	Fri, 25 Jul 2008 11:57:17 -0400
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:57149 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750974AbYGYP5Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 11:52:03 -0400
-Date: Fri, 25 Jul 2008 09:51:46 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Michal Schmidt <mschmidt@redhat.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Vrabel <david.vrabel@csr.com>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: PCI: MSI interrupts masked using prohibited method
-Message-ID: <20080725155146.GB17093@parisc-linux.org>
-References: <4860D09D.4060801@csr.com> <48807166.9010006@csr.com> <20080722155629.1160635e@brian.englab.brq.redhat.com> <200807221052.26879.jbarnes@virtuousgeek.org> <20080725152918.43bf3100@brian.englab.brq.redhat.com> <20080725134252.GG6701@parisc-linux.org> <20080725155329.79821436@brian.englab.brq.redhat.com>
+	Fri, 25 Jul 2008 11:57:16 -0400
+Message-ID: <4889F7D6.4010706@lwfinger.net>
+Date: Fri, 25 Jul 2008 10:57:10 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080725155329.79821436@brian.englab.brq.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: free_beer_for_all@yahoo.com
+CC: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: WLAN regression before this morning
+References: <761713.15647.qm@web46115.mail.sp1.yahoo.com>
+In-Reply-To: <761713.15647.qm@web46115.mail.sp1.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 03:53:29PM +0200, Michal Schmidt wrote:
-> Maybe we should just not use MSI for devices without maskbits.
+barry bouwsma wrote:
+> Servus,
+> 
+> Last successfully built and used kernel was 2.6.26-rc8, about
+> the start of 29.Jun UTC or so.
+> 
+> Present build of GIT 2.6.26 during the merge window, updated
+> just before 06h UTC, today, 25.Jul.
+> 
+> With today's kernel, I am not even able to associate with a
+> WLAN less than two metres away from my ZD1211rw type USB
+> adapter, to say nothing of more distant WLANs with which I
+> could authenticate with the earlier code without problems --
+> I don't even come near the associate stage.
+> 
+> The networks all show up as expected in `iwlist wlan1 scan'
+> with decent strengths; while all I get from dmesg is
+> [ 1016.829827] wlan1: authenticate with AP 00:1X:YZ:AB:23:45
+> [ 1017.032769] wlan1: authenticate with AP 00:1X:YZ:AB:23:45
+> [ 1017.234213] wlan1: authenticate with AP 00:1X:YZ:AB:23:45
+> [ 1017.435402] wlan1: authentication with AP 00:1X:YZ:AB:23:45 timed out
+> 
+> 
+> If I've hosed myself with a new .config option, I'll be kicking
+> meself where it hurts most.  Else, back to -rc8 to both send
+> this message and to regain 'net access to do other needed so-
+> called `work', so sorry I haven't narrowed this down further...
+> 
+> And I'll feel me a fool if the failure is because I went from
+> a different (BSD) OS into 2.6.26-merge, while going from that
+> into -rc8 I promptly associate as desired.
 
-That seems excessive.  I wouldn't object to forbidding CPU affinity
-changes for devices:
+I too have a problem with wireless in the current 2.6.26-gitX kernels. If you 
+have done the git pull, you can try bisecting to find the problem. Use 'git 
+bisect good v2.6.26' to mark a known good point. If you don't wish to take the 
+time bisecting, then issue a 'git checkout v2.6.26'. That should give you a 
+kernel that works.
 
- - Without maskbits
- - With the intx quirk
-
-I'd want to look into it in a bit more detail .... perhaps we could
-allow irq affinity if we don't have to change the address, only the
-data.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Larry
