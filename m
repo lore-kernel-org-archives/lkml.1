@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbYGYXLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbYGYXMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756098AbYGYXLc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 19:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757328AbYGYXLV
+	id S1757587AbYGYXMH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 19:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757464AbYGYXLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 19:11:21 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33400 "EHLO mx2.suse.de"
+	Fri, 25 Jul 2008 19:11:43 -0400
+Received: from mx1.suse.de ([195.135.220.2]:58363 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757323AbYGYXLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 19:11:20 -0400
-Date: Fri, 25 Jul 2008 16:07:23 -0700
+	id S1757458AbYGYXLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 19:11:42 -0400
+Date: Fri, 25 Jul 2008 16:07:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stephen Hemminger <shemminger@vyatta.com>,
+       James Chapman <jchapman@katalix.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 3/9] ipv6: use timer pending
-Message-ID: <20080725230723.GD1612@suse.de>
+Subject: [patch 4/9] l2tp: Fix potential memory corruption in
+	pppol2tp_recvmsg()
+Message-ID: <20080725230725.GE1612@suse.de>
 References: <20080725225425.193966072@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0003-ipv6-use-timer-pending.patch"
+Content-Disposition: inline; filename="0004-l2tp-Fix-potential-memory-corruption-in-pppol2tp_re.patch"
 In-Reply-To: <20080725230644.GA1612@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,41 +41,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Stephen Hemminger <shemminger@vyatta.com>
+From: James Chapman <jchapman@katalix.com>
 
-[ Upstream commit 847499ce71bdcc8fc542062df6ebed3e596608dd ]
+[ Upstream commit 6b6707a50c7598a83820077393f8823ab791abf8 ]
 
-This fixes the bridge reference count problem and cleanups ipv6 FIB
-timer management.  Don't use expires field, because it is not a proper
-way to test, instead use timer_pending().
+This patch fixes a potential memory corruption in
+pppol2tp_recvmsg(). If skb->len is bigger than the caller's buffer
+length, memcpy_toiovec() will go into unintialized data on the kernel
+heap, interpret it as an iovec and start modifying memory.
 
-Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+The fix is to change the memcpy_toiovec() call to
+skb_copy_datagram_iovec() so that paged packets (rare for PPPOL2TP)
+are handled properly. Also check that the caller's buffer is big
+enough for the data and set the MSG_TRUNC flag if it is not so.
+
+Reported-by: Ilja <ilja@netric.org>
+Signed-off-by: James Chapman <jchapman@katalix.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv6/ip6_fib.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/pppol2tp.c |   20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
 
---- a/net/ipv6/ip6_fib.c
-+++ b/net/ipv6/ip6_fib.c
-@@ -679,7 +679,7 @@ static int fib6_add_rt2node(struct fib6_
- 
- static __inline__ void fib6_start_gc(struct rt6_info *rt)
- {
--	if (ip6_fib_timer.expires == 0 &&
-+	if (!timer_pending(&ip6_fib_timer) &&
- 	    (rt->rt6i_flags & (RTF_EXPIRES|RTF_CACHE)))
- 		mod_timer(&ip6_fib_timer, jiffies +
- 			  init_net.ipv6.sysctl.ip6_rt_gc_interval);
-@@ -687,7 +687,7 @@ static __inline__ void fib6_start_gc(str
- 
- void fib6_force_start_gc(void)
- {
--	if (ip6_fib_timer.expires == 0)
-+	if (!timer_pending(&ip6_fib_timer))
- 		mod_timer(&ip6_fib_timer, jiffies +
- 			  init_net.ipv6.sysctl.ip6_rt_gc_interval);
- }
+--- a/drivers/net/pppol2tp.c
++++ b/drivers/net/pppol2tp.c
+@@ -783,14 +783,18 @@ static int pppol2tp_recvmsg(struct kiocb
+ 	err = 0;
+ 	skb = skb_recv_datagram(sk, flags & ~MSG_DONTWAIT,
+ 				flags & MSG_DONTWAIT, &err);
+-	if (skb) {
+-		err = memcpy_toiovec(msg->msg_iov, (unsigned char *) skb->data,
+-				     skb->len);
+-		if (err < 0)
+-			goto do_skb_free;
+-		err = skb->len;
+-	}
+-do_skb_free:
++	if (!skb)
++		goto end;
++
++	if (len > skb->len)
++		len = skb->len;
++	else if (len < skb->len)
++		msg->msg_flags |= MSG_TRUNC;
++
++	err = skb_copy_datagram_iovec(skb, 0, msg->msg_iov, len);
++	if (likely(err == 0))
++		err = len;
++
+ 	kfree_skb(skb);
+ end:
+ 	return err;
 
 -- 
