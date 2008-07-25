@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbYGYJzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbYGYJzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755943AbYGYJzM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 05:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYGYJy5
+	id S1756504AbYGYJzd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 05:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbYGYJzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 05:54:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53899
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750934AbYGYJy4 (ORCPT
+	Fri, 25 Jul 2008 05:55:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47411 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755977AbYGYJzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 05:54:56 -0400
-Date: Fri, 25 Jul 2008 02:54:56 -0700 (PDT)
-Message-Id: <20080725.025456.68612813.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: pupilla@hotmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.26: [<c0133cc1>] __alloc_pages_internal+0x331/0x343
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080725074109.GA16747@gondor.apana.org.au>
-References: <20080723.234556.98132946.davem@davemloft.net>
-	<E1KM0Wl-0001zC-00@gondolin.me.apana.org.au>
-	<20080725074109.GA16747@gondor.apana.org.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 25 Jul 2008 05:55:13 -0400
+Date: Fri, 25 Jul 2008 02:54:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Altobelli <david.altobelli@hp.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Let HP iLO driver depend on PCI
+Message-Id: <20080725025411.bf6d8f74.akpm@linux-foundation.org>
+In-Reply-To: <20080725094131.GA4436@osiris.boeblingen.de.ibm.com>
+References: <20080725022048.GB5179@osiris.boeblingen.de.ibm.com>
+	<20080724215652.24e4e550.akpm@linux-foundation.org>
+	<20080725153502.283aae1f.sfr@canb.auug.org.au>
+	<20080724231519.b4553fa1.akpm@linux-foundation.org>
+	<20080725094131.GA4436@osiris.boeblingen.de.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Fri, 25 Jul 2008 15:41:09 +0800
+On Fri, 25 Jul 2008 11:41:31 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 
-> On Thu, Jul 24, 2008 at 09:06:39PM +0800, Herbert Xu wrote:
-> >
-> > Indeed, this is long overdue.  I'm going to spend a few cycles on
-> > this.  I'll start by moving the common code into net/xfrm/ipcomp.c
-> > so that I don't have to do it twice later.
+> On Thu, Jul 24, 2008 at 11:15:19PM -0700, Andrew Morton wrote:
+> > On Fri, 25 Jul 2008 15:35:02 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > 
+> > > Hi Andrew,
+> > > 
+> > > On Thu, 24 Jul 2008 21:56:52 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > >
+> > > > Three weeks and nobody did an allmodconfig build on linux-next for s390
+> > > > or m68k (at least).
+> > > 
+> > > http://kisskb.ellerman.id.au/kisskb/branch/9/
+> > > 
+> > 
+> > Wow, lots of red.
+> > 
+> > May I revise my comment?  Three weeks and nobody did anything about the
+> > failing allmodconfig builds on linux-next and s390 (at least).
 > 
-> Here is the first part:
-> 
-> ipsec: ipcomp - Merge IPComp implementations
-> 
-> This patch merges the IPv4/IPv6 IPComp implementations since most
-> of the code is identical.  As a result future enhancements will no
-> longer need to be duplicated.
-> 
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> Not true. I sent patches for all (s390) build failures two weeks ago.
+> Nobody cared. Patch for this specific build failure is available
+> here http://marc.info/?l=linux-next&m=121577361309086&w=2 .
 
-This is really nice :-)
+I doubt if the hpilo developers are watching linux-next for patches.
 
-Applied, thanks!
+Stephen will have seen it and he might play the
+feed-it-over-to-the-culprit game.  But usually I do that.
+
+It's always appreciated if the patch-creator can identify the
+appropriate individuals for the Cc: as well.
+
+> > Is anyone actively monitoring that page and doing the requisite culprit-poking?
+> 
+> Where to send patches to?
+
+Me, lkml, Stephen, maintainer(s).
+
+> And who takes care they get integrated before
+> the merge window opens?
+
+Usually me.  Maintainers will sometimes integrate the fix directly but
+the success rate via that route is distressingly low.
