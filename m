@@ -1,148 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbYGYJAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYGYJCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755282AbYGYJAx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 05:00:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYGYJAo
+	id S1755513AbYGYJCS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 05:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbYGYJCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 05:00:44 -0400
-Received: from n61.bullet.mail.sp1.yahoo.com ([98.136.44.37]:37801 "HELO
-	n61.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751897AbYGYJAn (ORCPT
+	Fri, 25 Jul 2008 05:02:06 -0400
+Received: from dgate20.fujitsu-siemens.com ([80.70.172.51]:27274 "EHLO
+	dgate20.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752687AbYGYJCF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 05:00:43 -0400
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 30067.98532.bm@omp301.mail.sp1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=KRX0sG58CB7dKz/t7tUaLZPqv6E+tINdXahqzZQTlT628Rfgz0vRmM8FpucPZMS4I//EGTP5bv2heNo/EKNmDd2wzi+zlfPQvbEwrBoDmZi2bMraIMUu3z2MdpxyvlOgBahK99BvC0vCQ4fgRxknW+4YUnBti6+TR6VsNk66QDg=;
-X-Mailer: YahooMailWebService/0.7.218
-Date: Fri, 25 Jul 2008 02:00:42 -0700 (PDT)
-From: barry bouwsma <free_beer_for_all@yahoo.com>
-Reply-To: free_beer_for_all@yahoo.com
-Subject: [from dvb] Testers with Medion MD95700 DVB-T wanted
-To: linux-kernel@vger.kernel.org
+	Fri, 25 Jul 2008 05:02:05 -0400
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
+  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
+   Received:Received:Message-ID:Date:From:Organization:
+   User-Agent:MIME-Version:To:CC:Subject:References:
+   In-Reply-To:Content-Type;
+  b=MbR0k9zfRPLIx9pACgrLIJ0K+C6nvuDWVw7Bq/XqXSghF9F5UB7OH1UW
+   ooFqQszmA429txh+n8aRM7kHteeV0Af9OfmBvHTiQeZvEVZsuN3ouXwcS
+   COW8UlXHAcf3OXs;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.31,252,1215381600"; 
+   d="diff'?scan'208";a="21177649"
+X-IronPort-AV: E=Sophos;i="4.31,251,1215381600"; 
+   d="diff'?scan'208";a="32935004"
+Message-ID: <4889968E.6020000@fujitsu-siemens.com>
+Date: Fri, 25 Jul 2008 11:02:06 +0200
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Organization: Fujitsu Siemens Computers
+User-Agent: Thunderbird 2.0.0.15pre (X11/20080508)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <805424.72662.qm@web46116.mail.sp1.yahoo.com>
+To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+CC: Cyrill Gorcunov <gorcunov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take
+ 2)
+References: <48885DDC.9010003@fujitsu-siemens.com> <20080724111631.GA3432@lenovo> <48886E6D.1030005@fujitsu-siemens.com> <20080724120512.GA21804@lenovo> <488889B6.9070707@fujitsu-siemens.com> <20080724143151.GA32422@lenovo> <20080724150116.GC32422@lenovo> <48889C14.4070408@fujitsu-siemens.com>
+In-Reply-To: <48889C14.4070408@fujitsu-siemens.com>
+Content-Type: multipart/mixed;
+ boundary="------------080705040003040700010305"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Moin,
+This is a multi-part message in MIME format.
+--------------080705040003040700010305
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I've already spammed the linux-dvb mailing list with this hack,
-to a rousing chorus of silence.  So before I rewrite this hack
-into a True Kernel Patch for consideration, I thought I'd take
-the chance of first seeking a wider audience of potential testers
-here (with the number of actual testers probably remaining zero,
-but hey), in case someone can offer real feedback.
+I wrote:
 
-So, if for some reason, you do have this device, *please* test
-this hack so I don't have to apologize later for breaking things.
+> This patch fixes this by two separate measures:
+>   a) make sure that no significant interruption occurs between APIC and
+>      TSC reads
+>   b) make sure that the measurement loop isn't significantly longer
+>      than originally intended.
 
-thanks!
-Barry Bouwsma
+Here is a new, simplified version of our patch that only uses measure a).
+We verified that this is sufficient for accurate calibration.
 
- -=-=-=-=-=-=-=-
+If we fail to determine the start or end time of the calibration 
+correctly 10 times in a row, we will print a critical error message and 
+go on. One might as well argue that this should cause a kernel panic (it 
+is impossible to run on the CPU for only a few cycles without being 
+interrupted by an SMI!), but Cyrill probably won't agree.
 
-I would like someone with the Medion MD95700 tuner to test
-the following patch and report whether anything breaks.
+Martin
 
-The present kernel codes do not function with my MD95700,
-and previously I've had to break supporting those cards that
-presently work in order to make mine work.
+-- 
+Martin Wilck
+PRIMERGY System Software Engineer
+FSC IP ESP DEV 6
 
-If you have this DVB-T tuner, can you try this patch, and
-report success or failure.  When you attach your device, you
-should see one line reporting that alt 6 is a bulk endpoint,
-and then you should be able to use your tuner as before.
+Fujitsu Siemens Computers GmbH
+Heinz-Nixdorf-Ring 1
+33106 Paderborn
+Germany
 
+Tel:			++49 5251 8 15113
+Fax:			++49 5251 8 20209
+Email:			mailto:martin.wilck@fujitsu-siemens.com
+Internet:		http://www.fujitsu-siemens.com
+Company Details:	http://www.fujitsu-siemens.com/imprint.html
 
+--------------080705040003040700010305
+Content-Type: text/x-patch;
+ name="calibrate_APIC_clock-4.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="calibrate_APIC_clock-4.diff"
 
---- drivers/media/dvb/dvb-usb/cxusb.c-DIST      2008-04-24 19:09:44.000000000 +0200
-+++ drivers/media/dvb/dvb-usb/cxusb.c   2008-07-17 13:58:41.000000000 +0200
-@@ -535,8 +535,7 @@ static int cxusb_dvico_xc3028_tuner_atta
- static int cxusb_cx22702_frontend_attach(struct dvb_usb_adapter *adap)
- {
-        u8 b;
--       if (usb_set_interface(adap->dev->udev, 0, 6) < 0)
--               err("set interface failed");
-+/* XXX don't usb_set_interface() here; let new identify routine set interface */
- 
-        cxusb_ctrl_msg(adap->dev, CMD_DIGITAL, NULL, 0, &b, 1);
- 
-@@ -712,6 +711,61 @@ static int bluebird_patch_dvico_firmware
-        return -EINVAL;
+[PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take 2)
+
+Non-maskable asynchronous events (e.g. SMIs) which occur during the APIC 
+timer calibration can cause timer miscalibrations, sometimes by large amounts. 
+This patch fixes this by making sure that no significant interruption occurs 
+between APIC and TSC reads. SMIs may still occur at some stage in the 
+calibration loop, causing the loop to last longer than intended. This 
+doesn't matter though, as long as the start and end values are both 
+taken simultaneously.
+
+Signed-off-by: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Signed-off-by: Gerhard Wichert <gerhard.wichert@fujitsu-siemens.com>
+
+--- arch/x86/kernel/apic_64.c	2008-07-25 10:45:09.000000000 +0200
++++ arch/x86/kernel/apic_64.c.new	2008-07-25 10:45:19.000000000 +0200
+@@ -300,6 +300,31 @@ static void setup_APIC_timer(void)
  }
  
-+/* XXX another desperate attempt at a hack */
-+/*  Use identify_state not for deciding whether the device is cold or not,
-+ *  but rather to check the type of data seen from alt setting 6.
-+ *  A type of BULK is what the present kernel code expects, and is what
-+ *  devices which have been flashed since purchase will deliver.
-+ *  Devices out-of-the-box (like mine) present ISOC data on this endpoint
-+ *  however, and won't work with the present kernel code -- however, they
-+ *  do deliver usable BULK data from alt setting 0.  Move the altsetting
-+ *  code to here and set it to 6 for flashed boxes like the present kernel
-+ *  code, or set it to 0 for boxes like mine.
-+ *  Spew some debuggery that can be deleted or turned into genuine debug
+ /*
++ * Helper function for calibrate_APIC_clock(): Make sure that
++ * APIC TMCTT and TSC are read at the same time, to reasonable
++ * accuracy. On any sane system, the retry loop won't need more
++ * than a single retry, given that the rdtsc/apic_read/rdtsc
++ * sequence won't take more than a few cycles.
 + */
-+static int medion_identify_state(struct usb_device *udev,
-+                                      struct dvb_usb_device_properties *props,
-+                                      struct dvb_usb_device_description **desc,
-+                                      int *cold)
++
++#define MAX_DIFFERENCE 1000UL
++#define MAX_ITER 10
++static inline int
++__read_tsc_and_apic(unsigned long *tsc, unsigned *apic)
 +{
-+       struct usb_host_interface *alt;
-+       struct usb_host_endpoint  *e;
-+
-+       if (*cold)
-+               return 0;
-+
-+       /* Check the data type on alt interface 6.  If it's bulk, use it.
-+        * If it's isoc, we're looking at a factory-fresh box, on which
-+        * bulk data can be found instead at alt 0.
-+        */
-+       alt = usb_altnum_to_altsetting(usb_ifnum_to_if(udev, 0), 6);
-+       e = alt->endpoint + 2; /* ep; */
-+
-+       switch (e->desc.bmAttributes) {
-+               case USB_ENDPOINT_XFER_ISOC:
-+/* XXX debug */                err("endpoint ISOC wrong, you have an original box");
-+                       alt = usb_altnum_to_altsetting(usb_ifnum_to_if(udev,
-+                           0), 0);
-+                       e = alt->endpoint + 2;
-+
-+                       if (e->desc.bmAttributes != USB_ENDPOINT_XFER_BULK) {
-+/* XXX this shouldn't happen */        err("NOT BULK ENDPOINT, this is BAD, bailing");
-+                               return -EIO;
-+                       }
-+                       if (usb_set_interface(udev, 0, 0) < 0)
-+                               err("set interface failed");
-+/* XXX debug */                err("using alt 0 as bulk instead");
-+                       break;
-+
-+               case USB_ENDPOINT_XFER_BULK:
-+/* XXX debug */                err("alt 6: endpoint BULK, you have an updated box!");
-+               default: /* should not happen... treat as original source */
-+                       if (usb_set_interface(udev, 0, 6) < 0)
-+                               err("set interface failed");
-+               }
-+       return 0;
++	unsigned long tsc0, tsc1, diff;
++	int i = 0;
++	do {
++		rdtscll(tsc0);
++		*apic = apic_read(APIC_TMCCT);
++		rdtscll(tsc1);
++		diff = tsc1 - tsc0;
++	} while (diff > MAX_DIFFERENCE && ++i < MAX_ITER); 
++	*tsc = tsc0 + (diff >> 1);
++	return diff > MAX_DIFFERENCE ? -EIO : 0;
 +}
 +
- /* DVB USB Driver stuff */
- static struct dvb_usb_device_properties cxusb_medion_properties;
- static struct dvb_usb_device_properties cxusb_bluebird_lgh064f_properties;
-@@ -772,6 +826,7 @@ static struct dvb_usb_device_properties 
-        .caps = DVB_USB_IS_AN_I2C_ADAPTER,
++/*
+  * In this function we calibrate APIC bus clocks to the external
+  * timer. Unfortunately we cannot use jiffies and the timer irq
+  * to calibrate, since some later bootup code depends on getting
+@@ -318,7 +343,7 @@ static void __init calibrate_APIC_clock(
+ {
+ 	unsigned apic, apic_start;
+ 	unsigned long tsc, tsc_start;
+-	int result;
++	int result, err_start, err;
  
-        .usb_ctrl = CYPRESS_FX2,
-+       .identify_state   = medion_identify_state,
+ 	local_irq_disable();
  
-        .size_of_priv     = sizeof(struct cxusb_state),
+@@ -331,23 +356,25 @@ static void __init calibrate_APIC_clock(
+ 	 */
+ 	__setup_APIC_LVTT(250000000, 0, 0);
  
+-	apic_start = apic_read(APIC_TMCCT);
+ #ifdef CONFIG_X86_PM_TIMER
+ 	if (apic_calibrate_pmtmr && pmtmr_ioport) {
++		apic_start = apic_read(APIC_TMCCT);
+ 		pmtimer_wait(5000);  /* 5ms wait */
+ 		apic = apic_read(APIC_TMCCT);
+ 		result = (apic_start - apic) * 1000L / 5;
+ 	} else
+ #endif
+ 	{
+-		rdtscll(tsc_start);
++		err_start = __read_tsc_and_apic(&tsc_start, &apic_start);
+ 
+ 		do {
+-			apic = apic_read(APIC_TMCCT);
+-			rdtscll(tsc);
++			err = __read_tsc_and_apic(&tsc, &apic);
+ 		} while ((tsc - tsc_start) < TICK_COUNT &&
+ 				(apic_start - apic) < TICK_COUNT);
+ 
++		if (err_start || err)
++			printk(KERN_CRIT "calibrate_APIC_clock: SMI flood - "
++				"the APIC timer calibration may be wrong!\n");
+ 		result = (apic_start - apic) * 1000L * tsc_khz /
+ 					(tsc - tsc_start);
+ 	}
 
-
-      
-
+--------------080705040003040700010305--
