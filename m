@@ -1,75 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbYGYNQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbYGYNUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755518AbYGYNQT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 09:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbYGYNQL
+	id S1755996AbYGYNUW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 09:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbYGYNUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 09:16:11 -0400
-Received: from sh.osrg.net ([192.16.179.4]:48250 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753118AbYGYNQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 09:16:10 -0400
-Date: Fri, 25 Jul 2008 22:15:06 +0900
-To: joerg.roedel@amd.com
-Cc: mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       robert.richter@amd.com, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH] add iommu_num_pages helper function
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1216990680-1227-2-git-send-email-joerg.roedel@amd.com>
-References: <1216990680-1227-1-git-send-email-joerg.roedel@amd.com>
-	<1216990680-1227-2-git-send-email-joerg.roedel@amd.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 25 Jul 2008 09:20:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:56040 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753094AbYGYNUJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 09:20:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=D4zpufRfKOX+M6JN4+yPgqT9/xziXlqByel8QGdRebqevFYfkJfh1KPjyAok65lOQN
+         x+I/PnKunYTaqiL3LpTkxvdzPsDAZ5heDUSu08CTrd2mmmE6koLzo1UUZfbRnh6WdNN5
+         BHXWghMGbWy8qHANwosOMF87AhQH9FKh+fdsU=
+Message-ID: <b647ffbd0807250620k2e7caa47pa81388c808d9eda7@mail.gmail.com>
+Date: Fri, 25 Jul 2008 15:20:08 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [patch, rfc: 2/2] sched, hotplug: ensure a task is on the valid cpu after set_cpus_allowed_ptr()
+Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1216989649.7257.381.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080725221553Q.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
+References: <1216937730.5368.16.camel@earth> <1216989649.7257.381.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Jul 2008 14:57:58 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+2008/7/25 Peter Zijlstra <a.p.zijlstra@chello.nl>:
+> On Fri, 2008-07-25 at 00:15 +0200, Dmitry Adamushko wrote:
+>>
+>> From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+>> Subject: sched, hotplug: ensure a task is on the valid cpu after
+>> set_cpus_allowed_ptr()
+>>
+>> ---
+>>     sched, hotplug: ensure a task is on the valid cpu after set_cpus_allowed_ptr()
+>>
+>>     The 'new_mask' may not include task_cpu(p) so we migrate 'p' on another 'cpu'.
+>>     In case it can't be placed on this 'cpu' immediately, we submit a request
+>>     to the migration thread and wait for its completion.
+>>
+>>     Now, by the moment this request gets handled by the migration_thread,
+>>     'cpu' may well be offline/non-active. As a result, 'p' continues
+>>     running on its old cpu which is not in the 'new_mask'.
+>>
+>>     Fix it: ensure 'p' ends up on a valid cpu.
+>>
+>>     Theoreticaly (but unlikely), we may get an endless loop if someone cpu_down()'s
+>>     a new cpu we have choosen on each iteration.
+>>
+>>     Alternatively, we may introduce a special type of request to migration_thread,
+>>     namely "move_to_any_allowed_cpu" (e.g. by specifying dest_cpu == -1).
+>>
+>>     Note, any_active_cpu() instead of any_online_cpu() would be better here.
+>
+> Hrmm,.. this is all growing into something of a mess.. defeating the
+> whole purpose of introducing that cpu_active_map stuff.
+>
+> Would the suggested SRCU logic simplify all this?
 
-> Calculating the number of pages from given address and length numbers is a task
-> required in multiple IOMMU implementations. So implement this as a generic
-> function into the IOMMU helper code.
-> 
-> Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  include/linux/iommu-helper.h |    1 +
->  lib/iommu-helper.c           |    8 ++++++++
->  2 files changed, 9 insertions(+), 0 deletions(-)
+Ah, wait a second.
 
-Thanks. I planed to work on this after rc1. You beat me. :)
+sched_setaffinity() -> set_cpus_allowed_ptr() is ok vs. cpu_down() as
+it does use get_online_cpus(). So none of the cpus can become offline
+while we are in set_cpus_allowed_ptr().
 
- 
-> diff --git a/include/linux/iommu-helper.h b/include/linux/iommu-helper.h
-> index c975caf..f8598f5 100644
-> --- a/include/linux/iommu-helper.h
-> +++ b/include/linux/iommu-helper.h
-> @@ -8,3 +8,4 @@ extern unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
->  				      unsigned long align_mask);
->  extern void iommu_area_free(unsigned long *map, unsigned long start,
->  			    unsigned int nr);
-> +extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
-> diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-> index a3b8d4c..889ddce 100644
-> --- a/lib/iommu-helper.c
-> +++ b/lib/iommu-helper.c
-> @@ -80,3 +80,11 @@ void iommu_area_free(unsigned long *map, unsigned long start, unsigned int nr)
->  	}
->  }
->  EXPORT_SYMBOL(iommu_area_free);
-> +
-> +unsigned long iommu_num_pages(unsigned long addr, unsigned long len)
-> +{
-> +	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
-> +
-> +	return size >> PAGE_SHIFT;
-> +}
-> +EXPORT_SYMBOL(iommu_num_pages);
+but there are numerous calls to set_cpus_allowed_ptr() from other
+places and not all of them seem to call get_online_cpus()...
 
-This doesn't work since PAGE_SIZE != IOMMU_PAGE_SIZE on the majority
-of architectures.
+yeah, I should check this issue again..
 
+btw., indeed all these different sync. cases are a bit of mess.
+
+---
+
+btw., I was wondering about this change:
+
+ba42059fbd0aa1ac91b582412b5fedb1258f241f
+
+sched: hrtick_enabled() should use cpu_active()
+
+Peter pointed out that hrtick_enabled() should use cpu_active().
+
+
+
+
+>
+>>     Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+>>
+>> diff --git a/kernel/sched.c b/kernel/sched.c
+>> index b4ccc8b..c3bd78a 100644
+>> --- a/kernel/sched.c
+>> +++ b/kernel/sched.c
+>> @@ -5774,21 +5774,23 @@ int set_cpus_allowed_ptr(struct task_struct *p, const cpumask_t *new_mask)
+>>       }
+>>
+>>       /* Can the task run on the task's current CPU? If so, we're done */
+>> -     if (cpu_isset(task_cpu(p), *new_mask))
+>> -             goto out;
+>> +     while (!cpu_isset(task_cpu(p), p->cpus_allowed)) {
+>> +             int cpu = any_online_cpu(p->cpus_allowed);
+>>
+>> -     if (migrate_task(p, any_online_cpu(*new_mask), &req)) {
+>> -             /* Need to wait for migration thread (might exit: take ref). */
+>> -             struct task_struct *mt = rq->migration_thread;
+>> +             if (migrate_task(p, cpu, &req)) {
+>> +                     /* Need to wait for migration thread (might exit: take ref). */
+>> +                     struct task_struct *mt = rq->migration_thread;
+>>
+>> -             get_task_struct(mt);
+>> -             task_rq_unlock(rq, &flags);
+>> -             wake_up_process(mt);
+>> -             put_task_struct(mt);
+>> +                     get_task_struct(mt);
+>> +                     task_rq_unlock(rq, &flags);
+>> +                     wake_up_process(mt);
+>> +                     put_task_struct(mt);
+>>
+>> -             wait_for_completion(&req.done);
+>> -             tlb_migrate_finish(p->mm);
+>> -             return 0;
+>> +                     wait_for_completion(&req.done);
+>> +                     tlb_migrate_finish(p->mm);
+>> +
+>> +                     rq = task_rq_lock(p, &flags);
+>> +             }
+>>       }
+>>  out:
+>>       task_rq_unlock(rq, &flags);
+>>
+>>
+>
+>
+
+
+
+-- 
+Best regards,
+Dmitry Adamushko
