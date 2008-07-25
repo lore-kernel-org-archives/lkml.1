@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbYGYFWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbYGYFfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753524AbYGYFWF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 01:22:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbYGYFVy
+	id S1753274AbYGYFfY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 01:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYGYFfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 01:21:54 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44650
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750867AbYGYFVx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 01:21:53 -0400
-Date: Thu, 24 Jul 2008 22:21:52 -0700 (PDT)
-Message-Id: <20080724.222152.193709632.davem@davemloft.net>
-To: James.Bottomley@HansenPartnership.com
-Cc: mpatocka@redhat.com, fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-parisc@vger.kernel.org
-Subject: Re: [PATCH] block: fix q->max_segment_size checking in
- blk_recalc_rq_segments about VMERGE
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1216957670.4524.87.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0807241727320.12036@devserv.devel.redhat.com>
-	<20080724.145336.41899163.davem@davemloft.net>
-	<1216957670.4524.87.camel@localhost.localdomain>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 25 Jul 2008 01:35:13 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47531 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751275AbYGYFfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 01:35:12 -0400
+Date: Fri, 25 Jul 2008 15:35:02 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       David Altobelli <david.altobelli@hp.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Let HP iLO driver depend on PCI
+Message-Id: <20080725153502.283aae1f.sfr@canb.auug.org.au>
+In-Reply-To: <20080724215652.24e4e550.akpm@linux-foundation.org>
+References: <20080725022048.GB5179@osiris.boeblingen.de.ibm.com>
+	<20080724215652.24e4e550.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__25_Jul_2008_15_35_02_+1000__p/ocmeRbeSIB=p/"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-Date: Thu, 24 Jul 2008 23:47:50 -0400
+--Signature=_Fri__25_Jul_2008_15_35_02_+1000__p/ocmeRbeSIB=p/
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> I'm sorry sparc broke, really I am ... but you changed your iommu code
-> from one with a working vmerge to one without and failed to turn off
-> vmerging.  Partly it wasn't noticed because at 2*PAGE_SIZE you have a
-> strange vmerge boundary, so it's harder to notice.   However, I can't
-> extrapolate that just because this happened on sparc it will inevitably
-> happen on all other architectures.
+Hi Andrew,
 
-The vmerge boundary on sparc64 was 8K which is equal to sparc64's base
-PAGE_SIZE.  I don't know where you get that 2*PAGE_SIZE from.
+On Thu, 24 Jul 2008 21:56:52 -0700 Andrew Morton <akpm@linux-foundation.org=
+> wrote:
+>
+> Three weeks and nobody did an allmodconfig build on linux-next for s390
+> or m68k (at least).
 
+http://kisskb.ellerman.id.au/kisskb/branch/9/
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__25_Jul_2008_15_35_02_+1000__p/ocmeRbeSIB=p/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiJZgYACgkQjjKRsyhoI8wA1QCeMSAmI8gqPNtOajelM4S1OWIn
+ZR4AnjUdl/g9/0gDXwnGBmzzOFPKhwHg
+=QtLA
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__25_Jul_2008_15_35_02_+1000__p/ocmeRbeSIB=p/--
