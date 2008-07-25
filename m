@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbYGYKmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751833AbYGYKop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756940AbYGYKmt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 06:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbYGYKmk
+	id S1751833AbYGYKop (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 06:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbYGYKoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 06:42:40 -0400
-Received: from ns.firmix.at ([62.141.48.66]:2707 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753765AbYGYKmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 06:42:39 -0400
-Subject: Re: how much stuff is no longer "EXPERIMENTAL"?
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Grant Coady <gcoady.lk@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4889615D.9020706@nortel.com>
-References: <alpine.LFD.1.10.0807241114000.4119@localhost.localdomain>
-	 <h2ih845fmasm3coi3qapmqkknj0ghp6k7t@4ax.com>
-	 <alpine.LFD.1.10.0807241606240.6474@localhost.localdomain>
-	 <20080724211141.4fa557ca@lxorguk.ukuu.org.uk> <4889615D.9020706@nortel.com>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Fri, 25 Jul 2008 12:41:55 +0200
-Message-Id: <1216982515.17267.108.camel@spike.firmix.at>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+	Fri, 25 Jul 2008 06:44:34 -0400
+Received: from mga10.intel.com ([192.55.52.92]:14473 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753674AbYGYKod (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 06:44:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,252,1215414000"; 
+   d="scan'208";a="364627717"
+Message-ID: <4889AE93.4090601@linux.intel.com>
+Date: Fri, 25 Jul 2008 03:44:35 -0700
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Len Brown <lenb@kernel.org>
+CC: Thomas Renninger <trenn@suse.de>, Arjan van de Ven <arjan@linux.intel.com>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christian Kornacker <ckornacker@suse.de>
+Subject: Re: ACPI OSI disaster on latest HP laptops - critical temperature
+ shutdown
+References: <200807241727.41715.trenn@suse.de> <alpine.LFD.1.10.0807241952270.6098@localhost.localdomain>
+In-Reply-To: <alpine.LFD.1.10.0807241952270.6098@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.342 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.342 required=5
-X-Spam-Score: -2.342 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-25 at 01:15 -0400, Chris Friesen wrote:
-> Alan Cox wrote:
-> >> legitimately experimental content in the source tree.  surely *some*
-> >> of that is suitably mature such that that dependency can be dropped.
-> > 
-> > What is the connection between age of code and experimental status ?
+Len Brown wrote:
+> Thomas,
 > 
-> Is it reasonable for in-tree code to remain "experimental" indefinately?
+> re: OSI(Windows...)
 
-Or until death. E.g. "devfs" went directly from "experimental" to
-"obsolete".
+Thomas,
 
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
+I discussed this with Len here in Ottawa. First I fully agree with his 
+reasoning for the current behaviour.
 
+The main problem with OSI(Linux) is that it would be a quickly moving 
+target so checking for it wouldn't really help the BIOSes.
+
+Still there might be special cases where BIOSes will still check (e.g.
+if they intend to work with specific distribution releases which might 
+have specific bugs). Or to check for specific Linux features.
+
+One way to do the later would be to define new OSI flags for specific
+features. Haven't got a good proposal for that currently, but it's a 
+possibility.
+
+The other thing that could be done is to define OSI flags specific for
+special distribution releases so BIOSes could potentially check for bugs
+in SLED10 or RHWS5 or something like this, which are hopefully stable
+in that behaviour doesn't move as quickly. The way to do that wouldn't
+be to change the kernel though, but just specify them on the command 
+line using acpi_osi=...
+
+-Andi
 
