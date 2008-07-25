@@ -1,76 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbYGYBSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbYGYBVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754293AbYGYBSp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 21:18:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbYGYBSf
+	id S1756105AbYGYBVk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 21:21:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbYGYBVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 21:18:35 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:6102 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753041AbYGYBSc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 21:18:32 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=xz3GLXG8GrvsrT6+8sxmLImGDOy6LicO5xuZGvyTPbOvb+KEq7DD1slKgARR1eAyc
-	LJSuIPnQrrwAbaeTP6Sew==
-Message-ID: <6599ad830807241818k5cb288e2l3e62a01c2f102913@mail.gmail.com>
-Date: Thu, 24 Jul 2008 21:18:21 -0400
-From: "Paul Menage" <menage@google.com>
-To: "Thomas Graf" <tgraf@suug.ch>
-Subject: Re: [PATCH] Traffic control cgroups subsystem
-Cc: "Ranjit Manomohan" <ranjitm@google.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, lizf@cn.fujitsu.com, kaber@trash.net
-In-Reply-To: <20080724234553.GC20815@postel.suug.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0807221041210.1091@ranjit.corp.google.com>
-	 <20080724234553.GC20815@postel.suug.ch>
+	Thu, 24 Jul 2008 21:21:31 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:56520 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753554AbYGYBVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jul 2008 21:21:30 -0400
+Message-Id: <20080725012129.794865000@polaris-admin.engr.sgi.com>
+References: <20080725012128.805332000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 24 Jul 2008 18:21:30 -0700
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 2/3] cpumask: Put cpumask_of_cpu_map in the initdata section
+Content-Disposition: inline; filename=make-cpumask_map-initdata
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 7:45 PM, Thomas Graf <tgraf@suug.ch> wrote:
->
-> It might have been easier to simply write a classifier which maps pids
-> to classes. The interface could be as simple as two nested attributes,
-> ADD_MAPS, REMOVE_MAPS which both take lists of pid->class mappings to
-> either add or remove from the classifier.
+  * Create the cpumask_of_cpu_map statically in the init data section
+    using NR_CPUS but replace it during boot up with one sized by
+    nr_cpu_ids (num possible cpus).
 
-You mean as processes fork/exit or move between cgroups you have to
-update the pid->class mappings in the kernel's filter? That sounds way
-too fragile to me.
+Based on linux-2.6.tip/master.
 
->
-> I have been working on this over the past 2 weeks, it includes the
-> classifier as just stated, a cgroup module which sends notifications
-> about events
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86/kernel/setup_percpu.c |   10 ++++++----
+ kernel/cpu.c                   |    8 +++++---
+ 2 files changed, 11 insertions(+), 7 deletions(-)
 
-What types of events? We discussed how to send cgroup notifications to
-userspace in the containers mini-summit on Tuesday. Netlink was one of
-the options discussed, but suffers from the problem that netlink
-sockets are tied to a particular network namespaces. The solution that
-seemed most favoured was to have pollable cgroup control files that
-represent events (and optionally support event data via a fifo).
+--- linux-2.6.tip.orig/arch/x86/kernel/setup_percpu.c
++++ linux-2.6.tip/arch/x86/kernel/setup_percpu.c
+@@ -81,10 +81,12 @@ static void __init setup_per_cpu_maps(vo
+ }
+ 
+ #ifdef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
+-cpumask_t *cpumask_of_cpu_map __read_mostly;
+-EXPORT_SYMBOL(cpumask_of_cpu_map);
+-
+-/* requires nr_cpu_ids to be initialized */
++/*
++ * Replace static cpumask_of_cpu_map in the initdata section,
++ * with one that's allocated sized by the possible number of cpus.
++ *
++ * (requires nr_cpu_ids to be initialized)
++ */
+ static void __init setup_cpumask_of_cpu(void)
+ {
+ 	int i;
+--- linux-2.6.tip.orig/kernel/cpu.c
++++ linux-2.6.tip/kernel/cpu.c
+@@ -457,7 +457,6 @@ out:
+ 
+ #endif /* CONFIG_SMP */
+ 
+-#ifndef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
+ /* 64 bits of zeros, for initializers. */
+ #if BITS_PER_LONG == 32
+ #define Z64 0, 0
+@@ -507,7 +506,11 @@ out:
+ 
+ /* We want this statically initialized, just to be safe.  We try not
+  * to waste too much space, either. */
+-static const cpumask_t cpumask_map[] = {
++static const cpumask_t cpumask_map[]
++#ifdef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
++__initdata
++#endif
++= {
+ 	CMI0(0), CMI0(1), CMI0(2), CMI0(3),
+ #if NR_CPUS > 4
+ 	CMI0(4), CMI0(5), CMI0(6), CMI0(7),
+@@ -567,4 +570,3 @@ static const cpumask_t cpumask_map[] = {
+ };
+ 
+ const cpumask_t *cpumask_of_cpu_map = cpumask_map;
+-#endif /* !CONFIG_HAVE_CPUMASK_OF_CPU_MAP */
 
-> as netlink messages and a daemon which creates qdiscs,
-> classes and filters on the fly according to the configured distribution.
-
-> It works both ingress (with some tricks) and egress.
->
-> IMHO, there is no point in a cgroup interface if the user has to create
-> qdiscs, classes and filters manually anyway.
->
-
-The user can use whatever middleware they want (e.g. your daemon,
-libcg, etc) to set up qdiscs and classes. I don't think that requiring
-any particular userspace implementation is the right way to go. The
-point of this patch was to provide a minimal way to tag
-sockets/packets as belonging to a particular cgroup, in order to make
-use of the existing traffic controll APIs.
-
-Paul
+-- 
