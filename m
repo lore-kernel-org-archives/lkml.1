@@ -1,105 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYGYTds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbYGYThF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbYGYTds (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 15:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbYGYTda
+	id S1755186AbYGYThF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 15:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbYGYTgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 15:33:30 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:50395 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752526AbYGYTd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 15:33:29 -0400
-Date: Fri, 25 Jul 2008 21:33:25 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: miklos@szeredi.hu, fuse-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] fs/suse/inode.c: Add missing fuse_request_alloc
-Message-ID: <Pine.LNX.4.64.0807252131280.1602@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 25 Jul 2008 15:36:51 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:48239 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbYGYTgu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 15:36:50 -0400
+Subject: Re: Kernel WARNING: at net/core/dev.c:1330
+	__netif_schedule+0x2c/0x98()
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Ingo Oeser <netdev@axxeo.de>, David Miller <davem@davemloft.net>,
+       peterz@infradead.org, Larry.Finger@lwfinger.net, kaber@trash.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, mingo@redhat.com
+In-Reply-To: <20080725193416.GB3107@ami.dom.local> (sfid-20080725_213320_802558_E914336B)
+References: <1216806614.7257.152.camel@twins>
+	 <1216810696.7257.175.camel@twins>
+	 <20080723.131441.200166513.davem@davemloft.net>
+	 <200807251904.37302.netdev@axxeo.de> <20080725183622.GA3107@ami.dom.local>
+	 <1217013384.4758.5.camel@johannes.berg>
+	 <20080725193416.GB3107@ami.dom.local>
+	 (sfid-20080725_213320_802558_E914336B)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-e2sQ7gS5VeqmczjeqMrm"
+Date: Fri, 25 Jul 2008 21:36:15 +0200
+Message-Id: <1217014575.4758.7.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
 
-The error handling code for the second call to fuse_request_alloc should
-include freeing the result of the first one.
+--=-e2sQ7gS5VeqmczjeqMrm
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+On Fri, 2008-07-25 at 21:34 +0200, Jarek Poplawski wrote:
 
-// <smpl>
-@r@
-expression x,E;
-statement S;
-position p1,p2,p3;
-@@
+> > Umm, of course it cannot, because then we'd have to take the mutex in
+> > the TX path, which we cannot. We cannot have another lock in the TX
+> > path, what's so hard to understand about? We need to be able to lock al=
+l
+> > queues to lock out multiple tx paths at once in some (really) slow path=
+s
+> > but not have any extra lock overhead for the tx path, especially not a
+> > single lock.
+>=20
+> But this mutex doesn't have to be mutex. And it's not for the tx path,
+> only for "service" just like netif_tx_lock(). The fast path needs only
+> queue->tx_lock.
 
-(
-if ((x = fuse_request_alloc@p1(...)) == NULL || ...) S
-|
-x = fuse_request_alloc@p1(...)
-... when != x
-if (x == NULL || ...) S
-)
-<...
-if@p3 (...) { ... when != fuse_request_free(x)
-    return@p2 ...;
-}
-...>
-(
-return x;
-|
-return 0;
-|
-x = E
-|
-E = x
-|
-fuse_request_free(x)
-)
+No, we need to be able to lock out multiple TX paths at once.
 
-@exists@
-position r.p1,r.p2,r.p3;
-expression x;
-int ret != 0;
-statement S;
-@@
+johannes
 
-* x = fuse_request_alloc@p1(...)
-  <...
-* if@p3 (...)
-  S
-  ...>
-* return@p2 \(NULL\|ret\);
+--=-e2sQ7gS5VeqmczjeqMrm
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-// </smpl>
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+iQIcBAABAgAGBQJIiissAAoJEKVg1VMiehFYW8sP/2K5cOt7mAUYh5kg0yNPoC9l
+x9gcX638YniIOkHw9zDrIfDfoYa4Z2b2DRXLCF1IdJNVoSGCoI2H9eOyIPUBvn62
+6h1jSa007+ejU3+iCGmxajiBxFMAg9ZH8uvUvxAZD7AsCHwq6Ix3R11lBPbxNB8S
+O6g827ZdQIxnJvyGEbf1FD58F26q9gH0HflfTVVEMq9TtP7KI4KzNugx3d0T1gko
+uEZRS7x6pThCQW5azlA78+Z9eG6o6OLkspOU6RV0lpN9BgleJJMjteFAVF9nMUG6
+mj1MdRGfpZBNaxg2iNnYgVaqwb0Xp5llIwcC3SnEcnlieTRlJb15NXJmt+rBmiF7
+/geJ6KgT/kODN5Dc5Y6OIDHRdAsb93vcExANzN5tFUpQCFUADXQkbeQVm1LN0fiE
+mmf/ZfE/apXyziQ4iXQsQxZnpcGodbiDvpQXbLCCae7r5hTwD0RDi0YM38YwrKiB
+BCfzmquREat7Jm5XfLxSOkaaJGjqgMQpe3/pc+uOVQD5icThjSWGazEHi1sFaiL9
+3P3eOo3cPmWX4dj08ohG18lU4p+EjnjTzBSfxI2axvNlQb+R9a5EOXzcuECu2KEG
+Pa17HJ43YL6+XtkXKkX12s+8C0enLxYc0Q6+kLx7fGMSlCJr7ddixzJx9LWoFcun
+vyTR9nUGNr6J+8RHtRrk
+=8gfk
+-----END PGP SIGNATURE-----
 
----
- fs/fuse/inode.c               |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+--=-e2sQ7gS5VeqmczjeqMrm--
 
-diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
-index 3141690..ae1d4fd 100644
---- a/fs/fuse/inode.c
-+++ b/fs/fuse/inode.c
-@@ -690,7 +690,7 @@ static int fuse_fill_super(struct super_block *sb, void *data, int silent)
- 	if (is_bdev) {
- 		fc->destroy_req = fuse_request_alloc();
- 		if (!fc->destroy_req)
--			goto err_put_root;
-+			goto err_free_init_req;
- 	}
- 
- 	mutex_lock(&fuse_mutex);
-@@ -720,6 +720,7 @@ static int fuse_fill_super(struct super_block *sb, void *data, int silent)
- 
-  err_unlock:
- 	mutex_unlock(&fuse_mutex);
-+ err_free_init_req:
- 	fuse_request_free(init_req);
-  err_put_root:
- 	dput(root_dentry);
