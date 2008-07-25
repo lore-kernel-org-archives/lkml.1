@@ -1,86 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbYGYBVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbYGYBVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756105AbYGYBVk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 21:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbYGYBVb
+	id S1757324AbYGYBVx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 21:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbYGYBVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 24 Jul 2008 21:21:31 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:56520 "EHLO relay.sgi.com"
+Received: from relay1.sgi.com ([192.48.171.29]:56509 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753554AbYGYBVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753107AbYGYBVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Jul 2008 21:21:30 -0400
-Message-Id: <20080725012129.794865000@polaris-admin.engr.sgi.com>
-References: <20080725012128.805332000@polaris-admin.engr.sgi.com>
+Message-Id: <20080725012128.805332000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Jul 2008 18:21:30 -0700
+Date: Thu, 24 Jul 2008 18:21:28 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Jack Steiner <steiner@sgi.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] cpumask: Put cpumask_of_cpu_map in the initdata section
-Content-Disposition: inline; filename=make-cpumask_map-initdata
+Subject: [PATCH 0/3] cpumask: Change cpumask_of_cpu to use cpumask_of_cpu_map V2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  * Create the cpumask_of_cpu_map statically in the init data section
-    using NR_CPUS but replace it during boot up with one sized by
-    nr_cpu_ids (num possible cpus).
 
-Based on linux-2.6.tip/master.
+V2: Use Rusty's cpumask initializer to statically initialize the
+    cpumask_of_cpu_map[].  In addition, create this map in the init
+    data section using NR_CPUS but replace it during boot up with
+    one sized by nr_cpu_ids (num possible cpus).
+
+The following patch is submitted to resolve this problem...
+
+(Based on tip/master.  I will generate a linux-next version if requested
+since it now has generic code that will be executed for non-x86 arch's.)
+
+> * Rusty Russell <rusty@rustcorp.com.au> wrote:
+> 
+> >> > > I wouldn't mind it at all, and since it's almost always calling a 
+> >> > > function that requires a cpumask_t pointer (like the cpu_* ops or 
+> >> > > set_cpus_allowed_ptr) then there shouldn't be too many "pointer 
+> >> > > dereference" penalties.  I'm just always a bit hesitant to make too 
+> >> > > many generic changes since I have only x86 and ia64 machines to test 
+> >> > > with.
+> > > 
+> > > The simple version is just a static array of [NR_CPUS] cpumask_t's.  
+> > > Do that, with an override for smarter archs?
+> > > 
+> > > I really REALLY prefer that over the fairly tortuous macros.
+> 
+> a fresh commit in -git has exposed the topology.h mess - see the hack 
+> below. We now have diverging versions of topology_core_siblings() 
+> semantics - that sure cannot be right. Mike?
+> 
+> 	Ingo
+> 
+> ------->
+> commit 695a6b456307455a10059512208e8ed0d376ecd3
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Wed Jul 23 13:19:44 2008 +0200
+> 
+>     topology: work around topology_core_siblings() breakage
+>     
+>     work around:
+>     
+>     drivers/net/sfc/efx.c: In function â??efx_probe_interrupts':
+>     drivers/net/sfc/efx.c:845: error: lvalue required as unary â??&' operand
+>     
+>     the topology API is a mess right now ...
+>     
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
 
 Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/x86/kernel/setup_percpu.c |   10 ++++++----
- kernel/cpu.c                   |    8 +++++---
- 2 files changed, 11 insertions(+), 7 deletions(-)
 
---- linux-2.6.tip.orig/arch/x86/kernel/setup_percpu.c
-+++ linux-2.6.tip/arch/x86/kernel/setup_percpu.c
-@@ -81,10 +81,12 @@ static void __init setup_per_cpu_maps(vo
- }
- 
- #ifdef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
--cpumask_t *cpumask_of_cpu_map __read_mostly;
--EXPORT_SYMBOL(cpumask_of_cpu_map);
--
--/* requires nr_cpu_ids to be initialized */
-+/*
-+ * Replace static cpumask_of_cpu_map in the initdata section,
-+ * with one that's allocated sized by the possible number of cpus.
-+ *
-+ * (requires nr_cpu_ids to be initialized)
-+ */
- static void __init setup_cpumask_of_cpu(void)
- {
- 	int i;
---- linux-2.6.tip.orig/kernel/cpu.c
-+++ linux-2.6.tip/kernel/cpu.c
-@@ -457,7 +457,6 @@ out:
- 
- #endif /* CONFIG_SMP */
- 
--#ifndef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
- /* 64 bits of zeros, for initializers. */
- #if BITS_PER_LONG == 32
- #define Z64 0, 0
-@@ -507,7 +506,11 @@ out:
- 
- /* We want this statically initialized, just to be safe.  We try not
-  * to waste too much space, either. */
--static const cpumask_t cpumask_map[] = {
-+static const cpumask_t cpumask_map[]
-+#ifdef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
-+__initdata
-+#endif
-+= {
- 	CMI0(0), CMI0(1), CMI0(2), CMI0(3),
- #if NR_CPUS > 4
- 	CMI0(4), CMI0(5), CMI0(6), CMI0(7),
-@@ -567,4 +570,3 @@ static const cpumask_t cpumask_map[] = {
- };
- 
- const cpumask_t *cpumask_of_cpu_map = cpumask_map;
--#endif /* !CONFIG_HAVE_CPUMASK_OF_CPU_MAP */
+---
+The following cross built successfully:
+
+    x86_64-default
+    x86_64-single
+    x86_64-8psmp
+    x86_64-debug
+    x86_64-numa
+    i386-default
+    i386-single
+    i386-smp
+    ia64-sn2
+    ia64-default
+    ia64-nosmp
+    ia64-zx1
+    s390-default
+    arm-default
+    sparc-default
+    sparc64-default
+    sparc64-smp
+    mips-default
+    ppc-pmac32
+
+These had problems:
+
+    ppc-iseries
+	 Build failed Wed Jul 23 10:10:10 PDT 2008
+	:0: error: -m64 not supported in this configuration
+	:0: error: -m64 not supported in this configuration
+	:0: error: -m64 not supported in this configuration
+    ppc64
+	 Build failed Wed Jul 23 10:10:19 PDT 2008
+	:0: error: -m64 not supported in this configuration
+	:0: error: -m64 not supported in this configuration
+	:0: error: -m64 not supported in this configuration
+    ppc-pseries
+	 Build failed Wed Jul 23 10:10:29 PDT 2008
+	:0: error: -m64 not supported in this configuration
+	:0: error: -m64 not supported in this configuration
+	:0: error: -m64 not supported in this configuration
+    ppc-smp
+	 Build failed Wed Jul 23 10:12:03 PDT 2008
+	  CC      drivers/scsi/scsi_error.o
+	  BOOTCC  arch/powerpc/boot/libfdt/fdt_strerror.o
+	make[1]: *** [arch/powerpc/boot/uImage] Error 127
+    ps3_defconfig
+	 Build failed Wed Jul 23 10:12:18 PDT 2008
+	:0: error: -m64 not supported in this configuration
+	:0: error: -m64 not supported in this configuration
+	:0: error: -m64 not supported in this configuration
+    powerpc-allmodconfig
+	 Build failed Wed Jul 23 10:12:31 PDT 2008
+	:0: error: -m64 not supported in this configuration
+	:0: error: -m64 not supported in this configuration
+	:0: error: -m64 not supported in this configuration
 
 -- 
