@@ -1,43 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbYGYSTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbYGYSTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbYGYSTj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 14:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYGYSTa
+	id S1755233AbYGYSTw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 14:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbYGYSTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 14:19:30 -0400
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:38263 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750858AbYGYST3 (ORCPT
+	Fri, 25 Jul 2008 14:19:38 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:39641 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752862AbYGYSTh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 14:19:29 -0400
-Message-ID: <488A192F.4040308@lwfinger.net>
-Date: Fri, 25 Jul 2008 13:19:27 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Kernel BUG in 2.6.26-git series
-References: <4889E538.5010007@lwfinger.net> <20080725181514.GL20882@one.firstfloor.org>
-In-Reply-To: <20080725181514.GL20882@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 25 Jul 2008 14:19:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=qdc6BVfj91vMmMpbVaQdbJtJRU8sFSi6SYFHK14B8ioPg5cGtfvz0U1XzP/sSIGFVg
+         xwdng8JF+fdzh4b3XNBZZvmVj3AO73Cc5BRtjgK0qHi/gOM1pGWlNLIwIDKgE6XAd8xN
+         HDfRmCxg1XPyDfobLm/GqYZaBz5KmAVC8yINc=
+Subject: Re: [PATCH] byteorder: force in-place endian conversion to always
+	evaluate args
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <488A17EC.2000107@zytor.com>
+References: <1217003621.5971.4.camel@brick>  <488A17EC.2000107@zytor.com>
+Content-Type: text/plain
+Date: Fri, 25 Jul 2008 11:19:35 -0700
+Message-Id: <1217009975.5971.21.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Fri, Jul 25, 2008 at 09:37:44AM -0500, Larry Finger wrote:
->> In the current git pulls from Linus's tree, I get a kernel BUG if 
->> CONFIG_SCHED_SMT is defined. It does not always appear, but when it does, 
->> it is late in the bootup sequence. Perhaps there is a timing issue. This is 
->> an x86_64 system on an HP dv2815nr notebook with and AMD Turion X2 CPU. My 
->> distro is openSUSE 11.0.
+On Fri, 2008-07-25 at 14:14 -0400, H. Peter Anvin wrote:
+> Harvey Harrison wrote:
+> > David Miller reported breakage in ide when the in-place byteorder helpers
+> > were used as the macros do not always evaluate their args which led to
+> > an infinite loop.
+> > 
+> > Just make them functions to ensure they always do so.
 > 
-> A couple of people ran into that. It was a latent bug triggered by
-> some changes of mine. Here's the patch.
+> > -#define __cpu_to_be64s(x) do {} while (0)
+> 
+> For what it's worth, the way to write a macro like this:
+> 
+> #define __cpu_to_be64s(x) ((void)(x))
 
-Thanks. The patch fixes it for me.
+If you've looked at the byteorder rework I've done in -mm, these get
+unified in a single include/linux/byteorder.h and look like:
 
-Larry
+static inline void __le16_to_cpus(__u16 *p)
+{
+#ifdef __BIG_ENDIAN
+	__swab16s(p);
+#endif
+}
+
+static inline void __be16_to_cpus(__u16 *p)
+{
+#ifdef __LITTLE_ENDIAN
+	__swab16s(p);
+#endif
+}
+
+...etc.
+
+As you can now rely on __BIG/__LITTLE_ENDIAN being set reliably.
+
+Harvey
 
