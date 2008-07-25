@@ -1,78 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbYGYNdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbYGYNgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbYGYNdb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 09:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYGYNdW
+	id S1756523AbYGYNgS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 09:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbYGYNgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 09:33:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:9538 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752832AbYGYNdW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 09:33:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=xHS5UBCINVQWl9W/9z/LmrBjEpYZeSTXJMWGUEapCwulT3CPqxSX9Xg1le83OAXIN3
-         oSujdfnJEXz5lDRlfaASCFeAEOFzzKHSDVH3aLMMSrNITyy6J37tBDq/6ZV8e1+0rfMW
-         uzkHLLPBnaeVW1wP4Lp2S+EbxlO7GJ0hMhFws=
-Message-ID: <728201270807250633vcaf8ac2r3be1d37736283385@mail.gmail.com>
-Date: Fri, 25 Jul 2008 08:33:10 -0500
-From: "Ram Gupta" <ram.gupta5@gmail.com>
-To: "Paul Menage" <menage@google.com>
-Subject: Re: [RFC][PATCH][0/3] introduce rlimit cgroup
-Cc: "Hirofumi Nakagawa" <hnakagawa@miraclelinux.com>,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <6599ad830807242305w2895905dgcd91fe3a430806dc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 25 Jul 2008 09:36:08 -0400
+Received: from sh.osrg.net ([192.16.179.4]:46014 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753540AbYGYNgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 09:36:05 -0400
+Date: Fri, 25 Jul 2008 22:34:57 +0900
+To: joerg.roedel@amd.com
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       bhavna.sarathy@amd.com, robert.richter@amd.com
+Subject: Re: [PATCH] add iommu_num_pages helper function
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080725132121.GZ7493@amd.com>
+References: <1216990680-1227-2-git-send-email-joerg.roedel@amd.com>
+	<20080725221553Q.fujita.tomonori@lab.ntt.co.jp>
+	<20080725132121.GZ7493@amd.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <488722DF.9080003@miraclelinux.com>
-	 <20080724150557.8697.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <48885A7F.80106@miraclelinux.com>
-	 <6599ad830807242305w2895905dgcd91fe3a430806dc@mail.gmail.com>
+Message-Id: <20080725223533A.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I understand that there might be some cases where it is useful to
-allow some process to set rlimits of other processes (e.g. some
-launcher process might want to control resources of all the
-applications being launched by it). But this has to be a very special
-case or this process needs to have special permission to do that
-otherwise there will be a lot of problems as a side effect.
+On Fri, 25 Jul 2008 15:21:21 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-Ram
+> On Fri, Jul 25, 2008 at 10:15:06PM +0900, FUJITA Tomonori wrote:
+> > On Fri, 25 Jul 2008 14:57:58 +0200
+> > Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > 
+> > > Calculating the number of pages from given address and length numbers is a task
+> > > required in multiple IOMMU implementations. So implement this as a generic
+> > > function into the IOMMU helper code.
+> > > 
+> > > Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> > > ---
+> > >  include/linux/iommu-helper.h |    1 +
+> > >  lib/iommu-helper.c           |    8 ++++++++
+> > >  2 files changed, 9 insertions(+), 0 deletions(-)
+> > 
+> > Thanks. I planed to work on this after rc1. You beat me. :)
+> > 
+> >  
+> > > diff --git a/include/linux/iommu-helper.h b/include/linux/iommu-helper.h
+> > > index c975caf..f8598f5 100644
+> > > --- a/include/linux/iommu-helper.h
+> > > +++ b/include/linux/iommu-helper.h
+> > > @@ -8,3 +8,4 @@ extern unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
+> > >  				      unsigned long align_mask);
+> > >  extern void iommu_area_free(unsigned long *map, unsigned long start,
+> > >  			    unsigned int nr);
+> > > +extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
+> > > diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
+> > > index a3b8d4c..889ddce 100644
+> > > --- a/lib/iommu-helper.c
+> > > +++ b/lib/iommu-helper.c
+> > > @@ -80,3 +80,11 @@ void iommu_area_free(unsigned long *map, unsigned long start, unsigned int nr)
+> > >  	}
+> > >  }
+> > >  EXPORT_SYMBOL(iommu_area_free);
+> > > +
+> > > +unsigned long iommu_num_pages(unsigned long addr, unsigned long len)
+> > > +{
+> > > +	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
+> > > +
+> > > +	return size >> PAGE_SHIFT;
+> > > +}
+> > > +EXPORT_SYMBOL(iommu_num_pages);
+> > 
+> > This doesn't work since PAGE_SIZE != IOMMU_PAGE_SIZE on the majority
+> > of architectures.
+> 
+> A quick grep in include/ tells me that only powerpc is declaring
+> IOMMU_PAGE_SIZE by now.
 
-On Fri, Jul 25, 2008 at 1:05 AM, Paul Menage <menage@google.com> wrote:
->>
->> To set rlimit from other processes is my original intention.
->> For I do not see a way to do it, please let me know if there were any
->> exists.
->
-> No, there's no way to do that currently. I'm not sure if it's
-> generally safe to update the rlimit for another process.
->
-> If we're trying to use rlimits in a cgroup context then some rlimits
-> (e.g. max nice priority) ought to apply as additional caps on the
-> processes in the cgroup (e.g. if you set a max nice priority of 1 on a
-> cgroup, that ought to override any per-process settings) whereas
-> others (e.g. locked memory, open files, num processes) ought to apply
-> as an aggregate limit on the cgroup (so the sum of all open files
-> across the cgroup shouldn't be able to exceed the cgroup's "open
-> files" limit). E.g. see Balbir's memrlimit control groups patches that
-> are currently in -mm.
->
-> What concrete problem are you trying to solve here?
->
-> Paul
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Ah, I just meant the I/O size of IOMMUs.
+
+This macro doesn't work for IA64, POWER, and SPARC.
