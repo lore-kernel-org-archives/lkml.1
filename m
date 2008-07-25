@@ -1,90 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYGYLIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbYGYLMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbYGYLIf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 07:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYGYLI1
+	id S1754365AbYGYLMi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 07:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYGYLMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 07:08:27 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:54369 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbYGYLI0 (ORCPT
+	Fri, 25 Jul 2008 07:12:30 -0400
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:60219 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750706AbYGYLM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 07:08:26 -0400
-X-BigFish: VPS14(z1857rzzz10d3izzz32i43j66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0K4K6XA-03-EIS-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: mingo@redhat.com, tglx@linutronix.de
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       bhavna.sarathy@amd.com, robert.richter@amd.com,
-       Joerg Roedel <joerg.roedel@amd.com>, Wei Wang <wei.wang2@amd.com>
-Subject: [PATCH] AMD IOMMU: include amd_iommu_last_bdf in device initialization
-Date: Fri, 25 Jul 2008 13:07:50 +0200
-Message-ID: <1216984070-8677-1-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.3.7
-X-OriginalArrivalTime: 25 Jul 2008 11:07:51.0029 (UTC) FILETIME=[ADC10A50:01C8EE46]
+	Fri, 25 Jul 2008 07:12:29 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4889B524.5010602@gmail.com>
+Date: Fri, 25 Jul 2008 12:12:36 +0100
+From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Jan Engelhardt <jengelh@medozas.de>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       spi-devel-general@lists.sourceforge.net,
+       LM Sensors <lm-sensors@lm-sensors.org>,
+       Jean Delvare <khali@linux-fr.org>, Dmitry Torokhov <dtor@mail.ru>,
+       "Hans J. Koch" <hjk@linutronix.de>, hmh@hmh.eng.br,
+       David Brownell <david-b@pacbell.net>, mgross@linux.intel.com,
+       Ben Nizette <bn@niasdigital.com>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 0/4] IndustrialIO subsystem (ADCs, accelerometers etc)
+References: <488763AD.4050400@gmail.com> <alpine.LNX.1.10.0807250025080.11551@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.10.0807250025080.11551@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All the values read while searching for amd_iommu_last_bdf are defined as
-inclusive. Let the code handle this value as such. Found by Wei Wang. Thanks
-Wei.
+Jan Engelhardt wrote:
+> On Wednesday 2008-07-23 19:00, Jonathan Cameron wrote:
+>
+>   
+>> Dear All,
+>>
+>> The need for an industrialio subsystem was discussed in
+>> http://lkml.org/lkml/2008/5/20/135
+>>
+>> Firstly thanks to all the people who have contributed to the discussion
+>> of this in the past.
+>>
+>> In brief the intention is provide a kernel subsystem directed towards the
+>> handling on sensors (and later related output devices) such as ADC's,
+>> accelerometers and many others.
+>>     
+>
+> Could this be done using UIO instead?
+>   
+No, this lot is directed towards devices that use serial buses such as
+i2c  and SPI whereas
+UIO is, from my admittedly cursory knowledge, intended for devices which
+can have
+their control registers memory mapped into user space.
 
-Cc: Wei Wang <wei.wang2@amd.com>
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/amd_iommu.c      |    4 ++--
- arch/x86/kernel/amd_iommu_init.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index c25210e..7469740 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -667,7 +667,7 @@ static int get_device_resources(struct device *dev,
- 	_bdf = calc_devid(pcidev->bus->number, pcidev->devfn);
- 
- 	/* device not translated by any IOMMU in the system? */
--	if (_bdf >= amd_iommu_last_bdf) {
-+	if (_bdf > amd_iommu_last_bdf) {
- 		*iommu = NULL;
- 		*domain = NULL;
- 		*bdf = 0xffff;
-@@ -1085,7 +1085,7 @@ void prealloc_protection_domains(void)
- 
- 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
- 		devid = (dev->bus->number << 8) | dev->devfn;
--		if (devid >= amd_iommu_last_bdf)
-+		if (devid > amd_iommu_last_bdf)
- 			continue;
- 		devid = amd_iommu_alias_table[devid];
- 		if (domain_for_device(devid))
-diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index c9d8ff2..d9a9da5 100644
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -732,7 +732,7 @@ static int __init init_exclusion_range(struct ivmd_header *m)
- 		set_device_exclusion_range(m->devid, m);
- 		break;
- 	case ACPI_IVMD_TYPE_ALL:
--		for (i = 0; i < amd_iommu_last_bdf; ++i)
-+		for (i = 0; i <= amd_iommu_last_bdf; ++i)
- 			set_device_exclusion_range(i, m);
- 		break;
- 	case ACPI_IVMD_TYPE_RANGE:
-@@ -934,7 +934,7 @@ int __init amd_iommu_init(void)
- 	/*
- 	 * let all alias entries point to itself
- 	 */
--	for (i = 0; i < amd_iommu_last_bdf; ++i)
-+	for (i = 0; i <= amd_iommu_last_bdf; ++i)
- 		amd_iommu_alias_table[i] = i;
- 
- 	/*
--- 
-1.5.3.7
-
-
+Looks like I need to be a bit more specific in my descriptions. It's
+terrible but as all the
+sensors etc I work with are connected like this it never occurred to me
+to make it
+explicit in the description.
+--
+Jonathan
