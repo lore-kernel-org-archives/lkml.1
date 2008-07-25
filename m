@@ -1,139 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbYGYGil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753020AbYGYGw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754214AbYGYGil (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 02:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYGYGid
+	id S1753020AbYGYGw1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 02:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbYGYGwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 02:38:33 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57933
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751624AbYGYGic (ORCPT
+	Fri, 25 Jul 2008 02:52:20 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48212 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750706AbYGYGwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 02:38:32 -0400
-Date: Thu, 24 Jul 2008 23:38:31 -0700 (PDT)
-Message-Id: <20080724.233831.193691312.davem@davemloft.net>
-To: bzolnier@gmail.com
-CC: harvey.harrison@gmail.com, linux-ide@kernel.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: recent IDE regression
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 25 Jul 2008 02:52:20 -0400
+Subject: [git pull] x86: patches for tip/x86/prototypes
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf8
+Date: Fri, 25 Jul 2008 12:21:09 +0530
+Message-Id: <1216968669.18082.6.camel@jaswinder.satnam>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+﻿Hello Ingo,
 
-After today's IDE merge my sparc64 workstation stopped booting.
+Please pull these patches for tip/x86/prototypes.
 
-It's due to this change:
+I have also verify that these are merge-able with tip/master and working.
 
-commit 7fa897b91a3ea0f16c2873b869d7a0eef05acff4
-Author: Harvey Harrison <harvey.harrison@gmail.com>
-Date:   Thu Jul 24 22:53:34 2008 +0200
+﻿The following changes since commit 71e3b818431957371c7f69fa1c576d4a403c1478:
+  Jaswinder Singh (1):
+        x86: mach-default/setup.c declare no_broadcast before they get used
 
-    ide: trivial sparse annotations
-    
-    Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-    Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+are available in the git repository at:
 
-Heh, "trivial", indeed.
+  git://git.infradead.org/users/jaswinder/linux-2.6-tip.git x86/prototypes-for-tip
 
-Specifically, this part of the change:
+Jaswinder Singh (6):
+      x86_64: Declare new_utsname in asm-x86/syscalls.h
+      X86_32: declare pt_regs_access as unsigned long
+      X86_SMP: smp.c declare functions before they get used
+      X86_SMP: smpboot.c declare idle_thread_array and smp_b_stepping as static
+      X86_SMP: ipi.c declare functions before they get used
+      X86_SMP: tlb_XX.c declare smp_invalidate_interrupt before they get used
 
-diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
-index 07da5fb..8aae917 100644
---- a/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -510,10 +510,8 @@ void ide_fixstring (u8 *s, const int bytecount, const int byteswap)
- 
- 	if (byteswap) {
- 		/* convert from big-endian to host byte order */
--		for (p = end ; p != s;) {
--			unsigned short *pp = (unsigned short *) (p -= 2);
--			*pp = ntohs(*pp);
--		}
-+		for (p = end ; p != s;)
-+			be16_to_cpus((u16 *)(p -= 2));
- 	}
- 	/* strip leading blanks */
- 	while (s != end && *s == ' ')
+ arch/x86/kernel/ipi.c      |    3 ++-
+ arch/x86/kernel/ptrace.c   |    2 +-
+ arch/x86/kernel/smpboot.c  |    4 ++--
+ include/asm-x86/hw_irq.h   |   10 ++++++++++
+ include/asm-x86/syscalls.h |    2 +-
+ 5 files changed, 16 insertions(+), 5 deletions(-)
 
-On big-endian, be16_to_cpus() (via __be16_to_cpus()) is:
 
-	do { } while (0)
-
-which therefore does not evaluate the argument, and thus this loop
-will make no forward progress.
-
-Probably the fix is in be16_to_cpus(), making it do something like
-"(void) (x);" in the do/while body.
-
-Something like this:
-
-endian: Always evaluate arguments.
-
-Changeset 7fa897b91a3ea0f16c2873b869d7a0eef05acff4
-("ide: trivial sparse annotations") created an IDE bootup
-regression on big-endian systems.  In drivers/ide/ide-iops.c,
-function ide_fixstring() we now have the loop:
-
-		for (p = end ; p != s;)
-			be16_to_cpus((u16 *)(p -= 2));
-
-which will never terminate on big-endian because in such
-a configuration be16_to_cpus() evaluates to "do { } while (0)"
-
-Therefore, always evaluate the arguments to nop endian transformation
-operations.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/include/linux/byteorder/big_endian.h b/include/linux/byteorder/big_endian.h
-index 961ed4b..44f95b9 100644
---- a/include/linux/byteorder/big_endian.h
-+++ b/include/linux/byteorder/big_endian.h
-@@ -94,12 +94,12 @@ static inline __u16 __be16_to_cpup(const __be16 *p)
- #define __le32_to_cpus(x) __swab32s((x))
- #define __cpu_to_le16s(x) __swab16s((x))
- #define __le16_to_cpus(x) __swab16s((x))
--#define __cpu_to_be64s(x) do {} while (0)
--#define __be64_to_cpus(x) do {} while (0)
--#define __cpu_to_be32s(x) do {} while (0)
--#define __be32_to_cpus(x) do {} while (0)
--#define __cpu_to_be16s(x) do {} while (0)
--#define __be16_to_cpus(x) do {} while (0)
-+#define __cpu_to_be64s(x) do { (void)(x); } while (0)
-+#define __be64_to_cpus(x) do { (void)(x); } while (0)
-+#define __cpu_to_be32s(x) do { (void)(x); } while (0)
-+#define __be32_to_cpus(x) do { (void)(x); } while (0)
-+#define __cpu_to_be16s(x) do { (void)(x); } while (0)
-+#define __be16_to_cpus(x) do { (void)(x); } while (0)
- 
- #ifdef __KERNEL__
- #include <linux/byteorder/generic.h>
-diff --git a/include/linux/byteorder/little_endian.h b/include/linux/byteorder/little_endian.h
-index 05dc7c3..4cc170a 100644
---- a/include/linux/byteorder/little_endian.h
-+++ b/include/linux/byteorder/little_endian.h
-@@ -88,12 +88,12 @@ static inline __u16 __be16_to_cpup(const __be16 *p)
- {
- 	return __swab16p((__u16 *)p);
- }
--#define __cpu_to_le64s(x) do {} while (0)
--#define __le64_to_cpus(x) do {} while (0)
--#define __cpu_to_le32s(x) do {} while (0)
--#define __le32_to_cpus(x) do {} while (0)
--#define __cpu_to_le16s(x) do {} while (0)
--#define __le16_to_cpus(x) do {} while (0)
-+#define __cpu_to_le64s(x) do { (void)(x); } while (0)
-+#define __le64_to_cpus(x) do { (void)(x); } while (0)
-+#define __cpu_to_le32s(x) do { (void)(x); } while (0)
-+#define __le32_to_cpus(x) do { (void)(x); } while (0)
-+#define __cpu_to_le16s(x) do { (void)(x); } while (0)
-+#define __le16_to_cpus(x) do { (void)(x); } while (0)
- #define __cpu_to_be64s(x) __swab64s((x))
- #define __be64_to_cpus(x) __swab64s((x))
- #define __cpu_to_be32s(x) __swab32s((x))
