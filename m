@@ -1,65 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYGZPEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752263AbYGZPFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755964AbYGZPEe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 11:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbYGZPE1
+	id S1752263AbYGZPFg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 11:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYGZPF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 11:04:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47366 "EHLO mx2.mail.elte.hu"
+	Sat, 26 Jul 2008 11:05:29 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:53779 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752071AbYGZPE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 11:04:26 -0400
-Date: Sat, 26 Jul 2008 17:04:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [git pull] x86: patches for tip/x86/prototypes
-Message-ID: <20080726150412.GA10036@elte.hu>
-References: <1216968669.18082.6.camel@jaswinder.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1216968669.18082.6.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0037]
+	id S1752158AbYGZPF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 11:05:29 -0400
+Date: Sun, 27 Jul 2008 00:07:21 +0900 (JST)
+Message-Id: <20080727.000721.108121385.anemo@mba.ocn.ne.jp>
+To: jason.wessel@windriver.com
+Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+Subject: Re: [PATCH] kgdb: kgdboc serial_txx9 I/O module
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <488A0D6E.8090105@windriver.com>
+References: <20080725.234914.41630045.anemo@mba.ocn.ne.jp>
+	<488A0D6E.8090105@windriver.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 25 Jul 2008 12:29:18 -0500, Jason Wessel <jason.wessel@windriver.com> wrote:
+> > Implement the serial polling hooks for the serial_txx9 uart for use
+> > with kgdboc.
+> 
+> Looks fine to me.
+> 
+> I pulled this into the kgdb-next branch, which I am working with Ralf to
+> merge.
 
-* Jaswinder Singh <jaswinder@infradead.org> wrote:
+Thanks, excellent!
 
-> ﻿Hello Ingo,
-> 
-> Please pull these patches for tip/x86/prototypes.
-> 
-> I have also verify that these are merge-able with tip/master and working.
-> 
-> ﻿The following changes since commit 71e3b818431957371c7f69fa1c576d4a403c1478:
->   Jaswinder Singh (1):
->         x86: mach-default/setup.c declare no_broadcast before they get used
-> 
-> are available in the git repository at:
-> 
->   git://git.infradead.org/users/jaswinder/linux-2.6-tip.git x86/prototypes-for-tip
-> 
-> Jaswinder Singh (6):
->       x86_64: Declare new_utsname in asm-x86/syscalls.h
->       X86_32: declare pt_regs_access as unsigned long
->       X86_SMP: smp.c declare functions before they get used
->       X86_SMP: smpboot.c declare idle_thread_array and smp_b_stepping as static
->       X86_SMP: ipi.c declare functions before they get used
->       X86_SMP: tlb_XX.c declare smp_invalidate_interrupt before they get used
-
-pulled into tip/x86/prototypes - thanks Jaswinder.
-
-	Ingo
+---
+Atsushi Nemoto
