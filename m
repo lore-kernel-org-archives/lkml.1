@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863AbYGZElc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbYGZEnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752863AbYGZElc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 00:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYGZElY
+	id S1753359AbYGZEnV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 00:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYGZEnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 00:41:24 -0400
-Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:3387 "EHLO
-	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751324AbYGZElX (ORCPT
+	Sat, 26 Jul 2008 00:43:13 -0400
+Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:2144 "EHLO
+	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751317AbYGZEnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 00:41:23 -0400
-Message-ID: <488AAAEB.3070005@xs4all.nl>
-Date: Sat, 26 Jul 2008 06:41:15 +0200
+	Sat, 26 Jul 2008 00:43:12 -0400
+Message-ID: <488AAB54.8070801@xs4all.nl>
+Date: Sat, 26 Jul 2008 06:43:00 +0200
 From: Udo van den Heuvel <udovdh@xs4all.nl>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 CC: LKML <linux-kernel@vger.kernel.org>
 Subject: Re: What to do with `kswapd0: page allocation failure. ` ?
-References: <fa.ajQey35b1AZPlS1/p6joOoTWhU4@ifi.uio.no> <488A214C.3060605@shaw.ca>
-In-Reply-To: <488A214C.3060605@shaw.ca>
+References: <4889D471.2050301@xs4all.nl> <20080726060755.0D2A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080726060755.0D2A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 X-Enigmail-Version: 0.95.2
 OpenPGP: id=8300CC02
 Content-Type: text/plain; charset=ISO-8859-1
@@ -28,14 +28,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> It's not really harmful, it just means the kernel was momentarily unable
-> to allocate memory to handle an incoming network packet. That packet
-> will get dropped, but the system should recover.
+KOSAKI Motohiro wrote:
+> no bug.
+> this stack trace speak to
 > 
-> Not sure why it's allocating an order 2 chunk though, that is 16KB. Are
-> you using jumbo frames on the network?
+> 1. memory pressure increased
+> 2. kswapd ran
+> 3. network packet received
+> 4. interrupt for network happend
+> 5. but can't allocate memory for network buffer(skb).
+> 6. Then, packet dropped
+> 7. Then, warning happend.
+> 
+> your network peer may resend the same packet after few times.
+> no problem.
 
-Yes. 9000 bytes for GBit LAN.
+Thanks.
+This was on a 4GB AMD X86_64 machine running Fedora 9.
+The memory was not loaded that much. (~2 GB)
+Or was the (largish) file being cached, filling up RAM?
 
 Udo
+
