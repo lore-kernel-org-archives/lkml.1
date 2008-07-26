@@ -1,77 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbYGZN3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbYGZNbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753916AbYGZN3O (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 09:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbYGZN26
+	id S1752984AbYGZNbY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 09:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbYGZNbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 09:28:58 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:36792 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751830AbYGZN24 (ORCPT
+	Sat, 26 Jul 2008 09:31:17 -0400
+Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:1710 "EHLO
+	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751776AbYGZNbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 09:28:56 -0400
-Subject: Re: Regression in 2.6.26-gitX: failure of wireless due to commit
-	175f9c1bba9b825d22b142
-From: Johannes Berg <johannes@sipsolutions.net>
-To: David Miller <davem@davemloft.net>
-Cc: Larry.Finger@lwfinger.net, jussi.kivilinna@mbnet.fi, kaber@trash.net,
-       linux-kernel@vger.kernel.org, free_beer_for_all@yahoo.com,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <20080726.003341.211819981.davem@davemloft.net> (sfid-20080726_093356_627865_68AC8E66)
-References: <488AB2F4.7060806@lwfinger.net>
-	 <20080726.003341.211819981.davem@davemloft.net>
-	 (sfid-20080726_093356_627865_68AC8E66)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8vIfMyS3uEbODMPKk/Hk"
-Date: Sat, 26 Jul 2008 15:28:45 +0200
-Message-Id: <1217078925.4758.9.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 26 Jul 2008 09:31:16 -0400
+Message-ID: <488B271F.5090907@xs4all.nl>
+Date: Sat, 26 Jul 2008 15:31:11 +0200
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Francois Romieu <romieu@fr.zoreil.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kernel: TD structure error TDindex=e
+References: <48835302.1090708@xs4all.nl> <20080720160812.GA23652@electric-eye.fr.zoreil.com> <48836EB3.3050707@xs4all.nl> <20080720171440.GB23278@electric-eye.fr.zoreil.com>
+In-Reply-To: <20080720171440.GB23278@electric-eye.fr.zoreil.com>
+X-Enigmail-Version: 0.95.2
+OpenPGP: id=8300CC02
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Francois Romieu wrote:
+> Can you apply the bandaid below too ?
 
---=-8vIfMyS3uEbODMPKk/Hk
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Today, during a http transfer of a 5.xGB file the EN12000 system hang.
+There was nothing in /var/log/messages.
 
-On Sat, 2008-07-26 at 00:33 -0700, David Miller wrote:
+So even with this patch something still goes wrong during
+high-speed/large transfers, be it perhaps less often (as it appears)
+since using the patch.
 
-> Yes we know, it exposes a larger problem that's been
-> present in the wireless stack for a long time.  It
-> assumes that the SKB control block can survive across
-> the SKB going through the qdisc, but that has never
-> been true.
->=20
-> We're thinking about how to solve this but have no
-> easy answers yet.
-
-There are three places afaik, and I have a plan on how to fix the worst
-two of them, the third one is in the disabled AP mode code.
-
-johannes
-
---=-8vIfMyS3uEbODMPKk/Hk
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJIiyaKAAoJEKVg1VMiehFYw2IP/RZczj656PkJEZgiFZhGvQ4o
-IKmsnUkznowTDhDrXpYANMeaMFLJaCBP5gVjD2CJawheN0Dozjgd5ftSvo+J7nTS
-KMhunGiaGtnwYcrqqzi6sGqKkWtuhsfIWLS7oURqLD2+dls8IIwby/fuW6UKX+EX
-oieFmG7wnz284SSzEYyYCqmzDrOTMuse442bz/j4GZs+j5WuopUKUilfGDOwUggL
-sgYbpk9YMrTBjy4mO0wWuUuyoAeLNGzczBHuIOmeWO+ElOkZoehl1DLhN1uhn5uZ
-3BMofOdgxzKYd9x1JkDvyblAxdczSOV6gcyqrf031m8qn4AECKL1TusJLsc4NTH5
-SRdYhCEYgD/zIwTR6kT3/B9hjQw6CxqM0G8iw0bY9OaMKWs/awyB1gcDSqkvQ1ag
-glvTVQiV2aJotmAauelGlk+sB2oST9t0xP0+vbMJVnY1Je739n5Hx1JcRBoSLOwC
-sG0imIBM+8mdzfwH7k1pCJcdwYIx8Iad2rbAXb1puZAk9dZ7XjZtG0A0xHZJXxTn
-tXJyYlOSk8QnivBVCJK5Z883YNRqJW/vQNfXslrGFtvHRsdZEeLwb5WDq5ZMVIP3
-RLxuorJs9gvbootMXhZBInX9nE8oQ5DRac2jK8j+Ufvs/vDCPWoVSobFjKkCjUk9
-1DE7bbqKZ8tH/DD75FWK
-=R9qR
------END PGP SIGNATURE-----
-
---=-8vIfMyS3uEbODMPKk/Hk--
-
+Udo
