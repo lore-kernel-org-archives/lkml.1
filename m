@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755112AbYGZMuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbYGZNAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755112AbYGZMuU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 08:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYGZMuD
+	id S1753511AbYGZNAd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 09:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYGZNAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 08:50:03 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:41444 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750934AbYGZMuC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 08:50:02 -0400
-Date: Sat, 26 Jul 2008 13:48:57 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: David Miller <davem@davemloft.net>
-cc: "Denis V. Lunev" <den@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] netns: fix ip_rt_frag_needed rt_is_expired
-Message-ID: <Pine.LNX.4.64.0807261345400.6643@blonde.site>
+	Sat, 26 Jul 2008 09:00:25 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52935 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751600AbYGZNAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 09:00:24 -0400
+Date: Sat, 26 Jul 2008 15:00:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix IBM Summit based systems' phys_cpu_present_map on
+	32-bit kernels
+Message-ID: <20080726130012.GC5418@elte.hu>
+References: <20080725020609.GB11800@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080725020609.GB11800@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.1077]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Running recent kernels, and using a particular vpn gateway, I've been
-having to edit my mails down to get them accepted by the smtp server.
 
-Git bisect led to commit e84f84f276473dcc673f360e8ff3203148bdf0e2 -
-netns: place rt_genid into struct net.  The conversion from a != test
-to rt_is_expired() put one negative too many: and now my mail works.
+* Chris McDermott <lcm@linux.vnet.ibm.com> wrote:
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-Ingo was having strange distcc problems, might this help him too?
+> x86 kernels on IBM Summit based systems will only online 1 CPU because 
+> the phys_cpu_present_map is not set up correctly. Patch below applied 
+> to 2.6.26-git10.
 
- net/ipv4/route.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+applied to tip/x86/urgent - thanks Chris!
 
---- 2.6.26-git/net/ipv4/route.c	2008-07-26 12:31:50.000000000 +0100
-+++ linux/net/ipv4/route.c	2008-07-26 13:10:04.000000000 +0100
-@@ -1502,7 +1502,7 @@ unsigned short ip_rt_frag_needed(struct 
- 				    rth->fl.iif != 0 ||
- 				    dst_metric_locked(&rth->u.dst, RTAX_MTU) ||
- 				    !net_eq(dev_net(rth->u.dst.dev), net) ||
--				    !rt_is_expired(rth))
-+				    rt_is_expired(rth))
- 					continue;
- 
- 				if (new_mtu < 68 || new_mtu >= old_mtu) {
+	Ingo
