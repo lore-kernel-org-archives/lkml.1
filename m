@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758158AbYGZVXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbYGZVmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758158AbYGZVXB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 17:23:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbYGZVWx
+	id S1758149AbYGZVmY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 17:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757972AbYGZVmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 17:22:53 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:54982 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758068AbYGZVWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 17:22:52 -0400
-Date: Sun, 27 Jul 2008 00:22:20 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andrea Righi <righi.andrea@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [-mm patch] mm/util.c must #include <linux/sched.h>
-Message-ID: <20080726212219.GH9301@cs181140183.pp.htv.fi>
-References: <20080725083943.GC19310@cs181140183.pp.htv.fi> <20080725015537.564e3397.akpm@linux-foundation.org> <20080725091455.GD19310@cs181140183.pp.htv.fi> <20080725092748.GF19310@cs181140183.pp.htv.fi> <20080725023455.dde3eb27.akpm@linux-foundation.org>
+	Sat, 26 Jul 2008 17:42:14 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:49345 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757740AbYGZVmN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 17:42:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bX5W8/mPlkQ4KqoZywaRrbOR/VGIlpoZPCiYY4XYwC2fxaVvJFiLy946xIxOzPIq3p
+         EXonpg9RekI3AlgywzxhdAbjMc7YCW/rAXvHfDLQzdcTXCu/VYXo9FLVXgRmduLoNTkm
+         k3xDFygCfKOhJQ+rQxygdhI0KsdPEwJDvvPfE=
+Message-ID: <1ba2fa240807261442n1d8c08fcv9384957e3325cecc@mail.gmail.com>
+Date: Sun, 27 Jul 2008 00:42:12 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Junty Mesmon" <jmesmon@gmail.com>
+Subject: Re: [ipw3945-devel] [PATCH] iwlwifi: Enable packet injection for iwl4965
+Cc: "=?ISO-8859-1?Q?Stefanik_G=E1bor?=" <netrolller.3d@gmail.com>,
+       "Zhu Yi" <yi.zhu@intel.com>,
+       "=?ISO-8859-1?Q?St=E9phane_Jourdois?=" <stephane@jourdois.fr>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org,
+       ipw3945-devel <ipw3945-devel@lists.sourceforge.net>
+In-Reply-To: <f2efd86c0807252030t1d73f4ffu8b23d6221f8f3212@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080725023455.dde3eb27.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <69e28c910807181205m6dd0cdcek83f9717bf1ac9dcc@mail.gmail.com>
+	 <69e28c910807220454q7c8371e1m11b1015ed8398758@mail.gmail.com>
+	 <4885DDC4.2060609@googlemail.com> <4886235F.6010407@jourdois.fr>
+	 <1216951133.2705.227.camel@debian.sh.intel.com>
+	 <69e28c910807251449h6e389cd2n72de63c558338335@mail.gmail.com>
+	 <f2efd86c0807252030t1d73f4ffu8b23d6221f8f3212@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 02:34:55AM -0700, Andrew Morton wrote:
-> On Fri, 25 Jul 2008 12:27:48 +0300 Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > Further testing revealed that you should choose a file that also gets 
-> > compiled on MMU-less architectures:
-> 
-> We don't have one :(
-> 
-> I guess util.c will have to do.
->...
+On Sat, Jul 26, 2008 at 6:30 AM, Junty Mesmon <jmesmon@gmail.com> wrote:
+> If this is the right place to do it, i would like to confirm that i
+> have had success injecting data packets with the stated patchto the
+> iwl4965 driver.
+>
+> On Fri, Jul 25, 2008 at 5:49 PM, Stefanik Gábor <netrolller.3d@gmail.com> wrote:
+>> 2008/7/25 Zhu Yi <yi.zhu@intel.com>:
+>>> On Tue, 2008-07-22 at 20:13 +0200, Stéphane Jourdois wrote:
+>>>> but this commit is for iwl3945, not iwl4965.
+>>>> The patch for iwl4965 is currently not in any git tree.
+>>>
+>>> We are waiting for more "confirmed success" response before merging it.
+>>>
+>>> Thanks,
+>>> -yi
+>>
+>> I think we now have a lot of "confirmed success", as aircrack-ng users
+>> are now using this card with aireplay-ng - injecting association
+>> frames is unstable, but injecting data packets works.
 
-Requires the fix below.
-
-cu
-Adrian
-
-
-<--  snip  -->
-
-
-This patch fixes the following build error:
-
-<--  snip  -->
-
-...
-  CC      mm/util.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/util.c: In function 'arch_pick_mmap_layout':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/util.c:144: error: dereferencing pointer to incomplete type
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/util.c:145: error: 'arch_get_unmapped_area' undeclared (first use in this function)
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/util.c:145: error: (Each undeclared identifier is reported only once
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/util.c:145: error: for each function it appears in.)
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/util.c:146: error: 'arch_unmap_area' undeclared (first use in this function)
-make[2]: *** [mm/util.o] Error 1
-
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-f003405997b99d300c99f7b1eae408fe42c07126 
-diff --git a/mm/util.c b/mm/util.c
-index 0efd830..d8d0221 100644
---- a/mm/util.c
-+++ b/mm/util.c
-@@ -3,6 +3,7 @@
- #include <linux/string.h>
- #include <linux/module.h>
- #include <linux/err.h>
-+#include <linux/sched.h>
- #include <asm/uaccess.h>
- 
- /**
-
+That I don't have doubt the question whether it didn't break normal operation.
+Tomas
