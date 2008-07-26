@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbYGZSoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbYGZSxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757557AbYGZSoz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 14:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYGZSoe
+	id S1756504AbYGZSxZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 14:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYGZSxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 14:44:34 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:4513 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752071AbYGZSod (ORCPT
+	Sat, 26 Jul 2008 14:53:17 -0400
+Received: from qb-out-0506.google.com ([72.14.204.238]:53902 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbYGZSxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 14:44:33 -0400
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       Ivan Seskar <Seskar@winlab.rutgers.edu>, jfm3 <jfm3@winlab.rutgers.edu>,
-       Sujith <m.sujith@gmail.com>
-Subject: Re: Bug on 2.6.26 - x86 VIA Nehemiah CentaurHauls processor cannot boot
-From: Andi Kleen <andi@firstfloor.org>
-References: <43e72e890807210614y58065d75j5b2fb3c5ebe6180a@mail.gmail.com>
-	<48848DDF.6010903@zytor.com>
-	<43e72e890807210701w6d7f5638w5fdbea76a1cf1c0b@mail.gmail.com>
-	<48851AC2.8030007@zytor.com> <20080722131408.GA12418@elte.hu>
-	<4885DF9D.2090804@zytor.com> <87prp07b0y.fsf@basil.nowhere.org>
-	<488B6E7B.9040908@zytor.com>
-Date: Sat, 26 Jul 2008 20:44:31 +0200
-In-Reply-To: <488B6E7B.9040908@zytor.com> (H. Peter Anvin's message of "Sat, 26 Jul 2008 14:35:39 -0400")
-Message-ID: <87ljzo7aeo.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Sat, 26 Jul 2008 14:53:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references
+         :in-reply-to:content-type:content-transfer-encoding:from;
+        b=P70WtVGtUv3+IGw7EYKUbrWH/xw5Wk/HARcjQilsOMHIGnejphKwWKSoC2cenk3q50
+         N8xr8hJZAXTSHP63X+dhrFQoKgFvXXELALVqmpn2pVBrjdO5fR9c82M+vLF+TnxdbDkO
+         eI1aZNnAS3byC/9bj0YGkFGl0ky6pwuaezuMk=
+Message-ID: <488B7297.8090405@gmail.com>
+Date: Sat, 26 Jul 2008 14:53:11 -0400
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 26 Jul 2008 18:44:25.0236 (UTC) FILETIME=[A0630D40:01C8EF4F]
+To: Glauber Costa <glommer@gmail.com>
+CC: linux-kernel@vger.kernel.org, gcosta@redhat.com
+Subject: Re: [Bisected] Regression: Hang on boot in schedule_timeout_interruptible
+ during ACPI init on SMP
+References: <4887B4D5.1050306@gmail.com> <5d6222a80807231731u41f9fb81w2796b3db1a5920e6@mail.gmail.com>
+In-Reply-To: <5d6222a80807231731u41f9fb81w2796b3db1a5920e6@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Andrew Drake <zappacky.lists@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
->
-> The real mode code *is* compiled with -march=i386, and in the CMOV
-> case it will err out with a legible message.
->
-> The issue isn't CMOV at all, it's with long NOPs, which don't have a
-> CPUID bit -- they're supposed to be supported if family >= 6, but some
-> VIA chips violate that condition.
+I just discovered; the nolapic_timer parameter causes the problem to go away 
+entirely. It doesn't seem to have any nasty side effects, so I'm content to use 
+it. Looking at the dmesg logs, however, I notice that the "last-good" kernel 
+doesn't even try to use the LAPIC timer, but the "first-bad" does. I wasn't able 
+to track down any discernible reason.
 
-Ah yes I realized that about 1 minute after sending the original mail %)
-Sorry for the noise. The only way to handle this is probably to add
-special quirks. Should check with Centaur for the exact CPUID signatures
-of these CPUs.
+On a side note, that's the first I've ever heard/seen of that parameter, I tried 
+it because I noticed the problems started when the LAPIC timer was successfully 
+set up. I doubt the average user would notice this (you can't even tell unless 
+you pass apic=debug), so I doubt many others would discover this fix/workaround.
 
-Or perhaps just stop using the special nops. It was always unclear
-if optimizing nops was really worth it.
+The question remains, though, why did it go from "don't try" to "try"?
 
--Andi
+Thanks,
+
+Andrew
+
