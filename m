@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754347AbYGZMh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbYGZMif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754347AbYGZMh0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 08:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYGZMhP
+	id S1755371AbYGZMif (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 08:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYGZMi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 08:37:15 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49765 "EHLO gate.crashing.org"
+	Sat, 26 Jul 2008 08:38:27 -0400
+Received: from toro.web-alm.net ([62.245.132.31]:46160 "EHLO toro.web-alm.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750934AbYGZMhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 08:37:14 -0400
-Subject: Re: CONFIG_FRAME_POINTER [was [PATCH] x86: BUILD_IRQ say .text]
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
-       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
-       Linuxppc-dev@ozlabs.org
-In-Reply-To: <Pine.LNX.4.64.0807261122430.20543@blonde.site>
-References: <Pine.LNX.4.64.0807211828470.26173@blonde.site>
-	 <20080724104459.GI28817@elte.hu>
-	 <Pine.LNX.4.64.0807251839190.20617@blonde.site>
-	 <1217022373.11188.115.camel@pasglop>
-	 <Pine.LNX.4.64.0807261122430.20543@blonde.site>
-Content-Type: text/plain
-Date: Sat, 26 Jul 2008 22:36:42 +1000
-Message-Id: <1217075802.11188.129.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	id S1751815AbYGZMi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 08:38:26 -0400
+X-Greylist: delayed 5400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Jul 2008 08:38:26 EDT
+Message-ID: <488B0474.1050205@osadl.org>
+Date: Sat, 26 Jul 2008 13:03:16 +0200
+From: Carsten Emde <Carsten.Emde@osadl.org>
+Organization: Open Source Automation Development Lab (OSADL) eG
+User-Agent: Thunderbird 2.0.0.9 (X11/20071119)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Clark Williams <williams@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Sebastian Sewior <bigeasy@linutronix.de>,
+       Greg Ungerer <gerg@snapgear.com>
+Subject: Re: 2.6.24.7-rt15
+References: <alpine.LFD.1.10.0807252141420.574@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0807252141420.574@apollo.tec.linutronix.de>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-07-26 at 12:02 +0100, Hugh Dickins wrote:
-> 
-> Hmm, perhaps it is doing sibling calls differently even without the
-> explicit -fno-optimize-sibling-calls (but when I add that option,
-> the vmlinux size does go up another 4400).
-> 
-> Sorry, I'm most probably fussing over nothing,
-> and wasting your time with my ignorance.
+Thomas,
 
-No you aren't, there is indeed something happening. It looks like gcc is
-keeping a copy of each stack frame in r31, thus forcing to save/restore
-that register, along function calls, possibly to help get reliable
-frames for leaf functions. I don't think we use that "feature" in our
-backtrace code though... so it won't harm in the sense that it won't
-break things, but it will indeed bloat the code a little bit.
+> We are pleased to announce the 2.6.24.7-rt15 tree [..]
+Looks like this newest is also our greatest:
 
-Maybe we should totally disable -fno-omit-frame-pointers on powerpc ...
-either that or see about actually using that r31 linkage, though I'm not
-sure it would be that useful.
+Board: Core 2 Duo, 2.4 GHz, Intel G965, 64 bit
+Kernel: 2.6.24.7-rt15 prerelease
+Config: CONFIG_IRQSOFF_TRACER, CONFIG_PREEMPT_TRACER, CONFIG_FTRACE
+Stress: hackbench 25 loop, ls -Ral / loop, flood ping from outside
+On-demand cpufreq disabled:
+# cd /sys/devices/system/cpu
+# echo performance >cpu0/cpufreq/scaling_governor
+# echo performance >cpu1/cpufreq/scaling_governor
+Test: cyclictest -a -t -n -p99 -i100 -d50
+Result:
+560.44 586.11 606.12 211/1160 3727
+T: 0 (18617) P:99 I:100 C:1011846111 Min:  2 Act:  4 Avg:  5 Max: 39
+T: 1 (18618) P:98 I:150 C: 708641019 Min:  2 Act:  5 Avg: 11 Max: 57
 
-I'll have to talk to our toolchain folks to figure out exactly what's
-going on there.
+While running more than one billion cyclictest loops, the internal
+worst-case latency did not exceed 39 microseconds.
 
-Cheers,
-Ben.
- 
 
+Great work, thanks a lot!
+
+	--cbe
