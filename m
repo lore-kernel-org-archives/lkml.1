@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbYGZQub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbYGZQwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757006AbYGZQub (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 12:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbYGZQuP
+	id S1756749AbYGZQwe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 12:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYGZQw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 12:50:15 -0400
-Received: from mail.tut.by ([195.137.160.40]:39603 "EHLO speedy.tutby.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756782AbYGZQuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 12:50:14 -0400
-Subject: [PATCH] fix warning in arch/x86/mm/pgtable.c
-From: Michael Borisov <niro@tut.by>
-To: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 26 Jul 2008 19:50:07 +0300
-Message-Id: <1217091007.6107.8.camel@inlin>
+	Sat, 26 Jul 2008 12:52:28 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:62273 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752768AbYGZQw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 12:52:27 -0400
+Date: Sat, 26 Jul 2008 18:48:08 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>,
+       Andrew Victor <linux@maxim.org.za>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] include/video/atmel_lcdc.h must #include
+ <linux/workqueue.h>
+Message-ID: <20080726184808.5fa9e8c3@siona.local>
+In-Reply-To: <20080725200348.GG19310@cs181140183.pp.htv.fi>
+References: <20080725200348.GG19310@cs181140183.pp.htv.fi>
+Organization: Atmel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following compile warning:
+On Fri, 25 Jul 2008 23:03:48 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
-arch/x86/mm/pgtable.c: In function ‘pgd_mop_up_pmds’:
-arch/x86/mm/pgtable.c:194: warning: unused variable ‘pmd’
+> This patch fixes the following compile error caused by
+> commit d22579b837358cbef12ccca5adaf7e93ae09ab7a
+> (atmel_lcdfb: FIFO underflow management):
+> 
+> <--  snip  -->
+> 
+> ...
+>   CC      arch/avr32/boards/atstk1000/atstk1004.o
+> In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/avr32/boards/atstk1000/atstk1004.c:21:
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/video/atmel_lcdc.h:40: error: field 'task' has incomplete type
+> make[2]: *** [arch/avr32/boards/atstk1000/atstk1004.o] Error 1
+> 
+> <--  snip  -->
+> 
+> Reported-by: Adrian Bunk <bunk@kernel.org>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Signed-off-by: Michael Borisov <niro@tut.by>
----
-diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
-index 557b2ab..2d57735 100644
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -163,7 +163,8 @@ static int preallocate_pmds(pmd_t *pmds[])
-        bool failed = false;
- 
-        for(i = 0; i < PREALLOCATED_PMDS; i++) {
--               pmd_t *pmd = (pmd_t *)get_zeroed_page(GFP_KERNEL|
-__GFP_REPEAT);
-+               pmd_t *pmd;
-+               pmd = (pmd_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
-                if (pmd == NULL)
-                        failed = true;
-                pmds[i] = pmd;
+Applied to the avr32 tree. Thanks a lot!
 
-
+Haavard
