@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbYGZRAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbYGZRMD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756834AbYGZRAu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 13:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYGZRAn
+	id S1756585AbYGZRMD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 13:12:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYGZRLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 13:00:43 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:1519 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753207AbYGZRAm (ORCPT
+	Sat, 26 Jul 2008 13:11:54 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:49250 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753099AbYGZRLx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 13:00:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=P5+K107BBcJgEj4IguoDxb9235Ri8JbOjmheYdc4pPjeoCwgTeq6AMqSIddIkumUQc
-         6MPs37POtmoxZKzjv8IS+PR5nAhQjEcnXuLs6DkEqsUq+ZHj5vYNww++w4D34gfDH7d/
-         feWlioIA/YmBQYpNGNXwX16zjoEzrVRhHMw4g=
-Subject: Re: Fw: asm-x86/byteorder.h, CONFIG_X86_BSWAP leaks to userland
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Olaf Hering <olaf@aepfle.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <488B555F.4090709@zytor.com>
-References: <20080726013931.bcc4682d.akpm@linux-foundation.org>
-	 <1217090446.5971.57.camel@brick>  <488B555F.4090709@zytor.com>
-Content-Type: text/plain
-Date: Sat, 26 Jul 2008 10:00:37 -0700
-Message-Id: <1217091637.5971.63.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Jul 2008 13:11:53 -0400
+Date: Sat, 26 Jul 2008 18:11:27 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix build error when no swap
+In-Reply-To: <20080726212246.d64073b3.yoichi_yuasa@tripeaks.co.jp>
+Message-ID: <Pine.LNX.4.64.0807261747470.27377@blonde.site>
+References: <20080726212246.d64073b3.yoichi_yuasa@tripeaks.co.jp>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-07-26 at 12:48 -0400, H. Peter Anvin wrote:
-> Harvey Harrison wrote:
-> >>
-> >> An undefined CONFIG_foo defaults to 0 (I think), so bswap is never used.
-> >> Is this done on purpose, or can the CONFIG_ foo be moved inside
-> >> __KERNEL__ somehow?
-> > 
-> > I believe it's there to prevent the bswap instruction from being used on
-> > early x86_32 models (i386/i486).  As this will be 0 in userspace it is
-> > effectively never using the bswap instruction for these routines.
-> > 
+On Sat, 26 Jul 2008, Yoichi Yuasa wrote:
+> When CONFIG_SWAP is not set, I got the following error.
 > 
-> i386, specifically.
-> 
-> However, you shouldn't leak these symbols to userspace; there is a 
-> warning option in gcc for undefined macros, and it's a *good thing* to 
-> use it.  Causing warnings in user space is not nice.
+> In file included from include/asm/tlb.h:21,
+>                  from fs/exec.c:55:
+> 		 include/asm-generic/tlb.h: In function 'tlb_flush_mmu':
+> 		 include/asm-generic/tlb.h:76: error: implicit declaration of function 'release_pages'
+> 		 include/asm-generic/tlb.h: In function 'tlb_remove_page':
+> 		 include/asm-generic/tlb.h:105: error: implicit declaration of function 'page_cache_release'
+> 		 make[1]: *** [fs/exec.o] Error 1
 
-True, but the existing header in Linus' tree does exactly this, so unless
-you beat me to it, I'll have a look to see what can be done here.
+Urgrrh, that'll be my fault: sorry, I've caused nothing but trouble
+with my little remove-a-few-unneeded #includes from exec.c.
+I honestly believed I'd tested !CONFIG_SWAP.
 
 > 
-> > I'm not sure if it's time yet to make the bswap ones be exported, as they
-> > would no longer be usable for those early machines.  X86 guys CC:d.
+> Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
 > 
-> On i386 we still default to i386-compatible binaries; I *think* gcc has 
-> macros telling you if the user has used -march=i486 etc.
-> 
+> diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/include/linux/swap.h linux/include/linux/swap.h
+> --- linux-orig/include/linux/swap.h	2008-07-26 17:27:22.651869820 +0900
+> +++ linux/include/linux/swap.h	2008-07-26 18:36:46.406531575 +0900
+> @@ -7,6 +7,7 @@
+>  #include <linux/list.h>
+>  #include <linux/memcontrol.h>
+>  #include <linux/sched.h>
+> +#include <linux/pagemap.h>
+>  
+>  #include <asm/atomic.h>
+>  #include <asm/page.h>
 
-Hmm, I wasn't aware of that, hopefully google will oblige.
+There's actually a comment further down saying that sparc cannot
+include pagemap.h in swap.h, so I think your patch will probably
+cause some other build trouble on sparc.
 
-Cheers,
+I'd be more inclined to include pagemap.h back in exec.c, as it
+was before I interfered, or see if there's another "obviously safe"
+(haha) solution.
 
-Harvey
+Please give me a little while to wander through the maze, thanks.
 
+Hugh
