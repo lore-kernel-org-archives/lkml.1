@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbYGZSaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757431AbYGZSbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757334AbYGZSaZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 14:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbYGZSaM
+	id S1757431AbYGZSbQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 14:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbYGZSbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 14:30:12 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55182 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754257AbYGZSaK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 14:30:10 -0400
-Subject: Re: 2.6.24.7-rt15
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Clark Williams <williams@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Sebastian Sewior <bigeasy@linutronix.de>,
-       Greg Ungerer <gerg@snapgear.com>, Carsten Emde <ce@ceag.ch>
-In-Reply-To: <Pine.LNX.4.58.0807260827240.12591@gandalf.stny.rr.com>
-References: <alpine.LFD.1.10.0807252141420.574@apollo.tec.linutronix.de>
-	 <1985e0f60807252248n581bdfa0s363f6ce0d283ec2c@mail.gmail.com>
-	 <1217070800.22147.8.camel@jaswinder.satnam>
-	 <Pine.LNX.4.58.0807260827240.12591@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=utf8
-Date: Sat, 26 Jul 2008 23:58:54 +0530
-Message-Id: <1217096934.8053.5.camel@jaswinder.satnam>
+	Sat, 26 Jul 2008 14:31:00 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:41118 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752170AbYGZSbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 14:31:00 -0400
+Date: Sat, 26 Jul 2008 20:30:34 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] linux/swap.h must #include <linux/pagemap.h>
+Message-ID: <20080726203034.456e7678@siona.local>
+In-Reply-To: <20080726173832.GE9301@cs181140183.pp.htv.fi>
+References: <1217092685-15267-1-git-send-email-haavard.skinnemoen@atmel.com>
+	<20080726173832.GE9301@cs181140183.pp.htv.fi>
+Organization: Atmel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Jul 2008 18:30:33.0484 (UTC) FILETIME=[B09FC4C0:01C8EF4D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On Sat, 26 Jul 2008 20:38:32 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
-On Sat, 2008-07-26 at 08:28 -0400, Steven Rostedt wrote:
-> 
-> On Sat, 26 Jul 2008, Jaswinder Singh wrote:
-> 
-> > Hello all,
-> >
-> > > We are pleased to announce the 2.6.24.7-rt15 tree, which can be
-> > > downloaded from the location:
-> > >
-> > >  http://rt.et.redhat.com/download/
-> > >
-> >
-> > linux-2.6/scripts/checkpatch.pl patch-2.6.24.7-rt15 is saying :
-> >
-> > total: 479 errors, 813 warnings, 65464 lines checked
-> >
-> > patch-2.6.24.7-rt15 has style problems, please review.  If any of these errors
-> > are false positives report them to the maintainer, see
-> > CHECKPATCH in MAINTAINERS.
-> >
-> > It seems many of errors and warnings are quite simple and easily removable.
-> 
-> Yes, and they will be before going into mainilne.
-> 
+> The patch is not the correct fix since the actual problem comes from 
+> free_pages_and_swap_cache() in swap.h
 
-I convert ﻿patch-2.6.24.7-rt15 to git patch and located here :-
-http://git.infradead.org/users/jaswinder/linux-2.6-rt.git?a=shortlog;h=refs/heads/2.6.24.7-rt15
+True, but I saw this comment in swap.h:
 
-I also try to fix style problems and also did some cleanup.
+/* only sparc can not include linux/pagemap.h in this file
+ * so leave page_cache_release and release_pages undeclared... */
 
-﻿scripts/checkpatch.pl is now saying :
-total: 108 errors, 347 warnings, 65486 lines checked
+so I thought it might be safer to add the include to tlb.h instead.
 
-I left these style problems for developers.
-You can get updated version from :-
-http://git.infradead.org/users/jaswinder/linux-2.6-rt.git?a=shortlog;h=refs/heads/2.6.24.7-rt15-jsr
-
-Thank you,
-
-Jaswinder Singh.
-
+Haavard
