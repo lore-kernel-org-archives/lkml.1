@@ -1,148 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbYGZSO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbYGZSTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757386AbYGZSO3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 14:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbYGZSOH
+	id S1757280AbYGZSTR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 14:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYGZSTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 14:14:07 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:45176 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754753AbYGZSOG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 14:14:06 -0400
-Date: Sat, 26 Jul 2008 19:13:43 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Adrian Bunk <bunk@kernel.org>
-cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] linux/swap.h must #include <linux/pagemap.h>
-In-Reply-To: <20080726173832.GE9301@cs181140183.pp.htv.fi>
-Message-ID: <Pine.LNX.4.64.0807261852050.582@blonde.site>
-References: <1217092685-15267-1-git-send-email-haavard.skinnemoen@atmel.com>
- <20080726173832.GE9301@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 26 Jul 2008 14:19:06 -0400
+Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:39472 "EHLO
+	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752182AbYGZSTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 14:19:05 -0400
+Subject: Re: Problem mounting Motorola USB device
+From: Alan <alan@clueserver.org>
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+In-Reply-To: <20080726112249.1ade4980.zaitcev@redhat.com>
+References: <52610.198.182.194.170.1216229551.squirrel@clueserver.org>
+	 <20080725235122.0e097f1f.akpm@linux-foundation.org>
+	 <20080726112249.1ade4980.zaitcev@redhat.com>
+Content-Type: text/plain
+Date: Sat, 26 Jul 2008 11:19:07 -0700
+Message-Id: <1217096347.5892.1.camel@rotwang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Jul 2008, Adrian Bunk wrote:
-> On Sat, Jul 26, 2008 at 07:18:05PM +0200, Haavard Skinnemoen wrote:
-> > This fixes the following compile error on avr32, introduced by
-> > commit ba92a43dbaee339cf5915ef766d3d3ffbaaf103c
-> > (exec: remove some includes):
+On Sat, 2008-07-26 at 11:22 -0600, Pete Zaitcev wrote:
+> On Fri, 25 Jul 2008 23:51:22 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > (cc linux-usb-devel)
 > > 
-> > In file included from include/asm/tlb.h:24,
-> >                  from fs/exec.c:55:
-> > include/asm-generic/tlb.h: In function 'tlb_flush_mmu':
-> > include/asm-generic/tlb.h:76: error: implicit declaration of function 'release_pages'
-> > include/asm-generic/tlb.h: In function 'tlb_remove_page':
-> > include/asm-generic/tlb.h:105: error: implicit declaration of function 'page_cache_release'
-> > make[1]: *** [fs/exec.o] Error 1
-> > 
-> > Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-> > ---
-> >  include/asm-generic/tlb.h |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
-> > index f490e43..f85f3a2 100644
-> > --- a/include/asm-generic/tlb.h
-> > +++ b/include/asm-generic/tlb.h
-> > @@ -13,6 +13,7 @@
-> >  #ifndef _ASM_GENERIC__TLB_H
-> >  #define _ASM_GENERIC__TLB_H
-> >  
-> > +#include <linux/pagemap.h>
-> >  #include <linux/swap.h>
-> >  #include <asm/pgalloc.h>
-> >  #include <asm/tlbflush.h>
+> > On Wed, 16 Jul 2008 10:32:31 -0700 (PDT) "Alan" <alan@clueserver.org> wrote:
 > 
-> The patch is not the correct fix since the actual problem comes from 
-> free_pages_and_swap_cache() in swap.h
+> > > [...] The device gives an odd media error at towards
+> > > the end of the device.  It gave that before, but would still mount.
+> 
+> Weird. Actually, I would rather blame the partitioning code than
+> the usb-storage as such.
+> 
+> > > [...] I know I probably need a new memory card.  I
+> > > would like to recover this one first.
+> 
+> Want a practical suggestion? Try to stick the card into a common
+> many-in-one reader, a SanDisk SDDR-somenumber would usually work.
+> Save the data.
 
-You're right, but ...
+This actually causes a kernel oops.  I will post debug info soon.
 
 > 
-> Patch is below, but it has not yet gotten enough testing that I'm 100% 
-> confident it doesn't break anything else...
+> > > sd 6:0:0:0: Attached scsi generic sg2 type 0
+> > > sd 6:0:0:0: [sdb] Result: hostbyte=DID_OK driverbyte=DRIVER_SENSE,SUGGEST_OK
+> > > sd 6:0:0:0: [sdb] Sense Key : Medium Error [current]
+> > > sd 6:0:0:0: [sdb] Add. Sense: No additional sense information
+> 
+> Well, duh.
+> 
+> BTW Andrew added:
+> 
+> > It's a 2.6.24 -> 2.6.25 regression.
+> 
+> Maybe in FAT... See the sector number (1987576).
+> 
+> BTW, all Fedora kernels have usbmon enabled. May I see the trace?
+> Best of all, take the one from the working 2.6.24 (if such install
+> is still available). It would become obvious if usb-storage began to
+> do something different.
+> 
+> Obligatory notice: I don't think ub would fix this.
 
-... according to the comment in swap.h, we have to expect that
-yours (just like Yoichi-san's) will cause some problem on sparc.
+I will get more info now that OSCON is over.
 
-I quite like Haavard's, since almost all the arch tlb.hs seem to
-have noticed a similar issue and already include pagemap.h.  But
-if we do go with his, it looks to me like include/asm-s390/tlb.h
-would also need the same.
-
-My preference for now is just to go with the fs/exec.c fixup at
-the bottom, restoring things more how they were before I came
-along and screwed everyone over.  Adrian, may I impertinently
-ask you to give that one a go in your build farm?
-
-The _right_ fix looks to me to be different from all of these, but
-something we shouldn't get into while people are waiting for their
-kernel builds to be fixed: probably not for 2.6.27.
-
-That right fix, I think, would be to move free_page_and_swap_cache
-and free_pages_and_swap_cache (and free_swap_cache) from mm/swap_state.c
-to mm/swap.c, and move their prototype declarations from linux/swap.h to
-asm*/tlb.h, and hopefully remove swap.h and pagemap.h from asm*/tlb.h.
-But that could cause a lot more trouble than I have done already!
-
-Hugh
-
-> 
-> cu
-> Adrian
-> 
-> 
-> <--  snip  -->
-> 
-> 
-> This patch fixes the following build error:
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      fs/exec.o
-> In file included from include2/asm/tlb.h:24,
->                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/fs/exec.c:55:
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/tlb.h: In function 'tlb_flush_mmu':
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/tlb.h:76: error: implicit declaration of function 'release_pages'
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/tlb.h: In function 'tlb_remove_page':
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/tlb.h:105: error: implicit declaration of function 'page_cache_release'
-> make[2]: *** [fs/exec.o] Error 1
-> 
-> <--  snip  -->
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 2dab88e59c7ec942df29bbdee041e54edeee1d25 
-> diff --git a/include/linux/swap.h b/include/linux/swap.h
-> index 0b33776..f835058 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -7,6 +7,7 @@
->  #include <linux/list.h>
->  #include <linux/memcontrol.h>
->  #include <linux/sched.h>
-> +#include <linux/pagemap.h>
->  
->  #include <asm/atomic.h>
->  #include <asm/page.h>
-
---- 2.6.26-git/fs/exec.c	2008-07-26 12:33:28.000000000 +0100
-+++ linux/fs/exec.c	2008-07-26 18:50:38.000000000 +0100
-@@ -32,6 +32,7 @@
- #include <linux/swap.h>
- #include <linux/string.h>
- #include <linux/init.h>
-+#include <linux/pagemap.h>
- #include <linux/highmem.h>
- #include <linux/spinlock.h>
- #include <linux/key.h>
