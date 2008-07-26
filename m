@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbYGZJTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752211AbYGZJTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651AbYGZJTY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 05:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbYGZJTF
+	id S1752211AbYGZJTi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 05:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbYGZJTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 05:19:05 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:51653 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753719AbYGZJTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 05:19:04 -0400
-Date: Fri, 25 Jul 2008 20:52:22 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       dbrownell@users.sourceforge.net
-Subject: Re: [PATCH] kernel-doc: handle/strip __init
-Message-ID: <20080725185222.GA22918@uranus.ravnborg.org>
-References: <20080619160329.1a4fe917.randy.dunlap@oracle.com> <20080627210521.GC29245@uranus.ravnborg.org> <20080722133605.34a399a8.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080722133605.34a399a8.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 26 Jul 2008 05:19:13 -0400
+Received: from h155.mvista.com ([63.81.120.155]:18499 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754468AbYGZJTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 05:19:12 -0400
+Message-ID: <488AEC02.9040602@ru.mvista.com>
+Date: Sat, 26 Jul 2008 13:18:58 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Elias Oltmanns <eo@nebensachen.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Pavel Machek <pavel@ucw.cz>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] Add documentation for hard disk shock protection
+ interface
+References: <87prp1kvyy.fsf@denkblock.local> <20080726062142.29070.60679.stgit@denkblock.local>
+In-Reply-To: <20080726062142.29070.60679.stgit@denkblock.local>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 22, 2008 at 01:36:05PM -0700, Randy Dunlap wrote:
-> On Fri, 27 Jun 2008 23:05:21 +0200 Sam Ravnborg wrote:
-> 
-> > On Thu, Jun 19, 2008 at 04:03:29PM -0700, Randy Dunlap wrote:
-> > > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > > 
-> > > cc: David Brownell <dbrownell@users.sourceforge.net>
-> > > 
-> > > Handle __init in functions with kernel-doc notation by stripping the
-> > > __init away from the output doc.  This is already being done for
-> > > "__devinit".  This patch fixes these kernel-doc error/aborts:
-> > 
-> > Applied
-> 
-> Hi Sam,
-> 
-> This patch is now needed so that "make *docs" does not fail.
-> 
-> Will you have Linus pull your tree soon or shall I send it separately?
+Hello.
 
-I just returned from vacation and to a restored Internet connection today.
-I will prepare a pull request tonight.
+Elias Oltmanns wrote:
+> Put some information (and pointers to more) into the kernel's doc tree,
+> describing briefly how to set up disk shock protection under GNU/Linux.
+>
+> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
+>   
+[...]
+> diff --git a/Documentation/laptops/disk-shock-protection.txt b/Documentation/laptops/disk-shock-protection.txt
+> new file mode 100644
+> index 0000000..ac26040
+> --- /dev/null
+> +++ b/Documentation/laptops/disk-shock-protection.txt
+>   
+[...]
+> +
+> +- http://www.thinkwiki.org/wiki/HDAPS
+> +  See this page for information about Linux support of the hard disk
+> +  active protection syystem as implemented in IBM/Lenovo Thinkpads.
+>   
 
-	Sam
+   A typo in "system". :-)
+
+MBR, Sergei
+
+
