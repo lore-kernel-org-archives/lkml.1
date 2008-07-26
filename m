@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbYGZFMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753781AbYGZFPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753256AbYGZFMT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 01:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbYGZFMJ
+	id S1753781AbYGZFPr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 01:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYGZFPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 01:12:09 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50949 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751478AbYGZFMJ (ORCPT
+	Sat, 26 Jul 2008 01:15:39 -0400
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:55554 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751634AbYGZFPi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 01:12:09 -0400
-Date: Fri, 25 Jul 2008 22:08:59 -0700
-From: Greg KH <greg@kroah.com>
-To: Richard A Nelson <cowboy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [stable] [patch 0/9] 2.6.25-stable review
-Message-ID: <20080726050859.GB18771@kroah.com>
-References: <20080725230644.GA1612@suse.de> <j74l84livfi260fi8glgpd09m9q7igqnu0@4ax.com> <alpine.DEB.1.10.0807252102480.30604@hygvzn-guhyr.pnirva.bet>
+	Sat, 26 Jul 2008 01:15:38 -0400
+Message-ID: <488AB2F4.7060806@lwfinger.net>
+Date: Sat, 26 Jul 2008 00:15:32 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0807252102480.30604@hygvzn-guhyr.pnirva.bet>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>,
+       Patrick McHardy <kaber@trash.net>,
+       "David S. Miller" <davem@davemloft.net>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       barry bouwsma <free_beer_for_all@yahoo.com>,
+       wireless <linux-wireless@vger.kernel.org>
+Subject: Regression in 2.6.26-gitX: failure of wireless due to commit 175f9c1bba9b825d22b142
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 09:07:47PM -0700, Richard A Nelson wrote:
-> On Fri, 25 Jul 2008 16:06:44 -0700, Greg KH <gregkh@suse.de> wrote:
-> 
-> > This is the start of the stable review cycle for the 2.6.25.13 release.
-> > There are 9 patches in this series, all will be posted as a response to
-> > this one.
-> 
-> While I appreciate keeping 2.6.25 going (I still need it on two boxen
-> where 2.6.26 just doesn't play nicely), I'm kind of surprised to not see
-> any similar activity against 2.6.26 - is .26 orphaned, or not started
-> until after the merge window ?
+Wireless communication has failed for recent 2.6.26-gitX kernels - a definite 
+regression. The logs show sequences such as:
 
-I'm just a bit slow in getting a .26 out.  There are patches already
-queued up, and my mbox is quite full for more patches to go before it
-can get out.  It was just really easy to flush the .25 patches out at
-this moment.
+eth1: authenticate with AP 00:1a:70:46:ba:b1
+eth1: authenticate with AP 00:1a:70:46:ba:b1
+eth1: authenticated
+eth1: associate with AP 00:1a:70:46:ba:b1
+eth1: associate with AP 00:1a:70:46:ba:b1
+eth1: associate with AP 00:1a:70:46:ba:b1
+eth1: association with AP 00:1a:70:46:ba:b1 timed out
 
-thanks,
+I have this problem with b43 and p54usb, and there is at least one report of the 
+same problem with zd1211rw. In my case, the encryption method is WPA-PSK/TKIP. I 
+have not tested with WEP or unencrypted networks.
 
-greg "digging the inbox out after 3 weeks of travel" k-h
+Bisection yields the following:
+
+175f9c1bba9b825d22b142d183c9e175488b260c is first bad commit
+commit 175f9c1bba9b825d22b142d183c9e175488b260c
+Author: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
+Date:   Sun Jul 20 00:08:47 2008 -0700
+
+     net_sched: Add size table for qdiscs
+
+     Add size table functions for qdiscs and calculate packet size in
+     qdisc_enqueue().
+
+     Based on patch by Patrick McHardy
+      http://marc.info/?l=linux-netdev&m=115201979221729&w=2
+
+     Signed-off-by: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
+     Signed-off-by: David S. Miller <davem@davemloft.net>
+
+========================================================
+
+I tried to reverse apply the patch; however, that does not happen cleanly, but I 
+am confident that the problem arises here. I don't understand enough about this 
+qdisc stuff to even guess at what might be wrong.
+
+As always, I am willing to test any trial patches, etc.
+
+Thanks,
+
+Larry
