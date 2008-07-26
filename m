@@ -1,60 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbYGZW05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757678AbYGZW3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756675AbYGZW05 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 18:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755020AbYGZW0s
+	id S1757678AbYGZW3W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 18:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYGZW3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 18:26:48 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:53416 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752158AbYGZW0r convert rfc822-to-8bit (ORCPT
+	Sat, 26 Jul 2008 18:29:14 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:52778 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753047AbYGZW3N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 18:26:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Q5DG5j/TnYRFgN6ADnUPhpXfB79EHBp8jSxXs0ApsbrJdLSXJFnD0iJ75SbV9BF+B/
-         /oybHLnXajRaW/8x+0GmM8bv024vdBH5dbqR4QLkJERRoDBUsN9wAkqpB6MUppCpNYF+
-         kzzg6m3fgwM7PL60CytNVhbMNXNVEylUsAzFY=
-Message-ID: <69e28c910807261526g17d1aeb1m7427b257cf61fc5e@mail.gmail.com>
-Date: Sun, 27 Jul 2008 00:26:47 +0200
-From: "=?ISO-8859-1?Q?Stefanik_G=E1bor?=" <netrolller.3d@gmail.com>
-To: "Zhu Yi" <yi.zhu@intel.com>, "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [PATCH] iwlwifi: Enable packet injection for iwl4965
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       ipw3945-devel <ipw3945-devel@lists.sourceforge.net>,
-       "Tomas Winkler" <tomasw@gmail.com>,
-       "Tomas Winkler" <tomas.winkler@intel.com>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "Marco Schuster" <marco@harddisk.is-a-geek.org>
-In-Reply-To: <69e28c910807181205m6dd0cdcek83f9717bf1ac9dcc@mail.gmail.com>
+	Sat, 26 Jul 2008 18:29:13 -0400
+Date: Sat, 26 Jul 2008 23:28:32 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Kel Modderman <kel@otaku42.de>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: tmpfs: kernel BUG at mm/shmem.c:814
+In-Reply-To: <200807262210.11502.kel@otaku42.de>
+Message-ID: <Pine.LNX.4.64.0807262318050.25997@blonde.site>
+References: <200807262210.11502.kel@otaku42.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <69e28c910807181205m6dd0cdcek83f9717bf1ac9dcc@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 9:05 PM, Stefanik Gábor <netrolller.3d@gmail.com> wrote:
-> @@ -822,7 +819,10 @@ int iwl_tx_skb(struct iwl_priv *priv, struct sk_buff *skb)
->        hdr_len = ieee80211_get_hdrlen(le16_to_cpu(fc));
->
->        /* Find (or create) index into station table for destination station */
-> -       sta_id = iwl_get_sta_id(priv, hdr);
-> +       if (info->flags & IEEE80211_TX_CTL_INJECTED)
-> +               sta_id = priv->hw_params.bcast_sta_id;
-> +       else
-> +               sta_id = iwl_get_sta_id(priv, hdr);
->        if (sta_id == IWL_INVALID_STATION) {
->                DECLARE_MAC_BUF(mac);
+On Sat, 26 Jul 2008, Kel Modderman wrote:
+> 
+> I am able to reproduce the triggering of BUG_ON() in shmem_delete_inode
+> function of mm/shmem.c, line 814, while testing the insserv program in a dir
+> on a tmpfs mount point with Linux 2.6.25.x and 2.6.26.
 
-Oops... this hunk (last hunk in iwl-tx.c) is unneeded, just ignore it
-(it's a leftover from another patch I have in my tree).
+Outstanding bug report and steps to reproduce: thank you so much.
+You should find this fixes it; though we may have some more work to
+do, maybe other filesystems are surprised by readahead on directories.
 
--- 
-Vista: [V]iruses, [I]ntruders, [S]pyware, [T]rojans and [A]dware. :-)
+
+[PATCH] tmpfs: fix kernel BUG in shmem_delete_inode
+
+SuSE's insserve initscript ordering program hits kernel BUG at mm/shmem.c:814
+on 2.6.26.  It's using posix_fadvise on directories, and the shmem_readpage
+method added in 2.6.23 is letting POSIX_FADV_WILLNEED allocate useless pages
+to a tmpfs directory, incrementing i_blocks count but never decrementing it.
+
+Fix this by assigning shmem_aops (pointing to readpage and writepage and
+set_page_dirty) only when it's needed, on a regular file or a long symlink.
+
+Many thanks to Kel for outstanding bugreport and steps to reproduce it.
+
+Reported-by: Kel Modderman <kel@otaku42.de>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Cc: stable@kernel.org
+---
+Other filesystems... ramfs looks as if it would allocate useless pages too,
+but should free them, and wouldn't BUG; are there other filesystems to be
+surprised by readahead on directories?  I have not looked through yet.
+
+ mm/shmem.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- 2.6.26-git/mm/shmem.c	2008-07-26 12:33:28.000000000 +0100
++++ linux/mm/shmem.c	2008-07-26 22:46:28.000000000 +0100
+@@ -1513,7 +1513,6 @@ shmem_get_inode(struct super_block *sb, 
+ 		inode->i_uid = current->fsuid;
+ 		inode->i_gid = current->fsgid;
+ 		inode->i_blocks = 0;
+-		inode->i_mapping->a_ops = &shmem_aops;
+ 		inode->i_mapping->backing_dev_info = &shmem_backing_dev_info;
+ 		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+ 		inode->i_generation = get_seconds();
+@@ -1528,6 +1527,7 @@ shmem_get_inode(struct super_block *sb, 
+ 			init_special_inode(inode, mode, dev);
+ 			break;
+ 		case S_IFREG:
++			inode->i_mapping->a_ops = &shmem_aops;
+ 			inode->i_op = &shmem_inode_operations;
+ 			inode->i_fop = &shmem_file_operations;
+ 			mpol_shared_policy_init(&info->policy,
+@@ -1929,6 +1929,7 @@ static int shmem_symlink(struct inode *d
+ 			return error;
+ 		}
+ 		unlock_page(page);
++		inode->i_mapping->a_ops = &shmem_aops;
+ 		inode->i_op = &shmem_symlink_inode_operations;
+ 		kaddr = kmap_atomic(page, KM_USER0);
+ 		memcpy(kaddr, symname, len);
