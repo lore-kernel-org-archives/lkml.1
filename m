@@ -1,94 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYGZPjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbYGZPkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbYGZPjX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 11:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYGZPjM
+	id S1756133AbYGZPkw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 11:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYGZPko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 11:39:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41296 "EHLO mx3.mail.elte.hu"
+	Sat, 26 Jul 2008 11:40:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41789 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752279AbYGZPjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 11:39:10 -0400
-Date: Sat, 26 Jul 2008 17:38:50 +0200
+	id S1752332AbYGZPko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 11:40:44 -0400
+Date: Sat, 26 Jul 2008 17:40:29 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [PATCH] x86: usb debug port early console v4
-Message-ID: <20080726153850.GA15794@elte.hu>
-References: <200807231252.20371.yhlu.kernel@gmail.com> <200807231400.53957.yhlu.kernel@gmail.com> <200807231739.39620.yhlu.kernel@gmail.com> <200807241729.41132.yhlu.kernel@gmail.com> <20080726134828.GF4401@elte.hu>
+To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take 3)
+Message-ID: <20080726154029.GA15945@elte.hu>
+References: <48889C14.4070408@fujitsu-siemens.com> <4889968E.6020000@fujitsu-siemens.com> <20080725100844.GA16698@lenovo> <4889C723.7050402@fujitsu-siemens.com> <20080725125950.GA28466@lenovo> <4889D767.5050709@fujitsu-siemens.com> <20080725134831.GB28466@lenovo> <4889DCA4.4010800@fujitsu-siemens.com> <20080725150104.GD28466@lenovo> <4889ED91.7050800@fujitsu-siemens.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080726134828.GF4401@elte.hu>
+In-Reply-To: <4889ED91.7050800@fujitsu-siemens.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.0
+X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
-	_SUMMARY_
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+* Martin Wilck <martin.wilck@fujitsu-siemens.com> wrote:
 
-> > based on work from Eric, and add some timeout so don't dead loop when 
-> > debug device is not installed
-> > 
-> > v2: fix checkpatch warning
-> > v3: move ehci struct def to linux/usrb/ehci_def.h from host/ehci.h
-> >     also add CONFIG_EARLY_PRINTK_DBGP to disable it by default
-> > v4: address comments from Ingo, seperate ehci reg def moving to another patch
-> >     also add auto detect port that connect to debug device for Nvidia southbridge
-> > 
-> > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take 3)
 > 
-> applied to tip/x86/early-printk - thanks Yinghai.
+> Non-maskable asynchronous events (e.g. SMIs) which occur during the 
+> APIC timer calibration can cause timer miscalibrations, sometimes by 
+> large amounts. This patch fixes this by making sure that no 
+> significant interruption occurs between APIC and TSC reads. SMIs may 
+> still occur at some stage in the calibration loop, causing the loop to 
+> last longer than intended. This doesn't matter though, as long as the 
+> start and end values are both taken simultaneously.
+> 
+> Changed wrt take 2: Use max. possible start value for the APIC timer 
+> to avoid underflow.
+> 
+> Signed-off-by: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+> Signed-off-by: Gerhard Wichert <gerhard.wichert@fujitsu-siemens.com>
+> 
+> --- arch/x86/kernel/apic_64.c	2008-07-25 15:39:51.000000000 +0200
+> +++ arch/x86/kernel/apic_64.c.new	2008-07-25 15:55:08.000000000 +0200
 
-small build fix below.
+nice - could you please implement it symmetrically on 32-bit APIC 
+calibration as well?
 
 	Ingo
-
------------->
->From 9749986a878e91182ff027ff0010ab8e3211031a Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sat, 26 Jul 2008 17:28:11 +0200
-Subject: [PATCH] x86: usb debug port early console, fix
-
-fix:
-
- arch/x86/kernel/built-in.o: In function `nvidia_set_debug_port':
- early_printk.c:(.text+0xf8b1): undefined reference to `read_pci_config'
- early_printk.c:(.text+0xf8dc): undefined reference to `write_pci_config'
- arch/x86/kernel/built-in.o: In function `setup_early_printk':
- early_printk.c:(.init.text+0x5487): undefined reference to `early_pci_allowed'
- early_printk.c:(.init.text+0x54cb): undefined reference to `read_pci_config'
- early_printk.c:(.init.text+0x54ec): undefined reference to `read_pci_config_16'
- [...]
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/Kconfig.debug |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index 93422d2..2a3dfbd 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -46,7 +46,7 @@ config EARLY_PRINTK
- config EARLY_PRINTK_DBGP
- 	bool "Early printk via EHCI debug port"
- 	default n
--	depends on EARLY_PRINTK
-+	depends on EARLY_PRINTK && PCI
- 	help
- 	  Write kernel log output directly into the EHCI debug port.
- 
