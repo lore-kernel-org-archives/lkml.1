@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbYGZNqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756554AbYGZNre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757453AbYGZNqi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 09:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbYGZNqY
+	id S1756554AbYGZNre (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 09:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbYGZNrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 09:46:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36340 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754647AbYGZNqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 09:46:22 -0400
-Date: Sat, 26 Jul 2008 15:46:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       robert.richter@amd.com, Wei Wang <wei.wang2@amd.com>
-Subject: Re: [PATCH] AMD IOMMU: include amd_iommu_last_bdf in device
-	initialization
-Message-ID: <20080726134603.GE4401@elte.hu>
-References: <1216984070-8677-1-git-send-email-joerg.roedel@amd.com>
+	Sat, 26 Jul 2008 09:47:22 -0400
+Received: from stinky.trash.net ([213.144.137.162]:64131 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751776AbYGZNrV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 09:47:21 -0400
+Message-ID: <488B2AE5.9070106@trash.net>
+Date: Sat, 26 Jul 2008 15:47:17 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1216984070-8677-1-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0007]
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       w@1wt.eu, davidn@davidnewall.com, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
+ pointer dereference
+References: <20080724060448.GA10203@elte.hu>  <E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>  <20080724.022259.113079007.davem@davemloft.net>  <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu>  <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net> <84144f020807240544q507e1b7cv220d1afbae0ee0f0@mail.gmail.com> <48887A71.5010209@trash.net> <alpine.LFD.1.10.0807241407410.8109@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807241407410.8109@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds wrote:
+> 
+> On Thu, 24 Jul 2008, Patrick McHardy wrote:
+>> To fix this I think we need a __krealloc() that doesn't
+>> free the old memory, especially since it must not be
+>> freed immediately because it may still be used in a RCU
+>> read side (see the last part in the patch attached to
+>> this mail (based on a kernel without your patch)).
+> 
+> Hmm. Don't you need to fix some of the ordering of the initialization too?
+> 
+> If there are possible readers that happen in parallel with changing this 
+> thing, don't you need to protect the update of "ext->len" against the 
+> actual changes? And the readers should probably have a read barrier 
+> between checking "len" and actually looking at the values?
 
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
+Extensions can only be added while the conntrack is "unconfirmed",
+meaning its not in the hash tables yet and the reference is exclusive.
+The reason why we need RCU at all is that the extension areas
+might already visible and contained in RCU protected lists.
 
-> All the values read while searching for amd_iommu_last_bdf are defined 
-> as inclusive. Let the code handle this value as such. Found by Wei 
-> Wang. Thanks Wei.
+> Finally, why do 
+> the "ct->ext" dereference thing, when we know it has to be equal to "new"?
 
-applied to tip/x86/urgent, thanks Joerg.
-
-	Ingo
+Thats a relict of the old code, which allocated "new" conditionally.
+I've taken that part from your patch without the smb_wmb(), which
+shouldn't be necessary.
