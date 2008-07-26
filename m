@@ -1,60 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756957AbYGZRqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbYGZRyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756957AbYGZRqr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 13:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbYGZRqj
+	id S1756822AbYGZRyO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 13:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbYGZRx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 13:46:39 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:35849 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753194AbYGZRqi (ORCPT
+	Sat, 26 Jul 2008 13:53:59 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:36763 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752170AbYGZRx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 13:46:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=wewYNSzmGa1Kx43cHSlP0YM22fDB5vbfhztJ94PY88HTZZTNUzKOSvkT9STv7LZdzY
-         sfDc7wplxzrLcA3b72OkSGjxXtMeRmH5/IfnYyF9x5BMZN3Fa5zs4EQroO97a9ZlC8eX
-         b/Qkl4bRJq88l3vwziITmZRHAq8Wk11tpFajw=
-Subject: Re: [PATCH] byteorder: force in-place endian conversion to always
-	evaluate args
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080726053459.GA26063@infradead.org>
-References: <1217003621.5971.4.camel@brick>
-	 <20080726053459.GA26063@infradead.org>
-Content-Type: text/plain
-Date: Sat, 26 Jul 2008 10:46:37 -0700
-Message-Id: <1217094397.5971.67.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 26 Jul 2008 13:53:58 -0400
+Message-ID: <fa686aa40807261053r5a8ebe40l7e8061f926f185f9@mail.gmail.com>
+Date: Sat, 26 Jul 2008 13:53:57 -0400
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Milton Miller" <miltonm@bga.com>
+Subject: Re: [RFC,PATCH] scripts/package: add powerpc images to tarball
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       "Jeremy Kerr" <jk@ozlabs.org>
+In-Reply-To: <913573e2092839fbe37a0bfa37119eb6@bga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1216887460.306306.238738123378.1.gpush@pingu>
+	 <200807250108.m6P18f4B099179@sullivan.realtime.net>
+	 <fa686aa40807252155l4f785920qdb14d117067b30f4@mail.gmail.com>
+	 <913573e2092839fbe37a0bfa37119eb6@bga.com>
+X-Google-Sender-Auth: 10821f110bba0f7d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-07-26 at 01:34 -0400, Christoph Hellwig wrote:
-> On Fri, Jul 25, 2008 at 09:33:41AM -0700, Harvey Harrison wrote:
-> > David Miller reported breakage in ide when the in-place byteorder helpers
-> > were used as the macros do not always evaluate their args which led to
-> > an infinite loop.
-> > 
-> > Just make them functions to ensure they always do so.
-> 
-> Of course the best thing would be to kill these macros entirely.
-> In-place endianess conversions are bad idea.
-> 
+On Sat, Jul 26, 2008 at 1:20 PM, Milton Miller <miltonm@bga.com> wrote:
+> On Jul 25, 2008, at 11:55 PM, Grant Likely wrote:
+>>
+>> On Thu, Jul 24, 2008 at 9:08 PM, Milton Miller <miltonm@bga.com> wrote:
+>>>>
+>>>> Add support for powerpc builds in the buildtar script, to include
+>>>> a few default images.
+>>>> ---
+>>>> RFC: any requests for more/less boot images?
+>>>
+>>> ..
+>>>>
+>>>> +             for img in zImage zImage.pseries zImage.iseries \
+>>>> +                             dtbImage dtbImage.ps3
+>>>
+>>> Yes.  How about all dtbImage, zImage, cuboot, treeboot, etc
+>>> that are newer than vmlinux?
+>>
+>> dtbImage is not a buildable image.  Neither is cuImage, treeImage or
+>> simpleImage.  All of those targets embed a device tree which is
+>> specified by adding the .dts filename to the target name.
+>
+> I intended "all dtbImage" as a wildcard for dtbImage.*, etc.
 
-It's better than seeing this:
-	some_u32 = cpu_to_le32(some_u32);
+Yeah, okay.  That's a good idea.
 
-But agreed, the 's' versions of the byteswapping api are a pretty good
-sign something could be done better.
+>> so, for example, 'make cuImage' fails.  Instead you do 'make
+>> cuImage.lite5200b' which pulls in dts/lite5200b.dts.
+>
+> The user does make zImage which makes cuImage.lite5200b based on Kconfig.
+> Or it was that way until your change in 2.6.25 to allow the later, but they
+> can still do the former.
 
-Harvey
+Yes, both methods should work (at least they both work for me).  There
+is also now a Kconfig option (CONFIG_EXTRA_TARGETS) which can be used
+to add additional images to the zImage target list.  Should be useful
+for some of the defconfigs.
 
+> Hmm, we really need to fix our calls to make boot images with make -j.
+>  Something for my todo list.
+
+Good idea
+
+>
+>> Also, zImage is a 'meta' target that builds all the default image
+>> targets (the $image-y list).  The zImage is actually just a symlink to
+>> the first file in the list of default images.  So zImage can actually
+>> point to any kind of kernel image depending on how the kernel is
+>> configured.  I wonder if we should just remove the zImage file
+>> entirely, or at least make it always linked to one particular image
+>> type.
+>
+> I think its fine as it is.   It says "make what is configured" that lets
+> cross-platform building scripts be dumb and not need to know specificially
+> what image makes sense to make.  Perhaps we should make it default to our
+> additional target in Kconfig if specified, this allowing the user to specify
+> which version he gets.
+
+It makes sense if only one target is ever built at a time; but since
+we build multiple targets, I don't want users to get caught just using
+zImage and then get bitten when a a config or source change causes it
+to be linked to a different kernel type.
+
+Come to think of it, I'd support just removing the zImage symlink
+entirely to eliminate confusion so that everyone knows that 'make
+zImage' is the 'make all' for default image targets.
+
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
