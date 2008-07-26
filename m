@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbYGZIMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbYGZIUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753249AbYGZIMQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 04:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYGZIME
+	id S1753730AbYGZIUO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 04:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbYGZIT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 04:12:04 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:45633 "EHLO smtpout3.tre.se"
+	Sat, 26 Jul 2008 04:19:56 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:46125 "EHLO smtpout3.tre.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751317AbYGZIMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 04:12:01 -0400
-X-Greylist: delayed 1754 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Jul 2008 04:12:01 EDT
-Date: Fri, 25 Jul 2008 22:34:46 +0200
+	id S1751638AbYGZITz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 04:19:55 -0400
+X-Greylist: delayed 2324 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Jul 2008 04:17:52 EDT
+Date: Sat, 26 Jul 2008 09:43:28 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
 Subject: [GIT PULL] kbuild
-Message-ID: <20080725203446.GA30215@uranus.ravnborg.org>
+Message-ID: <20080726074328.GA2161@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
