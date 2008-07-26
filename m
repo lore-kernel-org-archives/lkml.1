@@ -1,68 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbYGZNmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751945AbYGZNnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755861AbYGZNmm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 09:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYGZNmU
+	id S1751945AbYGZNnA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 09:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbYGZNmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 09:42:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38567 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752026AbYGZNmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 09:42:19 -0400
-Date: Sat, 26 Jul 2008 15:41:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: joerg.roedel@amd.com, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       bhavna.sarathy@amd.com, robert.richter@amd.com
-Subject: Re: [PATCH] add iommu_num_pages helper function
-Message-ID: <20080726134156.GC4401@elte.hu>
-References: <20080725134159.GA7493@amd.com> <20080725225724J.fujita.tomonori@lab.ntt.co.jp> <20080725141425.GB7493@amd.com> <20080725233325W.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080725233325W.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 26 Jul 2008 09:42:23 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:42093 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752207AbYGZNmV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 09:42:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=Uci+ZiSnAv5ZzK/d/rHjmk7bNid35iHhbI/KUuigImLLUHIqFqGP/iEt9MEkmbfdp4
+         Eiz+MA2c0IsmDRfthIvDv+7gBLZCxLf5cXgMAgFmSaQDNTLL6IpUvE/PY3V/awDobO62
+         miYKeETn9299GlOMABkXGEn/k/GtCkZaIhOkU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Sat, 26 Jul 2008 15:40:17 +0200
+Message-Id: <20080726134017.10589.12439.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080726134010.10589.51679.sendpatchset@localhost.localdomain>
+References: <20080726134010.10589.51679.sendpatchset@localhost.localdomain>
+Subject: [PATCH 02/10] ide: fix EXABYTENEST handling in probe_for_drive()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix EXABYTENEST handling in probe_for_drive() (so drive->present
+is checked for "nested" device) and cleanup enable_nest().
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-probe.c |   16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
 
-> On Fri, 25 Jul 2008 16:14:25 +0200
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > > > If not, I suggest that we (you?) introduce one in a follow-on patch
-> > > > series and fix the iommu_num_pages function then.
-> > > 
-> > > That's fine by me. Or I could try to find a solution and submit new
-> > > patchset with your AMD and GART patches.
-> > 
-> > Thats also possible. But I prefer to fix that incrementally and merge
-> > this first step.
-> > 
-> > > BTW, I prefer to push this patchset via -mm rather than x86 since
-> > > after all we need to clean up all the IOMMUs.
-> > 
-> > Push it through -mm would make sense since it touches generic code in
-> > lib/. On the other side in x86 we would avoid merge conflicts with
-> > updates in AMD IOMMU and GART code.
-> 
-> Ok, I have no preference. It's not urgent and I can work on this later 
-> on. I leave it to you and x86 maintainers.
-
-ok, i'll apply the 3 patches to tip/x86/iommu. As usual, feel free to 
-send IOMMU cleanups/generalizations/fixes against tip/master:
-
-  http://people.redhat.com/mingo/tip.git/README
-
-	Ingo
+Index: b/drivers/ide/ide-probe.c
+===================================================================
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -542,11 +542,6 @@ static void enable_nest (ide_drive_t *dr
+ 		printk(KERN_CONT "failed (status = 0x%02x)\n", stat);
+ 	else
+ 		printk(KERN_CONT "success\n");
+-
+-	/* if !(success||timed-out) */
+-	if (do_probe(drive, ATA_CMD_ID_ATA) >= 2)
+-		/* look for ATAPI device */
+-		(void)do_probe(drive, ATA_CMD_ID_ATAPI);
+ }
+ 
+ /**
+@@ -586,19 +581,22 @@ static inline u8 probe_for_drive (ide_dr
+ 	strcpy(m, "UNKNOWN");
+ 
+ 	/* skip probing? */
+-	if (!drive->noprobe)
+-	{
++	if (!drive->noprobe) {
++retry:
+ 		/* if !(success||timed-out) */
+ 		if (do_probe(drive, ATA_CMD_ID_ATA) >= 2)
+ 			/* look for ATAPI device */
+ 			(void)do_probe(drive, ATA_CMD_ID_ATAPI);
++
+ 		if (!drive->present)
+ 			/* drive not found */
+ 			return 0;
+ 
+-		if (strstr(m, "E X A B Y T E N E S T"))
++		if (strstr(m, "E X A B Y T E N E S T")) {
+ 			enable_nest(drive);
+-	
++			goto retry;
++		}
++
+ 		/* identification failed? */
+ 		if (!drive->id_read) {
+ 			if (drive->media == ide_disk) {
