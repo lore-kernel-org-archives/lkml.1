@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbYGZVHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758158AbYGZVXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758049AbYGZVHO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 17:07:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757301AbYGZVHA
+	id S1758158AbYGZVXB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 17:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbYGZVWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 17:07:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53525 "EHLO mx1.redhat.com"
+	Sat, 26 Jul 2008 17:22:53 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:54982 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757189AbYGZVG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 17:06:59 -0400
-Date: Sat, 26 Jul 2008 15:04:46 -0600
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Alan <alan@clueserver.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, zaitcev@redhat.com
-Subject: Re: Problem mounting Motorola USB device
-Message-Id: <20080726150446.7274b37d.zaitcev@redhat.com>
-In-Reply-To: <1217103320.22476.0.camel@rotwang>
-References: <52610.198.182.194.170.1216229551.squirrel@clueserver.org>
-	<20080725235122.0e097f1f.akpm@linux-foundation.org>
-	<20080726112249.1ade4980.zaitcev@redhat.com>
-	<1217096347.5892.1.camel@rotwang>
-	<20080726123348.782a2776.zaitcev@redhat.com>
-	<1217103320.22476.0.camel@rotwang>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.13.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1758068AbYGZVWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 17:22:52 -0400
+Date: Sun, 27 Jul 2008 00:22:20 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andrea Righi <righi.andrea@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [-mm patch] mm/util.c must #include <linux/sched.h>
+Message-ID: <20080726212219.GH9301@cs181140183.pp.htv.fi>
+References: <20080725083943.GC19310@cs181140183.pp.htv.fi> <20080725015537.564e3397.akpm@linux-foundation.org> <20080725091455.GD19310@cs181140183.pp.htv.fi> <20080725092748.GF19310@cs181140183.pp.htv.fi> <20080725023455.dde3eb27.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080725023455.dde3eb27.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Jul 2008 13:15:20 -0700, Alan <alan@clueserver.org> wrote:
-> On Sat, 2008-07-26 at 12:33 -0600, Pete Zaitcev wrote:
-
-> > One question: can you switch to self-built kernels instead of supplied
-> > by Fedora, just for this bug? It would be easier for me to look at
-> > (I'm speaking in the USB hacker capacity here rather than as one
-> > of Chuck's underlings).
+On Fri, Jul 25, 2008 at 02:34:55AM -0700, Andrew Morton wrote:
+> On Fri, 25 Jul 2008 12:27:48 +0300 Adrian Bunk <bunk@kernel.org> wrote:
 > 
-> Which tree do you want me to build from?
+> > Further testing revealed that you should choose a file that also gets 
+> > compiled on MMU-less architectures:
+> 
+> We don't have one :(
+> 
+> I guess util.c will have to do.
+>...
 
-I think 2.6.26 would be a good place to start. Also I think the best would
-be to populate the .config from /boot/config* that Fedora supplies. It takes
-longer to build, but makes it more likely that we reproduce one or both
-of the failures you saw (phone not mounted and the oops). You will need
-to run  mkinitrd /boot/initrd-2.6.26-alan.img 2.6.26-alan or something
-like it, Fedora's userland and .config pretty much require it.
+Requires the fix below.
 
--- Pete
+cu
+Adrian
+
+
+<--  snip  -->
+
+
+This patch fixes the following build error:
+
+<--  snip  -->
+
+...
+  CC      mm/util.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/util.c: In function 'arch_pick_mmap_layout':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/util.c:144: error: dereferencing pointer to incomplete type
+/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/util.c:145: error: 'arch_get_unmapped_area' undeclared (first use in this function)
+/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/util.c:145: error: (Each undeclared identifier is reported only once
+/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/util.c:145: error: for each function it appears in.)
+/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/util.c:146: error: 'arch_unmap_area' undeclared (first use in this function)
+make[2]: *** [mm/util.o] Error 1
+
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+f003405997b99d300c99f7b1eae408fe42c07126 
+diff --git a/mm/util.c b/mm/util.c
+index 0efd830..d8d0221 100644
+--- a/mm/util.c
++++ b/mm/util.c
+@@ -3,6 +3,7 @@
+ #include <linux/string.h>
+ #include <linux/module.h>
+ #include <linux/err.h>
++#include <linux/sched.h>
+ #include <asm/uaccess.h>
+ 
+ /**
+
