@@ -1,75 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753781AbYGZFPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbYGZFUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753781AbYGZFPr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 01:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYGZFPj
+	id S1753934AbYGZFUW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 01:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbYGZFUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 01:15:39 -0400
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:55554 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751634AbYGZFPi (ORCPT
+	Sat, 26 Jul 2008 01:20:09 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:17912 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751478AbYGZFUI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 01:15:38 -0400
-Message-ID: <488AB2F4.7060806@lwfinger.net>
-Date: Sat, 26 Jul 2008 00:15:32 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Sat, 26 Jul 2008 01:20:08 -0400
+Message-ID: <fa686aa40807252220x5b224e91ucca467ff6eecc0ae@mail.gmail.com>
+Date: Sat, 26 Jul 2008 01:20:06 -0400
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Daniel Walker" <dwalker@mvista.com>
+Subject: Re: [PATCH v3 4/4] powerpc/mpc5200: Add mpc5200-spi (non-PSC) device driver
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       spi-devel-general@lists.sourceforge.net,
+       dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org,
+       jonsmirl@gmail.com
+In-Reply-To: <1217047659.3970.14.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>,
-       Patrick McHardy <kaber@trash.net>,
-       "David S. Miller" <davem@davemloft.net>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       barry bouwsma <free_beer_for_all@yahoo.com>,
-       wireless <linux-wireless@vger.kernel.org>
-Subject: Regression in 2.6.26-gitX: failure of wireless due to commit 175f9c1bba9b825d22b142
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+	 <20080725073326.8485.99210.stgit@trillian.secretlab.ca>
+	 <1217009954.13539.23.camel@localhost.localdomain>
+	 <fa686aa40807251945t26a1656ep7a57ca71faa096c4@mail.gmail.com>
+	 <1217047659.3970.14.camel@localhost.localdomain>
+X-Google-Sender-Auth: 149fbee35a840bbd
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wireless communication has failed for recent 2.6.26-gitX kernels - a definite 
-regression. The logs show sequences such as:
+On Sat, Jul 26, 2008 at 12:47 AM, Daniel Walker <dwalker@mvista.com> wrote:
+> On Fri, 2008-07-25 at 22:45 -0400, Grant Likely wrote:
+>> On Fri, Jul 25, 2008 at 2:19 PM, Daniel Walker <dwalker@mvista.com> wrote:
+>> > On Fri, 2008-07-25 at 03:33 -0400, Grant Likely wrote:
+>> >
+>> >> +     if (status && (irq != NO_IRQ))
+>> >> +             dev_err(&ms->master->dev, "spurious irq, status=0x%.2x\n",
+>> >> +                     status);
+>> >> +
+>> >> +     /* Check if there is another transfer waiting */
+>> >> +     if (list_empty(&ms->queue))
+>> >> +             return FSM_STOP;
+>> >
+>> > I don't think doing list_empty outside the critical section is totally
+>> > safe.. You might want to move it down inside the spin_lock() section.
+>>
+>> This should be fine.  This is the only place where items are dequeued,
+>> and it will only ever be called from the ISR or the work queue.  The
+>> work queue and IRQ will never be active at the same time (I'll add a
+>> comment to the fact).  It also looks like list_empty is perfectly safe
+>> to call without the protection of a spin lock (but somebody correct me
+>> if I'm out to lunch).  It doesn't dereference any of the pointers in
+>> the list_head structure.
+>
+> The list_empty wouldn't crash, but the result isn't necessarily
+> accurate.
 
-eth1: authenticate with AP 00:1a:70:46:ba:b1
-eth1: authenticate with AP 00:1a:70:46:ba:b1
-eth1: authenticated
-eth1: associate with AP 00:1a:70:46:ba:b1
-eth1: associate with AP 00:1a:70:46:ba:b1
-eth1: associate with AP 00:1a:70:46:ba:b1
-eth1: association with AP 00:1a:70:46:ba:b1 timed out
+It doesn't need to be accurate because the spinlock is obtained before
+actually trying to dequeue anything.  Even if it held the spinlock
+there would still be uncertainty depending on which routine ran first.
+ If this function ran first, then it's going to stop the state machine
+regardless and the enqueue function will have to kick it off again
+anyway.
 
-I have this problem with b43 and p54usb, and there is at least one report of the 
-same problem with zd1211rw. In my case, the encryption method is WPA-PSK/TKIP. I 
-have not tested with WEP or unencrypted networks.
+But, I've taken a look at the code, and you're right, the spin lock
+does need to be held while running the state machine because I do have
+a case where the IRQ and workqueue could get executed at the same
+time.  I'll fix it up.
 
-Bisection yields the following:
+>
+>> >
+>> >> +     /* Get the next message */
+>> >> +     spin_lock(&ms->lock);
+>> >
+>> > The part that's a little confusing here is that the interrupt can
+>> > actually activate the workqueue .. So I'm wondering if maybe you could
+>> > have this interrupt driven any workqueue driven at the same time? If you
+>> > could then you would need the above to be
+>> > spin_lock_irq/spin_lock_irqsave ..
+>>
+>> Ditto here, since the irq and workqueue are not enabled at the same
+>> time there is no worry about collision.
+>
+> Why are you waking up the work queue from inside the irq handler? You
+> might also want to break out the handling from inside the irq handler
+> and call that from the workqueue, instead of re-calling the irq handler
+> function from the workqueue.. It's a little confusing from a context
+> perspective.
 
-175f9c1bba9b825d22b142d183c9e175488b260c is first bad commit
-commit 175f9c1bba9b825d22b142d183c9e175488b260c
-Author: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
-Date:   Sun Jul 20 00:08:47 2008 -0700
+Sure, I can rework that.  The irq handler would then just simply be a
+straight call into the state machine runner.  I just dropped the
+additional 4 lines of code for conciseness, but I can change it around
+for clarity... actually, with the spin lock stuff above I need to do
+this rework.
 
-     net_sched: Add size table for qdiscs
+g.
 
-     Add size table functions for qdiscs and calculate packet size in
-     qdisc_enqueue().
-
-     Based on patch by Patrick McHardy
-      http://marc.info/?l=linux-netdev&m=115201979221729&w=2
-
-     Signed-off-by: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
-     Signed-off-by: David S. Miller <davem@davemloft.net>
-
-========================================================
-
-I tried to reverse apply the patch; however, that does not happen cleanly, but I 
-am confident that the problem arises here. I don't understand enough about this 
-qdisc stuff to even guess at what might be wrong.
-
-As always, I am willing to test any trial patches, etc.
-
-Thanks,
-
-Larry
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
