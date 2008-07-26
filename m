@@ -1,91 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbYGZHy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYGZH4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753237AbYGZHy3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 03:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbYGZHyW
+	id S1753836AbYGZH4Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 03:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbYGZH4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 03:54:22 -0400
-Received: from smtp2.tech.numericable.fr ([82.216.111.38]:35311 "EHLO
-	smtp2.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751373AbYGZHyV (ORCPT
+	Sat, 26 Jul 2008 03:56:17 -0400
+Received: from ns.miraclelinux.com ([219.118.163.66]:42604 "EHLO
+	mail.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbYGZH4R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 03:54:21 -0400
-Message-ID: <488AD829.2080600@numericable.fr>
-Date: Sat, 26 Jul 2008 09:54:17 +0200
-From: Eric ROMMELFANGEN <eric.rommelfangen@numericable.fr>
-User-Agent: Thunderbird 3.0a1 (X11/2008051919)
+	Sat, 26 Jul 2008 03:56:17 -0400
+Message-ID: <488AD656.5060801@miraclelinux.com>
+Date: Sat, 26 Jul 2008 16:46:30 +0900
+From: Hirofumi Nakagawa <hnakagawa@miraclelinux.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [>=2.6.26-git9]general protection fault in PREEMPT SMP when	downloading
-References: <488A4FB4.8090602@numericable.fr> <20080725224410.GA5345@martell.zuzino.mipt.ru>
-In-Reply-To: <20080725224410.GA5345@martell.zuzino.mipt.ru>
-Content-Type: multipart/mixed;
- boundary="------------010505080204010705030507"
+To: linux-kernel@vger.kernel.org
+CC: Ram Gupta <ram.gupta5@gmail.com>, Paul Menage <menage@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH][0/3] introduce rlimit cgroup
+References: <488722DF.9080003@miraclelinux.com>	 <20080724150557.8697.KOSAKI.MOTOHIRO@jp.fujitsu.com>	 <48885A7F.80106@miraclelinux.com>	 <6599ad830807242305w2895905dgcd91fe3a430806dc@mail.gmail.com> <728201270807250633vcaf8ac2r3be1d37736283385@mail.gmail.com>
+In-Reply-To: <728201270807250633vcaf8ac2r3be1d37736283385@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2008.7.26.73923
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010505080204010705030507
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi,
 
-Alexey Dobriyan wrote:
-> On Sat, Jul 26, 2008 at 12:12:04AM +0200, Eric ROMMELFANGEN wrote:
->    
->> Since 2.6.26-git9 kernel, I have this protection fault when downloading
->> files with ftp or http protocol :
->> ...
->> trying to fetch "http:www..."
->> general protection fault : 0000 [1] PREEMPT SMP
->> CPU1
->> Modules linked in: iptables_raw xt_comment xt_policy ipt_ULOG ipt_TTL ...
+Thank you for your comments.
+I understand that.
+I'll look for other approach for this.
+
+thanks
+
+> I understand that there might be some cases where it is useful to
+> allow some process to set rlimits of other processes (e.g. some
+> launcher process might want to control resources of all the
+> applications being launched by it). But this has to be a very special
+> case or this process needs to have special permission to do that
+> otherwise there will be a lot of problems as a side effect.
+> 
+> Ram
+> 
+> On Fri, Jul 25, 2008 at 1:05 AM, Paul Menage <menage@google.com> wrote:
+>>> To set rlimit from other processes is my original intention.
+>>> For I do not see a way to do it, please let me know if there were any
+>>> exists.
+>> No, there's no way to do that currently. I'm not sure if it's
+>> generally safe to update the rlimit for another process.
 >>
->> I attach my .config.
+>> If we're trying to use rlimits in a cgroup context then some rlimits
+>> (e.g. max nice priority) ought to apply as additional caps on the
+>> processes in the cgroup (e.g. if you set a max nice priority of 1 on a
+>> cgroup, that ought to override any per-process settings) whereas
+>> others (e.g. locked memory, open files, num processes) ought to apply
+>> as an aggregate limit on the cgroup (so the sum of all open files
+>> across the cgroup shouldn't be able to exceed the cgroup's "open
+>> files" limit). E.g. see Balbir's memrlimit control groups patches that
+>> are currently in -mm.
 >>
->> Could someone tells me what the matter with this error ?
->>      
->
-> No, unless you post full protection fault message not just start of it.
->
->
->    
-hi Alexey,
+>> What concrete problem are you trying to solve here?
+>>
+>> Paul
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> 
 
-
-I found a patch in this post which seems to solve my bug :
-
-http://lkml.org/lkml/2008/7/24/186
-
-I am going to test it more and sorry for the noise.
-
-Thanks.
-
---------------010505080204010705030507
-Content-Type: text/x-vcard; charset=utf-8;
- name="eric_rommelfangen.vcf"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="eric_rommelfangen.vcf"
-
-YmVnaW46dmNhcmQNCmZuOkVyaWMgUk9NTUVMRkFOR0VODQpuOlJPTU1FTEZBTkdFTjtFcmlj
-DQphZHI7cXVvdGVkLXByaW50YWJsZTpBcHBhcnRlbWVudCA3Mzs7NDM0LCBhdmVudWUgQW5k
-cj1DMz1BOSBNYWxyYXV4O1ZJTExFUlMtTEVTLU5BTkNZOzs1NDYwMDtGUkFOQ0UNCmVtYWls
-O2ludGVybmV0OmVyaWMucm9tbWVsZmFuZ2VuQG51bWVyaWNhYmxlLmZyDQp0ZWw7d29yazow
-My44My40Ny4wMC42NS4gKHN0YW5kYXJkKQ0KdGVsO2ZheDowMy44My40Ny4yNy45NC4gKHBy
-b2Zlc3Npb25uZWwpDQp0ZWw7aG9tZTowMy41NS4yMC44NS43NS4NCnRlbDtjZWxsOjA2LjM1
-LjU1LjA5LjEzLg0Kbm90ZTtxdW90ZWQtcHJpbnRhYmxlOm1hY2hpbmUgeDg2XzY0IEFNRCBB
-dGhsb24odG0pIDY0IFgyIER1YWwgQ29yZSBQcm9jZXNzb3IgNjAwMCsgQXV0aGVudGljQU09
-DQoJRCBHTlUvTGludXggc291cyBHZW50b28gTGludXggfmFtZDY0IChrZXJuZWwtdmFuaWxs
-YS0yLjYuMjYtcmNYKT0wRD0wQT0NCgkqIGNsaWVudCBkZSBtZXNzYWdlcmllIDogTW96aWxs
-YSBUaHVuZGVyYmlyZCAzLjBhMT0wRD0wQT0NCglBZmluIGRlIGZhdm9yaXNlciBsZSBkPUMz
-PUE5dmVsb3BwZW1lbnQgZGUgbCdpbnRlcm9wPUMzPUE5cmFiaWxpdD1DMz1BOWRlPQ0KCXMg
-c3lzdD1DMz1BOG1lcyBkJ2luZm9ybWF0aW9uLCBtZXJjaSBkJ3V0aWxpc2VyLCBkYW5zIGxh
-IG1lc3VyZSBkZSB2b3Nwb3M9DQoJc2liaWxpdD1DMz1BOXMgdGVjaG5pcXVlcyBldCBtYXQ9
-QzM9QTlyaWVsbGVzLCBkZXMgZm9ybWF0cyBkZSBmaWNoaWVyc291dj0NCgllcnRzIGV0IHN0
-YW5kYXJkaXM9QzM9QTlzIChmaWNoaWVycyBidXJlYXV0aXF1ZXMgYXUgZm9ybWF0IHJ0Ziwg
-Lm9kdCBvdS54PQ0KCW1sLCBmaWNoaWVycyBpbWFnZXMgYXUgZm9ybWF0IC5qcGVnLCAuLi4p
-Lg0KeC1tb3ppbGxhLWh0bWw6RkFMU0UNCnVybDp3d3cuZ2VudG9vLm9yZw0KdmVyc2lvbjoy
-LjENCmVuZDp2Y2FyZA0KDQo=
---------------010505080204010705030507--
