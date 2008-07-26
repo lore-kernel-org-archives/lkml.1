@@ -1,68 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbYGZVmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758193AbYGZVp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758149AbYGZVmY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 17:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757972AbYGZVmO
+	id S1758193AbYGZVp1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 17:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbYGZVpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 17:42:14 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:49345 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757740AbYGZVmN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 17:42:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=bX5W8/mPlkQ4KqoZywaRrbOR/VGIlpoZPCiYY4XYwC2fxaVvJFiLy946xIxOzPIq3p
-         EXonpg9RekI3AlgywzxhdAbjMc7YCW/rAXvHfDLQzdcTXCu/VYXo9FLVXgRmduLoNTkm
-         k3xDFygCfKOhJQ+rQxygdhI0KsdPEwJDvvPfE=
-Message-ID: <1ba2fa240807261442n1d8c08fcv9384957e3325cecc@mail.gmail.com>
-Date: Sun, 27 Jul 2008 00:42:12 +0300
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Junty Mesmon" <jmesmon@gmail.com>
-Subject: Re: [ipw3945-devel] [PATCH] iwlwifi: Enable packet injection for iwl4965
-Cc: "=?ISO-8859-1?Q?Stefanik_G=E1bor?=" <netrolller.3d@gmail.com>,
-       "Zhu Yi" <yi.zhu@intel.com>,
-       "=?ISO-8859-1?Q?St=E9phane_Jourdois?=" <stephane@jourdois.fr>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       ipw3945-devel <ipw3945-devel@lists.sourceforge.net>
-In-Reply-To: <f2efd86c0807252030t1d73f4ffu8b23d6221f8f3212@mail.gmail.com>
+	Sat, 26 Jul 2008 17:45:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52428 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756109AbYGZVpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 17:45:19 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <69e28c910807181205m6dd0cdcek83f9717bf1ac9dcc@mail.gmail.com>
-	 <69e28c910807220454q7c8371e1m11b1015ed8398758@mail.gmail.com>
-	 <4885DDC4.2060609@googlemail.com> <4886235F.6010407@jourdois.fr>
-	 <1216951133.2705.227.camel@debian.sh.intel.com>
-	 <69e28c910807251449h6e389cd2n72de63c558338335@mail.gmail.com>
-	 <f2efd86c0807252030t1d73f4ffu8b23d6221f8f3212@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] tracehook: comment fixes
+X-Fcc: ~/Mail/linus
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20080726214512.5FD9115427E@magilla.localdomain>
+Date: Sat, 26 Jul 2008 14:45:12 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 26, 2008 at 6:30 AM, Junty Mesmon <jmesmon@gmail.com> wrote:
-> If this is the right place to do it, i would like to confirm that i
-> have had success injecting data packets with the stated patchto the
-> iwl4965 driver.
->
-> On Fri, Jul 25, 2008 at 5:49 PM, Stefanik Gábor <netrolller.3d@gmail.com> wrote:
->> 2008/7/25 Zhu Yi <yi.zhu@intel.com>:
->>> On Tue, 2008-07-22 at 20:13 +0200, Stéphane Jourdois wrote:
->>>> but this commit is for iwl3945, not iwl4965.
->>>> The patch for iwl4965 is currently not in any git tree.
->>>
->>> We are waiting for more "confirmed success" response before merging it.
->>>
->>> Thanks,
->>> -yi
->>
->> I think we now have a lot of "confirmed success", as aircrack-ng users
->> are now using this card with aireplay-ng - injecting association
->> frames is unstable, but injecting data packets works.
+The following changes since commit a048d3aff8b828b6c0fa7ddd90a531248ab4e0f9:
+  Linus Torvalds (1):
+        Merge branch 'tracing-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
 
-That I don't have doubt the question whether it didn't break normal operation.
-Tomas
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git tracehook
+
+Roland McGrath (1):
+      tracehook: comment fixes
+
+ include/linux/tracehook.h |   23 ++++++++++++-----------
+ 1 files changed, 12 insertions(+), 11 deletions(-)
+
+---
+This fixes some typos and errors in <linux/tracehook.h> comments.
+No code changes.
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ include/linux/tracehook.h |   23 ++++++++++++-----------
+ 1 files changed, 12 insertions(+), 11 deletions(-)
+
+diff --git a/include/linux/tracehook.h b/include/linux/tracehook.h
+index 589f429..b187558 100644
+--- a/include/linux/tracehook.h
++++ b/include/linux/tracehook.h
+@@ -244,7 +244,7 @@ static inline int tracehook_prepare_clone(unsigned clone_flags)
+  * tracehook_finish_clone - new child created and being attached
+  * @child:		new child task
+  * @clone_flags:	%CLONE_* flags from clone/fork/vfork system call
+- * @trace:		return value from tracehook_clone_prepare()
++ * @trace:		return value from tracehook_prepare_clone()
+  *
+  * This is called immediately after adding @child to its parent's children list.
+  * The @trace value is that returned by tracehook_prepare_clone().
+@@ -259,19 +259,20 @@ static inline void tracehook_finish_clone(struct task_struct *child,
+ 
+ /**
+  * tracehook_report_clone - in parent, new child is about to start running
+- * @trace:		return value from tracehook_clone_prepare()
++ * @trace:		return value from tracehook_prepare_clone()
+  * @regs:		parent's user register state
+  * @clone_flags:	flags from parent's system call
+  * @pid:		new child's PID in the parent's namespace
+  * @child:		new child task
+  *
+- * Called after a child is set up, but before it has been started running.
+- * The @trace value is that returned by tracehook_clone_prepare().
+- * This is not a good place to block, because the child has not started yet.
+- * Suspend the child here if desired, and block in tracehook_clone_complete().
+- * This must prevent the child from self-reaping if tracehook_clone_complete()
+- * uses the @child pointer; otherwise it might have died and been released by
+- * the time tracehook_report_clone_complete() is called.
++ * Called after a child is set up, but before it has been started
++ * running.  @trace is the value returned by tracehook_prepare_clone().
++ * This is not a good place to block, because the child has not started
++ * yet.  Suspend the child here if desired, and then block in
++ * tracehook_report_clone_complete().  This must prevent the child from
++ * self-reaping if tracehook_report_clone_complete() uses the @child
++ * pointer; otherwise it might have died and been released by the time
++ * tracehook_report_report_clone_complete() is called.
+  *
+  * Called with no locks held, but the child cannot run until this returns.
+  */
+@@ -290,7 +291,7 @@ static inline void tracehook_report_clone(int trace, struct pt_regs *regs,
+ 
+ /**
+  * tracehook_report_clone_complete - new child is running
+- * @trace:		return value from tracehook_clone_prepare()
++ * @trace:		return value from tracehook_prepare_clone()
+  * @regs:		parent's user register state
+  * @clone_flags:	flags from parent's system call
+  * @pid:		new child's PID in the parent's namespace
+@@ -347,7 +348,7 @@ static inline void tracehook_prepare_release_task(struct task_struct *task)
+ }
+ 
+ /**
+- * tracehook_finish_release_task - task is being reaped, clean up tracing
++ * tracehook_finish_release_task - final tracing clean-up
+  * @task:		task in %EXIT_DEAD state
+  *
+  * This is called in release_task() when @task is being in the middle of
