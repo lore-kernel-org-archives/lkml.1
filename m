@@ -1,93 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757764AbYGZVCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbYGZVGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757764AbYGZVCW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 17:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757240AbYGZVCP
+	id S1758012AbYGZVGN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 17:06:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757302AbYGZVF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 17:02:15 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:28016 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757189AbYGZVCO (ORCPT
+	Sat, 26 Jul 2008 17:05:57 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:47534 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757240AbYGZVF4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 17:02:14 -0400
-X-IronPort-AV: E=Sophos;i="4.31,257,1215388800"; 
-   d="scan'208";a="69406118"
-From: Roland Dreier <rdreier@cisco.com>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-Date: Sat, 26 Jul 2008 14:02:11 -0700
-Message-ID: <ada7ib87418.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Sat, 26 Jul 2008 17:05:56 -0400
+Date: Sat, 26 Jul 2008 22:05:34 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Adrian Bunk <bunk@kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       Ben Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] linux/swap.h must #include <linux/pagemap.h>
+In-Reply-To: <20080726204218.GG9301@cs181140183.pp.htv.fi>
+Message-ID: <Pine.LNX.4.64.0807262155160.17736@blonde.site>
+References: <1217092685-15267-1-git-send-email-haavard.skinnemoen@atmel.com>
+ <20080726173832.GE9301@cs181140183.pp.htv.fi> <Pine.LNX.4.64.0807261852050.582@blonde.site>
+ <20080726125025.465d524b.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0807262104060.13201@blonde.site> <20080726132610.6c583346.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0807262132460.15972@blonde.site> <20080726204218.GG9301@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 26 Jul 2008 21:02:11.0471 (UTC) FILETIME=[DF7269F0:01C8EF62]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+On Sat, 26 Jul 2008, Adrian Bunk wrote:
+> On Sat, Jul 26, 2008 at 09:37:45PM +0100, Hugh Dickins wrote:
+> > 
+> > I've trespassed on Adrian's good nature to ask him to run some builds
+> > on it, having demonstrated my incompetence twice already.  But he may
+> > well have better things to do with his time.  Hold on a mo, I'm just
+> > wrapping up the tmpfs BUG first.
+> 
+> Sorry, if you wanted to know anything from me anything except whether my 
+> patch is correct (as I already answered to Johannes it is not) I must 
+> have missed it.
+> 
+> What exactly do you want me to test?
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+It was this one, just including pagemap.h back in exec.c again:
+not the best solution, but should be good for now.  Please would
+you give it the build testing you were giving yours?  Or feel free
+to point out that I'm wasting your and everybody's time, and just
+call for a straight revert of ba92a43d, that'd be fine too.
 
-This tree is also available from kernel.org mirrors at:
+Thanks,
+Hugh
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
-
-This will get the some last RDMA/InfiniBand changes for 2.6.27.  The
-only major thing is changes to the iw_nes connection setup handling,
-which fix problems with lots of connections:
-
-Faisal Latif (1):
-      RDMA/nes: CM connection setup/teardown rework
-
-Jack Morgenstein (1):
-      mlx4: Update/add Mellanox Technologies copyright lines to mlx4 driver files
-
-Roland Dreier (5):
-      RDMA/ucma: BKL is not needed for ucma_open()
-      RDMA/ucm: BKL is not needed for ib_ucm_open()
-      IPoIB/cm: Connected mode is no longer EXPERIMENTAL
-      IPoIB: Correct help text for INFINIBAND_IPOIB_DEBUG
-      Merge branches 'bkl-removal', 'ipoib', 'mlx4' and 'nes' into for-linus
-
-Yevgeny Petrilin (1):
-      mlx4_core: Add VLAN tag field to WQE control segment struct
-
- drivers/infiniband/core/ucm.c         |   10 +-
- drivers/infiniband/core/ucma.c        |   11 +-
- drivers/infiniband/hw/mlx4/cq.c       |    1 +
- drivers/infiniband/hw/mlx4/main.c     |    1 +
- drivers/infiniband/hw/mlx4/mlx4_ib.h  |    1 +
- drivers/infiniband/hw/mlx4/mr.c       |    1 +
- drivers/infiniband/hw/mlx4/qp.c       |    1 +
- drivers/infiniband/hw/mlx4/srq.c      |    1 +
- drivers/infiniband/hw/mlx4/user.h     |    1 +
- drivers/infiniband/hw/nes/nes.c       |    4 +-
- drivers/infiniband/hw/nes/nes_cm.c    | 2034 ++++++++++++++++++---------------
- drivers/infiniband/hw/nes/nes_cm.h    |   23 +-
- drivers/infiniband/hw/nes/nes_hw.c    |    9 -
- drivers/infiniband/hw/nes/nes_verbs.c |   15 -
- drivers/infiniband/ulp/ipoib/Kconfig  |   22 +-
- drivers/net/mlx4/alloc.c              |    1 +
- drivers/net/mlx4/catas.c              |    1 +
- drivers/net/mlx4/cmd.c                |    2 +-
- drivers/net/mlx4/cq.c                 |    2 +-
- drivers/net/mlx4/eq.c                 |    2 +-
- drivers/net/mlx4/fw.c                 |    2 +-
- drivers/net/mlx4/fw.h                 |    2 +-
- drivers/net/mlx4/icm.c                |    2 +-
- drivers/net/mlx4/icm.h                |    2 +-
- drivers/net/mlx4/intf.c               |    1 +
- drivers/net/mlx4/main.c               |    2 +-
- drivers/net/mlx4/mcg.c                |    1 +
- drivers/net/mlx4/mlx4.h               |    2 +-
- drivers/net/mlx4/mr.c                 |    2 +-
- drivers/net/mlx4/qp.c                 |    2 +-
- drivers/net/mlx4/reset.c              |    1 +
- drivers/net/mlx4/srq.c                |    1 +
- include/linux/mlx4/qp.h               |    4 +-
- 33 files changed, 1211 insertions(+), 956 deletions(-)
+--- 2.6.26-git/fs/exec.c	2008-07-26 12:33:28.000000000 +0100
++++ linux/fs/exec.c	2008-07-26 18:50:38.000000000 +0100
+@@ -32,6 +32,7 @@
+ #include <linux/swap.h>
+ #include <linux/string.h>
+ #include <linux/init.h>
++#include <linux/pagemap.h>
+ #include <linux/highmem.h>
+ #include <linux/spinlock.h>
+ #include <linux/key.h>
