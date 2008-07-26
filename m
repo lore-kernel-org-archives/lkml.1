@@ -1,107 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbYGZMVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbYGZMXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754583AbYGZMVu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 08:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYGZMVn
+	id S1752886AbYGZMXB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 08:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYGZMWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 08:21:43 -0400
-Received: from mx45.mail.ru ([194.67.23.236]:41408 "EHLO mx45.mail.ru"
+	Sat, 26 Jul 2008 08:22:54 -0400
+Received: from mo30.po.2iij.net ([210.128.50.53]:6674 "EHLO mo30.po.2iij.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751808AbYGZMVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 08:21:42 -0400
-From: Ilya Eremin <che_guevara_3@bk.ru>
-To: linux-kernel@vger.kernel.org
-Subject: Process invoked oom-killer
+	id S1751307AbYGZMWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 08:22:54 -0400
+Date: Sat, 26 Jul 2008 21:22:46 +0900
+From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: yoichi_yuasa@tripeaks.co.jp,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fix build error when no swap
+Message-Id: <20080726212246.d64073b3.yoichi_yuasa@tripeaks.co.jp>
+Organization: TriPeaks Corporation
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: mPOP Web-Mail 2.19
-X-Originating-IP: [82.23.71.106]
-Date: Sat, 26 Jul 2008 16:06:39 +0400
-Reply-To: Ilya Eremin <che_guevara_3@bk.ru>
-Content-Type: text/plain; charset=windows-1251
-Content-Transfer-Encoding: 8bit
-Message-Id: <E1KMiXn-000Fpv-00.che_guevara_3-bk-ru@f202.mail.ru>
-X-Spam: Not detected
-X-Mras: OK
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-I am running a server which has more then 100k+ connected users at a time. At a certain point the process crashes with the following in the dmesg:
+When CONFIG_SWAP is not set, I got the following error.
 
-[320561.704783] eserver invoked oom-killer: gfp_mask=0x1201d2, order=0, oomkilladj=0                                                                         
-[320561.704833] Pid: 14417, comm: eserver Not tainted 2.6.25-2-686 #1                                                                                        
-[320561.704880]  [<c015ae08>] oom_kill_process+0x4f/0x195                                                                                                    
-[320561.704917]  [<c015b281>] out_of_memory+0x150/0x183                                                                                                      
-[320561.704947]  [<c015cf02>] __alloc_pages+0x245/0x2cb                                                                                                      
-[320561.704982]  [<c015a609>] filemap_fault+0x289/0x36d                                                                                                      
-[320561.705011]  [<c01632fc>] __do_fault+0x59/0x38e                                                                                                          
-[320561.705043]  [<c024bf07>] sys_recvfrom+0xb4/0x116                                                                                                        
-[320561.705078]  [<c024bf57>] sys_recvfrom+0x104/0x116                                                                                                       
-[320561.705108]  [<c016546f>] handle_mm_fault+0x2c5/0x6bb                                                                                                    
-[320561.705141]  [<c02b54a5>] _spin_lock_bh+0x8/0x1e                                                                                                         
-[320561.705169]  [<c0277d78>] tcp_setsockopt+0x303/0x31b                                                                                                     
-[320561.705198]  [<c024c7fd>] sock_common_setsockopt+0x12/0x16                                                                                               
-[320561.705228]  [<c024adb8>] sys_setsockopt+0x6f/0x8e                                                                                                       
-[320561.705261]  [<c024adcc>] sys_setsockopt+0x83/0x8e                                                                                                       
-[320561.705289]  [<c0118b50>] do_page_fault+0x268/0x584                                                                                                      
-[320561.705324]  [<c01188e8>] do_page_fault+0x0/0x584                                                                                                        
-[320561.705351]  [<c02b571a>] error_code+0x72/0x78                                                                                                           
-[320561.705380]  =======================                                                                                                                     
-[320561.705403] Mem-info:                                                                                                                                    
-[320561.707246] DMA per-cpu:                                                                                                                                 
-[320561.707267] CPU    0: hi:    0, btch:   1 usd:   0                                                                                                       
-[320561.707292] CPU    1: hi:    0, btch:   1 usd:   0                                                                                                       
-[320561.707317] CPU    2: hi:    0, btch:   1 usd:   0                                                                                                       
-[320561.707341] CPU    3: hi:    0, btch:   1 usd:   0                                                                                                       
-[320561.707366] Normal per-cpu:                                                                                                                              
-[320561.707388] CPU    0: hi:  186, btch:  31 usd: 146                                                                                                       
-[320561.707417] CPU    1: hi:  186, btch:  31 usd: 176                                                                                                       
-[320561.707442] CPU    2: hi:  186, btch:  31 usd: 141                                                                                                       
-[320561.707473] CPU    3: hi:  186, btch:  31 usd:  88                                                                                                       
-[320561.707498] HighMem per-cpu:                                                                                                                             
-[320561.707520] CPU    0: hi:  186, btch:  31 usd: 176                                                                                                       
-[320561.707545] CPU    1: hi:  186, btch:  31 usd:  56                                                                                                       
-[320561.707569] CPU    2: hi:  186, btch:  31 usd: 165                                                                                                       
-[320561.707594] CPU    3: hi:  186, btch:  31 usd: 166                                                                                                       
-[320561.707620] Active:291911 inactive:10 dirty:0 writeback:0 unstable:0                                                                                     
-[320561.707621]  free:27658 slab:85314 mapped:166 pagetables:371 bounce:0                                                                                    
-[320561.707676] DMA free:9228kB min:1168kB low:1460kB high:1752kB active:3284kB inactive:0kB present:16256kB pages_scanned:10735 all_unreclaimable? yes      
-[320561.707730] lowmem_reserve[]: 0 873 2015 2015                                                                                                            
-[320561.707764] Normal free:100900kB min:64364kB low:80452kB high:96544kB active:6380kB inactive:40kB present:894080kB pages_scanned:17384 all_unreclaimable? yes                                                                                                                                                         
-[320561.707833] lowmem_reserve[]: 0 0 9142 9142                                                                                                              
-[320561.707866] HighMem free:504kB min:512kB low:21572kB high:42632kB active:1157980kB inactive:0kB present:1170180kB pages_scanned:1914062 all_unreclaimable? yes                                                                                                                                                        
-[320561.707935] lowmem_reserve[]: 0 0 0 0                                                                                                                    
-[320561.707966] DMA: 63*4kB 64*8kB 55*16kB 35*32kB 21*64kB 16*128kB 4*256kB 4*512kB 0*1024kB 0*2048kB 0*4096kB = 9228kB                                      
-[320561.708035] Normal: 1239*4kB 10972*8kB 5*16kB 4*32kB 4*64kB 4*128kB 2*256kB 3*512kB 1*1024kB 0*2048kB 1*4096kB = 100876kB                                
-[320561.708110] HighMem: 112*4kB 7*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 504kB                                       
-[320561.708183] 215 total pagecache pages                                                                                                                    
-[320561.708206] Swap cache: add 586318, delete 586318, find 121541/199699                                                                                    
-[320561.708234] Free swap  = 0kB                                                                                                                             
-[320561.708255] Total swap = 0kB                                                                                                                             
-[320561.708276] Free swap:            0kB                                                                                                                    
-[320561.713405] 524224 pages of RAM                                                                                                                          
-[320561.713427] 294848 pages of HIGHMEM                                                                                                                      
-[320561.713450] 5156 reserved pages                                                                                                                          
-[320561.713471] 11607 pages shared                                                                                                                           
-[320561.713493] 0 pages swap cached                                                                                                                          
-[320561.713515] 0 pages dirty                                                                                                                                
-[320561.713535] 0 pages writeback                                                                                                                            
-[320561.713563] 166 pages mapped                                                                                                                             
-[320561.713584] 85314 pages slab                                                                                                                             
-[320561.713605] 371 pages pagetables                                                                                                                         
-[320561.713633] Out of memory: kill process 5310 (sh) score 1037960 or a child                                                                               
-[320561.713670] Killed process 14404 (eserver)                                                                                                               
-[854010.346518] Out of socket memory                                                                                                                         
-[394065.069129] Out of socket memory                                                                                                                         
-[394065.073127] Out of socket memory                                                                                                                         
-[394065.077145] Out of socket memory                                                                                                                         
-[394065.077179] Out of socket memory                                                                                                                         
-[394065.081139] Out of socket memory                                                                                                                         
-[394065.085150] Out of socket memory                                                                                                                         
-[394065.085185] Out of socket memory                                                                                                                         
-[394065.085211] Out of socket memory   
+In file included from include/asm/tlb.h:21,
+                 from fs/exec.c:55:
+		 include/asm-generic/tlb.h: In function 'tlb_flush_mmu':
+		 include/asm-generic/tlb.h:76: error: implicit declaration of function 'release_pages'
+		 include/asm-generic/tlb.h: In function 'tlb_remove_page':
+		 include/asm-generic/tlb.h:105: error: implicit declaration of function 'page_cache_release'
+		 make[1]: *** [fs/exec.o] Error 1
 
-The server has 2 GB of RAM and I am quiet sure that there's still free RAM when this happenes. It also happenes when swap is enabled (it's disabled in case of this output). The socket memory errors make me think that it's something to do with the TCP stack? Appreciate any help on this issue
-Thank you
-Ilya
+Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+
+diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/include/linux/swap.h linux/include/linux/swap.h
+--- linux-orig/include/linux/swap.h	2008-07-26 17:27:22.651869820 +0900
++++ linux/include/linux/swap.h	2008-07-26 18:36:46.406531575 +0900
+@@ -7,6 +7,7 @@
+ #include <linux/list.h>
+ #include <linux/memcontrol.h>
+ #include <linux/sched.h>
++#include <linux/pagemap.h>
+ 
+ #include <asm/atomic.h>
+ #include <asm/page.h>
