@@ -1,138 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYGZJ7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbYGZKEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755389AbYGZJ7S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 05:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbYGZJ64
+	id S1754690AbYGZKEQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 06:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbYGZKEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 05:58:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51111 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754832AbYGZJ6y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 05:58:54 -0400
-Date: Sat, 26 Jul 2008 02:58:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] hugetlbfs: fix build failure on 64-bit x86
-Message-Id: <20080726025839.39a11b66.akpm@linux-foundation.org>
-In-Reply-To: <20080726091654.GA18341@elte.hu>
-References: <20080726091654.GA18341@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Jul 2008 06:04:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57440 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751447AbYGZKEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 06:04:00 -0400
+Date: Sat, 26 Jul 2008 12:03:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Barry Kasindorf <barry.kasindorf@amd.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 11/24] x86/oprofile: Add IBS support for AMD CPUs,
+	model specific code
+Message-ID: <20080726100341.GF25890@elte.hu>
+References: <1216753748-11261-1-git-send-email-robert.richter@amd.com> <1216753748-11261-12-git-send-email-robert.richter@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1216753748-11261-12-git-send-email-robert.richter@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Jul 2008 11:16:54 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-> 
-> [resend, still relevant to -git]
-> 
-> >From 5215af24a20e5f448ee45cd1d97c4118b876c0f6 Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Fri, 25 Jul 2008 20:45:52 +0200
-> Subject: [PATCH] hugetlbfs: fix build failure on 64-bit x86
-> 
-> fix:
-> 
->  arch/x86/mm/built-in.o: In function `setup_hugepagesz':
->  hugetlbpage.c:(.init.text+0xb49): undefined reference to `hugetlb_add_hstate'
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/mm/hugetlbpage.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
-> index 8f307d9..977d185 100644
-> --- a/arch/x86/mm/hugetlbpage.c
-> +++ b/arch/x86/mm/hugetlbpage.c
-> @@ -425,7 +425,7 @@ hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+* Robert Richter <robert.richter@amd.com> wrote:
+
+> @@ -132,6 +214,65 @@ static int op_amd_check_ctrs(struct pt_regs * const regs,
+>  		}
+>  	}
 >  
->  #endif /*HAVE_ARCH_HUGETLB_UNMAPPED_AREA*/
->  
-> -#ifdef CONFIG_X86_64
-> +#if defined(CONFIG_X86_64) && defined(CONFIG_SYSCTL)
->  static __init int setup_hugepagesz(char *opt)
->  {
->  	unsigned long ps = memparse(opt, &opt);
+> +	/*If AMD and IBS is available */
+> +	if (ibs_allowed && ibs_config.fetch_enabled) {
+> +		rdmsr(MSR_AMD64_IBSFETCHCTL, low, high);
+> +		if (high & IBS_FETCH_VALID_BIT) {
+> +			ibs_fetch.ibs_fetch_ctl_high = high;
+> +			ibs_fetch.ibs_fetch_ctl_low = low;
+> +			rdmsr(MSR_AMD64_IBSFETCHLINAD, low, high);
+> +			ibs_fetch.ibs_fetch_lin_addr_high = high;
+> +			ibs_fetch.ibs_fetch_lin_addr_low = low;
+> +			rdmsr(MSR_AMD64_IBSFETCHPHYSAD, low, high);
+> +			ibs_fetch.ibs_fetch_phys_addr_high = high;
+> +			ibs_fetch.ibs_fetch_phys_addr_low = low;
+> +
+> +			oprofile_add_ibs_sample(regs,
+> +						(unsigned int *)&ibs_fetch,
+> +						IBS_FETCH_BEGIN);
 
-Seems wrong that a __setup handler would vanish if CONFIG_SYSCTL=n.
+please move this innermost code into a helper function. That will help 
+eliminate line 80 artifacts as well.
 
-I think Nishanth's patch (sent to Linus a few hours ago) fixes this
-correctly, by making hugetlb_add_hstate available if CONFIG_SYSCTL=n:
+> +	if (ibs_allowed && ibs_config.op_enabled) {
+> +		rdmsr(MSR_AMD64_IBSOPCTL, low, high);
+> +		if (low & IBS_OP_VALID_BIT) {
+> +			rdmsr(MSR_AMD64_IBSOPRIP, low, high);
+> +			ibs_op.ibs_op_rip_low = low;
+> +			ibs_op.ibs_op_rip_high = high;
+> +			rdmsr(MSR_AMD64_IBSOPDATA, low, high);
+> +			ibs_op.ibs_op_data1_low = low;
+> +			ibs_op.ibs_op_data1_high = high;
+> +			rdmsr(MSR_AMD64_IBSOPDATA2, low, high);
+> +			ibs_op.ibs_op_data2_low = low;
+> +			ibs_op.ibs_op_data2_high = high;
+> +			rdmsr(MSR_AMD64_IBSOPDATA3, low, high);
+> +			ibs_op.ibs_op_data3_low = low;
+> +			ibs_op.ibs_op_data3_high = high;
+> +			rdmsr(MSR_AMD64_IBSDCLINAD, low, high);
+> +			ibs_op.ibs_dc_linear_low = low;
+> +			ibs_op.ibs_dc_linear_high = high;
+> +			rdmsr(MSR_AMD64_IBSDCPHYSAD, low, high);
+> +			ibs_op.ibs_dc_phys_low = low;
+> +			ibs_op.ibs_dc_phys_high = high;
+> +
+> +			/* reenable the IRQ */
+> +			oprofile_add_ibs_sample(regs,
+> +						(unsigned int *)&ibs_op,
+> +						IBS_OP_BEGIN);
+> +			rdmsr(MSR_AMD64_IBSOPCTL, low, high);
+> +			low &= ~(IBS_OP_VALID_BIT);
+> +			low |= IBS_OP_ENABLE;
+> +			wrmsr(MSR_AMD64_IBSOPCTL, low, high);
+> +		}
+> +	}
 
+ditto.
 
-From: Nishanth Aravamudan <nacc@us.ibm.com>
+> +		/**** Be sure to run loop until NULL is returned to
+> +		decrement reference count on any pci_dev structures
+> +		returned ****/
 
-Fixes a build failure reported by Alan Cox:
+please use standard comment style:
 
-mm/hugetlb.c: In function `hugetlb_acct_memory': mm/hugetlb.c:1507:
-error: implicit declaration of function `cpuset_mems_nr'
+ /*
+  * Multi-line ..........
+  * ....................... comment:
+  */
 
-Also reverts Ingo's
+> +		while ((gh_device = pci_get_device(PCI_VENDOR_ID_AMD,
+> +			PCI_DEVICE_ID_AMD_10H_NB_MISC, gh_device))
+> +			!= NULL) {
+> +			/* This code may change if we can find a proper
+> +			* way to get at the PCI extended config space */
 
-    commit e44d1b2998d62a1f2f4d7eb17b56ba396535509f
-    Author: Ingo Molnar <mingo@elte.hu>
-    Date:   Fri Jul 25 12:57:41 2008 +0200
+ditto.
 
-        mm/hugetlb.c: fix build failure with !CONFIG_SYSCTL
-    
-which fixed the build error but added some unused-static-function warnings.
+> +			pci_write_config_dword(
+> +				gh_device, IBS_LVT_OFFSET_PCI,
+> +				(vector | IBS_CTL_LVT_OFFSET_VALID_BIT));
 
-Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+perhaps use a helper function to reduce col 80 artifacts.
 
- mm/hugetlb.c |   24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+> +/*
+> + * unitialize the APIC for the IBS interrupts if needed on AMD Family10h
+> + * rev B0 and later */
 
-diff -puN mm/hugetlb.c~hugetlb-fix-config_sysctl=n-build mm/hugetlb.c
---- a/mm/hugetlb.c~hugetlb-fix-config_sysctl=n-build
-+++ a/mm/hugetlb.c
-@@ -1026,18 +1026,6 @@ static void __init report_hugepages(void
- 	}
- }
- 
--static unsigned int cpuset_mems_nr(unsigned int *array)
--{
--	int node;
--	unsigned int nr = 0;
--
--	for_each_node_mask(node, cpuset_current_mems_allowed)
--		nr += array[node];
--
--	return nr;
--}
--
--#ifdef CONFIG_SYSCTL
- #ifdef CONFIG_HIGHMEM
- static void try_to_free_low(struct hstate *h, unsigned long count)
- {
-@@ -1386,6 +1374,18 @@ static int __init hugetlb_default_setup(
- }
- __setup("default_hugepagesz=", hugetlb_default_setup);
- 
-+static unsigned int cpuset_mems_nr(unsigned int *array)
-+{
-+	int node;
-+	unsigned int nr = 0;
-+
-+	for_each_node_mask(node, cpuset_current_mems_allowed)
-+		nr += array[node];
-+
-+	return nr;
-+}
-+
-+#ifdef CONFIG_SYSCTL
- int hugetlb_sysctl_handler(struct ctl_table *table, int write,
- 			   struct file *file, void __user *buffer,
- 			   size_t *length, loff_t *ppos)
-_
+comment style.
 
+> +static void setup_ibs_files(struct super_block *sb, struct dentry *root)
+> +{
+> +	char buf[12];
+
+magic limit.
+
+> +	struct dentry *dir;
+> +
+> +	if (!ibs_allowed)
+> +		return;
+> +
+> +	/* setup some reasonable defaults */
+> +	ibs_config.max_cnt_fetch = 250000;
+> +	ibs_config.fetch_enabled = 0;
+> +	ibs_config.max_cnt_op = 250000;
+> +	ibs_config.op_enabled = 0;
+> +	ibs_config.dispatched_ops = 1;
+> +	snprintf(buf,  sizeof(buf), "ibs_fetch");
+> +	dir = oprofilefs_mkdir(sb, root, buf);
+
+you could make use of a small style trick here: use a newline before 
+this statement, to make blocks of code stand out in a clearer way. The 
+construction of 'buf' is finished after the snprintf above, then comes 
+the next step, to create the oprofilefs entries.
+
+	Ingo
