@@ -1,245 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757595AbYGZTxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757426AbYGZT6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757595AbYGZTxA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 15:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbYGZTwx
+	id S1757426AbYGZT6R (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 15:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYGZT6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 15:52:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40838 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754474AbYGZTwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 15:52:51 -0400
-Date: Sat, 26 Jul 2008 21:52:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] tracing fixes
-Message-ID: <20080726195237.GA2406@elte.hu>
+	Sat, 26 Jul 2008 15:58:06 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:30364 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751166AbYGZT6G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 15:58:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=GBfAq4glQ9L9fjY8+S0btBnIOqn6RZJq9NdMnZIrI5PnfAGV1FKB+ZI4HI08vgsUZQfsz7XiHZpi9y20AlfcLzWfCTi32utLKEXUOMVMfeHtonvKOT1kNixrOrlMW2XXIG2YNIWrlLAKR8+SiHBTF/sy5NjWLUh+vNOYWQB9Xis=  ;
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: [PATCH] rtc-dev: stop periodic interrupts on device release
+Date: Sat, 26 Jul 2008 12:58:02 -0700
+User-Agent: KMail/1.9.9
+Cc: =?utf-8?q?Tom=C3=A1=C5=A1_Janou=C5=A1ek?= <tomi@nomi.cz>,
+       linux-kernel@vger.kernel.org
+References: <20080726154617.GA5613@notes.lisk.in> <20080726180610.GA12168@nomi.cz> <20080726201355.064a789e@i1501.lan.towertech.it>
+In-Reply-To: <20080726201355.064a789e@i1501.lan.towertech.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200807261258.02753.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 26 July 2008, Alessandro Zummo wrote:
+> On Sat, 26 Jul 2008 20:06:10 +0200 Tomáš Janoušek <tomi@nomi.cz> wrote:
+> > On Sat, Jul 26, 2008 at 07:55:21PM +0200 Alessandro Zummo wrote:
+> > 
+> > >  I'm not sure this is appropriate. sometimes the PIE is used to control
+> > >  external hardware and it doesn't make sense to have an application that's
+> > >  always open to handle that. 
 
-Linus,
+I'd stay that having an application running is the standard way
+to handle such stuff!
 
-Please pull the latest tracing-fixes-for-linus git tree from:
+In fact, how could the 1/(2^N) Hz periodic interrupt ever control
+external hardware *by itself*?  It would need some control path
+that's not part of the programming interface, like routing some
+signal from the RTC to that hardware.  That's PWM functionality,
+and isn't available from all timers/clocks/rtcs.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
-
-Thanks,
-
-	Ingo
-
------------------->
-Ingo Molnar (2):
-      ftrace: remove latency-tracer leftover
-      ftrace: fix modular build
-
-Steven Rostedt (3):
-      ftrace: fix 4d3702b6 (post-v2.6.26): WARNING: at kernel/lockdep.c:2731 check_flags (ftrace)
-      ftrace: only trace preempt off with preempt tracer
-      ftrace: disable tracing on acpi idle calls
+The only control path in scope of the RTC programming interface is
+client/application code responding to a (periodic) IRQ by issuing
+some type of command.
 
 
- drivers/acpi/processor_idle.c     |    6 ++++++
- kernel/trace/trace.c              |    3 ---
- kernel/trace/trace_irqsoff.c      |    8 ++++++--
- kernel/trace/trace_sched_wakeup.c |   27 ++++++++++++++++-----------
- 4 files changed, 28 insertions(+), 16 deletions(-)
+> > > 
+> > >  Any app should be responsible to release what it has allocated, if appropriate,
+> > >  and not rely on someone else to do on his behalf.
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index d592dbb..b7f2963 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -272,6 +272,8 @@ static atomic_t c3_cpu_count;
- /* Common C-state entry for C2, C3, .. */
- static void acpi_cstate_enter(struct acpi_processor_cx *cstate)
- {
-+	/* Don't trace irqs off for idle */
-+	stop_critical_timings();
- 	if (cstate->entry_method == ACPI_CSTATE_FFH) {
- 		/* Call into architectural FFH based C-state */
- 		acpi_processor_ffh_cstate_enter(cstate);
-@@ -284,6 +286,7 @@ static void acpi_cstate_enter(struct acpi_processor_cx *cstate)
- 		   gets asserted in time to freeze execution properly. */
- 		unused = inl(acpi_gbl_FADT.xpm_timer_block.address);
- 	}
-+	start_critical_timings();
- }
- #endif /* !CONFIG_CPU_IDLE */
- 
-@@ -1418,6 +1421,8 @@ static inline void acpi_idle_update_bm_rld(struct acpi_processor *pr,
-  */
- static inline void acpi_idle_do_entry(struct acpi_processor_cx *cx)
- {
-+	/* Don't trace irqs off for idle */
-+	stop_critical_timings();
- 	if (cx->entry_method == ACPI_CSTATE_FFH) {
- 		/* Call into architectural FFH based C-state */
- 		acpi_processor_ffh_cstate_enter(cx);
-@@ -1432,6 +1437,7 @@ static inline void acpi_idle_do_entry(struct acpi_processor_cx *cx)
- 		   gets asserted in time to freeze execution properly. */
- 		unused = inl(acpi_gbl_FADT.xpm_timer_block.address);
- 	}
-+	start_critical_timings();
- }
- 
- /**
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 868e121..fc20e09 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1203,9 +1203,6 @@ static void *s_next(struct seq_file *m, void *v, loff_t *pos)
- 
- 	iter->pos = *pos;
- 
--	if (last_ent && !ent)
--		seq_puts(m, "\n\nvim:ft=help\n");
--
- 	return ent;
- }
- 
-diff --git a/kernel/trace/trace_irqsoff.c b/kernel/trace/trace_irqsoff.c
-index 421d6fe..ece6cfb 100644
---- a/kernel/trace/trace_irqsoff.c
-+++ b/kernel/trace/trace_irqsoff.c
-@@ -253,12 +253,14 @@ void start_critical_timings(void)
- 	if (preempt_trace() || irq_trace())
- 		start_critical_timing(CALLER_ADDR0, CALLER_ADDR1);
- }
-+EXPORT_SYMBOL_GPL(start_critical_timings);
- 
- void stop_critical_timings(void)
- {
- 	if (preempt_trace() || irq_trace())
- 		stop_critical_timing(CALLER_ADDR0, CALLER_ADDR1);
- }
-+EXPORT_SYMBOL_GPL(stop_critical_timings);
- 
- #ifdef CONFIG_IRQSOFF_TRACER
- #ifdef CONFIG_PROVE_LOCKING
-@@ -337,12 +339,14 @@ EXPORT_SYMBOL(trace_hardirqs_off_caller);
- #ifdef CONFIG_PREEMPT_TRACER
- void trace_preempt_on(unsigned long a0, unsigned long a1)
- {
--	stop_critical_timing(a0, a1);
-+	if (preempt_trace())
-+		stop_critical_timing(a0, a1);
- }
- 
- void trace_preempt_off(unsigned long a0, unsigned long a1)
- {
--	start_critical_timing(a0, a1);
-+	if (preempt_trace())
-+		start_critical_timing(a0, a1);
- }
- #endif /* CONFIG_PREEMPT_TRACER */
- 
-diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
-index 3c8d61d..e303ccb 100644
---- a/kernel/trace/trace_sched_wakeup.c
-+++ b/kernel/trace/trace_sched_wakeup.c
-@@ -26,7 +26,8 @@ static struct task_struct	*wakeup_task;
- static int			wakeup_cpu;
- static unsigned			wakeup_prio = -1;
- 
--static DEFINE_SPINLOCK(wakeup_lock);
-+static raw_spinlock_t wakeup_lock =
-+	(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
- 
- static void __wakeup_reset(struct trace_array *tr);
- 
-@@ -56,7 +57,8 @@ wakeup_tracer_call(unsigned long ip, unsigned long parent_ip)
- 	if (unlikely(disabled != 1))
- 		goto out;
- 
--	spin_lock_irqsave(&wakeup_lock, flags);
-+	local_irq_save(flags);
-+	__raw_spin_lock(&wakeup_lock);
- 
- 	if (unlikely(!wakeup_task))
- 		goto unlock;
-@@ -71,7 +73,8 @@ wakeup_tracer_call(unsigned long ip, unsigned long parent_ip)
- 	trace_function(tr, data, ip, parent_ip, flags);
- 
-  unlock:
--	spin_unlock_irqrestore(&wakeup_lock, flags);
-+	__raw_spin_unlock(&wakeup_lock);
-+	local_irq_restore(flags);
- 
-  out:
- 	atomic_dec(&data->disabled);
-@@ -145,7 +148,8 @@ wakeup_sched_switch(void *private, void *rq, struct task_struct *prev,
- 	if (likely(disabled != 1))
- 		goto out;
- 
--	spin_lock_irqsave(&wakeup_lock, flags);
-+	local_irq_save(flags);
-+	__raw_spin_lock(&wakeup_lock);
- 
- 	/* We could race with grabbing wakeup_lock */
- 	if (unlikely(!tracer_enabled || next != wakeup_task))
-@@ -174,7 +178,8 @@ wakeup_sched_switch(void *private, void *rq, struct task_struct *prev,
- 
- out_unlock:
- 	__wakeup_reset(tr);
--	spin_unlock_irqrestore(&wakeup_lock, flags);
-+	__raw_spin_unlock(&wakeup_lock);
-+	local_irq_restore(flags);
- out:
- 	atomic_dec(&tr->data[cpu]->disabled);
- }
-@@ -209,8 +214,6 @@ static void __wakeup_reset(struct trace_array *tr)
- 	struct trace_array_cpu *data;
- 	int cpu;
- 
--	assert_spin_locked(&wakeup_lock);
--
- 	for_each_possible_cpu(cpu) {
- 		data = tr->data[cpu];
- 		tracing_reset(data);
-@@ -229,9 +232,11 @@ static void wakeup_reset(struct trace_array *tr)
- {
- 	unsigned long flags;
- 
--	spin_lock_irqsave(&wakeup_lock, flags);
-+	local_irq_save(flags);
-+	__raw_spin_lock(&wakeup_lock);
- 	__wakeup_reset(tr);
--	spin_unlock_irqrestore(&wakeup_lock, flags);
-+	__raw_spin_unlock(&wakeup_lock);
-+	local_irq_restore(flags);
- }
- 
- static void
-@@ -252,7 +257,7 @@ wakeup_check_start(struct trace_array *tr, struct task_struct *p,
- 		goto out;
- 
- 	/* interrupts should be off from try_to_wake_up */
--	spin_lock(&wakeup_lock);
-+	__raw_spin_lock(&wakeup_lock);
- 
- 	/* check for races. */
- 	if (!tracer_enabled || p->prio >= wakeup_prio)
-@@ -274,7 +279,7 @@ wakeup_check_start(struct trace_array *tr, struct task_struct *p,
- 		       CALLER_ADDR1, CALLER_ADDR2, flags);
- 
- out_locked:
--	spin_unlock(&wakeup_lock);
-+	__raw_spin_unlock(&wakeup_lock);
- out:
- 	atomic_dec(&tr->data[cpu]->disabled);
- }
+But exiting a task is responsible for freeing all of its kernel
+resources ... closing file descriptors, releasing memory, and
+so forth.  Programs rely on that, as in this case.
+
+
+> > mplayer and aireplay-ng have never done so. And what about crashes? Am I
+> 
+>  that's not an excuse, they have been written on a false assumption. Unless
+>  that behaviour is documented somewhere.
+
+We can't rely on documentation for interfaces (like the legacy RTC
+interface which the RTC framework is emulating) that never really
+had complete documentation!!
+
+In this case, we need to follow interface behavior, as observed, when
+it's not a bug.  Like shutting down periodic IRQs on close()...
+
+
+> > supposed to create a small "rtcpieoff" applications and make it into all
+> > distributions so that everyone can clean up the mess?
+> 
+>  just send patches to mplayer and aireplay-ng and it will make in the distros.
+
+Except ... that makes it even more clear that you're suggesting
+changes to a well established userspace interface.  Which is not
+something we like doing to the Linux userspace community.
+
+
+> > Additionally, it has been a regression against the old rtc and drivers like
+> > rtc-sh do so even today.
+> 
+>  Specific drivers might choice to do it on close. I believe rtc-cmos might
+>  be one of the few that might have to do it in order to cope with badly
+>  written programs. It's up to David to choice if it's appropriate too add it to
+>  rtc-cmos. 
+
+I want the framework to handle it, since that's how the RTC
+programming interface has traditionally behaved and since there
+should be as few driver-specific behaviors as practical.
+
+Remember, those programs should not be growing needless
+hardware dependencies.  In particular "only works on x86"
+would be really nasty.
+
+If it needs to be changed on x86 so that most Linux programs
+behave correctly again, then it needs to be changed for all
+RTC drivers.  Which means updating the framework is the most
+effective way to solve the problem.
+
+- Dave
+
