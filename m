@@ -1,127 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYGZTtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbYGZTux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757461AbYGZTtm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 15:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbYGZTte
+	id S1757516AbYGZTux (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 15:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbYGZTup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 15:49:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:47412 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753517AbYGZTte (ORCPT
+	Sat, 26 Jul 2008 15:50:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43572 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753864AbYGZTuo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 15:49:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=EfOCTMdUVfdZy6v3Zdp9iq4dP5KV0uAodqV13sLWe3ARrOsU84fIw3ino+f/WYzV6R
-         py6B0yHB4lw0OxINHJucnXbk3b8GjL4YRn+aHXIrYJ1zRAS96dMf549VBVWrVtLmaBvw
-         THrjxPBMLxxHftgWr9N9+uA/J0VCOT5YNXgPk=
-Message-ID: <b647ffbd0807261249v3aa9a94dy2882f9be98f83465@mail.gmail.com>
-Date: Sat, 26 Jul 2008 21:49:33 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [patch, rfc: 2/2] sched, hotplug: ensure a task is on the valid cpu after set_cpus_allowed_ptr()
-Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1216993184.7257.388.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 26 Jul 2008 15:50:44 -0400
+Date: Sat, 26 Jul 2008 12:50:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] linux/swap.h must #include <linux/pagemap.h>
+Message-Id: <20080726125025.465d524b.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0807261852050.582@blonde.site>
+References: <1217092685-15267-1-git-send-email-haavard.skinnemoen@atmel.com>
+	<20080726173832.GE9301@cs181140183.pp.htv.fi>
+	<Pine.LNX.4.64.0807261852050.582@blonde.site>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1216937730.5368.16.camel@earth> <1216989649.7257.381.camel@twins>
-	 <b647ffbd0807250620k2e7caa47pa81388c808d9eda7@mail.gmail.com>
-	 <1216993184.7257.388.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/25 Peter Zijlstra <a.p.zijlstra@chello.nl>:
-> On Fri, 2008-07-25 at 15:20 +0200, Dmitry Adamushko wrote:
->> 2008/7/25 Peter Zijlstra <a.p.zijlstra@chello.nl>:
->> > On Fri, 2008-07-25 at 00:15 +0200, Dmitry Adamushko wrote:
->> >>
->> >> From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
->> >> Subject: sched, hotplug: ensure a task is on the valid cpu after
->> >> set_cpus_allowed_ptr()
->> >>
->> >> ---
->> >>     sched, hotplug: ensure a task is on the valid cpu after set_cpus_allowed_ptr()
->> >>
->> >>     The 'new_mask' may not include task_cpu(p) so we migrate 'p' on another 'cpu'.
->> >>     In case it can't be placed on this 'cpu' immediately, we submit a request
->> >>     to the migration thread and wait for its completion.
->> >>
->> >>     Now, by the moment this request gets handled by the migration_thread,
->> >>     'cpu' may well be offline/non-active. As a result, 'p' continues
->> >>     running on its old cpu which is not in the 'new_mask'.
->> >>
->> >>     Fix it: ensure 'p' ends up on a valid cpu.
->> >>
->> >>     Theoreticaly (but unlikely), we may get an endless loop if someone cpu_down()'s
->> >>     a new cpu we have choosen on each iteration.
->> >>
->> >>     Alternatively, we may introduce a special type of request to migration_thread,
->> >>     namely "move_to_any_allowed_cpu" (e.g. by specifying dest_cpu == -1).
->> >>
->> >>     Note, any_active_cpu() instead of any_online_cpu() would be better here.
->> >
->> > Hrmm,.. this is all growing into something of a mess.. defeating the
->> > whole purpose of introducing that cpu_active_map stuff.
->> >
->> > Would the suggested SRCU logic simplify all this?
->>
->> Ah, wait a second.
->>
->> sched_setaffinity() -> set_cpus_allowed_ptr() is ok vs. cpu_down() as
->> it does use get_online_cpus(). So none of the cpus can become offline
->> while we are in set_cpus_allowed_ptr().
->>
->> but there are numerous calls to set_cpus_allowed_ptr() from other
->> places and not all of them seem to call get_online_cpus()...
->>
->> yeah, I should check this issue again..
->>
->> btw., indeed all these different sync. cases are a bit of mess.
->
-> Will ponder it a bit more, but my brain can't seem to let go of SRCU
-> now..
+On Sat, 26 Jul 2008 19:13:43 +0100 (BST) Hugh Dickins <hugh@veritas.com> wrote:
 
-I like it too.
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/tlb.h: In function 'tlb_flush_mmu':
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/tlb.h:76: error: implicit declaration of function 'release_pages'
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/tlb.h: In function 'tlb_remove_page':
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/tlb.h:105: error: implicit declaration of function 'page_cache_release'
 
-> I'll go concentrate on making the swap-over-nfs patches prettier,
-> maybe that will induce a brainwave ;-)
+tlb_finish_mmu() inlines tlb_flush_mmu() and ends up being quite large.
 
-what's about task-migration over NFS? ;-)
+tlb_finish_mmu() has five callsites in core kernel.
 
+The above error is God's way of telling us that it's all too large to
+be inlined.
 
->> btw., I was wondering about this change:
->>
->> ba42059fbd0aa1ac91b582412b5fedb1258f241f
->>
->> sched: hrtick_enabled() should use cpu_active()
->>
->> Peter pointed out that hrtick_enabled() should use cpu_active().
->
-> What exactly were you wondering about?
->
-> It seemed a good idea to stop starting hrtimers before we migrate them
-> to another cpu (one of the things done later in cpu_down), thereby
-> avoiding spurious fires on remote cpus.
->
+uninlining these things would be a bit of a pita because of the various
+arch overrides.  But it really is the right thing to do.
 
-Yeah, I thought that it's likely cpu_down() related.
-
-I looked at it from the point of cpu_up(), e.g. a cpu is online ->
-tasks get queued and start running (while cpu is still _not_ active
-for a while). So when they get enqueued first time, hrtick_enabled()
-wil give 0 and hr-timer won't be used.
-
-Actually, cpu_active_map has already broken expectations/assumptions -
-http://lkml.org/lkml/2008/7/24/260 (in case you have missed it). But
-this particular "microcode"s behavior is really bad, I think.
-
-
--- 
-Best regards,
-Dmitry Adamushko
