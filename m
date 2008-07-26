@@ -1,77 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbYGZOuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbYGZPCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755526AbYGZOuL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 10:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbYGZOt7
+	id S1754466AbYGZPCj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 11:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbYGZPCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 10:49:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34367 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752162AbYGZOt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 10:49:58 -0400
-Date: Sat, 26 Jul 2008 16:49:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] cpumask: Change cpumask_of_cpu to use
-	cpumask_of_cpu_map V2
-Message-ID: <20080726144941.GA6614@elte.hu>
-References: <20080725012128.805332000@polaris-admin.engr.sgi.com> <20080726144133.GA27011@elte.hu>
+	Sat, 26 Jul 2008 11:02:32 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:65216 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751846AbYGZPCb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 11:02:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vsprFXWAZLt+UDrmO6yGhS+upGSKMmDqy9mHxlRYh7w78WGJGVTdhAFMTQOwxYkqw1
+         gvLL+09GSeBYI/Uojrim5sBVD8WhoPrlFHdeg4x0qbdRnvCwYZQ0SvoaUT20B9FQA91u
+         aBiD9ihph2tYe0VAIHUF8VFhNNlZUM/8YbJGA=
+Date: Sun, 27 Jul 2008 00:02:20 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       tim@physik3.uni-rostock.de, linux-kernel@vger.kernel.org
+Subject: [PATCH] nwflash: fix build errors and warning
+Message-ID: <20080726150155.GA3562@localhost.localdomain>
+References: <200807250848.m6P8mIWF001718@imap1.linux-foundation.org> <20080726141808.GB8871@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-2022-jp
 Content-Disposition: inline
-In-Reply-To: <20080726144133.GA27011@elte.hu>
+In-Reply-To: <20080726141808.GB8871@flint.arm.linux.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jul 26, 2008 at 03:18:08PM +0100, Russell King - ARM Linux wrote:
+> On Fri, Jul 25, 2008 at 01:48:18AM -0700, akpm@linux-foundation.org wrote:
+> > From: Akinobu Mita <akinobu.mita@gmail.com>
+> > 
+> > Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> > Cc: Russell King <linux@arm.linux.org.uk>
+> > Cc: Tim Schmielau <tim@physik3.uni-rostock.de>
+> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> 
+> Argh...  Are people now submitting untested patches as a rule?
+> 
+> drivers/char/nwflash.c: In function 'flash_read':
+> drivers/char/nwflash.c:129: error: 'p' undeclared (first use in this function)
+> drivers/char/nwflash.c:129: error: (Each undeclared identifier is reported only once
+> drivers/char/nwflash.c:129: error: for each function it appears in.)
+> drivers/char/nwflash.c:129: error: 'count' undeclared (first use in this function)
+> drivers/char/nwflash.c:136: warning: passing argument 4 of 'simple_read_from_buffer' discards qualifiers from pointer target type
+> make[2]: *** [drivers/char/nwflash.o] Error 1
+> make[1]: *** [drivers/char] Error 2
+> make: *** [drivers] Error 2
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Sorry. I'm preparing cross compiler. But this patch should fix this
+problem.
 
-> i've applied it to tip/cpus4096 and started testing it. This is the 
-> topic where the problem originates from, so we can reuse it for 
-> linux-next.
+From: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: nwflash: fix build errors and warning
 
-fixlet below.
+The commit 6ee8928d94841aa764aeaf645ad16daff811dc26
+(nwflash: use simple_read_from_buffer()) broke nwflash.
 
-	Ingo
+drivers/char/nwflash.c: In function 'flash_read':
+drivers/char/nwflash.c:129: error: 'p' undeclared (first use in this function)
+drivers/char/nwflash.c:129: error: (Each undeclared identifier is reported only once
+drivers/char/nwflash.c:129: error: for each function it appears in.)
+drivers/char/nwflash.c:129: error: 'count' undeclared (first use in this function)
+drivers/char/nwflash.c:136: warning: passing argument 4 of 'simple_read_from_buffer' discards qualifiers from pointer target type
+make[2]: *** [drivers/char/nwflash.o] Error 1
+make[1]: *** [drivers/char] Error 2
+make: *** [drivers] Error 2
 
--------------->
->From 5a7a201c51c324876d00a54e7208af6af12d1ca4 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sat, 26 Jul 2008 16:50:47 +0200
-Subject: [PATCH] cpumask: export cpumask_of_cpu_map
-
-fix:
-
- ERROR: "cpumask_of_cpu_map" [drivers/acpi/processor.ko] undefined!
- ERROR: "cpumask_of_cpu_map" [arch/x86/kernel/microcode.ko] undefined!
- ERROR: "cpumask_of_cpu_map" [arch/x86/kernel/cpu/cpufreq/speedstep-ich.ko] undefined!
- ERROR: "cpumask_of_cpu_map" [arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.ko] undefined!
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 ---
- kernel/cpu.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/char/nwflash.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 9d4e1c2..a35d899 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -572,3 +572,5 @@ __initdata
- };
+Index: 2.6-mm/drivers/char/nwflash.c
+===================================================================
+--- 2.6-mm.orig/drivers/char/nwflash.c
++++ 2.6-mm/drivers/char/nwflash.c
+@@ -126,14 +126,15 @@ static ssize_t flash_read(struct file *f
  
- const cpumask_t *cpumask_of_cpu_map = cpumask_map;
-+
-+EXPORT_SYMBOL_GPL(cpumask_of_cpu_map);
+ 	if (flashdebug)
+ 		printk(KERN_DEBUG "flash_read: flash_read: offset=0x%lX, "
+-		       "buffer=%p, count=0x%X.\n", p, buf, count);
++		       "buffer=%p, count=0x%zX.\n", *ppos, buf, size);
+ 	/*
+ 	 * We now lock against reads and writes. --rmk
+ 	 */
+ 	if (mutex_lock_interruptible(&nwflash_mutex))
+ 		return -ERESTARTSYS;
+ 
+-	ret = simple_read_from_buffer(buf, size, ppos, FLASH_BASE, gbFlashSize);
++	ret = simple_read_from_buffer(buf, size, ppos, (void *)FLASH_BASE,
++					gbFlashSize);
+ 	mutex_unlock(&nwflash_mutex);
+ 
+ 	return ret;
