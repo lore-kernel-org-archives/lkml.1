@@ -1,80 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbYGZJhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbYGZJpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754301AbYGZJhq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 05:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbYGZJhj
+	id S1753148AbYGZJpT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 05:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYGZJpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 05:37:39 -0400
-Received: from in.cluded.net ([195.159.98.120]:52366 "EHLO in.cluded.net"
+	Sat, 26 Jul 2008 05:45:07 -0400
+Received: from nox.protox.org ([88.191.38.29]:59671 "EHLO nox.protox.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751447AbYGZJhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 05:37:38 -0400
-X-Greylist: delayed 1197 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Jul 2008 05:37:37 EDT
-Message-ID: <488AEA54.2030703@uw.no>
-Date: Sat, 26 Jul 2008 09:11:48 +0000
-From: "Daniel K." <dk@uw.no>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9a1) Gecko/20060307 SeaMonkey/1.5a
-MIME-Version: 1.0
-To: Peter Oruba <peter.oruba@amd.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 8/9] [PATCH 8/9] x86: Major refactoring.
-References: <20080725161723.636932280@amd.com> <20080725162003.347794240@amd.com>
-In-Reply-To: <20080725162003.347794240@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751611AbYGZJpF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 05:45:05 -0400
+Date: Sat, 26 Jul 2008 11:44:58 +0200
+From: Jerome Glisse <glisse@freedesktop.org>
+To: Nicolai =?ISO-8859-1?Q?H=E4hnle?= <prefect@upb.de>
+Cc: dri-devel@lists.sourceforge.net, Jonathan McDowell <noodles@earth.li>,
+       linux-kernel@vger.kernel.org
+Subject: Re: X "Hangs" with RS690 + 2.6.26
+Message-Id: <20080726114458.20ab97e3.glisse@freedesktop.org>
+In-Reply-To: <200807251905.04488.prefect@upb.de>
+References: <20080725094334.GC30002@earth.li>
+	<20080725121259.757499a9.glisse@freedesktop.org>
+	<200807251905.04488.prefect@upb.de>
+Organization: freedesktop.org
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Oruba wrote:
-> Refactored code by introducing a two-module solution. There is one
-> general module in which vendor specific modules can hook into.
->  
->  config MICROCODE
-> -	tristate "/dev/cpu/microcode - Intel IA32 CPU microcode support"
-> +	tristate "/dev/cpu/microcode - microcode support"
->  	select FW_LOADER
->  	---help---
->  	  If you say Y here, you will be able to update the microcode on
-> @@ -791,14 +791,28 @@ config MICROCODE
->  	  actual microcode binary data itself which is not shipped with the
->  	  Linux kernel.
->  
-> -	  For latest news and information on obtaining all the required
-> -	  ingredients for this driver, check:
-> -	  <http://www.urbanmyth.org/microcode/>.
-> +	  This option selects the general module only, you need to select
-> +	  at least one vendor specific module as well.
->  
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called microcode.
->  
-> -config MICROCODE_OLD_INTERFACE
-> +config MICROCODE_INTEL
-> +       tristate "Intel microcode patch loading support"
-> +       depends on MICROCODE
+On Fri, 25 Jul 2008 19:04:55 +0200
+Nicolai Hähnle <prefect@upb.de> wrote:
 
-	default MICROCODE
+> Am Freitag 25 Juli 2008 12:12:59 schrieb Jerome Glisse:
+> > This looks like usual engine lockup followed by CP lockup so
+> > that DMA buffer age never get written and we run out of DMA
+> > buffer thus freelist failing in infinite loop.
+> >
+> > I think we now know all the reason why we lockup, while a
+> > fix could be made for old ioctl we believe the best plan is
+> > to work on new ioctl with this fix in mind.
+> 
+> I can't help but feel uneasy with that kind of plan. After all, do "we" 
+> *really* know what's going on? I always had the impression that we only knew 
+> things along the lines of "perhaps it's better to submit 3D stuff in indirect 
+> buffers".
+> 
+> If you *really* know what causes the lockups, could you please document that? 
+> As in, what's the actual command processor sequence that is to blame? I know  
+> that running e.g. a Nexuiz demo + glxgears window above it is apparently a 
+> 100% guaranteed lockup on my system (R420).
+> 
+> If you could share your progress in tracking down the sources of the lockups, 
+> I'd happily try to write a patch against the current system.
+> 
+> cu,
+> Nicolai
+> 
 
-so that users doing make oldconfig don't get a surprise?
+Here is a brief list from top of my head for the record : 
 
-> +       select FW_LOADER
-> +       --help---
-> +         This options enables microcode patch loading support for Intel
-> +         processors.
-> +
-> +         For latest news and information on obtaining all the required
-> +         Intel ingredients for this driver, check:
-> +         <http://www.urbanmyth.org/microcode/>.
-> +
-> +         This driver is only available as a module: the module
-> +         will be called microcode_intel.  
-> +
-> +   config MICROCODE_OLD_INTERFACE
+- no RB3D_DSTCACHE twice in a row without rendering cmd in btw
+- initialize all clip register to default values wait for engine idle
+  after setting them
+- update wptr every 32 dwords (2 dwords seems enough but that one
+  is very hard to track)
+- use indirect buffer
+- RB3D_DSTCACHE is not pipelined if free or sync bit is not set
+  thus you have to feel the fifo and wait for idle before writing
+  it if none of these bits are set
+- flush & wait until 3d before 2d, and flush & wait dma & 2d idle
+  after 2d as well feel the fifo with dummy 2d reg to avoid unpipelined
+  3d reg to get executed before idle is asserted
+- avoid emitting cliprect too much
+- txinval before changing texture
+- avoid stuff RB3D_DSTCACHE & RB2D_DSTCACHE too much
+- set ISYNC properly through CP
+- CP idle is wrong we should wait for tag and not
+  try to force CP to goes idle or inject flush after
+  idle
+- set vertex shader constant & input to default safe value
 
-Kill the extra spaces.
+And there is other things to think about scattered in my drm.
+Baiscly things should be set in some order to make sure the
+engine will not be unhappy in face of a cmd stream. Some of the
+above might be wrong but i use them because somehow they each
+one of them seems to give me more stable drm. The last drm
+i have doesn't lockup in the case of few glxgears on top
+of other 3d app like celestia and likely nexuiz haven't tried
+that one.
 
-
-Daniel K.
+Cheers,
+Jerome Glisse <glisse@freedesktop.org>
