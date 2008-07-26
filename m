@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYGZNUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbYGZNWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbYGZNUs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 09:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYGZNUl
+	id S1755674AbYGZNWV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 09:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYGZNWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 09:20:41 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:40134 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750934AbYGZNUl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 09:20:41 -0400
-Date: Sat, 26 Jul 2008 09:18:54 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: how about a massive reorg of the "Kernel hacking" submenu?
-Message-ID: <alpine.LFD.1.10.0807260809140.3417@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 26 Jul 2008 09:22:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58096 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751600AbYGZNWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 09:22:13 -0400
+Date: Sat, 26 Jul 2008 15:21:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/2] ftrace: single CPU tracers use CPU clock
+Message-ID: <20080726132118.GA30903@elte.hu>
+References: <20080725220040.911370182@goodmis.org> <20080725220334.781928198@goodmis.org> <20080726124058.GD20713@elte.hu> <Pine.LNX.4.58.0807260905500.12953@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0807260905500.12953@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  this bit of whining is inspired by the observation that the "Kernel
-hacking" submenu (at least under x86) has become ridiculously long and
-seems only partially ordered by topic.  so some thoughts.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-  first, rename it from "Kernel hacking" to "Kernel debugging" since,
-well, pretty much *everything* you can do with "make *config" can be
-considered "hacking" so that submenu title isn't particularly
-informative.  and once that's done, really make it related to
-exclusively debugging selections, which has some implications.
+> > this is not a good idea. We want to fix cpu_clock(), not work around 
+> > any deficiencies it might have.
+> 
+> cpu_clock currently is "sched_clock" when the 
+> CONFIG_HAVE_UNSTABLE_SCHED_CLOCK is not set. Which is done via 
+> configuration, and I noticed is set on my boxes with a stable TSC??
 
-  first, debugging content from elsewhere should be shifted under
-here, such as "kprobes" and "markers" which currently reside under
-"General setup," which seems a bit odd.  and perhaps all
-profiling-related selections could be moved here as well.  (BTW, is
-"Profiling support" really still EXPERIMENTAL?  just curious.)
+define 'stable TSC' ;-)
 
-  at the same time, some stuff could be moved *out* from under "Kernel
-hacking," such as "Sample kernel code."  right now, it's buried
-partway down the hacking selection list, but i think it's useful
-enough to deserve its own top-level entry at the bottom of the menu.
-and if it's more prominent, that would encourage more people to write
-code samples, as opposed to having that selection buried in the
-Hacking/Debugging submenu where people might not even see it.  (and
-being able to build sample kernel code really has nothing to do with
-debugging, anyway.)
+> Perhaps we need to make cpu_clock change dynamically when an unstable 
+> sched_clock is detected.
+> 
+> Even in this case, forcing the tracers that are single CPU to use a 
+> clock source that modifies itself to try to look stable across CPUs 
+> still seems wrong to me.  The goal of looking stable across CPUs will 
+> always be at odds with the irqsoff tracer that does not care about 
+> other CPUS but cares tremendously about accurate latencies.
 
-  anyway, just some random thoughts from an early saturday morning
-at OLS 2008, waiting for someone to show up and turn on the
-$^$(*&^#)*^_# wireless.
+other tracers care too - for example to have the right chronology of 
+trace events. The scheduler cares too. What kind of worst-case cross-CPU 
+effects have you observed?
 
-rday
-
-p.s.  it should go without saying that it would be nice for a newer
-"Kernel debugging" submenu to collect related topics into subsubmenus
-to shorten what's there, like perhaps having a single selection to
-debug all mutex/spinlock-related stuff, that sort of thing.  the
-current layout *desperately* needs some subsubmenus for readability.
-or at least a few comments to break things up.
-
---
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+	Ingo
