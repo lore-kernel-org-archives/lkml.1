@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbYGYXzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbYGZA1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755537AbYGYXzw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 19:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbYGYXzl
+	id S1752999AbYGZA1V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 20:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbYGZA1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 19:55:41 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42026
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752915AbYGYXzk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 19:55:40 -0400
-Date: Fri, 25 Jul 2008 16:55:39 -0700 (PDT)
-Message-Id: <20080725.165539.91586849.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 25 Jul 2008 20:27:14 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:54089 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750827AbYGZA1N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jul 2008 20:27:13 -0400
+Message-ID: <488A6F5F.5000105@sgi.com>
+Date: Fri, 25 Jul 2008 17:27:11 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Hugh Dickins <hugh@veritas.com>, Jack Steiner <steiner@sgi.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] x86_64: Optimize percpu accesses
+References: <20080725211117.586723000@polaris-admin.engr.sgi.com> <488A613E.50305@goop.org>
+In-Reply-To: <488A613E.50305@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> Mike Travis wrote:
+>> This patchset provides the following:
+>>
+>>   * x86_64: Cleanup setup_percpu by fixing some minor potential
+>>     problems as well as add some debugging aids.
+>>
+>>   * x86_64: Rebase per cpu variables to zero
+>>
+>>     Rebase per cpu variables to zero in preparation for the following
+>>     patch to fold the pda into the per cpu area.
+>>
+>>   * x86_64: Fold pda into per cpu area
+>>
+>>     Declare the pda as a per cpu variable. This will allow the per cpu
+>>     variables to be accessible on the x86_64 using %gs as the base of
+>>     the percpu areas for each cpu:
+>>
+>>     %gs:per_cpu_xxxx
+>>
+>>   * x86_64: Reference zero-based percpu variables offset from gs
+>>
+>>     Actually implement the above operation for __get_cpu_var() and
+>>     __put_cpu_var().  Since this is now a single instruction, we
+>>     can remove the non-preemptible versions of x86_read_percpu()
+>>     and x86_write_percpu().
+>>   
+> 
+> No, I think you've misunderstood these calls.
+> 
+> get_cpu_var(x) evaluates to an lvalue of this cpu's 'x'.  It disables
+> preemption, in the same manner as get_cpu().
+> 
+> put_cpu_var(x) does nothing more than re-enable preemption, to pair with
+> get_cpu_var().
+> 
+> __get_cpu_var(x) is the same as get_cpu_var, but it assumes that
+> preemption is already disabled.  There is no __put_cpu_var().
+> 
+> The important point is that an expression like "__get_cpu_var(x) = foo"
+> does not evaluate to a single instruction, and is not preempt or
+> interrupt -atomic.  That's the reason x86_X_percpu() exist, since
+> they're a single instruction in an asm.  However, with %gs: based
+> addressing they can be easily unified.
+> 
+>    J
 
-A fix for a lockdep problem reported by Ingo, and a cure
-for order-5 page allocations that can be triggered by
-IPCOMP decompression from Herbert Xu.
+Yes, you're right, I wrote that quickly without really reading it back.
+My point is that now that x86_read_percpu() and x86_write_percpu() do
+evaluate to a single instruction (by definition atomic), then it doesn't
+need to be surrounded by the preempt_disable()/preempt_enable() calls.
 
-Please pull, thanks a lot!
+It appears as if I'm implying that's the case for get/put_cpu_var().
 
-The following changes since commit f867e6af94239a04ec23aeec2fcda5aa58e41db7:
-  Jarek Poplawski (1):
-        pkt_sched: sch_sfq: dump a real number of flows
+Thanks,
+Mike
 
-are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-David S. Miller (1):
-      pkt_sched: Fix locking in shutdown_scheduler_queue()
-
-Herbert Xu (2):
-      ipsec: ipcomp - Merge IPComp implementations
-      ipsec: ipcomp - Decompress into frags if necessary
-
- include/net/ipcomp.h    |    6 +
- net/ipv4/Kconfig        |    4 +-
- net/ipv4/ipcomp.c       |  315 +-------------------------------------
- net/ipv6/Kconfig        |    4 +-
- net/ipv6/ipcomp6.c      |  298 +-----------------------------------
- net/sched/sch_generic.c |    4 +-
- net/xfrm/Kconfig        |    6 +
- net/xfrm/Makefile       |    1 +
- net/xfrm/xfrm_ipcomp.c  |  385 +++++++++++++++++++++++++++++++++++++++++++++++
- 9 files changed, 415 insertions(+), 608 deletions(-)
- create mode 100644 net/xfrm/xfrm_ipcomp.c
