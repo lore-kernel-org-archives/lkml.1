@@ -1,83 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbYGZHAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbYGZHSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbYGZHAq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 03:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYGZHAh
+	id S1753729AbYGZHSi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 03:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbYGZHSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 03:00:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34504 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751361AbYGZHAg (ORCPT
+	Sat, 26 Jul 2008 03:18:30 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:21988 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752214AbYGZHSa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 03:00:36 -0400
-Date: Fri, 25 Jul 2008 23:59:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "D. Kelly" <user.kernel@gmail.com>
-Cc: "mailing list: linux-kernel" <linux-kernel@vger.kernel.org>,
-       Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org
-Subject: Re: Problem with restricted I2C algorithms in kernel 2.6.26!
-Message-Id: <20080725235936.aeae8bc2.akpm@linux-foundation.org>
-In-Reply-To: <5ab239b10807161233i6c1c4d0we01ea1b8e6ccaa5b@mail.gmail.com>
-References: <5ab239b10807161233i6c1c4d0we01ea1b8e6ccaa5b@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Jul 2008 03:18:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=ApFz0bWQtJRpEceFZTKKXUwFJQlu0a1tv05LfNTqgYQdD2+UKzYpJZu6P/W4vkQ26K
+         byQEkn1wwIS5zSgIEp4tmkIHAmZYinwp7Wcr/86TTDZsK95DIasg3r2crj8VDQQ80oZN
+         GdjLFkYxG2Ki3op6+4cGRhPxxpiR73vGiSMf4=
+Date: Sat, 26 Jul 2008 11:18:28 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] proc: fix inode number bogorithmetic
+Message-ID: <20080726071828.GA5115@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc's added)
+Id which proc gets from IDR for inode number and id which proc removes
+from IDR do not match. E.g. 0x11a transforms into 0x8000011a.
 
-On Wed, 16 Jul 2008 12:33:57 -0700 "D. Kelly" <user.kernel@gmail.com> wrote:
+Which stayed unnoticed for a long time because, surprise, idr_remove()
+masks out that high bit before doing anything.
 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=3845de25c5f83cd52729570f7b501679d37ca8de
-> 
-> The patch at the preceeding url disables the users ability to select
-> I2C algorithms.  Specifically the reason stated was:
-> 
-> "The algorithm drivers are
-> helper drivers that are selected automatically
-> as needed. There's no point in listing them in the config menu, it can
-> only confuse users and waste their time."
-> 
-> The algorithm drivers will not be 'selected automatically as needed'
-> if the user is compiling something outside of the kernel that requires
-> them!  Just one example, there are drivers found in the V4L dvb driver
-> tree that require i2c bit-banging be enabled.  The drivers are now
-> broken because the user is not allowed to enable bit-banging himself.
-> The only way around this is to revert the patch manually or enable
-> something else in the kernel, that he doesn't need, just to get
-> bit-banging.
-> 
-> It's a very bad idea to assume that nothing built outside of the
-> kernel may need i2c algorithms.  Furthermore, the whole point of being
-> able to customize your kernel is so you can select only the things
-> which you need.  It makes no good sense to intentionally
-> disable/restrict the users ability to do so.  Additionally, assuming
-> the ability to select i2c algorithms will only confuse the user and
-> waste their time is ridiculous.  The user should be allowed to decide
-> for himself what he needs regarding this!
-> 
-> One of the biggest reasons people choose to compile things from
-> cvs/svn/mercurial/etc. is because it gives them access to newer bug
-> fixes and support for things not yet present in the kernel source.  A
-> perfect example, the multiproto dvb driver tree.  Users wanting
-> support for dvb-s2 devices have to compile drivers outside of the
-> kernel because it's simply not available in the kernel and won't be
-> for some time.
-> 
-> I've contacted one of the i2c subsystem maintainers, Jean Delvare, but
-> unfortunately he doesn't seem to care about this problem and his
-> advice in dealing with it is to "Just get these drivers merged in the
-> kernel. Ah ah ah!"...
-> 
-> Clearly the more sane and reasonable solution is to not cripple the
-> menu options in the first place, especially when it creates no benefit
-> and only serves to limit/restrict the users ability to select what he
-> needs.  I'm asking that the patch be reverted and anyone in agreement
-> to please voice their opinion here in public.
-> 
-> Best regards,
-> -Derek
+All of this due to "| ~MAX_ID_MASK" in release_inode_number().
+
+I still don't understand how it's supposed to work, because "| ~MASK"
+is not an inversion for "& MAX" operation.
+
+So, use just one nice, working addition. Make start offset unsigned int,
+while I'm at it. It's longness is not used anywhere.
+
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
+
+ fs/proc/generic.c |   21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
+
+--- a/fs/proc/generic.c
++++ b/fs/proc/generic.c
+@@ -303,7 +303,7 @@ out:
+ static DEFINE_IDR(proc_inum_idr);
+ static DEFINE_SPINLOCK(proc_inum_lock); /* protects the above */
+ 
+-#define PROC_DYNAMIC_FIRST 0xF0000000UL
++#define PROC_DYNAMIC_FIRST 0xF0000000U
+ 
+ /*
+  * Return an inode number between PROC_DYNAMIC_FIRST and
+@@ -311,7 +311,7 @@ static DEFINE_SPINLOCK(proc_inum_lock); /* protects the above */
+  */
+ static unsigned int get_inode_number(void)
+ {
+-	int i, inum = 0;
++	unsigned int i;
+ 	int error;
+ 
+ retry:
+@@ -326,21 +326,18 @@ retry:
+ 	else if (error)
+ 		return 0;
+ 
+-	inum = (i & MAX_ID_MASK) + PROC_DYNAMIC_FIRST;
+-
+-	/* inum will never be more than 0xf0ffffff, so no check
+-	 * for overflow.
+-	 */
+-
+-	return inum;
++	if (i > UINT_MAX - PROC_DYNAMIC_FIRST) {
++		spin_lock(&proc_inum_lock);
++		idr_remove(&proc_inum_idr, i);
++		spin_unlock(&proc_inum_lock);
++	}
++	return PROC_DYNAMIC_FIRST + i;
+ }
+ 
+ static void release_inode_number(unsigned int inum)
+ {
+-	int id = (inum - PROC_DYNAMIC_FIRST) | ~MAX_ID_MASK;
+-
+ 	spin_lock(&proc_inum_lock);
+-	idr_remove(&proc_inum_idr, id);
++	idr_remove(&proc_inum_idr, inum - PROC_DYNAMIC_FIRST);
+ 	spin_unlock(&proc_inum_lock);
+ }
+ 
+-- 
+1.5.4.5
+
 
