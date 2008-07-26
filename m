@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbYGZMme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbYGZMnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755596AbYGZMme (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 08:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbYGZMm0
+	id S1755834AbYGZMnX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 08:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbYGZMnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 08:42:26 -0400
-Received: from mga10.intel.com ([192.55.52.92]:1602 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751818AbYGZMmZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 08:42:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,255,1215414000"; 
-   d="scan'208";a="364868804"
-Message-ID: <488B1BB3.7010602@linux.intel.com>
-Date: Sat, 26 Jul 2008 05:42:27 -0700
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Sat, 26 Jul 2008 08:43:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49526 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751855AbYGZMnO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 08:43:14 -0400
+Date: Sat, 26 Jul 2008 14:42:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/2] ftrace: disable tracing on acpi idle calls
+Message-ID: <20080726124230.GE20713@elte.hu>
+References: <20080725220040.911370182@goodmis.org> <20080725220334.931959350@goodmis.org>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Thomas Renninger <trenn@suse.de>, Len Brown <lenb@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christian Kornacker <ckornacker@suse.de>
-Subject: Re: ACPI OSI disaster on latest HP laptops - critical temperature
- shutdown
-References: <200807241727.41715.trenn@suse.de> <alpine.LFD.1.10.0807241952270.6098@localhost.localdomain> <200807251319.12786.trenn@suse.de> <200807251726.14366.rjw@sisk.pl>
-In-Reply-To: <200807251726.14366.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080725220334.931959350@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> If vendors use _OSI(Windows) to work around Windows bugs, we get broken
-> automatically on those systems unless we put in some DMI-based hacks.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-The general goal of ACPICA is to be bug-to-bug compatible with Windows.
-So it might be needed for ACPICA to just emulate the respective bugs.
+> The acpi idle waits calls local_irq_save and then uses mwait to go 
+> into idle. The tracer gets reenabled at local_irq_save but does not 
+> detect that the idle allows for wake ups.
+> 
+> This patch adds code to disable the tracing when acpi puts the CPU to 
+> idle.
 
-That said for this case I don't think that's needed, Linux just has to
-detect the workarounds (which it already does I think)
+applied to tip/tracing/urgent - thanks Steve.
 
--Andi
-
+	Ingo
