@@ -1,98 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbYGZNpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbYGZNp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233AbYGZNpm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 09:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756087AbYGZNnT
+	id S1756776AbYGZNp4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 09:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756530AbYGZNnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 09:43:19 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:42093 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755600AbYGZNnQ (ORCPT
+	Sat, 26 Jul 2008 09:43:52 -0400
+Received: from stinky.trash.net ([213.144.137.162]:64043 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756515AbYGZNnv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 09:43:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=izQdfdbkPNTsXQcqR4udeJFSxFepDJAafwB5yELFn3sRdX1wodnoryboXpgSTim5yK
-         CWplx3XNQ3flXf6wQARKVaaFyD9q4qRGfhMA8LGzsdlREqUHb1ms7CUKg3E5D+t1YenW
-         QM37Pr5d7v4Y9Co0JURaXX8kigmN+WE/H5PgE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Sat, 26 Jul 2008 15:41:12 +0200
-Message-Id: <20080726134112.10589.476.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080726134010.10589.51679.sendpatchset@localhost.localdomain>
-References: <20080726134010.10589.51679.sendpatchset@localhost.localdomain>
-Subject: [PATCH 10/10] ide: remove CONFIG_IDEDISK_MULTI_MODE
+	Sat, 26 Jul 2008 09:43:51 -0400
+Message-ID: <488B2A11.9090606@trash.net>
+Date: Sat, 26 Jul 2008 15:43:45 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
+ pointer dereference
+References: <20080724060448.GA10203@elte.hu>	<E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>	<20080724.022259.113079007.davem@davemloft.net>	<20080724093411.GA12001@elte.hu>	<20080724115625.GA23994@elte.hu>	<20080724115957.GA25701@elte.hu>	<48886FA6.6050908@trash.net>	<84144f020807240544q507e1b7cv220d1afbae0ee0f0@mail.gmail.com>	<48887A71.5010209@trash.net>	<1216905812.5897.6.camel@penberg-laptop>	<48888434.3030207@trash.net>	<1216906476.12021.4.camel@penberg-laptop> <20080724115127.6cfbb616.akpm@linux-foundation.org>
+In-Reply-To: <20080724115127.6cfbb616.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use multi PIO by default when available and remove no longer
-needed CONFIG_IDEDISK_MULTI_MODE (it should be safe nowadays,
-despite to what help entry has been saying).
+Andrew Morton wrote:
+> On Thu, 24 Jul 2008 16:34:36 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> 
+>>>> [PATCH] netfilter: fix double-free and use-after free
+>>>>
+>> Ingo, can you please test this? Andrew, I'm at OLS so can you pick up
+>> the patch in your tree?
+> 
+> Sure.  Or Patrick can do so and it can be merged via the net tree.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/Kconfig     |   23 -----------------------
- drivers/ide/ide-probe.c |    6 ++----
- 2 files changed, 2 insertions(+), 27 deletions(-)
-
-Index: b/drivers/ide/Kconfig
-===================================================================
---- a/drivers/ide/Kconfig
-+++ b/drivers/ide/Kconfig
-@@ -141,29 +141,6 @@ config BLK_DEV_IDEDISK
- 
- 	  If unsure, say Y.
- 
--config IDEDISK_MULTI_MODE
--	bool "Use multiple sector mode for Programmed Input/Output by default"
--	help
--	  This setting is irrelevant for most IDE disks, with direct memory
--	  access, to which multiple sector mode does not apply. Multiple sector
--	  mode is a feature of most modern IDE hard drives, permitting the
--	  transfer of multiple sectors per Programmed Input/Output interrupt,
--	  rather than the usual one sector per interrupt. When this feature is
--	  enabled, it can reduce operating system overhead for disk Programmed
--	  Input/Output. On some systems, it also can increase the data
--	  throughput of Programmed Input/Output. Some drives, however, seemed
--	  to run slower with multiple sector mode enabled. Some drives claimed
--	  to support multiple sector mode, but lost data at some settings.
--	  Under rare circumstances, such failures could result in massive
--	  filesystem corruption.
--
--	  If you get the following error, try to say Y here:
--
--	  hda: set_multmode: status=0x51 { DriveReady SeekComplete Error }
--	  hda: set_multmode: error=0x04 { DriveStatusError }
--
--	  If in doubt, say N.
--
- config BLK_DEV_IDECS
- 	tristate "PCMCIA IDE support"
- 	depends on PCMCIA
-Index: b/drivers/ide/ide-probe.c
-===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -89,16 +89,14 @@ static void ide_disk_init_mult_count(ide
- 	u8 max_multsect = id[ATA_ID_MAX_MULTSECT] & 0xff;
- 
- 	if (max_multsect) {
--#ifdef CONFIG_IDEDISK_MULTI_MODE
- 		if ((max_multsect / 2) > 1)
- 			id[ATA_ID_MULTSECT] = max_multsect | 0x100;
- 		else
- 			id[ATA_ID_MULTSECT] &= ~0x1ff;
- 
- 		drive->mult_req = id[ATA_ID_MULTSECT] & 0xff;
--#endif
--		if ((id[ATA_ID_MULTSECT] & 0x100) &&
--		    (id[ATA_ID_MULTSECT] & 0xff))
-+
-+		if (drive->mult_req)
- 			drive->special.b.set_multmode = 1;
- 	}
- }
+I've picked it up and will merge it via Dave.
