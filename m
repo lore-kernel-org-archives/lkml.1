@@ -1,47 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbYGZQJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbYGZQJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbYGZQJV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 12:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbYGZQJG
+	id S1756691AbYGZQJe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 12:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbYGZQJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 12:09:06 -0400
-Received: from stinky.trash.net ([213.144.137.162]:34297 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752768AbYGZQJF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 12:09:05 -0400
-Message-ID: <488B4C1D.3020506@trash.net>
-Date: Sat, 26 Jul 2008 18:09:01 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
-       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
- pointer dereference
-References: <20080724093411.GA12001@elte.hu> <20080724115625.GA23994@elte.hu> <20080724115957.GA25701@elte.hu> <48886FA6.6050908@trash.net> <84144f020807240544q507e1b7cv220d1afbae0ee0f0@mail.gmail.com> <48887A71.5010209@trash.net> <1216905812.5897.6.camel@penberg-laptop> <48888434.3030207@trash.net> <1216906476.12021.4.camel@penberg-laptop> <20080724115127.6cfbb616.akpm@linux-foundation.org> <20080724193532.GC1694@elte.hu>
-In-Reply-To: <20080724193532.GC1694@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Jul 2008 12:09:11 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:36368 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752872AbYGZQJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 12:09:08 -0400
+Date: Sat, 26 Jul 2008 20:12:13 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       balbir@linux.vnet.ibm.com, matt@bluehost.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] task IO accounting: correctly account threads IO statistics
+Message-ID: <20080726161213.GA594@tv-sign.ru>
+References: <1217087532-22620-1-git-send-email-righi.andrea@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217087532-22620-1-git-send-email-righi.andrea@gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
->> Ingo, did this patch actually fix something over there?
-> 
-> not that i know of. I'll do some re-tests tomorrow to make sure.
+On 07/26, Andrea Righi wrote:
+>
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -2381,35 +2381,18 @@ static int do_io_accounting(struct task_struct *task, char *buffer, int whole)
+>  	u64 rchar, wchar, syscr, syscw;
+>  	struct task_io_accounting ioac;
+>  
+> -	if (!whole) {
+> -		rchar = task->rchar;
+> -		wchar = task->wchar;
+> -		syscr = task->syscr;
+> -		syscw = task->syscw;
+> -		memcpy(&ioac, &task->ioac, sizeof(ioac));
+> -	} else {
+> -		unsigned long flags;
+> -		struct task_struct *t = task;
+> -		rchar = wchar = syscr = syscw = 0;
+> -		memset(&ioac, 0, sizeof(ioac));
+> +	rchar = task->rchar;
+> +	wchar = task->wchar;
+> +	syscr = task->syscr;
+> +	syscw = task->syscw;
+> +	memcpy(&ioac, &task->ioac, sizeof(ioac));
+>  
+> -		rcu_read_lock();
+> -		do {
+> -			rchar += t->rchar;
+> -			wchar += t->wchar;
+> -			syscr += t->syscr;
+> -			syscw += t->syscw;
+> -
+> -			ioac.read_bytes += t->ioac.read_bytes;
+> -			ioac.write_bytes += t->ioac.write_bytes;
+> -			ioac.cancelled_write_bytes +=
+> -					t->ioac.cancelled_write_bytes;
+> -			t = next_thread(t);
+> -		} while (t != task);
+> -		rcu_read_unlock();
+> +	if (whole) {
+> +		unsigned long flags;
+>  
+>  		if (lock_task_sighand(task, &flags)) {
+>  			struct signal_struct *sig = task->signal;
+> +			struct task_struct *t = task;
+>  
+>  			rchar += sig->rchar;
+>  			wchar += sig->wchar;
+> @@ -2420,11 +2403,20 @@ static int do_io_accounting(struct task_struct *task, char *buffer, int whole)
+>  			ioac.write_bytes += sig->ioac.write_bytes;
+>  			ioac.cancelled_write_bytes +=
+>  					sig->ioac.cancelled_write_bytes;
+> -
+> +			while_each_thread(task, t) {
+> +				rchar += t->rchar;
+> +				wchar += t->wchar;
+> +				syscr += t->syscr;
+> +				syscw += t->syscw;
+> +
+> +				ioac.read_bytes += t->ioac.read_bytes;
+> +				ioac.write_bytes += t->ioac.write_bytes;
+> +				ioac.cancelled_write_bytes +=
+> +					t->ioac.cancelled_write_bytes;
+> +			}
+>  			unlock_task_sighand(task, &flags);
+>  		}
+>  	}
+> -
+>  	return sprintf(buffer,
+>  			"rchar: %llu\n"
+>  			"wchar: %llu\n"
+> @@ -2433,13 +2425,9 @@ static int do_io_accounting(struct task_struct *task, char *buffer, int whole)
+>  			"read_bytes: %llu\n"
+>  			"write_bytes: %llu\n"
+>  			"cancelled_write_bytes: %llu\n",
+> -			(unsigned long long)rchar,
+> -			(unsigned long long)wchar,
+> -			(unsigned long long)syscr,
+> -			(unsigned long long)syscw,
+> -			(unsigned long long)ioac.read_bytes,
+> -			(unsigned long long)ioac.write_bytes,
+> -			(unsigned long long)ioac.cancelled_write_bytes);
+> +			rchar, wchar, syscr, syscw,
+> +			ioac.read_bytes, ioac.write_bytes,
+> +			ioac.cancelled_write_bytes);
+>  }
 
-I managed to reproduce the bug you reported, but it reliably
-goes away if I add Pekka's patch. Did you get a chance to
-retest already?
+Looks good!
 
+And thanks for correcting me, of course we should initialize t
+before while_each_thread(task, t).
+
+Oleg.
 
