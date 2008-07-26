@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbYGZNp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbYGZNqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756776AbYGZNp4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 09:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756530AbYGZNnw
+	id S1756983AbYGZNqZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 09:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbYGZNoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 09:43:52 -0400
-Received: from stinky.trash.net ([213.144.137.162]:64043 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756515AbYGZNnv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 09:43:51 -0400
-Message-ID: <488B2A11.9090606@trash.net>
-Date: Sat, 26 Jul 2008 15:43:45 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
+	Sat, 26 Jul 2008 09:44:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53633 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756956AbYGZNop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 09:44:45 -0400
+Date: Sat, 26 Jul 2008 15:44:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       robert.richter@amd.com
+Subject: Re: [PATCH 0/3] IOMMU: move page number calculation to generic code
+Message-ID: <20080726134427.GD4401@elte.hu>
+References: <1216990680-1227-1-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
-       w@1wt.eu, davidn@davidnewall.com, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stefanr@s5r6.in-berlin.de, rjw@sisk.pl, ilpo.jarvinen@helsinki.fi,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [regression] nf_iterate(), BUG: unable to handle kernel NULL
- pointer dereference
-References: <20080724060448.GA10203@elte.hu>	<E1KLwlD-0001Ub-00@gondolin.me.apana.org.au>	<20080724.022259.113079007.davem@davemloft.net>	<20080724093411.GA12001@elte.hu>	<20080724115625.GA23994@elte.hu>	<20080724115957.GA25701@elte.hu>	<48886FA6.6050908@trash.net>	<84144f020807240544q507e1b7cv220d1afbae0ee0f0@mail.gmail.com>	<48887A71.5010209@trash.net>	<1216905812.5897.6.camel@penberg-laptop>	<48888434.3030207@trash.net>	<1216906476.12021.4.camel@penberg-laptop> <20080724115127.6cfbb616.akpm@linux-foundation.org>
-In-Reply-To: <20080724115127.6cfbb616.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1216990680-1227-1-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 24 Jul 2008 16:34:36 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> 
->>>> [PATCH] netfilter: fix double-free and use-after free
->>>>
->> Ingo, can you please test this? Andrew, I'm at OLS so can you pick up
->> the patch in your tree?
-> 
-> Sure.  Or Patrick can do so and it can be merged via the net tree.
 
-I've picked it up and will merge it via Dave.
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
+
+> This small patch series introduces a generic iommu_num_pages function 
+> into the IOMMU helper code. This function can be used to calculate the 
+> number of pages an IOMMU has to map for a specific mapping request.
+> 
+> The patchset converts the x86 IOMMU implementations for AMD IOMMU and 
+> the GART to use this function.
+
+applied to tip/x86/iommu - thanks Joerg.
+
+> Other IOMMU implementations are not changed because I can't test them.
+
+if it's straightforward and expected to work with a high likelyhood then 
+please do it nevertheless. As long as it's finegrained patches we ought 
+to be able to filter out broken changes.
+
+	Ingo
