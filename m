@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbYGZNJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYGZNPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbYGZNJA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 09:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYGZNIw
+	id S1754766AbYGZNPh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 09:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYGZNP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 09:08:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55800 "EHLO mx3.mail.elte.hu"
+	Sat, 26 Jul 2008 09:15:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49025 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751818AbYGZNIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 09:08:51 -0400
-Date: Sat, 26 Jul 2008 15:08:40 +0200
+	id S1751808AbYGZNP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 09:15:28 -0400
+Date: Sat, 26 Jul 2008 15:15:12 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] x86: more header fixes
-Message-ID: <20080726130840.GA14466@elte.hu>
-References: <20080716142225.GA19054@elte.hu> <20080722123231.GA13172@localhost.localdomain> <20080722103632.GA27029@elte.hu> <19f34abd0807220413sabb9f65h6ac20f98efb680bf@mail.gmail.com> <20080722113823.GA9351@elte.hu> <19f34abd0807221127q1c26fed7w5b276cadb7319fec@mail.gmail.com>
+       Arjan van de Ven <arjan@infradead.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [bug] PCI hotplug, ibmphp_access_ebda: WARNING: at
+	arch/x86/mm/ioremap.c:182 __ioremap_caller+0x2d1/0x340()
+Message-ID: <20080726131512.GA29472@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19f34abd0807221127q1c26fed7w5b276cadb7319fec@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,55 +35,85 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
-
-> On Tue, Jul 22, 2008 at 1:38 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >> Though I still believe it should be squashed for bisectability.
-> >
-> > hm, i pulled it but 1ab9e368 cannot be squashed into aa27f9586 cleanly.
-> 
-> Yes, you are right. I forgot to check.
-> 
-> > I'd suggest the following approach, which we used for the scripted
-> > unification of arch/x86. Do a couple of preparatory patches that just
-> > bring all the header guards into proper shape. _Then_ run the script
-> > against that "prepared" tree. The end result should be correct to the
-> > best of our current knowledge. (i'll figure out any remaining build
-> > breakages quickly - i can build 120+ random kernels per hour)
-> >
-> > We can rebase x86/header-guards to such a bisectable approach no problem
-> > if you can do it like that, it's not yet merged anywhere. Just send me a
-> > pull URI that i'll pull into a x86/header-guards that is reset back to
-> > linus/master.
-> >
-> > Can you see any complications with that approach?
-> 
-> There's not really that much to prepare. But it really helps to work
-> against the right tree to begin with :-)
-> 
-> So here's another one, this time prepared against linus/master, and
-> fully bisectable by delaying the fixing of the headers which have
-> external users of their guard-names. Check out the (new) 'for-tip'
-> branch of
-> 
->     git://git.kernel.org/pub/scm/linux/kernel/git/vegard/linux-2.6-headers.git
-> 
-> There are still headers left which have no guard at all; that's okay. 
-> If they should be changed, it can be done later, it shouldn't make a 
-> difference for now.
-
-pulled into tip/x86/header-guards, thanks Vegard.
-
-One small request: in the future, could you use git-request-pull to 
-generate pull requests?
-
-That way the full URI is included (otherwise it's easy to forget to add 
-the 'for-tip' branch to the pull i do, etc.). Something like:
-
- git-request-pull linus/master \
-  git://git.kernel.org/pub/scm/linux/kernel/git/vegard/linux-2.6-headers.git \
-   for-tip
-
-should do the trick. Thanks,
+FYI, -tip testing triggered the new warning below on a testbox. I 
+suspect it's related to recent commits in drivers/pci/hotplug/.
+I'm wondering, why does a driver map the EBDA? That's a really lowlevel 
+thing.
 
 	Ingo
+
+---------------->
+calling  pci_hotplug_init+0x0/0x60
+pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+initcall pci_hotplug_init+0x0/0x60 returned 0 after 4 msecs
+calling  ibmphp_init+0x0/0x6d0
+ibmphpd: IBM Hot Plug PCI Controller Driver version: 0.6
+------------[ cut here ]------------
+WARNING: at arch/x86/mm/ioremap.c:182 __ioremap_caller+0x2d1/0x340()
+Pid: 1, comm: swapper Not tainted 2.6.26-tip #6
+ [<c1028acf>] warn_on_slowpath+0x4f/0x80
+ [<c1048ae0>] ? mark_held_locks+0x40/0x80
+ [<c100fa64>] ? xapic_wait_icr_idle+0x14/0x20
+ [<c100f47e>] ? __send_IPI_shortcut+0x3e/0x50
+ [<c1001723>] ? send_IPI_allbutself+0x33/0x70
+ [<c1048d0b>] ? trace_hardirqs_on+0xb/0x10
+ [<c100f26e>] ? native_send_call_func_ipi+0x4e/0x60
+ [<c104d1d4>] ? smp_call_function_mask+0xd4/0x150
+ [<c100f730>] ? do_flush_tlb_all+0x0/0x60
+ [<c100f730>] ? do_flush_tlb_all+0x0/0x60
+ [<c1048ae0>] ? mark_held_locks+0x40/0x80
+ [<c1048d0b>] ? trace_hardirqs_on+0xb/0x10
+ [<c100f730>] ? do_flush_tlb_all+0x0/0x60
+ [<c10145b1>] __ioremap_caller+0x2d1/0x340
+ [<c1048d0b>] ? trace_hardirqs_on+0xb/0x10
+ [<c1048c7d>] ? trace_hardirqs_on_caller+0xbd/0x140
+ [<c16fa84d>] ? _write_unlock+0x1d/0x20
+ [<c1a9f016>] ? ibmphp_access_ebda+0x66/0xc70
+ [<c101475a>] ioremap_nocache+0x1a/0x20
+ [<c1a9f016>] ? ibmphp_access_ebda+0x66/0xc70
+ [<c1a9f016>] ibmphp_access_ebda+0x66/0xc70
+ [<c1044392>] ? debug_mutex_init+0x32/0x50
+ [<c1047005>] ? lockdep_init_map+0x35/0x100
+ [<c103d4f3>] ? __mutex_init+0x43/0x60
+ [<c1aa0fe9>] ? ibmphp_hpc_initvars+0x139/0x1a0
+ [<c1a9d4f9>] ibmphp_init+0x99/0x6d0
+ [<c103df39>] ? ktime_get+0x19/0x40
+ [<c1001190>] do_one_initcall+0x30/0x170
+ [<c1a9d460>] ? ibmphp_init+0x0/0x6d0
+ [<c1048d0b>] ? trace_hardirqs_on+0xb/0x10
+ [<c1037ab1>] ? __queue_work+0x31/0x40
+ [<c1037b28>] ? queue_work_on+0x38/0x50
+ [<c1a82cd8>] kernel_init+0x138/0x210
+ [<c1a82ba0>] ? kernel_init+0x0/0x210
+ [<c100474f>] kernel_thread_helper+0x7/0x18
+ =======================
+---[ end trace a7919e7f17c0a725 ]---
+initcall ibmphp_init+0x0/0x6d0 returned -12 after 179 msecs
+initcall ibmphp_init+0x0/0x6d0 returned with error code -12 
+calling  zt5550_init+0x0/0xa0
+cpcihp_zt5550: ZT5550 CompactPCI Hot Plug Driver version: 0.2
+initcall zt5550_init+0x0/0xa0 returned 0 after 32 msecs
+calling  shpcd_init+0x0/0x60
+shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
+initcall shpcd_init+0x0/0x60 returned 0 after 6 msecs
+calling  dummyphp_init+0x0/0xb0
+fakephp: Fake PCI Hot Plug Controller Driver
+pci_create_slot: created pci_slot on 0000:00:00
+pci_create_slot: created pci_slot on 0000:00:01
+pci_create_slot: created pci_slot on 0000:00:02
+pci_create_slot: created pci_slot on 0000:00:1e
+pci_create_slot: created pci_slot on 0000:00:1f
+pci_create_slot: created pci_slot on 0000:01:00
+pci_create_slot: created pci_slot on 0000:02:1f
+pci_create_slot: created pci_slot on 0000:03:00
+pci_create_slot: created pci_slot on 0000:03:04
+pci_create_slot: created pci_slot on 0000:04:03
+pci_create_slot: created pci_slot on 0000:04:04
+pci_create_slot: created pci_slot on 0000:04:07
+initcall dummyphp_init+0x0/0xb0 returned 0 after 144 msecs
+calling  platform_lcd_init+0x0/0x10
+initcall platform_lcd_init+0x0/0x10 returned 0 after 2 msecs
+calling  mbp_init+0x0/0x10
+initcall mbp_init+0x0/0x10 returned -19 after 0 msecs
+calling  cyber2000fb_init+0x0/0xc0
+initcall cyber2000fb_init+0x0/0xc0 returned 0 after 2 msecs
