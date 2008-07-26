@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753410AbYGZCqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbYGZCxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753410AbYGZCqJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jul 2008 22:46:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbYGZCp4
+	id S1753319AbYGZCxd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jul 2008 22:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbYGZCxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 22:45:56 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:63281 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751545AbYGZCp4 (ORCPT
+	Fri, 25 Jul 2008 22:53:24 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59922 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752332AbYGZCxX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 22:45:56 -0400
-Message-ID: <fa686aa40807251945t26a1656ep7a57ca71faa096c4@mail.gmail.com>
-Date: Fri, 25 Jul 2008 22:45:54 -0400
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Daniel Walker" <dwalker@mvista.com>
-Subject: Re: [PATCH v3 4/4] powerpc/mpc5200: Add mpc5200-spi (non-PSC) device driver
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       spi-devel-general@lists.sourceforge.net,
-       dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org,
-       jonsmirl@gmail.com
-In-Reply-To: <1217009954.13539.23.camel@localhost.localdomain>
+	Fri, 25 Jul 2008 22:53:23 -0400
+Message-ID: <488A9174.40303@zytor.com>
+Date: Fri, 25 Jul 2008 22:52:36 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+CC: Eli Collins <ecollins@vmware.com>, lkml <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: please revert commit 53f1b1433da7eac2607a4a0898a221a4485fd732
+ (rtc: push the BKL down into the driver ioctl method)
+References: <b6a2187b0807250726n77a0cd6eqb97b817fddc343b9@mail.gmail.com>	 <4889F78B.9090202@zytor.com> <b6a2187b0807251918w2b2b3810h6c90df28a3261c7f@mail.gmail.com>
+In-Reply-To: <b6a2187b0807251918w2b2b3810h6c90df28a3261c7f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
-	 <20080725073326.8485.99210.stgit@trillian.secretlab.ca>
-	 <1217009954.13539.23.camel@localhost.localdomain>
-X-Google-Sender-Auth: eb30f428ce4a8709
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 2:19 PM, Daniel Walker <dwalker@mvista.com> wrote:
-> On Fri, 2008-07-25 at 03:33 -0400, Grant Likely wrote:
->
->> +     if (status && (irq != NO_IRQ))
->> +             dev_err(&ms->master->dev, "spurious irq, status=0x%.2x\n",
->> +                     status);
->> +
->> +     /* Check if there is another transfer waiting */
->> +     if (list_empty(&ms->queue))
->> +             return FSM_STOP;
->
-> I don't think doing list_empty outside the critical section is totally
-> safe.. You might want to move it down inside the spin_lock() section.
+Jeff Chua wrote:
+> On Fri, Jul 25, 2008 at 11:55 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+>> Jeff Chua wrote:
+>>> This commit is breaking vmware-6.0.4. Upon booting linux (guest) on
+>>> vmware, the whole vmware environment crashed.
+>> Quality hypervisor we have there...
+> 
+> Well then, lets hope Vmware will do something to fix this and remove
+> the init_mm stuff.
 
-This should be fine.  This is the only place where items are dequeued,
-and it will only ever be called from the ISR or the work queue.  The
-work queue and IRQ will never be active at the same time (I'll add a
-comment to the fact).  It also looks like list_empty is perfectly safe
-to call without the protection of a spin lock (but somebody correct me
-if I'm out to lunch).  It doesn't dereference any of the pointers in
-the list_head structure.
+Well, let me clarify:
 
->
->> +     /* Get the next message */
->> +     spin_lock(&ms->lock);
->
-> The part that's a little confusing here is that the interrupt can
-> actually activate the workqueue .. So I'm wondering if maybe you could
-> have this interrupt driven any workqueue driven at the same time? If you
-> could then you would need the above to be
-> spin_lock_irq/spin_lock_irqsave ..
+- if userspace crashes the kernel, it is a kernel problem (except for 
+abuse of certain specific privileged interfaces, like /dev/mem.)
 
-Ditto here, since the irq and workqueue are not enabled at the same
-time there is no worry about collision.
+- if a kernel crashes the hypervisor, it is likewise a hypervisor 
+problem, even if it was triggered by a bug in the kernel.
 
-Cheers,
-g.
+The hypervisor, after all, is supposed to provide isolation.
 
+As far as the kernel is concerned, the hypervisor is hardware.  Now, we 
+work around bugs in broken hardware all the time, and *if it is sane*, 
+we should do so here too.  However, it is *still* a hypervisor problem, 
+and Vmware needs to fix it.
 
+	-hpa
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
