@@ -1,99 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbYGZSIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757135AbYGZSOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757255AbYGZSIL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 14:08:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYGZSH5
+	id S1757135AbYGZSOQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 14:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYGZSOB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 14:07:57 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:44369 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752170AbYGZSH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 14:07:57 -0400
-Date: Sat, 26 Jul 2008 21:07:24 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] linux/swap.h must #include <linux/pagemap.h>
-Message-ID: <20080726180724.GF9301@cs181140183.pp.htv.fi>
-References: <1217092685-15267-1-git-send-email-haavard.skinnemoen@atmel.com> <20080726173832.GE9301@cs181140183.pp.htv.fi> <87tzecy1ar.fsf@saeurebad.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <87tzecy1ar.fsf@saeurebad.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 26 Jul 2008 14:14:01 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:60515 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752182AbYGZSOA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 14:14:00 -0400
+Date: Sat, 26 Jul 2008 20:13:55 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: =?iso-8859-2?Q?Tom=E1=B9_Janou=B9ek?= <tomi@nomi.cz>
+Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] rtc-dev: stop periodic interrupts on device release
+Message-ID: <20080726201355.064a789e@i1501.lan.towertech.it>
+In-Reply-To: <20080726180610.GA12168@nomi.cz>
+References: <20080726154617.GA5613@notes.lisk.in>
+	<20080726195521.36d4d48c@i1501.lan.towertech.it>
+	<20080726180610.GA12168@nomi.cz>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 26, 2008 at 07:59:08PM +0200, Johannes Weiner wrote:
-> Hi,
+On Sat, 26 Jul 2008 20:06:10 +0200
+Tomáš Janoušek <tomi@nomi.cz> wrote:
+
+> On Sat, Jul 26, 2008 at 07:55:21PM +0200, Alessandro Zummo wrote:
+> >  I'm not sure this is appropriate. sometimes the PIE is used to control
+> >  external hardware and it doesn't make sense to have an application that's
+> >  always open to handle that. 
+> > 
+> >  Any app should be responsible to release what it has allocated, if appropriate,
+> >  and not rely on someone else to do on his behalf.
 > 
-> Adrian Bunk <bunk@kernel.org> writes:
-> 
-> > On Sat, Jul 26, 2008 at 07:18:05PM +0200, Haavard Skinnemoen wrote:
-> >> This fixes the following compile error on avr32, introduced by
-> >> commit ba92a43dbaee339cf5915ef766d3d3ffbaaf103c
-> >> (exec: remove some includes):
-> >> 
-> >> In file included from include/asm/tlb.h:24,
-> >>                  from fs/exec.c:55:
-> >> include/asm-generic/tlb.h: In function 'tlb_flush_mmu':
-> >> include/asm-generic/tlb.h:76: error: implicit declaration of function 'release_pages'
-> >> include/asm-generic/tlb.h: In function 'tlb_remove_page':
-> >> include/asm-generic/tlb.h:105: error: implicit declaration of function 'page_cache_release'
-> >> make[1]: *** [fs/exec.o] Error 1
-> >> 
-> >> Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-> >> ---
-> >>  include/asm-generic/tlb.h |    1 +
-> >>  1 files changed, 1 insertions(+), 0 deletions(-)
-> >> 
-> >> diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
-> >> index f490e43..f85f3a2 100644
-> >> --- a/include/asm-generic/tlb.h
-> >> +++ b/include/asm-generic/tlb.h
-> >> @@ -13,6 +13,7 @@
-> >>  #ifndef _ASM_GENERIC__TLB_H
-> >>  #define _ASM_GENERIC__TLB_H
-> >>  
-> >> +#include <linux/pagemap.h>
-> >>  #include <linux/swap.h>
-> >>  #include <asm/pgalloc.h>
-> >>  #include <asm/tlbflush.h>
-> >
-> > The patch is not the correct fix since the actual problem comes from 
-> > free_pages_and_swap_cache() in swap.h
-> >
-> > Patch is below, but it has not yet gotten enough testing that I'm 100% 
-> > confident it doesn't break anything else...
-> 
-> There is a comment about sparc and linux/pagemap.h in linux/swap.h.
+> mplayer and aireplay-ng have never done so. And what about crashes? Am I
 
-Damn, this trap strikes again.
+ that's not an excuse, they have been written on a false assumption. Unless
+ that behaviour is documented somewhere.
 
-So Haavard's patch is actually the best available solution.
 
-> Adrian, do you cross-compile for sparc?
->...
+> supposed to create a small "rtcpieoff" applications and make it into all
+> distributions so that everyone can clean up the mess?
 
-Sure, I wouldn't touch generic headers without testing whether it 
-breaks any defconfig.
+ just send patches to mplayer and aireplay-ng and it will make in the distros.
 
-I knew why I was saying "Patch is below, but it has not yet gotten 
-enough testing that I'm 100% confident it doesn't break anything 
-else..." - I was simply not yet through with the compilations.
 
-> 	Hannes
+> Additionally, it has been a regression against the old rtc and drivers like
+> rtc-sh do so even today.
 
-cu
-Adrian
+ Specific drivers might choice to do it on close. I believe rtc-cmos might
+ be one of the few that might have to do it in order to cope with badly
+ written programs. It's up to David to choice if it's appropriate too add it to
+ rtc-cmos. 
+
+
 
 -- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
