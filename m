@@ -1,57 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbYG0Vti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbYG0Vx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759451AbYG0Vti (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 17:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758579AbYG0Vta
+	id S1759369AbYG0Vx4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 17:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758297AbYG0Vxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 17:49:30 -0400
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:35949 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757614AbYG0Vta (ORCPT
+	Sun, 27 Jul 2008 17:53:49 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:30468 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758151AbYG0Vxs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 17:49:30 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=2rndQQRu8S+E/fru9HVMQsGzHZZVgcwfs1HyfX1eqYhDfUgp15VFbGCVydURGIVhvdv38gdPdTeUl7WC+5LyKbTFuTY85QgDu5AiOejp3vNIjtiwFrksXz/d/jvSRL5f56adoLRQyapcQyl9eZL2qsnxy41ScR6CLWAPikPb8RY=  ;
-X-YMail-OSG: mKsj87sVM1m8LPEwLlidZDN27hNrCQi1g4S7DxdZd39VnuI28_loqKGiiaRE_P_budga9MZ8GIesT0gNCpYJrHnUIRUFDpeXCV6g5yLjAECPgR_7ULGEQNuM14W1bRIeREo-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: spi-devel-general@lists.sourceforge.net
-Subject: Re: [PATCH v3 0/4 REPOST] OF infrastructure for SPI devices
-Date: Sun, 27 Jul 2008 14:49:28 -0700
-User-Agent: KMail/1.9.9
-Cc: Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linuxppc-dev@ozlabs.org, jonsmirl@gmail.com
-References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
-In-Reply-To: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+	Sun, 27 Jul 2008 17:53:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding:sender;
+        b=hAX92gVYu2HoADGLUjSoHOQfwPKEXM/tLV48XIWJus/DfrgRWFlTGyX9L8xkKr7ff3
+         11u1VigdYKViFs6JJALdtmgIGVzHoYddPN0BobbSvpL7pNxxpcx6IOfVflRU4icD3lrU
+         ELkxlSvMKbA5Mi82nyPHjsD69IseWzQsz+7Lo=
+Message-ID: <488CEE68.2060102@users.sourceforge.net>
+Date: Sun, 27 Jul 2008 23:53:44 +0200
+From: Andrea Righi <righiandr@users.sourceforge.net>
+Reply-To: righiandr@users.sourceforge.net
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200807271449.28472.david-b@pacbell.net>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Andrea Righi <righi.andrea@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, balbir@linux.vnet.ibm.com, matt@bluehost.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] task IO accounting: improve code readability
+References: <1217172555-8335-1-git-send-email-righi.andrea@gmail.com> <20080727163323.GA1802@tv-sign.ru>
+In-Reply-To: <20080727163323.GA1802@tv-sign.ru>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 July 2008, Grant Likely wrote:
-> I don't know what to do with these patches.  I'd really like to see them
-> in .27, and now that akpm has cleared his queue, the prerequisite patch
-> has been merged so they are ready to go in.  However, even though there
-> has been favourable reception on the SPI and linuxppc lists for these
-> changes I don't have any acks from anybody yet.
+Oleg Nesterov wrote:
+> On 07/27, Andrea Righi wrote:
+>> Put all i/o statistics in struct proc_io_accounting and use inline functions to
+>> initialize and increment statistics, removing a lot of single variable
+>> assignments.
 > 
-> David, can you please reply on if you are okay with these patches
-> getting merged?  If so, do you want me to merge them via my tree, or
-> do you want to pick them up?
+> Imho, the change like this is obviously good, but can't we simplify
+> this a little bit? Just make
+> 
+> 	struct task_io_accounting
+> 	{
+> 	#ifdef CONFIG_TASK_XACCT
+> 		/* bytes read */
+> 		u64 rchar;
+> 		/*  bytes written */
+> 		u64 wchar;
+> 		/* # of read syscalls */
+> 		u64 syscr;
+> 		/* # of write syscalls */
+> 		u64 syscw;
+> 	#endif /* CONFIG_TASK_XACCT */
+> 
+> 	#ifdef CONFIG_TASK_IO_ACCOUNTING
+> 		/*
+> 		 * The number of bytes which this task has caused to be read from
+> 		 * storage.
+> 		 */
+> 		u64 read_bytes;
+> 
+> 		/*
+> 		 * The number of bytes which this task has caused, or shall cause to be
+> 		 * written to disk.
+> 		 */
+> 		u64 write_bytes;
+> 
+> 		/*
+> 		 * A task can cause "negative" IO too.  If this task truncates some
+> 		 * dirty pagecache, some IO which another task has been accounted for
+> 		 * (in its write_bytes) will not be happening.  We _could_ just
+> 		 * subtract that from the truncating task's write_bytes, but there is
+> 		 * information loss in doing that.
+> 		 */
+> 		u64 cancelled_write_bytes;
+> 	#endif
+> 	};
+> 
+> This should make the patch much smaller with the same effect, no?
+> 
+> Oleg.
+> 
 
-OK ... to recap, #1 and #3 are OF-specific, I'll be agnostic.
-If other OF folk think it's OK, great.
+Sounds good to me. This also makes sense because it merges *all* the i/o
+statistics in "struct task_io_accounting", that is a reasonable thing
+IMHO. A patch on-top-of the previous one will follow.
 
-Some cleanup was needed for #2, but it was basically ok ...
-I'd like to see the final version, and if it goes via an
-OF push that's OK by me.  (Though I'd like to see that change
-make it into 2.6.27 regardless, so let me know.)
-
-And #4 isn't quite cooked yet.
+-Andrea
