@@ -1,73 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbYG0EFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbYG0EJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725AbYG0EFw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 00:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbYG0EEu
+	id S1757986AbYG0EJT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 00:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbYG0EJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 00:04:50 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:26712 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753261AbYG0EEs (ORCPT
+	Sun, 27 Jul 2008 00:09:11 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44762 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752388AbYG0EJK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 00:04:48 -0400
-Date: Sat, 26 Jul 2008 20:08:57 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Trent Piepho <tpiepho@freescale.com>
-Cc: linux-kernel@vger.kernel.org, Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Richard Purdie <rpurdie@rpsys.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] leds: make the default trigger name const
-Message-ID: <20080727020857.GM12191@secretlab.ca>
-References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp> <1217019705-24244-1-git-send-email-tpiepho@freescale.com>
+	Sun, 27 Jul 2008 00:09:10 -0400
+Date: Sun, 27 Jul 2008 05:09:08 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jan Kara <jack@ucw.cz>
+Subject: Re: 2.6.26-mmotm-0724 - linux-next.git loses /proc/sys/fs/quota,
+	breaks disk quotas
+Message-ID: <20080727040908.GX28946@ZenIV.linux.org.uk>
+References: <14615.1217125366@turing-police.cc.vt.edu> <20080726202525.3ac3052f.akpm@linux-foundation.org> <21657.1217130229@turing-police.cc.vt.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1217019705-24244-1-git-send-email-tpiepho@freescale.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <21657.1217130229@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 02:01:44PM -0700, Trent Piepho wrote:
-> The default_trigger fields of struct gpio_led and thus struct led_classdev
-> are pretty much always assigned from a string literal, which means the
-> string can't be modified.  Which is fine, since there is no reason to
-> modify the string and in fact it never is.
+On Sat, Jul 26, 2008 at 11:43:49PM -0400, Valdis.Kletnieks@vt.edu wrote:
+
+> > Ah, it seems to be taking a little vacation over in
+> > /proc/sys/kernel/.  Curious.
 > 
-> But they should be marked const to prevent such code from being added, to
-> prevent warnings if -Wwrite-strings is used and when assigned from a
-> constant string other than a string literal (which produces a warning under
-> current kernel compiler flags), and for general good coding practices.
-> 
-> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->  include/linux/leds.h |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/leds.h b/include/linux/leds.h
-> index 519df72..defe693 100644
-> --- a/include/linux/leds.h
-> +++ b/include/linux/leds.h
-> @@ -48,7 +48,7 @@ struct led_classdev {
->  
->  	struct device		*dev;
->  	struct list_head	 node;			/* LED Device list */
-> -	char			*default_trigger;	/* Trigger to use */
-> +	const char		*default_trigger;	/* Trigger to use */
->  
->  #ifdef CONFIG_LEDS_TRIGGERS
->  	/* Protects the trigger data below */
-> @@ -121,7 +121,7 @@ extern void ledtrig_ide_activity(void);
->  /* For the leds-gpio driver */
->  struct gpio_led {
->  	const char *name;
-> -	char *default_trigger;
-> +	const char *default_trigger;
->  	unsigned 	gpio;
->  	u8 		active_low;
->  };
-> -- 
-> 1.5.4.3
-> 
+> Wow. I never *thought* to look for it there, and neither did my userspace :)
+
+Wow, indeed...  Very odd, since there shouldn't be any way for that
+to end up there.  Off to try and reproduce it...
