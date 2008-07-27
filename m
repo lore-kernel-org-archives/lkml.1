@@ -1,105 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbYG0B1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbYG0B1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbYG0B1N (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 21:27:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbYG0B05
+	id S1758678AbYG0B1n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 21:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756836AbYG0B1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 21:26:57 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:40183 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756018AbYG0B04 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 21:26:56 -0400
-To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: New ext4 patchset: 2.6.26-git6-ext4-1 // and 2.6.26-ext4-3
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1KMv2C-0007fs-1b@closure.thunk.org>
-Date: Sat, 26 Jul 2008 21:26:52 -0400
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sat, 26 Jul 2008 21:27:35 -0400
+Received: from mx2.suse.de ([195.135.220.15]:54530 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757152AbYG0B1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 21:27:34 -0400
+Date: Sat, 26 Jul 2008 18:24:54 -0700
+From: Greg KH <gregkh@suse.de>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] usb: don't hide bios bug warning
+Message-ID: <20080727012454.GA22219@suse.de>
+References: <200807261812.15836.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807261812.15836.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jul 26, 2008 at 06:12:15PM -0700, Yinghai Lu wrote:
+> 
+> quirk_usb_disable_handoff will wait a while if there is BIOS bug.
+> let the end user know the reason for that.
+> 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> 
+> ---
+>  drivers/usb/host/pci-quirks.c |    9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6/drivers/usb/host/pci-quirks.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/usb/host/pci-quirks.c
+> +++ linux-2.6/drivers/usb/host/pci-quirks.c
+> @@ -190,7 +190,8 @@ static void __devinit quirk_usb_handoff_
+>  			msleep(10);
+>  		}
+>  		if (wait_time <= 0)
+> -			dev_warn(&pdev->dev, "OHCI: BIOS handoff failed"
+> +			dev_printk(KERN_WARNING, &pdev->dev,
+> +					"OHCI: BIOS handoff failed"
 
-I've released a new patchset for post-2.6.26-git4 kernels (when Linus
-accepted a set of patches for the 2.6.27-rc1 merge window).  A number of
-the new patches are cleanups and bug fixes that will be pushed to Linus
-shortly; those are marked with an (*).
+This is the exact same thing here, no change.
 
-As a git tree:
+> @@ -242,7 +243,8 @@ static void __devinit quirk_usb_disable_
+>  		switch (cap & 0xff) {
+>  		case 1:			/* BIOS/SMM/... handoff support */
+>  			if ((cap & EHCI_USBLEGSUP_BIOS)) {
+> -				dev_dbg(&pdev->dev, "EHCI: BIOS handoff\n");
+> +				dev_printk(KERN_DEBUG, &pdev->dev,
+> +						"EHCI: BIOS handoff\n");
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.26-git6-ext4-1
-http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.26-git6-ext4-1
+Is this what you really want to see?  But you just made things noiser.
 
-As a patchset:
+> @@ -283,7 +285,8 @@ static void __devinit quirk_usb_disable_
+>  				/* well, possibly buggy BIOS... try to shut
+>  				 * it down, and hope nothing goes too wrong
+>  				 */
+> -				dev_warn(&pdev->dev, "EHCI: BIOS handoff failed"
+> +				dev_printk(KERN_WARNING, &pdev->dev,
+> +						"EHCI: BIOS handoff failed"
 
-ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-git6-ext4-1
+This is the exact same thing, no change.
 
-					----
+confused,
 
-I've also created a patchset which consists of the new features and bug
-fixes pushed to linus, plus the bug fixes and cleanups that are part of
-2.6.26-git6-ext4-1 for people who are running the stock 2.6.26 kernel.
-This can be found here:
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-git6-ext4-3
-
-This patchset plus e2fsprogs 1.41.0 should be stable enough for wider
-testing.
-
-							- Ted
-
-Akira Fujita (7):
-      ext4: online defrag-- Main function of defrag and ioctl implementation
-      ext4: online defrag-- Allocate new contiguous blocks with mballoc
-      ext4: online defrag-- Read and write file data with memory page
-      ext4: online defrag-- Exchange the blocks between two inodes
-      ext4: online defrag-- Defragmentation for the relevant files (-r mode)
-      ext4: online defrag-- Check the free space fragmentation (-f mode)
-      ext4: online defrag-- Move victim files for the target file (-f mode)
-
-Aneesh Kumar K.V (6):
-    * ext4: Fix data corruption when writing to prealloc area
-    * ext4: Improve error handling in mballoc
-    * ext4: Convert the usage of NR_CPUS to nr_cpu_ids.
-    * ext4: Don't allow lg prealloc list to be grow large.
-    * ext4: Cleanup the block reservation code path
-    * ext4: undo the stable boundary patch changes
-
-Eric Sandeen (3):
-    * sync up block & inode bitmap reading functions
-    * lock block groups when initializing
-    * Hook ext4 to the vfs fiemap interface.
-
-Hidehiro Kawai (1):
-    * ext4: don't read inode block if the buffer has a write error
-
-Josef Bacik (1):
-      Any block based fs (this patch includes ext3) just has to declare its own
-
-Li Zefan (1):
-    * ext4: improve ext4_fill_flex_info() a bit
-
-Mingming Cao (1):
-    * Ext4: journal credits reservation fixes for DIO, fallocate and delalloc writepages
-
-Theodore Ts'o (9):
-    * ext4: Allow read/only mounts with corrupted block group checksums
-    * jbd2: don't abort if flushing file data failed
-    * ext4: Cleanup whitespace and other miscellaneous style issues
-    * ext4: unexport jbd2_journal_update_superblock
-      ext4: Stable/Unstable boundary
-      This patch should be merged with ext4-online-defrag-alloc-contiguous-blks.patch
-      This patch should be merged with ext4-online-defrag-relocate-file-data.patch
-      Basic vfs-level fiemap infrastructure, which sets up a new ->fiemap
-      Plug ocfs2 into ->fiemap. Some portions of ocfs2_get_clusters() had to be
-
-
-
-
-
-
-
+greg k-h
