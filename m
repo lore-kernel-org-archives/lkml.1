@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755745AbYG0GwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbYG0GxG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755745AbYG0GwT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 02:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbYG0GwJ
+	id S1758758AbYG0GxG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 02:53:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbYG0Gwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 02:52:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35168 "EHLO mx1.redhat.com"
+	Sun, 27 Jul 2008 02:52:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35175 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752947AbYG0GwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 02:52:07 -0400
+	id S1753283AbYG0Gwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 02:52:54 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -17,125 +17,130 @@ To: Paul Mackerras <paulus@samba.org>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>
 X-Fcc: ~/Mail/linus
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5] powerpc: tracehook: asm/syscall.h
+Subject: [PATCH 4/5] powerpc: tracehook: TIF_NOTIFY_RESUME
 In-Reply-To: Roland McGrath's message of  Saturday, 26 July 2008 23:48:59 -0700 <20080727064859.69692154280@magilla.localdomain>
 References: <20080727064859.69692154280@magilla.localdomain>
-X-Windows: sometimes you fill a vacuum and it still sucks.
-Message-Id: <20080727065135.6A08A154280@magilla.localdomain>
-Date: Sat, 26 Jul 2008 23:51:35 -0700 (PDT)
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20080727065252.0F1B1154280@magilla.localdomain>
+Date: Sat, 26 Jul 2008 23:52:52 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add asm/syscall.h for powerpc with all the required entry points.
-This will allow arch-independent tracing code for system calls.
+This adds TIF_NOTIFY_RESUME support for powerpc.  When set,
+we call tracehook_notify_resume() on the way to user mode.
+This overloads do_signal() to do the work, but changes its
+arguments to it has the TIF_* bits handy in a register and
+drops the useless first argument that was always zero.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- include/asm-powerpc/ptrace.h  |    1 +
- include/asm-powerpc/syscall.h |   84 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 85 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-powerpc/syscall.h
+ arch/powerpc/kernel/entry_32.S    |    4 ++--
+ arch/powerpc/kernel/entry_64.S    |    3 +--
+ arch/powerpc/kernel/signal.c      |   13 ++++++++++++-
+ include/asm-powerpc/signal.h      |    3 +--
+ include/asm-powerpc/thread_info.h |    5 ++++-
+ 5 files changed, 20 insertions(+), 8 deletions(-)
 
-diff --git a/include/asm-powerpc/ptrace.h b/include/asm-powerpc/ptrace.h
-index 3d6e310..734e075 100644
---- a/include/asm-powerpc/ptrace.h
-+++ b/include/asm-powerpc/ptrace.h
-@@ -84,6 +84,7 @@ struct pt_regs {
- #ifndef __ASSEMBLY__
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 0efc1e6..3e7445e 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -1060,8 +1060,8 @@ do_user_signal:			/* r10 contains MSR_KERNEL here */
+ 	SAVE_NVGPRS(r1)
+ 	rlwinm	r3,r3,0,0,30
+ 	stw	r3,_TRAP(r1)
+-2:	li	r3,0
+-	addi	r4,r1,STACK_FRAME_OVERHEAD
++2:	addi	r3,r1,STACK_FRAME_OVERHEAD
++	mr	r4,r9
+ 	bl	do_signal
+ 	REST_NVGPRS(r1)
+ 	b	recheck
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 79c089e..2d802e9 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -643,8 +643,7 @@ user_work:
+ 	b	.ret_from_except_lite
  
- #define instruction_pointer(regs) ((regs)->nip)
-+#define user_stack_pointer(regs) ((regs)->gpr[1])
- #define regs_return_value(regs) ((regs)->gpr[3])
+ 1:	bl	.save_nvgprs
+-	li	r3,0
+-	addi	r4,r1,STACK_FRAME_OVERHEAD
++	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	.do_signal
+ 	b	.ret_from_except
  
- #ifdef CONFIG_SMP
-diff --git a/include/asm-powerpc/syscall.h b/include/asm-powerpc/syscall.h
-new file mode 100644
-index 0000000..3ced23a
---- /dev/null
-+++ b/include/asm-powerpc/syscall.h
-@@ -0,0 +1,84 @@
-+/*
-+ * Access to user system call parameters and results
-+ *
-+ * Copyright (C) 2008 Red Hat, Inc.  All rights reserved.
-+ *
-+ * This copyrighted material is made available to anyone wishing to use,
-+ * modify, copy, or redistribute it subject to the terms and conditions
-+ * of the GNU General Public License v.2.
-+ *
-+ * See asm-generic/syscall.h for descriptions of what we must do here.
-+ */
-+
-+#ifndef _ASM_SYSCALL_H
-+#define _ASM_SYSCALL_H	1
-+
-+#include <linux/sched.h>
-+
-+static inline long syscall_get_nr(struct task_struct *task,
-+				  struct pt_regs *regs)
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index 11a5c45..060d2a8 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -112,7 +112,7 @@ static void check_syscall_restart(struct pt_regs *regs, struct k_sigaction *ka,
+ 	}
+ }
+ 
+-int do_signal(sigset_t *oldset, struct pt_regs *regs)
++static int do_signal_pending(sigset_t *oldset, struct pt_regs *regs)
+ {
+ 	siginfo_t info;
+ 	int signr;
+@@ -188,6 +188,17 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
+ 	return ret;
+ }
+ 
++void do_signal(struct pt_regs *regs, unsigned long thread_info_flags)
 +{
-+	return regs->trap == 0xc01 ? regs->gpr[0] : -1L;
-+}
++	if (thread_info_flags & _TIF_SIGPENDING)
++		do_signal_pending(NULL, regs);
 +
-+static inline void syscall_rollback(struct task_struct *task,
-+				    struct pt_regs *regs)
-+{
-+	regs->gpr[3] = regs->orig_gpr3;
-+}
-+
-+static inline long syscall_get_error(struct task_struct *task,
-+				     struct pt_regs *regs)
-+{
-+	return (regs->ccr & 0x1000) ? -regs->gpr[3] : 0;
-+}
-+
-+static inline long syscall_get_return_value(struct task_struct *task,
-+					    struct pt_regs *regs)
-+{
-+	return regs->gpr[3];
-+}
-+
-+static inline void syscall_set_return_value(struct task_struct *task,
-+					    struct pt_regs *regs,
-+					    int error, long val)
-+{
-+	if (error) {
-+		regs->ccr |= 0x1000L;
-+		regs->gpr[3] = -error;
-+	} else {
-+		regs->ccr &= ~0x1000L;
-+		regs->gpr[3] = val;
++	if (thread_info_flags & _TIF_NOTIFY_RESUME) {
++		clear_thread_flag(TIF_NOTIFY_RESUME);
++		tracehook_notify_resume(regs);
 +	}
 +}
 +
-+static inline void syscall_get_arguments(struct task_struct *task,
-+					 struct pt_regs *regs,
-+					 unsigned int i, unsigned int n,
-+					 unsigned long *args)
-+{
-+	BUG_ON(i + n > 6);
-+#ifdef CONFIG_PPC64
-+	if (test_tsk_thread_flag(task, TIF_32BIT)) {
-+		/*
-+		 * Zero-extend 32-bit argument values.  The high bits are
-+		 * garbage ignored by the actual syscall dispatch.
-+		 */
-+		while (n-- > 0)
-+			args[n] = (u32) regs->gpr[3 + i + n];
-+		return;
-+	}
-+#endif
-+	memcpy(args, &regs->gpr[3 + i], n * sizeof(args[0]));
-+}
-+
-+static inline void syscall_set_arguments(struct task_struct *task,
-+					 struct pt_regs *regs,
-+					 unsigned int i, unsigned int n,
-+					 const unsigned long *args)
-+{
-+	BUG_ON(i + n > 6);
-+	memcpy(&regs->gpr[3 + i], args, n * sizeof(args[0]));
-+}
-+
-+#endif	/* _ASM_SYSCALL_H */
+ long sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
+ 		unsigned long r5, unsigned long r6, unsigned long r7,
+ 		unsigned long r8, struct pt_regs *regs)
+diff --git a/include/asm-powerpc/signal.h b/include/asm-powerpc/signal.h
+index a8c7bab..a7360cd 100644
+--- a/include/asm-powerpc/signal.h
++++ b/include/asm-powerpc/signal.h
+@@ -122,8 +122,7 @@ typedef struct sigaltstack {
+ 
+ #ifdef __KERNEL__
+ struct pt_regs;
+-extern int do_signal(sigset_t *oldset, struct pt_regs *regs);
+-extern int do_signal32(sigset_t *oldset, struct pt_regs *regs);
++extern void do_signal(struct pt_regs *regs, unsigned long thread_info_flags);
+ #define ptrace_signal_deliver(regs, cookie) do { } while (0)
+ #endif /* __KERNEL__ */
+ 
+diff --git a/include/asm-powerpc/thread_info.h b/include/asm-powerpc/thread_info.h
+index a9db562..9665a26 100644
+--- a/include/asm-powerpc/thread_info.h
++++ b/include/asm-powerpc/thread_info.h
+@@ -108,6 +108,7 @@ static inline struct thread_info *current_thread_info(void)
+ #define TIF_SECCOMP		10	/* secure computing */
+ #define TIF_RESTOREALL		11	/* Restore all regs (implies NOERROR) */
+ #define TIF_NOERROR		12	/* Force successful syscall return */
++#define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
+ #define TIF_FREEZE		14	/* Freezing for suspend */
+ #define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
+ #define TIF_ABI_PENDING		16	/* 32/64 bit switch needed */
+@@ -125,12 +126,14 @@ static inline struct thread_info *current_thread_info(void)
+ #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
+ #define _TIF_RESTOREALL		(1<<TIF_RESTOREALL)
+ #define _TIF_NOERROR		(1<<TIF_NOERROR)
++#define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
+ #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
+ #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+ #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
+ 
+-#define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED)
++#define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
++				 _TIF_NOTIFY_RESUME)
+ #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
+ 
+ /* Bits in local_flags */
