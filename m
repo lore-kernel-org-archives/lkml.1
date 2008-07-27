@@ -1,60 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbYG0Oqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbYG0Ott@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757645AbYG0Oqb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 10:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757709AbYG0Opm
+	id S1757874AbYG0Ott (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 10:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYG0Otk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 10:45:42 -0400
-Received: from po-out-1718.google.com ([72.14.252.158]:28101 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757614AbYG0Opc (ORCPT
+	Sun, 27 Jul 2008 10:49:40 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:38853 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752132AbYG0Otj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 10:45:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :sender;
-        b=jCfJKjBh9BmTMPgrvhq2QkUCN+o0zChWS7sWEOBVkpAA35A4VORle1gvnDcRJw0gd3
-         YlhF3iqS/GJwUpQE5OxPR9fH0tH1QIzAFzO2Sbi2vSk7b+iBbnB/pmNA+AdwHKdWPpQZ
-         yD1Hqf1CdoeJxfuw9o+abC3/NLL4zm59IPhVs=
-From: Bryan Wu <cooloney@kernel.org>
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 3/3] Blackfin EMAC Driver: Functional power management support
-Date: Sun, 27 Jul 2008 22:45:05 +0800
-Message-Id: <1217169905-7055-4-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1217169905-7055-1-git-send-email-cooloney@kernel.org>
-References: <1217169905-7055-1-git-send-email-cooloney@kernel.org>
+	Sun, 27 Jul 2008 10:49:39 -0400
+Subject: [GIT PATCH] final SCSI pieces for 2.6.27
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 27 Jul 2008 10:49:10 -0400
+Message-Id: <1217170150.3503.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+This is the last tranche (hopefully) for the merge window.  There are a
+few new things (like data integrity DIF/DIX) but it's actually also a
+lot of bug fixes.
 
-Reprogram MAC address after resume from Suspend Mem
-(Blackfin Hibernate looses all CORE and SYSTEM register content)
+The patch is available here:
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/net/bfin_mac.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
 
-diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
-index 57ebe6d..69a6b9d 100644
---- a/drivers/net/bfin_mac.c
-+++ b/drivers/net/bfin_mac.c
-@@ -972,6 +972,7 @@ static int bfin_mac_open(struct net_device *dev)
- 	phy_start(lp->phydev);
- 	phy_write(lp->phydev, MII_BMCR, BMCR_RESET);
- 	setup_system_regs(dev);
-+	setup_mac_addr(dev->dev_addr);
- 	bfin_mac_disable();
- 	bfin_mac_enable();
- 	pr_debug("hardware init finished\n");
--- 
-1.5.6
+The short changelog is:
+
+Adam Radford (1):
+      3w-9xxx: add MSI support and misc fixes
+
+Akinobu Mita (1):
+      qla2xxx: use memory_read_from_buffer()
+
+Alan Jenkins (1):
+      extend the last_sector_bug flag to cover more sectors
+
+Alan Stern (1):
+      scsi_eh_prep_cmnd should save scmd->underflow
+
+Andrew Morton (1):
+      qla2xxx: suppress uninitialized-var warning
+
+Andrew Vasquez (12):
+      qla2xxx: Update version number to 8.02.01-k6.
+      qla2xxx: Additional NPIV corrections.
+      qla2xxx: Issue proper ISP callbacks during stop-firmware.
+      qla2xxx: Update version number to 8.02.01-k5.
+      qla2xxx: Don't hardcode fw_transfer_size for ISP2[45]xx parts.
+      qla2xxx: Verify the RISC is not in ROM code if firmware-load is disabled.
+      qla2xxx: Correct overflow during dump-processing on large-memory ISP23xx p
+      qla2xxx: Skip FDMI registration on ISP21xx/22xx parts.
+      qla2xxx: Swap enablement order of EFT and FCE.
+      qla2xxx: Allow the user the option of disabling iIDMA.
+      qla2xxx: Set an rport's dev_loss_tmo value in a consistent manner.
+      qla2xxx: Correct locking during NVRAM manipulation.
+
+Brian King (6):
+      ibmvfc: Update driver version to 1.0.1
+      ibmvfc: Add ADISC support
+      ibmvfc: Miscellaneous fixes
+      ibmvfc: Fix hang on module removal
+      ibmvfc: Target refcounting fixes
+      ibmvfc: Reduce unnecessary log noise
+
+FUJITA Tomonori (1):
+      ch: fix ch_remove oops
+
+Hannes Reinecke (8):
+      scsi_dh: create lookup cache
+      scsi_dh: attach to hardware handler from dm-mpath
+      scsi_dh: add generic SPC-3 alua handler
+      scsi_dh: Update RDAC device handler
+      scsi_dh: Update hp_sw hardware handler
+      scsi_dh: Update EMC handler
+      scsi_dh: Add 'dh_state' sysfs attribute
+      scsi_dh: Implement common device table handling
+
+Harish Zunjarrao (2):
+      qla2xxx: Add LIP count to FC-transport statistics.
+      qla2xxx: Track total number of ISP aborts.
+
+Harvey Harrison (1):
+      replace __FUNCTION__ with __func__
+
+Joe Carnuccio (1):
+      qla2xxx: Retrieve board serial-number and description from VPD.
+
+Julia Lawall (1):
+      scsi_scan.c: Release mutex in error handling code
+
+Kai Makisara (2):
+      st: Remove bogus memset
+      st: Move buffer pointer back when data could not be written.
+
+Martin K. Petersen (6):
+      sd: Support for SCSI disk (SBC) Data Integrity Field
+      sd: Identify DIF protection type and application tag ownership
+      Do not retry a request whose data integrity check failed
+      Support devices with protection information
+      Command protection operation
+      Host protection capabilities
+
+Matthew Wilcox (1):
+      Make host_no an unsigned int
+
+Mike Anderson (1):
+      sym53c8xx: free luntbl in sym_hcb_free
+
+Mike Christie (5):
+      scsi_lib: use blk_rq_tagged in scsi_request_fn
+      fix shared tag map tag allocation
+      stex: fix queue depth setting
+      qla4xxx: fix queue depth setting
+      fix shared tag map setup
+
+Seokmann Ju (6):
+      qla2xxx: Correct rport/fcport visibility-state handling during loop-resync
+      qla2xxx: Correct vport management of MBA_PORT_UPDATE.
+      qla2xxx: Correct fcport state-management during loss.
+      qla2xxx: Always aquire the parent's hardware_lock.
+      qla2xxx: Cleanup NPIV related functions
+      qla2xxx: Add dev_loss_tmo_callbk/terminate_rport_io callback support.
+
+Tejun Heo (1):
+      sd: update index allocation and use ida instead of idr
+
+and the diffstat:
+
+ drivers/md/dm-mpath.c                       |   13 
+ drivers/scsi/3w-9xxx.c                      |   40 +
+ drivers/scsi/3w-9xxx.h                      |    9 
+ drivers/scsi/Kconfig                        |    1 
+ drivers/scsi/Makefile                       |    2 
+ drivers/scsi/ch.c                           |    1 
+ drivers/scsi/device_handler/Kconfig         |    8 
+ drivers/scsi/device_handler/Makefile        |    1 
+ drivers/scsi/device_handler/scsi_dh.c       |  446 ++++++++++++++-
+ drivers/scsi/device_handler/scsi_dh_alua.c  |  802 ++++++++++++++++++++++++++++
+ drivers/scsi/device_handler/scsi_dh_emc.c   |  644 ++++++++++++++--------
+ drivers/scsi/device_handler/scsi_dh_hp_sw.c |  348 +++++++++---
+ drivers/scsi/device_handler/scsi_dh_rdac.c  |  262 ++++-----
+ drivers/scsi/ibmvscsi/ibmvfc.c              |  204 ++++++-
+ drivers/scsi/ibmvscsi/ibmvfc.h              |   40 +
+ drivers/scsi/qla2xxx/qla_attr.c             |  118 ++--
+ drivers/scsi/qla2xxx/qla_dbg.c              |    2 
+ drivers/scsi/qla2xxx/qla_def.h              |   12 
+ drivers/scsi/qla2xxx/qla_gbl.h              |    5 
+ drivers/scsi/qla2xxx/qla_gs.c               |    6 
+ drivers/scsi/qla2xxx/qla_init.c             |  133 ++--
+ drivers/scsi/qla2xxx/qla_iocb.c             |   14 
+ drivers/scsi/qla2xxx/qla_isr.c              |    4 
+ drivers/scsi/qla2xxx/qla_mbx.c              |    9 
+ drivers/scsi/qla2xxx/qla_mid.c              |   16 
+ drivers/scsi/qla2xxx/qla_os.c               |   94 ++-
+ drivers/scsi/qla2xxx/qla_sup.c              |   48 +
+ drivers/scsi/qla2xxx/qla_version.h          |    2 
+ drivers/scsi/qla4xxx/ql4_os.c               |    4 
+ drivers/scsi/scsi.c                         |   55 +
+ drivers/scsi/scsi_error.c                   |    8 
+ drivers/scsi/scsi_lib.c                     |   49 +
+ drivers/scsi/scsi_priv.h                    |    1 
+ drivers/scsi/scsi_scan.c                    |    1 
+ drivers/scsi/scsi_sysfs.c                   |    4 
+ drivers/scsi/sd.c                           |  291 +++++++---
+ drivers/scsi/sd.h                           |   54 +
+ drivers/scsi/sd_dif.c                       |  538 ++++++++++++++++++
+ drivers/scsi/st.c                           |   11 
+ drivers/scsi/stex.c                         |    2 
+ drivers/scsi/sym53c8xx_2/sym_hipd.c         |    2 
+ include/scsi/scsi.h                         |    3 
+ include/scsi/scsi_cmnd.h                    |   86 +++
+ include/scsi/scsi_device.h                  |   17 
+ include/scsi/scsi_dh.h                      |   11 
+ include/scsi/scsi_eh.h                      |    2 
+ include/scsi/scsi_host.h                    |   86 ++-
+ 47 files changed, 3713 insertions(+), 796 deletions(-)
+
+James
+
 
