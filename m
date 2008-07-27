@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759082AbYG0T3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759184AbYG0TdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759082AbYG0T3d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 15:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbYG0T3Z
+	id S1759184AbYG0TdS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 15:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbYG0TdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 15:29:25 -0400
-Received: from www.tglx.de ([62.245.132.106]:48029 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751006AbYG0T3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 15:29:25 -0400
-Date: Sun, 27 Jul 2008 21:23:10 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, Thomas Meyer <thomas@m3y3r.de>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: -git: BUG: unable to handle kernel paging request at c0100248
- [CPU hotplug]
-In-Reply-To: <19f34abd0807271019i2112498ay57c267354bd63a8c@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0807272118460.574@apollo.tec.linutronix.de>
-References: <19f34abd0807270255o1ff260a8ucb9d931905aa4947@mail.gmail.com>  <b647ffbd0807271014j17d1a14cncd0976ff4d3ff3fd@mail.gmail.com> <19f34abd0807271019i2112498ay57c267354bd63a8c@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sun, 27 Jul 2008 15:33:08 -0400
+Received: from poesci.dolphinics.no ([81.175.23.36]:44455 "EHLO
+	poesci.dolphinics.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756405AbYG0TdH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 15:33:07 -0400
+Message-ID: <488CCD81.7010002@dolphinics.no>
+Date: Sun, 27 Jul 2008 21:33:21 +0200
+From: Simen Timian Thoresen <simentt@dolphinics.no>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alistair John Strachan <alistair@devzero.co.uk>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Misidentification and failing revalidations of ide dvd-roms with
+ libata
+References: <48838593.8020007@dolphinics.no> <20080720194628.6c8632cb@the-village.bc.nu> <48839358.8010206@dolphinics.no> <200807202103.51889.alistair@devzero.co.uk>
+In-Reply-To: <200807202103.51889.alistair@devzero.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Jul 2008, Vegard Nossum wrote:
-> Booting processor 1/1 ip 6000
-> Initializing CPU#1
-> [...]
-> Write protecting the kernel text: 5648k
+Alistair John Strachan wrote:
+> On Sunday 20 July 2008 20:34:48 Simen Timian Thoresen wrote:
+>> Alan Cox wrote:
+>>>> [  155.457098] ata4.00: model number mismatch 'Pioneer DVD-ROM
+>>>> ATAPIModel DVD-116  0109' != 'Pioïeer¡DVD­ROM¡ATAñIMoåel åVD-±16 ¡010¹'
+>>>> [  155.457103] ata4.00: revalidation failed (errno=-19)
+>>> So it failed because the data read from the drive was corrupted.
+>>>
+>>>> As I understand, this would most commonly indicate that the drive has
+>>>> gone bad, but this also occurs on the /other/ drive (same make/model) in
+>>> Or a cable problem.
+>> Hi Alan,
+>>
+>> Should this apply here too? There are two separate cables, and I've
+>> never seen the other drive to fail after the first drive has failed.
+>> I've now ripped ~50 CDs with the still working drive, while this drive
+>> failed during the first 5 CDs on my two previous boots.
+>>
+>> I don't doubt that the revalidation goes bad, but I can't see hardware
+>> being the cause of it as it hits any drive, but so-far only one drive pr
+>> boot.
 > 
-> So it succeeds because the protection happens much later :-)
+> Power supply maybe? Check the rails. The +12VDC must be good.
 
-Patch below fixes the issue. I get it to Linus ASAP.
+Hi Alistair, Alan,
 
-Thanks,
+I've spent a few hours more looking into this, and I'm not really 
+getting much clearer;
 
-	tglx
----------
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index f67e934..a7010c3 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -456,9 +456,6 @@ is386:	movl $2,%ecx		# set MP
- 1:
- #endif /* CONFIG_SMP */
- 	jmp *(initial_code)
--.align 4
--ENTRY(initial_code)
--	.long i386_start_kernel
- 
- /*
-  * We depend on ET to be correct. This checks for 287/387.
-@@ -601,6 +598,11 @@ ignore_int:
- #endif
- 	iret
- 
-+.section .cpuinit.data,"wa"
-+.align 4
-+ENTRY(initial_code)
-+	.long i386_start_kernel
-+
- .section .text
- /*
-  * Real beginning of normal "text" segment
+I've run either and both of the two DVDroms on an external power-supply 
+(drive-power from a jumped, believed good ATX-PSU), and the the symptoms 
+remain; inconsistent capabilities reported at boot, and when I start 
+ripping CDs, one of them will fail as above.
+
+As I still have the impression that this started when I switched distros 
+(ie went from CentOS4 2.6.9 pre-libata-kernel to the current Ubuntu 8.04 
+2.6.24-kernel), I've now started playing around with the libata module 
+parameters.
+
+Further suggestions are most welcome .-)
+
+Yours,
+-S
+
+-- 
+Simen Thoresen, Dolphin ICS
+Systems Administration and Wulfkit Support
+
