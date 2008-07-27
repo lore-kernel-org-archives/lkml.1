@@ -1,25 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbYG0Abw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbYG0Aer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757841AbYG0Abw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 20:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbYG0Abo
+	id S1758107AbYG0Aer (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 20:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbYG0Aeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 20:31:44 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49057
+	Sat, 26 Jul 2008 20:34:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49063
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754447AbYG0Abn (ORCPT
+	by vger.kernel.org with ESMTP id S1756199AbYG0Aef (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 20:31:43 -0400
-Date: Sat, 26 Jul 2008 17:31:43 -0700 (PDT)
-Message-Id: <20080726.173143.137065135.davem@davemloft.net>
-To: bzolnier@gmail.com
-Cc: harvey.harrison@gmail.com, linux-ide@kernel.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: recent IDE regression
+	Sat, 26 Jul 2008 20:34:35 -0400
+Date: Sat, 26 Jul 2008 17:34:34 -0700 (PDT)
+Message-Id: <20080726.173434.48036095.davem@davemloft.net>
+To: jarkao2@gmail.com
+Cc: johannes@sipsolutions.net, netdev@axxeo.de, peterz@infradead.org,
+       Larry.Finger@lwfinger.net, kaber@trash.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, mingo@redhat.com
+Subject: Re: Kernel WARNING: at net/core/dev.c:1330
+ __netif_schedule+0x2c/0x98()
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <200807261404.49947.bzolnier@gmail.com>
-References: <20080724.233831.193691312.davem@davemloft.net>
-	<200807261404.49947.bzolnier@gmail.com>
+In-Reply-To: <20080726131838.GA2873@ami.dom.local>
+References: <20080725200137.GC3107@ami.dom.local>
+	<20080726.021846.236624483.davem@davemloft.net>
+	<20080726131838.GA2873@ami.dom.local>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,19 +33,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date: Sat, 26 Jul 2008 14:04:49 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+Date: Sat, 26 Jul 2008 15:18:38 +0200
 
-> PS We need more big-endian users testing linux-next (this particular patch
-> despite being trivial has been put there just-in-case for a week)
+> I guess some additional synchronization will be added yet to prevent
+> parallel freeze and especially unfreeze.
 
-Normally I do test linux-next from time to time.
+Yes, that could be a problem.  Using test_and_set_bit() can
+guard the freezing sequence itself, but it won't handle
+letting two threads of control freeze and unfreeze safely
+without a reference count.
 
-But in the past week or so my efforts have been purely focused on
-merging the tree(s) that I maintain.
+We want this thing to be able to be used flexbly, which means
+we can't just assume that this is a short code sequence and
+the unfreeze will come quickly.  That pretty much rules
+out using a new lock around the operation or anything
+like that.
 
-It's going to be like this for bascially every other person doing
-development.
+So I guess we could replace the state bit with a reference
+count.  It doesn't even need to be atomic since it is set
+and tested under dev_queue->_xmit_lock
 
-Therefore I would suggest not adding changes during the merge window
-that you or someone else has not actually tested.
