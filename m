@@ -1,123 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbYG0PpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbYG0PuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757996AbYG0PpU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 11:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbYG0PpG
+	id S1758137AbYG0PuS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 11:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbYG0PuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 11:45:06 -0400
-Received: from gw.goop.org ([64.81.55.164]:44164 "EHLO mail.goop.org"
+	Sun, 27 Jul 2008 11:50:04 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:55206 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751224AbYG0PpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 11:45:04 -0400
-Message-ID: <488C97FE.2010606@goop.org>
-Date: Sun, 27 Jul 2008 08:45:02 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1752938AbYG0PuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 11:50:03 -0400
+Date: Sun, 27 Jul 2008 18:49:26 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Karsten Keil <kkeil@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] release_tei namespace fix
+Message-ID: <20080727154926.GN9301@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] xen: fix allocation and use of large ldts
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the ldt gets to more than 1 page in size, the kernel uses vmalloc
-to allocate it.  This means that:
- - when making the ldt RO, we must update the pages in both the vmalloc
-   mapping and the linear mapping to make sure there are no RW aliases.
- - we need to use arbitrary_virt_to_machine to compute the machine addr
-   for each update
+This patch fixes the following build error caused by
+commit 1b2b03f8e514e4f68e293846ba511a948b80243c
+(Add mISDN core files):
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+<--  snip  -->
+
+...
+  LD      drivers/isdn/built-in.o
+drivers/isdn/hisax/built-in.o: In function `release_tei':
+(.text+0x21ce): multiple definition of `release_tei'
+drivers/isdn/mISDN/built-in.o:(.text+0x7c39): first defined here
+make[3]: *** [drivers/isdn/built-in.o] Error 1
+
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
 ---
- arch/x86/xen/enlighten.c |   49 ++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 39 insertions(+), 10 deletions(-)
 
-===================================================================
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -305,24 +305,53 @@
- 	return 0;
- }
- 
-+/* If 'v' is a vmalloc mapping, then find the linear mapping of the
-+   page (if any) and also set its protections to match. */
-+static void set_aliased_prot(void *v, pgprot_t prot)
-+{
-+	int level;
-+	pte_t *ptep;
-+	pte_t pte;
-+	unsigned long pfn;
-+	struct page *page;
-+
-+	ptep = lookup_address((unsigned long)v, &level);
-+	BUG_ON(ptep == NULL);
-+
-+	pfn = pte_pfn(*ptep);
-+	page = pfn_to_page(pfn);
-+
-+	pte = pfn_pte(pfn, prot);
-+
-+	if (HYPERVISOR_update_va_mapping((unsigned long)v, pte, 0))
-+		BUG();
-+
-+	if (!PageHighMem(page)) {
-+		void *av = __va(PFN_PHYS(pfn));
-+
-+		if (av != v)
-+			if (HYPERVISOR_update_va_mapping((unsigned long)av, pte, 0))
-+				BUG();
-+	} else
-+		kmap_flush_unused();
-+}
-+
- static void xen_alloc_ldt(struct desc_struct *ldt, unsigned entries)
- {
--	unsigned pages = roundup(entries * LDT_ENTRY_SIZE, PAGE_SIZE);
--	void *v = ldt;
-+	const unsigned entries_per_page = PAGE_SIZE / LDT_ENTRY_SIZE;
- 	int i;
- 
--	for(i = 0; i < pages; i += PAGE_SIZE)
--		make_lowmem_page_readonly(v + i);
-+	for(i = 0; i < entries; i += entries_per_page)
-+		set_aliased_prot(ldt + i, PAGE_KERNEL_RO);
- }
- 
- static void xen_free_ldt(struct desc_struct *ldt, unsigned entries)
- {
--	unsigned pages = roundup(entries * LDT_ENTRY_SIZE, PAGE_SIZE);
--	void *v = ldt;
-+	const unsigned entries_per_page = PAGE_SIZE / LDT_ENTRY_SIZE;
- 	int i;
- 
--	for(i = 0; i < pages; i += PAGE_SIZE)
--		make_lowmem_page_readwrite(v + i);
-+	for(i = 0; i < entries; i += entries_per_page)
-+		set_aliased_prot(ldt + i, PAGE_KERNEL);
- }
- 
- static void xen_set_ldt(const void *addr, unsigned entries)
-@@ -426,7 +455,7 @@
- 				const void *ptr)
- {
- 	unsigned long lp = (unsigned long)&dt[entrynum];
--	xmaddr_t mach_lp = virt_to_machine(lp);
-+	xmaddr_t mach_lp = arbitrary_virt_to_machine(lp);
- 	u64 entry = *(u64 *)ptr;
- 
- 	preempt_disable();
-@@ -559,7 +588,7 @@
- }
- 
- static void xen_load_sp0(struct tss_struct *tss,
--			  struct thread_struct *thread)
-+			 struct thread_struct *thread)
- {
- 	struct multicall_space mcs = xen_mc_entry(0);
- 	MULTI_stack_switch(mcs.mc, __KERNEL_DS, thread->sp0);
+ drivers/isdn/mISDN/layer2.c |    2 +-
+ drivers/isdn/mISDN/layer2.h |    2 +-
+ drivers/isdn/mISDN/tei.c    |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
+bc16cf6ec9d5c2fd14043184c3babb8ebbd7ed87 
+diff --git a/drivers/isdn/mISDN/layer2.c b/drivers/isdn/mISDN/layer2.c
+index f5ad888..10396a5 100644
+--- a/drivers/isdn/mISDN/layer2.c
++++ b/drivers/isdn/mISDN/layer2.c
+@@ -2030,7 +2030,7 @@ release_l2(struct layer2 *l2)
+ 	skb_queue_purge(&l2->down_queue);
+ 	ReleaseWin(l2);
+ 	if (test_bit(FLG_LAPD, &l2->flag)) {
+-		release_tei(l2);
++		release_l2_tei(l2);
+ 		if (l2->ch.st)
+ 			l2->ch.st->dev->D.ctrl(&l2->ch.st->dev->D,
+ 			    CLOSE_CHANNEL, NULL);
+diff --git a/drivers/isdn/mISDN/layer2.h b/drivers/isdn/mISDN/layer2.h
+index de2dd02..90f6436 100644
+--- a/drivers/isdn/mISDN/layer2.h
++++ b/drivers/isdn/mISDN/layer2.h
+@@ -96,7 +96,7 @@ extern int		tei_l2(struct layer2 *, u_int, u_long arg);
+ 
+ /* from tei.c */
+ extern int 		l2_tei(struct layer2 *, u_int, u_long arg);
+-extern void 		release_tei(struct layer2 *);
++extern void 		release_l2_tei(struct layer2 *);
+ extern int 		TEIInit(u_int *);
+ extern void 		TEIFree(void);
+ 
+diff --git a/drivers/isdn/mISDN/tei.c b/drivers/isdn/mISDN/tei.c
+index 56a76a0..9d0066f 100644
+--- a/drivers/isdn/mISDN/tei.c
++++ b/drivers/isdn/mISDN/tei.c
+@@ -945,7 +945,7 @@ l2_tei(struct layer2 *l2, u_int cmd, u_long arg)
+ }
+ 
+ void
+-release_tei(struct layer2 *l2)
++release_l2_tei(struct layer2 *l2)
+ {
+ 	struct teimgr	*tm = l2->tm;
+ 	u_long		flags;
 
