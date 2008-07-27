@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbYG0L1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbYG0LcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756204AbYG0L1V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 07:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbYG0L1O
+	id S1755787AbYG0LcS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 07:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbYG0LcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 07:27:14 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:45178 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751013AbYG0L1N (ORCPT
+	Sun, 27 Jul 2008 07:32:08 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54725 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751026AbYG0LcF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 07:27:13 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Fix SCHED_HRTICK dependency
-Date: Sun, 27 Jul 2008 20:27:06 +0900
-Message-ID: <87wsj71sad.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Sun, 27 Jul 2008 07:32:05 -0400
+Date: Sun, 27 Jul 2008 12:32:00 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Rufus & Azrael <rufus-azrael@numericable.fr>
+cc: Al Viro <viro@zeniv.linux.org.uk>,
+       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.26-git15] Cannot open "/proc/sys/net/ipv4/route/flush"
+In-Reply-To: <488C5545.5010309@numericable.fr>
+Message-ID: <Pine.LNX.4.64.0807271228060.12405@blonde.site>
+References: <488C5545.5010309@numericable.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 27 Jul 2008, Rufus & Azrael wrote:
+> 
+> After compiling the very latest git kernel this morning, I have this message
+> on boot (on Gentoo box) :
+> 
+> Bringing up interface lo
+>     127.0.0.1/8 ...
+>     Adding routes
+>         127.0.0.0/8 via 127.0.0.1 ...
+> Cannot open "/proc/sys/net/ipv4/route/flush"
+> 
+> Do I put
+> /proc/sys/net/ipv4/route/flush=1
+> or
+> net.ipv4.conf.all.accept_source_route = 1
+> 
+> in my sysctl.conf file ?
 
-Currently, it seems SCHED_HRTICK allowed for !SMP. But, it seems to have
-no dependency of it. So how about the following?
+If I may answer a different question, I believe you need Al Viro's
+[PATCH] lost sysctl fix
+http://lkml.org/lkml/2008/7/27/7
+and
+[PATCH] missing bits of net-namespace / sysctl
+http://lkml.org/lkml/2008/7/27/61
 
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
-
- kernel/Kconfig.hz |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -puN kernel/Kconfig.hz~sched_hrtick-dep-fix kernel/Kconfig.hz
---- linux-2.6/kernel/Kconfig.hz~sched_hrtick-dep-fix	2008-07-26 00:23:26.000000000 +0900
-+++ linux-2.6-hirofumi/kernel/Kconfig.hz	2008-07-26 00:25:12.000000000 +0900
-@@ -55,4 +55,4 @@ config HZ
- 	default 1000 if HZ_1000
- 
- config SCHED_HRTICK
--	def_bool HIGH_RES_TIMERS && USE_GENERIC_SMP_HELPERS
-+	def_bool HIGH_RES_TIMERS && (!SMP || USE_GENERIC_SMP_HELPERS)
-_
-
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Hugh
