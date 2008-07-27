@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbYG0Mjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbYG0NDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756990AbYG0Mjk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 08:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYG0Mjd
+	id S1756835AbYG0NDj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 09:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYG0ND3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 08:39:33 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:39812 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751255AbYG0Mjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 08:39:32 -0400
-Date: Sun, 27 Jul 2008 16:42:59 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: akpm@linux-foundation.org
-Cc: roland@redhat.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: [PATCH] kthread_bind: use wait_task_inactive(TASK_UNINTERRUPTIBLE)
-Message-ID: <20080727124259.GC178@tv-sign.ru>
-References: <200807260245.m6Q2jwB4012297@imap1.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 27 Jul 2008 09:03:29 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:19697 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751520AbYG0ND2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 09:03:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=QIni7rledAt5A6THQCv1TJOwTMkqidOCMIZ4MoQ3kKJPGUjNpAlZVOABd++t8h6mB8
+         iU7tW5fcbymfDNiG0ZMNWSYnJPBM8LVNX7Vosz+aqJwGnwlg6b4yfDtXwrSobfTQChzW
+         l23Bc1Bf/Un8gE6QGcu7mCNKL7gYuFEMKDzEs=
+Message-ID: <8bd0f97a0807270603s2d3ac6f7q3735b2ac6e31a22c@mail.gmail.com>
+Date: Sun, 27 Jul 2008 09:03:27 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Bryan Wu" <cooloney@kernel.org>
+Subject: Re: [PATCH 1/3] Blackfin EMAC Driver: add proper __devinit/__devexit markings
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <1217139235-19018-2-git-send-email-cooloney@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200807260245.m6Q2jwB4012297@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+References: <1217139235-19018-1-git-send-email-cooloney@kernel.org>
+	 <1217139235-19018-2-git-send-email-cooloney@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that wait_task_inactive(task, state) checks task->state == state,
-we can simplify the code and make this debugging check more robust.
+On Sun, Jul 27, 2008 at 2:13 AM, Bryan Wu wrote:
+> From: Mike Frysinger <vapier.adi@gmail.com>
+>
+> Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> ---
+>  drivers/net/bfin_mac.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
+> index 4144343..e18a7ee 100644
+> --- a/drivers/net/bfin_mac.c
+> +++ b/drivers/net/bfin_mac.c
+> @@ -614,7 +614,7 @@ static int bfin_mac_hard_start_xmit(struct sk_buff *skb,
+>         * Is skb->data always 16-bit aligned?
+>         * Do we need to memcpy((char *)(tail->packet + 2), skb->data, len)?
+>         */
+> -       if ((((unsigned int)(skb->data)) & 0x02) == 2) {
+> +       if ((((unsigned int)(skb->data)) & 0x01) == 0) {
+>                /* move skb->data to current_tx_ptr payload */
+>                data = (unsigned int)(skb->data) - 2;
+>                *((unsigned short *)data) = (unsigned short)(skb->len);
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- LINUS/kernel/kthread.c~	2008-07-27 16:19:27.000000000 +0400
-+++ LINUS/kernel/kthread.c	2008-07-27 16:22:17.000000000 +0400
-@@ -171,12 +171,11 @@ EXPORT_SYMBOL(kthread_create);
-  */
- void kthread_bind(struct task_struct *k, unsigned int cpu)
- {
--	if (k->state != TASK_UNINTERRUPTIBLE) {
-+	/* Must have done schedule() in kthread() before we set_task_cpu */
-+	if (!wait_task_inactive(k, TASK_UNINTERRUPTIBLE)) {
- 		WARN_ON(1);
- 		return;
- 	}
--	/* Must have done schedule() in kthread() before we set_task_cpu */
--	wait_task_inactive(k, 0);
- 	set_task_cpu(k, cpu);
- 	k->cpus_allowed = cpumask_of_cpu(cpu);
- 	k->rt.nr_cpus_allowed = 1;
-
+i think this unrelated hunk slipped in
+-mike
