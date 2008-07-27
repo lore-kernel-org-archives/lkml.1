@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbYG0Md0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752585AbYG0Mee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbYG0Md0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 08:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbYG0MdR
+	id S1752585AbYG0Mee (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 08:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbYG0MeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 08:33:17 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:46021 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751410AbYG0MdQ (ORCPT
+	Sun, 27 Jul 2008 08:34:24 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:20260 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751518AbYG0MeY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 08:33:16 -0400
-Date: Sun, 27 Jul 2008 08:33:13 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Grant Coady <gcoady.lk@gmail.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: New ext4 patchset: 2.6.26-git6-ext4-1 // and 2.6.26-ext4-3
-Message-ID: <20080727123313.GB8789@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Grant Coady <gcoady.lk@gmail.com>, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <E1KMv2C-0007fs-1b@closure.thunk.org> <aunn841s5j5d3r7j9mb9j8k0k64gop53jh@4ax.com>
+	Sun, 27 Jul 2008 08:34:24 -0400
+Message-ID: <488C6B4E.8040205@nixpanic.net>
+Date: Sun, 27 Jul 2008 14:34:22 +0200
+From: Niels de Vos <niels@nixpanic.net>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aunn841s5j5d3r7j9mb9j8k0k64gop53jh@4ax.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [RESEND] [PATCH] linux/fs.h should include linux/path.h
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 27, 2008 at 12:39:57PM +1000, Grant Coady wrote:
-> >
-> >ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-git6-ext4-3
-> 
-> I think you meant:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-ext4-3/2.6.26-ext4-3.gz
+<linux/fs.h> defines 'struct file' which uses 'struct path'. However
+<linux/path.h> is not being included.
 
-Yes I did, thanks!  My apologies for any confusion.
+Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
 
-						- Ted
+---
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index d8e2762..a14f1c4 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -289,6 +289,7 @@ extern int dir_notify_enable;
+ #include <linux/mutex.h>
+ #include <linux/capability.h>
+ #include <linux/semaphore.h>
++#include <linux/path.h>
+
+ #include <asm/atomic.h>
+ #include <asm/byteorder.h>
+
