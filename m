@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYG0Dus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbYG0D7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbYG0Dus (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 23:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755376AbYG0Duk
+	id S1758155AbYG0D7v (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 23:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755823AbYG0D7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 23:50:40 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:23397 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754496AbYG0Duj (ORCPT
+	Sat, 26 Jul 2008 23:59:38 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:50664 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755815AbYG0D7h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 23:50:39 -0400
-X-IronPort-AV: E=Sophos;i="4.31,257,1215388800"; 
-   d="scan'208";a="58095695"
-From: Roland Dreier <rdreier@cisco.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jan Kara <jack@ucw.cz>, Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: 2.6.26-mmotm-0724 - linux-next.git loses /proc/sys/fs/quota, breaks disk quotas
-References: <14615.1217125366@turing-police.cc.vt.edu>
-	<20080726202525.3ac3052f.akpm@linux-foundation.org>
-	<21657.1217130229@turing-police.cc.vt.edu>
-X-Message-Flag: Warning: May contain useful information
-Date: Sat, 26 Jul 2008 20:50:37 -0700
-In-Reply-To: <21657.1217130229@turing-police.cc.vt.edu> (Valdis Kletnieks's
-	message of "Sat, 26 Jul 2008 23:43:49 -0400")
-Message-ID: <adatzec56k2.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Sat, 26 Jul 2008 23:59:37 -0400
+Date: Sun, 27 Jul 2008 04:59:09 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+cc: Kel Modderman <kel@otaku42.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: tmpfs: kernel BUG at mm/shmem.c:814
+In-Reply-To: <20080727033137.GA3489@khazad-dum.debian.net>
+Message-ID: <Pine.LNX.4.64.0807270451250.5297@blonde.site>
+References: <200807262210.11502.kel@otaku42.de> <Pine.LNX.4.64.0807262318050.25997@blonde.site>
+ <20080727033137.GA3489@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 27 Jul 2008 03:50:37.0837 (UTC) FILETIME=[EE611BD0:01C8EF9B]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I've bisected through Linus' tree more than once - ISTR that there was
- > some special funkiness in dealing with trying to bisect through linux-next
- > because the tree gets redone every night.
+On Sun, 27 Jul 2008, Henrique de Moraes Holschuh wrote:
+> On Sat, 26 Jul 2008, Hugh Dickins wrote:
+> > on 2.6.26.  It's using posix_fadvise on directories, and the shmem_readpage
+> > method added in 2.6.23 is letting POSIX_FADV_WILLNEED allocate useless pages
+> ...
+> 
+> > Cc: stable@kernel.org
+> 
+> Is the fix needed on 2.6.25 as well?
 
- > If it *was* as easy as Linus's tree to bisect, I'd go ahead and do it.
+That's right: I introduced the bug in 2.6.23, so all since want the fix.
 
-For a single day's linux-next tree, it should be just like Linus's
-tree... just clone
-
-    git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-
-and bisect as usual.
-
-The funkiness is that if you say, "linux-next from July 24 worked,
-linux-next from July 25 didn't," then it's pretty much hopeless, exactly
-because those two trees were built independently.
-
- - R.
+Hugh
