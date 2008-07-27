@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbYG0GPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbYG0GXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758085AbYG0GPr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 02:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758437AbYG0GPG
+	id S1757314AbYG0GXf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 02:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYG0GX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 02:15:06 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:34498 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758384AbYG0GPD (ORCPT
+	Sun, 27 Jul 2008 02:23:28 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47302 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751946AbYG0GX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 02:15:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :sender;
-        b=DE1cnnGGn+4zRdBAWYYpqKdBTojYvmlTFAS5AoeDk0vN8YmI8Pu8zTjVrTT+kUJWuo
-         U6CqiN1gTnxlcaditLdcQMNmhoB5+d5ptnFA+hBGhiS2jhq+0SEy7GpzcEqZvjdxjGfT
-         JS2m0UYEtB06+otmXK0MqwEeK3yANg62CNgVU=
-From: Bryan Wu <cooloney@kernel.org>
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 3/3] Blackfin EMAC Driver: Functional power management support
-Date: Sun, 27 Jul 2008 14:13:55 +0800
-Message-Id: <1217139235-19018-4-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1217139235-19018-1-git-send-email-cooloney@kernel.org>
-References: <1217139235-19018-1-git-send-email-cooloney@kernel.org>
+	Sun, 27 Jul 2008 02:23:27 -0400
+Date: Sat, 26 Jul 2008 22:54:20 -0700
+From: Greg KH <greg@kroah.com>
+To: stephane ancelot <sancelot@free.fr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: usb port share
+Message-ID: <20080727055420.GA29457@kroah.com>
+References: <op.ueqix5a2nuwxn3@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <op.ueqix5a2nuwxn3@localhost>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+On Wed, Jul 23, 2008 at 09:55:07AM +0200, stephane ancelot wrote:
+> Hi,
+> I would like to know if it is already possible to share a usb port ?
 
-Reprogram MAC address after resume from Suspend Mem
-(Blackfin Hibernate looses all CORE and SYSTEM register content)
+A single port?  If you want to do that, plug a hub into it.
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/net/bfin_mac.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> I would need it in order designing a usb over ip interface.
 
-diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
-index 57ebe6d..69a6b9d 100644
---- a/drivers/net/bfin_mac.c
-+++ b/drivers/net/bfin_mac.c
-@@ -972,6 +972,7 @@ static int bfin_mac_open(struct net_device *dev)
- 	phy_start(lp->phydev);
- 	phy_write(lp->phydev, MII_BMCR, BMCR_RESET);
- 	setup_system_regs(dev);
-+	setup_mac_addr(dev->dev_addr);
- 	bfin_mac_disable();
- 	bfin_mac_enable();
- 	pr_debug("hardware init finished\n");
--- 
-1.5.6
+What's wrong with the existing usb over ip code for Linux?
 
+thanks,
+
+greg k-h
