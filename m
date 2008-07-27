@@ -1,49 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758603AbYG0BZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbYG0B1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758603AbYG0BZY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 21:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756965AbYG0BZK
+	id S1758556AbYG0B1N (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 21:27:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbYG0B05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 21:25:10 -0400
-Received: from mo30.po.2iij.net ([210.128.50.53]:8611 "EHLO mo30.po.2iij.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756820AbYG0BZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 21:25:09 -0400
-Date: Sun, 27 Jul 2008 10:24:33 +0900
-From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: yoichi_yuasa@tripeaks.co.jp,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fix arch_pick_mmap_layout() build error
-Message-Id: <20080727102433.e28d858b.yoichi_yuasa@tripeaks.co.jp>
-Organization: TriPeaks Corporation
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Jul 2008 21:26:57 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:40183 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756018AbYG0B04 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 21:26:56 -0400
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: New ext4 patchset: 2.6.26-git6-ext4-1 // and 2.6.26-ext4-3
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1KMv2C-0007fs-1b@closure.thunk.org>
+Date: Sat, 26 Jul 2008 21:26:52 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-uninline arch_pick_mmap_layout()[16d69265b930f7e2fa9eea381715696f780718f4]
-has forgotten to add #include <linux/sched.h>.
 
-mm/util.c: In function 'arch_pick_mmap_layout':
-mm/util.c:145: error: 'arch_get_unmapped_area' undeclared (first use in this function)
-mm/util.c:145: error: (Each undeclared identifier is reported only once
-mm/util.c:145: error: for each function it appears in.)
-mm/util.c:146: error: 'arch_unmap_area' undeclared (first use in this function)
-make[1]: *** [mm/util.o] Error 1
+I've released a new patchset for post-2.6.26-git4 kernels (when Linus
+accepted a set of patches for the 2.6.27-rc1 merge window).  A number of
+the new patches are cleanups and bug fixes that will be pushed to Linus
+shortly; those are marked with an (*).
 
-Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+As a git tree:
 
-diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/mm/util.c linux/mm/util.c
---- linux-orig/mm/util.c	2008-07-27 09:58:16.643441756 +0900
-+++ linux/mm/util.c	2008-07-27 10:02:26.069593850 +0900
-@@ -1,4 +1,5 @@
- #include <linux/mm.h>
-+#include <linux/sched.h>
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/module.h>
+git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.26-git6-ext4-1
+http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.26-git6-ext4-1
+
+As a patchset:
+
+ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-git6-ext4-1
+
+					----
+
+I've also created a patchset which consists of the new features and bug
+fixes pushed to linus, plus the bug fixes and cleanups that are part of
+2.6.26-git6-ext4-1 for people who are running the stock 2.6.26 kernel.
+This can be found here:
+
+ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-git6-ext4-3
+
+This patchset plus e2fsprogs 1.41.0 should be stable enough for wider
+testing.
+
+							- Ted
+
+Akira Fujita (7):
+      ext4: online defrag-- Main function of defrag and ioctl implementation
+      ext4: online defrag-- Allocate new contiguous blocks with mballoc
+      ext4: online defrag-- Read and write file data with memory page
+      ext4: online defrag-- Exchange the blocks between two inodes
+      ext4: online defrag-- Defragmentation for the relevant files (-r mode)
+      ext4: online defrag-- Check the free space fragmentation (-f mode)
+      ext4: online defrag-- Move victim files for the target file (-f mode)
+
+Aneesh Kumar K.V (6):
+    * ext4: Fix data corruption when writing to prealloc area
+    * ext4: Improve error handling in mballoc
+    * ext4: Convert the usage of NR_CPUS to nr_cpu_ids.
+    * ext4: Don't allow lg prealloc list to be grow large.
+    * ext4: Cleanup the block reservation code path
+    * ext4: undo the stable boundary patch changes
+
+Eric Sandeen (3):
+    * sync up block & inode bitmap reading functions
+    * lock block groups when initializing
+    * Hook ext4 to the vfs fiemap interface.
+
+Hidehiro Kawai (1):
+    * ext4: don't read inode block if the buffer has a write error
+
+Josef Bacik (1):
+      Any block based fs (this patch includes ext3) just has to declare its own
+
+Li Zefan (1):
+    * ext4: improve ext4_fill_flex_info() a bit
+
+Mingming Cao (1):
+    * Ext4: journal credits reservation fixes for DIO, fallocate and delalloc writepages
+
+Theodore Ts'o (9):
+    * ext4: Allow read/only mounts with corrupted block group checksums
+    * jbd2: don't abort if flushing file data failed
+    * ext4: Cleanup whitespace and other miscellaneous style issues
+    * ext4: unexport jbd2_journal_update_superblock
+      ext4: Stable/Unstable boundary
+      This patch should be merged with ext4-online-defrag-alloc-contiguous-blks.patch
+      This patch should be merged with ext4-online-defrag-relocate-file-data.patch
+      Basic vfs-level fiemap infrastructure, which sets up a new ->fiemap
+      Plug ocfs2 into ->fiemap. Some portions of ocfs2_get_clusters() had to be
+
+
+
+
+
+
 
