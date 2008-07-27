@@ -1,145 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbYG0BCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbYG0BIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758210AbYG0BCS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 21:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbYG0BB7
+	id S1758243AbYG0BIw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 21:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756820AbYG0BIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 21:01:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35722
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752579AbYG0BB6 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 21:01:58 -0400
-Date: Sat, 26 Jul 2008 18:01:57 -0700 (PDT)
-Message-Id: <20080726.180157.90619311.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sat, 26 Jul 2008 21:08:45 -0400
+Received: from ns.suse.de ([195.135.220.2]:42392 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756526AbYG0BIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jul 2008 21:08:44 -0400
+Date: Sun, 27 Jul 2008 03:08:37 +0200
+From: Karsten Keil <kkeil@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/7] Add mISDN driver
+Message-ID: <20080727010837.GA3415@pingi.kke.suse.de>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: SuSE Linux AG
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Please pull this and the following patches from 
+git://git.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6.git master
 
-Several updates, including the krealloc() fix for the
-nf_iterate() OOPS, and the inverted test in net/ipv4/route.c
-found and fixed by Hugh Dickens.
+mISDN is a new modular ISDN driver, in the long term it should replace
+the old I4L driver architecture for passiv ISDN cards.
 
-This also has changes from Ilpo which get rid of our stupid local
-"BUG_TRAP()" thing in the networking, and use the common WARN_ON()
-instead.
+Signed-off-by: Karsten Keil <kkeil@suse.de>
+---
+ Documentation/isdn/README.mISDN |    6 ++++++
+ drivers/isdn/Kconfig            |    4 +++-
+ drivers/isdn/Makefile           |    1 +
+ drivers/isdn/hardware/Makefile  |    1 +
+ 4 files changed, 11 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/isdn/README.mISDN
 
-Please pull, thanks a lot!
+diff --git a/Documentation/isdn/README.mISDN b/Documentation/isdn/README.mISDN
+new file mode 100644
+index 0000000..cd8bf92
+--- /dev/null
++++ b/Documentation/isdn/README.mISDN
+@@ -0,0 +1,6 @@
++mISDN is a new modular ISDN driver, in the long term it should replace
++the old I4L driver architecture for passiv ISDN cards.
++It was designed to allow a broad range of applications and interfaces
++but only have the basic function in kernel, the interface to the user
++space is based on sockets with a own address family AF_ISDN.
++
+diff --git a/drivers/isdn/Kconfig b/drivers/isdn/Kconfig
+index 66f946a..3d113c6 100644
+--- a/drivers/isdn/Kconfig
++++ b/drivers/isdn/Kconfig
+@@ -3,7 +3,7 @@
+ #
+ 
+ menuconfig ISDN
+-	tristate "ISDN support"
++	bool "ISDN support"
+ 	depends on NET
+ 	depends on !S390
+ 	---help---
+@@ -21,6 +21,8 @@ menuconfig ISDN
+ 
+ if ISDN
+ 
++source "drivers/isdn/mISDN/Kconfig"
++
+ menuconfig ISDN_I4L
+ 	tristate "Old ISDN4Linux (deprecated)"
+ 	---help---
+diff --git a/drivers/isdn/Makefile b/drivers/isdn/Makefile
+index 988142c..8380a45 100644
+--- a/drivers/isdn/Makefile
++++ b/drivers/isdn/Makefile
+@@ -4,6 +4,7 @@
+ 
+ obj-$(CONFIG_ISDN_I4L)			+= i4l/
+ obj-$(CONFIG_ISDN_CAPI)			+= capi/
++obj-$(CONFIG_MISDN)			+= mISDN/
+ obj-$(CONFIG_ISDN_CAPI)			+= hardware/
+ obj-$(CONFIG_ISDN_DIVERSION)		+= divert/
+ obj-$(CONFIG_ISDN_DRV_HISAX)		+= hisax/
+diff --git a/drivers/isdn/hardware/Makefile b/drivers/isdn/hardware/Makefile
+index 11c8a18..a5d8fce 100644
+--- a/drivers/isdn/hardware/Makefile
++++ b/drivers/isdn/hardware/Makefile
+@@ -4,3 +4,4 @@
+ 
+ obj-$(CONFIG_CAPI_AVM)		+= avm/
+ obj-$(CONFIG_CAPI_EICON)	+= eicon/
++obj-$(CONFIG_MISDN)		+= mISDN/
+-- 
+1.5.6.4
 
-The following changes since commit 7d7e5a60c62e88cb8782760bb6c4d3bd1577a6c6:
-  Herbert Xu (1):
-        ipsec: ipcomp - Decompress into frags if necessary
 
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Alexey Dobriyan (4):
-      netfilter: ebtables: use nf_register_hooks()
-      selinux: use nf_register_hooks()
-      netfilter: ip{,6}tables_security: fix future section mismatch
-      netfilter: arptables in netns for real
-
-David S. Miller (1):
-      Revert "pkt_sched: sch_sfq: dump a real number of flows"
-
-Florian Westphal (1):
-      syncookies: Make sure ECN is disabled
-
-Heiko Carstens (1):
-      qeth: use dev->ml_priv instead of dev->priv
-
-Hugh Dickins (1):
-      netns: fix ip_rt_frag_needed rt_is_expired
-
-Ilpo Järvinen (3):
-      drivers/net: convert BUG_TRAP to generic WARN_ON
-      net: convert BUG_TRAP to generic WARN_ON
-      net: drop unused BUG_TRAP()
-
-Patrick McHardy (1):
-      netfilter: nf_conntrack_extend: avoid unnecessary "ct->ext" dereferences
-
-Pekka Enberg (1):
-      netfilter: fix double-free and use-after free
-
- drivers/net/bnx2x_main.c                |   10 +++---
- drivers/s390/net/qeth_core_main.c       |   14 +++++-----
- drivers/s390/net/qeth_l2_main.c         |   26 +++++++++---------
- drivers/s390/net/qeth_l3_main.c         |   30 ++++++++++----------
- include/linux/rtnetlink.h               |    7 -----
- include/linux/slab.h                    |    1 +
- include/net/request_sock.h              |    5 ++-
- mm/util.c                               |   44 ++++++++++++++++++++++++-------
- net/appletalk/ddp.c                     |    4 +-
- net/bridge/netfilter/ebtable_filter.c   |   18 +++---------
- net/bridge/netfilter/ebtable_nat.c      |   18 +++---------
- net/core/datagram.c                     |    8 +++---
- net/core/dev.c                          |   10 +++---
- net/core/request_sock.c                 |    2 +-
- net/core/skbuff.c                       |   20 +++++++-------
- net/core/stream.c                       |    6 ++--
- net/core/user_dma.c                     |    5 +--
- net/dccp/dccp.h                         |    2 +-
- net/dccp/input.c                        |    2 +-
- net/dccp/ipv4.c                         |    2 +-
- net/dccp/ipv6.c                         |    2 +-
- net/dccp/proto.c                        |    4 +-
- net/dccp/timer.c                        |    2 +-
- net/ipv4/af_inet.c                      |   14 +++++-----
- net/ipv4/devinet.c                      |    6 ++--
- net/ipv4/inet_connection_sock.c         |   18 ++++++------
- net/ipv4/inet_fragment.c                |    4 +-
- net/ipv4/inet_hashtables.c              |    8 +++---
- net/ipv4/inet_timewait_sock.c           |    2 +-
- net/ipv4/ip_fragment.c                  |    4 +-
- net/ipv4/ip_output.c                    |    2 +-
- net/ipv4/netfilter/arptable_filter.c    |   39 +++++++++++++++++++++------
- net/ipv4/netfilter/iptable_security.c   |    2 +-
- net/ipv4/route.c                        |    2 +-
- net/ipv4/syncookies.c                   |    1 +
- net/ipv4/tcp.c                          |   12 ++++----
- net/ipv4/tcp_input.c                    |   20 +++++++-------
- net/ipv4/tcp_ipv4.c                     |    2 +-
- net/ipv4/tcp_timer.c                    |    2 +-
- net/ipv6/addrconf.c                     |   11 +++++---
- net/ipv6/af_inet6.c                     |    2 +-
- net/ipv6/inet6_connection_sock.c        |    2 +-
- net/ipv6/inet6_hashtables.c             |    4 +-
- net/ipv6/ip6_fib.c                      |   31 +++++++++++----------
- net/ipv6/ip6_output.c                   |    2 +-
- net/ipv6/mip6.c                         |    8 +++---
- net/ipv6/netfilter/ip6table_security.c  |    2 +-
- net/ipv6/netfilter/nf_conntrack_reasm.c |    4 +-
- net/ipv6/reassembly.c                   |    4 +-
- net/ipv6/syncookies.c                   |    1 +
- net/ipv6/tcp_ipv6.c                     |    2 +-
- net/key/af_key.c                        |    4 +-
- net/netfilter/nf_conntrack_extend.c     |   10 +++---
- net/netlink/af_netlink.c                |    7 +++--
- net/packet/af_packet.c                  |    4 +-
- net/rxrpc/af_rxrpc.c                    |    6 ++--
- net/sched/act_api.c                     |    2 +-
- net/sched/act_police.c                  |    2 +-
- net/sched/cls_u32.c                     |   10 +++---
- net/sched/sch_cbq.c                     |    4 +-
- net/sched/sch_generic.c                 |    2 +-
- net/sched/sch_htb.c                     |   16 +++++-----
- net/sched/sch_sfq.c                     |    9 +-----
- net/sctp/associola.c                    |    2 +-
- net/unix/af_unix.c                      |    8 +++---
- net/xfrm/xfrm_algo.c                    |    4 +-
- net/xfrm/xfrm_ipcomp.c                  |    3 +-
- net/xfrm/xfrm_state.c                   |    2 +-
- security/selinux/hooks.c                |   27 +++++-------------
- 69 files changed, 293 insertions(+), 282 deletions(-)
+-- 
+Karsten Keil
+SuSE Labs
+ISDN and VOIP development
+SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
