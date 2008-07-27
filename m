@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752585AbYG0Mee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbYG0Mjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752585AbYG0Mee (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 08:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbYG0MeY
+	id S1756990AbYG0Mjk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 08:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYG0Mjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 08:34:24 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:20260 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751518AbYG0MeY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 08:34:24 -0400
-Message-ID: <488C6B4E.8040205@nixpanic.net>
-Date: Sun, 27 Jul 2008 14:34:22 +0200
-From: Niels de Vos <niels@nixpanic.net>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [RESEND] [PATCH] linux/fs.h should include linux/path.h
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Jul 2008 08:39:33 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:39812 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751255AbYG0Mjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 08:39:32 -0400
+Date: Sun, 27 Jul 2008 16:42:59 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: akpm@linux-foundation.org
+Cc: roland@redhat.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: [PATCH] kthread_bind: use wait_task_inactive(TASK_UNINTERRUPTIBLE)
+Message-ID: <20080727124259.GC178@tv-sign.ru>
+References: <200807260245.m6Q2jwB4012297@imap1.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807260245.m6Q2jwB4012297@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<linux/fs.h> defines 'struct file' which uses 'struct path'. However
-<linux/path.h> is not being included.
+Now that wait_task_inactive(task, state) checks task->state == state,
+we can simplify the code and make this debugging check more robust.
 
-Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
----
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index d8e2762..a14f1c4 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -289,6 +289,7 @@ extern int dir_notify_enable;
- #include <linux/mutex.h>
- #include <linux/capability.h>
- #include <linux/semaphore.h>
-+#include <linux/path.h>
-
- #include <asm/atomic.h>
- #include <asm/byteorder.h>
+--- LINUS/kernel/kthread.c~	2008-07-27 16:19:27.000000000 +0400
++++ LINUS/kernel/kthread.c	2008-07-27 16:22:17.000000000 +0400
+@@ -171,12 +171,11 @@ EXPORT_SYMBOL(kthread_create);
+  */
+ void kthread_bind(struct task_struct *k, unsigned int cpu)
+ {
+-	if (k->state != TASK_UNINTERRUPTIBLE) {
++	/* Must have done schedule() in kthread() before we set_task_cpu */
++	if (!wait_task_inactive(k, TASK_UNINTERRUPTIBLE)) {
+ 		WARN_ON(1);
+ 		return;
+ 	}
+-	/* Must have done schedule() in kthread() before we set_task_cpu */
+-	wait_task_inactive(k, 0);
+ 	set_task_cpu(k, cpu);
+ 	k->cpus_allowed = cpumask_of_cpu(cpu);
+ 	k->rt.nr_cpus_allowed = 1;
 
