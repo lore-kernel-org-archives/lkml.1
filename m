@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759307AbYG0UsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759044AbYG0VET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759307AbYG0UsX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 16:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758053AbYG0UsP
+	id S1759044AbYG0VET (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 17:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758170AbYG0VEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 16:48:15 -0400
-Received: from mk-outboundfilter-4.mail.uk.tiscali.com ([212.74.114.32]:44582
-	"EHLO mk-outboundfilter-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757740AbYG0UsP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 16:48:15 -0400
-X-Trace: 116046322/mk-outboundfilter-2.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6
-X-SBRS: None
-X-RemoteIP: 195.149.44.6
-X-IP-MAIL-FROM: alistair@devzero.co.uk
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiEFABt8jEjDlSwG/2dsb2JhbACBW4k8oVw
-X-IronPort-AV: E=Sophos;i="4.31,260,1215385200"; 
-   d="scan'208";a="116046322"
-X-IP-Direction: IN
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Simen Timian Thoresen <simentt@dolphinics.no>
-Subject: Re: Misidentification and failing revalidations of ide dvd-roms with libata
-Date: Sun, 27 Jul 2008 21:47:42 +0100
-User-Agent: KMail/1.9.9
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-References: <48838593.8020007@dolphinics.no> <200807202103.51889.alistair@devzero.co.uk> <488CCD81.7010002@dolphinics.no>
-In-Reply-To: <488CCD81.7010002@dolphinics.no>
+	Sun, 27 Jul 2008 17:04:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41761 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758151AbYG0VEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 17:04:09 -0400
+Date: Sun, 27 Jul 2008 23:03:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Mike Travis <travis@sgi.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [git pull] cpus4096 fixes
+Message-ID: <20080727210350.GA30033@elte.hu>
+References: <20080727190601.GA764@elte.hu> <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807272147.42264.alistair@devzero.co.uk>
+In-Reply-To: <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 27 July 2008 20:33:21 Simen Timian Thoresen wrote:
-[snip]
-> I've spent a few hours more looking into this, and I'm not really
-> getting much clearer;
->
-> I've run either and both of the two DVDroms on an external power-supply
-> (drive-power from a jumped, believed good ATX-PSU), and the the symptoms
-> remain; inconsistent capabilities reported at boot, and when I start
-> ripping CDs, one of them will fail as above.
->
-> As I still have the impression that this started when I switched distros
-> (ie went from CentOS4 2.6.9 pre-libata-kernel to the current Ubuntu 8.04
-> 2.6.24-kernel), I've now started playing around with the libata module
-> parameters.
 
-If it's not power then I'm still with Alan re the cables. Maybe you have very 
-long cables?
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I used Alan's nForce4 pata driver for a year or so and didn't have any 
-problems. OTOH maybe at this stage it's worth checking whether amd74xx (old 
-IDE) breaks in similar ways?
+> On Sun, 27 Jul 2008, Ingo Molnar wrote:
+> > 
+> > Please pull the latest cpus4096-fixes git tree from:
+> 
+> No. Not without explanations.
+> 
+> Quite frankly, this "fix" looks like a huge stinking pile of sh*t.
 
-Also, I assume you've memtest86'ed the machine?
+Agreed :-/
 
--- 
-Cheers,
-Alistair.
+NUMA-locality might have been a valid argument in favor of the massive 
+array of constant cpumasks (common usage is to use it for the current 
+cpu), if it wasnt all stupidly allocated on the boot node:
+
+        cpumask_of_cpu_map = alloc_bootmem_low(sizeof(cpumask_t) * nr_cpu_ids);
+        for (i = 0; i < nr_cpu_ids; i++)
+                cpu_set(i, cpumask_of_cpu_map[i]);
+
+> And I further right, and you are so STUPID that you cannot see that 
+> you can share all the zero words?
+
+That's fair to say :-/ I cannot talk for the others but it certainly 
+didnt occur to me and i should have caught it.
+
+( To me it didnt occur because we rarely have the opportunity for such 
+  rather clever optimizations, in most cases there's really just two 
+  choices in practice: either maximally global, or maximally per cpu. 
+  Here we can do something inbetween and overlap. I dont think we do any 
+  comparable compression of constants in the kernel. That boxed in my
+  imagination i guess. )
+
+Sorry about this - please ignore these patches, we'll rework them along 
+the lines you suggest. Your suggested data structure will indeed be both 
+simpler, smaller and more cache-efficient.
+
+	Ingo
