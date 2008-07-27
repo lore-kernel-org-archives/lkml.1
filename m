@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757890AbYG0NFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbYG0NF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757890AbYG0NFn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 09:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757504AbYG0NF0
+	id S1758032AbYG0NF7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 09:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYG0NFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 09:05:26 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:41754 "EHLO smtp6.pp.htv.fi"
+	Sun, 27 Jul 2008 09:05:47 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:50395 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757470AbYG0NFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 09:05:24 -0400
-Date: Sun, 27 Jul 2008 16:04:48 +0300
+	id S1752045AbYG0NFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 09:05:46 -0400
+Date: Sun, 27 Jul 2008 16:05:10 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: bzolnier@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] simplify MAX_HWIFS setting
-Message-ID: <20080727130448.GK9301@cs181140183.pp.htv.fi>
+To: takata@linux-m32r.org
+Cc: linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] m32r: don't offer CONFIG_ISA
+Message-ID: <20080727130510.GM9301@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,84 +24,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sh systemh_defconfig currently fails to build with the following 
-error:
+As far as I know no M32R hardware actually has ISA slots.
 
-<--  snip  -->
+And ISA drivers don't compile on M32R.
 
-...
-  CC      arch/sh/boards/renesas/systemh/irq.o
-In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/boards/renesas/systemh/irq.c:16:
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/ide.h:645: error: 'CONFIG_IDE_MAX_HWIFS' undeclared here (not in a function)
-make[2]: *** [arch/sh/boards/renesas/systemh/irq.o] Error 1
-
-<--  snip  -->
-
-Considering the little benefits of all this fiddling with IDE_MAX_HWIFS 
-I decided to fix it through a simplification:
-- always #define MAX_HWIFS      CONFIG_IDE_MAX_HWIFS
-- always set CONFIG_IDE_MAX_HWIFS in kconfig
-- let IDE_MAX_HWIFS default to 10
-- allow changing the value of IDE_MAX_HWIFS only if IDE && EMBEDDED
-
-Reported-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/ide/Kconfig |    9 ++++-----
- include/linux/ide.h |   11 -----------
- 2 files changed, 4 insertions(+), 16 deletions(-)
+This patch has been sent on:
+- 11 Jun 2008
 
-fd8ca9d5fefc48c04caa910adb753924454d9cfc 
-diff --git a/drivers/ide/Kconfig b/drivers/ide/Kconfig
-index 130ef64..174b627 100644
---- a/drivers/ide/Kconfig
-+++ b/drivers/ide/Kconfig
-@@ -52,18 +52,17 @@ menuconfig IDE
+ecb434c7ed05067f4fc9fae1b8fc9df1525b5484 diff --git a/arch/m32r/Kconfig b/arch/m32r/Kconfig
+index de153de..bd96c2e 100644
+--- a/arch/m32r/Kconfig
++++ b/arch/m32r/Kconfig
+@@ -409,11 +409,7 @@ config PCI_DIRECT
+ source "drivers/pci/Kconfig"
  
- 	  If unsure, say Y.
+ config ISA
+-	bool "ISA support"
+-	help
+-	  Find out whether you have ISA slots on your motherboard.  ISA is the
+-	  name of a bus system, i.e. the way the CPU talks to the other stuff
+-	  inside your box.  If you have ISA, say Y, otherwise N.
++	bool
  
--if IDE
--
- config IDE_MAX_HWIFS
--	int "Max IDE interfaces"
--	depends on ALPHA || SUPERH || IA64 || EMBEDDED
-+	int "Max IDE interfaces" if IDE && EMBEDDED
- 	range 1 10
--	default 4
-+	default 10
- 	help
- 	  This is the maximum number of IDE hardware interfaces that will
- 	  be supported by the driver. Make sure it is at least as high as
- 	  the number of IDE interfaces in your system.
+ source "drivers/pcmcia/Kconfig"
  
-+if IDE
-+
- config BLK_DEV_IDE
- 	tristate "Enhanced IDE/MFM/RLL disk/cdrom/tape/floppy support"
- 	---help---
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index b846bc4..b5b84fe 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -219,18 +219,7 @@ static inline int __ide_default_irq(unsigned long base)
- #include <asm-generic/ide_iops.h>
- #endif
- 
--#ifndef MAX_HWIFS
--#if defined(CONFIG_BLACKFIN) || defined(CONFIG_H8300) || defined(CONFIG_XTENSA)
--# define MAX_HWIFS	1
--#else
--# define MAX_HWIFS	10
--#endif
--#endif
--
--#if !defined(MAX_HWIFS) || defined(CONFIG_EMBEDDED)
--#undef MAX_HWIFS
- #define MAX_HWIFS	CONFIG_IDE_MAX_HWIFS
--#endif
- 
- /* Currently only m68k, apus and m8xx need it */
- #ifndef IDE_ARCH_ACK_INTR
 
