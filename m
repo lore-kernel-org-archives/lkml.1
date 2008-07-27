@@ -1,77 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759184AbYG0TdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759229AbYG0Tfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759184AbYG0TdS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 15:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbYG0TdI
+	id S1759229AbYG0Tfg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 15:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757490AbYG0Tf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 15:33:08 -0400
-Received: from poesci.dolphinics.no ([81.175.23.36]:44455 "EHLO
-	poesci.dolphinics.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756405AbYG0TdH convert rfc822-to-8bit (ORCPT
+	Sun, 27 Jul 2008 15:35:29 -0400
+Received: from qb-out-0506.google.com ([72.14.204.230]:3317 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751006AbYG0Tf2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 15:33:07 -0400
-Message-ID: <488CCD81.7010002@dolphinics.no>
-Date: Sun, 27 Jul 2008 21:33:21 +0200
-From: Simen Timian Thoresen <simentt@dolphinics.no>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Sun, 27 Jul 2008 15:35:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=CfrryTjWenjwbmt+X2ALYFwfQBy65IQ7gq1ycPRKEShnD0xZp2y+bsmJgUtPqLY5je
+         Hv8ZSodO4d8QQPogYSl+MgxUsmxygJ4WmAB9yxHc0XELmYa+A/K7pqNvoqakRi/2SaVX
+         jlgnokE/l54GY+dF9ZqEtFmBjtIv1zHogcn/A=
+Message-ID: <19f34abd0807271235q516fc2e1rc43c6736044eabfc@mail.gmail.com>
+Date: Sun, 27 Jul 2008 21:35:27 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: -git: BUG: unable to handle kernel paging request at c0100248 [CPU hotplug]
+Cc: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, "Thomas Meyer" <thomas@m3y3r.de>,
+       "the arch/x86 maintainers" <x86@kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0807272118460.574@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-To: Alistair John Strachan <alistair@devzero.co.uk>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Misidentification and failing revalidations of ide dvd-roms with
- libata
-References: <48838593.8020007@dolphinics.no> <20080720194628.6c8632cb@the-village.bc.nu> <48839358.8010206@dolphinics.no> <200807202103.51889.alistair@devzero.co.uk>
-In-Reply-To: <200807202103.51889.alistair@devzero.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0807270255o1ff260a8ucb9d931905aa4947@mail.gmail.com>
+	 <b647ffbd0807271014j17d1a14cncd0976ff4d3ff3fd@mail.gmail.com>
+	 <19f34abd0807271019i2112498ay57c267354bd63a8c@mail.gmail.com>
+	 <alpine.LFD.1.10.0807272118460.574@apollo.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alistair John Strachan wrote:
-> On Sunday 20 July 2008 20:34:48 Simen Timian Thoresen wrote:
->> Alan Cox wrote:
->>>> [  155.457098] ata4.00: model number mismatch 'Pioneer DVD-ROM
->>>> ATAPIModel DVD-116  0109' != 'Pioïeer¡DVD­ROM¡ATAñIMoåel åVD-±16 ¡010¹'
->>>> [  155.457103] ata4.00: revalidation failed (errno=-19)
->>> So it failed because the data read from the drive was corrupted.
->>>
->>>> As I understand, this would most commonly indicate that the drive has
->>>> gone bad, but this also occurs on the /other/ drive (same make/model) in
->>> Or a cable problem.
->> Hi Alan,
+On Sun, Jul 27, 2008 at 9:23 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Sun, 27 Jul 2008, Vegard Nossum wrote:
+>> Booting processor 1/1 ip 6000
+>> Initializing CPU#1
+>> [...]
+>> Write protecting the kernel text: 5648k
 >>
->> Should this apply here too? There are two separate cables, and I've
->> never seen the other drive to fail after the first drive has failed.
->> I've now ripped ~50 CDs with the still working drive, while this drive
->> failed during the first 5 CDs on my two previous boots.
->>
->> I don't doubt that the revalidation goes bad, but I can't see hardware
->> being the cause of it as it hits any drive, but so-far only one drive pr
->> boot.
-> 
-> Power supply maybe? Check the rails. The +12VDC must be good.
+>> So it succeeds because the protection happens much later :-)
+>
+> Patch below fixes the issue. I get it to Linus ASAP.
 
-Hi Alistair, Alan,
+Nice :)
 
-I've spent a few hours more looking into this, and I'm not really 
-getting much clearer;
+[...]
 
-I've run either and both of the two DVDroms on an external power-supply 
-(drive-power from a jumped, believed good ATX-PSU), and the the symptoms 
-remain; inconsistent capabilities reported at boot, and when I start 
-ripping CDs, one of them will fail as above.
+> +.section .cpuinit.data,"wa"
+> +.align 4
+> +ENTRY(initial_code)
+> +       .long i386_start_kernel
+> +
+>  .section .text
+>  /*
+>  * Real beginning of normal "text" segment
+>
 
-As I still have the impression that this started when I switched distros 
-(ie went from CentOS4 2.6.9 pre-libata-kernel to the current Ubuntu 8.04 
-2.6.24-kernel), I've now started playing around with the libata module 
-parameters.
+Hm, isn't there some kind of "section stack" that can be used to
+restore the previous section? .pushsection/.popsection directives?
 
-Further suggestions are most welcome .-)
 
-Yours,
--S
+Vegard
 
 -- 
-Simen Thoresen, Dolphin ICS
-Systems Administration and Wulfkit Support
-
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
