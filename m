@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbYG0Tnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759079AbYG0Tzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759275AbYG0Tnw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 15:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757604AbYG0Tnp
+	id S1759079AbYG0Tzb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 15:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbYG0TzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 15:43:45 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:29485 "EHLO
-	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751006AbYG0Tno (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 15:43:44 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=fGO4tVQLAAAA:8 a=e5mUnYsNAAAA:8 a=J7Emv_Ib2ZDzVmxTqGEA:9 a=on3AerLtWeNTlSql8qsA:7 a=SsADE4CtVzHiFqjzNvszvVpON6kA:4 a=RsnuHwBzcWYA:10 a=Nc4zK0GYoJ8A:10
-Message-ID: <488CCFEE.5040304@shaw.ca>
-Date: Sun, 27 Jul 2008 13:43:42 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Sun, 27 Jul 2008 15:55:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46981 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757622AbYG0TzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 15:55:22 -0400
 MIME-Version: 1.0
-To: Nikos Chantziaras <realnc@arcor.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: do_IRQ: 0.83/0.84 No irq handler for vector
-References: <fa.dCDqP8nkXgM8NhJMm3I+bMK+//w@ifi.uio.no> <fa.7GQkKKWUwuudcm81hY5cYLJkEY4@ifi.uio.no>
-In-Reply-To: <fa.7GQkKKWUwuudcm81hY5cYLJkEY4@ifi.uio.no>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] wait_task_inactive: don't consider task->nivcsw
+In-Reply-To: Oleg Nesterov's message of  Sunday, 27 July 2008 15:37:32 +0400 <20080727113732.GA178@tv-sign.ru>
+References: <200807260245.m6Q2jwB4012297@imap1.linux-foundation.org>
+	<20080727113732.GA178@tv-sign.ru>
+X-Zippy-Says: I wish I was on a Cincinnati street corner holding a clean dog!
+Message-Id: <20080727195513.5BE65154284@magilla.localdomain>
+Date: Sun, 27 Jul 2008 12:55:13 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nikos Chantziaras wrote:
-> Nikos Chantziaras wrote:
->> Kernel 2.6.26 (on x86-64) gives "do_IRQ: 0.83 No irq handler for 
->> vector" (and "do_IRQ: 0.83", but less often) warnings periodically.
-> 
-> I changed the kernel config:
-> 
->   - CONFIG_PCI_MSI=y
->   + # CONFIG_PCI_MSI is not set
-> 
-> In other words I disabled Message Signaled Interrupt support.  Now 
-> instead of "do_IRQ: 0.83 No irq handler for vector" I get:
-> 
->   +------ PCI-Express Device Error ------+
->   Error Severity          : Uncorrected (Non-Fatal)
->   PCIE Bus Error type     : Transaction Layer
->   Flow Control Protocol   : First
->   Receiver ID             : 0010
->   VendorID=1106h, DeviceID=a208h, Bus=00h, Device=02h, Function=00h
->   Broadcast error_detected message
->   Broadcast mmio_enabled message
->   Broadcast resume message
->   AER driver successfully recovered
-> 
-> (Repeated as many times as the "do_IRQ" message previously.)
-> 
-> In case someone needs it, this is my complete dmesg:
-> 
->   http://realnc.pastebin.com/d6534029
-> 
-> and this is the kernel configuration: 
-> http://bugs.freedesktop.org/attachment.cgi?id=17912
+> If wait_task_inactive() returns success the task was deactivated.
+> In that case schedule() always increments ->nvcsw which alone can
+> be used as a "generation counter".
 
-My guess is some device is that some device is generating MSI interrupts 
-without any handler being registered for it, and with MSI support 
-disabled it now generates a master abort instead. Most likely whatever 
-device is connected to the Bus=00h, Device=02h, Function=00h bridge. Can 
-you post "lspci -vv" output?
+Thanks, that looks fine to me.
+
+> Q: perhaps it is better to do "ncsw = (p->nvcsw << 1) | 1" ? This
+> decreases the possibility of "was it unscheduled" false positive
+> when ->nvcsw == 0.
+
+That makes sense.
+
+
+Thanks,
+Roland
