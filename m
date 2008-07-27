@@ -1,38 +1,110 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbYGYIjT (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 25 Jul 2008 04:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYGYIjH
+	id S1757737AbYG0PZ0 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 27 Jul 2008 11:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYG0PZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jul 2008 04:39:07 -0400
-Received: from tomts24.bellnexxia.net ([209.226.175.187]:48390 "EHLO
-	tomts24-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752425AbYGYIjG convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jul 2008 04:39:06 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Am4OAAkuiUjR4q/5WWdsb2JhbACBN4hHiE8BFgYHBRCaCQ
-X-IronPort-AV: E=Sophos;i="4.31,252,1215403200"; 
-   d="scan'208";a="62860819"
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [41.219.230.202]
-From: Chariiot 2008 Lottery Award <timex@bellnet.ca>
-Reply-To: relliancetrust@aim.com
-Organization: Charriot Lottery Award 2008
-To: info.com@bellnet.ca
-Subject: Claims
-Date: Fri, 25 Jul 2008 4:38:53 -0400
+	Sun, 27 Jul 2008 11:25:09 -0400
+Received: from unallocated.dg.net.ua ([213.186.218.211]:51336 "EHLO
+	mail.connect.com.ua" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752460AbYG0PZI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 11:25:08 -0400
+To: linux-kernel@vger.kernel.org
+Subject: =?UTF-8?B?0JrQvtC90L3QtdC60YIgfCDQl9C80ZbQvdC4INC30LAg0L7RgdGC0LDQvdC9?=  =?UTF-8?B?0ZbQuSDRgtC40LbQtNC10L3RjA==?=
+Date: Sun, 27 Jul 2008 18:25:03 +0300
+From: =?UTF-8?B?0JrQvtC80LDQvdC00LAg0JrQvtC90L3QtdC60YLQsA==?= 
+	<donotreply@connect.com.ua>
+Reply-to: Connect <donotreply@connect.com.ua>
+Message-ID: <ba1ba37e23f1b81615e248e49244545e@localhost.localdomain>
+X-Priority: 3
+X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.0 rc1]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Message-Id: <20080725083903.KLBA1580.tomts24-srv.bellnexxia.net@toip35-bus.srvr.bell.ca>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755210AbYGYIjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757737AbYG0PZ0@vger.kernel.org>
 
-Contact with your data[Names,address,occupation and country]for your
-=A31 000.000.00(G.B.P). sir Mr.Gideon Leslie Email address:
-relliancetrust@aim.com.
+=D0=92=D1=96=D1=82=D0=B0=D1=94=D0=BC=D0=BE, =D0=92=D0=BB=D0=B0=D0=B4=D0=
+=B8=D0=BC=D0=B8=D1=80 =D0=9A=D0=B8=D1=80=D0=B8=D0=BB=D0=BE=D0=B2!
+
+=D0=9F=D1=80=D0=BE=D0=BF=D0=BE=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=B4=D0=BE=
+ =D0=B2=D0=B0=D1=88=D0=BE=D1=97 =D1=83=D0=B2=D0=B0=D0=B3=D0=B8 =D0=BF=D0=
+=B5=D1=80=D0=B5=D0=BB=D1=96=D0=BA =D0=BD=D0=B0=D0=B9=D0=B1=D1=96=D0=BB=D1=
+=8C=D1=88 =D1=86=D1=96=D0=BA=D0=B0=D0=B2=D0=B8=D1=85 =D0=BF=D0=BE=D0=B4=
+=D1=96=D0=B9 =D0=BD=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82=D1=
+=96 =D0=B7=D0=B0 =D0=BE=D1=81=D1=82=D0=B0=D0=BD=D0=BD=D1=96=D0=B9 =D1=87=
+=D0=B0=D1=81:
+
+=D0=9A=D1=96=D0=BB=D1=8C=D0=BA=D0=B0 =D0=B4=D0=BD=D1=96=D0=B2 =D1=82=D0=
+=BE=D0=BC=D1=83 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82 =D0=BF=D1=96=
+=D0=B4=D0=B4=D0=B0=D0=B2=D1=81=D1=8F =D0=B0=D1=82=D0=B0=D1=86=D1=96 =D0=
+=B2=D1=96=D1=80=D1=83=D1=81=D1=83. =D0=92=D0=BD=D0=B0=D1=81=D0=BB=D1=96=
+=D0=B4=D0=BE=D0=BA =D1=87=D0=BE=D0=B3=D0=BE, =D0=B2=D1=96=D0=B4 =D1=96=D0=
+=BC=D0=B5=D0=BD=D1=96 =D1=80=D0=B5=D0=B0=D0=BB=D1=8C=D0=BD=D0=B8=D1=85 =
+=D0=BA=D0=BE=D1=80=D0=B8=D1=81=D1=82=D1=83=D0=B2=D0=B0=D1=87=D1=96=D0=B2=
+ =D0=B1=D0=B5=D0=B7 =D1=97=D1=85 =D0=B2=D1=96=D0=B4=D0=BE=D0=BC=D0=B0 =D0=
+=BD=D0=B0 =D1=81=D1=82=D1=96=D0=BD=D0=BA=D0=B0=D1=85 =D1=96=D0=BD=D1=88=
+=D0=B8=D1=85 =D0=BA=D0=BE=D1=80=D0=B8=D1=81=D1=82=D1=83=D0=B2=D0=B0=D1=87=
+=D1=96=D0=B2 =D0=BF=D1=83=D0=B1=D0=BB=D1=96=D0=BA=D1=83=D0=B2=D0=B0=D0=BB=
+=D0=B8=D1=81=D1=8F =D0=BF=D0=BE=D1=81=D0=B8=D0=BB=D0=B0=D0=BD=D0=BD=D1=8F=
+ =D0=BD=D0=B0 =D1=81=D0=B0=D0=B9=D1=82=D0=B8 =D0=BF=D0=BE=D1=80=D0=BD=D0=
+=BE=D0=B3=D1=80=D0=B0=D1=84=D1=96=D1=87=D0=BD=D0=BE=D0=B3=D0=BE =D0=B7=D0=
+=BC=D1=96=D1=81=D1=82=D1=83. =D0=9F=D0=BE=D0=B2=D1=96=D0=B4=D0=BE=D0=BC=
+=D0=BB=D0=B5=D0=BD=D0=BD=D1=8F =D0=B7=D1=96 =D1=81=D1=82=D1=96=D0=BD=D0=
+=BE=D0=BA =D0=B1=D1=83=D0=BB=D0=B8 =D0=B2=D0=B8=D0=B4=D0=B0=D0=BB=D0=B5=
+=D0=BD=D1=96, =D0=BF=D1=80=D0=B8=D0=B9=D0=BD=D1=8F=D1=82=D1=96 =D0=BC=D1=
+=96=D1=80=D0=B8 =D0=B4=D0=BB=D1=8F =D0=B7=D0=B0=D0=BF=D0=BE=D0=B1=D1=96=
+=D0=B3=D0=B0=D0=BD=D0=BD=D1=8F =D0=BF=D0=BE=D0=B2=D1=82=D0=BE=D1=80=D0=B5=
+=D0=BD=D0=BD=D1=8F =D0=B0=D1=82=D0=B0=D0=BA=D0=B8. =D0=9F=D1=80=D0=B8=D0=
+=BD=D0=BE=D1=81=D0=B8=D0=BC=D0=BE =D1=81=D0=B2=D0=BE=D1=97 =D0=B2=D0=B8=
+=D0=B1=D0=B0=D1=87=D0=B5=D0=BD=D0=BD=D1=8F.
+
+
+=D0=9D=D0=BE=D0=B2=D0=B5 =D0=B2i=D0=B4=D0=B5=D0=BE:
+=D0=A1=D1=80=D0=B5=D0=B4=D1=81=D1=82=D0=B2=D0=BE =D0=BF=D1=80=D0=BE=D1=82=
+=D0=B8=D0=B2 =D1=8D=D1=80=D0=B5=D0=BA=D1=86=D0=B8=D0=B8, 5563 =D0=BF=D0=
+=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4=D0=B0: http://connect.ua/video/=
+view?id=3D58218
+=D0=A1=D0=BE=D1=81=D0=B5=D0=B4 =D0=B8 =D1=81=D0=BE=D1=81=D0=B5=D0=B4=D0=
+=BA=D0=B0, 4432 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4=D0=B0:=
+ http://connect.ua/video/view?id=3D55070
+Ipod nano, 1640 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4i=D0=B2=
+: http://connect.ua/video/view?id=3D61000
+=D0=92=D1=81i =D0=B2i=D0=B4=D0=B5=D0=BE http://connect.ua/video
+
+=D0=AF=D0=BA=D1=89=D0=BE =D0=B2=D0=BA=D0=B0=D0=B7=D0=B0=D0=BD=D0=B5 =D0=
+=B2=D0=B8=D1=89=D0=B5 =D0=BF=D0=BE=D1=81=D0=B8=D0=BB=D0=B0=D0=BD=D0=BD=D1=
+=8F =D0=BD=D0=B5 =D0=B2=D1=96=D0=B4=D0=BA=D1=80=D0=B8=D0=B2=D0=B0=D1=94=
+=D1=82=D1=8C=D1=81=D1=8F, =D0=B7=D0=BA=D0=BE=D0=BF=D1=96=D1=8E=D0=B9=D1=
+=82=D0=B5 =D0=B9=D0=BE=D0=B3=D0=BE =D0=B4=D0=BE =D0=B1=D1=83=D1=84=D0=B5=
+=D1=80=D0=B0 =D0=BE=D0=B1=D0=BC=D1=96=D0=BD=D1=83, =D0=B2=D1=81=D1=82=D0=
+=B0=D0=B2=D1=82=D0=B5 =D0=B2 =D0=B0=D0=B4=D1=80=D0=B5=D1=81=D0=BD=D0=B8=
+=D0=B9 =D1=80=D1=8F=D0=B4=D0=BE=D0=BA =D0=B1=D1=80=D0=B0=D1=83=D0=B7=D0=
+=B5=D1=80=D0=B0 =D1=82=D0=B0 =D0=BD=D0=B0=D1=82=D0=B8=D1=81=D0=BD=D1=96=
+=D1=82=D1=8C Enter.
+
+=D0=92=D0=B8 =D0=BE=D1=82=D1=80=D0=B8=D0=BC=D0=B0=D0=BB=D0=B8 =D1=86=D0=
+=B5=D0=B9 =D0=BB=D0=B8=D1=81=D1=82, =D1=82=D0=BE=D0=BC=D1=83 =D1=89=D0=BE=
+ =D0=B7=D0=B0=D1=80=D0=B5=D1=94=D1=81=D1=82=D1=80=D0=BE=D0=B2=D0=B0=D0=BD=
+=D1=96 =D0=BD=D0=B0 =D1=81=D0=B0=D0=B9=D1=82=D1=96 =D0=BD=D0=B0=D1=86=D1=
+=96=D0=BE=D0=BD=D0=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D1=83=D0=BA=D1=80=D0=
+=B0=D1=97=D0=BD=D1=81=D1=8C=D0=BA=D0=BE=D1=97 =D1=81=D0=BE=D1=86=D1=96=D0=
+=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D0=BC=D0=B5=D1=80=D0=B5=D0=B6=D1=96 =
+Connect.ua
+
+=D0=92=D0=B8 =D0=BC=D0=BE=D0=B6=D0=B5=D1=82=D0=B5 =D0=B7=D0=BC=D1=96=D0=
+=BD=D0=B8=D1=82=D0=B8 =D0=BF=D0=B0=D1=80=D0=B0=D0=BC=D0=B5=D1=82=D1=80=D0=
+=B8 =D0=B2=D1=96=D0=B4=D0=BF=D1=80=D0=B0=D0=B2=D0=BB=D0=B5=D0=BD=D0=BD=D1=
+=8F =D0=BF=D0=BE=D0=B2=D1=96=D0=B4=D0=BE=D0=BC=D0=BB=D0=B5=D0=BD=D1=8C =
+=D0=B2 =D0=BE=D0=BF=D1=86=D1=96=D1=8F=D1=85 =D0=B0=D0=BD=D0=BA=D0=B5=D1=
+=82=D0=B8.
+
+=D0=9E=D0=B1`=D1=94=D0=B4=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=A3=D0=BA=D1=
+=80=D0=B0=D1=97=D0=BD=D1=83!
+=D0=9A=D0=BE=D0=BC=D0=B0=D0=BD=D0=B4=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=
+=D0=BA=D1=82=D1=83
 
 --
 To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
