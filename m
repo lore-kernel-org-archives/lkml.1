@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759038AbYG0Gxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752111AbYG0HxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759038AbYG0Gxc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 02:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756959AbYG0GxX
+	id S1752111AbYG0HxT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 03:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750834AbYG0HxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 02:53:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35180 "EHLO mx1.redhat.com"
+	Sun, 27 Jul 2008 03:53:08 -0400
+Received: from gate.crashing.org ([63.228.1.57]:37167 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756887AbYG0GxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 02:53:22 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-X-Fcc: ~/Mail/linus
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] powerpc: tracehook: CONFIG_HAVE_ARCH_TRACEHOOK
-In-Reply-To: Roland McGrath's message of  Saturday, 26 July 2008 23:48:59 -0700 <20080727064859.69692154280@magilla.localdomain>
+	id S1750824AbYG0HxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 03:53:07 -0400
+Subject: Re: [PATCH 0/5] powerpc tracehook
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Roland McGrath <roland@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080727064859.69692154280@magilla.localdomain>
 References: <20080727064859.69692154280@magilla.localdomain>
-X-Shopping-List: (1) Hydroelectric reluctant insurgents
-   (2) Educated luminous winters
-   (3) Illogical yies
-   (4) Economical nutrition
-Message-Id: <20080727065320.972D9154280@magilla.localdomain>
-Date: Sat, 26 Jul 2008 23:53:20 -0700 (PDT)
+Content-Type: text/plain
+Date: Sun, 27 Jul 2008 17:52:45 +1000
+Message-Id: <1217145165.11188.132.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The powerpc arch code has all the prerequisites, so set HAVE_ARCH_TRACEHOOK.
+On Sat, 2008-07-26 at 23:48 -0700, Roland McGrath wrote:
+> These patches are posted for review, but you can just pull the GIT branch
+> if you prefer.  Patch 1/5 corrects a long-standing (minor) error in ptrace
+> behavior.  The others change no existing behavior, just enable new and
+> future features to work on the arch.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/powerpc/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Hi Roland !
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index fe88418..587da5e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -117,6 +117,7 @@ config PPC
- 	select HAVE_KPROBES
- 	select HAVE_ARCH_KGDB
- 	select HAVE_KRETPROBES
-+	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_LMB
- 	select HAVE_DMA_ATTRS if PPC64
- 	select USE_GENERIC_SMP_HELPERS if SMP
+Thanks for this. I haven't followed the story of tracehook so far, are
+those patches dependent on something else or it's all already upstream
+and do you think that's still 2.6.27 material ?
+
+Cheers,
+Ben.
+
+> The following changes since commit 8be1a6d6c77ab4532e4476fdb8177030ef48b52c:
+>   Linus Torvalds (1):
+>         Merge branch 'for-linus' of git://git.kernel.org/.../roland/infiniband
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git powerpc-tracehook
+> 
+> Roland McGrath (5):
+>       powerpc: tracehook_signal_handler
+>       powerpc: tracehook syscall
+>       powerpc: tracehook: asm/syscall.h
+>       powerpc: tracehook: TIF_NOTIFY_RESUME
+>       powerpc: tracehook: CONFIG_HAVE_ARCH_TRACEHOOK
+> 
+>  arch/powerpc/Kconfig              |    1 +
+>  arch/powerpc/kernel/entry_32.S    |   11 ++++-
+>  arch/powerpc/kernel/entry_64.S    |   10 +++-
+>  arch/powerpc/kernel/ptrace.c      |   47 ++++++++++-----------
+>  arch/powerpc/kernel/signal.c      |   21 ++++++++-
+>  include/asm-powerpc/ptrace.h      |    1 +
+>  include/asm-powerpc/signal.h      |    3 +-
+>  include/asm-powerpc/syscall.h     |   84 +++++++++++++++++++++++++++++++++++++
+>  include/asm-powerpc/thread_info.h |    5 ++-
+>  9 files changed, 147 insertions(+), 36 deletions(-)
+>  create mode 100644 include/asm-powerpc/syscall.h
+> 
+> 
+> Thanks,
+> Roland
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
