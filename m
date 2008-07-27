@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbYG0NFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757890AbYG0NFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757573AbYG0NFa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 09:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYG0NFQ
+	id S1757890AbYG0NFn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 09:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757504AbYG0NF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 09:05:16 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:33094 "EHLO smtp5.pp.htv.fi"
+	Sun, 27 Jul 2008 09:05:26 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:41754 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751858AbYG0NFO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 09:05:14 -0400
-Date: Sun, 27 Jul 2008 16:04:38 +0300
+	id S1757470AbYG0NFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 09:05:24 -0400
+Date: Sun, 27 Jul 2008 16:04:48 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Andi Kleen <ak@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: wli@holomorphy.com, linux-kernel@vger.kernel.org, lethal@linux-sh.org,
-       linux-sh@vger.kernel.org
-Subject: [2.6 patch] mm/hugetlb.c must #include <asm/io.h>
-Message-ID: <20080727130438.GJ9301@cs181140183.pp.htv.fi>
+To: bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] simplify MAX_HWIFS setting
+Message-ID: <20080727130448.GK9301@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,35 +23,84 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following build error on sh caused by
-commit aa888a74977a8f2120ae9332376e179c39a6b07d
-(hugetlb: support larger than MAX_ORDER):
+The sh systemh_defconfig currently fails to build with the following 
+error:
 
 <--  snip  -->
 
 ...
-  CC      mm/hugetlb.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/hugetlb.c: In function 'alloc_bootmem_huge_page':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/hugetlb.c:958: error: implicit declaration of function 'virt_to_phys'
-make[2]: *** [mm/hugetlb.o] Error 1
+  CC      arch/sh/boards/renesas/systemh/irq.o
+In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/boards/renesas/systemh/irq.c:16:
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/ide.h:645: error: 'CONFIG_IDE_MAX_HWIFS' undeclared here (not in a function)
+make[2]: *** [arch/sh/boards/renesas/systemh/irq.o] Error 1
 
 <--  snip  -->
+
+Considering the little benefits of all this fiddling with IDE_MAX_HWIFS 
+I decided to fix it through a simplification:
+- always #define MAX_HWIFS      CONFIG_IDE_MAX_HWIFS
+- always set CONFIG_IDE_MAX_HWIFS in kconfig
+- let IDE_MAX_HWIFS default to 10
+- allow changing the value of IDE_MAX_HWIFS only if IDE && EMBEDDED
 
 Reported-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-98c5be88abb276588ea1f377f08726308765aa3c 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index a8bf4ab..6101012 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -19,6 +19,7 @@
+
+ drivers/ide/Kconfig |    9 ++++-----
+ include/linux/ide.h |   11 -----------
+ 2 files changed, 4 insertions(+), 16 deletions(-)
+
+fd8ca9d5fefc48c04caa910adb753924454d9cfc 
+diff --git a/drivers/ide/Kconfig b/drivers/ide/Kconfig
+index 130ef64..174b627 100644
+--- a/drivers/ide/Kconfig
++++ b/drivers/ide/Kconfig
+@@ -52,18 +52,17 @@ menuconfig IDE
  
- #include <asm/page.h>
- #include <asm/pgtable.h>
-+#include <asm/io.h>
+ 	  If unsure, say Y.
  
- #include <linux/hugetlb.h>
- #include "internal.h"
+-if IDE
+-
+ config IDE_MAX_HWIFS
+-	int "Max IDE interfaces"
+-	depends on ALPHA || SUPERH || IA64 || EMBEDDED
++	int "Max IDE interfaces" if IDE && EMBEDDED
+ 	range 1 10
+-	default 4
++	default 10
+ 	help
+ 	  This is the maximum number of IDE hardware interfaces that will
+ 	  be supported by the driver. Make sure it is at least as high as
+ 	  the number of IDE interfaces in your system.
+ 
++if IDE
++
+ config BLK_DEV_IDE
+ 	tristate "Enhanced IDE/MFM/RLL disk/cdrom/tape/floppy support"
+ 	---help---
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index b846bc4..b5b84fe 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -219,18 +219,7 @@ static inline int __ide_default_irq(unsigned long base)
+ #include <asm-generic/ide_iops.h>
+ #endif
+ 
+-#ifndef MAX_HWIFS
+-#if defined(CONFIG_BLACKFIN) || defined(CONFIG_H8300) || defined(CONFIG_XTENSA)
+-# define MAX_HWIFS	1
+-#else
+-# define MAX_HWIFS	10
+-#endif
+-#endif
+-
+-#if !defined(MAX_HWIFS) || defined(CONFIG_EMBEDDED)
+-#undef MAX_HWIFS
+ #define MAX_HWIFS	CONFIG_IDE_MAX_HWIFS
+-#endif
+ 
+ /* Currently only m68k, apus and m8xx need it */
+ #ifndef IDE_ARCH_ACK_INTR
 
