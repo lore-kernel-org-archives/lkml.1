@@ -1,89 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758966AbYG0Vs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbYG0Vti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758966AbYG0Vs4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 17:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758151AbYG0Vss
+	id S1759451AbYG0Vti (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 17:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758579AbYG0Vta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 17:48:48 -0400
-Received: from www.tglx.de ([62.245.132.106]:33641 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757727AbYG0Vss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 17:48:48 -0400
-Date: Sun, 27 Jul 2008 23:47:12 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Venkatesch Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <lenb@kernel.org>, Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH] ACPI/CPUIDLE: prevent setting pm_idle to NULL
-Message-ID: <alpine.LFD.1.10.0807272343480.574@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sun, 27 Jul 2008 17:49:30 -0400
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:35949 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757614AbYG0Vta (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 17:49:30 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=2rndQQRu8S+E/fru9HVMQsGzHZZVgcwfs1HyfX1eqYhDfUgp15VFbGCVydURGIVhvdv38gdPdTeUl7WC+5LyKbTFuTY85QgDu5AiOejp3vNIjtiwFrksXz/d/jvSRL5f56adoLRQyapcQyl9eZL2qsnxy41ScR6CLWAPikPb8RY=  ;
+X-YMail-OSG: mKsj87sVM1m8LPEwLlidZDN27hNrCQi1g4S7DxdZd39VnuI28_loqKGiiaRE_P_budga9MZ8GIesT0gNCpYJrHnUIRUFDpeXCV6g5yLjAECPgR_7ULGEQNuM14W1bRIeREo-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: spi-devel-general@lists.sourceforge.net
+Subject: Re: [PATCH v3 0/4 REPOST] OF infrastructure for SPI devices
+Date: Sun, 27 Jul 2008 14:49:28 -0700
+User-Agent: KMail/1.9.9
+Cc: Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linuxppc-dev@ozlabs.org, jonsmirl@gmail.com
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+In-Reply-To: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200807271449.28472.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pm_idle_save resp. pm_idle_old can be NULL when the restore code in 
-acpi_processor_cst_has_changed() resp. cpuidle_uninstall_idle_handler()
-is called. This can set pm_idle unconditinally to NULL, which causes the
-kernel to panic when calling pm_idle in the x86 idle code. This was
-covered by an extra check for !pm_idle in the x86 idle code, which was
-removed during the x86 idle code refactoring.
+On Friday 25 July 2008, Grant Likely wrote:
+> I don't know what to do with these patches.  I'd really like to see them
+> in .27, and now that akpm has cleared his queue, the prerequisite patch
+> has been merged so they are ready to go in.  However, even though there
+> has been favourable reception on the SPI and linuxppc lists for these
+> changes I don't have any acks from anybody yet.
+> 
+> David, can you please reply on if you are okay with these patches
+> getting merged?  If so, do you want me to merge them via my tree, or
+> do you want to pick them up?
 
-Instead of restoring the pm_idle check in the x86 code prevent the
-acpi/cpuidle code to set pm_idle to NULL.
+OK ... to recap, #1 and #3 are OF-specific, I'll be agnostic.
+If other OF folk think it's OK, great.
 
-Reported by: Dhaval Giani http://lkml.org/lkml/2008/7/2/309
-Based on a debug patch from Ingo Molnar
+Some cleanup was needed for #2, but it was basically ok ...
+I'd like to see the final version, and if it goes via an
+OF push that's OK by me.  (Though I'd like to see that change
+make it into 2.6.27 regardless, so let me know.)
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index b7f2963..283c08f 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -1332,9 +1332,15 @@ int acpi_processor_cst_has_changed(struct acpi_processor *pr)
- 	if (!pr->flags.power_setup_done)
- 		return -ENODEV;
- 
--	/* Fall back to the default idle loop */
--	pm_idle = pm_idle_save;
--	synchronize_sched();	/* Relies on interrupts forcing exit from idle. */
-+	/*
-+	 * Fall back to the default idle loop, when pm_idle_save had
-+	 * been initialized.
-+	 */
-+	if (pm_idle_save) {
-+		pm_idle = pm_idle_save;
-+		/* Relies on interrupts forcing exit from idle. */
-+		synchronize_sched();
-+	}
- 
- 	pr->flags.power = 0;
- 	result = acpi_processor_get_power_info(pr);
-@@ -1896,7 +1902,8 @@ int acpi_processor_power_exit(struct acpi_processor *pr,
- 
- 	/* Unregister the idle handler when processor #0 is removed. */
- 	if (pr->id == 0) {
--		pm_idle = pm_idle_save;
-+		if (pm_idle_save)
-+			pm_idle = pm_idle_save;
- 
- 		/*
- 		 * We are about to unload the current idle thread pm callback
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 5405769..5ce07b5 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -94,7 +94,7 @@ void cpuidle_install_idle_handler(void)
-  */
- void cpuidle_uninstall_idle_handler(void)
- {
--	if (enabled_devices && (pm_idle != pm_idle_old)) {
-+	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
- 		pm_idle = pm_idle_old;
- 		cpuidle_kick_cpus();
- 	}
+And #4 isn't quite cooked yet.
