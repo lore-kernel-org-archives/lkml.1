@@ -1,305 +1,386 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755709AbYG0Ka2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbYG0Kao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755709AbYG0Ka2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 06:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYG0KaT
+	id S1757405AbYG0Kao (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 06:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYG0KaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 06:30:19 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:40728 "HELO
+	Sun, 27 Jul 2008 06:30:21 -0400
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:40738 "HELO
 	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751333AbYG0KaR (ORCPT
+	by vger.kernel.org with SMTP id S1751367AbYG0KaS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 06:30:17 -0400
+	Sun, 27 Jul 2008 06:30:18 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-Newman-Property:To:Subject:Cc:Content-Disposition:From:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=R4rq2FRq9oti5hUblqocjtDKhQPTyfaKYKcYAXWBtkxU/C3TJW43X6VrMCMaOAvmlUXcWCwp1pT9KcHriMqs4hfS0OJK1afAAqFa5BurdoZx+gJc+FophT1vlucsgNXgM296JKhLcqFSp2RyjgUSOZ8IkqFJ2nbVgVOSaQddvDw=  ;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:To:Subject:Cc:Content-Disposition:From:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=ORiAMKoiULIlGAzC28oPM8CgA1IFyCpgH/wKv+d5LqIY3IFnzglUNx3m8t3sbuLOsaIvL+ODkkf7s9BZqI57h8PG+EklYjvrIxzsuNbg+ngxPec6GYFijJiqEgq9b+YettouAN5i8rIQPLSu3GIHx+9AOhHal77Vyg019ACToG8=  ;
+X-YMail-OSG: W0dqHtYVM1nfHWLxHMXbJp5o7RMSc1Ui6RZqIhDIJwNhIMZr47NFx0cOb_55UpaDpAPSSp8e9Yxs0WBL8guvJz1LNQnHTQ9P0CjMeDXzqg--
 X-Yahoo-Newman-Property: ymail-3
-To: Andrew Morton <akpm@linux-foundation.org>, linux-mtd@lists.infradead.org,
-       dwmw2@infradead.org
-Subject: [RESEND x2 PATCH 2.6.26-git 1/2] MTD DataFlash: bugfix, binary page sizes now handled (v3)
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [RESEND x2 PATCH 2.6.26-git 2/2] mtd:  dataflash OTP support
 Cc: Bryan Wu <cooloney@kernel.org>,
        Michael Hennerich <michael.hennerich@analog.com>,
-       linux-kernel@vger.kernel.org
+       lkml <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org
 Content-Disposition: inline
 From: David Brownell <david-b@pacbell.net>
-Date: Sun, 27 Jul 2008 03:25:13 -0700
+Date: Sun, 27 Jul 2008 03:28:01 -0700
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200807270325.13790.david-b@pacbell.net>
+Message-Id: <200807270328.01802.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Brownell <dbrownell@users.sourceforge.net>
 
-The wrong version of the "teach dataflash about binary density" patch
-just got merged (v2 not v3) ... this restores the missing updates:
+Now that we can tell when we have one of the newer DataFlash chips,
+optionally expose the 128 bytes of OTP memory they provide.  Tested
+on at45db642 revision B and D chips.
 
-  * Fix the cmdlinepart *regression* that caused testing failures (!!)
-    by restoring the original part labels in relevant cases.
-
-  * Don't reference things that don't exist (!)
-	- An opcode that doesn't even exist for DataFlash
-	- The part is "at45db642" not "at45db641"
-	- ID zero in this JEDEC table
-
-  * Make the JEDEC probe routine report and handle errors better:
-	- If the SPI calls fail, return the error codes.
-	- Don't depend on ordering of table entries.
-	- Unrecognized ids are different from parts that have no ID.
-          We won't actually know how to handle them correctly; display
-	  the ID and ignore the chip.
-
-  * Move the original block comment about the "legacy" chip ID scheme
-    back next to the code to which it applies ... not next to the new
-    JEDEC query code, which uses an entirely different strategy.
-
-  * Don't print a guessed erasesize; /proc/mtd has the real value.
-
-And add a few more comments.
+Switch mtdchar over to a generic HAVE_MTD_OTP flag instead of adding
+another #ifdef for each type of chip whose driver has OTP support.
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
-Refreshed against current GIT
+Refreshed against latest GIT; re-verified on '642d part.
 
- drivers/mtd/devices/mtd_dataflash.c |  130 +++++++++++++++++++++-------------
- 1 file changed, 83 insertions(+), 47 deletions(-)
+ drivers/mtd/Kconfig                 |    5 
+ drivers/mtd/chips/Kconfig           |    1 
+ drivers/mtd/devices/Kconfig         |   11 +
+ drivers/mtd/devices/mtd_dataflash.c |  206 ++++++++++++++++++++++++++++++++--
+ drivers/mtd/mtdchar.c               |    4 
+ drivers/mtd/onenand/Kconfig         |    1 
+ 6 files changed, 219 insertions(+), 9 deletions(-)
 
---- a/drivers/mtd/devices/mtd_dataflash.c	2008-07-27 01:27:21.000000000 -0700
-+++ b/drivers/mtd/devices/mtd_dataflash.c	2008-07-27 02:02:39.000000000 -0700
-@@ -15,6 +15,8 @@
- #include <linux/delay.h>
- #include <linux/device.h>
- #include <linux/mutex.h>
-+#include <linux/err.h>
-+
- #include <linux/spi/spi.h>
- #include <linux/spi/flash.h>
+--- a/drivers/mtd/Kconfig	2008-07-26 23:36:16.000000000 -0700
++++ b/drivers/mtd/Kconfig	2008-07-27 02:06:54.000000000 -0700
+@@ -172,6 +172,11 @@ config MTD_CHAR
+ 	  memory chips, and also use ioctl() to obtain information about
+ 	  the device, or to erase parts of it.
  
-@@ -487,9 +489,8 @@ add_dataflash(struct spi_device *spi, ch
++config HAVE_MTD_OTP
++	bool
++	help
++	  Enable access to OTP regions using MTD_CHAR.
++
+ config MTD_BLKDEVS
+ 	tristate "Common interface to block layer for MTD 'translation layers'"
+ 	depends on BLOCK
+--- a/drivers/mtd/chips/Kconfig	2008-07-26 23:33:36.000000000 -0700
++++ b/drivers/mtd/chips/Kconfig	2008-07-27 02:06:54.000000000 -0700
+@@ -154,6 +154,7 @@ config MTD_CFI_I8
+ config MTD_OTP
+ 	bool "Protection Registers aka one-time programmable (OTP) bits"
+ 	depends on MTD_CFI_ADV_OPTIONS
++	select HAVE_MTD_OTP
+ 	default n
+ 	help
+ 	  This enables support for reading, writing and locking so called
+--- a/drivers/mtd/devices/Kconfig	2008-07-26 23:36:16.000000000 -0700
++++ b/drivers/mtd/devices/Kconfig	2008-07-27 02:06:54.000000000 -0700
+@@ -59,6 +59,17 @@ config MTD_DATAFLASH
+ 	  Sometimes DataFlash chips are packaged inside MMC-format
+ 	  cards; at this writing, the MMC stack won't handle those.
+ 
++config MTD_DATAFLASH_OTP
++	bool "DataFlash OTP support (Security Register)"
++	depends on MTD_DATAFLASH
++	select HAVE_MTD_OTP
++	help
++	  Newer DataFlash chips (revisions C and D) support 128 bytes of
++	  one-time-programmable (OTP) data.  The first half may be written
++	  (once) with up to 64 bytes of data, such as a serial number or
++	  other key product data.  The second half is programmed with a
++	  unique-to-each-chip bit pattern at the factory.
++
+ config MTD_M25P80
+ 	tristate "Support most SPI Flash chips (AT26DF, M25P, W25X, ...)"
+ 	depends on SPI_MASTER && EXPERIMENTAL
+--- a/drivers/mtd/devices/mtd_dataflash.c	2008-07-27 02:02:39.000000000 -0700
++++ b/drivers/mtd/devices/mtd_dataflash.c	2008-07-27 02:06:54.000000000 -0700
+@@ -80,7 +80,8 @@
+  */
+ #define OP_READ_ID		0x9F
+ #define OP_READ_SECURITY	0x77
+-#define OP_WRITE_SECURITY	0x9A	/* OTP bits */
++#define OP_WRITE_SECURITY_REVC	0x9A
++#define OP_WRITE_SECURITY	0x9B	/* revision D */
+ 
+ 
+ struct dataflash {
+@@ -451,16 +452,192 @@ static int dataflash_write(struct mtd_in
+ 
+ /* ......................................................................... */
+ 
++#ifdef CONFIG_MTD_DATAFLASH_OTP
++
++static int dataflash_get_otp_info(struct mtd_info *mtd,
++		struct otp_info *info, size_t len)
++{
++	/* Report both blocks as identical:  bytes 0..64, locked.
++	 * Unless the user block changed from all-ones, we can't
++	 * tell whether it's still writable; so we assume it isn't.
++	 */
++	info->start = 0;
++	info->length = 64;
++	info->locked = 1;
++	return sizeof(*info);
++}
++
++static ssize_t otp_read(struct spi_device *spi, unsigned base,
++		uint8_t *buf, loff_t off, size_t len)
++{
++	struct spi_message	m;
++	size_t			l;
++	uint8_t			*scratch;
++	struct spi_transfer	t;
++	int			status;
++
++	if (off > 64)
++		return -EINVAL;
++
++	if ((off + len) > 64)
++		len = 64 - off;
++	if (len == 0)
++		return len;
++
++	spi_message_init(&m);
++
++	l = 4 + base + off + len;
++	scratch = kzalloc(l, GFP_KERNEL);
++	if (!scratch)
++		return -ENOMEM;
++
++	/* OUT: OP_READ_SECURITY, 3 don't-care bytes, zeroes
++	 * IN:  ignore 4 bytes, data bytes 0..N (max 127)
++	 */
++	scratch[0] = OP_READ_SECURITY;
++
++	memset(&t, 0, sizeof t);
++	t.tx_buf = scratch;
++	t.rx_buf = scratch;
++	t.len = l;
++	spi_message_add_tail(&t, &m);
++
++	dataflash_waitready(spi);
++
++	status = spi_sync(spi, &m);
++	if (status >= 0) {
++		memcpy(buf, scratch + 4 + base + off, len);
++		status = len;
++	}
++
++	kfree(scratch);
++	return status;
++}
++
++static int dataflash_read_fact_otp(struct mtd_info *mtd,
++		loff_t from, size_t len, size_t *retlen, u_char *buf)
++{
++	struct dataflash	*priv = (struct dataflash *)mtd->priv;
++	int			status;
++
++	/* 64 bytes, from 0..63 ... start at 64 on-chip */
++	mutex_lock(&priv->lock);
++	status = otp_read(priv->spi, 64, buf, from, len);
++	mutex_unlock(&priv->lock);
++
++	if (status < 0)
++		return status;
++	*retlen = status;
++	return 0;
++}
++
++static int dataflash_read_user_otp(struct mtd_info *mtd,
++		loff_t from, size_t len, size_t *retlen, u_char *buf)
++{
++	struct dataflash	*priv = (struct dataflash *)mtd->priv;
++	int			status;
++
++	/* 64 bytes, from 0..63 ... start at 0 on-chip */
++	mutex_lock(&priv->lock);
++	status = otp_read(priv->spi, 0, buf, from, len);
++	mutex_unlock(&priv->lock);
++
++	if (status < 0)
++		return status;
++	*retlen = status;
++	return 0;
++}
++
++static int dataflash_write_user_otp(struct mtd_info *mtd,
++		loff_t from, size_t len, size_t *retlen, u_char *buf)
++{
++	struct spi_message	m;
++	const size_t		l = 4 + 64;
++	uint8_t			*scratch;
++	struct spi_transfer	t;
++	struct dataflash	*priv = (struct dataflash *)mtd->priv;
++	int			status;
++
++	if (len > 64)
++		return -EINVAL;
++
++	/* Strictly speaking, we *could* truncate the write ... but
++	 * let's not do that for the only write that's ever possible.
++	 */
++	if ((from + len) > 64)
++		return -EINVAL;
++
++	/* OUT: OP_WRITE_SECURITY, 3 zeroes, 64 data-or-zero bytes
++	 * IN:  ignore all
++	 */
++	scratch = kzalloc(l, GFP_KERNEL);
++	if (!scratch)
++		return -ENOMEM;
++	scratch[0] = OP_WRITE_SECURITY;
++	memcpy(scratch + 4 + from, buf, len);
++
++	spi_message_init(&m);
++
++	memset(&t, 0, sizeof t);
++	t.tx_buf = scratch;
++	t.len = l;
++	spi_message_add_tail(&t, &m);
++
++	/* Write the OTP bits, if they've not yet been written.
++	 * This modifies SRAM buffer1.
++	 */
++	mutex_lock(&priv->lock);
++	dataflash_waitready(priv->spi);
++	status = spi_sync(priv->spi, &m);
++	mutex_unlock(&priv->lock);
++
++	kfree(scratch);
++
++	if (status >= 0) {
++		status = 0;
++		*retlen = len;
++	}
++	return status;
++}
++
++static char *otp_setup(struct mtd_info *device, char revision)
++{
++	device->get_fact_prot_info = dataflash_get_otp_info;
++	device->read_fact_prot_reg = dataflash_read_fact_otp;
++	device->get_user_prot_info = dataflash_get_otp_info;
++	device->read_user_prot_reg = dataflash_read_user_otp;
++
++	/* rev c parts (at45db321c and at45db1281 only!) use a
++	 * different write procedure; not (yet?) implemented.
++	 */
++	if (revision > 'c')
++		device->write_user_prot_reg = dataflash_write_user_otp;
++
++	return ", OTP";
++}
++
++#else
++
++static char *otp_setup(struct mtd_info *device)
++{
++	return " (OTP)";
++}
++
++#endif
++
++/* ......................................................................... */
++
+ /*
+  * Register DataFlash device with MTD subsystem.
+  */
+ static int __devinit
+-add_dataflash(struct spi_device *spi, char *name,
+-		int nr_pages, int pagesize, int pageoffset)
++add_dataflash_otp(struct spi_device *spi, char *name,
++		int nr_pages, int pagesize, int pageoffset, char revision)
+ {
+ 	struct dataflash		*priv;
+ 	struct mtd_info			*device;
+ 	struct flash_platform_data	*pdata = spi->dev.platform_data;
++	char				*otp_tag = "";
+ 
+ 	priv = kzalloc(sizeof *priv, GFP_KERNEL);
+ 	if (!priv)
+@@ -489,8 +666,12 @@ add_dataflash(struct spi_device *spi, ch
  	device->write = dataflash_write;
  	device->priv = priv;
  
--	dev_info(&spi->dev, "%s (%d KBytes) pagesize %d bytes, "
--		"erasesize %d bytes\n", name, device->size/1024,
--		 pagesize, pagesize * 8);	/* 8 pages = 1 block */
-+	dev_info(&spi->dev, "%s (%d KBytes) pagesize %d bytes\n",
-+			name, DIV_ROUND_UP(device->size, 1024), pagesize);
+-	dev_info(&spi->dev, "%s (%d KBytes) pagesize %d bytes\n",
+-			name, DIV_ROUND_UP(device->size, 1024), pagesize);
++	if (revision >= 'c')
++		otp_tag = otp_setup(device, revision);
++
++	dev_info(&spi->dev, "%s (%d KBytes) pagesize %d bytes%s\n",
++			name, DIV_ROUND_UP(device->size, 1024),
++			pagesize, otp_tag);
  	dev_set_drvdata(&spi->dev, priv);
  
  	if (mtd_has_partitions()) {
-@@ -518,65 +519,57 @@ add_dataflash(struct spi_device *spi, ch
+@@ -519,6 +700,14 @@ add_dataflash(struct spi_device *spi, ch
  	return add_mtd_device(device) == 1 ? -ENODEV : 0;
  }
  
--/*
-- * Detect and initialize DataFlash device:
-- *
-- *   Device      Density         ID code          #Pages PageSize  Offset
-- *   AT45DB011B  1Mbit   (128K)  xx0011xx (0x0c)    512    264      9
-- *   AT45DB021B  2Mbit   (256K)  xx0101xx (0x14)   1024    264      9
-- *   AT45DB041B  4Mbit   (512K)  xx0111xx (0x1c)   2048    264      9
-- *   AT45DB081B  8Mbit   (1M)    xx1001xx (0x24)   4096    264      9
-- *   AT45DB0161B 16Mbit  (2M)    xx1011xx (0x2c)   4096    528     10
-- *   AT45DB0321B 32Mbit  (4M)    xx1101xx (0x34)   8192    528     10
-- *   AT45DB0642  64Mbit  (8M)    xx111xxx (0x3c)   8192   1056     11
-- *   AT45DB1282  128Mbit (16M)   xx0100xx (0x10)  16384   1056     11
-- */
--
++static inline int __devinit
++add_dataflash(struct spi_device *spi, char *name,
++		int nr_pages, int pagesize, int pageoffset)
++{
++	return add_dataflash_otp(spi, name, nr_pages, pagesize,
++			pageoffset, 0);
++}
++
  struct flash_info {
  	char		*name;
  
--	/* JEDEC id zero means "no ID" (most older chips); otherwise it has
--	 * a high byte of zero plus three data bytes: the manufacturer id,
--	 * then a two byte device id.
-+	/* JEDEC id has a high byte of zero plus three data bytes:
-+	 * the manufacturer id, then a two byte device id.
- 	 */
- 	uint32_t	jedec_id;
- 
--	/* The size listed here is what works with OPCODE_SE, which isn't
--	 * necessarily called a "sector" by the vendor.
--	 */
-+	/* The size listed here is what works with OP_ERASE_PAGE. */
- 	unsigned	nr_pages;
- 	uint16_t	pagesize;
- 	uint16_t	pageoffset;
- 
- 	uint16_t	flags;
--#define	SUP_POW2PS	0x02
--#define	IS_POW2PS	0x01
-+#define SUP_POW2PS	0x0002		/* supports 2^N byte pages */
-+#define IS_POW2PS	0x0001		/* uses 2^N byte pages */
- };
- 
- static struct flash_info __devinitdata dataflash_data [] = {
- 
--	{ "at45db011d",  0x1f2200, 512, 264, 9, SUP_POW2PS},
-+	/*
-+	 * NOTE:  chips with SUP_POW2PS (rev D and up) need two entries,
-+	 * one with IS_POW2PS and the other without.  The entry with the
-+	 * non-2^N byte page size can't name exact chip revisions without
-+	 * losing backwards compatibility for cmdlinepart.
-+	 *
-+	 * These newer chips also support 128-byte security registers (with
-+	 * 64 bytes one-time-programmable) and software write-protection.
-+	 */
-+	{ "AT45DB011B",  0x1f2200, 512, 264, 9, SUP_POW2PS},
- 	{ "at45db011d",  0x1f2200, 512, 256, 8, SUP_POW2PS | IS_POW2PS},
- 
--	{ "at45db021d",  0x1f2300, 1024, 264, 9, SUP_POW2PS},
-+	{ "AT45DB021B",  0x1f2300, 1024, 264, 9, SUP_POW2PS},
- 	{ "at45db021d",  0x1f2300, 1024, 256, 8, SUP_POW2PS | IS_POW2PS},
- 
--	{ "at45db041d",  0x1f2400, 2048, 264, 9, SUP_POW2PS},
-+	{ "AT45DB041x",  0x1f2400, 2048, 264, 9, SUP_POW2PS},
- 	{ "at45db041d",  0x1f2400, 2048, 256, 8, SUP_POW2PS | IS_POW2PS},
- 
--	{ "at45db081d",  0x1f2500, 4096, 264, 9, SUP_POW2PS},
-+	{ "AT45DB081B",  0x1f2500, 4096, 264, 9, SUP_POW2PS},
- 	{ "at45db081d",  0x1f2500, 4096, 256, 8, SUP_POW2PS | IS_POW2PS},
- 
--	{ "at45db161d",  0x1f2600, 4096, 528, 10, SUP_POW2PS},
-+	{ "AT45DB161x",  0x1f2600, 4096, 528, 10, SUP_POW2PS},
- 	{ "at45db161d",  0x1f2600, 4096, 512, 9, SUP_POW2PS | IS_POW2PS},
- 
--	{ "at45db321c",  0x1f2700, 8192, 528, 10, },
-+	{ "AT45DB321x",  0x1f2700, 8192, 528, 10, 0},		/* rev C */
- 
--	{ "at45db321d",  0x1f2701, 8192, 528, 10, SUP_POW2PS},
-+	{ "AT45DB321x",  0x1f2701, 8192, 528, 10, SUP_POW2PS},
- 	{ "at45db321d",  0x1f2701, 8192, 512, 9, SUP_POW2PS | IS_POW2PS},
- 
--	{ "at45db641d",  0x1f2800, 8192, 1056, 11, SUP_POW2PS},
--	{ "at45db641d",  0x1f2800, 8192, 1024, 10, SUP_POW2PS | IS_POW2PS},
-+	{ "AT45DB642x",  0x1f2800, 8192, 1056, 11, SUP_POW2PS},
-+	{ "at45db642d",  0x1f2800, 8192, 1024, 10, SUP_POW2PS | IS_POW2PS},
- };
- 
- static struct flash_info *__devinit jedec_probe(struct spi_device *spi)
-@@ -588,17 +581,23 @@ static struct flash_info *__devinit jede
- 	struct flash_info	*info;
- 	int status;
- 
--
- 	/* JEDEC also defines an optional "extended device information"
- 	 * string for after vendor-specific data, after the three bytes
- 	 * we use here.  Supporting some chips might require using it.
-+	 *
-+	 * If the vendor ID isn't Atmel's (0x1f), assume this call failed.
-+	 * That's not an error; only rev C and newer chips handle it, and
-+	 * only Atmel sells these chips.
- 	 */
- 	tmp = spi_write_then_read(spi, &code, 1, id, 3);
- 	if (tmp < 0) {
- 		DEBUG(MTD_DEBUG_LEVEL0, "%s: error %d reading JEDEC ID\n",
- 			spi->dev.bus_id, tmp);
--		return NULL;
-+		return ERR_PTR(tmp);
- 	}
-+	if (id[0] != 0x1f)
-+		return NULL;
-+
- 	jedec = id[0];
- 	jedec = jedec << 8;
- 	jedec |= id[1];
-@@ -609,19 +608,53 @@ static struct flash_info *__devinit jede
- 			tmp < ARRAY_SIZE(dataflash_data);
- 			tmp++, info++) {
- 		if (info->jedec_id == jedec) {
-+			DEBUG(MTD_DEBUG_LEVEL1, "%s: OTP, sector protect%s\n",
-+				dev_name(spi->dev),
-+				(info->flags & SUP_POW2PS)
-+					? ", binary pagesize" : ""
-+				);
- 			if (info->flags & SUP_POW2PS) {
- 				status = dataflash_status(spi);
--				if (status & 0x1)
--					/* return power of 2 pagesize */
--					return ++info;
--				else
--					return info;
-+				if (status < 0) {
-+					DEBUG(MTD_DEBUG_LEVEL1,
-+						"%s: status error %d\n",
-+						dev_name(spi->dev), status);
-+					return ERR_PTR(status);
-+				}
-+				if (status & 0x1) {
-+					if (info->flags & IS_POW2PS)
-+						return info;
-+				} else {
-+					if (!(info->flags & IS_POW2PS))
-+						return info;
-+				}
- 			}
- 		}
- 	}
--	return NULL;
-+
-+	/*
-+	 * Treat other chips as errors ... we won't know the right page
-+	 * size (it might be binary) even when we can tell which density
-+	 * class is involved (legacy chip id scheme).
-+	 */
-+	dev_warn(&spi->dev, "JEDEC id %06x not handled\n", jedec);
-+	return ERR_PTR(-ENODEV);
- }
- 
-+/*
-+ * Detect and initialize DataFlash device, using JEDEC IDs on newer chips
-+ * or else the ID code embedded in the status bits:
-+ *
-+ *   Device      Density         ID code          #Pages PageSize  Offset
-+ *   AT45DB011B  1Mbit   (128K)  xx0011xx (0x0c)    512    264      9
-+ *   AT45DB021B  2Mbit   (256K)  xx0101xx (0x14)   1024    264      9
-+ *   AT45DB041B  4Mbit   (512K)  xx0111xx (0x1c)   2048    264      9
-+ *   AT45DB081B  8Mbit   (1M)    xx1001xx (0x24)   4096    264      9
-+ *   AT45DB0161B 16Mbit  (2M)    xx1011xx (0x2c)   4096    528     10
-+ *   AT45DB0321B 32Mbit  (4M)    xx1101xx (0x34)   8192    528     10
-+ *   AT45DB0642  64Mbit  (8M)    xx111xxx (0x3c)   8192   1056     11
-+ *   AT45DB1282  128Mbit (16M)   xx0100xx (0x10)  16384   1056     11
-+ */
- static int __devinit dataflash_probe(struct spi_device *spi)
- {
- 	int status;
-@@ -632,14 +665,17 @@ static int __devinit dataflash_probe(str
+@@ -664,13 +853,16 @@ static int __devinit dataflash_probe(str
+ 	 * Try to detect dataflash by JEDEC ID.
  	 * If it succeeds we know we have either a C or D part.
  	 * D will support power of 2 pagesize option.
++	 * Both support the security register, though with different
++	 * write procedures.
  	 */
--
  	info = jedec_probe(spi);
--
-+	if (IS_ERR(info))
-+		return PTR_ERR(info);
+ 	if (IS_ERR(info))
+ 		return PTR_ERR(info);
  	if (info != NULL)
- 		return add_dataflash(spi, info->name, info->nr_pages,
- 				 info->pagesize, info->pageoffset);
+-		return add_dataflash(spi, info->name, info->nr_pages,
+-				 info->pagesize, info->pageoffset);
++		return add_dataflash_otp(spi, info->name, info->nr_pages,
++				info->pagesize, info->pageoffset,
++				(info->flags & SUP_POW2PS) ? 'd' : 'c');
  
--
-+	/*
-+	 * Older chips support only legacy commands, identifing
-+	 * capacity using bits in the status byte.
-+	 */
- 	status = dataflash_status(spi);
- 	if (status <= 0 || status == 0xff) {
- 		DEBUG(MTD_DEBUG_LEVEL1, "%s: status error %d\n",
-@@ -661,13 +697,13 @@ static int __devinit dataflash_probe(str
- 		status = add_dataflash(spi, "AT45DB021B", 1024, 264, 9);
+ 	/*
+ 	 * Older chips support only legacy commands, identifing
+--- a/drivers/mtd/mtdchar.c	2008-07-26 23:36:16.000000000 -0700
++++ b/drivers/mtd/mtdchar.c	2008-07-27 02:06:54.000000000 -0700
+@@ -350,7 +350,7 @@ static void mtdchar_erase_callback (stru
+ 	wake_up((wait_queue_head_t *)instr->priv);
+ }
+ 
+-#if defined(CONFIG_MTD_OTP) || defined(CONFIG_MTD_ONENAND_OTP)
++#ifdef CONFIG_HAVE_MTD_OTP
+ static int otp_select_filemode(struct mtd_file_info *mfi, int mode)
+ {
+ 	struct mtd_info *mtd = mfi->mtd;
+@@ -663,7 +663,7 @@ static int mtd_ioctl(struct inode *inode
  		break;
- 	case 0x1c:	/* 0 1 1 1 x x */
--		status = add_dataflash(spi, "AT45DB041B", 2048, 264, 9);
-+		status = add_dataflash(spi, "AT45DB041x", 2048, 264, 9);
- 		break;
- 	case 0x24:	/* 1 0 0 1 x x */
- 		status = add_dataflash(spi, "AT45DB081B", 4096, 264, 9);
- 		break;
- 	case 0x2c:	/* 1 0 1 1 x x */
--		status = add_dataflash(spi, "AT45DB161B", 4096, 528, 10);
-+		status = add_dataflash(spi, "AT45DB161x", 4096, 528, 10);
- 		break;
- 	case 0x34:	/* 1 1 0 1 x x */
- 		status = add_dataflash(spi, "AT45DB321x", 8192, 528, 10);
+ 	}
+ 
+-#if defined(CONFIG_MTD_OTP) || defined(CONFIG_MTD_ONENAND_OTP)
++#ifdef CONFIG_HAVE_MTD_OTP
+ 	case OTPSELECT:
+ 	{
+ 		int mode;
+--- a/drivers/mtd/onenand/Kconfig	2008-07-26 23:33:36.000000000 -0700
++++ b/drivers/mtd/onenand/Kconfig	2008-07-27 02:06:54.000000000 -0700
+@@ -29,6 +29,7 @@ config MTD_ONENAND_GENERIC
+ 
+ config MTD_ONENAND_OTP
+ 	bool "OneNAND OTP Support"
++	select HAVE_MTD_OTP
+ 	help
+ 	  One Block of the NAND Flash Array memory is reserved as
+ 	  a One-Time Programmable Block memory area.
