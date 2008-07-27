@@ -1,83 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbYG0Tk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbYG0Tnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759208AbYG0Tk5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 15:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757503AbYG0Tkt
+	id S1759275AbYG0Tnw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 15:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757604AbYG0Tnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 15:40:49 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:23873 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757490AbYG0Tks (ORCPT
+	Sun, 27 Jul 2008 15:43:45 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:29485 "EHLO
+	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751006AbYG0Tno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 15:40:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=TbvfQqZp/+47s+qFezemoamHVzHl+f05ktsnP9Up0xl8Hxsxmf6EXfpTv3jybEhAeW
-         PxPYnJZ+WjVaL+f7nMF/PRoF6bcs8E7vPDBhv8d29HzbLkBFWTB6rLLuizD1QHLCBuVG
-         LBWHAf3mh9JQXGBlHA+zTjK2gKtlOW+OGud7Q=
-Message-ID: <19f34abd0807271240x71fb85e3qae5d7beaad6eaba3@mail.gmail.com>
-Date: Sun, 27 Jul 2008 21:40:46 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: -git: BUG: unable to handle kernel paging request at c0100248 [CPU hotplug]
-Cc: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, "Thomas Meyer" <thomas@m3y3r.de>,
-       "the arch/x86 maintainers" <x86@kernel.org>
-In-Reply-To: <19f34abd0807271235q516fc2e1rc43c6736044eabfc@mail.gmail.com>
+	Sun, 27 Jul 2008 15:43:44 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=fGO4tVQLAAAA:8 a=e5mUnYsNAAAA:8 a=J7Emv_Ib2ZDzVmxTqGEA:9 a=on3AerLtWeNTlSql8qsA:7 a=SsADE4CtVzHiFqjzNvszvVpON6kA:4 a=RsnuHwBzcWYA:10 a=Nc4zK0GYoJ8A:10
+Message-ID: <488CCFEE.5040304@shaw.ca>
+Date: Sun, 27 Jul 2008 13:43:42 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Nikos Chantziaras <realnc@arcor.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: do_IRQ: 0.83/0.84 No irq handler for vector
+References: <fa.dCDqP8nkXgM8NhJMm3I+bMK+//w@ifi.uio.no> <fa.7GQkKKWUwuudcm81hY5cYLJkEY4@ifi.uio.no>
+In-Reply-To: <fa.7GQkKKWUwuudcm81hY5cYLJkEY4@ifi.uio.no>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0807270255o1ff260a8ucb9d931905aa4947@mail.gmail.com>
-	 <b647ffbd0807271014j17d1a14cncd0976ff4d3ff3fd@mail.gmail.com>
-	 <19f34abd0807271019i2112498ay57c267354bd63a8c@mail.gmail.com>
-	 <alpine.LFD.1.10.0807272118460.574@apollo.tec.linutronix.de>
-	 <19f34abd0807271235q516fc2e1rc43c6736044eabfc@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 27, 2008 at 9:35 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> On Sun, Jul 27, 2008 at 9:23 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
->> On Sun, 27 Jul 2008, Vegard Nossum wrote:
->>> Booting processor 1/1 ip 6000
->>> Initializing CPU#1
->>> [...]
->>> Write protecting the kernel text: 5648k
->>>
->>> So it succeeds because the protection happens much later :-)
->>
->> Patch below fixes the issue. I get it to Linus ASAP.
->
-> Nice :)
->
-> [...]
->
->> +.section .cpuinit.data,"wa"
->> +.align 4
->> +ENTRY(initial_code)
->> +       .long i386_start_kernel
->> +
->>  .section .text
->>  /*
->>  * Real beginning of normal "text" segment
->>
->
-> Hm, isn't there some kind of "section stack" that can be used to
-> restore the previous section? .pushsection/.popsection directives?
+Nikos Chantziaras wrote:
+> Nikos Chantziaras wrote:
+>> Kernel 2.6.26 (on x86-64) gives "do_IRQ: 0.83 No irq handler for 
+>> vector" (and "do_IRQ: 0.83", but less often) warnings periodically.
+> 
+> I changed the kernel config:
+> 
+>   - CONFIG_PCI_MSI=y
+>   + # CONFIG_PCI_MSI is not set
+> 
+> In other words I disabled Message Signaled Interrupt support.  Now 
+> instead of "do_IRQ: 0.83 No irq handler for vector" I get:
+> 
+>   +------ PCI-Express Device Error ------+
+>   Error Severity          : Uncorrected (Non-Fatal)
+>   PCIE Bus Error type     : Transaction Layer
+>   Flow Control Protocol   : First
+>   Receiver ID             : 0010
+>   VendorID=1106h, DeviceID=a208h, Bus=00h, Device=02h, Function=00h
+>   Broadcast error_detected message
+>   Broadcast mmio_enabled message
+>   Broadcast resume message
+>   AER driver successfully recovered
+> 
+> (Repeated as many times as the "do_IRQ" message previously.)
+> 
+> In case someone needs it, this is my complete dmesg:
+> 
+>   http://realnc.pastebin.com/d6534029
+> 
+> and this is the kernel configuration: 
+> http://bugs.freedesktop.org/attachment.cgi?id=17912
 
-Oh, never mind :-)
-
-(Sorry for the noise.)
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+My guess is some device is that some device is generating MSI interrupts 
+without any handler being registered for it, and with MSI support 
+disabled it now generates a master abort instead. Most likely whatever 
+device is connected to the Bus=00h, Device=02h, Function=00h bridge. Can 
+you post "lspci -vv" output?
