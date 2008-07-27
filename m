@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbYG0Lsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbYG0L4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbYG0Lsc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 07:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbYG0LsY
+	id S1753717AbYG0L4o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 07:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYG0L4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 07:48:24 -0400
-Received: from smtp3.tech.numericable.fr ([82.216.111.39]:45873 "EHLO
-	smtp3.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751013AbYG0LsX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 07:48:23 -0400
-Message-ID: <488C6085.9000507@numericable.fr>
-Date: Sun, 27 Jul 2008 13:48:21 +0200
-From: Rufus & Azrael <rufus-azrael@numericable.fr>
-User-Agent: Thunderbird 3.0a1 (X11/2008051919)
-MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Al Viro <viro@zeniv.linux.org.uk>,
-       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.26-git15] Cannot open "/proc/sys/net/ipv4/route/flush"
-References: <488C5545.5010309@numericable.fr> <Pine.LNX.4.64.0807271228060.12405@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0807271228060.12405@blonde.site>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Jul 2008 07:56:34 -0400
+Received: from il.qumranet.com ([212.179.150.194]:13045 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751013AbYG0L4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 07:56:33 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] KVM fixes for 2.6.27-rc
+Date: Sun, 27 Jul 2008 14:56:32 +0300
+Message-Id: <1217159792-30016-1-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Sun, 27 Jul 2008, Rufus&  Azrael wrote:
->    
->> After compiling the very latest git kernel this morning, I have this message
->> on boot (on Gentoo box) :
->>
->> Bringing up interface lo
->>      127.0.0.1/8 ...
->>      Adding routes
->>          127.0.0.0/8 via 127.0.0.1 ...
->> Cannot open "/proc/sys/net/ipv4/route/flush"
->>
->> Do I put
->> /proc/sys/net/ipv4/route/flush=1
->> or
->> net.ipv4.conf.all.accept_source_route = 1
->>
->> in my sysctl.conf file ?
->>      
->
-> If I may answer a different question, I believe you need Al Viro's
-> [PATCH] lost sysctl fix
-> http://lkml.org/lkml/2008/7/27/7
-> and
-> [PATCH] missing bits of net-namespace / sysctl
-> http://lkml.org/lkml/2008/7/27/61
->
-> Hugh
->
->    
-Thanks Hugh,
+Linus, please pull from repo & branch at
 
-I have applied these two patches and all is returning in order about sysctl.
+  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git kvm-updates-2.6.27
+
+which contains fixes for 2.6.27's KVM.  These include an interrupt injection
+fix, corrections for the universally admired x86 hardware task switching
+mechanism, making unloading and reloading the vendor specific module
+work while changing module parameters, and s390, ppc, and ia64 fixes.
+
+Shortlog/diffstat follow.
+
+Avi Kivity (1):
+      KVM: Avoid instruction emulation when event delivery is pending
+
+Carsten Otte (1):
+      KVM: s390: Advertise KVM_CAP_USER_MEMORY
+
+Christian Borntraeger (4):
+      KVM: s390: Fix guest kconfig
+      KVM: s390: Fix program check on interrupt delivery handling
+      KVM: s390: Fix instruction naming for lctlg
+      KVM: s390: Fix possible host kernel bug on lctl(g) handling
+
+Hollis Blanchard (1):
+      KVM: ppc: fix invalidation of large guest pages
+
+Joerg Roedel (1):
+      KVM: SVM: allow enabling/disabling NPT by reloading only the architecture module
+
+Julia Lawall (1):
+      KVM: ia64: Fix irq disabling leak in error handling code
+
+Marcelo Tosatti (3):
+      KVM: task switch: segment base is linear address
+      KVM: task switch: use seg regs provided by subarch instead of reading from GDT
+      KVM: task switch: translate guest segment limit to virt-extension byte granular field
+
+Martin Schwidefsky (1):
+      KVM: s390: Change guestaddr type in gaccess
+
+Sheng Yang (2):
+      KVM: VMX: Fix bypass_guest_pf enabling when disable EPT in module parameter
+      KVM: VMX: Fix undefined beaviour of EPT after reload kvm-intel.ko
+
+ arch/ia64/kvm/kvm-ia64.c      |    5 +-
+ arch/powerpc/kvm/44x_tlb.c    |    5 +-
+ arch/powerpc/kvm/emulate.c    |    2 +-
+ arch/s390/kvm/gaccess.h       |   62 ++++++++++++-----------
+ arch/s390/kvm/intercept.c     |   14 ++++--
+ arch/s390/kvm/interrupt.c     |   21 +++-----
+ arch/s390/kvm/kvm-s390.c      |    9 +++-
+ arch/s390/kvm/sigp.c          |    5 +-
+ arch/x86/kvm/mmu.c            |    7 +++
+ arch/x86/kvm/svm.c            |   10 +++-
+ arch/x86/kvm/vmx.c            |   22 +++++----
+ arch/x86/kvm/x86.c            |  109 ++++++++++++++++-------------------------
+ drivers/s390/kvm/Makefile     |    2 +-
+ include/asm-powerpc/kvm_ppc.h |    3 +-
+ include/asm-s390/kvm_host.h   |    4 +-
+ include/asm-x86/kvm_host.h    |    1 +
+ 16 files changed, 143 insertions(+), 138 deletions(-)
