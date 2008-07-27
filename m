@@ -1,44 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759034AbYG0TZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759082AbYG0T3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759034AbYG0TZR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 15:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757589AbYG0TZE
+	id S1759082AbYG0T3d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 15:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbYG0T3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 15:25:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46907 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757560AbYG0TZD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 15:25:03 -0400
-Date: Sun, 27 Jul 2008 12:24:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, ppc-dev <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] powerpc/ibmveth: fix multiple errors with
- dma_mapping_error conversion
-Message-Id: <20080727122414.cac4e336.akpm@linux-foundation.org>
-In-Reply-To: <20080728021424.40cf66bc.sfr@canb.auug.org.au>
-References: <20080728021424.40cf66bc.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Jul 2008 15:29:25 -0400
+Received: from www.tglx.de ([62.245.132.106]:48029 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751006AbYG0T3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 15:29:25 -0400
+Date: Sun, 27 Jul 2008 21:23:10 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, Thomas Meyer <thomas@m3y3r.de>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: -git: BUG: unable to handle kernel paging request at c0100248
+ [CPU hotplug]
+In-Reply-To: <19f34abd0807271019i2112498ay57c267354bd63a8c@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0807272118460.574@apollo.tec.linutronix.de>
+References: <19f34abd0807270255o1ff260a8ucb9d931905aa4947@mail.gmail.com>  <b647ffbd0807271014j17d1a14cncd0976ff4d3ff3fd@mail.gmail.com> <19f34abd0807271019i2112498ay57c267354bd63a8c@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008 02:14:24 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+On Sun, 27 Jul 2008, Vegard Nossum wrote:
+> Booting processor 1/1 ip 6000
+> Initializing CPU#1
+> [...]
+> Write protecting the kernel text: 5648k
+> 
+> So it succeeds because the protection happens much later :-)
 
-> The addition of an argument to dma_mapping_error() in commit
-> 8d8bb39b9eba32dd70e87fd5ad5c5dd4ba118e06 "dma-mapping: add the device
-> argument to dma_mapping_error()" left a bit of fallout:
+Patch below fixes the issue. I get it to Linus ASAP.
 
-Yeah, sorry, that patch was a horror - I fixed it perhaps ten times.  I
-think people were madly adding new dma_mapping_error() calls while we
-were trying to maintain it as well.
+Thanks,
 
-It should have been dome as a two-stage conversion.
+	tglx
+---------
+diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+index f67e934..a7010c3 100644
+--- a/arch/x86/kernel/head_32.S
++++ b/arch/x86/kernel/head_32.S
+@@ -456,9 +456,6 @@ is386:	movl $2,%ecx		# set MP
+ 1:
+ #endif /* CONFIG_SMP */
+ 	jmp *(initial_code)
+-.align 4
+-ENTRY(initial_code)
+-	.long i386_start_kernel
+ 
+ /*
+  * We depend on ET to be correct. This checks for 287/387.
+@@ -601,6 +598,11 @@ ignore_int:
+ #endif
+ 	iret
+ 
++.section .cpuinit.data,"wa"
++.align 4
++ENTRY(initial_code)
++	.long i386_start_kernel
++
+ .section .text
+ /*
+  * Real beginning of normal "text" segment
