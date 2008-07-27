@@ -1,42 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbYG0Uo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759307AbYG0UsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759384AbYG0Uo0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 16:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758297AbYG0UoS
+	id S1759307AbYG0UsX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 16:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758053AbYG0UsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 16:44:18 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:37451 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758162AbYG0UoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 16:44:18 -0400
-Date: Sun, 27 Jul 2008 22:43:55 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
-       sfr@canb.auug.org.au, kkeil@suse.de, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] isdn: mISDN HFC PCI support depends on virt_to_bus()
-Message-ID: <20080727204355.GA14057@uranus.ravnborg.org>
-References: <20080728023732.090aff83.sfr@canb.auug.org.au> <20080727182709.1dac0556@lxorguk.ukuu.org.uk> <20080727.125604.73857337.davem@davemloft.net> <adamyk35aoi.fsf@cisco.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 27 Jul 2008 16:48:15 -0400
+Received: from mk-outboundfilter-4.mail.uk.tiscali.com ([212.74.114.32]:44582
+	"EHLO mk-outboundfilter-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757740AbYG0UsP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 16:48:15 -0400
+X-Trace: 116046322/mk-outboundfilter-2.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6
+X-SBRS: None
+X-RemoteIP: 195.149.44.6
+X-IP-MAIL-FROM: alistair@devzero.co.uk
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiEFABt8jEjDlSwG/2dsb2JhbACBW4k8oVw
+X-IronPort-AV: E=Sophos;i="4.31,260,1215385200"; 
+   d="scan'208";a="116046322"
+X-IP-Direction: IN
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Simen Timian Thoresen <simentt@dolphinics.no>
+Subject: Re: Misidentification and failing revalidations of ide dvd-roms with libata
+Date: Sun, 27 Jul 2008 21:47:42 +0100
+User-Agent: KMail/1.9.9
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+References: <48838593.8020007@dolphinics.no> <200807202103.51889.alistair@devzero.co.uk> <488CCD81.7010002@dolphinics.no>
+In-Reply-To: <488CCD81.7010002@dolphinics.no>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <adamyk35aoi.fsf@cisco.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200807272147.42264.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 27, 2008 at 01:33:49PM -0700, Roland Dreier wrote:
->  > IMHO, this driver was really rushed in and that was a huge mistake.
->  > If it had gone through linux-next we could have tidied all of this
->  > stuff up in a less "rushed" manner.
-> 
-> ??  This thread *is* about a build failure in linux-next.
-mISDN are in -linus which is part of -next and Stephens point is that if
-we have had mISDN in -next then this would have been fixed before hitting
--linus. Maybe Karsten should use davem as gateway as he has anyway been
-so for other isdn patches lately?
+On Sunday 27 July 2008 20:33:21 Simen Timian Thoresen wrote:
+[snip]
+> I've spent a few hours more looking into this, and I'm not really
+> getting much clearer;
+>
+> I've run either and both of the two DVDroms on an external power-supply
+> (drive-power from a jumped, believed good ATX-PSU), and the the symptoms
+> remain; inconsistent capabilities reported at boot, and when I start
+> ripping CDs, one of them will fail as above.
+>
+> As I still have the impression that this started when I switched distros
+> (ie went from CentOS4 2.6.9 pre-libata-kernel to the current Ubuntu 8.04
+> 2.6.24-kernel), I've now started playing around with the libata module
+> parameters.
 
-	Sam
+If it's not power then I'm still with Alan re the cables. Maybe you have very 
+long cables?
+
+I used Alan's nForce4 pata driver for a year or so and didn't have any 
+problems. OTOH maybe at this stage it's worth checking whether amd74xx (old 
+IDE) breaks in similar ways?
+
+Also, I assume you've memtest86'ed the machine?
+
+-- 
+Cheers,
+Alistair.
