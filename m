@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbYG0CkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbYG0DEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757316AbYG0CkW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jul 2008 22:40:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbYG0CkK
+	id S1757220AbYG0DEN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jul 2008 23:04:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbYG0DD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jul 2008 22:40:10 -0400
-Received: from relay03.mail-hub.dodo.com.au ([123.2.6.238]:39499 "EHLO
-	relay03.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751912AbYG0CkI (ORCPT
+	Sat, 26 Jul 2008 23:03:58 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:20475 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753517AbYG0DD5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jul 2008 22:40:08 -0400
-From: Grant Coady <grant_lkml@dodo.com.au>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: New ext4 patchset: 2.6.26-git6-ext4-1 // and 2.6.26-ext4-3
-Date: Sun, 27 Jul 2008 12:39:57 +1000
-Organization: http://bugsplatter.mine.nu/
-Reply-To: Grant Coady <gcoady.lk@gmail.com>
-Message-ID: <aunn841s5j5d3r7j9mb9j8k0k64gop53jh@4ax.com>
-References: <E1KMv2C-0007fs-1b@closure.thunk.org>
-In-Reply-To: <E1KMv2C-0007fs-1b@closure.thunk.org>
-X-Mailer: Forte Agent 2.0/32.652
+	Sat, 26 Jul 2008 23:03:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=AVZPp+CpVLHVKjZ4aBXGSDr6M7weKVjBh5mdKRe1PQLFnfQdDUtZwc2qrDAgTLMRvN
+         CgNLEljZiad4wfiPF+9v6wWamYVXa9/cB15VOReTKL9yOaIIL39XMI7i9gm0c9rlwjAw
+         3VrXAk7JFoZiHZ38IsT9C4c3oBOJPuNOZRpmw=
+Message-ID: <8bd0f97a0807262003y4000f55eh45d5d1b8c866fd10@mail.gmail.com>
+Date: Sat, 26 Jul 2008 23:03:57 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH] rtc-dev: stop periodic interrupts on device release
+Cc: "Tomas Janousek" <tomi@nomi.cz>, linux-kernel@vger.kernel.org,
+       "Alessandro Zummo" <alessandro.zummo@towertech.it>
+In-Reply-To: <200807261350.55524.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080726154617.GA5613@notes.lisk.in>
+	 <200807261350.55524.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Jul 2008 21:26:52 -0400, "Theodore Ts'o" <tytso@mit.edu> wrote:
+On Sat, Jul 26, 2008 at 4:50 PM, David Brownell wrote:
+> On Saturday 26 July 2008, Tomas Janousek wrote:
+>> I am aware that some drivers, like rtc-sh, handle userspace PIE sets in their
+>> ioctl op, exporting the irq_set_state op at the same time. The logic in
+>> rtc_irq_set_state should make sure it doesn't matter and the driver should not
+>> need to care stopping periodic interrupts in its release routine any more.
+>> I did not look at other drivers though.
+>
+> A quick grep shows that out of 42 (wow!) current RTC drivers:
+>
+>  - rtc-{bfin,sa1100,sh,test} support ioctl(PIE_ON/PIE_OFF), at least
+>   before some recent patches fixing that glitch (not in my tree) by
+>   switching to irq_set_state().
 
->
->I've released a new patchset for post-2.6.26-git4 kernels (when Linus
->accepted a set of patches for the 2.6.27-rc1 merge window).  A number of
->the new patches are cleanups and bug fixes that will be pushed to Linus
->shortly; those are marked with an (*).
->
->As a git tree:
->
->git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.26-git6-ext4-1
->http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.26-git6-ext4-1
->
->As a patchset:
->
->ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-git6-ext4-1
->
->					----
->
->I've also created a patchset which consists of the new features and bug
->fixes pushed to linus, plus the bug fixes and cleanups that are part of
->2.6.26-git6-ext4-1 for people who are running the stock 2.6.26 kernel.
->This can be found here:
->
->ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-git6-ext4-3
+the rtc-bfin.c patches are in some queue somewhere to fix this ;)
 
-I think you meant:
-ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-ext4-3/2.6.26-ext4-3.gz
-??
+>  - Of those:  rtc-{bfin,s3c,sa1100,sh,vr41xx} all have release()
+>   methods ... though it looks to me like most of those wrongly
+>   disable *all* IRQs, even ones in use by something other than
+>   the /dev client closing that FD.
 
-Grant.
+rtc-bfin.c turns off all irqs and frees it in the release() function
+(since the irq is requested in the open() function).  i guess that
+isnt supposed to happen huh.
+
+> That suggests there's quite a mess yet to be fixed.  This patch
+> will ensure that periodic IRQs get properly shut off by close()
+> or exit() of a task that started them.  Those release() methods
+> shouldn't then be second-guessing things.
+>
+> And then there are the other two types of IRQ.  Update IRQs can
+> only be enabled through ioctl(UIE_ON), so they're fair game to
+> turn off when closing /dev files.  Alarms seem to be a special
+> case -- best not touched when closing files.
+
+specific drivers shouldnt worry about this then right ?  handle it in rtc-dev ?
+-mike
