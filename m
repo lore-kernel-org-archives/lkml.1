@@ -1,109 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbYG1OKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbYG1OOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755398AbYG1OKk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 10:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbYG1OK1
+	id S1754006AbYG1OOU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 10:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYG1OOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 10:10:27 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:2244 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752463AbYG1OKZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 10:10:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:user-agent:mime-version
-         :content-type;
-        b=dWiVccBzQ51qGFPxOuTcO+tX4zHN+RxQtPc0nMKoahpupzrWF1TAQegUEl9allUU82
-         6031VB9OMNpU+uFUqWqmXUVta/EfxnhplgzRdydaI6B2tmaXmrnnqoeNdPSEh7T733ky
-         dywQxiXfz7cp/y7yoY775HijwiQZEIT47VNg8=
-From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86: Optimize tail handling for copy_user
-Date: Mon, 28 Jul 2008 16:10:30 +0200
-Message-ID: <m3ljzmdrqh.fsf@gravicappa.englab.brq.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 28 Jul 2008 10:14:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36873 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751319AbYG1OOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 10:14:08 -0400
+Date: Mon, 28 Jul 2008 16:13:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Cihula, Joseph" <joseph.cihula@intel.com>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
+       "Brown, Len" <len.brown@intel.com>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] acpi - Add support for AddressRangeUnusuable ACPI
+	memory type
+Message-ID: <20080728141353.GD18144@elte.hu>
+References: <D936D925018D154694D8A362EEB0892004FC7099@orsmsx416.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <D936D925018D154694D8A362EEB0892004FC7099@orsmsx416.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reduce protection faults count in copy_user_handle_tail routine by
-limiting clear length to the end of page as was suggested by Linus.
 
-Linus, should I add myself "signed-off-by: you" for patches with your
-ideas implemented? Clear length calculation was changed a bit for
-correct handling of page aligned addresses.
+* Cihula, Joseph <joseph.cihula@intel.com> wrote:
 
-I'm using this systemtap script for sanity testing:
-http://people.redhat.com/vmayatsk/copy_user_x8664/
-It looks very ugly, but works.
+> Add support for the E820_UNUSABLE memory type, which is defined in
+> Revision 3.0b (Oct. 10, 2006) of the ACPI Specification on p. 394 Table
+> 14-1:
+> 	AddressRangeUnusuable
+> 	This range of address contains memory in which errors have been
+> detected. This range must not be used by the OSPM.
+> 
+> This patch applies cleanly to 2.6.26.
 
-Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+Looks good to me, but the 32-bit and 64-bit files that this patch 
+changes got unified in the latest upstream tree - could you please 
+resend this against tip/master:
 
-diff --git a/arch/x86/lib/usercopy_64.c b/arch/x86/lib/usercopy_64.c
-index f4df6e7..42baeca 100644
---- a/arch/x86/lib/usercopy_64.c
-+++ b/arch/x86/lib/usercopy_64.c
-@@ -161,23 +161,33 @@ EXPORT_SYMBOL(copy_in_user);
- /*
-  * Try to copy last bytes and clear the rest if needed.
-  * Since protection fault in copy_from/to_user is not a normal situation,
-- * it is not necessary to optimize tail handling.
-+ * it is not necessary to do low level optimization of tail handling.
-  */
- unsigned long
--copy_user_handle_tail(char *to, char *from, unsigned len, unsigned zerorest)
-+copy_user_handle_tail(char *to, char *from, unsigned len, unsigned clear_rest)
- {
- 	char c;
--	unsigned zero_len;
-+	unsigned clear_len;
- 
--	for (; len; --len) {
--		if (__get_user_nocheck(c, from++, sizeof(char)))
--			break;
--		if (__put_user_nocheck(c, to++, sizeof(char)))
-+	while (len) {
-+		if (__get_user_nocheck(c, from, 1))
- 			break;
-+		from++;
-+		if (__put_user_nocheck(c, to, 1))
-+			/* Fault in destination, nothing to clear */
-+			goto out;
-+		to++;
-+		len--;
- 	}
- 
--	for (c = 0, zero_len = len; zerorest && zero_len; --zero_len)
--		if (__put_user_nocheck(c, to++, sizeof(char)))
--			break;
-+	if (clear_rest) {
-+		unsigned long addr = (unsigned long)to;
-+		clear_len = len;
-+		/* Limit clear_len to the rest of the page */
-+		if ((addr + len) & PAGE_MASK != addr & PAGE_MASK)
-+			clear_len = len - ((addr + len) & ~PAGE_MASK);
-+		memset(to, 0, clear_len);
-+	}
-+out:
- 	return len;
- }
-diff --git a/include/asm-x86/uaccess_64.h b/include/asm-x86/uaccess_64.h
-index 5cfd295..c5c5af0 100644
---- a/include/asm-x86/uaccess_64.h
-+++ b/include/asm-x86/uaccess_64.h
-@@ -196,6 +196,6 @@ static inline int __copy_from_user_inatomic_nocache(void *dst,
- }
- 
- unsigned long
--copy_user_handle_tail(char *to, char *from, unsigned len, unsigned zerorest);
-+copy_user_handle_tail(char *to, char *from, unsigned len, unsigned clear_rest);
- 
- #endif /* ASM_X86__UACCESS_64_H */
+ http://people.redhat.com/mingo/tip.git/README
 
--- 
-wbr, Vitaly
+thanks,
+
+	Ingo
