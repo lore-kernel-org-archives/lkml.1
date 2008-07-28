@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755809AbYG1LPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbYG1LUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755809AbYG1LPP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 07:15:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbYG1LPB
+	id S1754125AbYG1LUU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 07:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbYG1LUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 07:15:01 -0400
-Received: from mx1.suse.de ([195.135.220.2]:47676 "EHLO mx1.suse.de"
+	Mon, 28 Jul 2008 07:20:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40457 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750728AbYG1LPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 07:15:00 -0400
-Date: Mon, 28 Jul 2008 13:14:58 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: benh@kernel.crashing.org, David Miller <davem@davemloft.net>,
-       sfr@canb.auug.org.au, kkeil@suse.de, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: mISDN still breaking the allmodconfig build...
-Message-ID: <20080728111458.GA26604@pingi.kke.suse.de>
-References: <20080727.170235.97056809.davem@davemloft.net> <1217204022.11188.139.camel@pasglop> <20080727204805.59f55dda@lappy.seanm.ca> <20080728102009.5fb3df6b@lxorguk.ukuu.org.uk>
+	id S1750740AbYG1LUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 07:20:04 -0400
+Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling
+	through rfkill
+From: Dan Williams <dcbw@redhat.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Philip Langdale <philipl@overt.org>, Ivo van Doorn <ivdoorn@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, toshiba_acpi@memebeam.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20080728030437.GC10672@khazad-dum.debian.net>
+References: <488CBBAB.6010508@overt.org>
+	 <200807272259.44364.IvDoorn@gmail.com> <488CF6D8.6000700@overt.org>
+	 <20080728030437.GC10672@khazad-dum.debian.net>
+Content-Type: text/plain
+Date: Mon, 28 Jul 2008 07:17:43 -0400
+Message-Id: <1217243863.24609.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080728102009.5fb3df6b@lxorguk.ukuu.org.uk>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.54-0.2.5-smp x86_64
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 10:20:09AM +0100, Alan Cox wrote:
-> On Sun, 27 Jul 2008 20:48:05 -0400
-> Sean MacLennan <smaclennan@pikatech.com> wrote:
+On Mon, 2008-07-28 at 00:04 -0300, Henrique de Moraes Holschuh wrote:
+> On Sun, 27 Jul 2008, Philip Langdale wrote:
+> > Ivo van Doorn wrote:
+> >>
+> >> You don't seem to be using rfkill_force_state() which is required to inform the rfkill
+> >> layer about the state changes.
+> >
+> > Hmm? According to rfkill.txt, one can either use force_state() or implement the
+> > get_state() hook, and I have done the later. If this is not the correct method,
+> > can you please explain when I should be using force_state?
 > 
-> > On Mon, 28 Jul 2008 10:13:42 +1000
-> > "Benjamin Herrenschmidt" <benh@kernel.crashing.org> wrote:
-> > 
-> > > On Sun, 2008-07-27 at 17:02 -0700, David Miller wrote:
-> > > > More fallout from the premature mISDN driver merge:
-> > > > 
-> > > > drivers/isdn/hardware/mISDN/hfcmulti.c:5255:2: error: #error "not
-> > > > running on big endian machines now"
-> > > 
-> > > Lovely...
-> > 
-> > mISDN is notoriously bad on big endian machines.
+> There is a bunch of rfkill bug fix patches that was not merged in
+> wireless-testing yet (which is a pity, it would be really good if they could
+> go into 2.6.27).  One of those patches fixes the docs to make it clear that
+
+Lots of wireless people (including John) were at OLS this past week, so
+it's not entirely surprising that patch merging might have been slow.
+
+Dan
+
+> rfkill_force_state() is the way to go if you have events of any sort.
 > 
-
-This only affect the hardware IO layer of some cards and I think
-it will be fixed very soon, I did not remove the very old
-#error line, because I did not had the hardware to verify that it is
-OK now.
-I already reserved a PPC machine now (will get it today or tomorrow) and
-will test the endian robustness this week.
-
-> In which case it really should not be in Linus tree but in linux-next.
-> Karsten - will you ask Linus to revert mISDN so it can go into linux-next
-> instead and get cleaned up in the right place ?
+> The big difference from get_state() is that rfkill_force_state() propagates
+> state changes as soon as your driver notices them and sends them to rfkill
+> through rfkill_force_state()... while get_state() can only do that when
+> someone asks rfkill about the current state.
 > 
 
-This was my original plan and my fault, that I only included the
-pull URL and sent it to Linus diectely, I did not know that in this case
-Linus will pull it without further discussion, but I'm still glad that it
-is in and only show few issues (I'm very unhappy that I did not find
-these before, I did builds on all our architectures, but not with the
-all*config, only with subsets).
-The good thing is, that this brought back the ENDIAN issue back on my
-radar and on my near time TODO list :-)
-
--- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
