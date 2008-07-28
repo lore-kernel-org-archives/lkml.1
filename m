@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbYG1LZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbYG1L2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753912AbYG1LZu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 07:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbYG1LZn
+	id S1754422AbYG1L2x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 07:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYG1L2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 07:25:43 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:48364 "EHLO
+	Mon, 28 Jul 2008 07:28:45 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:48465 "EHLO
 	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751380AbYG1LZm (ORCPT
+	with ESMTP id S1751898AbYG1L2p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 07:25:42 -0400
-X-Greylist: delayed 1099 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jul 2008 07:25:42 EDT
-Subject: [PATCH] madvise: update function comment of madvise_dontneed
+	Mon, 28 Jul 2008 07:28:45 -0400
+Subject: [PATCH] swap: update function comment of release_pages
 From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
 	<fernando@oss.ntt.co.jp>
 To: cl@linux-foundation.org
 Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain
 Organization: NTT Open Source Software Center
-Date: Mon, 28 Jul 2008 20:07:21 +0900
-Message-Id: <1217243241.3087.6.camel@sebastian.kern.oss.ntt.co.jp>
+Date: Mon, 28 Jul 2008 20:28:44 +0900
+Message-Id: <1217244524.3087.8.camel@sebastian.kern.oss.ntt.co.jp>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -30,21 +29,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
 ---
 
-diff -urNp linux-2.6.26/mm/madvise.c linux-2.6.26-fixes/mm/madvise.c
---- linux-2.6.26/mm/madvise.c	2008-07-14 06:51:29.000000000 +0900
-+++ linux-2.6.26-fixes/mm/madvise.c	2008-07-28 19:53:27.000000000 +0900
-@@ -132,10 +132,10 @@ static long madvise_willneed(struct vm_a
-  * Application no longer needs these pages.  If the pages are dirty,
-  * it's OK to just throw them away.  The app will be more careful about
-  * data it wants to keep.  Be sure to free swap resources too.  The
-- * zap_page_range call sets things up for refill_inactive to actually free
-+ * zap_page_range call sets things up for shrink_active_list to actually free
-  * these pages later if no one else has touched them in the meantime,
-  * although we could add these pages to a global reuse list for
-- * refill_inactive to pick up before reclaiming other pages.
-+ * shrink_active_list to pick up before reclaiming other pages.
+diff -urNp linux-2.6.26/mm/swap.c linux-2.6.26-fixes/mm/swap.c
+--- linux-2.6.26/mm/swap.c	2008-07-14 06:51:29.000000000 +0900
++++ linux-2.6.26-fixes/mm/swap.c	2008-07-28 20:24:42.000000000 +0900
+@@ -278,9 +278,10 @@ int lru_add_drain_all(void)
+  * Avoid taking zone->lru_lock if possible, but if it is taken, retain it
+  * for the remainder of the operation.
   *
-  * NB: This interface discards data rather than pushes it out to swap,
-  * as some implementations do.  This has performance implications for
+- * The locking in this function is against shrink_cache(): we recheck the
+- * page count inside the lock to see whether shrink_cache grabbed the page
+- * via the LRU.  If it did, give up: shrink_cache will free it.
++ * The locking in this function is against shrink_inactive_list(): we recheck
++ * the page count inside the lock to see whether shrink_inactive_list()
++ * grabbed the page via the LRU.  If it did, give up: shrink_inactive_list()
++ * will free it.
+  */
+ void release_pages(struct page **pages, int nr, int cold)
+ {
 
 
