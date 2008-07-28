@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758979AbYG1VOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752136AbYG1VPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758979AbYG1VOb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757251AbYG1VJm
+	id S1752136AbYG1VPF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:15:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757604AbYG1VJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:09:42 -0400
+	Mon, 28 Jul 2008 17:09:44 -0400
 Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:49590 "EHLO
 	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756066AbYG1VJl (ORCPT
+	with ESMTP id S1756903AbYG1VJm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:09:41 -0400
+	Mon, 28 Jul 2008 17:09:42 -0400
 From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu
-Subject: [PATCH 14/24] x86: kernel/pci-calgary_64.c cleanup
-Date: Mon, 28 Jul 2008 18:09:21 -0300
-Message-Id: <1217279371-4410-15-git-send-email-gustavo@las.ic.unicamp.br>
+Subject: [PATCH 16/24] x86: kernel/process_32.c cleanup
+Date: Mon, 28 Jul 2008 18:09:23 -0300
+Message-Id: <1217279371-4410-17-git-send-email-gustavo@las.ic.unicamp.br>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217279371-4410-14-git-send-email-gustavo@las.ic.unicamp.br>
+In-Reply-To: <1217279371-4410-16-git-send-email-gustavo@las.ic.unicamp.br>
 References: <gustavo@las.ic.unicamp.br>
  <1217279371-4410-1-git-send-email-gustavo@las.ic.unicamp.br>
  <1217279371-4410-2-git-send-email-gustavo@las.ic.unicamp.br>
@@ -33,6 +33,8 @@ References: <gustavo@las.ic.unicamp.br>
  <1217279371-4410-12-git-send-email-gustavo@las.ic.unicamp.br>
  <1217279371-4410-13-git-send-email-gustavo@las.ic.unicamp.br>
  <1217279371-4410-14-git-send-email-gustavo@las.ic.unicamp.br>
+ <1217279371-4410-15-git-send-email-gustavo@las.ic.unicamp.br>
+ <1217279371-4410-16-git-send-email-gustavo@las.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -41,22 +43,22 @@ Remove additional tab.
 
 Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
 ---
- arch/x86/kernel/pci-calgary_64.c |    2 +-
+ arch/x86/kernel/process_32.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
-index b67a4b1..1bed35a 100644
---- a/arch/x86/kernel/pci-calgary_64.c
-+++ b/arch/x86/kernel/pci-calgary_64.c
-@@ -854,7 +854,7 @@ static void __init calgary_free_bus(struct pci_dev *dev)
- 	tbl->it_map = NULL;
- 
- 	kfree(tbl);
--	
-+
- 	set_pci_iommu(dev->bus, NULL);
- 
- 	/* Can't free bootmem allocated memory after system is up :-( */
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 53bc653..1fe67f5 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -288,7 +288,7 @@ void flush_thread(void)
+ 	tsk->thread.debugreg3 = 0;
+ 	tsk->thread.debugreg6 = 0;
+ 	tsk->thread.debugreg7 = 0;
+-	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));	
++	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
+ 	clear_tsk_thread_flag(tsk, TIF_DEBUG);
+ 	/*
+ 	 * Forget coprocessor state..
 -- 
 1.5.4.5
 
