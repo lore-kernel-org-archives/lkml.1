@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbYG1OOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbYG1OQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754006AbYG1OOU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 10:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYG1OOJ
+	id S1755167AbYG1OQB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 10:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYG1OPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 10:14:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36873 "EHLO mx3.mail.elte.hu"
+	Mon, 28 Jul 2008 10:15:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56741 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751319AbYG1OOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 10:14:08 -0400
-Date: Mon, 28 Jul 2008 16:13:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Cihula, Joseph" <joseph.cihula@intel.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
-       "Brown, Len" <len.brown@intel.com>, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] acpi - Add support for AddressRangeUnusuable ACPI
-	memory type
-Message-ID: <20080728141353.GD18144@elte.hu>
-References: <D936D925018D154694D8A362EEB0892004FC7099@orsmsx416.amr.corp.intel.com>
+	id S1751205AbYG1OPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 10:15:52 -0400
+Date: Mon, 28 Jul 2008 11:15:33 -0300
+From: Glauber Costa <gcosta@redhat.com>
+To: Andrew Drake <zappacky.lists@gmail.com>
+Cc: Glauber Costa <glommer@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [Bisected] Regression: Hang on boot in
+	schedule_timeout_interruptible during ACPI init on SMP
+Message-ID: <20080728141533.GA3697@redhat.com>
+References: <4887B4D5.1050306@gmail.com> <5d6222a80807231731u41f9fb81w2796b3db1a5920e6@mail.gmail.com> <488B7297.8090405@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <D936D925018D154694D8A362EEB0892004FC7099@orsmsx416.amr.corp.intel.com>
+In-Reply-To: <488B7297.8090405@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jul 26, 2008 at 02:53:11PM -0400, Andrew Drake wrote:
+> I just discovered; the nolapic_timer parameter causes the problem to go 
+> away entirely. It doesn't seem to have any nasty side effects, so I'm 
+> content to use it. Looking at the dmesg logs, however, I notice that the 
+> "last-good" kernel doesn't even try to use the LAPIC timer, but the 
+> "first-bad" does. I wasn't able to track down any discernible reason.
+fine, but if you can still help us on this, it would be awesome ;-)
 
-* Cihula, Joseph <joseph.cihula@intel.com> wrote:
+Actually, there is another nasty bug that depends, at least by a first
+impression, on the lapic timer. I'm planning to save a time today to
+look further on your problem.
+>
+> On a side note, that's the first I've ever heard/seen of that parameter, 
+> I tried it because I noticed the problems started when the LAPIC timer 
+> was successfully set up. I doubt the average user would notice this (you 
+> can't even tell unless you pass apic=debug), so I doubt many others would 
+> discover this fix/workaround.
+>
+> The question remains, though, why did it go from "don't try" to "try"?
 
-> Add support for the E820_UNUSABLE memory type, which is defined in
-> Revision 3.0b (Oct. 10, 2006) of the ACPI Specification on p. 394 Table
-> 14-1:
-> 	AddressRangeUnusuable
-> 	This range of address contains memory in which errors have been
-> detected. This range must not be used by the OSPM.
-> 
-> This patch applies cleanly to 2.6.26.
+Probably because the order of initialization of smp entities changed a
+bit during this series. Probably the lapic timer is now initialized a
+little bit earlier, before we have the chance to mark it as bad.
 
-Looks good to me, but the 32-bit and 64-bit files that this patch 
-changes got unified in the latest upstream tree - could you please 
-resend this against tip/master:
+If you can send me at least your dmesgs and cpuinfo, it would be really really
+awesome.
 
- http://people.redhat.com/mingo/tip.git/README
-
-thanks,
-
-	Ingo
+> Thanks,
+>
+> Andrew
+>
