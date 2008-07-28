@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbYG1ODm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbYG1ODa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbYG1ODm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 10:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbYG1ODU
+	id S1754869AbYG1ODa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 10:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbYG1ODT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 10:03:20 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:49700 "EHLO
-	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753820AbYG1ODT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 28 Jul 2008 10:03:19 -0400
-X-BigFish: VPS-19(zz1432R98dR936eQ62a3L148cM1805Mzz10d3izzz32i6bh87il43j63h)
-X-Spam-TCS-SCL: 2:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K4PZ13-02-L3Y-01
-Date: Mon, 28 Jul 2008 16:02:57 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Barry Kasindorf <barry.kasindorf@amd.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>, Jason Yeh <jason.yeh@amd.com>
-Subject: Re: [PATCH 0/24] oprofile: Add IBS support for AMD CPUs
-Message-ID: <20080728140257.GO15356@erda.amd.com>
-References: <1216753748-11261-1-git-send-email-robert.richter@amd.com> <20080726095221.GB25890@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20080726095221.GB25890@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 28 Jul 2008 14:03:07.0270 (UTC) FILETIME=[A9295260:01C8F0BA]
+Received: from mba.ocn.ne.jp ([122.1.235.107]:50562 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750986AbYG1ODS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 10:03:18 -0400
+Date: Mon, 28 Jul 2008 23:05:12 +0900 (JST)
+Message-Id: <20080728.230512.132304415.anemo@mba.ocn.ne.jp>
+To: jason.wessel@windriver.com
+Cc: linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+       linux-mips@linux-mips.org
+Subject: Re: [PATCH 2/3] kgdb, mips: add arch support for the kernel's kgdb
+ core
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20080725.235233.130241768.anemo@mba.ocn.ne.jp>
+References: <20080725.012748.108121457.anemo@mba.ocn.ne.jp>
+	<488941C5.9060908@windriver.com>
+	<20080725.235233.130241768.anemo@mba.ocn.ne.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26.07.08 11:52:21, Ingo Molnar wrote:
+On Fri, 25 Jul 2008 23:52:33 +0900 (JST), Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> > It seem ok to me to try it.  Here is version 3 of the patch, which I was going to send to Ralf.
 > 
-> * Robert Richter <robert.richter@amd.com> wrote:
-> 
-> > Patches #1-3 are not directly related to IBS.
-> > Patch #4 adds generic support of model specific initialization.
-> > Patches #10, #11 add the core implementation of IBS.
-> > Patches #12-24 contain code improvements and small fixes.
-> 
-> cool stuff! I've created the tip/oprofile topic branch for the patches 
-> from you, Barry and Jason and have applied all the current patches (and 
-> followup fixes) to it. Below are the access coordinates and the log 
-> summary.
-> 
-> It's not yet integrated into tip/master - will do some testing first. 
-> I'll send review feedback separately as well, on a per patch basis.
+> Thanks, it works for me with serial_txx9 kgdboc module.
 
-Ingo,
+BTW, is FRAME_POINTER mandatory for kgdb?  I agree that FRAME_POINTER
+(ie. -fno-omit-frame-pointer -fno-optimize-sibling-calls) helps source
+level debugging, but I think transparency is more important.
 
-thanks for adding the patches to tip/oprofile. I will send you more
-patches that reflect the comments you made.
+Now kgdboc can be loaded/activated at run-time, so I want to enable
+CONFIG_KGDB usually.  But CONFIG_FRAME_POINTER introduces runtime
+overhead on overall kernel, which is too bad (at least on MIPS).
 
--Robert
+Also, selecting FRAME_POINTER (which is not selectable on MIPS)
+unconditionally looks somewhat inconsistent.
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+So ... Is this patch reasonable?
 
+
+Subject: kgdb: Do not select FRAME_POINTER on MIPS
+
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
+index a5d4b1d..cc61bf0 100644
+--- a/lib/Kconfig.kgdb
++++ b/lib/Kconfig.kgdb
+@@ -7,7 +7,7 @@ config HAVE_ARCH_KGDB
+ 
+ menuconfig KGDB
+ 	bool "KGDB: kernel debugging with remote gdb"
+-	select FRAME_POINTER
++	select FRAME_POINTER if !MIPS
+ 	depends on HAVE_ARCH_KGDB
+ 	depends on DEBUG_KERNEL && EXPERIMENTAL
+ 	help
