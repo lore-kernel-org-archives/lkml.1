@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761458AbYG1VNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761540AbYG1VNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761458AbYG1VNd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756732AbYG1VJk
+	id S1761540AbYG1VNu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756846AbYG1VJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:09:40 -0400
-Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:49591 "EHLO
+	Mon, 28 Jul 2008 17:09:41 -0400
+Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:49590 "EHLO
 	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756066AbYG1VJj (ORCPT
+	with ESMTP id S1756257AbYG1VJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:09:39 -0400
+	Mon, 28 Jul 2008 17:09:40 -0400
 From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu
-Subject: [PATCH 11/24] x86: kernel/kprobes.c cleanup
-Date: Mon, 28 Jul 2008 18:09:18 -0300
-Message-Id: <1217279371-4410-12-git-send-email-gustavo@las.ic.unicamp.br>
+Subject: [PATCH 12/24] x86: kernel/microcode.c cleanup
+Date: Mon, 28 Jul 2008 18:09:19 -0300
+Message-Id: <1217279371-4410-13-git-send-email-gustavo@las.ic.unicamp.br>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217279371-4410-11-git-send-email-gustavo@las.ic.unicamp.br>
+In-Reply-To: <1217279371-4410-12-git-send-email-gustavo@las.ic.unicamp.br>
 References: <gustavo@las.ic.unicamp.br>
  <1217279371-4410-1-git-send-email-gustavo@las.ic.unicamp.br>
  <1217279371-4410-2-git-send-email-gustavo@las.ic.unicamp.br>
@@ -30,6 +30,7 @@ References: <gustavo@las.ic.unicamp.br>
  <1217279371-4410-9-git-send-email-gustavo@las.ic.unicamp.br>
  <1217279371-4410-10-git-send-email-gustavo@las.ic.unicamp.br>
  <1217279371-4410-11-git-send-email-gustavo@las.ic.unicamp.br>
+ <1217279371-4410-12-git-send-email-gustavo@las.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -38,33 +39,27 @@ Remove additional whitespaces.
 
 Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
 ---
- arch/x86/kernel/kprobes.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ arch/x86/kernel/microcode.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 6c27679..d3190dc 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -30,14 +30,14 @@
-  *		<jkenisto@us.ibm.com> and Prasanna S Panchamukhi
-  *		<prasanna@in.ibm.com> added function-return probes.
-  * 2005-May	Rusty Lynch <rusty.lynch@intel.com>
-- * 		Added function return probes functionality
-+ *		Added function return probes functionality
-  * 2006-Feb	Masami Hiramatsu <hiramatu@sdl.hitachi.co.jp> added
-- * 		kprobe-booster and kretprobe-booster for i386.
-+ *		kprobe-booster and kretprobe-booster for i386.
-  * 2007-Dec	Masami Hiramatsu <mhiramat@redhat.com> added kprobe-booster
-- * 		and kretprobe-booster for x86-64
-+ *		and kretprobe-booster for x86-64
-  * 2007-Dec	Masami Hiramatsu <mhiramat@redhat.com>, Arjan van de Ven
-- * 		<arjan@infradead.org> and Jim Keniston <jkenisto@us.ibm.com>
-- * 		unified x86 kprobes code.
-+ *		<arjan@infradead.org> and Jim Keniston <jkenisto@us.ibm.com>
-+ *		unified x86 kprobes code.
-  */
+diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
+index 6994c75..24a82ea 100644
+--- a/arch/x86/kernel/microcode.c
++++ b/arch/x86/kernel/microcode.c
+@@ -98,10 +98,10 @@ MODULE_DESCRIPTION("Intel CPU (IA-32) Microcode Update Driver");
+ MODULE_AUTHOR("Tigran Aivazian <tigran@aivazian.fsnet.co.uk>");
+ MODULE_LICENSE("GPL");
  
- #include <linux/kprobes.h>
+-#define MICROCODE_VERSION 	"1.14a"
++#define MICROCODE_VERSION	"1.14a"
+ 
+-#define DEFAULT_UCODE_DATASIZE 	(2000) 	  /* 2000 bytes */
+-#define MC_HEADER_SIZE		(sizeof (microcode_header_t))  	  /* 48 bytes */
++#define DEFAULT_UCODE_DATASIZE	(2000)	  /* 2000 bytes */
++#define MC_HEADER_SIZE		(sizeof (microcode_header_t))	  /* 48 bytes */
+ #define DEFAULT_UCODE_TOTALSIZE (DEFAULT_UCODE_DATASIZE + MC_HEADER_SIZE) /* 2048 bytes */
+ #define EXT_HEADER_SIZE		(sizeof (struct extended_sigtable)) /* 20 bytes */
+ #define EXT_SIGNATURE_SIZE	(sizeof (struct extended_signature)) /* 12 bytes */
 -- 
 1.5.4.5
 
