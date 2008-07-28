@@ -1,138 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbYG1XeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbYG1Xeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752682AbYG1XeS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 19:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbYG1XeJ
+	id S1753236AbYG1Xeo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 19:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbYG1Xee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 19:34:09 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:51478 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751264AbYG1XeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 19:34:08 -0400
-Date: Mon, 28 Jul 2008 18:34:07 -0500
-From: Robin Holt <holt@sgi.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Memory Management List <linux-mm@kvack.org>, xfs@oss.sgi.com,
-       xen-devel@lists.xensource.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [rfc][patch 1/3] mm: vmap rewrite
-Message-ID: <20080728233407.GB10501@sgi.com>
-References: <20080728123438.GA13926@wotan.suse.de>
+	Mon, 28 Jul 2008 19:34:34 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:47504 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751853AbYG1Xed (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 19:34:33 -0400
+Date: Mon, 28 Jul 2008 19:32:55 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Paul Mundt <lethal@linux-sh.org>
+cc: magnus.damm@gmail.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: bad CONFIG variable references from Makefiles
+In-Reply-To: <20080728233119.GC28055@linux-sh.org>
+Message-ID: <alpine.LFD.1.10.0807281932170.32248@localhost.localdomain>
+References: <alpine.LFD.1.10.0807281607400.28285@localhost.localdomain> <20080728205439.GA27744@linux-sh.org> <alpine.LFD.1.10.0807281923310.31937@localhost.localdomain> <20080728233119.GC28055@linux-sh.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080728123438.GA13926@wotan.suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> After:
->  78406 total                                      0.0081
->  40053 default_idle                              89.4040
->  33576 ia64_spinlock_contention                 349.7500 
->   1650 _spin_lock                                17.1875
+On Tue, 29 Jul 2008, Paul Mundt wrote:
 
-Here is a patch that will unroll those two sample and let you see which
-function is hitting the contention.  This has been submitted and
-rejected at least once a few years ago.  I keep and old copy around
-because it is often very handy.
+> On Mon, Jul 28, 2008 at 07:24:47PM -0400, Robert P. J. Day wrote:
+> > On Tue, 29 Jul 2008, Paul Mundt wrote:
+> >
+> > > On Mon, Jul 28, 2008 at 04:09:28PM -0400, Robert P. J. Day wrote:
+> > > >
+> > > >   a complete list of all references to non-existent CONFIG
+> > > > variables exclusively from Makefiles in the tree.  since the
+> > > > list is so short, i'm not bothering to break it up by
+> > > > subsystem or arch.  enjoy.
+> > > >
+> > > >
+> > > > ===== FB_SH7343VOU =====
+> > > > ./drivers/video/Makefile:obj-$(CONFIG_FB_SH7343VOU)	  += sh7343_voufb.o
+> > >
+> > > Seems to have crept in from a working local tree. It's obviously
+> > > bogus and can simply be killed off.
+> >
+> > ok, i can slap together a patch unless someone else gets to it
+> > first.
+> >
+> Already in my tree, forgot to mention :-)
 
-I have not tested it in a couple years (usually working on performance with
-a SLES kernel).  It applied with a couple minor fixups so I assume it
-works.  If not, please let me know.
+i believe that qualifies as "getting to it first."
 
+rday
+--
 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
 
-Index: ia64_spinlock_contention/arch/ia64/kernel/head.S
-===================================================================
---- ia64_spinlock_contention.orig/arch/ia64/kernel/head.S	2008-07-28 17:35:21.000000000 -0500
-+++ ia64_spinlock_contention/arch/ia64/kernel/head.S	2008-07-28 17:35:51.000000000 -0500
-@@ -1137,6 +1137,8 @@ GLOBAL_ENTRY(ia64_spinlock_contention_pr
- 	tbit.nz p15,p0=r27,IA64_PSR_I_BIT
- 	.restore sp		// pop existing prologue after next insn
- 	mov b6 = r28
-+	.global ia64_spinlock_contention_pre3_4_beg	// for kernprof
-+ia64_spinlock_contention_pre3_4_beg:
- 	.prologue
- 	.save ar.pfs, r0
- 	.altrp b6
-@@ -1185,6 +1187,8 @@ GLOBAL_ENTRY(ia64_spinlock_contention)
- (p14)	br.cond.sptk.few .wait
- 
- 	br.ret.sptk.many b6	// lock is now taken
-+	.global ia64_spinlock_contention_end	// for determining if we are in ia64_spinlock_contention code.
-+ia64_spinlock_contention_end:
- END(ia64_spinlock_contention)
- 
- #endif
-Index: ia64_spinlock_contention/arch/ia64/kernel/ia64_ksyms.c
-===================================================================
---- ia64_spinlock_contention.orig/arch/ia64/kernel/ia64_ksyms.c	2008-07-28 17:35:21.000000000 -0500
-+++ ia64_spinlock_contention/arch/ia64/kernel/ia64_ksyms.c	2008-07-28 17:35:51.000000000 -0500
-@@ -95,6 +95,10 @@ EXPORT_SYMBOL(unw_init_running);
-  */
- extern char ia64_spinlock_contention_pre3_4;
- EXPORT_SYMBOL(ia64_spinlock_contention_pre3_4);
-+extern char ia64_spinlock_contention_pre3_4_beg;
-+EXPORT_SYMBOL(ia64_spinlock_contention_pre3_4_beg);
-+extern char ia64_spinlock_contention_pre3_4_end;
-+EXPORT_SYMBOL(ia64_spinlock_contention_pre3_4_end);
- #  else
- /*
-  * This is not a normal routine and we don't want a function descriptor for it, so we use
-@@ -102,6 +106,8 @@ EXPORT_SYMBOL(ia64_spinlock_contention_p
-  */
- extern char ia64_spinlock_contention;
- EXPORT_SYMBOL(ia64_spinlock_contention);
-+extern char ia64_spinlock_contention_end;
-+EXPORT_SYMBOL(ia64_spinlock_contention_end);
- #  endif
- # endif
- #endif
-Index: ia64_spinlock_contention/arch/ia64/kernel/perfmon_default_smpl.c
-===================================================================
---- ia64_spinlock_contention.orig/arch/ia64/kernel/perfmon_default_smpl.c	2008-07-28 17:35:21.000000000 -0500
-+++ ia64_spinlock_contention/arch/ia64/kernel/perfmon_default_smpl.c	2008-07-28 18:18:56.000000000 -0500
-@@ -11,6 +11,7 @@
- #include <linux/init.h>
- #include <asm/delay.h>
- #include <linux/smp.h>
-+#include <linux/spinlock.h>
- 
- #include <asm/perfmon.h>
- #include <asm/perfmon_default_smpl.h>
-@@ -98,6 +99,16 @@ default_init(struct task_struct *task, v
- 	return 0;
- }
- 
-+#ifdef CONFIG_SMP
-+#if __GNUC__ < 3 || (__GNUC__ == 3 && __GNUC_MINOR__ < 3)
-+extern char ia64_spinlock_contention_pre3_4_beg[], ia64_spinlock_contention_pre3_4_end[];
-+#define ia64_spinlock_contention		ia64_spinlock_contention_pre3_4_beg
-+#define ia64_spinlock_contention_end		ia64_spinlock_contention_pre3_4_end
-+#else
-+extern char ia64_spinlock_contention[], ia64_spinlock_contention_end[];
-+#endif
-+#endif
-+
- static int
- default_handler(struct task_struct *task, void *buf, pfm_ovfl_arg_t *arg, struct pt_regs *regs, unsigned long stamp)
- {
-@@ -164,6 +175,14 @@ default_handler(struct task_struct *task
- 	 * where did the fault happen (includes slot number)
- 	 */
- 	ent->ip = regs->cr_iip | ((regs->cr_ipsr >> 41) & 0x3);
-+#ifdef CONFIG_SMP
-+	/* Fix up the ip for code in the spinlock contention path. */
-+	if ((ent->ip >= (unsigned long)ia64_spinlock_contention) &&
-+	    (ent->ip < (unsigned long)ia64_spinlock_contention_end))
-+		ent->ip = regs->b6;
-+#endif
-+	if (in_lock_functions(ent->ip))
-+		ent->ip = regs->r28;
- 
- 	ent->tstamp    = stamp;
- 	ent->cpu       = smp_processor_id();
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
