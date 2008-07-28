@@ -1,107 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759462AbYG1Az2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759480AbYG1A7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759462AbYG1Az2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 20:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757424AbYG1AzS
+	id S1759480AbYG1A7U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 20:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbYG1A7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 20:55:18 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:20026 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756755AbYG1AzQ (ORCPT
+	Sun, 27 Jul 2008 20:59:11 -0400
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:39763 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756130AbYG1A7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 20:55:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=Tz+AS2ZHsRa6ywMRlGg7mCItf0ClzkcDjEI9RZ/OU++2NFL8o2KQ9vHh9cGicfyigg
-         IHHtFVuUMdPK9nBDZ0MpDBp6Fgkoh5/JBw+HvwRt30NtdKhEhRRPCVTPq8ALEqmX1Ed6
-         VZjHrURWJ7lmdm1oU1wTFckqMpdFrOeTkq5bQ=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] mm: remove find_max_pfn_with_active_regions
-Date: Sun, 27 Jul 2008 17:54:33 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sun, 27 Jul 2008 20:59:09 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiEFANewjEhMRKxB/2dsb2JhbACBW4k8oV0
+Date: Sun, 27 Jul 2008 20:54:05 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       linux-btrace@vger.kernel.org
+Subject: [RFC] LTTng merge plan
+Message-ID: <20080728005405.GA7941@Krystal>
+References: <20080717155724.897537670@polymtl.ca> <48862A30.7050701@qumranet.com> <y0mabg991c3.fsf@ton.toronto.redhat.com> <488635A7.2030609@qumranet.com> <20080722221204.GA14661@Krystal> <488C49CC.8040800@qumranet.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807271754.33833.yhlu.kernel@gmail.com>
+In-Reply-To: <488C49CC.8040800@qumranet.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:16:25 up 53 days,  4:57,  4 users,  load average: 0.33, 0.34,
+	0.36
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Avi Kivity (avi@qumranet.com) wrote:
+> Mathieu Desnoyers wrote:
+>
+>  
+>>> Yes, but the userspace side would collect the format strings as well 
+>>> (just once) and could put them in the same file.  The aggregation is 
+>>> portable across kernel versions.
+>>>
+>>>     
+>>
+>> Yes,
+>>
+>> LTTng does exactly all that.
+>>
+>>
+>>   
+>
+> [snip goodies]
+>
+>> I'll be more than happy to answer your questions.
+>>   
+>
+> What's the merge plan for this?
+>
 
-no user now
+Hi Avi,
 
-also print out info about adding/removing active region
+Thanks for asking. Given the amount of expectation from kernel
+developers, distributions and users I have seen for kernel tracing at
+this year's OLS, I think giving a detailed merge plan for my LTTng work
+is appropriate.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Currently, it looks like :
 
----
- include/linux/mm.h |    1 -
- mm/page_alloc.c    |   22 ++--------------------
- 2 files changed, 2 insertions(+), 21 deletions(-)
+In Ingo's trees :
+- Tracepoints, scheduler tracepoints instrumentation, ftrace port to
+  tracepoints
+  - Should make it into 2.6.27 since ftrace needs those.
+- Immediate Values (faster branch based on load immediate instruction)
+  Useful for markers and tracepoints, but can also be used for any
+  compiled-in code that has to be dynamically enabled.
+  - Aims at 2.6.28
+- Text Edit Lock : protection of kernel text modification with a mutex.
+  Synchronises kprobes and immediate values.
+  - Aims at 2.6.28
 
-Index: linux-2.6/include/linux/mm.h
-===================================================================
---- linux-2.6.orig/include/linux/mm.h
-+++ linux-2.6/include/linux/mm.h
-@@ -1036,7 +1036,6 @@ extern unsigned long absent_pages_in_ran
- extern void get_pfn_range_for_nid(unsigned int nid,
- 			unsigned long *start_pfn, unsigned long *end_pfn);
- extern unsigned long find_min_pfn_with_active_regions(void);
--extern unsigned long find_max_pfn_with_active_regions(void);
- extern void free_bootmem_with_active_regions(int nid,
- 						unsigned long max_low_pfn);
- typedef int (*work_fn_t)(unsigned long, unsigned long, void *);
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -3572,8 +3572,7 @@ void __init add_active_range(unsigned in
- {
- 	int i;
- 
--	mminit_dprintk(MMINIT_TRACE, "memory_register",
--			"Entering add_active_range(%d, %#lx, %#lx) "
-+	printk(KERN_INFO "Adding active range (%d, %#lx, %#lx) "
- 			"%d entries of %d used\n",
- 			nid, start_pfn, end_pfn,
- 			nr_nodemap_entries, MAX_ACTIVE_REGIONS);
-@@ -3635,7 +3634,7 @@ void __init remove_active_range(unsigned
- 	int i, j;
- 	int removed = 0;
- 
--	printk(KERN_DEBUG "remove_active_range (%d, %lu, %lu)\n",
-+	printk(KERN_INFO "Removing active range (%d, %#lx, %#lx)\n",
- 			  nid, start_pfn, end_pfn);
- 
- 	/* Find the old active region end and shrink */
-@@ -3753,23 +3752,6 @@ unsigned long __init find_min_pfn_with_a
- 	return find_min_pfn_for_node(MAX_NUMNODES);
- }
- 
--/**
-- * find_max_pfn_with_active_regions - Find the maximum PFN registered
-- *
-- * It returns the maximum PFN based on information provided via
-- * add_active_range().
-- */
--unsigned long __init find_max_pfn_with_active_regions(void)
--{
--	int i;
--	unsigned long max_pfn = 0;
--
--	for (i = 0; i < nr_nodemap_entries; i++)
--		max_pfn = max(max_pfn, early_node_map[i].end_pfn);
--
--	return max_pfn;
--}
--
- /*
-  * early_calculate_totalpages()
-  * Sum pages in active regions for movable zone.
+Short-term submission plan
+
+In LTTng patchset
+(http://ltt.polymtl.ca/lttng/patch-2.6.26-0.12.tar.bz2)
+
+- Instrumentation
+  - LTTng tracepoints
+    - Used by LTTng, SystemTAP and usable specialized probes.
+  - Port specific sets of tracepoints along with their current users
+    - ftrace (port currently in Ingo's tree), KVM trace, blktrace.
+
+- Data extraction
+  - LTTng timestamping
+     - Based on the CPU cycle counter when synchronized across CPUs.
+     - Fallback on a simple cache-bouncing atomic counter if no
+       synchronized fast time source is available. Basically, the idea
+       is that having the correct event _order_ is more important than
+       having an approximate time, because this "timestamp" is used to
+       reorder events which are written in per-CPU buffers. Time updates
+       can always be recorded as an event in the trace to get an idea of
+       the kernel time flow.
+  - LTTng trace management
+    - netlink interface to start/stop tracing and set the buffer sizes.
+      - Supports multiple channels (high/medium/low event rate).
+        Metadata (marker types, list of interrupt handlers...) can be
+        exported in low event rate channels.
+      - Supports flight recorder mode (overwriting oldest buffer data),
+        normal mode (writes to disk, drops events if buffer is full) or
+        hybrid, or mixed, mode, where the high event rate buffers only
+        are in flight recorder mode.
+  - Data relay
+    - Atomic buffering mechanism which does not call into kernel
+      primitives except preempt disable. Only touches variables
+      atomically, does not use any lock. Aims at having minimal
+      intrusiveness and allowing the largest code coverage (thus not
+      calling kernel code).
+  - LTTng marker control
+    - Currently a /proc/ltt interface with read and write operations to
+      list markers and connect LTTng probe to individual markers,
+      specifying in which channel to send the data (I know, should
+      probably belong to /sys instead, comments welcome) It's not part
+      of the core marker infrastructure because it depends both on
+      markers and on the LTTng trace management. It's also responsible
+      for allocating a numeric ID to a marker which is guaranteed to be
+      unique as long as there is at least one active trace.
+
+
+Medium-term submission plan
+
+In LTTng patchset
+
+- Instrumentation
+  - Userspace tracing interface
+    - Allow userspace to declare tracepoints and/or markers
+    - Provide a data extraction interface to collect the tracing data.
+      - More work needed in this area.
+  - LTTng statedump
+    - Exports the kernel data structures to the trace buffers at trace
+      start. List interrupts, system calls, threads, memory maps, ... It
+      does not use /proc because :
+        1 - /proc has nasty races which makes the information "generally
+        correct" but not more.
+        2 - /proc exports the information in text format, which is not
+        as compact as LTTng binary format.
+
+Longer term wishlist
+- GCC support for static branch patching
+  - Improvement on the immediate values for dynamic code activation
+
+A bit more information is available in the slides I just presented at
+OLS at :
+
+http://ltt.polymtl.ca/slides/desnoyers-talk-ols2008.pdf
+
+I'll gladly answer to questions/comments.
+
+Mathieu
+
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
