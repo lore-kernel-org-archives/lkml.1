@@ -1,62 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbYG1Umr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760093AbYG1Un0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759330AbYG1Umr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 16:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYG1Umj
+	id S1760093AbYG1Un0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 16:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYG1UnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 16:42:39 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:55178 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752773AbYG1Umi (ORCPT
+	Mon, 28 Jul 2008 16:43:06 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:15694 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbYG1UnD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 16:42:38 -0400
+	Mon, 28 Jul 2008 16:43:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=bAgRi0BIim9aHTqB/2y+b/Cjn5yN5eVbpt75PMl3wB8Sw/u0J/Eren4cM2Nx5IAWVt
-         k97QFFtDsll0AzYsgR53J7qYczGwmiqlwq/BhBeTyNmkoALJiLmGfJ8UvA46kyQ69ycf
-         SpFGDIbKha0ITdSyu6qcpvdllXEJBljXeP23Y=
-Message-ID: <84144f020807281342t2e1a3dc3id01314ac01de406f@mail.gmail.com>
-Date: Mon, 28 Jul 2008 23:42:37 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] eCryptfs - use page_alloc not kmalloc to get a page of memory
-Cc: "Eric Sandeen" <sandeen@redhat.com>, linux-kernel@vger.kernel.org,
-       mhalcrow@us.ibm.com, stable@kernel.org,
-       "Christoph Lameter" <cl@linux-foundation.org>
-In-Reply-To: <20080728133504.156f438f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <488DF00F.3080809@redhat.com>
-	 <20080728133504.156f438f.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 677f15235277cac1
+        h=from:to:cc:date:message-id:subject;
+        b=DsTYjeKJ60LqmZiXo/LcQKt17bCUsVs6P9ZGO5N0+ibHzNKF/AtV0fK23iZr91y17H
+         BY84Yw8fWR4F2IqRtgjs3yRcrJs1zwUoK4Vi13R+wSRmMxoyAxxo+m0eXFGJ6q9XOBy7
+         193J6otd4jnUoOKm9WD0iKhy5hkQrAqJ5oHLQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Mon, 28 Jul 2008 22:41:02 +0200
+Message-Id: <20080728204102.4283.74632.sendpatchset@localhost.localdomain>
+Subject: [PATCH 1/5] ide: remove SECTOR_WORDS define
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 11:35 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Mon, 28 Jul 2008 11:13:03 -0500
-> Eric Sandeen <sandeen@redhat.com> wrote:
->
->> With SLUB debugging turned on in 2.6.26, I was getting memory corruption
->> when testing eCryptfs.  The root cause turned out to be that eCryptfs
->> was doing kmalloc(PAGE_CACHE_SIZE); virt_to_page() and treating that
->> as a nice page-aligned chunk of memory.  But at least with SLUB debugging
->> on, this is not always true, and the page we get from virt_to_page does
->> not necessarily match the PAGE_CACHE_SIZE worth of memory we got from
->> kmalloc.
->>
->> My simple testcase was 2 loops doing "rm -f fileX; cp /tmp/fileX ." for
->> 2 different multi-megabyte files.  With this change I no longer see
->> the corruption.
->
-> The fix applies to both 2.6.25 and to 2.6.26 and appears to be needed
-> in both kernel versions, so I have tagged it for backporting into both.
+Just use SECTOR_SIZE instead.
 
-Hmm, SLUB will use the page allocator directly for PAGE_CACHE_SIZE
-regadless of whether debugging is enabled or not...
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+another batch of small cleanups...
+
+ drivers/ide/ide-disk.c     |    5 +++--
+ drivers/ide/ide-iops.c     |    2 +-
+ drivers/ide/ide-probe.c    |    2 +-
+ drivers/ide/ide-proc.c     |    5 +++--
+ drivers/ide/ide-taskfile.c |    2 +-
+ include/linux/ide.h        |    2 +-
+ 6 files changed, 10 insertions(+), 8 deletions(-)
+
+Index: b/drivers/ide/ide-disk.c
+===================================================================
+--- a/drivers/ide/ide-disk.c
++++ b/drivers/ide/ide-disk.c
+@@ -546,13 +546,14 @@ static int proc_idedisk_read_smart(char 
+ 
+ 	if (get_smart_data(drive, page, sub_cmd) == 0) {
+ 		unsigned short *val = (unsigned short *) page;
+-		char *out = ((char *)val) + (SECTOR_WORDS * 4);
++		char *out = (char *)val + SECTOR_SIZE;
++
+ 		page = out;
+ 		do {
+ 			out += sprintf(out, "%04x%c", le16_to_cpu(*val),
+ 				       (++i & 7) ? ' ' : '\n');
+ 			val += 1;
+-		} while (i < (SECTOR_WORDS * 2));
++		} while (i < SECTOR_SIZE / 2);
+ 		len = out - page;
+ 	}
+ 
+Index: b/drivers/ide/ide-iops.c
+===================================================================
+--- a/drivers/ide/ide-iops.c
++++ b/drivers/ide/ide-iops.c
+@@ -693,7 +693,7 @@ int ide_driveid_update(ide_drive_t *driv
+ 	}
+ 	local_irq_save(flags);
+ 	SELECT_MASK(drive, 0);
+-	id = kmalloc(SECTOR_WORDS*4, GFP_ATOMIC);
++	id = kmalloc(SECTOR_SIZE, GFP_ATOMIC);
+ 	if (!id) {
+ 		local_irq_restore(flags);
+ 		return 0;
+Index: b/drivers/ide/ide-probe.c
+===================================================================
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -561,7 +561,7 @@ static inline u8 probe_for_drive (ide_dr
+ 	 *	Also note that 0 everywhere means "can't do X"
+ 	 */
+  
+-	drive->id = kzalloc(SECTOR_WORDS *4, GFP_KERNEL);
++	drive->id = kzalloc(SECTOR_SIZE, GFP_KERNEL);
+ 	drive->id_read = 0;
+ 	if(drive->id == NULL)
+ 	{
+Index: b/drivers/ide/ide-proc.c
+===================================================================
+--- a/drivers/ide/ide-proc.c
++++ b/drivers/ide/ide-proc.c
+@@ -100,13 +100,14 @@ static int proc_ide_read_identify
+ 
+ 		err = taskfile_lib_get_identify(drive, page);
+ 		if (!err) {
+-			char *out = ((char *)page) + (SECTOR_WORDS * 4);
++			char *out = (char *)page + SECTOR_SIZE;
++
+ 			page = out;
+ 			do {
+ 				out += sprintf(out, "%04x%c",
+ 					le16_to_cpup(val), (++i & 7) ? ' ' : '\n');
+ 				val += 1;
+-			} while (i < (SECTOR_WORDS * 2));
++			} while (i < SECTOR_SIZE / 2);
+ 			len = out - page;
+ 		}
+ 	}
+Index: b/drivers/ide/ide-taskfile.c
+===================================================================
+--- a/drivers/ide/ide-taskfile.c
++++ b/drivers/ide/ide-taskfile.c
+@@ -768,7 +768,7 @@ int ide_cmd_ioctl (ide_drive_t *drive, u
+ 
+ 	if (args[3]) {
+ 		tfargs.tf_flags |= IDE_TFLAG_IO_16BIT;
+-		bufsize = SECTOR_WORDS * 4 * args[3];
++		bufsize = SECTOR_SIZE * args[3];
+ 		buf = kzalloc(bufsize, GFP_KERNEL);
+ 		if (buf == NULL)
+ 			return -ENOMEM;
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -126,7 +126,7 @@ struct ide_io_ports {
+ #define PARTN_BITS	6	/* number of minor dev bits for partitions */
+ #define MAX_DRIVES	2	/* per interface; 2 assumed by lots of code */
+ #define SECTOR_SIZE	512
+-#define SECTOR_WORDS	(SECTOR_SIZE / 4)	/* number of 32bit words per sector */
++
+ #define IDE_LARGE_SEEK(b1,b2,t)	(((b1) > (b2) + (t)) || ((b2) > (b1) + (t)))
+ 
+ /*
