@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbYG1Kv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756507AbYG1Kwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756297AbYG1Kv3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 06:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbYG1KvV
+	id S1756507AbYG1Kwc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 06:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbYG1KwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 06:51:21 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38083 "EHLO gate.crashing.org"
+	Mon, 28 Jul 2008 06:52:24 -0400
+Received: from pond.fysh.org ([166.84.7.109]:44064 "EHLO pond.fysh.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753472AbYG1KvU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 06:51:20 -0400
-Subject: Re: mISDN still breaking the allmodconfig build...
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: David Miller <davem@davemloft.net>, sfr@canb.auug.org.au, kkeil@suse.de,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-In-Reply-To: <93120C4B-D2F4-4479-806B-2141AC3DC607@holtmann.org>
-References: <20080727.170235.97056809.davem@davemloft.net>
-	 <93120C4B-D2F4-4479-806B-2141AC3DC607@holtmann.org>
-Content-Type: text/plain
-Date: Mon, 28 Jul 2008 20:50:53 +1000
-Message-Id: <1217242253.11188.197.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	id S1750728AbYG1KwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 06:52:23 -0400
+Date: Mon, 28 Jul 2008 11:52:22 +0100
+From: Athanasius <link@miggy.org>
+To: Reg Clemens <reg@dwf.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Confused: 'tail -f' how can this happen???
+Message-ID: <20080728105222.GB17871@miggy.org>
+Mail-Followup-To: Reg Clemens <reg@dwf.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <200807252137.m6PLbAkj008998@deneb.dwf.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807252137.m6PLbAkj008998@deneb.dwf.com>
+X-gpg-fingerprint: E218CE1D
+X-gpg-key: http://www.fysh.org/~athan/gpg-key
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-28 at 03:03 +0200, Marcel Holtmann wrote:
-> Hi Dave,
+On Fri, Jul 25, 2008 at 03:37:10PM -0600, Reg Clemens wrote:
+> OK, I dont understand this at all.
+> I was debugging another problem, and had a 'tail -f' running on my maillog 
+> file.
+> It showed data down to the  present, namely 15:18:18
+
+  What date ?
+
+> Something had gone by fast enough that I brought the maillog up in an editor
+> but IT only showed data down to 14:02:16
+
+  And what date here ?
+
+> Looking at the 'ls' of /var/log, the maillog file shows a write date of 14:02.
 > 
-> > More fallout from the premature mISDN driver merge:
-> >
-> > drivers/isdn/hardware/mISDN/hfcmulti.c:5255:2: error: #error "not  
-> > running on big endian machines now"
+> If I do a 2nd tail -f, it too stops at 14:02.
+
+  And here ?
+
+> What is going on with the file system to cause the bizare behaviour?
+> Why cant I see ALL the data in maillog, or why could I see it only once?
 > 
-> is that only the HFC driver or the whole mISDN stack?
-> 
-> I know that the two old ISDN stacks where really bad on big endian,  
-> but my assumption was that we did sort this out in the end.
+> Confused.
 
-Well, I got it working well enough (the old one) on a ppc405 about 5 or
-6 years ago... It did require some endian & dma mapping fixing, iirc, in
-the hisax pci driver, but nothing very tricky.
+   I'm hoping this is as simple as:
 
-What bugs me is that we -fixed- at least some of these things in the old
-stack, up to the point where I could use it reliably in some commercial
-products, and now we are merging a new stack which, in that area, is a
-clear regression over the old code.
+	1) You opened the initial tail on one day and left it running
+	2) Log rotation happens, mail software, via syslog or directly,
+	starts logging to the new 'maillog', the other one now being
+	'maillog.1' or whatever
+	3) You don't realise this and get confused by the differing data
+	when you look afresh at what is now 'maillog'
 
-One basic premise to me for replacing a whole stack with a new one is
-that the new one should be -at-least- as good as the old one in all
-areas, and those (virt_to_bus and endianness) are pretty major.
+And of course, depending on local configuration, maybe your maillog
+rotates more often than once a day (although that alone wouldn't explain
+the 'gone backwards' timestamp).
 
-Ben.
+HTH,
 
-
+-Ath
+-- 
+- Athanasius = Athanasius(at)miggy.org / http://www.miggy.org/
+                  Finger athan(at)fysh.org for PGP key
+	   "And it's me who is my enemy. Me who beats me up.
+Me who makes the monsters. Me who strips my confidence." Paula Cole - ME
