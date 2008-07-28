@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbYG1ODa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbYG1OEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbYG1ODa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 10:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbYG1ODT
+	id S1754348AbYG1OEo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 10:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYG1OEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 10:03:19 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:50562 "EHLO smtp.mba.ocn.ne.jp"
+	Mon, 28 Jul 2008 10:04:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48003 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750986AbYG1ODS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 10:03:18 -0400
-Date: Mon, 28 Jul 2008 23:05:12 +0900 (JST)
-Message-Id: <20080728.230512.132304415.anemo@mba.ocn.ne.jp>
-To: jason.wessel@windriver.com
-Cc: linux-kernel@vger.kernel.org, ralf@linux-mips.org,
-       linux-mips@linux-mips.org
-Subject: Re: [PATCH 2/3] kgdb, mips: add arch support for the kernel's kgdb
- core
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080725.235233.130241768.anemo@mba.ocn.ne.jp>
-References: <20080725.012748.108121457.anemo@mba.ocn.ne.jp>
-	<488941C5.9060908@windriver.com>
-	<20080725.235233.130241768.anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1750851AbYG1OEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 10:04:34 -0400
+Date: Mon, 28 Jul 2008 16:04:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: roel kluin <roel.kluin@gmail.com>, rml@tech9.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sched: Test runtime rather than period in
+	global_rt_runtime()
+Message-ID: <20080728140423.GA18144@elte.hu>
+References: <488529B2.1080609@gmail.com> <1216717739.7257.94.camel@twins> <48864843.6030808@gmail.com> <1216794328.7257.123.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1216794328.7257.123.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0002]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Jul 2008 23:52:33 +0900 (JST), Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-> > It seem ok to me to try it.  Here is version 3 of the patch, which I was going to send to Ralf.
+
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> On Tue, 2008-07-22 at 16:51 -0400, roel kluin wrote:
+> > Peter Zijlstra wrote:
+> > > On Mon, 2008-07-21 at 20:28 -0400, roel kluin wrote:
+> > >> Peter, you added the test in global_rt_runtime(), in commit
+> > >> d0b27fa77854b149ad4af08b0fe47fe712a47ade
+> > >> could you take a look at it and tell whether this test should
+> > >> be replaced by something else?
+> > 
+> > >> -	if (sysctl_sched_rt_period < 0)
+> > 
+> > > Gah, I'm a moron. That should read:
+> > > 
+> > >   if (sysctl_sched_rt_runtime < 0)
 > 
-> Thanks, it works for me with serial_txx9 kgdboc module.
+> Thanks!
+> 
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-BTW, is FRAME_POINTER mandatory for kgdb?  I agree that FRAME_POINTER
-(ie. -fno-omit-frame-pointer -fno-optimize-sibling-calls) helps source
-level debugging, but I think transparency is more important.
+applied to tip/sched/urgent - thanks!
 
-Now kgdboc can be loaded/activated at run-time, so I want to enable
-CONFIG_KGDB usually.  But CONFIG_FRAME_POINTER introduces runtime
-overhead on overall kernel, which is too bad (at least on MIPS).
-
-Also, selecting FRAME_POINTER (which is not selectable on MIPS)
-unconditionally looks somewhat inconsistent.
-
-So ... Is this patch reasonable?
-
-
-Subject: kgdb: Do not select FRAME_POINTER on MIPS
-
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
-index a5d4b1d..cc61bf0 100644
---- a/lib/Kconfig.kgdb
-+++ b/lib/Kconfig.kgdb
-@@ -7,7 +7,7 @@ config HAVE_ARCH_KGDB
- 
- menuconfig KGDB
- 	bool "KGDB: kernel debugging with remote gdb"
--	select FRAME_POINTER
-+	select FRAME_POINTER if !MIPS
- 	depends on HAVE_ARCH_KGDB
- 	depends on DEBUG_KERNEL && EXPERIMENTAL
- 	help
+	Ingo
