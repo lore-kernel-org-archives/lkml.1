@@ -1,49 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759115AbYG1AsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759315AbYG1Aux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759115AbYG1AsV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 20:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756398AbYG1AsN
+	id S1759315AbYG1Aux (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 20:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbYG1Aup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 20:48:13 -0400
-Received: from toronto-hs-216-138-233-67.s-ip.magma.ca ([216.138.233.67]:45933
-	"HELO yow.seanm.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755932AbYG1AsM (ORCPT
+	Sun, 27 Jul 2008 20:50:45 -0400
+Received: from qmta03.westchester.pa.mail.comcast.net ([76.96.62.32]:36834
+	"EHLO QMTA03.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756370AbYG1Auo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 20:48:12 -0400
-Date: Sun, 27 Jul 2008 20:48:05 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: <benh@kernel.crashing.org>
-Cc: "David Miller" <davem@davemloft.net>, <sfr@canb.auug.org.au>,
-       <kkeil@suse.de>, <linux-kernel@vger.kernel.org>,
-       <linuxppc-dev@ozlabs.org>, <akpm@linux-foundation.org>,
-       <torvalds@linux-foundation.org>
-Subject: Re: mISDN still breaking the allmodconfig build...
-Message-ID: <20080727204805.59f55dda@lappy.seanm.ca>
-In-Reply-To: <1217204022.11188.139.camel@pasglop>
-References: <20080727.170235.97056809.davem@davemloft.net>
-	<1217204022.11188.139.camel@pasglop>
-Organization: PIKA
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
-X-Message-Flag: Warning: This message may contain actual content.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 27 Jul 2008 20:50:44 -0400
+X-Authority-Analysis: v=1.0 c=1 a=nIwtGICpIgsA:10 a=1qr_vtFaH-wA:10
+ a=NbdmU-cPIxq_6GOXheQA:9 a=roiMnqvtNayks1BoYIwA:9 a=2Z9fHDJeg8UbPuzLIakA:7
+ a=XpT0jO_MSIoxnI5yc-7OeDg2TrcA:4 a=Tb-hHMzVUqsA:10 a=JqzK7hVu6n4A:10
+Message-ID: <488D17DE.5000801@splhi.com>
+Date: Sun, 27 Jul 2008 17:50:38 -0700
+From: Tim Wright <timw@splhi.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: linux-scsi@vger.kernel.org
+Subject: [PATCH] Fix miscalculation of sg_io timeout in CDROM_SEND_PACKET
+ handler.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008 10:13:42 +1000
-"Benjamin Herrenschmidt" <benh@kernel.crashing.org> wrote:
+It seems cdrwtool in the udftools has been unusable on "modern" kernels 
+for some time. A Google search reveals many people with the same issue 
+but no solution (cdrwtool fails to format the disk). After spending some 
+time tracking down the issue, it comes down to the following:
 
-> On Sun, 2008-07-27 at 17:02 -0700, David Miller wrote:
-> > More fallout from the premature mISDN driver merge:
-> > 
-> > drivers/isdn/hardware/mISDN/hfcmulti.c:5255:2: error: #error "not
-> > running on big endian machines now"
-> 
-> Lovely...
+The udftools still use the older CDROM_SEND_PACKET interface to send 
+things like FORMAT_UNIT through to the drive. They should really be 
+updated, but that's another story. Since most distros are using libata 
+now, the cd or dvd burner appears as a SCSI device, and we wind up in 
+block/scsi_ioctl.c. Here, the code tries to take the "struct 
+cdrom_generic_command" and translate it and stuff it into a "struct 
+sg_io_hdr" structure so it can pass it to the modern sg_io() routine 
+instead. Unfortunately, there is one error, or rather an omission in the 
+translation. The timeout that is passed in in the "struct 
+cdrom_generic_command" is in HZ=100 units, and this is modified and 
+correctly converted to jiffies by use of clock_t_to_jiffies(). However, 
+a little further down, this cgc.timeout value in jiffies is simply 
+copied into the sg_io_hdr timeout, which should be in milliseconds. 
+Since most modern x86 kernels seems to be getting build with HZ=250, the 
+timeout that is passed to sg_io and eventually converted to the 
+timeout_per_command member of the scsi_cmnd structure is now four times 
+too small. Since cdrwtool tries to set the timeout to one hour for the 
+FORMAT_UNIT command, and it takes about 20 minutes to format a 4x CDRW, 
+the SCSI error-handler kicks in after the FORMAT_UNIT completes because 
+it took longer than the incorrectly-calculated timeout.
 
-mISDN is notoriously bad on big endian machines. 
+Patch to correct this follows. It fixes the problem on my test system.
 
-Cheers,
-   Sean
+Signed-off-by: Tim Wright <timw@splhi.com>
+
+--- linux-2.6.26/block/scsi_ioctl.c.orig        2008-07-27 
+17:35:49.000000000 -0700
++++ linux-2.6.26/block/scsi_ioctl.c     2008-07-27 17:36:41.000000000 -0700
+@@ -629,7 +629,7 @@ int scsi_cmd_ioctl(struct file *file, st
+                        hdr.sbp = cgc.sense;
+                        if (hdr.sbp)
+                                hdr.mx_sb_len = sizeof(struct 
+request_sense);
+-                       hdr.timeout = cgc.timeout;
++                       hdr.timeout = jiffies_to_msecs(cgc.timeout);
+                        hdr.cmdp = ((struct cdrom_generic_command 
+__user*) arg)->cmd;
+                        hdr.cmd_len = sizeof(cgc.cmd);
+
+
+
