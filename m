@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbYG1XUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758420AbYG1XVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233AbYG1XUQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 19:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbYG1XUD
+	id S1758420AbYG1XVM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 19:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbYG1XU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 19:20:03 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:42094 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751561AbYG1XUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 19:20:01 -0400
-Date: Tue, 29 Jul 2008 08:19:22 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-kbuild <linux-kbuild@vger.kernel.org>
-Subject: Re: kill include symlinks for sh?
-Message-ID: <20080728231922.GB28055@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Sam Ravnborg <sam@ravnborg.org>, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-kbuild <linux-kbuild@vger.kernel.org>
-References: <20080728115735.GA32089@uranus.ravnborg.org>
+	Mon, 28 Jul 2008 19:20:58 -0400
+Received: from gw.goop.org ([64.81.55.164]:57646 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751454AbYG1XU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 19:20:58 -0400
+Message-ID: <488E5455.6010901@goop.org>
+Date: Mon, 28 Jul 2008 16:20:53 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080728115735.GA32089@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: x86: Is there still value in having a special tlb flush IPI vector?
+References: <488E534F.2030204@goop.org>
+In-Reply-To: <488E534F.2030204@goop.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+Resend to cc: Andi on an address which actually works.
 
-On Mon, Jul 28, 2008 at 01:57:35PM +0200, Sam Ravnborg wrote:
-> Now that kbuild has proper support for
-> include/$ARCH/* maybe this is a good time
-> to kill the use of symlinks for sh?
-> 
-Good idea, I just saw the sparc change go by earlier today and remembered
-we had talked about this before.
+Jeremy Fitzhardinge wrote:
+> Now that normal smp_function_call is no longer an enormous bottleneck, 
+> is there still value in having a specialised IPI vector for tlb 
+> flushes?  It seems like quite a lot of duplicate code.
+>
+> The 64-bit tlb flush multiplexes the various cpus across 8 vectors to 
+> increase scalability. If this is a big issue, then the smp function 
+> call code can (and should) do the same thing.  (Though looking at it 
+> more closely, the way the code uses the 8 vectors is actually a less 
+> general way of doing what smp_call_function is doing anyway.)
+>
+> Thoughts?
+>
+> (And uv should definitely be hooking pvops if it wants its own 
+> flush_tlb_others; vsmp sets the precedent for a subarch-like use of 
+> pvops.)
+>
+>    J
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-> I do not have sh toolchina on this box so I have
-> not tried to do a full patch myself. And the mach stuff
-> obviously worries me with the link to the parent directory.
-> 
-This didn't end up being _too_ painful, though it did take a bit of time
-to hunt down all of the guilty parties. I've pushed out what I have now,
-which you can see at:
-
-http://git.kernel.org/?p=linux/kernel/git/lethal/sh-2.6.git;a=commitdiff;h=f15cbe6f1a4b4d9df59142fc8e4abb973302cf44
-
-It's been holding up to all of the random builds I've thrown at it so
-far, so there shouldn't be any really nasty surprises left over.
-
-I'm glad git supports renames.. :-)
