@@ -1,46 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752537AbYG1NqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751567AbYG1NqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752537AbYG1NqE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 09:46:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYG1Npz
+	id S1751567AbYG1NqY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 09:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbYG1NqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 09:45:55 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35054 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750936AbYG1Npy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 09:45:54 -0400
-Message-ID: <488DCD70.4020003@zytor.com>
-Date: Mon, 28 Jul 2008 09:45:20 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jan Beulich <jbeulich@novell.com>, Andi Kleen <andi@firstfloor.org>,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+	Mon, 28 Jul 2008 09:46:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50077 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752493AbYG1NqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 09:46:03 -0400
+Date: Mon, 28 Jul 2008 09:44:05 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Simon Horman <horms@verge.net.au>,
+       Andrew Morton <akpm@linux-foundation.org>, Chandru <chandru@in.ibm.com>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Joerg Roedel <joro@8bytes.org>
-Subject: Re: [PATCH] i386: improve double fault handling
-References: <4880A912.76E4.0078.0@novell.com> <4881263B.7060700@zytor.com> <48846B02.76E4.0078.0@novell.com> <20080721110510.GC10782@elte.hu> <4885CEFE.76E4.0078.0@novell.com> <20080728134252.GI5515@elte.hu>
-In-Reply-To: <20080728134252.GI5515@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Terry Loftin <terry.loftin@hp.com>, Tony Luck <tony.luck@intel.com>,
+       linux-ia64@vger.kernel.org
+Subject: Re: [patch] crashdump: fix undefined reference to `elfcorehdr_addr'
+Message-ID: <20080728134405.GD25963@redhat.com>
+References: <20080728015117.GA12055@verge.net.au> <m1tzeamust.fsf@frodo.ebiederm.org> <20080728062446.GC12655@il.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080728062446.GC12655@il.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+On Mon, Jul 28, 2008 at 09:24:46AM +0300, Muli Ben-Yehuda wrote:
+> On Sun, Jul 27, 2008 at 10:39:30PM -0700, Eric W. Biederman wrote:
+> > Simon Horman <horms@verge.net.au> writes:
+> > 
+> > > There has long been a strong aversion to providing the second
+> > > kernel with flags like im_in_kexec or im_in_kdump, as its felt
+> > > that this kind of problem is better handled by making sure that
+> > > the hardware is in a sensible state before leaving the
+> > > first-kernel.  But this is arguably more reasonable in the kexec
+> > > case than the kdump case.
+> > 
+> > That and because we can generally solve the specific problem with a
+> > general feature.  Something we can enable/disable on the command
+> > line if needed.  Right now this is especially interesting as on
+> > several architectures distros are not building special kdump kernels
+> > but have a single kernel binary that works in both cases.
+> > 
+> > Skimming through your patches this is a case we really do need to
+> > implement and handle cleanly.
+> > 
+> > Currently we leave DMA running in the kexec on panic case.  We avoid
+> > problems by only running out of a reserved area of memory.
+> > 
+> > As as general strategy that is fine.  However we have not
+> > implemented that strategy in the case of IOMMUs.  And we are having
+> > trouble with IOMMUs.
+> > 
+> > My hunch is that we should implement options to reserve a section of
+> > the iommu and to tell to the iommu to use the previously reserved
+> > section. Although turning iommus off altogether and simply using
+> > swiotlb may be acceptable.  In which case we should just force usage
+> > of the swiotlb on the command line in /sbin/kexec.
 > 
-> Secondly, task gates are really a relic that should not be proliferated. 
-> Besides the complications in virtualized environments (if more common 
-> things like Big Real Mode are not supported well in virtual mode what do 
-> we expect of more esoteric features as task gates?) it does not get 
-> nearly as much testing on real silicon as other, more mainstream CPU 
-> features.
+> With an isolation-capable IOMMU (such as Calgary, VT-d and AMD's
+> IOMMU) on the I/O path, as long as we want to keep DMAs running and
+> going through to memory, we need to keep the IOMMU running, with the
+> same set of permissions and translation tables. If we don't mind DMAs
+> failing, we need to gracefully handle IOMMU DMA faults (where
+> possible---Calgary can't do it at the moment). What we do instead with
+> Calgary (c.f., the patch that instigated this discussion) is a hack,
+> we "reinitialize" the IOMMU with the old IOMMU's translation tables so
+> that DMAs continue working. 
 > 
 
-I think that using it as a bailout mechanism is going to remain 
-supported and tested.  It's just never going to be fast.
+Hi Muli,
 
-	-hpa
+Agree, using old kernel's TCE tables is a hack. As Eric pointed out,
+is there a reason why swiotlb will not work here? (I guess using
+swiotlb will mean disabling iommu and that will again fault if 
+DMA is going on).
 
+So one of the solutions, as eric suggested,  will be to reserve some
+entries in first kernel and then pass that info to second kernel and
+let second kernel use thos entries for setting up DMA and let the
+DMA's of first kernel run untouched.
+
+This patch is effectively doing that (using previous kernel's TCE table),
+except the fact that there are no gurantees that there are free table
+entries when kdump kernel wants to perform a DMA of its own. Should
+probably work though in most of the cases. 
+
+> My preference would be to have stopped all DMAs in the old kernel,
+> which would've made this nastiness go away. Can you explain in simple
+> words why we can't or won't do that?
+> 
+
+Is there a reliable way of stopping all ongoing DMAs after kernel crash?
+
+Thanks
+Vivek
