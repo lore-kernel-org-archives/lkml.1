@@ -1,90 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYG1QQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758199AbYG1QRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbYG1QQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 12:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbYG1QQU
+	id S1758199AbYG1QRJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 12:17:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbYG1QQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 12:16:20 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:13535 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754340AbYG1QQT convert rfc822-to-8bit (ORCPT
+	Mon, 28 Jul 2008 12:16:56 -0400
+Received: from outbound-mail-134.bluehost.com ([67.222.39.24]:39976 "HELO
+	outbound-mail-134.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754340AbYG1QQz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 12:16:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=g9O/5incrpgKiueQkrA6XKmUu1PeUivk/MA/NXOcBh2SeJxkPRGiwQjUJcx6HVOy/3
-         E6N4aICbb/cuixHZGdLPk8EiKbmE+OwLfJnHW06lxarqQMJfv5NxsXzIs3vwW0tpkPJg
-         3Z6TM4NhmRZZ1usyltLnQzpz1gxiCt1iw/1+Y=
-Message-ID: <9ea470500807280916k7824dc28m169f4c4db65023fa@mail.gmail.com>
-Date: Mon, 28 Jul 2008 18:16:16 +0200
-From: "Boris Petkov" <petkovbb@googlemail.com>
-Reply-To: petkovbb@gmail.com
-To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-Subject: Re: IDE S.M.A.R.T. ioctl errors
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-In-Reply-To: <200807281644.38419.bzolnier@gmail.com>
+	Mon, 28 Jul 2008 12:16:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=pOfg9blHSiaWXhf0lRK/Pd3XM8HkBdzW4PoqfGYHpeV/Ch7m+vVZekHl3w59E+TSmyfIwW04/EN9hbDkOExpmzImg5TD1uqbwVnVgkh49A6voF1IKdGZ9n/B+AhuR0KZ;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
+Date: Mon, 28 Jul 2008 09:16:44 -0700
+User-Agent: KMail/1.9.9
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>, Alex Chiang <achiang@hp.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
+       Kristen Accardi <kristen.c.accardi@intel.com>
+References: <20080724134737.4b91f30d@mjolnir.drzeus.cx> <200807251518.53462.jbarnes@virtuousgeek.org> <488D86EC.1010903@jp.fujitsu.com>
+In-Reply-To: <488D86EC.1010903@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080728060133.GA14007@gollum.tnic>
-	 <200807281644.38419.bzolnier@gmail.com>
+Message-Id: <200807280916.44664.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 4:44 PM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
+On Monday, July 28, 2008 1:44 am Kenji Kaneshige wrote:
+> Jesse Barnes wrote:
+> > I think that's fine (automatically creating duplicate devices with names
+> > to differentiate them), but I think we should also try harder to avoid
+> > adding duplicates.
+> >
+> > In Pierre's case, and on my T61, there's only one actual hotplug slot
+> > available, but the firmware creates duplicate physical slot numbers and
+> > sets the HP_CAP bit on everything, both of which are obviously wrong
+> > (well I suppose you could pop these chips off the board, but it's not
+> > very practical).  However, afaict that "other" OS uses the _RMV method to
+> > determine whether a given slot is actually hot pluggable.  On my T61 at
+> > least, this seems to be accurate: only one of my EXP* objects has a _RMV
+> > method.
+> >
+> > So maybe the PCIe hotplug driver should be checking for that method when
+> > ACPI is available?  We already try to use _OSC etc., so checking for _RMV
+> > first would make sense...
 >
-> Hi,
+> As you pointed out, the root cause might not a problem of slot naming,
+> but a problem of slots detection, because pciehp driver detects multiple
+> PCIe hotplug slots even thought your and Pierre's system seems to have
+> only one hotplug slot. So I think we should also consider the problem
+> from this view point (slot detection).
 >
-> On Monday 28 July 2008, Borislav Petkov wrote:
->
-> [...]
->
->> [   32.918048] ide_cmd_ioctl: args[0]: 0xb0, args[1]: 0x1, args[2]: 0xd5 args[3]: 0x1
->> [   32.918164] hdd: status error: status=0x58 { DriveReady SeekComplete DataRequest }
->> [   32.918392] ide: failed opcode was: 0xb0
->> [   32.918491] hdd: drive not ready for command
->> [   32.918618] hdd: status error: status=0x58 { DriveReady SeekComplete DataRequest }
->> [   32.918844] ide: failed opcode was: 0xea
->> [   32.918949] hdd: drive not ready for command
->> ...
->>
->> and this is "caused" by
->> ide-use-correct-data-phase-for-smart-read-data-log-in-ide_cmd_ioctl.patch. This
->> happens, IMHO, because when you do ATA_CMD_SMART from userspace ioctl, one of
->> the cases is that the tf->feature flags have values which are inconsistent with
->> the ATA/ATAPI v.7 spec (6.54.5 SMART READ DATA):
->>
->> "If the device does not support this command, if SMART is disabled, or if the
->> values in the Features, LBA Mid, or LBA High registers are invalid, the device
->> shall return command aborted."
->>
->> For example this one:
->>
->> [   30.499581] ide_cmd_ioctl: args[0]: 0xb0, args[1]: 0x1, args[2]: 0xd1 args[3]: 0x1
->> [   30.516111] hda: task_no_data_intr: status=0x58 { DriveReady SeekComplete DataRequest }
->> [   30.516387] ide: failed opcode was: 0xb0
->>
->> However, the case with the SMART_READ_LOG looks correct above: args[2] = 0xd5
->> which is the tf->feature flag, cmd = 0xb0 (ATA_CMD_SMART). This one fails too, though.
->
-> Thanks for spotting it.
->
-> It seems that ide_cmd_ioctl() ->data_phase change is not as obvious as
-> I previously thought.  Since the patch is quite low-prio (it prepares
-> the code for future changes) I just dropped it until we learn more about
-> the underlying issues.
+> But, I think simply checking for _RMV method first is dangerous because
+> I think there are many systems that doesn't implement _RMV for PCIe
+> hotplug slots (at least, my system doesn't implement that. Anyway,
+> I would like to look at the documents/specifications that mention _RMV
+> method for determining whether a given slot is hot pluggable. Do you
+> have any information about that? I think PCI Local Bus, PCI Express and
+> PCI Firmware specification don't mention that. I think hot pluggable slots
+> on your, Pierre's and Matthew's system are ExpressCard slots. So I guess
+> ExpressCard specification might define something about this. But
+> unfortunately, I don't have ExpressCard specification. Can anyone access
+> ExpressCard spec?
 
-How about aborting the ioctl in all those cases when the relevant
-registers above contain invalid values
-according to the spec? It sounds a pretty sane thing to do...
+Your systems don't have _RMV methods for the hotpluggable PCIe slots in the 
+DSDT?  That's a shame; the Windows docs I found on PCIe hotplug seemed to 
+indicate that _RMV and _OSC (under Vista) were used to detect whether a given 
+slot was hot pluggable (I just googled for "windows pcie hotplug" or 
+something) so I was hoping that would be a reliable method...  Any other 
+ideas?  I'll go see if I can dig up some ExpressCard info.
 
-
--- 
-Regards/Gruﬂ,
-Boris
+Thanks,
+Jesse
