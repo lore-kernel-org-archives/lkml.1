@@ -1,140 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758514AbYG1QZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758722AbYG1Q2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758514AbYG1QZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 12:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbYG1QZU
+	id S1758722AbYG1Q2p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 12:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbYG1Q2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 12:25:20 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:45434 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752053AbYG1QZS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 12:25:18 -0400
-Date: Mon, 28 Jul 2008 11:25:03 -0500
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] eCryptfs - use page_alloc not kmalloc to get a page of
-	memory
-Message-ID: <20080728162503.GC7234@halcrowt61p.austin.ibm.com>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
-References: <488DF00F.3080809@redhat.com>
+	Mon, 28 Jul 2008 12:28:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45201 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756076AbYG1Q2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 12:28:37 -0400
+Date: Mon, 28 Jul 2008 18:28:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jan Beulich <jbeulich@novell.com>, Joerg Roedel <joro@8bytes.org>,
+       Andi Kleen <andi@firstfloor.org>, tglx@linutronix.de,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i386: improve double fault handling
+Message-ID: <20080728162816.GB27662@elte.hu>
+References: <4880A912.76E4.0078.0@novell.com> <4881263B.7060700@zytor.com> <48846B02.76E4.0078.0@novell.com> <20080721110510.GC10782@elte.hu> <4885CEFE.76E4.0078.0@novell.com> <20080728134252.GI5515@elte.hu> <488DECD9.76E4.0078.0@novell.com> <488DD176.50600@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <488DF00F.3080809@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <488DD176.50600@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 11:13:03AM -0500, Eric Sandeen wrote:
-> With SLUB debugging turned on in 2.6.26, I was getting memory corruption
-> when testing eCryptfs.  The root cause turned out to be that eCryptfs
-> was doing kmalloc(PAGE_CACHE_SIZE); virt_to_page() and treating that
-> as a nice page-aligned chunk of memory.  But at least with SLUB debugging
-> on, this is not always true, and the page we get from virt_to_page does
-> not necessarily match the PAGE_CACHE_SIZE worth of memory we got from 
-> kmalloc.
-> 
-> My simple testcase was 2 loops doing "rm -f fileX; cp /tmp/fileX ." for
-> 2 different multi-megabyte files.  With this change I no longer see
-> the corruption.
-> 
-> Thanks,
-> -Eric
-> 
-> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
 
-Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-> ---
-> 
-> Index: linux-2.6.26/fs/ecryptfs/crypto.c
-> ===================================================================
-> --- linux-2.6.26.orig/fs/ecryptfs/crypto.c
-> +++ linux-2.6.26/fs/ecryptfs/crypto.c
-> @@ -474,8 +474,8 @@ int ecryptfs_encrypt_page(struct page *p
->  {
->  	struct inode *ecryptfs_inode;
->  	struct ecryptfs_crypt_stat *crypt_stat;
-> -	char *enc_extent_virt = NULL;
-> -	struct page *enc_extent_page;
-> +	char *enc_extent_virt;
-> +	struct page *enc_extent_page = NULL;
->  	loff_t extent_offset;
->  	int rc = 0;
-> 
-> @@ -491,14 +491,14 @@ int ecryptfs_encrypt_page(struct page *p
->  			       page->index);
->  		goto out;
->  	}
-> -	enc_extent_virt = kmalloc(PAGE_CACHE_SIZE, GFP_USER);
-> -	if (!enc_extent_virt) {
-> +	enc_extent_page = alloc_page(GFP_USER);
-> +	if (!enc_extent_page) {
->  		rc = -ENOMEM;
->  		ecryptfs_printk(KERN_ERR, "Error allocating memory for "
->  				"encrypted extent\n");
->  		goto out;
->  	}
-> -	enc_extent_page = virt_to_page(enc_extent_virt);
-> +	enc_extent_virt = kmap(enc_extent_page);
->  	for (extent_offset = 0;
->  	     extent_offset < (PAGE_CACHE_SIZE / crypt_stat->extent_size);
->  	     extent_offset++) {
-> @@ -526,7 +526,10 @@ int ecryptfs_encrypt_page(struct page *p
->  		}
->  	}
->  out:
-> -	kfree(enc_extent_virt);
-> +	if (enc_extent_page) {
-> +		kunmap(enc_extent_page);
-> +		__free_page(enc_extent_page);
-> +	}
->  	return rc;
->  }
-> 
-> @@ -608,8 +611,8 @@ int ecryptfs_decrypt_page(struct page *p
->  {
->  	struct inode *ecryptfs_inode;
->  	struct ecryptfs_crypt_stat *crypt_stat;
-> -	char *enc_extent_virt = NULL;
-> -	struct page *enc_extent_page;
-> +	char *enc_extent_virt;
-> +	struct page *enc_extent_page = NULL;
->  	unsigned long extent_offset;
->  	int rc = 0;
-> 
-> @@ -626,14 +629,14 @@ int ecryptfs_decrypt_page(struct page *p
->  			       page->index);
->  		goto out;
->  	}
-> -	enc_extent_virt = kmalloc(PAGE_CACHE_SIZE, GFP_USER);
-> -	if (!enc_extent_virt) {
-> +	enc_extent_page = alloc_page(GFP_USER);
-> +	if (!enc_extent_page) {
->  		rc = -ENOMEM;
->  		ecryptfs_printk(KERN_ERR, "Error allocating memory for "
->  				"encrypted extent\n");
->  		goto out;
->  	}
-> -	enc_extent_page = virt_to_page(enc_extent_virt);
-> +	enc_extent_virt = kmap(enc_extent_page);
->  	for (extent_offset = 0;
->  	     extent_offset < (PAGE_CACHE_SIZE / crypt_stat->extent_size);
->  	     extent_offset++) {
-> @@ -661,7 +664,10 @@ int ecryptfs_decrypt_page(struct page *p
->  		}
->  	}
->  out:
-> -	kfree(enc_extent_virt);
-> +	if (enc_extent_page) {
-> +		kunmap(enc_extent_page);
-> +		__free_page(enc_extent_page);
-> +	}
->  	return rc;
->  }
-> 
-> 
+> Jan Beulich wrote:
+>>
+>>> Firstly, 64-bit does not use a task gate for double faults anymore. 
+>>> (but uses a separate IST stack for double faults)
+>>
+>> Sure - because there are no task gates on 64-bit.
+>>
+>
+> What we're doing here is really using task gates to emulate IST 
+> anyway.
+
+yes, because we dont use the main feature that differentiates task gates 
+from ISTs: a different cr3 entry. (the rest of the differences is really 
+just fluff)
+
+	Ingo
