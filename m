@@ -1,26 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940AbYG1Dpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbYG1Dsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754940AbYG1Dpw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 23:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYG1Dpp
+	id S1755307AbYG1Dsz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 23:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYG1Dsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 23:45:45 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:45064 "EHLO
+	Sun, 27 Jul 2008 23:48:47 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:45591 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752404AbYG1Dpo (ORCPT
+	with ESMTP id S1751635AbYG1Dsq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 23:45:44 -0400
-Date: Sun, 27 Jul 2008 20:42:56 -0700
+	Sun, 27 Jul 2008 23:48:46 -0400
+Date: Sun, 27 Jul 2008 20:44:24 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCHES for 2.6.27] V4L/DVB updates
-Message-Id: <20080727204256.bba5eaf6.randy.dunlap@oracle.com>
-In-Reply-To: <20080727224104.78b8298d@gaivota>
-References: <20080727224104.78b8298d@gaivota>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: torvalds <torvalds@linux-foundation.org>, akpm <akpm@linux-foundation.org>
+Subject: [PATCH] SubmittingPatches: add git pull & diffstat format info
+Message-Id: <20080727204424.88be784b.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -34,47 +29,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Jul 2008 22:41:04 -0300 Mauro Carvalho Chehab wrote:
-
-> Linus,
-> 
-> Please pull from:
->         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git for_linus
-> 
-> For the following:
-> 
->    - API internal improvements on V4L;
->    - Two new drivers: dw2102, mxl5007t;
->    - removal of the long time broken PlanB driver;
->    - added two very old boards to be removed, at feature-removal-schedule;
->    - several fixes and new board support and cleanups on drivers: cx18, gspca,
->      uvcvideo, cs5345, cx2885, pvrusb2, em28xx, s2255drv, stkwebcam, mt20xx, anysee,
->      zr36067, saa7134, saa7134-empress, saa7146, ivtv and tveeprom and pwc;
->    - Some cleanups at V4L core.
-
-I'd really like to get this patch that I mailed to you 2008-July-21 merged...
-
----
-
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Add kernel-doc for parameter @index:
-
-Warning(linhead//drivers/media/video/videodev.c:2090): No description found for parameter 'index'
+Add git pull command info and diffstat summary info so that we don't
+have to search email archives for it repeatedly.
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/media/video/videodev.c |    2 ++
- 1 file changed, 2 insertions(+)
+ Documentation/SubmittingPatches |   26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
---- linhead.orig/drivers/media/video/videodev.c
-+++ linhead/drivers/media/video/videodev.c
-@@ -2066,6 +2066,8 @@ EXPORT_SYMBOL(video_register_device);
-  *	@type: type of device to register
-  *	@nr:   which device number (0 == /dev/video0, 1 == /dev/video1, ...
-  *             -1 == first free)
-+ *	@index: stream number based on parent device;
-+ *		-1 if auto assign, requested number otherwise
-  *
-  *	The registration code assigns minor numbers based on the type
-  *	requested. -ENFILE is returned in all the device slots for this
+--- linux-2.6.26-git8.orig/Documentation/SubmittingPatches
++++ linux-2.6.26-git8/Documentation/SubmittingPatches
+@@ -528,7 +528,33 @@ See more details on the proper patch for
+ references.
+ 
+ 
++16) Sending "git pull" requests  (from Linus emails)
+ 
++Please write the git repo address and branch name alone on the same line
++so that I can't even by mistake pull from the wrong branch, and so
++that a triple-click just selects the whole thing.
++
++So the proper format is something along the lines of:
++
++	"Please pull from
++
++		git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
++
++	 to get these changes:"
++
++so that I don't have to hunt-and-peck for the address and inevitably
++get it wrong (actually, I've only gotten it wrong a few times, and
++checking against the diffstat tells me when I get it wrong, but I'm
++just a lot more comfortable when I don't have to "look for" the right
++thing to pull, and double-check that I have the right branch-name).
++
++
++Please use "git diff -M --stat --summary" to generate the diffstat:
++the -M enables rename detection, and the summary enables a summary of
++new/deleted or renamed files.
++
++With rename detection, the statistics are rather different [...]
++because git will notice that a fair number of the changes are renames.
+ 
+ -----------------------------------
+ SECTION 2 - HINTS, TIPS, AND TRICKS
+
+
+---
