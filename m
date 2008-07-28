@@ -1,82 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758531AbYG1Pgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbYG1Pk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758531AbYG1Pgh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 11:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbYG1Pg3
+	id S1756585AbYG1Pk3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 11:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYG1PkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 11:36:29 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:43518 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751717AbYG1Pg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 11:36:28 -0400
-Date: Mon, 28 Jul 2008 18:35:46 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-Message-ID: <20080728153546.GD30612@cs181140183.pp.htv.fi>
-References: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com> <9e4733910807280820v118b728fu1c0a8b8eb4c4fdaa@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <9e4733910807280820v118b728fu1c0a8b8eb4c4fdaa@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 28 Jul 2008 11:40:21 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:54516 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751070AbYG1PkV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 11:40:21 -0400
+Date: Mon, 28 Jul 2008 08:38:14 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCHES for 2.6.27] V4L/DVB updates
+Message-Id: <20080728083814.ea480697.randy.dunlap@oracle.com>
+In-Reply-To: <20080728122518.77cea66e@gaivota>
+References: <20080727224104.78b8298d@gaivota>
+	<20080727204256.bba5eaf6.randy.dunlap@oracle.com>
+	<alpine.LFD.1.10.0807280303110.18581@bombadil.infradead.org>
+	<20080728081813.423ac50c.randy.dunlap@oracle.com>
+	<20080728122518.77cea66e@gaivota>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 11:20:49AM -0400, Jon Smirl wrote:
-> Some stats using the new mailmap file:
+On Mon, 28 Jul 2008 12:25:18 -0300 Mauro Carvalho Chehab wrote:
+
+> On Mon, 28 Jul 2008 08:18:13 -0700
+> Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > 
-> Patches, number of developers
-> 1, 1591
-> 2, 484
-> 3, 254
-> 4, 152
-> 5, 118
-> more, 1242
+> > On Mon, 28 Jul 2008 03:08:27 -0400 (EDT) Mauro Carvalho Chehab wrote:
+> > 
+> > > Hi Randy,
+> > > 
+> > > > I'd really like to get this patch that I mailed to you 2008-July-21 merged...
+> > > 
+> > > Your patch looks OK to me. However, this function were moved to 
+> > > v4l2-dev.c, by the V4L core changes (the changes broke videodev into two 
+> > > different files, and did some improvements there).
+> > > 
+> > > Do you mind to rebase your patch?
+> > 
+> > What tree contains v4l2-dev.c?
+> > It's not in today's linux-next.  Shouldn't it be, or is it for after 2.6.27?
 > 
-> Top twenty developers:
+> I've changed my procedures to generate my trees, to avoid needing to rebase all
+> branches (the idea is to have just for_linus rebased).
 > 
-> Linus Torvalds (4350):
-
-You count merges as patches.
-
-> Andrew Morton (1789):
-> Adrian Bunk (1774):
-> Al Viro (1735):
-> Ingo Molnar (1393):
-> Ralf Baechle (1367):
-> Jeff Garzik (1291):
-> Takashi Iwai (1196):
-> Tejun Heo (1092):
-> Bartlomiej Zolnierkiewicz (1071):
-> David S. Miller (1069):
-> Patrick McHardy (1031):
-> Stephen Hemminger (1017):
-> Russell King (985):
-> Andi Kleen (973):
-> Thomas Gleixner (953):
-> Alan Cox (822):
-> Paul Mundt (813):
-> Dave Miller (787):
-
-Dave Miller = David S. Miller
-
-In this case your .mailmap made the result worse...
- 
-> Make your own list:
->    git shortlog | grep -v ^[[:space:]] | grep -v ^$ | sort -t "(" -g -k 2 -r
+> Due to that change, only yesterday I fixed the updates for linux-next (also,
+> I've applied the pending patches only yesterday, including the ones that
+> touched on V4L core). Probably, that's the reason why linux-next is not
+> updated. Let's see if tomorrow's version will be ok.
 > 
-> Jon Smirl
+> At the meantime, you can use my -git tree:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=summary
 
-cu
-Adrian
+Thanks for the info.  I'll wait for tomorrow's linux-next.
 
--- 
+(having to git up to 200 or so git trees does not scale IMO)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
