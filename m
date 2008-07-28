@@ -1,65 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbYG1Mvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYG1Mxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753384AbYG1Mvj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 08:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751070AbYG1Mv3
+	id S1754045AbYG1Mxj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 08:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751070AbYG1Mxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 08:51:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53220 "EHLO mx3.mail.elte.hu"
+	Mon, 28 Jul 2008 08:53:31 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:46808 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751054AbYG1Mv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 08:51:28 -0400
-Date: Mon, 28 Jul 2008 14:48:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Simon Horman <horms@verge.net.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Muli Ben-Yehuda <muli@il.ibm.com>, Tony Luck <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, Chandru <chandru@in.ibm.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Terry Loftin <terry.loftin@hp.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [patch] crashdump: fix undefined reference to `elfcorehdr_addr'
-Message-ID: <20080728124856.GF5515@elte.hu>
-References: <20080727234529.GM6175@verge.net.au> <20080728015117.GA12055@verge.net.au> <20080728024526.GB3334@verge.net.au> <20080728034007.GA30450@verge.net.au>
-MIME-Version: 1.0
+	id S1750823AbYG1Mxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 08:53:30 -0400
+Date: Mon, 28 Jul 2008 16:57:04 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: Q: wait_task_inactive() and !CONFIG_SMP && CONFIG_PREEMPT
+Message-ID: <20080728125704.GA98@tv-sign.ru>
+References: <200807260245.m6Q2jwB4012297@imap1.linux-foundation.org> <20080727121540.GB178@tv-sign.ru> <20080727200551.D3F6A154284@magilla.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080728034007.GA30450@verge.net.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080727200551.D3F6A154284@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 07/27, Roland McGrath wrote:
+>
+> > Without CONFIG_SMP wait_task_inactive() is noop, this doesn't look right.
+> > Shouldn't we also take CONFIG_PREEMPT into account?
+>
+> wait_task_inactive is only called when task->state is nonzero (i.e. not
+> TASK_RUNNING).  Preemption leaves a task in TASK_RUNNING, so a preempted
+> task shouldn't ever be passed to wait_task_inactive.
 
-* Simon Horman <horms@verge.net.au> wrote:
+No, schedule() doesn't change prev->state when the task with ->state !=
+TASK_RUNNING gets a preemption. Note this check
 
-> On Mon, Jul 28, 2008 at 12:45:28PM +1000, Simon Horman wrote:
-> > The rfc patch I made to rename is_kdump_kernel to kernel_has_vmcore,
-> > which I appended to my previous post should have looked more like the
-> > following. Although, as I noted in my previous post, its more a starting
-> > point for discussion than a solution to the problem at hand.
-> 
-> Sorry, one more time. I forgot to quilt refresh.
+	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
 
-doesnt apply cleanly to latest -git:
+in schedule().
 
- Hunk #1 FAILED at 2070.
- 1 out of 1 hunk FAILED -- saving rejects to file arch/ia64/hp/common/sba_iommu.c.rej
+Let's suppose the child does ptrace_stop(). It sets state = TASK_TRACED
+and unlocks ->siglock.
 
-due to a crossing change i guess. Also, i guess this should go via -mm 
-as it touches fs/proc/vmcore.c and include/linux/crash_dump.h. The x86 
-bits look good to me.
+If it is preempted by the parent which does ptrace_check_attach(),
+wait_task_inactive() must wait until the child leaves the runqueue,
+but the dummy version just returns success.
 
- Acked-by: Ingo Molnar <mingo@elte.hu>
+sys_ptrace() continues assuming that the child sleeps in TASK_TRACED,
+while it fact it is running, despite its ->state == TASK_TRACED.
 
-	Ingo
+
+As I said, nothing realy bad can happen, the child can't return to the
+user-space or something, but this just means that ptrace_check_attach()
+afaics doesn't have the strong reasons for wait_task_inactive().
+
+> > Also, the !SMP version of wait_task_inactive() always returns 1, this
+> > doesn't conform to the comment near kernel/sched.c:wait_task_inactive().
+>
+> You mean the "(its total switch count)" part of the comment?
+> The normative part was only meant to be "a positive number".
+
+I refer to this patch of the comment:
+
+	If a second call a short while later returns the same number, the
+	caller can be sure that @p has remained unscheduled the whole time.
+
+The dummy version always returns the same number == 1.
+
+
+So. I think that wait_task_inactive() needs "defined(SMP) || defined(PREEMPT)"
+and the dummy version should return ->nvcsw too.
+
+Oleg.
+
