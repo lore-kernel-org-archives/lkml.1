@@ -1,43 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbYG1R4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760046AbYG1R43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760652AbYG1R4A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 13:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758405AbYG1Rz1
+	id S1760046AbYG1R43 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 13:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759091AbYG1Rz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 13:55:27 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:62136 "EHLO
+	Mon, 28 Jul 2008 13:55:28 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:62137 "EHLO
 	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757983AbYG1Rz0 (ORCPT
+	with ESMTP id S1758036AbYG1Rz0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 28 Jul 2008 13:55:26 -0400
-Message-Id: <20080728175355.734299984@de.ibm.com>
+Message-Id: <20080728175511.989025821@de.ibm.com>
+References: <20080728175355.734299984@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 28 Jul 2008 19:53:55 +0200
+Date: Mon, 28 Jul 2008 19:54:00 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: [patch 00/15] [RFC] kmsg macros and script.
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 05/15] kmsg: convert cpcmd to kmsg api.
+Content-Disposition: inline; filename=804-kmsg-cpcmd.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
-this is the next step of our project to document all s390 specific
-kernel messages. The message cleanup patches have been integrated
-into the upstream kernel. After we removed the meaningless messages
-it is now time to brush up the remaining messages.
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-The first patch introduces a new set of wrapper macros around printk.
-These macros add a prefix to each message and a message id can be
-specified. The second patch adds a script to help writing the kmsg
-comments that describe a kmsg and it can be used to write man pages
-for the documented messages. The remaining 13 patches convert some of
-the printk messages found in the s390 architecture files and some of
-the s390 device drivers to demonstrate how all this is supposed to
-work.
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-The code is currently only usable for s390. Should this be of interest
-to other architectures as well we have to think about where to put
-things. We'd be happy to get feedback on this.
+ Documentation/s390/kmsg/cpcmd |   18 ++++++++++++++++++
+ arch/s390/kernel/cpcmd.c      |    7 +++++--
+ 2 files changed, 23 insertions(+), 2 deletions(-)
+
+Index: quilt-2.6/arch/s390/kernel/cpcmd.c
+===================================================================
+--- quilt-2.6.orig/arch/s390/kernel/cpcmd.c
++++ quilt-2.6/arch/s390/kernel/cpcmd.c
+@@ -15,9 +15,12 @@
+ #include <linux/string.h>
+ #include <asm/ebcdic.h>
+ #include <asm/cpcmd.h>
++#include <asm/kmsg.h>
+ #include <asm/system.h>
+ #include <asm/io.h>
+ 
++#define KMSG_COMPONENT "cpcmd"
++
+ static DEFINE_SPINLOCK(cpcmd_lock);
+ static char cpcmd_buf[241];
+ 
+@@ -104,8 +107,8 @@ int cpcmd(const char *cmd, char *respons
+ 			(((unsigned long)response + rlen) >> 31)) {
+ 		lowbuf = kmalloc(rlen, GFP_KERNEL | GFP_DMA);
+ 		if (!lowbuf) {
+-			printk(KERN_WARNING
+-				"cpcmd: could not allocate response buffer\n");
++			kmsg_warn(1, "The cpcmd kernel function failed to "
++				     "allocate a response buffer\n");
+ 			return -ENOMEM;
+ 		}
+ 		spin_lock_irqsave(&cpcmd_lock, flags);
+Index: quilt-2.6/Documentation/s390/kmsg/cpcmd
+===================================================================
+--- /dev/null
++++ quilt-2.6/Documentation/s390/kmsg/cpcmd
+@@ -0,0 +1,18 @@
++/*?
++ * Text: "The cpcmd kernel function failed to allocate a response buffer"
++ * Tag: cpcmd.1
++ * Severity: Warning
++ * Description:
++ * IPL code, console detection, and device drivers like vmcp or vmlogrdr use
++ * the cpcmd kernel function to send commands to the z/VM control program (CP).
++ * If a program that uses the cpcmd function does not allocate a contiguous
++ * response buffer below 2 GB guest real storage, cpcmd creates a bounce buffer
++ * to be used as the response buffer. Because of low memory or memory
++ * fragmentation, cpcmd could not create the bounce buffer.
++ * User action:
++ * Look for related page allocation failure messages and at the stack trace to
++ * find out which program or operation failed. Free some memory and retry the
++ * failed operation. Consider allocating more memory to your z/VM guest virtual
++ * machine.
++ */
++
 
 -- 
 blue skies,
