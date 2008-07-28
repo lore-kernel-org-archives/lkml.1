@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759425AbYG1UMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758871AbYG1UOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759425AbYG1UMn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 16:12:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbYG1UMe
+	id S1758871AbYG1UOw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 16:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYG1UOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 16:12:34 -0400
-Received: from ik-out-1112.google.com ([66.249.90.178]:62756 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752602AbYG1UMd (ORCPT
+	Mon, 28 Jul 2008 16:14:44 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:34899 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752024AbYG1UOn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 16:12:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id:from;
-        b=UK68bVWe74f7zER6LPHyPOFkpAmr4rTbJHSZb0Fhi9tPCSILHX6Y3sas2M+g+JcPmg
-         0bnRZdzfvhdf/MvvGyGt+Ru0Nx+BDNzwIBr/glvs0VAMF2qczoXqu4ozHqhSdZY4CtLE
-         JK8KiTey4BDml2gbGNV3Iw09kOOOtZBtnWi0A=
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling through rfkill
-Date: Mon, 28 Jul 2008 22:32:37 +0200
-User-Agent: KMail/1.9.9
-Cc: Dan Williams <dcbw@redhat.com>, Philip Langdale <philipl@overt.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, toshiba_acpi@memebeam.org,
-       linux-wireless@vger.kernel.org
-References: <488CBBAB.6010508@overt.org> <1217243863.24609.6.camel@localhost.localdomain> <20080728185233.GB26564@khazad-dum.debian.net>
-In-Reply-To: <20080728185233.GB26564@khazad-dum.debian.net>
+	Mon, 28 Jul 2008 16:14:43 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] filldir write data missing size
+References: <87k5fi4l49.wl%ysato@users.sourceforge.jp>
+	<871w1pn5wz.fsf@devron.myhome.or.jp>
+	<87iqv1wwy1.wl%ysato@users.sourceforge.jp>
+	<87r69pk51q.fsf@devron.myhome.or.jp>
+	<87abgbgrvt.wl%ysato@users.sourceforge.jp>
+	<878wvu9b6n.fsf@devron.myhome.or.jp>
+	<20080728190749.GA20019@linux-sh.org>
+Date: Tue, 29 Jul 2008 05:14:37 +0900
+In-Reply-To: <20080728190749.GA20019@linux-sh.org> (Paul Mundt's message of
+	"Tue, 29 Jul 2008 04:07:49 +0900")
+Message-ID: <871w1dvk9e.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807282232.38076.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 July 2008, Henrique de Moraes Holschuh wrote:
-> On Mon, 28 Jul 2008, Dan Williams wrote:
-> > On Mon, 2008-07-28 at 00:04 -0300, Henrique de Moraes Holschuh wrote:
-> > > On Sun, 27 Jul 2008, Philip Langdale wrote:
-> > > > Ivo van Doorn wrote:
-> > > >> You don't seem to be using rfkill_force_state() which is required to inform the rfkill
-> > > >> layer about the state changes.
-> > > >
-> > > > Hmm? According to rfkill.txt, one can either use force_state() or implement the
-> > > > get_state() hook, and I have done the later. If this is not the correct method,
-> > > > can you please explain when I should be using force_state?
-> > > 
-> > > There is a bunch of rfkill bug fix patches that was not merged in
-> > > wireless-testing yet (which is a pity, it would be really good if they could
-> > > go into 2.6.27).  One of those patches fixes the docs to make it clear that
-> > 
-> > Lots of wireless people (including John) were at OLS this past week, so
-> > it's not entirely surprising that patch merging might have been slow.
-> 
-> That would explain it, yes...  Well, I sure hope this means the patches
-> still have a non-zero chance of being sent to mainline for 2.6.27 :-)  I am
-> not up to date on how merges are usually handled in the wireless and net
-> subsystems.
+Paul Mundt <lethal@linux-sh.org> writes:
 
-The feature window for 2.6.27 closed with the release of 2.6.26, after that
-only bugfixes can go in.
+> On Tue, Jul 22, 2008 at 06:31:12AM +0900, OGAWA Hirofumi wrote:
+>> Yoshinori Sato <ysato@users.sourceforge.jp> writes:
+>> 
+>> > This problem is sh-linux-gcc v4.1.2 and target sh2(a)-bigendian.
+>> >
+>> > "__put_user(s64, u32_ptr)" compiled.
+>> >
+>> > Correct code.
+>> > *u32_ptr = s64 & 0xffffffff;
+>> >
+>> > Bad code.
+>> > *u32_ptr = s64 >> 32;
+>> >
+>> > I'm add cast put_user 4byte case.
+>> 
+>> I see. How about the following patch? I guess the problems of this type
+>> should be fixed.
+>> 
+> I merged a different workaround as no one bothered to CC me on this
+> thread. Your fix looks more correct though, please provide a
+> Signed-off-by for it and I'll take this over the previous workaround.
 
-Ivo
+Of course. But I didn't test it at all, so please test it.
+
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
