@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbYG1Pk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbYG1PpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756585AbYG1Pk3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 11:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYG1PkV
+	id S1757180AbYG1PpK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 11:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbYG1Po5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 11:40:21 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:54516 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751070AbYG1PkV (ORCPT
+	Mon, 28 Jul 2008 11:44:57 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49484 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751418AbYG1Po4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 11:40:21 -0400
-Date: Mon, 28 Jul 2008 08:38:14 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 28 Jul 2008 11:44:56 -0400
+Date: Mon, 28 Jul 2008 08:40:42 -0700
+From: Greg KH <greg@kroah.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       David Brownell <david-b@pacbell.net>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCHES for 2.6.27] V4L/DVB updates
-Message-Id: <20080728083814.ea480697.randy.dunlap@oracle.com>
-In-Reply-To: <20080728122518.77cea66e@gaivota>
-References: <20080727224104.78b8298d@gaivota>
-	<20080727204256.bba5eaf6.randy.dunlap@oracle.com>
-	<alpine.LFD.1.10.0807280303110.18581@bombadil.infradead.org>
-	<20080728081813.423ac50c.randy.dunlap@oracle.com>
-	<20080728122518.77cea66e@gaivota>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+       Andi Kleen <andi@firstfloor.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH] usb: move ehci reg def
+Message-ID: <20080728154042.GC30206@kroah.com>
+References: <200807231252.20371.yhlu.kernel@gmail.com> <200807231739.39620.yhlu.kernel@gmail.com> <200807241727.57692.yhlu.kernel@gmail.com> <200807241757.23441.david-b@pacbell.net> <86802c440807241914o3e09a1a2la1cf9345b4b0e52b@mail.gmail.com> <20080726141813.GG4401@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080726141813.GG4401@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008 12:25:18 -0300 Mauro Carvalho Chehab wrote:
-
-> On Mon, 28 Jul 2008 08:18:13 -0700
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Sat, Jul 26, 2008 at 04:18:13PM +0200, Ingo Molnar wrote:
 > 
-> > On Mon, 28 Jul 2008 03:08:27 -0400 (EDT) Mauro Carvalho Chehab wrote:
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> 
+> > >> +#include <linux/usb/ehci_def.h>
+> > >>
+> > >>  /*-------------------------------------------------------------------------*/
+> > >>
+> > >> +
+> > >
+> > > Only one blank line needed please.  ;)
 > > 
-> > > Hi Randy,
-> > > 
-> > > > I'd really like to get this patch that I mailed to you 2008-July-21 merged...
-> > > 
-> > > Your patch looks OK to me. However, this function were moved to 
-> > > v4l2-dev.c, by the V4L core changes (the changes broke videodev into two 
-> > > different files, and did some improvements there).
-> > > 
-> > > Do you mind to rebase your patch?
-> > 
-> > What tree contains v4l2-dev.c?
-> > It's not in today's linux-next.  Shouldn't it be, or is it for after 2.6.27?
+> > thanks.
+> > Greg, Do i need to resend ?
 > 
-> I've changed my procedures to generate my trees, to avoid needing to rebase all
-> branches (the idea is to have just for_linus rebased).
+> i've fixed it up - see updated patch below.
 > 
-> Due to that change, only yesterday I fixed the updates for linux-next (also,
-> I've applied the pending patches only yesterday, including the ones that
-> touched on V4L core). Probably, that's the reason why linux-next is not
-> updated. Let's see if tomorrow's version will be ok.
+> Greg, could you please pull this change from the tip/usb-for-greg git 
+> tree:
 > 
-> At the meantime, you can use my -git tree:
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git usb-for-greg
 > 
-> http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=summary
+> so that we can share the commit ID, without you having to carry 
+> unrelated x86 fixes? I'll merge this tree too into x86/early-printk.
 
-Thanks for the info.  I'll wait for tomorrow's linux-next.
+I only use git for sending stuff to Linus, so that will not really work.
 
-(having to git up to 200 or so git trees does not scale IMO)
+I have no objection for you keeping this in your tree, as that probably
+makes it easier.
 
+thanks,
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+greg k-h
