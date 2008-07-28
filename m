@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758088AbYG1O4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbYG1O5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758088AbYG1O4v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 10:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbYG1Oxf
+	id S1758227AbYG1O5d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 10:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbYG1Oy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 10:53:35 -0400
-Received: from styx.suse.cz ([82.119.242.94]:42510 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756615AbYG1Oxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 10:53:33 -0400
-From: David Sterba <dsterba@suse.cz>
-Subject: [PATCH 12/12] ipwireless: Preallocate received packet buffers with
-	MRU size
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, jkosina@suse.cz,
-       dsterba@suse.cz
-Date: Mon, 28 Jul 2008 16:53:32 +0200
-Message-ID: <20080728145332.13378.80871.stgit@ds.suse.cz>
-In-Reply-To: <20080728145124.13378.39300.stgit@ds.suse.cz>
-References: <20080728145124.13378.39300.stgit@ds.suse.cz>
-User-Agent: StGIT/0.14.3.173.g2e37
+	Mon, 28 Jul 2008 10:54:59 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:22760 "EHLO
+	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757377AbYG1Oy6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 10:54:58 -0400
+X-BigFish: VPS-27(z21eW37d4lz1432R1805M103dK7cf0izzzzz32i6bh65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0K4Q1FA-01-JJC-01
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 01/01] x86: L3 cache index disable for 2.6.26
+Date: Mon, 28 Jul 2008 09:54:52 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC2E@sausexmb4.amd.com>
+In-Reply-To: <20080728144913.GA16147@elte.hu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 01/01] x86: L3 cache index disable for 2.6.26
+Thread-Index: AcjwwVLW2k5VNh+qQaanqvYSFuz0LAAAH3wg
+References: <200807181603.52332.mark.langsdorf@amd.com> <20080721113706.GC23095@elte.hu> <20080721124812.GA25371@elte.hu> <200807221306.03123.mark.langsdorf@amd.com> <20080728142256.GF18144@elte.hu> <20080728144913.GA16147@elte.hu>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+CC: <tglx@linutronix.de>, <mingo@redhat.com>, <hpa@zytor.com>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 28 Jul 2008 14:54:52.0788 (UTC) FILETIME=[E431C340:01C8F0C1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ipwireless: Preallocate received packet buffers with MRU size
+> > > > please send a delta fix patch against the tip/x86/cpu branch:
+> > > > 
+> > > >   http://people.redhat.com/mingo/tip.git/README
+> > > > 
+> > > > which has your patch plus the cleanup applied.
+> > > 
+> > > delta fix patch follows.  It removes the dependency on 
+> k8_northbridges.
+> > 
+> > applied, thanks. I fixed up some whitespace damage, see below. That 
+> > file could use a thorough cleanup ...
+> 
+> it still doesnt work, on !PCI:
+> 
+> arch/x86/kernel/cpu/intel_cacheinfo.c: In function 
+> 'get_k8_northbridge':
+> arch/x86/kernel/cpu/intel_cacheinfo.c:675: error: implicit 
+> declaration of function 'pci_match_id'
+> make[2]: *** [arch/x86/kernel/cpu/intel_cacheinfo.o] Error 1
+> 
+> config and fix attached.
 
-Packets are assembled from link size (~300 bytes) up to PPP MRU
-(1500 by default). Try to preallocate full size rather than
-repeatedly advance buffer size by 256 bytes.
+Thanks!
 
-Signed-off-by: David Sterba <dsterba@suse.cz>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
----
-
- drivers/char/pcmcia/ipwireless/hardware.c |    3 ++-
- drivers/char/pcmcia/ipwireless/network.c  |    5 +++++
- drivers/char/pcmcia/ipwireless/network.h  |    1 +
- 3 files changed, 8 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/char/pcmcia/ipwireless/hardware.c b/drivers/char/pcmcia/ipwireless/hardware.c
-index d1e69de..7d500f8 100644
---- a/drivers/char/pcmcia/ipwireless/hardware.c
-+++ b/drivers/char/pcmcia/ipwireless/hardware.c
-@@ -567,7 +567,8 @@ static struct ipw_rx_packet *pool_allocate(struct ipw_hardware *hw,
- 			spin_unlock_irqrestore(&hw->lock, flags);
- 			list_del(&packet->queue);
- 		} else {
--			static int min_capacity = 256;
-+			const int min_capacity =
-+				ipwireless_ppp_mru(hw->network + 2);
- 			int new_capacity;
- 
- 			spin_unlock_irqrestore(&hw->lock, flags);
-diff --git a/drivers/char/pcmcia/ipwireless/network.c b/drivers/char/pcmcia/ipwireless/network.c
-index 2b07af0..590762a 100644
---- a/drivers/char/pcmcia/ipwireless/network.c
-+++ b/drivers/char/pcmcia/ipwireless/network.c
-@@ -499,3 +499,8 @@ int ipwireless_ppp_unit_number(struct ipw_network *network)
- 
- 	return ret;
- }
-+
-+int ipwireless_ppp_mru(const struct ipw_network *network)
-+{
-+	return network->mru;
-+}
-diff --git a/drivers/char/pcmcia/ipwireless/network.h b/drivers/char/pcmcia/ipwireless/network.h
-index ccacd26..561f765 100644
---- a/drivers/char/pcmcia/ipwireless/network.h
-+++ b/drivers/char/pcmcia/ipwireless/network.h
-@@ -48,5 +48,6 @@ void ipwireless_ppp_open(struct ipw_network *net);
- void ipwireless_ppp_close(struct ipw_network *net);
- int ipwireless_ppp_channel_index(struct ipw_network *net);
- int ipwireless_ppp_unit_number(struct ipw_network *net);
-+int ipwireless_ppp_mru(const struct ipw_network *net);
- 
- #endif
+-Mark Langsdorf
+Operating System Research Center
+AMD
 
