@@ -1,72 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760883AbYG1SCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbYG1SC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760883AbYG1SCL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 14:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYG1SB4
+	id S1754817AbYG1SC2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 14:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760762AbYG1SCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 14:01:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57218 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752214AbYG1SBz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 14:01:55 -0400
-Date: Mon, 28 Jul 2008 20:01:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Oruba <peter.oruba@amd.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patch 00/11] x86: AMD microcode patch loading support v2
-Message-ID: <20080728180141.GB2937@elte.hu>
-References: <20080728164411.490752571@amd.com>
+	Mon, 28 Jul 2008 14:02:08 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:13775 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757814AbYG1SCH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 14:02:07 -0400
+Date: Mon, 28 Jul 2008 22:02:04 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Trent Piepho <tpiepho@freescale.com>, linux-kernel@vger.kernel.org,
+       Richard Purdie <rpurdie@rpsys.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/2] leds: Support OpenFirmware led bindings
+Message-ID: <20080728180204.GA13190@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp> <1217019705-24244-2-git-send-email-tpiepho@freescale.com> <20080727022116.GN12191@secretlab.ca> <Pine.LNX.4.64.0807272159500.26456@t2.domain.actdsltmp> <20080728170914.GA21265@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <20080728164411.490752571@amd.com>
+In-Reply-To: <20080728170914.GA21265@secretlab.ca>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_00,URIBL_BLACK autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	2.0 URIBL_BLACK            Contains an URL listed in the URIBL blacklist
-	[URIs: checkpatch.pl]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jul 28, 2008 at 11:09:14AM -0600, Grant Likely wrote:
+[...]
+> > >> +- function :  (optional) This parameter, if present, is a string
+> > >> +  defining the function of the LED.  It can be used to put the LED
+> > >> +  under software control, e.g. Linux LED triggers like "heartbeat",
+> > >> +  "ide-disk", and "timer".  Or it could be used to attach a hardware
+> > >> +  signal to the LED, e.g. a SoC that can configured to put a SATA
+> > >> +  activity signal on a GPIO line.
+> > >
+> > > This makes me nervous.  It exposes Linux internal implementation details
+> > > into the device tree data.  If you want to have a property that
+> > > describes the LED usage, then the possible values and meanings should be
+> > > documented here.
+> > 
+> > Should it be a linux specific property then?  I could list all the current
+> > linux triggers, but enumerating every possible function someone might want
+> > to assign to an LED seems hopeless.
+> 
+> I don't like adding Linux specific properties to the device tree if at
+> all possible, and I really don't like encoding Linux internal details
+> (like trigger names).  They can change between kernel versions and
+> breaking compatibility with older device trees is strongly avoided.
+> That's why so much effort goes into getting bindings correct the first
+> time.
+> 
+> I'd rather see the device tree provide 'hints' toward the expected usage
+> and if a platform needs something specific, then the platform specific
+> code should setup the trigger.
+> 
+> Regardless, any hints provided by the binding must be documented.  In
+> most cases the gpio-leds driver should be able to figure out which trigger
+> to bind without platform code intervention.
 
-* Peter Oruba <peter.oruba@amd.com> wrote:
+Maybe we can encode leds into devices themselves, via phandles?
 
-> AMD microcode patch loader v2, rebased to Linux master.
+E.g.
 
-applied to tip/x86/microcode - thanks Peter.
+sata@101 {
+	compatible = "fsl,sata";
+	leds = <&red_led>;
+};
 
-One open issue i noticed is the checkpatch warnings:
+And then the OF GPIO LEDs driver could do something like:
 
- $ scripts/checkpatch.pl --file arch/x86/kernel/microcode_amd.c
- total: 0 errors, 10 warnings, 1 checks, 521 lines checked
+char *ide_disk_trigger_compatibles[] = {
+	"fsl,sata",
+	"ide-generic",
+	...
+};
 
- $ scripts/checkpatch.pl --file arch/x86/kernel/microcode.c
- total: 2 errors, 12 warnings, 477 lines checked
+for_each_node_with_leds_property(node, led_phandle) {
+	if (if_ide_disk_compatible(node)) {
+		struct gpio_led *led = phandle_to_led(led_phandle);
 
- $ scripts/checkpatch.pl --file arch/x86/kernel/microcode_intel.c
- total: 1 errors, 11 warnings, 546 lines checked
+		led->default_trigger = "ide-disk";
+	}
+}
 
-Could you send delta patch(es) to fix them up? You can pick up the 
-committed patches via:
-
-  http://people.redhat.com/mingo/tip.git/README
-
-and do something like:
-
-  git-checkout tip/master
-  git-merge tip/x86/microcode
-
-to get the latest code plus your changes.
-
-Thanks,
-
-	Ingo
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
