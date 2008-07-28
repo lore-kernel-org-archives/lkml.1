@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbYG1WV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066AbYG1WXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752648AbYG1WV1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 18:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbYG1WVU
+	id S1756066AbYG1WXv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 18:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYG1WXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 18:21:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56054 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751610AbYG1WVS (ORCPT
+	Mon, 28 Jul 2008 18:23:43 -0400
+Received: from outbound-mail-09.bluehost.com ([69.89.17.209]:57665 "HELO
+	outbound-mail-09.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751323AbYG1WXm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 18:21:18 -0400
-Date: Mon, 28 Jul 2008 15:20:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: torvalds@linux-foundation.org, travis@sgi.com, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk, dsterba@suse.cz,
-       jkosina@suse.cz
-Subject: Re: [build error] drivers/char/pcmcia/ipwireless/hardware.c:571:
- error: invalid use of undefined type 'struct ipw_network'
-Message-Id: <20080728152056.8e83c4ec.akpm@linux-foundation.org>
-In-Reply-To: <20080728220631.GA8095@elte.hu>
-References: <20080727190601.GA764@elte.hu>
-	<alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org>
-	<200807281042.12860.rusty@rustcorp.com.au>
-	<488E06F0.4070404@sgi.com>
-	<alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org>
-	<20080728205700.GA3613@elte.hu>
-	<20080728213532.GA24744@elte.hu>
-	<20080728214153.GA30511@elte.hu>
-	<20080728220631.GA8095@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 28 Jul 2008 18:23:42 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=bdwxedHnw8la2DbfHC5HBUUiplW3yHZxiQPR7hUvRAAhUc8ZqXPw/115PRAzqEdznH5CdXRg7/YVsRLevsCyZnw7mXPGHpKprzp5KwS9i/VUUad2HCswdkmevRRbF3KS;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
+Date: Mon, 28 Jul 2008 15:23:35 -0700
+User-Agent: KMail/1.9.9
+Cc: joro@8bytes.org, prarit@redhat.com, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+References: <20080723111928.15828.42561.sendpatchset@prarit.bos.redhat.com> <20080723221033.GD13662@8bytes.org> <20080724081528F.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080724081528F.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807281523.35469.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jul 2008 00:06:31 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On Wednesday, July 23, 2008 4:14 pm FUJITA Tomonori wrote:
+> On Thu, 24 Jul 2008 00:10:33 +0200
+>
+> Joerg Roedel <joro@8bytes.org> wrote:
+> > On Wed, Jul 23, 2008 at 07:19:43AM -0400, Prarit Bhargava wrote:
+> > > pci_alloc_consistent/dma_alloc_coherent does not return size aligned
+> > > addresses.
+> > >
+> > > >From Documentation/DMA-mapping.txt:
+> > >
+> > > "pci_alloc_consistent returns two values: the virtual address which you
+> > > can use to access it from the CPU and dma_handle which you pass to the
+> > > card.
+> > >
+> > > The cpu return address and the DMA bus master address are both
+> > > guaranteed to be aligned to the smallest PAGE_SIZE order which
+> > > is greater than or equal to the requested size.  This invariant
+> > > exists (for example) to guarantee that if you allocate a chunk
+> > > which is smaller than or equal to 64 kilobytes, the extent of the
+> > > buffer you receive will not cross a 64K boundary."
+> >
+> > Interesting. Have you experienced any problems because of that
+> > misbehavior in the GART code? AMD IOMMU currently also violates this
+> > requirement. I will send a patch to fix that there too.
+>
+> IIRC, only PARISC and POWER IOMMUs follow the above rule. So I also
+> wondered what problem he hit.
 
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > drivers/char/pcmcia/ipwireless/hardware.c:571: error: invalid use of 
-> > undefined type 'struct ipw_network'
-> > 
-> > http://redhat.com/~mingo/misc/config-Mon_Jul_28_23_36_20_CEST_2008.bad
-> > 
-> > probably due to a string of commits to that file from today.
-> 
-> hm, has this version of the driver ever been built successfully? Because 
-> struct ipw_network is defined in network.c [only], and then used in 
-> hardware.c.
-> 
-> It could be changed to void * if the structure wasnt relied on by:
-> 
->                         const int min_capacity =
->                                 ipwireless_ppp_mru(hw->network + 2);
-> 
-> so changing it to void * would break this part of the code.
-> 
-> furthermore, what does that "hw->network + 2" mean? It points into 
-> la-la-land AFAICS, because it's initialized as:
-> 
->         struct ipw_network *network =
->                 kzalloc(sizeof(struct ipw_network), GFP_ATOMIC);
-> 
-> and then written into hw->network via:
-> 
->         ipwireless_associate_network(hw, network);
-> 
-> it's getting late here, so i might be missing some really obvious 
-> solution (and Jiri is asleep i suspect), so below is a temporary patch 
-> that marks the driver CONFIG_BROKEN until this is resolved. This gets 
-> allyesconfig going on x86.
+Prarit, what's the latest here?  The v3 patch I have from you doesn't apply to 
+my tree but it looks like a good fix.  Care to send me a new patch against my 
+for-linus branch?
 
-I suspect that this:
-
---- a/drivers/char/pcmcia/ipwireless/hardware.c~a
-+++ a/drivers/char/pcmcia/ipwireless/hardware.c
-@@ -568,7 +568,7 @@ static struct ipw_rx_packet *pool_alloca
- 			list_del(&packet->queue);
- 		} else {
- 			const int min_capacity =
--				ipwireless_ppp_mru(hw->network + 2);
-+				ipwireless_ppp_mru(hw->network) + 2;
- 			int new_capacity;
- 
- 			spin_unlock_irqrestore(&hw->lock, flags);
-_
-
-was intended.
+Thanks,
+Jesse
