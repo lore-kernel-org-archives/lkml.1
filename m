@@ -1,58 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759529AbYG1BNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758328AbYG1BV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759529AbYG1BNe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 21:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbYG1BN1
+	id S1758328AbYG1BV1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 21:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYG1BVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 21:13:27 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:51527 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752095AbYG1BN0 (ORCPT
+	Sun, 27 Jul 2008 21:21:16 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:43230 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750838AbYG1BVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 21:13:26 -0400
-Cc: linux-kernel@vger.kernel.org, sfr@canb.auug.org.au,
-       linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, kkeil@suse.de
-Message-Id: <7949EA87-4340-4353-AFC9-79A718B95DF0@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20080727.180736.74131389.davem@davemloft.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v928.1)
-Subject: Re: mISDN still breaking the allmodconfig build...
-Date: Mon, 28 Jul 2008 03:13:21 +0200
-References: <20080727.170235.97056809.davem@davemloft.net> <93120C4B-D2F4-4479-806B-2141AC3DC607@holtmann.org> <20080727.180736.74131389.davem@davemloft.net>
-X-Mailer: Apple Mail (2.928.1)
+	Sun, 27 Jul 2008 21:21:15 -0400
+Date: Sun, 27 Jul 2008 21:21:10 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: New ext4 patchset: 2.6.26-git6-ext4-2 // and 2.6.26-ext4-4
+Message-ID: <20080728012110.GC9378@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <E1KMv2C-0007fs-1b@closure.thunk.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1KMv2C-0007fs-1b@closure.thunk.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+I've released a new patchset for post-2.6.26-git4 kernels (when Linus
+accepted a set of patches for the 2.6.27-rc1 merge window).  This
+removes a problematic patch and adds a documentation patch to remind
+people that when installing e2fsprogs 1.41.x, it's important to make
+sure to update their /etc/mke2fs.conf file.
 
->>> More fallout from the premature mISDN driver merge:
->>>
->>> drivers/isdn/hardware/mISDN/hfcmulti.c:5255:2: error: #error "not
->>> running on big endian machines now"
->>
->> is that only the HFC driver or the whole mISDN stack?
->>
->> I know that the two old ISDN stacks where really bad on big endian,
->> but my assumption was that we did sort this out in the end.
->
-> One of the two mISDN drivers uses the deprecated virt_to_bus()
-> interface for handling DMA addresses (that doesn't even work on many
-> x86 systems these days) and the other mISDN driver gives the above
-> big-endian compile time error.
->
-> In short, this driver was not ready for merging at all.
+As a git tree:
 
-I am not defending it and agree that this driver should have had at  
-least one test run in linux-next. However mISDN is a whole ISDN stack.  
-So does mISDN has an issue too or do we only have a really broken  
-driver. Karsten?
+git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.26-git6-ext4-2
+http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.26-git6-ext4-2
 
-Regards
+As a patchset:
 
-Marcel
+ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-git6-ext4-2
 
+
+I've also updated the patch set vs. the 2.6.26-stock kernel, which can
+be found here:
+
+ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-ext4-4
+
+							- Ted
+
+Akira Fujita (7):
+      ext4: online defrag-- Main function of defrag and ioctl implementation
+      ext4: online defrag-- Allocate new contiguous blocks with mballoc
+      ext4: online defrag-- Read and write file data with memory page
+      ext4: online defrag-- Exchange the blocks between two inodes
+      ext4: online defrag-- Defragmentation for the relevant files (-r mode)
+      ext4: online defrag-- Check the free space fragmentation (-f mode)
+      ext4: online defrag-- Move victim files for the target file (-f mode)
+
+Aneesh Kumar K.V (6):
+    * ext4: Fix data corruption when writing to prealloc area
+    * ext4: Improve error handling in mballoc
+    * ext4: Convert the usage of NR_CPUS to nr_cpu_ids.
+    * ext4: Don't allow lg prealloc list to be grow large.
+    * ext4: Cleanup the block reservation code path
+    * ext4: undo the stable boundary patch changes
+
+Eric Sandeen (3):
+    * sync up block & inode bitmap reading functions
+    * lock block groups when initializing
+    * Hook ext4 to the vfs fiemap interface.
+
+Hidehiro Kawai (1):
+    * ext4: don't read inode block if the buffer has a write error
+
+Josef Bacik (1):
+      Any block based fs (this patch includes ext3) just has to declare its own
+
+Li Zefan (1):
+    * ext4: improve ext4_fill_flex_info() a bit
+
+Theodore Ts'o (8):
+    * ext4: Allow read/only mounts with corrupted block group checksums
+    * jbd2: don't abort if flushing file data failed
+    * ext4: Cleanup whitespace and other miscellaneous style issues
+    * ext4: unexport jbd2_journal_update_superblock
+    * ext4: Update documentation to remind users to update mke2fs.conf
+      ext4: Stable/Unstable boundary
+      Basic vfs-level fiemap infrastructure, which sets up a new ->fiemap
+      Plug ocfs2 into ->fiemap. Some portions of ocfs2_get_clusters() had to be
