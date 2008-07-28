@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbYG1B7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759271AbYG1CCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759482AbYG1B7K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 21:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbYG1B65
+	id S1759271AbYG1CCb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 22:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbYG1CCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 21:58:57 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:35877 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750728AbYG1B64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 21:58:56 -0400
+	Sun, 27 Jul 2008 22:02:23 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:60668 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751131AbYG1CCW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 22:02:22 -0400
+Date: Sun, 27 Jul 2008 18:56:49 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+X-X-Sender: xyzzy@t2.domain.actdsltmp
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Trent Piepho <tpiepho@freescale.com>,
+       Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Richard Purdie <rpurdie@rpsys.net>,
+       Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] leds: make the default trigger name const
+In-Reply-To: <20080727231149.1b2508da.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0807271304350.26456@t2.domain.actdsltmp>
+References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
+ <1217019705-24244-1-git-send-email-tpiepho@freescale.com>
+ <20080727020857.GM12191@secretlab.ca> <20080727231149.1b2508da.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18573.10107.853761.684410@harpo.it.uu.se>
-Date: Mon, 28 Jul 2008 03:57:15 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: David Miller <davem@davemloft.net>
-Cc: marcel@holtmann.org, linux-kernel@vger.kernel.org, sfr@canb.auug.org.au,
-       linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, kkeil@suse.de
-Subject: Re: mISDN still breaking the allmodconfig build...
-In-Reply-To: <20080727.180736.74131389.davem@davemloft.net>
-References: <20080727.170235.97056809.davem@davemloft.net>
-	<93120C4B-D2F4-4479-806B-2141AC3DC607@holtmann.org>
-	<20080727.180736.74131389.davem@davemloft.net>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller writes:
- > From: Marcel Holtmann <marcel@holtmann.org>
- > Date: Mon, 28 Jul 2008 03:03:04 +0200
- > 
- > > > More fallout from the premature mISDN driver merge:
- > > >
- > > > drivers/isdn/hardware/mISDN/hfcmulti.c:5255:2: error: #error "not  
- > > > running on big endian machines now"
- > > 
- > > is that only the HFC driver or the whole mISDN stack?
- > > 
- > > I know that the two old ISDN stacks where really bad on big endian,  
- > > but my assumption was that we did sort this out in the end.
- > 
- > One of the two mISDN drivers uses the deprecated virt_to_bus()
- > interface for handling DMA addresses (that doesn't even work on many
- > x86 systems these days) and the other mISDN driver gives the above
- > big-endian compile time error.
- > 
- > In short, this driver was not ready for merging at all.
+On Sun, 27 Jul 2008, Stephen Rothwell wrote:
+> On Sat, 26 Jul 2008 20:08:57 -0600 Grant Likely <grant.likely@secretlab.ca> wrote:
+>> On Fri, Jul 25, 2008 at 02:01:44PM -0700, Trent Piepho wrote:
+>>> The default_trigger fields of struct gpio_led and thus struct led_classdev
+>>> are pretty much always assigned from a string literal, which means the
+>>> string can't be modified.  Which is fine, since there is no reason to
+>>> modify the string and in fact it never is.
+>>>
+>>> But they should be marked const to prevent such code from being added, to
+>>> prevent warnings if -Wwrite-strings is used and when assigned from a
+>>> constant string other than a string literal (which produces a warning under
+>>> current kernel compiler flags), and for general good coding practices.
+>>>
+>>> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+>> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+>
+> I would ack this as well, except I am not sure what tree this patch is
+> against.  In the current powerpc next tree,
 
-Why on earth does a generic (I hope) protocol driver (some ISDN
-thingy in this case) care about endianess at all?
+It was against powerpc next from Jul 22nd, current at the time I made the
+patch.  It looks like that file has changed in the last few days.  There is a
+patch from Anton Vorontsov, "leds:  mark led_classdev.default_trigger as
+const", which adds const to one of the structs I modified, but doesn't get the
+other one (struct gpio_led).
 
-Or has things come to a "the world's an x86" ("the world's a VAX" for
-old-timers but add 25+ years or so) situation where the majority of
-coders don't even consider that machines might be different from what
-they use? If so, a deep sigh of sadness.
+Then another patch from Nate Case added a new LED chip driver, and the
+platform data for this driver was added as "generic led platform data", which
+I don't entirely agree with.  And this new struct didn't make default_trigger
+const, probably because it was just copied from the gpio led platform data
+with some fields removed (so it's not really that generic then, is it?).
 
-(Not that I prefer a particular endianess. My point being that coders
-shouldn't make endianess assumptions unless they're really^3 important.)>
+I'll send an updated patch for current powerpc next.
