@@ -1,61 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYG1Tci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756449AbYG1ThA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbYG1Tci (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 15:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbYG1Tcb
+	id S1756449AbYG1ThA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 15:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYG1Tgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 15:32:31 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:35052 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751677AbYG1Tca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 15:32:30 -0400
-Date: Mon, 28 Jul 2008 21:32:35 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Alex Nixon (Intern)" <Alex.Nixon@eu.citrix.com>,
-       Eduardo Habkost <ehabkost@redhat.com>
-Subject: Re: [PATCH] xen: xen: compile irq functions without -pg for ftrace
-Message-ID: <20080728193235.GB11431@uranus.ravnborg.org>
-References: <488E15C5.3070902@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <488E15C5.3070902@goop.org>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 28 Jul 2008 15:36:52 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:44211 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751431AbYG1Tgv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 15:36:51 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5348"; a="5116496"
+Message-ID: <488E1FD1.8060902@qualcomm.com>
+Date: Mon, 28 Jul 2008 12:36:49 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Peter Oruba <peter.oruba@amd.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 10/11] [PATCH 10/11] x86: Major refactoring.
+References: <20080728164411.490752571@amd.com> <20080728164449.234580245@amd.com>
+In-Reply-To: <20080728164449.234580245@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 11:53:57AM -0700, Jeremy Fitzhardinge wrote:
-> For some reason I managed to miss a bunch of irq-related functions
-> which also need to be compiled without -pg when using ftrace.  This
-> patch moves them into their own file, and starts a cleanup process
-> I've been meaning to do anyway.
+Peter Oruba wrote:
+> Refactored code by introducing a two-module solution. There is one
+> general module in which vendor specific modules can hook into.
+> However, that is exclusive, there is only one vendor specific module
+> allowed at a time. A CPU vendor check makes sure only the corect
+> module for the underlying system gets called. Functinally in terms
+> of patch loading itself there are no changes. This refactoring
+> provides a basis for future implementations of other vendors'
+> patch loaders.
 > 
-> [ Sam, Ingo: I think the problem was that I enabled CONFIG_FTRACE
->  but didn't do a clean build.  Shouldn't the build-system notice
->  that the config changes the CFLAGS and rebuild everything?  That
->  didn't seem to happen in this case. ]
+> Signed-off-by: Peter Oruba <peter.oruba@amd.com>
+<snip>
 
-The build system usually does this.
-And I have no reports that this has regressed until now.
-What file?
-Can you tell me how to reproduce it?
+> diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
+> index c1047d7..1e42e79 100644
+> --- a/arch/x86/kernel/microcode.c
+> +++ b/arch/x86/kernel/microcode.c
+<snip>
 
-> 
-> ===================================================================
-> --- a/arch/x86/xen/Makefile
-> +++ b/arch/x86/xen/Makefile
-> @@ -2,9 +2,10 @@
-> # Do not profile debug and lowlevel utilities
-> CFLAGS_REMOVE_spinlock.o = -pg
-> CFLAGS_REMOVE_time.o = -pg
-> +CFLAGS_REMOVE_irq.o = -pg
-> endif
+> @@ -244,9 +243,9 @@ static void microcode_init_cpu(int cpu, int resume)
+>  
+>  	set_cpus_allowed_ptr(current, newmask);
+>  	mutex_lock(&microcode_mutex);
+> -	collect_cpu_info(cpu);
+> +	microcode_ops->collect_cpu_info(cpu);
+>  	if (uci->valid && system_state == SYSTEM_RUNNING && !resume)
+> -		cpu_request_microcode(cpu);
+> +		microcode_ops->cpu_request_microcode(cpu);
+>  	mutex_unlock(&microcode_mutex);
+>  	set_cpus_allowed_ptr(current, &old);
+> @@ -274,7 +273,7 @@ static ssize_t reload_store(struct sys_device *dev,
+>  
+>  		mutex_lock(&microcode_mutex);
+>  		if (uci->valid)
+> -			err = cpu_request_microcode(cpu);
+> +			err = microcode_ops->cpu_request_microcode(cpu);
+>  		mutex_unlock(&microcode_mutex);
+>  		put_online_cpus();
+>  		set_cpus_allowed_ptr(current, &old);
 
-I already NACK'ed this syntax and described the way it should be done.
-Is this ignored or on a TODO list?
+Peter, question while we're at it. This came up in another thread and I 
+asked the same question to Tigran but he is either on vacation or not 
+paying attention :).
 
-	Sam
+Microcode cpu hotplug handler is messing with the cps_allowed flags of a 
+random process and can race with sched_setaffinity() (pointed by 
+Dmitry). It also makes some assumptions on the overall cpu hotplug 
+sequence which is bad.
+
+It's easy to fix but the question is - does the microcode update need to 
+happen synchronously ? I'm thinking that it does not but I wanted to 
+verify that. If it does not need to be synchronous then we can simply 
+schedule a work queue and do the update there. If it does we could do 
+collect_cpu_info() and load_microcode() in the IPIs.
+
+Max
