@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbYG1V6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760122AbYG1WAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760787AbYG1V6i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757946AbYG1V6U
+	id S1760122AbYG1WAU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 18:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYG1WAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:58:20 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:48380 "EHLO smtp5.pp.htv.fi"
+	Mon, 28 Jul 2008 18:00:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41607 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757611AbYG1V6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:58:19 -0400
-Date: Tue, 29 Jul 2008 00:57:36 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Eric Miao <eric.miao@marvell.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: bad CONFIG variable references from Makefiles
-Message-ID: <20080728215735.GI7713@cs181140183.pp.htv.fi>
-References: <alpine.LFD.1.10.0807281607400.28285@localhost.localdomain>
+	id S1751893AbYG1WAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 18:00:04 -0400
+Message-ID: <488E4166.5070304@redhat.com>
+Date: Mon, 28 Jul 2008 18:00:06 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807281607400.28285@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jan Beulich <jbeulich@novell.com>, Andi Kleen <andi@firstfloor.org>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH] i386: improve double fault handling
+References: <4880A912.76E4.0078.0@novell.com> <4881263B.7060700@zytor.com> <48846B02.76E4.0078.0@novell.com> <20080721110510.GC10782@elte.hu> <4885CEFE.76E4.0078.0@novell.com> <20080728134252.GI5515@elte.hu>
+In-Reply-To: <20080728134252.GI5515@elte.hu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 04:09:28PM -0400, Robert P. J. Day wrote:
+Ingo Molnar wrote:
 > 
->   a complete list of all references to non-existent CONFIG variables
-> exclusively from Makefiles in the tree.  since the list is so short,
-> i'm not bothering to break it up by subsystem or arch.  enjoy.
->...
-> ===== CACHE_XSC3L2 =====
-> ./arch/arm/mm/Makefile:obj-$(CONFIG_CACHE_XSC3L2)	+= cache-xsc3l2.o
->...
+> All CPUs hitting a double fault simultaneously and corrupting each 
+> others' kernel stack is a theoretical possibility - but is handling it 
+> worth the complexity? It appears to me that a lock plus a short stub 
+> function that takes the lock (with no stack usage) would handle that 
+> much better.
 
-Comparing commit 20072fd0c93349e19527dd2fa9588b4335960e62
-([ARM] pxa: add support for L2 outer cache on XScale3) with
-the patch that originally went to linux-arm-kernel it seems
-only a tiny fragment of the original patch arrived in the tree.
+That can't happen now because the TSS gets marked busy so we will get a
+triple fault instead. One thing we might want to do in the current code
+is unset the busy flag after handling the fault and before we start looping
+at the end of the handler so we can handle another fault later.
 
-> rday
+> 
+> So i'm really uneasy about all this. Breakage in such rarely used code 
+> gets found very late, and has thus a high risk of losing debug 
+> information when we need it the most. (i.e. it works in the exact 
+> _opposite_ way of the intented goal of making things more robust - it 
+> makes things less robust)
+> 
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Also how much bloat does this cause, having a per-CPU TSS and stack for every
+fault handler that uses this method?
 
