@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbYG1Xv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbYG1X5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752918AbYG1Xv6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 19:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYG1Xvt
+	id S1753277AbYG1X5b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 19:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbYG1X5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 19:51:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57763 "EHLO mx2.mail.elte.hu"
+	Mon, 28 Jul 2008 19:57:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47097 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751792AbYG1Xvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 19:51:49 -0400
-Date: Tue, 29 Jul 2008 01:51:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: combinatorial explosion in lockdep
-Message-ID: <20080728235133.GA7956@elte.hu>
-References: <20080728.153702.103032029.davem@davemloft.net> <20080728.161318.38361710.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080728.161318.38361710.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751899AbYG1X5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 19:57:22 -0400
+Date: Mon, 28 Jul 2008 19:57:13 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: PERF: performance tests with the split LRU VM in -mm
+Message-ID: <20080728195713.42cbceed@cuia.bos.redhat.com>
+In-Reply-To: <20080728164124.8240eabe.akpm@linux-foundation.org>
+References: <20080724222510.3bbbbedc@bree.surriel.com>
+	<20080728105742.50d6514e@cuia.bos.redhat.com>
+	<20080728164124.8240eabe.akpm@linux-foundation.org>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 28 Jul 2008 16:41:24 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-* David Miller <davem@davemloft.net> wrote:
-
-> From: David Miller <davem@davemloft.net>
-> Date: Mon, 28 Jul 2008 15:37:02 -0700 (PDT)
+> > Andrew, what is your preference between:
+> > 	http://lkml.org/lkml/2008/7/15/465
+> > and
+> > 	http://marc.info/?l=linux-mm&m=121683855132630&w=2
+> > 
 > 
-> > I'm still digging on what exactly makes this happen, but I wanted to 
-> > get the information out as soon as I had something useful like this.
+> Boy.  They both seem rather hacky special-cases.  But that doesn't mean
+> that they're undesirable hacky special-cases.  I guess the second one
+> looks a bit more "algorithmic" and a bit less hacky-special-case.  But
+> it all depends on testing..
+
+I prefer the second one, since it removes the + 1 magic (at least,
+for the higher priorities), instead of adding new magic like the
+other patch does.
+
+> On a different topic, these:
 > 
-> As a simple hack, I tried mitigating these effects using a 
-> generation-count based "visited" scheme to bypass traversing 
-> lock_class chains we've already walked down.
+> vmscan-give-referenced-active-and-unmapped-pages-a-second-trip-around-the-lru.patch
+> vm-dont-run-touch_buffer-during-buffercache-lookups.patch
 > 
-> It seems to work.
+> have been floating about in -mm for ages, awaiting demonstration that
+> they're a net benefit.  But all of this new page-reclaim rework was
+> built on top of those two patches and incorporates and retains them.
+> 
+> I could toss them out, but that would require some rework and would
+> partially invalidate previous testing and who knows, they _might_ be
+> good patches.  Or they might not be.
+> 
+> What are your thoughts?
 
-nice!
+I believe you should definately keep those.  Being able to better
+preserve actively accessed file pages could be a good benefit and
+we have yet to discover a downside to those patches.
 
-Any chance to get the "cat /proc/lockdep*" output, so that we could see 
-and check the expected behavior of the full graph?
-
-But with 128 cpus and double locking taking in the scheduler, there's 
-around 127*128/2 possible combinations of cpu rq lock ordering, that's 
-thousands of chains, and that takes a quadratic number of steps to 
-iterate via the current algorithm - which would be in the neighborhood 
-of 127^4 / 4, or about 65 million steps for each new change to the 
-graph. (but it's late and i'm not sure at all about the numbers so i 
-could be off by a few orders of magnitude, in either direction)
-
-Plus the irqsafe/softirqsafe layers multiply things too.
-
-Could you please also send the non-stack-iterator changes you did as 
-well - that's cool stuff too!
-
-	Ingo
+-- 
+All Rights Reversed
