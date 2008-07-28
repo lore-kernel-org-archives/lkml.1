@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbYG1SfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbYG1Sfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754914AbYG1SfA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 14:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757468AbYG1Seu
+	id S1758786AbYG1Sfh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 14:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbYG1Sf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 14:34:50 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:37955 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752885AbYG1Set (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 14:34:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	b=YfsfWNqLoFT81ket18M4fBYfswQ44ZFr8uabrovjNXLE6u5UWPXq68sdmnymlq96mFT3nVOUMQXteNJbzw/0tFv1a/J1gZyJE4xwhxlDeQsbr87v4LzdPttHaJ+UwrMw;
-Message-ID: <488E1147.5040803@simon.arlott.org.uk>
-Date: Mon, 28 Jul 2008 19:34:47 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
+	Mon, 28 Jul 2008 14:35:28 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:56369 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752446AbYG1Sf1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 14:35:27 -0400
+Date: Mon, 28 Jul 2008 11:26:28 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+X-X-Sender: xyzzy@t2.domain.actdsltmp
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+cc: Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
+       Richard Purdie <rpurdie@rpsys.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/2] leds: Support OpenFirmware led bindings
+In-Reply-To: <20080728180204.GA13190@polina.dev.rtsoft.ru>
+Message-ID: <Pine.LNX.4.64.0807281120150.26456@t2.domain.actdsltmp>
+References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
+ <1217019705-24244-2-git-send-email-tpiepho@freescale.com>
+ <20080727022116.GN12191@secretlab.ca> <Pine.LNX.4.64.0807272159500.26456@t2.domain.actdsltmp>
+ <20080728170914.GA21265@secretlab.ca> <20080728180204.GA13190@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-References: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>	 <488DF9CF.8020408@simon.arlott.org.uk>	 <9e4733910807281005y62dca90ar96f663908e644546@mail.gmail.com>	 <488DFD97.7080802@simon.arlott.org.uk>	 <9e4733910807281022v38d323c9sc7b63235824690f6@mail.gmail.com>	 <488E0BB6.7020006@simon.arlott.org.uk> <9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com>
-In-Reply-To: <9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28/07/08 19:19, Jon Smirl wrote:
-> On 7/28/08, Simon Arlott <simon@fire.lp0.eu> wrote:
->> On 28/07/08 18:22, Jon Smirl wrote:
->> > On 7/28/08, Simon Arlott <simon@fire.lp0.eu> wrote:
->> > > No, I've submitted patches using three email addresses (well, two - one
->> > > is a typo).
->> > >
->> >
->> > That's the whole point of this list. When you submit patches in the
->> > future we can check your name/email against the list and flag it if it
->> > isn't there. That will alert you that you've made a typo.
->> >
+On Mon, 28 Jul 2008, Anton Vorontsov wrote:
+> On Mon, Jul 28, 2008 at 11:09:14AM -0600, Grant Likely wrote:
+> [...]
+>>>>> +- function :  (optional) This parameter, if present, is a string
+>>>>> +  defining the function of the LED.  It can be used to put the LED
+>>>>> +  under software control, e.g. Linux LED triggers like "heartbeat",
+>>>>> +  "ide-disk", and "timer".  Or it could be used to attach a hardware
+>>>>> +  signal to the LED, e.g. a SoC that can configured to put a SATA
+>>>>> +  activity signal on a GPIO line.
+>>>>
+>>>> This makes me nervous.  It exposes Linux internal implementation details
+>>>> into the device tree data.  If you want to have a property that
+>>>> describes the LED usage, then the possible values and meanings should be
+>>>> documented here.
+>>>
+>>> Should it be a linux specific property then?  I could list all the current
+>>> linux triggers, but enumerating every possible function someone might want
+>>> to assign to an LED seems hopeless.
 >>
->>  I don't make typos in my name or email address.
-> 
-> You just admitted six lines early that you made a typo.
+>> I'd rather see the device tree provide 'hints' toward the expected usage
+>> and if a platform needs something specific, then the platform specific
+>> code should setup the trigger.
+>>
+> Maybe we can encode leds into devices themselves, via phandles?
 
-No, all I said was that one is a typo. I did not make it.
+How will this work for anything besides ide activity?  For example, flashing,
+heartbeat, default on, overheat, fan failed, kernel panic, etc.
 
--- 
-Simon Arlott
+> And then the OF GPIO LEDs driver could do something like:
+>
+> char *ide_disk_trigger_compatibles[] = {
+> 	"fsl,sata",
+> 	"ide-generic",
+> 	...
+> };
+
+Everytime someone added a new ide driver, this table would have to be updated.
