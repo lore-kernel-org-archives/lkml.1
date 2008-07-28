@@ -1,79 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbYG1PNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbYG1POa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756628AbYG1PNr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 11:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbYG1PNi
+	id S1755537AbYG1POa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 11:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYG1POT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 11:13:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39169 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750851AbYG1PNh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 11:13:37 -0400
-Subject: Re: [PATCH] RCU: implement rcu_read_[un]lock_preempt()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: dipankar@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <487D98AC.3020005@kernel.org>
-References: <487AEAC6.60307@kernel.org> <1216188469.5232.0.camel@twins>
-	 <487D98AC.3020005@kernel.org>
-Content-Type: text/plain
-Date: Mon, 28 Jul 2008 17:13:21 +0200
-Message-Id: <1217258001.18049.7.camel@twins>
+	Mon, 28 Jul 2008 11:14:19 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:58984 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752861AbYG1POR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 11:14:17 -0400
+Date: Tue, 29 Jul 2008 00:16:12 +0900 (JST)
+Message-Id: <20080729.001612.79297475.anemo@mba.ocn.ne.jp>
+To: David Brownell <dbrownell@users.sourceforge.net>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] gpio: Fix build on CONFIG_GPIO_SYSFS=n
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-16 at 15:43 +0900, Tejun Heo wrote:
-> Peter Zijlstra wrote:
-> > On Mon, 2008-07-14 at 14:57 +0900, Tejun Heo wrote:
-> >> With the introduction of preemptible RCU, RCU doesn't gurantee that
-> >> its critical section runs on the CPU it started to run.  As there are
-> >> cases where non-preemptible RCU critical section makes sense, create
-> >> new RCU read lock variants which turns of preemption -
-> >> rcu_read_[un]lock_preempt() which are identical to rcu_read_[un]lock()
-> >> for classic implementation and have enclosing preempt disable/enable
-> >> for preemptible RCU.
-> >>
-> >> Signed-off-by: Tejun Heo <tj@kernel.org>
-> > 
-> > Sorry, NAK.
-> > 
-> > If you need preempt off you need it for other reasons than RCU, so
-> > mixing it in the interface doesn't make sense to me.
-> 
-> Hmmm... the point of the interface is avoiding doing double preemption
-> operations as on common configurations rcu_read_lock() disables
-> preemption.
+If CONFIG_GENERIC_GPIO=y && CONFIG_GPIO_SYSFS=n, gpio_export() in
+asm-generic/gpio.h refers -ENOSYS and causes build error.
 
-Should be really cheap then, because the cacheline is already hot.
-
->   Yes, it's for different purposes but we have two partially
-> overlapping ops and implementing combined / collapsed ops for such cases
-> is acceptable, I think.
-
-They only overlap for !PREEMPT_RCU || !PREEMPT_RT
-
-> Using get_cpu() or separate preempt_disable() wouldn't incur noticeable
-> performance difference as preemption is really cheap to manipulate but
-> both per-cpu and RCU are for performance optimization and I think having
-> combined ops is a good idea.
-
-I don't as its a nightmare to sort out on -rt, where get_cpu() can be
-converted to get_cpu_locked(), and rcu_read_lock() never disables
-preemption.
-
-If you convert it to use get_cpu() the conversion is easy, if you
-introduce this collapsed primitive we're up shit creek because it
-doesn't map.
-
-Nor does it tell us why you need preempt disabled. Making it just as bad
-as open-coded preempt_disable()s.
-
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index c764a8f..0f99ad3 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -2,6 +2,7 @@
+ #define _ASM_GENERIC_GPIO_H
+ 
+ #include <linux/types.h>
++#include <linux/errno.h>
+ 
+ #ifdef CONFIG_GPIOLIB
+ 
