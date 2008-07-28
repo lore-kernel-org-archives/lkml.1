@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbYG1Sjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbYG1SlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758174AbYG1Sjg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 14:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbYG1Sj2
+	id S1758805AbYG1SlR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 14:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbYG1SlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 14:39:28 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:55545 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753041AbYG1Sj2 (ORCPT
+	Mon, 28 Jul 2008 14:41:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54618 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753311AbYG1Sk7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 14:39:28 -0400
-Date: Mon, 28 Jul 2008 12:39:11 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       stephen@blacksapphire.com, benm@symmetric.co.nz, jkosina@suse.cz
-Subject: Re: warning in scheduler
-Message-ID: <20080728183911.GC16059@parisc-linux.org>
-References: <1217214947.11188.156.camel@pasglop> <1217238791.6331.15.camel@twins> <1217239403.11188.189.camel@pasglop> <20080728100752.GA4717@elte.hu> <1217241622.11188.191.camel@pasglop>
+	Mon, 28 Jul 2008 14:40:59 -0400
+Date: Mon, 28 Jul 2008 11:37:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [git pull] cpus4096 fixes
+In-Reply-To: <alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807281135060.3486@nehalem.linux-foundation.org>
+References: <20080727190601.GA764@elte.hu> <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org> <200807281042.12860.rusty@rustcorp.com.au> <488E06F0.4070404@sgi.com> <alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217241622.11188.191.camel@pasglop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 08:40:22PM +1000, Benjamin Herrenschmidt wrote:
-> I tend to agree. I might look into doing it for powerpc around rc3 or
-> so, when things have settled a bit.
 
-It'd be nice if allmodconfig even compiled:
 
-drivers/char/pcmcia/ipwireless/hardware.c:571: error: invalid use of undefined type 'struct ipw_network'
+On Mon, 28 Jul 2008, Linus Torvalds wrote:
+> 
+> Here's a trivial setup, that is even tested. It's _small_ too.
+> 
+> 	/* cpu_bit_bitmap[0] is empty - so we can back into it */
+> 	#define MASK_DECLARE_1(x) [x+1][0] = 1ul << (x)
+> 	#define MASK_DECLARE_2(x) MASK_DECLARE_1(x), MASK_DECLARE_1(x+1)
+> 	#define MASK_DECLARE_4(x) MASK_DECLARE_2(x), MASK_DECLARE_2(x+2)
+> 	#define MASK_DECLARE_8(x) MASK_DECLARE_4(x), MASK_DECLARE_4(x+4)
+> 
+> 	static const unsigned long cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)] = {
+> 		MASK_DECLARE_8(0), MASK_DECLARE_8(8),
+> 		MASK_DECLARE_8(16), MASK_DECLARE_8(24),
+> 	#if BITS_PER_LONG > 32
+> 		MASK_DECLARE_8(32), MASK_DECLARE_8(40),
+> 		MASK_DECLARE_8(48), MASK_DECLARE_8(56),
+> 	#endif
+> 	};
+> 
+> 	static inline const cpumask_t *get_cpu_mask(unsigned int nr)
+> 	{
+> 		const unsigned long *p = cpu_bit_bitmap[1 + nr % BITS_PER_LONG];
+> 		p -= nr / BITS_PER_LONG;
+> 		return (const cpumask_t *)p;
+> 	}
 
-Not to mention the qla_attr patch:
+Btw, Ingo, can we get this issue resolved asap, please?
 
-+#include <linux/delay.h>
+I was planning on doing -rc1 today, but this kind of hangs over me. The 
+above three lines of code (and more lines of macro initializers) obviously 
+does need some more testing, but if you hook it into the other changes you 
+already had, maybe we can get it done.
 
-There's probably others, I just haven't got far enough in the
-compilation process yet.
+Hmm?
 
-But I am seeing lots of warnings _without_ the patch applied:
-
-fs/omfs/inode.c: In function 'omfs_fill_super':
-fs/omfs/inode.c:495: warning: format '%llx' expects type 'long long
-unsigned int', but argument 2 has type 'u64'
-fs/proc/base.c: In function 'do_io_accounting':
-fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
-unsigned int', but argument 3 has type 'u64'
-fs/ubifs/dir.c: In function 'ubifs_readdir':
-fs/ubifs/dir.c:437: warning: format '%llu' expects type 'long long
-unsigned int', but argument 5 has type '__le64'
-
-(other warnings snipped for brevity).
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+			Linus
