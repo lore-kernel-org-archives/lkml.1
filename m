@@ -1,79 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759684AbYG1Ury@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759952AbYG1UtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759684AbYG1Ury (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 16:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYG1Urq
+	id S1759952AbYG1UtW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 16:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbYG1UtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 16:47:46 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:33589 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751739AbYG1Urq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 16:47:46 -0400
-Date: Mon, 28 Jul 2008 22:47:40 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: =?iso-8859-2?Q?Tom=E1=B9_Janou=B9ek?= <tomi@nomi.cz>
-Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] rtc-dev: stop periodic interrupts on device release
-Message-ID: <20080728224740.5a7a1b3e@i1501.lan.towertech.it>
-In-Reply-To: <20080728204136.GA6683@nomi.cz>
-References: <20080726154617.GA5613@notes.lisk.in>
-	<200807261350.55524.david-b@pacbell.net>
-	<20080728204136.GA6683@nomi.cz>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 28 Jul 2008 16:49:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52563 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753053AbYG1UtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 16:49:13 -0400
+Message-ID: <488E2E58.3000306@redhat.com>
+Date: Mon, 28 Jul 2008 15:38:48 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, mhalcrow@us.ibm.com, stable@kernel.org
+Subject: Re: [PATCH] eCryptfs - use page_alloc not kmalloc to get a page of
+ memory
+References: <488DF00F.3080809@redhat.com> <20080728133504.156f438f.akpm@linux-foundation.org>
+In-Reply-To: <20080728133504.156f438f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008 22:41:36 +0200
-Tomáš Janoušek <tomi@nomi.cz> wrote:
-
+Andrew Morton wrote:
+> On Mon, 28 Jul 2008 11:13:03 -0500
+> Eric Sandeen <sandeen@redhat.com> wrote:
 > 
-> From: Tomas Janousek <tomi@nomi.cz>
-> Date: Sat, 26 Jul 2008 16:23:36 +0100
-> Subject: [PATCH] rtc-dev: stop periodic interrupts on device release
+>> With SLUB debugging turned on in 2.6.26, I was getting memory corruption
+>> when testing eCryptfs.  The root cause turned out to be that eCryptfs
+>> was doing kmalloc(PAGE_CACHE_SIZE); virt_to_page() and treating that
+>> as a nice page-aligned chunk of memory.  But at least with SLUB debugging
+>> on, this is not always true, and the page we get from virt_to_page does
+>> not necessarily match the PAGE_CACHE_SIZE worth of memory we got from 
+>> kmalloc.
+>>
+>> My simple testcase was 2 loops doing "rm -f fileX; cp /tmp/fileX ." for
+>> 2 different multi-megabyte files.  With this change I no longer see
+>> the corruption.
 > 
-> Solves http://bugzilla.kernel.org/show_bug.cgi?id=11127
-> 
-> The old rtc.c driver did it and some drivers (like rtc-sh) do it in their
-> release function, though they should not -- because they should provide the
-> irq_set_state op and the rtc framework itself should care about it. This patch
-> makes it do so.
-> 
-> I am aware that some drivers, like rtc-sh, handle userspace PIE sets in their
-> ioctl op (instead of having the framework call the op), exporting the
-> irq_set_state op at the same time. The logic in rtc_irq_set_state should make
-> sure it doesn't matter and the driver should not need to care stopping periodic
-> interrupts in its release routine any more.
-> 
-> The correct way, in my opinion, should be this:
-> 1) The driver provides the irq_set_state op and does not care closing the
->    interrupts in its release op.
-> 2) If the driver does not provide the op and handles PIE in the ioctl op, it's
->    reponsible for closing them in its release op.
-> 3) Something similar for other IRQs, like UIE -- if there's no in-kernel API
->    like irq_set_state, handle it in ioctl and release ops. The framework will
->    be responsible either for everything or for nothing.
-> 
-> Signed-off-by: Tomas Janousek <tomi@nomi.cz>
-> Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+> The fix applies to both 2.6.25 and to 2.6.26 and appears to be needed
+> in both kernel versions, so I have tagged it for backporting into both.
 
- ok, that's fair.
+I agree, thanks.
 
- Acked-by: Alessandro Zummo <a.zummo@towertech.it>
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+-Eric
