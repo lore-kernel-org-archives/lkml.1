@@ -1,98 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757658AbYG1UD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758780AbYG1UEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757658AbYG1UD4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 16:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbYG1UDt
+	id S1758780AbYG1UEX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 16:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYG1UEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 16:03:49 -0400
-Received: from wr-out-0506.google.com ([64.233.184.236]:1940 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751692AbYG1UDs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 16:03:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OcOUhAxogyPv/6Ll+yjhRKUnFZa0w/TSsgjnerO9d2Kyg+6MxF3L0Au3TI4sLFvHUV
-         wLXDq7vGDL4uiip1Wj3IAgPbs8737/mP+2Q5Tg9mRxQ0QcTKEenIEDsuXX1mtgk0knGu
-         8w1tYIZ/t3yS0M6Fe2wGSVoIPYhDr1wrFwW2c=
-Message-ID: <6179c79b0807281303s7b48d7c9xad2d4d1b407a4ad7@mail.gmail.com>
-Date: Mon, 28 Jul 2008 22:03:46 +0200
-From: "Piotr Skamruk" <piotr.skamruk@gmail.com>
-To: "Michael Buesch" <mb@bu3sch.de>
-Subject: Re: [PATCH v2] Add GPIO-based MMC/SD driver
-Cc: "David Brownell" <david-b@pacbell.net>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, gregkh <greg@kroah.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Pierre Ossman" <drzeus-mmc@drzeus.cx>, openwrt-devel@lists.openwrt.org
-In-Reply-To: <200807281511.54299.mb@bu3sch.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jul 2008 16:04:15 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:38786 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752136AbYG1UEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 16:04:15 -0400
+Date: Mon, 28 Jul 2008 22:05:00 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linux arch <linux-arch@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: kbuild now support arch/$ARCH/include - time for ARCHs to convert
+Message-ID: <20080728200500.GA14284@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200807182201.33913.mb@bu3sch.de>
-	 <20080721135332.4ce02e0c.randy.dunlap@oracle.com>
-	 <200807271630.07939.david-b@pacbell.net>
-	 <200807281511.54299.mb@bu3sch.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/28 Michael Buesch <mb@bu3sch.de>:
-> On Monday 28 July 2008 01:30:07 David Brownell wrote:
->> > How to?
->>
->> Simplest to just rip out the support for using one!  And in any case:
->> as a rule, any delay should be a function of the target bus speed.
->
-> Well, that wasn't exactly an answer to my question. ;)
-> So setting boardinfo->max_speed_hz to zero will do?
-David wants fastest code (so it could run optimally on embedded
-devices), and Yours version is more overview.
-IMHO both approach are right, but in diffrent situations.
-If i need fastest implementation, which i could use on some special
-device, probably i would wrote machine dependent platform device, with
-inlined gpio calls, because this would be faster.
-But, when i want more generic interface, which could be used in more
-diffrent situations - i would preferre Michaels approach.
+The traditional location of the arch specific Makefiles
+has been at:
 
->> > Where's that documented?
->>
->> UTSL ... mmc_spi_probe(), first thing.  :)
-:)
+	include/asm-$ARCH
 
-> [...]
->> > > There is no "platform GPIO bus" ...
->> >
->> > hm??
->>
->> If you look in /sys/bus you won't see GPIO.  It's not a bus.
->
-> Oh well... This is getting boring...
-> Then call it "platform GPIO pins" or "platform GPIO controller" or whatever.
-> That's really just splitting the hair into 16 parts.
-Michael - ok, change this to "platform GPIO lines" :)
+But as suggested by several people over time and lately
+by Linus in the following post:
+http://kerneltrap.org/mailarchive/linux-kernel/2008/5/21/1903924
 
->> > People asked me to expose it. It was hidden in the first patch that
->> > I submitted. I'm not going to change this just to see the next one
->> > yelling "I want to see this interface in public" again.
->>
->> Could you send me some URLs for that feedback?
->
-> It was private. One of the OpenWRT guys requested that to have a
-> convenient way to define a hardwired MMC card in the platform code
-> by just defining a simple data structure.
-Maybe I was this one, ore one of them. I wanted some method to
-experiment with MMC/SD connected to GPIO. Not some determined lines,
-but in some way configurable. There was several ugly patches on net
-(mostly around OpenWRT, and mostly tested by users of OpenWRT), but
-all of them was ugly hacks, dependent on some particular architecture
-(ARM as i remember).
-So, in that time, simply I started writing something more general,
-less architecture dependent, something, what could be more easy to
-configure (in kernel/module loading time).
-I started this, and Michael did the rest...
+is is suggested to move the arch specific files under arch/
+and for the header files this is arch/$ARCH/include.
+
+So I have hacked up support for this in kbuild so
+for the simpler cases a simple move of header files as
+in:
+	git mv include/asm-$ARCH arch/$ARCH/include/asm
+
+is enough.
+
+If Linus will accept it then I think -rc1 is a perfect
+time to do it as people has less stuff pending touching
+the header files that are moved.
+Validation is easy - does the usual configs build?
+
+For the archs that plays games with symlinks this is a
+splendid opportunity to get rid af these.
+The receipe is simple:
+Use 
+	KBUILD_CFLAGS += -Iarch/$ARCH/include/$CPU
+
+to select the CPU and then do a copy of the header files
+like this:
+
+	git mv include/asm-$ARCH/$CPU arch/$ARCH/include/$CPU/cpu
+
+Then the code can continue to use:
+
+	#include <cpu/foo.h>
+
+I already converted sparc to use arch/sparc/include -
+while I merged the header files for sparc and sparc64.
+This change is already upstream.
+
+And for SH I posted a receipe which you can read here:
+http://lkml.org/lkml/2008/7/28/83
+
+It is SH specific but anyway pretty generic.
+
+I am limited in time and resources at the moment but I
+would be glad to help out as time permits should there
+be any questions.
+
+	Sam
