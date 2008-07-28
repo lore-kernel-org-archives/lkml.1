@@ -1,96 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756986AbYG1Wg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbYG1WhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756986AbYG1Wg3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 18:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYG1WgS
+	id S1755601AbYG1WhR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 18:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYG1WhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 18:36:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33665 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751307AbYG1WgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 18:36:17 -0400
-Date: Tue, 29 Jul 2008 00:35:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Sterba <dsterba@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
-       linux-net@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>
-Subject: [resend] [PATCH] Build fallout from scsi merge...
-Message-ID: <20080728223557.GA26416@elte.hu>
-References: <1217283104.3503.170.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217283104.3503.170.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 28 Jul 2008 18:37:04 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41480
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751270AbYG1WhD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 18:37:03 -0400
+Date: Mon, 28 Jul 2008 15:37:02 -0700 (PDT)
+Message-Id: <20080728.153702.103032029.davem@davemloft.net>
+To: mingo@elte.hu
+CC: peterz@infradead.org, linux-kernel@vger.kernel.org
+Subject: combinatorial explosion in lockdep
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+As Peter and some others have known I've been trying to track down a
+full system wedge that occurs early in the userland boot on sparc64
+Niagara systems when lockdep is enabled.  This has been happening
+since I first added sparc64 lockdep support, the problem has always
+been there.
 
-> There's a brown paper bag compile failure introduced by this patch
+Some fiddling around recently showed that booting with max_cpus=16
+allowed the system to fully boot, albeit very slowly.
 
-hm, while at it, i still dont see the scsi build fix below upstream. My 
-tests were hit by it too.
+That was a clue.
 
-	Ingo
+My suspicion became that somehow the number of active runqueues
+contributes to the problem.
 
-------------------->
->From c3d4eb8e157b6e4bb0b87e921bb5743cfc6f8f25 Mon Sep 17 00:00:00 2001
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Date: Mon, 28 Jul 2008 11:59:20 +0900
-Subject: [PATCH] Build fallout from scsi merge...
+Also, the problem seems to occur when udev is forked off to
+load driver modules.
 
-On Sun, 27 Jul 2008 17:04:15 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+So I added a piece of debugging that would capture all cpu's program
+counters and initial backtrace even if they had interrupts disabled,
+when the softlockup watchdog triggers.  Then I lowered the softlockup
+watchdog threshold to only a few seconds so that I could more quickly
+trigger the dumps.
 
->
-> From allmodconfig on sparc64:
->
-> drivers/scsi/qla2xxx/qla_attr.c: In function 'qla24xx_vport_delete':
-> drivers/scsi/qla2xxx/qla_attr.c:1184: error: implicit declaration of function 'msleep'
-> make[3]: *** [drivers/scsi/qla2xxx/qla_attr.o] Error 1
-> make[3]: *** Waiting for unfinished jobs....
+The triggering event seems to be kstopmachine as done by the first
+module load.  This seems to create the situation where we do double RQ
+locking on essentially all the run queues, in order to move the
+kstopmachine threads around to their proprer cpus.  I think this is
+what starts to make the lockdep dependency chains huge.
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] qla2xxx: fix msleep compile error
+Then, all the cpus wedge trying to grab a particular RQ lock, with one
+of the cpus cycling seemingly endlessly in find_usage_backwards().
 
-drivers/scsi/qla2xxx/qla_attr.c: In function 'qla24xx_vport_delete':
-drivers/scsi/qla2xxx/qla_attr.c:1184: error: implicit declaration of function 'msleep'
-make[3]: *** [drivers/scsi/qla2xxx/qla_attr.o] Error 1
-make[3]: *** Waiting for unfinished jobs....
+At first I thought we were getting killed by recurion on sparc64.
+After going 8 or more entries deep, every recursive call or return
+from such a call will write or read 128 bytes from the stack for
+the window spill/fill traps sparc uses to manage the register windows.
+So I rewrote find_usage_{backwards/forwards} and check_usage() to
+use iteration instead of recurion.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Acked-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Cc: davem@davemloft.net
-Cc: James.Bottomley@HansenPartnership.com
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/scsi/qla2xxx/qla_attr.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+The problem persisted, and I was still seeing one of the cpus spending
+tons of time in find_usage_backwards().
 
-diff --git a/drivers/scsi/qla2xxx/qla_attr.c b/drivers/scsi/qla2xxx/qla_attr.c
-index 7a4409a..a319a20 100644
---- a/drivers/scsi/qla2xxx/qla_attr.c
-+++ b/drivers/scsi/qla2xxx/qla_attr.c
-@@ -8,6 +8,7 @@
- 
- #include <linux/kthread.h>
- #include <linux/vmalloc.h>
-+#include <linux/delay.h>
- 
- static int qla24xx_vport_disable(struct fc_vport *, bool);
- 
+So I added debugging to count how many lock_class entries are visited
+in a single top-level invocation of find_usage_{backwards,forwards}()
+and then I printed out this information when the softlockup watchdog
+triggered.
+
+We find:
+
+[ 1287.450897] BUG: max_forwards_checks[73290] max_backwards_checks[56968881]
+[ 1287.456186] BUG: max_forwards_class --> (&rq->rq_lock_key#3){++..}
+[ 1287.461866] BUG: max_backwards_class --> (&rt_b->rt_runtime_lock){+...}
+
+Just under 57 million lock_class entries visited in a single top-level
+find_usage_backwards() call, on rt_b->rt_runtime_lock.  No wonder the
+machine grinds to a halt :-)
+
+And on the forwards side, the winner is the suspected runqueue lock,
+but it's not as bad as the backwards chain from the rt_runtime_lock.
+
+I'm still digging on what exactly makes this happen, but I wanted to
+get the information out as soon as I had something useful like this.
