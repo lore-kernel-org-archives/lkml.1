@@ -1,131 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758417AbYG1QNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYG1QQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758417AbYG1QNe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 12:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755567AbYG1QNW
+	id S1757378AbYG1QQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 12:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbYG1QQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 12:13:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58142 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754333AbYG1QNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 12:13:21 -0400
-Message-ID: <488DF00F.3080809@redhat.com>
-Date: Mon, 28 Jul 2008 11:13:03 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Mon, 28 Jul 2008 12:16:20 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:13535 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754340AbYG1QQT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 12:16:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=g9O/5incrpgKiueQkrA6XKmUu1PeUivk/MA/NXOcBh2SeJxkPRGiwQjUJcx6HVOy/3
+         E6N4aICbb/cuixHZGdLPk8EiKbmE+OwLfJnHW06lxarqQMJfv5NxsXzIs3vwW0tpkPJg
+         3Z6TM4NhmRZZ1usyltLnQzpz1gxiCt1iw/1+Y=
+Message-ID: <9ea470500807280916k7824dc28m169f4c4db65023fa@mail.gmail.com>
+Date: Mon, 28 Jul 2008 18:16:16 +0200
+From: "Boris Petkov" <petkovbb@googlemail.com>
+Reply-To: petkovbb@gmail.com
+To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Subject: Re: IDE S.M.A.R.T. ioctl errors
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+In-Reply-To: <200807281644.38419.bzolnier@gmail.com>
 MIME-Version: 1.0
-To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Michael Halcrow <mhalcrow@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] eCryptfs - use page_alloc not kmalloc to get a page of memory
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <20080728060133.GA14007@gollum.tnic>
+	 <200807281644.38419.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With SLUB debugging turned on in 2.6.26, I was getting memory corruption
-when testing eCryptfs.  The root cause turned out to be that eCryptfs
-was doing kmalloc(PAGE_CACHE_SIZE); virt_to_page() and treating that
-as a nice page-aligned chunk of memory.  But at least with SLUB debugging
-on, this is not always true, and the page we get from virt_to_page does
-not necessarily match the PAGE_CACHE_SIZE worth of memory we got from 
-kmalloc.
+On Mon, Jul 28, 2008 at 4:44 PM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+>
+> Hi,
+>
+> On Monday 28 July 2008, Borislav Petkov wrote:
+>
+> [...]
+>
+>> [   32.918048] ide_cmd_ioctl: args[0]: 0xb0, args[1]: 0x1, args[2]: 0xd5 args[3]: 0x1
+>> [   32.918164] hdd: status error: status=0x58 { DriveReady SeekComplete DataRequest }
+>> [   32.918392] ide: failed opcode was: 0xb0
+>> [   32.918491] hdd: drive not ready for command
+>> [   32.918618] hdd: status error: status=0x58 { DriveReady SeekComplete DataRequest }
+>> [   32.918844] ide: failed opcode was: 0xea
+>> [   32.918949] hdd: drive not ready for command
+>> ...
+>>
+>> and this is "caused" by
+>> ide-use-correct-data-phase-for-smart-read-data-log-in-ide_cmd_ioctl.patch. This
+>> happens, IMHO, because when you do ATA_CMD_SMART from userspace ioctl, one of
+>> the cases is that the tf->feature flags have values which are inconsistent with
+>> the ATA/ATAPI v.7 spec (6.54.5 SMART READ DATA):
+>>
+>> "If the device does not support this command, if SMART is disabled, or if the
+>> values in the Features, LBA Mid, or LBA High registers are invalid, the device
+>> shall return command aborted."
+>>
+>> For example this one:
+>>
+>> [   30.499581] ide_cmd_ioctl: args[0]: 0xb0, args[1]: 0x1, args[2]: 0xd1 args[3]: 0x1
+>> [   30.516111] hda: task_no_data_intr: status=0x58 { DriveReady SeekComplete DataRequest }
+>> [   30.516387] ide: failed opcode was: 0xb0
+>>
+>> However, the case with the SMART_READ_LOG looks correct above: args[2] = 0xd5
+>> which is the tf->feature flag, cmd = 0xb0 (ATA_CMD_SMART). This one fails too, though.
+>
+> Thanks for spotting it.
+>
+> It seems that ide_cmd_ioctl() ->data_phase change is not as obvious as
+> I previously thought.  Since the patch is quite low-prio (it prepares
+> the code for future changes) I just dropped it until we learn more about
+> the underlying issues.
 
-My simple testcase was 2 loops doing "rm -f fileX; cp /tmp/fileX ." for
-2 different multi-megabyte files.  With this change I no longer see
-the corruption.
+How about aborting the ioctl in all those cases when the relevant
+registers above contain invalid values
+according to the spec? It sounds a pretty sane thing to do...
 
-Thanks,
--Eric
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
----
-
-Index: linux-2.6.26/fs/ecryptfs/crypto.c
-===================================================================
---- linux-2.6.26.orig/fs/ecryptfs/crypto.c
-+++ linux-2.6.26/fs/ecryptfs/crypto.c
-@@ -474,8 +474,8 @@ int ecryptfs_encrypt_page(struct page *p
- {
- 	struct inode *ecryptfs_inode;
- 	struct ecryptfs_crypt_stat *crypt_stat;
--	char *enc_extent_virt = NULL;
--	struct page *enc_extent_page;
-+	char *enc_extent_virt;
-+	struct page *enc_extent_page = NULL;
- 	loff_t extent_offset;
- 	int rc = 0;
- 
-@@ -491,14 +491,14 @@ int ecryptfs_encrypt_page(struct page *p
- 			       page->index);
- 		goto out;
- 	}
--	enc_extent_virt = kmalloc(PAGE_CACHE_SIZE, GFP_USER);
--	if (!enc_extent_virt) {
-+	enc_extent_page = alloc_page(GFP_USER);
-+	if (!enc_extent_page) {
- 		rc = -ENOMEM;
- 		ecryptfs_printk(KERN_ERR, "Error allocating memory for "
- 				"encrypted extent\n");
- 		goto out;
- 	}
--	enc_extent_page = virt_to_page(enc_extent_virt);
-+	enc_extent_virt = kmap(enc_extent_page);
- 	for (extent_offset = 0;
- 	     extent_offset < (PAGE_CACHE_SIZE / crypt_stat->extent_size);
- 	     extent_offset++) {
-@@ -526,7 +526,10 @@ int ecryptfs_encrypt_page(struct page *p
- 		}
- 	}
- out:
--	kfree(enc_extent_virt);
-+	if (enc_extent_page) {
-+		kunmap(enc_extent_page);
-+		__free_page(enc_extent_page);
-+	}
- 	return rc;
- }
- 
-@@ -608,8 +611,8 @@ int ecryptfs_decrypt_page(struct page *p
- {
- 	struct inode *ecryptfs_inode;
- 	struct ecryptfs_crypt_stat *crypt_stat;
--	char *enc_extent_virt = NULL;
--	struct page *enc_extent_page;
-+	char *enc_extent_virt;
-+	struct page *enc_extent_page = NULL;
- 	unsigned long extent_offset;
- 	int rc = 0;
- 
-@@ -626,14 +629,14 @@ int ecryptfs_decrypt_page(struct page *p
- 			       page->index);
- 		goto out;
- 	}
--	enc_extent_virt = kmalloc(PAGE_CACHE_SIZE, GFP_USER);
--	if (!enc_extent_virt) {
-+	enc_extent_page = alloc_page(GFP_USER);
-+	if (!enc_extent_page) {
- 		rc = -ENOMEM;
- 		ecryptfs_printk(KERN_ERR, "Error allocating memory for "
- 				"encrypted extent\n");
- 		goto out;
- 	}
--	enc_extent_page = virt_to_page(enc_extent_virt);
-+	enc_extent_virt = kmap(enc_extent_page);
- 	for (extent_offset = 0;
- 	     extent_offset < (PAGE_CACHE_SIZE / crypt_stat->extent_size);
- 	     extent_offset++) {
-@@ -661,7 +664,10 @@ int ecryptfs_decrypt_page(struct page *p
- 		}
- 	}
- out:
--	kfree(enc_extent_virt);
-+	if (enc_extent_page) {
-+		kunmap(enc_extent_page);
-+		__free_page(enc_extent_page);
-+	}
- 	return rc;
- }
- 
-
+-- 
+Regards/Gruﬂ,
+Boris
