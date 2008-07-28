@@ -1,160 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbYG1Dk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940AbYG1Dpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754623AbYG1Dk1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 23:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbYG1DkO
+	id S1754940AbYG1Dpw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 23:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYG1Dpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 23:40:14 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:46320 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751668AbYG1DkN (ORCPT
+	Sun, 27 Jul 2008 23:45:45 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:45064 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752404AbYG1Dpo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 23:40:13 -0400
-Date: Mon, 28 Jul 2008 13:40:10 +1000
-From: Simon Horman <horms@verge.net.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Muli Ben-Yehuda <muli@il.ibm.com>, Tony Luck <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, Chandru <chandru@in.ibm.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Terry Loftin <terry.loftin@hp.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [patch] crashdump: fix undefined reference to `elfcorehdr_addr'
-Message-ID: <20080728034007.GA30450@verge.net.au>
-References: <20080727234529.GM6175@verge.net.au> <20080728015117.GA12055@verge.net.au> <20080728024526.GB3334@verge.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080728024526.GB3334@verge.net.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 27 Jul 2008 23:45:44 -0400
+Date: Sun, 27 Jul 2008 20:42:56 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCHES for 2.6.27] V4L/DVB updates
+Message-Id: <20080727204256.bba5eaf6.randy.dunlap@oracle.com>
+In-Reply-To: <20080727224104.78b8298d@gaivota>
+References: <20080727224104.78b8298d@gaivota>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 12:45:28PM +1000, Simon Horman wrote:
-> The rfc patch I made to rename is_kdump_kernel to kernel_has_vmcore,
-> which I appended to my previous post should have looked more like the
-> following. Although, as I noted in my previous post, its more a starting
-> point for discussion than a solution to the problem at hand.
+On Sun, 27 Jul 2008 22:41:04 -0300 Mauro Carvalho Chehab wrote:
 
-Sorry, one more time. I forgot to quilt refresh.
+> Linus,
+> 
+> Please pull from:
+>         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git for_linus
+> 
+> For the following:
+> 
+>    - API internal improvements on V4L;
+>    - Two new drivers: dw2102, mxl5007t;
+>    - removal of the long time broken PlanB driver;
+>    - added two very old boards to be removed, at feature-removal-schedule;
+>    - several fixes and new board support and cleanups on drivers: cx18, gspca,
+>      uvcvideo, cs5345, cx2885, pvrusb2, em28xx, s2255drv, stkwebcam, mt20xx, anysee,
+>      zr36067, saa7134, saa7134-empress, saa7146, ivtv and tveeprom and pwc;
+>    - Some cleanups at V4L core.
 
-Index: linux-2.6/arch/x86/kernel/pci-calgary_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/pci-calgary_64.c	2008-07-28 10:10:31.000000000 +1000
-+++ linux-2.6/arch/x86/kernel/pci-calgary_64.c	2008-07-28 10:14:24.000000000 +1000
-@@ -801,7 +801,7 @@ static int __init calgary_setup_tar(stru
- 	tbl = pci_iommu(dev->bus);
- 	tbl->it_base = (unsigned long)bus_info[dev->bus->number].tce_space;
- 
--	if (is_kdump_kernel())
-+	if (kernel_has_vmcore())
- 		calgary_init_bitmap_from_tce_table(tbl);
- 	else
- 		tce_free(tbl, 0, tbl->it_size);
-@@ -1184,7 +1184,7 @@ static int __init calgary_init(void)
- 		return ret;
- 
- 	/* Purely for kdump kernel case */
--	if (is_kdump_kernel())
-+	if (kernel_has_vmcore())
- 		get_tce_space_from_tar();
- 
- 	do {
-@@ -1438,7 +1438,7 @@ void __init detect_calgary(void)
- 		return;
- 	}
- 
--	specified_table_size = determine_tce_table_size((is_kdump_kernel() ?
-+	specified_table_size = determine_tce_table_size((kernel_has_vmcore() ?
- 					saved_max_pfn : max_pfn) * PAGE_SIZE);
- 
- 	for (bus = 0; bus < MAX_PHB_BUS_NUM; bus++) {
-@@ -1461,7 +1461,7 @@ void __init detect_calgary(void)
- 			 * If it is kdump kernel, find and use tce tables
- 			 * from first kernel, else allocate tce tables here
- 			 */
--			if (!is_kdump_kernel()) {
-+			if (!kernel_has_vmcore()) {
- 				tbl = alloc_tce_table();
- 				if (!tbl)
- 					goto cleanup;
-Index: linux-2.6/fs/proc/vmcore.c
-===================================================================
---- linux-2.6.orig/fs/proc/vmcore.c	2008-07-28 09:51:30.000000000 +1000
-+++ linux-2.6/fs/proc/vmcore.c	2008-07-28 09:51:53.000000000 +1000
-@@ -32,8 +32,7 @@ static size_t elfcorebuf_sz;
- /* Total size of vmcore file. */
- static u64 vmcore_size;
- 
--/* Stores the physical address of elf header of crash image. */
--unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
-+unsigned long long elfcorehdr_addr;
- 
- struct proc_dir_entry *proc_vmcore = NULL;
- 
-Index: linux-2.6/include/linux/crash_dump.h
-===================================================================
---- linux-2.6.orig/include/linux/crash_dump.h	2008-07-28 09:46:29.000000000 +1000
-+++ linux-2.6/include/linux/crash_dump.h	2008-07-28 12:11:57.000000000 +1000
-@@ -9,12 +9,6 @@
- 
- #define ELFCORE_ADDR_MAX	(-1ULL)
- 
--#ifdef CONFIG_PROC_VMCORE
--extern unsigned long long elfcorehdr_addr;
--#else
--static const unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
--#endif
--
- extern ssize_t copy_oldmem_page(unsigned long, char *, size_t,
- 						unsigned long, int);
- extern const struct file_operations proc_vmcore_operations;
-@@ -28,13 +22,18 @@ extern struct proc_dir_entry *proc_vmcor
- 
- #define vmcore_elf_check_arch(x) (elf_check_arch(x) || vmcore_elf_check_arch_cross(x))
- 
--static inline int is_kdump_kernel(void)
--{
--	return (elfcorehdr_addr != ELFCORE_ADDR_MAX) ? 1 : 0;
--}
--#else /* !CONFIG_CRASH_DUMP */
--static inline int is_kdump_kernel(void) { return 0; }
- #endif /* CONFIG_CRASH_DUMP */
- 
- extern unsigned long saved_max_pfn;
- #endif /* LINUX_CRASHDUMP_H */
-+
-+#ifdef CONFIG_PROC_VMCORE
-+extern unsigned long long elfcorehdr_addr;
-+
-+static inline int kernel_has_vmcore(void)
-+{
-+	return (elfcorehdr_addr != ELFCORE_ADDR_MAX) ? 1 : 0;
-+}
-+#else
-+static inline int kernel_has_vmcore(void) { return 0; }
-+#endif
-Index: linux-2.6/arch/ia64/hp/common/sba_iommu.c
-===================================================================
---- linux-2.6.orig/arch/ia64/hp/common/sba_iommu.c	2008-07-28 11:51:36.000000000 +1000
-+++ linux-2.6/arch/ia64/hp/common/sba_iommu.c	2008-07-28 12:11:27.000000000 +1000
-@@ -2070,14 +2070,13 @@ sba_init(void)
- 	if (!ia64_platform_is("hpzx1") && !ia64_platform_is("hpzx1_swiotlb"))
- 		return 0;
- 
--#if defined(CONFIG_IA64_GENERIC) && defined(CONFIG_PROC_VMCORE) && \
--        defined(CONFIG_PROC_FS)
-+#if defined(CONFIG_IA64_GENERIC)
- 	/* If we are booting a kdump kernel, the sba_iommu will
- 	 * cause devices that were not shutdown properly to MCA
- 	 * as soon as they are turned back on.  Our only option for
- 	 * a successful kdump kernel boot is to use the swiotlb.
- 	 */
--	if (elfcorehdr_addr < ELFCORE_ADDR_MAX) {
-+	if (kernel_has_vmcore()) {
- 		if (swiotlb_late_init_with_default_size(64 * (1<<20)) != 0)
- 			panic("Unable to initialize software I/O TLB:"
- 				  " Try machvec=dig boot option");
+I'd really like to get this patch that I mailed to you 2008-July-21 merged...
+
+---
+
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Add kernel-doc for parameter @index:
+
+Warning(linhead//drivers/media/video/videodev.c:2090): No description found for parameter 'index'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/media/video/videodev.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- linhead.orig/drivers/media/video/videodev.c
++++ linhead/drivers/media/video/videodev.c
+@@ -2066,6 +2066,8 @@ EXPORT_SYMBOL(video_register_device);
+  *	@type: type of device to register
+  *	@nr:   which device number (0 == /dev/video0, 1 == /dev/video1, ...
+  *             -1 == first free)
++ *	@index: stream number based on parent device;
++ *		-1 if auto assign, requested number otherwise
+  *
+  *	The registration code assigns minor numbers based on the type
+  *	requested. -ENFILE is returned in all the device slots for this
