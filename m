@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbYG1QUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758885AbYG1QXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756827AbYG1QUu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 12:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758802AbYG1QUj
+	id S1758885AbYG1QXi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 12:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYG1QX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 12:20:39 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:48081 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756347AbYG1QUi (ORCPT
+	Mon, 28 Jul 2008 12:23:28 -0400
+Received: from 85-10-209-111.clients.your-server.de ([85.10.209.111]:54168
+	"EHLO mail.road.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751454AbYG1QX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 12:20:38 -0400
-Date: Mon, 28 Jul 2008 10:20:36 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Message-ID: <20080728162036.GA21039@secretlab.ca>
-References: <1217239117.11188.187.camel@pasglop> <alpine.LFD.1.10.0807280838580.3486@nehalem.linux-foundation.org> <20080729015330.39aff7a5.sfr@canb.auug.org.au> <alpine.LFD.1.10.0807280905500.3486@nehalem.linux-foundation.org>
+	Mon, 28 Jul 2008 12:23:27 -0400
+From: Uli Luckas <u.luckas@road.de>
+Organization: Road GmbH
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix misalignment in pxamci
+Date: Mon, 28 Jul 2008 18:23:24 +0200
+User-Agent: KMail/1.9.9
+Cc: "pHilipp Zabel" <philipp.zabel@gmail.com>,
+       "Marek Vasut" <marek.vasut@gmail.com>, drzeus-mmc@drzeus.cx
+References: <200807050219.52218.marek.vasut@gmail.com> <74d0deb30807050121n38c44dfaoa843fe8a0b581d01@mail.gmail.com>
+In-Reply-To: <74d0deb30807050121n38c44dfaoa843fe8a0b581d01@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807280905500.3486@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200807281823.25302.u.luckas@road.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 09:06:35AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 29 Jul 2008, Stephen Rothwell wrote:
-> > 
-> > It should be
-> > 
-> > 	git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-> > 
-> > Ben seems to have copied from one of Paul's pull requests.
-> 
-> Ok, that one worked for me.
-> 
-> Ben, I'm sure some day you'll get it right on the first try. We're all 
-> cheering for you!
+On Saturday, 5. July 2008, pHilipp Zabel wrote:
+> On Sat, Jul 5, 2008 at 2:19 AM, Marek Vasut <marek.vasut@gmail.com> wrote:
+> > Hi,
+> > Philipp Zabel finally made the pxamci issue clear. It turned out, that
+> > pxamci needs the DMA destination address to be aligned to 8 bytes. In
+> > some cases it happened, that the address was aligned to 4 bytes causing
+> > controller to incorrectly transfer data (and resulting into error like
+> > "mmc0: unrecognised SCR structure version 1"). The following patch allows
+> > to debug this issue and moreover fixes it by moving one 4 byte entry of
+> > mmc_card structure, aligning the DMA destination back to 8 bytes.
+> >
+> > Signed-off-by: Marek Vasut <marek.vasut@gmail.com>
+>
+> We can enable byte aligned transfers on the DMA controller. This is
+> what I came up with yesterday:
+> (sorry for wrapped lines - the proper patch should probably be a
+> combination of both
+> warning/DALGN handling and and moving something in mmc_card around).
+>
+Hi Philipp,
+this driver is not only for pxa27x but for pxa25x as well and pxa25x can't 
+handle unaligned DMA.
+Shouldn't Marek Vasut's patch be included for the PXA25x case?
 
-Ben! Ben! He's our man!  If he can't grok it, no-one can!  :-)
+regards,
+Uli
 
-git-request-pull has saved me from many a bogus pull request.
 
-g.
+-- 
+
+------- ROAD ...the handyPC Company - - -  ) ) )
+
+Uli Luckas
+Software Development
+
+ROAD GmbH
+Bennigsenstr. 14 | 12159 Berlin | Germany
+fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
+url: www.road.de
+
+Amtsgericht Charlottenburg: HRB 96688 B
+Managing directors: Hans-Peter Constien, Hubertus von Streit
