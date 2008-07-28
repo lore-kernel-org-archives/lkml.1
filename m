@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759975AbYG1RAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759888AbYG1RDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759975AbYG1RAH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 13:00:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757582AbYG1Q7e
+	id S1759888AbYG1RDn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 13:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758227AbYG1RD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 12:59:34 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:41475 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756936AbYG1Q7b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 12:59:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=tNTP0sUPG9dLLLbG/ybBhXo9znX00ZUBP8DomnLUD1JlbPtega2gq3a/SClgihLqcd
-         dOmN49KQCfe3EXzMnq4Q+EwqAbg5Hlv+Ce42mQZUmfBT328cjQRHpzGmuuSsQD+sfpdq
-         aB33/6+Umpt8mEudmFcWvLAWvB6ALvp1+rZ0U=
-Date: Mon, 28 Jul 2008 12:59:26 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: [git pull] Input updates for 2.6.27-rc0 (round 2)
-Message-ID: <20080728165926.GA21561@anvil.corenet.prv>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 28 Jul 2008 13:03:27 -0400
+Received: from waste.org ([66.93.16.53]:51143 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757040AbYG1RD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 13:03:26 -0400
+Subject: Re: [PATCH 12/30] mm: memory reserve management
+From: Matt Mackall <mpm@selenic.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Neil Brown <neilb@suse.de>,
+       cl@linux-foundation.org
+In-Reply-To: <1217241541.6331.42.camel@twins>
+References: <20080724140042.408642539@chello.nl>
+	 <20080724141530.127530749@chello.nl>
+	 <1217239564.7813.36.camel@penberg-laptop>  <1217240224.6331.32.camel@twins>
+	 <1217240994.7813.53.camel@penberg-laptop>  <1217241541.6331.42.camel@twins>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 28 Jul 2008 11:59:34 -0500
+Message-Id: <1217264374.15724.42.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-Please pull from:
+On Mon, 2008-07-28 at 12:39 +0200, Peter Zijlstra wrote:
+> Also, you might have noticed, I still need to do everything SLOB. The
+> last time I rewrote all this code I was still hoping Linux would 'soon'
+> have a single slab allocator, but evidently we're still going with 3 for
+> now.. :-/
+>
+> So I guess I can no longer hide behind that and will have to bite the
+> bullet and write the SLOB bits..
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+﻿I haven't seen the rest of this thread, but I presume this is part of
+your OOM-avoidance for network I/O framework?
 
-to receive updates for the input subsystem.
-
-Changelog:
----------
-
-Dan Liang (1):
-      Input: add driver for Atmel integrated touchscreen controller
-
-Dmitry Torokhov (1):
-      Input: serio - mark serio_register_driver() __must_check
-
-Hans-Christian Egtvedt (1):
-      Input: ads7846 - optimize order of calculating Rt in ads7846_rx()
-
-Harvey Harrison (1):
-      Input: ads7846 - fix sparse endian warnings
-
-Huang Weiyi (1):
-      Input: uinput - remove duplicate include
-
-Shaohua Li (1):
-      Input: serio - offload resume to kseriod
-
-
-Diffstat:
---------
-
- drivers/input/misc/uinput.c              |    1 -
- drivers/input/serio/serio.c              |   55 ++++--
- drivers/input/touchscreen/Kconfig        |   12 +
- drivers/input/touchscreen/Makefile       |    1 +
- drivers/input/touchscreen/ads7846.c      |   16 +-
- drivers/input/touchscreen/atmel_tsadcc.c |  332 ++++++++++++++++++++++++++++++
- include/linux/serio.h                    |    3 +-
- 7 files changed, 390 insertions(+), 30 deletions(-)
- create mode 100644 drivers/input/touchscreen/atmel_tsadcc.c
+SLOB can be pretty easily expanded to handle a notion of independent
+allocation arenas as there are only a couple global variables to switch
+between. ﻿kfree will also return allocations to the page list (and
+therefore arena) from whence they came. That may make it pretty simple
+to create and prepopulate reserve pools.
 
 -- 
-Dmitry
+Mathematics is the supreme nostalgia of our time.
+
