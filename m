@@ -1,49 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758038AbYG1QnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbYG1QqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758038AbYG1QnU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 12:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbYG1QnG
+	id S1756133AbYG1QqU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 12:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYG1QqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 12:43:06 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:43379 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754810AbYG1QnE (ORCPT
+	Mon, 28 Jul 2008 12:46:12 -0400
+Received: from qb-out-0506.google.com ([72.14.204.231]:14935 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751345AbYG1QqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 12:43:04 -0400
-Message-ID: <488DF70E.20404@nortel.com>
-Date: Mon, 28 Jul 2008 10:42:54 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Mon, 28 Jul 2008 12:46:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=HhItv25eMuLaDGavUW5Q8a8tljPbufpqnGT1L49B/AoMEiep6fDZZEq6uSg5QIWEB7
+         hRmP6lDqqiB7LqltFxU24r4PsWeMsdt5dsiXnMWPLNpGdk+8QLaR9Qqig8ZX5F0OlAOK
+         RgbelHuu768ckV1gpBNIHiYRoxU3EH29d8Wh8=
+Message-ID: <2ae234c70807280946s77a02e1ex120fc2723e286a9e@mail.gmail.com>
+Date: Mon, 28 Jul 2008 12:46:09 -0400
+From: "Andrew Drake" <drakedevel.lists@gmail.com>
+To: "Glauber Costa" <gcosta@redhat.com>
+Subject: Re: [Bisected] Regression: Hang on boot in schedule_timeout_interruptible during ACPI init on SMP
+Cc: "Andrew Drake" <zappacky.lists@gmail.com>,
+       "Glauber Costa" <glommer@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080728141533.GA3697@redhat.com>
 MIME-Version: 1.0
-To: luis6674@yahoo.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: How to disable group scheduler correctly?
-References: <842240.12654.qm@web53310.mail.re2.yahoo.com>
-In-Reply-To: <842240.12654.qm@web53310.mail.re2.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jul 2008 16:42:58.0565 (UTC) FILETIME=[FE04CB50:01C8F0D0]
+Content-Disposition: inline
+References: <4887B4D5.1050306@gmail.com>
+	 <5d6222a80807231731u41f9fb81w2796b3db1a5920e6@mail.gmail.com>
+	 <488B7297.8090405@gmail.com> <20080728141533.GA3697@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alberto Gonzalez wrote:
+On Mon, Jul 28, 2008 at 10:15 AM, Glauber Costa <gcosta@redhat.com> wrote:
+> fine, but if you can still help us on this, it would be awesome ;-)
+>
 
-> [1] For example, in Arch Linux the group scheduler was first enabled
-> in 2.6.25, but due to latency issues it was quickly disabled. But
-> after that, the following report claims to have problems with
-> everything *GROUP* disabled and that you need to enable CGROUPS to
-> solve them (the report links to similar reports on Gentoo and Ubuntu,
-> so it seems the confusion is quite general):
-> 
-> http://bugs.archlinux.org/task/10512
+Oh absolutely! :P I'm not the type to settle on a workaround.
 
-The linked thread talks about latency problems in the CFQ I/O scheduler, 
-not the process scheduler.  It appears that enabling CGROUPS helps get 
-around the I/O scheduler issues.
+> Actually, there is another nasty bug that depends, at least by a first
+> impression, on the lapic timer. I'm planning to save a time today to
+> look further on your problem.
 
-Are you sure that you actually want to disable group scheduling for 
-processes?
+Thanks!
 
-Chris
+>
+> Probably because the order of initialization of smp entities changed a
+> bit during this series. Probably the lapic timer is now initialized a
+> little bit earlier, before we have the chance to mark it as bad.
+>
+
+I noticed that; but I couldn't find where it was indeed marked as bad.
+
+> If you can send me at least your dmesgs and cpuinfo, it would be really really
+> awesome.
+>
+
+Did you get my most recent email? (It was sent to your glommer[at]
+address, and CC'd to the kernel list) If you didn't receive it, I'll
+forward you the message. It included dmesg of good kernel, dmesg of
+bad kernel, cpuinfo, .config, and my disassembled DSDT (which, as a
+side project, I'm doing a full-blown reverse engineering of).
+
+Thanks,
+
+Andrew
+
+P.S. I apologize in advance if this email is HTML, I'm at work and I
+have to use the gmail web interface, I have it set to "text only", but
+you never know.
