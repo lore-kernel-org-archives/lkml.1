@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759315AbYG1Aux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbYG1AyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759315AbYG1Aux (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 20:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbYG1Aup
+	id S1759356AbYG1AyT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 20:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbYG1AyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 20:50:45 -0400
-Received: from qmta03.westchester.pa.mail.comcast.net ([76.96.62.32]:36834
-	"EHLO QMTA03.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756370AbYG1Auo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 20:50:44 -0400
-X-Authority-Analysis: v=1.0 c=1 a=nIwtGICpIgsA:10 a=1qr_vtFaH-wA:10
- a=NbdmU-cPIxq_6GOXheQA:9 a=roiMnqvtNayks1BoYIwA:9 a=2Z9fHDJeg8UbPuzLIakA:7
- a=XpT0jO_MSIoxnI5yc-7OeDg2TrcA:4 a=Tb-hHMzVUqsA:10 a=JqzK7hVu6n4A:10
-Message-ID: <488D17DE.5000801@splhi.com>
-Date: Sun, 27 Jul 2008 17:50:38 -0700
-From: Tim Wright <timw@splhi.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Sun, 27 Jul 2008 20:54:09 -0400
+Received: from ozlabs.org ([203.10.76.45]:43356 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755951AbYG1AyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 20:54:08 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [git pull] cpus4096 fixes
+Date: Mon, 28 Jul 2008 10:53:57 +1000
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Mike Travis <travis@sgi.com>
+References: <20080727190601.GA764@elte.hu>
+In-Reply-To: <20080727190601.GA764@elte.hu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: linux-scsi@vger.kernel.org
-Subject: [PATCH] Fix miscalculation of sg_io timeout in CDROM_SEND_PACKET
- handler.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807281053.58267.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems cdrwtool in the udftools has been unusable on "modern" kernels 
-for some time. A Google search reveals many people with the same issue 
-but no solution (cdrwtool fails to format the disk). After spending some 
-time tracking down the issue, it comes down to the following:
+On Monday 28 July 2008 05:06:01 Ingo Molnar wrote:
+> Linus,
+>
+> Please pull the latest cpus4096-fixes git tree from:
+>
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+> cpus4096
+>
+> this fixes the cpumask_of_cpu API fallout described here:
+>
+>    http://lkml.org/lkml/2008/7/23/76
+>
+> ... and the fix is wider than i'd like it to be, so close to -rc1
 
-The udftools still use the older CDROM_SEND_PACKET interface to send 
-things like FORMAT_UNIT through to the drive. They should really be 
-updated, but that's another story. Since most distros are using libata 
-now, the cd or dvd burner appears as a SCSI device, and we wind up in 
-block/scsi_ioctl.c. Here, the code tries to take the "struct 
-cdrom_generic_command" and translate it and stuff it into a "struct 
-sg_io_hdr" structure so it can pass it to the modern sg_io() routine 
-instead. Unfortunately, there is one error, or rather an omission in the 
-translation. The timeout that is passed in in the "struct 
-cdrom_generic_command" is in HZ=100 units, and this is modified and 
-correctly converted to jiffies by use of clock_t_to_jiffies(). However, 
-a little further down, this cgc.timeout value in jiffies is simply 
-copied into the sg_io_hdr timeout, which should be in milliseconds. 
-Since most modern x86 kernels seems to be getting build with HZ=250, the 
-timeout that is passed to sg_io and eventually converted to the 
-timeout_per_command member of the scsi_cmnd structure is now four times 
-too small. Since cdrwtool tries to set the timeout to one hour for the 
-FORMAT_UNIT command, and it takes about 20 minutes to format a 4x CDRW, 
-the SCSI error-handler kicks in after the FORMAT_UNIT completes because 
-it took longer than the incorrectly-calculated timeout.
+Sorry, it's wider because you pushed the last stupid Mike patch.  Over my 
+(obviously too-polite) objections.  Most of this is reverting that, just 
+without actually admitting it.
 
-Patch to correct this follows. It fixes the problem on my test system.
+> - but 
+> it's the cleanest one and it has Rusty's ack as well.
 
-Signed-off-by: Tim Wright <timw@splhi.com>
+Not really.  As authored, I intended it as a bandaid for systems with small 
+CPU numbers.  Mike made it always on (tho __initdata on large x86 systems), 
+which IMHO is insane (2MB of initdata?).
 
---- linux-2.6.26/block/scsi_ioctl.c.orig        2008-07-27 
-17:35:49.000000000 -0700
-+++ linux-2.6.26/block/scsi_ioctl.c     2008-07-27 17:36:41.000000000 -0700
-@@ -629,7 +629,7 @@ int scsi_cmd_ioctl(struct file *file, st
-                        hdr.sbp = cgc.sense;
-                        if (hdr.sbp)
-                                hdr.mx_sb_len = sizeof(struct 
-request_sense);
--                       hdr.timeout = cgc.timeout;
-+                       hdr.timeout = jiffies_to_msecs(cgc.timeout);
-                        hdr.cmdp = ((struct cdrom_generic_command 
-__user*) arg)->cmd;
-                        hdr.cmd_len = sizeof(cgc.cmd);
+Mike: I now think the right long-term answer is Linus' dense cpumap idea + a 
+convenience allocator for cpumasks.  We sweep the kernel for all on-stack 
+vars and replace them with one or the other.  Thoughts?
 
-
-
+Rusty.
