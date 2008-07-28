@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758624AbYG1QRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758882AbYG1QSB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758624AbYG1QRq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 12:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbYG1QRh
+	id S1758882AbYG1QSB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 12:18:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758699AbYG1QRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 12:17:37 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:46305 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755278AbYG1QRg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 12:17:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=wGVjZ/kc3svs7v1rN5YED6SW/XRI0/894M+ehNIy8c8auyRpOGfDk7OPKW86gqkyqF
-         O466Tw8c/r6zbbbCAafhXCpS70v+57P0BAFYINFDCmYWYVn8sgGgSuzaVd9eisgLJeBp
-         p5zEHt8dhgYJm88HAHaN4aB3skCN/+96Apypc=
-Message-ID: <488DF119.2000004@gmail.com>
-Date: Mon, 28 Jul 2008 18:17:29 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Mon, 28 Jul 2008 12:17:49 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:32523 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758661AbYG1QRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 12:17:48 -0400
+Date: Tue, 29 Jul 2008 01:17:01 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Huang Ying <ying.huang@intel.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
+       linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: sh kexec build error
+Message-ID: <20080728161701.GA17350@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian Bunk <bunk@kernel.org>, Huang Ying <ying.huang@intel.com>,
+	Vivek Goyal <vgoyal@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080728130613.GB30612@cs181140183.pp.htv.fi> <20080728131444.GA15942@linux-sh.org> <20080728161004.GH30612@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: akpm@linux-foundation.org, linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] mm: unify pmd_free() implementation
-References: <> <1217260287-13115-1-git-send-email-righi.andrea@gmail.com> <alpine.LFD.1.10.0807280851130.3486@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807280851130.3486@nehalem.linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080728161004.GH30612@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Mon, Jul 28, 2008 at 07:10:04PM +0300, Adrian Bunk wrote:
+> On Mon, Jul 28, 2008 at 10:14:44PM +0900, Paul Mundt wrote:
+> > On Mon, Jul 28, 2008 at 04:06:13PM +0300, Adrian Bunk wrote:
+> > > Commit 3ab83521378268044a448113c6aa9a9e245f4d2f (kexec jump)
+> > > causes the following build error on sh:
+> > > 
+> > > <--  snip  -->
+> > > 
+> > > ...
+> > >   CC      kernel/kexec.o
+> > > {standard input}: Assembler messages:
+> > > {standard input}:1518: Error: offset to unaligned destination
+> > > make[2]: *** [kernel/kexec.o] Error 1
+> > > 
+> > > <--  snip  -->
+> > > 
+> > > If I understand the assembler correctly it fails at
+> > > include/asm-sh/kexec.h:59
+> > > 
+> > Indeed. This should fix it:
 > 
-> On Mon, 28 Jul 2008, Andrea Righi wrote:
->> Move multiple definitions of pmd_free() from different include/asm-* into
->> mm/util.c.
 > 
-> But this is horrible, because it forces a totally unnecessary function 
-> call for that empty function.
+> I can confirm that your patch fixes the compilation.
 > 
-> Yeah, the function will be cheap, but the call itself will not be (it's a 
-> C language barrier and basically disables optimizations around it, causing 
-> thigns like register spill/reload for no good reason).
-> 
-> 		Linus
-
-yep! clear.
-
-Ok, in this case wouldn't be better at least to define pud_free() as:
-
-static inline pud_free(struct mm_struct *mm, pmd_t *pmd)
-{
-}
-
-in include/asm-generic/pgtable-nopmd.h, just to avoid the warning
-on x86 without PAE?
-
-Thanks for the explanation,
--Andrea
+Thanks for testing, I'll roll it in with my next batch of updates.
