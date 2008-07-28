@@ -1,90 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbYG1Inq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYG1Iq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197AbYG1Inq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 04:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYG1Ini
+	id S1754830AbYG1Iq1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 04:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbYG1IqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 04:43:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42501 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750728AbYG1Inh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 04:43:37 -0400
-Date: Mon, 28 Jul 2008 10:43:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [git pull] cpus4096 fixes
-Message-ID: <20080728084314.GB30302@elte.hu>
-References: <20080727190601.GA764@elte.hu> <200807281053.58267.rusty@rustcorp.com.au>
+	Mon, 28 Jul 2008 04:46:19 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51118 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750728AbYG1IqS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 04:46:18 -0400
+Message-ID: <488D86EC.1010903@jp.fujitsu.com>
+Date: Mon, 28 Jul 2008 17:44:28 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807281053.58267.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Pierre Ossman <drzeus-list@drzeus.cx>, Alex Chiang <achiang@hp.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
+       Kristen Accardi <kristen.c.accardi@intel.com>
+Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
+References: <20080724134737.4b91f30d@mjolnir.drzeus.cx> <20080725012916.06679a6d@mjolnir.drzeus.cx> <48895BA1.1030606@jp.fujitsu.com> <200807251518.53462.jbarnes@virtuousgeek.org>
+In-Reply-To: <200807251518.53462.jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
-
-> On Monday 28 July 2008 05:06:01 Ingo Molnar wrote:
-> > Linus,
-> >
-> > Please pull the latest cpus4096-fixes git tree from:
-> >
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-> > cpus4096
-> >
-> > this fixes the cpumask_of_cpu API fallout described here:
-> >
-> >    http://lkml.org/lkml/2008/7/23/76
-> >
-> > ... and the fix is wider than i'd like it to be, so close to -rc1
+Jesse Barnes wrote:
+> On Thursday, July 24, 2008 9:50 pm Kenji Kaneshige wrote:
+>> Thank you for debug info, Pierre.
+>>
+>> According to the debugging output, five slots are detected (five
+>> slots on laptop!?) and two of them have the same physical slots
+>> number '2'. This is the reason why Pierre's machine needs
+>> 'pciehp_slot_with_bus' option.
+>>
+>> Before 2.6.26 (from 2.6.xx), pciehp did the workaround for the
+>> problem (some platform wrongly assign the same physical slot
+>> number to multiple slots) by default. But this was not a good
+>> idea because of the several reasons like follows:
+>>
+>>   - Slot name should be a physical identifier of physical slot
+>>     on the system. Using bus number as a part of slot name is
+>>     not a idea because bus number is logical number and it can
+>>     be changed.
+>>
+>>   - As Jesse explained, some hotplug slot can be handled through
+>>     several type of controllers. For example, some hotplug slot
+>>     can be handled by either acpiphp or pciehp. But those drivers
+>>     must not handle the same slot at the same time. The pci
+>>     hotplug core is checking this by checking duplicate names.
+>>     This check didn't work because pciehp had started using bus
+>>     number as a part of slot name and slot names became different
+>>     between acpiphp and pciehp.
+>>
+>> About the former, I'm ok with using bus number as a part of slot
+>> name on the problematic platform. But it should not be used on
+>> the normal platform.
+>>
+>> About the latter, IIRC, thanks to Alex's pci slot framework from
+>> 2.6.26, pci hotplug core can check if multiple drivers attempts
+>> to handle the same slot even if those drivers uses the different
+>> names.
+>>
+>> Based on my thought above, I have a following idea to remove
+>> "pciehp_slot_with_bus".
+>>
+>>   - Try to use physical slot number as a slot name, first.
+>>
+>>   - If pci_hp_register() success, no problem.
+>>
+>>   - If pci_hp_register() returns -EBUSY, that means another
+>>     hotplug driver already handling the slot. So return as error.
+>>
+>>   - If pci_hp_register() returns -EEXIST, that means there is a
+>>     existing slot with the same name. In this case, retry to
+>>     register slots with logical name (bus number + physical slot
+>>     number, or other).
+>>
+>> With this idea, slots names will become as follows on Pierre's
+>> machine.
+>>
+>> <Before 2.6.26>
+>> 0001_0001, 0002_0002, 0003_0003, 0004_0004, 0005_0005, 000d_0002
+>>
+>> <Current>
+>> 1, 2, 3, 4, 5
+>>
+>> <With my idea>
+>> 1, 2, 3, 4, 5, 000d_0002
+>>
+>>
+>> Please give me comments.
 > 
-> Sorry, it's wider because you pushed the last stupid Mike patch.  Over my 
-> (obviously too-polite) objections.  Most of this is reverting that, just 
-> without actually admitting it.
+> I think that's fine (automatically creating duplicate devices with names to 
+> differentiate them), but I think we should also try harder to avoid adding 
+> duplicates.
 > 
-> > - but it's the cleanest one and it has Rusty's ack as well.
+> In Pierre's case, and on my T61, there's only one actual hotplug slot 
+> available, but the firmware creates duplicate physical slot numbers and sets 
+> the HP_CAP bit on everything, both of which are obviously wrong (well I 
+> suppose you could pop these chips off the board, but it's not very 
+> practical).  However, afaict that "other" OS uses the _RMV method to 
+> determine whether a given slot is actually hot pluggable.  On my T61 at 
+> least, this seems to be accurate: only one of my EXP* objects has a _RMV 
+> method.
 > 
-> Not really.  As authored, I intended it as a bandaid for systems with 
-> small CPU numbers.  Mike made it always on (tho __initdata on large 
-> x86 systems), which IMHO is insane (2MB of initdata?).
+> So maybe the PCIe hotplug driver should be checking for that method when ACPI 
+> is available?  We already try to use _OSC etc., so checking for _RMV first 
+> would make sense...
+> 
 
-well, firstly, please understand that nobody is (and the least i am) 
-blaming you for anything. I was the one who picked up the patch from 
-Mike and sent it Linuswards so i'm to blame and it's me where the buck 
-stops.
+As you pointed out, the root cause might not a problem of slot naming,
+but a problem of slots detection, because pciehp driver detects multiple
+PCIe hotplug slots even thought your and Pierre's system seems to have
+only one hotplug slot. So I think we should also consider the problem
+from this view point (slot detection).
 
-I have picked up a patch that you wrote originally that solved a problem 
-that was first noticed due to crossing commits in the middle of -rc1, by 
-drivers/net/sfc/efx.c aa6ef27ea9 which was authored 10 days ago and sent 
-upstream 4 days after that - so there was no linux-next exposure where 
-we could have noticed it. The cpumask API changes were in the works for 
-months literally, and in linux-next for a long time.
- 
-That particular cpumask API breakage was dormant (read: nobody in-tree 
-used the API as an lvalue up to commit aa6ef27ea9) and only got 
-unearthed by that crossing change that made such (valid) use of the API. 
-I'd have delayed it all and would have waited for the discussion to play 
-out, hadnt it been for that (small) build breakage.
-   
-The 4 commits which were objected to by Linus were literally scrambled 
-together in haste within 4 days, to solve that lvalue problem. And i 
-Cc:-ed you on the pull request. If you disagree with or are unsure about 
-patches you send out then please do not put a Signed-off-by into them 
-but a Not-Yet-Signed-off-by. I _will_ notice that - and even if i dont 
-notice it, my scripts will ;)
+But, I think simply checking for _RMV method first is dangerous because
+I think there are many systems that doesn't implement _RMV for PCIe
+hotplug slots (at least, my system doesn't implement that. Anyway,
+I would like to look at the documents/specifications that mention _RMV
+method for determining whether a given slot is hot pluggable. Do you
+have any information about that? I think PCI Local Bus, PCI Express and
+PCI Firmware specification don't mention that. I think hot pluggable slots
+on your, Pierre's and Matthew's system are ExpressCard slots. So I guess
+ExpressCard specification might define something about this. But
+unfortunately, I don't have ExpressCard specification. Can anyone access
+ExpressCard spec?
 
-	Ingo
+Thanks,
+Kenji Kaneshige
+
+
