@@ -1,37 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbYG1Pan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbYG1Pa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756749AbYG1Pan (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 11:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYG1Pad
+	id S1758343AbYG1Pa4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 11:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754340AbYG1Pag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 11:30:33 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:26413 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751160AbYG1Pac (ORCPT
+	Mon, 28 Jul 2008 11:30:36 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:29901 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752214AbYG1Pae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 11:30:32 -0400
+	Mon, 28 Jul 2008 11:30:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ZcI3HdwKG8ghElWugk2KS70P3xo3MjyaOmq9LTgSRJd+tSa4IRTh1WR5IKAwK4TorW
-         HsGyS3Q8/2fEHe17eFGSTkx4gxu8ijcyA55s9g+veyfGiMTz2Y5W92AfjqjmD5Fc/yWb
-         0mb12gH9kb2GnmQbLdHftdLF/qmooSLHm+aoQ=
-Date: Mon, 28 Jul 2008 19:30:29 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Narendra Prasad Madanapalli <narendramind@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: 64-bit rlimits
-Message-ID: <20080728153029.GA14188@martell.zuzino.mipt.ru>
-References: <85e5430e0807280821k1ec1f990te815c8eb4de19b61@mail.gmail.com>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=QOH+6uZWnlmvPuBLpPlB/xz/j2afODAii+f4Q0TOFzNlMvY992BS5w40sk0Cyk/pLp
+         ubqGuGOPdA+nD0S2x7uJdrJZgqwPnyTJVOvmjFEFzR2Hp/Hxy4XNp9jtMNoiu8lIAYmz
+         UQ1A2nSg8qaaGng5dToVE/6+hL3fdYm47+aQI=
+Message-ID: <2c0942db0807280830n621922vdb5e9fdb6c66d48f@mail.gmail.com>
+Date: Mon, 28 Jul 2008 08:30:34 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Rik van Riel" <riel@redhat.com>
+Subject: Re: PERF: performance tests with the split LRU VM in -mm
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20080728105742.50d6514e@cuia.bos.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <85e5430e0807280821k1ec1f990te815c8eb4de19b61@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <20080724222510.3bbbbedc@bree.surriel.com>
+	 <20080728105742.50d6514e@cuia.bos.redhat.com>
+X-Google-Sender-Auth: 9e4b4c149333894e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Having in-kernel 32-bit AND 64-bit rlimits is plain wrong, sorry.
+On Mon, Jul 28, 2008 at 7:57 AM, Rik van Riel <riel@redhat.com> wrote:
+> On Thu, 24 Jul 2008 22:25:10 -0400
+> Rik van Riel <riel@redhat.com> wrote:
+>
+>>   TEST 1: dd if=/dev/sda of=/dev/null bs=1M
+>>
+>> kernel  speed    swap used
+>>
+>> 2.6.26  111MB/s  500kB
+>> -mm     110MB/s  59MB     (ouch, system noticably slower)
+>> noforce       111MB/s  128kB
+>> stream  108MB/s  0        (slight regression, not sure why yet)
+>>
+>> This patch shows that the split LRU VM in -mm has a problem
+>> with large streaming IOs: the working set gets pushed out of
+>> memory, which makes doing anything else during the big streaming
+>> IO kind of painful.
+>>
+>> However, either of the two patches posted fixes that problem,
+>> though at a slight performance penalty for the "stream" patch.
+>
+> OK, the throughput number with this test turns out not to mean
+> nearly as much as I thought.
+>
+> Switching off CPU frequency scaling, pinning the CPUs at the
+> highest speed, resulted in a throughput of only 102MB/s.
+>
+> My suspicion is that faster running code on the CPU results
+> in IOs being sent down to the device faster, resulting in
+> smaller IOs and lower throughput.
 
+Or the IOs are getting sent in a different order, and so
+coalescing/merging isn't occurring as often. Getting some
+instrumentation (something as simple as a histogram) on the IO sizes
+could be useful.
