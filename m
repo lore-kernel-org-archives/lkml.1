@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbYG1QK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757162AbYG1QLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132AbYG1QK4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 12:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbYG1QKr
+	id S1757162AbYG1QLS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 12:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbYG1QKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 12:10:47 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:57614 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751454AbYG1QKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 12:10:47 -0400
-Date: Mon, 28 Jul 2008 19:10:04 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Paul Mundt <lethal@linux-sh.org>, Huang Ying <ying.huang@intel.com>,
-       Vivek Goyal <vgoyal@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
-       linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: sh kexec build error
-Message-ID: <20080728161004.GH30612@cs181140183.pp.htv.fi>
-References: <20080728130613.GB30612@cs181140183.pp.htv.fi> <20080728131444.GA15942@linux-sh.org>
+	Mon, 28 Jul 2008 12:10:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41435 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755836AbYG1QKy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 12:10:54 -0400
+Date: Mon, 28 Jul 2008 09:06:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+       akpm@linux-foundation.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+In-Reply-To: <20080729015330.39aff7a5.sfr@canb.auug.org.au>
+Message-ID: <alpine.LFD.1.10.0807280905500.3486@nehalem.linux-foundation.org>
+References: <1217239117.11188.187.camel@pasglop> <alpine.LFD.1.10.0807280838580.3486@nehalem.linux-foundation.org> <20080729015330.39aff7a5.sfr@canb.auug.org.au>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080728131444.GA15942@linux-sh.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 10:14:44PM +0900, Paul Mundt wrote:
-> On Mon, Jul 28, 2008 at 04:06:13PM +0300, Adrian Bunk wrote:
-> > Commit 3ab83521378268044a448113c6aa9a9e245f4d2f (kexec jump)
-> > causes the following build error on sh:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> >   CC      kernel/kexec.o
-> > {standard input}: Assembler messages:
-> > {standard input}:1518: Error: offset to unaligned destination
-> > make[2]: *** [kernel/kexec.o] Error 1
-> > 
-> > <--  snip  -->
-> > 
-> > If I understand the assembler correctly it fails at
-> > include/asm-sh/kexec.h:59
-> > 
-> Indeed. This should fix it:
 
 
-I can confirm that your patch fixes the compilation.
+On Tue, 29 Jul 2008, Stephen Rothwell wrote:
+> 
+> It should be
+> 
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+> 
+> Ben seems to have copied from one of Paul's pull requests.
 
+Ok, that one worked for me.
 
-> diff --git a/include/asm-sh/processor_32.h b/include/asm-sh/processor_32.h
-> index c6583f2..0dadd75 100644
-> --- a/include/asm-sh/processor_32.h
-> +++ b/include/asm-sh/processor_32.h
-> @@ -19,7 +19,7 @@
->   * Default implementation of macro that returns current
->   * instruction pointer ("program counter").
->   */
-> -#define current_text_addr() ({ void *pc; __asm__("mova	1f, %0\n1:":"=z" (pc)); pc; })
-> +#define current_text_addr() ({ void *pc; __asm__("mova	1f, %0\n.align 2\n1:":"=z" (pc)); pc; })
->  
->  /* Core Processor Version Register */
->  #define CCN_PVR		0xff000030
+Ben, I'm sure some day you'll get it right on the first try. We're all 
+cheering for you!
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+			Linus
