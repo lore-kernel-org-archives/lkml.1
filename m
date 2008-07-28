@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756789AbYG1Oxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbYG1OyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756789AbYG1Oxs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 10:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbYG1Owv
+	id S1756904AbYG1OyK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 10:54:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYG1Ow5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 10:52:51 -0400
-Received: from styx.suse.cz ([82.119.242.94]:42451 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755341AbYG1Owu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 10:52:50 -0400
-From: David Sterba <dsterba@suse.cz>
-Subject: [PATCH 04/12] ipwireless: Remove pt_regs from interrupt handler
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, jkosina@suse.cz,
-       dsterba@suse.cz
-Date: Mon, 28 Jul 2008 16:52:49 +0200
-Message-ID: <20080728145249.13378.48420.stgit@ds.suse.cz>
-In-Reply-To: <20080728145124.13378.39300.stgit@ds.suse.cz>
-References: <20080728145124.13378.39300.stgit@ds.suse.cz>
-User-Agent: StGIT/0.14.3.173.g2e37
+	Mon, 28 Jul 2008 10:52:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58805 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752144AbYG1Ow4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 10:52:56 -0400
+Date: Mon, 28 Jul 2008 16:52:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, peterz@infradead.org,
+       mingo <mingo@redhat.com>, akpm <akpm@linux-foundation.org>,
+       gregkh <greg@kroah.com>
+Subject: Re: [PATCH] locking: fix mutex @key parameter kernel-doc notation
+Message-ID: <20080728145209.GI18144@elte.hu>
+References: <20080724165842.fbae8993.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080724165842.fbae8993.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0080]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ipwireless: Remove pt_regs from interrupt handler
 
-Signed-off-by: David Sterba <dsterba@suse.cz>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
----
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
- drivers/char/pcmcia/ipwireless/hardware.c |    2 +-
- drivers/char/pcmcia/ipwireless/hardware.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix @key parameter to mutex_init() and one of its callers.
+> 
+> Warning(linux-2.6.26-git11//drivers/base/class.c:210): No description 
+> found for parameter 'key'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-diff --git a/drivers/char/pcmcia/ipwireless/hardware.c b/drivers/char/pcmcia/ipwireless/hardware.c
-index f948791..0ccbbc1 100644
---- a/drivers/char/pcmcia/ipwireless/hardware.c
-+++ b/drivers/char/pcmcia/ipwireless/hardware.c
-@@ -1196,7 +1196,7 @@ static irqreturn_t ipwireless_handle_v2_v3_interrupt(int irq,
- 	return IRQ_HANDLED;
- }
- 
--irqreturn_t ipwireless_interrupt(int irq, void *dev_id, struct pt_regs *regs)
-+irqreturn_t ipwireless_interrupt(int irq, void *dev_id)
- {
- 	struct ipw_hardware *hw = dev_id;
- 
-diff --git a/drivers/char/pcmcia/ipwireless/hardware.h b/drivers/char/pcmcia/ipwireless/hardware.h
-index 19ce5eb..e21d23a 100644
---- a/drivers/char/pcmcia/ipwireless/hardware.h
-+++ b/drivers/char/pcmcia/ipwireless/hardware.h
-@@ -34,7 +34,7 @@ struct ipw_network;
- 
- struct ipw_hardware *ipwireless_hardware_create(void);
- void ipwireless_hardware_free(struct ipw_hardware *hw);
--irqreturn_t ipwireless_interrupt(int irq, void *dev_id, struct pt_regs *regs);
-+irqreturn_t ipwireless_interrupt(int irq, void *dev_id);
- int ipwireless_set_DTR(struct ipw_hardware *hw, unsigned int channel_idx,
- 		int state);
- int ipwireless_set_RTS(struct ipw_hardware *hw, unsigned int channel_idx,
+applied to tip/core/urgent, thanks Randy. Greg, any objections?
 
+	Ingo
