@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbYG1Klh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbYG1Ku3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102AbYG1Klh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 06:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbYG1Kl0
+	id S1755840AbYG1Ku3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 06:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbYG1KuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 06:41:26 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:56907 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753696AbYG1KlZ (ORCPT
+	Mon, 28 Jul 2008 06:50:20 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:17273 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753820AbYG1KuU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 06:41:25 -0400
-Subject: Re: [PATCH 12/30] mm: memory reserve management
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, Neil Brown <neilb@suse.de>,
-       mpm@selenic.com, cl@linux-foundation.org
-In-Reply-To: <1217241541.6331.42.camel@twins>
-References: <20080724140042.408642539@chello.nl>
-	 <20080724141530.127530749@chello.nl>
-	 <1217239564.7813.36.camel@penberg-laptop>  <1217240224.6331.32.camel@twins>
-	 <1217240994.7813.53.camel@penberg-laptop>  <1217241541.6331.42.camel@twins>
-Date: Mon, 28 Jul 2008 13:41:24 +0300
-Message-Id: <1217241684.7813.59.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 28 Jul 2008 06:50:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Ur0caP5FcBSFFoU5Qw76Q+WtVvZ2Hak4bOAn+EiCKPVm6fbtZGEuadF1emvsLT5Zd7
+         phkzfRj/Xt8H/l0lCVCvB8GWdFQaEtm94vfMuACidMx24jsxe54pf669qaNbKbl0tOjD
+         heFMFNcoQVYHFQEUBLed5FZD5GLRMBZ6uHVo8=
+Message-ID: <f19298770807280350r79b2811er79061bb4fa363369@mail.gmail.com>
+Date: Mon, 28 Jul 2008 14:50:19 +0400
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: commit a352def21a642133758b868c71bee12ab34ad5c5 broke pptp.
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <f19298770807231111p2aaa2a3eyc4bf0c084c626c9b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+Content-Disposition: inline
+References: <f19298770807231111p2aaa2a3eyc4bf0c084c626c9b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+On Wed, Jul 23, 2008 at 10:11 PM, Alexey Zaytsev
+<alexey.zaytsev@gmail.com> wrote:
+> Hello.
+>
+>
+> Pptp breaks for me on the current git (c010b2f76):
+>
+> root@nx:~# pppd call semunlim defaultroute nodetach debug
+> Couldn't set tty to PPP discipline: Invalid argument
+> Waiting for 1 child processes...
+>  script pptp 172.18.2.2 --nolaunchpppd, pid 4359
+> root@nx:~#
+>
+> It bisects to:
+> a352def21a642133758b868c71bee12ab34ad5c5 tty: Ldisc revamp
+>
+> Revetring this commit, along with
+> 7a4d29f426f17479395980ded8fa5e3bdd6d94e4
+> and 01e1abb2c27e43339b8829a2e3b1c6f53806b77a fixes the problem.
+>
 
-On Mon, 2008-07-28 at 12:39 +0200, Peter Zijlstra wrote:
-> Also, you might have noticed, I still need to do everything SLOB. The
-> last time I rewrote all this code I was still hoping Linux would 'soon'
-> have a single slab allocator, but evidently we're still going with 3 for
-> now.. :-/
-> 
-> So I guess I can no longer hide behind that and will have to bite the
-> bullet and write the SLOB bits..
-
-Oh, I don't expect SLOB to go away anytime soon. We are still trying to
-get rid of SLAB, though, but there are some TPC regressions that we
-don't have a reproducible test case for so that effort has stalled a
-bit.
-
-		Pekka
-
+Still there (c9272c4f). Could you maybe revert this for the -rc1? If not the
+problem, this would probably be the first -rc1 ever that actually
+works for me. ;)
