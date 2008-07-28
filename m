@@ -1,80 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbYG1Dsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbYG1EZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755307AbYG1Dsz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 23:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYG1Dsr
+	id S1753165AbYG1EZU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 00:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbYG1EZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 23:48:47 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:45591 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751635AbYG1Dsq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 23:48:46 -0400
-Date: Sun, 27 Jul 2008 20:44:24 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: torvalds <torvalds@linux-foundation.org>, akpm <akpm@linux-foundation.org>
-Subject: [PATCH] SubmittingPatches: add git pull & diffstat format info
-Message-Id: <20080727204424.88be784b.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Mon, 28 Jul 2008 00:25:07 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:34807 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750922AbYG1EZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 00:25:06 -0400
+Date: Sun, 27 Jul 2008 23:25:02 -0500
+From: Paul Jackson <pj@sgi.com>
+To: akpm@linux-foundation.org, Cliff Wickman <cpw@sgi.com>
+Cc: menage@google.com, linux-kernel@vger.kernel.org,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH] cpuset: a bit cleanup for scan_for_empty_cpusets()
+Message-Id: <20080727232502.0613c7ca.pj@sgi.com>
+In-Reply-To: <488D3325.8030203@cn.fujitsu.com>
+References: <488D3325.8030203@cn.fujitsu.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Andrew - could you add the following CC to this patch:
 
-Add git pull command info and diffstat summary info so that we don't
-have to search email archives for it repeatedly.
+	Cc: Cliff Wickman <cpw@sgi.com>
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/SubmittingPatches |   26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+Thanks.
 
---- linux-2.6.26-git8.orig/Documentation/SubmittingPatches
-+++ linux-2.6.26-git8/Documentation/SubmittingPatches
-@@ -528,7 +528,33 @@ See more details on the proper patch for
- references.
- 
- 
-+16) Sending "git pull" requests  (from Linus emails)
- 
-+Please write the git repo address and branch name alone on the same line
-+so that I can't even by mistake pull from the wrong branch, and so
-+that a triple-click just selects the whole thing.
-+
-+So the proper format is something along the lines of:
-+
-+	"Please pull from
-+
-+		git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
-+
-+	 to get these changes:"
-+
-+so that I don't have to hunt-and-peck for the address and inevitably
-+get it wrong (actually, I've only gotten it wrong a few times, and
-+checking against the diffstat tells me when I get it wrong, but I'm
-+just a lot more comfortable when I don't have to "look for" the right
-+thing to pull, and double-check that I have the right branch-name).
-+
-+
-+Please use "git diff -M --stat --summary" to generate the diffstat:
-+the -M enables rename detection, and the summary enables a summary of
-+new/deleted or renamed files.
-+
-+With rename detection, the statistics are rather different [...]
-+because git will notice that a fair number of the changes are renames.
- 
- -----------------------------------
- SECTION 2 - HINTS, TIPS, AND TRICKS
-
-
----
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
