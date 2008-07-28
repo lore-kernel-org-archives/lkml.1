@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758990AbYG1WjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759885AbYG1Wjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758990AbYG1WjN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 18:39:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYG1Wi6
+	id S1759885AbYG1Wjl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 18:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYG1Wjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 18:38:58 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:63603 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751423AbYG1Wi5 (ORCPT
+	Mon, 28 Jul 2008 18:39:32 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:38452 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbYG1Wjb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 18:38:57 -0400
-Date: Mon, 28 Jul 2008 23:38:28 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: lethal@linux-sh.org, Yusuke Goda <goda.yusuke@renesas.com>,
-       Magnus Damm <damm@igel.co.jp>, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] SH_AP325RXA must select I2C
-Message-ID: <20080728223828.GF8301@fluff.org.uk>
-References: <20080728201705.GC7713@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080728201705.GC7713@cs181140183.pp.htv.fi>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 28 Jul 2008 18:39:31 -0400
+Date: Mon, 28 Jul 2008 15:38:06 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Dave Jones <davej@redhat.com>,
+       Simon Arlott <simon@fire.lp0.eu>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 463 kernel developers missing!
+Message-Id: <20080728153806.cef6dba5.randy.dunlap@oracle.com>
+In-Reply-To: <20080728223241.GR9378@mit.edu>
+References: <9e4733910807281005y62dca90ar96f663908e644546@mail.gmail.com>
+	<488DFD97.7080802@simon.arlott.org.uk>
+	<9e4733910807281022v38d323c9sc7b63235824690f6@mail.gmail.com>
+	<488E0BB6.7020006@simon.arlott.org.uk>
+	<9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com>
+	<488E1147.5040803@simon.arlott.org.uk>
+	<9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com>
+	<20080728202236.GN9378@mit.edu>
+	<20080728204624.GA11581@redhat.com>
+	<9e4733910807281508v5d348d53la59eeea8e2fabb67@mail.gmail.com>
+	<20080728223241.GR9378@mit.edu>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 11:17:05PM +0300, Adrian Bunk wrote:
-> This patch fixes the following build error:
-> 
-> <--  snip  -->
-> 
-> ...
->   LD      vmlinux
-> arch/sh/boards/renesas/ap325rxa/built-in.o: In function `camera_set_capture':
-> setup.c:(.text+0x80): undefined reference to `i2c_get_adapter'
-> setup.c:(.text+0x88): undefined reference to `i2c_transfer'
-> make[1]: *** [vmlinux] Error 1
-> 
-> <--  snip  -->
-> 
-> Reported-by: Adrian Bunk <bunk@kernel.org>
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+On Mon, 28 Jul 2008 18:32:41 -0400 Theodore Tso wrote:
 
-I suggest fixing the code or moving out to something that
-depends on having I2C available.
- 
-> ---
-> cdcb22706c51f0ae44946f4c3826cc3658960eba 
-> diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-> index 7bfb0d2..6f77d0a 100644
-> --- a/arch/sh/Kconfig
-> +++ b/arch/sh/Kconfig
-> @@ -520,6 +520,7 @@ config SH_MIGOR
->  config SH_AP325RXA
->  	bool "AP-325RXA"
->  	depends on CPU_SUBTYPE_SH7723
-> +	select I2C
->  	help
->  	  Renesas "AP-325RXA" support.
->  	  Compatible with ALGO SYSTEM CO.,LTD. "AP-320A"
+> On Mon, Jul 28, 2008 at 06:08:33PM -0400, Jon Smirl wrote:
+> > I didn't do this to measure statistics, I did it because I was writing
+> > a script and the script was getting garbage for input. It just had the
+> > side effect of cleaning up the statistics.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Out of curiosity, what is your script trying to do?
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
 
-  'a smiley only costs 4 bytes'
+Speaking of missing developers, I'd be more interested in whatever
+happened to Michal Piotrowski, Satyam Sharma, et al...
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
