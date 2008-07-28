@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758383AbYG1Wbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbYG1WdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758383AbYG1Wbv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 18:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYG1Wbm
+	id S1758863AbYG1WdR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 18:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYG1WdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 18:31:42 -0400
-Received: from outbound-mail-155.bluehost.com ([67.222.39.35]:54395 "HELO
-	outbound-mail-155.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751270AbYG1Wbm (ORCPT
+	Mon, 28 Jul 2008 18:33:07 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:59207 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752107AbYG1WdG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 18:31:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=AhSvnZUsNKn1JdBQnrG3xvsx881jhZjsNFjL6QGfvieFjULH1IkNomPj2pYEptBy92irCsRJL2UYGmaNsafy+H/FMTZsgqR2Eze6pp07M/cc3lbFYR6tmONz5TCRtYdW;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [bug] PCI hotplug, ibmphp_access_ebda: WARNING: at arch/x86/mm/ioremap.c:182 __ioremap_caller+0x2d1/0x340()
-Date: Mon, 28 Jul 2008 15:31:32 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, greg@kroah.com
-References: <20080726131512.GA29472@elte.hu>
-In-Reply-To: <20080726131512.GA29472@elte.hu>
+	Mon, 28 Jul 2008 18:33:06 -0400
+Date: Mon, 28 Jul 2008 18:32:41 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Dave Jones <davej@redhat.com>, Simon Arlott <simon@fire.lp0.eu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: 463 kernel developers missing!
+Message-ID: <20080728223241.GR9378@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jon Smirl <jonsmirl@gmail.com>, Dave Jones <davej@redhat.com>,
+	Simon Arlott <simon@fire.lp0.eu>,
+	lkml <linux-kernel@vger.kernel.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>
+References: <9e4733910807281005y62dca90ar96f663908e644546@mail.gmail.com> <488DFD97.7080802@simon.arlott.org.uk> <9e4733910807281022v38d323c9sc7b63235824690f6@mail.gmail.com> <488E0BB6.7020006@simon.arlott.org.uk> <9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com> <488E1147.5040803@simon.arlott.org.uk> <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com> <20080728202236.GN9378@mit.edu> <20080728204624.GA11581@redhat.com> <9e4733910807281508v5d348d53la59eeea8e2fabb67@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807281531.32640.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <9e4733910807281508v5d348d53la59eeea8e2fabb67@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, July 26, 2008 6:15 am Ingo Molnar wrote:
-> FYI, -tip testing triggered the new warning below on a testbox. I
-> suspect it's related to recent commits in drivers/pci/hotplug/.
-> I'm wondering, why does a driver map the EBDA? That's a really lowlevel
-> thing.
+On Mon, Jul 28, 2008 at 06:08:33PM -0400, Jon Smirl wrote:
+> I didn't do this to measure statistics, I did it because I was writing
+> a script and the script was getting garbage for input. It just had the
+> side effect of cleaning up the statistics.
 
-AFAICT, this driver digs around in there for hotplug controller configuration 
-(cc'ing Greg since he appears to be one of the original authors).  It's a 
-custom platform driver too, that may be the only method available there.  Is 
-there a shadow copy of the EDBA somewhere we should be using instead?
+Out of curiosity, what is your script trying to do?
 
-Jesse
+       		       	       	      	     	- Ted
