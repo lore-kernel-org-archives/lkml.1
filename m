@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759682AbYG1Qyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759895AbYG1Qzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759682AbYG1Qyw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 12:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYG1Qyn
+	id S1759895AbYG1Qzk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 12:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYG1Qza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 12:54:43 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:51508 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751660AbYG1Qym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 12:54:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	b=II/Pg8U7vaKVI3qgt8g3v+VLci7Pp6XvKqlGiPk0gdd7HvGKlS9STVm8ipLkwS1BeIkHjeeIJP6lEPJHdNu9aVYcgwSyqPTFmHgy6qoXJMhNMqfmH44AZDgBttLmIz9M;
-Message-ID: <488DF9CF.8020408@simon.arlott.org.uk>
-Date: Mon, 28 Jul 2008 17:54:39 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
+	Mon, 28 Jul 2008 12:55:30 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44089 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752270AbYG1Qza (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 12:55:30 -0400
+Date: Mon, 28 Jul 2008 09:47:47 -0700
+From: Greg KH <greg@kroah.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       David Brownell <david-b@pacbell.net>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH] usb: move ehci reg def
+Message-ID: <20080728164747.GA31120@kroah.com>
+References: <200807231252.20371.yhlu.kernel@gmail.com> <200807231739.39620.yhlu.kernel@gmail.com> <200807241727.57692.yhlu.kernel@gmail.com> <200807241757.23441.david-b@pacbell.net> <86802c440807241914o3e09a1a2la1cf9345b4b0e52b@mail.gmail.com> <20080726141813.GG4401@elte.hu> <20080728154042.GC30206@kroah.com> <20080728161102.GA18860@elte.hu>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-References: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
-In-Reply-To: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080728161102.GA18860@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28/07/08 15:45, Jon Smirl wrote:
-> Here's a new .mailmap file for the kernel that cleans up the horrible
-> mess of names and email addresses in the log.  To use it put it at the
-> root of your kernel tree and type 'git shortlog'. Before the clean up
-> there were 4,284 developers, after 3,821. There are 5,051 unique
-> emails.
+On Mon, Jul 28, 2008 at 06:11:02PM +0200, Ingo Molnar wrote:
+> * Greg KH <greg@kroah.com> wrote:
+> > I have no objection for you keeping this in your tree, as that 
+> > probably makes it easier.
 > 
-> The mailmap file contains all email addresses that have been used to
-> submit patches to the kernel. Don't freak out about your email address
-> being in the file, if it is in the file it is already in Google since
-> the kernel log is already in Google.
+> okay - i just wanted to keep your options maximally flexible, it's code 
+> you maintain, we are just trespassing :)
+> 
+> the commit will eventually show up in linux-next via tip/auto-x86-next. 
+> 
+> Given that it's all pretty uncontroversial, we might as well send it 
+> upstream after -rc1 - this is an isolated debug feature. (and a much 
+> desired one to begin with. We could even get printks out of terminally 
+> hung suspend/resume laptops this way i think!)
+> 
+> Any objections to that course of action?
 
-Just because anyone can grep the kernel log for email addresses [to 
-send spam to], doesn't mean that you need to do it for them.
+No objections from me at all, I would like to see this code finaly get
+moved into the tree.
 
-Please read git-shortlog(1) and then remove me from this file because 
-it won't change anything.
+thanks for doing this.
 
--- 
-Simon Arlott
+greg k-h
