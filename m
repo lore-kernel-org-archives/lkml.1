@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbYG1K0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbYG1K2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755561AbYG1K0m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 06:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYG1K0d
+	id S1756037AbYG1K2e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 06:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYG1K21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 06:26:33 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60798 "EHLO mx2.suse.de"
+	Mon, 28 Jul 2008 06:28:27 -0400
+Received: from mail.suse.de ([195.135.220.2]:42540 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752593AbYG1K0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 06:26:32 -0400
-Date: Mon, 28 Jul 2008 12:26:29 +0200
+	id S1752593AbYG1K20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 06:28:26 -0400
+Date: Mon, 28 Jul 2008 12:28:25 +0200
 From: Karsten Keil <kkeil@suse.de>
-To: David Miller <davem@davemloft.net>
-Cc: marcel@holtmann.org, linux-kernel@vger.kernel.org, sfr@canb.auug.org.au,
-       linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: mISDN still breaking the allmodconfig build...
-Message-ID: <20080728102629.GA25509@pingi.kke.suse.de>
-References: <20080727.170235.97056809.davem@davemloft.net> <93120C4B-D2F4-4479-806B-2141AC3DC607@holtmann.org> <20080727.180736.74131389.davem@davemloft.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Remove deprecated virt_to_bus()
+Message-ID: <20080728102825.GB25509@pingi.kke.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080727.180736.74131389.davem@davemloft.net>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.54-0.2.5-smp x86_64
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 27, 2008 at 06:07:36PM -0700, David Miller wrote:
-> From: Marcel Holtmann <marcel@holtmann.org>
-> Date: Mon, 28 Jul 2008 03:03:04 +0200
-> 
-> > > More fallout from the premature mISDN driver merge:
-> > >
-> > > drivers/isdn/hardware/mISDN/hfcmulti.c:5255:2: error: #error "not  
-> > > running on big endian machines now"
-> > 
-> > is that only the HFC driver or the whole mISDN stack?
-> > 
-> > I know that the two old ISDN stacks where really bad on big endian,  
-> > but my assumption was that we did sort this out in the end.
-> 
-> One of the two mISDN drivers uses the deprecated virt_to_bus()
-> interface for handling DMA addresses (that doesn't even work on many
-> x86 systems these days) and the other mISDN driver gives the above
-> big-endian compile time error.
-> 
+Please pull from git://git.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6.git master
 
-OK this was forgotten to change in a printk from the old driver, the new allocation
-code should be OK it use pci_alloc_consistent().
-I think it should simple use the returned dmahandle in this printk.
+This was a forgotten item in a printk from the old driver,
+the DMA allocation use already the new interface.
+
+Signed-off-by: Karsten Keil <kkeil@suse.de>
+---
+ drivers/isdn/hardware/mISDN/Kconfig  |    1 -
+ drivers/isdn/hardware/mISDN/hfcpci.c |    3 +--
+ 2 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/isdn/hardware/mISDN/Kconfig b/drivers/isdn/hardware/mISDN/Kconfig
+index 9cd5f5f..1479348 100644
+--- a/drivers/isdn/hardware/mISDN/Kconfig
++++ b/drivers/isdn/hardware/mISDN/Kconfig
+@@ -7,7 +7,6 @@ config MISDN_HFCPCI
+ 	tristate "Support for HFC PCI cards"
+ 	depends on MISDN
+ 	depends on PCI
+-	depends on VIRT_TO_BUS
+ 	help
+ 	  Enable support for cards with Cologne Chip AG's
+           HFC PCI chip.
+diff --git a/drivers/isdn/hardware/mISDN/hfcpci.c b/drivers/isdn/hardware/mISDN/hfcpci.c
+index 9179685..3231814 100644
+--- a/drivers/isdn/hardware/mISDN/hfcpci.c
++++ b/drivers/isdn/hardware/mISDN/hfcpci.c
+@@ -1988,8 +1988,7 @@ setup_hw(struct hfc_pci *hc)
+ 	printk(KERN_INFO
+ 		"HFC-PCI: defined at mem %#lx fifo %#lx(%#lx) IRQ %d HZ %d\n",
+ 		(u_long) hc->hw.pci_io, (u_long) hc->hw.fifos,
+-		(u_long) virt_to_bus(hc->hw.fifos),
+-		hc->irq, HZ);
++		(u_long) hc->hw.dmahandle, hc->irq, HZ);
+ 	/* enable memory mapped ports, disable busmaster */
+ 	pci_write_config_word(hc->pdev, PCI_COMMAND, PCI_ENA_MEMIO);
+ 	hc->hw.int_m2 = 0;
+-- 
+1.5.6.4
+
 
 -- 
 Karsten Keil
