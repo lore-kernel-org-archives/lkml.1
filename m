@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757843AbYG1O63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbYG1PAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757843AbYG1O63 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 10:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbYG1O6S
+	id S1756967AbYG1PAF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 11:00:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYG1O7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 10:58:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36094 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752051AbYG1O6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 10:58:17 -0400
-Date: Mon, 28 Jul 2008 10:57:42 -0400
-From: Rik van Riel <riel@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: Re: PERF: performance tests with the split LRU VM in -mm
-Message-ID: <20080728105742.50d6514e@cuia.bos.redhat.com>
-In-Reply-To: <20080724222510.3bbbbedc@bree.surriel.com>
-References: <20080724222510.3bbbbedc@bree.surriel.com>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 28 Jul 2008 10:59:54 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:27769 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751717AbYG1O7x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 10:59:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=B3DyTD2y/lk1LXI3nfa0Tvx3u5xHsMKNBTlCRTX1RD2W8ahQWdRleGq4YADq9wRZki
+         Lj3a3DERKS5zGMPUhojPCHUW1u1sulaeZ0XqPaW4BvULJOnhbQ/qoTINopPF44fk7uyY
+         aHYdpmvJqj1g6M+lRGa7Y/rg/WNSHF50iGPzs=
+Message-ID: <5d6222a80807280759x5b2511c5t1743ff2a63046429@mail.gmail.com>
+Date: Mon, 28 Jul 2008 11:59:52 -0300
+From: "Glauber Costa" <glommer@gmail.com>
+To: "Glauber Costa" <gcosta@redhat.com>
+Subject: Re: [Bisected] Regression: Hang on boot in schedule_timeout_interruptible during ACPI init on SMP
+Cc: "Andrew Drake" <zappacky.lists@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080728141533.GA3697@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4887B4D5.1050306@gmail.com>
+	 <5d6222a80807231731u41f9fb81w2796b3db1a5920e6@mail.gmail.com>
+	 <488B7297.8090405@gmail.com> <20080728141533.GA3697@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Jul 2008 22:25:10 -0400
-Rik van Riel <riel@redhat.com> wrote:
+On Mon, Jul 28, 2008 at 11:15 AM, Glauber Costa <gcosta@redhat.com> wrote:
+> On Sat, Jul 26, 2008 at 02:53:11PM -0400, Andrew Drake wrote:
+>> I just discovered; the nolapic_timer parameter causes the problem to go
+>> away entirely. It doesn't seem to have any nasty side effects, so I'm
+>> content to use it. Looking at the dmesg logs, however, I notice that the
+>> "last-good" kernel doesn't even try to use the LAPIC timer, but the
+>> "first-bad" does. I wasn't able to track down any discernible reason.
+> fine, but if you can still help us on this, it would be awesome ;-)
+>
+> Actually, there is another nasty bug that depends, at least by a first
+> impression, on the lapic timer. I'm planning to save a time today to
+> look further on your problem.
+>>
+>> On a side note, that's the first I've ever heard/seen of that parameter,
+>> I tried it because I noticed the problems started when the LAPIC timer
+>> was successfully set up. I doubt the average user would notice this (you
+>> can't even tell unless you pass apic=debug), so I doubt many others would
+>> discover this fix/workaround.
+>>
+>> The question remains, though, why did it go from "don't try" to "try"?
+>
+> Probably because the order of initialization of smp entities changed a
+> bit during this series. Probably the lapic timer is now initialized a
+> little bit earlier, before we have the chance to mark it as bad.
+>
+> If you can send me at least your dmesgs and cpuinfo, it would be really really
+> awesome.
 
->   TEST 1: dd if=/dev/sda of=/dev/null bs=1M
-> 
-> kernel  speed    swap used
-> 
-> 2.6.26  111MB/s  500kB
-> -mm     110MB/s  59MB     (ouch, system noticably slower)
-> noforce	111MB/s  128kB
-> stream  108MB/s  0        (slight regression, not sure why yet)
-> 
-> This patch shows that the split LRU VM in -mm has a problem
-> with large streaming IOs: the working set gets pushed out of
-> memory, which makes doing anything else during the big streaming
-> IO kind of painful.
-> 
-> However, either of the two patches posted fixes that problem,
-> though at a slight performance penalty for the "stream" patch.
+Just saw you've already done it.
 
-OK, the throughput number with this test turns out not to mean
-nearly as much as I thought.
+Will look through it.
 
-Switching off CPU frequency scaling, pinning the CPUs at the
-highest speed, resulted in a throughput of only 102MB/s.
+many thanks
+>> Thanks,
+>>
+>> Andrew
+>>
+>
 
-My suspicion is that faster running code on the CPU results
-in IOs being sent down to the device faster, resulting in
-smaller IOs and lower throughput.
 
-This would be promising for the "stream" patch, which makes
-choosing between the two patches harder :)
-
-Andrew, what is your preference between:
-	http://lkml.org/lkml/2008/7/15/465
-and
-	http://marc.info/?l=linux-mm&m=121683855132630&w=2
 
 -- 
-All Rights Reversed
+Glauber Costa.
+"Free as in Freedom"
+http://glommer.net
+
+"The less confident you are, the more serious you have to act."
