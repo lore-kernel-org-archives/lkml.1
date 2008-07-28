@@ -1,91 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759874AbYG1Ui0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbYG1Uls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759874AbYG1Ui0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 16:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbYG1UiR
+	id S1758264AbYG1Uls (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 16:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbYG1Ulk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 16:38:17 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:53668 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752979AbYG1UiQ (ORCPT
+	Mon, 28 Jul 2008 16:41:40 -0400
+Received: from ackle.nomi.cz ([81.31.33.35]:47971 "EHLO ackle.nomi.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751752AbYG1Ulj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 16:38:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ToV7erUVHp9ptvM4JJ/MX7eTAzNPRTVoGevBfZSm55dX6PaJw9bWmF8BDHOtlk6KR1
-         6oSlLdsf6qQHwxuquB/pZCMIx9wdhEhfodK9kpksGqZSueiMrRlDJDexDF0ym0nKfOds
-         ch8F2BioDuYJvK08L4CHYvTjJgaejtD4YZ2mE=
-Message-ID: <9e4733910807281338o229e7736gb164ad01ff0b2448@mail.gmail.com>
-Date: Mon, 28 Jul 2008 16:38:15 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Theodore Tso" <tytso@mit.edu>, "Jon Smirl" <jonsmirl@gmail.com>,
-       "Simon Arlott" <simon@fire.lp0.eu>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-In-Reply-To: <20080728202236.GN9378@mit.edu>
+	Mon, 28 Jul 2008 16:41:39 -0400
+Date: Mon, 28 Jul 2008 22:41:36 +0200
+From: =?iso-8859-2?Q?Tom=E1=B9_Janou=B9ek?= <tomi@nomi.cz>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org,
+       Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: [PATCH] rtc-dev: stop periodic interrupts on device release
+Message-ID: <20080728204136.GA6683@nomi.cz>
+References: <20080726154617.GA5613@notes.lisk.in> <200807261350.55524.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-References: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
-	 <488DF9CF.8020408@simon.arlott.org.uk>
-	 <9e4733910807281005y62dca90ar96f663908e644546@mail.gmail.com>
-	 <488DFD97.7080802@simon.arlott.org.uk>
-	 <9e4733910807281022v38d323c9sc7b63235824690f6@mail.gmail.com>
-	 <488E0BB6.7020006@simon.arlott.org.uk>
-	 <9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com>
-	 <488E1147.5040803@simon.arlott.org.uk>
-	 <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com>
-	 <20080728202236.GN9378@mit.edu>
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <200807261350.55524.david-b@pacbell.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/28/08, Theodore Tso <tytso@mit.edu> wrote:
-> On Mon, Jul 28, 2008 at 03:00:13PM -0400, Jon Smirl wrote:
->  > Other people aren't perfect, I've found over 1,000 typos in the those
->  > names and emails. We need a validation mechanism.
->  >
->
->
-> You keep using the word "need"; I do not think it means what you think
->  it does.  :-)
->
->  Seriously, why is it so important?  It's a nice to have, and I
->  recognize that you've spent a bunch of time on it.  But if the goal is
->  to get better statistics, and in exchange we forcibly map all Mark
->  Browns to one e-mail address, and/or force them to all adopt middle
->  initials (what if there are two Dan Smith's that don't have middle
->  initials) just for the convenience of your statistics gathering, I
->  would gently suggest to you that you've forgotten which is the tail,
->  and which is the dog.
+Hello,
 
-There are over 1,000 typos in the logs. No validation being done on
-the names/addresses in the logs. Many email addresses aren't
-syntactically valid. Why not put some checks in place to try and clean
-this up? Signed-off-by is worthless if it is full of garbage.
+thanks for your insight about other RTC drivers. I have updated the
+description somewhat.
 
-The are two Mark Browns in the file:
-Mark Brown <broonie@opensource.wolfsonmicro.com>
-Mark Brown <broonie@sirena.org.uk>
+On Sat, Jul 26, 2008 at 01:50:55PM -0700, David Brownell wrote:
+> Hmm, I'd think that something like an rtc_dev_ioctl(PIE_OFF) would be
+> preferable here ... so that it's not just UIE_EMUL logic which turns
+> off the one-per-second update IRQs.
 
-I don't know if these are two different people or one person with two
-emails. But the file doesn't force that decision. It's git shortlog
-that is combining them.
+I think it'd be more consistent if the framework only called the rtc api
+functions. Like: if the driver doesn't export an op for it and handles it in
+the ioctl op, it itself should be responsible to clear the irq in its release
+op. (I know there's no op for UIE, so we'd better add it instead of calling
+ioctl in the framework's release function.) More explanation in the updated
+patch desc.
 
-The file serves two purposes:
-Map people using multiple email aliases a human single name, It can be
-any name they choose. Existing file already does this but the list is
-not complete.
-Enumerate all email addresses used in the log so that it is possible
-to tell when a new address is encountered. Allows simple validation to
-be implemented.
+---
 
-In it's current form it doesn't indicate which aliases is the
-developer's currently active one.
+From: Tomas Janousek <tomi@nomi.cz>
+Date: Sat, 26 Jul 2008 16:23:36 +0100
+Subject: [PATCH] rtc-dev: stop periodic interrupts on device release
+
+Solves http://bugzilla.kernel.org/show_bug.cgi?id=11127
+
+The old rtc.c driver did it and some drivers (like rtc-sh) do it in their
+release function, though they should not -- because they should provide the
+irq_set_state op and the rtc framework itself should care about it. This patch
+makes it do so.
+
+I am aware that some drivers, like rtc-sh, handle userspace PIE sets in their
+ioctl op (instead of having the framework call the op), exporting the
+irq_set_state op at the same time. The logic in rtc_irq_set_state should make
+sure it doesn't matter and the driver should not need to care stopping periodic
+interrupts in its release routine any more.
+
+The correct way, in my opinion, should be this:
+1) The driver provides the irq_set_state op and does not care closing the
+   interrupts in its release op.
+2) If the driver does not provide the op and handles PIE in the ioctl op, it's
+   reponsible for closing them in its release op.
+3) Something similar for other IRQs, like UIE -- if there's no in-kernel API
+   like irq_set_state, handle it in ioctl and release ops. The framework will
+   be responsible either for everything or for nothing.
+
+Signed-off-by: Tomas Janousek <tomi@nomi.cz>
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/rtc/rtc-dev.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/rtc/rtc-dev.c b/drivers/rtc/rtc-dev.c
+index 90dfa0d..6fafa62 100644
+--- a/drivers/rtc/rtc-dev.c
++++ b/drivers/rtc/rtc-dev.c
+@@ -408,6 +408,8 @@ static int rtc_dev_release(struct inode *inode, struct file *file)
+ #ifdef CONFIG_RTC_INTF_DEV_UIE_EMUL
+        clear_uie(rtc);
+ #endif
++       rtc_irq_set_state(rtc, NULL, 0);
++
+        if (rtc->ops->release)
+                rtc->ops->release(rtc->dev.parent);
+ 
+-- 
+1.5.6
+
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Tomá¹ Janou¹ek, a.k.a. Liskni_si, http://work.lisk.in/
