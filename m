@@ -1,78 +1,371 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760084AbYG1WxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760207AbYG1Wxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760084AbYG1WxG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 18:53:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYG1Wwx
+	id S1760207AbYG1Wxt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 18:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbYG1Wxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 18:52:53 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:58073 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752752AbYG1Wwv (ORCPT
+	Mon, 28 Jul 2008 18:53:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:27615 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751307AbYG1Wxi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 18:52:51 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Simon Horman <horms@verge.net.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Muli Ben-Yehuda <muli@il.ibm.com>, Tony Luck <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, Chandru <chandru@in.ibm.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Terry Loftin <terry.loftin@hp.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org
-References: <20080727234529.GM6175@verge.net.au>
-	<20080728015117.GA12055@verge.net.au>
-	<20080728024526.GB3334@verge.net.au>
-	<20080728034007.GA30450@verge.net.au>
-	<20080728211025.GA9985@redhat.com>
-Date: Mon, 28 Jul 2008 15:47:41 -0700
-In-Reply-To: <20080728211025.GA9985@redhat.com> (Vivek Goyal's message of
-	"Mon, 28 Jul 2008 17:10:25 -0400")
-Message-ID: <m1vdypfwxe.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 28 Jul 2008 18:53:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=KxQolgG+cOOGXtqN56fwLr5fVK/21H3LHveQOL3PhxzIC8WCnwsgny1QZMzw9S1EwA
+         d7dNkfwuPYgbJo6G6DMH+54Qa1am9Ia1fGsswLdvdz4FB01/lxAklO8ff8Ww+REdqlEb
+         byCk+5bnWYWiIAhtSsIjeAzGLO4WbNi8XB6SQ=
+Message-ID: <488E4DEB.5010705@gmail.com>
+Date: Tue, 29 Jul 2008 00:53:31 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Vivek Goyal <vgoyal@redhat.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 1/5] Move elfcorehdr_addr out of vmcore.c (Was: Re: [patch] crashdump: fix undefined reference to `elfcorehdr_addr')
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, kosaki.motohiro@jp.fujitsu.com,
+       torvalds@linux-foundation.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/1] mm: unify pmd_free() and __pmd_free_tlb() implementation
+References: <alpine.LFD.1.10.0807280851130.3486@nehalem.linux-foundation.org>	<488DF119.2000004@gmail.com>	<20080729012656.566F.KOSAKI.MOTOHIRO@jp.fujitsu.com>	<488DFFB0.1090107@gmail.com> <20080728133030.8b29fa5a.akpm@linux-foundation.org> <488E3020.1040701@goop.org>
+In-Reply-To: <488E3020.1040701@goop.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal <vgoyal@redhat.com> writes:
+Jeremy Fitzhardinge wrote:
+> Andrew Morton wrote:
+>> I can second that.  See
+>> http://userweb.kernel.org/~akpm/mmotm/broken-out/include-asm-generic-pgtable-nopmdh-macros-are-noxious-reason-435.patch
+>>
+>> Ingo cruelly ignored it.  Probably he's used to ignoring the comit
+>> storm which I send in his direction - I'll need to resend it sometime.
+>>
+>> I'd consider that patch to be partial - we should demacroize the
+>> surrounding similar functions too.  But that will require a bit more
+>> testing.
+> 
+> Its immediate neighbours should be easy enough (pmd_alloc_one, 
+> __pmd_free_tlb), but any of the ones involving pmd_t risk #include hell 
+> (though the earlier references to pud_t in inline functions suggest it 
+> will work).  And pmd_addr_end is just ugly.
+> 
+>     J
+> 
 
-> Hi All,
->
-> How does following series of patches look like. I have moved
-> elfcorehdr_addr out of vmcore.c and pushed it to arch dependent section 
-> of crash dump to make sure that it can be worked with even when
-> CONFIG_PROC_VMCORE is disabled and CONFIG_CRASH_DUMP is enabled.
->
-> I tested it on x86_64. Compile tested it on i386 and ppc64. ia64 and
-> sh versions are completely untested.
+ok, let's start with the easiest: pmd_free() and __pmd_free_tlb().
 
-Given the current state of the code:
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+Following another attempt to unify the implementations using inline
+functions. It seems to build fine on x86 (pae / non-pae) and on x86_64.
+This is an RFC patch right now, not for inclusion (just asking if it
+could be a reasonable approach or not). And in any case this would need
+more testing.
 
-To process a kernel crash dump we pass the kernel elfcorehdr option, so testing
-to see if it was passed seems reasonable.
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+---
+ arch/sparc/include/asm/pgalloc_64.h |    1 +
+ include/asm-alpha/pgalloc.h         |    1 +
+ include/asm-arm/pgalloc.h           |    1 -
+ include/asm-frv/pgalloc.h           |    2 --
+ include/asm-generic/pgtable-nopmd.h |   19 +++++++++++++++++--
+ include/asm-ia64/pgalloc.h          |    1 +
+ include/asm-m32r/pgalloc.h          |    2 --
+ include/asm-m68k/motorola_pgalloc.h |    3 ++-
+ include/asm-m68k/sun3_pgalloc.h     |    7 -------
+ include/asm-mips/pgalloc.h          |   12 +-----------
+ include/asm-parisc/pgalloc.h        |    2 +-
+ include/asm-powerpc/pgalloc-32.h    |    2 --
+ include/asm-powerpc/pgalloc-64.h    |    1 +
+ include/asm-s390/pgalloc.h          |    1 -
+ include/asm-sh/pgalloc.h            |    8 --------
+ include/asm-um/pgalloc.h            |    1 +
+ include/asm-x86/pgalloc.h           |    2 ++
+ 17 files changed, 28 insertions(+), 38 deletions(-)
 
-In general I think this method of handling the problems with kdump is
-too brittle to live, but in the case of iommus we certainly need to do something
-different, and unfortunately iommus were not common on x86 when the original code
-was merged so we have not handled them well.
-
-Eric
+diff --git a/arch/sparc/include/asm/pgalloc_64.h b/arch/sparc/include/asm/pgalloc_64.h
+index 5bdfa2c..17cf9f5 100644
+--- a/arch/sparc/include/asm/pgalloc_64.h
++++ b/arch/sparc/include/asm/pgalloc_64.h
+@@ -35,6 +35,7 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ {
+ 	quicklist_free(0, NULL, pmd);
+ }
++#define pmd_free pmd_free
+ 
+ static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
+ 					  unsigned long address)
+diff --git a/include/asm-alpha/pgalloc.h b/include/asm-alpha/pgalloc.h
+index fd09015..ba68ca2 100644
+--- a/include/asm-alpha/pgalloc.h
++++ b/include/asm-alpha/pgalloc.h
+@@ -49,6 +49,7 @@ pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ {
+ 	free_page((unsigned long)pmd);
+ }
++#define pmd_free pmd_free
+ 
+ extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
+ 
+diff --git a/include/asm-arm/pgalloc.h b/include/asm-arm/pgalloc.h
+index 163b030..c1da401 100644
+--- a/include/asm-arm/pgalloc.h
++++ b/include/asm-arm/pgalloc.h
+@@ -27,7 +27,6 @@
+  * Since we have only two-level page tables, these are trivial
+  */
+ #define pmd_alloc_one(mm,addr)		({ BUG(); ((pmd_t *)2); })
+-#define pmd_free(mm, pmd)		do { } while (0)
+ #define pgd_populate(mm,pmd,pte)	BUG()
+ 
+ extern pgd_t *get_pgd_slow(struct mm_struct *mm);
+diff --git a/include/asm-frv/pgalloc.h b/include/asm-frv/pgalloc.h
+index 971e6ad..790b9ff 100644
+--- a/include/asm-frv/pgalloc.h
++++ b/include/asm-frv/pgalloc.h
+@@ -61,8 +61,6 @@ do {							\
+  * (In the PAE case we free the pmds as part of the pgd.)
+  */
+ #define pmd_alloc_one(mm, addr)		({ BUG(); ((pmd_t *) 2); })
+-#define pmd_free(mm, x)			do { } while (0)
+-#define __pmd_free_tlb(tlb,x)		do { } while (0)
+ 
+ #endif /* CONFIG_MMU */
+ 
+diff --git a/include/asm-generic/pgtable-nopmd.h b/include/asm-generic/pgtable-nopmd.h
+index 087325e..7bf330e 100644
+--- a/include/asm-generic/pgtable-nopmd.h
++++ b/include/asm-generic/pgtable-nopmd.h
+@@ -5,6 +5,9 @@
+ 
+ #include <asm-generic/pgtable-nopud.h>
+ 
++struct mm_struct;
++struct mmu_gather;
++
+ #define __PAGETABLE_PMD_FOLDED
+ 
+ /*
+@@ -54,8 +57,20 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
+  * inside the pud, so has no extra memory associated with it.
+  */
+ #define pmd_alloc_one(mm, address)		NULL
+-#define pmd_free(mm, x)				do { } while (0)
+-#define __pmd_free_tlb(tlb, x)			do { } while (0)
++
++#ifndef pmd_free
++static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
++{
++}
++#define pmd_free pmd_free
++#endif
++
++#ifndef __pmd_free_tlb
++static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
++{
++}
++#define __pmd_free_tlb __pmd_free_tlb
++#endif
+ 
+ #undef  pmd_addr_end
+ #define pmd_addr_end(addr, end)			(end)
+diff --git a/include/asm-ia64/pgalloc.h b/include/asm-ia64/pgalloc.h
+index b9ac1a6..6c9575c 100644
+--- a/include/asm-ia64/pgalloc.h
++++ b/include/asm-ia64/pgalloc.h
+@@ -66,6 +66,7 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ {
+ 	quicklist_free(0, NULL, pmd);
+ }
++#define pmd_free pmd_free
+ 
+ #define __pmd_free_tlb(tlb, pmd)	pmd_free((tlb)->mm, pmd)
+ 
+diff --git a/include/asm-m32r/pgalloc.h b/include/asm-m32r/pgalloc.h
+index f11a2b9..f7ecc72 100644
+--- a/include/asm-m32r/pgalloc.h
++++ b/include/asm-m32r/pgalloc.h
+@@ -67,8 +67,6 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
+  */
+ 
+ #define pmd_alloc_one(mm, addr)		({ BUG(); ((pmd_t *)2); })
+-#define pmd_free(mm, x)			do { } while (0)
+-#define __pmd_free_tlb(tlb, x)		do { } while (0)
+ #define pgd_populate(mm, pmd, pte)	BUG()
+ 
+ #define check_pgt_cache()	do { } while (0)
+diff --git a/include/asm-m68k/motorola_pgalloc.h b/include/asm-m68k/motorola_pgalloc.h
+index d08bf62..1dc96c7 100644
+--- a/include/asm-m68k/motorola_pgalloc.h
++++ b/include/asm-m68k/motorola_pgalloc.h
+@@ -72,12 +72,13 @@ static inline int pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ {
+ 	return free_pointer_table(pmd);
+ }
++#define pmd_free pmd_free
+ 
+ static inline int __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
+ {
+ 	return free_pointer_table(pmd);
+ }
+-
++#define __pmd_free_tlb __pmd_free_tlb
+ 
+ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+ {
+diff --git a/include/asm-m68k/sun3_pgalloc.h b/include/asm-m68k/sun3_pgalloc.h
+index d4c83f1..795e3c0 100644
+--- a/include/asm-m68k/sun3_pgalloc.h
++++ b/include/asm-m68k/sun3_pgalloc.h
+@@ -75,13 +75,6 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd, pgtable_t page
+ }
+ #define pmd_pgtable(pmd) pmd_page(pmd)
+ 
+-/*
+- * allocating and freeing a pmd is trivial: the 1-entry pmd is
+- * inside the pgd, so has no extra memory associated with it.
+- */
+-#define pmd_free(mm, x)			do { } while (0)
+-#define __pmd_free_tlb(tlb, x)		do { } while (0)
+-
+ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+ {
+         free_page((unsigned long) pgd);
+diff --git a/include/asm-mips/pgalloc.h b/include/asm-mips/pgalloc.h
+index 1275831..79a4182 100644
+--- a/include/asm-mips/pgalloc.h
++++ b/include/asm-mips/pgalloc.h
+@@ -104,17 +104,6 @@ do {							\
+ 	tlb_remove_page((tlb), pte);			\
+ } while (0)
+ 
+-#ifdef CONFIG_32BIT
+-
+-/*
+- * allocating and freeing a pmd is trivial: the 1-entry pmd is
+- * inside the pgd, so has no extra memory associated with it.
+- */
+-#define pmd_free(mm, x)			do { } while (0)
+-#define __pmd_free_tlb(tlb, x)		do { } while (0)
+-
+-#endif
+-
+ #ifdef CONFIG_64BIT
+ 
+ static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long address)
+@@ -131,6 +120,7 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ {
+ 	free_pages((unsigned long)pmd, PMD_ORDER);
+ }
++#define pmd_free pmd_free
+ 
+ #define __pmd_free_tlb(tlb, x)	pmd_free((tlb)->mm, x)
+ 
+diff --git a/include/asm-parisc/pgalloc.h b/include/asm-parisc/pgalloc.h
+index fc987a1..632b2c5 100644
+--- a/include/asm-parisc/pgalloc.h
++++ b/include/asm-parisc/pgalloc.h
+@@ -80,6 +80,7 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ #endif
+ 	free_pages((unsigned long)pmd, PMD_ORDER);
+ }
++#define pmd_free pmd_free
+ 
+ #else
+ 
+@@ -91,7 +92,6 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+  */
+ 
+ #define pmd_alloc_one(mm, addr)		({ BUG(); ((pmd_t *)2); })
+-#define pmd_free(mm, x)			do { } while (0)
+ #define pgd_populate(mm, pmd, pte)	BUG()
+ 
+ #endif
+diff --git a/include/asm-powerpc/pgalloc-32.h b/include/asm-powerpc/pgalloc-32.h
+index 58c0714..dc6dca5 100644
+--- a/include/asm-powerpc/pgalloc-32.h
++++ b/include/asm-powerpc/pgalloc-32.h
+@@ -13,8 +13,6 @@ extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
+  * the pgd will always be present..
+  */
+ /* #define pmd_alloc_one(mm,address)       ({ BUG(); ((pmd_t *)2); }) */
+-#define pmd_free(mm, x) 		do { } while (0)
+-#define __pmd_free_tlb(tlb,x)		do { } while (0)
+ /* #define pgd_populate(mm, pmd, pte)      BUG() */
+ 
+ #ifndef CONFIG_BOOKE
+diff --git a/include/asm-powerpc/pgalloc-64.h b/include/asm-powerpc/pgalloc-64.h
+index 812a1d8..0b63bc4 100644
+--- a/include/asm-powerpc/pgalloc-64.h
++++ b/include/asm-powerpc/pgalloc-64.h
+@@ -87,6 +87,7 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ {
+ 	kmem_cache_free(pgtable_cache[PMD_CACHE_NUM], pmd);
+ }
++#define pmd_free pmd_free
+ 
+ static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
+ 					  unsigned long address)
+diff --git a/include/asm-s390/pgalloc.h b/include/asm-s390/pgalloc.h
+index f5b2bf3..67b4758 100644
+--- a/include/asm-s390/pgalloc.h
++++ b/include/asm-s390/pgalloc.h
+@@ -61,7 +61,6 @@ static inline unsigned long pgd_entry_type(struct mm_struct *mm)
+ #define pud_free(mm, x)				do { } while (0)
+ 
+ #define pmd_alloc_one(mm,address)		({ BUG(); ((pmd_t *)2); })
+-#define pmd_free(mm, x)				do { } while (0)
+ 
+ #define pgd_populate(mm, pgd, pud)		BUG()
+ #define pgd_populate_kernel(mm, pgd, pud)	BUG()
+diff --git a/include/asm-sh/pgalloc.h b/include/asm-sh/pgalloc.h
+index 84dd2db..f9d9ccb 100644
+--- a/include/asm-sh/pgalloc.h
++++ b/include/asm-sh/pgalloc.h
+@@ -79,14 +79,6 @@ do {							\
+ 	tlb_remove_page((tlb), (pte));			\
+ } while (0)
+ 
+-/*
+- * allocating and freeing a pmd is trivial: the 1-entry pmd is
+- * inside the pgd, so has no extra memory associated with it.
+- */
+-
+-#define pmd_free(mm, x)			do { } while (0)
+-#define __pmd_free_tlb(tlb,x)		do { } while (0)
+-
+ static inline void check_pgt_cache(void)
+ {
+ 	quicklist_trim(QUICK_PGD, NULL, 25, 16);
+diff --git a/include/asm-um/pgalloc.h b/include/asm-um/pgalloc.h
+index 9062a6e..264120b 100644
+--- a/include/asm-um/pgalloc.h
++++ b/include/asm-um/pgalloc.h
+@@ -52,6 +52,7 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ {
+ 	free_page((unsigned long)pmd);
+ }
++#define pmd_free pmd_free
+ 
+ #define __pmd_free_tlb(tlb,x)   tlb_remove_page((tlb),virt_to_page(x))
+ #endif
+diff --git a/include/asm-x86/pgalloc.h b/include/asm-x86/pgalloc.h
+index d63ea43..3c46c59 100644
+--- a/include/asm-x86/pgalloc.h
++++ b/include/asm-x86/pgalloc.h
+@@ -76,8 +76,10 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ 	BUG_ON((unsigned long)pmd & (PAGE_SIZE-1));
+ 	free_page((unsigned long)pmd);
+ }
++#define pmd_free pmd_free
+ 
+ extern void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd);
++#define __pmd_free_tlb __pmd_free_tlb
+ 
+ #ifdef CONFIG_X86_PAE
+ extern void pud_populate(struct mm_struct *mm, pud_t *pudp, pmd_t *pmd);
