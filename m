@@ -1,134 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760529AbYG1Svg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760146AbYG1SwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760529AbYG1Svg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 14:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759581AbYG1SvK
+	id S1760146AbYG1SwU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 14:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755397AbYG1SwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 14:51:10 -0400
-Received: from mail.windriver.com ([147.11.1.11]:39147 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756058AbYG1SvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 14:51:08 -0400
-Message-ID: <488E150F.9050508@windriver.com>
-Date: Mon, 28 Jul 2008 13:50:55 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-CC: linux-kernel@vger.kernel.org, ralf@linux-mips.org,
-       linux-mips@linux-mips.org
-Subject: Re: [PATCH 2/3] kgdb, mips: add arch support for the kernel's kgdb
- core
-References: <20080725.012748.108121457.anemo@mba.ocn.ne.jp><488941C5.9060908@windriver.com><20080725.235233.130241768.anemo@mba.ocn.ne.jp> <20080728.230512.132304415.anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080728.230512.132304415.anemo@mba.ocn.ne.jp>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 28 Jul 2008 14:52:07 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:16182 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753794AbYG1SwE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 14:52:04 -0400
+Date: Mon, 28 Jul 2008 11:51:12 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Calvin Walton <calvin.walton@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] FILESYSTEMS: Make "advanced partitions" immediately
+ unselectable.
+Message-Id: <20080728115112.282f3585.randy.dunlap@oracle.com>
+In-Reply-To: <alpine.LFD.1.10.0807281437070.10586@localhost.localdomain>
+References: <alpine.LFD.1.10.0807241135540.5289@localhost.localdomain>
+	<20080726094718.b617c1e7.randy.dunlap@oracle.com>
+	<alpine.LFD.1.10.0807261750340.3493@localhost.localdomain>
+	<1217214689.22927.3.camel@zem.phub.net.cable.rogers.com>
+	<alpine.LFD.1.10.0807280531210.3402@localhost.localdomain>
+	<20080728103731.7bafd577.randy.dunlap@oracle.com>
+	<alpine.LFD.1.10.0807281437070.10586@localhost.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jul 2008 18:50:56.0308 (UTC) FILETIME=[DE4F6740:01C8F0E2]
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 28 Jul 2008 14:42:47 -0400 (EDT) Robert P. J. Day wrote:
 
-
-Atsushi Nemoto wrote:
-> On Fri, 25 Jul 2008 23:52:33 +0900 (JST), Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
->>> It seem ok to me to try it.  Here is version 3 of the patch, which I was going to send to Ralf.
->> Thanks, it works for me with serial_txx9 kgdboc module.
+> On Mon, 28 Jul 2008, Randy Dunlap wrote:
 > 
-> BTW, is FRAME_POINTER mandatory for kgdb?  I agree that FRAME_POINTER
-> (ie. -fno-omit-frame-pointer -fno-optimize-sibling-calls) helps source
-> level debugging, but I think transparency is more important.
+> > >   yes, it's nitpicking but, as it's laid out right now, it's
+> > > unnecessarily confusing and inconsistent.  but i don't know if
+> > > there's a trivial fix for it.
+> >
+> > Yes, I'd call MSDOS partitions basic, not Advanced, and then put all
+> > others under an Advanced menu that can be toggled on/off easily with
+> > menuconfig.
+> >
+> > Not quite trivial, but not messy either.
+> >
+> > Patch below.  Comments?
 > 
-> Now kgdboc can be loaded/activated at run-time, so I want to enable
-> CONFIG_KGDB usually.  But CONFIG_FRAME_POINTER introduces runtime
-> overhead on overall kernel, which is too bad (at least on MIPS).
+> ... patch snipped ...
 > 
-> Also, selecting FRAME_POINTER (which is not selectable on MIPS)
-> unconditionally looks somewhat inconsistent.
-> 
-> So ... Is this patch reasonable?
-> 
+>   i suspect that's as good as it's going to get, but it's unfortunate
+> that it adds yet another level of submenu under "Partition types."
 
-Sure the patch is reasonable for MIPS, but I think it is worth going a
-step further.
+I looked but didn't see a way to avoid that.
 
-There is no technical reason that frame pointers are required for KGDB
-in the present mainline sources.  This does allow for further
-traceability but it is certainly not a requirement for the use of kgdb.
-If all you want to do is look at frame 0 and inspect memory or set a
-breakpoint and look at some structures kgdb will certainly serve your
-purpose.
+> personally, i was pondering a top level submenu entry of "Advanced
+> partition types" in which the (non-advanced) MSDOS partition support
+> was yanked out of there *entirely*.
 
-I'll consider this a defect to the kgdb core and update the
-documentation to reflect that it is advised to use frame pointers, but
-not a requirement.
+I did that first but left MSDOS partitioning in the main FS menu.
+I didn't like it being separated from the others.
 
-Jason.
+>   it strikes me that, at least on x86, MSDOS partition support is so
+> fundamental that it should take work for someone to turn it *off*.
+> perhaps simply have it on by default, and force someone to go under
+> "Configure standard kernel features (for small systems)"
+> (CONFIG_EMBEDDED) to make it go away?
+
+That could be done, but still, I'd rather have all of the partition types
+close together instead of far apart.
+
+>   seriously, how often is someone going to build a kernel for x86 and
+> not need MSDOS partition support?  just curious.
+
+since MP3 players & cameras use it?  :)
+Other than that, I could do without it for awhile.
 
 
-
->From 329f5bb0071eb2a56f2bcf79838ba91784c8b54d Mon Sep 17 00:00:00 2001
-From: Jason Wessel <jason.wessel@windriver.com>
-Date: Mon, 28 Jul 2008 13:48:31 -0500
-Subject: [PATCH] kgdb: remove the requirement for CONFIG_FRAME_POINTER
-
-There is no technical reason that the kgdb core requires frame
-pointers.  It is up to the end user of KGDB to decide if they need
-them or not.
-
-[ anemo@mba.ocn.ne.jp: removed frame pointers on mips ]
-
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Thanks.
 ---
- Documentation/DocBook/kgdb.tmpl |    8 ++++++++
- lib/Kconfig.kgdb                |   11 +++++++----
- 2 files changed, 15 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/DocBook/kgdb.tmpl b/Documentation/DocBook/kgdb.tmpl
-index e8acd1f..54d3b15 100644
---- a/Documentation/DocBook/kgdb.tmpl
-+++ b/Documentation/DocBook/kgdb.tmpl
-@@ -98,6 +98,14 @@
-     "Kernel debugging" select "KGDB: kernel debugging with remote gdb".
-     </para>
-     <para>
-+    It is advised, but not required that you turn on the
-+    CONFIG_FRAME_POINTER kernel option.  This option inserts code to
-+    into the compiled executable which saves the frame information in
-+    registers or on the stack at different points which will allow a
-+    debugger such as gdb to more accurately construct stack back traces
-+    while debugging the kernel.
-+    </para>
-+    <para>
-     Next you should choose one of more I/O drivers to interconnect debugging
-     host and debugged target.  Early boot debugging requires a KGDB
-     I/O driver that supports early debugging and the driver must be
-diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
-index 2cfd272..9b5d1d7 100644
---- a/lib/Kconfig.kgdb
-+++ b/lib/Kconfig.kgdb
-@@ -4,14 +4,17 @@ config HAVE_ARCH_KGDB
- 
- menuconfig KGDB
- 	bool "KGDB: kernel debugging with remote gdb"
--	select FRAME_POINTER
- 	depends on HAVE_ARCH_KGDB
- 	depends on DEBUG_KERNEL && EXPERIMENTAL
- 	help
- 	  If you say Y here, it will be possible to remotely debug the
--	  kernel using gdb.  Documentation of kernel debugger is available
--	  at http://kgdb.sourceforge.net as well as in DocBook form
--	  in Documentation/DocBook/.  If unsure, say N.
-+	  kernel using gdb.  It is recommended but not required, that
-+	  you also turn on the kernel config option
-+	  CONFIG_FRAME_POINTER to aid in producing more reliable stack
-+	  backtraces in the external debugger.  Documentation of
-+	  kernel debugger is available at http://kgdb.sourceforge.net
-+	  as well as in DocBook form in Documentation/DocBook/.  If
-+	  unsure, say N.
- 
- if KGDB
- 
--- 
-1.5.5.1
-
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
