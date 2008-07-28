@@ -1,102 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbYG1JkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbYG1Jkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755095AbYG1JkK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 05:40:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYG1Jj7
+	id S1755714AbYG1Jkj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 05:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbYG1JkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 05:39:59 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:56493 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751753AbYG1Jj6 (ORCPT
+	Mon, 28 Jul 2008 05:40:14 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:55935 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755152AbYG1JkM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 05:39:58 -0400
-Date: Mon, 28 Jul 2008 05:38:20 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Calvin Walton <calvin.walton@gmail.com>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] FILESYSTEMS: Make "advanced partitions" immediately
- unselectable.
-In-Reply-To: <1217214689.22927.3.camel@zem.phub.net.cable.rogers.com>
-Message-ID: <alpine.LFD.1.10.0807280531210.3402@localhost.localdomain>
-References: <alpine.LFD.1.10.0807241135540.5289@localhost.localdomain>  <20080726094718.b617c1e7.randy.dunlap@oracle.com>  <alpine.LFD.1.10.0807261750340.3493@localhost.localdomain> <1217214689.22927.3.camel@zem.phub.net.cable.rogers.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Mon, 28 Jul 2008 05:40:12 -0400
+Subject: Re: [RFC PATCH 3/4] kmemtrace: SLUB hooks.
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: cl@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       rdunlap@xenotime.net, mpm@selenic.com
+In-Reply-To: <1216751808-14428-4-git-send-email-eduard.munteanu@linux360.ro>
+References: <1216751808-14428-1-git-send-email-eduard.munteanu@linux360.ro>
+	 <1216751808-14428-2-git-send-email-eduard.munteanu@linux360.ro>
+	 <1216751808-14428-3-git-send-email-eduard.munteanu@linux360.ro>
+	 <1216751808-14428-4-git-send-email-eduard.munteanu@linux360.ro>
+Date: Mon, 28 Jul 2008 12:40:10 +0300
+Message-Id: <1217238010.7813.11.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Jul 2008, Calvin Walton wrote:
+On Tue, 2008-07-22 at 21:36 +0300, Eduard - Gabriel Munteanu wrote:
+> This adds hooks for the SLUB allocator, to allow tracing with kmemtrace.
 
-> On Sat, 2008-07-26 at 17:52 -0400, Robert P. J. Day wrote:
-> > On Sat, 26 Jul 2008, Randy Dunlap wrote:
-> >
-> > > On Sat, 26 Jul 2008 09:20:49 -0400 (EDT) Robert P. J. Day wrote:
-> > >
-> > > >
-> > > > Use "menuconfig" to allow all advanced partitions to be
-> > > > deselectable from the top-level FS menu.
-> > > >
-> > > > Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-> > >
-> > > Hi,
-> > >
-> > > I like the idea, but it does have one problem.  Before this
-> > > patch, if someone disabled PARTITION_ADVANCED, the .config would
-> > > still contain CONFIG_MSDOS_PARTITION=y but after this change,
-> > > that config line is missing.  Not good.
-> >
-> > ah, quite right.  the obvious solution is to move MSDOS_PARTITION
-> > out of there since it doesn't even *remotely* qualify as an
-> > "advanced" partition -- it's about as basic as it gets.  i'll
-> > ponder and resubmit.
->
-> It's not that any of the partition types in the menu are advanced -
-...
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-but that's how it's **listed** in "make menuconfig".  once you click
-on
+> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> ---
+>  include/linux/slub_def.h |   53 ++++++++++++++++++++++++++++++++++--
+>  mm/slub.c                |   66 +++++++++++++++++++++++++++++++++++++++++----
+>  2 files changed, 110 insertions(+), 9 deletions(-)
+> 
+> diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+> index d117ea2..d77012a 100644
+> --- a/include/linux/slub_def.h
+> +++ b/include/linux/slub_def.h
+> @@ -10,6 +10,7 @@
+>  #include <linux/gfp.h>
+>  #include <linux/workqueue.h>
+>  #include <linux/kobject.h>
+> +#include <linux/kmemtrace.h>
+>  
+>  enum stat_item {
+>  	ALLOC_FASTPATH,		/* Allocation from cpu slab */
+> @@ -203,13 +204,31 @@ static __always_inline struct kmem_cache *kmalloc_slab(size_t size)
+>  void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
+>  void *__kmalloc(size_t size, gfp_t flags);
+>  
+> +#ifdef CONFIG_KMEMTRACE
+> +extern void *kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags);
+> +#else
+> +static __always_inline void *
+> +kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags)
+> +{
+> +	return kmem_cache_alloc(s, gfpflags);
+> +}
+> +#endif
+> +
+>  static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
+>  {
+> -	return (void *)__get_free_pages(flags | __GFP_COMP, get_order(size));
+> +	unsigned int order = get_order(size);
+> +	void *ret = (void *) __get_free_pages(flags, order);
+> +
+> +	kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC, _THIS_IP_, ret,
+> +			     size, PAGE_SIZE << order, flags);
+> +
+> +	return ret;
+>  }
+>  
+>  static __always_inline void *kmalloc(size_t size, gfp_t flags)
+>  {
+> +	void *ret;
+> +
+>  	if (__builtin_constant_p(size)) {
+>  		if (size > PAGE_SIZE)
+>  			return kmalloc_large(size, flags);
+> @@ -220,7 +239,13 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)
+>  			if (!s)
+>  				return ZERO_SIZE_PTR;
+>  
+> -			return kmem_cache_alloc(s, flags);
+> +			ret = kmem_cache_alloc_notrace(s, flags);
+> +
+> +			kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC,
+> +					     _THIS_IP_, ret,
+> +					     size, s->size, flags);
+> +
+> +			return ret;
+>  		}
+>  	}
+>  	return __kmalloc(size, flags);
+> @@ -230,8 +255,24 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)
+>  void *__kmalloc_node(size_t size, gfp_t flags, int node);
+>  void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
+>  
+> +#ifdef CONFIG_KMEMTRACE
+> +extern void *kmem_cache_alloc_node_notrace(struct kmem_cache *s,
+> +					   gfp_t gfpflags,
+> +					   int node);
+> +#else
+> +static __always_inline void *
+> +kmem_cache_alloc_node_notrace(struct kmem_cache *s,
+> +			      gfp_t gfpflags,
+> +			      int node)
+> +{
+> +	return kmem_cache_alloc_node(s, gfpflags, node);
+> +}
+> +#endif
+> +
+>  static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+>  {
+> +	void *ret;
+> +
+>  	if (__builtin_constant_p(size) &&
+>  		size <= PAGE_SIZE && !(flags & SLUB_DMA)) {
+>  			struct kmem_cache *s = kmalloc_slab(size);
+> @@ -239,7 +280,13 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+>  		if (!s)
+>  			return ZERO_SIZE_PTR;
+>  
+> -		return kmem_cache_alloc_node(s, flags, node);
+> +		ret = kmem_cache_alloc_node_notrace(s, flags, node);
+> +
+> +		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
+> +					  _THIS_IP_, ret,
+> +					  size, s->size, flags, node);
+> +
+> +		return ret;
+>  	}
+>  	return __kmalloc_node(size, flags, node);
+>  }
+> diff --git a/mm/slub.c b/mm/slub.c
+> index 315c392..940145f 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/kallsyms.h>
+>  #include <linux/memory.h>
+>  #include <linux/math64.h>
+> +#include <linux/kmemtrace.h>
+>  
+>  /*
+>   * Lock order:
+> @@ -1652,18 +1653,47 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
+>  
+>  void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
+>  {
+> -	return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
+> +	void *ret = slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
+> +
+> +	kmemtrace_mark_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> +			     s->objsize, s->size, gfpflags);
+> +
+> +	return ret;
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc);
+>  
+> +#ifdef CONFIG_KMEMTRACE
+> +void *kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags)
+> +{
+> +	return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
+> +}
+> +EXPORT_SYMBOL(kmem_cache_alloc_notrace);
+> +#endif
+> +
+>  #ifdef CONFIG_NUMA
+>  void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
+>  {
+> -	return slab_alloc(s, gfpflags, node, __builtin_return_address(0));
+> +	void *ret = slab_alloc(s, gfpflags, node,
+> +			       __builtin_return_address(0));
+> +
+> +	kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> +				  s->objsize, s->size, gfpflags, node);
+> +
+> +	return ret;
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc_node);
+>  #endif
+>  
+> +#ifdef CONFIG_KMEMTRACE
+> +void *kmem_cache_alloc_node_notrace(struct kmem_cache *s,
+> +				    gfp_t gfpflags,
+> +				    int node)
+> +{
+> +	return slab_alloc(s, gfpflags, node, __builtin_return_address(0));
+> +}
+> +EXPORT_SYMBOL(kmem_cache_alloc_node_notrace);
+> +#endif
+> +
+>  /*
+>   * Slow patch handling. This may still be called frequently since objects
+>   * have a longer lifetime than the cpu slabs in most processing loads.
+> @@ -1771,6 +1801,8 @@ void kmem_cache_free(struct kmem_cache *s, void *x)
+>  	page = virt_to_head_page(x);
+>  
+>  	slab_free(s, page, x, __builtin_return_address(0));
+> +
+> +	kmemtrace_mark_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, x);
+>  }
+>  EXPORT_SYMBOL(kmem_cache_free);
+>  
+> @@ -2676,6 +2708,7 @@ static struct kmem_cache *get_slab(size_t size, gfp_t flags)
+>  void *__kmalloc(size_t size, gfp_t flags)
+>  {
+>  	struct kmem_cache *s;
+> +	void *ret;
+>  
+>  	if (unlikely(size > PAGE_SIZE))
+>  		return kmalloc_large(size, flags);
+> @@ -2685,7 +2718,12 @@ void *__kmalloc(size_t size, gfp_t flags)
+>  	if (unlikely(ZERO_OR_NULL_PTR(s)))
+>  		return s;
+>  
+> -	return slab_alloc(s, flags, -1, __builtin_return_address(0));
+> +	ret = slab_alloc(s, flags, -1, __builtin_return_address(0));
+> +
+> +	kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, ret,
+> +			     size, s->size, flags);
+> +
+> +	return ret;
+>  }
+>  EXPORT_SYMBOL(__kmalloc);
+>  
+> @@ -2704,16 +2742,30 @@ static void *kmalloc_large_node(size_t size, gfp_t flags, int node)
+>  void *__kmalloc_node(size_t size, gfp_t flags, int node)
+>  {
+>  	struct kmem_cache *s;
+> +	void *ret;
+>  
+> -	if (unlikely(size > PAGE_SIZE))
+> -		return kmalloc_large_node(size, flags, node);
+> +	if (unlikely(size > PAGE_SIZE)) {
+> +		ret = kmalloc_large_node(size, flags, node);
+> +
+> +		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
+> +					  _RET_IP_, ret,
+> +					  size, PAGE_SIZE << get_order(size),
+> +					  flags, node);
+> +
+> +		return ret;
+> +	}
+>  
+>  	s = get_slab(size, flags);
+>  
+>  	if (unlikely(ZERO_OR_NULL_PTR(s)))
+>  		return s;
+>  
+> -	return slab_alloc(s, flags, node, __builtin_return_address(0));
+> +	ret = slab_alloc(s, flags, node, __builtin_return_address(0));
+> +
+> +	kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, ret,
+> +				  size, s->size, flags, node);
+> +
+> +	return ret;
+>  }
+>  EXPORT_SYMBOL(__kmalloc_node);
+>  #endif
+> @@ -2771,6 +2823,8 @@ void kfree(const void *x)
+>  		return;
+>  	}
+>  	slab_free(page->slab, page, object, __builtin_return_address(0));
+> +
+> +	kmemtrace_mark_free(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, x);
+>  }
+>  EXPORT_SYMBOL(kfree);
+>  
 
-  Partition Types  --->
-
-the top-level config option that selects or deselects all of that menu
-is labelled:
-
-  [*] Advanced partition selection
-      ^^^^^^^^
-
-there's a logical inconsistency in that part of the menu -- are those
-just regular partitions, or are they "advanced" partitions?  pick one.
-
-  i'm not sure there's an elegant redesign for that -- an obvious fix
-(if it's even worth doing) is to move the fundamental MSDOS partition
-option out of there since it's not an "advanced" option.  and that
-MSDOS option doesn't even really belong there anyway since, even if
-you deselect that entire submenu, you still get CONFIG_MSDOS_PARTITION
-selected in your eventual .config file.
-
-  yes, it's nitpicking but, as it's laid out right now, it's
-unnecessarily confusing and inconsistent.  but i don't know if there's
-a trivial fix for it.
-
-rday
---
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
