@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759761AbYG1Vlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760163AbYG1VmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759761AbYG1Vlb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbYG1VlY
+	id S1760163AbYG1VmX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYG1VmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:41:24 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:47877 "EHLO smtp5.pp.htv.fi"
+	Mon, 28 Jul 2008 17:42:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58887 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754145AbYG1VlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:41:23 -0400
-Date: Tue, 29 Jul 2008 00:40:39 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>,
-       Paul Mundt <lethal@linux-sh.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: sh se7750_defconfig compile error
-Message-ID: <20080728214039.GE7713@cs181140183.pp.htv.fi>
+	id S1752015AbYG1VmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 17:42:14 -0400
+Date: Mon, 28 Jul 2008 23:41:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mike Travis <travis@sgi.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, David Sterba <dsterba@suse.cz>,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: [build error] drivers/char/pcmcia/ipwireless/hardware.c:571:
+	error: invalid use of undefined type 'struct ipw_network'
+Message-ID: <20080728214153.GA30511@elte.hu>
+References: <20080727190601.GA764@elte.hu> <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org> <200807281042.12860.rusty@rustcorp.com.au> <488E06F0.4070404@sgi.com> <alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org> <20080728205700.GA3613@elte.hu> <20080728213532.GA24744@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080728213532.GA24744@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit ffb91ad2751723bcc9925cd38e37013e2169e256
-(sh: Solution Enginge 7710/7712 SH-Ether support)
-causes the following compile error with se7750_defconfig:
 
-<--  snip  -->
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-...
-  CC      arch/sh/boards/se/770x/setup.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/boards/se/770x/setup.c:134: error: 'PHY_ID' undeclared here (not in a function)
-make[2]: *** [arch/sh/boards/se/770x/setup.o] Error 1
+> This has a trivial conflict with the latest tree you just pushed out. 
 
-<--  snip  -->
+btw., if you intend that for -rc1, that tree has a common looking build 
+failure:
 
-The patch did:
-#if defined(CONFIG_CPU_SUBTYPE_SH7710)
-# define PHY_ID 0x00
-#elif defined(CONFIG_CPU_SUBTYPE_SH7712)
-# define PHY_ID 0x01
-#endif
+drivers/char/pcmcia/ipwireless/hardware.c:571: error: invalid use of 
+undefined type 'struct ipw_network'
 
-But in this case we have CONFIG_CPU_SUBTYPE_SH7750.
+http://redhat.com/~mingo/misc/config-Mon_Jul_28_23_36_20_CEST_2008.bad
 
-cu
-Adrian
+probably due to a string of commits to that file from today.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Ingo
