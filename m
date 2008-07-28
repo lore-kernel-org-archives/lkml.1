@@ -1,57 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760716AbYG1Vt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759947AbYG1VwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760716AbYG1Vt4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756264AbYG1Vtr
+	id S1759947AbYG1VwU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbYG1VwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:49:47 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:36625 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752045AbYG1Vtq (ORCPT
+	Mon, 28 Jul 2008 17:52:09 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51547 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751375AbYG1VwI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:49:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=VKoQ5vZxKV+bj6gZN0J6Tfy5aPt/SOTCUKS6HVc19oQc7axewJBG/dYS6H3ldCEnAL
-         RnMwQOMZkyAf6RLFkcgot5AIPJfLcWzr7mYrKjoSDz9A79/8g2vKOsTrchc2eo5v60NN
-         7ItEIqunOEoYf37bnS1slBJbhD9jmdtpqe6CY=
-Message-ID: <4d8e3fd30807281449t2b68e84cx674a2a9b91207295@mail.gmail.com>
-Date: Mon, 28 Jul 2008 22:19:45 +0030
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Dave Jones" <davej@redhat.com>,
-       "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       tglx <tglx@linutronix.de>, hpa <hpa@zytor.com>,
-       "Arjan van de Ven" <arjan@fenrus.demon.nl>
-Subject: Re: [PATCH] x86: Coding style fixes to arch/x86/kernel/cpu/cpufreq/powernow-k6.c
-In-Reply-To: <20080728205045.GB11581@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jul 2008 17:52:08 -0400
+Date: Mon, 28 Jul 2008 23:51:56 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: sched-powersave causes oops on 2.6.26-08037-g8cd362a
+Message-ID: <20080728215156.GF30344@one.firstfloor.org>
+References: <1217281739.7345.8.camel@nimitz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080728210816.4989c3f0@paolo-desktop>
-	 <20080728205045.GB11581@redhat.com>
+In-Reply-To: <1217281739.7345.8.camel@nimitz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/28/08, Dave Jones <davej@redhat.com> wrote:
->  > Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
->
-> I'll queue this up in cpufreq.git
+On Mon, Jul 28, 2008 at 02:48:59PM -0700, Dave Hansen wrote:
+> This oops just happens on startup for me.
+
+Patch has been already posted a couple of times, here is it again.
+
+-Andi
 
 
-thank you Dave and apologize for not sending you directly the patch.
+Author: Andi Kleen <ak@gargoyle.(none)>
+Date:   Thu Jul 24 21:57:40 2008 +0200
 
-you might want to look at the other patch i sent a few hours ago, subject was:
-Subject: [PATCH] x86: Coding style fixes to
-arch/x86/kernel/cpu/cpufreq/elanfreq.c
+    Make scheduler sysfs attributes sysdev class devices
+    
+    They are really class devices, but were incorrectly declared. This leads
+    to crashes with the recent changes that makes non normal sysdevs
+    use a different prototype.
+    
+    Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-ciao,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 6acf749..24358ca 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7641,34 +7641,34 @@ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+ }
+ 
+ #ifdef CONFIG_SCHED_MC
+-static ssize_t sched_mc_power_savings_show(struct sys_device *dev,
+-				struct sysdev_attribute *attr, char *page)
++static ssize_t sched_mc_power_savings_show(struct sysdev_class *class,
++					   char *page)
+ {
+ 	return sprintf(page, "%u\n", sched_mc_power_savings);
+ }
+-static ssize_t sched_mc_power_savings_store(struct sys_device *dev,
+-					    struct sysdev_attribute *attr,
++static ssize_t sched_mc_power_savings_store(struct sysdev_class *class,
+ 					    const char *buf, size_t count)
+ {
+ 	return sched_power_savings_store(buf, count, 0);
+ }
+-static SYSDEV_ATTR(sched_mc_power_savings, 0644, sched_mc_power_savings_show,
+-		   sched_mc_power_savings_store);
++static SYSDEV_CLASS_ATTR(sched_mc_power_savings, 0644, 
++			 sched_mc_power_savings_show,
++		         sched_mc_power_savings_store);
+ #endif
+ 
+ #ifdef CONFIG_SCHED_SMT
+-static ssize_t sched_smt_power_savings_show(struct sys_device *dev,
+-				struct sysdev_attribute *attr, char *page)
++static ssize_t sched_smt_power_savings_show(struct sysdev_class *dev,
++					    char *page)
+ {
+ 	return sprintf(page, "%u\n", sched_smt_power_savings);
+ }
+-static ssize_t sched_smt_power_savings_store(struct sys_device *dev,
+-					     struct sysdev_attribute *attr,
++static ssize_t sched_smt_power_savings_store(struct sysdev_class *dev,
+ 					     const char *buf, size_t count)
+ {
+ 	return sched_power_savings_store(buf, count, 1);
+ }
+-static SYSDEV_ATTR(sched_smt_power_savings, 0644, sched_smt_power_savings_show,
++static SYSDEV_CLASS_ATTR(sched_smt_power_savings, 0644, 
++		   sched_smt_power_savings_show,
+ 		   sched_smt_power_savings_store);
+ #endif
+ 
