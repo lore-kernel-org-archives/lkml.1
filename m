@@ -1,69 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066AbYG1WXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbYG1W22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756066AbYG1WXv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 18:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYG1WXn
+	id S1756833AbYG1W22 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 18:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYG1W2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 18:23:43 -0400
-Received: from outbound-mail-09.bluehost.com ([69.89.17.209]:57665 "HELO
-	outbound-mail-09.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751323AbYG1WXm (ORCPT
+	Mon, 28 Jul 2008 18:28:20 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:30329 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752107AbYG1W2U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 18:23:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=bdwxedHnw8la2DbfHC5HBUUiplW3yHZxiQPR7hUvRAAhUc8ZqXPw/115PRAzqEdznH5CdXRg7/YVsRLevsCyZnw7mXPGHpKprzp5KwS9i/VUUad2HCswdkmevRRbF3KS;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
-Date: Mon, 28 Jul 2008 15:23:35 -0700
-User-Agent: KMail/1.9.9
-Cc: joro@8bytes.org, prarit@redhat.com, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-References: <20080723111928.15828.42561.sendpatchset@prarit.bos.redhat.com> <20080723221033.GD13662@8bytes.org> <20080724081528F.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080724081528F.fujita.tomonori@lab.ntt.co.jp>
+	Mon, 28 Jul 2008 18:28:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=LJJBSKWvYwL80BbfmxQTM7p0RnS971WOr3Wydj1tEaqnniWOobm4BsHY4hiL85vJAA
+         QD7WVfQ9RxzxPyqEgT/zMXCxyAEOQEib/osT1ZhB1154Fp6Wdv7u3ovOQv0Dypz1TEYV
+         PIm8o5svrBXUCJ9OCRX7/xz/zoYhWpTBVyDXI=
+Date: Tue, 29 Jul 2008 00:26:43 +0200
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       suresh.b.siddha@intel.com
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
+	00000002
+Message-ID: <20080728222643.GA6339@slug>
+References: <20080725095317.GA12636@skywalker>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807281523.35469.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20080725095317.GA12636@skywalker>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, July 23, 2008 4:14 pm FUJITA Tomonori wrote:
-> On Thu, 24 Jul 2008 00:10:33 +0200
->
-> Joerg Roedel <joro@8bytes.org> wrote:
-> > On Wed, Jul 23, 2008 at 07:19:43AM -0400, Prarit Bhargava wrote:
-> > > pci_alloc_consistent/dma_alloc_coherent does not return size aligned
-> > > addresses.
-> > >
-> > > >From Documentation/DMA-mapping.txt:
-> > >
-> > > "pci_alloc_consistent returns two values: the virtual address which you
-> > > can use to access it from the CPU and dma_handle which you pass to the
-> > > card.
-> > >
-> > > The cpu return address and the DMA bus master address are both
-> > > guaranteed to be aligned to the smallest PAGE_SIZE order which
-> > > is greater than or equal to the requested size.  This invariant
-> > > exists (for example) to guarantee that if you allocate a chunk
-> > > which is smaller than or equal to 64 kilobytes, the extent of the
-> > > buffer you receive will not cross a 64K boundary."
-> >
-> > Interesting. Have you experienced any problems because of that
-> > misbehavior in the GART code? AMD IOMMU currently also violates this
-> > requirement. I will send a patch to fix that there too.
->
-> IIRC, only PARISC and POWER IOMMUs follow the above rule. So I also
-> wondered what problem he hit.
+Hello  Aneesh,
 
-Prarit, what's the latest here?  The v3 patch I have from you doesn't apply to 
-my tree but it looks like a good fix.  Care to send me a new patch against my 
-for-linus branch?
+On Fri, Jul 25, 2008 at 03:23:17PM +0530, Aneesh Kumar K.V wrote:
+> [  163.378265] BUG: unable to handle kernel NULL pointer dereference at 00000002
+> [  163.378276] IP: [<c0124933>] sched_power_savings_store+0x13/0x70
 
-Thanks,
-Jesse
+Does the attached patch solve the problem?
+
+Regards,
+Frederik
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 0047bd9..090b397 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7643,34 +7643,30 @@ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+ }
+ 
+ #ifdef CONFIG_SCHED_MC
+-static ssize_t sched_mc_power_savings_show(struct sys_device *dev,
+-				struct sysdev_attribute *attr, char *page)
++static ssize_t sched_mc_power_savings_show(struct sysdev_class *cls, char *page)
+ {
+ 	return sprintf(page, "%u\n", sched_mc_power_savings);
+ }
+-static ssize_t sched_mc_power_savings_store(struct sys_device *dev,
+-					    struct sysdev_attribute *attr,
++static ssize_t sched_mc_power_savings_store(struct sysdev_class *cls,
+ 					    const char *buf, size_t count)
+ {
+ 	return sched_power_savings_store(buf, count, 0);
+ }
+-static SYSDEV_ATTR(sched_mc_power_savings, 0644, sched_mc_power_savings_show,
++static SYSDEV_CLASS_ATTR(sched_mc_power_savings, 0644, sched_mc_power_savings_show,
+ 		   sched_mc_power_savings_store);
+ #endif
+ 
+ #ifdef CONFIG_SCHED_SMT
+-static ssize_t sched_smt_power_savings_show(struct sys_device *dev,
+-				struct sysdev_attribute *attr, char *page)
++static ssize_t sched_smt_power_savings_show(struct sysdev_class *cls, char *page)
+ {
+ 	return sprintf(page, "%u\n", sched_smt_power_savings);
+ }
+-static ssize_t sched_smt_power_savings_store(struct sys_device *dev,
+-					     struct sysdev_attribute *attr,
++static ssize_t sched_smt_power_savings_store(struct sysdev_class *cls,
+ 					     const char *buf, size_t count)
+ {
+ 	return sched_power_savings_store(buf, count, 1);
+ }
+-static SYSDEV_ATTR(sched_smt_power_savings, 0644, sched_smt_power_savings_show,
++static SYSDEV_CLASS_ATTR(sched_smt_power_savings, 0644, sched_smt_power_savings_show,
+ 		   sched_smt_power_savings_store);
+ #endif
+ 
+@@ -7680,13 +7676,13 @@ int sched_create_sysfs_power_savings_entries(struct sysdev_class *cls)
+ 
+ #ifdef CONFIG_SCHED_SMT
+ 	if (smt_capable())
+-		err = sysfs_create_file(&cls->kset.kobj,
+-					&attr_sched_smt_power_savings.attr);
++		err = sysdev_class_create_file(cls,
++					       &attr_sched_smt_power_savings);
+ #endif
+ #ifdef CONFIG_SCHED_MC
+ 	if (!err && mc_capable())
+-		err = sysfs_create_file(&cls->kset.kobj,
+-					&attr_sched_mc_power_savings.attr);
++		err = sysdev_class_create_file(cls,
++					       &attr_sched_mc_power_savings);
+ #endif
+ 	return err;
+ }
