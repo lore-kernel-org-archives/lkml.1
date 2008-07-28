@@ -1,86 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760605AbYG1R1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757257AbYG1Reg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760605AbYG1R1p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 13:27:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755246AbYG1R1h
+	id S1757257AbYG1Reg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 13:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbYG1Re1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 13:27:37 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:47988 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751323AbYG1R1g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 13:27:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=JCQESSmA4H/gd2ONwiJRLtV3VdD7sa+C7lxIBRoEAVFrggZ5U/HPNfAuSi8ZZC6Ide
-         Mx6zvgGQ7k5Aopu9QKIPdbHT38G5nYnOoHfj0eA1fdSffQyDriWB/nnUrw3wH2VDM0sb
-         RhsF3KeDA7rtFPjYA5efl6IKGbBWBJYi9moZo=
-Message-ID: <dd18b0c30807281027l251d5ec0q6532107c78061090@mail.gmail.com>
-Date: Mon, 28 Jul 2008 10:27:35 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Alistair John Strachan" <alistair@devzero.co.uk>
-Subject: Re: NETDEV WATCHDOG: wifi0: transmit timed out
-Cc: "Arjan van de Ven" <arjan@infradead.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200807281622.43288.alistair@devzero.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 28 Jul 2008 13:34:27 -0400
+Received: from zombie.ncsc.mil ([144.51.88.131]:45735 "EHLO zombie.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750819AbYG1Re0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 13:34:26 -0400
+Subject: Re: BUG at security/selinux/avc.c:883 (was: Re: linux-next: Tree
+	for July 17: early crash on x86-64)
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Thomas Meyer <thomas@m3y3r.de>, James Morris <jmorris@namei.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Paris <eparis@parisplace.org>
+In-Reply-To: <20080720121559.GV28946@ZenIV.linux.org.uk>
+References: <20080718012842.690b8346.sfr@canb.auug.org.au>
+	 <a4423d670807180652y352e66lfe04d2b33d2ed176@mail.gmail.com>
+	 <20080719035231.GU28946@ZenIV.linux.org.uk>
+	 <200807192042.06988.rjw@sisk.pl>
+	 <Xine.LNX.4.64.0807200553380.22632@us.intercode.com.au>
+	 <1216546973.3217.6.camel@dhcppc2>
+	 <20080720121559.GV28946@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Mon, 28 Jul 2008 13:32:38 -0400
+Message-Id: <1217266358.20373.54.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30807280010h34002232wb53b7a154d9853fc@mail.gmail.com>
-	 <20080728061226.26ffae06@infradead.org>
-	 <dd18b0c30807280653q6c11cd6aia20946f6fd9acf0c@mail.gmail.com>
-	 <200807281622.43288.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 8:22 AM, Alistair John Strachan
-<alistair@devzero.co.uk> wrote:
-> On Monday 28 July 2008 14:53:41 Justin Mattock wrote:
->> On Mon, Jul 28, 2008 at 6:12 AM, Arjan van de Ven <arjan@infradead.org>
-> wrote:
->> > On Mon, 28 Jul 2008 00:10:46 -0700
->> >
->> > "Justin Mattock" <justinmattock@gmail.com> wrote:
->> >> I should'nt be posting this, due to
->> >> having  tainted modules(madwifi), but
->> >
->> > and fglrx
->> >
->> >> I figured I might as well:(below)
->> >>
->> >> [ 5000.986044] NETDEV WATCHDOG: wifi0: transmit timed out
->> >
->> > and what's more... it's the the wifi that's b0rked.
->> >
->> > sounds like you want to switch to ath5k or ath9k.
->> >
->> >
->> > --
->> > If you want to reach me at my work email, use arjan@linux.intel.com
->> > For development, discussion and tips for power savings,
->> > visit http://www.lesswatts.org
->>
->> If there's support for the 5418 card that the macbook pro has.
->> interesting when lspci I'm not seeing the card number(below is lspci)
->> As for the fglrx "f*&k it" too much of a pain.:
->
-> Yep check out the linux-wireless archives for more info, but ath9k is ready
-> and working on your hardware. I've got a Macbook with the same chipset and
-> it's totally fine (2.6.26+wireless-testing+ath9k).
->
-> --
-> Cheers,
-> Alistair.
->
+On Sun, 2008-07-20 at 13:15 +0100, Al Viro wrote:
+> On Sun, Jul 20, 2008 at 11:42:53AM +0200, Thomas Meyer wrote:
+> > Am Sonntag, den 20.07.2008, 05:54 +1000 schrieb James Morris:
+> > > On Sat, 19 Jul 2008, Rafael J. Wysocki wrote:
+> > > 
+> > > > > vfs-next/net-next conflict; apply the patch below on top of the
+> > > merge.
+> > > > 
+> > > > That helped, thanks.
+> > > > 
+> > > > But next it ran into the BUG_ON() in line 883 of
+> > > security/selinux/avc.c .
+> > > > Disabling selinux made the kernel boot, finally.
+> > > 
+> > > Ugh, that's not supposed to happen.  Where was this in the boot?  Do
+> > > you 
+> > > have a console log?
+> 
+> Argh...  Fallout from ->permission() patch series.  I've folded that into
+> rebase (along with Randy's compile fixes and missing bit in capability.c
+> in ->inode_permission() patch; AFAICS takes care of all mismerges as well).
+> In the meanwhile, see the patch below on top of next-20080718:
+> 
+> diff --git a/fs/namei.c b/fs/namei.c
+> index a15c155..c0a64e2 100644
+> --- a/fs/namei.c
+> +++ b/fs/namei.c
+> @@ -286,7 +286,8 @@ int permission(struct inode *inode, int mask, struct nameidata *nd)
+>  	if (retval)
+>  		return retval;
+>  
+> -	return security_inode_permission(inode, mask);
+> +	return security_inode_permission(inode,
+> +					mask & (MAY_READ|MAY_WRITE|MAY_EXEC));
+>  }
+>  
+>  /**
 
-Alright!!
-I'm glad to hear this.
-"natural and fresh".
+SELinux needs MAY_APPEND to be passed down to the security hook.
+Otherwise, we get permission denials when only append permission is
+granted by policy even if the opening process specified O_APPEND.
+Shows up as a regression in the ltp selinux testsuite, fixed by
+this patch.
+
+Signed-off-by:  Stephen Smalley <sds@tycho.nsa.gov>
+
+---
+
+ fs/namei.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/namei.c b/fs/namei.c
+index a7b0a0b..b91e973 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -274,7 +274,7 @@ int inode_permission(struct inode *inode, int mask)
+ 		return retval;
+ 
+ 	return security_inode_permission(inode,
+-			mask & (MAY_READ|MAY_WRITE|MAY_EXEC));
++			mask & (MAY_READ|MAY_WRITE|MAY_EXEC|MAY_APPEND));
+ }
+ 
+ /**
+
 
 -- 
-Justin P. Mattock
+Stephen Smalley
+National Security Agency
+
