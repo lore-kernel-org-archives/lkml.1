@@ -1,237 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863AbYG1Qrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759457AbYG1Qrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752863AbYG1Qrg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 12:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYG1Qqq
+	id S1759457AbYG1Qrw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 12:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYG1Qqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 28 Jul 2008 12:46:46 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:46992 "EHLO
-	WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751893AbYG1Qqm (ORCPT
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:33277 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751942AbYG1Qqm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 28 Jul 2008 12:46:42 -0400
-X-BigFish: VPS7(zz1cddkzz10d3izzz32i43j63h)
-X-Spam-TCS-SCL: 2:0
-X-WSS-ID: 0K4Q6LF-01-PPU-01
-Message-ID: <20080728164448.846318365@amd.com>
+X-BigFish: VPS12(zz1cddkzz10d3izzz32i68o)
+X-Spam-TCS-SCL: 7:0
+X-WSS-ID: 0K4Q6LC-01-PPO-01
+Message-ID: <20080728164447.569717192@amd.com>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Mon, 28 Jul 2008 18:44:18 +0200
+Date: Mon, 28 Jul 2008 18:44:13 +0200
 From: Peter Oruba <peter.oruba@amd.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
 CC: LKML <linux-kernel@vger.kernel.org>, Peter Oruba <peter.oruba@amd.com>
-Subject: [patch 07/11] [PATCH 07/11] x86: Structure declaration renaming.
+Subject: [patch 02/11] [PATCH 02/11] x86: Moved Intel microcode patch loader declarations to seperate header file.
 References: <20080728164411.490752571@amd.com>
 Content-Disposition: inline;
-	filename="0007-x86-Structure-declaration-renaming.patch"
-X-OriginalArrivalTime: 28 Jul 2008 16:46:29.0559 (UTC) FILETIME=[7BC7EC70:01C8F0D1]
+	filename="0002-x86-Moved-Intel-microcode-patch-loader-declarations.patch"
+X-OriginalArrivalTime: 28 Jul 2008 16:46:29.0106 (UTC) FILETIME=[7B82CD20:01C8F0D1]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Renamed common structures to vendor specific naming scheme
-so other vendors will be able to use the same naming
-convention.
+Intel specific microcode declarations have been moved to a seperate header file.
+There are no code changes to the code itself and no side effects to other parts.
 
 Signed-off-by: Peter Oruba <peter.oruba@amd.com>
-
-Conflicts:
 ---
- arch/x86/kernel/microcode_intel.c |   46 +++++++++++++++++++-----------------
- include/asm-x86/microcode.h       |   10 +++++---
- 2 files changed, 30 insertions(+), 26 deletions(-)
+ arch/x86/kernel/microcode.c |    1 +
+ include/asm-x86/microcode.h |   34 ++++++++++++++++++++++++++++++++++
+ include/asm-x86/processor.h |   35 -----------------------------------
+ 3 files changed, 35 insertions(+), 35 deletions(-)
+ create mode 100644 include/asm-x86/microcode.h
 
-diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
-index eded0a1..ca9861b 100644
---- a/arch/x86/kernel/microcode_intel.c
-+++ b/arch/x86/kernel/microcode_intel.c
-@@ -100,17 +100,19 @@ MODULE_AUTHOR("Tigran Aivazian <tigran@aivazian.fsnet.co.uk>");
- MODULE_LICENSE("GPL");
+diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
+index 6994c75..0d654bd 100644
+--- a/arch/x86/kernel/microcode.c
++++ b/arch/x86/kernel/microcode.c
+@@ -93,6 +93,7 @@
+ #include <asm/msr.h>
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
++#include <asm/microcode.h>
  
- #define DEFAULT_UCODE_DATASIZE 	(2000) 	  /* 2000 bytes */
--#define MC_HEADER_SIZE		(sizeof(struct microcode_header))  	  /* 48 bytes */
-+#define MC_HEADER_SIZE		(sizeof(struct microcode_header_intel)) /* 48 bytes */
- #define DEFAULT_UCODE_TOTALSIZE (DEFAULT_UCODE_DATASIZE + MC_HEADER_SIZE) /* 2048 bytes */
- #define EXT_HEADER_SIZE		(sizeof(struct extended_sigtable)) /* 20 bytes */
- #define EXT_SIGNATURE_SIZE	(sizeof(struct extended_signature)) /* 12 bytes */
- #define DWSIZE			(sizeof(u32))
- #define get_totalsize(mc) \
--	(((struct microcode *)mc)->hdr.totalsize ? \
--	 ((struct microcode *)mc)->hdr.totalsize : DEFAULT_UCODE_TOTALSIZE)
-+	(((struct microcode_intel *)mc)->hdr.totalsize ? \
-+	 ((struct microcode_intel *)mc)->hdr.totalsize : \
-+	 DEFAULT_UCODE_TOTALSIZE)
-+
- #define get_datasize(mc) \
--	(((struct microcode *)mc)->hdr.datasize ? \
--	 ((struct microcode *)mc)->hdr.datasize : DEFAULT_UCODE_DATASIZE)
-+	(((struct microcode_intel *)mc)->hdr.datasize ? \
-+	 ((struct microcode_intel *)mc)->hdr.datasize : DEFAULT_UCODE_DATASIZE)
- 
- #define sigmatch(s1, s2, p1, p2) \
- 	(((s1) == (s2)) && (((p1) & (p2)) || (((p1) == 0) && ((p2) == 0))))
-@@ -134,7 +136,7 @@ void collect_cpu_info(int cpu_num)
- 	/* We should bind the task to the CPU */
- 	BUG_ON(raw_smp_processor_id() != cpu_num);
- 	uci->pf = uci->rev = 0;
--	uci->mc = NULL;
-+	uci->mc.mc_intel = NULL;
- 	uci->valid = 1;
- 
- 	if (c->x86_vendor != X86_VENDOR_INTEL || c->x86 < 6 ||
-@@ -163,7 +165,7 @@ void collect_cpu_info(int cpu_num)
- }
- 
- static inline int microcode_update_match(int cpu_num,
--	struct microcode_header *mc_header, int sig, int pf)
-+	struct microcode_header_intel *mc_header, int sig, int pf)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu_num;
- 
-@@ -175,7 +177,7 @@ static inline int microcode_update_match(int cpu_num,
- 
- int microcode_sanity_check(void *mc)
- {
--	struct microcode_header *mc_header = mc;
-+	struct microcode_header_intel *mc_header = mc;
- 	struct extended_sigtable *ext_header = NULL;
- 	struct extended_signature *ext_sig;
- 	unsigned long total_size, data_size, ext_table_size;
-@@ -260,7 +262,7 @@ int microcode_sanity_check(void *mc)
- int get_matching_microcode(void *mc, int cpu)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
--	struct microcode_header *mc_header = mc;
-+	struct microcode_header_intel *mc_header = mc;
- 	struct extended_sigtable *ext_header;
- 	unsigned long total_size = get_totalsize(mc_header);
- 	int ext_sigcount, i;
-@@ -294,10 +296,10 @@ find:
- 	}
- 
- 	/* free previous update file */
--	vfree(uci->mc);
-+	vfree(uci->mc.mc_intel);
- 
- 	memcpy(new_mc, mc, total_size);
--	uci->mc = new_mc;
-+	uci->mc.mc_intel = new_mc;
- 	return 1;
- }
- 
-@@ -311,7 +313,7 @@ void apply_microcode(int cpu)
- 	/* We should bind the task to the CPU */
- 	BUG_ON(cpu_num != cpu);
- 
--	if (uci->mc == NULL)
-+	if (uci->mc.mc_intel == NULL)
- 		return;
- 
- 	/* serialize access to the physical write to MSR 0x79 */
-@@ -319,8 +321,8 @@ void apply_microcode(int cpu)
- 
- 	/* write microcode via MSR 0x79 */
- 	wrmsr(MSR_IA32_UCODE_WRITE,
--		(unsigned long) uci->mc->bits,
--		(unsigned long) uci->mc->bits >> 16 >> 16);
-+	      (unsigned long) uci->mc.mc_intel->bits,
-+	      (unsigned long) uci->mc.mc_intel->bits >> 16 >> 16);
- 	wrmsr(MSR_IA32_UCODE_REV, 0, 0);
- 
- 	/* see notes above for revision 1.07.  Apparent chip bug */
-@@ -330,14 +332,14 @@ void apply_microcode(int cpu)
- 	rdmsr(MSR_IA32_UCODE_REV, val[0], val[1]);
- 
- 	spin_unlock_irqrestore(&microcode_update_lock, flags);
--	if (val[1] != uci->mc->hdr.rev) {
-+	if (val[1] != uci->mc.mc_intel->hdr.rev) {
- 		printk(KERN_ERR "microcode: CPU%d update from revision "
- 			"0x%x to 0x%x failed\n", cpu_num, uci->rev, val[1]);
- 		return;
- 	}
- 	printk(KERN_INFO "microcode: CPU%d updated from revision "
- 	       "0x%x to 0x%x, date = %08x \n",
--	       cpu_num, uci->rev, val[1], uci->mc->hdr.date);
-+	       cpu_num, uci->rev, val[1], uci->mc.mc_intel->hdr.date);
- 	uci->rev = val[1];
- }
- 
-@@ -347,7 +349,7 @@ extern unsigned int user_buffer_size;   /* it's size */
- 
- long get_next_ucode(void **mc, long offset)
- {
--	struct microcode_header mc_header;
-+	struct microcode_header_intel mc_header;
- 	unsigned long total_size;
- 
- 	/* No more data */
-@@ -378,13 +380,13 @@ long get_next_ucode(void **mc, long offset)
- static long get_next_ucode_from_buffer(void **mc, const u8 *buf,
- 	unsigned long size, long offset)
- {
--	struct microcode_header *mc_header;
-+	struct microcode_header_intel *mc_header;
- 	unsigned long total_size;
- 
- 	/* No more data */
- 	if (offset >= size)
- 		return 0;
--	mc_header = (struct microcode_header *)(buf + offset);
-+	mc_header = (struct microcode_header_intel *)(buf + offset);
- 	total_size = get_totalsize(mc_header);
- 
- 	if (offset + total_size > size) {
-@@ -463,7 +465,7 @@ int apply_microcode_check_cpu(int cpu)
- 	int err = 0;
- 
- 	/* Check if the microcode is available */
--	if (!uci->mc)
-+	if (!uci->mc.mc_intel)
- 		return 0;
- 
- 	old = current->cpus_allowed;
-@@ -508,7 +510,7 @@ void microcode_fini_cpu(int cpu)
- 
- 	mutex_lock(&microcode_mutex);
- 	uci->valid = 0;
--	kfree(uci->mc);
--	uci->mc = NULL;
-+	kfree(uci->mc.mc_intel);
-+	uci->mc.mc_intel = NULL;
- 	mutex_unlock(&microcode_mutex);
- }
+ MODULE_DESCRIPTION("Intel CPU (IA-32) Microcode Update Driver");
+ MODULE_AUTHOR("Tigran Aivazian <tigran@aivazian.fsnet.co.uk>");
 diff --git a/include/asm-x86/microcode.h b/include/asm-x86/microcode.h
-index d34a1fc..ef77c6f 100644
---- a/include/asm-x86/microcode.h
+new file mode 100644
+index 0000000..5a05568
+--- /dev/null
 +++ b/include/asm-x86/microcode.h
-@@ -1,4 +1,4 @@
+@@ -0,0 +1,34 @@
++struct microcode_header {
++	unsigned int            hdrver;
++	unsigned int            rev;
++	unsigned int            date;
++	unsigned int            sig;
++	unsigned int            cksum;
++	unsigned int            ldrver;
++	unsigned int            pf;
++	unsigned int            datasize;
++	unsigned int            totalsize;
++	unsigned int            reserved[3];
++};
++
++struct microcode {
++	struct microcode_header hdr;
++	unsigned int            bits[0];
++};
++
++typedef struct microcode          microcode_t;
++typedef struct microcode_header   microcode_header_t;
++
++/* microcode format is extended from prescott processors */
++struct extended_signature {
++	unsigned int            sig;
++	unsigned int            pf;
++	unsigned int            cksum;
++};
++
++struct extended_sigtable {
++	unsigned int            count;
++	unsigned int            cksum;
++	unsigned int            reserved[3];
++	struct extended_signature sigs[0];
++};
+diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
+index 5f58da4..58a76f6 100644
+--- a/include/asm-x86/processor.h
++++ b/include/asm-x86/processor.h
+@@ -561,41 +561,6 @@ static inline void clear_in_cr4(unsigned long mask)
+ 	write_cr4(cr4);
+ }
+ 
 -struct microcode_header {
-+struct microcode_header_intel {
- 	unsigned int            hdrver;
- 	unsigned int            rev;
- 	unsigned int            date;
-@@ -11,8 +11,8 @@ struct microcode_header {
- 	unsigned int            reserved[3];
- };
- 
+-	unsigned int		hdrver;
+-	unsigned int		rev;
+-	unsigned int		date;
+-	unsigned int		sig;
+-	unsigned int		cksum;
+-	unsigned int		ldrver;
+-	unsigned int		pf;
+-	unsigned int		datasize;
+-	unsigned int		totalsize;
+-	unsigned int		reserved[3];
+-};
+-
 -struct microcode {
--	struct microcode_header hdr;
-+struct microcode_intel {
-+	struct microcode_header_intel hdr;
- 	unsigned int            bits[0];
- };
- 
-@@ -35,5 +35,7 @@ struct ucode_cpu_info {
- 	unsigned int sig;
- 	unsigned int pf;
- 	unsigned int rev;
--	struct microcode *mc;
-+	union {
-+		struct microcode_intel *mc_intel;
-+	} mc;
- };
+-	struct microcode_header	hdr;
+-	unsigned int		bits[0];
+-};
+-
+-typedef struct microcode	microcode_t;
+-typedef struct microcode_header	microcode_header_t;
+-
+-/* microcode format is extended from prescott processors */
+-struct extended_signature {
+-	unsigned int		sig;
+-	unsigned int		pf;
+-	unsigned int		cksum;
+-};
+-
+-struct extended_sigtable {
+-	unsigned int		count;
+-	unsigned int		cksum;
+-	unsigned int		reserved[3];
+-	struct extended_signature sigs[0];
+-};
+-
+ typedef struct {
+ 	unsigned long		seg;
+ } mm_segment_t;
 -- 
 1.5.4.5
 
