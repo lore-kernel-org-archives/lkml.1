@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbYG1SlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbYG1Smb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758805AbYG1SlR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 14:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbYG1SlA
+	id S1759384AbYG1Smb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 14:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbYG1SmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 14:41:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54618 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753311AbYG1Sk7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 14:40:59 -0400
-Date: Mon, 28 Jul 2008 11:37:11 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
+	Mon, 28 Jul 2008 14:42:24 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:38777 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753511AbYG1SmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 14:42:23 -0400
+Message-ID: <488E130E.9060108@sgi.com>
+Date: Mon, 28 Jul 2008 11:42:22 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>
+       Rusty Russell <rusty@rustcorp.com.au>
 Subject: Re: [git pull] cpus4096 fixes
-In-Reply-To: <alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0807281135060.3486@nehalem.linux-foundation.org>
-References: <20080727190601.GA764@elte.hu> <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org> <200807281042.12860.rusty@rustcorp.com.au> <488E06F0.4070404@sgi.com> <alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <20080727190601.GA764@elte.hu> <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org> <20080727210350.GA30033@elte.hu>
+In-Reply-To: <20080727210350.GA30033@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 28 Jul 2008, Linus Torvalds wrote:
+Ingo Molnar wrote:
+...
+> NUMA-locality might have been a valid argument in favor of the massive 
+> array of constant cpumasks (common usage is to use it for the current 
+> cpu), if it wasnt all stupidly allocated on the boot node:
 > 
-> Here's a trivial setup, that is even tested. It's _small_ too.
-> 
-> 	/* cpu_bit_bitmap[0] is empty - so we can back into it */
-> 	#define MASK_DECLARE_1(x) [x+1][0] = 1ul << (x)
-> 	#define MASK_DECLARE_2(x) MASK_DECLARE_1(x), MASK_DECLARE_1(x+1)
-> 	#define MASK_DECLARE_4(x) MASK_DECLARE_2(x), MASK_DECLARE_2(x+2)
-> 	#define MASK_DECLARE_8(x) MASK_DECLARE_4(x), MASK_DECLARE_4(x+4)
-> 
-> 	static const unsigned long cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)] = {
-> 		MASK_DECLARE_8(0), MASK_DECLARE_8(8),
-> 		MASK_DECLARE_8(16), MASK_DECLARE_8(24),
-> 	#if BITS_PER_LONG > 32
-> 		MASK_DECLARE_8(32), MASK_DECLARE_8(40),
-> 		MASK_DECLARE_8(48), MASK_DECLARE_8(56),
-> 	#endif
-> 	};
-> 
-> 	static inline const cpumask_t *get_cpu_mask(unsigned int nr)
-> 	{
-> 		const unsigned long *p = cpu_bit_bitmap[1 + nr % BITS_PER_LONG];
-> 		p -= nr / BITS_PER_LONG;
-> 		return (const cpumask_t *)p;
-> 	}
+>         cpumask_of_cpu_map = alloc_bootmem_low(sizeof(cpumask_t) * nr_cpu_ids);
+>         for (i = 0; i < nr_cpu_ids; i++)
+>                 cpu_set(i, cpumask_of_cpu_map[i]);
 
-Btw, Ingo, can we get this issue resolved asap, please?
+The alternate method was for each cpu to contribute a cpumask_of_cpu
+for itself in the percpu area.  I don't recall why that idea was rejected.
 
-I was planning on doing -rc1 today, but this kind of hangs over me. The 
-above three lines of code (and more lines of macro initializers) obviously 
-does need some more testing, but if you hook it into the other changes you 
-already had, maybe we can get it done.
+But yes, the set_cpus_allowed is the biggest receiver of cpumask_t's with
+a single bit set.  I had also proposed a different interface allowing just
+that, but I think it was rejected as being redundant.
 
-Hmm?
-
-			Linus
+Thanks,
+Mike
