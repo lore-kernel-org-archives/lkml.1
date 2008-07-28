@@ -1,85 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbYG1I4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbYG1JA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755338AbYG1I4V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 04:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbYG1I4N
+	id S1754790AbYG1JA3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 05:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbYG1JAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 04:56:13 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45916 "EHLO
+	Mon, 28 Jul 2008 05:00:20 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46072 "EHLO
 	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751858AbYG1I4M (ORCPT
+	with ESMTP id S1750728AbYG1JAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 04:56:12 -0400
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <11498528.1217234602331.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 28 Jul 2008 17:43:22 +0900 (JST)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Re: [PATCH 2/2][-mm][resend] memcg limit change shrink usage.
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080722014517.04e88306.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
+	Mon, 28 Jul 2008 05:00:19 -0400
+Message-ID: <488D8A2E.5080509@jp.fujitsu.com>
+Date: Mon, 28 Jul 2008 17:58:22 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Pierre Ossman <drzeus-list@drzeus.cx>, Alex Chiang <achiang@hp.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
+       Kristen Accardi <kristen.c.accardi@intel.com>
+Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
+References: <20080724134737.4b91f30d@mjolnir.drzeus.cx> <20080725012916.06679a6d@mjolnir.drzeus.cx> <48895BA1.1030606@jp.fujitsu.com> <200807251518.53462.jbarnes@virtuousgeek.org> <20080726011600.GA19079@parisc-linux.org>
+In-Reply-To: <20080726011600.GA19079@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <20080722014517.04e88306.akpm@linux-foundation.org>
- <20080714171154.e1cc9943.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080714171522.d1cd50e9.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message -----
+Matthew Wilcox wrote:
+> On Fri, Jul 25, 2008 at 03:18:53PM -0700, Jesse Barnes wrote:
+>> I think that's fine (automatically creating duplicate devices with names to 
+>> differentiate them), but I think we should also try harder to avoid adding 
+>> duplicates.
+>>
+>> In Pierre's case, and on my T61, there's only one actual hotplug slot 
+>> available, but the firmware creates duplicate physical slot numbers and sets 
+>> the HP_CAP bit on everything, both of which are obviously wrong (well I 
+>> suppose you could pop these chips off the board, but it's not very 
+>> practical).  However, afaict that "other" OS uses the _RMV method to 
+>> determine whether a given slot is actually hot pluggable.  On my T61 at 
+>> least, this seems to be accurate: only one of my EXP* objects has a _RMV 
+>> method.
+> 
+> I think you're getting distracted from the real problem we're trying to
+> solve here, the reason for introducing the pci_slot driver in the first
+> place: we want to have information on all slots, not just hotplug ones.
+> 
+> So while this is growing out of the hotplug system, we need to register
+> all slots, even ones without _RMV.
+> 
 
->On Mon, 14 Jul 2008 17:15:22 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fuji
-tsu.com> wrote:
->
->> Shrinking memory usage at limit change.
->
->The above six words are all we really have as a changelog.  It is not
->adequate.
->
-I'll add enough description (in this week), sorry,
+I think Jesse's idea is not for breaking pci_slot driver. I think even
+with his idea pci_slot driver will detect all slots, but hotplug driver
+(e.g. pciehp) will not be registered on some of those slots.
 
-
->> +	while (res_counter_set_limit(&memcg->res, val)) {
->> +		if (signal_pending(current)) {
->> +			ret = -EINTR;
->> +			break;
->> +		}
->> +		if (!retry_count) {
->> +			ret = -EBUSY;
->> +			break;
->> +		}
->> +		progress = try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL);
->> +		if (!progress)
->> +			retry_count--;
->> +	}
->> +	return ret;
->> +}
->
->We could perhaps get away with a basically-unchanglogged patch if the
->code was adequately commented.  But it is not.
->
->What the heck does this function *do*?  Why does it exist?
->
-Sorry. I should do so.
-
->Guys, this is core Linux kernel, not some weekend hack project.  Please
->work to make it as comprehensible and as maintainable as we possibly
->can.
->
->Also, it is frequently a mistake for a callee to assume that the caller
->can use GFP_KERNEL.  Often when we do this we end having to change the
->interface so that the caller passes in the gfp_t.  As there's only one
->caller I guess we can get away with it this time.  For now.
->
-
-Hmm, ok. will rework this and take gfp_t as an argument.
+By the way, how is pci_slot driver on your system that has a problem with
+pciehp? Does duplicate slot problem happen also with pci_slot driver? 
 
 Thanks,
--Kame
+Kenji Kaneshige
 
