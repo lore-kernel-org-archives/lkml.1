@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761039AbYG1VQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761715AbYG1VRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761039AbYG1VQw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759531AbYG1VJs
+	id S1761715AbYG1VRS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759589AbYG1VJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:09:48 -0400
-Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:49590 "EHLO
+	Mon, 28 Jul 2008 17:09:49 -0400
+Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:49591 "EHLO
 	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757819AbYG1VJo (ORCPT
+	with ESMTP id S1758238AbYG1VJp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:09:44 -0400
+	Mon, 28 Jul 2008 17:09:45 -0400
 From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu
-Subject: [PATCH 20/24] x86: kernel/tsc.c cleanup
-Date: Mon, 28 Jul 2008 18:09:27 -0300
-Message-Id: <1217279371-4410-21-git-send-email-gustavo@las.ic.unicamp.br>
+Subject: [PATCH 21/24] x86: kernel/visws_quirks.c cleanup
+Date: Mon, 28 Jul 2008 18:09:28 -0300
+Message-Id: <1217279371-4410-22-git-send-email-gustavo@las.ic.unicamp.br>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217279371-4410-20-git-send-email-gustavo@las.ic.unicamp.br>
+In-Reply-To: <1217279371-4410-21-git-send-email-gustavo@las.ic.unicamp.br>
 References: <gustavo@las.ic.unicamp.br>
  <1217279371-4410-1-git-send-email-gustavo@las.ic.unicamp.br>
  <1217279371-4410-2-git-send-email-gustavo@las.ic.unicamp.br>
@@ -39,30 +39,31 @@ References: <gustavo@las.ic.unicamp.br>
  <1217279371-4410-18-git-send-email-gustavo@las.ic.unicamp.br>
  <1217279371-4410-19-git-send-email-gustavo@las.ic.unicamp.br>
  <1217279371-4410-20-git-send-email-gustavo@las.ic.unicamp.br>
+ <1217279371-4410-21-git-send-email-gustavo@las.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove additional tab.
+Remove additional whitespace.
 
 Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
 ---
- arch/x86/kernel/tsc.c |    2 +-
+ arch/x86/kernel/visws_quirks.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 7603c05..34e55d9 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -307,7 +307,7 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
- 	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
- 			(val == CPUFREQ_POSTCHANGE && freq->old > freq->new) ||
- 			(val == CPUFREQ_RESUMECHANGE)) {
--		*lpj = 	cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
-+		*lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
+diff --git a/arch/x86/kernel/visws_quirks.c b/arch/x86/kernel/visws_quirks.c
+index 41e01b1..03a45be 100644
+--- a/arch/x86/kernel/visws_quirks.c
++++ b/arch/x86/kernel/visws_quirks.c
+@@ -668,7 +668,7 @@ static struct irqaction master_action = {
+ };
  
- 		tsc_khz = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
- 		if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+ static struct irqaction cascade_action = {
+-	.handler = 	no_action,
++	.handler =	no_action,
+ 	.name =		"cascade",
+ };
+ 
 -- 
 1.5.4.5
 
