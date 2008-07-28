@@ -1,120 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759637AbYG1ViA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759880AbYG1Vj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759637AbYG1ViA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754905AbYG1Vhr
+	id S1759880AbYG1Vj0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755661AbYG1VjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:37:47 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:8386 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752059AbYG1Vhq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:37:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=wwrBUbDwEMN6UqzrkWB/kwCx8ucVXdmAPR8oyMXzcfIK/vqmlON3rn80X7Sl3I1HJI
-         gYpfIhBtJWZl1E1cMYAHqWmj8efw99/xzR9YY/J5lS9EFO3zr4XASVMlXAHZRewQiKm/
-         S2mDLdBjTZ7hYUhrglrOiTn70aCyNn3xClCgQ=
-Message-ID: <6b53b1990807281437l707be573n3be4d85feb033c63@mail.gmail.com>
-Date: Mon, 28 Jul 2008 18:37:44 -0300
-From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 0/24] x86: arch/x86/kernel/ cleanups
-Cc: linux-kernel@vger.kernel.org, "the arch/x86 maintainers" <x86@kernel.org>
-In-Reply-To: <20080728212052.GB9986@elte.hu>
+	Mon, 28 Jul 2008 17:39:16 -0400
+Received: from namei.org ([69.55.235.186]:35798 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753780AbYG1VjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 17:39:14 -0400
+Date: Tue, 29 Jul 2008 07:38:17 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Stephen Smalley <sds@tycho.nsa.gov>
+cc: Al Viro <viro@ZenIV.linux.org.uk>, Thomas Meyer <thomas@m3y3r.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Paris <eparis@parisplace.org>,
+       linux-security-module@vger.kernel.org
+Subject: Re: BUG at security/selinux/avc.c:883 (was: Re: linux-next: Tree
+ for July 17: early crash on x86-64)
+In-Reply-To: <1217266358.20373.54.camel@moss-spartans.epoch.ncsc.mil>
+Message-ID: <Xine.LNX.4.64.0807290736440.30242@us.intercode.com.au>
+References: <20080718012842.690b8346.sfr@canb.auug.org.au> 
+ <a4423d670807180652y352e66lfe04d2b33d2ed176@mail.gmail.com> 
+ <20080719035231.GU28946@ZenIV.linux.org.uk>  <200807192042.06988.rjw@sisk.pl>
+  <Xine.LNX.4.64.0807200553380.22632@us.intercode.com.au> 
+ <1216546973.3217.6.camel@dhcppc2>  <20080720121559.GV28946@ZenIV.linux.org.uk>
+ <1217266358.20373.54.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <gustavo@las.ic.unicamp.br>
-	 <1217279371-4410-1-git-send-email-gustavo@las.ic.unicamp.br>
-	 <20080728212052.GB9986@elte.hu>
-X-Google-Sender-Auth: f039612515773454
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 6:20 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Gustavo F. Padovan <gustavo@las.ic.unicamp.br> wrote:
->
->> Ingo,
->>
->> I removed many extra whitespaces and tabs from arch/x86/kernel/
->
-> hm, we tend to do a full cleanup of files we touch for style
-> cleanup.
->
-> You can check some style errors via:
->
->  scripts/checkpatch.pl --file arch/x86/kernel/alternative.c
->
-> but it also makes sense to look at the file and figure out places that
-> look ugly.
->
->>       x86: kernel/alternative.c cleanup
->
-> total: 4 errors, 15 warnings, 4 checks, 540 lines checked
->
->>       x86: kernel/apm_32.c cleanup
->
-> total: 6 errors, 27 warnings, 5 checks, 2416 lines checked
->
-> [ etc. ]
->
-> If we did each style problem separately we'd be generating over 1
-> million commits for the entire tree - that's not feasible. So we go per
-> file and once a file has been cleaned up, we keep it clean.
->
-> Note, checkpatch errors can be false positives occasionally, and not all
-> warnings have to be fixed all the time - ask if unsure about whether to
-> fix something or not.
->
-> It's also useful to check that the .o's are unchanged after a cleanup.
-> You can see commits that do that, for example:
+On Mon, 28 Jul 2008, Stephen Smalley wrote:
 
-Right. I will do this.
+> SELinux needs MAY_APPEND to be passed down to the security hook.
+> Otherwise, we get permission denials when only append permission is
+> granted by policy even if the opening process specified O_APPEND.
+> Shows up as a regression in the ltp selinux testsuite, fixed by
+> this patch.
+> 
+> Signed-off-by:  Stephen Smalley <sds@tycho.nsa.gov>
 
-Thanks, Ingo.
+Applied to  
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#hotfixes
 
->
->  commit d4413732b54a17684e48fbb4b52fade5bf965b5d
->  Author: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
->  Date:   Tue Feb 19 23:51:27 2008 +0100
->
->    x86: coding style fixes to arch/x86/oprofile/op_model_athlon.c
->
->    The patch fixes 33 errors and a few warnings reported by checkpatch.pl
->
->    arch/x86/oprofile/op_model_athlon.o:
->       text    data     bss     dec     hex filename
->       1691       0      32    1723     6bb op_model_athlon.o.before
->       1691       0      32    1723     6bb op_model_athlon.o.after
->    md5:
->    c354bc2d7140e1e626c03390eddaa0a6  op_model_athlon.o.before.asm
->    c354bc2d7140e1e626c03390eddaa0a6  op_model_athlon.o.after.asm
->
->    Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
->    Signed-off-by: Ingo Molnar <mingo@elte.hu>
->
->        Ingo
->
+
+Al, holler if you want to push this through your tree.
+
+
+---
+
+ fs/namei.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/namei.c b/fs/namei.c
+index a7b0a0b..b91e973 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -274,7 +274,7 @@ int inode_permission(struct inode *inode, int mask)
+                return retval;
+ 
+        return security_inode_permission(inode,
+-                       mask & (MAY_READ|MAY_WRITE|MAY_EXEC));
++                       mask & (MAY_READ|MAY_WRITE|MAY_EXEC|MAY_APPEND));
+ }
+ 
+ /**
 
 
 
+- James
 -- 
-----------------------------------------------
-Gustavo Fernando Padovan
-Engenharia de Computação 2006
-LAS - Laboratório de Administração e Segurança de Sistemas
-Instituto de Computação - UNICAMP
-
-gfpadovan@gmail.com
-ra061316@students.ic.unicamp.br
-pao@jabber.org
--------------------------------------------
-
-Seja Livre, use Software Livre
+James Morris
+<jmorris@namei.org>
