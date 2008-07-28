@@ -1,81 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbYG1Soe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbYG1SqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbYG1Soe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 14:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbYG1So0
+	id S1758204AbYG1SqR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 14:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbYG1SqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 14:44:26 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:60249 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750728AbYG1SoZ (ORCPT
+	Mon, 28 Jul 2008 14:46:07 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:13469 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752743AbYG1SqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 14:44:25 -0400
-Date: Mon, 28 Jul 2008 14:42:47 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Calvin Walton <calvin.walton@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] FILESYSTEMS: Make "advanced partitions" immediately
- unselectable.
-In-Reply-To: <20080728103731.7bafd577.randy.dunlap@oracle.com>
-Message-ID: <alpine.LFD.1.10.0807281437070.10586@localhost.localdomain>
-References: <alpine.LFD.1.10.0807241135540.5289@localhost.localdomain> <20080726094718.b617c1e7.randy.dunlap@oracle.com> <alpine.LFD.1.10.0807261750340.3493@localhost.localdomain> <1217214689.22927.3.camel@zem.phub.net.cable.rogers.com>
- <alpine.LFD.1.10.0807280531210.3402@localhost.localdomain> <20080728103731.7bafd577.randy.dunlap@oracle.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Mon, 28 Jul 2008 14:46:06 -0400
+Date: Mon, 28 Jul 2008 11:39:38 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] v4l: fix kernel-doc warning, function name, and docbook
+ filename
+Message-Id: <20080728113938.bd84ee3c.randy.dunlap@oracle.com>
+In-Reply-To: <20080728122518.77cea66e@gaivota>
+References: <20080727224104.78b8298d@gaivota>
+	<20080727204256.bba5eaf6.randy.dunlap@oracle.com>
+	<alpine.LFD.1.10.0807280303110.18581@bombadil.infradead.org>
+	<20080728081813.423ac50c.randy.dunlap@oracle.com>
+	<20080728122518.77cea66e@gaivota>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008, Randy Dunlap wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> >   yes, it's nitpicking but, as it's laid out right now, it's
-> > unnecessarily confusing and inconsistent.  but i don't know if
-> > there's a trivial fix for it.
->
-> Yes, I'd call MSDOS partitions basic, not Advanced, and then put all
-> others under an Advanced menu that can be toggled on/off easily with
-> menuconfig.
->
-> Not quite trivial, but not messy either.
->
-> Patch below.  Comments?
+Change function name in kernel-doc and add kernel-doc for parameter @index:
+Warning(linhead//drivers/media/video/videodev.c:2090): No description found for parameter 'index'
 
-... patch snipped ...
+Also change source file name in DocBook/videobook.tmpl to match the new
+source file name.
 
-  i suspect that's as good as it's going to get, but it's unfortunate
-that it adds yet another level of submenu under "Partition types."
-personally, i was pondering a top level submenu entry of "Advanced
-partition types" in which the (non-advanced) MSDOS partition support
-was yanked out of there *entirely*.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/DocBook/videobook.tmpl |    2 +-
+ drivers/media/video/v4l2-dev.c       |    4 +++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-  it strikes me that, at least on x86, MSDOS partition support is so
-fundamental that it should take work for someone to turn it *off*.
-perhaps simply have it on by default, and force someone to go under
-"Configure standard kernel features (for small systems)"
-(CONFIG_EMBEDDED) to make it go away?
-
-  seriously, how often is someone going to build a kernel for x86 and
-not need MSDOS partition support?  just curious.
-
-rday
---
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+--- head.orig/drivers/media/video/v4l2-dev.c
++++ head/drivers/media/video/v4l2-dev.c
+@@ -222,11 +222,13 @@ int video_register_device(struct video_d
+ EXPORT_SYMBOL(video_register_device);
+ 
+ /**
+- *	video_register_device - register video4linux devices
++ *	video_register_device_index - register video4linux devices
+  *	@vfd:  video device structure we want to register
+  *	@type: type of device to register
+  *	@nr:   which device number (0 == /dev/video0, 1 == /dev/video1, ...
+  *             -1 == first free)
++ *	@index: stream number based on parent device;
++ *		-1 if auto assign, requested number otherwise
+  *
+  *	The registration code assigns minor numbers based on the type
+  *	requested. -ENFILE is returned in all the device slots for this
+--- head.orig/Documentation/DocBook/videobook.tmpl
++++ head/Documentation/DocBook/videobook.tmpl
+@@ -1648,7 +1648,7 @@ static struct video_buffer capture_fb;
+ 
+   <chapter id="pubfunctions">
+      <title>Public Functions Provided</title>
+-!Edrivers/media/video/videodev.c
++!Edrivers/media/video/v4l2-dev.c
+   </chapter>
+ 
+ </book>
