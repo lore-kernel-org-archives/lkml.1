@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757778AbYG1Pb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYG1Pcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757778AbYG1Pb5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 11:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbYG1Pbt
+	id S1758246AbYG1Pcz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 11:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbYG1Pcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 11:31:49 -0400
-Received: from gate.criticalsoftware.com ([212.13.37.242]:40130 "EHLO
+	Mon, 28 Jul 2008 11:32:46 -0400
+Received: from gate.criticalsoftware.com ([212.13.37.242]:40204 "EHLO
 	gate.criticalsoftware.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752214AbYG1Pbt (ORCPT
+	with ESMTP id S1751718AbYG1Pcq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 11:31:49 -0400
-X-Greylist: delayed 1115 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jul 2008 11:31:49 EDT
-Message-ID: <488DE723.4020904@criticalsoftware.com>
-Date: Mon, 28 Jul 2008 16:34:59 +0100
+	Mon, 28 Jul 2008 11:32:46 -0400
+Message-ID: <488DE2C7.3090003@criticalsoftware.com>
+Date: Mon, 28 Jul 2008 16:16:23 +0100
 From: mihaela elena grigore <e-grigore@criticalsoftware.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
 MIME-Version: 1.0
@@ -36,5 +35,6 @@ others ? How to make it relocatable for ppc32? I assume that changing
 LDFLAGS_vmlinux to '-r' in the Makefile for ppc is not enough... (i'm 
 using 2.6.11)
 
-p.s. any comments/answers to my posting, please add me in CC, as i 
-didn't subscribe, thank you.
+
+
+
