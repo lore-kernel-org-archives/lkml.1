@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760340AbYG1RO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760557AbYG1ROm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760340AbYG1RO1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 13:14:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbYG1RN4
+	id S1760557AbYG1ROm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 13:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759502AbYG1ROF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 13:13:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47738 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756236AbYG1RNx (ORCPT
+	Mon, 28 Jul 2008 13:14:05 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:26934 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758808AbYG1ROB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 13:13:53 -0400
-Date: Mon, 28 Jul 2008 10:10:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Andrea Righi <righi.andrea@gmail.com>, akpm@linux-foundation.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] mm: unify pmd_free() implementation
-In-Reply-To: <1217264339.3503.97.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.1.10.0807281000070.3486@nehalem.linux-foundation.org>
-References: <> <1217260287-13115-1-git-send-email-righi.andrea@gmail.com>  <alpine.LFD.1.10.0807280851130.3486@nehalem.linux-foundation.org>  <1217261852.3503.89.camel@localhost.localdomain>  <alpine.LFD.1.10.0807280937150.3486@nehalem.linux-foundation.org>
- <1217264339.3503.97.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 28 Jul 2008 13:14:01 -0400
+X-SourceIP: 80.57.229.25
+Subject: Re: [PATCH 12/30] mm: memory reserve management
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Neil Brown <neilb@suse.de>,
+       cl@linux-foundation.org
+In-Reply-To: <1217264374.15724.42.camel@calx>
+References: <20080724140042.408642539@chello.nl>
+	 <20080724141530.127530749@chello.nl>
+	 <1217239564.7813.36.camel@penberg-laptop>  <1217240224.6331.32.camel@twins>
+	 <1217240994.7813.53.camel@penberg-laptop>  <1217241541.6331.42.camel@twins>
+	 <1217264374.15724.42.camel@calx>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 28 Jul 2008 19:13:46 +0200
+Message-Id: <1217265226.18049.24.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 28 Jul 2008, James Bottomley wrote:
+On Mon, 2008-07-28 at 11:59 -0500, Matt Mackall wrote:
+> On Mon, 2008-07-28 at 12:39 +0200, Peter Zijlstra wrote:
+> > Also, you might have noticed, I still need to do everything SLOB. The
+> > last time I rewrote all this code I was still hoping Linux would 'soon'
+> > have a single slab allocator, but evidently we're still going with 3 for
+> > now.. :-/
+> >
+> > So I guess I can no longer hide behind that and will have to bite the
+> > bullet and write the SLOB bits..
 > 
-> Sorry ... should have been clearer.  My main concern is the cost of
-> barrier() which is just a memory clobber ... we have to use barriers to
-> place the probe points correctly in the code.
+> ﻿I haven't seen the rest of this thread, but I presume this is part of
+> your OOM-avoidance for network I/O framework?
 
-Oh, "barrier()" itself has _much_ less cost.
+Yes indeed.
 
-It still has all the "needs to flush any global/address-taken-of variables 
-to memory" property and can thus cause reloads, but that's kind of the 
-point of it, after all. So in that sense "barrier()" is free: the only 
-cost of a barrier is the cost of what you actually need to get done. It's 
-not really "free", but it's also not any more costly than what your 
-objective was.
+> SLOB can be pretty easily expanded to handle a notion of independent
+> allocation arenas as there are only a couple global variables to switch
+> between. ﻿kfree will also return allocations to the page list (and
+> therefore arena) from whence they came. That may make it pretty simple
+> to create and prepopulate reserve pools.
 
-In contrast, the "objective" in an empty function call is seldom the 
-serialization, so in that case the serialization is all just unnecessary 
-overhead.
+Right - currently we let all the reserves sit on the free page list. The
+advantage there is that it also helps the anti-frag stuff, due to having
+larger free lists.
 
-Also, barrier() avoids the big hit of turning a leaf function into a 
-non-leaf one. It also avoids all the fixed registers and the register 
-clobbers (although for tracing purposes you may end up setting up fixed 
-regs, of course).
-
-The leaf -> non-leaf thing is actually often the major thing. Yes, the 
-compiler will often inline functions that are simple enough to be leaf 
-functions with no stack frame, so we don't have _that_ many of them, but 
-when it hits, it's often the most noticeable part of an unnecessary 
-function call. And "barrier()" should never trigger that problem.
-
-			Linus
