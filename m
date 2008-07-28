@@ -1,76 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762958AbYG1VWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762989AbYG1VXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762958AbYG1VWy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761858AbYG1VUQ
+	id S1762989AbYG1VXQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762232AbYG1VVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:20:16 -0400
-Received: from gate.crashing.org ([63.228.1.57]:43479 "EHLO gate.crashing.org"
+	Mon, 28 Jul 2008 17:21:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47281 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762104AbYG1VUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:20:13 -0400
-Subject: Re: warning in scheduler
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       stephen@blacksapphire.com, benm@symmetric.co.nz, jkosina@suse.cz
-In-Reply-To: <20080728183911.GC16059@parisc-linux.org>
-References: <1217214947.11188.156.camel@pasglop>
-	 <1217238791.6331.15.camel@twins> <1217239403.11188.189.camel@pasglop>
-	 <20080728100752.GA4717@elte.hu> <1217241622.11188.191.camel@pasglop>
-	 <20080728183911.GC16059@parisc-linux.org>
-Content-Type: text/plain
-Date: Tue, 29 Jul 2008 07:19:16 +1000
-Message-Id: <1217279956.11188.221.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	id S1762168AbYG1VVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 17:21:09 -0400
+Date: Mon, 28 Jul 2008 23:20:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
+Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 0/24] x86: arch/x86/kernel/ cleanups
+Message-ID: <20080728212052.GB9986@elte.hu>
+References: <gustavo@las.ic.unicamp.br> <1217279371-4410-1-git-send-email-gustavo@las.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217279371-4410-1-git-send-email-gustavo@las.ic.unicamp.br>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_00,URIBL_BLACK autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	2.0 URIBL_BLACK            Contains an URL listed in the URIBL blacklist
+	[URIs: checkpatch.pl]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-28 at 12:39 -0600, Matthew Wilcox wrote:
-> On Mon, Jul 28, 2008 at 08:40:22PM +1000, Benjamin Herrenschmidt wrote:
-> > I tend to agree. I might look into doing it for powerpc around rc3 or
-> > so, when things have settled a bit.
-> 
-> It'd be nice if allmodconfig even compiled:
-> 
-> drivers/char/pcmcia/ipwireless/hardware.c:571: error: invalid use of undefined type 'struct ipw_network'
-> 
-> Not to mention the qla_attr patch:
-> 
-> +#include <linux/delay.h>
-> 
-> There's probably others, I just haven't got far enough in the
-> compilation process yet.
 
-Yup, it's been a pretty bad merge window (at least it's my impression as
-my first one as maintainer), mostly fixing compile bugs all the time.
+* Gustavo F. Padovan <gustavo@las.ic.unicamp.br> wrote:
 
-> But I am seeing lots of warnings _without_ the patch applied:
+> Ingo,
 > 
-> fs/omfs/inode.c: In function 'omfs_fill_super':
-> fs/omfs/inode.c:495: warning: format '%llx' expects type 'long long
-> unsigned int', but argument 2 has type 'u64'
-> fs/proc/base.c: In function 'do_io_accounting':
-> fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
-> unsigned int', but argument 3 has type 'u64'
-> fs/ubifs/dir.c: In function 'ubifs_readdir':
-> fs/ubifs/dir.c:437: warning: format '%llu' expects type 'long long
-> unsigned int', but argument 5 has type '__le64'
-> 
-> (other warnings snipped for brevity).
+> I removed many extra whitespaces and tabs from arch/x86/kernel/
 
-I have a handful on powerpc too.
+hm, we tend to do a full cleanup of files we touch for style 
+cleanup.
 
-BTW. I'm looking at adding a %pR to print a struct resource (or maybe
-a %pr for a resource_size_t and %pR for the whole resource). That would
-help with the whole business of the thing being either 32 or 64 bits.
+You can check some style errors via:
 
-Ben.
+  scripts/checkpatch.pl --file arch/x86/kernel/alternative.c
 
+but it also makes sense to look at the file and figure out places that 
+look ugly.
 
+> 	x86: kernel/alternative.c cleanup
+
+total: 4 errors, 15 warnings, 4 checks, 540 lines checked
+
+> 	x86: kernel/apm_32.c cleanup
+
+total: 6 errors, 27 warnings, 5 checks, 2416 lines checked
+
+[ etc. ]
+
+If we did each style problem separately we'd be generating over 1 
+million commits for the entire tree - that's not feasible. So we go per 
+file and once a file has been cleaned up, we keep it clean.
+
+Note, checkpatch errors can be false positives occasionally, and not all 
+warnings have to be fixed all the time - ask if unsure about whether to 
+fix something or not.
+
+It's also useful to check that the .o's are unchanged after a cleanup. 
+You can see commits that do that, for example:
+
+ commit d4413732b54a17684e48fbb4b52fade5bf965b5d
+ Author: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+ Date:   Tue Feb 19 23:51:27 2008 +0100
+
+    x86: coding style fixes to arch/x86/oprofile/op_model_athlon.c
+
+    The patch fixes 33 errors and a few warnings reported by checkpatch.pl
+
+    arch/x86/oprofile/op_model_athlon.o:
+       text    data     bss     dec     hex filename
+       1691       0      32    1723     6bb op_model_athlon.o.before
+       1691       0      32    1723     6bb op_model_athlon.o.after
+    md5:
+    c354bc2d7140e1e626c03390eddaa0a6  op_model_athlon.o.before.asm
+    c354bc2d7140e1e626c03390eddaa0a6  op_model_athlon.o.after.asm
+
+    Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
