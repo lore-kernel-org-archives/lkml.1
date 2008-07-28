@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbYG1AdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758801AbYG1Amq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758833AbYG1AdR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 20:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756915AbYG1AdD
+	id S1758801AbYG1Amq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 20:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbYG1Amh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 20:33:03 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:33283 "EHLO smtps.tip.net.au"
+	Sun, 27 Jul 2008 20:42:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:38292 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756766AbYG1AdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 20:33:01 -0400
-Date: Mon, 28 Jul 2008 10:32:53 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, ppc-dev <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] powerpc/ibmveth: fix multiple errors with
- dma_mapping_error conversion
-Message-Id: <20080728103253.5256e6c0.sfr@canb.auug.org.au>
-In-Reply-To: <20080727122414.cac4e336.akpm@linux-foundation.org>
-References: <20080728021424.40cf66bc.sfr@canb.auug.org.au>
-	<20080727122414.cac4e336.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__28_Jul_2008_10_32_53_+1000_0JQ_/qAiFWNDz46v"
+	id S1750843AbYG1Amg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jul 2008 20:42:36 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git pull] cpus4096 fixes
+Date: Mon, 28 Jul 2008 10:42:12 +1000
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Mike Travis <travis@sgi.com>
+References: <20080727190601.GA764@elte.hu> <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807281042.12860.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__28_Jul_2008_10_32_53_+1000_0JQ_/qAiFWNDz46v
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Andrew,
-
-On Sun, 27 Jul 2008 12:24:14 -0700 Andrew Morton <akpm@linux-foundation.org=
-> wrote:
+On Monday 28 July 2008 06:15:26 Linus Torvalds wrote:
+> On Sun, 27 Jul 2008, Ingo Molnar wrote:
+> > Please pull the latest cpus4096-fixes git tree from:
 >
-> On Mon, 28 Jul 2008 02:14:24 +1000 Stephen Rothwell <sfr@canb.auug.org.au=
-> wrote:
->=20
-> > The addition of an argument to dma_mapping_error() in commit
-> > 8d8bb39b9eba32dd70e87fd5ad5c5dd4ba118e06 "dma-mapping: add the device
-> > argument to dma_mapping_error()" left a bit of fallout:
->=20
-> Yeah, sorry, that patch was a horror - I fixed it perhaps ten times.  I
-> think people were madly adding new dma_mapping_error() calls while we
-> were trying to maintain it as well.
->=20
-> It should have been dome as a two-stage conversion.
+> No. Not without explanations.
+>
+> Quite frankly, this "fix" looks like a huge stinking pile of sh*t.
+>
+> I can't follow that thread on lkml.org (horrible web interface with
+> hard-to-follow threading), and I'm too lazy to bother to look in my lkml
+> email archives, but whoever said
+>
+>   "The simple version is just a static array of [NR_CPUS] cpumask_t's."
+>
+> and then implemented this piece of shit is a complete and utter moron.
 
-Yes, indeed (my new favourite word :-))
+How awesome, Linus is talking about me!
 
-I hope that we all can discuss procedures for API changes at the Kernel
-Summit ...
+Your idea is clever, thanks.  This patch was a bandaid to save us from the 
+unbearably fugly "cpumask_of_cpu_ptr_declare(cpu_mask)".  I was going to rip 
+this code out as soon as possible, but with your trick we should keep it.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+The 4k CPU patches have been sliding in without review up until now.  We need 
+a serious think about how to handle cpumask_t that doesn't fit on the stack.  
 
---Signature=_Mon__28_Jul_2008_10_32_53_+1000_0JQ_/qAiFWNDz46v
-Content-Type: application/pgp-signature
+Hey, since Mike put his Signed-off-by above mine and didn't put a From line 
+when he took my patch, WFT am I taking responsibility? :)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiNE7UACgkQjjKRsyhoI8zTcgCePJJdfrTRzlwHIQkh2vwNv3Ax
-AxUAn0VftUIy32jvnG+ULTZqvOc6dmi8
-=9/z9
------END PGP SIGNATURE-----
-
---Signature=_Mon__28_Jul_2008_10_32_53_+1000_0JQ_/qAiFWNDz46v--
+Rusty.
