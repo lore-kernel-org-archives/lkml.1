@@ -1,90 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbYG1TaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbYG1Tbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757315AbYG1TaS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 15:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYG1TaF
+	id S1757711AbYG1Tbg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 15:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYG1Tb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 15:30:05 -0400
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:57648 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751431AbYG1TaB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 15:30:01 -0400
-X-Greylist: delayed 1987 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jul 2008 15:30:01 EDT
-Date: Mon, 28 Jul 2008 20:56:51 +0200
-From: Bastian Blank <waldi@debian.org>
-To: linuxppc-dev@ozlabs.org
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/lpar - defer prefered console setup
-Message-ID: <20080728185651.GA29530@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <waldi@debian.org>, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+	Mon, 28 Jul 2008 15:31:28 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:52619 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751677AbYG1Tb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 15:31:27 -0400
+Message-ID: <488E1E7F.6060802@sgi.com>
+Date: Mon, 28 Jul 2008 12:31:11 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [git pull] cpus4096 fixes
+References: <20080727190601.GA764@elte.hu> <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org> <200807281042.12860.rusty@rustcorp.com.au> <488E06F0.4070404@sgi.com> <alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org> <alpine.LFD.1.10.0807281135060.3486@nehalem.linux-foundation.org> <20080728185134.GA11664@elte.hu> <488E1C75.7060808@sgi.com>
+In-Reply-To: <488E1C75.7060808@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Mike Travis wrote:
+> Ingo Molnar wrote:
+>> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>>
+>>> On Mon, 28 Jul 2008, Linus Torvalds wrote:
+>>>> Here's a trivial setup, that is even tested. It's _small_ too.
+>>>>
+>>>> 	/* cpu_bit_bitmap[0] is empty - so we can back into it */
+>>>> 	#define MASK_DECLARE_1(x) [x+1][0] = 1ul << (x)
+>>>> 	#define MASK_DECLARE_2(x) MASK_DECLARE_1(x), MASK_DECLARE_1(x+1)
+>>>> 	#define MASK_DECLARE_4(x) MASK_DECLARE_2(x), MASK_DECLARE_2(x+2)
+>>>> 	#define MASK_DECLARE_8(x) MASK_DECLARE_4(x), MASK_DECLARE_4(x+4)
+>>>>
+>>>> 	static const unsigned long cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)] = {
+>>>> 		MASK_DECLARE_8(0), MASK_DECLARE_8(8),
+>>>> 		MASK_DECLARE_8(16), MASK_DECLARE_8(24),
+>>>> 	#if BITS_PER_LONG > 32
+>>>> 		MASK_DECLARE_8(32), MASK_DECLARE_8(40),
+>>>> 		MASK_DECLARE_8(48), MASK_DECLARE_8(56),
+>>>> 	#endif
+>>>> 	};
+>>>>
+>>>> 	static inline const cpumask_t *get_cpu_mask(unsigned int nr)
+>>>> 	{
+>>>> 		const unsigned long *p = cpu_bit_bitmap[1 + nr % BITS_PER_LONG];
+>>>> 		p -= nr / BITS_PER_LONG;
+>>>> 		return (const cpumask_t *)p;
+>>>> 	}
+>>> Btw, Ingo, can we get this issue resolved asap, please?
+>>>
+>>> I was planning on doing -rc1 today, but this kind of hangs over me. 
+>>> The above three lines of code (and more lines of macro initializers) 
+>>> obviously does need some more testing, but if you hook it into the 
+>>> other changes you already had, maybe we can get it done.
+>>>
+>>> Hmm?
+>> yeah, i'm on it. If everything goes well hopefully i'll have something 
+>> pullable in 1-2 hours, if that's ok as a timeframe.
+>>
+>> 	Ingo
+> 
+> One problem is that the current api is cpumask_t cpumask_of_cpu(x), so
+> all ref's would have to be changed.  (Unless there's some clever way of
+> defining "&cpumask_of_cpu(x)" to be get_cpu_mask(x) ...?)
+> 
+> Do you want me to do these changes?
+> 
+> Thanks,
+> Mike
 
-The powerpc lpar code adds a prefered console at a very early state,
-during arch_setup. This runs even before the console setup from the
-command line and takes preference.
+Please ignore my stupidity...  I was not thinking very clearly.
 
-This patch moves the prefered console setup into an arch_initcall which
-runs later and allows the specification of the correct console on the
-command line. The udbg console remains as boot console.
-
-There is a different problem that the code does not pick up the correct
-console because it uses a part (4) of the lpar device number (30000004)
-instead of the correct index 1.
-
-Signed-off-by: Bastian Blank <waldi@debian.org>
-
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 9235c46..626290d 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -57,6 +57,7 @@ extern void pSeries_find_serial_port(void);
- 
- 
- int vtermno;	/* virtual terminal# for udbg  */
-+static char *console_name;
- 
- #define __ALIGNED__ __attribute__((__aligned__(sizeof(long))))
- static void udbg_hvsi_putc(char c)
-@@ -232,18 +233,24 @@ void __init find_udbg_vterm(void)
- 		udbg_putc = udbg_putcLP;
- 		udbg_getc = udbg_getcLP;
- 		udbg_getc_poll = udbg_getc_pollLP;
--		add_preferred_console("hvc", termno[0] & 0xff, NULL);
-+		console_name = "hvc";
- 	} else if (of_device_is_compatible(stdout_node, "hvterm-protocol")) {
--		vtermno = termno[0];
- 		udbg_putc = udbg_hvsi_putc;
- 		udbg_getc = udbg_hvsi_getc;
- 		udbg_getc_poll = udbg_hvsi_getc_poll;
--		add_preferred_console("hvsi", termno[0] & 0xff, NULL);
-+		console_name = "hvsi";
- 	}
- out:
- 	of_node_put(stdout_node);
- }
- 
-+static void __init enable_vterm(void)
-+{
-+	if (console_name)
-+		add_preferred_console(console_name, vtermno, NULL);
-+}
-+arch_initcall(enable_vterm);
-+
- void vpa_init(int cpu)
- {
- 	int hwcpu = get_hard_smp_processor_id(cpu);
-
--- 
-Genius doesn't work on an assembly line basis.  You can't simply say,
-"Today I will be brilliant."
-		-- Kirk, "The Ultimate Computer", stardate 4731.3
+Mike
