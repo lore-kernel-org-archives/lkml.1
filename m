@@ -1,194 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761483AbYG1SAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761178AbYG1SAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761483AbYG1SAG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 14:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759687AbYG1R4V
+	id S1761178AbYG1SAu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 14:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761315AbYG1R6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 13:56:21 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:10723 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760712AbYG1R4T (ORCPT
+	Mon, 28 Jul 2008 13:58:48 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:5992 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761302AbYG1R6q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 13:56:19 -0400
-Message-Id: <20080728175512.449879016@de.ibm.com>
-References: <20080728175355.734299984@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 28 Jul 2008 19:54:02 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 07/15] kmsg: convert xpram messages to kmsg api.
-Content-Disposition: inline; filename=806-kmsg-xpram.diff
+	Mon, 28 Jul 2008 13:58:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=ilowNCfTGTLuoW6UTCSBg+OUv/3Vdhosw/XM4s84zro/48+bbor5OUKSVN9KxiAwNC
+         w0t2rEKhcB32X6I4aH1TlNZtJG2/thOSUxd13Ozhr17B+hBSiOCMhDW6gaYmdhuat86O
+         JjmG9MsJe6V3B/kG5awBnxOH6cJqJ0u90/whQ=
+Message-ID: <37219a840807281058j7d0de82fx76d7340b3bc3318f@mail.gmail.com>
+Date: Mon, 28 Jul 2008 13:58:44 -0400
+From: "Michael Krufky" <mkrufky@linuxtv.org>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: 463 kernel developers missing!
+Cc: "Simon Arlott" <simon@fire.lp0.eu>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <9e4733910807281022v38d323c9sc7b63235824690f6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
+	 <488DF9CF.8020408@simon.arlott.org.uk>
+	 <9e4733910807281005y62dca90ar96f663908e644546@mail.gmail.com>
+	 <488DFD97.7080802@simon.arlott.org.uk>
+	 <9e4733910807281022v38d323c9sc7b63235824690f6@mail.gmail.com>
+X-Google-Sender-Auth: 0d1453cc8123ecbf
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+On Mon, Jul 28, 2008 at 1:22 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On 7/28/08, Simon Arlott <simon@fire.lp0.eu> wrote:
+> A later version of this list could separate the valid current
+> names/addresses from the entries that are fixing typos or that have
+> old emails. That would improve the validation. But I don't have an
+> automated way to tell me which alias is the current one. Access to the
+> current LKML subscriber list would supply the needed info as to which
+> one to pick.
 
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+Please dont use LKML subscriptions as the authority of one's preferred
+email address.
 
- Documentation/s390/kmsg/xpram |   54 ++++++++++++++++++++++++++++++++++++++++++
- drivers/s390/block/xpram.c    |   41 ++++++++++++++-----------------
- 2 files changed, 73 insertions(+), 22 deletions(-)
+I, for instance, am *only* subscribed to LKML using my gmail account.
+I prefer that nobody ever email my gmail account directly -- I use my
+gmail account as a filter -- gmail filters my mails and fwd's specific
+mails to my other specific email addresses -- I rarely read gmail
+directly, and I am unlikely to ever read an email addressed to my
+gmail box.
 
-Index: quilt-2.6/Documentation/s390/kmsg/xpram
-===================================================================
---- /dev/null
-+++ quilt-2.6/Documentation/s390/kmsg/xpram
-@@ -0,0 +1,54 @@
-+/*?
-+ * Tag: xpram.1
-+ * Text: "%d is not a valid number of XPRAM devices"
-+ * Severity: Error
-+ * Parameter:
-+ *   @1: number of partitions
-+ * Description:
-+ * The number of XPRAM partitions specified for the 'devs' module parameter
-+ * or with the 'xpram.parts' kernel parameter must be an integer in the
-+ * range 1 to 32. The XPRAM device driver created a maximum of 32 partitions
-+ * that are probably not configured as intended.
-+ * User action:
-+ * If the XPRAM device driver has been complied as a separate module,
-+ * unload the module and load it again with a correct value for the
-+ * 'devs' module parameter. If the XPRAM device driver has been compiled
-+ * into the kernel, correct the 'xpram.parts' parameter in the kernel
-+ * parameter line and restart Linux.
-+ */
-+
-+/*?
-+ * Tag: xpram.2
-+ * Text: "Not enough expanded memory available"
-+ * Severity: Error
-+ * Description:
-+ * The amount of expanded memory required to set up your XPRAM partitions
-+ * depends on the 'sizes' parameter specified for the xpram module or on
-+ * the specifications for the 'xpram.parts' parameter if the XPRAM device
-+ * driver has been compiled into the kernel. Your
-+ * current specification exceed the amount of available expanded memory.
-+ * Your XPRAM partitions are probably not configured as intended.
-+ * User action:
-+ * If the XPRAM device driver has been complied as a separate module,
-+ * unload the xpram module and load it again with an appropriate value
-+ * for the 'sizes' module parameter. If the XPRAM device driver has been
-+ * compiled into the kernel, adjust the 'xpram.parts' parameter in the
-+ * kernel parameter line and restart Linux. If you need more than the
-+ * available expanded memory, increase the expanded memory allocation for
-+ * your virtual hardware or LPAR.
-+ */
-+
-+/*?
-+ * Tag: xpram.3
-+ * Text: "No expanded memory available"
-+ * Severity: Error
-+ * Description:
-+ * The XPRAM device driver has been loaded in a Linux instance that runs
-+ * in an LPAR or virtual hardware without expanded memory.
-+ * are created.
-+ * User action:
-+ * Allocate expanded memory for your LPAR or virtual hardware or do not
-+ * load the xpram module. You can ignore this message, if you do not want
-+ * to create XPRAM partitions.
-+ */
-+
-Index: quilt-2.6/drivers/s390/block/xpram.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/block/xpram.c
-+++ quilt-2.6/drivers/s390/block/xpram.c
-@@ -37,17 +37,14 @@
- #include <linux/sysdev.h>
- #include <linux/bio.h>
- #include <asm/uaccess.h>
-+#include <asm/kmsg.h>
-+
-+#define KMSG_COMPONENT "xpram"
- 
- #define XPRAM_NAME	"xpram"
- #define XPRAM_DEVS	1	/* one partition */
- #define XPRAM_MAX_DEVS	32	/* maximal number of devices (partitions) */
- 
--#define PRINT_DEBUG(x...)	printk(KERN_DEBUG XPRAM_NAME " debug:" x)
--#define PRINT_INFO(x...)	printk(KERN_INFO XPRAM_NAME " info:" x)
--#define PRINT_WARN(x...)	printk(KERN_WARNING XPRAM_NAME " warning:" x)
--#define PRINT_ERR(x...)		printk(KERN_ERR XPRAM_NAME " error:" x)
--
--
- typedef struct {
- 	unsigned int	size;		/* size of xpram segment in pages */
- 	unsigned int	offset;		/* start page of xpram segment */
-@@ -263,7 +260,7 @@ static int __init xpram_setup_sizes(unsi
- 
- 	/* Check number of devices. */
- 	if (devs <= 0 || devs > XPRAM_MAX_DEVS) {
--		PRINT_ERR("invalid number %d of devices\n",devs);
-+		kmsg_err(1, "%d is not a valid number of XPRAM devices\n",devs);
- 		return -EINVAL;
- 	}
- 	xpram_devs = devs;
-@@ -294,22 +291,22 @@ static int __init xpram_setup_sizes(unsi
- 			mem_auto_no++;
- 	}
- 	
--	PRINT_INFO("  number of devices (partitions): %d \n", xpram_devs);
-+	kmsg_info(0, "  number of devices (partitions): %d \n", xpram_devs);
- 	for (i = 0; i < xpram_devs; i++) {
- 		if (xpram_sizes[i])
--			PRINT_INFO("  size of partition %d: %u kB\n",
--				   i, xpram_sizes[i]);
-+			kmsg_info(0, "  size of partition %d: %u kB\n",
-+				  i, xpram_sizes[i]);
- 		else
--			PRINT_INFO("  size of partition %d to be set "
--				   "automatically\n",i);
-+			kmsg_info(0, "  size of partition %d to be set "
-+				  "automatically\n",i);
- 	}
--	PRINT_DEBUG("  memory needed (for sized partitions): %lu kB\n",
--		    mem_needed);
--	PRINT_DEBUG("  partitions to be sized automatically: %d\n",
--		    mem_auto_no);
-+	kmsg_info(0, "  memory needed (for sized partitions): %lu kB\n",
-+		  mem_needed);
-+	kmsg_info(0, "  partitions to be sized automatically: %d\n",
-+		  mem_auto_no);
- 
- 	if (mem_needed > pages * 4) {
--		PRINT_ERR("Not enough expanded memory available\n");
-+		kmsg_err(2, "Not enough expanded memory available\n");
- 		return -EINVAL;
- 	}
- 
-@@ -321,8 +318,8 @@ static int __init xpram_setup_sizes(unsi
- 	 */
- 	if (mem_auto_no) {
- 		mem_auto = ((pages - mem_needed / 4) / mem_auto_no) * 4;
--		PRINT_INFO("  automatically determined "
--			   "partition size: %lu kB\n", mem_auto);
-+		kmsg_info(0, "  automatically determined "
-+			  "partition size: %lu kB\n", mem_auto);
- 		for (i = 0; i < xpram_devs; i++)
- 			if (xpram_sizes[i] == 0)
- 				xpram_sizes[i] = mem_auto;
-@@ -412,12 +409,12 @@ static int __init xpram_init(void)
- 
- 	/* Find out size of expanded memory. */
- 	if (xpram_present() != 0) {
--		PRINT_WARN("No expanded memory available\n");
-+		kmsg_err(3, "No expanded memory available\n");
- 		return -ENODEV;
- 	}
- 	xpram_pages = xpram_highest_page_index() + 1;
--	PRINT_INFO("  %u pages expanded memory found (%lu KB).\n",
--		   xpram_pages, (unsigned long) xpram_pages*4);
-+	kmsg_info(0, "  %u pages expanded memory found (%lu KB).\n",
-+		  xpram_pages, (unsigned long) xpram_pages*4);
- 	rc = xpram_setup_sizes(xpram_pages);
- 	if (rc)
- 		return rc;
+I favor my "at linuxtv dot org" account for my kernel work, and I hope
+that is the email that shows up as primary for me (I would only guess
+that I have one or two aliases in this .mailmap file.)
 
--- 
-blue skies,
-   Martin.
+Regards,
 
-"Reality continues to ruin my life." - Calvin.
-
+Mike
