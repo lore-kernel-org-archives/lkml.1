@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbYG1LUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbYG1LZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbYG1LUU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 07:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbYG1LUF
+	id S1753912AbYG1LZu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 07:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbYG1LZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 07:20:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40457 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750740AbYG1LUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 07:20:04 -0400
-Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling
-	through rfkill
-From: Dan Williams <dcbw@redhat.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Philip Langdale <philipl@overt.org>, Ivo van Doorn <ivdoorn@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, toshiba_acpi@memebeam.org,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <20080728030437.GC10672@khazad-dum.debian.net>
-References: <488CBBAB.6010508@overt.org>
-	 <200807272259.44364.IvDoorn@gmail.com> <488CF6D8.6000700@overt.org>
-	 <20080728030437.GC10672@khazad-dum.debian.net>
+	Mon, 28 Jul 2008 07:25:43 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:48364 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751380AbYG1LZm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 07:25:42 -0400
+X-Greylist: delayed 1099 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jul 2008 07:25:42 EDT
+Subject: [PATCH] madvise: update function comment of madvise_dontneed
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: cl@linux-foundation.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain
-Date: Mon, 28 Jul 2008 07:17:43 -0400
-Message-Id: <1217243863.24609.6.camel@localhost.localdomain>
+Organization: NTT Open Source Software Center
+Date: Mon, 28 Jul 2008 20:07:21 +0900
+Message-Id: <1217243241.3087.6.camel@sebastian.kern.oss.ntt.co.jp>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-28 at 00:04 -0300, Henrique de Moraes Holschuh wrote:
-> On Sun, 27 Jul 2008, Philip Langdale wrote:
-> > Ivo van Doorn wrote:
-> >>
-> >> You don't seem to be using rfkill_force_state() which is required to inform the rfkill
-> >> layer about the state changes.
-> >
-> > Hmm? According to rfkill.txt, one can either use force_state() or implement the
-> > get_state() hook, and I have done the later. If this is not the correct method,
-> > can you please explain when I should be using force_state?
-> 
-> There is a bunch of rfkill bug fix patches that was not merged in
-> wireless-testing yet (which is a pity, it would be really good if they could
-> go into 2.6.27).  One of those patches fixes the docs to make it clear that
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
 
-Lots of wireless people (including John) were at OLS this past week, so
-it's not entirely surprising that patch merging might have been slow.
+diff -urNp linux-2.6.26/mm/madvise.c linux-2.6.26-fixes/mm/madvise.c
+--- linux-2.6.26/mm/madvise.c	2008-07-14 06:51:29.000000000 +0900
++++ linux-2.6.26-fixes/mm/madvise.c	2008-07-28 19:53:27.000000000 +0900
+@@ -132,10 +132,10 @@ static long madvise_willneed(struct vm_a
+  * Application no longer needs these pages.  If the pages are dirty,
+  * it's OK to just throw them away.  The app will be more careful about
+  * data it wants to keep.  Be sure to free swap resources too.  The
+- * zap_page_range call sets things up for refill_inactive to actually free
++ * zap_page_range call sets things up for shrink_active_list to actually free
+  * these pages later if no one else has touched them in the meantime,
+  * although we could add these pages to a global reuse list for
+- * refill_inactive to pick up before reclaiming other pages.
++ * shrink_active_list to pick up before reclaiming other pages.
+  *
+  * NB: This interface discards data rather than pushes it out to swap,
+  * as some implementations do.  This has performance implications for
 
-Dan
-
-> rfkill_force_state() is the way to go if you have events of any sort.
-> 
-> The big difference from get_state() is that rfkill_force_state() propagates
-> state changes as soon as your driver notices them and sends them to rfkill
-> through rfkill_force_state()... while get_state() can only do that when
-> someone asks rfkill about the current state.
-> 
 
