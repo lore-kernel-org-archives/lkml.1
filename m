@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759346AbYG1Vzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760392AbYG1V4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759346AbYG1Vzy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYG1Vzo
+	id S1760392AbYG1V4O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758986AbYG1Vzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:55:44 -0400
-Received: from rtr.ca ([76.10.145.34]:4656 "EHLO mail.rtr.ca"
+	Mon, 28 Jul 2008 17:55:52 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:35626 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750819AbYG1Vzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:55:43 -0400
-Message-ID: <488E405E.4010300@rtr.ca>
-Date: Mon, 28 Jul 2008 17:55:42 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: petkovbb@gmail.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: IDE S.M.A.R.T. ioctl errors
-References: <20080728060133.GA14007@gollum.tnic> <200807281644.38419.bzolnier@gmail.com> <9ea470500807280916k7824dc28m169f4c4db65023fa@mail.gmail.com> <200807281822.05211.bzolnier@gmail.com>
-In-Reply-To: <200807281822.05211.bzolnier@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1758735AbYG1Vzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 17:55:52 -0400
+Subject: Re: sched-powersave causes oops on 2.6.26-08037-g8cd362a
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1217281739.7345.8.camel@nimitz>
+References: <1217281739.7345.8.camel@nimitz>
+Content-Type: text/plain
+Date: Mon, 28 Jul 2008 14:55:49 -0700
+Message-Id: <1217282149.7345.9.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If we're going to continue to keep drivers/ide on life-support,
-then perhaps one should just add SG_IO::ATA_16 support into it
-and leave the "legacy" ioctls alone.
+On Mon, 2008-07-28 at 14:49 -0700, Dave Hansen wrote:
+> This oops just happens on startup for me.
+> 
+> $ uname -a
+> Linux nimitz 2.6.26-08037-g8cd362a #69 SMP Mon Jul 28 14:12:00 PDT 2008 i686 GNU/Linux
+> 
+> $ addr2line -e vmlinux c0126866
+> linux-2.6.git/kernel/sched.c:7660
+> 
+> static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+> {
+>         int ret;
+> 
+> HERE--> if (buf[0] != '0' && buf[0] != '1')
+>                 return -EINVAL;
 
-I've done this for linux-2.2.xx (really!), and the patch was rather
-tiny indeed -- and that custom kernel now supports all of the fancy
-ioctl() needs of hdparm-8.9 and smartctl.
+OK, I just found Andi's patch to fix this.  Have you sent it to Linus,
+yet?
 
-Perhaps a similar patch for drivers/ide ?
+-- Dave
 
-Here's my 2.2.xx hack for perusal:
- http://empeg-hijack.sourceforge.net/patches/relative/v489-v490.patch.gz
-
-It won't work on current kernels, of course, but perhaps something similar would.
-
-Cheers
