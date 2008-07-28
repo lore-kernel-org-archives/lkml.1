@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbYG1QfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbYG1QkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757864AbYG1QfG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 12:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYG1Qez
+	id S1756027AbYG1QkM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 12:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYG1QkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 12:34:55 -0400
-Received: from mail119.messagelabs.com ([216.82.245.51]:54906 "HELO
-	mail119.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750870AbYG1Qey (ORCPT
+	Mon, 28 Jul 2008 12:40:00 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:51535 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751345AbYG1Qj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 12:34:54 -0400
-X-VirusChecked: Checked
-X-Env-Sender: ziomek@labs.mot.com
-X-Msg-Ref: server-4.tower-119.messagelabs.com!1217262892!29823782!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [129.188.136.8]
-Date: Mon, 28 Jul 2008 11:34:35 -0500
-From: T Ziomek <ctz001@email.mot.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: [RFC,PATCH] scripts/package: add powerpc images to tarball
-Message-ID: <20080728163435.GE27068@email.mot.com>
-References: <1216887460.306306.238738123378.1.gpush@pingu> <200807250108.m6P18f4B099179@sullivan.realtime.net> <fa686aa40807252155l4f785920qdb14d117067b30f4@mail.gmail.com> <913573e2092839fbe37a0bfa37119eb6@bga.com> <fa686aa40807261053r5a8ebe40l7e8061f926f185f9@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 28 Jul 2008 12:39:59 -0400
+Date: Mon, 28 Jul 2008 10:39:56 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: David Brownell <david-b@pacbell.net>
+Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linuxppc-dev@ozlabs.org, jonsmirl@gmail.com
+Subject: Re: [PATCH v3 0/4 REPOST] OF infrastructure for SPI devices
+Message-ID: <20080728163956.GC21039@secretlab.ca>
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca> <200807271449.28472.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <fa686aa40807261053r5a8ebe40l7e8061f926f185f9@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200807271449.28472.david-b@pacbell.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 26, 2008 at 01:53:57PM -0400, Grant Likely wrote:
- . . .
-> Come to think of it, I'd support just removing the zImage symlink
-> entirely to eliminate confusion so that everyone knows that 'make
-> zImage' is the 'make all' for default image targets.
+On Sun, Jul 27, 2008 at 02:49:28PM -0700, David Brownell wrote:
+> On Friday 25 July 2008, Grant Likely wrote:
+> > I don't know what to do with these patches.  I'd really like to see them
+> > in .27, and now that akpm has cleared his queue, the prerequisite patch
+> > has been merged so they are ready to go in.  However, even though there
+> > has been favourable reception on the SPI and linuxppc lists for these
+> > changes I don't have any acks from anybody yet.
+> > 
+> > David, can you please reply on if you are okay with these patches
+> > getting merged?  If so, do you want me to merge them via my tree, or
+> > do you want to pick them up?
+> 
+> OK ... to recap, #1 and #3 are OF-specific, I'll be agnostic.
+> If other OF folk think it's OK, great.
+> 
+> Some cleanup was needed for #2, but it was basically ok ...
+> I'd like to see the final version, and if it goes via an
+> OF push that's OK by me.  (Though I'd like to see that change
+> make it into 2.6.27 regardless, so let me know.)
 
-That ("zImage" means all default image targets) seems pretty non-intui-
-tive; why not something like 'make all_def_images'?
+Thanks for the review.  1-3 is already merged into my git tree and Ben
+has pulled them.  I hope that's okay.  Here's a link to the commit:
 
-Tom
--- 
-  /"\  ASCII Ribbon Campaign   |
-  \ /                          |   Email to user 'CTZ001'
-   X        Against HTML       |             at 'email.mot.com'
-  / \     in e-mail & news     |
+http://git.kernel.org/?p=linux/kernel/git/benh/powerpc.git;a=commitdiff;h=dc87c98e8f635a718f1abb2c3e15fc77c0001651
+
+Let me know if you see anything else that needs to be changed and I'll
+submit a fixup patch.
+
+> And #4 isn't quite cooked yet.
+
+Okay, I'll hack on this more and post v4.
+
+Thanks again,
+g.
