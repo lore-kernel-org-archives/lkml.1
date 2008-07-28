@@ -1,74 +1,311 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756915AbYG1PU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757955AbYG1PV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756915AbYG1PU5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 11:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYG1PUu
+	id S1757955AbYG1PV2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 11:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYG1PVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 11:20:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:30020 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751576AbYG1PUt (ORCPT
+	Mon, 28 Jul 2008 11:21:16 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:55720 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751863AbYG1PVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 11:20:49 -0400
+	Mon, 28 Jul 2008 11:21:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=LnVSIlgcaFXV5koahIS2sxFgw7BaUvGRsgZ4x6u1Fof7GwAO/E1pPqCH7r4TZl1YiC
-         dT1Iw0IvIdU3WJK30xVn7zeO4oPJfSDZwaoceNzDLqK9fzsn453mH2Qu0c2jiD924sLj
-         D0AISfaL4zzez3UuG6VGmmh2EC0k3DsbuOjdQ=
-Message-ID: <9e4733910807280820v118b728fu1c0a8b8eb4c4fdaa@mail.gmail.com>
-Date: Mon, 28 Jul 2008 11:20:49 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-In-Reply-To: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
+        h=message-id:date:from:to:subject:mime-version:content-type;
+        b=GET41MdxZcavuxhbz0qZATiGji3IZhnnRebSIW4w1jwa648EMF7fDzcTZoY/wNdDhY
+         EDS9SQAtP24yhPjsNfXxjAHwFynvq16UmRyfiU5xJ662rVyfPCt/58TliL47Vv5WadeG
+         KJAqDexdHk0pLEQT0E269oO+6a7m6XIIuLfW4=
+Message-ID: <85e5430e0807280821k1ec1f990te815c8eb4de19b61@mail.gmail.com>
+Date: Mon, 28 Jul 2008 20:51:12 +0530
+From: "Narendra Prasad Madanapalli" <narendramind@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: akpm@osdl.org,mtk.manpages@gmail.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_85346_26396415.1217258472559"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some stats using the new mailmap file:
+------=_Part_85346_26396415.1217258472559
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Patches, number of developers
-1, 1591
-2, 484
-3, 254
-4, 152
-5, 118
-more, 1242
+Problem Description:
+    The following issue affects the setrlimit() and getrlimit() system
+calls on Linux 2.6.13 (and earlier) on x86.
+    The Problem is filed at kernel.org bug 5042
+(http://bugzilla.kernel.org/show_bug.cgi?id=5042)
 
-Top twenty developers:
+    With setrlimit()/getrlimit(), resource limits can not be set >
+2^32-1 on x86  as internally, resource limits are represented in the
+'rlimit' structure (defined in include/linux/resource.h) as  unsigned
+longs, meaning 32 bits on x86. The most pertinent limit here is
+RLIMIT_FSIZE, which specifies the maximum size to which a file can
+grow: to be useful, this limit must be represented using a type that
+is as wide as the type used to represent file offsets, i.e., as wide
+as a 64-bit off_t.
 
-Linus Torvalds (4350):
-Andrew Morton (1789):
-Adrian Bunk (1774):
-Al Viro (1735):
-Ingo Molnar (1393):
-Ralf Baechle (1367):
-Jeff Garzik (1291):
-Takashi Iwai (1196):
-Tejun Heo (1092):
-Bartlomiej Zolnierkiewicz (1071):
-David S. Miller (1069):
-Patrick McHardy (1031):
-Stephen Hemminger (1017):
-Russell King (985):
-Andi Kleen (973):
-Thomas Gleixner (953):
-Alan Cox (822):
-Paul Mundt (813):
-Dave Miller (787):
+    Current versions of glibc (e.g., 2.3.5) deal with this situation
+somewhat strangely: if a program compiled with
+    _FILE_OFFSET_BITS set to 64 (i.e., off_t is thus 'long long' -- 64
+bits) tries to set a resource limit to a value
+    larger than can be represented in a 32-bit unsigned long, then the
+glibc wrapper for setrlimit() silently converts
+    the limit value to RLIM_INFINITY.
+    In other words, the requested resource limit setting is silently
+ignored. (One could argue that perhaps the glibc
+    wrapper should give an error, rather than silently turning a very
+large limit into infinity; however, the glibc
+    developers instead seem to have decided on the current behaviour
+as a means of dealing with what is fundamentally a
+     kernel problem.)
 
-Make your own list:
-   git shortlog | grep -v ^[[:space:]] | grep -v ^$ | sort -t "(" -g -k 2 -r
+    (NOTE: This problem is not merely a theoretical one facing
+programmers developing new applications. Since many x86
+    distributions compile all (file) utilities with
+-D_FILE_OFFSET_BITS=64, this issue can bite end-users as well, if
+    they expect to be able to set resource limits greater than 2^32-1.)
+
+    The solution to this problem would require new setrlimit64() and
+getrlimit64() system calls on x86,
+    and the existing 32-bit system calls would need to be retained so
+that existing binaries would still run.
+
+Design Approach:
+    Add two system calls sys_setrlimit64()/sys_getrlimit64().
+    And a type 'struct rlimit64' to accomodate limits more <= 2^64-1
+
+Implementation Details:
+    Inclutions: struct rlimit64, struct rlimit64
+rlim64[RLIM64_NRLIMITS] to task_struct
+
+Test Results:
+    Test results are posted as Comment#6 to
+http://bugzilla.kernel.org/show_bug.cgi?id=5042
+    Issues Facing:
+        Though the limits of 'rlim64 of task_struct' are initialized
+to RLIM64_INFINITY in linux/init_task.h, garbage values are set to
+them. Placed some printks in sys_getrlimit64 to print the values of
+'rlim64 of task_struct'; the printk statements will be execute when
+getrlimit64() is invoked.
+
+the output of dmesg is as follows:
+[  111.221402] resource = 1, RLIM64_INFINITY = ffffffffffffffff,
+RLIMIT_FSIZE = 1, RLIM64_NLIMITS = 2
+[  111.221411] current rlim64            :  max64 = f4967194, cur64 =
+f496719400000001
+[  111.221416] value (local var, before) :  max64 = c02f9730b7f4cce0,
+cur64 =b7f18ff4f4ae5e00
+[  111.221421] value (after assignment)  : max64 = f4967194, cur64 =
+f496719400000001
+[  118.437395] resource = 1, RLIM64_INFINITY = ffffffffffffffff,
+RLIMIT_FSIZE = 1, RLIM64_NLIMITS = 2
+[  118.437406] current rlim64            :  max64 = f499ff98f499ff98,
+cur64 = fe86a13df498a628
+[  118.437411] value (local var, before) :  max64 = c02f9730b7f94ce0,
+cur64 = b7f60ff4f4b41e00
+[  118.437419] value (after assignment)  : max64 = f499ff98f499ff98,
+cur64 = fe86a13df498a628
 
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+    Signed-off-by: Narendra Prasad Madanapalli <narendramind@gmail.com>
+
+------=_Part_85346_26396415.1217258472559
+Content-Type: application/octet-stream; name=patch-2.6.26-rlim64
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fj7893us0
+Content-Disposition: attachment; filename=patch-2.6.26-rlim64
+
+IGFyY2gveDg2L2tlcm5lbC9zeXNjYWxsX3RhYmxlXzMyLlMgfCAgICAyIAogaW5jbHVkZS9hc20t
+Z2VuZXJpYy9yZXNvdXJjZS5oICAgICB8ICAgMTEgKysrCiBpbmNsdWRlL2FzbS14ODYvdW5pc3Rk
+XzMyLmggICAgICAgIHwgICAgMiAKIGluY2x1ZGUvbGludXgvaW5pdF90YXNrLmggICAgICAgICAg
+fCAgICAxIAogaW5jbHVkZS9saW51eC9yZXNvdXJjZS5oICAgICAgICAgICB8ICAgIDUgKwogaW5j
+bHVkZS9saW51eC9zY2hlZC5oICAgICAgICAgICAgICB8ICAgIDEgCiBrZXJuZWwvQ2hhbmdlTG9n
+ICAgICAgICAgICAgICAgICAgIHwgICAxMCArKwoga2VybmVsL3N5cy5jICAgICAgICAgICAgICAg
+ICAgICAgICB8ICAxMjYgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwogOCBm
+aWxlcyBjaGFuZ2VkLCAxNTggaW5zZXJ0aW9ucygrKQoKZGlmZiAtdU5ycCAtWCBsaW51eC0yLjYu
+MjYtYmFzZS9Eb2N1bWVudGF0aW9uL2RvbnRkaWZmIGxpbnV4LTIuNi4yNi1iYXNlL2FyY2gveDg2
+L2tlcm5lbC9zeXNjYWxsX3RhYmxlXzMyLlMgbGludXgtMi42LjI2LXJsaW02NC9hcmNoL3g4Ni9r
+ZXJuZWwvc3lzY2FsbF90YWJsZV8zMi5TCi0tLSBsaW51eC0yLjYuMjYtYmFzZS9hcmNoL3g4Ni9r
+ZXJuZWwvc3lzY2FsbF90YWJsZV8zMi5TCTIwMDgtMDctMTQgMDM6MjE6MjkuMDAwMDAwMDAwICsw
+NTMwCisrKyBsaW51eC0yLjYuMjYtcmxpbTY0L2FyY2gveDg2L2tlcm5lbC9zeXNjYWxsX3RhYmxl
+XzMyLlMJMjAwOC0wNy0yMCAyMTowNjoyMi4wMDAwMDAwMDAgKzA1MzAKQEAgLTMyNiwzICszMjYs
+NSBAQCBFTlRSWShzeXNfY2FsbF90YWJsZSkKIAkubG9uZyBzeXNfZmFsbG9jYXRlCiAJLmxvbmcg
+c3lzX3RpbWVyZmRfc2V0dGltZQkvKiAzMjUgKi8KIAkubG9uZyBzeXNfdGltZXJmZF9nZXR0aW1l
+CisgICAgICAgIC5sb25nIHN5c19zZXRybGltaXQ2NAorICAgICAgICAubG9uZyBzeXNfZ2V0cmxp
+bWl0NjQKZGlmZiAtdU5ycCAtWCBsaW51eC0yLjYuMjYtYmFzZS9Eb2N1bWVudGF0aW9uL2RvbnRk
+aWZmIGxpbnV4LTIuNi4yNi1iYXNlL2luY2x1ZGUvYXNtLWdlbmVyaWMvcmVzb3VyY2UuaCBsaW51
+eC0yLjYuMjYtcmxpbTY0L2luY2x1ZGUvYXNtLWdlbmVyaWMvcmVzb3VyY2UuaAotLS0gbGludXgt
+Mi42LjI2LWJhc2UvaW5jbHVkZS9hc20tZ2VuZXJpYy9yZXNvdXJjZS5oCTIwMDgtMDctMTQgMDM6
+MjE6MjkuMDAwMDAwMDAwICswNTMwCisrKyBsaW51eC0yLjYuMjYtcmxpbTY0L2luY2x1ZGUvYXNt
+LWdlbmVyaWMvcmVzb3VyY2UuaAkyMDA4LTA3LTIwIDIxOjEwOjQ4LjAwMDAwMDAwMCArMDUzMApA
+QCAtNDYsNiArNDYsNyBAQAogI2RlZmluZSBSTElNSVRfUlRQUklPCQkxNAkvKiBtYXhpbXVtIHJl
+YWx0aW1lIHByaW9yaXR5ICovCiAjZGVmaW5lIFJMSU1JVF9SVFRJTUUJCTE1CS8qIHRpbWVvdXQg
+Zm9yIFJUIHRhc2tzIGluIHVzICovCiAjZGVmaW5lIFJMSU1fTkxJTUlUUwkJMTYKKyNkZWZpbmUg
+UkxJTTY0X05MSU1JVFMgICAgICAgICAgMgogCiAvKgogICogU3VTIHNheXMgbGltaXRzIGhhdmUg
+dG8gYmUgdW5zaWduZWQuCkBAIC01Nyw2ICs1OCwxMCBAQAogIyBkZWZpbmUgUkxJTV9JTkZJTklU
+WQkJKH4wVUwpCiAjZW5kaWYKIAorI2lmbmRlZiBSTElNNjRfSU5GSU5JVFkKKyMgZGVmaW5lIFJM
+SU02NF9JTkZJTklUWSAgICAgICAgKH4wVUxMKQorI2VuZGlmCisKIC8qCiAgKiBSTElNSVRfU1RB
+Q0sgZGVmYXVsdCBtYXhpbXVtIC0gc29tZSBhcmNoaXRlY3R1cmVzIG92ZXJyaWRlIGl0OgogICov
+CkBAIC04OSw2ICs5NCwxMiBAQAogCVtSTElNSVRfUlRUSU1FXQkJPSB7ICBSTElNX0lORklOSVRZ
+LCAgUkxJTV9JTkZJTklUWSB9LAlcCiB9CiAKKyNkZWZpbmUgSU5JVF9STElNSVRTNjQgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXAoreyAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICBcCisgICAgICAgIFswXSAgICAgICAgICAgICAgICAgICAgID0geyAgUkxJTTY0X0lO
+RklOSVRZLCAgUkxJTTY0X0lORklOSVRZIH0sIFwKKyAgICAgICAgW1JMSU1JVF9GU0laRV0gICAg
+ICAgICAgPSB7ICBSTElNNjRfSU5GSU5JVFksICBSTElNNjRfSU5GSU5JVFkgfSwgXAorfQorCiAj
+ZW5kaWYJLyogX19LRVJORUxfXyAqLwogCiAjZW5kaWYKZGlmZiAtdU5ycCAtWCBsaW51eC0yLjYu
+MjYtYmFzZS9Eb2N1bWVudGF0aW9uL2RvbnRkaWZmIGxpbnV4LTIuNi4yNi1iYXNlL2luY2x1ZGUv
+YXNtLXg4Ni91bmlzdGRfMzIuaCBsaW51eC0yLjYuMjYtcmxpbTY0L2luY2x1ZGUvYXNtLXg4Ni91
+bmlzdGRfMzIuaAotLS0gbGludXgtMi42LjI2LWJhc2UvaW5jbHVkZS9hc20teDg2L3VuaXN0ZF8z
+Mi5oCTIwMDgtMDctMTQgMDM6MjE6MjkuMDAwMDAwMDAwICswNTMwCisrKyBsaW51eC0yLjYuMjYt
+cmxpbTY0L2luY2x1ZGUvYXNtLXg4Ni91bmlzdGRfMzIuaAkyMDA4LTA3LTIwIDIxOjEyOjQxLjAw
+MDAwMDAwMCArMDUzMApAQCAtMzMyLDYgKzMzMiw4IEBACiAjZGVmaW5lIF9fTlJfZmFsbG9jYXRl
+CQkzMjQKICNkZWZpbmUgX19OUl90aW1lcmZkX3NldHRpbWUJMzI1CiAjZGVmaW5lIF9fTlJfdGlt
+ZXJmZF9nZXR0aW1lCTMyNgorI2RlZmluZSBfX05SX3NldHJsaW1pdDY0ICAgICAgICAzMjcKKyNk
+ZWZpbmUgX19OUl9nZXRybGltaXQ2NCAgICAgICAgMzI4CiAKICNpZmRlZiBfX0tFUk5FTF9fCiAK
+ZGlmZiAtdU5ycCAtWCBsaW51eC0yLjYuMjYtYmFzZS9Eb2N1bWVudGF0aW9uL2RvbnRkaWZmIGxp
+bnV4LTIuNi4yNi1iYXNlL2luY2x1ZGUvbGludXgvaW5pdF90YXNrLmggbGludXgtMi42LjI2LXJs
+aW02NC9pbmNsdWRlL2xpbnV4L2luaXRfdGFzay5oCi0tLSBsaW51eC0yLjYuMjYtYmFzZS9pbmNs
+dWRlL2xpbnV4L2luaXRfdGFzay5oCTIwMDgtMDctMTQgMDM6MjE6MjkuMDAwMDAwMDAwICswNTMw
+CisrKyBsaW51eC0yLjYuMjYtcmxpbTY0L2luY2x1ZGUvbGludXgvaW5pdF90YXNrLmgJMjAwOC0w
+Ny0yMCAyMToxNDoyNC4wMDAwMDAwMDAgKzA1MzAKQEAgLTQ3LDYgKzQ3LDcgQEAgZXh0ZXJuIHN0
+cnVjdCBmaWxlc19zdHJ1Y3QgaW5pdF9maWxlczsKIAkucG9zaXhfdGltZXJzCSA9IExJU1RfSEVB
+RF9JTklUKHNpZy5wb3NpeF90aW1lcnMpLAkJXAogCS5jcHVfdGltZXJzCT0gSU5JVF9DUFVfVElN
+RVJTKHNpZy5jcHVfdGltZXJzKSwJCVwKIAkucmxpbQkJPSBJTklUX1JMSU1JVFMsCQkJCQlcCisg
+ICAgICAgIC5ybGltNjQgICAgICAgICA9IElOSVRfUkxJTUlUUzY0LCAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICBcCiB9CiAKIGV4dGVybiBzdHJ1Y3QgbnNwcm94eSBpbml0X25zcHJveHk7
+CmRpZmYgLXVOcnAgLVggbGludXgtMi42LjI2LWJhc2UvRG9jdW1lbnRhdGlvbi9kb250ZGlmZiBs
+aW51eC0yLjYuMjYtYmFzZS9pbmNsdWRlL2xpbnV4L3Jlc291cmNlLmggbGludXgtMi42LjI2LXJs
+aW02NC9pbmNsdWRlL2xpbnV4L3Jlc291cmNlLmgKLS0tIGxpbnV4LTIuNi4yNi1iYXNlL2luY2x1
+ZGUvbGludXgvcmVzb3VyY2UuaAkyMDA4LTA3LTE0IDAzOjIxOjI5LjAwMDAwMDAwMCArMDUzMAor
+KysgbGludXgtMi42LjI2LXJsaW02NC9pbmNsdWRlL2xpbnV4L3Jlc291cmNlLmgJMjAwOC0wNy0y
+MCAyMToxNToyMi4wMDAwMDAwMDAgKzA1MzAKQEAgLTQ1LDYgKzQ1LDExIEBAIHN0cnVjdCBybGlt
+aXQgewogCXVuc2lnbmVkIGxvbmcJcmxpbV9tYXg7CiB9OwogCitzdHJ1Y3QgcmxpbWl0NjQgewor
+ICAgICAgICB1NjQgICBybGltNjRfY3VyOworICAgICAgICB1NjQgICBybGltNjRfbWF4OworfTsK
+KwogI2RlZmluZQlQUklPX01JTgkoLTIwKQogI2RlZmluZQlQUklPX01BWAkyMAogCmRpZmYgLXVO
+cnAgLVggbGludXgtMi42LjI2LWJhc2UvRG9jdW1lbnRhdGlvbi9kb250ZGlmZiBsaW51eC0yLjYu
+MjYtYmFzZS9pbmNsdWRlL2xpbnV4L3NjaGVkLmggbGludXgtMi42LjI2LXJsaW02NC9pbmNsdWRl
+L2xpbnV4L3NjaGVkLmgKLS0tIGxpbnV4LTIuNi4yNi1iYXNlL2luY2x1ZGUvbGludXgvc2NoZWQu
+aAkyMDA4LTA3LTE0IDAzOjIxOjI5LjAwMDAwMDAwMCArMDUzMAorKysgbGludXgtMi42LjI2LXJs
+aW02NC9pbmNsdWRlL2xpbnV4L3NjaGVkLmgJMjAwOC0wNy0yMCAyMToxNzowNS4wMDAwMDAwMDAg
+KzA1MzAKQEAgLTUyMyw2ICs1MjMsNyBAQCBzdHJ1Y3Qgc2lnbmFsX3N0cnVjdCB7CiAJICogaGF2
+ZSBubyBuZWVkIHRvIGRpc2FibGUgaXJxcy4KIAkgKi8KIAlzdHJ1Y3QgcmxpbWl0IHJsaW1bUkxJ
+TV9OTElNSVRTXTsKKyAgICAgICAgc3RydWN0IHJsaW1pdDY0IHJsaW02NFtSTElNNjRfTkxJTUlU
+U107CiAKIAlzdHJ1Y3QgbGlzdF9oZWFkIGNwdV90aW1lcnNbM107CiAKZGlmZiAtdU5ycCAtWCBs
+aW51eC0yLjYuMjYtYmFzZS9Eb2N1bWVudGF0aW9uL2RvbnRkaWZmIGxpbnV4LTIuNi4yNi1iYXNl
+L2tlcm5lbC9DaGFuZ2VMb2cgbGludXgtMi42LjI2LXJsaW02NC9rZXJuZWwvQ2hhbmdlTG9nCi0t
+LSBsaW51eC0yLjYuMjYtYmFzZS9rZXJuZWwvQ2hhbmdlTG9nCTE5NzAtMDEtMDEgMDU6MzA6MDAu
+MDAwMDAwMDAwICswNTMwCisrKyBsaW51eC0yLjYuMjYtcmxpbTY0L2tlcm5lbC9DaGFuZ2VMb2cJ
+MjAwOC0wNy0yOCAxNjowNjoxNS4wMDAwMDAwMDAgKzA1MzAKQEAgLTAsMCArMSwxMCBAQAorMjAw
+OC0wNy0yOCAgTmFyZW5kcmEgUHJhc2FkIDxuYXJlbmRyYW1pbmRAZ21haWwuY29tPgorICAgIFBy
+b2JsZW0gRGVzY3JpcHRpb246CisgICAgICAgIFRoZSBmb2xsb3dpbmcgaXNzdWUgYWZmZWN0cyB0
+aGUgc2V0cmxpbWl0KCkgYW5kIGdldHJsaW1pdCgpIHN5c3RlbSBjYWxscyBvbiBMaW51eCAyLjYu
+MTMgKGFuZCBlYXJsaWVyKSBvbiB4ODYuCisgICAgICAgIFRoZSBQcm9ibGVtIGlzIGZpbGVkIGF0
+IGtlcm5lbC5vcmcgYnVnIDUwNDIgKGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVn
+LmNnaT9pZD01MDQyKQorICAgIERlc2lnbiBBcHByb2FjaDoKKyAgICAgICAgQWRkIHR3byBzeXN0
+ZW0gY2FsbHMgc3lzX3NldHJsaW1pdDY0KCkvc3lzX2dldHJsaW1pdDY0KCkuCisgICAgICAgIEFu
+ZCBhIHR5cGUgJ3N0cnVjdCBybGltaXQ2NCcgdG8gYWNjb21vZGF0ZSBsaW1pdHMgbW9yZSA8PSAy
+XjY0LTEKKyAgICBJbXBsZW1lbnRhdGlvbiBEZXRhaWxzOgorICAgICAgICBJbmNsdXRpb25zOiBz
+dHJ1Y3QgcmxpbWl0NjQsIHN0cnVjdCBybGltaXQ2NAorICAgICAgICBybGltNjRbUkxJTTY0X05S
+TElNSVRTXSB0byB0YXNrX3N0cnVjdApkaWZmIC11TnJwIC1YIGxpbnV4LTIuNi4yNi1iYXNlL0Rv
+Y3VtZW50YXRpb24vZG9udGRpZmYgbGludXgtMi42LjI2LWJhc2Uva2VybmVsL3N5cy5jIGxpbnV4
+LTIuNi4yNi1ybGltNjQva2VybmVsL3N5cy5jCi0tLSBsaW51eC0yLjYuMjYtYmFzZS9rZXJuZWwv
+c3lzLmMJMjAwOC0wNy0xNCAwMzoyMToyOS4wMDAwMDAwMDAgKzA1MzAKKysrIGxpbnV4LTIuNi4y
+Ni1ybGltNjQva2VybmVsL3N5cy5jCTIwMDgtMDctMjggMTU6NDE6MDIuMDAwMDAwMDAwICswNTMw
+CkBAIC0xNTI0LDYgKzE1MjQsMTMyIEBAIG91dDoKIAlyZXR1cm4gMDsKIH0KIAorYXNtbGlua2Fn
+ZSBsb25nIHN5c19nZXRybGltaXQ2NCh1bnNpZ25lZCBpbnQgcmVzb3VyY2UsIHN0cnVjdCBybGlt
+aXQ2NCBfX3VzZXIgKnJsaW0pCit7CisgICAgc3RydWN0IHJsaW1pdDY0ICB2YWx1ZTsKKworICAg
+IGlmIChyZXNvdXJjZSA+PSBSTElNX05MSU1JVFMpCisgICAgICAgIHJldHVybiAtRUlOVkFMOwor
+CisgICAgcHJpbnRrKCJcbnJlc291cmNlID0gJWQsIFJMSU02NF9JTkZJTklUWSA9ICVsbHgsIFJM
+SU1JVF9GU0laRSA9ICVkLCBSTElNNjRfTkxJTUlUUyA9ICVkIiwgCisgICAgICAgICAgIHJlc291
+cmNlLCBSTElNNjRfSU5GSU5JVFksIFJMSU1JVF9GU0laRSwgUkxJTTY0X05MSU1JVFMpOworICAg
+IGlmIChyZXNvdXJjZSA9PSBSTElNSVRfRlNJWkUpIHsKKyAgICAgICAgdGFza19sb2NrKGN1cnJl
+bnQtPmdyb3VwX2xlYWRlcik7CisgICAgICAgIHByaW50aygiXG5jdXJyZW50IHJsaW02NCAgICAg
+ICAgICAgICAgIDogbWF4NjQgPSAlbGx4LCBjdXI2NCA9ICVsbHgiLCAKKyAgICAgICAgICAgICAg
+IGN1cnJlbnQtPnNpZ25hbC0+cmxpbTY0W3Jlc291cmNlXS5ybGltNjRfbWF4LCBjdXJyZW50LT5z
+aWduYWwtPnJsaW02NFtyZXNvdXJjZV0ucmxpbTY0X2N1cik7CisgICAgICAgIHByaW50aygiXG52
+YWx1ZSAobG9jYWwgdmFyLCBiZWZvcmUpICAgIDogbWF4NjQgPSAlbGx4LCBjdXI2NCA9ICVsbHgi
+LCB2YWx1ZS5ybGltNjRfbWF4LCB2YWx1ZS5ybGltNjRfY3VyKTsKKyAgICAgICAgdmFsdWUgPSBj
+dXJyZW50LT5zaWduYWwtPnJsaW02NFtyZXNvdXJjZV07CisgICAgICAgIHByaW50aygiXG52YWx1
+ZSAoYWZ0ZXIgYXNzaWdubWVudCkgICAgIDogbWF4NjQgPSAlbGx4LCBjdXI2NCA9ICVsbHgiLCB2
+YWx1ZS5ybGltNjRfbWF4LCB2YWx1ZS5ybGltNjRfY3VyKTsKKyAgICAgICAgdGFza191bmxvY2so
+Y3VycmVudC0+Z3JvdXBfbGVhZGVyKTsKKyAgICAgICAgcmV0dXJuIGNvcHlfdG9fdXNlcihybGlt
+LCAmdmFsdWUsIHNpemVvZigqcmxpbSkpID8gLUVGQVVMVCA6IDA7CisgICAgfQorICAgIGVsc2Ug
+eworICAgICAgICB0YXNrX2xvY2soY3VycmVudC0+Z3JvdXBfbGVhZGVyKTsKKyAgICAgICAgdmFs
+dWUucmxpbTY0X21heCA9IGN1cnJlbnQtPnNpZ25hbC0+cmxpbVtyZXNvdXJjZV0ucmxpbV9tYXg7
+CisgICAgICAgIHZhbHVlLnJsaW02NF9jdXIgPSBjdXJyZW50LT5zaWduYWwtPnJsaW1bcmVzb3Vy
+Y2VdLnJsaW1fY3VyOworICAgICAgICB0YXNrX3VubG9jayhjdXJyZW50LT5ncm91cF9sZWFkZXIp
+OworICAgICAgICBpZiAodmFsdWUucmxpbTY0X2N1ciA9PSBSTElNX0lORklOSVRZKQorICAgICAg
+ICAgICAgdmFsdWUucmxpbTY0X2N1ciA9IFJMSU02NF9JTkZJTklUWTsKKyAgICAgICAgaWYgKHZh
+bHVlLnJsaW02NF9tYXggPT0gUkxJTV9JTkZJTklUWSkKKyAgICAgICAgICAgIHZhbHVlLnJsaW02
+NF9tYXggPSBSTElNNjRfSU5GSU5JVFk7CisgICAgICAgIC8qIFhYOiBSTElNX1NBVkVEX01BWCA/
+IFJMSU1fU0FWRURfQ1VSID8gKFNlZSBMYXJnZS1GaWxlLVN1bW1pdCkgKi8KKyAgICB9CisgICAg
+cmV0dXJuIChjb3B5X3RvX3VzZXIocmxpbSwgJnZhbHVlLCBzaXplb2YoKnJsaW0pKSA/IC1FRkFV
+TFQgOiAwKTsKK30KKworYXNtbGlua2FnZSBsb25nIHN5c19zZXRybGltaXQ2NCh1bnNpZ25lZCBp
+bnQgcmVzb3VyY2UsIHN0cnVjdCBybGltaXQ2NCBfX3VzZXIgKnJsaW0pCit7CisgICAgc3RydWN0
+IHJsaW1pdDY0ICBuZXdfcmxpbTsKKyAgICBzdHJ1Y3QgcmxpbWl0ICAgICpvbGRfcmxpbSwgbmV3
+X3ZhbHVlOworICAgIHVuc2lnbmVkIGxvbmcgICAgaXRfcHJvZl9zZWNzOworICAgIGludCAgICAg
+ICAgICAgICAgcmV0dmFsOworCisgICAgaWYgKHJlc291cmNlID49IFJMSU1fTkxJTUlUUykKKyAg
+ICAgICAgcmV0dXJuIC1FSU5WQUw7CisgICAgaWYoY29weV9mcm9tX3VzZXIoJm5ld19ybGltLCBy
+bGltLCBzaXplb2YoKnJsaW0pKSkKKyAgICAgICAgcmV0dXJuIC1FRkFVTFQ7CisKKyAgICBpZiAo
+cmVzb3VyY2UgPT0gUkxJTUlUX0ZTSVpFKSB7CisgICAgICAgIHN0cnVjdCBybGltaXQ2NCAgKm9s
+ZF9ybGltOworICAgICAgICBzdHJ1Y3QgcmxpbWl0ICAgICpvbGRfdmFsdWU7CisKKyAgICAgICAg
+b2xkX3JsaW0gPSBjdXJyZW50LT5zaWduYWwtPnJsaW02NCArIHJlc291cmNlOworICAgICAgICBp
+ZiAoKChuZXdfcmxpbS5ybGltNjRfY3VyID4gb2xkX3JsaW0tPnJsaW02NF9tYXgpIHx8CisgICAg
+ICAgICAgICAgKG5ld19ybGltLnJsaW02NF9tYXggPiBvbGRfcmxpbS0+cmxpbTY0X21heCkpICYm
+CisgICAgICAgICAgICAgIWNhcGFibGUoQ0FQX1NZU19SRVNPVVJDRSkpCisgICAgICAgICAgICBy
+ZXR1cm4gLUVQRVJNOworICAgICAgICAqb2xkX3JsaW0gPSBuZXdfcmxpbTsKKyAgICAgICAgaWYg
+KG5ld19ybGltLnJsaW02NF9jdXIgPiBSTElNX0lORklOSVRZKQorICAgICAgICAgICAgICAgbmV3
+X3JsaW0ucmxpbTY0X2N1ciA9IFJMSU1fSU5GSU5JVFk7CisgICAgICAgIGlmIChuZXdfcmxpbS5y
+bGltNjRfbWF4ID4gUkxJTV9JTkZJTklUWSkKKyAgICAgICAgICAgICAgIG5ld19ybGltLnJsaW02
+NF9tYXggPSBSTElNX0lORklOSVRZOworICAgICAgICB0YXNrX2xvY2soY3VycmVudC0+Z3JvdXBf
+bGVhZGVyKTsKKyAgICAgICAgb2xkX3ZhbHVlID0gKGN1cnJlbnQtPnNpZ25hbC0+cmxpbSArIHJl
+c291cmNlKTsKKyAgICAgICAgb2xkX3ZhbHVlLT5ybGltX21heCA9IG5ld19ybGltLnJsaW02NF9t
+YXg7CisgICAgICAgIG9sZF92YWx1ZS0+cmxpbV9jdXIgPSBuZXdfcmxpbS5ybGltNjRfY3VyOwor
+ICAgICAgICB0YXNrX3VubG9jayhjdXJyZW50LT5ncm91cF9sZWFkZXIpOworICAgICAgICByZXR1
+cm4gMDsKKyAgICB9CisKKyAgICBvbGRfcmxpbSA9IGN1cnJlbnQtPnNpZ25hbC0+cmxpbSArIHJl
+c291cmNlOworICAgIGlmIChuZXdfcmxpbS5ybGltNjRfY3VyID4gUkxJTV9JTkZJTklUWSkgIG5l
+d19ybGltLnJsaW02NF9jdXIgPSBSTElNX0lORklOSVRZOworICAgIGlmIChuZXdfcmxpbS5ybGlt
+NjRfbWF4ID4gUkxJTV9JTkZJTklUWSkgIG5ld19ybGltLnJsaW02NF9tYXggPSBSTElNX0lORklO
+SVRZOworICAgIGlmICgoKG5ld19ybGltLnJsaW02NF9jdXIgPiBvbGRfcmxpbS0+cmxpbV9tYXgp
+IHx8CisgICAgICAgICAobmV3X3JsaW0ucmxpbTY0X21heCA+IG9sZF9ybGltLT5ybGltX21heCkp
+ICYmCisgICAgICAgICAgIWNhcGFibGUoQ0FQX1NZU19SRVNPVVJDRSkpCisgICAgICAgIHJldHVy
+biAtRVBFUk07CisgICAgaWYgKHJlc291cmNlID09IFJMSU1JVF9OT0ZJTEUpIHsKKyAgICAgICAg
+aWYgKG5ld19ybGltLnJsaW02NF9jdXIgPiBJTlJfT1BFTiB8fCBuZXdfcmxpbS5ybGltNjRfbWF4
+ID4gSU5SX09QRU4pCisgICAgICAgICAgICByZXR1cm4gLUVQRVJNOworICAgIH0KKyAgICBuZXdf
+dmFsdWUucmxpbV9tYXggPSBuZXdfcmxpbS5ybGltNjRfbWF4OworICAgIG5ld192YWx1ZS5ybGlt
+X2N1ciA9IG5ld19ybGltLnJsaW02NF9jdXI7CisgICAgcmV0dmFsID0gc2VjdXJpdHlfdGFza19z
+ZXRybGltaXQocmVzb3VyY2UsICZuZXdfdmFsdWUpOworICAgIGlmIChyZXR2YWwpCisgICAgICAg
+IHJldHVybiByZXR2YWw7CisKKyAgICBpZiAocmVzb3VyY2UgPT0gUkxJTUlUX0NQVSAmJiBuZXdf
+dmFsdWUucmxpbV9jdXIgPT0gMCkgeworICAgICAgICAvKgorICAgICAgICAgKiBUaGUgY2FsbGVy
+IGlzIGFza2luZyBmb3IgYW4gaW1tZWRpYXRlIFJMSU1JVF9DUFUKKyAgICAgICAgICogZXhwaXJ5
+LiAgQnV0IHdlIHVzZSB0aGUgemVybyB2YWx1ZSB0byBtZWFuICJpdCB3YXMKKyAgICAgICAgICog
+bmV2ZXIgc2V0Ii4gIFNvIGxldCdzIGNoZWF0IGFuZCBtYWtlIGl0IG9uZSBzZWNvbmQKKyAgICAg
+ICAgICogaW5zdGVhZAorICAgICAgICAgKi8KKyAgICAgICAgbmV3X3ZhbHVlLnJsaW1fY3VyID0g
+MTsKKyAgICB9CisKKyAgICB0YXNrX2xvY2soY3VycmVudC0+Z3JvdXBfbGVhZGVyKTsKKyAgICAq
+b2xkX3JsaW0gPSBuZXdfdmFsdWU7CisgICAgdGFza191bmxvY2soY3VycmVudC0+Z3JvdXBfbGVh
+ZGVyKTsKKworICAgIGlmIChyZXNvdXJjZSAhPSBSTElNSVRfQ1BVKQorICAgICAgICBnb3RvIG91
+dDsKKworICAgIC8qCisgICAgICogUkxJTUlUX0NQVSBoYW5kbGluZy4gICBOb3RlIHRoYXQgdGhl
+IGtlcm5lbCBmYWlscyB0byByZXR1cm4gYW4gZXJyb3IKKyAgICAgKiBjb2RlIGlmIGl0IHJlamVj
+dGVkIHRoZSB1c2VyJ3MgYXR0ZW1wdCB0byBzZXQgUkxJTUlUX0NQVS4gIFRoaXMgaXMgYQorICAg
+ICAqIHZlcnkgbG9uZy1zdGFuZGluZyBlcnJvciwgYW5kIGZpeGluZyBpdCBub3cgcmlza3MgYnJl
+YWthZ2Ugb2YKKyAgICAgKiBhcHBsaWNhdGlvbnMsIHNvIHdlIGxpdmUgd2l0aCBpdAorICAgICAq
+LworICAgIGlmIChuZXdfdmFsdWUucmxpbV9jdXIgPT0gUkxJTV9JTkZJTklUWSkKKyAgICAgICAg
+Z290byBvdXQ7CisKKyAgICBpdF9wcm9mX3NlY3MgPSBjcHV0aW1lX3RvX3NlY3MoY3VycmVudC0+
+c2lnbmFsLT5pdF9wcm9mX2V4cGlyZXMpOworICAgIGlmIChpdF9wcm9mX3NlY3MgPT0gMCB8fCBu
+ZXdfdmFsdWUucmxpbV9jdXIgPD0gaXRfcHJvZl9zZWNzKSB7CisgICAgICAgIHVuc2lnbmVkIGxv
+bmcgIHJsaW1fY3VyID0gbmV3X3ZhbHVlLnJsaW1fY3VyOworICAgICAgICBjcHV0aW1lX3QgICAg
+ICBjcHV0aW1lOworCisgICAgICAgIGNwdXRpbWUgPSBzZWNzX3RvX2NwdXRpbWUocmxpbV9jdXIp
+OworICAgICAgICByZWFkX2xvY2soJnRhc2tsaXN0X2xvY2spOworICAgICAgICBzcGluX2xvY2tf
+aXJxKCZjdXJyZW50LT5zaWdoYW5kLT5zaWdsb2NrKTsKKyAgICAgICAgc2V0X3Byb2Nlc3NfY3B1
+X3RpbWVyKGN1cnJlbnQsIENQVUNMT0NLX1BST0YsICZjcHV0aW1lLCBOVUxMKTsKKyAgICAgICAg
+c3Bpbl91bmxvY2tfaXJxKCZjdXJyZW50LT5zaWdoYW5kLT5zaWdsb2NrKTsKKyAgICAgICAgcmVh
+ZF91bmxvY2soJnRhc2tsaXN0X2xvY2spOworICAgIH0KK291dDoKKyAgICAgICAgcmV0dXJuIDA7
+Cit9CisKIC8qCiAgKiBJdCB3b3VsZCBtYWtlIHNlbnNlIHRvIHB1dCBzdHJ1Y3QgcnVzYWdlIGlu
+IHRoZSB0YXNrX3N0cnVjdCwKICAqIGV4Y2VwdCB0aGF0IHdvdWxkIG1ha2UgdGhlIHRhc2tfc3Ry
+dWN0IGJlICpyZWFsbHkgYmlnKi4gIEFmdGVyCg==
+------=_Part_85346_26396415.1217258472559--
