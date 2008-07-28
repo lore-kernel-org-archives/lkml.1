@@ -1,48 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbYG1Nzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYG1Nz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752998AbYG1Nzn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 09:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbYG1Nze
+	id S1754538AbYG1Nz6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 09:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbYG1Nzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 09:55:34 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:33775 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbYG1Nzd (ORCPT
+	Mon, 28 Jul 2008 09:55:45 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37955 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753000AbYG1Nzn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 09:55:33 -0400
-Date: Mon, 28 Jul 2008 06:55:32 -0700
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: davem@davemloft.net, linux-scsi@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org
-Subject: Re: Build fallout from scsi merge...
-Message-ID: <20080728135532.GA3358@plap4-2.qlogic.org>
-References: <20080727.170415.12257647.davem@davemloft.net> <20080728115954E.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080728115954E.fujita.tomonori@lab.ntt.co.jp>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 28 Jul 2008 13:55:32.0554 (UTC) FILETIME=[9A212AA0:01C8F0B9]
+	Mon, 28 Jul 2008 09:55:43 -0400
+Subject: Re: [PATCH] typhoon: use request_firmware
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: David Dillow <dave@thedillows.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, becker@scyld.com,
+       davidpmclean@yahoo.com, Jeff Garzik <jeff@garzik.org>,
+       netdev <netdev@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1217248585.22789.58.camel@obelisk.thedillows.org>
+References: <1217170232.3537.6.camel@jaswinder.satnam>
+	 <1217209400.22789.47.camel@obelisk.thedillows.org>
+	 <1217215009.2970.7.camel@jaswinder.satnam>
+	 <1217248585.22789.58.camel@obelisk.thedillows.org>
+Content-Type: text/plain
+Date: Mon, 28 Jul 2008 19:24:20 +0530
+Message-Id: <1217253260.17632.6.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008, FUJITA Tomonori wrote:
+Hello David,
 
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH] qla2xxx: fix msleep compile error
+On Mon, 2008-07-28 at 08:36 -0400, David Dillow wrote:
+
+> Please re-read what I said -- you broke error handling and potentially
+> resume. Previously, the firmware was available without a sleeping call
+> to user space to get it. Now, it is not. You cannot sleep in
+> typhoon_tx_timeout(), and trying to get a firmware image in resume is
+> going to be a problem if your file system is NFS mounted over the NIC
+> you're trying to resume.
 > 
-> drivers/scsi/qla2xxx/qla_attr.c: In function 'qla24xx_vport_delete':
-> drivers/scsi/qla2xxx/qla_attr.c:1184: error: implicit declaration of function 'msleep'
-> make[3]: *** [drivers/scsi/qla2xxx/qla_attr.o] Error 1
-> make[3]: *** Waiting for unfinished jobs....
+> http://marc.info/?l=linux-kernel&m=121608383506190&w=2
+> http://marc.info/?l=linux-kernel&m=121608255704704&w=2
 > 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>
-> Cc: James.Bottomley@HansenPartnership.com
+> 
 
-Acked-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Here is patch for typhoon.c :
 
-Tomo, thank you.
+diff --git a/drivers/net/typhoon.c b/drivers/net/typhoon.c
+index c0dd25b..c792741 100644
+--- a/drivers/net/typhoon.c
++++ b/drivers/net/typhoon.c
+@@ -130,9 +130,9 @@ static const int multicast_filter_limit = 32;
+ #include <linux/in6.h>
+ #include <linux/version.h>
+ #include <linux/dma-mapping.h>
++#include <linux/firmware.h>
+ 
+ #include "typhoon.h"
+-#include "typhoon-firmware.h"
+ 
+ static char version[] __devinitdata =
+     "typhoon.c: version " DRV_MODULE_VERSION " (" DRV_MODULE_RELDATE ")\n";
+@@ -140,6 +140,7 @@ static char version[] __devinitdata =
+ MODULE_AUTHOR("David Dillow <dave@thedillows.org>");
+ MODULE_VERSION(DRV_MODULE_VERSION);
+ MODULE_LICENSE("GPL");
++MODULE_FIRMWARE("3com/typhoon.bin");
+ MODULE_DESCRIPTION("3Com Typhoon Family (3C990, 3CR990, and variants)");
+ MODULE_PARM_DESC(rx_copybreak, "Packets smaller than this are copied and "
+ 			       "the buffer given back to the NIC. Default "
+@@ -307,6 +308,9 @@ struct typhoon {
+ 	/* unused stuff (future use) */
+ 	int			capabilities;
+ 	struct transmit_ring 	txHiRing;
++
++	/* firmware */
++	u8			*tp_fw_image;
+ };
+ 
+ enum completion_wait_values {
+@@ -1347,6 +1351,32 @@ typhoon_init_rings(struct typhoon *tp)
+ 	tp->txHiRing.lastRead = 0;
+ }
+ 
++static int typhoon_init_firmware(struct typhoon *tp)
++{
++	const struct firmware *fw;
++	const char fw_name[] = "3com/typhoon.bin";
++	int err;
++
++	err = request_firmware(&fw, fw_name, &tp->pdev->dev);
++	if (err) {
++		printk(KERN_ERR "%s: Failed to load firmware \"%s\"\n",
++		       tp->name, fw_name);
++		return err;
++	}
++	tp->tp_fw_image = vmalloc(fw->size);
++	if (!tp->tp_fw_image) {
++		err = -ENOMEM;
++		printk(KERN_ERR "%s: \"%s\" Failed %d\n",
++		       tp->name, fw_name, err);
++		goto out;
++	}
++
++	memcpy(tp->tp_fw_image, fw->data, fw->size);
++out:
++	release_firmware(fw);
++	return err;
++}
++
+ static int
+ typhoon_download_firmware(struct typhoon *tp)
+ {
+@@ -1369,7 +1399,7 @@ typhoon_download_firmware(struct typhoon *tp)
+ 	int err;
+ 
+ 	err = -EINVAL;
+-	fHdr = (struct typhoon_file_header *) typhoon_firmware_image;
++	fHdr = (struct typhoon_file_header *) tp->tp_fw_image;
+ 	image_data = (u8 *) fHdr;
+ 
+ 	if(memcmp(fHdr->tag, "TYPHOON", 8)) {
+@@ -2102,6 +2132,10 @@ typhoon_open(struct net_device *dev)
+ 	if(err < 0)
+ 		goto out_sleep;
+ 
++	err = typhoon_init_firmware(tp);
++	if (err)
++		goto out_irq;
++
+ 	napi_enable(&tp->napi);
+ 
+ 	err = typhoon_start_runtime(tp);
+@@ -2155,6 +2189,9 @@ typhoon_close(struct net_device *dev)
+ 	if(typhoon_sleep(tp, PCI_D3hot, 0) < 0)
+ 		printk(KERN_ERR "%s: unable to put card to sleep\n", dev->name);
+ 
++	if (tp->tp_fw_image)
++		vfree(tp->tp_fw_image);
++
+ 	return 0;
+ }
+ 
+You can check complete patch from :-
+
+http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git
+
+Thank you,
+
+Jaswinder Singh.
+
