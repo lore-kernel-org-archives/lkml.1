@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761611AbYG1VV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762333AbYG1VWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761611AbYG1VV4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761242AbYG1VSQ
+	id S1762333AbYG1VWW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762243AbYG1VSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:18:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42809 "EHLO mx1.redhat.com"
+	Mon, 28 Jul 2008 17:18:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42815 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761885AbYG1VSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:18:07 -0400
-Date: Mon, 28 Jul 2008 17:13:14 -0400
+	id S1761447AbYG1VSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 17:18:09 -0400
+Date: Mon, 28 Jul 2008 17:14:08 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: Simon Horman <horms@verge.net.au>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -22,17 +22,19 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
        linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/5] ia64: Define elfcorehdr_addr in arch dependent section
-Message-ID: <20080728211314.GC9985@redhat.com>
-References: <20080727234529.GM6175@verge.net.au> <20080728015117.GA12055@verge.net.au> <20080728024526.GB3334@verge.net.au> <20080728034007.GA30450@verge.net.au> <20080728211025.GA9985@redhat.com> <20080728211156.GB9985@redhat.com>
+Subject: [PATCH 4/5] powerpc: Define elfcorehdr_addr in arch dependent
+	section
+Message-ID: <20080728211408.GD9985@redhat.com>
+References: <20080727234529.GM6175@verge.net.au> <20080728015117.GA12055@verge.net.au> <20080728024526.GB3334@verge.net.au> <20080728034007.GA30450@verge.net.au> <20080728211025.GA9985@redhat.com> <20080728211156.GB9985@redhat.com> <20080728211314.GC9985@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080728211156.GB9985@redhat.com>
+In-Reply-To: <20080728211314.GC9985@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
 
 
 o Move elfcorehdr_addr definition in arch dependent crash dump file. This is
@@ -44,15 +46,25 @@ o Move elfcorehdr_addr definition in arch dependent crash dump file. This is
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
 
- arch/ia64/kernel/setup.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/crash_dump.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff -puN arch/ia64/kernel/setup.c~fix-elfcorehdr_addr-parsing-ia64 arch/ia64/kernel/setup.c
---- linux-2.6.27-pre-rc1/arch/ia64/kernel/setup.c~fix-elfcorehdr_addr-parsing-ia64	2008-07-28 12:16:40.000000000 -0400
-+++ linux-2.6.27-pre-rc1-root/arch/ia64/kernel/setup.c	2008-07-28 12:16:40.000000000 -0400
-@@ -478,7 +478,12 @@ static __init int setup_nomca(char *s)
+diff -puN arch/powerpc/kernel/crash_dump.c~fix-elfcorehdr_addr-parsing-ppc64 arch/powerpc/kernel/crash_dump.c
+--- linux-2.6.27-pre-rc1/arch/powerpc/kernel/crash_dump.c~fix-elfcorehdr_addr-parsing-ppc64	2008-07-28 12:14:22.000000000 -0400
++++ linux-2.6.27-pre-rc1-root/arch/powerpc/kernel/crash_dump.c	2008-07-28 12:14:22.000000000 -0400
+@@ -27,6 +27,9 @@
+ #define DBG(fmt...)
+ #endif
+ 
++/* Stores the physical address of elf header of crash image. */
++unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
++
+ void __init reserve_kdump_trampoline(void)
+ {
+ 	lmb_reserve(0, KDUMP_RESERVE_LIMIT);
+@@ -66,7 +69,11 @@ void __init setup_kdump_trampoline(void)
+ 	DBG(" <- setup_kdump_trampoline()\n");
  }
- early_param("nomca", setup_nomca);
  
 -#ifdef CONFIG_PROC_VMCORE
 +/*
@@ -60,18 +72,15 @@ diff -puN arch/ia64/kernel/setup.c~fix-elfcorehdr_addr-parsing-ia64 arch/ia64/ke
 + * is_kdump_kernel() to determine if we are booting after a panic. Hence
 + * ifdef it under CONFIG_CRASH_DUMP and not CONFIG_PROC_VMCORE.
 + */
-+#ifdef CONFIG_CRASH_DUMP
- /* elfcorehdr= specifies the location of elf core header
-  * stored by the crashed kernel.
-  */
-@@ -491,7 +496,9 @@ static int __init parse_elfcorehdr(char 
- 	return 0;
- }
- early_param("elfcorehdr", parse_elfcorehdr);
-+#endif
- 
-+#ifdef CONFIG_PROC_VMCORE
- int __init reserve_elfcorehdr(unsigned long *start, unsigned long *end)
+ static int __init parse_elfcorehdr(char *p)
  {
- 	unsigned long length;
+ 	if (p)
+@@ -75,7 +82,6 @@ static int __init parse_elfcorehdr(char 
+ 	return 1;
+ }
+ __setup("elfcorehdr=", parse_elfcorehdr);
+-#endif
+ 
+ static int __init parse_savemaxmem(char *p)
+ {
 _
