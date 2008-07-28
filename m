@@ -1,114 +1,48 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757737AbYG0PZ0 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 27 Jul 2008 11:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYG0PZJ
+	id S1759968AbYG1Wup (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 28 Jul 2008 18:50:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbYG1Wub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 11:25:09 -0400
-Received: from unallocated.dg.net.ua ([213.186.218.211]:51336 "EHLO
-	mail.connect.com.ua" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752460AbYG0PZI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 11:25:08 -0400
-To: linux-kernel@vger.kernel.org
-Subject: =?UTF-8?B?0JrQvtC90L3QtdC60YIgfCDQl9C80ZbQvdC4INC30LAg0L7RgdGC0LDQvdC9?=  =?UTF-8?B?0ZbQuSDRgtC40LbQtNC10L3RjA==?=
-Date: Sun, 27 Jul 2008 18:25:03 +0300
-From: =?UTF-8?B?0JrQvtC80LDQvdC00LAg0JrQvtC90L3QtdC60YLQsA==?= 
-	<donotreply@connect.com.ua>
-Reply-to: Connect <donotreply@connect.com.ua>
-Message-ID: <ba1ba37e23f1b81615e248e49244545e@localhost.localdomain>
-X-Priority: 3
-X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.0 rc1]
+	Mon, 28 Jul 2008 18:50:31 -0400
+Received: from lhr63.pie.net.pk ([221.120.210.210]:1310 "EHLO umt.edu.pk"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752648AbYG1Wua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 18:50:30 -0400
+Date: Mon, 28 Jul 2008 17:56:56 +0500
+From: "MEHROON GULL" <040320007@umt.edu.pk>
+Reply-To: chika2flex2000@rocketmail.com
+Subject: 
 MIME-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
+Message-ID: <WorldClient-F200807281756.AA56560215@umt.edu.pk>
+X-Mailer: WorldClient 7.1.0
+X-Authenticated-Sender: 040320007@umt.edu.pk
+X-Return-Path: 040320007@umt.edu.pk
+X-MDAV-Processed: umt.edu.pk, Mon, 28 Jul 2008 17:58:15 +0500
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757737AbYG0PZ0@vger.kernel.org>
-
-=D0=92=D1=96=D1=82=D0=B0=D1=94=D0=BC=D0=BE, =D0=92=D0=BB=D0=B0=D0=B4=D0=
-=B8=D0=BC=D0=B8=D1=80 =D0=9A=D0=B8=D1=80=D0=B8=D0=BB=D0=BE=D0=B2!
-
-=D0=9F=D1=80=D0=BE=D0=BF=D0=BE=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=B4=D0=BE=
- =D0=B2=D0=B0=D1=88=D0=BE=D1=97 =D1=83=D0=B2=D0=B0=D0=B3=D0=B8 =D0=BF=D0=
-=B5=D1=80=D0=B5=D0=BB=D1=96=D0=BA =D0=BD=D0=B0=D0=B9=D0=B1=D1=96=D0=BB=D1=
-=8C=D1=88 =D1=86=D1=96=D0=BA=D0=B0=D0=B2=D0=B8=D1=85 =D0=BF=D0=BE=D0=B4=
-=D1=96=D0=B9 =D0=BD=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82=D1=
-=96 =D0=B7=D0=B0 =D0=BE=D1=81=D1=82=D0=B0=D0=BD=D0=BD=D1=96=D0=B9 =D1=87=
-=D0=B0=D1=81:
-
-=D0=9A=D1=96=D0=BB=D1=8C=D0=BA=D0=B0 =D0=B4=D0=BD=D1=96=D0=B2 =D1=82=D0=
-=BE=D0=BC=D1=83 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82 =D0=BF=D1=96=
-=D0=B4=D0=B4=D0=B0=D0=B2=D1=81=D1=8F =D0=B0=D1=82=D0=B0=D1=86=D1=96 =D0=
-=B2=D1=96=D1=80=D1=83=D1=81=D1=83. =D0=92=D0=BD=D0=B0=D1=81=D0=BB=D1=96=
-=D0=B4=D0=BE=D0=BA =D1=87=D0=BE=D0=B3=D0=BE, =D0=B2=D1=96=D0=B4 =D1=96=D0=
-=BC=D0=B5=D0=BD=D1=96 =D1=80=D0=B5=D0=B0=D0=BB=D1=8C=D0=BD=D0=B8=D1=85 =
-=D0=BA=D0=BE=D1=80=D0=B8=D1=81=D1=82=D1=83=D0=B2=D0=B0=D1=87=D1=96=D0=B2=
- =D0=B1=D0=B5=D0=B7 =D1=97=D1=85 =D0=B2=D1=96=D0=B4=D0=BE=D0=BC=D0=B0 =D0=
-=BD=D0=B0 =D1=81=D1=82=D1=96=D0=BD=D0=BA=D0=B0=D1=85 =D1=96=D0=BD=D1=88=
-=D0=B8=D1=85 =D0=BA=D0=BE=D1=80=D0=B8=D1=81=D1=82=D1=83=D0=B2=D0=B0=D1=87=
-=D1=96=D0=B2 =D0=BF=D1=83=D0=B1=D0=BB=D1=96=D0=BA=D1=83=D0=B2=D0=B0=D0=BB=
-=D0=B8=D1=81=D1=8F =D0=BF=D0=BE=D1=81=D0=B8=D0=BB=D0=B0=D0=BD=D0=BD=D1=8F=
- =D0=BD=D0=B0 =D1=81=D0=B0=D0=B9=D1=82=D0=B8 =D0=BF=D0=BE=D1=80=D0=BD=D0=
-=BE=D0=B3=D1=80=D0=B0=D1=84=D1=96=D1=87=D0=BD=D0=BE=D0=B3=D0=BE =D0=B7=D0=
-=BC=D1=96=D1=81=D1=82=D1=83. =D0=9F=D0=BE=D0=B2=D1=96=D0=B4=D0=BE=D0=BC=
-=D0=BB=D0=B5=D0=BD=D0=BD=D1=8F =D0=B7=D1=96 =D1=81=D1=82=D1=96=D0=BD=D0=
-=BE=D0=BA =D0=B1=D1=83=D0=BB=D0=B8 =D0=B2=D0=B8=D0=B4=D0=B0=D0=BB=D0=B5=
-=D0=BD=D1=96, =D0=BF=D1=80=D0=B8=D0=B9=D0=BD=D1=8F=D1=82=D1=96 =D0=BC=D1=
-=96=D1=80=D0=B8 =D0=B4=D0=BB=D1=8F =D0=B7=D0=B0=D0=BF=D0=BE=D0=B1=D1=96=
-=D0=B3=D0=B0=D0=BD=D0=BD=D1=8F =D0=BF=D0=BE=D0=B2=D1=82=D0=BE=D1=80=D0=B5=
-=D0=BD=D0=BD=D1=8F =D0=B0=D1=82=D0=B0=D0=BA=D0=B8. =D0=9F=D1=80=D0=B8=D0=
-=BD=D0=BE=D1=81=D0=B8=D0=BC=D0=BE =D1=81=D0=B2=D0=BE=D1=97 =D0=B2=D0=B8=
-=D0=B1=D0=B0=D1=87=D0=B5=D0=BD=D0=BD=D1=8F.
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759968AbYG1Wup@vger.kernel.org>
 
 
-=D0=9D=D0=BE=D0=B2=D0=B5 =D0=B2i=D0=B4=D0=B5=D0=BE:
-=D0=A1=D1=80=D0=B5=D0=B4=D1=81=D1=82=D0=B2=D0=BE =D0=BF=D1=80=D0=BE=D1=82=
-=D0=B8=D0=B2 =D1=8D=D1=80=D0=B5=D0=BA=D1=86=D0=B8=D0=B8, 5563 =D0=BF=D0=
-=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4=D0=B0: http://connect.ua/video/=
-view?id=3D58218
-=D0=A1=D0=BE=D1=81=D0=B5=D0=B4 =D0=B8 =D1=81=D0=BE=D1=81=D0=B5=D0=B4=D0=
-=BA=D0=B0, 4432 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4=D0=B0:=
- http://connect.ua/video/view?id=3D55070
-Ipod nano, 1640 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4i=D0=B2=
-: http://connect.ua/video/view?id=3D61000
-=D0=92=D1=81i =D0=B2i=D0=B4=D0=B5=D0=BE http://connect.ua/video
+Dear Netvision User,
 
-=D0=AF=D0=BA=D1=89=D0=BE =D0=B2=D0=BA=D0=B0=D0=B7=D0=B0=D0=BD=D0=B5 =D0=
-=B2=D0=B8=D1=89=D0=B5 =D0=BF=D0=BE=D1=81=D0=B8=D0=BB=D0=B0=D0=BD=D0=BD=D1=
-=8F =D0=BD=D0=B5 =D0=B2=D1=96=D0=B4=D0=BA=D1=80=D0=B8=D0=B2=D0=B0=D1=94=
-=D1=82=D1=8C=D1=81=D1=8F, =D0=B7=D0=BA=D0=BE=D0=BF=D1=96=D1=8E=D0=B9=D1=
-=82=D0=B5 =D0=B9=D0=BE=D0=B3=D0=BE =D0=B4=D0=BE =D0=B1=D1=83=D1=84=D0=B5=
-=D1=80=D0=B0 =D0=BE=D0=B1=D0=BC=D1=96=D0=BD=D1=83, =D0=B2=D1=81=D1=82=D0=
-=B0=D0=B2=D1=82=D0=B5 =D0=B2 =D0=B0=D0=B4=D1=80=D0=B5=D1=81=D0=BD=D0=B8=
-=D0=B9 =D1=80=D1=8F=D0=B4=D0=BE=D0=BA =D0=B1=D1=80=D0=B0=D1=83=D0=B7=D0=
-=B5=D1=80=D0=B0 =D1=82=D0=B0 =D0=BD=D0=B0=D1=82=D0=B8=D1=81=D0=BD=D1=96=
-=D1=82=D1=8C Enter.
+To complete your Netvision account, you must reply with your login 
+details.
+username:     (*********)
+password here (*********)
 
-=D0=92=D0=B8 =D0=BE=D1=82=D1=80=D0=B8=D0=BC=D0=B0=D0=BB=D0=B8 =D1=86=D0=
-=B5=D0=B9 =D0=BB=D0=B8=D1=81=D1=82, =D1=82=D0=BE=D0=BC=D1=83 =D1=89=D0=BE=
- =D0=B7=D0=B0=D1=80=D0=B5=D1=94=D1=81=D1=82=D1=80=D0=BE=D0=B2=D0=B0=D0=BD=
-=D1=96 =D0=BD=D0=B0 =D1=81=D0=B0=D0=B9=D1=82=D1=96 =D0=BD=D0=B0=D1=86=D1=
-=96=D0=BE=D0=BD=D0=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D1=83=D0=BA=D1=80=D0=
-=B0=D1=97=D0=BD=D1=81=D1=8C=D0=BA=D0=BE=D1=97 =D1=81=D0=BE=D1=86=D1=96=D0=
-=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D0=BC=D0=B5=D1=80=D0=B5=D0=B6=D1=96 =
-Connect.ua
+Failure to do this will immediately render your email address
+deactivated from our database.
 
-=D0=92=D0=B8 =D0=BC=D0=BE=D0=B6=D0=B5=D1=82=D0=B5 =D0=B7=D0=BC=D1=96=D0=
-=BD=D0=B8=D1=82=D0=B8 =D0=BF=D0=B0=D1=80=D0=B0=D0=BC=D0=B5=D1=82=D1=80=D0=
-=B8 =D0=B2=D1=96=D0=B4=D0=BF=D1=80=D0=B0=D0=B2=D0=BB=D0=B5=D0=BD=D0=BD=D1=
-=8F =D0=BF=D0=BE=D0=B2=D1=96=D0=B4=D0=BE=D0=BC=D0=BB=D0=B5=D0=BD=D1=8C =
-=D0=B2 =D0=BE=D0=BF=D1=86=D1=96=D1=8F=D1=85 =D0=B0=D0=BD=D0=BA=D0=B5=D1=
-=82=D0=B8.
+We apologise for the inconvenience that this will cause you during this
+period, but trust you understand that our primary concern is for our
+customers and for the security of their data.
+our customers are totally secure
+Regards
 
-=D0=9E=D0=B1`=D1=94=D0=B4=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=A3=D0=BA=D1=
-=80=D0=B0=D1=97=D0=BD=D1=83!
-=D0=9A=D0=BE=D0=BC=D0=B0=D0=BD=D0=B4=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=
-=D0=BA=D1=82=D1=83
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Netvision Support Team
+
+
