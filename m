@@ -1,58 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445AbYG1MdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751824AbYG1Mdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753445AbYG1MdW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 08:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYG1MdJ
+	id S1751824AbYG1Mdg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 08:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYG1MdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 08:33:09 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:45537 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750790AbYG1MdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 08:33:08 -0400
-Date: Mon, 28 Jul 2008 21:32:29 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org
-Subject: [PATCH] USB: m66592-udc: Fix up dev_set_name() badness.
-Message-ID: <20080728123229.GA15202@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	Kay Sievers <kay.sievers@vrfy.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-sh@vger.kernel.org
+	Mon, 28 Jul 2008 08:33:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39760 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753261AbYG1MdV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 08:33:21 -0400
+Date: Mon, 28 Jul 2008 08:33:09 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: alan@lxorguk.ukuu.org.uk, sfr@canb.auug.org.au, linuxppc-dev@ozlabs.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, kkeil@suse.de
+Subject: Re: [PATCH] isdn: mISDN HFC PCI support depends on virt_to_bus()
+Message-ID: <20080728123309.GA3970@infradead.org>
+References: <20080728023732.090aff83.sfr@canb.auug.org.au> <20080727182709.1dac0556@lxorguk.ukuu.org.uk> <20080727.125604.73857337.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080727.125604.73857337.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 0031a06e2f07ab0d1bc98c31dbb6801f95f4bf01 converted all of the USB
-drivers to use dev_set_name(), though there was a typo on the m66592-udc
-conversion that handed off the wrong pointer (we want the struct device
-here obviously, not the struct usb_gadget).
+On Sun, Jul 27, 2008 at 12:56:04PM -0700, David Miller wrote:
+> Yes, please.
+> 
+> IMHO, this driver was really rushed in and that was a huge mistake.
+> If it had gone through linux-next we could have tidied all of this
+> stuff up in a less "rushed" manner.
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-
----
-
- drivers/usb/gadget/m66592-udc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/usb/gadget/m66592-udc.c b/drivers/usb/gadget/m66592-udc.c
-index 8da7535..77b44fb 100644
---- a/drivers/usb/gadget/m66592-udc.c
-+++ b/drivers/usb/gadget/m66592-udc.c
-@@ -1593,7 +1593,7 @@ static int __init m66592_probe(struct platform_device *pdev)
- 
- 	m66592->gadget.ops = &m66592_gadget_ops;
- 	device_initialize(&m66592->gadget.dev);
--	dev_set_name(&m66592->gadget, "gadget");
-+	dev_set_name(&m66592->gadget.dev, "gadget");
- 	m66592->gadget.is_dualspeed = 1;
- 	m66592->gadget.dev.parent = &pdev->dev;
- 	m66592->gadget.dev.dma_mask = pdev->dev.dma_mask;
+Or just reviewed in at least some way..
