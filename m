@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbYG1O5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758088AbYG1O4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758144AbYG1O5O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 10:57:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756973AbYG1OyS
+	id S1758088AbYG1O4v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 10:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbYG1Oxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 10:54:18 -0400
-Received: from gra-lx1.iram.es ([150.214.224.41]:44907 "EHLO gra-lx1.iram.es"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756313AbYG1OyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 10:54:15 -0400
-X-Greylist: delayed 1952 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jul 2008 10:54:15 EDT
-From: Gabriel Paubert <paubert@iram.es>
-Date: Mon, 28 Jul 2008 15:52:51 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Linuxppc-dev@ozlabs.org,
-       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>
-Subject: Re: CONFIG_FRAME_POINTER [was [PATCH] x86: BUILD_IRQ say .text]
-Message-ID: <20080728135251.GA1216@iram.es>
-References: <Pine.LNX.4.64.0807211828470.26173@blonde.site> <20080724104459.GI28817@elte.hu> <Pine.LNX.4.64.0807251839190.20617@blonde.site> <1217022373.11188.115.camel@pasglop> <Pine.LNX.4.64.0807261122430.20543@blonde.site> <1217075802.11188.129.camel@pasglop>
+	Mon, 28 Jul 2008 10:53:35 -0400
+Received: from styx.suse.cz ([82.119.242.94]:42510 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756615AbYG1Oxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 10:53:33 -0400
+From: David Sterba <dsterba@suse.cz>
+Subject: [PATCH 12/12] ipwireless: Preallocate received packet buffers with
+	MRU size
+To: torvalds@linux-foundation.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, jkosina@suse.cz,
+       dsterba@suse.cz
+Date: Mon, 28 Jul 2008 16:53:32 +0200
+Message-ID: <20080728145332.13378.80871.stgit@ds.suse.cz>
+In-Reply-To: <20080728145124.13378.39300.stgit@ds.suse.cz>
+References: <20080728145124.13378.39300.stgit@ds.suse.cz>
+User-Agent: StGIT/0.14.3.173.g2e37
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217075802.11188.129.camel@pasglop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 26, 2008 at 10:36:42PM +1000, Benjamin Herrenschmidt wrote:
-> On Sat, 2008-07-26 at 12:02 +0100, Hugh Dickins wrote:
-> > 
-> > Hmm, perhaps it is doing sibling calls differently even without the
-> > explicit -fno-optimize-sibling-calls (but when I add that option,
-> > the vmlinux size does go up another 4400).
-> > 
-> > Sorry, I'm most probably fussing over nothing,
-> > and wasting your time with my ignorance.
-> 
-> No you aren't, there is indeed something happening. It looks like gcc is
-> keeping a copy of each stack frame in r31, thus forcing to save/restore
-> that register, along function calls, possibly to help get reliable
-> frames for leaf functions. I don't think we use that "feature" in our
-> backtrace code though... so it won't harm in the sense that it won't
-> break things, but it will indeed bloat the code a little bit.
-> 
-> Maybe we should totally disable -fno-omit-frame-pointers on powerpc ...
+ipwireless: Preallocate received packet buffers with MRU size
 
-Yes.
-> either that or see about actually using that r31 linkage, though I'm not
-> sure it would be that useful.
+Packets are assembled from link size (~300 bytes) up to PPP MRU
+(1500 by default). Try to preallocate full size rather than
+repeatedly advance buffer size by 256 bytes.
 
-On PPC you can get reliable backtraces (modulo leaf functions, but AFAIR
-the frame pointer does not help, only the CFI data) without a frame pointer
-since the ABI makes the stack pointer chain easy to follow. The frame pointer
-(r31) is only necessary when there are variable size stack allocations, 
-alloca() for example, but are they even allowed in the kernel?
+Signed-off-by: David Sterba <dsterba@suse.cz>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+---
 
-	Regards,
-	Gabriel
+ drivers/char/pcmcia/ipwireless/hardware.c |    3 ++-
+ drivers/char/pcmcia/ipwireless/network.c  |    5 +++++
+ drivers/char/pcmcia/ipwireless/network.h  |    1 +
+ 3 files changed, 8 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/char/pcmcia/ipwireless/hardware.c b/drivers/char/pcmcia/ipwireless/hardware.c
+index d1e69de..7d500f8 100644
+--- a/drivers/char/pcmcia/ipwireless/hardware.c
++++ b/drivers/char/pcmcia/ipwireless/hardware.c
+@@ -567,7 +567,8 @@ static struct ipw_rx_packet *pool_allocate(struct ipw_hardware *hw,
+ 			spin_unlock_irqrestore(&hw->lock, flags);
+ 			list_del(&packet->queue);
+ 		} else {
+-			static int min_capacity = 256;
++			const int min_capacity =
++				ipwireless_ppp_mru(hw->network + 2);
+ 			int new_capacity;
+ 
+ 			spin_unlock_irqrestore(&hw->lock, flags);
+diff --git a/drivers/char/pcmcia/ipwireless/network.c b/drivers/char/pcmcia/ipwireless/network.c
+index 2b07af0..590762a 100644
+--- a/drivers/char/pcmcia/ipwireless/network.c
++++ b/drivers/char/pcmcia/ipwireless/network.c
+@@ -499,3 +499,8 @@ int ipwireless_ppp_unit_number(struct ipw_network *network)
+ 
+ 	return ret;
+ }
++
++int ipwireless_ppp_mru(const struct ipw_network *network)
++{
++	return network->mru;
++}
+diff --git a/drivers/char/pcmcia/ipwireless/network.h b/drivers/char/pcmcia/ipwireless/network.h
+index ccacd26..561f765 100644
+--- a/drivers/char/pcmcia/ipwireless/network.h
++++ b/drivers/char/pcmcia/ipwireless/network.h
+@@ -48,5 +48,6 @@ void ipwireless_ppp_open(struct ipw_network *net);
+ void ipwireless_ppp_close(struct ipw_network *net);
+ int ipwireless_ppp_channel_index(struct ipw_network *net);
+ int ipwireless_ppp_unit_number(struct ipw_network *net);
++int ipwireless_ppp_mru(const struct ipw_network *net);
+ 
+ #endif
+
