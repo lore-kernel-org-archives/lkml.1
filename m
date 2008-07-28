@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbYG1O5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758417AbYG1O5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758227AbYG1O5d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 10:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbYG1Oy7
+	id S1758417AbYG1O5s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 10:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757733AbYG1Ozx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 10:54:59 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:22760 "EHLO
-	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757377AbYG1Oy6 convert rfc822-to-8bit (ORCPT
+	Mon, 28 Jul 2008 10:55:53 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:45258 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757713AbYG1Ozw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 10:54:58 -0400
-X-BigFish: VPS-27(z21eW37d4lz1432R1805M103dK7cf0izzzzz32i6bh65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0K4Q1FA-01-JJC-01
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Mon, 28 Jul 2008 10:55:52 -0400
+Date: Mon, 28 Jul 2008 15:54:30 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Ingo Molnar <mingo@elte.hu>
+cc: Mike Travis <travis@sgi.com>, Ben Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
+       Linuxppc-dev@ozlabs.org, Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: CONFIG_FRAME_POINTER [was [PATCH] x86: BUILD_IRQ say .text]
+In-Reply-To: <20080728144133.GH18144@elte.hu>
+Message-ID: <Pine.LNX.4.64.0807281550260.25371@blonde.site>
+References: <Pine.LNX.4.64.0807211828470.26173@blonde.site>
+ <20080724104459.GI28817@elte.hu> <Pine.LNX.4.64.0807251839190.20617@blonde.site>
+ <20080728144133.GH18144@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 01/01] x86: L3 cache index disable for 2.6.26
-Date: Mon, 28 Jul 2008 09:54:52 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC2E@sausexmb4.amd.com>
-In-Reply-To: <20080728144913.GA16147@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 01/01] x86: L3 cache index disable for 2.6.26
-Thread-Index: AcjwwVLW2k5VNh+qQaanqvYSFuz0LAAAH3wg
-References: <200807181603.52332.mark.langsdorf@amd.com> <20080721113706.GC23095@elte.hu> <20080721124812.GA25371@elte.hu> <200807221306.03123.mark.langsdorf@amd.com> <20080728142256.GF18144@elte.hu> <20080728144913.GA16147@elte.hu>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-CC: <tglx@linutronix.de>, <mingo@redhat.com>, <hpa@zytor.com>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 28 Jul 2008 14:54:52.0788 (UTC) FILETIME=[E431C340:01C8F0C1]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > please send a delta fix patch against the tip/x86/cpu branch:
-> > > > 
-> > > >   http://people.redhat.com/mingo/tip.git/README
-> > > > 
-> > > > which has your patch plus the cleanup applied.
-> > > 
-> > > delta fix patch follows.  It removes the dependency on 
-> k8_northbridges.
-> > 
-> > applied, thanks. I fixed up some whitespace damage, see below. That 
-> > file could use a thorough cleanup ...
+On Mon, 28 Jul 2008, Ingo Molnar wrote:
+> * Hugh Dickins <hugh@veritas.com> wrote:
 > 
-> it still doesnt work, on !PCI:
+> > I rather think CONFIG_FRAME_POINTER shouldn't exist at all (or be a 
+> > private, config-user-invisible, specific-to-a-few-arches thing): what 
+> > one wants to configure is how far to sacrifice cpu performance and 
+> > kernel smallness to getting a good stacktrace.  Frame pointer is just 
+> > an implementation detail on that, appropriate to some arches. Perhaps 
+> > three settings: no stacktrace, fair stacktrace, best stacktrace.
 > 
-> arch/x86/kernel/cpu/intel_cacheinfo.c: In function 
-> 'get_k8_northbridge':
-> arch/x86/kernel/cpu/intel_cacheinfo.c:675: error: implicit 
-> declaration of function 'pci_match_id'
-> make[2]: *** [arch/x86/kernel/cpu/intel_cacheinfo.o] Error 1
-> 
-> config and fix attached.
+> actually, we consciously use and rely on frame pointers on x86. The 
+> runtime cost on 64-bit is miniscule and the improved backtrace output in 
+> recent kernels makes backtraces _much_ easier to interpret:
 
-Thanks!
+Just to clarify, no way was I criticizing the use of frame pointers
+on x86.  What I don't care for is that CONFIG_FRAME_POINTER is used
+by common code (e.g. top level Makefile, and various debug Kconfigs),
+when I see it as an arch-specific technique for getting best stacktrace.
 
--Mark Langsdorf
-Operating System Research Center
-AMD
-
+Hugh
