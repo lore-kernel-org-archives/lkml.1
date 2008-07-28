@@ -1,75 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbYG1QNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758417AbYG1QNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757953AbYG1QNP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 12:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbYG1QM7
+	id S1758417AbYG1QNe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 12:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755567AbYG1QNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 12:12:59 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:34183 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754227AbYG1QM5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 12:12:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=NtqqzeU2bOhR31ZiWFB5oyH5ZNe3BmNyGrkGnxU2F3a2JYYnlCsX5QXKCTAQD+h2KF
-         JhBP+HKJ+RJaQjTtfOxTL62YHWE2aeriozHlfSq1SElVzPnsjJheC0MetTu42NmX/3/W
-         5KYfGXYMohJheapyizMGlk+MrSXx92x+GXMl4=
-Message-ID: <9e4733910807280912r5a30d951u3cfd4ca95c12c850@mail.gmail.com>
-Date: Mon, 28 Jul 2008 12:12:56 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: 463 kernel developers missing!
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <9e4733910807280858s243d02b8hb4732bcae1e8f4d3@mail.gmail.com>
+	Mon, 28 Jul 2008 12:13:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58142 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754333AbYG1QNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 12:13:21 -0400
+Message-ID: <488DF00F.3080809@redhat.com>
+Date: Mon, 28 Jul 2008 11:13:03 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
+To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Michael Halcrow <mhalcrow@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] eCryptfs - use page_alloc not kmalloc to get a page of memory
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
-	 <9e4733910807280820v118b728fu1c0a8b8eb4c4fdaa@mail.gmail.com>
-	 <20080728153546.GD30612@cs181140183.pp.htv.fi>
-	 <9e4733910807280845y7e07486n84794a6e74cb59c2@mail.gmail.com>
-	 <20080728155227.GF30612@cs181140183.pp.htv.fi>
-	 <9e4733910807280858s243d02b8hb4732bcae1e8f4d3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew was getting credit for Len Brown's patches, new top 20.
+With SLUB debugging turned on in 2.6.26, I was getting memory corruption
+when testing eCryptfs.  The root cause turned out to be that eCryptfs
+was doing kmalloc(PAGE_CACHE_SIZE); virt_to_page() and treating that
+as a nice page-aligned chunk of memory.  But at least with SLUB debugging
+on, this is not always true, and the page we get from virt_to_page does
+not necessarily match the PAGE_CACHE_SIZE worth of memory we got from 
+kmalloc.
 
-Of course the list has errors in it, but they are easy to find and
-fix. Once they are fixed they will never change since they reflect the
-existing history in the tree.
+My simple testcase was 2 loops doing "rm -f fileX; cp /tmp/fileX ." for
+2 different multi-megabyte files.  With this change I no longer see
+the corruption.
 
-Let's get the main patch in and then everyone can send in little
-patches to fix the errors. I've removed all of the errors I can via
-scripts, now it is a manual process to spot the aliases.
+Thanks,
+-Eric
 
-Linus Torvalds (4350):
-David S. Miller (1858):
-Adrian Bunk (1774):
-Al Viro (1735):
-Ingo Molnar (1393):
-Ralf Baechle (1367):
-Jeff Garzik (1291):
-Andrew Morton (1280):
-Takashi Iwai (1196):
-Tejun Heo (1092):
-Bartlomiej Zolnierkiewicz (1071):
-Patrick McHardy (1031):
-Stephen Hemminger (1017):
-Russell King (985):
-Andi Kleen (973):
-Thomas Gleixner (953):
-Alan Cox (822):
-Paul Mundt (813):
-Jean Delvare (771):
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+---
 
+Index: linux-2.6.26/fs/ecryptfs/crypto.c
+===================================================================
+--- linux-2.6.26.orig/fs/ecryptfs/crypto.c
++++ linux-2.6.26/fs/ecryptfs/crypto.c
+@@ -474,8 +474,8 @@ int ecryptfs_encrypt_page(struct page *p
+ {
+ 	struct inode *ecryptfs_inode;
+ 	struct ecryptfs_crypt_stat *crypt_stat;
+-	char *enc_extent_virt = NULL;
+-	struct page *enc_extent_page;
++	char *enc_extent_virt;
++	struct page *enc_extent_page = NULL;
+ 	loff_t extent_offset;
+ 	int rc = 0;
+ 
+@@ -491,14 +491,14 @@ int ecryptfs_encrypt_page(struct page *p
+ 			       page->index);
+ 		goto out;
+ 	}
+-	enc_extent_virt = kmalloc(PAGE_CACHE_SIZE, GFP_USER);
+-	if (!enc_extent_virt) {
++	enc_extent_page = alloc_page(GFP_USER);
++	if (!enc_extent_page) {
+ 		rc = -ENOMEM;
+ 		ecryptfs_printk(KERN_ERR, "Error allocating memory for "
+ 				"encrypted extent\n");
+ 		goto out;
+ 	}
+-	enc_extent_page = virt_to_page(enc_extent_virt);
++	enc_extent_virt = kmap(enc_extent_page);
+ 	for (extent_offset = 0;
+ 	     extent_offset < (PAGE_CACHE_SIZE / crypt_stat->extent_size);
+ 	     extent_offset++) {
+@@ -526,7 +526,10 @@ int ecryptfs_encrypt_page(struct page *p
+ 		}
+ 	}
+ out:
+-	kfree(enc_extent_virt);
++	if (enc_extent_page) {
++		kunmap(enc_extent_page);
++		__free_page(enc_extent_page);
++	}
+ 	return rc;
+ }
+ 
+@@ -608,8 +611,8 @@ int ecryptfs_decrypt_page(struct page *p
+ {
+ 	struct inode *ecryptfs_inode;
+ 	struct ecryptfs_crypt_stat *crypt_stat;
+-	char *enc_extent_virt = NULL;
+-	struct page *enc_extent_page;
++	char *enc_extent_virt;
++	struct page *enc_extent_page = NULL;
+ 	unsigned long extent_offset;
+ 	int rc = 0;
+ 
+@@ -626,14 +629,14 @@ int ecryptfs_decrypt_page(struct page *p
+ 			       page->index);
+ 		goto out;
+ 	}
+-	enc_extent_virt = kmalloc(PAGE_CACHE_SIZE, GFP_USER);
+-	if (!enc_extent_virt) {
++	enc_extent_page = alloc_page(GFP_USER);
++	if (!enc_extent_page) {
+ 		rc = -ENOMEM;
+ 		ecryptfs_printk(KERN_ERR, "Error allocating memory for "
+ 				"encrypted extent\n");
+ 		goto out;
+ 	}
+-	enc_extent_page = virt_to_page(enc_extent_virt);
++	enc_extent_virt = kmap(enc_extent_page);
+ 	for (extent_offset = 0;
+ 	     extent_offset < (PAGE_CACHE_SIZE / crypt_stat->extent_size);
+ 	     extent_offset++) {
+@@ -661,7 +664,10 @@ int ecryptfs_decrypt_page(struct page *p
+ 		}
+ 	}
+ out:
+-	kfree(enc_extent_virt);
++	if (enc_extent_page) {
++		kunmap(enc_extent_page);
++		__free_page(enc_extent_page);
++	}
+ 	return rc;
+ }
+ 
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
