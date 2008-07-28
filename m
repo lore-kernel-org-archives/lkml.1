@@ -1,94 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbYG1DSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbYG1Dd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754598AbYG1DSk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jul 2008 23:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYG1DS2
+	id S1754170AbYG1Dd6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jul 2008 23:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYG1Ddu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jul 2008 23:18:28 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50793 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752002AbYG1DS2 (ORCPT
+	Sun, 27 Jul 2008 23:33:50 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:43191 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751677AbYG1Dds (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jul 2008 23:18:28 -0400
-Subject: Re: [PATCH] typhoon: use request_firmware
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: David Dillow <dave@thedillows.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, becker@scyld.com,
-       davidpmclean@yahoo.com, Jeff Garzik <jeff@garzik.org>,
-       netdev <netdev@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1217209400.22789.47.camel@obelisk.thedillows.org>
-References: <1217170232.3537.6.camel@jaswinder.satnam>
-	 <1217209400.22789.47.camel@obelisk.thedillows.org>
-Content-Type: text/plain; charset=utf8
-Date: Mon, 28 Jul 2008 08:46:49 +0530
-Message-Id: <1217215009.2970.7.camel@jaswinder.satnam>
+	Sun, 27 Jul 2008 23:33:48 -0400
+Date: Sun, 27 Jul 2008 20:33:08 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Niels de Vos <niels@nixpanic.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Remove newline from the description of module
+ parameters
+Message-Id: <20080727203308.4ae2ea2b.randy.dunlap@oracle.com>
+In-Reply-To: <488CBA8B.8070307@nixpanic.net>
+References: <488CBA8B.8070307@nixpanic.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Dave,
+On Sun, 27 Jul 2008 20:12:27 +0200 Niels de Vos wrote:
 
-On Sun, 2008-07-27 at 21:43 -0400, David Dillow wrote:
-
-> >  MODULE_LICENSE("GPL");
-> > +MODULE_LICENSE("3com/typhoon.bin");
+> Some module parameters with only one line have the '\n' at the end of
+> the description. This is not needed nor wanted as after the
+> description the type (i.e. int) is followed by a newline.
 > 
-> Uhm, MODULE_FIRMWARE()?
+> Some modules contain a multi-line description, these are not affected
+> by this patch.
 > 
+> Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
 
-Sorry, Fixed. Thanks.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-> > @@ -1368,8 +1371,14 @@ typhoon_download_firmware(struct typhoon *tp)
-> >  	int i;
-> >  	int err;
-> >  
-> > +	err = request_firmware(&fw, fw_name, &tp->pdev->dev);
-> > +	if (err) {
-> > +		printk(KERN_ERR "%s: Failed to load firmware \"%s\"\n",
-> > +		       tp->name, fw_name);
-> > +		return err;
-> > +	}
-> >  	err = -EINVAL;
-> > -	fHdr = (struct typhoon_file_header *) typhoon_firmware_image;
-> > +	fHdr = (struct typhoon_file_header *) fw->data;
-> >  	image_data = (u8 *) fHdr;
-> >  
-> >  	if(memcmp(fHdr->tag, "TYPHOON", 8)) {
-> > @@ -1494,6 +1503,7 @@ err_out_irq:
-> >  	pci_free_consistent(pdev, PAGE_SIZE, dpage, dpage_dma);
-> >  
-> >  err_out:
-> > +	release_firmware(fw);
-> >  	return err;
-> >  }
+Thanks.
+
+> ---
+>  drivers/acpi/asus_acpi.c                    |    4 ++--
+>  drivers/block/aoe/aoenet.c                  |    2 +-
+>  drivers/gpu/drm/radeon/radeon_drv.c         |    2 +-
+>  drivers/infiniband/hw/ipath/ipath_iba7220.c |    2 +-
+>  drivers/media/video/cs5345.c                |    2 +-
+>  drivers/media/video/cs53l32a.c              |    2 +-
+>  drivers/media/video/mt9v022.c               |    2 +-
+>  drivers/net/netconsole.c                    |    2 +-
+>  drivers/net/tokenring/3c359.c               |    8 ++++----
+>  drivers/net/wireless/ipw2200.c              |    2 +-
+>  drivers/net/wireless/iwlwifi/iwl-4965.c     |    2 +-
+>  drivers/video/matrox/matroxfb_base.c        |    2 +-
+>  12 files changed, 16 insertions(+), 16 deletions(-)
 > 
-> It is not quite this simple. By not loading the firmware on device
-> probe, you have opened the door to a broken resume, and the driver will
-> now try to sleep in an atomic context, when typhoon_tx_timeout() is
-> called at the very least.
-> 
+> diff --git a/drivers/acpi/asus_acpi.c b/drivers/acpi/asus_acpi.c
+> index 44ad90c..d3d0886 100644
+> --- a/drivers/acpi/asus_acpi.c
+> +++ b/drivers/acpi/asus_acpi.c
+> @@ -78,9 +78,9 @@ MODULE_LICENSE("GPL");
+>  static uid_t asus_uid;
+>  static gid_t asus_gid;
+>  module_param(asus_uid, uint, 0);
+> -MODULE_PARM_DESC(asus_uid, "UID for entries in /proc/acpi/asus.\n");
+> +MODULE_PARM_DESC(asus_uid, "UID for entries in /proc/acpi/asus");
+>  module_param(asus_gid, uint, 0);
+> -MODULE_PARM_DESC(asus_gid, "GID for entries in /proc/acpi/asus.\n");
+> +MODULE_PARM_DESC(asus_gid, "GID for entries in /proc/acpi/asus");
+>  
+>  /* For each model, all features implemented, 
+>   * those marked with R are relative to HOTK, A for absolute */
+> diff --git a/drivers/block/aoe/aoenet.c b/drivers/block/aoe/aoenet.c
+> index d625169..0c81ca7 100644
+> --- a/drivers/block/aoe/aoenet.c
+> +++ b/drivers/block/aoe/aoenet.c
+> @@ -30,7 +30,7 @@ enum {
+>  
+>  static char aoe_iflist[IFLISTSZ];
+>  module_param_string(aoe_iflist, aoe_iflist, IFLISTSZ, 0600);
+> -MODULE_PARM_DESC(aoe_iflist, "aoe_iflist=\"dev1 [dev2 ...]\"\n");
+> +MODULE_PARM_DESC(aoe_iflist, "aoe_iflist=\"dev1 [dev2 ...]\"");
+>  
+>  #ifndef MODULE
+>  static int __init aoe_iflist_setup(char *str)
+> diff --git a/drivers/gpu/drm/radeon/radeon_drv.c b/drivers/gpu/drm/radeon/radeon_drv.c
+> index 349ac3d..637bd7f 100644
+> --- a/drivers/gpu/drm/radeon/radeon_drv.c
+> +++ b/drivers/gpu/drm/radeon/radeon_drv.c
+> @@ -38,7 +38,7 @@
+>  
+>  int radeon_no_wb;
+>  
+> -MODULE_PARM_DESC(no_wb, "Disable AGP writeback for scratch registers\n");
+> +MODULE_PARM_DESC(no_wb, "Disable AGP writeback for scratch registers");
+>  module_param_named(no_wb, radeon_no_wb, int, 0444);
+>  
+>  static int dri_library_name(struct drm_device *dev, char *buf)
+> diff --git a/drivers/infiniband/hw/ipath/ipath_iba7220.c b/drivers/infiniband/hw/ipath/ipath_iba7220.c
+> index fb70712..fadbfbf 100644
+> --- a/drivers/infiniband/hw/ipath/ipath_iba7220.c
+> +++ b/drivers/infiniband/hw/ipath/ipath_iba7220.c
+> @@ -528,7 +528,7 @@ static const struct ipath_cregs ipath_7220_cregs = {
+>  
+>  static char int_type[16] = "auto";
+>  module_param_string(interrupt_type, int_type, sizeof(int_type), 0444);
+> -MODULE_PARM_DESC(int_type, " interrupt_type=auto|force_msi|force_intx\n");
+> +MODULE_PARM_DESC(int_type, " interrupt_type=auto|force_msi|force_intx");
+>  
+>  /* packet rate matching delay; chip has support */
+>  static u8 rate_to_delay[2][2] = {
+> diff --git a/drivers/media/video/cs5345.c b/drivers/media/video/cs5345.c
+> index 1c3fa3a..2fb2c0e 100644
+> --- a/drivers/media/video/cs5345.c
+> +++ b/drivers/media/video/cs5345.c
+> @@ -35,7 +35,7 @@ static int debug;
+>  
+>  module_param(debug, bool, 0644);
+>  
+> -MODULE_PARM_DESC(debug, "Debugging messages\n\t\t\t0=Off (default), 1=On");
+> +MODULE_PARM_DESC(debug, "Debugging messages, 0=Off (default), 1=On");
+>  
+>  
+>  /* ----------------------------------------------------------------------- */
+> diff --git a/drivers/media/video/cs53l32a.c b/drivers/media/video/cs53l32a.c
+> index 645b339..d9f920e 100644
+> --- a/drivers/media/video/cs53l32a.c
+> +++ b/drivers/media/video/cs53l32a.c
+> @@ -39,7 +39,7 @@ static int debug;
+>  
+>  module_param(debug, bool, 0644);
+>  
+> -MODULE_PARM_DESC(debug, "Debugging messages\n\t\t\t0=Off (default), 1=On");
+> +MODULE_PARM_DESC(debug, "Debugging messages, 0=Off (default), 1=On");
+>  
+>  static unsigned short normal_i2c[] = { 0x22 >> 1, I2C_CLIENT_END };
+>  
+> diff --git a/drivers/media/video/mt9v022.c b/drivers/media/video/mt9v022.c
+> index b31ba4e..56808cd 100644
+> --- a/drivers/media/video/mt9v022.c
+> +++ b/drivers/media/video/mt9v022.c
+> @@ -25,7 +25,7 @@
+>  
+>  static char *sensor_type;
+>  module_param(sensor_type, charp, S_IRUGO);
+> -MODULE_PARM_DESC(sensor_type, "Sensor type: \"colour\" or \"monochrome\"\n");
+> +MODULE_PARM_DESC(sensor_type, "Sensor type: \"colour\" or \"monochrome\"");
+>  
+>  /* mt9v022 selected register addresses */
+>  #define MT9V022_CHIP_VERSION		0x00
+> diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
+> index e13966b..9681618 100644
+> --- a/drivers/net/netconsole.c
+> +++ b/drivers/net/netconsole.c
+> @@ -53,7 +53,7 @@ MODULE_LICENSE("GPL");
+>  
+>  static char config[MAX_PARAM_LENGTH];
+>  module_param_string(netconsole, config, MAX_PARAM_LENGTH, 0);
+> -MODULE_PARM_DESC(netconsole, " netconsole=[src-port]@[src-ip]/[dev],[tgt-port]@<tgt-ip>/[tgt-macaddr]\n");
+> +MODULE_PARM_DESC(netconsole, " netconsole=[src-port]@[src-ip]/[dev],[tgt-port]@<tgt-ip>/[tgt-macaddr]");
+>  
+>  #ifndef	MODULE
+>  static int __init option_setup(char *opt)
+> diff --git a/drivers/net/tokenring/3c359.c b/drivers/net/tokenring/3c359.c
+> index 7766cde..bf62132 100644
+> --- a/drivers/net/tokenring/3c359.c
+> +++ b/drivers/net/tokenring/3c359.c
+> @@ -95,20 +95,20 @@ MODULE_DESCRIPTION("3Com 3C359 Velocity XL Token Ring Adapter Driver \n") ;
+>  static int ringspeed[XL_MAX_ADAPTERS] = {0,} ;
+>  
+>  module_param_array(ringspeed, int, NULL, 0);
+> -MODULE_PARM_DESC(ringspeed,"3c359: Ringspeed selection - 4,16 or 0") ; 
+> +MODULE_PARM_DESC(ringspeed,"3c359: Ringspeed selection - 4,16 or 0") ;
+>  
+>  /* Packet buffer size */
+>  
+>  static int pkt_buf_sz[XL_MAX_ADAPTERS] = {0,} ;
+>   
+>  module_param_array(pkt_buf_sz, int, NULL, 0) ;
+> -MODULE_PARM_DESC(pkt_buf_sz,"3c359: Initial buffer size") ; 
+> +MODULE_PARM_DESC(pkt_buf_sz,"3c359: Initial buffer size") ;
+>  /* Message Level */
+>  
+> -static int message_level[XL_MAX_ADAPTERS] = {0,} ; 
+> +static int message_level[XL_MAX_ADAPTERS] = {0,} ;
+>  
+>  module_param_array(message_level, int, NULL, 0) ;
+> -MODULE_PARM_DESC(message_level, "3c359: Level of reported messages \n") ; 
+> +MODULE_PARM_DESC(message_level, "3c359: Level of reported messages") ;
+>  /* 
+>   *	This is a real nasty way of doing this, but otherwise you
+>   *	will be stuck with 1555 lines of hex #'s in the code.
+> diff --git a/drivers/net/wireless/ipw2200.c b/drivers/net/wireless/ipw2200.c
+> index 1acfbcd..846a7d0 100644
+> --- a/drivers/net/wireless/ipw2200.c
+> +++ b/drivers/net/wireless/ipw2200.c
+> @@ -11946,7 +11946,7 @@ module_param(auto_create, int, 0444);
+>  MODULE_PARM_DESC(auto_create, "auto create adhoc network (default on)");
+>  
+>  module_param(led, int, 0444);
+> -MODULE_PARM_DESC(led, "enable led control on some systems (default 0 off)\n");
+> +MODULE_PARM_DESC(led, "enable led control on some systems (default 0 off)");
+>  
+>  module_param(debug, int, 0444);
+>  MODULE_PARM_DESC(debug, "debug output mask");
+> diff --git a/drivers/net/wireless/iwlwifi/iwl-4965.c b/drivers/net/wireless/iwlwifi/iwl-4965.c
+> index 9afecb8..ba2df1b 100644
+> --- a/drivers/net/wireless/iwlwifi/iwl-4965.c
+> +++ b/drivers/net/wireless/iwlwifi/iwl-4965.c
+> @@ -2469,7 +2469,7 @@ MODULE_PARM_DESC(antenna, "select antenna (1=Main, 2=Aux, default 0 [both])");
+>  module_param_named(disable, iwl4965_mod_params.disable, int, 0444);
+>  MODULE_PARM_DESC(disable, "manually disable the radio (default 0 [radio on])");
+>  module_param_named(swcrypto, iwl4965_mod_params.sw_crypto, int, 0444);
+> -MODULE_PARM_DESC(swcrypto, "using crypto in software (default 0 [hardware])\n");
+> +MODULE_PARM_DESC(swcrypto, "using crypto in software (default 0 [hardware])");
+>  module_param_named(debug, iwl4965_mod_params.debug, int, 0444);
+>  MODULE_PARM_DESC(debug, "debug output mask");
+>  module_param_named(
+> diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
+> index 54e82f3..c021362 100644
+> --- a/drivers/video/matrox/matroxfb_base.c
+> +++ b/drivers/video/matrox/matroxfb_base.c
+> @@ -2536,7 +2536,7 @@ module_param(fh, int, 0);
+>  MODULE_PARM_DESC(fh, "Startup horizontal frequency, 0-999kHz, 1000-INF Hz");
+>  module_param(fv, int, 0);
+>  MODULE_PARM_DESC(fv, "Startup vertical frequency, 0-INF Hz\n"
+> -"You should specify \"fv:max_monitor_vsync,fh:max_monitor_hsync,maxclk:max_monitor_dotclock\"\n");
+> +"You should specify \"fv:max_monitor_vsync,fh:max_monitor_hsync,maxclk:max_monitor_dotclock\"");
+>  module_param(grayscale, int, 0);
+>  MODULE_PARM_DESC(grayscale, "Sets display into grayscale. Works perfectly with paletized videomode (4, 8bpp), some limitations apply to 16, 24 and 32bpp videomodes (default=nograyscale)");
+>  module_param(cross4MB, int, 0);
+> -- 
 
-I just added the request_firmware support and
-replaced ﻿typhoon_firmware_image with ﻿fw->data.
-I do not think this will make any difference in rest of driver.
-
-If you like to change the driver then it should be in another patch.
-
-David Woodhouse, any comments.
-
-> I've said that I was thinking about doing the conversion myself, and I
-> think the firmware loader makes some sense for new drivers. But the more
-> I think about converting old -- fairly static -- drivers such as
-> typhoon, I wonder "what's the point?" We don't save memory, we add code,
-> and we add failure points that weren't there before. Where's the upside?
-> 
-
-﻿David Woodhouse, any comments.
-
-Thank you,
-
-Jaswinder Singh.
-
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
