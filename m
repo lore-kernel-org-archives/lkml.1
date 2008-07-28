@@ -1,52 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759205AbYG1QSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbYG1QUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759205AbYG1QSz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 12:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbYG1QSq
+	id S1758644AbYG1QUb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 12:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756347AbYG1QUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 12:18:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60462 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755278AbYG1QSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 12:18:45 -0400
-Date: Mon, 28 Jul 2008 11:11:58 -0500
-From: David Teigland <teigland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] dlm updates for 2.6.27
-Message-ID: <20080728161158.GA981@redhat.com>
+	Mon, 28 Jul 2008 12:20:23 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2590 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754309AbYG1QUW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 12:20:22 -0400
+Subject: Re: 463 kernel developers missing!
+From: Joe Perches <joe@perches.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
+References: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 28 Jul 2008 09:20:18 -0700
+Message-Id: <1217262018.6145.8.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.12.3-1.3mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
-Third try here... please pull dlm updates for 2.6.27 from:
+On Mon, 2008-07-28 at 10:45 -0400, Jon Smirl wrote:
+> if you aren't in mailmap part of your commit
+> needs to include a new entry for mailmap.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/teigland/dlm.git for-linus
-
-They are all simple fixes and have been in linux-next for quite a while.
-
-Thanks,
-Dave
-
-
-Benny Halevy (1):
-     dlm: fix uninitialized variable for search_rsb_list callers
-
-David Teigland (1):
-     dlm: fix basts for granted CW waiting PR/CW
-
-Masatake YAMATO (2):
-     dlm: check for null in device_write
-     dlm: release socket on error
-
-
- fs/dlm/lock.c     |    4 +++-
- fs/dlm/lowcomms.c |    4 +++-
- fs/dlm/user.c     |    2 +-
- 3 files changed, 7 insertions(+), 3 deletions(-)
+Why?
 
