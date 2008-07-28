@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYG1JxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYG1Jyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbYG1JxT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 05:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbYG1JxM
+	id S1755483AbYG1Jyh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 05:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbYG1Jya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 05:53:12 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:12082 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752053AbYG1JxL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 05:53:11 -0400
-Date: Mon, 28 Jul 2008 13:53:09 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Trent Piepho <tpiepho@freescale.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
-       Richard Purdie <rpurdie@rpsys.net>,
-       Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] leds: make the default trigger name const
-Message-ID: <20080728095309.GA31809@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp> <1217019705-24244-1-git-send-email-tpiepho@freescale.com> <20080727020857.GM12191@secretlab.ca> <20080727231149.1b2508da.sfr@canb.auug.org.au> <Pine.LNX.4.64.0807271304350.26456@t2.domain.actdsltmp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0807271304350.26456@t2.domain.actdsltmp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 28 Jul 2008 05:54:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59078 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750728AbYG1Jy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 05:54:29 -0400
+Date: Mon, 28 Jul 2008 11:54:12 +0200
+From: Michal Schmidt <mschmidt@redhat.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Vrabel <david.vrabel@csr.com>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: PCI: MSI interrupts masked using prohibited method
+Message-ID: <20080728115412.75397898@brian.englab.brq.redhat.com>
+In-Reply-To: <20080725155146.GB17093@parisc-linux.org>
+References: <4860D09D.4060801@csr.com>
+	<48807166.9010006@csr.com>
+	<20080722155629.1160635e@brian.englab.brq.redhat.com>
+	<200807221052.26879.jbarnes@virtuousgeek.org>
+	<20080725152918.43bf3100@brian.englab.brq.redhat.com>
+	<20080725134252.GG6701@parisc-linux.org>
+	<20080725155329.79821436@brian.englab.brq.redhat.com>
+	<20080725155146.GB17093@parisc-linux.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 27, 2008 at 06:56:49PM -0700, Trent Piepho wrote:
-> On Sun, 27 Jul 2008, Stephen Rothwell wrote:
-> > On Sat, 26 Jul 2008 20:08:57 -0600 Grant Likely <grant.likely@secretlab.ca> wrote:
-> >> On Fri, Jul 25, 2008 at 02:01:44PM -0700, Trent Piepho wrote:
-> >>> The default_trigger fields of struct gpio_led and thus struct led_classdev
-> >>> are pretty much always assigned from a string literal, which means the
-> >>> string can't be modified.  Which is fine, since there is no reason to
-> >>> modify the string and in fact it never is.
-> >>>
-> >>> But they should be marked const to prevent such code from being added, to
-> >>> prevent warnings if -Wwrite-strings is used and when assigned from a
-> >>> constant string other than a string literal (which produces a warning under
-> >>> current kernel compiler flags), and for general good coding practices.
-> >>>
-> >>> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-> >> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> >
-> > I would ack this as well, except I am not sure what tree this patch is
-> > against.  In the current powerpc next tree,
+On Fri, 25 Jul 2008 09:51:46 -0600
+Matthew Wilcox <matthew@wil.cx> wrote:
+
+> On Fri, Jul 25, 2008 at 03:53:29PM +0200, Michal Schmidt wrote:
+> > Maybe we should just not use MSI for devices without maskbits.
 > 
-> It was against powerpc next from Jul 22nd, current at the time I made the
-> patch.  It looks like that file has changed in the last few days.  There is a
-> patch from Anton Vorontsov, "leds:  mark led_classdev.default_trigger as
-> const", which adds const to one of the structs I modified, but doesn't get the
-> other one (struct gpio_led).
+> That seems excessive.  I wouldn't object to forbidding CPU affinity
+> changes for devices:
+> 
+>  - Without maskbits
+>  - With the intx quirk
+> 
+> I'd want to look into it in a bit more detail .... perhaps we could
+> allow irq affinity if we don't have to change the address, only the
+> data.
 
-Yes, I posted the patch for my version of OF GPIO LEDs, which didn't use
-struct gpio_led's default_trigger.
+At least on x86, the destination processor is encoded in the message
+address (see Intel Architecture Software Developer's Manual Vol. 3A,
+9.11.1), so it won't help.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Michal
+
