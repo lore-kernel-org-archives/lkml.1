@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758965AbYG1UwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbYG1Ux0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758965AbYG1UwX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 16:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbYG1UwP
+	id S1760027AbYG1Ux0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 16:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYG1UxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 16:52:15 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:1832 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752053AbYG1UwO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 16:52:14 -0400
-X-Trace: 50442775/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/81.1.72.79
-X-SBRS: None
-X-RemoteIP: 81.1.72.79
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtcEAJHOjUhRAUhP/2dsb2JhbACBW65q
-X-IronPort-AV: E=Sophos;i="4.31,267,1215385200"; 
-   d="scan'208";a="50442775"
-Subject: Re: drivers/sh/maple/maple.c compile error
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080728204438.GC20019@linux-sh.org>
-References: <20080728202012.GD7713@cs181140183.pp.htv.fi>
-	 <20080728204438.GC20019@linux-sh.org>
-Content-Type: text/plain
-Date: Mon, 28 Jul 2008 21:51:48 +0100
-Message-Id: <1217278308.6875.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jul 2008 16:53:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52789 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752494AbYG1UxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 16:53:17 -0400
+Date: Mon, 28 Jul 2008 16:46:24 -0400
+From: Dave Jones <davej@redhat.com>
+To: Theodore Tso <tytso@mit.edu>, Jon Smirl <jonsmirl@gmail.com>,
+       Simon Arlott <simon@fire.lp0.eu>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 463 kernel developers missing!
+Message-ID: <20080728204624.GA11581@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Theodore Tso <tytso@mit.edu>, Jon Smirl <jonsmirl@gmail.com>,
+	Simon Arlott <simon@fire.lp0.eu>,
+	lkml <linux-kernel@vger.kernel.org>
+References: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com> <488DF9CF.8020408@simon.arlott.org.uk> <9e4733910807281005y62dca90ar96f663908e644546@mail.gmail.com> <488DFD97.7080802@simon.arlott.org.uk> <9e4733910807281022v38d323c9sc7b63235824690f6@mail.gmail.com> <488E0BB6.7020006@simon.arlott.org.uk> <9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com> <488E1147.5040803@simon.arlott.org.uk> <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com> <20080728202236.GN9378@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080728202236.GN9378@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-29 at 05:44 +0900, Paul Mundt wrote:
-> On Mon, Jul 28, 2008 at 11:20:12PM +0300, Adrian Bunk wrote:
-> > Commit 306cfd630a4d121cf4e08b894d8b4c4cf106e57e
-> > (maple: tidy maple_driver code by removing redundant connect/disconnect)
-> > causes the following compile error:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> >   CC      drivers/sh/maple/maple.o
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/sh/maple/maple.c: In function 'attach_matching_maple_driver':
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/sh/maple/maple.c:259: error: 'struct maple_driver' has no member named 'connect'
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/sh/maple/maple.c: In function 'maple_detach_driver':
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/sh/maple/maple.c:272: error: 'struct maple_driver' has no member named 'disconnect'
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/sh/maple/maple.c:273: error: 'struct maple_driver' has no member named 'disconnect'
-> > make[4]: *** [drivers/sh/maple/maple.o] Error 1
-> > 
-> > <--  snip  -->
-> > 
-> Adrian was supposed to send follow-up patches for this, which never
-> happened. I thought I had dropped this already, but in this case I'll
-> just revert it.
+On Mon, Jul 28, 2008 at 04:22:36PM -0400, Theodore Tso wrote:
+ > On Mon, Jul 28, 2008 at 03:00:13PM -0400, Jon Smirl wrote:
+ > > Other people aren't perfect, I've found over 1,000 typos in the those
+ > > names and emails. We need a validation mechanism.
+ > > 
+ > 
+ > You keep using the word "need"; I do not think it means what you think
+ > it does.  :-)
+ > 
+ > Seriously, why is it so important?  It's a nice to have, and I
+ > recognize that you've spent a bunch of time on it.  But if the goal is
+ > to get better statistics, and in exchange we forcibly map all Mark
+ > Browns to one e-mail address, and/or force them to all adopt middle
+ > initials (what if there are two Dan Smith's that don't have middle
+ > initials) just for the convenience of your statistics gathering, I
+ > would gently suggest to you that you've forgotten which is the tail,
+ > and which is the dog.
 
-Actually I wasn't asked about this, but to submit a fix/replacement for
-a patch that didn't apply.
+I'm beginning to question just how useful the continued measuring
+of things like Signed-off-by's is.   Last week at OLS, I overheard
+a conversation where someone was talking about the "top 10" lists
+that Greg has been talking about at various conferences.
+The conversation went along the lines of "my manager really wants
+to see us on that list, at any cost".
+Whilst the niave may think 'more patches == more better', this isn't
+necessarily the case given we have nowhere near enough review bandwidth
+*now*, and flooding with a zillion trivial patches really isn't going
+to make that job any easier.
 
-I will submit a patch for the whole thing then - as I cannot actually
-match the commit Adrian has quoted to anything.
+Getting patches into the tree is easy, we've proven that.
+As things stand now, it's also fairly easy to 'game' the system
+by committing something in 10 changesets when it could be done
+just as easily in 2-3.
 
-I think the problem is that I am trying to get a change in the bus and
-in the drivers (which have different maintainers) to go in together and
-that has never quite worked. The code runs fine on my box and has done
-for months now.
+How about we start measuring things that actually matter, like..
 
-Adrian
+"How many patches were reviewed before they went in"
+"How many patches were directly responsible for a bug"
+"How many patches actually fixed something anyone cares about"
+"How many patches are responsible for just 'churn'"
 
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
