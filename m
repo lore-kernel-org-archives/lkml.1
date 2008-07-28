@@ -1,113 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757882AbYG1W3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758383AbYG1Wbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757882AbYG1W3z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 18:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbYG1W3p
+	id S1758383AbYG1Wbv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 18:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYG1Wbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 18:29:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47870 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752270AbYG1W3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 18:29:44 -0400
-Date: Tue, 29 Jul 2008 00:29:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, travis@sgi.com, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk, dsterba@suse.cz,
-       jkosina@suse.cz
-Subject: Re: [build error] drivers/char/pcmcia/ipwireless/hardware.c:571:
-	error: invalid use of undefined type 'struct ipw_network'
-Message-ID: <20080728222925.GA21012@elte.hu>
-References: <20080727190601.GA764@elte.hu> <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org> <200807281042.12860.rusty@rustcorp.com.au> <488E06F0.4070404@sgi.com> <alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org> <20080728205700.GA3613@elte.hu> <20080728213532.GA24744@elte.hu> <20080728214153.GA30511@elte.hu> <20080728220631.GA8095@elte.hu> <20080728152056.8e83c4ec.akpm@linux-foundation.org>
+	Mon, 28 Jul 2008 18:31:42 -0400
+Received: from outbound-mail-155.bluehost.com ([67.222.39.35]:54395 "HELO
+	outbound-mail-155.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751270AbYG1Wbm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 18:31:42 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=AhSvnZUsNKn1JdBQnrG3xvsx881jhZjsNFjL6QGfvieFjULH1IkNomPj2pYEptBy92irCsRJL2UYGmaNsafy+H/FMTZsgqR2Eze6pp07M/cc3lbFYR6tmONz5TCRtYdW;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [bug] PCI hotplug, ibmphp_access_ebda: WARNING: at arch/x86/mm/ioremap.c:182 __ioremap_caller+0x2d1/0x340()
+Date: Mon, 28 Jul 2008 15:31:32 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, greg@kroah.com
+References: <20080726131512.GA29472@elte.hu>
+In-Reply-To: <20080726131512.GA29472@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080728152056.8e83c4ec.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200807281531.32640.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday, July 26, 2008 6:15 am Ingo Molnar wrote:
+> FYI, -tip testing triggered the new warning below on a testbox. I
+> suspect it's related to recent commits in drivers/pci/hotplug/.
+> I'm wondering, why does a driver map the EBDA? That's a really lowlevel
+> thing.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+AFAICT, this driver digs around in there for hotplug controller configuration 
+(cc'ing Greg since he appears to be one of the original authors).  It's a 
+custom platform driver too, that may be the only method available there.  Is 
+there a shadow copy of the EDBA somewhere we should be using instead?
 
-> On Tue, 29 Jul 2008 00:06:31 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > drivers/char/pcmcia/ipwireless/hardware.c:571: error: invalid use of 
-> > > undefined type 'struct ipw_network'
-> > > 
-> > > http://redhat.com/~mingo/misc/config-Mon_Jul_28_23_36_20_CEST_2008.bad
-> > > 
-> > > probably due to a string of commits to that file from today.
-> > 
-> > hm, has this version of the driver ever been built successfully? Because 
-> > struct ipw_network is defined in network.c [only], and then used in 
-> > hardware.c.
-> > 
-> > It could be changed to void * if the structure wasnt relied on by:
-> > 
-> >                         const int min_capacity =
-> >                                 ipwireless_ppp_mru(hw->network + 2);
-> > 
-> > so changing it to void * would break this part of the code.
-> > 
-> > furthermore, what does that "hw->network + 2" mean? It points into 
-> > la-la-land AFAICS, because it's initialized as:
-> > 
-> >         struct ipw_network *network =
-> >                 kzalloc(sizeof(struct ipw_network), GFP_ATOMIC);
-> > 
-> > and then written into hw->network via:
-> > 
-> >         ipwireless_associate_network(hw, network);
-> > 
-> > it's getting late here, so i might be missing some really obvious 
-> > solution (and Jiri is asleep i suspect), so below is a temporary patch 
-> > that marks the driver CONFIG_BROKEN until this is resolved. This gets 
-> > allyesconfig going on x86.
-> 
-> I suspect that this:
-> 
-> --- a/drivers/char/pcmcia/ipwireless/hardware.c~a
-> +++ a/drivers/char/pcmcia/ipwireless/hardware.c
-> @@ -568,7 +568,7 @@ static struct ipw_rx_packet *pool_alloca
->  			list_del(&packet->queue);
->  		} else {
->  			const int min_capacity =
-> -				ipwireless_ppp_mru(hw->network + 2);
-> +				ipwireless_ppp_mru(hw->network) + 2;
->  			int new_capacity;
->  
->  			spin_unlock_irqrestore(&hw->lock, flags);
-> _
-> 
-> was intended.
-
-ah, indeed. I see, this came from the 12/12 patch:
-
--                       static int min_capacity = 256;
-+                       const int min_capacity =
-+                               ipwireless_ppp_mru(hw->network + 2);
-
-which was probably a last-minute change. So instead of turning the 
-driver into something (while the author is sleeping) that was never 
-tested before, i'd rather suggest to revert commit 
-a01386924874c4d6d67f8a34e66f04452c2abb69, which seems a non-essential 
-optimization to the driver and which apparently was not build tested, so 
-quite likely not functionality tested either. It reverts cleanly here.
-
-OTOH ... your change looks correct enough too.
-
-	Ingo
+Jesse
