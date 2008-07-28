@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758351AbYG1PqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbYG1Prr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758351AbYG1PqU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 11:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbYG1PqI
+	id S1757433AbYG1Prr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 11:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYG1Prk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 11:46:08 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:32967 "EHLO smtp5.pp.htv.fi"
+	Mon, 28 Jul 2008 11:47:40 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:57177 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752554AbYG1PqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 11:46:07 -0400
-Date: Mon, 28 Jul 2008 18:45:25 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-Message-ID: <20080728154525.GE30612@cs181140183.pp.htv.fi>
-References: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751542AbYG1Prj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 11:47:39 -0400
+Date: Tue, 29 Jul 2008 01:47:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: eranian@googlemail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/19] perfmon2 minimal v3:  introduction
+Message-Id: <20080729014730.76b879a4.sfr@canb.auug.org.au>
+In-Reply-To: <4868dbf6.0af5660a.1972.52f4@mx.google.com>
+References: <4868dbf6.0af5660a.1972.52f4@mx.google.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__29_Jul_2008_01_47_30_+1000_EIX.GyFJs.xJCciU"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 10:45:59AM -0400, Jon Smirl wrote:
-> Here's a new .mailmap file for the kernel that cleans up the horrible
-> mess of names and email addresses in the log.  To use it put it at the
-> root of your kernel tree and type 'git shortlog'. Before the clean up
-> there were 4,284 developers, after 3,821. There are 5,051 unique
-> emails.
-> 
-> The mailmap file contains all email addresses that have been used to
-> submit patches to the kernel. Don't freak out about your email address
-> being in the file, if it is in the file it is already in Google since
-> the kernel log is already in Google.
-> 
-> Putting all the email addresses and names into this file allows it to
-> be used as a basis for future validation. Since I don't know perl, can
-> someone whip up a patch to checkpatch.pl that validates the emails in
-> new patches against the ones in mailmap? Then if you aren't in mailmap
-> part of your commit needs to include a new entry for mailmap.
-> 
-> Another useful script would take the output of "git log | grep ^Author
-> | sort -u" and diff the list of email address against the mailmap
-> file.  Any new emails found are new people that need to be added to
-> mailmap. Only the emails should be checked, not the names.
-> 
-> Please excuse any errors I made in the clean up process, a large
-> portion of it was done manually. After the base file is in we can
-> patch it to fix the errors. For those of you using a dozen aliases,
-> you might want to order them so that your current email is the last
-> one in the list. James Bottomley has the most aliases, 13.
+--Signature=_Tue__29_Jul_2008_01_47_30_+1000_EIX.GyFJs.xJCciU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The charset of the names is pretty random - that should be fixed at some 
-point.
+Hi Stephane,
 
-> PS It's not a diff because it would be too big to post.
+On Mon, 30 Jun 2008 06:13:26 -0700 (PDT) eranian@googlemail.com wrote:
+>
+> The following patches implement a minimal perfmon2 subsystem which provid=
+es
+> access to the hardware performance counters of modern processors.
 
-200 kB would be OK for linux-kernel (AFAIR the current limit
-is 400 kB). But to prevent charset problems a compressed attachment 
-might make sense...
+First up, I cannot speak to the actual function of the patches, but just
+to the mechanics of getting them into the kernel.  One good thing is that
+with CONFIG_PERFMON turned off, it looks like the impact is very close to
+zero. Two obvious things that would help these being accepted are:
 
-> Jon Smirl
+	ordering - in the current incarnation, the patches produce places
+where the kernel will not build.  We like things to be ordered so that
+git bisection does not fail if at all possible - that means that an
+allmod/yesconfig should build after the application of each patch.
+Currently this is not so.  It could be mode to do so trivially by
+delaying the "global" Kconfig/Makefile updates until later in the
+sequence.  And you really should introduce the system calls *before*
+wiring them up.
 
-cu
-Adrian
+	quite a few of the macros (especially for the dummy (non
+CONFIG_PERFMON) versions of functions) should be "static inline"
+functions unless they absolutely must be macros.  Andrew Morton said it
+best - "write in C not C preprocessor".
 
--- 
+I can see that this infrastructure could be very useful and I appreciate
+that it has been cut down for this initial merge.  These patches (even as
+they are) compare favourably to some other new infrastructure that has
+been introduced.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__29_Jul_2008_01_47_30_+1000_EIX.GyFJs.xJCciU
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiN6hIACgkQjjKRsyhoI8zEhwCeNeV0y52N1Nz3MBhOsZn2bGr7
+GcYAoLc0S1M732v9F6VZ1By0QYQiYrkp
+=g60t
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__29_Jul_2008_01_47_30_+1000_EIX.GyFJs.xJCciU--
