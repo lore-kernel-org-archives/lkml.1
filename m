@@ -1,80 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbYG1T2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbYG1TaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756742AbYG1T2w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 15:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYG1T2p
+	id S1757315AbYG1TaS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 15:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYG1TaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 15:28:45 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:34604 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751991AbYG1T2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 15:28:44 -0400
-Date: Mon, 28 Jul 2008 21:28:28 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Michael Holzheu <holzheu@de.ibm.com>
-Subject: Re: [patch 02/15] kmsg: Kernel message catalog script.
-Message-ID: <20080728192828.GA11431@uranus.ravnborg.org>
-References: <20080728175355.734299984@de.ibm.com> <20080728175511.260174666@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 28 Jul 2008 15:30:05 -0400
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:57648 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751431AbYG1TaB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 15:30:01 -0400
+X-Greylist: delayed 1987 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jul 2008 15:30:01 EDT
+Date: Mon, 28 Jul 2008 20:56:51 +0200
+From: Bastian Blank <waldi@debian.org>
+To: linuxppc-dev@ozlabs.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/lpar - defer prefered console setup
+Message-ID: <20080728185651.GA29530@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <waldi@debian.org>, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080728175511.260174666@de.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> The kmsg man page creation is invoked with "make K=2" and reads the source
-> files for all built objects, looks up the message description and writes
-> a man page to $(objtree)/man.
-Can we use M=2 instead of K=?
-I have sort of reserved 'K' for Kconfig usage.
+Hi
 
-> Index: quilt-2.6/scripts/Makefile.build
-> ===================================================================
-> --- quilt-2.6.orig/scripts/Makefile.build
-> +++ quilt-2.6/scripts/Makefile.build
-> @@ -211,12 +211,14 @@ endef
->  # Built-in and composite module parts
->  $(obj)/%.o: $(src)/%.c FORCE
->  	$(call cmd,force_checksrc)
-> +	$(call cmd,force_check_kmsg)
->  	$(call if_changed_rule,cc_o_c)
->  
->  # Single-part modules are special since we need to mark them in $(MODVERDIR)
->  
->  $(single-used-m): $(obj)/%.o: $(src)/%.c FORCE
->  	$(call cmd,force_checksrc)
-> +	$(call cmd,force_check_kmsg)
->  	$(call if_changed_rule,cc_o_c)
->  	@{ echo $(@:.o=.ko); echo $@; } > $(MODVERDIR)/$(@F:.o=.mod)
->  
-> @@ -339,6 +341,19 @@ $(multi-used-m) : %.o: $(multi-objs-m) F
->  
->  targets += $(multi-used-y) $(multi-used-m)
->  
-> +# kmsg check tool
-> +ifneq ($(KBUILD_KMSG_CHECK),0)
-> +  ifeq ($(KBUILD_KMSG_CHECK),2)
-> +    kmsg_cmd = print
-> +    quiet_cmd_force_check_kmsg = KMSG_PRINT $<
-> +    $(shell [ -d $(objtree)/man ] || mkdir -p $(objtree)/man)
-> +  else
-> +    kmsg_cmd = check
-> +    quiet_cmd_force_check_kmsg = KMSG_CHECK $<
-> +  endif
-> +  cmd_force_check_kmsg = SRCTREE=$(srctree) OBJTREE=$(objtree) \
-> +			$(KMSG_CHECK) $(kmsg_cmd) $(CC) $(c_flags) $< ;
-> +endif
-We are executing with $(objtree) as current directory so no need
-to specify $(objtree) in the above.
+The powerpc lpar code adds a prefered console at a very early state,
+during arch_setup. This runs even before the console setup from the
+command line and takes preference.
 
-You can used non-recursive assignments for kmsg_cmd (use ':=').
+This patch moves the prefered console setup into an arch_initcall which
+runs later and allows the specification of the correct console on the
+command line. The udbg console remains as boot console.
 
-Do you really need the uppercase SRCTREE, OBJTREE?
-Other scripts uses the lower cases variants direct.
+There is a different problem that the code does not pick up the correct
+console because it uses a part (4) of the lpar device number (30000004)
+instead of the correct index 1.
 
-	Sam
+Signed-off-by: Bastian Blank <waldi@debian.org>
+
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 9235c46..626290d 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -57,6 +57,7 @@ extern void pSeries_find_serial_port(void);
+ 
+ 
+ int vtermno;	/* virtual terminal# for udbg  */
++static char *console_name;
+ 
+ #define __ALIGNED__ __attribute__((__aligned__(sizeof(long))))
+ static void udbg_hvsi_putc(char c)
+@@ -232,18 +233,24 @@ void __init find_udbg_vterm(void)
+ 		udbg_putc = udbg_putcLP;
+ 		udbg_getc = udbg_getcLP;
+ 		udbg_getc_poll = udbg_getc_pollLP;
+-		add_preferred_console("hvc", termno[0] & 0xff, NULL);
++		console_name = "hvc";
+ 	} else if (of_device_is_compatible(stdout_node, "hvterm-protocol")) {
+-		vtermno = termno[0];
+ 		udbg_putc = udbg_hvsi_putc;
+ 		udbg_getc = udbg_hvsi_getc;
+ 		udbg_getc_poll = udbg_hvsi_getc_poll;
+-		add_preferred_console("hvsi", termno[0] & 0xff, NULL);
++		console_name = "hvsi";
+ 	}
+ out:
+ 	of_node_put(stdout_node);
+ }
+ 
++static void __init enable_vterm(void)
++{
++	if (console_name)
++		add_preferred_console(console_name, vtermno, NULL);
++}
++arch_initcall(enable_vterm);
++
+ void vpa_init(int cpu)
+ {
+ 	int hwcpu = get_hard_smp_processor_id(cpu);
+
+-- 
+Genius doesn't work on an assembly line basis.  You can't simply say,
+"Today I will be brilliant."
+		-- Kirk, "The Ultimate Computer", stardate 4731.3
