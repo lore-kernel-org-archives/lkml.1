@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752136AbYG1VPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761785AbYG1VOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752136AbYG1VPF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:15:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757604AbYG1VJo
+	id S1761785AbYG1VOq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757426AbYG1VJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:09:44 -0400
-Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:49590 "EHLO
+	Mon, 28 Jul 2008 17:09:43 -0400
+Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:49591 "EHLO
 	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756903AbYG1VJm (ORCPT
+	with ESMTP id S1756257AbYG1VJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:09:42 -0400
+	Mon, 28 Jul 2008 17:09:41 -0400
 From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu
-Subject: [PATCH 16/24] x86: kernel/process_32.c cleanup
-Date: Mon, 28 Jul 2008 18:09:23 -0300
-Message-Id: <1217279371-4410-17-git-send-email-gustavo@las.ic.unicamp.br>
+Subject: [PATCH 15/24] x86: kernel/probe_roms_32.c cleanup
+Date: Mon, 28 Jul 2008 18:09:22 -0300
+Message-Id: <1217279371-4410-16-git-send-email-gustavo@las.ic.unicamp.br>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217279371-4410-16-git-send-email-gustavo@las.ic.unicamp.br>
+In-Reply-To: <1217279371-4410-15-git-send-email-gustavo@las.ic.unicamp.br>
 References: <gustavo@las.ic.unicamp.br>
  <1217279371-4410-1-git-send-email-gustavo@las.ic.unicamp.br>
  <1217279371-4410-2-git-send-email-gustavo@las.ic.unicamp.br>
@@ -34,31 +34,68 @@ References: <gustavo@las.ic.unicamp.br>
  <1217279371-4410-13-git-send-email-gustavo@las.ic.unicamp.br>
  <1217279371-4410-14-git-send-email-gustavo@las.ic.unicamp.br>
  <1217279371-4410-15-git-send-email-gustavo@las.ic.unicamp.br>
- <1217279371-4410-16-git-send-email-gustavo@las.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove additional tab.
+Remove additional whitespaces.
 
 Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
 ---
- arch/x86/kernel/process_32.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/kernel/probe_roms_32.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 53bc653..1fe67f5 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -288,7 +288,7 @@ void flush_thread(void)
- 	tsk->thread.debugreg3 = 0;
- 	tsk->thread.debugreg6 = 0;
- 	tsk->thread.debugreg7 = 0;
--	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));	
-+	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
- 	clear_tsk_thread_flag(tsk, TIF_DEBUG);
- 	/*
- 	 * Forget coprocessor state..
+diff --git a/arch/x86/kernel/probe_roms_32.c b/arch/x86/kernel/probe_roms_32.c
+index 675a48c..00ff4fa 100644
+--- a/arch/x86/kernel/probe_roms_32.c
++++ b/arch/x86/kernel/probe_roms_32.c
+@@ -35,39 +35,39 @@ static struct resource extension_rom_resource = {
+ };
+ 
+ static struct resource adapter_rom_resources[] = { {
+-	.name 	= "Adapter ROM",
++	.name	= "Adapter ROM",
+ 	.start	= 0xc8000,
+ 	.end	= 0,
+ 	.flags	= IORESOURCE_BUSY | IORESOURCE_READONLY | IORESOURCE_MEM
+ }, {
+-	.name 	= "Adapter ROM",
++	.name	= "Adapter ROM",
+ 	.start	= 0,
+ 	.end	= 0,
+ 	.flags	= IORESOURCE_BUSY | IORESOURCE_READONLY | IORESOURCE_MEM
+ }, {
+-	.name 	= "Adapter ROM",
++	.name	= "Adapter ROM",
+ 	.start	= 0,
+ 	.end	= 0,
+ 	.flags	= IORESOURCE_BUSY | IORESOURCE_READONLY | IORESOURCE_MEM
+ }, {
+-	.name 	= "Adapter ROM",
++	.name	= "Adapter ROM",
+ 	.start	= 0,
+ 	.end	= 0,
+ 	.flags	= IORESOURCE_BUSY | IORESOURCE_READONLY | IORESOURCE_MEM
+ }, {
+-	.name 	= "Adapter ROM",
++	.name	= "Adapter ROM",
+ 	.start	= 0,
+ 	.end	= 0,
+ 	.flags	= IORESOURCE_BUSY | IORESOURCE_READONLY | IORESOURCE_MEM
+ }, {
+-	.name 	= "Adapter ROM",
++	.name	= "Adapter ROM",
+ 	.start	= 0,
+ 	.end	= 0,
+ 	.flags	= IORESOURCE_BUSY | IORESOURCE_READONLY | IORESOURCE_MEM
+ } };
+ 
+ static struct resource video_rom_resource = {
+-	.name 	= "Video ROM",
++	.name	= "Video ROM",
+ 	.start	= 0xc0000,
+ 	.end	= 0xc7fff,
+ 	.flags	= IORESOURCE_BUSY | IORESOURCE_READONLY | IORESOURCE_MEM
 -- 
 1.5.4.5
 
