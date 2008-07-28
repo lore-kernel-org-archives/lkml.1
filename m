@@ -1,113 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbYG1PTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757286AbYG1PTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755537AbYG1PTY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 11:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbYG1PTN
+	id S1757286AbYG1PTv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 11:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbYG1PTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 11:19:13 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:34548 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751160AbYG1PTM (ORCPT
+	Mon, 28 Jul 2008 11:19:42 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:45522 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753051AbYG1PTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 11:19:12 -0400
-Date: Mon, 28 Jul 2008 11:19:10 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: =?ISO-8859-1?Q?C=E9dric_Godin?= <cedric@belbone.be>
-cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       SCSI Kernel <linux-scsi@vger.kernel.org>
-Subject: Re: [SCSI] can't plug Nokia 5300 anymore (bisected)
-In-Reply-To: <488D837D.1070001@belbone.be>
-Message-ID: <Pine.LNX.4.44L0.0807281054060.2296-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 28 Jul 2008 11:19:41 -0400
+Date: Mon, 28 Jul 2008 08:18:13 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCHES for 2.6.27] V4L/DVB updates
+Message-Id: <20080728081813.423ac50c.randy.dunlap@oracle.com>
+In-Reply-To: <alpine.LFD.1.10.0807280303110.18581@bombadil.infradead.org>
+References: <20080727224104.78b8298d@gaivota>
+	<20080727204256.bba5eaf6.randy.dunlap@oracle.com>
+	<alpine.LFD.1.10.0807280303110.18581@bombadil.infradead.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008, Cédric Godin wrote:
+On Mon, 28 Jul 2008 03:08:27 -0400 (EDT) Mauro Carvalho Chehab wrote:
 
-> >>>> Hello,
-> >>>>
-> >>>> since 2 or 3 -git kernels (Linus tree)  I have a problem with my laptop 
-> >>>> and its connection through USB to a nokia 5300 gsm.
-> >>>>
-> >>>> The logs show me a endless loop (until i unplug my USB cable) of 
-> >>>> following messages :
-> >>>>
-> >>>> Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
-> >>>> Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
-> >>>> Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
-> >>>> Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
-> >>>> Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
-> >>>> Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
-> >>>> Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
-> >>>> Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
-> >>>> Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] ASC=0x0 ASCQ=0x0
-> >>>> Jul 25 15:19:14 enea sd 2:0:0:0: [sdb] Sense Key : 0x0 [current]
-> >>>>
-> >>>> I bisected the kernel and found the following commit as result :
-> >>>>
-> >>>> 427e59f09fdba387547106de7bab980b7fff77be is first bad commit
-> >>>> commit 427e59f09fdba387547106de7bab980b7fff77be
-> >>>> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> >>>> Date:   Sat Mar 8 18:24:17 2008 -0600
-> >>>>
-> >>>>    [SCSI] make use of the residue value
-> >>>>
-> >>>>    USB sometimes doesn't return an error but instead returns a residue
-> >>>>    value indicating part (or all) of the command wasn't completed.  So if
-> >>>>    the driver _done() error processing indicates the command was fully
-> >>>>    processed, subtract off the residue so that this USB error gets
-> >>>>    propagated.
+> Hi Randy,
+> 
+> > I'd really like to get this patch that I mailed to you 2008-July-21 merged...
+> 
+> Your patch looks OK to me. However, this function were moved to 
+> v4l2-dev.c, by the V4L core changes (the changes broke videodev into two 
+> different files, and did some improvements there).
+> 
+> Do you mind to rebase your patch?
 
-> That's me sending the wrong dmesg, sorry :-$
-> 
-> Attached is the "good" one.
-> 
-> > see only one error, and the commit you found wouldn't have affected 
-> > that error.  More accurately, if the commit magnified the error into an 
-> > endless loop, then without the commit the error would still have been 
-> > present and would have caused data corruption.
+What tree contains v4l2-dev.c?
+It's not in today's linux-next.  Shouldn't it be, or is it for after 2.6.27?
+
+
 > >
-> > Anyway, it would be interesting to see what happens with the commit in 
-> > place and the following patch applied.  (The first part of the patch 
-> > has already been accepted by James.)
-> >   
-> Same problem.
+> > ---
+> >
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> >
+> > Add kernel-doc for parameter @index:
+> >
+> > Warning(linhead//drivers/media/video/videodev.c:2090): No description found for parameter 'index'
+> >
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > ---
+> > drivers/media/video/videodev.c |    2 ++
+> > 1 file changed, 2 insertions(+)
+> >
+> > --- linhead.orig/drivers/media/video/videodev.c
+> > +++ linhead/drivers/media/video/videodev.c
+> > @@ -2066,6 +2066,8 @@ EXPORT_SYMBOL(video_register_device);
+> >  *	@type: type of device to register
+> >  *	@nr:   which device number (0 == /dev/video0, 1 == /dev/video1, ...
+> >  *             -1 == first free)
+> > + *	@index: stream number based on parent device;
+> > + *		-1 if auto assign, requested number otherwise
+> >  *
+> >  *	The registration code assigns minor numbers based on the type
+> >  *	requested. -ENFILE is returned in all the device slots for this
 
-Okay.  The problem is one we've seen many times in the past: The device
-reports that it contains one sector more than it really does contain.  
-When the system tries to access the non-existent "last" sector, all
-sorts of problems occur.  In your case the device returned no data,
-together with an indication that a problem existed (Check Condition
-status) and no indication of what the problem actually was (no Sense
-data).
 
-The patch below should fix the problem.
-
-Alan Stern
-
-
-
-Index: usb-2.6/drivers/usb/storage/unusual_devs.h
-===================================================================
---- usb-2.6.orig/drivers/usb/storage/unusual_devs.h
-+++ usb-2.6/drivers/usb/storage/unusual_devs.h
-@@ -225,6 +225,13 @@ UNUSUAL_DEV(  0x0421, 0x0495, 0x0370, 0x
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_MAX_SECTORS_64 ),
- 
-+/* Reported by Cedric Godin <cedric@belbone.be> */
-+UNUSUAL_DEV(  0x0421, 0x04b9, 0x0551, 0x0551,
-+		"Nokia",
-+		"5300",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		US_FL_FIX_CAPACITY ),
-+
- /* Reported by Olaf Hering <olh@suse.de> from novell bug #105878 */
- UNUSUAL_DEV(  0x0424, 0x0fdc, 0x0210, 0x0210,
- 		"SMSC",
-
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
