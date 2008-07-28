@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762510AbYG1VTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762592AbYG1VUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762510AbYG1VTt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760659AbYG1VPj
+	id S1762592AbYG1VUI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760909AbYG1VQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:15:39 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:33495 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761451AbYG1VPh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:15:37 -0400
-Message-ID: <488E3643.8000300@cs.helsinki.fi>
-Date: Tue, 29 Jul 2008 00:12:35 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
-MIME-Version: 1.0
-To: Eric Sandeen <sandeen@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mhalcrow@us.ibm.com, stable@kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH] eCryptfs - use page_alloc not kmalloc to get a page of
- memory
-References: <488DF00F.3080809@redhat.com>	 <20080728133504.156f438f.akpm@linux-foundation.org> <84144f020807281342t2e1a3dc3id01314ac01de406f@mail.gmail.com> <488E3414.8020506@redhat.com>
-In-Reply-To: <488E3414.8020506@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 28 Jul 2008 17:16:14 -0400
+Received: from gate.crashing.org ([63.228.1.57]:49513 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760863AbYG1VQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 17:16:13 -0400
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org,
+       akpm@linux-foundation.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0807280905500.3486@nehalem.linux-foundation.org>
+References: <1217239117.11188.187.camel@pasglop>
+	 <alpine.LFD.1.10.0807280838580.3486@nehalem.linux-foundation.org>
+	 <20080729015330.39aff7a5.sfr@canb.auug.org.au>
+	 <alpine.LFD.1.10.0807280905500.3486@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 29 Jul 2008 07:15:36 +1000
+Message-Id: <1217279736.11188.215.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eric,
-
-Eric Sandeen wrote:
-> Pekka Enberg wrote:
->> On Mon, Jul 28, 2008 at 11:35 PM, Andrew Morton
->> <akpm@linux-foundation.org> wrote:
->>> On Mon, 28 Jul 2008 11:13:03 -0500
->>> Eric Sandeen <sandeen@redhat.com> wrote:
->>>
->>>> With SLUB debugging turned on in 2.6.26, I was getting memory corruption
->>>> when testing eCryptfs.  The root cause turned out to be that eCryptfs
->>>> was doing kmalloc(PAGE_CACHE_SIZE); virt_to_page() and treating that
->>>> as a nice page-aligned chunk of memory.  But at least with SLUB debugging
->>>> on, this is not always true, and the page we get from virt_to_page does
->>>> not necessarily match the PAGE_CACHE_SIZE worth of memory we got from
->>>> kmalloc.
->>>>
->>>> My simple testcase was 2 loops doing "rm -f fileX; cp /tmp/fileX ." for
->>>> 2 different multi-megabyte files.  With this change I no longer see
->>>> the corruption.
->>> The fix applies to both 2.6.25 and to 2.6.26 and appears to be needed
->>> in both kernel versions, so I have tagged it for backporting into both.
->> Hmm, SLUB will use the page allocator directly for PAGE_CACHE_SIZE
->> regadless of whether debugging is enabled or not...
+On Mon, 2008-07-28 at 09:06 -0700, Linus Torvalds wrote:
 > 
-> For whatever reason, I did see non-page-aligned memory returned from
-> kmalloc(PAGE_CACHE_SIZE), and I think this is what caused the problem
-> once virt_to_page() was used to get hold of a page to pass around in the
-> ecryptfs/crypto code...
+> On Tue, 29 Jul 2008, Stephen Rothwell wrote:
+> > 
+> > It should be
+> > 
+> > 	git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+> > 
+> > Ben seems to have copied from one of Paul's pull requests.
+> 
+> Ok, that one worked for me.
+> 
+> Ben, I'm sure some day you'll get it right on the first try. We're all 
+> cheering for you!
 
-With SLUB? I can't see how that's possible. I can see this with SLAB, 
-though, for 4K pages.
+Should I hang out with a brown paper bag on my head all day today ?
 
-In any case, the patch, of course, make sense as kmalloc() behavior 
-varies between allocators.
+Cheers,
+Ben.
 
-		Pekka
+
