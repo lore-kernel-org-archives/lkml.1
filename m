@@ -1,100 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbYG1Uls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbYG1UmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758264AbYG1Uls (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 16:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbYG1Ulk
+	id S1754239AbYG1UmE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 16:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbYG1Ull
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 16:41:40 -0400
-Received: from ackle.nomi.cz ([81.31.33.35]:47971 "EHLO ackle.nomi.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751752AbYG1Ulj convert rfc822-to-8bit (ORCPT
+	Mon, 28 Jul 2008 16:41:41 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:10814 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752072AbYG1Ulk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 16:41:39 -0400
-Date: Mon, 28 Jul 2008 22:41:36 +0200
-From: =?iso-8859-2?Q?Tom=E1=B9_Janou=B9ek?= <tomi@nomi.cz>
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-kernel@vger.kernel.org,
-       Alessandro Zummo <alessandro.zummo@towertech.it>
-Subject: Re: [PATCH] rtc-dev: stop periodic interrupts on device release
-Message-ID: <20080728204136.GA6683@nomi.cz>
-References: <20080726154617.GA5613@notes.lisk.in> <200807261350.55524.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <200807261350.55524.david-b@pacbell.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 28 Jul 2008 16:41:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=FC/LBQuOyL2AaIpqjZS00btjYTx/zGQzXqNoaICpRmdxeKfc3rUoR7xr8ZdBGLLPT2
+         QljwSZcm0LqgM385FmWDgc6Yekl/cTATosWlt3UoRJ17i0fPLz+PRLl/fmo4lnviCptb
+         qTxb2s39SSVN/emb25jSlO3lsMmRbp4Eylg5E=
+Subject: [patch, minor]  workqueue: consistently use 'err' in
+	__create_workqueue_key()
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>
+Content-Type: text/plain
+Date: Mon, 28 Jul 2008 22:41:34 +0200
+Message-Id: <1217277694.20627.9.camel@earth>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-thanks for your insight about other RTC drivers. I have updated the
-description somewhat.
 
-On Sat, Jul 26, 2008 at 01:50:55PM -0700, David Brownell wrote:
-> Hmm, I'd think that something like an rtc_dev_ioctl(PIE_OFF) would be
-> preferable here ... so that it's not just UIE_EMUL logic which turns
-> off the one-per-second update IRQs.
+I guess error handling is a bit illogical in __create_workqueue_key().
+Although, it won't cause any real problems.
 
-I think it'd be more consistent if the framework only called the rtc api
-functions. Like: if the driver doesn't export an op for it and handles it in
-the ioctl op, it itself should be responsible to clear the irq in its release
-op. (I know there's no op for UIE, so we'd better add it instead of calling
-ioctl in the framework's release function.) More explanation in the updated
-patch desc.
 
 ---
 
-From: Tomas Janousek <tomi@nomi.cz>
-Date: Sat, 26 Jul 2008 16:23:36 +0100
-Subject: [PATCH] rtc-dev: stop periodic interrupts on device release
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: workqueue: consistently use 'err' in __create_workqueue_key()
+    
+Fix the logic behind the use of 'err' in the 'for_each_posible_cpu()' loop
+of __create_workqueue_key().
+    
+Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
 
-Solves http://bugzilla.kernel.org/show_bug.cgi?id=11127
-
-The old rtc.c driver did it and some drivers (like rtc-sh) do it in their
-release function, though they should not -- because they should provide the
-irq_set_state op and the rtc framework itself should care about it. This patch
-makes it do so.
-
-I am aware that some drivers, like rtc-sh, handle userspace PIE sets in their
-ioctl op (instead of having the framework call the op), exporting the
-irq_set_state op at the same time. The logic in rtc_irq_set_state should make
-sure it doesn't matter and the driver should not need to care stopping periodic
-interrupts in its release routine any more.
-
-The correct way, in my opinion, should be this:
-1) The driver provides the irq_set_state op and does not care closing the
-   interrupts in its release op.
-2) If the driver does not provide the op and handles PIE in the ioctl op, it's
-   reponsible for closing them in its release op.
-3) Something similar for other IRQs, like UIE -- if there's no in-kernel API
-   like irq_set_state, handle it in ioctl and release ops. The framework will
-   be responsible either for everything or for nothing.
-
-Signed-off-by: Tomas Janousek <tomi@nomi.cz>
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/rtc/rtc-dev.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/rtc/rtc-dev.c b/drivers/rtc/rtc-dev.c
-index 90dfa0d..6fafa62 100644
---- a/drivers/rtc/rtc-dev.c
-+++ b/drivers/rtc/rtc-dev.c
-@@ -408,6 +408,8 @@ static int rtc_dev_release(struct inode *inode, struct file *file)
- #ifdef CONFIG_RTC_INTF_DEV_UIE_EMUL
-        clear_uie(rtc);
- #endif
-+       rtc_irq_set_state(rtc, NULL, 0);
-+
-        if (rtc->ops->release)
-                rtc->ops->release(rtc->dev.parent);
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index ec7e4f6..738bf05 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -827,7 +827,8 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 	if (singlethread) {
+ 		cwq = init_cpu_workqueue(wq, singlethread_cpu);
+ 		err = create_workqueue_thread(cwq, singlethread_cpu);
+-		start_workqueue_thread(cwq, -1);
++		if (!err)
++			start_workqueue_thread(cwq, -1);
+ 	} else {
+ 		cpu_maps_update_begin();
+ 		spin_lock(&workqueue_lock);
+@@ -836,9 +837,11 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
  
--- 
-1.5.6
+ 		for_each_possible_cpu(cpu) {
+ 			cwq = init_cpu_workqueue(wq, cpu);
+-			if (err || !cpu_online(cpu))
++			if (!cpu_online(cpu))
+ 				continue;
+ 			err = create_workqueue_thread(cwq, cpu);
++			if (err)
++				break;
+ 			start_workqueue_thread(cwq, cpu);
+ 		}
+ 		cpu_maps_update_done();
 
 
--- 
-Tomá¹ Janou¹ek, a.k.a. Liskni_si, http://work.lisk.in/
+
