@@ -1,155 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYG1Nz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbYG1N66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754538AbYG1Nz6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 09:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbYG1Nzp
+	id S1753384AbYG1N66 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 09:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751070AbYG1N6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 09:55:45 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37955 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753000AbYG1Nzn (ORCPT
+	Mon, 28 Jul 2008 09:58:50 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:3669 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750986AbYG1N6t convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 09:55:43 -0400
-Subject: Re: [PATCH] typhoon: use request_firmware
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: David Dillow <dave@thedillows.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, becker@scyld.com,
-       davidpmclean@yahoo.com, Jeff Garzik <jeff@garzik.org>,
-       netdev <netdev@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1217248585.22789.58.camel@obelisk.thedillows.org>
-References: <1217170232.3537.6.camel@jaswinder.satnam>
-	 <1217209400.22789.47.camel@obelisk.thedillows.org>
-	 <1217215009.2970.7.camel@jaswinder.satnam>
-	 <1217248585.22789.58.camel@obelisk.thedillows.org>
-Content-Type: text/plain
-Date: Mon, 28 Jul 2008 19:24:20 +0530
-Message-Id: <1217253260.17632.6.camel@jaswinder.satnam>
+	Mon, 28 Jul 2008 09:58:49 -0400
+Message-Id: <488DECD9.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Mon, 28 Jul 2008 14:59:21 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Joerg Roedel" <joro@8bytes.org>, "Andi Kleen" <andi@firstfloor.org>,
+       <tglx@linutronix.de>, "Linus Torvalds" <torvalds@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] i386: improve double fault handling
+References: <4880A912.76E4.0078.0@novell.com> <4881263B.7060700@zytor.com>
+ <48846B02.76E4.0078.0@novell.com> <20080721110510.GC10782@elte.hu>
+ <4885CEFE.76E4.0078.0@novell.com> <20080728134252.GI5515@elte.hu>
+In-Reply-To: <20080728134252.GI5515@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello David,
+>Also, you seem to be setting things up to turn NMIs and MCEs into task 
+>gates too, right?
 
-On Mon, 2008-07-28 at 08:36 -0400, David Dillow wrote:
+Yes, at the very minimum I'd like to have the possibility to do so. Perhaps
+under a default-off config option.
 
-> Please re-read what I said -- you broke error handling and potentially
-> resume. Previously, the firmware was available without a sleeping call
-> to user space to get it. Now, it is not. You cannot sleep in
-> typhoon_tx_timeout(), and trying to get a firmware image in resume is
-> going to be a problem if your file system is NFS mounted over the NIC
-> you're trying to resume.
-> 
-> http://marc.info/?l=linux-kernel&m=121608383506190&w=2
-> http://marc.info/?l=linux-kernel&m=121608255704704&w=2
-> 
-> 
+>So i'm really uneasy about all this. Breakage in such rarely used code 
+>gets found very late, and has thus a high risk of losing debug 
+>information when we need it the most. (i.e. it works in the exact 
+>_opposite_ way of the intented goal of making things more robust - it 
+>makes things less robust)
 
-Here is patch for typhoon.c :
+I realize this aspect, but think that either way has its advantages and
+disadvantages.
 
-diff --git a/drivers/net/typhoon.c b/drivers/net/typhoon.c
-index c0dd25b..c792741 100644
---- a/drivers/net/typhoon.c
-+++ b/drivers/net/typhoon.c
-@@ -130,9 +130,9 @@ static const int multicast_filter_limit = 32;
- #include <linux/in6.h>
- #include <linux/version.h>
- #include <linux/dma-mapping.h>
-+#include <linux/firmware.h>
- 
- #include "typhoon.h"
--#include "typhoon-firmware.h"
- 
- static char version[] __devinitdata =
-     "typhoon.c: version " DRV_MODULE_VERSION " (" DRV_MODULE_RELDATE ")\n";
-@@ -140,6 +140,7 @@ static char version[] __devinitdata =
- MODULE_AUTHOR("David Dillow <dave@thedillows.org>");
- MODULE_VERSION(DRV_MODULE_VERSION);
- MODULE_LICENSE("GPL");
-+MODULE_FIRMWARE("3com/typhoon.bin");
- MODULE_DESCRIPTION("3Com Typhoon Family (3C990, 3CR990, and variants)");
- MODULE_PARM_DESC(rx_copybreak, "Packets smaller than this are copied and "
- 			       "the buffer given back to the NIC. Default "
-@@ -307,6 +308,9 @@ struct typhoon {
- 	/* unused stuff (future use) */
- 	int			capabilities;
- 	struct transmit_ring 	txHiRing;
-+
-+	/* firmware */
-+	u8			*tp_fw_image;
- };
- 
- enum completion_wait_values {
-@@ -1347,6 +1351,32 @@ typhoon_init_rings(struct typhoon *tp)
- 	tp->txHiRing.lastRead = 0;
- }
- 
-+static int typhoon_init_firmware(struct typhoon *tp)
-+{
-+	const struct firmware *fw;
-+	const char fw_name[] = "3com/typhoon.bin";
-+	int err;
-+
-+	err = request_firmware(&fw, fw_name, &tp->pdev->dev);
-+	if (err) {
-+		printk(KERN_ERR "%s: Failed to load firmware \"%s\"\n",
-+		       tp->name, fw_name);
-+		return err;
-+	}
-+	tp->tp_fw_image = vmalloc(fw->size);
-+	if (!tp->tp_fw_image) {
-+		err = -ENOMEM;
-+		printk(KERN_ERR "%s: \"%s\" Failed %d\n",
-+		       tp->name, fw_name, err);
-+		goto out;
-+	}
-+
-+	memcpy(tp->tp_fw_image, fw->data, fw->size);
-+out:
-+	release_firmware(fw);
-+	return err;
-+}
-+
- static int
- typhoon_download_firmware(struct typhoon *tp)
- {
-@@ -1369,7 +1399,7 @@ typhoon_download_firmware(struct typhoon *tp)
- 	int err;
- 
- 	err = -EINVAL;
--	fHdr = (struct typhoon_file_header *) typhoon_firmware_image;
-+	fHdr = (struct typhoon_file_header *) tp->tp_fw_image;
- 	image_data = (u8 *) fHdr;
- 
- 	if(memcmp(fHdr->tag, "TYPHOON", 8)) {
-@@ -2102,6 +2132,10 @@ typhoon_open(struct net_device *dev)
- 	if(err < 0)
- 		goto out_sleep;
- 
-+	err = typhoon_init_firmware(tp);
-+	if (err)
-+		goto out_irq;
-+
- 	napi_enable(&tp->napi);
- 
- 	err = typhoon_start_runtime(tp);
-@@ -2155,6 +2189,9 @@ typhoon_close(struct net_device *dev)
- 	if(typhoon_sleep(tp, PCI_D3hot, 0) < 0)
- 		printk(KERN_ERR "%s: unable to put card to sleep\n", dev->name);
- 
-+	if (tp->tp_fw_image)
-+		vfree(tp->tp_fw_image);
-+
- 	return 0;
- }
- 
-You can check complete patch from :-
+>Firstly, 64-bit does not use a task gate for double faults anymore. (but 
+>uses a separate IST stack for double faults)
 
-http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git
+Sure - because there are no task gates on 64-bit.
 
-Thank you,
+>Secondly, task gates are really a relic that should not be proliferated. 
+>Besides the complications in virtualized environments (if more common 
+>things like Big Real Mode are not supported well in virtual mode what do 
+>we expect of more esoteric features as task gates?) it does not get 
+>nearly as much testing on real silicon as other, more mainstream CPU 
+>features.
+>
+>Thirdly, NMI based profiling is quite common, so by turning NMIs into 
+>task gates we'd slow that down quite a lot.
 
-Jaswinder Singh.
+As said above, I'd like to allow the option of doing so. Profiling via
+NMI certainly will not want this. I'm really uncertain whether modern
+machines can report any hardware issue through NMI (no chipset spec
+I read 'recently' [covering quite a number of years] was really explicit
+about this) - if it can't, MCE would be the only candidate unless
+running on really old hardware.
+
+>Also, the change to doublefault_fn is quite ugly - that inner block 
+>should be split out into a separate function.
+
+That's certainly doable - if the whole thing is acceptable apart from
+that issue, which it doesn't seem it is...
+
+>Plus the notifier - why do we care about that? It's not like we can 
+
+In order to let a kernel debugger take control.
+
+>sanely kexec into a safe kernel from double faulting kernels in most 
+>cases. In real cases where i've seen double faults it was due to us 
+>corrupting kernel pagetables - kexec has no chance there. To recover 
+>from that we'd have to set up the TSS with a safe(r) cr3 as well - but 
+>your patch leaves _that_ untouched. (nor do we want to waste extra 
+>unswappable memory on such remote possibilities i think)
+
+I've seen double faults due to other than page table corruption, but
+I do understand if it is the page tables that caused it handling the
+condition is almost impossible without a second complete set of (kernel)
+page tables.
+
+Jan
 
