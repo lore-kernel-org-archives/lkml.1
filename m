@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYG1Mxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752885AbYG1NBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754045AbYG1Mxj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 08:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751070AbYG1Mxb
+	id S1752885AbYG1NBL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 09:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751070AbYG1NA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 08:53:31 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:46808 "EHLO mail.screens.ru"
+	Mon, 28 Jul 2008 09:00:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40176 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750823AbYG1Mxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 08:53:30 -0400
-Date: Mon, 28 Jul 2008 16:57:04 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: wait_task_inactive() and !CONFIG_SMP && CONFIG_PREEMPT
-Message-ID: <20080728125704.GA98@tv-sign.ru>
-References: <200807260245.m6Q2jwB4012297@imap1.linux-foundation.org> <20080727121540.GB178@tv-sign.ru> <20080727200551.D3F6A154284@magilla.localdomain>
-Mime-Version: 1.0
+	id S1751012AbYG1NA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 09:00:57 -0400
+Date: Mon, 28 Jul 2008 15:00:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] memparse(): constify argument
+Message-ID: <20080728130038.GG5515@elte.hu>
+References: <48890FF2.9070005@goop.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080727200551.D3F6A154284@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <48890FF2.9070005@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/27, Roland McGrath wrote:
+
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+> memparse()'s first argument can be const, so it should be.
 >
-> > Without CONFIG_SMP wait_task_inactive() is noop, this doesn't look right.
-> > Shouldn't we also take CONFIG_PREEMPT into account?
->
-> wait_task_inactive is only called when task->state is nonzero (i.e. not
-> TASK_RUNNING).  Preemption leaves a task in TASK_RUNNING, so a preempted
-> task shouldn't ever be passed to wait_task_inactive.
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-No, schedule() doesn't change prev->state when the task with ->state !=
-TASK_RUNNING gets a preemption. Note this check
+this one clashed with upstream commit v2.6.26-6912-gfd19382, i've fixed 
+it up as below.
 
-	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+	Ingo
 
-in schedule().
+-------
+Subject: generic, memparse(): constify argument
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Date: Thu, 24 Jul 2008 16:27:46 -0700
 
-Let's suppose the child does ptrace_stop(). It sets state = TASK_TRACED
-and unlocks ->siglock.
+memparse()'s first argument can be const, so it should be.
 
-If it is preempted by the parent which does ptrace_check_attach(),
-wait_task_inactive() must wait until the child leaves the runqueue,
-but the dummy version just returns success.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/kernel.h |    2 +-
+ lib/cmdline.c          |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-sys_ptrace() continues assuming that the child sleeps in TASK_TRACED,
-while it fact it is running, despite its ->state == TASK_TRACED.
-
-
-As I said, nothing realy bad can happen, the child can't return to the
-user-space or something, but this just means that ptrace_check_attach()
-afaics doesn't have the strong reasons for wait_task_inactive().
-
-> > Also, the !SMP version of wait_task_inactive() always returns 1, this
-> > doesn't conform to the comment near kernel/sched.c:wait_task_inactive().
->
-> You mean the "(its total switch count)" part of the comment?
-> The normative part was only meant to be "a positive number".
-
-I refer to this patch of the comment:
-
-	If a second call a short while later returns the same number, the
-	caller can be sure that @p has remained unscheduled the whole time.
-
-The dummy version always returns the same number == 1.
-
-
-So. I think that wait_task_inactive() needs "defined(SMP) || defined(PREEMPT)"
-and the dummy version should return ->nvcsw too.
-
-Oleg.
-
+===================================================================
+Index: tip/include/linux/kernel.h
+===================================================================
+--- tip.orig/include/linux/kernel.h
++++ tip/include/linux/kernel.h
+@@ -176,7 +176,7 @@ extern int vsscanf(const char *, const c
+ 
+ extern int get_option(char **str, int *pint);
+ extern char *get_options(const char *str, int nints, int *ints);
+-extern unsigned long long memparse(char *ptr, char **retptr);
++extern unsigned long long memparse(const char *ptr, char **retptr);
+ 
+ extern int core_kernel_text(unsigned long addr);
+ extern int __kernel_text_address(unsigned long addr);
+Index: tip/lib/cmdline.c
+===================================================================
+--- tip.orig/lib/cmdline.c
++++ tip/lib/cmdline.c
+@@ -126,7 +126,7 @@ char *get_options(const char *str, int n
+  *	megabyte, or one gigabyte, respectively.
+  */
+ 
+-unsigned long long memparse(char *ptr, char **retptr)
++unsigned long long memparse(const char *ptr, char **retptr)
+ {
+ 	char *endptr;	/* local pointer to end of parsed string */
+ 
