@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759774AbYG1TSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbYG1TTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759774AbYG1TSr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 15:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbYG1TRh
+	id S1758870AbYG1TTK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 15:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757282AbYG1TRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 15:17:37 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:37549 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756949AbYG1TRg (ORCPT
+	Mon, 28 Jul 2008 15:17:38 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:41631 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756936AbYG1TRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 15:17:36 -0400
+	Mon, 28 Jul 2008 15:17:35 -0400
 From: Eric Munson <ebmunson@us.ibm.com>
 To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
        libhugetlbfs-devel@lists.sourceforge.net,
-       Eric Munson <ebmunson@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH 1/5 V2] Align stack boundaries based on personality
-Date: Mon, 28 Jul 2008 12:17:11 -0700
-Message-Id: <6061445882ce9574999bf343eeb333be02a1afa6.1216928613.git.ebmunson@us.ibm.com>
+       Eric Munson <ebmunson@us.ibm.com>
+Subject: [PATCH 3/5] Split boundary checking from body of do_munmap
+Date: Mon, 28 Jul 2008 12:17:13 -0700
+Message-Id: <46e1300bead6e4bf02451f139b6a2ecfae5b67b5.1216928613.git.ebmunson@us.ibm.com>
 X-Mailer: git-send-email 1.5.6.1
 In-Reply-To: <cover.1216928613.git.ebmunson@us.ibm.com>
 References: <cover.1216928613.git.ebmunson@us.ibm.com>
@@ -27,93 +27,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a personality flag that requests hugetlb pages be used for
-a processes stack.  It adds a helper function that chooses the proper ALIGN
-macro based on tthe process personality and calls this function from
-setup_arg_pages when aligning the stack address.
+Currently do_unmap pre-checks the unmapped address range against the
+valid address range for the process size.  However during initial setup
+the stack may actually be outside this range, particularly it may be
+initially placed at the 64 bit stack address and later moved to the
+normal 32 bit stack location.  In a later patch we will want to unmap
+the stack as part of relocating it into huge pages.
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+This patch moves the bulk of do_munmap into __do_munmap which will not
+be protected by the boundary checking.  When an area that would normally
+fail at these checks needs to be unmapped (e.g. unmapping a stack that
+was setup at 64 bit TASK_SIZE for a 32 bit process) __do_munmap should
+be called directly.  do_munmap will continue to do the boundary checking
+and will call __do_munmap as appropriate.
+
 Signed-off-by: Eric Munson <ebmunson@us.ibm.com>
 
 ---
 Based on 2.6.26-rc8-mm1
 
-Changes from V1:
-Rebase to 2.6.26-rc8-mm1
+ include/linux/mm.h |    1 +
+ mm/mmap.c          |   11 +++++++++--
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
- fs/exec.c                   |   15 ++++++++++++++-
- include/linux/hugetlb.h     |    3 +++
- include/linux/personality.h |    3 +++
- 3 files changed, 20 insertions(+), 1 deletions(-)
-
-diff --git a/fs/exec.c b/fs/exec.c
-index af9b29c..c99ba24 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -49,6 +49,7 @@
- #include <linux/tsacct_kern.h>
- #include <linux/cn_proc.h>
- #include <linux/audit.h>
-+#include <linux/hugetlb.h>
- 
- #include <asm/uaccess.h>
- #include <asm/mmu_context.h>
-@@ -155,6 +156,18 @@ exit:
- 	goto out;
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index a4eeb3c..59c6f89 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1152,6 +1152,7 @@ out:
+ 	return ret;
  }
  
-+static unsigned long personality_page_align(unsigned long addr)
++extern int __do_munmap(struct mm_struct *, unsigned long, size_t);
+ extern int do_munmap(struct mm_struct *, unsigned long, size_t);
+ 
+ extern unsigned long do_brk(unsigned long, unsigned long);
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 5b62e5d..4e56369 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1881,17 +1881,24 @@ int split_vma(struct mm_struct * mm, struct vm_area_struct * vma,
+ 	return 0;
+ }
+ 
++int do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 +{
-+	if (current->personality & HUGETLB_STACK)
-+#ifdef CONFIG_STACK_GROWSUP
-+		return HPAGE_ALIGN(addr);
-+#else
-+		return addr & HPAGE_MASK;
-+#endif
-+
-+	return PAGE_ALIGN(addr);
++	if (start > TASK_SIZE || len > TASK_SIZE-start)
++		return -EINVAL;
++	return __do_munmap(mm, start, len);
 +}
 +
- #ifdef CONFIG_MMU
- 
- static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
-@@ -596,7 +609,7 @@ int setup_arg_pages(struct linux_binprm *bprm,
- 	bprm->p = vma->vm_end - stack_shift;
- #else
- 	stack_top = arch_align_stack(stack_top);
--	stack_top = PAGE_ALIGN(stack_top);
-+	stack_top = personality_page_align(stack_top);
- 	stack_shift = vma->vm_end - stack_top;
- 
- 	bprm->p -= stack_shift;
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index 9a71d4c..eed37d7 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -95,6 +95,9 @@ static inline unsigned long hugetlb_total_pages(void)
- #ifndef HPAGE_MASK
- #define HPAGE_MASK	PAGE_MASK		/* Keep the compiler happy */
- #define HPAGE_SIZE	PAGE_SIZE
-+
-+/* to align the pointer to the (next) huge page boundary */
-+#define HPAGE_ALIGN(addr)	ALIGN(addr, HPAGE_SIZE)
- #endif
- 
- #endif /* !CONFIG_HUGETLB_PAGE */
-diff --git a/include/linux/personality.h b/include/linux/personality.h
-index a84e9ff..2bb0f95 100644
---- a/include/linux/personality.h
-+++ b/include/linux/personality.h
-@@ -22,6 +22,9 @@ extern int		__set_personality(unsigned long);
-  * These occupy the top three bytes.
+ /* Munmap is split into 2 main parts -- this part which finds
+  * what needs doing, and the areas themselves, which do the
+  * work.  This now handles partial unmappings.
+  * Jeremy Fitzhardinge <jeremy@goop.org>
   */
- enum {
-+	HUGETLB_STACK =		0x0020000,	/* Attempt to use hugetlb pages
-+						 * for the process stack
-+						 */
- 	ADDR_NO_RANDOMIZE = 	0x0040000,	/* disable randomization of VA space */
- 	FDPIC_FUNCPTRS =	0x0080000,	/* userspace function ptrs point to descriptors
- 						 * (signal handling)
+-int do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
++int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
+ {
+ 	unsigned long end;
+ 	struct vm_area_struct *vma, *prev, *last;
+ 
+-	if ((start & ~PAGE_MASK) || start > TASK_SIZE || len > TASK_SIZE-start)
++	if (start & ~PAGE_MASK)
+ 		return -EINVAL;
+ 
+ 	if ((len = PAGE_ALIGN(len)) == 0)
 -- 
 1.5.6.1
 
