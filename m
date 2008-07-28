@@ -1,81 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbYG1WRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbYG1WV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760034AbYG1WRf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 18:17:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbYG1WR1
+	id S1752648AbYG1WV1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 18:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbYG1WVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 18:17:27 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:39801 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751477AbYG1WR0 (ORCPT
+	Mon, 28 Jul 2008 18:21:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56054 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751610AbYG1WVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 18:17:26 -0400
-Date: Mon, 28 Jul 2008 15:14:41 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Calvin Walton <calvin.walton@gmail.com>
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] FILESYSTEMS: Make "advanced partitions" immediately
- unselectable.
-Message-Id: <20080728151441.03410ecd.randy.dunlap@oracle.com>
-In-Reply-To: <1217282540.22927.13.camel@zem.phub.net.cable.rogers.com>
-References: <alpine.LFD.1.10.0807241135540.5289@localhost.localdomain>
-	<20080726094718.b617c1e7.randy.dunlap@oracle.com>
-	<alpine.LFD.1.10.0807261750340.3493@localhost.localdomain>
-	<1217214689.22927.3.camel@zem.phub.net.cable.rogers.com>
-	<alpine.LFD.1.10.0807280531210.3402@localhost.localdomain>
-	<20080728103731.7bafd577.randy.dunlap@oracle.com>
-	<alpine.LFD.1.10.0807281437070.10586@localhost.localdomain>
-	<1217282540.22927.13.camel@zem.phub.net.cable.rogers.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Mon, 28 Jul 2008 18:21:18 -0400
+Date: Mon, 28 Jul 2008 15:20:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: torvalds@linux-foundation.org, travis@sgi.com, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk, dsterba@suse.cz,
+       jkosina@suse.cz
+Subject: Re: [build error] drivers/char/pcmcia/ipwireless/hardware.c:571:
+ error: invalid use of undefined type 'struct ipw_network'
+Message-Id: <20080728152056.8e83c4ec.akpm@linux-foundation.org>
+In-Reply-To: <20080728220631.GA8095@elte.hu>
+References: <20080727190601.GA764@elte.hu>
+	<alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org>
+	<200807281042.12860.rusty@rustcorp.com.au>
+	<488E06F0.4070404@sgi.com>
+	<alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org>
+	<20080728205700.GA3613@elte.hu>
+	<20080728213532.GA24744@elte.hu>
+	<20080728214153.GA30511@elte.hu>
+	<20080728220631.GA8095@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008 18:02:20 -0400 Calvin Walton wrote:
+On Tue, 29 Jul 2008 00:06:31 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> On Mon, 2008-07-28 at 14:42 -0400, Robert P. J. Day wrote:
-> > On Mon, 28 Jul 2008, Randy Dunlap wrote:
-> > it strikes me that, at least on x86, MSDOS partition support is so
-> > fundamental that it should take work for someone to turn it *off*.
-> > perhaps simply have it on by default, and force someone to go under
-> > "Configure standard kernel features (for small systems)"
-> > (CONFIG_EMBEDDED) to make it go away?
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > drivers/char/pcmcia/ipwireless/hardware.c:571: error: invalid use of 
+> > undefined type 'struct ipw_network'
 > > 
-> >   seriously, how often is someone going to build a kernel for x86 and
-> > not need MSDOS partition support?  just curious.
+> > http://redhat.com/~mingo/misc/config-Mon_Jul_28_23_36_20_CEST_2008.bad
 > > 
-> > rday
+> > probably due to a string of commits to that file from today.
 > 
-> Naturally, on an architecture other than x86 (e.g. sparc) you'll want to
-> ensure that the platform's native partitioning format (for sparc,
-> SUN_PARTITION) is similarly on by default, and difficult to unselect. 
+> hm, has this version of the driver ever been built successfully? Because 
+> struct ipw_network is defined in network.c [only], and then used in 
+> hardware.c.
 > 
-> In this case, you could get by perfectly without msdos partitions
-> enabled (although the default is still to enable them), unless you want
-> to read a usb key or something.
+> It could be changed to void * if the structure wasnt relied on by:
 > 
-> This was the point of the original menu, I think - it allowed each
-> partition type to have a default based on arch, but to hide away the
-> mess of other types unless you feel like overriding it.
+>                         const int min_capacity =
+>                                 ipwireless_ppp_mru(hw->network + 2);
 > 
-> You'll want to make sure in your patch that arches other than x86 don't
-> lose their own native partitioning types :)
+> so changing it to void * would break this part of the code.
+> 
+> furthermore, what does that "hw->network + 2" mean? It points into 
+> la-la-land AFAICS, because it's initialized as:
+> 
+>         struct ipw_network *network =
+>                 kzalloc(sizeof(struct ipw_network), GFP_ATOMIC);
+> 
+> and then written into hw->network via:
+> 
+>         ipwireless_associate_network(hw, network);
+> 
+> it's getting late here, so i might be missing some really obvious 
+> solution (and Jiri is asleep i suspect), so below is a temporary patch 
+> that marks the driver CONFIG_BROKEN until this is resolved. This gets 
+> allyesconfig going on x86.
 
+I suspect that this:
 
-Thanks.  I won't bother pushing the latest patch.  :)
+--- a/drivers/char/pcmcia/ipwireless/hardware.c~a
++++ a/drivers/char/pcmcia/ipwireless/hardware.c
+@@ -568,7 +568,7 @@ static struct ipw_rx_packet *pool_alloca
+ 			list_del(&packet->queue);
+ 		} else {
+ 			const int min_capacity =
+-				ipwireless_ppp_mru(hw->network + 2);
++				ipwireless_ppp_mru(hw->network) + 2;
+ 			int new_capacity;
+ 
+ 			spin_unlock_irqrestore(&hw->lock, flags);
+_
 
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+was intended.
