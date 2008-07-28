@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758163AbYG1P0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbYG1P2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758163AbYG1P0U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 11:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbYG1P0J
+	id S1757433AbYG1P2O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 11:28:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYG1P17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 11:26:09 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45335 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753620AbYG1P0I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 11:26:08 -0400
-Date: Mon, 28 Jul 2008 12:25:18 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCHES for 2.6.27] V4L/DVB updates
-Message-ID: <20080728122518.77cea66e@gaivota>
-In-Reply-To: <20080728081813.423ac50c.randy.dunlap@oracle.com>
-References: <20080727224104.78b8298d@gaivota>
-	<20080727204256.bba5eaf6.randy.dunlap@oracle.com>
-	<alpine.LFD.1.10.0807280303110.18581@bombadil.infradead.org>
-	<20080728081813.423ac50c.randy.dunlap@oracle.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.5; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 28 Jul 2008 11:27:59 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:60335 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751717AbYG1P17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 11:27:59 -0400
+Date: Mon, 28 Jul 2008 18:27:16 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] asm-generic/gpio.h must #include <linux/errno.h>
+Message-ID: <20080728152716.GC30612@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008 08:18:13 -0700
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+This patch fixes the following build error:
 
-> On Mon, 28 Jul 2008 03:08:27 -0400 (EDT) Mauro Carvalho Chehab wrote:
-> 
-> > Hi Randy,
-> > 
-> > > I'd really like to get this patch that I mailed to you 2008-July-21 merged...
-> > 
-> > Your patch looks OK to me. However, this function were moved to 
-> > v4l2-dev.c, by the V4L core changes (the changes broke videodev into two 
-> > different files, and did some improvements there).
-> > 
-> > Do you mind to rebase your patch?
-> 
-> What tree contains v4l2-dev.c?
-> It's not in today's linux-next.  Shouldn't it be, or is it for after 2.6.27?
+<--  snip  -->
 
-I've changed my procedures to generate my trees, to avoid needing to rebase all
-branches (the idea is to have just for_linus rebased).
+...
+  CC      arch/mips/kernel/gpio_txx9.o
+In file included from 
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-mips/mach-generic/gpio.h:19,
+                 from include2/asm/gpio.h:4,
+                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/gpio.h:7,
+                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/kernel/gpio_txx9.c:13:
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/gpio.h: In function 'gpio_export':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/gpio.h:163: error: 'ENOSYS' undeclared (first use in this function)
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/gpio.h:163: error: (Each undeclared identifier is reported only once
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/gpio.h:163: error: for each function it appears in.)
+make[2]: *** [arch/mips/kernel/gpio_txx9.o] Error 1
 
-Due to that change, only yesterday I fixed the updates for linux-next (also,
-I've applied the pending patches only yesterday, including the ones that
-touched on V4L core). Probably, that's the reason why linux-next is not
-updated. Let's see if tomorrow's version will be ok.
+<--  snip  -->
 
-At the meantime, you can use my -git tree:
+Reported-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=summary
+---
+ae0b61bdf413151d7587e9488c8e60dd3ff8f20d 
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index c764a8f..0f99ad3 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -2,6 +2,7 @@
+ #define _ASM_GENERIC_GPIO_H
+ 
+ #include <linux/types.h>
++#include <linux/errno.h>
+ 
+ #ifdef CONFIG_GPIOLIB
+ 
 
-Cheers,
-Mauro.
