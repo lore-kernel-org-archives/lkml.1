@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756984AbYG1Ozi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757554AbYG1O4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756984AbYG1Ozi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 10:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756388AbYG1OxN
+	id S1757554AbYG1O4U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 10:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755931AbYG1OxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 10:53:13 -0400
-Received: from styx.suse.cz ([82.119.242.94]:42479 "EHLO mail.suse.cz"
+	Mon, 28 Jul 2008 10:53:23 -0400
+Received: from styx.suse.cz ([82.119.242.94]:42498 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752890AbYG1OxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 10:53:12 -0400
+	id S1756484AbYG1OxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 10:53:22 -0400
 From: David Sterba <dsterba@suse.cz>
-Subject: [PATCH 08/12] ipwireless: Constify buffer variables
+Subject: [PATCH 10/12] ipwireless: Increase PPP outgoing queue size
 To: torvalds@linux-foundation.org
 Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, jkosina@suse.cz,
        dsterba@suse.cz
-Date: Mon, 28 Jul 2008 16:53:11 +0200
-Message-ID: <20080728145310.13378.81222.stgit@ds.suse.cz>
+Date: Mon, 28 Jul 2008 16:53:21 +0200
+Message-ID: <20080728145321.13378.68859.stgit@ds.suse.cz>
 In-Reply-To: <20080728145124.13378.39300.stgit@ds.suse.cz>
 References: <20080728145124.13378.39300.stgit@ds.suse.cz>
 User-Agent: StGIT/0.14.3.173.g2e37
@@ -26,124 +26,70 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ipwireless: Constify buffer variables
+ipwireless: Increase PPP outgoing queue size
+
+Increase default size of PPP outgoing queue. Currently set to 1, which
+means that a packet quickly following another pushed by PPP must wait
+until hardware actually sends the previous and PPP has to be waken up
+by ppp_wakeup(). This slows down upstream.
+
+Now PPP can push more packets at once which get buffered inside driver
+and pushed immediatelly to hardware when previous packet is out.
+
+Experiments show that size = 10 is quite good for all connection types
+(GPRS/EDGE/UMTS) and gains 4 KB/sec of upload for UMTS for batch uploads.
+Need for higher queue size than 10 occures in only < 0.1 % of cases.
 
 Signed-off-by: David Sterba <dsterba@suse.cz>
 Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 ---
 
- drivers/char/pcmcia/ipwireless/hardware.c |   26 ++++++++++++++------------
- drivers/char/pcmcia/ipwireless/hardware.h |    2 +-
- drivers/char/pcmcia/ipwireless/tty.c      |    2 +-
- 3 files changed, 16 insertions(+), 14 deletions(-)
+ drivers/char/pcmcia/ipwireless/main.c    |    4 ++--
+ drivers/char/pcmcia/ipwireless/network.c |    4 +++-
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/char/pcmcia/ipwireless/hardware.c b/drivers/char/pcmcia/ipwireless/hardware.c
-index ff2093d..814ea32 100644
---- a/drivers/char/pcmcia/ipwireless/hardware.c
-+++ b/drivers/char/pcmcia/ipwireless/hardware.c
-@@ -30,11 +30,11 @@
- static void ipw_send_setup_packet(struct ipw_hardware *hw);
- static void handle_received_SETUP_packet(struct ipw_hardware *ipw,
- 					 unsigned int address,
--					 unsigned char *data, int len,
-+					 const unsigned char *data, int len,
- 					 int is_last);
- static void ipwireless_setup_timer(unsigned long data);
- static void handle_received_CTRL_packet(struct ipw_hardware *hw,
--		unsigned int channel_idx, unsigned char *data, int len);
-+		unsigned int channel_idx, const unsigned char *data, int len);
+diff --git a/drivers/char/pcmcia/ipwireless/main.c b/drivers/char/pcmcia/ipwireless/main.c
+index 7169a0d..5eca7a9 100644
+--- a/drivers/char/pcmcia/ipwireless/main.c
++++ b/drivers/char/pcmcia/ipwireless/main.c
+@@ -49,7 +49,7 @@ static void ipwireless_detach(struct pcmcia_device *link);
+ /* Debug mode: more verbose, print sent/recv bytes */
+ int ipwireless_debug;
+ int ipwireless_loopback;
+-int ipwireless_out_queue = 1;
++int ipwireless_out_queue = 10;
  
- /*#define TIMING_DIAGNOSTICS*/
+ module_param_named(debug, ipwireless_debug, int, 0);
+ module_param_named(loopback, ipwireless_loopback, int, 0);
+@@ -57,7 +57,7 @@ module_param_named(out_queue, ipwireless_out_queue, int, 0);
+ MODULE_PARM_DESC(debug, "switch on debug messages [0]");
+ MODULE_PARM_DESC(loopback,
+ 		"debug: enable ras_raw channel [0]");
+-MODULE_PARM_DESC(out_queue, "debug: set size of outgoing queue [1]");
++MODULE_PARM_DESC(out_queue, "debug: set size of outgoing PPP queue [10]");
  
-@@ -615,8 +615,10 @@ static void pool_free(struct ipw_hardware *hw, struct ipw_rx_packet *packet)
- }
- 
- static void queue_received_packet(struct ipw_hardware *hw,
--				  unsigned int protocol, unsigned int address,
--				  unsigned char *data, int length, int is_last)
-+				  unsigned int protocol,
-+				  unsigned int address,
-+				  const unsigned char *data, int length,
-+				  int is_last)
- {
- 	unsigned int channel_idx = address - 1;
- 	struct ipw_rx_packet *packet = NULL;
-@@ -760,10 +762,10 @@ static void ipw_receive_data_work(struct work_struct *work_rx)
- 
- static void handle_received_CTRL_packet(struct ipw_hardware *hw,
- 					unsigned int channel_idx,
--					unsigned char *data, int len)
-+					const unsigned char *data, int len)
- {
--	struct ipw_control_packet_body *body =
--		(struct ipw_control_packet_body *) data;
-+	const struct ipw_control_packet_body *body =
-+		(const struct ipw_control_packet_body *) data;
- 	unsigned int changed_mask;
- 
- 	if (len != sizeof(struct ipw_control_packet_body)) {
-@@ -805,13 +807,13 @@ static void handle_received_CTRL_packet(struct ipw_hardware *hw,
- }
- 
- static void handle_received_packet(struct ipw_hardware *hw,
--				   union nl_packet *packet,
-+				   const union nl_packet *packet,
- 				   unsigned short len)
- {
- 	unsigned int protocol = packet->hdr.protocol;
- 	unsigned int address = packet->hdr.address;
- 	unsigned int header_length;
--	unsigned char *data;
-+	const unsigned char *data;
- 	unsigned int data_len;
- 	int is_last = packet->hdr.packet_rank & NL_LAST_PACKET;
- 
-@@ -1288,7 +1290,7 @@ static void *alloc_ctrl_packet(int header_size,
- }
- 
- int ipwireless_send_packet(struct ipw_hardware *hw, unsigned int channel_idx,
--			    unsigned char *data, unsigned int length,
-+			    const unsigned char *data, unsigned int length,
- 			    void (*callback) (void *cb, unsigned int length),
- 			    void *callback_data)
- {
-@@ -1522,10 +1524,10 @@ static void ipw_send_setup_packet(struct ipw_hardware *hw)
- 
- static void handle_received_SETUP_packet(struct ipw_hardware *hw,
- 					 unsigned int address,
--					 unsigned char *data, int len,
-+					 const unsigned char *data, int len,
- 					 int is_last)
- {
--	union ipw_setup_rx_msg *rx_msg = (union ipw_setup_rx_msg *) data;
-+	const union ipw_setup_rx_msg *rx_msg = (const union ipw_setup_rx_msg *) data;
- 
- 	if (address != ADDR_SETUP_PROT) {
- 		printk(KERN_INFO IPWIRELESS_PCCARD_NAME
-diff --git a/drivers/char/pcmcia/ipwireless/hardware.h b/drivers/char/pcmcia/ipwireless/hardware.h
-index e21d23a..90a8590 100644
---- a/drivers/char/pcmcia/ipwireless/hardware.h
-+++ b/drivers/char/pcmcia/ipwireless/hardware.h
-@@ -41,7 +41,7 @@ int ipwireless_set_RTS(struct ipw_hardware *hw, unsigned int channel_idx,
- 		int state);
- int ipwireless_send_packet(struct ipw_hardware *hw,
- 			    unsigned int channel_idx,
--			    unsigned char *data,
-+			    const unsigned char *data,
- 			    unsigned int length,
- 			    void (*packet_sent_callback) (void *cb,
- 							  unsigned int length),
-diff --git a/drivers/char/pcmcia/ipwireless/tty.c b/drivers/char/pcmcia/ipwireless/tty.c
-index 42f3815..b141450 100644
---- a/drivers/char/pcmcia/ipwireless/tty.c
-+++ b/drivers/char/pcmcia/ipwireless/tty.c
-@@ -259,7 +259,7 @@ static int ipw_write(struct tty_struct *linux_tty,
+ /* Executes in process context. */
+ static void signalled_reboot_work(struct work_struct *work_reboot)
+diff --git a/drivers/char/pcmcia/ipwireless/network.c b/drivers/char/pcmcia/ipwireless/network.c
+index 28d9fd7..2b07af0 100644
+--- a/drivers/char/pcmcia/ipwireless/network.c
++++ b/drivers/char/pcmcia/ipwireless/network.c
+@@ -75,7 +75,7 @@ static void notify_packet_sent(void *callback_data, unsigned int packet_length)
+ 			spin_unlock_irqrestore(&network->lock, flags);
+ 			ppp_output_wakeup(network->ppp_channel);
+ 			if (ipwireless_debug)
+-				printk(KERN_INFO IPWIRELESS_PCCARD_NAME
++				printk(KERN_DEBUG IPWIRELESS_PCCARD_NAME
+ 				       ": ppp unblocked\n");
+ 		} else
+ 			spin_unlock_irqrestore(&network->lock, flags);
+@@ -144,6 +144,8 @@ static int ipwireless_ppp_start_xmit(struct ppp_channel *ppp_channel,
+ 		 */
+ 		network->ppp_blocked = 1;
+ 		spin_unlock_irqrestore(&network->lock, flags);
++		if (ipwireless_debug)
++			printk(KERN_DEBUG IPWIRELESS_PCCARD_NAME ": ppp blocked\n");
+ 		return 0;
  	}
- 
- 	ret = ipwireless_send_packet(tty->hardware, IPW_CHANNEL_RAS,
--			       (unsigned char *) buf, count,
-+			       buf, count,
- 			       ipw_write_packet_sent_callback, tty);
- 	if (ret == -1) {
- 		mutex_unlock(&tty->ipw_tty_mutex);
+ }
 
