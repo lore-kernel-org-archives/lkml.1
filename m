@@ -1,26 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbYG1Eh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbYG1Eox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753400AbYG1Eh5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 00:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbYG1Eht
+	id S1753546AbYG1Eox (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 00:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbYG1Eop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 00:37:49 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:54562 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750922AbYG1Eht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 00:37:49 -0400
-Date: Sun, 27 Jul 2008 23:37:46 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: akpm@linux-foundation.org, menage@google.com,
-       seto.hidetoshi@jp.fujitsu.com, laijs@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] cpuset: clean up cpuset hierarchy traversal code
-Message-Id: <20080727233746.7f057e74.pj@sgi.com>
-In-Reply-To: <488D332A.1030008@cn.fujitsu.com>
-References: <488D332A.1030008@cn.fujitsu.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Mon, 28 Jul 2008 00:44:45 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52458 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750922AbYG1Eop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 00:44:45 -0400
+Date: Mon, 28 Jul 2008 14:44:40 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Karsten Keil <kkeil@suse.de>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: linux-next: build failure
+Message-Id: <20080728144440.74e28e8b.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,21 +24,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> +	list_add(&top_cpuset.stack_list, &q);
+Hi Karsten,
 
-Can you figure out if we are holding any system wide lock, such as
-cgroup_mutex, at this point?  There is only one top_cpuset.stack_list
-in the system, so I would think that we need to single thread its usage
-somehow.
+(Previously reported by Dave Miller for Sparc)
 
-The hotplug hooks, such as common_cpu_mem_hotplug_unplug() that were
-added sometime in the last few months (while the so called maintainer,
-who's initials seem to be 'pj', was asleep ;) don't describe what
-locking applies to them very well, and they call rebuild_sched_domains(),
-where the above line of code lives.
+Today's linux-next build (powerpc allyesconfig) failed like this:
 
+drivers/isdn/hardware/mISDN/hfcmulti.c:5255:2: error: #error "not running on big endian machines now"
+
+I just disabled it using the patch below.
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+>From c4f3c0cba3811f71465c332fe36fe30b3b17f507 Mon Sep 17 00:00:00 2001
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 28 Jul 2008 14:38:29 +1000
+Subject: [PATCH] hfcmulti is not supported on big endian
+
+So stick it to X86 for now.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/isdn/hardware/mISDN/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/isdn/hardware/mISDN/Kconfig b/drivers/isdn/hardware/mISDN/Kconfig
+index 9cd5f5f..1a78575 100644
+--- a/drivers/isdn/hardware/mISDN/Kconfig
++++ b/drivers/isdn/hardware/mISDN/Kconfig
+@@ -16,6 +16,7 @@ config MISDN_HFCMULTI
+ 	tristate "Support for HFC multiport cards (HFC-4S/8S/E1)"
+ 	depends on PCI
+ 	depends on MISDN
++	depends on X86
+ 	help
+ 	  Enable support for cards with Cologne Chip AG's HFC multiport
+ 	  chip. There are three types of chips that are quite similar,
+-- 
+1.5.6.3
+
