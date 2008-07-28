@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbYG1SGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbYG1SHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbYG1SGr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 14:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYG1SGj
+	id S1757754AbYG1SHr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 14:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYG1SHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 14:06:39 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:41901 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751727AbYG1SGi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 14:06:38 -0400
-Date: Mon, 28 Jul 2008 12:06:31 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Trent Piepho <tpiepho@freescale.com>, linux-kernel@vger.kernel.org,
-       Richard Purdie <rpurdie@rpsys.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] leds: Support OpenFirmware led bindings
-Message-ID: <20080728180631.GE21534@secretlab.ca>
-References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp> <1217019705-24244-2-git-send-email-tpiepho@freescale.com> <20080727022116.GN12191@secretlab.ca> <Pine.LNX.4.64.0807272159500.26456@t2.domain.actdsltmp> <20080728170914.GA21265@secretlab.ca> <20080728180204.GA13190@polina.dev.rtsoft.ru>
+	Mon, 28 Jul 2008 14:07:39 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:47754 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753250AbYG1SHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 14:07:38 -0400
+Message-ID: <488E0AE9.4030007@sgi.com>
+Date: Mon, 28 Jul 2008 11:07:37 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080728180204.GA13190@polina.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git pull] cpus4096 fixes
+References: <20080727190601.GA764@elte.hu> <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org> <200807281042.12860.rusty@rustcorp.com.au> <20080728083311.GA30302@elte.hu>
+In-Reply-To: <20080728083311.GA30302@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 10:02:04PM +0400, Anton Vorontsov wrote:
-> On Mon, Jul 28, 2008 at 11:09:14AM -0600, Grant Likely wrote:
-> > I'd rather see the device tree provide 'hints' toward the expected usage
-> > and if a platform needs something specific, then the platform specific
-> > code should setup the trigger.
-> > 
-> > Regardless, any hints provided by the binding must be documented.  In
-> > most cases the gpio-leds driver should be able to figure out which trigger
-> > to bind without platform code intervention.
+Ingo Molnar wrote:
+> * Rusty Russell <rusty@rustcorp.com.au> wrote:
 > 
-> Maybe we can encode leds into devices themselves, via phandles?
+>> Hey, since Mike put his Signed-off-by above mine and didn't put a From 
+>> line when he took my patch, WFT am I taking responsibility? :)
 > 
-> E.g.
+> hm, Mike, please dont do that. You changed Rusty's patch but the way we 
+> do that is to preserve the original change and then do a delta patch. If 
+> you dont want to split a commit you should keep the original From and 
+> mention your own changes in the changelog. I know this was all in the 
+> rush to meet -rc1, but still.
 > 
-> sata@101 {
-> 	compatible = "fsl,sata";
-> 	leds = <&red_led>;
-> };
+> 	Ingo
 
-I like that idea!  That neatly solves the problem for many use cases.
 
-> And then the OF GPIO LEDs driver could do something like:
-> 
-> char *ide_disk_trigger_compatibles[] = {
-> 	"fsl,sata",
-> 	"ide-generic",
-> 	...
-> };
-> 
-> for_each_node_with_leds_property(node, led_phandle) {
-> 	if (if_ide_disk_compatible(node)) {
-> 		struct gpio_led *led = phandle_to_led(led_phandle);
-> 
-> 		led->default_trigger = "ide-disk";
-> 	}
-> }
+Yes, sorry, as I mentioned I wasn't aware of the correct thing to do.  And
+as you've mentioned, a lot of this has been under pressure because 2.6.27
+will be the kernel that the distros use when this system comes online.  So
+time is the one thing we (SGI) do not have.  That's not to say that doing it
+wrong is ok, it's just that sometimes what I might think is trivial (ie.,
+builds and functions correctly) might not be to others, and I welcome comments,
+suggestions, reviews, criticism, ideas, whatever.  As I've mentioned I am
+new to this "arena" of development.
 
-I'm not sure what would be best for implementation details, but
-implementation details can easily be changed.
+And again, thanks for the comments and feedback, it has been an enlightening
+10 months. ;-)
 
-> 
-> -- 
-> Anton Vorontsov
-> email: cbouatmailru@gmail.com
-> irc://irc.freenode.net/bd2
+Mike
