@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbYG1Xeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbYG1Xf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753236AbYG1Xeo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 19:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbYG1Xee
+	id S1753361AbYG1Xf3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 19:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYG1XfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 19:34:34 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:47504 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751853AbYG1Xed (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 19:34:33 -0400
-Date: Mon, 28 Jul 2008 19:32:55 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Paul Mundt <lethal@linux-sh.org>
-cc: magnus.damm@gmail.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: bad CONFIG variable references from Makefiles
-In-Reply-To: <20080728233119.GC28055@linux-sh.org>
-Message-ID: <alpine.LFD.1.10.0807281932170.32248@localhost.localdomain>
-References: <alpine.LFD.1.10.0807281607400.28285@localhost.localdomain> <20080728205439.GA27744@linux-sh.org> <alpine.LFD.1.10.0807281923310.31937@localhost.localdomain> <20080728233119.GC28055@linux-sh.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 28 Jul 2008 19:35:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60675 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751030AbYG1XfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 19:35:18 -0400
+Date: Tue, 29 Jul 2008 01:34:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: x86: Is there still value in having a special tlb flush IPI
+	vector?
+Message-ID: <20080728233455.GA2919@elte.hu>
+References: <488E534F.2030204@goop.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <488E534F.2030204@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jul 2008, Paul Mundt wrote:
 
-> On Mon, Jul 28, 2008 at 07:24:47PM -0400, Robert P. J. Day wrote:
-> > On Tue, 29 Jul 2008, Paul Mundt wrote:
-> >
-> > > On Mon, Jul 28, 2008 at 04:09:28PM -0400, Robert P. J. Day wrote:
-> > > >
-> > > >   a complete list of all references to non-existent CONFIG
-> > > > variables exclusively from Makefiles in the tree.  since the
-> > > > list is so short, i'm not bothering to break it up by
-> > > > subsystem or arch.  enjoy.
-> > > >
-> > > >
-> > > > ===== FB_SH7343VOU =====
-> > > > ./drivers/video/Makefile:obj-$(CONFIG_FB_SH7343VOU)	  += sh7343_voufb.o
-> > >
-> > > Seems to have crept in from a working local tree. It's obviously
-> > > bogus and can simply be killed off.
-> >
-> > ok, i can slap together a patch unless someone else gets to it
-> > first.
-> >
-> Already in my tree, forgot to mention :-)
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-i believe that qualifies as "getting to it first."
+> Now that normal smp_function_call is no longer an enormous bottleneck, 
+> is there still value in having a specialised IPI vector for tlb 
+> flushes?  It seems like quite a lot of duplicate code.
+>
+> The 64-bit tlb flush multiplexes the various cpus across 8 vectors to 
+> increase scalability. If this is a big issue, then the smp function 
+> call code can (and should) do the same thing.  (Though looking at it 
+> more closely, the way the code uses the 8 vectors is actually a less 
+> general way of doing what smp_call_function is doing anyway.)
 
-rday
---
+yep, and we could eliminate the reschedule IPI as well.
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+	Ingo
