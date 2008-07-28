@@ -1,84 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbYG1Tbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYG1Tci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757711AbYG1Tbg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 15:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYG1Tb2
+	id S1758246AbYG1Tci (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 15:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbYG1Tcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 15:31:28 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:52619 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751677AbYG1Tb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 15:31:27 -0400
-Message-ID: <488E1E7F.6060802@sgi.com>
-Date: Mon, 28 Jul 2008 12:31:11 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
+	Mon, 28 Jul 2008 15:32:31 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:35052 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751677AbYG1Tca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 15:32:30 -0400
+Date: Mon, 28 Jul 2008 21:32:35 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [git pull] cpus4096 fixes
-References: <20080727190601.GA764@elte.hu> <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org> <200807281042.12860.rusty@rustcorp.com.au> <488E06F0.4070404@sgi.com> <alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org> <alpine.LFD.1.10.0807281135060.3486@nehalem.linux-foundation.org> <20080728185134.GA11664@elte.hu> <488E1C75.7060808@sgi.com>
-In-Reply-To: <488E1C75.7060808@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       "Alex Nixon (Intern)" <Alex.Nixon@eu.citrix.com>,
+       Eduardo Habkost <ehabkost@redhat.com>
+Subject: Re: [PATCH] xen: xen: compile irq functions without -pg for ftrace
+Message-ID: <20080728193235.GB11431@uranus.ravnborg.org>
+References: <488E15C5.3070902@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <488E15C5.3070902@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Ingo Molnar wrote:
->> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
->>
->>> On Mon, 28 Jul 2008, Linus Torvalds wrote:
->>>> Here's a trivial setup, that is even tested. It's _small_ too.
->>>>
->>>> 	/* cpu_bit_bitmap[0] is empty - so we can back into it */
->>>> 	#define MASK_DECLARE_1(x) [x+1][0] = 1ul << (x)
->>>> 	#define MASK_DECLARE_2(x) MASK_DECLARE_1(x), MASK_DECLARE_1(x+1)
->>>> 	#define MASK_DECLARE_4(x) MASK_DECLARE_2(x), MASK_DECLARE_2(x+2)
->>>> 	#define MASK_DECLARE_8(x) MASK_DECLARE_4(x), MASK_DECLARE_4(x+4)
->>>>
->>>> 	static const unsigned long cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)] = {
->>>> 		MASK_DECLARE_8(0), MASK_DECLARE_8(8),
->>>> 		MASK_DECLARE_8(16), MASK_DECLARE_8(24),
->>>> 	#if BITS_PER_LONG > 32
->>>> 		MASK_DECLARE_8(32), MASK_DECLARE_8(40),
->>>> 		MASK_DECLARE_8(48), MASK_DECLARE_8(56),
->>>> 	#endif
->>>> 	};
->>>>
->>>> 	static inline const cpumask_t *get_cpu_mask(unsigned int nr)
->>>> 	{
->>>> 		const unsigned long *p = cpu_bit_bitmap[1 + nr % BITS_PER_LONG];
->>>> 		p -= nr / BITS_PER_LONG;
->>>> 		return (const cpumask_t *)p;
->>>> 	}
->>> Btw, Ingo, can we get this issue resolved asap, please?
->>>
->>> I was planning on doing -rc1 today, but this kind of hangs over me. 
->>> The above three lines of code (and more lines of macro initializers) 
->>> obviously does need some more testing, but if you hook it into the 
->>> other changes you already had, maybe we can get it done.
->>>
->>> Hmm?
->> yeah, i'm on it. If everything goes well hopefully i'll have something 
->> pullable in 1-2 hours, if that's ok as a timeframe.
->>
->> 	Ingo
+On Mon, Jul 28, 2008 at 11:53:57AM -0700, Jeremy Fitzhardinge wrote:
+> For some reason I managed to miss a bunch of irq-related functions
+> which also need to be compiled without -pg when using ftrace.  This
+> patch moves them into their own file, and starts a cleanup process
+> I've been meaning to do anyway.
 > 
-> One problem is that the current api is cpumask_t cpumask_of_cpu(x), so
-> all ref's would have to be changed.  (Unless there's some clever way of
-> defining "&cpumask_of_cpu(x)" to be get_cpu_mask(x) ...?)
-> 
-> Do you want me to do these changes?
-> 
-> Thanks,
-> Mike
+> [ Sam, Ingo: I think the problem was that I enabled CONFIG_FTRACE
+>  but didn't do a clean build.  Shouldn't the build-system notice
+>  that the config changes the CFLAGS and rebuild everything?  That
+>  didn't seem to happen in this case. ]
 
-Please ignore my stupidity...  I was not thinking very clearly.
+The build system usually does this.
+And I have no reports that this has regressed until now.
+What file?
+Can you tell me how to reproduce it?
 
-Mike
+> 
+> ===================================================================
+> --- a/arch/x86/xen/Makefile
+> +++ b/arch/x86/xen/Makefile
+> @@ -2,9 +2,10 @@
+> # Do not profile debug and lowlevel utilities
+> CFLAGS_REMOVE_spinlock.o = -pg
+> CFLAGS_REMOVE_time.o = -pg
+> +CFLAGS_REMOVE_irq.o = -pg
+> endif
+
+I already NACK'ed this syntax and described the way it should be done.
+Is this ignored or on a TODO list?
+
+	Sam
