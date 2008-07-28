@@ -1,103 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbYG1Sux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbYG1SvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbYG1Sux (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 14:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbYG1Suo
+	id S1760214AbYG1SvW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 14:51:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbYG1SvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 14:50:44 -0400
-Received: from jrmy.net ([64.40.111.128]:46354 "EHLO cowbell.omegasupeme.ca"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753990AbYG1Sun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 14:50:43 -0400
-X-Greylist: delayed 4037 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jul 2008 14:50:43 EDT
-Message-ID: <488E051D.3020008@jrmy.net>
-Date: Mon, 28 Jul 2008 10:42:53 -0700
-From: Jeremy Freeman <jeremy@jrmy.net>
-User-Agent: Thunderbird 2.0b2pre (Windows/20070122)
+	Mon, 28 Jul 2008 14:51:06 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:14031 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753620AbYG1SvF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 14:51:05 -0400
+Date: Mon, 28 Jul 2008 22:51:03 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Trent Piepho <tpiepho@freescale.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
+       Richard Purdie <rpurdie@rpsys.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/2] leds: Support OpenFirmware led bindings
+Message-ID: <20080728185103.GA25343@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp> <1217019705-24244-2-git-send-email-tpiepho@freescale.com> <20080727022116.GN12191@secretlab.ca> <Pine.LNX.4.64.0807272159500.26456@t2.domain.actdsltmp> <20080728170914.GA21265@secretlab.ca> <20080728180204.GA13190@polina.dev.rtsoft.ru> <Pine.LNX.4.64.0807281120150.26456@t2.domain.actdsltmp>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Ports 59873 - 60000 in use. Not sure by what.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: Spam detection software, running on the system "cowbell.omegasupeme.ca", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	the administrator of that system for details.
-	Content preview:  I have exhausted all other avenues to solve this. So in a
-	last ditch effort I am posting to KML. For some reason on one of my servers
-	ports 59873 through 60000 are bound to some mystery process. netstat -nap
-	shows nothing using them. lsof shows nothing using them. [...] 
-	Content analysis details:   (-4.4 points, 4.5 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0807281120150.26456@t2.domain.actdsltmp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have exhausted all other avenues to solve this. So in a last ditch 
-effort I am posting to KML.
+On Mon, Jul 28, 2008 at 11:26:28AM -0700, Trent Piepho wrote:
+> On Mon, 28 Jul 2008, Anton Vorontsov wrote:
+> > On Mon, Jul 28, 2008 at 11:09:14AM -0600, Grant Likely wrote:
+> > [...]
+> >>>>> +- function :  (optional) This parameter, if present, is a string
+> >>>>> +  defining the function of the LED.  It can be used to put the LED
+> >>>>> +  under software control, e.g. Linux LED triggers like "heartbeat",
+> >>>>> +  "ide-disk", and "timer".  Or it could be used to attach a hardware
+> >>>>> +  signal to the LED, e.g. a SoC that can configured to put a SATA
+> >>>>> +  activity signal on a GPIO line.
+> >>>>
+> >>>> This makes me nervous.  It exposes Linux internal implementation details
+> >>>> into the device tree data.  If you want to have a property that
+> >>>> describes the LED usage, then the possible values and meanings should be
+> >>>> documented here.
+> >>>
+> >>> Should it be a linux specific property then?  I could list all the current
+> >>> linux triggers, but enumerating every possible function someone might want
+> >>> to assign to an LED seems hopeless.
+> >>
+> >> I'd rather see the device tree provide 'hints' toward the expected usage
+> >> and if a platform needs something specific, then the platform specific
+> >> code should setup the trigger.
+> >>
+> > Maybe we can encode leds into devices themselves, via phandles?
+> 
+> How will this work for anything besides ide activity?  For example, flashing,
+> heartbeat, default on, overheat, fan failed, kernel panic, etc.
 
-For some reason on one of my servers ports 59873 through 60000 are bound 
-to some mystery process.
+Everything is possible, but will look weird. For example,
 
-netstat -nap shows nothing using them.
-lsof shows nothing using them.
+Default on (power led) could be encoded in the root node.
+fan and overheat in a PM controller's node.
+Kernel panic in the chosen node.
 
-However they are most definitely in use.
+> > And then the OF GPIO LEDs driver could do something like:
+> >
+> > char *ide_disk_trigger_compatibles[] = {
+> > 	"fsl,sata",
+> > 	"ide-generic",
+> > 	...
+> > };
+> 
+> Everytime someone added a new ide driver, this table would have to be updated.
 
-I'll use nc for an example:
+Yes. device_type would be helpful here. :-)
 
-# nc -l 59872
-.. works and listens ...
 
-# nc -l 59873
-nc: Address already in use
+Well, otherwise, we could provide a trigger map in the chosen node:
 
-... < all ports in between> ...
+chosen {
+	/* leds map: default-on, ide-disk, nand-disk, panic */
+	linux,leds = <&green_led &red_led 0 0>;
+};
 
-# nc -l 60000
-nc: Address already in use
-
-nc -l 60001
-.. works and listens ...
-
-stracing nc shows:
-bind(3, {sa_family=AF_INET, sin_port=htons(60000), 
-sin_addr=inet_addr("0.0.0.0")}, 16) = -1 EADDRINUSE (Address already in use)
-
-So the obvious culprit is a rootkit of some-sort. I checked the system 
-using rkhunter and chkrootkit and they found nothing. Ran lsof, tcpdump 
-and netstat from clean binaries on write-protected media.. also nothing. 
-Further, this system has not been "on-net".. so although I am not 
-disqualifying this as the issue, I cannot find any evidence.
-
-I tried to run kstat but there does not seem to be a version for 2.6.
-
-I tried changing my ip_local_port_range to 32768 - 55000 and the issue 
-persists.
-
-Even in run-level 1 those ports cannot be bound to.
-
-BOX is: Red Hat Enterprise Linux Server release 5.1 (Tikanga)
-Kernel: 2.6.18-53.1.14.el5 #1 SMP Tue Feb 19 07:18:46 EST 2008 x86_64 
-x86_64 x86_64 GNU/Linux
-
-All I can think is the kernel is somehow reserving these ports for 
-outgoing use or something? Which I am not even sure about because I 
-changed my ip_local_port_range to not include those ports and they are 
-still held.
-
-So.. now I am out of ideas.. perhaps someone out there can help me or 
-give me some other ideas to try.
-
-Thank you.
-
-Please CC me if possible as I am not subscribed.
-
---
-Jeremy
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
