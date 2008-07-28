@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbYG1SBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760883AbYG1SCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756289AbYG1SBN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 14:01:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761332AbYG1R7K
+	id S1760883AbYG1SCL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 14:02:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYG1SB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 13:59:10 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:25183 "EHLO
-	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760930AbYG1R7I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 13:59:08 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=ta5PbOrD6259nOntzTEA:9 a=LWHKpjwJIp_VRYmLL_IMtxH9HX4A:4 a=NFhwgSV09UQA:10 a=l9iCJtgIvv4A:10 a=GFZTb6icBPAA:10
-Message-ID: <488E08C4.20809@sieb.net>
-Date: Mon, 28 Jul 2008 10:58:28 -0700
-From: Samuel Sieb <samuel@sieb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.15) Gecko/20080706 Fedora/1.1.10-1.fc9 SeaMonkey/1.1.10
+	Mon, 28 Jul 2008 14:01:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57218 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752214AbYG1SBz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 14:01:55 -0400
+Date: Mon, 28 Jul 2008 20:01:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Oruba <peter.oruba@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patch 00/11] x86: AMD microcode patch loading support v2
+Message-ID: <20080728180141.GB2937@elte.hu>
+References: <20080728164411.490752571@amd.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Juergen Beisert <jbe@pengutronix.de>, linux-kernel@vger.kernel.org,
-       "Rafael C. de Almeida" <almeidaraf@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Magnus Damm <magnus@valinux.co.jp>, takada <takada@mbf.nifty.com>
-Subject: Re: kernel won't boot on a Cyrix MediaGXm (Geode )
-References: <48841A92.4020301@sieb.net> <48856BC6.7030308@sieb.net> <20080722102457.GA773@elte.hu> <200807221251.10843.jbe@pengutronix.de> <4886DB31.8070306@sieb.net> <20080728153224.GA28495@elte.hu>
-In-Reply-To: <20080728153224.GA28495@elte.hu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080728164411.490752571@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_00,URIBL_BLACK autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	2.0 URIBL_BLACK            Contains an URL listed in the URIBL blacklist
+	[URIs: checkpatch.pl]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Samuel Sieb <samuel@sieb.net> wrote:
-> 
->>> The only critical tweak I found is the one that changes the 
->>> "Performance Control Incrementer" because its settings depends on the 
->>> CPU's core frequency. Maybe this tweak should be removed, because the 
->>> BIOS (hopefully) set it in a way the hardware supports.
->> This was the only line that was a problem.  See the other branch of 
->> this thread with Juergen Beisert.
-> 
-> any patch we should pick up to make your box boot?
-> 
-Are you suggesting I should make the patch or you're just asking which 
-lines?  What I did to make a kernel that boots was to comment out the 
-line that calls the incrementor setup function.  It sounds like the 
-stepping 2 version doesn't have the problem, so if possible could you 
-call the function based on it not being a stepping 1 CPU?
+
+* Peter Oruba <peter.oruba@amd.com> wrote:
+
+> AMD microcode patch loader v2, rebased to Linux master.
+
+applied to tip/x86/microcode - thanks Peter.
+
+One open issue i noticed is the checkpatch warnings:
+
+ $ scripts/checkpatch.pl --file arch/x86/kernel/microcode_amd.c
+ total: 0 errors, 10 warnings, 1 checks, 521 lines checked
+
+ $ scripts/checkpatch.pl --file arch/x86/kernel/microcode.c
+ total: 2 errors, 12 warnings, 477 lines checked
+
+ $ scripts/checkpatch.pl --file arch/x86/kernel/microcode_intel.c
+ total: 1 errors, 11 warnings, 546 lines checked
+
+Could you send delta patch(es) to fix them up? You can pick up the 
+committed patches via:
+
+  http://people.redhat.com/mingo/tip.git/README
+
+and do something like:
+
+  git-checkout tip/master
+  git-merge tip/x86/microcode
+
+to get the latest code plus your changes.
+
+Thanks,
+
+	Ingo
