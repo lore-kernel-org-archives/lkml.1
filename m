@@ -1,100 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYG1JIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbYG1JK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbYG1JIP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 05:08:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYG1JH4
+	id S1755499AbYG1JK7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 05:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYG1JKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 05:07:56 -0400
-Received: from isilmar.linta.de ([213.133.102.198]:60401 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751987AbYG1JHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 05:07:55 -0400
-Date: Mon, 28 Jul 2008 11:07:53 +0200
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, dahinds@users.sourceforge.net,
-       becker@scyld.com, x-csrdh@jcu.edu.au, erik@vt.edu,
-       Jeff Garzik <jeff@garzik.org>, netdev <netdev@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] smc91c92_cs: use request_firmware
-Message-ID: <20080728090753.GA12080@isilmar.linta.de>
-Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-	Jaswinder Singh <jaswinder@infradead.org>,
-	LKML <linux-kernel@vger.kernel.org>, dahinds@users.sourceforge.net,
-	becker@scyld.com, x-csrdh@jcu.edu.au, erik@vt.edu,
-	Jeff Garzik <jeff@garzik.org>, netdev <netdev@vger.kernel.org>,
-	David Woodhouse <dwmw2@infradead.org>
-References: <1217170341.3537.9.camel@jaswinder.satnam> <20080728082814.GA4708@isilmar.linta.de> <1217235775.6407.3.camel@jaswinder.satnam>
+	Mon, 28 Jul 2008 05:10:51 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:40160 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752758AbYG1JKu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 05:10:50 -0400
+X-Sasl-enc: 2zgshmCBC3cqCmdNBCDa8GQLb/+ZiBsHNpgv2DMPOluZ 1217236249
+Message-ID: <488D8D16.7010502@ladisch.de>
+Date: Mon, 28 Jul 2008 11:10:46 +0200
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
+To: David Brownell <david-b@pacbell.net>
+CC: lkml <linux-kernel@vger.kernel.org>, bob.picco@hp.com,
+       venkatesh.pallipadi@intel.com, Vojtech Pavlik <vojtech@suse.cz>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Adrian Bunk <bunk@kernel.org>
+Subject: Re: [patch 2.6.26-git] /dev/hpet - fixes and cleanup
+References: <200807221508.56672.david-b@pacbell.net> <200807251258.59878.david-b@pacbell.net> <488D7BFF.10005@ladisch.de> <200807280127.22060.david-b@pacbell.net>
+In-Reply-To: <200807280127.22060.david-b@pacbell.net>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217235775.6407.3.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+David Brownell wrote:
+> Oh ... I see.  It's called write_counter() but doesn't
+> actually write the counter.  Likewise, read_counter() is
+> not actually reading the counter.  Gaack ...
 
-On Mon, Jul 28, 2008 at 02:32:54PM +0530, Jaswinder Singh wrote:
-> On Mon, 2008-07-28 at 10:28 +0200, Dominik Brodowski wrote:
-> > > +static int osi_load_firmware(struct pcmcia_device *link)
-> > > +{
-> > > +	struct platform_device *pdev;
-> > > +	const struct firmware *fw;
-> > > +	const char fw_name[] = "ositech/Xilinx7OD.bin"; 
-> > > +	int i, err;
-> > > + 
-> > > +	pdev = platform_device_register_simple("ositech", 0, NULL, 0);
-> > 
-> > Why do we need a platform_device here? Can't we just use the pcmcia device
-> > (so &link->dev) here?
-> > 
-> 
-> Thanks for pointing it out, I was searching for it.
-> 
-> Here is the fix:
-> 
-> diff --git a/drivers/net/pcmcia/smc91c92_cs.c b/drivers/net/pcmcia/smc91c92_cs.c
-> index 03f9be9..43d8e23 100644
-> --- a/drivers/net/pcmcia/smc91c92_cs.c
-> +++ b/drivers/net/pcmcia/smc91c92_cs.c
-> @@ -43,7 +43,6 @@
->  #include <linux/mii.h>
->  #include <linux/jiffies.h>
->  #include <linux/firmware.h>
-> -#include <linux/platform_device.h>
->  
->  #include <pcmcia/cs_types.h>
->  #include <pcmcia/cs.h>
-> @@ -794,18 +793,11 @@ static int osi_config(struct pcmcia_device *link)
->  
->  static int osi_load_firmware(struct pcmcia_device *link)
->  {
-> -	struct platform_device *pdev;
->  	const struct firmware *fw;
->  	const char fw_name[] = "ositech/Xilinx7OD.bin"; 
->  	int i, err;
->   
-> -	pdev = platform_device_register_simple("ositech", 0, NULL, 0);
-> -	if (IS_ERR(pdev)) {
-> -		printk(KERN_ERR "Failed to register platform device ositech\n");
-> -		return IS_ERR(pdev);
-> -	}
-> -	err = request_firmware(&fw, fw_name, &pdev->dev);
-> -	platform_device_unregister(pdev);
-> +	err = request_firmware(&fw, fw_name, &link->dev);
->  	if (err) {
->  		printk(KERN_ERR "Failed to load firmware \"%s\"\n",
->  		       fw_name);
-> 
-> You can check updated patch from :-
-> 
-> http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git
+A more correct name would be something like
+write_a_register_that_has_the_same_size_as_a_counter_register().
 
-for the pcmcia aspects of this patch:
-Acked-by: Dominik Brodowski <linux@dominikbrodowski.net>
+> In fact, most places would be better off just hard-wiring 32-bit
+> access...
 
-Thanks!
+... and the definition of read/write_counter() depends on the word size
+of the CPU architecture and has nothing to do with the actual size of
+the HPET registers ...
 
-	Dominik
+I'm hoping that I can deprecate and delete much of this code without
+having to clean it up first.
+
+> Any comments on the rest?
+
+Looks fine.  I would have preferred a series of smaller patches, but my
+feelings on this are not strong enough to split it myself or to ask you
+to do it.
+
+
+Regards,
+Clemens
