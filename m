@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762333AbYG1VWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762890AbYG1VWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762333AbYG1VWW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762243AbYG1VSS
+	id S1762890AbYG1VWh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761246AbYG1VSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:18:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42815 "EHLO mx1.redhat.com"
+	Mon, 28 Jul 2008 17:18:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42829 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761447AbYG1VSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:18:09 -0400
-Date: Mon, 28 Jul 2008 17:14:08 -0400
+	id S1761346AbYG1VSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 17:18:20 -0400
+Date: Mon, 28 Jul 2008 17:10:25 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: Simon Horman <horms@verge.net.au>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -22,65 +22,102 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
        linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/5] powerpc: Define elfcorehdr_addr in arch dependent
-	section
-Message-ID: <20080728211408.GD9985@redhat.com>
-References: <20080727234529.GM6175@verge.net.au> <20080728015117.GA12055@verge.net.au> <20080728024526.GB3334@verge.net.au> <20080728034007.GA30450@verge.net.au> <20080728211025.GA9985@redhat.com> <20080728211156.GB9985@redhat.com> <20080728211314.GC9985@redhat.com>
+Subject: [PATCH 1/5] Move elfcorehdr_addr out of vmcore.c (Was: Re: [patch]
+	crashdump: fix undefined reference to `elfcorehdr_addr')
+Message-ID: <20080728211025.GA9985@redhat.com>
+References: <20080727234529.GM6175@verge.net.au> <20080728015117.GA12055@verge.net.au> <20080728024526.GB3334@verge.net.au> <20080728034007.GA30450@verge.net.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080728211314.GC9985@redhat.com>
+In-Reply-To: <20080728034007.GA30450@verge.net.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi All,
+
+How does following series of patches look like. I have moved
+elfcorehdr_addr out of vmcore.c and pushed it to arch dependent section 
+of crash dump to make sure that it can be worked with even when
+CONFIG_PROC_VMCORE is disabled and CONFIG_CRASH_DUMP is enabled.
+
+I tested it on x86_64. Compile tested it on i386 and ppc64. ia64 and
+sh versions are completely untested.
+
+Thanks
+Vivek
 
 
-o Move elfcorehdr_addr definition in arch dependent crash dump file. This is
-  equivalent to defining elfcorehdr_addr under CONFIG_CRASH_DUMP instead of
-  CONFIG_PROC_VMCORE. This is needed by is_kdump_kernel() which can be
-  used irrespective of the fact whether CONFIG_PROC_VMCORE is enabled or
-  not.
+
+
+o elfcorehdr_addr is used by not only the code under CONFIG_PROC_VMCORE but
+  also by the code which is not inside CONFIG_PROC_VMCORE. For example,
+  is_kdump_kernel() is used by powerpc code to determine if kernel is booting
+  after a panic then use previous kernel's TCE table. So even if
+  CONFIG_PROC_VMCORE is not set in second kernel, one should be able to
+  correctly determine that we are booting after a panic and setup calgary
+  iommu accordingly.
+
+o So remove the assumption that elfcorehdr_addr is under CONFIG_PROC_VMCORE.
+
+o Move definition of elfcorehdr_addr to arch dependent crash files.
+  (Unfortunately crash dump does not have an arch independent file otherwise
+   that would have been the best place).
+
+o kexec.c is not the right place as one can Have CRASH_DUMP enabled in
+  second kernel without KEXEC being enabled.
 
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
 
- arch/powerpc/kernel/crash_dump.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ fs/proc/vmcore.c           |    3 ---
+ include/linux/crash_dump.h |   14 ++++++++++----
+ 2 files changed, 10 insertions(+), 7 deletions(-)
 
-diff -puN arch/powerpc/kernel/crash_dump.c~fix-elfcorehdr_addr-parsing-ppc64 arch/powerpc/kernel/crash_dump.c
---- linux-2.6.27-pre-rc1/arch/powerpc/kernel/crash_dump.c~fix-elfcorehdr_addr-parsing-ppc64	2008-07-28 12:14:22.000000000 -0400
-+++ linux-2.6.27-pre-rc1-root/arch/powerpc/kernel/crash_dump.c	2008-07-28 12:14:22.000000000 -0400
-@@ -27,6 +27,9 @@
- #define DBG(fmt...)
- #endif
+diff -puN fs/proc/vmcore.c~remove-elfcore-hdr-addr-definition-vmcore fs/proc/vmcore.c
+--- linux-2.6.27-pre-rc1/fs/proc/vmcore.c~remove-elfcore-hdr-addr-definition-vmcore	2008-07-28 09:19:50.000000000 -0400
++++ linux-2.6.27-pre-rc1-root/fs/proc/vmcore.c	2008-07-28 09:20:10.000000000 -0400
+@@ -32,9 +32,6 @@ static size_t elfcorebuf_sz;
+ /* Total size of vmcore file. */
+ static u64 vmcore_size;
  
-+/* Stores the physical address of elf header of crash image. */
-+unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
-+
- void __init reserve_kdump_trampoline(void)
- {
- 	lmb_reserve(0, KDUMP_RESERVE_LIMIT);
-@@ -66,7 +69,11 @@ void __init setup_kdump_trampoline(void)
- 	DBG(" <- setup_kdump_trampoline()\n");
- }
+-/* Stores the physical address of elf header of crash image. */
+-unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
+-
+ struct proc_dir_entry *proc_vmcore = NULL;
+ 
+ /* Reads a page from the oldmem device from given offset. */
+diff -puN include/linux/crash_dump.h~remove-elfcore-hdr-addr-definition-vmcore include/linux/crash_dump.h
+--- linux-2.6.27-pre-rc1/include/linux/crash_dump.h~remove-elfcore-hdr-addr-definition-vmcore	2008-07-28 12:00:44.000000000 -0400
++++ linux-2.6.27-pre-rc1-root/include/linux/crash_dump.h	2008-07-28 12:00:56.000000000 -0400
+@@ -9,11 +9,7 @@
+ 
+ #define ELFCORE_ADDR_MAX	(-1ULL)
  
 -#ifdef CONFIG_PROC_VMCORE
-+/*
-+ * Note: elfcorehdr_addr is not just limited to vmcore. It is also used by
-+ * is_kdump_kernel() to determine if we are booting after a panic. Hence
-+ * ifdef it under CONFIG_CRASH_DUMP and not CONFIG_PROC_VMCORE.
-+ */
- static int __init parse_elfcorehdr(char *p)
- {
- 	if (p)
-@@ -75,7 +82,6 @@ static int __init parse_elfcorehdr(char 
- 	return 1;
- }
- __setup("elfcorehdr=", parse_elfcorehdr);
+ extern unsigned long long elfcorehdr_addr;
+-#else
+-static const unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
 -#endif
  
- static int __init parse_savemaxmem(char *p)
+ extern ssize_t copy_oldmem_page(unsigned long, char *, size_t,
+ 						unsigned long, int);
+@@ -28,6 +24,16 @@ extern struct proc_dir_entry *proc_vmcor
+ 
+ #define vmcore_elf_check_arch(x) (elf_check_arch(x) || vmcore_elf_check_arch_cross(x))
+ 
++/*
++ * is_kdump_kernel() checks whether this kernel is booting after a panic of
++ * previous kernel or not. This is determined by checking if previous kernel
++ * has passed the elf core header address on command line.
++ *
++ * This is not just a test if CONFIG_CRASH_DUMP is enabled or not. It will
++ * return 1 if CONFIG_CRASH_DUMP=y and if kernel is booting after a panic of
++ * previous kernel.
++ */
++
+ static inline int is_kdump_kernel(void)
  {
+ 	return (elfcorehdr_addr != ELFCORE_ADDR_MAX) ? 1 : 0;
 _
