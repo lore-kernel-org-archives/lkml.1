@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbYG1Pxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbYG1Pxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758851AbYG1Pxu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 11:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbYG1Pxj
+	id S1758755AbYG1Pxd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 11:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbYG1PxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 11:53:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58928 "EHLO smtps.tip.net.au"
+	Mon, 28 Jul 2008 11:53:14 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53192 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754474AbYG1Pxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 11:53:38 -0400
-Date: Tue, 29 Jul 2008 01:53:30 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       akpm@linux-foundation.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Message-Id: <20080729015330.39aff7a5.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LFD.1.10.0807280838580.3486@nehalem.linux-foundation.org>
-References: <1217239117.11188.187.camel@pasglop>
-	<alpine.LFD.1.10.0807280838580.3486@nehalem.linux-foundation.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__29_Jul_2008_01_53_30_+1000_otV=jz8EaQGALWEd"
+	id S1754914AbYG1PxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 11:53:13 -0400
+Date: Mon, 28 Jul 2008 17:52:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Hugh Dickins <hugh@veritas.com>, Jack Steiner <steiner@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: [crash] Re: [PATCH 0/4] x86_64: Optimize percpu accesses
+Message-ID: <20080728155248.GA7123@elte.hu>
+References: <20080725211117.586723000@polaris-admin.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080725211117.586723000@polaris-admin.engr.sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__29_Jul_2008_01_53_30_+1000_otV=jz8EaQGALWEd
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Linus,
+ok, i have integrated tip/x86/percpu-zerobased into tip/master briefly, 
+but it blew up almost immediately in testing, on two boxes.
 
-On Mon, 28 Jul 2008 08:40:44 -0700 (PDT) Linus Torvalds <torvalds@linux-fou=
-ndation.org> wrote:
->
-> On Mon, 28 Jul 2008, Benjamin Herrenschmidt wrote:
-> >=20
-> > It's all in:
-> >=20
-> > git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
->=20
-> It doesn't really seem to be. I get "Already up-to-date.", and the top=20
-> commit there seems to be from July 3..
->=20
-> Forgot to push?
+one bad config is:
 
-It should be
+  http://redhat.com/~mingo/misc/config-Mon_Jul_28_17_35_00_CEST_2008.bad
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+failure pattern: it booted up fine to userspace and seemed function, but 
+then produced a spontaneous reboot while building a kernel, without any 
+log entries.
 
-Ben seems to have copied from one of Paul's pull requests.
+other bad config is:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+  http://redhat.com/~mingo/misc/config-Mon_Jul_28_17_30_39_CEST_2008.bad
 
---Signature=_Tue__29_Jul_2008_01_53_30_+1000_otV=jz8EaQGALWEd
-Content-Type: application/pgp-signature
+failure pattern: early crash at:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+  PANIC: early exception 0e rip 10:fffffff817dfc1a error 0 cr2 28
 
-iEYEARECAAYFAkiN63oACgkQjjKRsyhoI8z3RQCfUvfYXEWwAfDrjZlUX/rD7Zjo
-IEMAoInTZg5TsnWFGxBZ4caAKTlNKTxd
-=H+1v
------END PGP SIGNATURE-----
+which corresponds to:
 
---Signature=_Tue__29_Jul_2008_01_53_30_+1000_otV=jz8EaQGALWEd--
+ffffffff817dfc0f <machine_specific_memory_setup>:
+ffffffff817dfc0f:       48 8b 05 aa cf 04 00    mov    315306(%rip),%rax
+# ffffffff8182cbc0 <x86_quirks>
+ffffffff817dfc16:       55                      push   %rbp
+ffffffff817dfc17:       48 89 e5                mov    %rsp,%rbp
+ffffffff817dfc1a:       48 8b 40 28             mov    0x28(%rax),%rax  [*]
+ffffffff817dfc1e:       48 85 c0                test   %rax,%rax
+
+i.e. RAX was zero.
+
+i've pushed out the tip/tmp.x86/percpu-zerobased.bad branch which shows 
+the exact kernel that failed. It was generated by:
+
+ git-checkout tip/master
+ git-merge tip/x86/percpu-zerobased
+
+	Ingo
