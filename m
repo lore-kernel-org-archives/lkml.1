@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbYG1OQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbYG1OSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755167AbYG1OQB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 10:16:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYG1OPx
+	id S1755204AbYG1OSS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 10:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbYG1OSC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 10:15:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56741 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbYG1OPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 10:15:52 -0400
-Date: Mon, 28 Jul 2008 11:15:33 -0300
-From: Glauber Costa <gcosta@redhat.com>
-To: Andrew Drake <zappacky.lists@gmail.com>
-Cc: Glauber Costa <glommer@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [Bisected] Regression: Hang on boot in
-	schedule_timeout_interruptible during ACPI init on SMP
-Message-ID: <20080728141533.GA3697@redhat.com>
-References: <4887B4D5.1050306@gmail.com> <5d6222a80807231731u41f9fb81w2796b3db1a5920e6@mail.gmail.com> <488B7297.8090405@gmail.com>
+	Mon, 28 Jul 2008 10:18:02 -0400
+Received: from usul.saidi.cx ([204.11.33.34]:54618 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751423AbYG1OSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 10:18:01 -0400
+Message-ID: <488DD500.1050805@overt.org>
+Date: Mon, 28 Jul 2008 07:17:36 -0700
+From: Philip Langdale <philipl@overt.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <488B7297.8090405@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: Ivo van Doorn <ivdoorn@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, toshiba_acpi@memebeam.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling
+ through rfkill
+References: <488CBBAB.6010508@overt.org> <200807272259.44364.IvDoorn@gmail.com> <488CF6D8.6000700@overt.org> <20080728030437.GC10672@khazad-dum.debian.net>
+In-Reply-To: <20080728030437.GC10672@khazad-dum.debian.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-RunX1: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 26, 2008 at 02:53:11PM -0400, Andrew Drake wrote:
-> I just discovered; the nolapic_timer parameter causes the problem to go 
-> away entirely. It doesn't seem to have any nasty side effects, so I'm 
-> content to use it. Looking at the dmesg logs, however, I notice that the 
-> "last-good" kernel doesn't even try to use the LAPIC timer, but the 
-> "first-bad" does. I wasn't able to track down any discernible reason.
-fine, but if you can still help us on this, it would be awesome ;-)
+Henrique de Moraes Holschuh wrote:
+> 
+> There is a bunch of rfkill bug fix patches that was not merged in
+> wireless-testing yet (which is a pity, it would be really good if they could
+> go into 2.6.27).  One of those patches fixes the docs to make it clear that
+> rfkill_force_state() is the way to go if you have events of any sort.
+> 
+> The big difference from get_state() is that rfkill_force_state() propagates
+> state changes as soon as your driver notices them and sends them to rfkill
+> through rfkill_force_state()... while get_state() can only do that when
+> someone asks rfkill about the current state.
 
-Actually, there is another nasty bug that depends, at least by a first
-impression, on the lapic timer. I'm planning to save a time today to
-look further on your problem.
->
-> On a side note, that's the first I've ever heard/seen of that parameter, 
-> I tried it because I noticed the problems started when the LAPIC timer 
-> was successfully set up. I doubt the average user would notice this (you 
-> can't even tell unless you pass apic=debug), so I doubt many others would 
-> discover this fix/workaround.
->
-> The question remains, though, why did it go from "don't try" to "try"?
+Fair enough. I'll update the patch when I get some time. And good point on how
+to react to the event; dunno what I was(n't) thinking. :-)
 
-Probably because the order of initialization of smp entities changed a
-bit during this series. Probably the lapic timer is now initialized a
-little bit earlier, before we have the chance to mark it as bad.
-
-If you can send me at least your dmesgs and cpuinfo, it would be really really
-awesome.
-
-> Thanks,
->
-> Andrew
->
+--phil
