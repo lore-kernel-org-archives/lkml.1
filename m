@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbYG1Xf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996AbYG1Xgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753361AbYG1Xf3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 19:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYG1XfU
+	id S1752996AbYG1Xgw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 19:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYG1Xgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 19:35:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60675 "EHLO mx3.mail.elte.hu"
+	Mon, 28 Jul 2008 19:36:44 -0400
+Received: from ackle.nomi.cz ([81.31.33.35]:37827 "EHLO ackle.nomi.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751030AbYG1XfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 19:35:18 -0400
-Date: Tue, 29 Jul 2008 01:34:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: x86: Is there still value in having a special tlb flush IPI
-	vector?
-Message-ID: <20080728233455.GA2919@elte.hu>
-References: <488E534F.2030204@goop.org>
+	id S1751064AbYG1Xgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 19:36:44 -0400
+Date: Tue, 29 Jul 2008 01:36:38 +0200
+From: =?iso-8859-2?Q?Tom=E1=B9_Janou=B9ek?= <tomi@nomi.cz>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org,
+       Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: [PATCH] rtc-dev: stop periodic interrupts on device release
+Message-ID: <20080728233638.GA10327@nomi.cz>
+References: <20080726154617.GA5613@notes.lisk.in> <200807261350.55524.david-b@pacbell.net> <20080728204136.GA6683@nomi.cz> <200807281505.37122.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <488E534F.2030204@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200807281505.37122.david-b@pacbell.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Mon, Jul 28, 2008 at 03:05:36PM -0700, David Brownell wrote:
+> Surely you agree that having the framework shut down only *emulated*
+> update IRQs, not "real" ones, is inconsistent?  And hence undesirable?
 
-> Now that normal smp_function_call is no longer an enormous bottleneck, 
-> is there still value in having a specialised IPI vector for tlb 
-> flushes?  It seems like quite a lot of duplicate code.
->
-> The 64-bit tlb flush multiplexes the various cpus across 8 vectors to 
-> increase scalability. If this is a big issue, then the smp function 
-> call code can (and should) do the same thing.  (Though looking at it 
-> more closely, the way the code uses the 8 vectors is actually a less 
-> general way of doing what smp_call_function is doing anyway.)
+The idea was that if the "real" ones get turned on using some ioctl magic the
+framework has no exact control over, they shouldn't be shut down by it. But
+yeah, your point of view looks fine as well.
 
-yep, and we could eliminate the reschedule IPI as well.
+So I guess I'll post the current patch to Andrew and then, someone (not me,
+for time and competence reasons, sorry) can prepare a patch removing the
+release op and changing the calls in framework's release to call
+rtc_dev_ioctl.
 
-	Ingo
+Is this ok?
+
+-- 
+Tomá¹ Janou¹ek, a.k.a. Liskni_si, http://work.lisk.in/
