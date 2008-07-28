@@ -1,59 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYG1HWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYG1HYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754045AbYG1HWq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 03:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYG1HWh
+	id S1754649AbYG1HYV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 03:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYG1HYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 03:22:37 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41443 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752276AbYG1HWg (ORCPT
+	Mon, 28 Jul 2008 03:24:11 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:60801 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752677AbYG1HYJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 03:22:36 -0400
-Message-ID: <488D7369.4060508@jp.fujitsu.com>
-Date: Mon, 28 Jul 2008 16:21:13 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Pierre Ossman <drzeus-list@drzeus.cx>, Alex Chiang <achiang@hp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
-References: <20080724134737.4b91f30d@mjolnir.drzeus.cx> <200807241407.18543.jbarnes@virtuousgeek.org> <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org> <4889948D.7020408@jp.fujitsu.com> <20080725114040.GC6701@parisc-linux.org>
-In-Reply-To: <20080725114040.GC6701@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 28 Jul 2008 03:24:09 -0400
+X-SourceIP: 80.57.229.25
+Subject: Re: [PATCH] fix task dirty balancing
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+Cc: nickpiggin@yahoo.com.au, kamezawa.hiroyu@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20080728055031.DB0BF5A5D@siro.lan>
+References: <1216979872.7257.361.camel@twins>
+	 <20080728055031.DB0BF5A5D@siro.lan>
+Content-Type: text/plain
+Date: Mon, 28 Jul 2008 09:24:00 +0200
+Message-Id: <1217229840.6331.3.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Fri, Jul 25, 2008 at 05:53:33PM +0900, Kenji Kaneshige wrote:
->> IIRC, pciehp uses bridge's secondary bus number for slot name, and
->> PCI express downstream port can have only one hotplug slot. I think
->> this is why with_bus prameter makes difference.
+On Mon, 2008-07-28 at 14:50 +0900, YAMAMOTO Takashi wrote:
+> hi,
 > 
-> Ahh, I overlooked that last night.
+> > > @@ -1074,8 +1074,13 @@ int __set_page_dirty_no_writeback(struct page *page)
+> > >   */
+> > >  int __set_page_dirty_nobuffers(struct page *page)
+> > >  {
+> > > -	if (!TestSetPageDirty(page)) {
+> > > -		struct address_space *mapping = page_mapping(page);
+> > > +	struct address_space *mapping;
+> > > +
+> > > +	if (TestSetPageDirty(page))
+> > > +		return 0;
+> > > +
+> > > +	mapping = page_mapping(page);
+> > > +	if (likely(mapping)) {
+> > >  		struct address_space *mapping2;
+> > >  
+> > >  		if (!mapping)
+> > 
+> > This results in funny code..
 > 
->> But it doesn't work on the system that has multiple pci segments.
-> 
-> Yes, we still have the problem that pciehp does not include the 'chassis
-> number' as part of the name.  I no longer have easy access to any
-> systems with multiple chassis.  Do your systems have devices which
-> implement the PCI_CAP_ID_SLOTID capcbility?  (as root) lspci -vvv will
-> report it:
-> 
->   printf("Slot ID: %d slots, First%c, chassis %02x\n",
->          esr & PCI_SID_ESR_NSLOTS,
->          FLAG(esr, PCI_SID_ESR_FIC),
->          chs);
-> 
+> oops, you're right.
+> i removed the dead code.
 
-Unfortunately, I don't have any systems that implement the
-PCI_CAP_ID_SLOTID capability...
+Looks good
 
-Thanks,
-Kenji Kaneshige
+Do we want to tidy stuff up with something like:
 
+
+diff -u b/fs/buffer.c b/fs/buffer.c
+--- b/fs/buffer.c
++++ b/fs/buffer.c
+@@ -708,13 +708,16 @@
+ static int __set_page_dirty(struct page *page,
+ 		struct address_space *mapping, int warn)
+ {
+-
+ 	if (TestSetPageDirty(page))
+ 		return 0;
+ 
+ 	if (likely(mapping)) {
++		struct address_space *mapping2;
++
+ 		spin_lock_irq(&mapping->tree_lock);
+-		if (page->mapping) {	/* Race with truncate? */
++		mapping2 = page->mapping;
++		if (mapping2) {	/* Race with truncate? */
++			BUG_ON(mapping2 != mapping);
+ 			WARN_ON_ONCE(warn && !PageUptodate(page));
+ 
+ 			if (mapping_cap_account_dirty(mapping)) {
+diff -u b/mm/page-writeback.c b/mm/page-writeback.c
+--- b/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -1088,6 +1088,7 @@
+ 		if (mapping2) { /* Race with truncate? */
+ 			BUG_ON(mapping2 != mapping);
+ 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
++
+ 			if (mapping_cap_account_dirty(mapping)) {
+ 				__inc_zone_page_state(page, NR_FILE_DIRTY);
+ 				__inc_bdi_stat(mapping->backing_dev_info,
+
+
+
+
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+> Signed-off-by: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+> ---
+> 
+> diff --git a/fs/buffer.c b/fs/buffer.c
+> index 4ffb5bb..3a89d58 100644
+> --- a/fs/buffer.c
+> +++ b/fs/buffer.c
+> @@ -708,27 +708,29 @@ EXPORT_SYMBOL(mark_buffer_dirty_inode);
+>  static int __set_page_dirty(struct page *page,
+>  		struct address_space *mapping, int warn)
+>  {
+> -	if (unlikely(!mapping))
+> -		return !TestSetPageDirty(page);
+>  
+>  	if (TestSetPageDirty(page))
+>  		return 0;
+>  
+> -	spin_lock_irq(&mapping->tree_lock);
+> -	if (page->mapping) {	/* Race with truncate? */
+> -		WARN_ON_ONCE(warn && !PageUptodate(page));
+> +	if (likely(mapping)) {
+> +		spin_lock_irq(&mapping->tree_lock);
+> +		if (page->mapping) {	/* Race with truncate? */
+> +			WARN_ON_ONCE(warn && !PageUptodate(page));
+>  
+> -		if (mapping_cap_account_dirty(mapping)) {
+> -			__inc_zone_page_state(page, NR_FILE_DIRTY);
+> -			__inc_bdi_stat(mapping->backing_dev_info,
+> -					BDI_RECLAIMABLE);
+> -			task_io_account_write(PAGE_CACHE_SIZE);
+> +			if (mapping_cap_account_dirty(mapping)) {
+> +				__inc_zone_page_state(page, NR_FILE_DIRTY);
+> +				__inc_bdi_stat(mapping->backing_dev_info,
+> +						BDI_RECLAIMABLE);
+> +				task_io_account_write(PAGE_CACHE_SIZE);
+> +			}
+> +			radix_tree_tag_set(&mapping->page_tree,
+> +					page_index(page), PAGECACHE_TAG_DIRTY);
+>  		}
+> -		radix_tree_tag_set(&mapping->page_tree,
+> -				page_index(page), PAGECACHE_TAG_DIRTY);
+> +		spin_unlock_irq(&mapping->tree_lock);
+> +		__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+>  	}
+> -	spin_unlock_irq(&mapping->tree_lock);
+> -	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+> +
+> +	task_dirty_inc(current);
+>  
+>  	return 1;
+>  }
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index a4eeb3c..33fd91a 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1167,6 +1167,7 @@ extern int filemap_fault(struct vm_area_struct *, struct vm_fault *);
+>  
+>  /* mm/page-writeback.c */
+>  int write_one_page(struct page *page, int wait);
+> +void task_dirty_inc(struct task_struct *tsk);
+>  
+>  /* readahead.c */
+>  #define VM_MAX_READAHEAD	128	/* kbytes */
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index 29b1d1e..3062f26 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -176,7 +176,7 @@ void bdi_writeout_inc(struct backing_dev_info *bdi)
+>  }
+>  EXPORT_SYMBOL_GPL(bdi_writeout_inc);
+>  
+> -static inline void task_dirty_inc(struct task_struct *tsk)
+> +void task_dirty_inc(struct task_struct *tsk)
+>  {
+>  	prop_inc_single(&vm_dirties, &tsk->dirties);
+>  }
+> @@ -1074,12 +1074,14 @@ int __set_page_dirty_no_writeback(struct page *page)
+>   */
+>  int __set_page_dirty_nobuffers(struct page *page)
+>  {
+> -	if (!TestSetPageDirty(page)) {
+> -		struct address_space *mapping = page_mapping(page);
+> -		struct address_space *mapping2;
+> +	struct address_space *mapping;
+>  
+> -		if (!mapping)
+> -			return 1;
+> +	if (TestSetPageDirty(page))
+> +		return 0;
+> +
+> +	mapping = page_mapping(page);
+> +	if (likely(mapping)) {
+> +		struct address_space *mapping2;
+>  
+>  		spin_lock_irq(&mapping->tree_lock);
+>  		mapping2 = page_mapping(page);
+> @@ -1100,9 +1102,11 @@ int __set_page_dirty_nobuffers(struct page *page)
+>  			/* !PageAnon && !swapper_space */
+>  			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+>  		}
+> -		return 1;
+>  	}
+> -	return 0;
+> +
+> +	task_dirty_inc(current);
+> +
+> +	return 1;
+>  }
+>  EXPORT_SYMBOL(__set_page_dirty_nobuffers);
+>  
+> @@ -1122,7 +1126,7 @@ EXPORT_SYMBOL(redirty_page_for_writepage);
+>   * If the mapping doesn't provide a set_page_dirty a_op, then
+>   * just fall through and assume that it wants buffer_heads.
+>   */
+> -static int __set_page_dirty(struct page *page)
+> +int set_page_dirty(struct page *page)
+>  {
+>  	struct address_space *mapping = page_mapping(page);
+>  
+> @@ -1140,14 +1144,6 @@ static int __set_page_dirty(struct page *page)
+>  	}
+>  	return 0;
+>  }
+> -
+> -int set_page_dirty(struct page *page)
+> -{
+> -	int ret = __set_page_dirty(page);
+> -	if (ret)
+> -		task_dirty_inc(current);
+> -	return ret;
+> -}
+>  EXPORT_SYMBOL(set_page_dirty);
+>  
+>  /*
 
