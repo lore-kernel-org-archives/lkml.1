@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759724AbYG1ROL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760340AbYG1RO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759724AbYG1ROL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 13:14:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756161AbYG1RNx
+	id S1760340AbYG1RO1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 13:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbYG1RN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 13:13:53 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:60291 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750870AbYG1RNw (ORCPT
+	Mon, 28 Jul 2008 13:13:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47738 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756236AbYG1RNx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 13:13:52 -0400
-X-SourceIP: 80.57.229.25
-Subject: Re: [PATCH 12/30] mm: memory reserve management
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, Neil Brown <neilb@suse.de>,
-       cl@linux-foundation.org
-In-Reply-To: <1217263769.15724.32.camel@calx>
-References: <20080724140042.408642539@chello.nl>
-	 <20080724141530.127530749@chello.nl>
-	 <1217239564.7813.36.camel@penberg-laptop>  <1217263769.15724.32.camel@calx>
-Content-Type: text/plain
-Date: Mon, 28 Jul 2008 19:13:43 +0200
-Message-Id: <1217265223.18049.22.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jul 2008 13:13:53 -0400
+Date: Mon, 28 Jul 2008 10:10:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Andrea Righi <righi.andrea@gmail.com>, akpm@linux-foundation.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] mm: unify pmd_free() implementation
+In-Reply-To: <1217264339.3503.97.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.1.10.0807281000070.3486@nehalem.linux-foundation.org>
+References: <> <1217260287-13115-1-git-send-email-righi.andrea@gmail.com>  <alpine.LFD.1.10.0807280851130.3486@nehalem.linux-foundation.org>  <1217261852.3503.89.camel@localhost.localdomain>  <alpine.LFD.1.10.0807280937150.3486@nehalem.linux-foundation.org>
+ <1217264339.3503.97.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-28 at 11:49 -0500, Matt Mackall wrote:
-> On Mon, 2008-07-28 at 13:06 +0300, Pekka Enberg wrote:
-> > We're trying to get rid of kfree() so I'd __kfree_reserve() could to
-> > mm/sl?b.c. Matt, thoughts?
+
+
+On Mon, 28 Jul 2008, James Bottomley wrote:
 > 
-> I think you mean ksize there. My big issue is that we need to make it
-> clear that ksize pairs -only- with kmalloc and that
-> ksize(kmem_cache_alloc(...)) is a categorical error. Preferably, we do
-> this by giving it a distinct name, like kmalloc_size(). We can stick an
-> underbar in front of it to suggest you ought not be using it too.
+> Sorry ... should have been clearer.  My main concern is the cost of
+> barrier() which is just a memory clobber ... we have to use barriers to
+> place the probe points correctly in the code.
 
-Right, both make sense, so _kmalloc_size() has my vote.
+Oh, "barrier()" itself has _much_ less cost.
 
-> > > +	/*
-> > > +	 * ksize gives the full allocated size vs the requested size we
-> > used to
-> > > +	 * charge; however since we round up to the nearest power of two,
-> > this
-> > > +	 * should all work nicely.
-> > > +	 */
-> 
-> SLOB doesn't do this, of course. But does that matter? I think you want
-> to charge the actual allocation size to the reserve in all cases, no?
-> That probably means calling ksize() on both alloc and free.
+It still has all the "needs to flush any global/address-taken-of variables 
+to memory" property and can thus cause reloads, but that's kind of the 
+point of it, after all. So in that sense "barrier()" is free: the only 
+cost of a barrier is the cost of what you actually need to get done. It's 
+not really "free", but it's also not any more costly than what your 
+objective was.
 
-Like said, I still need to do all the SLOB reservation stuff. That
-includes coming up with upper bound fragmentation loss.
+In contrast, the "objective" in an empty function call is seldom the 
+serialization, so in that case the serialization is all just unnecessary 
+overhead.
 
-For SL[UA]B I use roundup_power_of_two for kmalloc sizes. Thus with the
-above ksize(), if we did p=kmalloc(x), then we'd account
-roundup_power_of_two(x), and that should be equal to
-roundup_power_of_two(ksize(p)), as ksize will always be smaller or equal
-to the roundup.
+Also, barrier() avoids the big hit of turning a leaf function into a 
+non-leaf one. It also avoids all the fixed registers and the register 
+clobbers (although for tracing purposes you may end up setting up fixed 
+regs, of course).
 
-I'm guessing the power of two upper bound is good for SLOB too -
-although I haven't tried proving it wrong or tighetening it.
+The leaf -> non-leaf thing is actually often the major thing. Yes, the 
+compiler will often inline functions that are simple enough to be leaf 
+functions with no stack frame, so we don't have _that_ many of them, but 
+when it hits, it's often the most noticeable part of an unnecessary 
+function call. And "barrier()" should never trigger that problem.
 
-Only the kmem_cache_* reservation stuff would need some extra attention
-with SLOB.
-
+			Linus
