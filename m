@@ -1,23 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbYG1FHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754020AbYG1FMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753682AbYG1FHW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 01:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbYG1FHJ
+	id S1754020AbYG1FMS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 01:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbYG1FMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 01:07:09 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38004 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751635AbYG1FHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 01:07:08 -0400
-Date: Mon, 28 Jul 2008 15:07:05 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: linux-next: build failure
-Message-Id: <20080728150705.67408647.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Mon, 28 Jul 2008 01:12:09 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:46215 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750795AbYG1FMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 01:12:08 -0400
+Date: Mon, 28 Jul 2008 00:12:05 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: lizf@cn.fujitsu.com, akpm@linux-foundation.org, menage@google.com,
+       seto.hidetoshi@jp.fujitsu.com, laijs@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] cpuset: clean up cpuset hierarchy traversal code
+Message-Id: <20080728001205.f3801aca.pj@sgi.com>
+In-Reply-To: <20080727233746.7f057e74.pj@sgi.com>
+References: <488D332A.1030008@cn.fujitsu.com>
+	<20080727233746.7f057e74.pj@sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -25,43 +29,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi James, Andrew,
+pj wrote:
+> Can you figure out if we are holding any system wide lock, such as
+> cgroup_mutex, at this point?
 
-(Previously reported by Dave Miller.)
+Nevermind ... this is in rebuild_sched_domains(), which must be
+called with cgroup_mutex held.  So we danged well better be holding
+a system wide lock.
 
-Today's linux-next build (powerpc allyesconfig) failed like this:
-
-drivers/scsi/qla2xxx/qla_attr.c: In function 'qla24xx_vport_delete':
-drivers/scsi/qla2xxx/qla_attr.c:1184: error: implicit declaration of function 'msleep'
-
-I applied the patch below.
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
->From 879b13261ee593b8afcae80a33844f162e8e8a5c Mon Sep 17 00:00:00 2001
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 28 Jul 2008 15:02:35 +1000
-Subject: [PATCH] scsi: msleep is declared in delay.h
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/scsi/qla2xxx/qla_attr.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/scsi/qla2xxx/qla_attr.c b/drivers/scsi/qla2xxx/qla_attr.c
-index 7a4409a..a319a20 100644
---- a/drivers/scsi/qla2xxx/qla_attr.c
-+++ b/drivers/scsi/qla2xxx/qla_attr.c
-@@ -8,6 +8,7 @@
- 
- #include <linux/kthread.h>
- #include <linux/vmalloc.h>
-+#include <linux/delay.h>
- 
- static int qla24xx_vport_disable(struct fc_vport *, bool);
- 
--- 
-1.5.6.3
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
