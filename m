@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759880AbYG1V6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbYG1V6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759880AbYG1V6Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYG1V6Q
+	id S1760787AbYG1V6i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757946AbYG1V6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:58:16 -0400
-Received: from www.tglx.de ([62.245.132.106]:60006 "EHLO www.tglx.de"
+	Mon, 28 Jul 2008 17:58:20 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48380 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751739AbYG1V6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:58:15 -0400
-Date: Mon, 28 Jul 2008 23:51:45 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Venkatesch Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] ACPI/CPUIDLE: prevent setting pm_idle to NULL
-In-Reply-To: <20080728195324.GE30344@one.firstfloor.org>
-Message-ID: <alpine.LFD.1.10.0807282340590.14925@apollo.tec.linutronix.de>
-References: <alpine.LFD.1.10.0807272343480.574@apollo.tec.linutronix.de> <20080728174644.GC30344@one.firstfloor.org> <alpine.LFD.1.10.0807282107500.14925@apollo.tec.linutronix.de> <20080728195324.GE30344@one.firstfloor.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S1757611AbYG1V6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 17:58:19 -0400
+Date: Tue, 29 Jul 2008 00:57:36 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Eric Miao <eric.miao@marvell.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: bad CONFIG variable references from Makefiles
+Message-ID: <20080728215735.GI7713@cs181140183.pp.htv.fi>
+References: <alpine.LFD.1.10.0807281607400.28285@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807281607400.28285@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008, Andi Kleen wrote:
-
-> > The problem here is that the acpi/cpuidle code can be in a state where
-> > the _save/old variables _ARE_ NULL because they had not been
-> > initialized with the original pm_idle before the module is removed or
-> > the cst state changes. So all we have to do is to prevent pm_idle to
-> > be set to NULL.
+On Mon, Jul 28, 2008 at 04:09:28PM -0400, Robert P. J. Day wrote:
 > 
-> It still seems wrong to me to fall back to the cpuidle idle function
-> instead of the earlier idle function just because cpuidle was loaded
-> in a weird way. 
+>   a complete list of all references to non-existent CONFIG variables
+> exclusively from Makefiles in the tree.  since the list is so short,
+> i'm not bothering to break it up by subsystem or arch.  enjoy.
+>...
+> ===== CACHE_XSC3L2 =====
+> ./arch/arm/mm/Makefile:obj-$(CONFIG_CACHE_XSC3L2)	+= cache-xsc3l2.o
+>...
 
-WTF are you talking about ? 
+Comparing commit 20072fd0c93349e19527dd2fa9588b4335960e62
+([ARM] pxa: add support for L2 outer cache on XScale3) with
+the patch that originally went to linux-arm-kernel it seems
+only a tiny fragment of the original patch arrived in the tree.
 
-pm_idle_save is initialized with pm_idle (the original idle function
-selected by the arch code).
+> rday
 
-When CST changes or the acpi/cpuidle modules are removed we need to
-restore the original pm_idle function from pm_idle_save.
+cu
+Adrian
 
-When pm_idle_save was not initialized, which can happen, then we wrote
-NULL to pm_idle, which is obviously wrong. We simply want to avoid
-that we write NULL into pm_idle.
+-- 
 
-That's all what the patch does. Nothing else. 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-This problem was hidden by the magic
-
-   if (!pm_idle)
-      pm_idle = default_idle;
-
-in the arch/x86 code which was removed when I refactored the pm_idle
-initialization code.
-
-Just get it. That "if (!pm_idle)" check in the arch code was just
-papering over the fact that the acpi code set pm_idle to NULL under
-certain conditions.
-
-Thanks,
-
-	tglx
