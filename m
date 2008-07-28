@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbYG1G7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYG1HFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753401AbYG1G7O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 02:59:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbYG1G66
+	id S1753836AbYG1HFT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 03:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYG1HFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 02:58:58 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:31744 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752032AbYG1G66 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 02:58:58 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=2B6gjl+aH0FDvoNWNvLi3RxdG+CRVAZMtzNtX3IgLglQZpiREoTm1756lgZLwyZ3/DQzWmtZqVvOopibksjr3GcrX2yTNlQOsNrssCKSK56G5CK1eSUcThREN3lYO5MxlqXGYQ1PV5nQm0vSfG2y28CLS4fh4zkOvGd4xtmmumY=  ;
-X-YMail-OSG: kbCCOG4VM1lbGzdwXbkNJLY.WAdC8TYN3iTFhew8pl9V2pMufvyOjPYxE5MYpCRKk1NbkOLI74udNHc2M.rCCs272TDAT7HaTXr8bjocRckOz4MsMG.HXArC0o3IHFLlC8I-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [git pull] cpus4096 fixes
-Date: Mon, 28 Jul 2008 16:58:48 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Travis <travis@sgi.com>
-References: <20080727190601.GA764@elte.hu> <20080727200636.96da12d0.akpm@linux-foundation.org> <200807281634.43036.rusty@rustcorp.com.au>
-In-Reply-To: <200807281634.43036.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 28 Jul 2008 03:05:07 -0400
+Received: from main.gmane.org ([80.91.229.2]:51965 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752169AbYG1HFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 03:05:06 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: David W Studeman <avionicsdv@aim.com>
+Subject: Keyboard Jammed error patch 2.4.35-pre4
+Date: Sun, 27 Jul 2008 23:59:47 -0700
+Message-ID: <g6jqud$t5e$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807281658.48628.nickpiggin@yahoo.com.au>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: pool-71-112-171-94.sttlwa.dsl-w.verizon.net
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1a2pre) Gecko/2008072700 SeaMonkey/2.0a1pre
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 July 2008 16:34, Rusty Russell wrote:
-> On Monday 28 July 2008 13:06:36 Andrew Morton wrote:
-> > On Mon, 28 Jul 2008 10:42:12 +1000 Rusty Russell <rusty@rustcorp.com.au>
->
-> wrote:
-> > > The 4k CPU patches have been sliding in without review up until now.
-> >
-> > wot?
->
-> This surprises you?  I stumbled across the cpumask_of_cpu() bug because I
-> happened to want it for stop_machine and read the damned code.  But it lead
-> me to the surrounding code, which is pretty questionable.  An arch-specific
-> map, rather than depending on NR_CPUS?  Adding set_cpus_allowed_ptr()
-> instead of changing set_cpus_allowed()?  Macros which declare things and
-> may or may not do an allocation/free?  Finally a patch so horrifically ugly
-> that it can't be ignored any more gets all the way to Linus.
->
-> Overall, it seems like an attempt to sneak in gradual workarounds for
-> cpumasks on the stack, rather than a coherent plan.  I understand the
-> temptation to avoid an "are we prepared to pay this price for large
-> NR_CPUS?" discussion, but we need it anyway.
->
-> And that's what I call "review".
+  Hello! The changes that were made on 04-25-2007 as "[PATCH 
+2.4.35-pre4] fix 'pc_keyb: controller jammed (0xA7)' error" have broken 
+the ability to compile with no keyboard and no VT support. This mainly 
+affects Cobalt machines which do not have dmi present as these use a 
+flashrom to boot with and not a typical bios so dmi blacklisting would 
+be pointless unless it allowed for no dmi present and then blacklist. I 
+had to create a patch against 2.4.34 to restore the ability to compile 
+with no keyboard and VT support.
 
-Well, I'm not talking about this case specifically, but lots of
-people I see these days tend to "review" code without doing a lot
-of high level critical thinking (is the overall design any good,
-could it be better or completely different, are the tradeoffs
-worthwhile etc).
+With keyboard support whether embedded or modularized, in a Raq/Qube3 
+and Raq4, it simply gives off a warning in the serial console if you are 
+watching it boot, a Raq 550 on the other hand shows it as an error about 
+300 times and will also show up in the dmesg log. Unless one was to fix 
+the dmi blacklisting to disable when no dmi is present as is the case 
+here, it needs to be fixed to allow compiling without. A Cobalt can only 
+use two methods of terminal access, one being serial console and ssh 
+being the other.
 
-Don't get me wrong, the lower level spot-the-bug and coding style
-etc reviews are indespensible too...
+These units do not use a typical bios but rather a flashrom on a 1 OR 
+2mb flash chip depending on model. The flashrom image contains it's own 
+kernel and Cobalt utilities and starts it's own boot process and looks 
+for a bzipped vmlinux image in boot to hand off to when it's time to 
+actually boot your OS. You have to set the boot and root partition in it 
+the first time and it does not care about or see any bootloader you may 
+have installed. It also does not give off any info about itself either. 
+Sure, the required embedded Cobalt drivers will tell something from 
+/proc/cobalt but that's about it.
 
-Unfortunately the development process isn't exactly conducive to
-that higher level kind of review... there are pros and cons to
-this, it's not all bad...
+This ability to compile without had been broken and restored back in 
+kernel 2.4.31 and then as of the 2.4.35.4 it has been broken since. I'm 
+involved in making a Cobalt build of IPCop and would love it if I didn't 
+have to patch for this in addition to the rest that is required to make 
+a Raq/Qube run.
+
+Dave Studeman
 
