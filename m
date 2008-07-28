@@ -1,288 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbYG1SKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbYG1SLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760652AbYG1SKk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 14:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbYG1SKH
+	id S1759969AbYG1SLM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 14:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbYG1SK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 14:10:07 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45681 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751146AbYG1SKF (ORCPT
+	Mon, 28 Jul 2008 14:10:56 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:53960 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753502AbYG1SKy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 14:10:05 -0400
-Date: Mon, 28 Jul 2008 11:07:55 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.25.13
-Message-ID: <20080728180755.GB28669@kroah.com>
-References: <20080728180740.GA28669@kroah.com>
+	Mon, 28 Jul 2008 14:10:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vJNQXR4tB5EYWJvbqhoT+qhmlFaW5PWFjlifwFmkhW7ssSkX35yTNl+ijaRbsxFgoy
+         KB4+sOeyn+ZMljIN8MEhQSIoi6lJQsyHYBSCUjIVUX8FfrUll7rGgQ7PTGdIOx+UGor2
+         FbNKIdG2QW8+Mt+Al8MS9U9qYtXK23XyNuJws=
+Message-ID: <9e4733910807281110i3b28a12m5c6cebdab68766a8@mail.gmail.com>
+Date: Mon, 28 Jul 2008 14:10:53 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Michael Krufky" <mkrufky@linuxtv.org>
+Subject: Re: 463 kernel developers missing!
+Cc: "Simon Arlott" <simon@fire.lp0.eu>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <37219a840807281058j7d0de82fx76d7340b3bc3318f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080728180740.GA28669@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
+	 <488DF9CF.8020408@simon.arlott.org.uk>
+	 <9e4733910807281005y62dca90ar96f663908e644546@mail.gmail.com>
+	 <488DFD97.7080802@simon.arlott.org.uk>
+	 <9e4733910807281022v38d323c9sc7b63235824690f6@mail.gmail.com>
+	 <37219a840807281058j7d0de82fx76d7340b3bc3318f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Documentation/networking/udplite.txt b/Documentation/networking/udplite.txt
-index 3870f28..855d8da 100644
---- a/Documentation/networking/udplite.txt
-+++ b/Documentation/networking/udplite.txt
-@@ -148,7 +148,7 @@
-         getsockopt(sockfd, SOL_SOCKET, SO_NO_CHECK, &value, ...);
- 
-   is meaningless (as in TCP). Packets with a zero checksum field are
--  illegal (cf. RFC 3828, sec. 3.1) will be silently discarded.
-+  illegal (cf. RFC 3828, sec. 3.1) and will be silently discarded.
- 
-   4) Fragmentation
- 
-diff --git a/Makefile b/Makefile
-index febc946..dfc5a88 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 25
--EXTRAVERSION = .12
-+EXTRAVERSION = .13
- NAME = Funky Weasel is Jiggy wit it
- 
- # *DOCUMENTATION*
-diff --git a/drivers/net/hamradio/hdlcdrv.c b/drivers/net/hamradio/hdlcdrv.c
-index ae9629f..c258a05 100644
---- a/drivers/net/hamradio/hdlcdrv.c
-+++ b/drivers/net/hamradio/hdlcdrv.c
-@@ -88,6 +88,7 @@
- static inline void append_crc_ccitt(unsigned char *buffer, int len)
- {
-  	unsigned int crc = crc_ccitt(0xffff, buffer, len) ^ 0xffff;
-+	buffer += len;
- 	*buffer++ = crc;
- 	*buffer++ = crc >> 8;
- }
-diff --git a/drivers/net/pppoe.c b/drivers/net/pppoe.c
-index ac0ac98..6bc58dd 100644
---- a/drivers/net/pppoe.c
-+++ b/drivers/net/pppoe.c
-@@ -341,12 +341,6 @@ static int pppoe_rcv_core(struct sock *sk, struct sk_buff *skb)
- 	struct pppox_sock *relay_po;
- 
- 	if (sk->sk_state & PPPOX_BOUND) {
--		struct pppoe_hdr *ph = pppoe_hdr(skb);
--		int len = ntohs(ph->length);
--		skb_pull_rcsum(skb, sizeof(struct pppoe_hdr));
--		if (pskb_trim_rcsum(skb, len))
--			goto abort_kfree;
--
- 		ppp_input(&po->chan, skb);
- 	} else if (sk->sk_state & PPPOX_RELAY) {
- 		relay_po = get_item_by_addr(&po->pppoe_relay);
-@@ -357,7 +351,6 @@ static int pppoe_rcv_core(struct sock *sk, struct sk_buff *skb)
- 		if ((sk_pppox(relay_po)->sk_state & PPPOX_CONNECTED) == 0)
- 			goto abort_put;
- 
--		skb_pull(skb, sizeof(struct pppoe_hdr));
- 		if (!__pppoe_xmit(sk_pppox(relay_po), skb))
- 			goto abort_put;
- 	} else {
-@@ -388,6 +381,7 @@ static int pppoe_rcv(struct sk_buff *skb,
- {
- 	struct pppoe_hdr *ph;
- 	struct pppox_sock *po;
-+	int len;
- 
- 	if (!(skb = skb_share_check(skb, GFP_ATOMIC)))
- 		goto out;
-@@ -399,10 +393,21 @@ static int pppoe_rcv(struct sk_buff *skb,
- 		goto drop;
- 
- 	ph = pppoe_hdr(skb);
-+	len = ntohs(ph->length);
-+
-+	skb_pull_rcsum(skb, sizeof(*ph));
-+	if (skb->len < len)
-+		goto drop;
- 
- 	po = get_item(ph->sid, eth_hdr(skb)->h_source, dev->ifindex);
--	if (po != NULL)
--		return sk_receive_skb(sk_pppox(po), skb, 0);
-+	if (!po)
-+		goto drop;
-+
-+	if (pskb_trim_rcsum(skb, len))
-+		goto drop;
-+
-+	return sk_receive_skb(sk_pppox(po), skb, 0);
-+
- drop:
- 	kfree_skb(skb);
- out:
-@@ -427,12 +432,12 @@ static int pppoe_disc_rcv(struct sk_buff *skb,
- 	if (dev->nd_net != &init_net)
- 		goto abort;
- 
--	if (!pskb_may_pull(skb, sizeof(struct pppoe_hdr)))
--		goto abort;
--
- 	if (!(skb = skb_share_check(skb, GFP_ATOMIC)))
- 		goto out;
- 
-+	if (!pskb_may_pull(skb, sizeof(struct pppoe_hdr)))
-+		goto abort;
-+
- 	ph = pppoe_hdr(skb);
- 	if (ph->code != PADT_CODE)
- 		goto abort;
-@@ -937,12 +942,10 @@ static int pppoe_recvmsg(struct kiocb *iocb, struct socket *sock,
- 	m->msg_namelen = 0;
- 
- 	if (skb) {
--		struct pppoe_hdr *ph = pppoe_hdr(skb);
--		const int len = ntohs(ph->length);
--
--		error = memcpy_toiovec(m->msg_iov, (unsigned char *) &ph->tag[0], len);
-+		total_len = min_t(size_t, total_len, skb->len);
-+		error = skb_copy_datagram_iovec(skb, 0, m->msg_iov, total_len);
- 		if (error == 0)
--			error = len;
-+			error = total_len;
- 	}
- 
- 	kfree_skb(skb);
-diff --git a/drivers/net/pppol2tp.c b/drivers/net/pppol2tp.c
-index a629355..a3e1d22 100644
---- a/drivers/net/pppol2tp.c
-+++ b/drivers/net/pppol2tp.c
-@@ -783,14 +783,18 @@ static int pppol2tp_recvmsg(struct kiocb *iocb, struct socket *sock,
- 	err = 0;
- 	skb = skb_recv_datagram(sk, flags & ~MSG_DONTWAIT,
- 				flags & MSG_DONTWAIT, &err);
--	if (skb) {
--		err = memcpy_toiovec(msg->msg_iov, (unsigned char *) skb->data,
--				     skb->len);
--		if (err < 0)
--			goto do_skb_free;
--		err = skb->len;
--	}
--do_skb_free:
-+	if (!skb)
-+		goto end;
-+
-+	if (len > skb->len)
-+		len = skb->len;
-+	else if (len < skb->len)
-+		msg->msg_flags |= MSG_TRUNC;
-+
-+	err = skb_copy_datagram_iovec(skb, 0, msg->msg_iov, len);
-+	if (likely(err == 0))
-+		err = len;
-+
- 	kfree_skb(skb);
- end:
- 	return err;
-diff --git a/include/linux/ipv6.h b/include/linux/ipv6.h
-index 134c8e5..2584306 100644
---- a/include/linux/ipv6.h
-+++ b/include/linux/ipv6.h
-@@ -123,6 +123,7 @@ struct ipv6hdr {
- 	struct	in6_addr	daddr;
- };
- 
-+#ifdef __KERNEL__
- /*
-  * This structure contains configuration options per IPv6 link.
-  */
-@@ -162,6 +163,7 @@ struct ipv6_devconf {
- #endif
- 	void		*sysctl;
- };
-+#endif
- 
- /* index values for the variables in ipv6_devconf */
- enum {
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 2df44e7..6890264 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -20,6 +20,7 @@
- extern const char linux_banner[];
- extern const char linux_proc_banner[];
- 
-+#define USHORT_MAX	((u16)(~0U))
- #define INT_MAX		((int)(~0U>>1))
- #define INT_MIN		(-INT_MAX - 1)
- #define UINT_MAX	(~0U)
-diff --git a/net/ipv4/raw.c b/net/ipv4/raw.c
-index a3002fe..37801ae 100644
---- a/net/ipv4/raw.c
-+++ b/net/ipv4/raw.c
-@@ -936,7 +936,7 @@ static void raw_sock_seq_show(struct seq_file *seq, struct sock *sp, int i)
- 	      srcp  = inet->num;
- 
- 	seq_printf(seq, "%4d: %08X:%04X %08X:%04X"
--		" %02X %08X:%08X %02X:%08lX %08X %5d %8d %lu %d %p %d",
-+		" %02X %08X:%08X %02X:%08lX %08X %5d %8d %lu %d %p %d\n",
- 		i, src, srcp, dest, destp, sp->sk_state,
- 		atomic_read(&sp->sk_wmem_alloc),
- 		atomic_read(&sp->sk_rmem_alloc),
-diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
-index 1704c14..9703c87 100644
---- a/net/ipv4/udp.c
-+++ b/net/ipv4/udp.c
-@@ -1325,6 +1325,8 @@ int udp_lib_setsockopt(struct sock *sk, int level, int optname,
- 			return -ENOPROTOOPT;
- 		if (val != 0 && val < 8) /* Illegal coverage: use default (8) */
- 			val = 8;
-+		else if (val > USHORT_MAX)
-+			val = USHORT_MAX;
- 		up->pcslen = val;
- 		up->pcflag |= UDPLITE_SEND_CC;
- 		break;
-@@ -1337,6 +1339,8 @@ int udp_lib_setsockopt(struct sock *sk, int level, int optname,
- 			return -ENOPROTOOPT;
- 		if (val != 0 && val < 8) /* Avoid silly minimal values.       */
- 			val = 8;
-+		else if (val > USHORT_MAX)
-+			val = USHORT_MAX;
- 		up->pcrlen = val;
- 		up->pcflag |= UDPLITE_RECV_CC;
- 		break;
-diff --git a/net/ipv4/xfrm4_mode_tunnel.c b/net/ipv4/xfrm4_mode_tunnel.c
-index 584e6d7..7135279 100644
---- a/net/ipv4/xfrm4_mode_tunnel.c
-+++ b/net/ipv4/xfrm4_mode_tunnel.c
-@@ -52,7 +52,7 @@ static int xfrm4_mode_tunnel_output(struct xfrm_state *x, struct sk_buff *skb)
- 		IP_ECN_clear(top_iph);
- 
- 	top_iph->frag_off = (flags & XFRM_STATE_NOPMTUDISC) ?
--			    0 : XFRM_MODE_SKB_CB(skb)->frag_off;
-+		0 : (XFRM_MODE_SKB_CB(skb)->frag_off & htons(IP_DF));
- 	ip_select_ident(top_iph, dst->child, NULL);
- 
- 	top_iph->ttl = dst_metric(dst->child, RTAX_HOPLIMIT);
-diff --git a/net/ipv6/ip6_fib.c b/net/ipv6/ip6_fib.c
-index bab72b6..dee7fea 100644
---- a/net/ipv6/ip6_fib.c
-+++ b/net/ipv6/ip6_fib.c
-@@ -679,7 +679,7 @@ static int fib6_add_rt2node(struct fib6_node *fn, struct rt6_info *rt,
- 
- static __inline__ void fib6_start_gc(struct rt6_info *rt)
- {
--	if (ip6_fib_timer.expires == 0 &&
-+	if (!timer_pending(&ip6_fib_timer) &&
- 	    (rt->rt6i_flags & (RTF_EXPIRES|RTF_CACHE)))
- 		mod_timer(&ip6_fib_timer, jiffies +
- 			  init_net.ipv6.sysctl.ip6_rt_gc_interval);
-@@ -687,7 +687,7 @@ static __inline__ void fib6_start_gc(struct rt6_info *rt)
- 
- void fib6_force_start_gc(void)
- {
--	if (ip6_fib_timer.expires == 0)
-+	if (!timer_pending(&ip6_fib_timer))
- 		mod_timer(&ip6_fib_timer, jiffies +
- 			  init_net.ipv6.sysctl.ip6_rt_gc_interval);
- }
+On 7/28/08, Michael Krufky <mkrufky@linuxtv.org> wrote:
+> On Mon, Jul 28, 2008 at 1:22 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+>  > On 7/28/08, Simon Arlott <simon@fire.lp0.eu> wrote:
+>
+> > A later version of this list could separate the valid current
+>  > names/addresses from the entries that are fixing typos or that have
+>  > old emails. That would improve the validation. But I don't have an
+>  > automated way to tell me which alias is the current one. Access to the
+>  > current LKML subscriber list would supply the needed info as to which
+>  > one to pick.
+>
+>
+> Please dont use LKML subscriptions as the authority of one's preferred
+>  email address.
+
+I was only going to use it to help decide which alias was the right
+alias, not to generate new entries. In your case it wouldn't help.
+
+>
+>  I, for instance, am *only* subscribed to LKML using my gmail account.
+>  I prefer that nobody ever email my gmail account directly -- I use my
+>  gmail account as a filter -- gmail filters my mails and fwd's specific
+>  mails to my other specific email addresses -- I rarely read gmail
+>  directly, and I am unlikely to ever read an email addressed to my
+>  gmail box.
+>
+>  I favor my "at linuxtv dot org" account for my kernel work, and I hope
+>  that is the email that shows up as primary for me (I would only guess
+>  that I have one or two aliases in this .mailmap file.)
+
+You have used four aliases: krufky, infradead, linuxtv, m1k.
+
+>
+>  Regards,
+>
+>  Mike
+>
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
