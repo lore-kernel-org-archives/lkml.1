@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759880AbYG1Vj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759761AbYG1Vlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759880AbYG1Vj0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 17:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755661AbYG1VjQ
+	id S1759761AbYG1Vlb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 17:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbYG1VlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 17:39:16 -0400
-Received: from namei.org ([69.55.235.186]:35798 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753780AbYG1VjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 17:39:14 -0400
-Date: Tue, 29 Jul 2008 07:38:17 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Stephen Smalley <sds@tycho.nsa.gov>
-cc: Al Viro <viro@ZenIV.linux.org.uk>, Thomas Meyer <thomas@m3y3r.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Paris <eparis@parisplace.org>,
-       linux-security-module@vger.kernel.org
-Subject: Re: BUG at security/selinux/avc.c:883 (was: Re: linux-next: Tree
- for July 17: early crash on x86-64)
-In-Reply-To: <1217266358.20373.54.camel@moss-spartans.epoch.ncsc.mil>
-Message-ID: <Xine.LNX.4.64.0807290736440.30242@us.intercode.com.au>
-References: <20080718012842.690b8346.sfr@canb.auug.org.au> 
- <a4423d670807180652y352e66lfe04d2b33d2ed176@mail.gmail.com> 
- <20080719035231.GU28946@ZenIV.linux.org.uk>  <200807192042.06988.rjw@sisk.pl>
-  <Xine.LNX.4.64.0807200553380.22632@us.intercode.com.au> 
- <1216546973.3217.6.camel@dhcppc2>  <20080720121559.GV28946@ZenIV.linux.org.uk>
- <1217266358.20373.54.camel@moss-spartans.epoch.ncsc.mil>
+	Mon, 28 Jul 2008 17:41:24 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:47877 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754145AbYG1VlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 17:41:23 -0400
+Date: Tue, 29 Jul 2008 00:40:39 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: sh se7750_defconfig compile error
+Message-ID: <20080728214039.GE7713@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008, Stephen Smalley wrote:
+Commit ffb91ad2751723bcc9925cd38e37013e2169e256
+(sh: Solution Enginge 7710/7712 SH-Ether support)
+causes the following compile error with se7750_defconfig:
 
-> SELinux needs MAY_APPEND to be passed down to the security hook.
-> Otherwise, we get permission denials when only append permission is
-> granted by policy even if the opening process specified O_APPEND.
-> Shows up as a regression in the ltp selinux testsuite, fixed by
-> this patch.
-> 
-> Signed-off-by:  Stephen Smalley <sds@tycho.nsa.gov>
+<--  snip  -->
 
-Applied to  
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#hotfixes
+...
+  CC      arch/sh/boards/se/770x/setup.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/boards/se/770x/setup.c:134: error: 'PHY_ID' undeclared here (not in a function)
+make[2]: *** [arch/sh/boards/se/770x/setup.o] Error 1
 
+<--  snip  -->
 
-Al, holler if you want to push this through your tree.
+The patch did:
+#if defined(CONFIG_CPU_SUBTYPE_SH7710)
+# define PHY_ID 0x00
+#elif defined(CONFIG_CPU_SUBTYPE_SH7712)
+# define PHY_ID 0x01
+#endif
 
+But in this case we have CONFIG_CPU_SUBTYPE_SH7750.
 
----
+cu
+Adrian
 
- fs/namei.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/fs/namei.c b/fs/namei.c
-index a7b0a0b..b91e973 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -274,7 +274,7 @@ int inode_permission(struct inode *inode, int mask)
-                return retval;
- 
-        return security_inode_permission(inode,
--                       mask & (MAY_READ|MAY_WRITE|MAY_EXEC));
-+                       mask & (MAY_READ|MAY_WRITE|MAY_EXEC|MAY_APPEND));
- }
- 
- /**
-
-
-
-- James
 -- 
-James Morris
-<jmorris@namei.org>
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
