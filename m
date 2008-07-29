@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649AbYG2Gli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbYG2Gpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756649AbYG2Gli (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 02:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbYG2Gl3
+	id S1755339AbYG2Gpn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 02:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYG2Gpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 02:41:29 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:45595 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753259AbYG2Gl2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 02:41:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=lnSxe/BCVUldQsmp/NVV8Zc4TdQyDRjTs3N3GvlkxIy5nK/qUoxZJ4TnROMKJSBpUK
-         cEdGxHt2HyufqxvBidaXRfUDsYMvuGlj+uh4mdxi4jThmD9AQoTvKV51gUOka197ZHkM
-         4o5HSGo6mazYqmnIdsfPz2HcrRNwjGvK1rBCQ=
-Message-ID: <86802c440807282341g65c90f10gbdcf72beecdd0852@mail.gmail.com>
-Date: Mon, 28 Jul 2008 23:41:27 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 0/5] x86 cleanup: convert round_up() to roundup()
-Cc: "Joerg Roedel" <joerg.roedel@amd.com>, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20080726133932.GB4401@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1216997339-31427-1-git-send-email-joerg.roedel@amd.com>
-	 <20080726133932.GB4401@elte.hu>
+	Tue, 29 Jul 2008 02:45:34 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36701 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750950AbYG2Gpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 02:45:33 -0400
+Date: Tue, 29 Jul 2008 16:45:23 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, joerg.roedel@amd.com,
+       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       robert.richter@amd.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, jbarnes@virtuousgeek.org,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] add iommu_num_pages helper function
+Message-Id: <20080729164523.bfd2d539.sfr@canb.auug.org.au>
+In-Reply-To: <20080728.222439.176200666.davem@davemloft.net>
+References: <20080729110749.728c54e6.sfr@canb.auug.org.au>
+	<20080729104722H.fujita.tomonori@lab.ntt.co.jp>
+	<20080729135652.f89042c1.sfr@canb.auug.org.au>
+	<20080728.222439.176200666.davem@davemloft.net>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__29_Jul_2008_16_45_23_+1000_a7Xt8ibxpn.b8CVb"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 26, 2008 at 6:39 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Joerg Roedel <joerg.roedel@amd.com> wrote:
->
->> The x86 architecture declares its own round_up macro. But there is a
->> generic one in <linux/kernel.h> which can also be used. This patchset
->> replaces the x86 round_up() macro with the generic roundup() one where
->> possible. The patches have been compile-tested for 32 and 64 bit and
->> boot-tested for 64 bit. If we can fix the other places too we can get
->> rid of the x86 specific round_up() in the future.
->
-> applied to tip/x86/cleanups - thanks Joerg!
->
-these patches looks like some backward, aka wrong direction.
+--Signature=_Tue__29_Jul_2008_16_45_23_+1000_a7Xt8ibxpn.b8CVb
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+Hi Dave,
 
-#define round_up(x, y) (((x) + (y) - 1) & ~((y) - 1))
-#define round_down(x, y) ((x) & ~((y) - 1))
+On Mon, 28 Jul 2008 22:24:39 -0700 (PDT) David Miller <davem@davemloft.net>=
+ wrote:
+>
+> sparc64: Fix build after addition of iommu_num_pages() helper.
 
-round_up looks more efficient.
+I added this to the end of linux-next for today.  Hopefully we will have
+a fix in Linus' tree tomorrow.
 
-YH
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__29_Jul_2008_16_45_23_+1000_a7Xt8ibxpn.b8CVb
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiOvIMACgkQjjKRsyhoI8w/zgCfdvD9BKiJ+kEvVYQ1hPrVJflt
+2MsAn1Xd2KkdYOvD6xXmteHOsh7Qli3K
+=RoIi
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__29_Jul_2008_16_45_23_+1000_a7Xt8ibxpn.b8CVb--
