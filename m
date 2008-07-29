@@ -1,102 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbYG2Sx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbYG2SzE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbYG2Sx2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 14:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYG2SxS
+	id S1753210AbYG2SzE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 14:55:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbYG2Syu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 14:53:18 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:37568 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750986AbYG2SxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 14:53:17 -0400
-Date: Tue, 29 Jul 2008 13:53:15 -0500
-From: Robin Holt <holt@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: GRU driver feedback
-Message-ID: <20080729185315.GA14260@sgi.com>
-References: <20080723141229.GB13247@wotan.suse.de> <20080728173605.GB28480@sgi.com> <200807291200.09907.nickpiggin@yahoo.com.au>
+	Tue, 29 Jul 2008 14:54:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39468 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750712AbYG2Sys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 14:54:48 -0400
+Message-ID: <488F6758.8080907@redhat.com>
+Date: Tue, 29 Jul 2008 14:54:16 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+Reply-To: rwheeler@redhat.com
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807291200.09907.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jim Meyering <jim@meyering.net>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Matt Domsch <Matt_Domsch@Dell.com>
+Subject: Re: tools support for non-512 byte sector sizes
+References: <488F524F.6020905@redhat.com>	<20080729182611.GB24924@parisc-linux.org>	<1217356645.6103.48.camel@localhost.localdomain> <yq13alsr0g0.fsf@sermon.lab.mkp.net>
+In-Reply-To: <yq13alsr0g0.fsf@sermon.lab.mkp.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 12:00:09PM +1000, Nick Piggin wrote:
-> On Tuesday 29 July 2008 03:36, Jack Steiner wrote:
-> > I appreciate the thorough review. The GRU is a complicated device. I
-> > tried to provide comments in the code but I know it is still difficult
-> > to understand.
-> >
-> > You appear to have a pretty good idea of how it works. I've added a
-> > few new comments to the code to make it clearer in a few cases.
-> 
-> Hi Jack,
-> 
-> Thanks very much for your thorough comments in return. I will take longer
-> to digest them, but quick reply now because you're probably rushing to
-> get things merged... So I think you've resolved all my concerns except one.
-> 
-> 
-> > > - GRU driver -- gru_intr finds mm to fault pages from, does an "atomic
-> > > pte lookup" which looks up the pte atomically using similar lockless
-> > > pagetable walk from get_user_pages_fast. This only works because it can
-> > > guarantee page table existence by disabling interrupts on the CPU where
-> > > mm is currently running.  It looks like atomic pte lookup can be run on
-> > > mms which are not presently running on the local CPU. This would have
-> > > been noticed if it had been using a specialised function in
-> > > arch/*/mm/gup.c, because it would not have provided an mm_struct
-> > > parameter ;)
-> >
-> > Existence of the mm is guaranteed thru an indirect path. The  mm
-> > struct cannot go away until the GRU context that caused the interrupt
-> > is unloaded.  When the GRU hardware sends an interrupt, it locks the
-> > context & prevents it from being unloaded until the interrupt is
-> > serviced.  If the atomic pte is successful, the subsequent TLB dropin
-> > will unlock the context to allow it to be unloaded. The mm can't go
-> > away until the context is unloaded.
-> 
-> It is not existence of the mm that I am worried about, but existence
-> of the page tables. get_user_pages_fast works the way it does on x86
-> because x86's pagetable shootdown and TLB flushing requires that an
-> IPI be sent to all running threads of a process before page tables
-> are freed. So if `current` is one such thread, and wants to do a page
-> table walk of its own mm, then it can guarantee page table existence
-> by turning off interrupts (and so blocking the IPI).
-> 
-> This will not work if you are trying to walk down somebody else's
-> page tables because there is nothing to say the processor you are
-> running on will get an IPI. This is why get_user_pages_fast can not
-> work if task != current or mm != current->mm.
-> 
-> So I think there is still a problem.
+Martin K. Petersen wrote:
+>>>>>> "James" == James Bottomley <James.Bottomley@HansenPartnership.com> writes:
+>>>>>>             
+>
+> James> The problem, which ata_ram also suffers, is that the tools we
+> James> most need to test are the ones for manipulating non volatile
+> James> characteristics (like partition tables).  We'd really like the
+> James> disk contents to survive reboot for this ...
+>
+> Yeah, I should add that I wanted persistence too.  I went through a
+> whole stack (well, 5-6 or so) fibre channel drives from various
+> vendors and attempted to low-level format them to 4KB sectors.  Most
+> of them laughed in my face.  One of them tried to comply and
+> irreparably confused its firmware in the process.
+>
+> Just yesterday I received a couple of prototype drives in the mail.
+> I'll ask the vendor whether they support 4KB and if so I'll give them
+> a whirl.
+>   
+Isn't this a great use case for a SCSI target device where our target 
+can be a software disk on a remote host? What is missing for us to put 
+something like that together?
 
-I reserve the right to be wrong, but I think this is covered.
+ric
 
-First, let me be clear about what I gathered your concern is.  I assume
-you are addressing the case of page tables being torn down.
-
-In the case where unmap_region is clearing page tables, the caller to
-unmap_region is expected to be holding the mmap_sem writably.  Jacks fault
-handler will immediately return when it fails on the down_read_trylock().
-
-In the exit_mmap case, the sequence is mmu_notifier_release(), ... some
-other stuff ..., free_pgtables().  Here is where special hardware
-comes into play again.  The mmu_notifier_release() callout to the GRU
-will result in all of the GRU contexts for this MM to be torn down.
-That process will free the actual hardware's context.  The hardware-free
-portion of the hardware will not complete until all NUMA traffic
-associated with this context are finished and all fault interrupts have
-been either ack'd or terminated (last part of the interrupt handler).
-
-I am sorry for the rushed explanation.  I hope my understanding of your
-concern is correct and my explanation is clear.
-
-Thanks,
-Robin
