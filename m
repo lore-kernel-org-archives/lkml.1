@@ -1,175 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbYG2FvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbYG2F4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757362AbYG2FvH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 01:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbYG2FtB
+	id S1756096AbYG2F4h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 01:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbYG2F41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 01:49:01 -0400
-Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:55505 "EHLO
-	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755260AbYG2Fs7 (ORCPT
+	Tue, 29 Jul 2008 01:56:27 -0400
+Received: from ik-out-1112.google.com ([66.249.90.178]:2214 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753912AbYG2F40 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 01:48:59 -0400
-From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
+	Tue, 29 Jul 2008 01:56:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=NWBeV2FADa7+x/nf3FcVQld2XgpjirbnAy979yOGCs3BwSnIgCNpnHchIRZSwLVu5y
+         DFKWm9KRxaX0QDcWMD2OP/q2/zbfinZXTFm4YbCy/mfAA9xfOhFdk6252T4nVmB2quOZ
+         Cghi0jTbk1ZMEaM3OVQjsyp9IjtFGmVZIFdz4=
+Date: Tue, 29 Jul 2008 13:57:31 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu
-Subject: [PATCH 6/6] x86: coding style fixes to arch/x86/kernel/sys_x86_64.c
-Date: Tue, 29 Jul 2008 02:48:56 -0300
-Message-Id: <1217310536-7181-7-git-send-email-gustavo@las.ic.unicamp.br>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217310536-7181-6-git-send-email-gustavo@las.ic.unicamp.br>
-References: <gustavo@las.ic.unicamp.br>
- <1217310536-7181-1-git-send-email-gustavo@las.ic.unicamp.br>
- <1217310536-7181-2-git-send-email-gustavo@las.ic.unicamp.br>
- <1217310536-7181-3-git-send-email-gustavo@las.ic.unicamp.br>
- <1217310536-7181-4-git-send-email-gustavo@las.ic.unicamp.br>
- <1217310536-7181-5-git-send-email-gustavo@las.ic.unicamp.br>
- <1217310536-7181-6-git-send-email-gustavo@las.ic.unicamp.br>
+Cc: linux-wireless@vger.kernel.org
+Subject: [BUG] wireless : cpu stuck for 61s
+Message-ID: <20080729055731.GA3265@darkstar>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix all errors and many warnings reported by checkpatch.pl
-without change sys_x86_64.o
+While set my wlan0 to ad-hoc mode and then set the essid to something,
+this bug triggered.
 
-arch/x86/kernel/sys_x86_64.o:
-text    data     bss     dec     hex filename
-1567       0       0    1567     61f sys_x86_64.o.after
-1567       0       0    1567     61f sys_x86_64.o.before
-md5:
-de28ffedcb5851dfd7ec87a03afec1fd  sys_x86_64.o.after
-de28ffedcb5851dfd7ec87a03afec1fd  sys_x86_64.o.before
+I suspect it's related to debugfs or mutex? But I'm not sure.
 
-Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
----
- arch/x86/kernel/sys_x86_64.c |   43 +++++++++++++++++++++--------------------
- 1 files changed, 22 insertions(+), 21 deletions(-)
-
-diff --git a/arch/x86/kernel/sys_x86_64.c b/arch/x86/kernel/sys_x86_64.c
-index 3b360ef..56eb8f9 100644
---- a/arch/x86/kernel/sys_x86_64.c
-+++ b/arch/x86/kernel/sys_x86_64.c
-@@ -13,15 +13,16 @@
- #include <linux/utsname.h>
- #include <linux/personality.h>
- #include <linux/random.h>
-+#include <linux/uaccess.h>
- 
--#include <asm/uaccess.h>
- #include <asm/ia32.h>
- 
--asmlinkage long sys_mmap(unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags,
--	unsigned long fd, unsigned long off)
-+asmlinkage long sys_mmap(unsigned long addr, unsigned long len,
-+		unsigned long prot, unsigned long flags,
-+		unsigned long fd, unsigned long off)
- {
- 	long error;
--	struct file * file;
-+	struct file *file;
- 
- 	error = -EINVAL;
- 	if (off & ~PAGE_MASK)
-@@ -56,9 +57,9 @@ static void find_start_end(unsigned long flags, unsigned long *begin,
- 		   unmapped base down for this case. This can give
- 		   conflicts with the heap, but we assume that glibc
- 		   malloc knows how to fall back to mmap. Give it 1GB
--		   of playground for now. -AK */ 
--		*begin = 0x40000000; 
--		*end = 0x80000000;		
-+		   of playground for now. -AK */
-+		*begin = 0x40000000;
-+		*end = 0x80000000;
- 		if (current->flags & PF_RANDOMIZE) {
- 			new_begin = randomize_range(*begin, *begin + 0x02000000, 0);
- 			if (new_begin)
-@@ -66,9 +67,9 @@ static void find_start_end(unsigned long flags, unsigned long *begin,
- 		}
- 	} else {
- 		*begin = TASK_UNMAPPED_BASE;
--		*end = TASK_SIZE; 
-+		*end = TASK_SIZE;
- 	}
--} 
-+}
- 
- unsigned long
- arch_get_unmapped_area(struct file *filp, unsigned long addr,
-@@ -78,11 +79,11 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	struct vm_area_struct *vma;
- 	unsigned long start_addr;
- 	unsigned long begin, end;
--	
-+
- 	if (flags & MAP_FIXED)
- 		return addr;
- 
--	find_start_end(flags, &begin, &end); 
-+	find_start_end(flags, &begin, &end);
- 
- 	if (len > end)
- 		return -ENOMEM;
-@@ -96,12 +97,12 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	}
- 	if (((flags & MAP_32BIT) || test_thread_flag(TIF_IA32))
- 	    && len <= mm->cached_hole_size) {
--	        mm->cached_hole_size = 0;
-+		mm->cached_hole_size = 0;
- 		mm->free_area_cache = begin;
- 	}
- 	addr = mm->free_area_cache;
--	if (addr < begin) 
--		addr = begin; 
-+	if (addr < begin)
-+		addr = begin;
- 	start_addr = addr;
- 
- full_search:
-@@ -127,7 +128,7 @@ full_search:
- 			return addr;
- 		}
- 		if (addr + mm->cached_hole_size < vma->vm_start)
--		        mm->cached_hole_size = vma->vm_start - addr;
-+			mm->cached_hole_size = vma->vm_start - addr;
- 
- 		addr = vma->vm_end;
- 	}
-@@ -177,7 +178,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
- 		vma = find_vma(mm, addr-len);
- 		if (!vma || addr <= vma->vm_start)
- 			/* remember the address as a hint for next time */
--			return (mm->free_area_cache = addr-len);
-+			return mm->free_area_cache = addr-len;
- 	}
- 
- 	if (mm->mmap_base < len)
-@@ -194,7 +195,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
- 		vma = find_vma(mm, addr);
- 		if (!vma || addr+len <= vma->vm_start)
- 			/* remember the address as a hint for next time */
--			return (mm->free_area_cache = addr);
-+			return mm->free_area_cache = addr;
- 
- 		/* remember the largest hole we saw so far */
- 		if (addr + mm->cached_hole_size < vma->vm_start)
-@@ -224,13 +225,13 @@ bottomup:
- }
- 
- 
--asmlinkage long sys_uname(struct new_utsname __user * name)
-+asmlinkage long sys_uname(struct new_utsname __user *name)
- {
- 	int err;
- 	down_read(&uts_sem);
--	err = copy_to_user(name, utsname(), sizeof (*name));
-+	err = copy_to_user(name, utsname(), sizeof(*name));
- 	up_read(&uts_sem);
--	if (personality(current->personality) == PER_LINUX32) 
--		err |= copy_to_user(&name->machine, "i686", 5); 		
-+	if (personality(current->personality) == PER_LINUX32)
-+		err |= copy_to_user(&name->machine, "i686", 5);
- 	return err ? -EFAULT : 0;
- }
--- 
-1.5.4.5
-
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493] BUG: soft lockup - CPU#0 stuck for 61s! [events/0:9]
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493] Modules linked in: radeonfb fb_ddc i2c_algo_bit snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss rfcomm l2cap bluetooth vfat fuse rtc_cmos rtc_core psmouse intel_agp pl2303 rtc_lib ath5k e100 i2c_i801 serio_raw usbserial agpgart 3c59x mii snd_hda_intel snd_pcm mac80211 snd_timer snd_page_alloc cfg80211 snd_hwdep snd soundcore thermal processor button thermal_sys evdev sg
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493] 
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493] Pid: 9, comm: events/0 Tainted: G        W (2.6.26-smp #3)
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493] EIP: 0060:[<c0450bc3>] EFLAGS: 00000246 CPU: 0
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493] EIP is at mutex_lock_nested+0x1b3/0x280
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493] EAX: 00000000 EBX: f7bf5284 ECX: f7c7e000 EDX: f7bf52a8
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493] ESI: f7bf5288 EDI: 00000246 EBP: f7c7fedc ESP: f7c7fe9c
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493] CR0: 8005003b CR2: b800c5ac CR3: 36e71000 CR4: 000006d0
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493] DR6: ffff0ff0 DR7: 00000400
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<c02375a6>] ? debugfs_create_file+0x46/0x210
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<c02375a6>] ? debugfs_create_file+0x46/0x210
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<c02375a6>] debugfs_create_file+0x46/0x210
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<c02377f1>] debugfs_create_dir+0x21/0x30
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<f8901f6d>] ieee80211_sta_debugfs_add+0x2d/0x150 [mac80211]
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<f88eba89>] sta_info_debugfs_add_work+0x89/0x130 [mac80211]
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<f890a170>] ? rate_control_pid_add_sta_debugfs+0x0/0x30 [mac80211]
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<c01394c6>] run_workqueue+0x156/0x1d0
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<c0139472>] ? run_workqueue+0x102/0x1d0
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<f88eba00>] ? sta_info_debugfs_add_work+0x0/0x130 [mac80211]
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<c0139f18>] worker_thread+0x88/0xe0
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<c013cd20>] ? autoremove_wake_function+0x0/0x40
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<c0139e90>] ? worker_thread+0x0/0xe0
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<c013ca32>] kthread+0x42/0x70
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<c013c9f0>] ? kthread+0x0/0x70
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  [<c0104993>] kernel_thread_helper+0x7/0x14
+Jul 29 13:01:46 darkstar kernel: [ 8033.736493]  =======================
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898] BUG: soft lockup - CPU#0 stuck for 61s! [events/0:9]
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898] Modules linked in: radeonfb fb_ddc i2c_algo_bit snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss rfcomm l2cap bluetooth vfat fuse rtc_cmos rtc_core psmouse intel_agp pl2303 rtc_lib ath5k e100 i2c_i801 serio_raw usbserial agpgart 3c59x mii snd_hda_intel snd_pcm mac80211 snd_timer snd_page_alloc cfg80211 snd_hwdep snd soundcore thermal processor button thermal_sys evdev sg
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898] 
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898] Pid: 9, comm: events/0 Tainted: G        W (2.6.26-smp #3)
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898] EIP: 0060:[<c0450bc3>] EFLAGS: 00000246 CPU: 0
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898] EIP is at mutex_lock_nested+0x1b3/0x280
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898] EAX: 00000000 EBX: f7bf5284 ECX: f7c7e000 EDX: f7bf52a8
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898] ESI: f7bf5288 EDI: 00000246 EBP: f7c7fedc ESP: f7c7fe9c
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898] CR0: 8005003b CR2: b800c5ac CR3: 36e71000 CR4: 000006d0
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898] DR6: ffff0ff0 DR7: 00000400
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<c02375a6>] ? debugfs_create_file+0x46/0x210
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<c02375a6>] ? debugfs_create_file+0x46/0x210
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<c02375a6>] debugfs_create_file+0x46/0x210
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<c02377f1>] debugfs_create_dir+0x21/0x30
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<f8901f6d>] ieee80211_sta_debugfs_add+0x2d/0x150 [mac80211]
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<f88eba89>] sta_info_debugfs_add_work+0x89/0x130 [mac80211]
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<f890a170>] ? rate_control_pid_add_sta_debugfs+0x0/0x30 [mac80211]
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<c01394c6>] run_workqueue+0x156/0x1d0
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<c0139472>] ? run_workqueue+0x102/0x1d0
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<f88eba00>] ? sta_info_debugfs_add_work+0x0/0x130 [mac80211]
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<c0139f18>] worker_thread+0x88/0xe0
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<c013cd20>] ? autoremove_wake_function+0x0/0x40
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<c0139e90>] ? worker_thread+0x0/0xe0
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<c013ca32>] kthread+0x42/0x70
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<c013c9f0>] ? kthread+0x0/0x70
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  [<c0104993>] kernel_thread_helper+0x7/0x14
+Jul 29 13:02:51 darkstar kernel: [ 8099.234898]  =======================
