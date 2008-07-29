@@ -1,43 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbYG2N7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759374AbYG2N7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759208AbYG2N7W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 09:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbYG2N7M
+	id S1759374AbYG2N7j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 09:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757988AbYG2N73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 09:59:12 -0400
-Received: from casper.infradead.org ([85.118.1.10]:41598 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754977AbYG2N7L (ORCPT
+	Tue, 29 Jul 2008 09:59:29 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:38094 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755299AbYG2N72 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 09:59:11 -0400
-Date: Tue, 29 Jul 2008 06:58:59 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Komuro <komurojun-mbn@nifty.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: NETDEV WATCHDOG: wifi0: transmit timed out
-Message-ID: <20080729065859.2bcc65ed@infradead.org>
-In-Reply-To: <20080729215315.5a505fe7.komurojun-mbn@nifty.com>
-References: <20080525112308.03a5fda7.komurojun-mbn@nifty.com>
-	<20080729215315.5a505fe7.komurojun-mbn@nifty.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 29 Jul 2008 09:59:28 -0400
+Date: Tue, 29 Jul 2008 09:59:26 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Alexander Beregalov <a.beregalov@gmail.com>
+cc: gregkh@suse.de, <linux-usb@vger.kernel.org>,
+       <kernel-janitors@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] usb/core/driver: fix warning
+In-Reply-To: <20080729015431.GA28952@orion>
+Message-ID: <Pine.LNX.4.44L0.0807290959010.2518-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jul 2008 21:53:15 +0900
-Komuro <komurojun-mbn@nifty.com> wrote:
+On Tue, 29 Jul 2008, Alexander Beregalov wrote:
 
-> Hi,
+> From: Alexander Beregalov <a.beregalov@gmail.com>
 > 
-> Please try to comment out the "WARN_ON_ONCE"
-> at net/sched/sched_generic.c.
+> usb/core/driver: fix warning:
+> drivers/usb/core/driver.c:834: warning: 'do_unbind_rebind' defined but not used
 > 
+> 
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 
-"I have a hardware failure so I'll comment out the message that says
-so, and then I won't have a failure". Yeah that'll work well.
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
+
