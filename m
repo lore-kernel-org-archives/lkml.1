@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbYG2GBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757126AbYG2GCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755661AbYG2GBq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 02:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYG2GBg
+	id S1757126AbYG2GCc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 02:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbYG2GBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 02:01:36 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:29879 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751639AbYG2GBf (ORCPT
+	Tue, 29 Jul 2008 02:01:52 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:5661 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755047AbYG2GBm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 02:01:35 -0400
+	Tue, 29 Jul 2008 02:01:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=xyf78kSBTZhHe0gsMBUOwoM/rxFlxchicMKaiaVQSYM2M3foV8OKY4tYlTdzsMyfqH
-         Peq/Od57gllrAtNDf2/4tLUQlpuQwt5lJaovd7S9I7xTxM1ukGBvEICWd0trP6omrGrU
-         5RCqogiGCZTGykdQsEXUAPb3SdZZvH7/zPf10=
-Subject: [PATCH 1/8] blackfin: replace __FUNCTION__ with __func__
+        b=lq/DJcZKIpLBKTQ1mSZByMTR3BK4NZCtfp2nSZDMhKLOYtB6SDQbqrUCQ58oi9PbLA
+         IJekKkO8QemgKhk5Vs5zq9v5wG+o9ZOrY/LQwwNMonnPXTaSRP+WCPQH2jSizKO07qHj
+         8Qq0bdqGAesxbmpT9hafHgmc0U868US51UvXI=
+Subject: [PATCH 3/8] wireless: replace __FUNCTION__ with __func__
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+To: John Linville <linville@tuxdriver.com>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Mon, 28 Jul 2008 23:01:33 -0700
-Message-Id: <1217311293.23389.24.camel@brick>
+Date: Mon, 28 Jul 2008 23:01:34 -0700
+Message-Id: <1217311294.23389.26.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -37,294 +38,328 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/serial/bfin_sport_uart.c |   60 +++++++++++++++++++-------------------
- drivers/video/bfin-t350mcqb-fb.c |    6 ++--
- 2 files changed, 33 insertions(+), 33 deletions(-)
+ drivers/net/wireless/airo.c                   |   16 ++++++++--------
+ drivers/net/wireless/hermes.c                 |    2 +-
+ drivers/net/wireless/ipw2100.c                |    2 +-
+ drivers/net/wireless/ipw2200.h                |    4 ++--
+ drivers/net/wireless/iwlwifi/iwl-3945-debug.h |    4 ++--
+ drivers/net/wireless/iwlwifi/iwl-debug.h      |    4 ++--
+ drivers/net/wireless/iwlwifi/iwl3945-base.c   |    4 ++--
+ drivers/net/wireless/iwlwifi/iwl4965-base.c   |    4 ++--
+ drivers/net/wireless/libertas/if_cs.c         |    2 +-
+ drivers/net/wireless/prism54/isl_ioctl.c      |    8 ++++----
+ drivers/net/wireless/rt2x00/rt2x00.h          |    4 ++--
+ drivers/net/wireless/wl3501_cs.c              |    8 ++++----
+ 12 files changed, 31 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/serial/bfin_sport_uart.c b/drivers/serial/bfin_sport_uart.c
-index dd8564d..529c0ff 100644
---- a/drivers/serial/bfin_sport_uart.c
-+++ b/drivers/serial/bfin_sport_uart.c
-@@ -99,7 +99,7 @@ static void sport_stop_tx(struct uart_port *port);
+diff --git a/drivers/net/wireless/airo.c b/drivers/net/wireless/airo.c
+index b5cd850..ae58a12 100644
+--- a/drivers/net/wireless/airo.c
++++ b/drivers/net/wireless/airo.c
+@@ -1915,7 +1915,7 @@ static int mpi_start_xmit(struct sk_buff *skb, struct net_device *dev) {
+ 	struct airo_info *ai = dev->priv;
  
- static inline void tx_one_byte(struct sport_uart_port *up, unsigned int value)
- {
--	pr_debug("%s value:%x\n", __FUNCTION__, value);
-+	pr_debug("%s value:%x\n", __func__, value);
- 	/* Place a Start and Stop bit */
- 	__asm__ volatile (
- 		"R2 = b#01111111100;\n\t"
-@@ -110,7 +110,7 @@ static inline void tx_one_byte(struct sport_uart_port *up, unsigned int value)
- 		:"=r"(value)
- 		:"0"(value)
- 		:"R2", "R3");
--	pr_debug("%s value:%x\n", __FUNCTION__, value);
-+	pr_debug("%s value:%x\n", __func__, value);
- 
- 	SPORT_PUT_TX(up, value);
- }
-@@ -120,7 +120,7 @@ static inline unsigned int rx_one_byte(struct sport_uart_port *up)
- 	unsigned int value, extract;
- 
- 	value = SPORT_GET_RX32(up);
--	pr_debug("%s value:%x\n", __FUNCTION__, value);
-+	pr_debug("%s value:%x\n", __func__, value);
- 
- 	/* Extract 8 bits data */
- 	__asm__ volatile (
-@@ -151,12 +151,12 @@ static int sport_uart_setup(struct sport_uart_port *up, int sclk, int baud_rate)
- 	/* Set TCR1 and TCR2 */
- 	SPORT_PUT_TCR1(up, (LTFS | ITFS | TFSR | TLSBIT | ITCLK));
- 	SPORT_PUT_TCR2(up, 10);
--	pr_debug("%s TCR1:%x, TCR2:%x\n", __FUNCTION__, SPORT_GET_TCR1(up), SPORT_GET_TCR2(up));
-+	pr_debug("%s TCR1:%x, TCR2:%x\n", __func__, SPORT_GET_TCR1(up), SPORT_GET_TCR2(up));
- 
- 	/* Set RCR1 and RCR2 */
- 	SPORT_PUT_RCR1(up, (RCKFE | LARFS | LRFS | RFSR | IRCLK));
- 	SPORT_PUT_RCR2(up, 28);
--	pr_debug("%s RCR1:%x, RCR2:%x\n", __FUNCTION__, SPORT_GET_RCR1(up), SPORT_GET_RCR2(up));
-+	pr_debug("%s RCR1:%x, RCR2:%x\n", __func__, SPORT_GET_RCR1(up), SPORT_GET_RCR2(up));
- 
- 	tclkdiv = sclk/(2 * baud_rate) - 1;
- 	tfsdiv = 12;
-@@ -166,7 +166,7 @@ static int sport_uart_setup(struct sport_uart_port *up, int sclk, int baud_rate)
- 	SPORT_PUT_RCLKDIV(up, rclkdiv);
- 	SSYNC();
- 	pr_debug("%s sclk:%d, baud_rate:%d, tclkdiv:%d, tfsdiv:%d, rclkdiv:%d\n",
--			__FUNCTION__, sclk, baud_rate, tclkdiv, tfsdiv, rclkdiv);
-+			__func__, sclk, baud_rate, tclkdiv, tfsdiv, rclkdiv);
- 
- 	return 0;
- }
-@@ -231,7 +231,7 @@ static int sport_startup(struct uart_port *port)
- 	char buffer[20];
- 	int retval;
- 
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	memset(buffer, 20, '\0');
- 	snprintf(buffer, 20, "%s rx", up->name);
- 	retval = request_irq(up->rx_irq, sport_uart_rx_irq, IRQF_SAMPLE_RANDOM, buffer, up);
-@@ -320,7 +320,7 @@ static unsigned int sport_tx_empty(struct uart_port *port)
- 	unsigned int stat;
- 
- 	stat = SPORT_GET_STAT(up);
--	pr_debug("%s stat:%04x\n", __FUNCTION__, stat);
-+	pr_debug("%s stat:%04x\n", __func__, stat);
- 	if (stat & TXHRE) {
- 		return TIOCSER_TEMT;
- 	} else
-@@ -329,13 +329,13 @@ static unsigned int sport_tx_empty(struct uart_port *port)
- 
- static unsigned int sport_get_mctrl(struct uart_port *port)
- {
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	return (TIOCM_CTS | TIOCM_CD | TIOCM_DSR);
- }
- 
- static void sport_set_mctrl(struct uart_port *port, unsigned int mctrl)
- {
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- }
- 
- static void sport_stop_tx(struct uart_port *port)
-@@ -343,7 +343,7 @@ static void sport_stop_tx(struct uart_port *port)
- 	struct sport_uart_port *up = (struct sport_uart_port *)port;
- 	unsigned int stat;
- 
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 
- 	stat = SPORT_GET_STAT(up);
- 	while(!(stat & TXHRE)) {
-@@ -366,21 +366,21 @@ static void sport_start_tx(struct uart_port *port)
- {
- 	struct sport_uart_port *up = (struct sport_uart_port *)port;
- 
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	/* Write data into SPORT FIFO before enable SPROT to transmit */
- 	sport_uart_tx_chars(up);
- 
- 	/* Enable transmit, then an interrupt will generated */
- 	SPORT_PUT_TCR1(up, (SPORT_GET_TCR1(up) | TSPEN));
- 	SSYNC();
--	pr_debug("%s exit\n", __FUNCTION__);
-+	pr_debug("%s exit\n", __func__);
- }
- 
- static void sport_stop_rx(struct uart_port *port)
- {
- 	struct sport_uart_port *up = (struct sport_uart_port *)port;
- 
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	/* Disable sport to stop rx */
- 	SPORT_PUT_RCR1(up, (SPORT_GET_RCR1(up) & ~RSPEN));
- 	SSYNC();
-@@ -388,19 +388,19 @@ static void sport_stop_rx(struct uart_port *port)
- 
- static void sport_enable_ms(struct uart_port *port)
- {
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- }
- 
- static void sport_break_ctl(struct uart_port *port, int break_state)
- {
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- }
- 
- static void sport_shutdown(struct uart_port *port)
- {
- 	struct sport_uart_port *up = (struct sport_uart_port *)port;
- 
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 
- 	/* Disable sport */
- 	SPORT_PUT_TCR1(up, (SPORT_GET_TCR1(up) & ~TSPEN));
-@@ -421,7 +421,7 @@ static void sport_shutdown(struct uart_port *port)
- static void sport_set_termios(struct uart_port *port,
- 		struct termios *termios, struct termios *old)
- {
--	pr_debug("%s enter, c_cflag:%08x\n", __FUNCTION__, termios->c_cflag);
-+	pr_debug("%s enter, c_cflag:%08x\n", __func__, termios->c_cflag);
- 	uart_update_timeout(port, CS8 ,port->uartclk);
- }
- 
-@@ -429,18 +429,18 @@ static const char *sport_type(struct uart_port *port)
- {
- 	struct sport_uart_port *up = (struct sport_uart_port *)port;
- 
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	return up->name;
- }
- 
- static void sport_release_port(struct uart_port *port)
- {
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- }
- 
- static int sport_request_port(struct uart_port *port)
- {
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	return 0;
- }
- 
-@@ -448,13 +448,13 @@ static void sport_config_port(struct uart_port *port, int flags)
- {
- 	struct sport_uart_port *up = (struct sport_uart_port *)port;
- 
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	up->port.type = PORT_BFIN_SPORT;
- }
- 
- static int sport_verify_port(struct uart_port *port, struct serial_struct *ser)
- {
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	return 0;
- }
- 
-@@ -527,7 +527,7 @@ static int sport_uart_suspend(struct platform_device *dev, pm_message_t state)
- {
- 	struct sport_uart_port *sport = platform_get_drvdata(dev);
- 
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	if (sport)
- 		uart_suspend_port(&sport_uart_reg, &sport->port);
- 
-@@ -538,7 +538,7 @@ static int sport_uart_resume(struct platform_device *dev)
- {
- 	struct sport_uart_port *sport = platform_get_drvdata(dev);
- 
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	if (sport)
- 		uart_resume_port(&sport_uart_reg, &sport->port);
- 
-@@ -547,7 +547,7 @@ static int sport_uart_resume(struct platform_device *dev)
- 
- static int sport_uart_probe(struct platform_device *dev)
- {
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	sport_uart_ports[dev->id].port.dev = &dev->dev;
- 	uart_add_one_port(&sport_uart_reg, &sport_uart_ports[dev->id].port);
- 	platform_set_drvdata(dev, &sport_uart_ports[dev->id]);
-@@ -559,7 +559,7 @@ static int sport_uart_remove(struct platform_device *dev)
- {
- 	struct sport_uart_port *sport = platform_get_drvdata(dev);
- 
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	platform_set_drvdata(dev, NULL);
- 
- 	if (sport)
-@@ -582,7 +582,7 @@ static int __init sport_uart_init(void)
- {
- 	int ret;
- 
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	ret = uart_register_driver(&sport_uart_reg);
- 	if (ret != 0) {
- 		printk(KERN_ERR "Failed to register %s:%d\n",
-@@ -597,13 +597,13 @@ static int __init sport_uart_init(void)
+ 	if (!skb) {
+-		airo_print_err(dev->name, "%s: skb == NULL!",__FUNCTION__);
++		airo_print_err(dev->name, "%s: skb == NULL!",__func__);
+ 		return 0;
+ 	}
+ 	npacks = skb_queue_len (&ai->txq);
+@@ -1964,7 +1964,7 @@ static int mpi_send_packet (struct net_device *dev)
+ 	if ((skb = skb_dequeue(&ai->txq)) == NULL) {
+ 		airo_print_err(dev->name,
+ 			"%s: Dequeue'd zero in send_packet()",
+-			__FUNCTION__);
++			__func__);
+ 		return 0;
  	}
  
-
--	pr_debug("%s exit\n", __FUNCTION__);
-+	pr_debug("%s exit\n", __func__);
- 	return ret;
- }
+@@ -2115,7 +2115,7 @@ static int airo_start_xmit(struct sk_buff *skb, struct net_device *dev) {
+ 	u32 *fids = priv->fids;
  
- static void __exit sport_uart_exit(void)
- {
--	pr_debug("%s enter\n", __FUNCTION__);
-+	pr_debug("%s enter\n", __func__);
- 	platform_driver_unregister(&sport_uart_driver);
- 	uart_unregister_driver(&sport_uart_reg);
- }
-diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
-index 7d1b819..a9b3ada 100644
---- a/drivers/video/bfin-t350mcqb-fb.c
-+++ b/drivers/video/bfin-t350mcqb-fb.c
-@@ -255,7 +255,7 @@ static int bfin_t350mcqb_fb_check_var(struct fb_var_screeninfo *var,
- {
- 
- 	if (var->bits_per_pixel != LCD_BPP) {
--		pr_debug("%s: depth not supported: %u BPP\n", __FUNCTION__,
-+		pr_debug("%s: depth not supported: %u BPP\n", __func__,
- 			 var->bits_per_pixel);
- 		return -EINVAL;
+ 	if ( skb == NULL ) {
+-		airo_print_err(dev->name, "%s: skb == NULL!", __FUNCTION__);
++		airo_print_err(dev->name, "%s: skb == NULL!", __func__);
+ 		return 0;
  	}
-@@ -264,7 +264,7 @@ static int bfin_t350mcqb_fb_check_var(struct fb_var_screeninfo *var,
- 	    info->var.xres_virtual != var->xres_virtual ||
- 	    info->var.yres_virtual != var->yres_virtual) {
- 		pr_debug("%s: Resolution not supported: X%u x Y%u \n",
--			 __FUNCTION__, var->xres, var->yres);
-+			 __func__, var->xres, var->yres);
+ 
+@@ -2186,7 +2186,7 @@ static int airo_start_xmit11(struct sk_buff *skb, struct net_device *dev) {
+ 	}
+ 
+ 	if ( skb == NULL ) {
+-		airo_print_err(dev->name, "%s: skb == NULL!", __FUNCTION__);
++		airo_print_err(dev->name, "%s: skb == NULL!", __func__);
+ 		return 0;
+ 	}
+ 
+@@ -4127,7 +4127,7 @@ static int PC4500_writerid(struct airo_info *ai, u16 rid,
+ 		if (test_bit(FLAG_ENABLED, &ai->flags) && (RID_WEP_TEMP != rid))
+ 			airo_print_err(ai->dev->name,
+ 				"%s: MAC should be disabled (rid=%04x)",
+-				__FUNCTION__, rid);
++				__func__, rid);
+ 		memset(&cmd, 0, sizeof(cmd));
+ 		memset(&rsp, 0, sizeof(rsp));
+ 
+@@ -4142,7 +4142,7 @@ static int PC4500_writerid(struct airo_info *ai, u16 rid,
+ 			&ai->config_desc.rid_desc, sizeof(Rid));
+ 
+ 		if (len < 4 || len > 2047) {
+-			airo_print_err(ai->dev->name, "%s: len=%d", __FUNCTION__, len);
++			airo_print_err(ai->dev->name, "%s: len=%d", __func__, len);
+ 			rc = -1;
+ 		} else {
+ 			memcpy((char *)ai->config_desc.virtual_host_addr,
+@@ -4151,9 +4151,9 @@ static int PC4500_writerid(struct airo_info *ai, u16 rid,
+ 			rc = issuecommand(ai, &cmd, &rsp);
+ 			if ((rc & 0xff00) != 0) {
+ 				airo_print_err(ai->dev->name, "%s: Write rid Error %d",
+-						__FUNCTION__, rc);
++						__func__, rc);
+ 				airo_print_err(ai->dev->name, "%s: Cmd=%04x",
+-						__FUNCTION__, cmd.cmd);
++						__func__, cmd.cmd);
+ 			}
+ 
+ 			if ((rsp.status & 0x7f00))
+diff --git a/drivers/net/wireless/hermes.c b/drivers/net/wireless/hermes.c
+index 29d3910..2cd86af 100644
+--- a/drivers/net/wireless/hermes.c
++++ b/drivers/net/wireless/hermes.c
+@@ -463,7 +463,7 @@ int hermes_read_ltv(hermes_t *hw, int bap, u16 rid, unsigned bufsize,
+ 	if (rtype != rid)
+ 		printk(KERN_WARNING "hermes @ %p: %s(): "
+ 		       "rid (0x%04x) does not match type (0x%04x)\n",
+-		       hw->iobase, __FUNCTION__, rid, rtype);
++		       hw->iobase, __func__, rid, rtype);
+ 	if (HERMES_RECLEN_TO_BYTES(rlength) > bufsize)
+ 		printk(KERN_WARNING "hermes @ %p: "
+ 		       "Truncating LTV record from %d to %d bytes. "
+diff --git a/drivers/net/wireless/ipw2100.c b/drivers/net/wireless/ipw2100.c
+index 5bf9e00..c71bb09 100644
+--- a/drivers/net/wireless/ipw2100.c
++++ b/drivers/net/wireless/ipw2100.c
+@@ -212,7 +212,7 @@ static u32 ipw2100_debug_level = IPW_DL_NONE;
+ do { \
+ 	if (ipw2100_debug_level & (level)) { \
+ 		printk(KERN_DEBUG "ipw2100: %c %s ", \
+-                       in_interrupt() ? 'I' : 'U',  __FUNCTION__); \
++                       in_interrupt() ? 'I' : 'U',  __func__); \
+ 		printk(message); \
+ 	} \
+ } while (0)
+diff --git a/drivers/net/wireless/ipw2200.h b/drivers/net/wireless/ipw2200.h
+index d4ab28b..0bad1ec 100644
+--- a/drivers/net/wireless/ipw2200.h
++++ b/drivers/net/wireless/ipw2200.h
+@@ -1394,13 +1394,13 @@ BIT_ARG16(x)
+ #define IPW_DEBUG(level, fmt, args...) \
+ do { if (ipw_debug_level & (level)) \
+   printk(KERN_DEBUG DRV_NAME": %c %s " fmt, \
+-         in_interrupt() ? 'I' : 'U', __FUNCTION__ , ## args); } while (0)
++         in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
+ 
+ #ifdef CONFIG_IPW2200_DEBUG
+ #define IPW_LL_DEBUG(level, fmt, args...) \
+ do { if (ipw_debug_level & (level)) \
+   printk(KERN_DEBUG DRV_NAME": %c %s " fmt, \
+-         in_interrupt() ? 'I' : 'U', __FUNCTION__ , ## args); } while (0)
++         in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
+ #else
+ #define IPW_LL_DEBUG(level, fmt, args...) do {} while (0)
+ #endif				/* CONFIG_IPW2200_DEBUG */
+diff --git a/drivers/net/wireless/iwlwifi/iwl-3945-debug.h b/drivers/net/wireless/iwlwifi/iwl-3945-debug.h
+index f1d002f..33016fb 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-3945-debug.h
++++ b/drivers/net/wireless/iwlwifi/iwl-3945-debug.h
+@@ -34,12 +34,12 @@ extern u32 iwl3945_debug_level;
+ #define IWL_DEBUG(level, fmt, args...) \
+ do { if (iwl3945_debug_level & (level)) \
+   printk(KERN_ERR DRV_NAME": %c %s " fmt, \
+-	 in_interrupt() ? 'I' : 'U', __FUNCTION__ , ## args); } while (0)
++	 in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
+ 
+ #define IWL_DEBUG_LIMIT(level, fmt, args...) \
+ do { if ((iwl3945_debug_level & (level)) && net_ratelimit()) \
+   printk(KERN_ERR DRV_NAME": %c %s " fmt, \
+-	 in_interrupt() ? 'I' : 'U', __FUNCTION__ , ## args); } while (0)
++	 in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
+ 
+ static inline void iwl3945_print_hex_dump(int level, void *p, u32 len)
+ {
+diff --git a/drivers/net/wireless/iwlwifi/iwl-debug.h b/drivers/net/wireless/iwlwifi/iwl-debug.h
+index 5838480..097a72f 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-debug.h
++++ b/drivers/net/wireless/iwlwifi/iwl-debug.h
+@@ -33,12 +33,12 @@
+ #define IWL_DEBUG(level, fmt, args...) \
+ do { if (priv->debug_level & (level)) \
+   dev_printk(KERN_ERR, &(priv->hw->wiphy->dev), "%c %s " fmt, \
+-	 in_interrupt() ? 'I' : 'U', __FUNCTION__ , ## args); } while (0)
++	 in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
+ 
+ #define IWL_DEBUG_LIMIT(level, fmt, args...) \
+ do { if ((priv->debug_level & (level)) && net_ratelimit()) \
+   dev_printk(KERN_ERR, &(priv->hw->wiphy->dev), "%c %s " fmt, \
+-	 in_interrupt() ? 'I' : 'U', __FUNCTION__ , ## args); } while (0)
++	 in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
+ 
+ #ifdef CONFIG_IWLWIFI_DEBUGFS
+ struct iwl_debugfs {
+diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+index 4a22d3f..64d2f71 100644
+--- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+@@ -6336,7 +6336,7 @@ static void iwl3945_bg_post_associate(struct work_struct *data)
+ 	DECLARE_MAC_BUF(mac);
+ 
+ 	if (priv->iw_mode == IEEE80211_IF_TYPE_AP) {
+-		IWL_ERROR("%s Should not be called in AP mode\n", __FUNCTION__);
++		IWL_ERROR("%s Should not be called in AP mode\n", __func__);
+ 		return;
+ 	}
+ 
+@@ -6417,7 +6417,7 @@ static void iwl3945_bg_post_associate(struct work_struct *data)
+ 
+ 	default:
+ 		 IWL_ERROR("%s Should not be called in %d mode\n",
+-			   __FUNCTION__, priv->iw_mode);
++			   __func__, priv->iw_mode);
+ 		break;
+ 	}
+ 
+diff --git a/drivers/net/wireless/iwlwifi/iwl4965-base.c b/drivers/net/wireless/iwlwifi/iwl4965-base.c
+index 71f5da3..04e8795 100644
+--- a/drivers/net/wireless/iwlwifi/iwl4965-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl4965-base.c
+@@ -2415,7 +2415,7 @@ static void iwl4965_post_associate(struct iwl_priv *priv)
+ 	unsigned long flags;
+ 
+ 	if (priv->iw_mode == IEEE80211_IF_TYPE_AP) {
+-		IWL_ERROR("%s Should not be called in AP mode\n", __FUNCTION__);
++		IWL_ERROR("%s Should not be called in AP mode\n", __func__);
+ 		return;
+ 	}
+ 
+@@ -2491,7 +2491,7 @@ static void iwl4965_post_associate(struct iwl_priv *priv)
+ 
+ 	default:
+ 		IWL_ERROR("%s Should not be called in %d mode\n",
+-				__FUNCTION__, priv->iw_mode);
++				__func__, priv->iw_mode);
+ 		break;
+ 	}
+ 
+diff --git a/drivers/net/wireless/libertas/if_cs.c b/drivers/net/wireless/libertas/if_cs.c
+index 04d7a25..92837a2 100644
+--- a/drivers/net/wireless/libertas/if_cs.c
++++ b/drivers/net/wireless/libertas/if_cs.c
+@@ -720,7 +720,7 @@ static int if_cs_host_to_card(struct lbs_private *priv,
+ 		ret = if_cs_send_cmd(priv, buf, nb);
+ 		break;
+ 	default:
+-		lbs_pr_err("%s: unsupported type %d\n", __FUNCTION__, type);
++		lbs_pr_err("%s: unsupported type %d\n", __func__, type);
+ 	}
+ 
+ 	lbs_deb_leave_args(LBS_DEB_CS, "ret %d", ret);
+diff --git a/drivers/net/wireless/prism54/isl_ioctl.c b/drivers/net/wireless/prism54/isl_ioctl.c
+index 97fa14e..0a639a9 100644
+--- a/drivers/net/wireless/prism54/isl_ioctl.c
++++ b/drivers/net/wireless/prism54/isl_ioctl.c
+@@ -71,7 +71,7 @@ prism54_mib_mode_helper(islpci_private *priv, u32 iw_mode)
+ 	if (iw_mode == IW_MODE_REPEAT || iw_mode == IW_MODE_SECOND) {
+ 		printk(KERN_DEBUG
+ 		       "%s(): Sorry, Repeater mode and Secondary mode "
+-		       "are not yet supported by this driver.\n", __FUNCTION__);
++		       "are not yet supported by this driver.\n", __func__);
  		return -EINVAL;
  	}
  
-@@ -274,7 +274,7 @@ static int bfin_t350mcqb_fb_check_var(struct fb_var_screeninfo *var,
- 
- 	if ((info->fix.line_length * var->yres_virtual) > info->fix.smem_len) {
- 		pr_debug("%s: Memory Limit requested yres_virtual = %u\n",
--			 __FUNCTION__, var->yres_virtual);
-+			 __func__, var->yres_virtual);
- 		return -ENOMEM;
+@@ -333,7 +333,7 @@ prism54_set_mode(struct net_device *ndev, struct iw_request_info *info,
+ 	if (*uwrq > IW_MODE_MONITOR || *uwrq < IW_MODE_AUTO) {
+ 		printk(KERN_DEBUG
+ 		       "%s: %s() You passed a non-valid init_mode.\n",
+-		       priv->ndev->name, __FUNCTION__);
++		       priv->ndev->name, __func__);
+ 		return -EINVAL;
  	}
+ 
+@@ -1234,7 +1234,7 @@ prism54_set_txpower(struct net_device *ndev, struct iw_request_info *info,
+ 		/* don't know how to disable radio */
+ 		printk(KERN_DEBUG
+ 		       "%s: %s() disabling radio is not yet supported.\n",
+-		       priv->ndev->name, __FUNCTION__);
++		       priv->ndev->name, __func__);
+ 		return -ENOTSUPP;
+ 	} else if (vwrq->fixed)
+ 		/* currently only fixed value is supported */
+@@ -1242,7 +1242,7 @@ prism54_set_txpower(struct net_device *ndev, struct iw_request_info *info,
+ 	else {
+ 		printk(KERN_DEBUG
+ 		       "%s: %s() auto power will be implemented later.\n",
+-		       priv->ndev->name, __FUNCTION__);
++		       priv->ndev->name, __func__);
+ 		return -ENOTSUPP;
+ 	}
+ }
+diff --git a/drivers/net/wireless/rt2x00/rt2x00.h b/drivers/net/wireless/rt2x00/rt2x00.h
+index 07b03b3..c0edc72 100644
+--- a/drivers/net/wireless/rt2x00/rt2x00.h
++++ b/drivers/net/wireless/rt2x00/rt2x00.h
+@@ -53,11 +53,11 @@
+  */
+ #define DEBUG_PRINTK_MSG(__dev, __kernlvl, __lvl, __msg, __args...)	\
+ 	printk(__kernlvl "%s -> %s: %s - " __msg,			\
+-	       wiphy_name((__dev)->hw->wiphy), __FUNCTION__, __lvl, ##__args)
++	       wiphy_name((__dev)->hw->wiphy), __func__, __lvl, ##__args)
+ 
+ #define DEBUG_PRINTK_PROBE(__kernlvl, __lvl, __msg, __args...)	\
+ 	printk(__kernlvl "%s -> %s: %s - " __msg,		\
+-	       KBUILD_MODNAME, __FUNCTION__, __lvl, ##__args)
++	       KBUILD_MODNAME, __func__, __lvl, ##__args)
+ 
+ #ifdef CONFIG_RT2X00_DEBUG
+ #define DEBUG_PRINTK(__dev, __kernlvl, __lvl, __msg, __args...)	\
+diff --git a/drivers/net/wireless/wl3501_cs.c b/drivers/net/wireless/wl3501_cs.c
+index 3771419..b6d4e04 100644
+--- a/drivers/net/wireless/wl3501_cs.c
++++ b/drivers/net/wireless/wl3501_cs.c
+@@ -79,7 +79,7 @@ static int pc_debug = PCMCIA_DEBUG;
+ module_param(pc_debug, int, 0);
+ #define dprintk(n, format, args...) \
+ 	{ if (pc_debug > (n)) \
+-		printk(KERN_INFO "%s: " format "\n", __FUNCTION__ , ##args); }
++		printk(KERN_INFO "%s: " format "\n", __func__ , ##args); }
+ #else
+ #define dprintk(n, format, args...)
+ #endif
+@@ -470,7 +470,7 @@ static int wl3501_pwr_mgmt(struct wl3501_card *this, int suspend)
+ 			spin_unlock_irqrestore(&this->lock, flags);
+ 			rc = wait_event_interruptible(this->wait,
+ 				this->sig_pwr_mgmt_confirm.status != 255);
+-			printk(KERN_INFO "%s: %s status=%d\n", __FUNCTION__,
++			printk(KERN_INFO "%s: %s status=%d\n", __func__,
+ 			       suspend ? "suspend" : "resume",
+ 			       this->sig_pwr_mgmt_confirm.status);
+ 			goto out;
+@@ -1199,7 +1199,7 @@ static int wl3501_reset_board(struct wl3501_card *this)
+ 		}
+ 		WL3501_NOPLOOP(10);
+ 	}
+-	printk(KERN_WARNING "%s: failed to reset the board!\n", __FUNCTION__);
++	printk(KERN_WARNING "%s: failed to reset the board!\n", __func__);
+ 	rc = -ENODEV;
+ out:
+ 	return rc;
+@@ -1250,7 +1250,7 @@ static int wl3501_init_firmware(struct wl3501_card *this)
+ out:
+ 	return rc;
+ fail:
+-	printk(KERN_WARNING "%s: failed!\n", __FUNCTION__);
++	printk(KERN_WARNING "%s: failed!\n", __func__);
+ 	goto out;
+ }
  
 -- 
 1.6.0.rc1.154.ge3fc
