@@ -1,87 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759486AbYG2WeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbYG2Wej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759486AbYG2WeW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 18:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbYG2WeM
+	id S1756089AbYG2Wej (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 18:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757609AbYG2WeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 18:34:12 -0400
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:54122
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755288AbYG2WeL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 18:34:11 -0400
-Date: Tue, 29 Jul 2008 15:33:46 -0700
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: Alex Buell <alex.buell@munted.org.uk>
-Cc: Robert Hancock <hancockr@shaw.ca>, usb-storage@lists.one-eyed-alien.net,
-       Tomas Styblo <tripie@cpan.org>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [usb-storage] [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device 152d:2338
-Message-ID: <20080729223346.GE6091@one-eyed-alien.net>
-Mail-Followup-To: Alex Buell <alex.buell@munted.org.uk>,
-	Robert Hancock <hancockr@shaw.ca>,
-	usb-storage@lists.one-eyed-alien.net,
-	Tomas Styblo <tripie@cpan.org>, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <fa.eWQqoO1e4Mdhu8SK5jzMFAI/3NU@ifi.uio.no> <4884E585.2050104@shaw.ca> <20080722051110.GA8303@notebook.homenet.local> <488570A5.8000602@shaw.ca> <20080722061147.GB8303@notebook.homenet.local> <48859E2C.4070805@shaw.ca> <20080729220908.8b698469.alex.buell@munted.org.uk>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
-Content-Disposition: inline
-In-Reply-To: <20080729220908.8b698469.alex.buell@munted.org.uk>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Tue, 29 Jul 2008 15:33:46 -0700 (PDT)
+	Tue, 29 Jul 2008 18:34:19 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:37661 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754401AbYG2WeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 18:34:18 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	b=P/w1SF+l6Xes+2P2BdUoG5CR9R/VxannjfCQIT56sCNFMIHXfqzE2LXoTVykk+X9R7f4hcDeQ21wwEQPFlAd6bvCelfySs3NvsE3BHGVzSdQWJ4sS0nBDukfpxUGOH5T;
+Message-ID: <488F9AE3.8040207@simon.arlott.org.uk>
+Date: Tue, 29 Jul 2008 23:34:11 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
+MIME-Version: 1.0
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, Alan Stern <stern@rowland.harvard.edu>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [patch 5/3] fastboot: sync the async execution before late_initcall
+ and move level 6s (sync) first
+References: <20080720085924.122feb2b@infradead.org>	<20080720090041.5924f5ff@infradead.org>	<488F84ED.9010200@keyaccess.nl>	<20080729140434.31022f55@infradead.org>	<488F87AB.9080309@keyaccess.nl> <20080729142123.5164b1a4@infradead.org> <488F99EB.2030808@keyaccess.nl>
+In-Reply-To: <488F99EB.2030808@keyaccess.nl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 29/07/08 23:30, Rene Herman wrote:
+> On 29-07-08 23:21, Arjan van de Ven wrote:
+> 
+>> On Tue, 29 Jul 2008 23:12:11 +0200
+>> Rene Herman <rene.herman@keyaccess.nl> wrote:
+> 
+>>> After this patch, there are now 2 flush_workqueue(async_init_wq)
+>>> calls in do_initcalls. Should the other one remain as well?
+>>
+>> yes because if you don't have any level 7's then you won't hit this
+>> condition... you need the second one.
+>>
+>> flush_workqueue is cheap for the nothing-in-there case.
+> 
+> Ah, yes.
+> 
+> For what it's worth by the way, I'm running that which is available from 
+> your fastboot repo (12 patches currently) on top of 2.6.26. Not seen any 
+> trouble. Nor improvements that I've noticed but this is a rather minimal 
+> and fast booting kernel/system anyway.
 
---FCuugMFkClbJLl1L
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It doesn't appear to be possible to init multiple PCI devices at once... 
+I haven't looked into what is doing it exactly but presumably there's a 
+lock being held over the whole device probe process.
 
-On Tue, Jul 29, 2008 at 10:09:08PM +0100, Alex Buell wrote:
-> On Tue, 22 Jul 2008 02:45:32 -0600, I waved a wand and this message
-> magically appears in front of Robert Hancock:
->=20
-> > I suppose it wouldn't hurt to let JMicron know about this. I doubt
-> > they could do anything for existing chipsets, but it might help them
-> > avoid this bug in future designs.
->=20
-> I can reproduce this EVERY time with SATA disks using the same JM20337
-> chipset.=20
->=20
-> 1. mke2fs /dev/sda1
-> 2. tunefs -j /dev/sda1
-> 3. e2fsck /dev/sda1
+The speedup from usb seems to be primarily from initialising devices in 
+the background... perhaps there's some way to do that without doing hcd 
+init from a second thread?
 
-I already sent a note to my contact at JMicron, but got no response.
+I get a really slow booting system if I enable the SAS controller... it 
+requires 14 seconds to initialise itself, even with no drives attached 
+(LSI 1068E).
 
-Matt
-
---=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
-
-Somebody call an exorcist!
-					-- Dust Puppy
-User Friendly, 5/16/1998
-
---FCuugMFkClbJLl1L
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFIj5rKHL9iwnUZqnkRAnhUAJ4pQgFMWpRUyrtyLsXwPfA1BKJFUgCfaMSF
-mjLW3cMJQA7cLmZ2cJ4ziR8=
-=g3jD
------END PGP SIGNATURE-----
-
---FCuugMFkClbJLl1L--
+-- 
+Simon Arlott
