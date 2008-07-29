@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbYG2Q3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbYG2Q3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbYG2Q3h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 12:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYG2Q32
+	id S1759312AbYG2Q3v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 12:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbYG2Q3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 12:29:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59686 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751608AbYG2Q31 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 12:29:27 -0400
-Date: Tue, 29 Jul 2008 09:26:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Miller <davem@davemloft.net>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Mike Travis <travis@sgi.com>
-Subject: Re: linux-next: build failure
-In-Reply-To: <20080729080055.GA28916@elte.hu>
-Message-ID: <alpine.LFD.1.10.0807290918460.3334@nehalem.linux-foundation.org>
-References: <20080729162300.733b3e09.sfr@canb.auug.org.au> <20080729080055.GA28916@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 29 Jul 2008 12:29:37 -0400
+Received: from waste.org ([66.93.16.53]:53664 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754832AbYG2Q3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 12:29:36 -0400
+Subject: Re: [patch 1/4] Configure out AIO support
+From: Matt Mackall <mpm@selenic.com>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       bcrl@kvack.org, linux-aio@kvack.org, akpm@linux-foundation.org
+In-Reply-To: <20080729154747.574989775@free-electrons.com>>
+References: <20080729154520.728594017@free-electrons.com> >
+	  <20080729154747.574989775@free-electrons.com>>
+Content-Type: text/plain
+Date: Tue, 29 Jul 2008 11:27:46 -0500
+Message-Id: <1217348866.15724.148.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-On Tue, 29 Jul 2008, Ingo Molnar wrote:
->
-> > @@ -287,7 +287,7 @@ static inline const cpumask_t *get_cpu_mask(unsigned int cpu)
-> >   * gcc optimizes it out (it's a constant) and there's no huge stack
-> >   * variable created:
-> >   */
-> > -#define cpumask_of_cpu(cpu) ({ *get_cpu_mask(cpu); })
-> > +#define cpumask_of_cpu(cpu) (*get_cpu_mask(cpu))
+On Tue, 2008-07-29 at 17:45 +0200, Thomas Petazzoni wrote:
+> plain text document attachment (configure-out-aio-support)
+> This patchs adds the CONFIG_AIO option which allows to remove support
+> for asynchronous I/O operations, that are not necessarly used by
+> applications, particularly on embedded devices. As this is a
+> size-reduction option, it depends on CONFIG_EMBEDDED. It allows to
+> save ~7 kilobytes of kernel code/data:
 > 
-> hm, i'm wondering - is this a compiler bug?
+>    text	   data	    bss	    dec	    hex	filename
+> 1115067	 119180	 217088	1451335	 162547	vmlinux
+> 1108025	 119048	 217088	1444161	 160941	vmlinux.new
+>   -7042    -132       0   -7174   -1C06 +/-
+> 
+> This patch has been originally written by Matt Mackall
+> <mpm@selenic.com>, and is part of the Linux Tiny project.
+> 
+> Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+> Cc: bcrl@kvack.org
+> Cc: linux-aio@kvack.org
+> Cc: mpm@selenic.com
+> Cc: akpm@linux-foundation.org
 
-Not necessarily. The code is fragile.
+These all look good to me, naturally.
 
-Doing a statement expression basically creates a new temporary variable 
-with pretty much undefined scope. Taking the address of it *may* be 
-optimized away to the original cpu_mask pointer, but it's not really a 
-well-defined operation: there really _is_ a local temporary variable, and 
-if you were to change things through the address-of thing, gcc would be 
-buggy if it had done the optimization.
+Signed-off-by: Matt Mackall <mpm@selenic.com>
 
-So the "address-of statement expression" really is a dubious construct.
+-- 
+Mathematics is the supreme nostalgia of our time.
 
-That said, the change that Stephen introduces is _not_ a no-op. It very 
-fundamentally changes the code - exactly because now there is no temporary 
-value created any more: it's a real lvalue, and now anybody who does 
-&cpumask_of_cpu(cpu) will fundamentally get the original pointer back, 
-except it has lost the "const".
-
-And that's actually dangerous - exactly because it now loses the "const" 
-thing, there may be people who end up modifying the result without 
-getting any compile-time warnings.
-
-I would _seriously_ suggest that both the original code and Stephen's 
-modified version is really bad. And you should have taken my interface 
-as-is - one that returns a "const cpumask_t *", and nothing else. 
-
-Anything else is simply fundamentally broken.
-
-			Linus
