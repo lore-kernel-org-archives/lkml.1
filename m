@@ -1,102 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760530AbYG2UKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbYG2USm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760530AbYG2UKr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 16:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759501AbYG2UJV
+	id S1758905AbYG2USm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 16:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYG2USd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 16:09:21 -0400
-Received: from xenotime.net ([66.160.160.81]:46374 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1759469AbYG2UJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 16:09:19 -0400
-Date: Tue, 29 Jul 2008 13:05:15 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Sam Ravnborg <sam@ravnborg.org>,
-       balbir@linux.vnet.ibm.com
-Subject: [PATCH 5/5] docsrc: fix getdelays printk formats
-Message-ID: <121736191553@xenotime.net>
-In-Reply-To: <12173619152424@xenotime.net>
-X-Mailer: gregkh_patchbomb
+	Tue, 29 Jul 2008 16:18:33 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:48905 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752050AbYG2USc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 16:18:32 -0400
+Date: Tue, 29 Jul 2008 13:17:57 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: dbaryshkov@gmail.com, jbarnes@virtuousgeek.org, mingo@elte.hu
+Subject: Re: dma-coherent: add documentation to new interfaces
+Message-Id: <20080729131757.16e721c5.randy.dunlap@oracle.com>
+In-Reply-To: <200807290301.m6T317GG021226@hera.kernel.org>
+References: <200807290301.m6T317GG021226@hera.kernel.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Tue, 29 Jul 2008 03:01:07 GMT Linux Kernel Mailing List wrote:
 
-Fix printf format type warnings (seen on alpha & ia64):
+> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b6d4f7e3ef25beb8c658c97867d98883e69dc544
+> Commit:     b6d4f7e3ef25beb8c658c97867d98883e69dc544
+> Parent:     8fa8b9fbab90c74139e8e868fe5b30b6a9f6be65
+> Author:     Dmitry Baryshkov <dbaryshkov@gmail.com>
+> AuthorDate: Sun Jul 20 15:01:10 2008 +0400
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Sun Jul 20 21:22:00 2008 +0200
+> 
+>     dma-coherent: add documentation to new interfaces
 
-Documentation/accounting/getdelays.c:206: warning: format '%15llu' expects type 'long long unsigned int', but argument 6 has type '__u64'
-Documentation/accounting/getdelays.c:206: warning: format '%15llu' expects type 'long long unsigned int', but argument 7 has type '__u64'
-Documentation/accounting/getdelays.c:206: warning: format '%15llu' expects type 'long long unsigned int', but argument 8 has type '__u64'
-Documentation/accounting/getdelays.c:206: warning: format '%15llu' expects type 'long long unsigned int', but argument 9 has type '__u64'
-Documentation/accounting/getdelays.c:206: warning: format '%15llu' expects type 'long long unsigned int', but argument 12 has type '__u64'
-Documentation/accounting/getdelays.c:206: warning: format '%15llu' expects type 'long long unsigned int', but argument 13 has type '__u64'
-Documentation/accounting/getdelays.c:206: warning: format '%15llu' expects type 'long long unsigned int', but argument 16 has type '__u64'
-Documentation/accounting/getdelays.c:206: warning: format '%15llu' expects type 'long long unsigned int', but argument 17 has type '__u64'
-Documentation/accounting/getdelays.c:214: warning: format '%15llu' expects type 'long long unsigned int', but argument 4 has type '__u64'
-Documentation/accounting/getdelays.c:214: warning: format '%15llu' expects type 'long long unsigned int', but argument 5 has type '__u64'
-Documentation/accounting/getdelays.c:221: warning: format '%llu' expects type 'long long unsigned int', but argument 2 has type '__u64'
-Documentation/accounting/getdelays.c:221: warning: format '%llu' expects type 'long long unsigned int', but argument 3 has type '__u64'
-Documentation/accounting/getdelays.c:221: warning: format '%llu' expects type 'long long unsigned int', but argument 4 has type '__u64'
-Documentation/accounting/getdelays.c:221: warning: format '%llu' expects type 'long long unsigned int', but argument 5 has type '__u64'
-Documentation/accounting/getdelays.c:221: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type '__u64'
-Documentation/accounting/getdelays.c:236: warning: 'cmd_type' may be used uninitialized in this function
+Hi,
+Please fix these to be proper kernel-doc notation, as described in
+Documentation/kernel-doc-nano-HOWTO.txt ...
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>     Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+>     Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  kernel/dma-coherent.c |   28 ++++++++++++++++++++++++++++
+>  1 files changed, 28 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/dma-coherent.c b/kernel/dma-coherent.c
+> index 56dff5c..7517115 100644
+> --- a/kernel/dma-coherent.c
+> +++ b/kernel/dma-coherent.c
+> @@ -92,6 +92,21 @@ void *dma_mark_declared_memory_occupied(struct device *dev,
+>  }
+>  EXPORT_SYMBOL(dma_mark_declared_memory_occupied);
+>  
+> +/**
+> + * Try to allocate memory from the per-device coherent area.
+
+Missing function name -
+
+> + *
+> + * @dev:	device from which we allocate memory
+> + * @size:	size of requested memory area
+> + * @dma_handle:	This will be filled with the correct dma handle
+> + * @ret:	This pointer will be filled with the virtual address
+> + * 		to allocated area.
+> + *
+> + * This function should be only called from per-arch %dma_alloc_coherent()
+> + * to support allocation from per-device coherent memory pools.
+> + *
+> + * Returns 0 if dma_alloc_coherent should continue with allocating from
+> + * generic memory areas, or !0 if dma_alloc_coherent should return %ret.
+
+'%' is a constant-value prefix in kernel-doc.
+
+> + */
+>  int dma_alloc_from_coherent(struct device *dev, ssize_t size,
+>  				       dma_addr_t *dma_handle, void **ret)
+>  {
+> @@ -111,6 +126,19 @@ int dma_alloc_from_coherent(struct device *dev, ssize_t size,
+>  	return (mem != NULL);
+>  }
+>  
+> +/**
+> + * Try to free the memory allocated from per-device coherent memory pool.
+
+Missing function name -
+
+> + * @dev:	device from which the memory was allocated
+> + * @order:	the order of pages allocated
+> + * @vaddr:	virtual address of allocated pages
+> + *
+> + * This checks whether the memory was allocated from the per-device
+> + * coherent memory pool and if so, releases that memory.
+> + *
+> + * Returns 1 if we correctly released the memory, or 0 if
+> + * %dma_release_coherent() should proceed with releasing memory from
+
+Drop the '%'.
+
+> + * generic pools.
+> + */
+>  int dma_release_from_coherent(struct device *dev, int order, void *vaddr)
+>  {
+>  	struct dma_coherent_mem *mem = dev ? dev->dma_mem : NULL;
+> --
+
+
+Thanks.
+
 ---
- Documentation/accounting/getdelays.c |   25 +++++++++++++++++--------
- 1 file changed, 17 insertions(+), 8 deletions(-)
-
---- linux-next-20080729.orig/Documentation/accounting/getdelays.c
-+++ linux-next-20080729/Documentation/accounting/getdelays.c
-@@ -201,13 +201,19 @@ void print_delayacct(struct taskstats *t
- 	       "RECLAIM  %12s%15s\n"
- 	       "      %15llu%15llu\n",
- 	       "count", "real total", "virtual total", "delay total",
--	       t->cpu_count, t->cpu_run_real_total, t->cpu_run_virtual_total,
--	       t->cpu_delay_total,
-+	       (unsigned long long)t->cpu_count,
-+	       (unsigned long long)t->cpu_run_real_total,
-+	       (unsigned long long)t->cpu_run_virtual_total,
-+	       (unsigned long long)t->cpu_delay_total,
- 	       "count", "delay total",
--	       t->blkio_count, t->blkio_delay_total,
--	       "count", "delay total", t->swapin_count, t->swapin_delay_total,
-+	       (unsigned long long)t->blkio_count,
-+	       (unsigned long long)t->blkio_delay_total,
- 	       "count", "delay total",
--	       t->freepages_count, t->freepages_delay_total);
-+	       (unsigned long long)t->swapin_count,
-+	       (unsigned long long)t->swapin_delay_total,
-+	       "count", "delay total",
-+	       (unsigned long long)t->freepages_count,
-+	       (unsigned long long)t->freepages_delay_total);
- }
- 
- void task_context_switch_counts(struct taskstats *t)
-@@ -215,14 +221,17 @@ void task_context_switch_counts(struct t
- 	printf("\n\nTask   %15s%15s\n"
- 	       "       %15llu%15llu\n",
- 	       "voluntary", "nonvoluntary",
--	       t->nvcsw, t->nivcsw);
-+	       (unsigned long long)t->nvcsw, (unsigned long long)t->nivcsw);
- }
- 
- void print_cgroupstats(struct cgroupstats *c)
- {
- 	printf("sleeping %llu, blocked %llu, running %llu, stopped %llu, "
--		"uninterruptible %llu\n", c->nr_sleeping, c->nr_io_wait,
--		c->nr_running, c->nr_stopped, c->nr_uninterruptible);
-+		"uninterruptible %llu\n", (unsigned long long)c->nr_sleeping,
-+		(unsigned long long)c->nr_io_wait,
-+		(unsigned long long)c->nr_running,
-+		(unsigned long long)c->nr_stopped,
-+		(unsigned long long)c->nr_uninterruptible);
- }
- 
- 
-
-
--- 
-
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
