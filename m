@@ -1,55 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbYG2SZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbYG2S0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbYG2SZw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 14:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbYG2SZo
+	id S1758699AbYG2S0Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 14:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037AbYG2S0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 14:25:44 -0400
-Received: from gw.goop.org ([64.81.55.164]:38945 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750767AbYG2SZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 14:25:43 -0400
-Message-ID: <488F60A1.2080902@goop.org>
-Date: Tue, 29 Jul 2008 11:25:37 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 29 Jul 2008 14:26:14 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:45624 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752880AbYG2S0N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 14:26:13 -0400
+Date: Tue, 29 Jul 2008 12:26:11 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jim Meyering <jim@meyering.net>, linux-kernel@vger.kernel.org,
+       Martin Petersen <mkp@mkp.net>, Jeff Garzik <jeff@garzik.org>,
+       Matt Domsch <Matt_Domsch@Dell.com>
+Subject: Re: tools support for non-512 byte sector sizes
+Message-ID: <20080729182611.GB24924@parisc-linux.org>
+References: <488F524F.6020905@redhat.com>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Cliff Wickman <cpw@sgi.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       steiner@sgi.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: Comments on UV tlb flushing
-References: <488E644B.10801@goop.org>	 <200807291412.18495.nickpiggin@yahoo.com.au>	 <20080729133204.GA13138@sgi.com> <488F2C9B.9070306@goop.org> <86802c440807291113u59ba996dg340c8feba1039f3a@mail.gmail.com>
-In-Reply-To: <86802c440807291113u59ba996dg340c8feba1039f3a@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <488F524F.6020905@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Tue, Jul 29, 2008 at 7:43 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->   
->> Cliff Wickman wrote:
->>     
->>> I think that the Linux distributions are not going to build a special
->>> UV kernel, are they?  So every distro would have to be prompted to turn on
->>> CONFIG_X86_UV, or else their kernel is not going to boot on UV.
->>>
->>>       
->> Distros will generally turn on everything.  You could have it on by default
->> if the kernel is built for CONFIG_X86_GENERICARCH which enables support for
->> other big numa configurations.  I think distros generally build with that
->> enabled anyway.
->>     
->
-> config X86_GENERICARCH
->        bool "Generic architecture"
->         depends on X86_32
->   
+On Tue, Jul 29, 2008 at 01:24:31PM -0400, Ric Wheeler wrote:
+> Jim pinged me about the use case for having our tool chain (parted 
+> specifically) support devices with non-512 bytes sectors.
 
-Ah, overlooked that.
+Matt Domsch spoke with me about this at OLS.  I took that opportunity,
+and I'll take this one, to pimp my ata-ram driver which allows you to
+alter the sector sizse to whatever you want:
 
-OK, well, either way it still needs to be a separate config option.
+http://git.kernel.org/?p=linux/kernel/git/willy/misc.git;a=shortlog;h=ata-ram
 
-    J
+I'll admit to having not tested it with anything other than 512, but it
+ought to support 4096 byte sectors just fine.  I haven't looked at what
+would be required to support 520-byte sectors.
+
+Jeff, any interest in merging ata-ram soon?  I've got some users inside
+Intel, and Zab persuaded me to add the multiple port support last night,
+so it's not just useful for me.  I think it's also a nice template to
+have around to show how to write a minimal libata driver.
+
+> Off the top of my head, the following is the list of existing or soon to 
+> appear devices that could use this (taken from our thread last year, at
+> http://kerneltrap.org/mailarchive/linux-fsdevel/2007/3/11/317183):
+> 
+>    (1) R/W optical drives
+>    (2) S390 dasd devices have a 4096 byte sector
+>    (3) new 4096 byte disks (which intend to export a virtual 512 byte 
+> sector)
+> 
+> Anything else pop into mind? Any idea if SSD or FLASH devices have 
+> thoughts to use a non-512 byte sector size? What tools are most critical 
+> to support?
+> 
+> Thanks!
+> 
+> Ric
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
