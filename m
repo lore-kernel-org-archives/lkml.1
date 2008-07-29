@@ -1,72 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760121AbYG2Pql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbYG2Pxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760121AbYG2Pql (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 11:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759951AbYG2PqC
+	id S1756177AbYG2Pxv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 11:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbYG2Pxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 11:46:02 -0400
-Received: from outbound-mail-143.bluehost.com ([67.222.38.33]:41840 "HELO
-	outbound-mail-143.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753930AbYG2PqA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 11:46:00 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=O/D5EjBFaA2dvYZ0zrdFKZqkwXVxvtUzSB7Ia7Co0s+pZh4EBglyKNp8g8mXPMnGLYe/okO7ioBgIRDA/olrJ1uvli6IQWTxlVAF8o2mlHi/9sClRXTp9nudMVlNcUGQ;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] add iommu_num_pages helper function
-Date: Tue, 29 Jul 2008 08:45:28 -0700
-User-Agent: KMail/1.9.9
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, joerg.roedel@amd.com,
-       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       robert.richter@amd.com
-References: <20080725134159.GA7493@amd.com> <20080729110749.728c54e6.sfr@canb.auug.org.au> <20080729112724.GA11276@elte.hu>
-In-Reply-To: <20080729112724.GA11276@elte.hu>
+	Tue, 29 Jul 2008 11:53:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45699 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752604AbYG2Pxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 11:53:40 -0400
+Date: Tue, 29 Jul 2008 17:53:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [git pull] x86 fixes
+Message-ID: <20080729155323.GA25603@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807290845.28709.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, July 29, 2008 4:27 am Ingo Molnar wrote:
-> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > Hi Ingo,
-> >
-> > On Sat, 26 Jul 2008 15:41:56 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> > > ok, i'll apply the 3 patches to tip/x86/iommu. As usual, feel free to
-> > > send IOMMU cleanups/generalizations/fixes against tip/master:
-> > >
-> > >   http://people.redhat.com/mingo/tip.git/README
-> >
-> > So, I assume a patch created on July 25 is not destined for 2.6.27,
-> > right?  Especially since it breaks another architecture build and has
-> > only made it to linux-next on July 29 ... and needs more work given
-> > the comments already on this patch.
->
-> Correct, they were not intended for immediate upstream merging, they
-> werent even in auto-x86-next so there was no meaningful linux-next
-> exposure.
->
-> I was surprised they went upstream via the PCI tree yesterday, just
-> hours after i sent them over to Jesse and about an hour before -rc1 was
-> released. [ Nor did intend the core/generic-dma-coherent bits to go
-> upstream right before -rc1 - although those seem to be problem-free so
-> far. ]
->
-> I stopped sending non-urgent patches to Linus days ago, to let things
-> calm down for a smooth -rc1 release.
 
-Yeah I had a few things that I wanted to get upstream before -rc1, so I was 
-probably a bit hasty with these bits (I thought they had had more soak time).  
-Sounds like things are all worked out now though...
+Linus,
 
-Thanks,
-Jesse
+Please pull the latest x86-fixes-for-linus git tree from:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+
+the iommu patch undoes the build breakage to Sparc introduced yesterday.
+
+out-of-topic modifications in x86-fixes-for-linus:
+--------------------------------------------------
+include/linux/iommu-helper.h       # 8978b74: generic, x86: fix add iommu_num_p
+init/calibrate.c                   # d7ba11d: x86: remove stray <6> in BogoMIPS
+lib/iommu-helper.c                 # 8978b74: generic, x86: fix add iommu_num_p
+
+ Thanks,
+
+	Ingo
+
+------------------>
+Bernhard Walle (1):
+      x86: move dma32_reserve_bootmem() after reserve_crashkernel()
+
+FUJITA Tomonori (1):
+      generic, x86: fix add iommu_num_pages helper function
+
+Joe Perches (1):
+      x86: remove stray <6> in BogoMIPS printk
+
+
+ arch/x86/kernel/pci-dma.c    |    8 ++++++++
+ arch/x86/kernel/setup.c      |   13 +++++++++----
+ include/asm-x86/iommu.h      |    2 ++
+ include/linux/iommu-helper.h |    1 -
+ init/calibrate.c             |    2 +-
+ lib/iommu-helper.c           |    8 --------
+ 6 files changed, 20 insertions(+), 14 deletions(-)
+
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index 8dbffb8..87d4d69 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -123,6 +123,14 @@ void __init pci_iommu_alloc(void)
+ 
+ 	pci_swiotlb_init();
+ }
++
++unsigned long iommu_num_pages(unsigned long addr, unsigned long len)
++{
++	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
++
++	return size >> PAGE_SHIFT;
++}
++EXPORT_SYMBOL(iommu_num_pages);
+ #endif
+ 
+ /*
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index b520dae..2d88858 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -788,10 +788,6 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	initmem_init(0, max_pfn);
+ 
+-#ifdef CONFIG_X86_64
+-	dma32_reserve_bootmem();
+-#endif
+-
+ #ifdef CONFIG_ACPI_SLEEP
+ 	/*
+ 	 * Reserve low memory region for sleep support.
+@@ -806,6 +802,15 @@ void __init setup_arch(char **cmdline_p)
+ #endif
+ 	reserve_crashkernel();
+ 
++#ifdef CONFIG_X86_64
++	/*
++	 * dma32_reserve_bootmem() allocates bootmem which may conflict
++	 * with the crashkernel command line, so do that after
++	 * reserve_crashkernel()
++	 */
++	dma32_reserve_bootmem();
++#endif
++
+ 	reserve_ibft_region();
+ 
+ #ifdef CONFIG_KVM_CLOCK
+diff --git a/include/asm-x86/iommu.h b/include/asm-x86/iommu.h
+index ecc8061..5f888cc 100644
+--- a/include/asm-x86/iommu.h
++++ b/include/asm-x86/iommu.h
+@@ -7,6 +7,8 @@ extern struct dma_mapping_ops nommu_dma_ops;
+ extern int force_iommu, no_iommu;
+ extern int iommu_detected;
+ 
++extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
++
+ #ifdef CONFIG_GART_IOMMU
+ extern int gart_iommu_aperture;
+ extern int gart_iommu_aperture_allowed;
+diff --git a/include/linux/iommu-helper.h b/include/linux/iommu-helper.h
+index f8598f5..c975caf 100644
+--- a/include/linux/iommu-helper.h
++++ b/include/linux/iommu-helper.h
+@@ -8,4 +8,3 @@ extern unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
+ 				      unsigned long align_mask);
+ extern void iommu_area_free(unsigned long *map, unsigned long start,
+ 			    unsigned int nr);
+-extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
+diff --git a/init/calibrate.c b/init/calibrate.c
+index 7963e3f..a379c90 100644
+--- a/init/calibrate.c
++++ b/init/calibrate.c
+@@ -170,7 +170,7 @@ void __cpuinit calibrate_delay(void)
+ 				loops_per_jiffy &= ~loopbit;
+ 		}
+ 	}
+-	printk(KERN_INFO "%lu.%02lu BogoMIPS (lpj=%lu)\n",
++	printk(KERN_CONT "%lu.%02lu BogoMIPS (lpj=%lu)\n",
+ 			loops_per_jiffy/(500000/HZ),
+ 			(loops_per_jiffy/(5000/HZ)) % 100, loops_per_jiffy);
+ }
+diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
+index 889ddce..a3b8d4c 100644
+--- a/lib/iommu-helper.c
++++ b/lib/iommu-helper.c
+@@ -80,11 +80,3 @@ void iommu_area_free(unsigned long *map, unsigned long start, unsigned int nr)
+ 	}
+ }
+ EXPORT_SYMBOL(iommu_area_free);
+-
+-unsigned long iommu_num_pages(unsigned long addr, unsigned long len)
+-{
+-	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
+-
+-	return size >> PAGE_SHIFT;
+-}
+-EXPORT_SYMBOL(iommu_num_pages);
