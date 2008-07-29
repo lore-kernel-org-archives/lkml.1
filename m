@@ -1,32 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbYG2GDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757739AbYG2GDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756924AbYG2GDM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 02:03:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbYG2GB4
+	id S1757739AbYG2GDr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 02:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbYG2GB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 02:01:56 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:29879 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755623AbYG2GBq (ORCPT
+	Tue, 29 Jul 2008 02:01:59 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:5661 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755047AbYG2GBw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 02:01:46 -0400
+	Tue, 29 Jul 2008 02:01:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=GQ2SM+ITVDEY751il1o141VbQeH8Xq4H/uKMnLHrFSe+m6dUdPfB60uzxVhy/4EQtp
-         MO+E1u3A9mlsa2wMpghJ6z3fTz4k11ho4OVwL8O11wp/csWNydxfhrP0BFxA8o21X6fy
-         jbTHzeqPze0RHPCkNcMKjTR/o78KhUCtbijWk=
-Subject: [PATCH 5/8] media: drx397xD replace __FUNCTION__ with __func__
+        b=umb68E98zIZd1slMHpfMoK8G5qPggA2HtlAbr6mB3QzlmQPRH6UOX1PzgKz3AVR7no
+         UhGfX5Tx5UVCDjgjYjtqqpv6iSy7TFETJr9XqG7ciDBdJvlxSgZNNhSoTNoXYkKO9BwG
+         EWtu+Gyq+cfbcXtC/f5KdfTZt5L1/Yte/1YqI=
+Subject: [PATCH 7/8] powerpc: replace __FUNCTION__ with __func__
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       v4l-maintainer <v4l-dvb-maintainer@linuxtv.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Mon, 28 Jul 2008 23:01:35 -0700
-Message-Id: <1217311296.23389.28.camel@brick>
+Date: Mon, 28 Jul 2008 23:01:36 -0700
+Message-Id: <1217311296.23389.30.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -38,175 +37,62 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/media/dvb/frontends/drx397xD.c |   34 ++++++++++++++++----------------
- drivers/media/dvb/frontends/drx397xD.h |    2 +-
- 2 files changed, 18 insertions(+), 18 deletions(-)
+ arch/powerpc/kernel/lparcfg.c        |    8 ++++----
+ arch/powerpc/platforms/pseries/cmm.c |    4 ++--
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/media/dvb/frontends/drx397xD.c b/drivers/media/dvb/frontends/drx397xD.c
-index 3cbed87..e19147b 100644
---- a/drivers/media/dvb/frontends/drx397xD.c
-+++ b/drivers/media/dvb/frontends/drx397xD.c
-@@ -96,7 +96,7 @@ static void drx_release_fw(struct drx397xD_state *s)
- {
- 	fw_ix_t ix = s->chip_rev;
- 
--	pr_debug("%s\n", __FUNCTION__);
-+	pr_debug("%s\n", __func__);
- 
- 	write_lock(&fw[ix].lock);
- 	if (fw[ix].refcnt) {
-@@ -113,7 +113,7 @@ static int drx_load_fw(struct drx397xD_state *s, fw_ix_t ix)
- 	size_t size, len;
- 	int i = 0, j, rc = -EINVAL;
- 
--	pr_debug("%s\n", __FUNCTION__);
-+	pr_debug("%s\n", __func__);
- 
- 	if (ix < 0 || ix >= ARRAY_SIZE(fw))
+diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
+index 9f856a0..4281bd0 100644
+--- a/arch/powerpc/kernel/lparcfg.c
++++ b/arch/powerpc/kernel/lparcfg.c
+@@ -505,10 +505,10 @@ static ssize_t update_ppp(u64 *entitlement, u8 *weight)
  		return -EINVAL;
-@@ -197,10 +197,10 @@ static int write_fw(struct drx397xD_state *s, blob_ix_t ix)
- 	int len, rc = 0, i = 0;
  
- 	if (ix < 0 || ix >= ARRAY_SIZE(blob_name)) {
--		pr_debug("%s drx_fw_ix_t out of range\n", __FUNCTION__);
-+		pr_debug("%s drx_fw_ix_t out of range\n", __func__);
+ 	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
+-	         __FUNCTION__, ppp_data.entitlement, ppp_data.weight);
++	         __func__, ppp_data.entitlement, ppp_data.weight);
+ 
+ 	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
+-		 __FUNCTION__, new_entitled, new_weight);
++		 __func__, new_entitled, new_weight);
+ 
+ 	retval = plpar_hcall_norets(H_SET_PPP, new_entitled, new_weight);
+ 	return retval;
+@@ -551,10 +551,10 @@ static ssize_t update_mpp(u64 *entitlement, u8 *weight)
  		return -EINVAL;
- 	}
--	pr_debug("%s %s\n", __FUNCTION__, blob_name[ix]);
-+	pr_debug("%s %s\n", __func__, blob_name[ix]);
  
- 	read_lock(&fw[s->chip_rev].lock);
- 	data = fw[s->chip_rev].data[ix];
-@@ -305,7 +305,7 @@ static int PLL_Set(struct drx397xD_state *s,
- 	u32 f_tuner, f = fep->frequency;
- 	int rc;
+ 	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
+-	         __FUNCTION__, mpp_data.entitled_mem, mpp_data.mem_weight);
++	         __func__, mpp_data.entitled_mem, mpp_data.mem_weight);
  
--	pr_debug("%s\n", __FUNCTION__);
-+	pr_debug("%s\n", __func__);
+ 	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
+-	         __FUNCTION__, new_entitled, new_weight);
++	         __func__, new_entitled, new_weight);
  
- 	if ((f > s->frontend.ops.tuner_ops.info.frequency_max) ||
- 	    (f < s->frontend.ops.tuner_ops.info.frequency_min))
-@@ -325,7 +325,7 @@ static int PLL_Set(struct drx397xD_state *s,
- 		return rc;
+ 	rc = plpar_hcall_norets(H_SET_MPP, new_entitled, new_weight);
+ 	return rc;
+diff --git a/arch/powerpc/platforms/pseries/cmm.c b/arch/powerpc/platforms/pseries/cmm.c
+index 38fe32a..5cd4d27 100644
+--- a/arch/powerpc/platforms/pseries/cmm.c
++++ b/arch/powerpc/platforms/pseries/cmm.c
+@@ -121,7 +121,7 @@ static long cmm_alloc_pages(long nr)
+ 			npa = (struct cmm_page_array *)__get_free_page(GFP_NOIO | __GFP_NOWARN |
+ 								       __GFP_NORETRY | __GFP_NOMEMALLOC);
+ 			if (!npa) {
+-				pr_info("%s: Can not allocate new page list\n", __FUNCTION__);
++				pr_info("%s: Can not allocate new page list\n", __func__);
+ 				free_page(addr);
+ 				break;
+ 			}
+@@ -138,7 +138,7 @@ static long cmm_alloc_pages(long nr)
+ 		}
  
- 	*df_tuner = f_tuner - f;
--	pr_debug("%s requested %d [Hz] tuner %d [Hz]\n", __FUNCTION__, f,
-+	pr_debug("%s requested %d [Hz] tuner %d [Hz]\n", __func__, f,
- 		 f_tuner);
- 
- 	return 0;
-@@ -340,7 +340,7 @@ static int SC_WaitForReady(struct drx397xD_state *s)
- 	int cnt = 1000;
- 	int rc;
- 
--	pr_debug("%s\n", __FUNCTION__);
-+	pr_debug("%s\n", __func__);
- 
- 	while (cnt--) {
- 		rc = RD16(s, 0x820043);
-@@ -354,7 +354,7 @@ static int SC_SendCommand(struct drx397xD_state *s, int cmd)
- {
- 	int rc;
- 
--	pr_debug("%s\n", __FUNCTION__);
-+	pr_debug("%s\n", __func__);
- 
- 	WR16(s, 0x820043, cmd);
- 	SC_WaitForReady(s);
-@@ -368,7 +368,7 @@ static int HI_Command(struct drx397xD_state *s, u16 cmd)
- {
- 	int rc, cnt = 1000;
- 
--	pr_debug("%s\n", __FUNCTION__);
-+	pr_debug("%s\n", __func__);
- 
- 	rc = WR16(s, 0x420032, cmd);
- 	if (rc < 0)
-@@ -389,7 +389,7 @@ static int HI_Command(struct drx397xD_state *s, u16 cmd)
- static int HI_CfgCommand(struct drx397xD_state *s)
- {
- 
--	pr_debug("%s\n", __FUNCTION__);
-+	pr_debug("%s\n", __func__);
- 
- 	WR16(s, 0x420033, 0x3973);
- 	WR16(s, 0x420034, s->config.w50);	// code 4, log 4
-@@ -419,7 +419,7 @@ static int SetCfgIfAgc(struct drx397xD_state *s, struct drx397xD_CfgIfAgc *agc)
- 	u16 w0C = agc->w0C;
- 	int quot, rem, i, rc = -EINVAL;
- 
--	pr_debug("%s\n", __FUNCTION__);
-+	pr_debug("%s\n", __func__);
- 
- 	if (agc->w04 > 0x3ff)
- 		goto exit_rc;
-@@ -478,7 +478,7 @@ static int SetCfgRfAgc(struct drx397xD_state *s, struct drx397xD_CfgRfAgc *agc)
- 	u16 w06 = agc->w06;
- 	int rc = -1;
- 
--	pr_debug("%s %d 0x%x 0x%x\n", __FUNCTION__, agc->d00, w04, w06);
-+	pr_debug("%s %d 0x%x 0x%x\n", __func__, agc->d00, w04, w06);
- 
- 	if (w04 > 0x3ff)
- 		goto exit_rc;
-@@ -554,7 +554,7 @@ static int CorrectSysClockDeviation(struct drx397xD_state *s)
- 	int lockstat;
- 	u32 clk, clk_limit;
- 
--	pr_debug("%s\n", __FUNCTION__);
-+	pr_debug("%s\n", __func__);
- 
- 	if (s->config.d5C == 0) {
- 		EXIT_RC(WR16(s, 0x08200e8, 0x010));
-@@ -598,7 +598,7 @@ static int CorrectSysClockDeviation(struct drx397xD_state *s)
- 
- 	if (clk - s->config.f_osc * 1000 + clk_limit <= 2 * clk_limit) {
- 		s->f_osc = clk;
--		pr_debug("%s: osc %d %d [Hz]\n", __FUNCTION__,
-+		pr_debug("%s: osc %d %d [Hz]\n", __func__,
- 			 s->config.f_osc * 1000, clk - s->config.f_osc * 1000);
- 	}
- 	rc = WR16(s, 0x08200e8, 0);
-@@ -610,7 +610,7 @@ static int ConfigureMPEGOutput(struct drx397xD_state *s, int type)
- {
- 	int rc, si, bp;
- 
--	pr_debug("%s\n", __FUNCTION__);
-+	pr_debug("%s\n", __func__);
- 
- 	si = s->config.wA0;
- 	if (s->config.w98 == 0) {
-@@ -646,7 +646,7 @@ static int drx_tune(struct drx397xD_state *s,
- 
- 	int rc, df_tuner;
- 	int a, b, c, d;
--	pr_debug("%s %d\n", __FUNCTION__, s->config.d60);
-+	pr_debug("%s %d\n", __func__, s->config.d60);
- 
- 	if (s->config.d60 != 2)
- 		goto set_tuner;
-@@ -1082,7 +1082,7 @@ static int drx397x_init(struct dvb_frontend *fe)
- 	struct drx397xD_state *s = fe->demodulator_priv;
- 	int rc;
- 
--	pr_debug("%s\n", __FUNCTION__);
-+	pr_debug("%s\n", __func__);
- 
- 	s->config.rfagc.d00 = 2;	/* 0x7c */
- 	s->config.rfagc.w04 = 0;
-diff --git a/drivers/media/dvb/frontends/drx397xD.h b/drivers/media/dvb/frontends/drx397xD.h
-index ddc7a07..2ad1ea0 100644
---- a/drivers/media/dvb/frontends/drx397xD.h
-+++ b/drivers/media/dvb/frontends/drx397xD.h
-@@ -122,7 +122,7 @@ extern struct dvb_frontend* drx397xD_attach(const struct drx397xD_config *config
- static inline struct dvb_frontend* drx397xD_attach(const struct drx397xD_config *config,
- 					   struct i2c_adapter *i2c)
- {
--	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __FUNCTION__);
-+	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
- 	return NULL;
- }
- #endif /* CONFIG_DVB_DRX397XD */
+ 		if ((rc = plpar_page_set_loaned(__pa(addr)))) {
+-			pr_err("%s: Can not set page to loaned. rc=%ld\n", __FUNCTION__, rc);
++			pr_err("%s: Can not set page to loaned. rc=%ld\n", __func__, rc);
+ 			spin_unlock(&cmm_lock);
+ 			free_page(addr);
+ 			break;
 -- 
 1.6.0.rc1.154.ge3fc
 
