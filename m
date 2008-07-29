@@ -1,70 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbYG2V7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758065AbYG2WBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756701AbYG2V7h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 17:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYG2V73
+	id S1758065AbYG2WBj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 18:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYG2WBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 17:59:29 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:11586 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753265AbYG2V72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 17:59:28 -0400
-Date: Tue, 29 Jul 2008 23:59:42 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux v2.6.27-rc1
-Message-ID: <20080729215942.GA22760@uranus.ravnborg.org>
-References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org> <20080729213746.GA22548@uranus.ravnborg.org> <alpine.LFD.1.10.0807291439270.3334@nehalem.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807291439270.3334@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 29 Jul 2008 18:01:30 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:25773 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752817AbYG2WB3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 18:01:29 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: David Airlie <airlied@linux.ie>
+Subject: [PATCH] amd64-agp: run fallback when no bridges found,
+	not when driver registration fails
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Dave Jones <davej@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Date: Tue, 29 Jul 2008 16:01:13 -0600
+Message-ID: <20080729220058.27695.19873.stgit@tigger.helgaas>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 02:42:00PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 29 Jul 2008, Sam Ravnborg wrote:
-> > 
-> > But will you accept this stuff now or will we have to wait until
-> > next merge window?
-> 
-> if the patches are really small adn the resulting build is well tested 
-> (ignoring the actual _move_ operation), I'm ok with taking them.
 
-For arm the actual diff is:
- Makefile                 |   20 +++++++-------------
- boot/compressed/Makefile |    3 ---
- tools/Makefile           |    1 +
- 3 files changed, 8 insertions(+), 16 deletions(-)
+I think the intent was that if no bridges matched agp_amd64_pci_table[],
+we would fall back to checking for any bridge with the AGP capability.
+But in the current code, we execute the fallback path only when
+pci_register_driver() itself fails, which is unrelated to whether any
+matching devices were found.
 
-But on top of this there are ~600 files that needed a
-replacement of:
-#include <asm/arch/foo.h>
-to
-#include <arch/foo.h>
+This patch counts the AGP bridges found in the probe() method and
+executes the fallback path when none is found.
 
-So maybe not such a minimal patch - because I wanted to drop all
-the symlink stuff.
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+---
 
-> 
-> In fact, in many ways I'd _prefer_ to do it now, rather than have it 
-> pending and then do it durign the next merge window when there are a lot 
-> of non-movement changes too.
-> 
-> > Now is a good time as development just started for next kernel.
-> > And testing is simple - does it build?
-> 
-> Well, simple and simple. I'd love to see x86 done, but you yourself said 
-> you haven't even dared look at UM. Which is the thing that is most likely 
-> to have odd build things with direct symlinks etc.
-> 
-> (But I haven't looked either. Maybe I'm wrong, and it's all trivial).
-um i never trivial :-(
-But I will give it a try - but I have to sleep first.
+ drivers/char/agp/amd64-agp.c |   15 +++++++++++++--
+ 1 files changed, 13 insertions(+), 2 deletions(-)
 
-	Sam
+
+diff --git a/drivers/char/agp/amd64-agp.c b/drivers/char/agp/amd64-agp.c
+index 481ffe8..7345f9a 100644
+--- a/drivers/char/agp/amd64-agp.c
++++ b/drivers/char/agp/amd64-agp.c
+@@ -34,6 +34,7 @@
+ 
+ static struct resource *aperture_resource;
+ static int __initdata agp_try_unsupported = 1;
++static int agp_bridges_found;
+ 
+ static void amd64_tlbflush(struct agp_memory *temp)
+ {
+@@ -489,6 +490,7 @@ static int __devinit agp_amd64_probe(struct pci_dev *pdev,
+ {
+ 	struct agp_bridge_data *bridge;
+ 	u8 cap_ptr;
++	int err;
+ 
+ 	cap_ptr = pci_find_capability(pdev, PCI_CAP_ID_AGP);
+ 	if (!cap_ptr)
+@@ -536,7 +538,12 @@ static int __devinit agp_amd64_probe(struct pci_dev *pdev,
+ 	}
+ 
+ 	pci_set_drvdata(pdev, bridge);
+-	return agp_add_bridge(bridge);
++	err = agp_add_bridge(bridge);
++	if (err < 0)
++		return err;
++
++	agp_bridges_found++;
++	return 0;
+ }
+ 
+ static void __devexit agp_amd64_remove(struct pci_dev *pdev)
+@@ -713,7 +720,11 @@ int __init agp_amd64_init(void)
+ 
+ 	if (agp_off)
+ 		return -EINVAL;
+-	if (pci_register_driver(&agp_amd64_pci_driver) < 0) {
++	err = pci_register_driver(&agp_amd64_pci_driver);
++	if (err < 0)
++		return err;
++
++	if (agp_bridges_found == 0) {
+ 		struct pci_dev *dev;
+ 		if (!agp_try_unsupported && !agp_try_unsupported_boot) {
+ 			printk(KERN_INFO PFX "No supported AGP bridge found.\n");
+
