@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757041AbYG2Wsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbYG2W4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757041AbYG2Wsa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 18:48:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYG2WsT
+	id S1758256AbYG2W4z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 18:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754269AbYG2W4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 18:48:19 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:12934 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755534AbYG2WsS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 18:48:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Ai6N3DVhhpWGY30bLCZoogrgCMRfm0AhsC9JPOXexazg/YoRR+ooINRwCLEObxxelT
-         Np5etnxRJ0QwT1Sjd0Ir1oqvBuyEbQoBQtBuHTC1N5vB5OqqK+W8u0j3kRQ/FGizG2Ww
-         29tPv8wKhM0QYNqB7ycHs2ePbZEIXyHEd4V0Q=
-Message-ID: <dd18b0c30807291548u285bb00eqd376e0e96cede86c@mail.gmail.com>
-Date: Tue, 29 Jul 2008 15:48:17 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: NETDEV WATCHDOG: wifi0: transmit timed out
-Cc: arjan@infradead.org, komurojun-mbn@nifty.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20080729.134706.249036102.davem@davemloft.net>
+	Tue, 29 Jul 2008 18:56:47 -0400
+Received: from namei.org ([69.55.235.186]:49888 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753579AbYG2W4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 18:56:46 -0400
+Date: Wed, 30 Jul 2008 08:55:40 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Howells <dhowells@redhat.com>, Al Viro <viro@ftp.linux.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT] New Credentials API (preliminary patches for 2.6.27)
+ [updated]
+In-Reply-To: <Xine.LNX.4.64.0807291043190.18657@us.intercode.com.au>
+Message-ID: <Xine.LNX.4.64.0807300841430.10277@us.intercode.com.au>
+References: <Xine.LNX.4.64.0807260543320.24288@us.intercode.com.au>
+ <Xine.LNX.4.64.0807291043190.18657@us.intercode.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080525112308.03a5fda7.komurojun-mbn@nifty.com>
-	 <20080729215315.5a505fe7.komurojun-mbn@nifty.com>
-	 <20080729065859.2bcc65ed@infradead.org>
-	 <20080729.134706.249036102.davem@davemloft.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 1:47 PM, David Miller <davem@davemloft.net> wrote:
-> From: Arjan van de Ven <arjan@infradead.org>
-> Date: Tue, 29 Jul 2008 06:58:59 -0700
->
->> On Tue, 29 Jul 2008 21:53:15 +0900
->> Komuro <komurojun-mbn@nifty.com> wrote:
->>
->> > Hi,
->> >
->> > Please try to comment out the "WARN_ON_ONCE"
->> > at net/sched/sched_generic.c.
->> >
->>
->> "I have a hardware failure so I'll comment out the message that says
->> so, and then I won't have a failure". Yeah that'll work well.
->
-> Yes, this is indeed a recidulious suggestion, to hide the problem
-> instead of trying to figure out what it might actually be.
->
-> Komuro has a serious problem accepting the fact that this condition is
-> in fact an abnormal error should should be logged, and he keeps
-> pushing to get this WARN_ON() removed over and over again.
->
-> I'm just ignoring him at this point.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+On Tue, 29 Jul 2008, James Morris wrote:
 
-I should of mentioned the madwifi module I've been
-using is from february, so maybe madwifi took care of this already.
-As for experimanting with ath9k I pulled yesterday and compiled,
-but from what I saw ath9k seems to not handle wpa keys that well.
-so back to madwifi until later on.
+> On Sat, 26 Jul 2008, James Morris wrote:
+> 
+> > A new credentials framework has been developed by David Howells.  The code 
+> > has been through several iterations of posting and review, and is 
+> > considered by various folk to be ready to merge into linux-next.
+> 
+> These patches have been updated by David to resolve conflicts in current 
+> git, re-tested, and may be pulled cleanly per below.
+> 
 
+Linus,
+
+Would you be able to provide some guidance on a strategy for getting these 
+credentials changes merged?  I gather they've missed the boat for 2.6.27 
+(although, they are now essentially reduced to API-level changes, and not 
+as scary as they look).
+
+Stephen is not keen on taking them in linux-next, as there'll be constant 
+merge conflicts, and I'm not sure whether there'd be value in dropping 
+them in at the end each day.
+
+There seems to be two options at this stage:
+
+1. Drop them into the front of linux-next and ask developers to maintain
+trees against that.  Perhaps this is how API changes in general could 
+happen?
+
+2. Maintain them separately until the very start of the next merge window 
+and get them in up front when it opens.
+
+Thoughts?
+
+
+
+- James
 -- 
-Justin P. Mattock
+James Morris
+<jmorris@namei.org>
