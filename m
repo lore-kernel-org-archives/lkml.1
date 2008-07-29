@@ -1,124 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760432AbYG2Urx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760132AbYG2Utu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760432AbYG2Urx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 16:47:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757084AbYG2UrU
+	id S1760132AbYG2Utu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 16:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYG2Utk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 16:47:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44035 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756509AbYG2UrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 16:47:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux v2.6.27-rc1: problem with firmware stuff
-Date: Tue, 29 Jul 2008 22:49:47 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org>
+	Tue, 29 Jul 2008 16:49:40 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:60166 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752679AbYG2Utj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 16:49:39 -0400
+Date: Tue, 29 Jul 2008 21:49:24 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Greg KH <gregkh@suse.de>
+cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Bernhard Walle <bwalle@suse.de>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: linux-next: Tree for July 29
+In-Reply-To: <20080729181639.GA21311@suse.de>
+Message-ID: <Pine.LNX.4.64.0807292145220.28604@blonde.site>
+References: <20080729172337.b3d74100.sfr@canb.auug.org.au>
+ <200807291825.14281.bzolnier@gmail.com> <20080729181639.GA21311@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807292249.48050.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 29 of July 2008, Linus Torvalds wrote:
+On Tue, 29 Jul 2008, Greg KH wrote:
+> On Tue, Jul 29, 2008 at 06:25:14PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > On Tuesday 29 July 2008, Stephen Rothwell wrote:
+> > > 
+> > > Changes since next-20080728:
+> > 
+> > I keep reverting commit 0e3638d1e04040121af00195f7e4628078246489 ("warn
+> > when statically-allocated kobjects are used") with each linux-next release
+> > to make it work on my x86_32 laptop (http://lkml.org/lkml/2008/7/19/114).
+> > 
+> > Depending on the day I either forget to revert it on a first try or (lead by
+> > incurable optimism) I don't try to revert it in hope that it was fixed.
+> > 
+> > Unfortunately the result is always the same cursing-during-qemu-test-run
+> > -> git-revert -> recompile cycle and a needless time loss.
+> > 
+> > Could we have some action taken please?
 > 
-> It's two weeks (and one day), and the merge window is over.
+> What is the problem with this patch that has caused it to suddenly
+> keeping the boot from working?  Is the code in the patch warning you of
+> objects that are not properly being initialized?
 > 
-> Finally. I don't know why, but this one really did feel pretty dang busy. 
-> And the size of the -rc1 patch bears that out - at 12MB, it's about 50% 
-> bigger than 26-rc1 (but not that much bigger than 24/25-rc1, so it's not 
-> like it's anything unheard of).
-> 
-> The pure size of the -rc's _is_ making me a bit nervous, though. Sure, it 
-> means that we are good at merging it all, but I have to say that I 
-> sometimes wonder if we don't merge too much in one go, and even our 
-> current (fairly short) release cycle is actually too big.
-> 
-> Anyway, that's a discussion for some other event.
-> 
-> Much of -rc1 was in linux-next, but certainly not everything. We'll see 
-> how that whole thing ends up evolving - it certainly didn't solve all 
-> problems, and there was some bickering about things that weren't there 
-> (and some things that mostly were ;), but maybe it helped.
-> 
-> There's a ton of new stuff in there, but at least personally the 
-> interesting things are the BKL pushdown and perhaps the introduction of 
-> the lockless get_user_pages_fast(). The build system also got updated to 
-> allow moving the architecture include files ("include/asm-xyz") into the 
-> architecture subdirectories ("arch/xyz/include/asm"), and sparc seems to 
-> have taken advantage of that already.
-> 
-> But those changes are just small details in the end. As usual, the bulk of 
-> changes are all to device drivers (roughly half, as usual), with the arch 
-> directory amounting to about half of the remainder. Dirstat:
-> 
->    3.2% arch/arm/
->    9.2% arch/ppc/
->   24.6% arch/
->    5.2% drivers/char/drm/
->    6.3% drivers/char/
->    4.5% drivers/gpu/drm/
->    4.5% drivers/gpu/
->    4.6% drivers/media/video/
->    5.5% drivers/media/
->    3.0% drivers/net/wireless/
->   10.7% drivers/net/
->    6.4% drivers/usb/misc/
->    4.7% drivers/usb/serial/
->   12.9% drivers/usb/
->   51.2% drivers/
->    4.4% firmware/
->    3.7% fs/
->    9.2% include/
-> 
-> where the bulk of that fs/ update is the merge of the UBI filesystem, to 
-> pick one fairly sizeable chunk outside of arch or drivers (there's omfs 
-> too, but that's tiny in comparison).
-> 
-> Other stuff? tracing. firmware loading.
+> I'll be glad to fix this if possible.
 
-That one happens to break things for me badly:
+Isn't this the opposite end of the same problem for which Bernhard
+has been repeatedly trying to find a taker for his patch:
 
-rafael@chimera:~/src/linux-2.6> make O=../build/mainline/chimera -j5
-  GEN     /home/rafael/src/build/mainline/chimera/Makefile
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  Using /home/rafael/src/linux-2.6 as source for kernel
-  CALL    /home/rafael/src/linux-2.6/scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  Building modules, stage 2.
-Kernel: arch/x86/boot/bzImage is ready  (#208)
-  MODPOST 564 modules
-  IHEX2FW firmware/emi26/loader.fw
-Failed to open destination file: Permission deniedihex2fw: Convert ihex files into binary representation for use by Linux kernel
-usage: ihex2fw [<options>] <src.HEX> <dst.fw>
-       -w: wide records (16-bit length)
-       -s: sort records by address
-  IHEX2FW firmware/emi26/bitstream.fw
-  IHEX2FW firmware/emi26/firmware.fw
-Failed to open destination file: Permission deniedihex2fw: Convert ihex files into binary representation for use by Linux kernel
-usage: ihex2fw [<options>] <src.HEX> <dst.fw>
-       -w: wide records (16-bit length)
-       -s: sort records by address
-make[2]: *** [firmware/emi26/loader.fw] Error 1
-make[2]: *** Waiting for unfinished jobs....
-make[2]: *** [firmware/emi26/bitstream.fw] Error 1
-Failed to open destination file: Permission deniedihex2fw: Convert ihex files into binary representation for use by Linux kernel
-usage: ihex2fw [<options>] <src.HEX> <dst.fw>
-       -w: wide records (16-bit length)
-       -s: sort records by address
-make[2]: *** [firmware/emi26/firmware.fw] Error 1
-make[1]: *** [modules] Error 2
-make: *** [sub-make] Error 2
+http://article.gmane.org/gmane.linux.kernel.kexec/1882
 
-Thanks,
-Rafael
+Hugh
