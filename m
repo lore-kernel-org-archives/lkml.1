@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688AbYG2GEC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYG2GQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752688AbYG2GEC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 02:04:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbYG2GCA
+	id S1753902AbYG2GQl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 02:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYG2GQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 02:02:00 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:4620 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756353AbYG2GBz (ORCPT
+	Tue, 29 Jul 2008 02:16:32 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43084 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751801AbYG2GQb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 02:01:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=KR90rl9oXcq39iJu5XIxVJXPzLvF/CcNoL4aJbIKSYsIH3m71LhklwIma6jyJ8OoX/
-         IWuc0yU92SxFT4sSSWKNNwcJYx9eQzEVyxNzfWyK/x410yfSPHAolV+9706ynpn76J0j
-         i42jy0w2TTU9i3VTT7kpgMtbB2ARJR1vsbjTU=
-Subject: [PATCH 8/8] misc: replace __FUNCTION__ with __func__
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+	Tue, 29 Jul 2008 02:16:31 -0400
+Subject: Re: [PATCH] RCU: implement rcu_read_[un]lock_preempt()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: dipankar@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul E McKenney <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <488E76A2.9050804@kernel.org>
+References: <487AEAC6.60307@kernel.org> <1216188469.5232.0.camel@twins>
+	 <487D98AC.3020005@kernel.org> <1217258001.18049.7.camel@twins>
+	 <488E76A2.9050804@kernel.org>
 Content-Type: text/plain
-Date: Mon, 28 Jul 2008 23:01:37 -0700
-Message-Id: <1217311297.23389.31.camel@brick>
+Date: Tue, 29 Jul 2008 08:15:29 +0200
+Message-Id: <1217312129.18049.44.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -32,167 +32,75 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__FUNCTION__ is gcc-specific, use __func__
+On Tue, 2008-07-29 at 10:47 +0900, Tejun Heo wrote:
+> Peter Zijlstra wrote:
+> >>> If you need preempt off you need it for other reasons than RCU, so
+> >>> mixing it in the interface doesn't make sense to me.
+> >> Hmmm... the point of the interface is avoiding doing double preemption
+> >> operations as on common configurations rcu_read_lock() disables
+> >> preemption.
+> > 
+> > Should be really cheap then, because the cacheline is already hot.
+> 
+> Yeah, it is, so it is eventually a peripheral issue.
+> 
+> >>   Yes, it's for different purposes but we have two partially
+> >> overlapping ops and implementing combined / collapsed ops for such cases
+> >> is acceptable, I think.
+> > 
+> > They only overlap for !PREEMPT_RCU || !PREEMPT_RT
+> 
+> That part is pretty large tho.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-The leftovers.
+But the fact is that PREEMPT_RCU is upstream now..
 
- arch/m32r/kernel/process.c                 |    2 +-
- arch/x86/kvm/x86.c                         |    2 +-
- arch/xtensa/kernel/irq.c                   |    2 +-
- drivers/gpu/drm/i915/i915_dma.c            |    4 ++--
- drivers/gpu/drm/i915/i915_irq.c            |    2 +-
- drivers/input/joystick/xpad.c              |    4 ++--
- drivers/media/video/cx23885/cx23885-core.c |    2 +-
- drivers/pci/hotplug/pciehp_hpc.c           |    2 +-
- drivers/s390/net/ctcm_mpc.c                |    2 +-
- mm/bootmem.c                               |    2 +-
- 10 files changed, 12 insertions(+), 12 deletions(-)
+> >> Using get_cpu() or separate preempt_disable() wouldn't incur noticeable
+> >> performance difference as preemption is really cheap to manipulate but
+> >> both per-cpu and RCU are for performance optimization and I think having
+> >> combined ops is a good idea.
+> > 
+> > I don't as its a nightmare to sort out on -rt, where get_cpu() can be
+> > converted to get_cpu_locked(), and rcu_read_lock() never disables
+> > preemption.
+> > 
+> > If you convert it to use get_cpu() the conversion is easy, if you
+> > introduce this collapsed primitive we're up shit creek because it
+> > doesn't map.
+> 
+> I don't get it.  So, rcu_read_lock(); preempt_disable(); doesn't map for RT?
 
-diff --git a/arch/m32r/kernel/process.c b/arch/m32r/kernel/process.c
-index a689e29..5973df8 100644
---- a/arch/m32r/kernel/process.c
-+++ b/arch/m32r/kernel/process.c
-@@ -11,7 +11,7 @@
- #undef DEBUG_PROCESS
- #ifdef DEBUG_PROCESS
- #define DPRINTK(fmt, args...)  printk("%s:%d:%s: " fmt, __FILE__, __LINE__, \
--  __FUNCTION__, ##args)
-+  __func__, ##args)
- #else
- #define DPRINTK(fmt, args...)
- #endif
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 5916191..4d92b26 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -564,7 +564,7 @@ static void kvm_set_time_scale(uint32_t tsc_khz, struct pvclock_vcpu_time_info *
- 	hv_clock->tsc_to_system_mul = div_frac(nsecs, tps32);
- 
- 	pr_debug("%s: tsc_khz %u, tsc_shift %d, tsc_mul %u\n",
--		 __FUNCTION__, tsc_khz, hv_clock->tsc_shift,
-+		 __func__, tsc_khz, hv_clock->tsc_shift,
- 		 hv_clock->tsc_to_system_mul);
- }
- 
-diff --git a/arch/xtensa/kernel/irq.c b/arch/xtensa/kernel/irq.c
-index c9ea73b..5fbcde5 100644
---- a/arch/xtensa/kernel/irq.c
-+++ b/arch/xtensa/kernel/irq.c
-@@ -48,7 +48,7 @@ asmlinkage void do_IRQ(int irq, struct pt_regs *regs)
- 
- 	if (irq >= NR_IRQS) {
- 		printk(KERN_EMERG "%s: cannot handle IRQ %d\n",
--				__FUNCTION__, irq);
-+				__func__, irq);
- 	}
- 
- 	irq_enter();
-diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
-index 8897434..9ac4720 100644
---- a/drivers/gpu/drm/i915/i915_dma.c
-+++ b/drivers/gpu/drm/i915/i915_dma.c
-@@ -517,7 +517,7 @@ static int i915_dispatch_flip(struct drm_device * dev)
- 	RING_LOCALS;
- 
- 	DRM_DEBUG("%s: page=%d pfCurrentPage=%d\n",
--		  __FUNCTION__,
-+		  __func__,
- 		  dev_priv->current_page,
- 		  dev_priv->sarea_priv->pf_current_page);
- 
-@@ -642,7 +642,7 @@ static int i915_cmdbuffer(struct drm_device *dev, void *data,
- static int i915_flip_bufs(struct drm_device *dev, void *data,
- 			  struct drm_file *file_priv)
- {
--	DRM_DEBUG("%s\n", __FUNCTION__);
-+	DRM_DEBUG("%s\n", __func__);
- 
- 	LOCK_TEST_WITH_RETURN(dev, file_priv);
- 
-diff --git a/drivers/gpu/drm/i915/i915_irq.c b/drivers/gpu/drm/i915/i915_irq.c
-index df03611..17a7420 100644
---- a/drivers/gpu/drm/i915/i915_irq.c
-+++ b/drivers/gpu/drm/i915/i915_irq.c
-@@ -243,7 +243,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
- 
- 	temp &= (USER_INT_FLAG | VSYNC_PIPEA_FLAG | VSYNC_PIPEB_FLAG);
- 
--	DRM_DEBUG("%s flag=%08x\n", __FUNCTION__, temp);
-+	DRM_DEBUG("%s flag=%08x\n", __func__, temp);
- 
- 	if (temp == 0)
- 		return IRQ_NONE;
-diff --git a/drivers/input/joystick/xpad.c b/drivers/input/joystick/xpad.c
-index 87d3e7e..0a480ed 100644
---- a/drivers/input/joystick/xpad.c
-+++ b/drivers/input/joystick/xpad.c
-@@ -454,10 +454,10 @@ static void xpad_bulk_out(struct urb *urb)
- 	case -ENOENT:
- 	case -ESHUTDOWN:
- 		/* this urb is terminated, clean up */
--		dbg("%s - urb shutting down with status: %d", __FUNCTION__, urb->status);
-+		dbg("%s - urb shutting down with status: %d", __func__, urb->status);
- 		break;
- 	default:
--		dbg("%s - nonzero urb status received: %d", __FUNCTION__, urb->status);
-+		dbg("%s - nonzero urb status received: %d", __func__, urb->status);
- 	}
- }
- 
-diff --git a/drivers/media/video/cx23885/cx23885-core.c b/drivers/media/video/cx23885/cx23885-core.c
-index 6286a9c..c370de9 100644
---- a/drivers/media/video/cx23885/cx23885-core.c
-+++ b/drivers/media/video/cx23885/cx23885-core.c
-@@ -1442,7 +1442,7 @@ void cx23885_cancel_buffers(struct cx23885_tsport *port)
- 	struct cx23885_dev *dev = port->dev;
- 	struct cx23885_dmaqueue *q = &port->mpegq;
- 
--	dprintk(1, "%s()\n", __FUNCTION__);
-+	dprintk(1, "%s()\n", __func__);
- 	del_timer_sync(&q->timeout);
- 	cx23885_stop_dma(port);
- 	do_cancel_buffers(port, "cancel", 0);
-diff --git a/drivers/pci/hotplug/pciehp_hpc.c b/drivers/pci/hotplug/pciehp_hpc.c
-index ad27e9e..8268189 100644
---- a/drivers/pci/hotplug/pciehp_hpc.c
-+++ b/drivers/pci/hotplug/pciehp_hpc.c
-@@ -765,7 +765,7 @@ static irqreturn_t pcie_isr(int irq, void *dev_id)
- 		}
- 	} while (detected);
- 
--	dbg("%s: intr_loc %x\n", __FUNCTION__, intr_loc);
-+	dbg("%s: intr_loc %x\n", __func__, intr_loc);
- 
- 	/* Check Command Complete Interrupt Pending */
- 	if (intr_loc & CMD_COMPLETED) {
-diff --git a/drivers/s390/net/ctcm_mpc.c b/drivers/s390/net/ctcm_mpc.c
-index 49ae1cd..7297b35 100644
---- a/drivers/s390/net/ctcm_mpc.c
-+++ b/drivers/s390/net/ctcm_mpc.c
-@@ -1674,7 +1674,7 @@ static int mpc_validate_xid(struct mpcg_info *mpcginfo)
- 
- done:
- 	if (rc) {
--		ctcm_pr_info("ctcmpc	   :  %s() failed\n", __FUNCTION__);
-+		ctcm_pr_info("ctcmpc	   :  %s() failed\n", __func__);
- 		priv->xid->xid2_flag2 = 0x40;
- 		grp->saved_xid2->xid2_flag2 = 0x40;
- 	}
-diff --git a/mm/bootmem.c b/mm/bootmem.c
-index 4af15d0..dd73036 100644
---- a/mm/bootmem.c
-+++ b/mm/bootmem.c
-@@ -48,7 +48,7 @@ early_param("bootmem_debug", bootmem_debug_setup);
- 	if (unlikely(bootmem_debug))			\
- 		printk(KERN_INFO			\
- 			"bootmem::%s " fmt,		\
--			__FUNCTION__, ## args);		\
-+			__func__, ## args);		\
- })
- 
- static unsigned long __init bootmap_bytes(unsigned long pages)
--- 
-1.6.0.rc1.154.ge3fc
+Nope, we'd want something like:
+
+  rcu_read_lock();
+
+  cpu = get_cpu();
+  data = percpu_ptr(ptr, cpu);
+  fiddle_per_cpu_data();
+  put_cpu();
+
+  do_more_rcu_protected_stuff();
+
+  rcu_read_unlock();
+
+This clearly shows the intent - on -rt we can then easily convert the
+per-cpu stuff to use a lock instead of disabling preemption. Making the
+whole code sequence preemptible.
+
+If you would have mixed it into the rcu ops, its unclear what code needs
+protection from what.
+
+> > Nor does it tell us why you need preempt disabled. Making it just as bad
+> > as open-coded preempt_disable()s.
+> 
+> Heh.. the code probably would have used preempt_disable() if it were not
+> for the combined ops, so the objection is about using preempt_disable()?
+
+preempt_disable() is just like the BKL, its opaque in that it isn't
+bound to some data and doesn't tell you what it protects. So getting rid
+of them afterwards is pain.
+
+Therefore we prefer APIs such as, get_cpu() etc.. that show intent and
+don;t like stuff you just now proposed of mixing intents. Because when
+changing the preemption model you might need different solution for
+different intents.
 
