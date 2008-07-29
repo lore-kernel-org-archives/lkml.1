@@ -1,67 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760496AbYG2Wkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760634AbYG2Wl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760496AbYG2Wkx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 18:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756534AbYG2Wkn
+	id S1760634AbYG2Wl1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 18:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756919AbYG2WlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 18:40:43 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:57809 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755992AbYG2Wkm (ORCPT
+	Tue, 29 Jul 2008 18:41:19 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:51093 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756534AbYG2WlS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 18:40:42 -0400
-Date: Wed, 30 Jul 2008 08:40:41 +1000
-From: Simon Horman <horms@verge.net.au>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: kexec@lists.infradead.org, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3] kdump: use is_kdump_kernel() in sba_init()
-Message-ID: <20080729224039.GE6370@verge.net.au>
-References: <20080729081235.293361145@vergenet.net> <20080729081629.356523305@vergenet.net> <20080729145156.GO25975@redhat.com>
-MIME-Version: 1.0
+	Tue, 29 Jul 2008 18:41:18 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ak0GALc3j0hMRKxB/2dsb2JhbACBW4lEphw
+Date: Tue, 29 Jul 2008 18:41:16 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: module-placed markers/tracepoints
+Message-ID: <20080729224115.GA5209@Krystal>
+References: <20080717155724.897537670@polymtl.ca> <48862A30.7050701@qumranet.com> <y0mabg991c3.fsf@ton.toronto.redhat.com> <488635A7.2030609@qumranet.com> <20080722221204.GA14661@Krystal> <488C49CC.8040800@qumranet.com> <20080728005405.GA7941@Krystal> <20080729161836.GA10751@redhat.com> <20080729170151.GA24851@Krystal> <20080729211543.GB17097@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080729145156.GO25975@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080729211543.GB17097@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:12:15 up 55 days,  2:53,  4 users,  load average: 1.05, 1.60,
+	1.39
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 10:51:56AM -0400, Vivek Goyal wrote:
-> On Tue, Jul 29, 2008 at 06:12:36PM +1000, Simon Horman wrote:
-> > After recent patches* is_kdump_kernel() should return 1 in the
-> > case where code is executing in a crashkernel and 0 otherwise.
-> > It is save to use outside of CONFIG_KDUMP.
-> > 
-> > * http://lkml.org/lkml/2008/7/28/445
-> > 
+* Frank Ch. Eigler (fche@redhat.com) wrote:
+> Hi -
 > 
-> Hi Simon,
+> Some locals are wondering -- is there code for (or need for new code
+> for) incrementing module reference counts while markers and/or
+> tracepoints resident in modules have active clients?
 > 
-> is_kdump_kernel() returns 1 when both the following conditions are true.
-> 
-> - CONFIG_CRASH_DUMP is enabled
-> - And kernel is booting after a panic.
-> 
-> If any of the above condition is not true, it returns 0.
-> 
-> So for the cases where, CONFIG_CRASH_DUMP=n and kernel is booting after
-> panic, is_kdump_kernel() will still return 0.
-> 
-> This essentially means that any kernel which is booting after a panic,
-> but does not have CONFIG_CRASH_DUMP enabled, will not take special actions
-> required for booting that kernel. Until, somebody can come up with another
-> usage of booting a kernel after a panic (apart from crash dump), I think
-> this is good enough an assumption.
-> 
-> So your changes will work. I just wanted to clarify the semantics more
-> explicitly.
+> - FChE
 
-Hi Vivek,
+Hi Frank,
 
-sorry if my explanation was confused. The scheme that you describe
-above is what I am working with too.
+Probe module unloading is supposed to be done automatically assuming the
+following module unload behavior :
+
+1 - Module unload code takes the stop machine lock.
+2 - It is assumed that the module exit function is called at that time,
+  while no preempt-disabled section is executed. This function
+  unregisters the callbacks.
+3 - Given that preemption is disabled around tracepoint/marker calls, no
+  calls are left to a freed module.
+
+Actually, I notice that it might not be the case. I took for granted
+what (I can't remember who ? Rusty ?) told me about module unload code.
+If we look at sys_delete_module() :
+
+
+        /* Stop the machine so refcounts can't move and disable module. */
+        ret = try_stop_module(mod, flags, &forced);
+        if (ret != 0)
+                goto out;
+
+        /* Never wait if forced. */
+        if (!forced && module_refcount(mod) != 0)
+                wait_for_zero_refcount(mod);
+
+        mutex_unlock(&module_mutex);
+        /* Final destruction now noone is using it. */
+        if (mod->exit != NULL)
+                mod->exit();
+
+So we see that mod->exit(), which I believe is responsible for calling
+the module exit() functions, is called after the stop_machine, not
+during the stop machine.
+
+Therefore, what would be needed here is to add a synchronize_sched()
+after mod->exit() in module.c or after each tracepoint/marker unregister
+in marker.c/tracepoint.c. However, I'd really prefer to add this to
+module.c since adding this for _every_ unregister will slow down
+processing or multiple probe unregistration too much.
+
+Rusty, am I understanding that correctly ?
+
+Mathieu
+
 
 -- 
-Horms
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
