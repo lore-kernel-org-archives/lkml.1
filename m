@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbYG2VhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbYG2VpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbYG2VhW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 17:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYG2VhJ
+	id S1756686AbYG2VpS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 17:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbYG2VpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 17:37:09 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:10084 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752483AbYG2VhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 17:37:08 -0400
-Date: Tue, 29 Jul 2008 23:37:46 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Tue, 29 Jul 2008 17:45:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49431 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752894AbYG2VpF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 17:45:05 -0400
+Date: Tue, 29 Jul 2008 14:42:00 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux v2.6.27-rc1
-Message-ID: <20080729213746.GA22548@uranus.ravnborg.org>
-References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080729213746.GA22548@uranus.ravnborg.org>
+Message-ID: <alpine.LFD.1.10.0807291439270.3334@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org> <20080729213746.GA22548@uranus.ravnborg.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 08:23:21PM -0700, Linus Torvalds wrote:
 
-> The build system also got updated to 
-> allow moving the architecture include files ("include/asm-xyz") into the 
-> architecture subdirectories ("arch/xyz/include/asm"), and sparc seems to 
-> have taken advantage of that already.
 
-Most architectures are easy to convert. But those that uses
-symlinks to select between different platforms etc needs a bit more
-care if we shall get rid of all symlinks.
+On Tue, 29 Jul 2008, Sam Ravnborg wrote:
+> 
+> But will you accept this stuff now or will we have to wait until
+> next merge window?
 
-Paul already fixed up sh and sent you a pull request.
-I have something ready for arm (not yet posted).
-And I sent Harvaard a small script that can fix avr32 when arm is done.
-cris looks similar and I can take care too.
+if the patches are really small adn the resulting build is well tested 
+(ignoring the actual _move_ operation), I'm ok with taking them.
 
-The rest that does not use additiona symlinks are in general much simpler.
+In fact, in many ways I'd _prefer_ to do it now, rather than have it 
+pending and then do it durign the next merge window when there are a lot 
+of non-movement changes too.
 
-Kyle already fixed up parisc (simple).
-x86 is simple - only a small patch needed to arch/x86/Makefile.
-I have not dared looking at um.
+> Now is a good time as development just started for next kernel.
+> And testing is simple - does it build?
 
-But will you accept this stuff now or will we have to wait until
-next merge window?
-Now is a good time as development just started for next kernel.
-And testing is simple - does it build?
+Well, simple and simple. I'd love to see x86 done, but you yourself said 
+you haven't even dared look at UM. Which is the thing that is most likely 
+to have odd build things with direct symlinks etc.
 
-It will come in via arch maintainers but I will assist.
+(But I haven't looked either. Maybe I'm wrong, and it's all trivial).
 
-	Sam
+		Linus
