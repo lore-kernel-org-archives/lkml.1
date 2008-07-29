@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbYG2XpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbYG2XrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbYG2XpH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 19:45:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbYG2Xow
+	id S1756089AbYG2XrU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 19:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbYG2XrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 19:44:52 -0400
-Received: from sh.osrg.net ([192.16.179.4]:57728 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753100AbYG2Xou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 19:44:50 -0400
-Date: Wed, 30 Jul 2008 08:41:51 +0900
-To: James.Bottomley@HansenPartnership.com
-Cc: rwheeler@redhat.com, martin.petersen@oracle.com, matthew@wil.cx,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org, jim@meyering.net,
-       linux-kernel@vger.kernel.org, jeff@garzik.org, Matt_Domsch@Dell.com,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: tools support for non-512 byte sector sizes
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1217357774.6103.54.camel@localhost.localdomain>
-References: <yq13alsr0g0.fsf@sermon.lab.mkp.net>
-	<488F6758.8080907@redhat.com>
-	<1217357774.6103.54.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 29 Jul 2008 19:47:10 -0400
+Received: from relay04.mail-hub.dodo.com.au ([123.2.6.239]:49440 "EHLO
+	relay04.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753014AbYG2XrJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 19:47:09 -0400
+From: Grant Coady <grant_lkml@dodo.com.au>
+To: Frederik Deweerdt <deweerdt@free.fr>
+Cc: Grant Coady <gcoady.lk@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux v2.6.27-rc1: fails to compile
+Date: Wed, 30 Jul 2008 09:46:58 +1000
+Organization: http://bugsplatter.mine.nu/
+Reply-To: Grant Coady <gcoady.lk@gmail.com>
+Message-ID: <ruav84p0ceqcbl07oeb375k95n7heg7unp@4ax.com>
+References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org> <g54v84t6rgqplte4tvjrlh4r8g3m6n8kms@4ax.com> <20080729224049.GA7325@slug>
+In-Reply-To: <20080729224049.GA7325@slug>
+X-Mailer: Forte Agent 2.0/32.652
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080730084114R.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jul 2008 13:56:14 -0500
-James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+On Wed, 30 Jul 2008 00:40:49 +0200, Frederik Deweerdt <deweerdt@free.fr> wrote:
 
-> On Tue, 2008-07-29 at 14:54 -0400, Ric Wheeler wrote:
-> > Martin K. Petersen wrote:
-> > >>>>>> "James" == James Bottomley <James.Bottomley@HansenPartnership.com> writes:
-> > >>>>>>             
-> > >
-> > > James> The problem, which ata_ram also suffers, is that the tools we
-> > > James> most need to test are the ones for manipulating non volatile
-> > > James> characteristics (like partition tables).  We'd really like the
-> > > James> disk contents to survive reboot for this ...
-> > >
-> > > Yeah, I should add that I wanted persistence too.  I went through a
-> > > whole stack (well, 5-6 or so) fibre channel drives from various
-> > > vendors and attempted to low-level format them to 4KB sectors.  Most
-> > > of them laughed in my face.  One of them tried to comply and
-> > > irreparably confused its firmware in the process.
-> > >
-> > > Just yesterday I received a couple of prototype drives in the mail.
-> > > I'll ask the vendor whether they support 4KB and if so I'll give them
-> > > a whirl.
-> > >   
-> > Isn't this a great use case for a SCSI target device where our target 
-> > can be a software disk on a remote host? What is missing for us to put 
-> > something like that together?
-> 
-> Technically nothing.  Tomo should already have one for the STGT test
-> infrastructure (I've cc'd him).
+>Hello Grant,
+>On Wed, Jul 30, 2008 at 08:03:42AM +1000, Grant Coady wrote:
+>> On Mon, 28 Jul 2008 20:23:21 -0700 (PDT), Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>> 
+>> >
+>> >It's two weeks (and one day), and the merge window is over.
+>> >
+>> >Finally. I don't know why, but this one really did feel pretty dang busy. 
+>> >And the size of the -rc1 patch bears that out - at 12MB, it's about 50% 
+>> >bigger than 26-rc1 (but not that much bigger than 24/25-rc1, so it's not 
+>> >like it's anything unheard of).
+>> 
+>> Couple machines failed to compile with same error in different place:
+>> 
+>>   CC      arch/x86/kernel/acpi/cstate.o
+>> arch/x86/kernel/acpi/cstate.c: In function `acpi_processor_ffh_cstate_probe':
+>> arch/x86/kernel/acpi/cstate.c:94: error: invalid lvalue in unary `&'
+>> make[2]: *** [arch/x86/kernel/acpi/cstate.o] Error 1
+>> make[1]: *** [arch/x86/kernel/acpi] Error 2
+>> make: *** [arch/x86/kernel] Error 2
+>> grant@peetoo:~/linux/linux-2.6.27-rc1a$
+>> 
+>This issue has been reported, this is due to your old compiler.
+>Fix here:
+>http://lkml.org/lkml/2008/7/29/48
 
-Yeah, stgt also enables you to use a software media changer and a
-software DVD drive (and we are working on VTL).
+Thanks, that does the trick :)
 
-http://stgt.berlios.de/
+Grant.
+>
+>Regards,
+>Frederik
 
-You can connect to a remote host with iSCSI. FCoE might work since
-Mike Christie has used stgt to work on the FCoE initiator driver.
-
-stgt doesn't support non-512 byte sector sizes now but I'll add the
-support shortly. I want to try DIF with iSCSI and FCoE.
