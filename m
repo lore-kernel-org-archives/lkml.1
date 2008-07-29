@@ -1,113 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbYG2PQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759555AbYG2PQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759481AbYG2PQB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 11:16:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756757AbYG2PPm
+	id S1759555AbYG2PQf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 11:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbYG2PQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 11:15:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35024 "EHLO mx1.redhat.com"
+	Tue, 29 Jul 2008 11:16:26 -0400
+Received: from mx2.suse.de ([195.135.220.15]:51422 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754102AbYG2PPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 11:15:40 -0400
-Date: Tue, 29 Jul 2008 11:15:33 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Simon Horman <horms@verge.net.au>
-Cc: kexec@lists.infradead.org, linux-ia64@vger.kernel.org,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/3] kdump: add is_vmcore_usable() and vmcore_unusable()
-Message-ID: <20080729151533.GP25975@redhat.com>
-References: <20080729081235.293361145@vergenet.net> <20080729081629.522008269@vergenet.net>
+	id S1752426AbYG2PQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 11:16:25 -0400
+Date: Tue, 29 Jul 2008 08:13:52 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Hans J. Koch" <hjk@linutronix.de>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
+       Uwe.Kleine-Koenig@digi.com, akpm@linux-foundation.org,
+       lethal@linux-sh.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH][RESEND] uio: uio_pdrv_genirq V3
+Message-ID: <20080729151352.GA18556@suse.de>
+References: <20080729121015.13443.91824.sendpatchset@rx1.opensource.se> <20080729122806.GB2221@local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080729081629.522008269@vergenet.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080729122806.GB2221@local>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 06:12:37PM +1000, Simon Horman wrote:
-> The usage of elfcorehdr_addr has changed recently
-> such that being set to ELFCORE_ADDR_MAX is used by
-> is_kdump_kernel() to indicate if the code is executing
-> in a kernel executed as a crash kernel.
+On Tue, Jul 29, 2008 at 02:28:06PM +0200, Hans J. Koch wrote:
+> On Tue, Jul 29, 2008 at 09:10:15PM +0900, Magnus Damm wrote:
+> > From: Magnus Damm <damm@igel.co.jp>
+> > 
+> > This is V3 of uio_pdrv_genirq.c, a platform driver for UIO with
+> > generic IRQ handling code. This driver is very similar to the regular
+> > UIO platform driver, but is only suitable for devices that are
+> > connected to the interrupt controller using unique interrupt lines.
 > 
-> However, arch/ia64/kernel/setup.c:reserve_elfcorehdr will
-> rest elfcorehdr_addr to ELFCORE_ADDR_MAX on error,
-> which means any subsequent calls to is_kdump_kernel()
-> will return 0, even though they should return 1.
-> 
-> Ok, at this point in time there are no subsequent calls,
-> but I think its fair to say that there is ample scope for error
-> or at the very least confusion.
-> 
-> This patch add an extra state, ELFCORE_ADDR_ERR, which
-> indicates that elfcorehdr_addr was passed on the command line,
-> and thus execution is taking place in a crashdump kernel,
-> but vmcore can't be used for some reason. This is tested
-> for using is_vmcore_usable() and set using vmcore_unusable().
-> A subsequent patch makes use of this new code.
-> 
-> To summarise, the states that elfcorehdr_addr can now be in are as follows:
-> 
-> ELFCORE_ADDR_MAX: not a crashdump kernel
-> ELFCORE_ADDR_ERR: crashdump kernel but vmcore is unusable
-> any other value:  crash dump kernel and vmcore is usable
-> 
-> Signed-off-by: Simon Horman <horms@verge.net.au>
-> 
-> 
-> Index: linux-2.6/include/linux/crash_dump.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/crash_dump.h	2008-07-29 17:27:43.000000000 +1000
-> +++ linux-2.6/include/linux/crash_dump.h	2008-07-29 17:53:13.000000000 +1000
-> @@ -8,6 +8,7 @@
->  #include <linux/proc_fs.h>
->  
->  #define ELFCORE_ADDR_MAX	(-1ULL)
-> +#define ELFCORE_ADDR_ERR	(-2ULL)
->  
->  #ifdef CONFIG_PROC_VMCORE
->  extern unsigned long long elfcorehdr_addr;
-> @@ -36,5 +37,30 @@ static inline int is_kdump_kernel(void)
->  static inline int is_kdump_kernel(void) { return 0; }
->  #endif /* CONFIG_CRASH_DUMP */
->  
-> +#ifdef CONFIG_PROC_VMCORE
-> +/* is_vmcore_usable() checks if the kernel is booting after a panic and
-> + * the vmcore region is usable.
-> + *
-> + * This makes use of the fact that due to alignment 1 is not
-> + * a valid pointer, much in the vain of IS_ERR(), except
-> + * dealing directly with an unsigned long long rather than a pointer.
-> + */
-> +
-> +static inline int is_vmcore_usable(void)
-> +{
-> +	return is_kdump_kernel() && elfcorehdr_addr != ELFCORE_ADDR_ERR ? 1 : 0;
-> +}
-> +
-> +/* vmcore_unusable() marks the vmcore as unusable, without disturbing
-> + * the logic of is_kdump_kernel()
-> + */
-> +
-> +static inline void vmcore_unusable(void)
-> +{
-> +	if (!is_kdump_kernel())
-> +		elfcorehdr_addr = ELFCORE_ADDR_ERR;
-> +}
+> Hi Magnus,
+> I already sent this to Greg on July, 15. I guess this will be merged
+> soon. Greg was probably busy with tons of other stuff during the merge
+> window.
 
-Hi Simon,
+Yeah, it's in my queue, which _sucks_ right now for movement:
+	$ mdfrm -c ~/mail/todo
+	594 messages in ~/mail/todo
 
-Should above condition be "if(is_kdump_kernel())" instead of
-"if(!is_kdump_kernel())?
+I'm slowly digging out, I have to get through the -stable backlog first:
+	$ mdfrm -c ~/mail/todo-stable/
+	68 messages in ~/mail/todo-stable/
 
-I would think that you would like to mark a vmcore unusable only if, to 
-begin with you were booting after a panic.
+ah, for more time in a day...
 
-If we being marking vmcore_unusable in case of normal kernel
-(!is_kdump_kernel()), then is_kdump_kernel() will start reporting
-normal kernel as kdump kernel?
+thanks for your patience,
 
-Thanks
-Vivek
+greg k-h
