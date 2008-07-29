@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757838AbYG2MCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758549AbYG2MFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757838AbYG2MCz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 08:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbYG2MCr
+	id S1758549AbYG2MFX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 08:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbYG2MFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 08:02:47 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:36988 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755920AbYG2MCq (ORCPT
+	Tue, 29 Jul 2008 08:05:08 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:48996 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756137AbYG2MFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 08:02:46 -0400
-Date: Tue, 29 Jul 2008 14:02:37 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86: Is there still value in having a special tlb flush IPI vector?
-Message-ID: <20080729120237.GH30344@one.firstfloor.org>
-References: <488E534F.2030204@goop.org> <488E5455.6010901@goop.org> <20080729021215.GG30344@one.firstfloor.org> <488EB8BE.8050806@goop.org>
-Mime-Version: 1.0
+	Tue, 29 Jul 2008 08:05:07 -0400
+Date: Tue, 29 Jul 2008 08:04:42 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Alistair John Strachan <alistair@devzero.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dsd@gentoo.org, kune@deine-taler.de, linux-wireless@vger.kernel.org
+Subject: Re: 2.6.27-rc1: zd1211rw association fails
+Message-ID: <20080729120442.GE9378@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Alistair John Strachan <alistair@devzero.co.uk>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	dsd@gentoo.org, kune@deine-taler.de, linux-wireless@vger.kernel.org
+References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org> <200807291049.47342.alistair@devzero.co.uk> <1217326195.10489.10.camel@johannes.berg>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <488EB8BE.8050806@goop.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1217326195.10489.10.camel@johannes.berg>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 11:29:18PM -0700, Jeremy Fitzhardinge wrote:
-> Andi Kleen wrote:
-> >>>Now that normal smp_function_call is no longer an enormous bottleneck, 
-> >>>      
-> >
-> >Hmm? It still uses a global lock at least as of current git tree.
-> 
-> Yes, but it's only held briefly to put things onto the list.  It doesn't 
-> get held over the whole IPI transaction as the old smp_call_function 
-> did, and the tlb flush code still does.  RCU is used to manage the list 
-> walk and freeing, so there's no long-held locks there either.
+On Tue, Jul 29, 2008 at 12:09:55PM +0200, Johannes Berg wrote:
+> This is about the 100 millionth time this is reported. Please try the
+> patch I just posted.
 
-If it bounces regularly it will still hurt.
+Yeah, it's really too bad -rc1 got released just before you were able
+to post the fix to this, since if there were 100 million people who
+were trying out kernels starting with -git7 that use wireless, there
+will probably be 200 million people trying out -rc1.  :-)
 
--Andi
+Thanks for finding and fixing it, though.  I stopped trying out
+kernels after -git6 since I was travelling at OSCON, and not having
+wireless was a show-stopper for me....
+
+						- Ted
