@@ -1,72 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbYG2Eaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYG2Egz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbYG2Eaa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 00:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbYG2EaW
+	id S1754063AbYG2Egz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 00:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbYG2Egq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 00:30:22 -0400
-Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:35725 "HELO
-	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751055AbYG2EaV (ORCPT
+	Tue, 29 Jul 2008 00:36:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45100 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751180AbYG2Egq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 00:30:21 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=uUsj1oLSv+iS+51saYZOK0x2ABCLWm0cjhYL5XkJA45K8Oc7z+22kSsjMgLQ3Ryxd5A/nhyd/ttjn2gCmya3UvevuT5bubriwx0zNQnlL5xu+/9Ze8iTrxj+0CJoCqhyv/43lY5sOpbOQH0WdV6dEuj5U6l7qDvAijTz6pUsKyo=  ;
-X-YMail-OSG: OC5WhOkVM1kN0scPV8WH7WFUWzxVNyBuz9urBkWif4lS9_po70VCJfgDC64BPe1y30o7R9xZGeK2StqnPPtSFPzYxxaLi6di6Nk1rGo5IXVgBSqCnliRJ0bv6P.TbNGPlfk-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: x86: Is there still value in having a special tlb flush IPI vector?
-Date: Tue, 29 Jul 2008 14:30:07 +1000
-User-Agent: KMail/1.9.5
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-References: <488E534F.2030204@goop.org> <20080728233455.GA2919@elte.hu>
-In-Reply-To: <20080728233455.GA2919@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 29 Jul 2008 00:36:46 -0400
+Date: Mon, 28 Jul 2008 21:35:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Marc Pignat <marc.pignat@hevs.ch>
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>
+Subject: Re: [RFC,PATCH v1] hwmon: ADC124S501 generic driver
+Message-Id: <20080728213548.156af744.akpm@linux-foundation.org>
+In-Reply-To: <200807231307.54837.marc.pignat@hevs.ch>
+References: <200807231307.54837.marc.pignat@hevs.ch>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807291430.08220.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 July 2008 09:34, Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> > Now that normal smp_function_call is no longer an enormous bottleneck,
-> > is there still value in having a specialised IPI vector for tlb
-> > flushes?  It seems like quite a lot of duplicate code.
-> >
-> > The 64-bit tlb flush multiplexes the various cpus across 8 vectors to
-> > increase scalability. If this is a big issue, then the smp function
-> > call code can (and should) do the same thing.  (Though looking at it
-> > more closely, the way the code uses the 8 vectors is actually a less
-> > general way of doing what smp_call_function is doing anyway.)
+On Wed, 23 Jul 2008 13:07:54 +0200 Marc Pignat <marc.pignat@hevs.ch> wrote:
 
-It definitely is not a clear win. They do not have the same characteristics.
-So numbers will be needed.
+> SPI driver for analog to digital converters national semiconductor ADC081S101,
+> ADC124S501, ...
+> 
+> Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
+> 
+> Hi all!
+> 
+> patch against 2.6.26, tested on a custom arm board and only compil-tested on
+> x86.
+> 
+> This driver add support for National Semiconductor ADC<bb><c>S<sss> chip family,
+> where:
+>  * bb  is the resolution in number of bits (8, 10, 12)
+>  * c   is the number of channels (1, 2, 4)
+>  * sss is the maximum conversion speed (021 for 200 kSPS, 051 for 500
+>    kSPS and 101 for 1 MSPS)
+> 
+> Some remarks:
+>  * The chip type (-> the number of inputs) are determined by the module alias,
+>    is it a good idea? it could be implemented using platform data.
+> 
+>  * The Makefile seems ordered alphabetically, what order should be used for
+>    the Konfig file?
+> 
 
-smp_call_function is now properly scalable in smp_call_function_single
-form. The more general case of multiple targets is not so easy and it still
-takes a global lock and touches global cachelines.
+That changelog is a bit of a mess.  I cleaned up up as:
 
-I don't think it is a good use of time, honestly. Do you have a good reason?
+SPI driver for analog to digital converters national semiconductor
+ADC081S101, ADC124S501, ...
+
+This driver adds support for National Semiconductor ADC<bb><c>S<sss> chip
+family, where:
+
+ * bb  is the resolution in number of bits (8, 10, 12)
+ * c   is the number of channels (1, 2, 4)
+ * sss is the maximum conversion speed (021 for 200 kSPS, 051 for 500
+   kSPS and 101 for 1 MSPS)
+
+Some remarks:
+
+* The chip type (-> the number of inputs) are determined by the module
+  alias, is it a good idea?  it could be implemented using platform data.
+
+Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
+Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>
+Cc: Jean Delvare <khali@linux-fr.org>
+Cc: David Brownell <david-b@pacbell.net>
+
+but then didn't apply the patch.
+
+>
+> ...
+>
+> +/* sysfs hook function */
+> +static ssize_t adcxx_read(struct device *dev,
+> +		struct device_attribute *devattr, char *buf)
+> +{
+> +	struct spi_device *spi = to_spi_device(dev);
+> +	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
+> +	struct adcxx *adc = dev_get_drvdata(&spi->dev);
+> +
+> +	u8 tx_buf[2] = { attr->index << 3 }; /* other bits are don't care */
+> +	u8 rx_buf[2];
+> +	int status;
+> +	int value;
+
+The driver has rather a lot of inexplicable blank lines in the middle
+of the automatic variable definitions.  The preferred style is no blank
+lines within the definitions and a single blank line after them all,
+thanks.
+
+>
+> ...
+>
+> +static int __devinit adcxx_probe(struct spi_device *spi, int channels)
+> +{
+> +	struct adcxx *adc;
+> +	int status;
+> +	int i;
+> +
+> +	adc = kzalloc(sizeof *adc, GFP_KERNEL);
+> +	if (!adc)
+> +		return -ENOMEM;
+> +
+> +	/* set a default value for the reference */
+> +	adc->reference = 3300;
+> +
+> +	adc->channels = channels;
+> +
+> +	mutex_init(&adc->lock);
+> +
+> +	dev_set_drvdata(&spi->dev, adc);
+> +
+> +	for (i = 0; i < 3 + adc->channels; i++) {
+> +		status = device_create_file(&spi->dev, &ad_input[i].dev_attr);
+> +		if (status)
+> +			goto out_dev_create_file_failed;
+> +	}
+> +
+> +	adc->hwmon_dev = hwmon_device_register(&spi->dev);
+> +	if (IS_ERR(adc->hwmon_dev)) {
+> +		dev_dbg(&spi->dev, "hwmon_device_register failed.\n");
+> +		status = PTR_ERR(adc->hwmon_dev);
+> +		goto out_dev_reg_failed;
+> +	}
+> +
+> +	return 0;
+> +
+> +out_dev_create_file_failed:
+> +	hwmon_device_unregister(adc->hwmon_dev);
+> +	for (i = 0; i < 3 + adc->channels; i++)
+> +		device_remove_file(&spi->dev, &ad_input[i].dev_attr);
+> +out_dev_reg_failed:
+> +	dev_set_drvdata(&spi->dev, NULL);
+> +	kfree(adc);
+> +	return status;
+> +}
+
+The error recovery here is messed up.  The targets of the `goto's are
+reversed.  But even if that is fixed, we can end up doing
+device_remove_file() of objects which weren't successfully created. 
+That might work, or it might generate runtime warnings or it might
+crash.  I don't know.  It'd be best to just avoid doing it?
 
 
-> yep, and we could eliminate the reschedule IPI as well.
-
-No. The rewrite makes it now very good at synchronously sending a function
-to a single other CPU.
-
-Sending asynchronously requires a slab allocation and then a remote slab free
-(which is nasty for slab) at the other end, and bouncing of locks and
-cachelines. No way you want to do that in the reschedule IPI.
-
-Not to mention the minor problem that it still deadlocks when called with
-interrupts disabled ;)
