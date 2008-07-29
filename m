@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757684AbYG2L0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbYG2L16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757684AbYG2L0f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 07:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbYG2L00
+	id S1757915AbYG2L16 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 07:27:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755769AbYG2L1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 07:26:26 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:51115 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755749AbYG2L0Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 07:26:25 -0400
-Subject: Re: 2.6.27-rc1: zd1211rw association fails
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Alistair John Strachan <alistair@devzero.co.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dsd@gentoo.org, kune@deine-taler.de, linux-wireless@vger.kernel.org
-In-Reply-To: <200807291225.00679.alistair@devzero.co.uk>
-References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org>
-	 <200807291049.47342.alistair@devzero.co.uk>
-	 <1217326195.10489.10.camel@johannes.berg>
-	 <200807291225.00679.alistair@devzero.co.uk>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-YoFHl5kl+Z5ZgKZZFGG6"
-Date: Tue, 29 Jul 2008 13:26:17 +0200
-Message-Id: <1217330777.10489.21.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 29 Jul 2008 07:27:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37821 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755716AbYG2L1t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 07:27:49 -0400
+Date: Tue, 29 Jul 2008 13:27:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, joerg.roedel@amd.com,
+       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       robert.richter@amd.com, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] add iommu_num_pages helper function
+Message-ID: <20080729112724.GA11276@elte.hu>
+References: <20080725134159.GA7493@amd.com> <20080725225724J.fujita.tomonori@lab.ntt.co.jp> <20080725141425.GB7493@amd.com> <20080725233325W.fujita.tomonori@lab.ntt.co.jp> <20080726134156.GC4401@elte.hu> <20080729110749.728c54e6.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080729110749.728c54e6.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-YoFHl5kl+Z5ZgKZZFGG6
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
+> Hi Ingo,
+> 
+> On Sat, 26 Jul 2008 15:41:56 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > ok, i'll apply the 3 patches to tip/x86/iommu. As usual, feel free to 
+> > send IOMMU cleanups/generalizations/fixes against tip/master:
+> > 
+> >   http://people.redhat.com/mingo/tip.git/README
+> 
+> So, I assume a patch created on July 25 is not destined for 2.6.27, 
+> right?  Especially since it breaks another architecture build and has 
+> only made it to linux-next on July 29 ... and needs more work given 
+> the comments already on this patch.
 
-> If it doesn't strain you too much more, could you actually tell me where =
-this=20
-> is? Your last 5 posts to LKML don't seem to contain such a patch, and I'm=
- not=20
-> subscribed to linux-wireless.
+Correct, they were not intended for immediate upstream merging, they 
+werent even in auto-x86-next so there was no meaningful linux-next 
+exposure.
 
-Well, the latter has archives.
+I was surprised they went upstream via the PCI tree yesterday, just 
+hours after i sent them over to Jesse and about an hour before -rc1 was 
+released. [ Nor did intend the core/generic-dma-coherent bits to go 
+upstream right before -rc1 - although those seem to be problem-free so 
+far. ]
 
-johannes
+I stopped sending non-urgent patches to Linus days ago, to let things 
+calm down for a smooth -rc1 release.
 
---=-YoFHl5kl+Z5ZgKZZFGG6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJIjv5VAAoJEKVg1VMiehFYSakP/0cKisClmeEBiH9Tziil3/+V
-++MXA/IfExkw4CpadkUoupjyqFez/49apV93Jab3q4ffXZU09KTEb8QYd8Tqvu/W
-X/DkUCWMqYvhv5hOAcdKItzmHFvvev8oY2xicmJFeua5kzczKhQbIJDje53/Kkgy
-Sk6oLPVP9pxenMmV/l0RoB2JM6ehtgTcBEAv/KXpG8xTT7iTT/YU++TBswdgXhZz
-j5//xW5YrKZFEE+0tLZFKt7/SFyTlAO92KS2CFMESjag4s/E1ufS1+FvoFIj/ilu
-Tiy3YwdviQ9wctl3urV/pWV7q5NCYLLVIPpykyf8mCOSK9WvzVvdNofdWzn0U3H/
-LgrMhZ319jo54DfBAJZ/K6XYvVCMBEMuOJ649LQalSd5QieS8wt2narHutjOWgAh
-N9+x078BH7vXNB07N9ASL5qJ8L76drUp/8aW4eEsHzlQ0FbJiVoHipMoO+DOGtKG
-r8xVfFbPZ1HDT8ZYdW4wCMUasBXhiV02YN4YLW/tGZQucn+sec7X783zVUeXTySc
-xdStPaKe2NXDnObDyTuCY/GjwNfnOpXTRx9dEUsfFYgHwykezXZrDpXp0O+B5KOV
-NsEBv2IjV5pLb4FNi57dZUG9EWOY82NEEY3QXbFT9/qNdLMiu5qRRl/QVfXZ/NUI
-YGYoGJ0jOwU+X7Gm0lCm
-=+126
------END PGP SIGNATURE-----
-
---=-YoFHl5kl+Z5ZgKZZFGG6--
-
+	Ingo
