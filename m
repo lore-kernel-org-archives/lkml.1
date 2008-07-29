@@ -1,89 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYG2PYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011AbYG2Pau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbYG2PYS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 11:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYG2PYH
+	id S1755011AbYG2Pau (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 11:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYG2Pal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 11:24:07 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:55837 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751735AbYG2PYE (ORCPT
+	Tue, 29 Jul 2008 11:30:41 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38795 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751561AbYG2Pak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 11:24:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:references:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=FsoyHxAgkh0GkaQrsbF5ggrT+FmpEskiW8zA/ddmFXGnj9bGWQPm7dA2+IleXXkwpW
-         b8FNcQLBsKegUVEgnT1uJsgXe1jcA5s/OFkqgu/1PQp9bjRmYpMrrSb4JID4rJlulfhD
-         VQej4zrROie8hwzqqb0CaXzstfOteCmMNDShM=
-From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Vitaly Mayatskikh <v.mayatskih@gmail.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Optimize tail handling for copy_user
-References: <m3ljzmdrqh.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0807280846320.3486@nehalem.linux-foundation.org>
-Date: Tue, 29 Jul 2008 17:24:09 +0200
-In-Reply-To: <alpine.LFD.1.10.0807280846320.3486@nehalem.linux-foundation.org>
-	(Linus Torvalds's message of "Mon, 28 Jul 2008 08:48:41 -0700 (PDT)")
-Message-ID: <m3vdyok92e.fsf@gravicappa.englab.brq.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 29 Jul 2008 11:30:40 -0400
+Date: Tue, 29 Jul 2008 08:30:29 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
+       Frederik Deweerdt <deweerdt@free.fr>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       suresh.b.siddha@intel.com, Ingo Molnar <mingo@elte.hu>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
+ 00000002
+Message-ID: <20080729083029.094a32cb@infradead.org>
+In-Reply-To: <20080729145348.GN30344@one.firstfloor.org>
+References: <20080725095317.GA12636@skywalker>
+	<20080728222643.GA6339@slug>
+	<1217305335.5553.3.camel@marge.simson.net>
+	<20080729120911.GI30344@one.firstfloor.org>
+	<20080729065635.27630e33@infradead.org>
+	<20080729145348.GN30344@one.firstfloor.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Tue, 29 Jul 2008 16:53:48 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-> On Mon, 28 Jul 2008, Vitaly Mayatskikh wrote:
->>
->> Reduce protection faults count in copy_user_handle_tail routine by
->> limiting clear length to the end of page as was suggested by Linus.
->
-> No, you did it wrong.
->
-> The page _clearing_ has to be to the end of the copy. Yes, in practice, I 
-> don't think the kernel actually very often does "copy_from_user()" calls 
-> that are page crossers in the kernel, but they do happen.
->
-> It's the _copy_ part that needn't cross pages, because we know that 
-> something faulted, and we _know_ that it wasn't the clearing.
->
-> Really: the clearing should be just a "memset()" with no limitations. It 
-> can never fault without it being a serious bug, and then we should not fix 
-> it up, but we should oops!
+> On Tue, Jul 29, 2008 at 06:56:35AM -0700, Arjan van de Ven wrote:
+> > On Tue, 29 Jul 2008 14:09:11 +0200
+> > Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> > > On Tue, Jul 29, 2008 at 06:22:15AM +0200, Mike Galbraith wrote:
+> > > > On Tue, 2008-07-29 at 00:26 +0200, Frederik Deweerdt wrote:
+> > > > > Hello  Aneesh,
+> > > > > 
+> > > > > On Fri, Jul 25, 2008 at 03:23:17PM +0530, Aneesh Kumar K.V
+> > > > > wrote:
+> > > > > > [  163.378265] BUG: unable to handle kernel NULL pointer
+> > > > > > dereference at 00000002 [  163.378276] IP: [<c0124933>]
+> > > > > > sched_power_savings_store+0x13/0x70
+> > > > > 
+> > > > > Does the attached patch solve the problem?
+> > > > 
+> > > > Patch seems to have missed the boat for rc1 too.
+> > > 
+> > > Hmm.  I'll resend. 
+> > > 
+> > > BTW i think it's clearly a  bug that distributions are even
+> > > accessing that file. It doesn't make any sense in the context
+> > > they are using it (like at every boot). 
+> > 
+> > it's a power saving feature that they very likely turn on by
+> > default...
+> 
+> A power saving feature that has a significant trade off between power
+> and performance. 
 
-Right. I will take your code discussed previously. The only question is:
-what will be a good place for *_IS_USERSPACE and CLEAR_REMAINDER flags
-definitions and assembly macro ALIGN_DESTINATION (common for
-copy_user_64.S and copy_user_nocache_64.S)? I have a new file
-include/asm-x86/copy_user.h at the moment, but not sure if you will
-think it's ok to put that stuff here:
+do you have numbers to explain "significant tradeoff" ?
 
-include/asm-x86/copy_user.h:
-#ifndef _COPY_USER_H
-#define _COPY_USER_H
+ 
+> This means performance will go down. Perhaps it would be ok on
+> battery, 
 
-/* Flags for copy_user_handle_tail */
-#define CLEAR_REMAINDER         1
-#define DEST_IS_USERSPACE       2
-#define SOURCE_IS_USERSPACE     4
+the illusion that power only matters on battery got buried a few years
+ago ;)
 
-/* Align destination */
-#define FIX_ALIGNMENT 1
 
-#define BYTES_LEFT_IN_PAGE(ptr) \
-        (unsigned long)((PAGE_MASK & ((long)(ptr) + PAGE_SIZE)) - (long)(ptr))
-
-#ifdef __ASSEMBLY__
-        .macro ALIGN_DESTINATION
-...
-#endif /* FIX_ALIGNMENT */
-        .endm
-#endif /* __ASSEMBLY__ */
-#endif /* _COPY_USER_H */
-
--- 
-wbr, Vitaly
