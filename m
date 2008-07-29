@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbYG2UFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759067AbYG2UGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758181AbYG2UFH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 16:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYG2UE4
+	id S1759067AbYG2UGV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 16:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYG2UGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 16:04:56 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38133 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750897AbYG2UE4 (ORCPT
+	Tue, 29 Jul 2008 16:06:09 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:21070 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752050AbYG2UGI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 16:04:56 -0400
-Date: Tue, 29 Jul 2008 15:04:55 -0500
-From: Cliff Wickman <cpw@sgi.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, steiner@sgi.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: Comments on UV tlb flushing
-Message-ID: <20080729200455.GA20559@sgi.com>
-References: <488E644B.10801@goop.org> <200807291412.18495.nickpiggin@yahoo.com.au> <20080729133204.GA13138@sgi.com> <488F2C9B.9070306@goop.org> <20080729173420.GA18296@sgi.com> <488F5781.2030909@goop.org>
+	Tue, 29 Jul 2008 16:06:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=0ZEjP+f37ppgNHxZnV5kiJ7Th+5z87bXJCb4dM5foT6dNEJwtcrWnGhmL/0vNphvKI32BOSfFlpQlwQBxfjDFHcVS7woXNGaP9T5TEyXnuhDfTfD7mKFThTQUICPDPtYn/D/emahixiAu1IpGyhCJsZGm+vDDb4Sfa+4oixixMc=  ;
+X-YMail-OSG: WfZWFzEVM1nwpk3aQ3bjpx2qwu91lQN7tRI8cW4C4Knnlr7UmbzFL1k8613uwWBtSbxtA.slIChEB5cDl5eO3yCCSPIScbkH4F7CHMvFh.n7pCv7RY8AcZXZk1HN0fU-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 2.6.27-rc1] legacy rtc:  remove needless/confusing HPET_RTC_IRQ option
+Date: Tue, 29 Jul 2008 12:35:12 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>, rtc-linux@googlegroups.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <488F5781.2030909@goop.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200807291235.13011.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 10:46:41AM -0700, Jeremy Fitzhardinge wrote:
-> Cliff Wickman wrote:
->> But if the tlb_uv.o code should be present in "every" distro x86 kernel
->> I don't see the point of having to configure it in.  Why not just
->> configure it out for small (embedded) kernels?
->
-> Because it's not an binary thing.  Lots of people who are compiling  
-> their own kernels for specialized uses don't set CONFIG_EMBEDDED, but  
-> also don't want a kitchen sink kernel.  6k isn't that much, but if every  
-> obscure platform enabled some always-on code it rapidly starts to build 
-> up.
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-But UV will not be obscure! It will be common among x86_64 :)  
-I know what you're talking about.  It may sometimes be useful to turn
-off chunks of code you don't need. 
-But is the specialized application of 64-bit processors big enough to
-warrant the feature?
-The size of most any 64-bit system would, I would think, make 6k of
-code insignificant.
-And the more options you add, the more likely someone will pick
-combinations that won't work together.
+HPET_RTC_IRQ is no longer needed; HPET_EMULATE_RTC suffices and is
+more correct.  (http://bugzilla.kernel.org/show_bug.cgi?id=11111)
 
-> Basically, if you want to make sure if you're going to get some level of  
-> distro support, you need to make contact with the distros directly and  
-> talk about what you'd like them to do.
->    J
-And we do. And could reasonably expect that they would turn on that
-option for x86_64 kernels.  We'd just, of course, rather not have to watch
-and prompt to be sure all x86_64 kernels will run on our hardware.
+Note that when using the legacy RTC driver, platforms don't really do
+a dynamic switch between HPET and non-HPET modes based on whether HPET
+hardware actually exists ...  only rtc-cmos (using the new RTC framework)
+currently switches that way.
 
--Cliff
--- 
-Cliff Wickman
-Silicon Graphics, Inc.
-cpw@sgi.com
-(651) 683-3824
+So this reflects bitrot in that legacy code, for x86/ia64:  kernels with
+HPET support configured (e.g. for a clocksource) can't get IRQs from the
+legacy RTC driver unless they really have HPET hardware.  (The obvious
+workaround is to not use the legacy RTC driver on those platforms when
+you configure HPET ... unless you know the target really has a HPET.)
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/char/Kconfig |    9 ---------
+ drivers/char/rtc.c   |    2 +-
+ 2 files changed, 1 insertion(+), 10 deletions(-)
+
+--- a/drivers/char/Kconfig	2008-07-26 17:28:58.000000000 -0700
++++ b/drivers/char/Kconfig	2008-07-26 17:39:37.000000000 -0700
+@@ -1043,15 +1043,6 @@ config HPET
+ 	  open selects one of the timers supported by the HPET.  The timers are
+ 	  non-periodic and/or periodic.
+ 
+-config HPET_RTC_IRQ
+-	bool
+-	default HPET_EMULATE_RTC
+-	depends on RTC && HPET
+-	help
+-	  If you say Y here, you will disable RTC_IRQ in drivers/char/rtc.c. It
+-	  is assumed the platform called hpet_alloc with the RTC IRQ values for
+-	  the HPET timers.
+-
+ config HPET_MMAP
+ 	bool "Allow mmap of HPET"
+ 	default y
+--- a/drivers/char/rtc.c	2008-07-26 17:28:58.000000000 -0700
++++ b/drivers/char/rtc.c	2008-07-26 17:39:37.000000000 -0700
+@@ -97,7 +97,7 @@ static unsigned long rtc_port;
+ static int rtc_irq = PCI_IRQ_NONE;
+ #endif
+ 
+-#ifdef	CONFIG_HPET_RTC_IRQ
++#ifdef	CONFIG_HPET_EMULATE_RTC
+ #undef	RTC_IRQ
+ #endif
+ 
