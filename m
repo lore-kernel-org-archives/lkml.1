@@ -1,85 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbYG2D7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752533AbYG2EBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755328AbYG2D7d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 23:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYG2D7X
+	id S1752533AbYG2EBz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 00:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750773AbYG2EBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 23:59:23 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49631 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753081AbYG2D7V (ORCPT
+	Tue, 29 Jul 2008 00:01:47 -0400
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:28507 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750767AbYG2EBq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 23:59:21 -0400
-Date: Tue, 29 Jul 2008 13:04:50 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Ranjit Manomohan <ranjitm@google.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, lizf@cn.fujitsu.com,
-       menage@google.com, kaber@trash.net, akpm@linux-foundation.org
-Subject: Re: [PATCH 0/0] Traffic control cgroups subsystem
-Message-Id: <20080729130450.ac770afd.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0807241628270.30437@ranjit.corp.google.com>
-References: <Pine.LNX.4.64.0807241628270.30437@ranjit.corp.google.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Jul 2008 00:01:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=z6yIs1x6hTwpf0RCtoG+L7FTV0Xsbx8VOdbHwBAn0s+wwoIdWAqdgBbwspTMdPpF3AH2+jIRmGVh+IERz7SmFGU17kqZWZce2qheG+zlv57SH3fWZD3UoJ/gi1rXjip0U9i3UgLS95YNfqiuGHxtctWTfAWI8Juxpo8Zy/hlcAE=  ;
+X-YMail-OSG: 1sYS7PYVM1mSVi1xMDRBtfr8cBk.rp0hJFpF54WaF4RB1Q2JoGYeU5LDOwTb8azM60d.ztqFNihum5ZHyMHWLJCgAzFkAa8dt.5m310R6JPFTJUVusmYXAn4JN9wCKLRCcQ-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux v2.6.27-rc1
+Date: Tue, 29 Jul 2008 14:01:32 +1000
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807291401.32255.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Jul 2008 16:33:38 -0700 (PDT)
-Ranjit Manomohan <ranjitm@google.com> wrote:
+On Tuesday 29 July 2008 13:23, Linus Torvalds wrote:
 
-> [Take 4] incorporated additional comments from Patrick McHardy
-> 
-> This patch provides a simple resource controller (cgroup_tc) based on the
-> cgroups infrastructure to manage network traffic. The cgroup_tc resource
-> controller can be used to schedule and shape traffic belonging to the task(s)
-> in a particular cgroup.
-> 
+> Other stuff? tracing. firmware loading. continued x86 arch merging. And
+> moving more code to generic support (unified generic IPI handling,
+> coherent dma memory allocation, show_mem etc). bootmem rewrites. Some
+> support for further scalability (ie 4k cpu cores).
 
-Could you include your TO-DO-LIST/Known-Problems in patch description ?
-It will be a help to read new-feature patches.
-
-Thanks,
--Kame
-
-> The implementation consists of two parts:
-> 
-> 1) A resource controller (cgroup_tc) that is used to associate packets from
->    a particular task belonging to a cgroup with a traffic control class id (
->    tc_classid). This tc_classid is propagated to all sockets created by tasks
->    in the cgroup and will be used for classifying packets at the link layer.
-> 
-> 2) A new traffic control classifier (cls_cgroup) that can classify packets
->    based on the tc_classid field in the socket to specific destination classes.
-> 
-> An example of the use of this resource controller would be to limit
-> the traffic from all tasks from a file_server cgroup to 100Mbps. We could
-> achieve this by doing:
-> 
-> # make a cgroup of file transfer processes and assign it a arbitrary unique
-> # classid of 0x1234 - this will be used later to direct packets.
-> mkdir -p /dev/cgroup
-> mount -t cgroup tc -otc /dev/cgroup
-> mkdir /dev/cgroup/file_transfer
-> echo 0x1234 > /dev/cgroup/file_transfer/tc.classid
-> echo $PID_OF_FILE_XFER_PROCESS > /dev/cgroup/file_transfer/tasks
-> 
-> # Now create a HTB class that rate limits traffic to 100mbits and attach
-> # a filter to direct all traffic from cgroup file_transfer to this new class.
-> tc qdisc add dev eth0 root handle 1: htb
-> tc class add dev eth0 parent 1: classid 1:10 htb rate 100mbit ceil 100mbit
-> tc filter add dev eth0 parent 1: handle 800 protocol ip prio 1 cgroup value 0x1234 classid 1:10
-> 
-> Signed-off-by: Ranjit Manomohan <ranjitm@google.com>
-> 
-> ---
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+And lockless pagecache, woohoo!
