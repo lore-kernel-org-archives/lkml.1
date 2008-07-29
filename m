@@ -1,50 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbYG2LsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbYG2LuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758141AbYG2LsS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 07:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbYG2LsB
+	id S1758220AbYG2LuL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 07:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbYG2Lt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 07:48:01 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:24624 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755599AbYG2LsB (ORCPT
+	Tue, 29 Jul 2008 07:49:57 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:36482 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756046AbYG2Lt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 07:48:01 -0400
-To: "Johannes Berg" <johannes@sipsolutions.net>
-Cc: Alistair John Strachan <alistair@devzero.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dsd@gentoo.org, kune@deine-taler.de, linux-wireless@vger.kernel.org
-Subject: Re: 2.6.27-rc1: zd1211rw association fails
-References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org>
-	<200807291049.47342.alistair@devzero.co.uk>
-	<1217326195.10489.10.camel@johannes.berg>
-	<200807291225.00679.alistair@devzero.co.uk>
-	<1217330777.10489.21.camel@johannes.berg>
-From: Kalle Valo <kalle.valo@nokia.com>
-Date: Tue, 29 Jul 2008 14:46:16 +0300
-In-Reply-To: <1217330777.10489.21.camel@johannes.berg> (ext Johannes Berg's message of "Tue\, 29 Jul 2008 13\:26\:17 +0200")
-Message-ID: <87ljzklxpz.fsf@nokia.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 29 Jul 2008 11:46:18.0702 (UTC) FILETIME=[B6E2FEE0:01C8F170]
-X-Nokia-AV: Clean
+	Tue, 29 Jul 2008 07:49:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=avmSDmRWkb/ffBhbXCMFaq2udDnHeo4tdMDibyQbrQyrqSYszeLpT0h55AfMEynyER
+         /JQMhEDpd0c16Y8k0Fb5nKAzZIEQ32xgJhhROfFCAnHnCnWecpwp2bynB5tS+BlskMKD
+         J6CfE+AR6mQ49TbrOPw3I3qYdDe+9Tz14CM24=
+Subject: [PATCH] fs/fat/dir.c fix resource leak
+From: "Darren Jenkins\\" <darrenrjenkins@gmail.com>
+To: kernel Janitors <kernel-janitors@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, hirofumi@mail.parknet.co.jp
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 29 Jul 2008 10:03:33 +1000
+Message-Id: <1217289813.9367.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Berg <johannes@sipsolutions.net> writes:
+G'day people,
 
->> If it doesn't strain you too much more, could you actually tell me
->> where this is? Your last 5 posts to LKML don't seem to contain such
->> a patch, and I'm not subscribed to linux-wireless.
->
-> Well, the latter has archives.
+Coverity CID 2332 & 2333 RESOURCE_LEAK
 
-Here's a link to the patch:
 
-http://marc.info/?l=linux-wireless&m=121732394028001&w=2
+In fat_search_long() if fat_parse_long() returns a -ve value we return
+without first freeing unicode and bufname.
+This patch free's them on this error path.
 
--- 
-Kalle Valo
+Patch against linux-next commit 99be8ca04aa13c0ff10bbb3ba5f90676b050fcc6
+Only compile tested
+
+﻿﻿﻿﻿Signed-off-by: Darren Jenkins <darrenrjenkins@gmailcom>
+
+diff --git a/fs/fat/dir.c b/fs/fat/dir.c
+index 34541d0..8a9d7fa 100644
+--- a/fs/fat/dir.c
++++ b/fs/fat/dir.c
+@@ -346,14 +346,16 @@ parse_record:
+ 		if (de->attr == ATTR_EXT) {
+ 			int status = fat_parse_long(inode, &cpos, &bh, &de,
+ 						    &unicode, &nr_slots);
+-			if (status < 0)
+-				return status;
+-			else if (status == PARSE_INVALID)
++			if (status < 0) {
++				err = status;
++				goto EODir;
++			} else if (status == PARSE_INVALID) {
+ 				continue;
+-			else if (status == PARSE_NOT_LONGNAME)
++			} else if (status == PARSE_NOT_LONGNAME) {
+ 				goto parse_record;
+-			else if (status == PARSE_EOF)
++			} else if (status == PARSE_EOF) {
+ 				goto EODir;
++			}
+ 		}
+ 
+ 		memcpy(work, de->name, sizeof(de->name));
+
+
