@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbYG2L16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbYG2L3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757915AbYG2L16 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 07:27:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755769AbYG2L1u
+	id S1757842AbYG2L3w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 07:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbYG2L3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 07:27:50 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37821 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755716AbYG2L1t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 07:27:49 -0400
-Date: Tue, 29 Jul 2008 13:27:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, joerg.roedel@amd.com,
-       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       robert.richter@amd.com, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] add iommu_num_pages helper function
-Message-ID: <20080729112724.GA11276@elte.hu>
-References: <20080725134159.GA7493@amd.com> <20080725225724J.fujita.tomonori@lab.ntt.co.jp> <20080725141425.GB7493@amd.com> <20080725233325W.fujita.tomonori@lab.ntt.co.jp> <20080726134156.GC4401@elte.hu> <20080729110749.728c54e6.sfr@canb.auug.org.au>
+	Tue, 29 Jul 2008 07:29:44 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47194 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754305AbYG2L3n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 07:29:43 -0400
+Date: Tue, 29 Jul 2008 20:28:24 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: build failure
+Cc: kosaki.motohiro@jp.fujitsu.com, Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Miller <davem@davemloft.net>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>, Mike Travis <travis@sgi.com>
+In-Reply-To: <20080729085815.GA1301@elte.hu>
+References: <20080729180317.94c64634.sfr@canb.auug.org.au> <20080729085815.GA1301@elte.hu>
+Message-Id: <20080729202731.F18F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080729110749.728c54e6.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> Hi Ingo,
 > 
-> On Sat, 26 Jul 2008 15:41:56 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > ok, i'll apply the 3 patches to tip/x86/iommu. As usual, feel free to 
-> > send IOMMU cleanups/generalizations/fixes against tip/master:
+> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> 
+> > Hi Ingo,
 > > 
-> >   http://people.redhat.com/mingo/tip.git/README
+> > On Tue, 29 Jul 2008 10:00:55 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> > >
+> > > > -#define cpumask_of_cpu(cpu) ({ *get_cpu_mask(cpu); })
+> > > > +#define cpumask_of_cpu(cpu) (*get_cpu_mask(cpu))
+> > > 
+> > > hm, i'm wondering - is this a compiler bug?
+> > 
+> > Or maybe a deficiency in such an old compiler (v3.4.5) but the fix 
+> > makes sense anyway, right?
 > 
-> So, I assume a patch created on July 25 is not destined for 2.6.27, 
-> right?  Especially since it breaks another architecture build and has 
-> only made it to linux-next on July 29 ... and needs more work given 
-> the comments already on this patch.
+> yeah, i was just wondering.
 
-Correct, they were not intended for immediate upstream merging, they 
-werent even in auto-x86-next so there was no meaningful linux-next 
-exposure.
+in linux/README
 
-I was surprised they went upstream via the PCI tree yesterday, just 
-hours after i sent them over to Jesse and about an hour before -rc1 was 
-released. [ Nor did intend the core/generic-dma-coherent bits to go 
-upstream right before -rc1 - although those seem to be problem-free so 
-far. ]
+COMPILING the kernel:
 
-I stopped sending non-urgent patches to Linus days ago, to let things 
-calm down for a smooth -rc1 release.
+ - Make sure you have at least gcc 3.2 available.
+   For more information, refer to Documentation/Changes.
 
-	Ingo
+
+
+So, if 3.4.5 is old, Should we change readme?
+
+
+
