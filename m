@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbYG2S0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbYG2Sf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758699AbYG2S0Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 14:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037AbYG2S0O
+	id S1756490AbYG2Sf1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 14:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbYG2SfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 14:26:14 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:45624 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752880AbYG2S0N (ORCPT
+	Tue, 29 Jul 2008 14:35:17 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:24161 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751502AbYG2SfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 14:26:13 -0400
-Date: Tue, 29 Jul 2008 12:26:11 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       Jim Meyering <jim@meyering.net>, linux-kernel@vger.kernel.org,
-       Martin Petersen <mkp@mkp.net>, Jeff Garzik <jeff@garzik.org>,
-       Matt Domsch <Matt_Domsch@Dell.com>
-Subject: Re: tools support for non-512 byte sector sizes
-Message-ID: <20080729182611.GB24924@parisc-linux.org>
-References: <488F524F.6020905@redhat.com>
+	Tue, 29 Jul 2008 14:35:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=efreLPr5JMW9vqLz9Hbycwmssw7YMnu1F0GnbfT74XaZ1H2BBVPuo+gtML3IU5TfNw
+         ztfsTmIptDfat8eaD30PcSJ3bfX1N924UwYfEjqAu35z4WSnKUh/6iXq99G17k0M1YVo
+         O6eXsAy0o0WdendfKoovDg0vUKGDk0c3gxlQM=
+Message-ID: <86802c440807291135m7f8e2163xdde14545e311649a@mail.gmail.com>
+Date: Tue, 29 Jul 2008 11:35:15 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
+Subject: Re: kernel BUG at arch/x86/kernel/io_apic_64.c:357!
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080729160939.GA4484@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <488F524F.6020905@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20080729160939.GA4484@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 01:24:31PM -0400, Ric Wheeler wrote:
-> Jim pinged me about the use case for having our tool chain (parted 
-> specifically) support devices with non-512 bytes sectors.
+On Tue, Jul 29, 2008 at 9:09 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> Hi Ingo, Thomas,
+>
+> Hit this on 2.6.27-rc1
+>
+> (The kernel bug is at line 356 (Its 357 as I applied a debug patch to
+> print out the irq) (Full dmesg and .config attached)
 
-Matt Domsch spoke with me about this at OLS.  I took that opportunity,
-and I'll take this one, to pimp my ata-ram driver which allows you to
-alter the sector sizse to whatever you want:
+can you boot with "debug apic=verbose pci=routeirq"?
 
-http://git.kernel.org/?p=linux/kernel/git/willy/misc.git;a=shortlog;h=ata-ram
-
-I'll admit to having not tested it with anything other than 512, but it
-ought to support 4096 byte sectors just fine.  I haven't looked at what
-would be required to support 520-byte sectors.
-
-Jeff, any interest in merging ata-ram soon?  I've got some users inside
-Intel, and Zab persuaded me to add the multiple port support last night,
-so it's not just useful for me.  I think it's also a nice template to
-have around to show how to write a minimal libata driver.
-
-> Off the top of my head, the following is the list of existing or soon to 
-> appear devices that could use this (taken from our thread last year, at
-> http://kerneltrap.org/mailarchive/linux-fsdevel/2007/3/11/317183):
-> 
->    (1) R/W optical drives
->    (2) S390 dasd devices have a 4096 byte sector
->    (3) new 4096 byte disks (which intend to export a virtual 512 byte 
-> sector)
-> 
-> Anything else pop into mind? Any idea if SSD or FLASH devices have 
-> thoughts to use a non-512 byte sector size? What tools are most critical 
-> to support?
-> 
-> Thanks!
-> 
-> Ric
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+YH
