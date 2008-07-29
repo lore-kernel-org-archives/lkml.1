@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbYG2PF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbYG2PIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756662AbYG2PF6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 11:05:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbYG2PFu
+	id S1757868AbYG2PIQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 11:08:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbYG2PH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 11:05:50 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:49426 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbYG2PFt (ORCPT
+	Tue, 29 Jul 2008 11:07:59 -0400
+Received: from 42.mail-out.ovh.net ([213.251.189.42]:42319 "HELO
+	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752483AbYG2PH7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 11:05:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GRV+IdB2tYpoqPrd755VVY3ZisCpnFy/3HxBSdD6f/B84RYKl5sc+TZHJIWBf7Rw6G
-         BQSvSP7PARNDjDU9KbMQSk+OCHMhDLQf1XAU5fRQzN4FJxj1DSDPmWyIjsySC6GQNvGt
-         Ecs6SQMXkVxV1KYOY0d+1+QcprMMfXmmnrhiw=
-Date: Tue, 29 Jul 2008 19:05:46 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: cpu4096 + smp_affinity breakage
-Message-ID: <20080729150546.GA5140@martell.zuzino.mipt.ru>
-References: <488F2A65.2090405@gmail.com>
+	Tue, 29 Jul 2008 11:07:59 -0400
+X-Greylist: delayed 327 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Jul 2008 11:07:58 EDT
+Message-ID: <488F323E.6040403@boichat.ch>
+Date: Tue, 29 Jul 2008 23:07:42 +0800
+From: Nicolas Boichat <nicolas@boichat.ch>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080625)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <488F2A65.2090405@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "Mark M. Hoffman" <mhoffman@lightlink.com>
+CC: roberto@unbit.it, mactel-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Jean Delvare <khali@linux-fr.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "guilherme m. schroeder" <guilherme.m.schroeder@gmail.com>
+Subject: [PATCH 2/2] applesmc: add support for Macbook v3.
+References: <1216814135.5834.9.camel@sirius> <488F30F7.4030804@boichat.ch>
+In-Reply-To: <488F30F7.4030804@boichat.ch>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 3623145900843400352
+X-Ovh-Remote: 220.255.224.226 (bb220-255-224-226.singnet.com.sg)
+X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
+X-Spam-Check: DONE|H 0.5/N
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 04:34:13PM +0200, Jiri Slaby wrote:
-> I see cpu4096 branches in -tip. Do you know about /proc/irq/*/*smp_affinity 
-> (irq_affinity_read_proc, default_affinity_read) breakage with NR_CPUS=4096? 
-> Reading by `cat' from those files fails due to bitmap sent out is about 
-> 1150 bytes, but cat provides only 1024B sized buffer. Can you think about 
-> any fix for this?
->
-> Using file offset and utilize only portion of that buffer returned to the 
-> userspace will break atomicity I guess (does this matter?). If we get a 
-> snapshot, it would get old if some reader breaks up. And if we use 
-> per-reader buffer, we will be unable to free it. Any ideas?
->
-> I think the same problem is for not-at-once-writes.
+This patches adds support for Macbook v3 (sensors and accelerometer).
 
-Time to ressurect my smp_affinity-as-seq-file patch which was dropped
-for a stupid reason. 
+From: guilherme m. schroeder <guilherme.m.schroeder@gmail.com>
+Signed-off-by: Nicolas Boichat <nicolas@boichat.ch>
+---
+ drivers/hwmon/applesmc.c |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
+index 52d842b..b06b8e0 100644
+--- a/drivers/hwmon/applesmc.c
++++ b/drivers/hwmon/applesmc.c
+@@ -101,6 +101,9 @@ static const char* temperature_sensors_sets[][36] = {
+ /* Set 5: iMac */
+ 	{ "TC0D", "TA0P", "TG0P", "TG0D", "TG0H", "TH0P", "Tm0P", "TO0P",
+ 	  "Tp0C", NULL },
++/* Set 6: Macbook3 set */
++	{ "TB0T", "TC0D", "TC0P", "TM0P", "TN0P", "TTF0", "TW0P", "Th0H",
++	  "Th0S", "Th1H", NULL },
+ };
+ 
+ /* List of keys used to read/write fan speeds */
+@@ -1228,6 +1231,8 @@ static __initdata struct dmi_match_data applesmc_dmi_data[] = {
+ 	{ .accelerometer = 0, .light = 0, .temperature_set = 4 },
+ /* iMac: temperature set 5 */
+ 	{ .accelerometer = 0, .light = 0, .temperature_set = 5 },
++/* MacBook3: accelerometer and temperature set 6 */
++	{ .accelerometer = 1, .light = 0, .temperature_set = 6 },
+ };
+ 
+ /* Note that DMI_MATCH(...,"MacBook") will match "MacBookPro1,1".
+@@ -1237,10 +1242,14 @@ static __initdata struct dmi_system_id applesmc_whitelist[] = {
+ 	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
+ 	  DMI_MATCH(DMI_PRODUCT_NAME,"MacBookPro") },
+ 		(void*)&applesmc_dmi_data[0]},
+-	{ applesmc_dmi_match, "Apple MacBook", {
++	{ applesmc_dmi_match, "Apple MacBook (v2)", {
+ 	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
+ 	  DMI_MATCH(DMI_PRODUCT_NAME,"MacBook2") },
+ 		(void*)&applesmc_dmi_data[1]},
++	{ applesmc_dmi_match, "Apple MacBook (v3)", {
++	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
++	  DMI_MATCH(DMI_PRODUCT_NAME,"MacBook3") },
++		(void*)&applesmc_dmi_data[6]},
+ 	{ applesmc_dmi_match, "Apple MacBook", {
+ 	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
+ 	  DMI_MATCH(DMI_PRODUCT_NAME,"MacBook") },
+
 
