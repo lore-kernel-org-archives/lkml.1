@@ -1,32 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757126AbYG2GCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbYG2GCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757126AbYG2GCc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 02:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbYG2GBw
+	id S1757331AbYG2GCq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 02:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYG2GBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 02:01:52 -0400
+	Tue, 29 Jul 2008 02:01:55 -0400
 Received: from wa-out-1112.google.com ([209.85.146.176]:5661 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755047AbYG2GBm (ORCPT
+	with ESMTP id S1755473AbYG2GBp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 02:01:42 -0400
+	Tue, 29 Jul 2008 02:01:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=lq/DJcZKIpLBKTQ1mSZByMTR3BK4NZCtfp2nSZDMhKLOYtB6SDQbqrUCQ58oi9PbLA
-         IJekKkO8QemgKhk5Vs5zq9v5wG+o9ZOrY/LQwwNMonnPXTaSRP+WCPQH2jSizKO07qHj
-         8Qq0bdqGAesxbmpT9hafHgmc0U868US51UvXI=
-Subject: [PATCH 3/8] wireless: replace __FUNCTION__ with __func__
+        b=iHhUVKUTHm76Ybvu545jcHs9iajMSBgzxT7c2g0djb5FmlHiQgFwshDoEqP/J8LShT
+         jCVFFINb0GR1xYuqqAeoMtKSBFYvKZhcvzYeiV9F5S+zszx2OQHVYplXDLuCH+SapSTN
+         gwOwWRVaQcZepnnSkWtAuV6gIISd+kHGT7PfQ=
+Subject: [PATCH 4/8] drivers/net: replace __FUNCTION__ with __func__
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: John Linville <linville@tuxdriver.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+To: Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>
+Cc: LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+       Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain
-Date: Mon, 28 Jul 2008 23:01:34 -0700
-Message-Id: <1217311294.23389.26.camel@brick>
+Date: Mon, 28 Jul 2008 23:01:35 -0700
+Message-Id: <1217311295.23389.27.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -38,329 +37,2262 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/net/wireless/airo.c                   |   16 ++++++++--------
- drivers/net/wireless/hermes.c                 |    2 +-
- drivers/net/wireless/ipw2100.c                |    2 +-
- drivers/net/wireless/ipw2200.h                |    4 ++--
- drivers/net/wireless/iwlwifi/iwl-3945-debug.h |    4 ++--
- drivers/net/wireless/iwlwifi/iwl-debug.h      |    4 ++--
- drivers/net/wireless/iwlwifi/iwl3945-base.c   |    4 ++--
- drivers/net/wireless/iwlwifi/iwl4965-base.c   |    4 ++--
- drivers/net/wireless/libertas/if_cs.c         |    2 +-
- drivers/net/wireless/prism54/isl_ioctl.c      |    8 ++++----
- drivers/net/wireless/rt2x00/rt2x00.h          |    4 ++--
- drivers/net/wireless/wl3501_cs.c              |    8 ++++----
- 12 files changed, 31 insertions(+), 31 deletions(-)
+I can break this up further if you want.  Hoping just to get this
+finished with.
 
-diff --git a/drivers/net/wireless/airo.c b/drivers/net/wireless/airo.c
-index b5cd850..ae58a12 100644
---- a/drivers/net/wireless/airo.c
-+++ b/drivers/net/wireless/airo.c
-@@ -1915,7 +1915,7 @@ static int mpi_start_xmit(struct sk_buff *skb, struct net_device *dev) {
- 	struct airo_info *ai = dev->priv;
+ drivers/net/3c505.c               |    4 +-
+ drivers/net/arcnet/arcnet.c       |   18 +++---
+ drivers/net/arcnet/com20020.c     |   16 +++---
+ drivers/net/ax88796.c             |   14 ++--
+ drivers/net/bfin_mac.c            |    8 +-
+ drivers/net/bonding/bonding.h     |    2 +-
+ drivers/net/cxgb3/cxgb3_offload.c |    8 +-
+ drivers/net/e100.c                |    2 +-
+ drivers/net/enc28j60.c            |   56 +++++++++---------
+ drivers/net/ibm_newemac/phy.c     |    2 +-
+ drivers/net/ixgb/ixgb.h           |    2 +-
+ drivers/net/ixgbe/ixgbe.h         |    2 +-
+ drivers/net/meth.c                |    2 +-
+ drivers/net/mipsnet.c             |    2 +-
+ drivers/net/netx-eth.c            |    2 +-
+ drivers/net/netxen/netxen_nic.h   |    2 +-
+ drivers/net/pci-skeleton.c        |    4 +-
+ drivers/net/r8169.c               |    2 +-
+ drivers/net/s2io.c                |   40 ++++++------
+ drivers/net/smc911x.c             |   66 +++++++++++-----------
+ drivers/net/smc91x.c              |   40 ++++++------
+ drivers/net/tehuti.h              |    8 +-
+ drivers/net/tsi108_eth.c          |    6 +-
+ drivers/net/ucc_geth.c            |  116 ++++++++++++++++++------------------
+ drivers/net/usb/mcs7830.c         |    2 +-
+ drivers/net/usb/pegasus.c         |   24 ++++----
+ drivers/net/usb/rtl8150.c         |    6 +-
+ drivers/net/via-velocity.h        |    2 +-
+ drivers/net/wan/cycx_drv.c        |    6 +-
+ drivers/net/wan/cycx_x25.c        |   12 ++--
+ drivers/net/wan/dscc4.c           |    2 +-
+ drivers/net/wan/pc300_tty.c       |    2 +-
+ 32 files changed, 240 insertions(+), 240 deletions(-)
+
+diff --git a/drivers/net/3c505.c b/drivers/net/3c505.c
+index fdfb2b2..a424869 100644
+--- a/drivers/net/3c505.c
++++ b/drivers/net/3c505.c
+@@ -130,12 +130,12 @@ static const char filename[] = __FILE__;
  
- 	if (!skb) {
--		airo_print_err(dev->name, "%s: skb == NULL!",__FUNCTION__);
-+		airo_print_err(dev->name, "%s: skb == NULL!",__func__);
- 		return 0;
+ static const char timeout_msg[] = "*** timeout at %s:%s (line %d) ***\n";
+ #define TIMEOUT_MSG(lineno) \
+-	printk(timeout_msg, filename,__FUNCTION__,(lineno))
++	printk(timeout_msg, filename,__func__,(lineno))
+ 
+ static const char invalid_pcb_msg[] =
+ "*** invalid pcb length %d at %s:%s (line %d) ***\n";
+ #define INVALID_PCB_MSG(len) \
+-	printk(invalid_pcb_msg, (len),filename,__FUNCTION__,__LINE__)
++	printk(invalid_pcb_msg, (len),filename,__func__,__LINE__)
+ 
+ static char search_msg[] __initdata = KERN_INFO "%s: Looking for 3c505 adapter at address %#x...";
+ 
+diff --git a/drivers/net/arcnet/arcnet.c b/drivers/net/arcnet/arcnet.c
+index bdc4c0b..a5b0769 100644
+--- a/drivers/net/arcnet/arcnet.c
++++ b/drivers/net/arcnet/arcnet.c
+@@ -442,24 +442,24 @@ static int arcnet_open(struct net_device *dev)
+ 		BUGMSG(D_NORMAL, "WARNING!  Station address FF may confuse "
+ 		       "DOS networking programs!\n");
+ 
+-	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__FUNCTION__);
++	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__func__);
+ 	if (ASTATUS() & RESETflag) {
+-	  	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__FUNCTION__);
++	  	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__func__);
+ 		ACOMMAND(CFLAGScmd | RESETclear);
  	}
- 	npacks = skb_queue_len (&ai->txq);
-@@ -1964,7 +1964,7 @@ static int mpi_send_packet (struct net_device *dev)
- 	if ((skb = skb_dequeue(&ai->txq)) == NULL) {
- 		airo_print_err(dev->name,
- 			"%s: Dequeue'd zero in send_packet()",
--			__FUNCTION__);
-+			__func__);
- 		return 0;
+ 
+
+-	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__FUNCTION__);
++	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__func__);
+ 	/* make sure we're ready to receive IRQ's. */
+ 	AINTMASK(0);
+ 	udelay(1);		/* give it time to set the mask before
+ 				 * we reset it again. (may not even be
+ 				 * necessary)
+ 				 */
+-	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__FUNCTION__);
++	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__func__);
+ 	lp->intmask = NORXflag | RECONflag;
+ 	AINTMASK(lp->intmask);
+-	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__FUNCTION__);
++	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__func__);
+ 
+ 	netif_start_queue(dev);
+ 
+@@ -670,14 +670,14 @@ static int arcnet_send_packet(struct sk_buff *skb, struct net_device *dev)
+ 		freeskb = 0;
  	}
  
-@@ -2115,7 +2115,7 @@ static int airo_start_xmit(struct sk_buff *skb, struct net_device *dev) {
- 	u32 *fids = priv->fids;
+-	BUGMSG(D_DEBUG, "%s: %d: %s, status: %x\n",__FILE__,__LINE__,__FUNCTION__,ASTATUS());
++	BUGMSG(D_DEBUG, "%s: %d: %s, status: %x\n",__FILE__,__LINE__,__func__,ASTATUS());
+ 	/* make sure we didn't ignore a TX IRQ while we were in here */
+ 	AINTMASK(0);
  
- 	if ( skb == NULL ) {
--		airo_print_err(dev->name, "%s: skb == NULL!", __FUNCTION__);
-+		airo_print_err(dev->name, "%s: skb == NULL!", __func__);
- 		return 0;
+-	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__FUNCTION__);
++	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__func__);
+ 	lp->intmask |= TXFREEflag|EXCNAKflag;
+ 	AINTMASK(lp->intmask);
+-	BUGMSG(D_DEBUG, "%s: %d: %s, status: %x\n",__FILE__,__LINE__,__FUNCTION__,ASTATUS());
++	BUGMSG(D_DEBUG, "%s: %d: %s, status: %x\n",__FILE__,__LINE__,__func__,ASTATUS());
+ 
+ 	spin_unlock_irqrestore(&lp->lock, flags);
+ 	if (freeskb) {
+@@ -798,7 +798,7 @@ irqreturn_t arcnet_interrupt(int irq, void *dev_id)
+                 diagstatus = (status >> 8) & 0xFF;
+ 
+ 		BUGMSG(D_DEBUG, "%s: %d: %s: status=%x\n",
+-			__FILE__,__LINE__,__FUNCTION__,status);
++			__FILE__,__LINE__,__func__,status);
+ 		didsomething = 0;
+ 
+ 		/*
+diff --git a/drivers/net/arcnet/com20020.c b/drivers/net/arcnet/com20020.c
+index 8b51313..70124a9 100644
+--- a/drivers/net/arcnet/com20020.c
++++ b/drivers/net/arcnet/com20020.c
+@@ -238,15 +238,15 @@ static int com20020_reset(struct net_device *dev, int really_reset)
+ 	u_char inbyte;
+ 
+ 	BUGMSG(D_DEBUG, "%s: %d: %s: dev: %p, lp: %p, dev->name: %s\n",
+-		__FILE__,__LINE__,__FUNCTION__,dev,lp,dev->name);
++		__FILE__,__LINE__,__func__,dev,lp,dev->name);
+ 	BUGMSG(D_INIT, "Resetting %s (status=%02Xh)\n",
+ 	       dev->name, ASTATUS());
+ 
+-	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__FUNCTION__);
++	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__func__);
+ 	lp->config = TXENcfg | (lp->timeout << 3) | (lp->backplane << 2);
+ 	/* power-up defaults */
+ 	SETCONF;
+-	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__FUNCTION__);
++	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__func__);
+ 
+ 	if (really_reset) {
+ 		/* reset the card */
+@@ -254,22 +254,22 @@ static int com20020_reset(struct net_device *dev, int really_reset)
+ 		mdelay(RESETtime * 2);	/* COM20020 seems to be slower sometimes */
  	}
+ 	/* clear flags & end reset */
+-	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__FUNCTION__);
++	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__func__);
+ 	ACOMMAND(CFLAGScmd | RESETclear | CONFIGclear);
  
-@@ -2186,7 +2186,7 @@ static int airo_start_xmit11(struct sk_buff *skb, struct net_device *dev) {
+ 	/* verify that the ARCnet signature byte is present */
+-	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__FUNCTION__);
++	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__func__);
+ 
+ 	com20020_copy_from_card(dev, 0, 0, &inbyte, 1);
+-	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__FUNCTION__);
++	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__func__);
+ 	if (inbyte != TESTvalue) {
+-		BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__FUNCTION__);
++		BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__func__);
+ 		BUGMSG(D_NORMAL, "reset failed: TESTvalue not present.\n");
+ 		return 1;
  	}
+ 	/* enable extended (512-byte) packets */
+ 	ACOMMAND(CONFIGcmd | EXTconf);
+-	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__FUNCTION__);
++	BUGMSG(D_DEBUG, "%s: %d: %s\n",__FILE__,__LINE__,__func__);
  
- 	if ( skb == NULL ) {
--		airo_print_err(dev->name, "%s: skb == NULL!", __FUNCTION__);
-+		airo_print_err(dev->name, "%s: skb == NULL!", __func__);
- 		return 0;
+ 	/* done!  return success. */
+ 	return 0;
+diff --git a/drivers/net/ax88796.c b/drivers/net/ax88796.c
+index 0b4adf4..9e481c0 100644
+--- a/drivers/net/ax88796.c
++++ b/drivers/net/ax88796.c
+@@ -153,7 +153,7 @@ static void ax_reset_8390(struct net_device *dev)
+ 	while ((ei_inb(addr + EN0_ISR) & ENISR_RESET) == 0) {
+ 		if (jiffies - reset_start_time > 2*HZ/100) {
+ 			dev_warn(&ax->dev->dev, "%s: %s did not complete.\n",
+-			       __FUNCTION__, dev->name);
++			       __func__, dev->name);
+ 			break;
+ 		}
  	}
- 
-@@ -4127,7 +4127,7 @@ static int PC4500_writerid(struct airo_info *ai, u16 rid,
- 		if (test_bit(FLAG_ENABLED, &ai->flags) && (RID_WEP_TEMP != rid))
- 			airo_print_err(ai->dev->name,
- 				"%s: MAC should be disabled (rid=%04x)",
--				__FUNCTION__, rid);
-+				__func__, rid);
- 		memset(&cmd, 0, sizeof(cmd));
- 		memset(&rsp, 0, sizeof(rsp));
- 
-@@ -4142,7 +4142,7 @@ static int PC4500_writerid(struct airo_info *ai, u16 rid,
- 			&ai->config_desc.rid_desc, sizeof(Rid));
- 
- 		if (len < 4 || len > 2047) {
--			airo_print_err(ai->dev->name, "%s: len=%d", __FUNCTION__, len);
-+			airo_print_err(ai->dev->name, "%s: len=%d", __func__, len);
- 			rc = -1;
- 		} else {
- 			memcpy((char *)ai->config_desc.virtual_host_addr,
-@@ -4151,9 +4151,9 @@ static int PC4500_writerid(struct airo_info *ai, u16 rid,
- 			rc = issuecommand(ai, &cmd, &rsp);
- 			if ((rc & 0xff00) != 0) {
- 				airo_print_err(ai->dev->name, "%s: Write rid Error %d",
--						__FUNCTION__, rc);
-+						__func__, rc);
- 				airo_print_err(ai->dev->name, "%s: Cmd=%04x",
--						__FUNCTION__, cmd.cmd);
-+						__func__, cmd.cmd);
- 			}
- 
- 			if ((rsp.status & 0x7f00))
-diff --git a/drivers/net/wireless/hermes.c b/drivers/net/wireless/hermes.c
-index 29d3910..2cd86af 100644
---- a/drivers/net/wireless/hermes.c
-+++ b/drivers/net/wireless/hermes.c
-@@ -463,7 +463,7 @@ int hermes_read_ltv(hermes_t *hw, int bap, u16 rid, unsigned bufsize,
- 	if (rtype != rid)
- 		printk(KERN_WARNING "hermes @ %p: %s(): "
- 		       "rid (0x%04x) does not match type (0x%04x)\n",
--		       hw->iobase, __FUNCTION__, rid, rtype);
-+		       hw->iobase, __func__, rid, rtype);
- 	if (HERMES_RECLEN_TO_BYTES(rlength) > bufsize)
- 		printk(KERN_WARNING "hermes @ %p: "
- 		       "Truncating LTV record from %d to %d bytes. "
-diff --git a/drivers/net/wireless/ipw2100.c b/drivers/net/wireless/ipw2100.c
-index 5bf9e00..c71bb09 100644
---- a/drivers/net/wireless/ipw2100.c
-+++ b/drivers/net/wireless/ipw2100.c
-@@ -212,7 +212,7 @@ static u32 ipw2100_debug_level = IPW_DL_NONE;
- do { \
- 	if (ipw2100_debug_level & (level)) { \
- 		printk(KERN_DEBUG "ipw2100: %c %s ", \
--                       in_interrupt() ? 'I' : 'U',  __FUNCTION__); \
-+                       in_interrupt() ? 'I' : 'U',  __func__); \
- 		printk(message); \
- 	} \
- } while (0)
-diff --git a/drivers/net/wireless/ipw2200.h b/drivers/net/wireless/ipw2200.h
-index d4ab28b..0bad1ec 100644
---- a/drivers/net/wireless/ipw2200.h
-+++ b/drivers/net/wireless/ipw2200.h
-@@ -1394,13 +1394,13 @@ BIT_ARG16(x)
- #define IPW_DEBUG(level, fmt, args...) \
- do { if (ipw_debug_level & (level)) \
-   printk(KERN_DEBUG DRV_NAME": %c %s " fmt, \
--         in_interrupt() ? 'I' : 'U', __FUNCTION__ , ## args); } while (0)
-+         in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
- 
- #ifdef CONFIG_IPW2200_DEBUG
- #define IPW_LL_DEBUG(level, fmt, args...) \
- do { if (ipw_debug_level & (level)) \
-   printk(KERN_DEBUG DRV_NAME": %c %s " fmt, \
--         in_interrupt() ? 'I' : 'U', __FUNCTION__ , ## args); } while (0)
-+         in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
- #else
- #define IPW_LL_DEBUG(level, fmt, args...) do {} while (0)
- #endif				/* CONFIG_IPW2200_DEBUG */
-diff --git a/drivers/net/wireless/iwlwifi/iwl-3945-debug.h b/drivers/net/wireless/iwlwifi/iwl-3945-debug.h
-index f1d002f..33016fb 100644
---- a/drivers/net/wireless/iwlwifi/iwl-3945-debug.h
-+++ b/drivers/net/wireless/iwlwifi/iwl-3945-debug.h
-@@ -34,12 +34,12 @@ extern u32 iwl3945_debug_level;
- #define IWL_DEBUG(level, fmt, args...) \
- do { if (iwl3945_debug_level & (level)) \
-   printk(KERN_ERR DRV_NAME": %c %s " fmt, \
--	 in_interrupt() ? 'I' : 'U', __FUNCTION__ , ## args); } while (0)
-+	 in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
- 
- #define IWL_DEBUG_LIMIT(level, fmt, args...) \
- do { if ((iwl3945_debug_level & (level)) && net_ratelimit()) \
-   printk(KERN_ERR DRV_NAME": %c %s " fmt, \
--	 in_interrupt() ? 'I' : 'U', __FUNCTION__ , ## args); } while (0)
-+	 in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
- 
- static inline void iwl3945_print_hex_dump(int level, void *p, u32 len)
- {
-diff --git a/drivers/net/wireless/iwlwifi/iwl-debug.h b/drivers/net/wireless/iwlwifi/iwl-debug.h
-index 5838480..097a72f 100644
---- a/drivers/net/wireless/iwlwifi/iwl-debug.h
-+++ b/drivers/net/wireless/iwlwifi/iwl-debug.h
-@@ -33,12 +33,12 @@
- #define IWL_DEBUG(level, fmt, args...) \
- do { if (priv->debug_level & (level)) \
-   dev_printk(KERN_ERR, &(priv->hw->wiphy->dev), "%c %s " fmt, \
--	 in_interrupt() ? 'I' : 'U', __FUNCTION__ , ## args); } while (0)
-+	 in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
- 
- #define IWL_DEBUG_LIMIT(level, fmt, args...) \
- do { if ((priv->debug_level & (level)) && net_ratelimit()) \
-   dev_printk(KERN_ERR, &(priv->hw->wiphy->dev), "%c %s " fmt, \
--	 in_interrupt() ? 'I' : 'U', __FUNCTION__ , ## args); } while (0)
-+	 in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
- 
- #ifdef CONFIG_IWLWIFI_DEBUGFS
- struct iwl_debugfs {
-diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-index 4a22d3f..64d2f71 100644
---- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
-+++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-@@ -6336,7 +6336,7 @@ static void iwl3945_bg_post_associate(struct work_struct *data)
- 	DECLARE_MAC_BUF(mac);
- 
- 	if (priv->iw_mode == IEEE80211_IF_TYPE_AP) {
--		IWL_ERROR("%s Should not be called in AP mode\n", __FUNCTION__);
-+		IWL_ERROR("%s Should not be called in AP mode\n", __func__);
+@@ -173,7 +173,7 @@ static void ax_get_8390_hdr(struct net_device *dev, struct e8390_pkt_hdr *hdr,
+ 	if (ei_status.dmaing) {
+ 		dev_err(&ax->dev->dev, "%s: DMAing conflict in %s "
+ 			"[DMAstat:%d][irqlock:%d].\n",
+-			dev->name, __FUNCTION__,
++			dev->name, __func__,
+ 			ei_status.dmaing, ei_status.irqlock);
  		return;
  	}
- 
-@@ -6417,7 +6417,7 @@ static void iwl3945_bg_post_associate(struct work_struct *data)
- 
- 	default:
- 		 IWL_ERROR("%s Should not be called in %d mode\n",
--			   __FUNCTION__, priv->iw_mode);
-+			   __func__, priv->iw_mode);
- 		break;
+@@ -215,7 +215,7 @@ static void ax_block_input(struct net_device *dev, int count,
+ 		dev_err(&ax->dev->dev,
+ 			"%s: DMAing conflict in %s "
+ 			"[DMAstat:%d][irqlock:%d].\n",
+-			dev->name, __FUNCTION__,
++			dev->name, __func__,
+ 			ei_status.dmaing, ei_status.irqlock);
+ 		return;
  	}
+@@ -260,7 +260,7 @@ static void ax_block_output(struct net_device *dev, int count,
+ 	if (ei_status.dmaing) {
+ 		dev_err(&ax->dev->dev, "%s: DMAing conflict in %s."
+ 			"[DMAstat:%d][irqlock:%d]\n",
+-			dev->name, __FUNCTION__,
++			dev->name, __func__,
+ 		       ei_status.dmaing, ei_status.irqlock);
+ 		return;
+ 	}
+@@ -396,7 +396,7 @@ ax_phy_issueaddr(struct net_device *dev, int phy_addr, int reg, int opc)
+ {
+ 	if (phy_debug)
+ 		pr_debug("%s: dev %p, %04x, %04x, %d\n",
+-			__FUNCTION__, dev, phy_addr, reg, opc);
++			__func__, dev, phy_addr, reg, opc);
  
-diff --git a/drivers/net/wireless/iwlwifi/iwl4965-base.c b/drivers/net/wireless/iwlwifi/iwl4965-base.c
-index 71f5da3..04e8795 100644
---- a/drivers/net/wireless/iwlwifi/iwl4965-base.c
-+++ b/drivers/net/wireless/iwlwifi/iwl4965-base.c
-@@ -2415,7 +2415,7 @@ static void iwl4965_post_associate(struct iwl_priv *priv)
+ 	ax_mii_ei_outbits(dev, 0x3f, 6);	/* pre-amble */
+ 	ax_mii_ei_outbits(dev, 1, 2);		/* frame-start */
+@@ -422,7 +422,7 @@ ax_phy_read(struct net_device *dev, int phy_addr, int reg)
+       	spin_unlock_irqrestore(&ei_local->page_lock, flags);
+ 
+ 	if (phy_debug)
+-		pr_debug("%s: %04x.%04x => read %04x\n", __FUNCTION__,
++		pr_debug("%s: %04x.%04x => read %04x\n", __func__,
+ 			 phy_addr, reg, result);
+ 
+ 	return result;
+@@ -436,7 +436,7 @@ ax_phy_write(struct net_device *dev, int phy_addr, int reg, int value)
  	unsigned long flags;
  
- 	if (priv->iw_mode == IEEE80211_IF_TYPE_AP) {
--		IWL_ERROR("%s Should not be called in AP mode\n", __FUNCTION__);
-+		IWL_ERROR("%s Should not be called in AP mode\n", __func__);
+ 	dev_dbg(&ax->dev->dev, "%s: %p, %04x, %04x %04x\n",
+-		__FUNCTION__, dev, phy_addr, reg, value);
++		__func__, dev, phy_addr, reg, value);
+ 
+       	spin_lock_irqsave(&ei->page_lock, flags);
+ 
+diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
+index a8ec60e..ed42e76 100644
+--- a/drivers/net/bfin_mac.c
++++ b/drivers/net/bfin_mac.c
+@@ -761,7 +761,7 @@ static void bfin_mac_enable(void)
+ {
+ 	u32 opmode;
+ 
+-	pr_debug("%s: %s\n", DRV_NAME, __FUNCTION__);
++	pr_debug("%s: %s\n", DRV_NAME, __func__);
+ 
+ 	/* Set RX DMA */
+ 	bfin_write_DMA1_NEXT_DESC_PTR(&(rx_list_head->desc_a));
+@@ -797,7 +797,7 @@ static void bfin_mac_enable(void)
+ /* Our watchdog timed out. Called by the networking layer */
+ static void bfin_mac_timeout(struct net_device *dev)
+ {
+-	pr_debug("%s: %s\n", dev->name, __FUNCTION__);
++	pr_debug("%s: %s\n", dev->name, __func__);
+ 
+ 	bfin_mac_disable();
+ 
+@@ -899,7 +899,7 @@ static int bfin_mac_open(struct net_device *dev)
+ {
+ 	struct bfin_mac_local *lp = netdev_priv(dev);
+ 	int retval;
+-	pr_debug("%s: %s\n", dev->name, __FUNCTION__);
++	pr_debug("%s: %s\n", dev->name, __func__);
+ 
+ 	/*
+ 	 * Check that the address is valid.  If its not, refuse
+@@ -938,7 +938,7 @@ static int bfin_mac_open(struct net_device *dev)
+ static int bfin_mac_close(struct net_device *dev)
+ {
+ 	struct bfin_mac_local *lp = netdev_priv(dev);
+-	pr_debug("%s: %s\n", dev->name, __FUNCTION__);
++	pr_debug("%s: %s\n", dev->name, __func__);
+ 
+ 	netif_stop_queue(dev);
+ 	netif_carrier_off(dev);
+diff --git a/drivers/net/bonding/bonding.h b/drivers/net/bonding/bonding.h
+index fb730ec..f7b40ed 100644
+--- a/drivers/net/bonding/bonding.h
++++ b/drivers/net/bonding/bonding.h
+@@ -32,7 +32,7 @@
+ #ifdef BONDING_DEBUG
+ #define dprintk(fmt, args...) \
+ 	printk(KERN_DEBUG     \
+-	       DRV_NAME ": %s() %d: " fmt, __FUNCTION__, __LINE__ , ## args )
++	       DRV_NAME ": %s() %d: " fmt, __func__, __LINE__ , ## args )
+ #else
+ #define dprintk(fmt, args...)
+ #endif /* BONDING_DEBUG */
+diff --git a/drivers/net/cxgb3/cxgb3_offload.c b/drivers/net/cxgb3/cxgb3_offload.c
+index c5b3de1..0f6fd63 100644
+--- a/drivers/net/cxgb3/cxgb3_offload.c
++++ b/drivers/net/cxgb3/cxgb3_offload.c
+@@ -1018,7 +1018,7 @@ static void set_l2t_ix(struct t3cdev *tdev, u32 tid, struct l2t_entry *e)
+ 
+ 	skb = alloc_skb(sizeof(*req), GFP_ATOMIC);
+ 	if (!skb) {
+-		printk(KERN_ERR "%s: cannot allocate skb!\n", __FUNCTION__);
++		printk(KERN_ERR "%s: cannot allocate skb!\n", __func__);
+ 		return;
+ 	}
+ 	skb->priority = CPL_PRIORITY_CONTROL;
+@@ -1049,14 +1049,14 @@ void cxgb_redirect(struct dst_entry *old, struct dst_entry *new)
+ 		return;
+ 	if (!is_offloading(newdev)) {
+ 		printk(KERN_WARNING "%s: Redirect to non-offload "
+-		       "device ignored.\n", __FUNCTION__);
++		       "device ignored.\n", __func__);
+ 		return;
+ 	}
+ 	tdev = dev2t3cdev(olddev);
+ 	BUG_ON(!tdev);
+ 	if (tdev != dev2t3cdev(newdev)) {
+ 		printk(KERN_WARNING "%s: Redirect to different "
+-		       "offload device ignored.\n", __FUNCTION__);
++		       "offload device ignored.\n", __func__);
  		return;
  	}
  
-@@ -2491,7 +2491,7 @@ static void iwl4965_post_associate(struct iwl_priv *priv)
- 
- 	default:
- 		IWL_ERROR("%s Should not be called in %d mode\n",
--				__FUNCTION__, priv->iw_mode);
-+				__func__, priv->iw_mode);
- 		break;
+@@ -1064,7 +1064,7 @@ void cxgb_redirect(struct dst_entry *old, struct dst_entry *new)
+ 	e = t3_l2t_get(tdev, new->neighbour, newdev);
+ 	if (!e) {
+ 		printk(KERN_ERR "%s: couldn't allocate new l2t entry!\n",
+-		       __FUNCTION__);
++		       __func__);
+ 		return;
  	}
  
-diff --git a/drivers/net/wireless/libertas/if_cs.c b/drivers/net/wireless/libertas/if_cs.c
-index 04d7a25..92837a2 100644
---- a/drivers/net/wireless/libertas/if_cs.c
-+++ b/drivers/net/wireless/libertas/if_cs.c
-@@ -720,7 +720,7 @@ static int if_cs_host_to_card(struct lbs_private *priv,
- 		ret = if_cs_send_cmd(priv, buf, nb);
- 		break;
- 	default:
--		lbs_pr_err("%s: unsupported type %d\n", __FUNCTION__, type);
-+		lbs_pr_err("%s: unsupported type %d\n", __func__, type);
- 	}
+diff --git a/drivers/net/e100.c b/drivers/net/e100.c
+index 19d32a2..e57c0c8 100644
+--- a/drivers/net/e100.c
++++ b/drivers/net/e100.c
+@@ -191,7 +191,7 @@ MODULE_PARM_DESC(use_io, "Force use of i/o access mode");
+ #define DPRINTK(nlevel, klevel, fmt, args...) \
+ 	(void)((NETIF_MSG_##nlevel & nic->msg_enable) && \
+ 	printk(KERN_##klevel PFX "%s: %s: " fmt, nic->netdev->name, \
+-		__FUNCTION__ , ## args))
++		__func__ , ## args))
  
- 	lbs_deb_leave_args(LBS_DEB_CS, "ret %d", ret);
-diff --git a/drivers/net/wireless/prism54/isl_ioctl.c b/drivers/net/wireless/prism54/isl_ioctl.c
-index 97fa14e..0a639a9 100644
---- a/drivers/net/wireless/prism54/isl_ioctl.c
-+++ b/drivers/net/wireless/prism54/isl_ioctl.c
-@@ -71,7 +71,7 @@ prism54_mib_mode_helper(islpci_private *priv, u32 iw_mode)
- 	if (iw_mode == IW_MODE_REPEAT || iw_mode == IW_MODE_SECOND) {
- 		printk(KERN_DEBUG
- 		       "%s(): Sorry, Repeater mode and Secondary mode "
--		       "are not yet supported by this driver.\n", __FUNCTION__);
-+		       "are not yet supported by this driver.\n", __func__);
- 		return -EINVAL;
+ #define INTEL_8255X_ETHERNET_DEVICE(device_id, ich) {\
+ 	PCI_VENDOR_ID_INTEL, device_id, PCI_ANY_ID, PCI_ANY_ID, \
+diff --git a/drivers/net/enc28j60.c b/drivers/net/enc28j60.c
+index c05cb15..0303d65 100644
+--- a/drivers/net/enc28j60.c
++++ b/drivers/net/enc28j60.c
+@@ -110,7 +110,7 @@ spi_read_buf(struct enc28j60_net *priv, int len, u8 *data)
  	}
+ 	if (ret && netif_msg_drv(priv))
+ 		printk(KERN_DEBUG DRV_NAME ": %s() failed: ret = %d\n",
+-			__FUNCTION__, ret);
++			__func__, ret);
  
-@@ -333,7 +333,7 @@ prism54_set_mode(struct net_device *ndev, struct iw_request_info *info,
- 	if (*uwrq > IW_MODE_MONITOR || *uwrq < IW_MODE_AUTO) {
- 		printk(KERN_DEBUG
- 		       "%s: %s() You passed a non-valid init_mode.\n",
--		       priv->ndev->name, __FUNCTION__);
-+		       priv->ndev->name, __func__);
- 		return -EINVAL;
- 	}
- 
-@@ -1234,7 +1234,7 @@ prism54_set_txpower(struct net_device *ndev, struct iw_request_info *info,
- 		/* don't know how to disable radio */
- 		printk(KERN_DEBUG
- 		       "%s: %s() disabling radio is not yet supported.\n",
--		       priv->ndev->name, __FUNCTION__);
-+		       priv->ndev->name, __func__);
- 		return -ENOTSUPP;
- 	} else if (vwrq->fixed)
- 		/* currently only fixed value is supported */
-@@ -1242,7 +1242,7 @@ prism54_set_txpower(struct net_device *ndev, struct iw_request_info *info,
- 	else {
- 		printk(KERN_DEBUG
- 		       "%s: %s() auto power will be implemented later.\n",
--		       priv->ndev->name, __FUNCTION__);
-+		       priv->ndev->name, __func__);
- 		return -ENOTSUPP;
- 	}
+ 	return ret;
  }
-diff --git a/drivers/net/wireless/rt2x00/rt2x00.h b/drivers/net/wireless/rt2x00/rt2x00.h
-index 07b03b3..c0edc72 100644
---- a/drivers/net/wireless/rt2x00/rt2x00.h
-+++ b/drivers/net/wireless/rt2x00/rt2x00.h
-@@ -53,11 +53,11 @@
-  */
- #define DEBUG_PRINTK_MSG(__dev, __kernlvl, __lvl, __msg, __args...)	\
- 	printk(__kernlvl "%s -> %s: %s - " __msg,			\
--	       wiphy_name((__dev)->hw->wiphy), __FUNCTION__, __lvl, ##__args)
-+	       wiphy_name((__dev)->hw->wiphy), __func__, __lvl, ##__args)
+@@ -131,7 +131,7 @@ static int spi_write_buf(struct enc28j60_net *priv, int len,
+ 		ret = spi_write(priv->spi, priv->spi_transfer_buf, len + 1);
+ 		if (ret && netif_msg_drv(priv))
+ 			printk(KERN_DEBUG DRV_NAME ": %s() failed: ret = %d\n",
+-				__FUNCTION__, ret);
++				__func__, ret);
+ 	}
+ 	return ret;
+ }
+@@ -156,7 +156,7 @@ static u8 spi_read_op(struct enc28j60_net *priv, u8 op,
+ 	ret = spi_write_then_read(priv->spi, tx_buf, 1, rx_buf, slen);
+ 	if (ret)
+ 		printk(KERN_DEBUG DRV_NAME ": %s() failed: ret = %d\n",
+-			__FUNCTION__, ret);
++			__func__, ret);
+ 	else
+ 		val = rx_buf[slen - 1];
  
- #define DEBUG_PRINTK_PROBE(__kernlvl, __lvl, __msg, __args...)	\
- 	printk(__kernlvl "%s -> %s: %s - " __msg,		\
--	       KBUILD_MODNAME, __FUNCTION__, __lvl, ##__args)
-+	       KBUILD_MODNAME, __func__, __lvl, ##__args)
+@@ -176,14 +176,14 @@ static int spi_write_op(struct enc28j60_net *priv, u8 op,
+ 	ret = spi_write(priv->spi, priv->spi_transfer_buf, 2);
+ 	if (ret && netif_msg_drv(priv))
+ 		printk(KERN_DEBUG DRV_NAME ": %s() failed: ret = %d\n",
+-			__FUNCTION__, ret);
++			__func__, ret);
+ 	return ret;
+ }
  
- #ifdef CONFIG_RT2X00_DEBUG
- #define DEBUG_PRINTK(__dev, __kernlvl, __lvl, __msg, __args...)	\
-diff --git a/drivers/net/wireless/wl3501_cs.c b/drivers/net/wireless/wl3501_cs.c
-index 3771419..b6d4e04 100644
---- a/drivers/net/wireless/wl3501_cs.c
-+++ b/drivers/net/wireless/wl3501_cs.c
-@@ -79,7 +79,7 @@ static int pc_debug = PCMCIA_DEBUG;
- module_param(pc_debug, int, 0);
- #define dprintk(n, format, args...) \
- 	{ if (pc_debug > (n)) \
--		printk(KERN_INFO "%s: " format "\n", __FUNCTION__ , ##args); }
-+		printk(KERN_INFO "%s: " format "\n", __func__ , ##args); }
- #else
- #define dprintk(n, format, args...)
+ static void enc28j60_soft_reset(struct enc28j60_net *priv)
+ {
+ 	if (netif_msg_hw(priv))
+-		printk(KERN_DEBUG DRV_NAME ": %s() enter\n", __FUNCTION__);
++		printk(KERN_DEBUG DRV_NAME ": %s() enter\n", __func__);
+ 
+ 	spi_write_op(priv, ENC28J60_SOFT_RESET, 0, ENC28J60_SOFT_RESET);
+ 	/* Errata workaround #1, CLKRDY check is unreliable,
+@@ -357,7 +357,7 @@ static void enc28j60_mem_read(struct enc28j60_net *priv,
+ 		reg = nolock_regw_read(priv, ERDPTL);
+ 		if (reg != addr)
+ 			printk(KERN_DEBUG DRV_NAME ": %s() error writing ERDPT "
+-				"(0x%04x - 0x%04x)\n", __FUNCTION__, reg, addr);
++				"(0x%04x - 0x%04x)\n", __func__, reg, addr);
+ 	}
  #endif
-@@ -470,7 +470,7 @@ static int wl3501_pwr_mgmt(struct wl3501_card *this, int suspend)
- 			spin_unlock_irqrestore(&this->lock, flags);
- 			rc = wait_event_interruptible(this->wait,
- 				this->sig_pwr_mgmt_confirm.status != 255);
--			printk(KERN_INFO "%s: %s status=%d\n", __FUNCTION__,
-+			printk(KERN_INFO "%s: %s status=%d\n", __func__,
- 			       suspend ? "suspend" : "resume",
- 			       this->sig_pwr_mgmt_confirm.status);
- 			goto out;
-@@ -1199,7 +1199,7 @@ static int wl3501_reset_board(struct wl3501_card *this)
- 		}
- 		WL3501_NOPLOOP(10);
+ 	spi_read_buf(priv, len, data);
+@@ -380,7 +380,7 @@ enc28j60_packet_write(struct enc28j60_net *priv, int len, const u8 *data)
+ 		if (reg != TXSTART_INIT)
+ 			printk(KERN_DEBUG DRV_NAME
+ 				": %s() ERWPT:0x%04x != 0x%04x\n",
+-				__FUNCTION__, reg, TXSTART_INIT);
++				__func__, reg, TXSTART_INIT);
  	}
--	printk(KERN_WARNING "%s: failed to reset the board!\n", __FUNCTION__);
-+	printk(KERN_WARNING "%s: failed to reset the board!\n", __func__);
- 	rc = -ENODEV;
- out:
- 	return rc;
-@@ -1250,7 +1250,7 @@ static int wl3501_init_firmware(struct wl3501_card *this)
- out:
- 	return rc;
- fail:
--	printk(KERN_WARNING "%s: failed!\n", __FUNCTION__);
-+	printk(KERN_WARNING "%s: failed!\n", __func__);
- 	goto out;
+ #endif
+ 	/* Set the TXND pointer to correspond to the packet size given */
+@@ -390,13 +390,13 @@ enc28j60_packet_write(struct enc28j60_net *priv, int len, const u8 *data)
+ 	if (netif_msg_hw(priv))
+ 		printk(KERN_DEBUG DRV_NAME
+ 			": %s() after control byte ERWPT:0x%04x\n",
+-			__FUNCTION__, nolock_regw_read(priv, EWRPTL));
++			__func__, nolock_regw_read(priv, EWRPTL));
+ 	/* copy the packet into the transmit buffer */
+ 	spi_write_buf(priv, len, data);
+ 	if (netif_msg_hw(priv))
+ 		printk(KERN_DEBUG DRV_NAME
+ 			 ": %s() after write packet ERWPT:0x%04x, len=%d\n",
+-			 __FUNCTION__, nolock_regw_read(priv, EWRPTL), len);
++			 __func__, nolock_regw_read(priv, EWRPTL), len);
+ 	mutex_unlock(&priv->lock);
  }
  
+@@ -495,7 +495,7 @@ static int enc28j60_set_hw_macaddr(struct net_device *ndev)
+ 		if (netif_msg_drv(priv))
+ 			printk(KERN_DEBUG DRV_NAME
+ 				": %s() Hardware must be disabled to set "
+-				"Mac address\n", __FUNCTION__);
++				"Mac address\n", __func__);
+ 		ret = -EBUSY;
+ 	}
+ 	mutex_unlock(&priv->lock);
+@@ -575,7 +575,7 @@ static void nolock_rxfifo_init(struct enc28j60_net *priv, u16 start, u16 end)
+ 	if (start > 0x1FFF || end > 0x1FFF || start > end) {
+ 		if (netif_msg_drv(priv))
+ 			printk(KERN_ERR DRV_NAME ": %s(%d, %d) RXFIFO "
+-				"bad parameters!\n", __FUNCTION__, start, end);
++				"bad parameters!\n", __func__, start, end);
+ 		return;
+ 	}
+ 	/* set receive buffer start + end */
+@@ -591,7 +591,7 @@ static void nolock_txfifo_init(struct enc28j60_net *priv, u16 start, u16 end)
+ 	if (start > 0x1FFF || end > 0x1FFF || start > end) {
+ 		if (netif_msg_drv(priv))
+ 			printk(KERN_ERR DRV_NAME ": %s(%d, %d) TXFIFO "
+-				"bad parameters!\n", __FUNCTION__, start, end);
++				"bad parameters!\n", __func__, start, end);
+ 		return;
+ 	}
+ 	/* set transmit buffer start + end */
+@@ -630,7 +630,7 @@ static int enc28j60_hw_init(struct enc28j60_net *priv)
+ 	u8 reg;
+ 
+ 	if (netif_msg_drv(priv))
+-		printk(KERN_DEBUG DRV_NAME ": %s() - %s\n", __FUNCTION__,
++		printk(KERN_DEBUG DRV_NAME ": %s() - %s\n", __func__,
+ 			priv->full_duplex ? "FullDuplex" : "HalfDuplex");
+ 
+ 	mutex_lock(&priv->lock);
+@@ -661,7 +661,7 @@ static int enc28j60_hw_init(struct enc28j60_net *priv)
+ 	if (reg == 0x00 || reg == 0xff) {
+ 		if (netif_msg_drv(priv))
+ 			printk(KERN_DEBUG DRV_NAME ": %s() Invalid RevId %d\n",
+-				__FUNCTION__, reg);
++				__func__, reg);
+ 		return 0;
+ 	}
+ 
+@@ -724,7 +724,7 @@ static void enc28j60_hw_enable(struct enc28j60_net *priv)
+ 	/* enable interrupts */
+ 	if (netif_msg_hw(priv))
+ 		printk(KERN_DEBUG DRV_NAME ": %s() enabling interrupts.\n",
+-			__FUNCTION__);
++			__func__);
+ 
+ 	enc28j60_phy_write(priv, PHIE, PHIE_PGEIE | PHIE_PLNKIE);
+ 
+@@ -888,7 +888,7 @@ static void enc28j60_hw_rx(struct net_device *ndev)
+ 		if (netif_msg_rx_err(priv))
+ 			dev_err(&ndev->dev,
+ 				"%s() Invalid packet address!! 0x%04x\n",
+-				__FUNCTION__, priv->next_pk_ptr);
++				__func__, priv->next_pk_ptr);
+ 		/* packet address corrupted: reset RX logic */
+ 		mutex_lock(&priv->lock);
+ 		nolock_reg_bfclr(priv, ECON1, ECON1_RXEN);
+@@ -917,7 +917,7 @@ static void enc28j60_hw_rx(struct net_device *ndev)
+ 	rxstat |= rsv[4];
+ 
+ 	if (netif_msg_rx_status(priv))
+-		enc28j60_dump_rsv(priv, __FUNCTION__, next_packet, len, rxstat);
++		enc28j60_dump_rsv(priv, __func__, next_packet, len, rxstat);
+ 
+ 	if (!RSV_GETBIT(rxstat, RSV_RXOK)) {
+ 		if (netif_msg_rx_err(priv))
+@@ -941,7 +941,7 @@ static void enc28j60_hw_rx(struct net_device *ndev)
+ 			enc28j60_mem_read(priv, priv->next_pk_ptr + sizeof(rsv),
+ 					len, skb_put(skb, len));
+ 			if (netif_msg_pktdata(priv))
+-				dump_packet(__FUNCTION__, skb->len, skb->data);
++				dump_packet(__func__, skb->len, skb->data);
+ 			skb->protocol = eth_type_trans(skb, ndev);
+ 			/* update statistics */
+ 			ndev->stats.rx_packets++;
+@@ -958,7 +958,7 @@ static void enc28j60_hw_rx(struct net_device *ndev)
+ 	erxrdpt = erxrdpt_workaround(next_packet, RXSTART_INIT, RXEND_INIT);
+ 	if (netif_msg_hw(priv))
+ 		printk(KERN_DEBUG DRV_NAME ": %s() ERXRDPT:0x%04x\n",
+-			__FUNCTION__, erxrdpt);
++			__func__, erxrdpt);
+ 
+ 	mutex_lock(&priv->lock);
+ 	nolock_regw_write(priv, ERXRDPTL, erxrdpt);
+@@ -968,7 +968,7 @@ static void enc28j60_hw_rx(struct net_device *ndev)
+ 		reg = nolock_regw_read(priv, ERXRDPTL);
+ 		if (reg != erxrdpt)
+ 			printk(KERN_DEBUG DRV_NAME ": %s() ERXRDPT verify "
+-				"error (0x%04x - 0x%04x)\n", __FUNCTION__,
++				"error (0x%04x - 0x%04x)\n", __func__,
+ 				reg, erxrdpt);
+ 	}
+ #endif
+@@ -1006,7 +1006,7 @@ static int enc28j60_get_free_rxfifo(struct enc28j60_net *priv)
+ 	mutex_unlock(&priv->lock);
+ 	if (netif_msg_rx_status(priv))
+ 		printk(KERN_DEBUG DRV_NAME ": %s() free_space = %d\n",
+-			__FUNCTION__, free_space);
++			__func__, free_space);
+ 	return free_space;
+ }
+ 
+@@ -1022,7 +1022,7 @@ static void enc28j60_check_link_status(struct net_device *ndev)
+ 	reg = enc28j60_phy_read(priv, PHSTAT2);
+ 	if (netif_msg_hw(priv))
+ 		printk(KERN_DEBUG DRV_NAME ": %s() PHSTAT1: %04x, "
+-			"PHSTAT2: %04x\n", __FUNCTION__,
++			"PHSTAT2: %04x\n", __func__,
+ 			enc28j60_phy_read(priv, PHSTAT1), reg);
+ 	duplex = reg & PHSTAT2_DPXSTAT;
+ 
+@@ -1095,7 +1095,7 @@ static void enc28j60_irq_work_handler(struct work_struct *work)
+ 	int intflags, loop;
+ 
+ 	if (netif_msg_intr(priv))
+-		printk(KERN_DEBUG DRV_NAME ": %s() enter\n", __FUNCTION__);
++		printk(KERN_DEBUG DRV_NAME ": %s() enter\n", __func__);
+ 	/* disable further interrupts */
+ 	locked_reg_bfclr(priv, EIE, EIE_INTIE);
+ 
+@@ -1198,7 +1198,7 @@ static void enc28j60_irq_work_handler(struct work_struct *work)
+ 	/* re-enable interrupts */
+ 	locked_reg_bfset(priv, EIE, EIE_INTIE);
+ 	if (netif_msg_intr(priv))
+-		printk(KERN_DEBUG DRV_NAME ": %s() exit\n", __FUNCTION__);
++		printk(KERN_DEBUG DRV_NAME ": %s() exit\n", __func__);
+ }
+ 
+ /*
+@@ -1213,7 +1213,7 @@ static void enc28j60_hw_tx(struct enc28j60_net *priv)
+ 			": Tx Packet Len:%d\n", priv->tx_skb->len);
+ 
+ 	if (netif_msg_pktdata(priv))
+-		dump_packet(__FUNCTION__,
++		dump_packet(__func__,
+ 			    priv->tx_skb->len, priv->tx_skb->data);
+ 	enc28j60_packet_write(priv, priv->tx_skb->len, priv->tx_skb->data);
+ 
+@@ -1254,7 +1254,7 @@ static int enc28j60_send_packet(struct sk_buff *skb, struct net_device *dev)
+ 	struct enc28j60_net *priv = netdev_priv(dev);
+ 
+ 	if (netif_msg_tx_queued(priv))
+-		printk(KERN_DEBUG DRV_NAME ": %s() enter\n", __FUNCTION__);
++		printk(KERN_DEBUG DRV_NAME ": %s() enter\n", __func__);
+ 
+ 	/* If some error occurs while trying to transmit this
+ 	 * packet, you should return '1' from this function.
+@@ -1325,7 +1325,7 @@ static int enc28j60_net_open(struct net_device *dev)
+ 	struct enc28j60_net *priv = netdev_priv(dev);
+ 
+ 	if (netif_msg_drv(priv))
+-		printk(KERN_DEBUG DRV_NAME ": %s() enter\n", __FUNCTION__);
++		printk(KERN_DEBUG DRV_NAME ": %s() enter\n", __func__);
+ 
+ 	if (!is_valid_ether_addr(dev->dev_addr)) {
+ 		if (netif_msg_ifup(priv)) {
+@@ -1363,7 +1363,7 @@ static int enc28j60_net_close(struct net_device *dev)
+ 	struct enc28j60_net *priv = netdev_priv(dev);
+ 
+ 	if (netif_msg_drv(priv))
+-		printk(KERN_DEBUG DRV_NAME ": %s() enter\n", __FUNCTION__);
++		printk(KERN_DEBUG DRV_NAME ": %s() enter\n", __func__);
+ 
+ 	enc28j60_hw_disable(priv);
+ 	enc28j60_lowpower(priv, true);
+diff --git a/drivers/net/ibm_newemac/phy.c b/drivers/net/ibm_newemac/phy.c
+index 37bfeea..9164abb 100644
+--- a/drivers/net/ibm_newemac/phy.c
++++ b/drivers/net/ibm_newemac/phy.c
+@@ -321,7 +321,7 @@ static struct mii_phy_def bcm5248_phy_def = {
+ 
+ static int m88e1111_init(struct mii_phy *phy)
+ {
+-	pr_debug("%s: Marvell 88E1111 Ethernet\n", __FUNCTION__);
++	pr_debug("%s: Marvell 88E1111 Ethernet\n", __func__);
+ 	phy_write(phy, 0x14, 0x0ce3);
+ 	phy_write(phy, 0x18, 0x4101);
+ 	phy_write(phy, 0x09, 0x0e00);
+diff --git a/drivers/net/ixgb/ixgb.h b/drivers/net/ixgb/ixgb.h
+index 804698f..d85717e 100644
+--- a/drivers/net/ixgb/ixgb.h
++++ b/drivers/net/ixgb/ixgb.h
+@@ -85,7 +85,7 @@ struct ixgb_adapter;
+ #define DPRINTK(nlevel, klevel, fmt, args...) \
+ 	(void)((NETIF_MSG_##nlevel & adapter->msg_enable) && \
+ 	printk(KERN_##klevel PFX "%s: %s: " fmt, adapter->netdev->name, \
+-		__FUNCTION__ , ## args))
++		__func__ , ## args))
+ 
+
+ /* TX/RX descriptor defines */
+diff --git a/drivers/net/ixgbe/ixgbe.h b/drivers/net/ixgbe/ixgbe.h
+index 956914a..1b8d390 100644
+--- a/drivers/net/ixgbe/ixgbe.h
++++ b/drivers/net/ixgbe/ixgbe.h
+@@ -47,7 +47,7 @@
+ #define DPRINTK(nlevel, klevel, fmt, args...) \
+ 	((void)((NETIF_MSG_##nlevel & adapter->msg_enable) && \
+ 	printk(KERN_##klevel PFX "%s: %s: " fmt, adapter->netdev->name, \
+-		__FUNCTION__ , ## args)))
++		__func__ , ## args)))
+ 
+ /* TX/RX descriptor defines */
+ #define IXGBE_DEFAULT_TXD		   1024
+diff --git a/drivers/net/meth.c b/drivers/net/meth.c
+index 4cb364e..033e459 100644
+--- a/drivers/net/meth.c
++++ b/drivers/net/meth.c
+@@ -41,7 +41,7 @@
+ #endif
+ 
+ #if MFE_DEBUG>=1
+-#define DPRINTK(str,args...) printk(KERN_DEBUG "meth: %s: " str, __FUNCTION__ , ## args)
++#define DPRINTK(str,args...) printk(KERN_DEBUG "meth: %s: " str, __func__ , ## args)
+ #define MFE_RX_DEBUG 2
+ #else
+ #define DPRINTK(str,args...)
+diff --git a/drivers/net/mipsnet.c b/drivers/net/mipsnet.c
+index 6d343ef..4e7a5fa 100644
+--- a/drivers/net/mipsnet.c
++++ b/drivers/net/mipsnet.c
+@@ -203,7 +203,7 @@ static irqreturn_t mipsnet_interrupt(int irq, void *dev_id)
+ 
+ out_badirq:
+ 	printk(KERN_INFO "%s: %s(): irq %d for unknown device\n",
+-	       dev->name, __FUNCTION__, irq);
++	       dev->name, __func__, irq);
+ 	return ret;
+ }
+ 
+diff --git a/drivers/net/netx-eth.c b/drivers/net/netx-eth.c
+index dc442e3..b47c885 100644
+--- a/drivers/net/netx-eth.c
++++ b/drivers/net/netx-eth.c
+@@ -190,7 +190,7 @@ netx_eth_interrupt(int irq, void *dev_id)
+ 
+ 		if ((status & ISR_CON_HI) || (status & ISR_IND_HI))
+ 			printk("%s: unexpected status: 0x%08x\n",
+-			    __FUNCTION__, status);
++			    __func__, status);
+ 
+ 		fill_level =
+ 		    readl(NETX_PFIFO_FILL_LEVEL(IND_FIFO_PORT_LO(priv->id)));
+diff --git a/drivers/net/netxen/netxen_nic.h b/drivers/net/netxen/netxen_nic.h
+index 8e73661..80fb090 100644
+--- a/drivers/net/netxen/netxen_nic.h
++++ b/drivers/net/netxen/netxen_nic.h
+@@ -741,7 +741,7 @@ extern char netxen_nic_driver_name[];
+ 	} while (0)
+ #else
+ #define DPRINTK(klevel, fmt, args...)	do { \
+-	printk(KERN_##klevel PFX "%s: %s: " fmt, __FUNCTION__,\
++	printk(KERN_##klevel PFX "%s: %s: " fmt, __func__,\
+ 		(adapter != NULL && adapter->netdev != NULL) ? \
+ 		adapter->netdev->name : NULL, \
+ 		## args); } while(0)
+diff --git a/drivers/net/pci-skeleton.c b/drivers/net/pci-skeleton.c
+index 53451c3..0a575fe 100644
+--- a/drivers/net/pci-skeleton.c
++++ b/drivers/net/pci-skeleton.c
+@@ -119,7 +119,7 @@ KERN_INFO "  Support available from http://foo.com/bar/baz.html\n";
+ 
+ #ifdef NETDRV_DEBUG
+ /* note: prints function name for you */
+-#  define DPRINTK(fmt, args...) printk(KERN_DEBUG "%s: " fmt, __FUNCTION__ , ## args)
++#  define DPRINTK(fmt, args...) printk(KERN_DEBUG "%s: " fmt, __func__ , ## args)
+ #else
+ #  define DPRINTK(fmt, args...)
+ #endif
+@@ -130,7 +130,7 @@ KERN_INFO "  Support available from http://foo.com/bar/baz.html\n";
+ #  define assert(expr) \
+         if(!(expr)) {					\
+         printk( "Assertion failed! %s,%s,%s,line=%d\n",	\
+-        #expr,__FILE__,__FUNCTION__,__LINE__);		\
++        #expr,__FILE__,__func__,__LINE__);		\
+         }
+ #endif
+ 
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index a3e3895..764c2d1 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -36,7 +36,7 @@
+ #define assert(expr) \
+ 	if (!(expr)) {					\
+ 		printk( "Assertion failed! %s,%s,%s,line=%d\n",	\
+-		#expr,__FILE__,__FUNCTION__,__LINE__);		\
++		#expr,__FILE__,__func__,__LINE__);		\
+ 	}
+ #define dprintk(fmt, args...) \
+ 	do { printk(KERN_DEBUG PFX fmt, ## args); } while (0)
+diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
+index 86d77d0..6ba81ba 100644
+--- a/drivers/net/s2io.c
++++ b/drivers/net/s2io.c
+@@ -3136,7 +3136,7 @@ static void tx_intr_handler(struct fifo_info *fifo_data)
+ 		if (skb == NULL) {
+ 			spin_unlock_irqrestore(&fifo_data->tx_lock, flags);
+ 			DBG_PRINT(ERR_DBG, "%s: Null skb ",
+-			__FUNCTION__);
++			__func__);
+ 			DBG_PRINT(ERR_DBG, "in Tx Free Intr\n");
+ 			return;
+ 		}
+@@ -3496,7 +3496,7 @@ static void s2io_reset(struct s2io_nic * sp)
+ 	unsigned long long mem_alloc_cnt, mem_free_cnt, watchdog_cnt;
+ 
+ 	DBG_PRINT(INIT_DBG,"%s - Resetting XFrame card %s\n",
+-			__FUNCTION__, sp->dev->name);
++			__func__, sp->dev->name);
+ 
+ 	/* Back up  the PCI-X CMD reg, dont want to lose MMRBC, OST settings */
+ 	pci_read_config_word(sp->pdev, PCIX_COMMAND_REGISTER, &(pci_cmd));
+@@ -3518,7 +3518,7 @@ static void s2io_reset(struct s2io_nic * sp)
+ 	}
+ 
+ 	if (check_pci_device_id(val16) == (u16)PCI_ANY_ID) {
+-		DBG_PRINT(ERR_DBG,"%s SW_Reset failed!\n", __FUNCTION__);
++		DBG_PRINT(ERR_DBG,"%s SW_Reset failed!\n", __func__);
+ 	}
+ 
+ 	pci_write_config_word(sp->pdev, PCIX_COMMAND_REGISTER, pci_cmd);
+@@ -3768,7 +3768,7 @@ static void restore_xmsi_data(struct s2io_nic *nic)
+ 		val64 = (s2BIT(7) | s2BIT(15) | vBIT(msix_index, 26, 6));
+ 		writeq(val64, &bar0->xmsi_access);
+ 		if (wait_for_msix_trans(nic, msix_index)) {
+-			DBG_PRINT(ERR_DBG, "failed in %s\n", __FUNCTION__);
++			DBG_PRINT(ERR_DBG, "failed in %s\n", __func__);
+ 			continue;
+ 		}
+ 	}
+@@ -3789,7 +3789,7 @@ static void store_xmsi_data(struct s2io_nic *nic)
+ 		val64 = (s2BIT(15) | vBIT(msix_index, 26, 6));
+ 		writeq(val64, &bar0->xmsi_access);
+ 		if (wait_for_msix_trans(nic, msix_index)) {
+-			DBG_PRINT(ERR_DBG, "failed in %s\n", __FUNCTION__);
++			DBG_PRINT(ERR_DBG, "failed in %s\n", __func__);
+ 			continue;
+ 		}
+ 		addr = readq(&bar0->xmsi_address);
+@@ -3812,7 +3812,7 @@ static int s2io_enable_msi_x(struct s2io_nic *nic)
+ 			       GFP_KERNEL);
+ 	if (!nic->entries) {
+ 		DBG_PRINT(INFO_DBG, "%s: Memory allocation failed\n", \
+-			__FUNCTION__);
++			__func__);
+ 		nic->mac_control.stats_info->sw_stat.mem_alloc_fail_cnt++;
+ 		return -ENOMEM;
+ 	}
+@@ -3826,7 +3826,7 @@ static int s2io_enable_msi_x(struct s2io_nic *nic)
+ 				   GFP_KERNEL);
+ 	if (!nic->s2io_entries) {
+ 		DBG_PRINT(INFO_DBG, "%s: Memory allocation failed\n",
+-			__FUNCTION__);
++			__func__);
+ 		nic->mac_control.stats_info->sw_stat.mem_alloc_fail_cnt++;
+ 		kfree(nic->entries);
+ 		nic->mac_control.stats_info->sw_stat.mem_freed
+@@ -6729,7 +6729,7 @@ static int s2io_change_mtu(struct net_device *dev, int new_mtu)
+ 		ret = s2io_card_up(sp);
+ 		if (ret) {
+ 			DBG_PRINT(ERR_DBG, "%s: Device bring up failed\n",
+-				  __FUNCTION__);
++				  __func__);
+ 			return ret;
+ 		}
+ 		s2io_wake_all_tx_queue(sp);
+@@ -7513,7 +7513,7 @@ static int rx_osm_handler(struct ring_info *ring_data, struct RxD_t * rxdp)
+ 					default:
+ 						DBG_PRINT(ERR_DBG,
+ 							"%s: Samadhana!!\n",
+-							 __FUNCTION__);
++							 __func__);
+ 						BUG();
+ 				}
+ 			}
+@@ -7764,7 +7764,7 @@ s2io_init_nic(struct pci_dev *pdev, const struct pci_device_id *pre)
+ 		return -ENOMEM;
+ 	}
+ 	if ((ret = pci_request_regions(pdev, s2io_driver_name))) {
+-		DBG_PRINT(ERR_DBG, "%s: Request Regions failed - %x \n", __FUNCTION__, ret);
++		DBG_PRINT(ERR_DBG, "%s: Request Regions failed - %x \n", __func__, ret);
+ 		pci_disable_device(pdev);
+ 		return -ENODEV;
+ 	}
+@@ -7981,7 +7981,7 @@ s2io_init_nic(struct pci_dev *pdev, const struct pci_device_id *pre)
+ 	if (sp->device_type & XFRAME_II_DEVICE) {
+ 		mode = s2io_verify_pci_mode(sp);
+ 		if (mode < 0) {
+-			DBG_PRINT(ERR_DBG, "%s: ", __FUNCTION__);
++			DBG_PRINT(ERR_DBG, "%s: ", __func__);
+ 			DBG_PRINT(ERR_DBG, " Unsupported PCI bus mode\n");
+ 			ret = -EBADSLT;
+ 			goto set_swap_failed;
+@@ -8282,7 +8282,7 @@ static int check_L2_lro_capable(u8 *buffer, struct iphdr **ip,
+ 
+ 	if (!(rxdp->Control_1 & RXD_FRAME_PROTO_TCP)) {
+ 		DBG_PRINT(INIT_DBG,"%s: Non-TCP frames not supported for LRO\n",
+-			  __FUNCTION__);
++			  __func__);
+ 		return -1;
+ 	}
+ 
+@@ -8313,7 +8313,7 @@ static int check_L2_lro_capable(u8 *buffer, struct iphdr **ip,
+ static int check_for_socket_match(struct lro *lro, struct iphdr *ip,
+ 				  struct tcphdr *tcp)
+ {
+-	DBG_PRINT(INFO_DBG,"%s: Been here...\n", __FUNCTION__);
++	DBG_PRINT(INFO_DBG,"%s: Been here...\n", __func__);
+ 	if ((lro->iph->saddr != ip->saddr) || (lro->iph->daddr != ip->daddr) ||
+ 	   (lro->tcph->source != tcp->source) || (lro->tcph->dest != tcp->dest))
+ 		return -1;
+@@ -8328,7 +8328,7 @@ static inline int get_l4_pyld_length(struct iphdr *ip, struct tcphdr *tcp)
+ static void initiate_new_session(struct lro *lro, u8 *l2h,
+ 	struct iphdr *ip, struct tcphdr *tcp, u32 tcp_pyld_len, u16 vlan_tag)
+ {
+-	DBG_PRINT(INFO_DBG,"%s: Been here...\n", __FUNCTION__);
++	DBG_PRINT(INFO_DBG,"%s: Been here...\n", __func__);
+ 	lro->l2h = l2h;
+ 	lro->iph = ip;
+ 	lro->tcph = tcp;
+@@ -8358,7 +8358,7 @@ static void update_L3L4_header(struct s2io_nic *sp, struct lro *lro)
+ 	struct tcphdr *tcp = lro->tcph;
+ 	__sum16 nchk;
+ 	struct stat_block *statinfo = sp->mac_control.stats_info;
+-	DBG_PRINT(INFO_DBG,"%s: Been here...\n", __FUNCTION__);
++	DBG_PRINT(INFO_DBG,"%s: Been here...\n", __func__);
+ 
+ 	/* Update L3 header */
+ 	ip->tot_len = htons(lro->total_len);
+@@ -8386,7 +8386,7 @@ static void update_L3L4_header(struct s2io_nic *sp, struct lro *lro)
+ static void aggregate_new_rx(struct lro *lro, struct iphdr *ip,
+ 		struct tcphdr *tcp, u32 l4_pyld)
+ {
+-	DBG_PRINT(INFO_DBG,"%s: Been here...\n", __FUNCTION__);
++	DBG_PRINT(INFO_DBG,"%s: Been here...\n", __func__);
+ 	lro->total_len += l4_pyld;
+ 	lro->frags_len += l4_pyld;
+ 	lro->tcp_next_seq += l4_pyld;
+@@ -8410,7 +8410,7 @@ static int verify_l3_l4_lro_capable(struct lro *l_lro, struct iphdr *ip,
+ {
+ 	u8 *ptr;
+ 
+-	DBG_PRINT(INFO_DBG,"%s: Been here...\n", __FUNCTION__);
++	DBG_PRINT(INFO_DBG,"%s: Been here...\n", __func__);
+ 
+ 	if (!tcp_pyld_len) {
+ 		/* Runt frame or a pure ack */
+@@ -8492,7 +8492,7 @@ s2io_club_tcp_session(struct ring_info *ring_data, u8 *buffer, u8 **tcp,
+ 
+ 			if ((*lro)->tcp_next_seq != ntohl(tcph->seq)) {
+ 				DBG_PRINT(INFO_DBG, "%s:Out of order. expected "
+-					  "0x%x, actual 0x%x\n", __FUNCTION__,
++					  "0x%x, actual 0x%x\n", __func__,
+ 					  (*lro)->tcp_next_seq,
+ 					  ntohl(tcph->seq));
+ 
+@@ -8532,7 +8532,7 @@ s2io_club_tcp_session(struct ring_info *ring_data, u8 *buffer, u8 **tcp,
+ 
+ 	if (ret == 0) { /* sessions exceeded */
+ 		DBG_PRINT(INFO_DBG,"%s:All LRO sessions already in use\n",
+-			  __FUNCTION__);
++			  __func__);
+ 		*lro = NULL;
+ 		return ret;
+ 	}
+@@ -8554,7 +8554,7 @@ s2io_club_tcp_session(struct ring_info *ring_data, u8 *buffer, u8 **tcp,
+ 			break;
+ 		default:
+ 			DBG_PRINT(ERR_DBG,"%s:Dont know, can't say!!\n",
+-				__FUNCTION__);
++				__func__);
+ 			break;
+ 	}
+ 
+diff --git a/drivers/net/smc911x.c b/drivers/net/smc911x.c
+index c587162..5260245 100644
+--- a/drivers/net/smc911x.c
++++ b/drivers/net/smc911x.c
+@@ -183,7 +183,7 @@ static void smc911x_reset(struct net_device *dev)
+ 	unsigned int reg, timeout=0, resets=1;
+ 	unsigned long flags;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 
+ 	/*	 Take out of PM setting first */
+ 	if ((SMC_GET_PMT_CTRL(lp) & PMT_CTRL_READY_) == 0) {
+@@ -272,7 +272,7 @@ static void smc911x_enable(struct net_device *dev)
+ 	unsigned mask, cfg, cr;
+ 	unsigned long flags;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 
+ 	SMC_SET_MAC_ADDR(lp, dev->dev_addr);
+ 
+@@ -329,7 +329,7 @@ static void smc911x_shutdown(struct net_device *dev)
+ 	unsigned cr;
+ 	unsigned long flags;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", CARDNAME, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", CARDNAME, __func__);
+ 
+ 	/* Disable IRQ's */
+ 	SMC_SET_INT_EN(lp, 0);
+@@ -348,7 +348,7 @@ static inline void smc911x_drop_pkt(struct net_device *dev)
+ 	struct smc911x_local *lp = netdev_priv(dev);
+ 	unsigned int fifo_count, timeout, reg;
+ 
+-	DBG(SMC_DEBUG_FUNC | SMC_DEBUG_RX, "%s: --> %s\n", CARDNAME, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC | SMC_DEBUG_RX, "%s: --> %s\n", CARDNAME, __func__);
+ 	fifo_count = SMC_GET_RX_FIFO_INF(lp) & 0xFFFF;
+ 	if (fifo_count <= 4) {
+ 		/* Manually dump the packet data */
+@@ -382,7 +382,7 @@ static inline void	 smc911x_rcv(struct net_device *dev)
+ 	unsigned char *data;
+ 
+ 	DBG(SMC_DEBUG_FUNC | SMC_DEBUG_RX, "%s: --> %s\n",
+-		dev->name, __FUNCTION__);
++		dev->name, __func__);
+ 	status = SMC_GET_RX_STS_FIFO(lp);
+ 	DBG(SMC_DEBUG_RX, "%s: Rx pkt len %d status 0x%08x \n",
+ 		dev->name, (status & 0x3fff0000) >> 16, status & 0xc000ffff);
+@@ -460,7 +460,7 @@ static void smc911x_hardware_send_pkt(struct net_device *dev)
+ 	unsigned char *buf;
+ 	unsigned long flags;
+ 
+-	DBG(SMC_DEBUG_FUNC | SMC_DEBUG_TX, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC | SMC_DEBUG_TX, "%s: --> %s\n", dev->name, __func__);
+ 	BUG_ON(lp->pending_tx_skb == NULL);
+ 
+ 	skb = lp->pending_tx_skb;
+@@ -524,7 +524,7 @@ static int smc911x_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	unsigned long flags;
+ 
+ 	DBG(SMC_DEBUG_FUNC | SMC_DEBUG_TX, "%s: --> %s\n",
+-		dev->name, __FUNCTION__);
++		dev->name, __func__);
+ 
+ 	BUG_ON(lp->pending_tx_skb != NULL);
+ 
+@@ -596,7 +596,7 @@ static void smc911x_tx(struct net_device *dev)
+ 	unsigned int tx_status;
+ 
+ 	DBG(SMC_DEBUG_FUNC | SMC_DEBUG_TX, "%s: --> %s\n",
+-		dev->name, __FUNCTION__);
++		dev->name, __func__);
+ 
+ 	/* Collect the TX status */
+ 	while (((SMC_GET_TX_FIFO_INF(lp) & TX_FIFO_INF_TSUSED_) >> 16) != 0) {
+@@ -647,7 +647,7 @@ static int smc911x_phy_read(struct net_device *dev, int phyaddr, int phyreg)
+ 	SMC_GET_MII(lp, phyreg, phyaddr, phydata);
+ 
+ 	DBG(SMC_DEBUG_MISC, "%s: phyaddr=0x%x, phyreg=0x%02x, phydata=0x%04x\n",
+-		__FUNCTION__, phyaddr, phyreg, phydata);
++		__func__, phyaddr, phyreg, phydata);
+ 	return phydata;
+ }
+ 
+@@ -661,7 +661,7 @@ static void smc911x_phy_write(struct net_device *dev, int phyaddr, int phyreg,
+ 	struct smc911x_local *lp = netdev_priv(dev);
+ 
+ 	DBG(SMC_DEBUG_MISC, "%s: phyaddr=0x%x, phyreg=0x%x, phydata=0x%x\n",
+-		__FUNCTION__, phyaddr, phyreg, phydata);
++		__func__, phyaddr, phyreg, phydata);
+ 
+ 	SMC_SET_MII(lp, phyreg, phyaddr, phydata);
+ }
+@@ -676,7 +676,7 @@ static void smc911x_phy_detect(struct net_device *dev)
+ 	int phyaddr;
+ 	unsigned int cfg, id1, id2;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 
+ 	lp->phy_type = 0;
+ 
+@@ -746,7 +746,7 @@ static int smc911x_phy_fixed(struct net_device *dev)
+ 	int phyaddr = lp->mii.phy_id;
+ 	int bmcr;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 
+ 	/* Enter Link Disable state */
+ 	SMC_GET_PHY_BMCR(lp, phyaddr, bmcr);
+@@ -793,7 +793,7 @@ static int smc911x_phy_reset(struct net_device *dev, int phy)
+ 	unsigned long flags;
+ 	unsigned int reg;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s()\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s()\n", dev->name, __func__);
+ 
+ 	spin_lock_irqsave(&lp->lock, flags);
+ 	reg = SMC_GET_PMT_CTRL(lp);
+@@ -852,7 +852,7 @@ static void smc911x_phy_check_media(struct net_device *dev, int init)
+ 	int phyaddr = lp->mii.phy_id;
+ 	unsigned int bmcr, cr;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 
+ 	if (mii_check_media(&lp->mii, netif_msg_link(lp), init)) {
+ 		/* duplex state has changed */
+@@ -892,7 +892,7 @@ static void smc911x_phy_configure(struct work_struct *work)
+ 	int status;
+ 	unsigned long flags;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s()\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s()\n", dev->name, __func__);
+ 
+ 	/*
+ 	 * We should not be called if phy_type is zero.
+@@ -985,7 +985,7 @@ static void smc911x_phy_interrupt(struct net_device *dev)
+ 	int phyaddr = lp->mii.phy_id;
+ 	int status;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 
+ 	if (lp->phy_type == 0)
+ 		return;
+@@ -1013,7 +1013,7 @@ static irqreturn_t smc911x_interrupt(int irq, void *dev_id)
+ 	unsigned int rx_overrun=0, cr, pkts;
+ 	unsigned long flags;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 
+ 	spin_lock_irqsave(&lp->lock, flags);
+ 
+@@ -1188,7 +1188,7 @@ smc911x_tx_dma_irq(int dma, void *data)
+ 	struct sk_buff *skb = lp->current_tx_skb;
+ 	unsigned long flags;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 
+ 	DBG(SMC_DEBUG_TX | SMC_DEBUG_DMA, "%s: TX DMA irq handler\n", dev->name);
+ 	/* Clear the DMA interrupt sources */
+@@ -1224,7 +1224,7 @@ smc911x_rx_dma_irq(int dma, void *data)
+ 	unsigned long flags;
+ 	unsigned int pkts;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 	DBG(SMC_DEBUG_RX | SMC_DEBUG_DMA, "%s: RX DMA irq handler\n", dev->name);
+ 	/* Clear the DMA interrupt sources */
+ 	SMC_DMA_ACK_IRQ(dev, dma);
+@@ -1272,7 +1272,7 @@ static void smc911x_timeout(struct net_device *dev)
+ 	int status, mask;
+ 	unsigned long flags;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 
+ 	spin_lock_irqsave(&lp->lock, flags);
+ 	status = SMC_GET_INT(lp);
+@@ -1310,7 +1310,7 @@ static void smc911x_set_multicast_list(struct net_device *dev)
+ 	unsigned int mcr, update_multicast = 0;
+ 	unsigned long flags;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 
+ 	spin_lock_irqsave(&lp->lock, flags);
+ 	SMC_GET_MAC_CR(lp, mcr);
+@@ -1412,7 +1412,7 @@ smc911x_open(struct net_device *dev)
+ {
+ 	struct smc911x_local *lp = netdev_priv(dev);
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 
+ 	/*
+ 	 * Check that the address is valid.  If its not, refuse
+@@ -1420,7 +1420,7 @@ smc911x_open(struct net_device *dev)
+ 	 * address using ifconfig eth0 hw ether xx:xx:xx:xx:xx:xx
+ 	 */
+ 	if (!is_valid_ether_addr(dev->dev_addr)) {
+-		PRINTK("%s: no valid ethernet hw addr\n", __FUNCTION__);
++		PRINTK("%s: no valid ethernet hw addr\n", __func__);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -1449,7 +1449,7 @@ static int smc911x_close(struct net_device *dev)
+ {
+ 	struct smc911x_local *lp = netdev_priv(dev);
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 
+ 	netif_stop_queue(dev);
+ 	netif_carrier_off(dev);
+@@ -1483,7 +1483,7 @@ smc911x_ethtool_getsettings(struct net_device *dev, struct ethtool_cmd *cmd)
+ 	int ret, status;
+ 	unsigned long flags;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 	cmd->maxtxpkt = 1;
+ 	cmd->maxrxpkt = 1;
+ 
+@@ -1621,7 +1621,7 @@ static int smc911x_ethtool_wait_eeprom_ready(struct net_device *dev)
+ 	for(timeout=10;(e2p_cmd & E2P_CMD_EPC_BUSY_) && timeout; timeout--) {
+ 		if (e2p_cmd & E2P_CMD_EPC_TIMEOUT_) {
+ 			PRINTK("%s: %s timeout waiting for EEPROM to respond\n",
+-				dev->name, __FUNCTION__);
++				dev->name, __func__);
+ 			return -EFAULT;
+ 		}
+ 		mdelay(1);
+@@ -1629,7 +1629,7 @@ static int smc911x_ethtool_wait_eeprom_ready(struct net_device *dev)
+ 	}
+ 	if (timeout == 0) {
+ 		PRINTK("%s: %s timeout waiting for EEPROM CMD not busy\n",
+-			dev->name, __FUNCTION__);
++			dev->name, __func__);
+ 		return -ETIMEDOUT;
+ 	}
+ 	return 0;
+@@ -1742,7 +1742,7 @@ static int __init smc911x_findirq(struct net_device *dev)
+ 	int timeout = 20;
+ 	unsigned long cookie;
+ 
+-	DBG(SMC_DEBUG_FUNC, "--> %s\n", __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "--> %s\n", __func__);
+ 
+ 	cookie = probe_irq_on();
+ 
+@@ -1808,7 +1808,7 @@ static int __init smc911x_probe(struct net_device *dev)
+ 	const char *version_string;
+ 	unsigned long irq_flags;
+ 
+-	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
+ 
+ 	/* First, see if the endian word is recognized */
+ 	val = SMC_GET_BYTE_TEST(lp);
+@@ -2058,7 +2058,7 @@ static int smc911x_drv_probe(struct platform_device *pdev)
+ 	unsigned int *addr;
+ 	int ret;
+ 
+-	DBG(SMC_DEBUG_FUNC, "--> %s\n",  __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "--> %s\n",  __func__);
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!res) {
+ 		ret = -ENODEV;
+@@ -2129,7 +2129,7 @@ static int smc911x_drv_remove(struct platform_device *pdev)
+ 	struct smc911x_local *lp = netdev_priv(ndev);
+ 	struct resource *res;
+ 
+-	DBG(SMC_DEBUG_FUNC, "--> %s\n", __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "--> %s\n", __func__);
+ 	platform_set_drvdata(pdev, NULL);
+ 
+ 	unregister_netdev(ndev);
+@@ -2159,7 +2159,7 @@ static int smc911x_drv_suspend(struct platform_device *dev, pm_message_t state)
+ 	struct net_device *ndev = platform_get_drvdata(dev);
+ 	struct smc911x_local *lp = netdev_priv(ndev);
+ 
+-	DBG(SMC_DEBUG_FUNC, "--> %s\n", __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "--> %s\n", __func__);
+ 	if (ndev) {
+ 		if (netif_running(ndev)) {
+ 			netif_device_detach(ndev);
+@@ -2177,7 +2177,7 @@ static int smc911x_drv_resume(struct platform_device *dev)
+ {
+ 	struct net_device *ndev = platform_get_drvdata(dev);
+ 
+-	DBG(SMC_DEBUG_FUNC, "--> %s\n", __FUNCTION__);
++	DBG(SMC_DEBUG_FUNC, "--> %s\n", __func__);
+ 	if (ndev) {
+ 		struct smc911x_local *lp = netdev_priv(ndev);
+ 
+diff --git a/drivers/net/smc91x.c b/drivers/net/smc91x.c
+index 2040965..9e261e6 100644
+--- a/drivers/net/smc91x.c
++++ b/drivers/net/smc91x.c
+@@ -270,7 +270,7 @@ static void smc_reset(struct net_device *dev)
+ 	unsigned int ctl, cfg;
+ 	struct sk_buff *pending_skb;
+ 
+-	DBG(2, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(2, "%s: %s\n", dev->name, __func__);
+ 
+ 	/* Disable all interrupts, block TX tasklet */
+ 	spin_lock_irq(&lp->lock);
+@@ -363,7 +363,7 @@ static void smc_enable(struct net_device *dev)
+ 	void __iomem *ioaddr = lp->base;
+ 	int mask;
+ 
+-	DBG(2, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(2, "%s: %s\n", dev->name, __func__);
+ 
+ 	/* see the header file for options in TCR/RCR DEFAULT */
+ 	SMC_SELECT_BANK(lp, 0);
+@@ -397,7 +397,7 @@ static void smc_shutdown(struct net_device *dev)
+ 	void __iomem *ioaddr = lp->base;
+ 	struct sk_buff *pending_skb;
+ 
+-	DBG(2, "%s: %s\n", CARDNAME, __FUNCTION__);
++	DBG(2, "%s: %s\n", CARDNAME, __func__);
+ 
+ 	/* no more interrupts for me */
+ 	spin_lock_irq(&lp->lock);
+@@ -430,7 +430,7 @@ static inline void  smc_rcv(struct net_device *dev)
+ 	void __iomem *ioaddr = lp->base;
+ 	unsigned int packet_number, status, packet_len;
+ 
+-	DBG(3, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(3, "%s: %s\n", dev->name, __func__);
+ 
+ 	packet_number = SMC_GET_RXFIFO(lp);
+ 	if (unlikely(packet_number & RXFIFO_REMPTY)) {
+@@ -577,7 +577,7 @@ static void smc_hardware_send_pkt(unsigned long data)
+ 	unsigned int packet_no, len;
+ 	unsigned char *buf;
+ 
+-	DBG(3, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(3, "%s: %s\n", dev->name, __func__);
+ 
+ 	if (!smc_special_trylock(&lp->lock)) {
+ 		netif_stop_queue(dev);
+@@ -662,7 +662,7 @@ static int smc_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	void __iomem *ioaddr = lp->base;
+ 	unsigned int numPages, poll_count, status;
+ 
+-	DBG(3, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(3, "%s: %s\n", dev->name, __func__);
+ 
+ 	BUG_ON(lp->pending_tx_skb != NULL);
+ 
+@@ -734,7 +734,7 @@ static void smc_tx(struct net_device *dev)
+ 	void __iomem *ioaddr = lp->base;
+ 	unsigned int saved_packet, packet_no, tx_status, pkt_len;
+ 
+-	DBG(3, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(3, "%s: %s\n", dev->name, __func__);
+ 
+ 	/* If the TX FIFO is empty then nothing to do */
+ 	packet_no = SMC_GET_TXFIFO(lp);
+@@ -856,7 +856,7 @@ static int smc_phy_read(struct net_device *dev, int phyaddr, int phyreg)
+ 	SMC_SET_MII(lp, SMC_GET_MII(lp) & ~(MII_MCLK|MII_MDOE|MII_MDO));
+ 
+ 	DBG(3, "%s: phyaddr=0x%x, phyreg=0x%x, phydata=0x%x\n",
+-		__FUNCTION__, phyaddr, phyreg, phydata);
++		__func__, phyaddr, phyreg, phydata);
+ 
+ 	SMC_SELECT_BANK(lp, 2);
+ 	return phydata;
+@@ -883,7 +883,7 @@ static void smc_phy_write(struct net_device *dev, int phyaddr, int phyreg,
+ 	SMC_SET_MII(lp, SMC_GET_MII(lp) & ~(MII_MCLK|MII_MDOE|MII_MDO));
+ 
+ 	DBG(3, "%s: phyaddr=0x%x, phyreg=0x%x, phydata=0x%x\n",
+-		__FUNCTION__, phyaddr, phyreg, phydata);
++		__func__, phyaddr, phyreg, phydata);
+ 
+ 	SMC_SELECT_BANK(lp, 2);
+ }
+@@ -896,7 +896,7 @@ static void smc_phy_detect(struct net_device *dev)
+ 	struct smc_local *lp = netdev_priv(dev);
+ 	int phyaddr;
+ 
+-	DBG(2, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(2, "%s: %s\n", dev->name, __func__);
+ 
+ 	lp->phy_type = 0;
+ 
+@@ -935,7 +935,7 @@ static int smc_phy_fixed(struct net_device *dev)
+ 	int phyaddr = lp->mii.phy_id;
+ 	int bmcr, cfg1;
+ 
+-	DBG(3, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(3, "%s: %s\n", dev->name, __func__);
+ 
+ 	/* Enter Link Disable state */
+ 	cfg1 = smc_phy_read(dev, phyaddr, PHY_CFG1_REG);
+@@ -1168,7 +1168,7 @@ static void smc_phy_interrupt(struct net_device *dev)
+ 	int phyaddr = lp->mii.phy_id;
+ 	int phy18;
+ 
+-	DBG(2, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(2, "%s: %s\n", dev->name, __func__);
+ 
+ 	if (lp->phy_type == 0)
+ 		return;
+@@ -1236,7 +1236,7 @@ static irqreturn_t smc_interrupt(int irq, void *dev_id)
+ 	int status, mask, timeout, card_stats;
+ 	int saved_pointer;
+ 
+-	DBG(3, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(3, "%s: %s\n", dev->name, __func__);
+ 
+ 	spin_lock(&lp->lock);
+ 
+@@ -1358,7 +1358,7 @@ static void smc_timeout(struct net_device *dev)
+ 	void __iomem *ioaddr = lp->base;
+ 	int status, mask, eph_st, meminfo, fifo;
+ 
+-	DBG(2, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(2, "%s: %s\n", dev->name, __func__);
+ 
+ 	spin_lock_irq(&lp->lock);
+ 	status = SMC_GET_INT(lp);
+@@ -1402,7 +1402,7 @@ static void smc_set_multicast_list(struct net_device *dev)
+ 	unsigned char multicast_table[8];
+ 	int update_multicast = 0;
+ 
+-	DBG(2, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(2, "%s: %s\n", dev->name, __func__);
+ 
+ 	if (dev->flags & IFF_PROMISC) {
+ 		DBG(2, "%s: RCR_PRMS\n", dev->name);
+@@ -1505,7 +1505,7 @@ smc_open(struct net_device *dev)
+ {
+ 	struct smc_local *lp = netdev_priv(dev);
+ 
+-	DBG(2, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(2, "%s: %s\n", dev->name, __func__);
+ 
+ 	/*
+ 	 * Check that the address is valid.  If its not, refuse
+@@ -1513,7 +1513,7 @@ smc_open(struct net_device *dev)
+ 	 * address using ifconfig eth0 hw ether xx:xx:xx:xx:xx:xx
+ 	 */
+ 	if (!is_valid_ether_addr(dev->dev_addr)) {
+-		PRINTK("%s: no valid ethernet hw addr\n", __FUNCTION__);
++		PRINTK("%s: no valid ethernet hw addr\n", __func__);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -1557,7 +1557,7 @@ static int smc_close(struct net_device *dev)
+ {
+ 	struct smc_local *lp = netdev_priv(dev);
+ 
+-	DBG(2, "%s: %s\n", dev->name, __FUNCTION__);
++	DBG(2, "%s: %s\n", dev->name, __func__);
+ 
+ 	netif_stop_queue(dev);
+ 	netif_carrier_off(dev);
+@@ -1700,7 +1700,7 @@ static int __init smc_findirq(struct smc_local *lp)
+ 	int timeout = 20;
+ 	unsigned long cookie;
+ 
+-	DBG(2, "%s: %s\n", CARDNAME, __FUNCTION__);
++	DBG(2, "%s: %s\n", CARDNAME, __func__);
+ 
+ 	cookie = probe_irq_on();
+ 
+@@ -1778,7 +1778,7 @@ static int __init smc_probe(struct net_device *dev, void __iomem *ioaddr,
+ 	const char *version_string;
+ 	DECLARE_MAC_BUF(mac);
+ 
+-	DBG(2, "%s: %s\n", CARDNAME, __FUNCTION__);
++	DBG(2, "%s: %s\n", CARDNAME, __func__);
+ 
+ 	/* First, see if the high byte is 0x33 */
+ 	val = SMC_CURRENT_BANK(lp);
+diff --git a/drivers/net/tehuti.h b/drivers/net/tehuti.h
+index c66dfc9..316b597 100644
+--- a/drivers/net/tehuti.h
++++ b/drivers/net/tehuti.h
+@@ -540,22 +540,22 @@ struct txd_desc {
+ 
+ #define ERR(fmt, args...) printk(KERN_ERR fmt, ## args)
+ #define DBG2(fmt, args...)	\
+-	printk(KERN_ERR  "%s:%-5d: " fmt, __FUNCTION__, __LINE__, ## args)
++	printk(KERN_ERR  "%s:%-5d: " fmt, __func__, __LINE__, ## args)
+ 
+ #define BDX_ASSERT(x) BUG_ON(x)
+ 
+ #ifdef DEBUG
+ 
+ #define ENTER          do { \
+-	printk(KERN_ERR  "%s:%-5d: ENTER\n", __FUNCTION__, __LINE__); \
++	printk(KERN_ERR  "%s:%-5d: ENTER\n", __func__, __LINE__); \
+ } while (0)
+ 
+ #define RET(args...)   do { \
+-	printk(KERN_ERR  "%s:%-5d: RETURN\n", __FUNCTION__, __LINE__); \
++	printk(KERN_ERR  "%s:%-5d: RETURN\n", __func__, __LINE__); \
+ return args; } while (0)
+ 
+ #define DBG(fmt, args...)	\
+-	printk(KERN_ERR  "%s:%-5d: " fmt, __FUNCTION__, __LINE__, ## args)
++	printk(KERN_ERR  "%s:%-5d: " fmt, __func__, __LINE__, ## args)
+ #else
+ #define ENTER         do {  } while (0)
+ #define RET(args...)   return args
+diff --git a/drivers/net/tsi108_eth.c b/drivers/net/tsi108_eth.c
+index 43fde99..eb1da6f 100644
+--- a/drivers/net/tsi108_eth.c
++++ b/drivers/net/tsi108_eth.c
+@@ -263,7 +263,7 @@ static inline void tsi108_write_tbi(struct tsi108_prv_data *data,
+ 			return;
+ 		udelay(10);
+ 	}
+-	printk(KERN_ERR "%s function time out \n", __FUNCTION__);
++	printk(KERN_ERR "%s function time out \n", __func__);
+ }
+ 
+ static int mii_speed(struct mii_if_info *mii)
+@@ -1059,7 +1059,7 @@ static void tsi108_stop_ethernet(struct net_device *dev)
+ 			return;
+ 		udelay(10);
+ 	}
+-	printk(KERN_ERR "%s function time out \n", __FUNCTION__);
++	printk(KERN_ERR "%s function time out \n", __func__);
+ }
+ 
+ static void tsi108_reset_ether(struct tsi108_prv_data * data)
+@@ -1244,7 +1244,7 @@ static void tsi108_init_phy(struct net_device *dev)
+ 		udelay(10);
+ 	}
+ 	if (i == 0)
+-		printk(KERN_ERR "%s function time out \n", __FUNCTION__);
++		printk(KERN_ERR "%s function time out \n", __func__);
+ 
+ 	if (data->phy_type == TSI108_PHY_BCM54XX) {
+ 		tsi108_write_mii(data, 0x09, 0x0300);
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 8f944e5..c87747b 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -400,7 +400,7 @@ static struct enet_addr_container *get_enet_addr_container(void)
+ 	enet_addr_cont = kmalloc(sizeof(struct enet_addr_container), GFP_KERNEL);
+ 	if (!enet_addr_cont) {
+ 		ugeth_err("%s: No memory for enet_addr_container object.",
+-			  __FUNCTION__);
++			  __func__);
+ 		return NULL;
+ 	}
+ 
+@@ -427,7 +427,7 @@ static int hw_add_addr_in_paddr(struct ucc_geth_private *ugeth,
+ 	struct ucc_geth_82xx_address_filtering_pram *p_82xx_addr_filt;
+ 
+ 	if (!(paddr_num < NUM_OF_PADDRS)) {
+-		ugeth_warn("%s: Illegal paddr_num.", __FUNCTION__);
++		ugeth_warn("%s: Illegal paddr_num.", __func__);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -447,7 +447,7 @@ static int hw_clear_addr_in_paddr(struct ucc_geth_private *ugeth, u8 paddr_num)
+ 	struct ucc_geth_82xx_address_filtering_pram __iomem *p_82xx_addr_filt;
+ 
+ 	if (!(paddr_num < NUM_OF_PADDRS)) {
+-		ugeth_warn("%s: Illagel paddr_num.", __FUNCTION__);
++		ugeth_warn("%s: Illagel paddr_num.", __func__);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -1441,7 +1441,7 @@ static int adjust_enet_interface(struct ucc_geth_private *ugeth)
+ 	u32 upsmr, maccfg2, tbiBaseAddress;
+ 	u16 value;
+ 
+-	ugeth_vdbg("%s: IN", __FUNCTION__);
++	ugeth_vdbg("%s: IN", __func__);
+ 
+ 	ug_info = ugeth->ug_info;
+ 	ug_regs = ugeth->ug_regs;
+@@ -1504,7 +1504,7 @@ static int adjust_enet_interface(struct ucc_geth_private *ugeth)
+ 	if (ret_val != 0) {
+ 		if (netif_msg_probe(ugeth))
+ 			ugeth_err("%s: Preamble length must be between 3 and 7 inclusive.",
+-			     __FUNCTION__);
++			     __func__);
+ 		return ret_val;
+ 	}
+ 
+@@ -1744,7 +1744,7 @@ static int ugeth_enable(struct ucc_geth_private *ugeth, enum comm_dir mode)
+ 	/* check if the UCC number is in range. */
+ 	if (ugeth->ug_info->uf_info.ucc_num >= UCC_MAX_NUM) {
+ 		if (netif_msg_probe(ugeth))
+-			ugeth_err("%s: ucc_num out of range.", __FUNCTION__);
++			ugeth_err("%s: ucc_num out of range.", __func__);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -1773,7 +1773,7 @@ static int ugeth_disable(struct ucc_geth_private * ugeth, enum comm_dir mode)
+ 	/* check if the UCC number is in range. */
+ 	if (ugeth->ug_info->uf_info.ucc_num >= UCC_MAX_NUM) {
+ 		if (netif_msg_probe(ugeth))
+-			ugeth_err("%s: ucc_num out of range.", __FUNCTION__);
++			ugeth_err("%s: ucc_num out of range.", __func__);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -2062,7 +2062,7 @@ static int ugeth_82xx_filtering_add_addr_in_paddr(struct ucc_geth_private *ugeth
+ 		ugeth_warn
+ 		    ("%s: multicast address added to paddr will have no "
+ 		     "effect - is this what you wanted?",
+-		     __FUNCTION__);
++		     __func__);
+ 
+ 	ugeth->indAddrRegUsed[paddr_num] = 1;	/* mark this paddr as used */
+ 	/* store address in our database */
+@@ -2278,7 +2278,7 @@ static void ucc_geth_stop(struct ucc_geth_private *ugeth)
+ 	struct phy_device *phydev = ugeth->phydev;
+ 	u32 tempval;
+ 
+-	ugeth_vdbg("%s: IN", __FUNCTION__);
++	ugeth_vdbg("%s: IN", __func__);
+ 
+ 	/* Disable the controller */
+ 	ugeth_disable(ugeth, COMM_DIR_RX_AND_TX);
+@@ -2315,7 +2315,7 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
+ 	      (uf_info->bd_mem_part == MEM_PART_MURAM))) {
+ 		if (netif_msg_probe(ugeth))
+ 			ugeth_err("%s: Bad memory partition value.",
+-					__FUNCTION__);
++					__func__);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -2327,7 +2327,7 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
+ 			if (netif_msg_probe(ugeth))
+ 				ugeth_err
+ 				    ("%s: Rx BD ring length must be multiple of 4, no smaller than 8.",
+-					__FUNCTION__);
++					__func__);
+ 			return -EINVAL;
+ 		}
+ 	}
+@@ -2338,7 +2338,7 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
+ 			if (netif_msg_probe(ugeth))
+ 				ugeth_err
+ 				    ("%s: Tx BD ring length must be no smaller than 2.",
+-				     __FUNCTION__);
++				     __func__);
+ 			return -EINVAL;
+ 		}
+ 	}
+@@ -2349,21 +2349,21 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
+ 		if (netif_msg_probe(ugeth))
+ 			ugeth_err
+ 			    ("%s: max_rx_buf_length must be non-zero multiple of 128.",
+-			     __FUNCTION__);
++			     __func__);
+ 		return -EINVAL;
+ 	}
+ 
+ 	/* num Tx queues */
+ 	if (ug_info->numQueuesTx > NUM_TX_QUEUES) {
+ 		if (netif_msg_probe(ugeth))
+-			ugeth_err("%s: number of tx queues too large.", __FUNCTION__);
++			ugeth_err("%s: number of tx queues too large.", __func__);
+ 		return -EINVAL;
+ 	}
+ 
+ 	/* num Rx queues */
+ 	if (ug_info->numQueuesRx > NUM_RX_QUEUES) {
+ 		if (netif_msg_probe(ugeth))
+-			ugeth_err("%s: number of rx queues too large.", __FUNCTION__);
++			ugeth_err("%s: number of rx queues too large.", __func__);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -2374,7 +2374,7 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
+ 				ugeth_err
+ 				    ("%s: VLAN priority table entry must not be"
+ 					" larger than number of Rx queues.",
+-				     __FUNCTION__);
++				     __func__);
+ 			return -EINVAL;
+ 		}
+ 	}
+@@ -2386,7 +2386,7 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
+ 				ugeth_err
+ 				    ("%s: IP priority table entry must not be"
+ 					" larger than number of Rx queues.",
+-				     __FUNCTION__);
++				     __func__);
+ 			return -EINVAL;
+ 		}
+ 	}
+@@ -2394,7 +2394,7 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
+ 	if (ug_info->cam && !ug_info->ecamptr) {
+ 		if (netif_msg_probe(ugeth))
+ 			ugeth_err("%s: If cam mode is chosen, must supply cam ptr.",
+-				  __FUNCTION__);
++				  __func__);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -2404,7 +2404,7 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
+ 		if (netif_msg_probe(ugeth))
+ 			ugeth_err("%s: Number of station addresses greater than 1 "
+ 				  "not allowed in extended parsing mode.",
+-				  __FUNCTION__);
++				  __func__);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -2418,7 +2418,7 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
+ 	/* Initialize the general fast UCC block. */
+ 	if (ucc_fast_init(uf_info, &ugeth->uccf)) {
+ 		if (netif_msg_probe(ugeth))
+-			ugeth_err("%s: Failed to init uccf.", __FUNCTION__);
++			ugeth_err("%s: Failed to init uccf.", __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -ENOMEM;
+ 	}
+@@ -2448,7 +2448,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	u8 __iomem *endOfRing;
+ 	u8 numThreadsRxNumerical, numThreadsTxNumerical;
+ 
+-	ugeth_vdbg("%s: IN", __FUNCTION__);
++	ugeth_vdbg("%s: IN", __func__);
+ 	uccf = ugeth->uccf;
+ 	ug_info = ugeth->ug_info;
+ 	uf_info = &ug_info->uf_info;
+@@ -2474,7 +2474,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	default:
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err("%s: Bad number of Rx threads value.",
+-				       	__FUNCTION__);
++				       	__func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -EINVAL;
+ 		break;
+@@ -2499,7 +2499,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	default:
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err("%s: Bad number of Tx threads value.",
+-				       	__FUNCTION__);
++				       	__func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -EINVAL;
+ 		break;
+@@ -2553,7 +2553,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	if (ret_val != 0) {
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err("%s: IPGIFG initialization parameter too large.",
+-				  __FUNCTION__);
++				  __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return ret_val;
+ 	}
+@@ -2571,7 +2571,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	if (ret_val != 0) {
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err("%s: Half Duplex initialization parameter too large.",
+-			  __FUNCTION__);
++			  __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return ret_val;
+ 	}
+@@ -2626,7 +2626,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 			if (netif_msg_ifup(ugeth))
+ 				ugeth_err
+ 				    ("%s: Can not allocate memory for Tx bd rings.",
+-				     __FUNCTION__);
++				     __func__);
+ 			ucc_geth_memclean(ugeth);
+ 			return -ENOMEM;
+ 		}
+@@ -2662,7 +2662,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 			if (netif_msg_ifup(ugeth))
+ 				ugeth_err
+ 				    ("%s: Can not allocate memory for Rx bd rings.",
+-				     __FUNCTION__);
++				     __func__);
+ 			ucc_geth_memclean(ugeth);
+ 			return -ENOMEM;
+ 		}
+@@ -2678,7 +2678,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		if (ugeth->tx_skbuff[j] == NULL) {
+ 			if (netif_msg_ifup(ugeth))
+ 				ugeth_err("%s: Could not allocate tx_skbuff",
+-					  __FUNCTION__);
++					  __func__);
+ 			ucc_geth_memclean(ugeth);
+ 			return -ENOMEM;
+ 		}
+@@ -2710,7 +2710,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		if (ugeth->rx_skbuff[j] == NULL) {
+ 			if (netif_msg_ifup(ugeth))
+ 				ugeth_err("%s: Could not allocate rx_skbuff",
+-					  __FUNCTION__);
++					  __func__);
+ 			ucc_geth_memclean(ugeth);
+ 			return -ENOMEM;
+ 		}
+@@ -2744,7 +2744,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err
+ 			    ("%s: Can not allocate DPRAM memory for p_tx_glbl_pram.",
+-			     __FUNCTION__);
++			     __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -ENOMEM;
+ 	}
+@@ -2767,7 +2767,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err
+ 			    ("%s: Can not allocate DPRAM memory for p_thread_data_tx.",
+-			     __FUNCTION__);
++			     __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -ENOMEM;
+ 	}
+@@ -2797,7 +2797,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err
+ 			    ("%s: Can not allocate DPRAM memory for p_send_q_mem_reg.",
+-			     __FUNCTION__);
++			     __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -ENOMEM;
+ 	}
+@@ -2841,7 +2841,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 			if (netif_msg_ifup(ugeth))
+ 				ugeth_err
+ 				 ("%s: Can not allocate DPRAM memory for p_scheduler.",
+-				     __FUNCTION__);
++				     __func__);
+ 			ucc_geth_memclean(ugeth);
+ 			return -ENOMEM;
+ 		}
+@@ -2892,7 +2892,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 				ugeth_err
+ 				    ("%s: Can not allocate DPRAM memory for"
+ 					" p_tx_fw_statistics_pram.",
+-				       	__FUNCTION__);
++				       	__func__);
+ 			ucc_geth_memclean(ugeth);
+ 			return -ENOMEM;
+ 		}
+@@ -2932,7 +2932,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err
+ 			    ("%s: Can not allocate DPRAM memory for p_rx_glbl_pram.",
+-			     __FUNCTION__);
++			     __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -ENOMEM;
+ 	}
+@@ -2954,7 +2954,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err
+ 			    ("%s: Can not allocate DPRAM memory for p_thread_data_rx.",
+-			     __FUNCTION__);
++			     __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -ENOMEM;
+ 	}
+@@ -2978,7 +2978,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 			if (netif_msg_ifup(ugeth))
+ 				ugeth_err
+ 					("%s: Can not allocate DPRAM memory for"
+-					" p_rx_fw_statistics_pram.", __FUNCTION__);
++					" p_rx_fw_statistics_pram.", __func__);
+ 			ucc_geth_memclean(ugeth);
+ 			return -ENOMEM;
+ 		}
+@@ -3001,7 +3001,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err
+ 			    ("%s: Can not allocate DPRAM memory for"
+-				" p_rx_irq_coalescing_tbl.", __FUNCTION__);
++				" p_rx_irq_coalescing_tbl.", __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -ENOMEM;
+ 	}
+@@ -3070,7 +3070,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err
+ 			    ("%s: Can not allocate DPRAM memory for p_rx_bd_qs_tbl.",
+-			     __FUNCTION__);
++			     __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -ENOMEM;
+ 	}
+@@ -3147,7 +3147,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		if (!ug_info->extendedFilteringChainPointer) {
+ 			if (netif_msg_ifup(ugeth))
+ 				ugeth_err("%s: Null Extended Filtering Chain Pointer.",
+-					  __FUNCTION__);
++					  __func__);
+ 			ucc_geth_memclean(ugeth);
+ 			return -EINVAL;
+ 		}
+@@ -3161,7 +3161,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 			if (netif_msg_ifup(ugeth))
+ 				ugeth_err
+ 					("%s: Can not allocate DPRAM memory for"
+-					" p_exf_glbl_param.", __FUNCTION__);
++					" p_exf_glbl_param.", __func__);
+ 			ucc_geth_memclean(ugeth);
+ 			return -ENOMEM;
+ 		}
+@@ -3209,7 +3209,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err
+ 			    ("%s: Can not allocate memory for"
+-				" p_UccInitEnetParamShadows.", __FUNCTION__);
++				" p_UccInitEnetParamShadows.", __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -ENOMEM;
+ 	}
+@@ -3244,7 +3244,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		QE_FLTR_LARGEST_EXTERNAL_TABLE_LOOKUP_KEY_SIZE_16_BYTES)) {
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err("%s: Invalid largest External Lookup Key Size.",
+-				  __FUNCTION__);
++				  __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -EINVAL;
+ 	}
+@@ -3271,7 +3271,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		ug_info->riscRx, 1)) != 0) {
+ 		if (netif_msg_ifup(ugeth))
+ 				ugeth_err("%s: Can not fill p_init_enet_param_shadow.",
+-					__FUNCTION__);
++					__func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return ret_val;
+ 	}
+@@ -3287,7 +3287,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 				    ug_info->riscTx, 0)) != 0) {
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err("%s: Can not fill p_init_enet_param_shadow.",
+-				  __FUNCTION__);
++				  __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return ret_val;
+ 	}
+@@ -3297,7 +3297,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		if ((ret_val = rx_bd_buffer_set(ugeth, (u8) i)) != 0) {
+ 			if (netif_msg_ifup(ugeth))
+ 				ugeth_err("%s: Can not fill Rx bds with buffers.",
+-					  __FUNCTION__);
++					  __func__);
+ 			ucc_geth_memclean(ugeth);
+ 			return ret_val;
+ 		}
+@@ -3309,7 +3309,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err
+ 			    ("%s: Can not allocate DPRAM memory for p_init_enet_pram.",
+-			     __FUNCTION__);
++			     __func__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -ENOMEM;
+ 	}
+@@ -3360,7 +3360,7 @@ static void ucc_geth_timeout(struct net_device *dev)
+ {
+ 	struct ucc_geth_private *ugeth = netdev_priv(dev);
+ 
+-	ugeth_vdbg("%s: IN", __FUNCTION__);
++	ugeth_vdbg("%s: IN", __func__);
+ 
+ 	dev->stats.tx_errors++;
+ 
+@@ -3386,7 +3386,7 @@ static int ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	u32 bd_status;
+ 	u8 txQ = 0;
+ 
+-	ugeth_vdbg("%s: IN", __FUNCTION__);
++	ugeth_vdbg("%s: IN", __func__);
+ 
+ 	spin_lock_irq(&ugeth->lock);
+ 
+@@ -3459,7 +3459,7 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
+ 	u8 *bdBuffer;
+ 	struct net_device *dev;
+ 
+-	ugeth_vdbg("%s: IN", __FUNCTION__);
++	ugeth_vdbg("%s: IN", __func__);
+ 
+ 	dev = ugeth->dev;
+ 
+@@ -3481,7 +3481,7 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
+ 		    (bd_status & R_ERRORS_FATAL)) {
+ 			if (netif_msg_rx_err(ugeth))
+ 				ugeth_err("%s, %d: ERROR!!! skb - 0x%08x",
+-					   __FUNCTION__, __LINE__, (u32) skb);
++					   __func__, __LINE__, (u32) skb);
+ 			if (skb)
+ 				dev_kfree_skb_any(skb);
+ 
+@@ -3507,7 +3507,7 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
+ 		skb = get_new_skb(ugeth, bd);
+ 		if (!skb) {
+ 			if (netif_msg_rx_err(ugeth))
+-				ugeth_warn("%s: No Rx Data Buffer", __FUNCTION__);
++				ugeth_warn("%s: No Rx Data Buffer", __func__);
+ 			dev->stats.rx_dropped++;
+ 			break;
+ 		}
+@@ -3613,7 +3613,7 @@ static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
+ 	register u32 tx_mask;
+ 	u8 i;
+ 
+-	ugeth_vdbg("%s: IN", __FUNCTION__);
++	ugeth_vdbg("%s: IN", __func__);
+ 
+ 	uccf = ugeth->uccf;
+ 	ug_info = ugeth->ug_info;
+@@ -3683,13 +3683,13 @@ static int ucc_geth_open(struct net_device *dev)
+ 	struct ucc_geth_private *ugeth = netdev_priv(dev);
+ 	int err;
+ 
+-	ugeth_vdbg("%s: IN", __FUNCTION__);
++	ugeth_vdbg("%s: IN", __func__);
+ 
+ 	/* Test station address */
+ 	if (dev->dev_addr[0] & ENET_GROUP_ADDR) {
+ 		if (netif_msg_ifup(ugeth))
+ 			ugeth_err("%s: Multicast address used for station address"
+-				  " - is this what you wanted?", __FUNCTION__);
++				  " - is this what you wanted?", __func__);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -3772,7 +3772,7 @@ static int ucc_geth_close(struct net_device *dev)
+ {
+ 	struct ucc_geth_private *ugeth = netdev_priv(dev);
+ 
+-	ugeth_vdbg("%s: IN", __FUNCTION__);
++	ugeth_vdbg("%s: IN", __func__);
+ 
+ 	napi_disable(&ugeth->napi);
+ 
+@@ -3840,7 +3840,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 		PHY_INTERFACE_MODE_TBI, PHY_INTERFACE_MODE_RTBI,
+ 	};
+ 
+-	ugeth_vdbg("%s: IN", __FUNCTION__);
++	ugeth_vdbg("%s: IN", __func__);
+ 
+ 	prop = of_get_property(np, "cell-index", NULL);
+ 	if (!prop) {
+@@ -3857,7 +3857,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 	if (ug_info == NULL) {
+ 		if (netif_msg_probe(&debug))
+ 			ugeth_err("%s: [%d] Missing additional data!",
+-				       	__FUNCTION__, ucc_num);
++				       	__func__, ucc_num);
+ 		return -ENODEV;
+ 	}
+ 
+diff --git a/drivers/net/usb/mcs7830.c b/drivers/net/usb/mcs7830.c
+index c3d119f..aa1ab82 100644
+--- a/drivers/net/usb/mcs7830.c
++++ b/drivers/net/usb/mcs7830.c
+@@ -114,7 +114,7 @@ static void mcs7830_async_cmd_callback(struct urb *urb)
+ 
+ 	if (urb->status < 0)
+ 		printk(KERN_DEBUG "%s() failed with %d\n",
+-		       __FUNCTION__, urb->status);
++		       __func__, urb->status);
+ 
+ 	kfree(req);
+ 	usb_free_urb(urb);
+diff --git a/drivers/net/usb/pegasus.c b/drivers/net/usb/pegasus.c
+index b588c89..e4bd621 100644
+--- a/drivers/net/usb/pegasus.c
++++ b/drivers/net/usb/pegasus.c
+@@ -119,7 +119,7 @@ static void ctrl_callback(struct urb *urb)
+ 	default:
+ 		if (netif_msg_drv(pegasus))
+ 			dev_dbg(&pegasus->intf->dev, "%s, status %d\n",
+-				__FUNCTION__, urb->status);
++				__func__, urb->status);
+ 	}
+ 	pegasus->flags &= ~ETH_REGS_CHANGED;
+ 	wake_up(&pegasus->ctrl_wait);
+@@ -136,7 +136,7 @@ static int get_registers(pegasus_t * pegasus, __u16 indx, __u16 size,
+ 	if (!buffer) {
+ 		if (netif_msg_drv(pegasus))
+ 			dev_warn(&pegasus->intf->dev, "out of memory in %s\n",
+-					__FUNCTION__);
++					__func__);
+ 		return -ENOMEM;
+ 	}
+ 	add_wait_queue(&pegasus->ctrl_wait, &wait);
+@@ -168,7 +168,7 @@ static int get_registers(pegasus_t * pegasus, __u16 indx, __u16 size,
+ 			netif_device_detach(pegasus->net);
+ 		if (netif_msg_drv(pegasus))
+ 			dev_err(&pegasus->intf->dev, "%s, status %d\n",
+-					__FUNCTION__, ret);
++					__func__, ret);
+ 		goto out;
+ 	}
+ 
+@@ -192,7 +192,7 @@ static int set_registers(pegasus_t * pegasus, __u16 indx, __u16 size,
+ 	if (!buffer) {
+ 		if (netif_msg_drv(pegasus))
+ 			dev_warn(&pegasus->intf->dev, "out of memory in %s\n",
+-					__FUNCTION__);
++					__func__);
+ 		return -ENOMEM;
+ 	}
+ 	memcpy(buffer, data, size);
+@@ -224,7 +224,7 @@ static int set_registers(pegasus_t * pegasus, __u16 indx, __u16 size,
+ 			netif_device_detach(pegasus->net);
+ 		if (netif_msg_drv(pegasus))
+ 			dev_err(&pegasus->intf->dev, "%s, status %d\n",
+-					__FUNCTION__, ret);
++					__func__, ret);
+ 		goto out;
+ 	}
+ 
+@@ -246,7 +246,7 @@ static int set_register(pegasus_t * pegasus, __u16 indx, __u8 data)
+ 	if (!tmp) {
+ 		if (netif_msg_drv(pegasus))
+ 			dev_warn(&pegasus->intf->dev, "out of memory in %s\n",
+-					__FUNCTION__);
++					__func__);
+ 		return -ENOMEM;
+ 	}
+ 	memcpy(tmp, &data, 1);
+@@ -277,7 +277,7 @@ static int set_register(pegasus_t * pegasus, __u16 indx, __u8 data)
+ 			netif_device_detach(pegasus->net);
+ 		if (netif_msg_drv(pegasus))
+ 			dev_err(&pegasus->intf->dev, "%s, status %d\n",
+-					__FUNCTION__, ret);
++					__func__, ret);
+ 		goto out;
+ 	}
+ 
+@@ -310,7 +310,7 @@ static int update_eth_regs_async(pegasus_t * pegasus)
+ 			netif_device_detach(pegasus->net);
+ 		if (netif_msg_drv(pegasus))
+ 			dev_err(&pegasus->intf->dev, "%s, status %d\n",
+-					__FUNCTION__, ret);
++					__func__, ret);
+ 	}
+ 
+ 	return ret;
+@@ -341,7 +341,7 @@ static int read_mii_word(pegasus_t * pegasus, __u8 phy, __u8 indx, __u16 * regd)
+ 	}
+ fail:
+ 	if (netif_msg_drv(pegasus))
+-		dev_warn(&pegasus->intf->dev, "%s failed\n", __FUNCTION__);
++		dev_warn(&pegasus->intf->dev, "%s failed\n", __func__);
+ 
+ 	return ret;
+ }
+@@ -378,7 +378,7 @@ static int write_mii_word(pegasus_t * pegasus, __u8 phy, __u8 indx, __u16 regd)
+ 
+ fail:
+ 	if (netif_msg_drv(pegasus))
+-		dev_warn(&pegasus->intf->dev, "%s failed\n", __FUNCTION__);
++		dev_warn(&pegasus->intf->dev, "%s failed\n", __func__);
+ 	return -ETIMEDOUT;
+ }
+ 
+@@ -415,7 +415,7 @@ static int read_eprom_word(pegasus_t * pegasus, __u8 index, __u16 * retdata)
+ 
+ fail:
+ 	if (netif_msg_drv(pegasus))
+-		dev_warn(&pegasus->intf->dev, "%s failed\n", __FUNCTION__);
++		dev_warn(&pegasus->intf->dev, "%s failed\n", __func__);
+ 	return -ETIMEDOUT;
+ }
+ 
+@@ -463,7 +463,7 @@ static int write_eprom_word(pegasus_t * pegasus, __u8 index, __u16 data)
+ 		return ret;
+ fail:
+ 	if (netif_msg_drv(pegasus))
+-		dev_warn(&pegasus->intf->dev, "%s failed\n", __FUNCTION__);
++		dev_warn(&pegasus->intf->dev, "%s failed\n", __func__);
+ 	return -ETIMEDOUT;
+ }
+ #endif				/* PEGASUS_WRITE_EEPROM */
+diff --git a/drivers/net/usb/rtl8150.c b/drivers/net/usb/rtl8150.c
+index df56a51..8474fb5 100644
+--- a/drivers/net/usb/rtl8150.c
++++ b/drivers/net/usb/rtl8150.c
+@@ -665,7 +665,7 @@ static int enable_net_traffic(rtl8150_t * dev)
+ 	u8 cr, tcr, rcr, msr;
+ 
+ 	if (!rtl8150_reset(dev)) {
+-		warn("%s - device reset failed", __FUNCTION__);
++		warn("%s - device reset failed", __func__);
+ 	}
+ 	/* RCR bit7=1 attach Rx info at the end;  =0 HW CRC (which is broken) */
+ 	rcr = 0x9e;
+@@ -783,7 +783,7 @@ static int rtl8150_open(struct net_device *netdev)
+ 	if ((res = usb_submit_urb(dev->rx_urb, GFP_KERNEL))) {
+ 		if (res == -ENODEV)
+ 			netif_device_detach(dev->netdev);
+-		warn("%s: rx_urb submit failed: %d", __FUNCTION__, res);
++		warn("%s: rx_urb submit failed: %d", __func__, res);
+ 		return res;
+ 	}
+ 	usb_fill_int_urb(dev->intr_urb, dev->udev, usb_rcvintpipe(dev->udev, 3),
+@@ -792,7 +792,7 @@ static int rtl8150_open(struct net_device *netdev)
+ 	if ((res = usb_submit_urb(dev->intr_urb, GFP_KERNEL))) {
+ 		if (res == -ENODEV)
+ 			netif_device_detach(dev->netdev);
+-		warn("%s: intr_urb submit failed: %d", __FUNCTION__, res);
++		warn("%s: intr_urb submit failed: %d", __func__, res);
+ 		usb_kill_urb(dev->rx_urb);
+ 		return res;
+ 	}
+diff --git a/drivers/net/via-velocity.h b/drivers/net/via-velocity.h
+index 8644614..bf4214b 100644
+--- a/drivers/net/via-velocity.h
++++ b/drivers/net/via-velocity.h
+@@ -1381,7 +1381,7 @@ enum velocity_msg_level {
+ #define ASSERT(x) { \
+ 	if (!(x)) { \
+ 		printk(KERN_ERR "assertion %s failed: file %s line %d\n", #x,\
+-			__FUNCTION__, __LINE__);\
++			__func__, __LINE__);\
+ 		BUG(); \
+ 	}\
+ }
+diff --git a/drivers/net/wan/cycx_drv.c b/drivers/net/wan/cycx_drv.c
+index d14e667..a5ddc6c 100644
+--- a/drivers/net/wan/cycx_drv.c
++++ b/drivers/net/wan/cycx_drv.c
+@@ -407,7 +407,7 @@ static int load_cyc2x(struct cycx_hw *hw, struct cycx_firmware *cfm, u32 len)
+ 	if (cfm->version != CFM_VERSION) {
+ 		printk(KERN_ERR "%s:%s: firmware format %u rejected! "
+ 				"Expecting %u.\n",
+-				modname, __FUNCTION__, cfm->version, CFM_VERSION);
++				modname, __func__, cfm->version, CFM_VERSION);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -420,7 +420,7 @@ static int load_cyc2x(struct cycx_hw *hw, struct cycx_firmware *cfm, u32 len)
+ */
+ 	if (cksum != cfm->checksum) {
+ 		printk(KERN_ERR "%s:%s: firmware corrupted!\n",
+-				modname, __FUNCTION__);
++				modname, __func__);
+ 		printk(KERN_ERR " cdsize = 0x%x (expected 0x%lx)\n",
+ 				len - (int)sizeof(struct cycx_firmware) - 1,
+ 				cfm->info.codesize);
+@@ -432,7 +432,7 @@ static int load_cyc2x(struct cycx_hw *hw, struct cycx_firmware *cfm, u32 len)
+ 	/* If everything is ok, set reset, data and code pointers */
+ 	img_hdr = (struct cycx_fw_header *)&cfm->image;
+ #ifdef FIRMWARE_DEBUG
+-	printk(KERN_INFO "%s:%s: image sizes\n", __FUNCTION__, modname);
++	printk(KERN_INFO "%s:%s: image sizes\n", __func__, modname);
+ 	printk(KERN_INFO " reset=%lu\n", img_hdr->reset_size);
+ 	printk(KERN_INFO "  data=%lu\n", img_hdr->data_size);
+ 	printk(KERN_INFO "  code=%lu\n", img_hdr->code_size);
+diff --git a/drivers/net/wan/cycx_x25.c b/drivers/net/wan/cycx_x25.c
+index d3b28b0..5a7303d 100644
+--- a/drivers/net/wan/cycx_x25.c
++++ b/drivers/net/wan/cycx_x25.c
+@@ -874,7 +874,7 @@ static void cycx_x25_irq_connect(struct cycx_device *card,
+ 		nibble_to_byte(d + (sizeloc >> 1), rem, sizerem, sizeloc & 1);
+ 
+ 	dprintk(1, KERN_INFO "%s:lcn=%d, local=%s, remote=%s\n",
+-			  __FUNCTION__, lcn, loc, rem);
++			  __func__, lcn, loc, rem);
+ 
+ 	dev = cycx_x25_get_dev_by_dte_addr(wandev, rem);
+ 	if (!dev) {
+@@ -902,7 +902,7 @@ static void cycx_x25_irq_connect_confirm(struct cycx_device *card,
+ 	cycx_peek(&card->hw, cmd->buf, &lcn, sizeof(lcn));
+ 	cycx_peek(&card->hw, cmd->buf + 1, &key, sizeof(key));
+ 	dprintk(1, KERN_INFO "%s: %s:lcn=%d, key=%d\n",
+-			  card->devname, __FUNCTION__, lcn, key);
++			  card->devname, __func__, lcn, key);
+ 
+ 	dev = cycx_x25_get_dev_by_lcn(wandev, -key);
+ 	if (!dev) {
+@@ -929,7 +929,7 @@ static void cycx_x25_irq_disconnect_confirm(struct cycx_device *card,
+ 
+ 	cycx_peek(&card->hw, cmd->buf, &lcn, sizeof(lcn));
+ 	dprintk(1, KERN_INFO "%s: %s:lcn=%d\n",
+-			  card->devname, __FUNCTION__, lcn);
++			  card->devname, __func__, lcn);
+ 	dev = cycx_x25_get_dev_by_lcn(wandev, lcn);
+ 	if (!dev) {
+ 		/* Invalid channel, discard packet */
+@@ -950,7 +950,7 @@ static void cycx_x25_irq_disconnect(struct cycx_device *card,
+ 	u8 lcn;
+ 
+ 	cycx_peek(&card->hw, cmd->buf, &lcn, sizeof(lcn));
+-	dprintk(1, KERN_INFO "%s:lcn=%d\n", __FUNCTION__, lcn);
++	dprintk(1, KERN_INFO "%s:lcn=%d\n", __func__, lcn);
+ 
+ 	dev = cycx_x25_get_dev_by_lcn(wandev, lcn);
+ 	if (dev) {
+@@ -1381,7 +1381,7 @@ static void cycx_x25_chan_timer(unsigned long d)
+ 		cycx_x25_chan_disconnect(dev);
+ 	else
+ 		printk(KERN_ERR "%s: %s for svc (%s) not connected!\n",
+-				chan->card->devname, __FUNCTION__, dev->name);
++				chan->card->devname, __func__, dev->name);
+ }
+ 
+ /* Set logical channel state. */
+@@ -1485,7 +1485,7 @@ static void cycx_x25_chan_send_event(struct net_device *dev, u8 event)
+ 	unsigned char *ptr;
+ 
+ 	if ((skb = dev_alloc_skb(1)) == NULL) {
+-		printk(KERN_ERR "%s: out of memory\n", __FUNCTION__);
++		printk(KERN_ERR "%s: out of memory\n", __func__);
+ 		return;
+ 	}
+ 
+diff --git a/drivers/net/wan/dscc4.c b/drivers/net/wan/dscc4.c
+index 50ef5b4..7230a61 100644
+--- a/drivers/net/wan/dscc4.c
++++ b/drivers/net/wan/dscc4.c
+@@ -648,7 +648,7 @@ static inline void dscc4_rx_skb(struct dscc4_dev_priv *dpriv,
+ 
+ 	skb = dpriv->rx_skbuff[dpriv->rx_current++%RX_RING_SIZE];
+ 	if (!skb) {
+-		printk(KERN_DEBUG "%s: skb=0 (%s)\n", dev->name, __FUNCTION__);
++		printk(KERN_DEBUG "%s: skb=0 (%s)\n", dev->name, __func__);
+ 		goto refill;
+ 	}
+ 	pkt_len = TO_SIZE(le32_to_cpu(rx_fd->state2));
+diff --git a/drivers/net/wan/pc300_tty.c b/drivers/net/wan/pc300_tty.c
+index 4518d0a..4917a94 100644
+--- a/drivers/net/wan/pc300_tty.c
++++ b/drivers/net/wan/pc300_tty.c
+@@ -548,7 +548,7 @@ static int pc300_tiocmset(struct tty_struct *tty, struct file *file,
+ {
+ 	st_cpc_tty_area    *cpc_tty; 
+ 
+-	CPC_TTY_DBG("%s: set:%x clear:%x\n", __FUNCTION__, set, clear);
++	CPC_TTY_DBG("%s: set:%x clear:%x\n", __func__, set, clear);
+ 
+ 	if (!tty || !tty->driver_data ) {
+ 	   	CPC_TTY_DBG("hdlcX-tty: no TTY to chars in buffer\n");	
 -- 
 1.6.0.rc1.154.ge3fc
 
