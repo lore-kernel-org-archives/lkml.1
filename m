@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbYG2AhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbYG2Aha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754824AbYG2AhH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 20:37:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYG2Ag4
+	id S1755143AbYG2Aha (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 20:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbYG2AhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 20:36:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39902 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751610AbYG2Ag4 (ORCPT
+	Mon, 28 Jul 2008 20:37:11 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:35396 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754800AbYG2AhJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 20:36:56 -0400
-Date: Mon, 28 Jul 2008 17:33:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Johannes Weiner <hannes@saeurebad.de>
-cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linuxfoundation.org,
-       torvalds@linuxfoundation.org, npiggin@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: do not overrun page table ranges in gup
-In-Reply-To: <87tze95yrk.fsf@saeurebad.de>
-Message-ID: <alpine.LFD.1.10.0807281721200.3486@nehalem.linux-foundation.org>
-References: <20080728184947.GA5041@martell.zuzino.mipt.ru> <20080728185316.GA19479@martell.zuzino.mipt.ru> <87y73l5zlj.fsf_-_@saeurebad.de> <87tze95yrk.fsf@saeurebad.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 28 Jul 2008 20:37:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=jk3djaYBDLiLCDj/Y6TnT2DfR24Q7USu7VO3iDdyN7iXUZpX413LIU9AoNCh8gffqo
+         WZ33AzpgmnU8cMD6RLo/itKkgGFSXNLn+JHPSpMhj8GfsIFLRByk5EUtjNWP02AeMRN4
+         G9ZM06Qej5xcS2q968m2D+usS1nElNsToNi7w=
+Subject: [PATCH] omfs: fix sparse signedness warnings
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Bob Copeland <me@bobcopeland.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 28 Jul 2008 17:37:08 -0700
+Message-Id: <1217291828.23389.2.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+fs/omfs/bitmap.c:74:18: warning: incorrect type in argument 2 (different signedness)
+fs/omfs/bitmap.c:74:18:    expected unsigned long volatile *addr
+fs/omfs/bitmap.c:74:18:    got long *<noident>
+fs/omfs/bitmap.c:77:20: warning: incorrect type in argument 2 (different signedness)
+fs/omfs/bitmap.c:77:20:    expected unsigned long volatile *addr
+fs/omfs/bitmap.c:77:20:    got long *<noident>
+fs/omfs/bitmap.c:112:17: warning: incorrect type in argument 2 (different signedness)
+fs/omfs/bitmap.c:112:17:    expected unsigned long volatile *addr
+fs/omfs/bitmap.c:112:17:    got long *<noident>
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Sorry, missed these in my other sparse warning fixes, feel free to fold it
+with the other one.
+
+ fs/omfs/bitmap.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/fs/omfs/bitmap.c b/fs/omfs/bitmap.c
+index dc75f22..697663b 100644
+--- a/fs/omfs/bitmap.c
++++ b/fs/omfs/bitmap.c
+@@ -71,10 +71,10 @@ static int set_run(struct super_block *sb, int map,
+ 		}
+ 		if (set) {
+ 			set_bit(bit, sbi->s_imap[map]);
+-			set_bit(bit, (long *) bh->b_data);
++			set_bit(bit, (unsigned long *)bh->b_data);
+ 		} else {
+ 			clear_bit(bit, sbi->s_imap[map]);
+-			clear_bit(bit, (long *) bh->b_data);
++			clear_bit(bit, (unsigned long *)bh->b_data);
+ 		}
+ 	}
+ 	mark_buffer_dirty(bh);
+@@ -109,7 +109,7 @@ int omfs_allocate_block(struct super_block *sb, u64 block)
+ 		if (!bh)
+ 			goto out;
+ 
+-		set_bit(bit, (long *) bh->b_data);
++		set_bit(bit, (unsigned long *)bh->b_data);
+ 		mark_buffer_dirty(bh);
+ 		brelse(bh);
+ 	}
+-- 
+1.6.0.rc1.154.ge3fc
 
 
-On Tue, 29 Jul 2008, Johannes Weiner wrote:
-> 
-> Actually, I think the prettier fix would be to just establish that
-> garuantee:
->
-> --- a/arch/x86/mm/gup.c
-> +++ b/arch/x86/mm/gup.c
-> @@ -223,7 +223,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
->  			struct page **pages)
->  {
->  	struct mm_struct *mm = current->mm;
-> -	unsigned long end = start + (nr_pages << PAGE_SHIFT);
-> +	unsigned long end = PAGE_ALIGN(start + (nr_pages << PAGE_SHIFT));
 
-Umm. 'end' is guaranteed to be page-aligned if 'start' is. 
-
-So if this makes a difference, that implies that _start_ isn't 
-page-aligned, and then you when you add PAGE_SIZE to 'addr', you are going 
-to miss 'end' again.
-
-So no, the right fix would be to align 'start' first, which means that 
-everything else (including 'end') will be page-aligned. Aligning just one 
-or the other is very very wrong.
-
-But yeah, this looks like a nasty bug. It's also sad that the code 
-that _should_ be architecture-independent, isn't - because every 
-architecture defines the _whole_ "get_user_pages_fast()", even though part 
-of it is very much arch-independent (the whole alignment/access_ok part).
-
-It also shows a bug in that whole "access_ok()" check. The fact is, that 
-thing is broken too - for the same reason. If you want to get a single 
-page at the end of the address space, but don't use an aligned address, 
-the "access_ok()" will fail.
-
-Nick, how do you want to fix this? I was just about to cut an -rc1, but I 
-would really like to see this one not make it into it..
-
-		Linus
