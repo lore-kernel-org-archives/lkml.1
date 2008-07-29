@@ -1,111 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbYG2KL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758479AbYG2KLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758220AbYG2KL1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 06:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbYG2KKj
+	id S1758479AbYG2KLm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 06:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758171AbYG2KLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 06:10:39 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:3578 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755992AbYG2KKi (ORCPT
+	Tue, 29 Jul 2008 06:11:13 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36722 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758162AbYG2KLL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 06:10:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=QTV/mWRuyZhEbntzbVjPG6Vecz/yqq4TQ5uzZkfGCVFFBNJoyw2Drzk56fDstfj06A
-         +PI2VCp+x2wUrfeDBHrMkfR/JRpb/F3eSg8R1qN4VmEuKgCBHv6nEaZ5VbSjeKcVwwCC
-         dl6GwfSiQXddflDRVCrww01cVJeZb/0WYtAzI=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: printk_time to use tsc before cpu_clock is ready
-Date: Tue, 29 Jul 2008 03:09:44 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200807290308.35230.yhlu.kernel@gmail.com>
-In-Reply-To: <200807290308.35230.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 29 Jul 2008 06:11:11 -0400
+Date: Tue, 29 Jul 2008 10:53:50 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/13] proc tty: introduce ->proc_fops
+Message-ID: <20080729105350.009f5af0@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080729012908.GA3135@martell.zuzino.mipt.ru>
+References: <20080729012908.GA3135@martell.zuzino.mipt.ru>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807290309.44869.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 29 Jul 2008 05:29:08 +0400
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-so can get tsc value on printk
+> Add struct tty_operations:proc_fops .
+> 
+> The intent is gradual switch of TTY drivers from ->read_proc usage.
+> proc entries are created with proc_create_data() which even fixes
+> early-read races.
+> 
+> Eventually ->read_proc code will be removed from TTY code, thus helping
+> remove ->read_proc from whole proc code.
 
-need to apply after
-	[PATCH] printk_time: prepare stub for using other than cpu_clock
+I'm going to NAK this but not because I think the concept is wrong. I
+think the way its been done is perhaps wrong.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+You've added ifdefs to a lot of drivers and more basically duplicate
+code. Is there a reason you can't keep the ->read_proc method in the tty
+code but as a function called by a single instance of proc_fops and
+seq_file methods for the whole tty driver layer.
 
----
- arch/x86/kernel/cpu/common.c    |   11 +++++++++++
- arch/x86/kernel/cpu/common_64.c |   12 ++++++++++++
- 2 files changed, 23 insertions(+)
+Ie have a single tty seq_file method that calls driver->ops->read_proc as
+the seqfile iterator ?
 
-Index: linux-2.6/arch/x86/kernel/cpu/common.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/common.c
-+++ linux-2.6/arch/x86/kernel/cpu/common.c
-@@ -617,6 +617,15 @@ __setup("clearcpuid=", setup_disablecpui
- 
- cpumask_t cpu_initialized __cpuinitdata = CPU_MASK_NONE;
- 
-+static unsigned long long tsc_clock(int cpu)
-+{
-+	unsigned long long t;
-+
-+	rdtscll(t);
-+
-+	return t;
-+}
-+
- void __init early_cpu_init(void)
- {
- 	struct cpu_vendor_dev *cvdev;
-@@ -627,6 +636,8 @@ void __init early_cpu_init(void)
- 		cpu_devs[cvdev->vendor] = cvdev->cpu_dev;
- 
- 	early_cpu_detect();
-+	if (cpu_has_tsc)
-+		set_printk_time_clock(tsc_clock);
- 	validate_pat_support(&boot_cpu_data);
- }
- 
-Index: linux-2.6/arch/x86/kernel/cpu/common_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/common_64.c
-+++ linux-2.6/arch/x86/kernel/cpu/common_64.c
-@@ -215,6 +215,15 @@ static void __init early_cpu_support_pri
- 	}
- }
- 
-+static unsigned long long tsc_clock(int cpu)
-+{
-+	unsigned long long t;
-+
-+	rdtscll(t);
-+
-+	return t;
-+}
-+
- static void __cpuinit early_identify_cpu(struct cpuinfo_x86 *c);
- 
- void __init early_cpu_init(void)
-@@ -227,6 +236,9 @@ void __init early_cpu_init(void)
-                 cpu_devs[cvdev->vendor] = cvdev->cpu_dev;
- 	early_cpu_support_print();
- 	early_identify_cpu(&boot_cpu_data);
-+
-+	if (cpu_has_tsc)
-+		set_printk_time_clock(tsc_clock);
- }
- 
- /* Do some early cpuid on the boot CPU to get some parameter that are
+>  int count, int *eof, void *data);
+> +#ifdef CONFIG_PROC_FS
+> +	const struct file_operations *proc_fops;
+> +#endif
+
+I'd prefer you didn't put variables in the middle of the methods. Also
+the ifdef isn't needed. It's not worth one pointer to create a load of
+ifdefs
+
+Alan
