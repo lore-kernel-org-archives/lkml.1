@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759555AbYG2PQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbYG2PTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759555AbYG2PQf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 11:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbYG2PQ0
+	id S1756949AbYG2PTo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 11:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbYG2PTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 11:16:26 -0400
-Received: from mx2.suse.de ([195.135.220.15]:51422 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752426AbYG2PQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 11:16:25 -0400
-Date: Tue, 29 Jul 2008 08:13:52 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
-       Uwe.Kleine-Koenig@digi.com, akpm@linux-foundation.org,
-       lethal@linux-sh.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH][RESEND] uio: uio_pdrv_genirq V3
-Message-ID: <20080729151352.GA18556@suse.de>
-References: <20080729121015.13443.91824.sendpatchset@rx1.opensource.se> <20080729122806.GB2221@local>
+	Tue, 29 Jul 2008 11:19:36 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:35114 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751862AbYG2PTf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 11:19:35 -0400
+Date: Tue, 29 Jul 2008 11:18:30 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Alistair John Strachan <alistair@devzero.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dsd@gentoo.org, kune@deine-taler.de, linux-wireless@vger.kernel.org
+Subject: Re: 2.6.27-rc1: zd1211rw association fails
+Message-ID: <20080729151830.GA5126@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Alistair John Strachan <alistair@devzero.co.uk>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	dsd@gentoo.org, kune@deine-taler.de, linux-wireless@vger.kernel.org
+References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org> <200807291049.47342.alistair@devzero.co.uk> <1217326195.10489.10.camel@johannes.berg> <20080729120442.GE9378@mit.edu> <1217333359.10489.38.camel@johannes.berg> <1217333706.10489.40.camel@johannes.berg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080729122806.GB2221@local>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1217333706.10489.40.camel@johannes.berg>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 02:28:06PM +0200, Hans J. Koch wrote:
-> On Tue, Jul 29, 2008 at 09:10:15PM +0900, Magnus Damm wrote:
-> > From: Magnus Damm <damm@igel.co.jp>
-> > 
-> > This is V3 of uio_pdrv_genirq.c, a platform driver for UIO with
-> > generic IRQ handling code. This driver is very similar to the regular
-> > UIO platform driver, but is only suitable for devices that are
-> > connected to the interrupt controller using unique interrupt lines.
+On Tue, Jul 29, 2008 at 02:15:06PM +0200, Johannes Berg wrote:
+> > If everybody's going to decide now to hit on _me_, I'll point out that
+> > davem's MQ TX changes broke it
 > 
-> Hi Magnus,
-> I already sent this to Greg on July, 15. I guess this will be merged
-> soon. Greg was probably busy with tons of other stuff during the merge
-> window.
+> Of course that's not strictly true, it had been broken forever, it just
+> happened to never show up before. And I mean forever, the original
+> devicescape code that got in was already broken.
 
-Yeah, it's in my queue, which _sucks_ right now for movement:
-	$ mdfrm -c ~/mail/todo
-	594 messages in ~/mail/todo
+Sorry, no, I wasn't trying to blame you.  I understand that this was a
+hard problem to fix, and it wasn't at all obvious that changes in one
+part of the networking stack would break wireless stack due to bad
+assumptions it had made, that had been hiding for quite some time.
 
-I'm slowly digging out, I have to get through the -stable backlog first:
-	$ mdfrm -c ~/mail/todo-stable/
-	68 messages in ~/mail/todo-stable/
+The timing is just very unfortunate, since if -rc1 had been delayed by
+just one more day so it could have incorporated it we would probably
+reduce the large number of regression reports; a lot of people who
+test -rc1 don't necessarily follow netdev or linux-wireless.
 
-ah, for more time in a day...
+I'm of course also nervously building -rc1 and about to test it, since
+I haven't had a chance to test anything since -git6, and I'm wondering
+if some other regression may have been introduced since then.
 
-thanks for your patience,
+Since it probably doesn't get said enough to everyone who works of
+fixing bugs/regressions, thanks very much for your efforts; I (and
+many other people) very much appreciate it!!
 
-greg k-h
+						- Ted
