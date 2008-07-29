@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbYG2KYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbYG2K1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757006AbYG2KYQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 06:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754629AbYG2KYB
+	id S1757433AbYG2K1W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 06:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbYG2K1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 06:24:01 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45725 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754410AbYG2KYA (ORCPT
+	Tue, 29 Jul 2008 06:27:13 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:34307 "EHLO
+	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754761AbYG2K1L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 06:24:00 -0400
-Subject: Re: x86: Is there still value in having a special tlb flush IPI
-	vector?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <200807292017.42005.nickpiggin@yahoo.com.au>
-References: <488E534F.2030204@goop.org>
-	 <200807292000.30690.nickpiggin@yahoo.com.au>
-	 <1217325853.7563.5.camel@twins>
-	 <200807292017.42005.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Tue, 29 Jul 2008 12:23:43 +0200
-Message-Id: <1217327023.7563.8.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jul 2008 06:27:11 -0400
+X-BigFish: VPS-30(zz1432R98dR1805M936fQzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K4RJOY-04-C60-01
+Date: Tue, 29 Jul 2008 12:26:55 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: David Miller <davem@davemloft.net>
+CC: sfr@canb.auug.org.au, fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu,
+       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       robert.richter@amd.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, jbarnes@virtuousgeek.org,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] add iommu_num_pages helper function
+Message-ID: <20080729102655.GC4851@amd.com>
+References: <20080728.222439.176200666.davem@davemloft.net> <20080729164523.bfd2d539.sfr@canb.auug.org.au> <20080729095027.GA4851@amd.com> <20080729.031005.203132019.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080729.031005.203132019.davem@davemloft.net>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 29 Jul 2008 10:26:56.0001 (UTC) FILETIME=[A0187F10:01C8F165]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-29 at 20:17 +1000, Nick Piggin wrote:
-> On Tuesday 29 July 2008 20:04, Peter Zijlstra wrote:
-> > On Tue, 2008-07-29 at 20:00 +1000, Nick Piggin wrote:
-> > > On Tuesday 29 July 2008 19:54, Peter Zijlstra wrote:
-> > > > On Tue, 2008-07-29 at 14:30 +1000, Nick Piggin wrote:
-> > > > > Not to mention the minor problem that it still deadlocks when called
-> > > > > with interrupts disabled ;)
-> > > >
-> > > > __smp_call_function_single has potential though..
-> > >
-> > > For reschedule interrupt? I don't really agree.
-> >
-> > Not specifically, for not deadlocking from irq-off, more so.
+On Tue, Jul 29, 2008 at 03:10:05AM -0700, David Miller wrote:
+> From: Joerg Roedel <joerg.roedel@amd.com>
+> Date: Tue, 29 Jul 2008 11:50:27 +0200
 > 
-> Oh, well yes it already does work from irq-off, so it has already
-> realised its potential :)
+> > I think moving that function to x86-only code is the best solution for
+> > now. Before moving it back to generic code we need an architecture
+> > independent way to find out the IOMMU page size.
 > 
-> Not sure exactly what kinds of users it is going to attract, but
-> it should be interesting to see!
+> My suggestion (again) is to pass it in as a "const unsigned long
+> io_page_size" argument and update the callers.
 
-grep __smp_call_function_single kernel/sched.c
+Ok, this has the advantage that it supports more than one IOMMU page
+size per architecture and its also less intrusive.
 
+Joerg
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
