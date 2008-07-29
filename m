@@ -1,263 +1,254 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbYG2Fu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbYG2Fus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756726AbYG2Fu1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 01:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755480AbYG2Fs7
+	id S1756857AbYG2Fus (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 01:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbYG2FtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 01:48:59 -0400
-Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:55505 "EHLO
+	Tue, 29 Jul 2008 01:49:00 -0400
+Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:55506 "EHLO
 	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754735AbYG2Fs6 (ORCPT
+	with ESMTP id S1754959AbYG2Fs6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 Jul 2008 01:48:58 -0400
 From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu
-Subject: [PATCH 4/6] x86: coding style fixes to arch/x86/kernel/signal_64.c
-Date: Tue, 29 Jul 2008 02:48:54 -0300
-Message-Id: <1217310536-7181-5-git-send-email-gustavo@las.ic.unicamp.br>
+Subject: [PATCH 5/6] x86: coding style fixes to arch/x86/kernel/traps_64.c
+Date: Tue, 29 Jul 2008 02:48:55 -0300
+Message-Id: <1217310536-7181-6-git-send-email-gustavo@las.ic.unicamp.br>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217310536-7181-4-git-send-email-gustavo@las.ic.unicamp.br>
+In-Reply-To: <1217310536-7181-5-git-send-email-gustavo@las.ic.unicamp.br>
 References: <gustavo@las.ic.unicamp.br>
  <1217310536-7181-1-git-send-email-gustavo@las.ic.unicamp.br>
  <1217310536-7181-2-git-send-email-gustavo@las.ic.unicamp.br>
  <1217310536-7181-3-git-send-email-gustavo@las.ic.unicamp.br>
  <1217310536-7181-4-git-send-email-gustavo@las.ic.unicamp.br>
+ <1217310536-7181-5-git-send-email-gustavo@las.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix all errors and many warnings reported by checkpatch.pl
-without change signal_64.o
-
-arch/x86/kernel/signal_64.o
-text    data     bss     dec     hex filename
-5143       0       8    5151    141f signal_64.o.after
-5143       0       8    5151    141f signal_64.o.before
-md5:
-e68718092b3641cb27e79e55ce57e3ad  signal_64.o.after
-e68718092b3641cb27e79e55ce57e3ad  signal_64.o.before
+Fix all errors and many warnings reported by checkpath.pl.
+Except the change of include <asm/io.h> to <linux/io.h>
+the traps.o before and after changes are the same.
 
 Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
 ---
- arch/x86/kernel/sigframe.h  |    5 +++
- arch/x86/kernel/signal_64.c |   62 ++++++++++++++++++++----------------------
- 2 files changed, 35 insertions(+), 32 deletions(-)
+ arch/x86/kernel/traps_64.c |   59 +++++++++++++++++++++++--------------------
+ 1 files changed, 32 insertions(+), 27 deletions(-)
 
-diff --git a/arch/x86/kernel/sigframe.h b/arch/x86/kernel/sigframe.h
-index 72bbb51..8b4956e 100644
---- a/arch/x86/kernel/sigframe.h
-+++ b/arch/x86/kernel/sigframe.h
-@@ -24,4 +24,9 @@ struct rt_sigframe {
- 	struct ucontext uc;
- 	struct siginfo info;
- };
-+
-+int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
-+		sigset_t *set, struct pt_regs *regs);
-+int ia32_setup_frame(int sig, struct k_sigaction *ka,
-+		sigset_t *set, struct pt_regs *regs);
- #endif
-diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index b45ef8d..87a9c2f 100644
---- a/arch/x86/kernel/signal_64.c
-+++ b/arch/x86/kernel/signal_64.c
-@@ -19,9 +19,10 @@
- #include <linux/stddef.h>
- #include <linux/personality.h>
- #include <linux/compiler.h>
-+#include <linux/uaccess.h>
-+
- #include <asm/processor.h>
- #include <asm/ucontext.h>
--#include <asm/uaccess.h>
+diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
+index 3f18d73..fe36d96 100644
+--- a/arch/x86/kernel/traps_64.c
++++ b/arch/x86/kernel/traps_64.c
+@@ -32,6 +32,8 @@
+ #include <linux/bug.h>
+ #include <linux/nmi.h>
+ #include <linux/mm.h>
++#include <linux/smp.h>
++#include <linux/io.h>
+ 
+ #if defined(CONFIG_EDAC)
+ #include <linux/edac.h>
+@@ -45,9 +47,6 @@
+ #include <asm/unwind.h>
+ #include <asm/desc.h>
  #include <asm/i387.h>
+-#include <asm/nmi.h>
+-#include <asm/smp.h>
+-#include <asm/io.h>
+ #include <asm/pgalloc.h>
  #include <asm/proto.h>
- #include <asm/ia32_unistd.h>
-@@ -41,11 +42,6 @@
- # define FIX_EFLAGS	__FIX_EFLAGS
+ #include <asm/pda.h>
+@@ -85,7 +84,8 @@ static inline void preempt_conditional_cli(struct pt_regs *regs)
+ 
+ void printk_address(unsigned long address, int reliable)
+ {
+-	printk(" [<%016lx>] %s%pS\n", address, reliable ? "": "? ", (void *) address);
++	printk(" [<%016lx>] %s%pS\n", address, reliable ?
++			"" : "? ", (void *) address);
+ }
+ 
+ static unsigned long *in_exception_stack(unsigned cpu, unsigned long stack,
+@@ -98,7 +98,8 @@ static unsigned long *in_exception_stack(unsigned cpu, unsigned long stack,
+ 		[STACKFAULT_STACK - 1] = "#SS",
+ 		[MCE_STACK - 1] = "#MC",
+ #if DEBUG_STKSZ > EXCEPTION_STKSZ
+-		[N_EXCEPTION_STACKS ... N_EXCEPTION_STACKS + DEBUG_STKSZ / EXCEPTION_STKSZ - 2] = "#DB[?]"
++		[N_EXCEPTION_STACKS ... N_EXCEPTION_STACKS + DEBUG_STKSZ /
++			EXCEPTION_STKSZ - 2] = "#DB[?]"
+ #endif
+ 	};
+ 	unsigned k;
+@@ -163,7 +164,7 @@ static unsigned long *in_exception_stack(unsigned cpu, unsigned long stack,
+ }
+ 
+ /*
+- * x86-64 can have up to three kernel stacks: 
++ * x86-64 can have up to three kernel stacks:
+  * process stack
+  * interrupt stack
+  * severe exception (double fault, nmi, stack fault, debug, mce) hardware stack
+@@ -219,7 +220,7 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
+ 		const struct stacktrace_ops *ops, void *data)
+ {
+ 	const unsigned cpu = get_cpu();
+-	unsigned long *irqstack_end = (unsigned long*)cpu_pda(cpu)->irqstackptr;
++	unsigned long *irqstack_end = (unsigned long *)cpu_pda(cpu)->irqstackptr;
+ 	unsigned used = 0;
+ 	struct thread_info *tinfo;
+ 
+@@ -237,7 +238,7 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
+ 	if (!bp) {
+ 		if (task == current) {
+ 			/* Grab bp right from our regs */
+-			asm("movq %%rbp, %0" : "=r" (bp) :);
++			asm("movq %%rbp, %0" : "=r" (bp) : );
+ 		} else {
+ 			/* bp is the last reg pushed by switch_to */
+ 			bp = *(unsigned long *) task->thread.sp;
+@@ -357,11 +358,13 @@ show_stack_log_lvl(struct task_struct *task, struct pt_regs *regs,
+ 	unsigned long *stack;
+ 	int i;
+ 	const int cpu = smp_processor_id();
+-	unsigned long *irqstack_end = (unsigned long *) (cpu_pda(cpu)->irqstackptr);
+-	unsigned long *irqstack = (unsigned long *) (cpu_pda(cpu)->irqstackptr - IRQSTACKSIZE);
++	unsigned long *irqstack_end =
++		(unsigned long *) (cpu_pda(cpu)->irqstackptr);
++	unsigned long *irqstack =
++		(unsigned long *) (cpu_pda(cpu)->irqstackptr - IRQSTACKSIZE);
+ 
+-	// debugging aid: "show_stack(NULL, NULL);" prints the
+-	// back trace for this cpu.
++	/* debugging aid: "show_stack(NULL, NULL);" prints the
++	  back trace for this cpu. */
+ 
+ 	if (sp == NULL) {
+ 		if (task)
+@@ -404,7 +407,7 @@ void dump_stack(void)
+ 
+ #ifdef CONFIG_FRAME_POINTER
+ 	if (!bp)
+-		asm("movq %%rbp, %0" : "=r" (bp):);
++		asm("movq %%rbp, %0" : "=r" (bp) : );
  #endif
  
--int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
--               sigset_t *set, struct pt_regs * regs); 
--int ia32_setup_frame(int sig, struct k_sigaction *ka,
--            sigset_t *set, struct pt_regs * regs); 
+ 	printk("Pid: %d, comm: %.20s %s %s %.*s\n",
+@@ -414,7 +417,6 @@ void dump_stack(void)
+ 		init_utsname()->version);
+ 	show_trace(NULL, NULL, &stack, bp);
+ }
 -
- asmlinkage long
- sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
- 		struct pt_regs *regs)
-@@ -119,7 +115,7 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
- 	/* Always make any pending restarted system calls return -EINTR */
- 	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+ EXPORT_SYMBOL(dump_stack);
  
--#define COPY(x)		err |= __get_user(regs->x, &sc->x)
-+#define COPY(x)		(err |= __get_user(regs->x, &sc->x))
- 
- 	COPY(di); COPY(si); COPY(bp); COPY(sp); COPY(bx);
- 	COPY(dx); COPY(cx); COPY(ip);
-@@ -149,7 +145,7 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
- 	}
- 
- 	{
--		struct _fpstate __user * buf;
-+		struct _fpstate __user *buf;
- 		err |= __get_user(buf, &sc->fpstate);
- 
- 		if (buf) {
-@@ -189,7 +185,7 @@ asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
- 	current->blocked = set;
- 	recalc_sigpending();
- 	spin_unlock_irq(&current->sighand->siglock);
--	
-+
- 	if (restore_sigcontext(regs, &frame->uc.uc_mcontext, &ax))
- 		goto badframe;
- 
-@@ -199,16 +195,17 @@ asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
- 	return ax;
- 
- badframe:
--	signal_fault(regs,frame,"sigreturn");
-+	signal_fault(regs, frame, "sigreturn");
- 	return 0;
--}	
-+}
- 
- /*
-  * Set up a signal frame.
-  */
- 
- static inline int
--setup_sigcontext(struct sigcontext __user *sc, struct pt_regs *regs, unsigned long mask, struct task_struct *me)
-+setup_sigcontext(struct sigcontext __user *sc, struct pt_regs *regs,
-+		unsigned long mask, struct task_struct *me)
- {
- 	int err = 0;
- 
-@@ -264,35 +261,35 @@ get_stack(struct k_sigaction *ka, struct pt_regs *regs, unsigned long size)
- }
- 
- static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
--			   sigset_t *set, struct pt_regs * regs)
-+			   sigset_t *set, struct pt_regs *regs)
- {
- 	struct rt_sigframe __user *frame;
--	struct _fpstate __user *fp = NULL; 
-+	struct _fpstate __user *fp = NULL;
- 	int err = 0;
- 	struct task_struct *me = current;
- 
- 	if (used_math()) {
--		fp = get_stack(ka, regs, sizeof(struct _fpstate)); 
-+		fp = get_stack(ka, regs, sizeof(struct _fpstate));
- 		frame = (void __user *)round_down(
- 			(unsigned long)fp - sizeof(struct rt_sigframe), 16) - 8;
- 
- 		if (!access_ok(VERIFY_WRITE, fp, sizeof(struct _fpstate)))
- 			goto give_sigsegv;
- 
--		if (save_i387(fp) < 0) 
--			err |= -1; 
-+		if (save_i387(fp) < 0)
-+			err |= -1;
- 	} else
- 		frame = get_stack(ka, regs, sizeof(struct rt_sigframe)) - 8;
- 
- 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
- 		goto give_sigsegv;
- 
--	if (ka->sa.sa_flags & SA_SIGINFO) { 
-+	if (ka->sa.sa_flags & SA_SIGINFO) {
- 		err |= copy_siginfo_to_user(&frame->info, info);
- 		if (err)
- 			goto give_sigsegv;
- 	}
--		
-+
- 	/* Create the ucontext.  */
- 	err |= __put_user(0, &frame->uc.uc_flags);
- 	err |= __put_user(0, &frame->uc.uc_link);
-@@ -302,9 +299,9 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	err |= __put_user(me->sas_ss_size, &frame->uc.uc_stack.ss_size);
- 	err |= setup_sigcontext(&frame->uc.uc_mcontext, regs, set->sig[0], me);
- 	err |= __put_user(fp, &frame->uc.uc_mcontext.fpstate);
--	if (sizeof(*set) == 16) { 
-+	if (sizeof(*set) == 16) {
- 		__put_user(set->sig[0], &frame->uc.uc_sigmask.sig[0]);
--		__put_user(set->sig[1], &frame->uc.uc_sigmask.sig[1]); 
-+		__put_user(set->sig[1], &frame->uc.uc_sigmask.sig[1]);
- 	} else
- 		err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
- 
-@@ -315,7 +312,7 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 		err |= __put_user(ka->sa.sa_restorer, &frame->pretcode);
- 	} else {
- 		/* could use a vstub here */
--		goto give_sigsegv; 
-+		goto give_sigsegv;
- 	}
- 
- 	if (err)
-@@ -323,7 +320,7 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 
- 	/* Set up registers for signal handler */
- 	regs->di = sig;
--	/* In case the signal handler was declared without prototypes */ 
-+	/* In case the signal handler was declared without prototypes */
- 	regs->ax = 0;
- 
- 	/* This also works for non SA_SIGINFO handlers because they expect the
-@@ -376,7 +373,7 @@ static long current_syscall_ret(struct pt_regs *regs)
- 
- /*
-  * OK, we're invoking a handler
-- */	
-+ */
- 
- static int
- handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
-@@ -420,7 +417,7 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
- 			ret = ia32_setup_rt_frame(sig, ka, info, oldset, regs);
+ void show_registers(struct pt_regs *regs)
+@@ -493,7 +495,7 @@ unsigned __kprobes long oops_begin(void)
+ 	raw_local_irq_save(flags);
+ 	cpu = smp_processor_id();
+ 	if (!__raw_spin_trylock(&die_lock)) {
+-		if (cpu == die_owner) 
++		if (cpu == die_owner)
+ 			/* nested oops. should stop eventually */;
  		else
- 			ret = ia32_setup_frame(sig, ka, oldset, regs);
--	} else 
-+	} else
- #endif
- 	ret = setup_rt_frame(sig, ka, info, oldset, regs);
- 
-@@ -448,9 +445,9 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
- 			ptrace_notify(SIGTRAP);
- 
- 		spin_lock_irq(&current->sighand->siglock);
--		sigorsets(&current->blocked,&current->blocked,&ka->sa.sa_mask);
-+		sigorsets(&current->blocked, &current->blocked, &ka->sa.sa_mask);
- 		if (!(ka->sa.sa_flags & SA_NODEFER))
--			sigaddset(&current->blocked,sig);
-+			sigaddset(&current->blocked, sig);
- 		recalc_sigpending();
- 		spin_unlock_irq(&current->sighand->siglock);
- 	}
-@@ -552,14 +549,15 @@ void do_notify_resume(struct pt_regs *regs, void *unused,
+ 			__raw_spin_lock(&die_lock);
+@@ -638,7 +640,7 @@ kernel_trap:
  }
  
- void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
--{ 
--	struct task_struct *me = current; 
-+{
-+	struct task_struct *me = current;
- 	if (show_unhandled_signals && printk_ratelimit()) {
- 		printk("%s[%d] bad frame in %s frame:%p ip:%lx sp:%lx orax:%lx",
--	       me->comm,me->pid,where,frame,regs->ip,regs->sp,regs->orig_ax);
-+	       me->comm, me->pid, where, frame, regs->ip,
-+		   regs->sp, regs->orig_ax);
- 		print_vma_addr(" in ", regs->ip);
- 		printk("\n");
- 	}
+ #define DO_ERROR(trapnr, signr, str, name) \
+-asmlinkage void do_##name(struct pt_regs * regs, long error_code)	\
++asmlinkage void do_##name(struct pt_regs *regs, long error_code)	\
+ {									\
+ 	if (notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr)	\
+ 							== NOTIFY_STOP)	\
+@@ -648,7 +650,7 @@ asmlinkage void do_##name(struct pt_regs * regs, long error_code)	\
+ }
  
--	force_sig(SIGSEGV, me); 
--} 
-+	force_sig(SIGSEGV, me);
-+}
+ #define DO_ERROR_INFO(trapnr, signr, str, name, sicode, siaddr)		\
+-asmlinkage void do_##name(struct pt_regs * regs, long error_code)	\
++asmlinkage void do_##name(struct pt_regs *regs, long error_code)	\
+ {									\
+ 	siginfo_t info;							\
+ 	info.si_signo = signr;						\
+@@ -683,7 +685,7 @@ asmlinkage void do_stack_segment(struct pt_regs *regs, long error_code)
+ 	preempt_conditional_cli(regs);
+ }
+ 
+-asmlinkage void do_double_fault(struct pt_regs * regs, long error_code)
++asmlinkage void do_double_fault(struct pt_regs *regs, long error_code)
+ {
+ 	static const char str[] = "double fault";
+ 	struct task_struct *tsk = current;
+@@ -778,9 +780,10 @@ io_check_error(unsigned char reason, struct pt_regs *regs)
+ }
+ 
+ static notrace __kprobes void
+-unknown_nmi_error(unsigned char reason, struct pt_regs * regs)
++unknown_nmi_error(unsigned char reason, struct pt_regs *regs)
+ {
+-	if (notify_die(DIE_NMIUNKNOWN, "nmi", regs, reason, 2, SIGINT) == NOTIFY_STOP)
++	if (notify_die(DIE_NMIUNKNOWN, "nmi", regs, reason, 2, SIGINT) ==
++			NOTIFY_STOP)
+ 		return;
+ 	printk(KERN_EMERG "Uhhuh. NMI received for unknown reason %02x.\n",
+ 		reason);
+@@ -882,7 +885,7 @@ asmlinkage __kprobes struct pt_regs *sync_regs(struct pt_regs *eregs)
+ 	else if (user_mode(eregs))
+ 		regs = task_pt_regs(current);
+ 	/* Exception from kernel and interrupts are enabled. Move to
+- 	   kernel process stack. */
++	   kernel process stack. */
+ 	else if (eregs->flags & X86_EFLAGS_IF)
+ 		regs = (struct pt_regs *)(eregs->sp -= sizeof(struct pt_regs));
+ 	if (eregs != regs)
+@@ -891,7 +894,7 @@ asmlinkage __kprobes struct pt_regs *sync_regs(struct pt_regs *eregs)
+ }
+ 
+ /* runs on IST stack. */
+-asmlinkage void __kprobes do_debug(struct pt_regs * regs,
++asmlinkage void __kprobes do_debug(struct pt_regs *regs,
+ 				   unsigned long error_code)
+ {
+ 	struct task_struct *tsk = current;
+@@ -1035,7 +1038,7 @@ asmlinkage void do_coprocessor_error(struct pt_regs *regs)
+ 
+ asmlinkage void bad_intr(void)
+ {
+-	printk("bad interrupt"); 
++	printk("bad interrupt");
+ }
+ 
+ asmlinkage void do_simd_coprocessor_error(struct pt_regs *regs)
+@@ -1047,7 +1050,7 @@ asmlinkage void do_simd_coprocessor_error(struct pt_regs *regs)
+ 
+ 	conditional_sti(regs);
+ 	if (!user_mode(regs) &&
+-        	kernel_math_error(regs, "kernel simd math error", 19))
++			kernel_math_error(regs, "kernel simd math error", 19))
+ 		return;
+ 
+ 	/*
+@@ -1092,7 +1095,7 @@ asmlinkage void do_simd_coprocessor_error(struct pt_regs *regs)
+ 	force_sig_info(SIGFPE, &info, task);
+ }
+ 
+-asmlinkage void do_spurious_interrupt_bug(struct pt_regs * regs)
++asmlinkage void do_spurious_interrupt_bug(struct pt_regs *regs)
+ {
+ }
+ 
+@@ -1142,8 +1145,10 @@ void __init trap_init(void)
+ 	set_intr_gate(0, &divide_error);
+ 	set_intr_gate_ist(1, &debug, DEBUG_STACK);
+ 	set_intr_gate_ist(2, &nmi, NMI_STACK);
+- 	set_system_gate_ist(3, &int3, DEBUG_STACK); /* int3 can be called from all */
+-	set_system_gate(4, &overflow); /* int4 can be called from all */
++	/* int3 can be called from all */
++	set_system_gate_ist(3, &int3, DEBUG_STACK);
++	/* int4 can be called from all */
++	set_system_gate(4, &overflow);
+ 	set_intr_gate(5, &bounds);
+ 	set_intr_gate(6, &invalid_op);
+ 	set_intr_gate(7, &device_not_available);
 -- 
 1.5.4.5
 
