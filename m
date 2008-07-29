@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbYG2GlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649AbYG2Gli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755949AbYG2GlR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 02:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYG2GlE
+	id S1756649AbYG2Gli (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 02:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbYG2Gl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 02:41:04 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:53402 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750925AbYG2GlD (ORCPT
+	Tue, 29 Jul 2008 02:41:29 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:45595 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753259AbYG2Gl2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 02:41:03 -0400
-Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Max Krasnyansky <maxk@qualcomm.com>, linux-kernel@vger.kernel.org,
-       pj@sgi.com, menage@google.com, vegard.nossum@gmail.com,
-       Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <20080728140748.GB18144@elte.hu>
-References: <1216852381-23445-1-git-send-email-maxk@qualcomm.com>
-	 <488B7DC5.20302@qualcomm.com>  <20080728140748.GB18144@elte.hu>
-Content-Type: text/plain
-Date: Tue, 29 Jul 2008 08:40:54 +0200
-Message-Id: <1217313654.18049.59.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 29 Jul 2008 02:41:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lnSxe/BCVUldQsmp/NVV8Zc4TdQyDRjTs3N3GvlkxIy5nK/qUoxZJ4TnROMKJSBpUK
+         cEdGxHt2HyufqxvBidaXRfUDsYMvuGlj+uh4mdxi4jThmD9AQoTvKV51gUOka197ZHkM
+         4o5HSGo6mazYqmnIdsfPz2HcrRNwjGvK1rBCQ=
+Message-ID: <86802c440807282341g65c90f10gbdcf72beecdd0852@mail.gmail.com>
+Date: Mon, 28 Jul 2008 23:41:27 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 0/5] x86 cleanup: convert round_up() to roundup()
+Cc: "Joerg Roedel" <joerg.roedel@amd.com>, mingo@redhat.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20080726133932.GB4401@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1216997339-31427-1-git-send-email-joerg.roedel@amd.com>
+	 <20080726133932.GB4401@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-07-28 at 16:07 +0200, Ingo Molnar wrote:
-> * Max Krasnyansky <maxk@qualcomm.com> wrote:
-> 
-> > Max Krasnyansky wrote:
-> > > This is an updated version of my previous cpuset patch:
-> > >   "Make rebuild_sched_domains() usable from any context (take 2)"
-> > 
-> > Folks,
-> > 
-> > Any comments on this patch ? We need this to complete sched domain 
-> > handling fixes/improvements that we started with the cpu_active_map, 
-> > and to avoid circular locking issues in the cpu hotplug -> 
-> > rebuild_sched_domains path.
-> 
-> Paul, Peter, any comments?
+On Sat, Jul 26, 2008 at 6:39 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+>
+>> The x86 architecture declares its own round_up macro. But there is a
+>> generic one in <linux/kernel.h> which can also be used. This patchset
+>> replaces the x86 round_up() macro with the generic roundup() one where
+>> possible. The patches have been compile-tested for 32 and 64 bit and
+>> boot-tested for 64 bit. If we can fix the other places too we can get
+>> rid of the x86 specific round_up() in the future.
+>
+> applied to tip/x86/cleanups - thanks Joerg!
+>
+these patches looks like some backward, aka wrong direction.
 
-I'm really not that at home with all that cgroup fiddling, so I'd like a
-word from the two Pauls..
+#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
 
-Questions I have at the moment:
+#define round_up(x, y) (((x) + (y) - 1) & ~((y) - 1))
+#define round_down(x, y) ((x) & ~((y) - 1))
 
- -  do we really need a new workqueue for this? Can't we use the regular
-keventd stuff, now that Oleg fixed the get_online_cpus() thing?
-(3da1c84c00c7e5fa8348336bd8c342f9128b0f14)
+round_up looks more efficient.
 
- - aren't there funny races with the async_rebuild_sched_domains()
-stuff? 
-
+YH
