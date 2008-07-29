@@ -1,66 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757077AbYG2S4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752193AbYG2S5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757077AbYG2S4z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 14:56:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYG2S4o
+	id S1752193AbYG2S5T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 14:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYG2S5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 14:56:44 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:36179 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751612AbYG2S4n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 14:56:43 -0400
-Subject: Re: tools support for non-512 byte sector sizes
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: rwheeler@redhat.com
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jim Meyering <jim@meyering.net>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Matt Domsch <Matt_Domsch@Dell.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <488F6758.8080907@redhat.com>
-References: <488F524F.6020905@redhat.com>
-	 <20080729182611.GB24924@parisc-linux.org>
-	 <1217356645.6103.48.camel@localhost.localdomain>
-	 <yq13alsr0g0.fsf@sermon.lab.mkp.net>  <488F6758.8080907@redhat.com>
-Content-Type: text/plain
-Date: Tue, 29 Jul 2008 13:56:14 -0500
-Message-Id: <1217357774.6103.54.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jul 2008 14:57:06 -0400
+Received: from bay0-omc3-s25.bay0.hotmail.com ([65.54.246.225]:41912 "EHLO
+	bay0-omc3-s25.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751847AbYG2S5F convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 14:57:05 -0400
+Message-ID: <BAY103-W38794846AA924235B38E47B2820@phx.gbl>
+X-Originating-IP: [217.201.129.59]
+From: Marco Berizzi <pupilla@hotmail.com>
+To: Alistair John Strachan <alistair@devzero.co.uk>
+CC: <linux-kernel@vger.kernel.org>, <dwmw2@infradead.org>,
+       <tim.bird@am.sony.com>
+Subject: RE: commit a29ccf6f823a84d89e1c7aaaf221cf7282022024 break console
+ on slackware 12.1
+Date: Tue, 29 Jul 2008 20:57:02 +0200
+Importance: Normal
+In-Reply-To: <200807291815.13907.alistair@devzero.co.uk>
+References: <BAY103-DAV4F0ECBCAFB86B24C87D3EB2820@phx.gbl>
+ <200807291815.13907.alistair@devzero.co.uk>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
+X-OriginalArrivalTime: 29 Jul 2008 18:57:03.0019 (UTC) FILETIME=[E34CCFB0:01C8F1AC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-29 at 14:54 -0400, Ric Wheeler wrote:
-> Martin K. Petersen wrote:
-> >>>>>> "James" == James Bottomley <James.Bottomley@HansenPartnership.com> writes:
-> >>>>>>             
-> >
-> > James> The problem, which ata_ram also suffers, is that the tools we
-> > James> most need to test are the ones for manipulating non volatile
-> > James> characteristics (like partition tables).  We'd really like the
-> > James> disk contents to survive reboot for this ...
-> >
-> > Yeah, I should add that I wanted persistence too.  I went through a
-> > whole stack (well, 5-6 or so) fibre channel drives from various
-> > vendors and attempted to low-level format them to 4KB sectors.  Most
-> > of them laughed in my face.  One of them tried to comply and
-> > irreparably confused its firmware in the process.
-> >
-> > Just yesterday I received a couple of prototype drives in the mail.
-> > I'll ask the vendor whether they support 4KB and if so I'll give them
-> > a whirl.
-> >   
-> Isn't this a great use case for a SCSI target device where our target 
-> can be a software disk on a remote host? What is missing for us to put 
-> something like that together?
 
-Technically nothing.  Tomo should already have one for the STGT test
-infrastructure (I've cc'd him).
+alistair@devzero.co.uk wrote:
 
-James
+> You don't actually say whether you had CONFIG_CONSOLE_TRANSLATIONS=y or not?
 
-
+yes console_translation is set to yes. It cannot be changed if embedded is not
+set.
+_________________________________________________________________
+Connect to the next generation of MSN Messenger 
+http://imagine-msn.com/messenger/launch80/default.aspx?locale=en-us&source=wlmailtagline
