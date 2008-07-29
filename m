@@ -1,67 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbYG2JW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbYG2JX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756555AbYG2JW5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 05:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbYG2JWt
+	id S1756771AbYG2JX7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 05:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYG2JXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 05:22:49 -0400
-Received: from posthamster.phnxsoft.com ([195.227.45.4]:2037 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751431AbYG2JWs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 05:22:48 -0400
-X-Greylist: delayed 1283 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Jul 2008 05:22:48 EDT
-Message-ID: <488EDC63.8060700@imap.cc>
-Date: Tue, 29 Jul 2008 11:01:23 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11 Mnenhy/0.7.5.666
+	Tue, 29 Jul 2008 05:23:51 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:42258 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751612AbYG2JXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 05:23:50 -0400
+Message-ID: <488EE175.8040607@parallels.com>
+Date: Tue, 29 Jul 2008 13:23:01 +0400
+From: Vasily Averin <vvs@parallels.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Q: support for AVM Fritz! WLAN USB in kernel 2.6.25+
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigCF0C3450B2173C0476746DDA"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Markus Lidel <Markus.Lidel@shadowconnect.com>,
+       Vasily Averin <vvs@sw.ru>
+Subject: Re: [PATCH]: Proposed fix to the I2O problems with > 4GB space
+References: <20080725131637.48072ef3@lxorguk.ukuu.org.uk>	<20080729004756.113d85a0.akpm@linux-foundation.org>	<488ED4CF.1000402@parallels.com> <20080729095122.7021ddd0@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080729095122.7021ddd0@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigCF0C3450B2173C0476746DDA
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Alan Cox wrote:
+>> One of our test nodes uses i2o controller. Now this node have 6 Gb memory and
+>> quite a long time it works well under 64-bit RHEL5-based kernel. I'm not sure is
+>> i2o card really 64-bit capable, but dmesg shows that it uses 64-bit dma.
+> 
+> Do you use the i2o config interfaces and driver ?
 
-Commit 782e70c6fc2290a0395850e8e02583b8b62264d8, which went into
-2.6.25, broke AVM's closed-source driver for this device:
+When I loaded i2o_config module and read all entries in /proc/i2o/ directory the
+node hung.
 
-ID 057c:62ff AVM GmbH WLAN USB v1.1 (cdrom mode)
-ID 057c:6201 AVM GmbH WLAN USB v1.1
+Do you mean that you have fixed this issue?
 
-Is there an open source alternative for that driver, or do systems
-with that device have to stay with kernel 2.6.24?
-
-Thanks,
-Tilman
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigCF0C3450B2173C0476746DDA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFIjtxjQ3+did9BuFsRAmQbAKCARHha9QnfBRZyIGWS6/RxcyEm1gCeI36J
-7klEUhRZoYSwJzBVFbn7DIg=
-=bDIn
------END PGP SIGNATURE-----
-
---------------enigCF0C3450B2173C0476746DDA--
+thank you,
+	Vasily Averin
