@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbYG2A1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbYG2A1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753920AbYG2A1K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 20:27:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYG2A04
+	id S1754522AbYG2A1i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 20:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYG2A13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 20:26:56 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:56625 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751853AbYG2A0z (ORCPT
+	Mon, 28 Jul 2008 20:27:29 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:58098 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752298AbYG2A12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 20:26:55 -0400
-Message-ID: <488E644D.7000507@keyaccess.nl>
-Date: Tue, 29 Jul 2008 02:29:01 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Mon, 28 Jul 2008 20:27:28 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=NMsbSCyGkuSmTo7KW3eRXJXftoBQFbnXilbuhlIZk5sU80vUblgb8wBYNH1wfXDyA
+	UmF36QlXJ3F6p1IcA3PSw==
+Message-ID: <6599ad830807281727r63a57a1g11972c5395828aae@mail.gmail.com>
+Date: Mon, 28 Jul 2008 17:27:15 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Rusty Russell" <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] Introduce down_try() so we can move away from down_trylock()
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Matthew Wilcox" <matthew@wil.cx>,
+       "Randy.Dunlap" <rdunlap@xenotime.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christoph Hellwig" <hch@infradead.org>
+In-Reply-To: <200807291015.02865.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-CC: Paul Mundt <lethal@linux-sh.org>, James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-References: <488DFD97.7080802@simon.arlott.org.uk>	 <488E0BB6.7020006@simon.arlott.org.uk>	 <9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com>	 <488E1147.5040803@simon.arlott.org.uk>	 <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com>	 <20080728202236.GN9378@mit.edu> <20080728204624.GA11581@redhat.com>	 <20080728141414.d7e5def2.randy.dunlap@oracle.com>	 <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au>	 <20080728234131.GD28055@linux-sh.org> <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com>
-In-Reply-To: <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+References: <200807291015.02865.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29-07-08 02:14, Jon Smirl wrote:
+On Mon, Jul 28, 2008 at 5:15 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> I planned on removing the much-disliked down_trylock() (with its
+> backwards return codes) in 2.6.27, but it's creating something of a
+> logjam with other patches in -mm and linux-next.
+>
+> Andrew suggested introducing "down_try" as a wrapper now, to make
+> the transition easier.  Linus, please apply.
+>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Christoph Hellwig <hch@infradead.org>
+> Cc: Matthew Wilcox <matthew@wil.cx>
+> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  include/linux/semaphore.h |   14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>
+> diff -r 92664ae4130b include/linux/semaphore.h
+> --- a/include/linux/semaphore.h Wed May 21 14:54:40 2008 +1000
+> +++ b/include/linux/semaphore.h Wed May 21 15:07:31 2008 +1000
+> @@ -48,4 +48,18 @@ extern int __must_check down_timeout(str
+>  extern int __must_check down_timeout(struct semaphore *sem, long jiffies);
+>  extern void up(struct semaphore *sem);
+>
+> +/**
+> + * down_try - try to down a semaphore, but don't block
+> + * @sem: the semaphore
+> + *
+> + * This is equivalent to down_trylock(), but has the same return codes as
+> + * spin_trylock and mutex_trylock: 1 if semaphore acquired, 0 if not.
 
-> Why do these all end in (none)?
-> Craig Hughes <craig@com.rmk.(none)>
-> Dave Neuer <dneuer@org.rmk.(none)>
-> David Brownell <david-b@net.rmk.(none)>
-> David Woodhouse <dwmw2@org.rmk.(none)>
-> Deepak Saxena <dsaxena@net.rmk.(none)>
-> Enrico Scholz <enrico.scholz@de.rmk.(none)>
+Is there a reason to avoid using a return type of "bool" for this?
 
-Because rmk rewrites addresses to comply with privacy laws. Another good 
-example of why this nonsense of yours is exactly that.
-
-I checked and am personally in there three times, once even without any 
-valid email address listed. And any time there's anything other than my 
-gmail address in some submission it at least recently means that someone 
-_else_ took my from: address and stuck it on there and while I don't 
-terribly mind that generally, I find it really annoying to see even 
-those mistakes harvested into your hugely google-accessible resource.
-
-This is just yet another example of the senseless robotic crap people 
-people just insist is "needed" and "valueable", but which is neither.
-
-Nonsense it is.
-
-Rene.
+Paul
