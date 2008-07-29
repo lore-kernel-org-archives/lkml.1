@@ -1,63 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYG2EPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbYG2EWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbYG2EPv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 00:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbYG2EPn
+	id S1753551AbYG2EWe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 00:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbYG2EWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 00:15:43 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:58765 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750907AbYG2EPm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 00:15:42 -0400
-Date: Tue, 29 Jul 2008 00:15:39 -0400
-From: Theodore Tso <tytso@MIT.EDU>
-To: Jon Smirl <jonsmirl@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-Message-ID: <20080729041539.GD9378@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jon Smirl <jonsmirl@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>,
-	lkml <linux-kernel@vger.kernel.org>
-References: <9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com> <488E1147.5040803@simon.arlott.org.uk> <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com> <20080729011526.GF28946@ZenIV.linux.org.uk> <9e4733910807281825v42f9700al420ba48aebf3d790@mail.gmail.com> <20080729013650.GG28946@ZenIV.linux.org.uk> <9e4733910807281901i1a39ce93v902dd6bd240e1a34@mail.gmail.com> <20080729025016.GT9378@mit.edu> <9e4733910807282023h5479c755wde55e2324909b678@mail.gmail.com> <20080729041337.GC9378@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080729041337.GC9378@mit.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Tue, 29 Jul 2008 00:22:25 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38436 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750955AbYG2EWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 00:22:25 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+wS1FmdUWwW1k6W8IgN4QNPNYECyqUeKL2WjD0iU
+	X8oqdFBRO0ItIp
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
+	00000002
+From: Mike Galbraith <efault@gmx.de>
+To: Frederik Deweerdt <deweerdt@free.fr>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       suresh.b.siddha@intel.com, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <20080728222643.GA6339@slug>
+References: <20080725095317.GA12636@skywalker>  <20080728222643.GA6339@slug>
+Content-Type: text/plain
+Date: Tue, 29 Jul 2008 06:22:15 +0200
+Message-Id: <1217305335.5553.3.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 12:13:37AM -0400, Theodore Tso wrote:
-> Personally, I have no objection to the mailmap file as it's on the
-> whole an improvement; if it's been automatically generated and it
-> falsely maps multiple people to a single person, that would be highly
-> unfortunate, but maybe it fixes more problems than it creates.
-
-Typo correction.  The first part of that sentence should read:
-
-"Personally, I have no objection to the mailmap file IF on the
-whole it's an improvement...."
-
-> I think the part most people are seriously objecting to is that the
-> supposition that Linus and some of his top lieutenants should be
-> enforcing some arbitrary rule that rejects commits if they come from
-> addresses outside of your .mailmap file (unless they first send a
-> patch to add their e-mail address to the .mailmap file), in some kind
-> of misguided attempt to enforce validation, which apparently the main
-> justification for which is so that you and others can runs some
-> statistical analysis, of which there seems to be some dispute whether
-> or not encouraging people to compete to get into the top 20
-> signed-off-by by splitting up commits into 100 different micro-patches
-> should be considered a desirable side effect of said statistical
-> analysis.
+On Tue, 2008-07-29 at 00:26 +0200, Frederik Deweerdt wrote:
+> Hello  Aneesh,
 > 
-> As I said earlier, the moment you started advocating enforcing
-> validation, you may have started to confuse which is the tail and
-> which is the dog.  People should be supplying patches to improve the
-> kernel; not to provide accurate fodder for statistical analysis.
+> On Fri, Jul 25, 2008 at 03:23:17PM +0530, Aneesh Kumar K.V wrote:
+> > [  163.378265] BUG: unable to handle kernel NULL pointer dereference at 00000002
+> > [  163.378276] IP: [<c0124933>] sched_power_savings_store+0x13/0x70
 > 
-> 						- Ted
+> Does the attached patch solve the problem?
+
+Patch seems to have missed the boat for rc1 too.
+
+> 
+> Regards,
+> Frederik
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 0047bd9..090b397 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -7643,34 +7643,30 @@ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+>  }
+>  
+>  #ifdef CONFIG_SCHED_MC
+> -static ssize_t sched_mc_power_savings_show(struct sys_device *dev,
+> -				struct sysdev_attribute *attr, char *page)
+> +static ssize_t sched_mc_power_savings_show(struct sysdev_class *cls, char *page)
+>  {
+>  	return sprintf(page, "%u\n", sched_mc_power_savings);
+>  }
+> -static ssize_t sched_mc_power_savings_store(struct sys_device *dev,
+> -					    struct sysdev_attribute *attr,
+> +static ssize_t sched_mc_power_savings_store(struct sysdev_class *cls,
+>  					    const char *buf, size_t count)
+>  {
+>  	return sched_power_savings_store(buf, count, 0);
+>  }
+> -static SYSDEV_ATTR(sched_mc_power_savings, 0644, sched_mc_power_savings_show,
+> +static SYSDEV_CLASS_ATTR(sched_mc_power_savings, 0644, sched_mc_power_savings_show,
+>  		   sched_mc_power_savings_store);
+>  #endif
+>  
+>  #ifdef CONFIG_SCHED_SMT
+> -static ssize_t sched_smt_power_savings_show(struct sys_device *dev,
+> -				struct sysdev_attribute *attr, char *page)
+> +static ssize_t sched_smt_power_savings_show(struct sysdev_class *cls, char *page)
+>  {
+>  	return sprintf(page, "%u\n", sched_smt_power_savings);
+>  }
+> -static ssize_t sched_smt_power_savings_store(struct sys_device *dev,
+> -					     struct sysdev_attribute *attr,
+> +static ssize_t sched_smt_power_savings_store(struct sysdev_class *cls,
+>  					     const char *buf, size_t count)
+>  {
+>  	return sched_power_savings_store(buf, count, 1);
+>  }
+> -static SYSDEV_ATTR(sched_smt_power_savings, 0644, sched_smt_power_savings_show,
+> +static SYSDEV_CLASS_ATTR(sched_smt_power_savings, 0644, sched_smt_power_savings_show,
+>  		   sched_smt_power_savings_store);
+>  #endif
+>  
+> @@ -7680,13 +7676,13 @@ int sched_create_sysfs_power_savings_entries(struct sysdev_class *cls)
+>  
+>  #ifdef CONFIG_SCHED_SMT
+>  	if (smt_capable())
+> -		err = sysfs_create_file(&cls->kset.kobj,
+> -					&attr_sched_smt_power_savings.attr);
+> +		err = sysdev_class_create_file(cls,
+> +					       &attr_sched_smt_power_savings);
+>  #endif
+>  #ifdef CONFIG_SCHED_MC
+>  	if (!err && mc_capable())
+> -		err = sysfs_create_file(&cls->kset.kobj,
+> -					&attr_sched_mc_power_savings.attr);
+> +		err = sysdev_class_create_file(cls,
+> +					       &attr_sched_mc_power_savings);
+>  #endif
+>  	return err;
+>  }
+
+
