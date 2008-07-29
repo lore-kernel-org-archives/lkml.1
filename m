@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYG2Air@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYG2Ame@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754982AbYG2Air (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 20:38:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYG2Aij
+	id S1754189AbYG2Ame (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 20:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYG2Am0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 20:38:39 -0400
-Received: from mga11.intel.com ([192.55.52.93]:26825 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751263AbYG2Aii convert rfc822-to-8bit (ORCPT
+	Mon, 28 Jul 2008 20:42:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46336 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752276AbYG2AmZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 20:38:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,269,1215414000"; 
-   d="scan'208";a="365530663"
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: David Woodhouse <dwmw2@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "arjan@infradead.org" <arjan@infradead.org>
-Date: Mon, 28 Jul 2008 17:36:57 -0700
-Subject: RE: [RFC] Imprecise timers.
-Thread-Topic: [RFC] Imprecise timers.
-Thread-Index: Acjrp614s2SPymxUQLGojLGKSVa62QFaDOOw
-Message-ID: <7E82351C108FA840AB1866AC776AEC4608E23BE7@orsmsx505.amr.corp.intel.com>
-References: <1216695757.18980.16.camel@shinybook.infradead.org>
-In-Reply-To: <1216695757.18980.16.camel@shinybook.infradead.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 28 Jul 2008 20:42:25 -0400
+Date: Mon, 28 Jul 2008 17:39:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Johannes Weiner <hannes@saeurebad.de>
+cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linuxfoundation.org,
+       torvalds@linuxfoundation.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: do not overrun page table ranges in gup
+In-Reply-To: <alpine.LFD.1.10.0807281721200.3486@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807281737480.3486@nehalem.linux-foundation.org>
+References: <20080728184947.GA5041@martell.zuzino.mipt.ru> <20080728185316.GA19479@martell.zuzino.mipt.ru> <87y73l5zlj.fsf_-_@saeurebad.de> <87tze95yrk.fsf@saeurebad.de> <alpine.LFD.1.10.0807281721200.3486@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
->-----Original Message-----
->From: linux-kernel-owner@vger.kernel.org
->[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of David
->Woodhouse
->Sent: Monday, July 21, 2008 8:03 PM
->To: linux-kernel@vger.kernel.org
->Cc: Thomas Gleixner; Ingo Molnar; arjan@infradead.org
->Subject: [RFC] Imprecise timers.
->
->Many users of timers don't really care too much about exactly
->when their
->timer fires -- and waking a CPU to satisfy such a timer is a waste of
->power. This patch implements a 'range' timer which will fire
->at a 'convenient'
->moment within given constraints.
->
->It's implemented by a deferrable timer at the beginning of the range,
->which will run some time later when the CPU happens to be awake. And a
->non-deferrable timer at the hard deadline, to ensure it really does
->happen by then.
->
+On Mon, 28 Jul 2008, Linus Torvalds wrote:
+> 
+> So no, the right fix would be to align 'start' first, which means that 
+> everything else (including 'end') will be page-aligned. Aligning just one 
+> or the other is very very wrong.
 
-One concern I have is drivers using range_timers thinking that they need
-some upper bound, while all they need is a simple deferrable timer. With that
-we will have multiple timers waking up the CPU all the time (say, on
-different CPUs) problem again. Even without the timers waking up all
-the time problem, we have extra overhead of one or more spinlocks
-just to delete one extra unused timer. I don't how, but
-we will have to restrict this somehow to only code that really needs this
-kind of deadline.
+Does this work?
 
-Regarding implementation, I am thinking mod_range_timer should use
-ret &= mod_timer(). That is, if one of the timers has already fired and
-the other one is pending mod_range_timer return value should say it has
-already fired. Right?
+Not pretty, but it stands _some_ chance of being correct.
 
-Also, do we need both mod_range_timer and __mod_range_timer.
-Original mod_timer version talks about optimization for networking code.
-I think we can do with only one of the two here...
+		Linus
 
-Thanks,
-Venki
 
+---
+ arch/x86/mm/gup.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/mm/gup.c b/arch/x86/mm/gup.c
+index 3085f25..007bb06 100644
+--- a/arch/x86/mm/gup.c
++++ b/arch/x86/mm/gup.c
+@@ -223,14 +223,17 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 			struct page **pages)
+ {
+ 	struct mm_struct *mm = current->mm;
+-	unsigned long end = start + (nr_pages << PAGE_SHIFT);
+-	unsigned long addr = start;
++	unsigned long addr, len, end;
+ 	unsigned long next;
+ 	pgd_t *pgdp;
+ 	int nr = 0;
+ 
++	start &= PAGE_MASK;
++	addr = start;
++	len = (unsigned long) nr_pages << PAGE_SHIFT;
++	end = start + len;
+ 	if (unlikely(!access_ok(write ? VERIFY_WRITE : VERIFY_READ,
+-					start, nr_pages*PAGE_SIZE)))
++					start, len)))
+ 		goto slow_irqon;
+ 
+ 	/*
