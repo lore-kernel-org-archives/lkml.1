@@ -1,94 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758282AbYG2OUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbYG2OV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758282AbYG2OUz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 10:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758850AbYG2OUb
+	id S1759117AbYG2OV5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 10:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757099AbYG2OVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 10:20:31 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:51620 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758792AbYG2OUa (ORCPT
+	Tue, 29 Jul 2008 10:21:47 -0400
+Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:39100 "EHLO
+	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756889AbYG2OVr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 10:20:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=fj/UybP55mE4cv5wlKRm6fI15hq2LnOVM7stRonyA6ruSCWM5G0byxCz5oSVSoNA67
-         nU1Td97oco3i8fD5aPprAhd59TX1M+5SCIqIda1OD6AKUgKzyK1J8aLwx8ctPFBvvSqy
-         rqOt9eU3k2X+M/gNZ0x7oFi9gdForWbMMNvYc=
-Message-ID: <b647ffbd0807290720r3223461dt9d4f7f248e5e3c37@mail.gmail.com>
-Date: Tue, 29 Jul 2008 16:20:28 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Oleg Nesterov" <oleg@tv-sign.ru>
-Subject: Re: [patch, minor] workqueue: consistently use 'err' in __create_workqueue_key()
-Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <20080729134456.GA355@tv-sign.ru>
+	Tue, 29 Jul 2008 10:21:47 -0400
+Date: Tue, 29 Jul 2008 10:21:45 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to
+	convert
+Message-ID: <20080729142145.GC11425@phobos.i.cabal.ca>
+References: <20080728200500.GA14284@uranus.ravnborg.org> <20080729030647.GA11425@phobos.i.cabal.ca> <20080729032726.GA27460@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1217277694.20627.9.camel@earth> <20080729110250.GA177@tv-sign.ru>
-	 <b647ffbd0807290458n23dbe79et45cb27273e4fc2ae@mail.gmail.com>
-	 <20080729125201.GC177@tv-sign.ru> <20080729134456.GA355@tv-sign.ru>
+In-Reply-To: <20080729032726.GA27460@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/29 Oleg Nesterov <oleg@tv-sign.ru>:
-> On 07/29, Oleg Nesterov wrote:
->>
->> On 07/29, Dmitry Adamushko wrote:
->> >
->> > And I'd say this behavior (of having a partially-created object
->> > visible to the outside world) is not that robust. e.g. the
->> > aforementioned race would be eliminated if we place a wq on the global
->> > list only when it's been successfully initialized.
->>
->> Yes, we can change __create_workqueue_key() to check err == 0 before
->> list_add(),
->
-> Well no, we can't do even this.
->
-> Then we have another race with cpu-hotplug. Suppose we have CPUs 0, 1, 2.
-> create_workqueue() fails to create cwq->thread for CPU 2 and calls
-> destroy_workqueue(). Before it takes the cpu_add_remove_lock, _cpu_down()
-> removes CPU 1 from cpu_populated_map, but since we didn't add this wq
-> on the global list, cwq[1]->thread remains alive.
->
-> destroy_workqueue() takes cpu_add_remove_lock, and calls
-> cleanup_workqueue_thread() for CPUs 0 and 2. cwq[1]->thread is lost.
+On Tue, Jul 29, 2008 at 05:27:26AM +0200, Sam Ravnborg wrote:
+> On Mon, Jul 28, 2008 at 11:06:47PM -0400, Kyle McMartin wrote:
+> > On Mon, Jul 28, 2008 at 10:05:00PM +0200, Sam Ravnborg wrote:
+> > > I am limited in time and resources at the moment but I
+> > > would be glad to help out as time permits should there
+> > > be any questions.
+> > > 
+> > 
+> > Just a quick one... I moved the files on parisc, but found we're still
+> > using include/asm-$foo/asm-offsets.h. A quick glance at Kbuild seems to
+> > indicate so. Is this expected?
+> Yes.
+> 
+> asm-offsets.h is a generated file and I wanted to avoid adding
+> generated files to arch/$ARCH/include.
+> 
+> It was also a less intrusive patch to keep it at the old location.
+> But I recall that it troubles me a bit before I got it
+> correct but the kbuild changes all take care of this.
+> 
 
-Yes, I've actually seen this case and that's why I said "the cleanup
-path in __create_workqueue_key() would need
-to be altered" :-) likely, to the extent that it would not be a call
-to destroy_workqueue() anymore.
+Thanks for clarifying, Sam.
 
-either something that only does
-
-for_each_cpu_mask_nr(cpu, *cpu_map)
-          cleanup_workqueue_thread(per_cpu_ptr(wq->cpu_wq, cpu));
-
-
-and from the _same_ 'cpu_add_remove_lock' section which is used to
-create a wq (so we don't drop a lock);
-
-_or_ do it outside of the locked section _but_ don't rely on
-for_each_cpu_mask_nr(cpu, *cpu_map)... e.g. just delete all per-cpu
-wq->cpu_wq structures that have been initialized (that's no matter if
-their respective cpus are online/offline now).
-
-
-yes, maybe this cleanup path would not look all that fancy (but I
-didn't try) but I do think that by not exposing "partially-initialized
-object to the outside world" (e.g. cpu-hotplug events won't see them)
-this code would become more straightforward and less prone to possible
-errors/races.
-
-e.g. all these "create_workqueue_key() may race with cpu-hotplug" would be gone.
-
-
--- 
-Best regards,
-Dmitry Adamushko
+cheers, Kyle
