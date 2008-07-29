@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbYG2EMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753694AbYG2ENw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753081AbYG2EMk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 00:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbYG2EMc
+	id S1753694AbYG2ENw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 00:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbYG2ENn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 00:12:32 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:39407 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750886AbYG2EMb (ORCPT
+	Tue, 29 Jul 2008 00:13:43 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:58629 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750897AbYG2ENm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 00:12:31 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=msKfbfFQQbAOJWran66hlCSBjyYJaW7aJ8bytFOaWVwcV1EshoRKgw8fOSKN+EUBh0+N1m0joaribuizQOyEQ3I7dBcMG9CgZyFfKV5EUri1TRIK+dDG465mVZOJwACKY3DMz8aBkceH/m/2/gU2GQtnlvfVQQ6mhRiLFagpTGE=  ;
-X-YMail-OSG: rwNRqQ4VM1lCJQhHDHlww.ijTfDsDHkCVdB_Vgr9bEBv5N98tn97LZT4J4esnx_cRJlKOgGV.MV5AWcitugpb33oMz0EKXl.2cWuTEim3m8MgynvDfCbrMYftAX6Yi_nSPk-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: Comments on UV tlb flushing
-Date: Tue, 29 Jul 2008 14:12:18 +1000
-User-Agent: KMail/1.9.5
-Cc: Cliff Wickman <cpw@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <488E644B.10801@goop.org>
-In-Reply-To: <488E644B.10801@goop.org>
+	Tue, 29 Jul 2008 00:13:42 -0400
+Date: Tue, 29 Jul 2008 00:13:37 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 463 kernel developers missing!
+Message-ID: <20080729041337.GC9378@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jon Smirl <jonsmirl@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>,
+	lkml <linux-kernel@vger.kernel.org>
+References: <488E0BB6.7020006@simon.arlott.org.uk> <9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com> <488E1147.5040803@simon.arlott.org.uk> <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com> <20080729011526.GF28946@ZenIV.linux.org.uk> <9e4733910807281825v42f9700al420ba48aebf3d790@mail.gmail.com> <20080729013650.GG28946@ZenIV.linux.org.uk> <9e4733910807281901i1a39ce93v902dd6bd240e1a34@mail.gmail.com> <20080729025016.GT9378@mit.edu> <9e4733910807282023h5479c755wde55e2324909b678@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807291412.18495.nickpiggin@yahoo.com.au>
+In-Reply-To: <9e4733910807282023h5479c755wde55e2324909b678@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 July 2008 10:28, Jeremy Fitzhardinge wrote:
-> I'm just reworking the x86 tlb code to use smp_call_function_mask, and I
-> see how the UV tlb flushing hooks in.  A few things occur to me:
->
->    1. There should be a CONFIG_X86_UV to select this code.  tlb_uv.o is
->       around 6k, which is not trivial overhead to subject every x86_64
->       kernel to.
+On Mon, Jul 28, 2008 at 11:23:31PM -0400, Jon Smirl wrote:
+> The kernel already has a mailmap file, but it is not complete. So I
+> should just take this work that makes the mailmap file a lot better
+> and throw it away? The policy is that the log file should be messed up
+> enough so that a computer can't process it and that a human can
+> recover it only with several day's effort? That's a really hard line
+> to define and we'll probably lose the identity of a bunch of
+> contributors. I'll follow up with a patch that deletes the current
+> .mailmap
 
-Definitely.
+Personally, I have no objection to the mailmap file as it's on the
+whole an improvement; if it's been automatically generated and it
+falsely maps multiple people to a single person, that would be highly
+unfortunate, but maybe it fixes more problems than it creates.
 
+I think the part most people are seriously objecting to is that the
+supposition that Linus and some of his top lieutenants should be
+enforcing some arbitrary rule that rejects commits if they come from
+addresses outside of your .mailmap file (unless they first send a
+patch to add their e-mail address to the .mailmap file), in some kind
+of misguided attempt to enforce validation, which apparently the main
+justification for which is so that you and others can runs some
+statistical analysis, of which there seems to be some dispute whether
+or not encouraging people to compete to get into the top 20
+signed-off-by by splitting up commits into 100 different micro-patches
+should be considered a desirable side effect of said statistical
+analysis.
 
->    2. CONFIG_X86_UV should either depend on or select CONFIG_PARAVIRT.
->    3. You should hook into paravirt_ops to enable your tlb-flush code.
->       That is, in - say - uv_bau_init() you do
->       "pv_mmu_ops.flush_tlb_others = uv_flush_tlb_others".  This removes
->       a test/branch in the generic code.  Using paravirt_ops may open
->       other opportunities to put UV-optimised functions in place without
->       having to modify generic code.
+As I said earlier, the moment you started advocating enforcing
+validation, you may have started to confuse which is the tail and
+which is the dog.  People should be supplying patches to improve the
+kernel; not to provide accurate fodder for statistical analysis.
 
-Really? It's not virtualized at all, although I don't like adding that
-branch for such a small class of systems either.
-
-It would possibly be better to have a new function (eg.
-override_flush_tlb_others()), which returns 0 if
-CONFIG_OVERRIDE_FLUSH_TLB is set, otherwise branches. And have *that*
-selected by CONFIG_PARAVIRT and X86_UV.
-
-
-> My understanding is that the UV hardware has some kind of
-> payload-carrying IPI mechanism, which is a capability could be useful to
-> express in a higher-level way in the kernel.  Certainly I could imagine
-> using it in a virtual environment as a way to do inter-VCPU messaging
-> with less context switch overhead.
-
-Yes, as I said in my review of that part of the UV tlb flushing, it would
-be nice to have a generic mechanism to IPI with payload, which falls back
-to a smp_call_function-like approach on platforms that don't have the
-capability.
+						- Ted
