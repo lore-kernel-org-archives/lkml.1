@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbYG2IKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbYG2ILS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756761AbYG2IKy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 04:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbYG2IKj
+	id S1755414AbYG2ILS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 04:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbYG2IK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 04:10:39 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43807 "EHLO mx3.mail.elte.hu"
+	Tue, 29 Jul 2008 04:10:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45125 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753588AbYG2IKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 04:10:37 -0400
-Date: Tue, 29 Jul 2008 10:10:19 +0200
+	id S1756666AbYG2IKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 04:10:54 -0400
+Date: Tue, 29 Jul 2008 10:10:36 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Peter Oruba <peter.oruba@amd.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>,
        Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
        LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86, microcode support: fix build error
-Message-ID: <20080729081019.GA14838@elte.hu>
+Subject: Re: [patch 00/11] x86: AMD microcode patch loading support v2
+Message-ID: <20080729081036.GB14838@elte.hu>
 References: <20080728164411.490752571@amd.com> <20080728180141.GB2937@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
 In-Reply-To: <20080728180141.GB2937@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
@@ -37,45 +36,56 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->From 45b1e23eca1c53fa79a611a2bc8c93697ede6c97 Mon Sep 17 00:00:00 2001
+>From 224e946b81166d732f3e9b414cb69612072fb500 Mon Sep 17 00:00:00 2001
 From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 29 Jul 2008 09:42:17 +0200
-Subject: [PATCH] x86, microcode support: fix build error
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Date: Tue, 29 Jul 2008 09:52:55 +0200
+Subject: [PATCH] x86, microcode: fix symbol exports
 
-fix:
+fix tons of build errors:
 
-  arch/x86/kernel/microcode.c:412: error: static declaration of ‘microcode_init’ follows non-static declaration
-  include/asm/microcode.h:1: error: previous declaration of ‘microcode_init’ was here
-  arch/x86/kernel/microcode.c:454: error: static declaration of ‘microcode_exit’ follows non-static declaration
-  include/asm/microcode.h:2: error: previous declaration of ‘microcode_exit’ was here
+ arch/x86/kernel/built-in.o: In function `microcode_fini_cpu':
+ microcode_intel.c:(.text+0x11598): undefined reference to `microcode_mutex'
+ microcode_intel.c:(.text+0x115a4): undefined reference to `ucode_cpu_info'
+ microcode_intel.c:(.text+0x115ae): undefined reference to `ucode_cpu_info'
+ microcode_intel.c:(.text+0x115bc): undefined reference to `microcode_mutex'
+ [...]
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/microcode.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kernel/microcode.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
-index 1e42e79..9a88184 100644
+index 9a88184..758b958 100644
 --- a/arch/x86/kernel/microcode.c
 +++ b/arch/x86/kernel/microcode.c
-@@ -415,7 +415,7 @@ static struct notifier_block __refdata mc_cpu_notifier = {
- 	.notifier_call = mc_cpu_callback,
- };
+@@ -104,16 +104,16 @@ MODULE_LICENSE("GPL");
+ struct microcode_ops *microcode_ops;
  
--static int microcode_init(void *opaque, struct module *module)
-+int microcode_init(void *opaque, struct module *module)
- {
- 	struct microcode_ops *ops = (struct microcode_ops *)opaque;
- 	int error;
-@@ -457,7 +457,7 @@ static int microcode_init(void *opaque, struct module *module)
- }
- EXPORT_SYMBOL_GPL(microcode_init);
+ /* no concurrent ->write()s are allowed on /dev/cpu/microcode */
+-static DEFINE_MUTEX(microcode_mutex);
++DEFINE_MUTEX(microcode_mutex);
+ EXPORT_SYMBOL_GPL(microcode_mutex);
  
--static void __exit microcode_exit (void)
-+void __exit microcode_exit (void)
- {
- 	microcode_dev_exit();
+-static struct ucode_cpu_info ucode_cpu_info[NR_CPUS];
++struct ucode_cpu_info ucode_cpu_info[NR_CPUS];
+ EXPORT_SYMBOL_GPL(ucode_cpu_info);
  
+ #ifdef CONFIG_MICROCODE_OLD_INTERFACE
+-static void __user *user_buffer;	/* user area microcode data buffer */
++void __user *user_buffer;		/* user area microcode data buffer */
+ EXPORT_SYMBOL_GPL(user_buffer);
+-static unsigned int user_buffer_size;	/* it's size */
++unsigned int user_buffer_size;		/* it's size */
+ EXPORT_SYMBOL_GPL(user_buffer_size);
+ 
+ static int do_microcode_update (void)
+@@ -230,7 +230,7 @@ MODULE_ALIAS_MISCDEV(MICROCODE_MINOR);
+ #endif
+ 
+ /* fake device for request_firmware */
+-static struct platform_device *microcode_pdev;
++struct platform_device *microcode_pdev;
+ EXPORT_SYMBOL_GPL(microcode_pdev);
+ 
+ static void microcode_init_cpu(int cpu, int resume)
