@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbYG2Afo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbYG2AhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754883AbYG2Afo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 20:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYG2Aff
+	id S1754824AbYG2AhH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 20:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYG2Ag4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 20:35:35 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:55789 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751893AbYG2Aff (ORCPT
+	Mon, 28 Jul 2008 20:36:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39902 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751610AbYG2Ag4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 20:35:35 -0400
-Date: Tue, 29 Jul 2008 10:35:33 +1000
-From: Simon Horman <horms@verge.net.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Muli Ben-Yehuda <muli@il.ibm.com>, Tony Luck <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, Chandru <chandru@in.ibm.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Terry Loftin <terry.loftin@hp.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [patch] crashdump: fix undefined reference to `elfcorehdr_addr'
-Message-ID: <20080729003533.GH10434@verge.net.au>
-References: <20080727234529.GM6175@verge.net.au> <20080728015117.GA12055@verge.net.au> <20080728024526.GB3334@verge.net.au> <20080728034007.GA30450@verge.net.au> <20080728124856.GF5515@elte.hu>
+	Mon, 28 Jul 2008 20:36:56 -0400
+Date: Mon, 28 Jul 2008 17:33:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Johannes Weiner <hannes@saeurebad.de>
+cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linuxfoundation.org,
+       torvalds@linuxfoundation.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: do not overrun page table ranges in gup
+In-Reply-To: <87tze95yrk.fsf@saeurebad.de>
+Message-ID: <alpine.LFD.1.10.0807281721200.3486@nehalem.linux-foundation.org>
+References: <20080728184947.GA5041@martell.zuzino.mipt.ru> <20080728185316.GA19479@martell.zuzino.mipt.ru> <87y73l5zlj.fsf_-_@saeurebad.de> <87tze95yrk.fsf@saeurebad.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080728124856.GF5515@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 02:48:56PM +0200, Ingo Molnar wrote:
-> 
-> * Simon Horman <horms@verge.net.au> wrote:
-> 
-> > On Mon, Jul 28, 2008 at 12:45:28PM +1000, Simon Horman wrote:
-> > > The rfc patch I made to rename is_kdump_kernel to kernel_has_vmcore,
-> > > which I appended to my previous post should have looked more like the
-> > > following. Although, as I noted in my previous post, its more a starting
-> > > point for discussion than a solution to the problem at hand.
-> > 
-> > Sorry, one more time. I forgot to quilt refresh.
-> 
-> doesnt apply cleanly to latest -git:
-> 
->  Hunk #1 FAILED at 2070.
->  1 out of 1 hunk FAILED -- saving rejects to file arch/ia64/hp/common/sba_iommu.c.rej
-> 
-> due to a crossing change i guess. Also, i guess this should go via -mm 
-> as it touches fs/proc/vmcore.c and include/linux/crash_dump.h. The x86 
-> bits look good to me.
-> 
->  Acked-by: Ingo Molnar <mingo@elte.hu>
 
-Sorry about the messiness there. Vivek has a different patch
-set that renders most of this irrelevant. I'll fix up the
-arch/ia64/hp/common/sba_iommu.c portion to match his changes
-so that he can include it in his sereis / it can be included
-after his series.
 
--- 
-Horms
+On Tue, 29 Jul 2008, Johannes Weiner wrote:
+> 
+> Actually, I think the prettier fix would be to just establish that
+> garuantee:
+>
+> --- a/arch/x86/mm/gup.c
+> +++ b/arch/x86/mm/gup.c
+> @@ -223,7 +223,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+>  			struct page **pages)
+>  {
+>  	struct mm_struct *mm = current->mm;
+> -	unsigned long end = start + (nr_pages << PAGE_SHIFT);
+> +	unsigned long end = PAGE_ALIGN(start + (nr_pages << PAGE_SHIFT));
 
+Umm. 'end' is guaranteed to be page-aligned if 'start' is. 
+
+So if this makes a difference, that implies that _start_ isn't 
+page-aligned, and then you when you add PAGE_SIZE to 'addr', you are going 
+to miss 'end' again.
+
+So no, the right fix would be to align 'start' first, which means that 
+everything else (including 'end') will be page-aligned. Aligning just one 
+or the other is very very wrong.
+
+But yeah, this looks like a nasty bug. It's also sad that the code 
+that _should_ be architecture-independent, isn't - because every 
+architecture defines the _whole_ "get_user_pages_fast()", even though part 
+of it is very much arch-independent (the whole alignment/access_ok part).
+
+It also shows a bug in that whole "access_ok()" check. The fact is, that 
+thing is broken too - for the same reason. If you want to get a single 
+page at the end of the address space, but don't use an aligned address, 
+the "access_ok()" will fail.
+
+Nick, how do you want to fix this? I was just about to cut an -rc1, but I 
+would really like to see this one not make it into it..
+
+		Linus
