@@ -1,86 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbYG2PdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbYG2PoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480AbYG2PdU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 11:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYG2PdJ
+	id S1754729AbYG2PoR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 11:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYG2PoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 11:33:09 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57106 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751109AbYG2PdH (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 11:33:07 -0400
-Message-ID: <488F3832.8010007@sgi.com>
-Date: Tue, 29 Jul 2008 08:33:06 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 29 Jul 2008 11:44:00 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:17964 "EHLO
+	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752083AbYG2PoA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 11:44:00 -0400
+X-BigFish: VPS7(zz1cddkzz10d3izzz32i43j67h)
+X-Spam-TCS-SCL: 6:0
+X-FB-SS: 5,
+X-WSS-ID: 0K4RYCW-01-3JK-01
+Message-ID: <20080729154145.645238335@amd.com>
+User-Agent: quilt/0.46_cvs20080326-19.1
+Date: Tue, 29 Jul 2008 17:41:05 +0200
+From: Peter Oruba <peter.oruba@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
+CC: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Oruba <peter.oruba@amd.com>
+Subject: [patch 2/4] x86: Intel microcode patch loader style corrections.
+References: <20080729154103.007575982@amd.com>
+Content-Disposition: inline;
+	filename="0002-x86-Intel-microcode-patch-loader-style-corrections.patch"
+X-OriginalArrivalTime: 29 Jul 2008 15:43:49.0150 (UTC) FILETIME=[E4D0CBE0:01C8F191]
 MIME-Version: 1.0
-To: Simon Horman <horms@verge.net.au>
-CC: Linux-kernel <Linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: Regression on ia64 with cpu masks: optimize and clean up	cpumask_of_cpu()
-References: <20080729034459.GA11699@verge.net.au> <20080729095001.GA509@verge.net.au>
-In-Reply-To: <20080729095001.GA509@verge.net.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check linux-next, I believe the exact same fix is in there.  Apparently,
-as Stephen and others have pointed out earlier, that syntax isn't evaluated 
-correctly in earlier gcc's (at least earlier then the 4. series).
+Signed-off-by: Peter Oruba <peter.oruba@amd.com>
+---
+ arch/x86/kernel/microcode_intel.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-Thanks,
-Mike
+diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
+index 6da4a85..a61986e 100644
+--- a/arch/x86/kernel/microcode_intel.c
++++ b/arch/x86/kernel/microcode_intel.c
+@@ -55,8 +55,8 @@
+  *		in a single CPU package.
+  *	1.10	28 Feb 2002 Asit K Mallick <asit.k.mallick@intel.com> and
+  *		Tigran Aivazian <tigran@veritas.com>,
+- *		Serialize updates as required on HT processors due to speculative
+- *		nature of implementation.
++ *		Serialize updates as required on HT processors due to
++ *		speculative nature of implementation.
+  *	1.11	22 Mar 2002 Tigran Aivazian <tigran@veritas.com>
+  *		Fix the panic when writing zero-length microcode chunk.
+  *	1.12	29 Sep 2003 Nitin Kamble <nitin.a.kamble@intel.com>,
+@@ -71,7 +71,7 @@
+  *		Thanks to Stuart Swales for pointing out this bug.
+  */
+ 
+-//#define DEBUG /* pr_debug */
++/* #define DEBUG */ /* pr_debug */
+ #include <linux/capability.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+@@ -99,11 +99,11 @@ MODULE_DESCRIPTION("Microcode Update Driver");
+ MODULE_AUTHOR("Tigran Aivazian <tigran@aivazian.fsnet.co.uk>");
+ MODULE_LICENSE("GPL");
+ 
+-#define DEFAULT_UCODE_DATASIZE 	(2000) 	  /* 2000 bytes */
+-#define MC_HEADER_SIZE		(sizeof(struct microcode_header_intel)) /* 48 bytes */
+-#define DEFAULT_UCODE_TOTALSIZE (DEFAULT_UCODE_DATASIZE + MC_HEADER_SIZE) /* 2048 bytes */
+-#define EXT_HEADER_SIZE		(sizeof(struct extended_sigtable)) /* 20 bytes */
+-#define EXT_SIGNATURE_SIZE	(sizeof(struct extended_signature)) /* 12 bytes */
++#define DEFAULT_UCODE_DATASIZE 	(2000)
++#define MC_HEADER_SIZE		(sizeof(struct microcode_header_intel))
++#define DEFAULT_UCODE_TOTALSIZE (DEFAULT_UCODE_DATASIZE + MC_HEADER_SIZE)
++#define EXT_HEADER_SIZE		(sizeof(struct extended_sigtable))
++#define EXT_SIGNATURE_SIZE	(sizeof(struct extended_signature))
+ #define DWSIZE			(sizeof(u32))
+ #define get_totalsize(mc) \
+ 	(((struct microcode_intel *)mc)->hdr.totalsize ? \
+-- 
+1.5.4.5
 
-Simon Horman wrote:
-> On Tue, Jul 29, 2008 at 01:45:01PM +1000, Simon Horman wrote:
->> Hi,
->>
->> I haven't had a time to look into this closeley yet,
->> but "cpu masks: optimize and clean up cpumask_of_cpu()"
->> aka e56b3bc7942982ac2589c942fb345e38bc7a341a causes
->> a build failure for me on ia64.
->>
->> # ia64-unknown-linux-gnu-gcc --version
->> ia64-unknown-linux-gnu-gcc (GCC) 3.4.5
->> Copyright (C) 2004 Free Software Foundation, Inc.
->> This is free software; see the source for copying conditions.  There is NO
->> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
->>
->> # make
->> make[1]: `include/asm-ia64/nr-irqs.h' is up to date.
->>   CHK     include/linux/version.h
->>   CHK     include/linux/utsrelease.h
->>   CALL    scripts/checksyscalls.sh
->>   CHK     include/linux/compile.h
->>   CC      drivers/acpi/processor_throttling.o
->> drivers/acpi/processor_throttling.c: In function `acpi_processor_get_throttling':
->> drivers/acpi/processor_throttling.c:841: error: invalid lvalue in unary `&'
->> drivers/acpi/processor_throttling.c: In function `acpi_processor_set_throttling':
->> drivers/acpi/processor_throttling.c:1028: error: invalid lvalue in unary `&'
->> drivers/acpi/processor_throttling.c:1059: error: invalid lvalue in unary `&'
->> make[2]: *** [drivers/acpi/processor_throttling.o] Error 1
->> make[1]: *** [drivers/acpi] Error 2
->> make: *** [drivers] Error 2
-> 
-> I'm pretty sure that I am missing something subtle here,
-> but something that is working for me is:
-> 
-> Index: linux-2.6/include/linux/cpumask.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/cpumask.h	2008-07-29 19:03:06.000000000 +1000
-> +++ linux-2.6/include/linux/cpumask.h	2008-07-29 19:03:16.000000000 +1000
-> @@ -287,7 +287,7 @@ static inline const cpumask_t *get_cpu_m
->   * gcc optimizes it out (it's a constant) and there's no huge stack
->   * variable created:
->   */
-> -#define cpumask_of_cpu(cpu) ({ *get_cpu_mask(cpu); })
-> +#define cpumask_of_cpu(cpu) (*get_cpu_mask(cpu))
->  
->  
->  #define CPU_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(NR_CPUS)
+
+
 
