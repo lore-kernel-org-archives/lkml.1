@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbYG2F4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbYG2F6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754193AbYG2F4u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 01:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbYG2F4b
+	id S1756492AbYG2F6y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 01:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbYG2F6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 01:56:31 -0400
-Received: from mail.renesas.com ([202.234.163.13]:38163 "EHLO
-	mail01.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754477AbYG2F43 (ORCPT
+	Tue, 29 Jul 2008 01:58:45 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:55050 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753810AbYG2F6p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 01:56:29 -0400
-X-AuditID: ac140384-0000000900000ffd-cd-488eabb1094a
-Date: Tue, 29 Jul 2008 14:33:37 +0900
-From: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-Subject: Re: sh se7750_defconfig compile error
-In-reply-to: <20080728214039.GE7713@cs181140183.pp.htv.fi>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org,
+	Tue, 29 Jul 2008 01:58:45 -0400
+Subject: [PATCH] iwlwifi: fix iwl-led compile issue when
+	CONFIG_IWLWIFI_DEBUG is not set
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: yi.zhu@intel.com, reinette.chatre@intel.com
+Cc: ipw3945-devel@lists.sourceforge.net, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org
-Message-id: <488EABB1.2070008@renesas.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=UTF-8
-Content-transfer-encoding: 7bit
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-References: <20080728214039.GE7713@cs181140183.pp.htv.fi>
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Tue, 29 Jul 2008 14:58:42 +0900
+Message-Id: <1217311122.3087.55.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Adrian.
+Fix compile error when CONFIG_IWLWIFI_DEBUG not defined.
 
-Thank you for your check and report.
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
 
-I will fix this soon.
+--- linux-2.6.27-rc1/drivers/net/wireless/iwlwifi/iwl-led.c	2008-07-29 13:51:26.000000000 +0900
++++ linux-2.6.27-rc1-iocontext/drivers/net/wireless/iwlwifi/iwl-led.c	2008-07-29 14:47:13.000000000 +0900
+@@ -194,9 +194,10 @@ static void iwl_led_brightness_set(struc
+ 	if (test_bit(STATUS_EXIT_PENDING, &priv->status))
+ 		return;
+ 
+-
++#ifdef CONFIG_IWLWIFI_DEBUG
+ 	IWL_DEBUG_LED("Led type = %s brightness = %d\n",
+ 			led_type_str[led->type], brightness);
++#endif /* CONFIG_IWLWIFI_DEBUG */
+ 	switch (brightness) {
+ 	case LED_FULL:
+ 		if (led->type == IWL_LED_TRG_ASSOC)
 
-Best regards,
-  Nobuhiro
-
-Adrian Bunk wrote:
-> Commit ffb91ad2751723bcc9925cd38e37013e2169e256
-> (sh: Solution Enginge 7710/7712 SH-Ether support)
-> causes the following compile error with se7750_defconfig:
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      arch/sh/boards/se/770x/setup.o
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/boards/se/770x/setup.c:134: error: 'PHY_ID' undeclared here (not in a function)
-> make[2]: *** [arch/sh/boards/se/770x/setup.o] Error 1
-> 
-> <--  snip  -->
-> 
-> The patch did:
-> #if defined(CONFIG_CPU_SUBTYPE_SH7710)
-> # define PHY_ID 0x00
-> #elif defined(CONFIG_CPU_SUBTYPE_SH7712)
-> # define PHY_ID 0x01
-> #endif
-> 
-> But in this case we have CONFIG_CPU_SUBTYPE_SH7750.
-> 
-> cu
-> Adrian
-> 
 
