@@ -1,73 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYG2Ame@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbYG2AoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754189AbYG2Ame (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 20:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYG2Am0
+	id S1754175AbYG2AoX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 20:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYG2AoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 20:42:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46336 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752276AbYG2AmZ (ORCPT
+	Mon, 28 Jul 2008 20:44:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35244
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751034AbYG2AoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 20:42:25 -0400
-Date: Mon, 28 Jul 2008 17:39:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Johannes Weiner <hannes@saeurebad.de>
-cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linuxfoundation.org,
-       torvalds@linuxfoundation.org, npiggin@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: do not overrun page table ranges in gup
-In-Reply-To: <alpine.LFD.1.10.0807281721200.3486@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0807281737480.3486@nehalem.linux-foundation.org>
-References: <20080728184947.GA5041@martell.zuzino.mipt.ru> <20080728185316.GA19479@martell.zuzino.mipt.ru> <87y73l5zlj.fsf_-_@saeurebad.de> <87tze95yrk.fsf@saeurebad.de> <alpine.LFD.1.10.0807281721200.3486@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 28 Jul 2008 20:44:16 -0400
+Date: Mon, 28 Jul 2008 17:44:15 -0700 (PDT)
+Message-Id: <20080728.174415.154327359.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: combinatorial explosion in lockdep
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080728235133.GA7956@elte.hu>
+References: <20080728.153702.103032029.davem@davemloft.net>
+	<20080728.161318.38361710.davem@davemloft.net>
+	<20080728235133.GA7956@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 29 Jul 2008 01:51:33 +0200
 
+> Any chance to get the "cat /proc/lockdep*" output, so that we could see 
+> and check the expected behavior of the full graph?
 
-On Mon, 28 Jul 2008, Linus Torvalds wrote:
-> 
-> So no, the right fix would be to align 'start' first, which means that 
-> everything else (including 'end') will be page-aligned. Aligning just one 
-> or the other is very very wrong.
+/proc/lockdep loops forever in count_forward_deps() :-)
 
-Does this work?
+I was able to capture a copy of lockdep_chains:
 
-Not pretty, but it stands _some_ chance of being correct.
-
-		Linus
-
-
----
- arch/x86/mm/gup.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/mm/gup.c b/arch/x86/mm/gup.c
-index 3085f25..007bb06 100644
---- a/arch/x86/mm/gup.c
-+++ b/arch/x86/mm/gup.c
-@@ -223,14 +223,17 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
- 			struct page **pages)
- {
- 	struct mm_struct *mm = current->mm;
--	unsigned long end = start + (nr_pages << PAGE_SHIFT);
--	unsigned long addr = start;
-+	unsigned long addr, len, end;
- 	unsigned long next;
- 	pgd_t *pgdp;
- 	int nr = 0;
- 
-+	start &= PAGE_MASK;
-+	addr = start;
-+	len = (unsigned long) nr_pages << PAGE_SHIFT;
-+	end = start + len;
- 	if (unlikely(!access_ok(write ? VERIFY_WRITE : VERIFY_READ,
--					start, nr_pages*PAGE_SIZE)))
-+					start, len)))
- 		goto slow_irqon;
- 
- 	/*
+http://vger.kernel.org/~davem/lockdep_chains.bz2
