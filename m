@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbYG2Q3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYG2Qb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759312AbYG2Q3v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 12:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbYG2Q3h
+	id S1754036AbYG2Qb2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 12:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbYG2QbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 12:29:37 -0400
-Received: from waste.org ([66.93.16.53]:53664 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754832AbYG2Q3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 12:29:36 -0400
-Subject: Re: [patch 1/4] Configure out AIO support
-From: Matt Mackall <mpm@selenic.com>
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       bcrl@kvack.org, linux-aio@kvack.org, akpm@linux-foundation.org
-In-Reply-To: <20080729154747.574989775@free-electrons.com>>
-References: <20080729154520.728594017@free-electrons.com> >
-	  <20080729154747.574989775@free-electrons.com>>
-Content-Type: text/plain
-Date: Tue, 29 Jul 2008 11:27:46 -0500
-Message-Id: <1217348866.15724.148.camel@calx>
+	Tue, 29 Jul 2008 12:31:19 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60951 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750743AbYG2QbT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 12:31:19 -0400
+Date: Tue, 29 Jul 2008 18:31:13 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
+       Frederik Deweerdt <deweerdt@free.fr>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       suresh.b.siddha@intel.com, Ingo Molnar <mingo@elte.hu>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference at 00000002
+Message-ID: <20080729163113.GP30344@one.firstfloor.org>
+References: <20080725095317.GA12636@skywalker> <20080728222643.GA6339@slug> <1217305335.5553.3.camel@marge.simson.net> <20080729120911.GI30344@one.firstfloor.org> <20080729065635.27630e33@infradead.org> <20080729145348.GN30344@one.firstfloor.org> <20080729083029.094a32cb@infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080729083029.094a32cb@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-07-29 at 17:45 +0200, Thomas Petazzoni wrote:
-> plain text document attachment (configure-out-aio-support)
-> This patchs adds the CONFIG_AIO option which allows to remove support
-> for asynchronous I/O operations, that are not necessarly used by
-> applications, particularly on embedded devices. As this is a
-> size-reduction option, it depends on CONFIG_EMBEDDED. It allows to
-> save ~7 kilobytes of kernel code/data:
+> > A power saving feature that has a significant trade off between power
+> > and performance. 
 > 
->    text	   data	    bss	    dec	    hex	filename
-> 1115067	 119180	 217088	1451335	 162547	vmlinux
-> 1108025	 119048	 217088	1444161	 160941	vmlinux.new
->   -7042    -132       0   -7174   -1C06 +/-
+> do you have numbers to explain "significant tradeoff" ?
+
+I don't have numbers, but from the theory it seems pretty clear. 
+When you e.g. have two processes with 6MB cache foot print and 
+you have two 2C CPUs with 6MB cache they will fit in cache, but 
+with power aware scheduler they won't because both processes will run on 
+the single 6MB package.  With NUMA the effect is even worse because
+also the memory controllers are not used evenly.
+And there's the FSB bandwidth, but that's a secondary issue.
 > 
-> This patch has been originally written by Matt Mackall
-> <mpm@selenic.com>, and is part of the Linux Tiny project.
+>  
+> > This means performance will go down. Perhaps it would be ok on
+> > battery, 
 > 
-> Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-> Cc: bcrl@kvack.org
-> Cc: linux-aio@kvack.org
-> Cc: mpm@selenic.com
-> Cc: akpm@linux-foundation.org
+> the illusion that power only matters on battery got buried a few years
+> ago ;)
 
-These all look good to me, naturally.
+My understanding was always that unless you're on battery power saving
+features that are enabled by default are not supposed to impact performance
+significantly. When the user says impacting performance is ok then
+doing that is fine of course, but not by default. And I don't think
+that's an illusion. In fact if power saving means losing a lot of performance
+people would get discouraged from using it, and surely you don't want that.
 
-Signed-off-by: Matt Mackall <mpm@selenic.com>
-
--- 
-Mathematics is the supreme nostalgia of our time.
+-Andi
 
