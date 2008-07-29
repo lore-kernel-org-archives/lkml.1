@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbYG2NgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758479AbYG2Nl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758716AbYG2NgD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 09:36:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbYG2Nfy
+	id S1758479AbYG2Nl2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 09:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbYG2NlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 09:35:54 -0400
-Received: from mail.hevs.ch ([153.109.23.10]:51851 "EHLO mail.hevs.ch"
+	Tue, 29 Jul 2008 09:41:21 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:53559 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753715AbYG2Nfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 09:35:53 -0400
-From: Marc Pignat <marc.pignat@hevs.ch>
-Organization: HEVs
-To: khali@linux-fr.org
-Subject: [RFC,PATCH] i2c: fix device_init_wakeup place
-Date: Tue, 29 Jul 2008 15:35:44 +0200
-User-Agent: KMail/1.9.9
-Cc: dbrownell@users.sourceforge.net, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1753870AbYG2NlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 09:41:20 -0400
+Date: Tue, 29 Jul 2008 17:44:57 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch, minor] workqueue: consistently use 'err' in __create_workqueue_key()
+Message-ID: <20080729134456.GA355@tv-sign.ru>
+References: <1217277694.20627.9.camel@earth> <20080729110250.GA177@tv-sign.ru> <b647ffbd0807290458n23dbe79et45cb27273e4fc2ae@mail.gmail.com> <20080729125201.GC177@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807291535.45689.marc.pignat@hevs.ch>
+In-Reply-To: <20080729125201.GC177@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move device_init_wakeup. At it's current place this is a noop (will be reset in
-device_initialize).
+On 07/29, Oleg Nesterov wrote:
+>
+> On 07/29, Dmitry Adamushko wrote:
+> >
+> > And I'd say this behavior (of having a partially-created object
+> > visible to the outside world) is not that robust. e.g. the
+> > aforementioned race would be eliminated if we place a wq on the global
+> > list only when it's been successfully initialized.
+>
+> Yes, we can change __create_workqueue_key() to check err == 0 before
+> list_add(),
 
-Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
----
+Well no, we can't do even this.
 
-Hi all!
+Then we have another race with cpu-hotplug. Suppose we have CPUs 0, 1, 2.
+create_workqueue() fails to create cwq->thread for CPU 2 and calls
+destroy_workqueue(). Before it takes the cpu_add_remove_lock, _cpu_down()
+removes CPU 1 from cpu_populated_map, but since we didn't add this wq
+on the global list, cwq[1]->thread remains alive.
 
-The current code calls device_init_wakeup() before device_register, but
-device_register will disable device wakeup.
-
-This patch (against 2.6.27-rc1) move the device_init_wakeup() call in the bus
-probe function,just before the probe call.
-
-This will fix 3bbb835d4c53faf0bca62f0e39835926bef40b1f ('New style devices can
-support driver modle wakeup flags')which in fact has no effect. I think there
-is no need to fix -stable, because there is no in-tree users of the
-I2C_CLIENT_WAKE flag.
-
-This patch also include a small functionnal change: the I2C_CLIENT_WAKE is no
-more removed from the client flags, but this should't hurt.
-
-
-Best regards
-
-Marc
+destroy_workqueue() takes cpu_add_remove_lock, and calls
+cleanup_workqueue_thread() for CPUs 0 and 2. cwq[1]->thread is lost.
 
 
+Damn. I had this in mind when I wrote the code, but forgot. We need
+comments, I'll send the patch.
 
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index 7bf38c4..99c6a13 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -108,6 +108,7 @@ static int i2c_device_probe(struct device *dev)
- 	if (!driver->probe || !driver->id_table)
- 		return -ENODEV;
- 	client->driver = driver;
-+	device_init_wakeup(&client->dev, client->flags & I2C_CLIENT_WAKE);
- 	dev_dbg(dev, "probe\n");
- 
- 	status = driver->probe(client, i2c_match_id(driver->id_table, client));
-@@ -262,9 +263,8 @@ i2c_new_device(struct i2c_adapter *adap, struct i2c_board_info const *info)
- 	client->adapter = adap;
- 
- 	client->dev.platform_data = info->platform_data;
--	device_init_wakeup(&client->dev, info->flags & I2C_CLIENT_WAKE);
- 
--	client->flags = info->flags & ~I2C_CLIENT_WAKE;
-+	client->flags = info->flags;
- 	client->addr = info->addr;
- 	client->irq = info->irq;
- 
+Oleg.
+
