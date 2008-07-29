@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbYG2HgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYG2HiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbYG2HgW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 03:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbYG2HgO
+	id S1755513AbYG2HiN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 03:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYG2Hh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 03:36:14 -0400
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:37056 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752943AbYG2HgN (ORCPT
+	Tue, 29 Jul 2008 03:37:59 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:15259 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752943AbYG2Hh6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 03:36:13 -0400
-Date: Tue, 29 Jul 2008 09:36:11 +0200
-From: Bastian Blank <waldi@debian.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/lpar - defer prefered console setup
-Message-ID: <20080729073611.GA30627@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <waldi@debian.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <20080728185651.GA29530@wavehammer.waldi.eu.org> <1217300778.11188.233.camel@pasglop>
+	Tue, 29 Jul 2008 03:37:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=NkE91zvheVjH7ijaQvJpuxXblVIYZrQg4pbZFOTvRluZRy+HUKDdKLemWJweZfPWAn
+         KW5iH+8p+Y+blJzZzDjCsy72Vme9jwy9kBvZerlElRmN1nyad43zkTTGDQAsUfNXgsz+
+         +Hty/LjNzqGE0epV+v6G1H3NYw81m1DcOnYho=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: print per_cpu data address
+Date: Tue, 29 Jul 2008 00:37:10 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1217300778.11188.233.camel@pasglop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200807290037.11101.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 01:06:18PM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2008-07-28 at 20:56 +0200, Bastian Blank wrote:
-> > Hi
-> > 
-> > The powerpc lpar code adds a prefered console at a very early state,
-> > during arch_setup. This runs even before the console setup from the
-> > command line and takes preference.
-> > 
-> > This patch moves the prefered console setup into an arch_initcall which
-> > runs later and allows the specification of the correct console on the
-> > command line. The udbg console remains as boot console.
-> > 
-> Shouldn't it be a console_initcall() ? 
 
-No. console_initcall is for the initial console setup and runs way long
-before the command line setup. It needs to run after that.
+to make sure per_cpu data on correct node.
 
-> > There is a different problem that the code does not pick up the correct
-> > console because it uses a part (4) of the lpar device number (30000004)
-> > instead of the correct index 1.
-> Now, regarding the "different problem" I think it's even worse than
-> that, looking at the code there's some non sensical things in here...
-> 
-> add_preferred_console() argument is what gets compared to
-> console->index, right ? Now if you look at hvc_instantiate(),
-> it compares each "index" argument passed in to hvc_con_driver.index,
-> and that index argument passed from hvc_find_vtys() has strictly
-> nothing to do with the vtermno, it's purely the index of the node
-> found in order...
-> 
-> So I think the whole stuff is non-sensical and needs fixing. 
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-Yep. Would it be a solution to check this in hvc_vio and hvsi and do the
-calls there? They now that the device is available and the correct
-index. But even then it have to run after the command line. (Or the
-console infrastructure fixed to support more then one device of a type.)
+---
+ arch/x86/kernel/setup_percpu.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-Bastian
-
--- 
-Peace was the way.
-		-- Kirk, "The City on the Edge of Forever", stardate unknown
+Index: linux-2.6/arch/x86/kernel/setup_percpu.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_percpu.c
++++ linux-2.6/arch/x86/kernel/setup_percpu.c
+@@ -162,9 +162,16 @@ void __init setup_per_cpu_areas(void)
+ 			printk(KERN_INFO
+ 			       "cpu %d has no node %d or node-local memory\n",
+ 				cpu, node);
++			if (ptr)
++				printk(KERN_DEBUG "per cpu data for cpu%d at %016lx\n",
++					 cpu, __pa(ptr));
+ 		}
+-		else
++		else {
+ 			ptr = alloc_bootmem_pages_node(NODE_DATA(node), size);
++			if (ptr)
++				printk(KERN_DEBUG "per cpu data for cpu%d on node%d at %016lx\n",
++					 cpu, node, __pa(ptr));
++		}
+ #endif
+ 		per_cpu_offset(cpu) = ptr - __per_cpu_start;
+ 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
