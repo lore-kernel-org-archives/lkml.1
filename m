@@ -1,84 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011AbYG2Pau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbYG2PdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755011AbYG2Pau (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 11:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYG2Pal
+	id S1755480AbYG2PdU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 11:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYG2PdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 11:30:41 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38795 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751561AbYG2Pak (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 11:30:40 -0400
-Date: Tue, 29 Jul 2008 08:30:29 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
-       Frederik Deweerdt <deweerdt@free.fr>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       suresh.b.siddha@intel.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
- 00000002
-Message-ID: <20080729083029.094a32cb@infradead.org>
-In-Reply-To: <20080729145348.GN30344@one.firstfloor.org>
-References: <20080725095317.GA12636@skywalker>
-	<20080728222643.GA6339@slug>
-	<1217305335.5553.3.camel@marge.simson.net>
-	<20080729120911.GI30344@one.firstfloor.org>
-	<20080729065635.27630e33@infradead.org>
-	<20080729145348.GN30344@one.firstfloor.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Jul 2008 11:33:09 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57106 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751109AbYG2PdH (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 11:33:07 -0400
+Message-ID: <488F3832.8010007@sgi.com>
+Date: Tue, 29 Jul 2008 08:33:06 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Simon Horman <horms@verge.net.au>
+CC: Linux-kernel <Linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: Regression on ia64 with cpu masks: optimize and clean up	cpumask_of_cpu()
+References: <20080729034459.GA11699@verge.net.au> <20080729095001.GA509@verge.net.au>
+In-Reply-To: <20080729095001.GA509@verge.net.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jul 2008 16:53:48 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
+Check linux-next, I believe the exact same fix is in there.  Apparently,
+as Stephen and others have pointed out earlier, that syntax isn't evaluated 
+correctly in earlier gcc's (at least earlier then the 4. series).
 
-> On Tue, Jul 29, 2008 at 06:56:35AM -0700, Arjan van de Ven wrote:
-> > On Tue, 29 Jul 2008 14:09:11 +0200
-> > Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> > > On Tue, Jul 29, 2008 at 06:22:15AM +0200, Mike Galbraith wrote:
-> > > > On Tue, 2008-07-29 at 00:26 +0200, Frederik Deweerdt wrote:
-> > > > > Hello  Aneesh,
-> > > > > 
-> > > > > On Fri, Jul 25, 2008 at 03:23:17PM +0530, Aneesh Kumar K.V
-> > > > > wrote:
-> > > > > > [  163.378265] BUG: unable to handle kernel NULL pointer
-> > > > > > dereference at 00000002 [  163.378276] IP: [<c0124933>]
-> > > > > > sched_power_savings_store+0x13/0x70
-> > > > > 
-> > > > > Does the attached patch solve the problem?
-> > > > 
-> > > > Patch seems to have missed the boat for rc1 too.
-> > > 
-> > > Hmm.  I'll resend. 
-> > > 
-> > > BTW i think it's clearly a  bug that distributions are even
-> > > accessing that file. It doesn't make any sense in the context
-> > > they are using it (like at every boot). 
-> > 
-> > it's a power saving feature that they very likely turn on by
-> > default...
+Thanks,
+Mike
+
+Simon Horman wrote:
+> On Tue, Jul 29, 2008 at 01:45:01PM +1000, Simon Horman wrote:
+>> Hi,
+>>
+>> I haven't had a time to look into this closeley yet,
+>> but "cpu masks: optimize and clean up cpumask_of_cpu()"
+>> aka e56b3bc7942982ac2589c942fb345e38bc7a341a causes
+>> a build failure for me on ia64.
+>>
+>> # ia64-unknown-linux-gnu-gcc --version
+>> ia64-unknown-linux-gnu-gcc (GCC) 3.4.5
+>> Copyright (C) 2004 Free Software Foundation, Inc.
+>> This is free software; see the source for copying conditions.  There is NO
+>> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+>>
+>> # make
+>> make[1]: `include/asm-ia64/nr-irqs.h' is up to date.
+>>   CHK     include/linux/version.h
+>>   CHK     include/linux/utsrelease.h
+>>   CALL    scripts/checksyscalls.sh
+>>   CHK     include/linux/compile.h
+>>   CC      drivers/acpi/processor_throttling.o
+>> drivers/acpi/processor_throttling.c: In function `acpi_processor_get_throttling':
+>> drivers/acpi/processor_throttling.c:841: error: invalid lvalue in unary `&'
+>> drivers/acpi/processor_throttling.c: In function `acpi_processor_set_throttling':
+>> drivers/acpi/processor_throttling.c:1028: error: invalid lvalue in unary `&'
+>> drivers/acpi/processor_throttling.c:1059: error: invalid lvalue in unary `&'
+>> make[2]: *** [drivers/acpi/processor_throttling.o] Error 1
+>> make[1]: *** [drivers/acpi] Error 2
+>> make: *** [drivers] Error 2
 > 
-> A power saving feature that has a significant trade off between power
-> and performance. 
-
-do you have numbers to explain "significant tradeoff" ?
-
- 
-> This means performance will go down. Perhaps it would be ok on
-> battery, 
-
-the illusion that power only matters on battery got buried a few years
-ago ;)
-
+> I'm pretty sure that I am missing something subtle here,
+> but something that is working for me is:
+> 
+> Index: linux-2.6/include/linux/cpumask.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/cpumask.h	2008-07-29 19:03:06.000000000 +1000
+> +++ linux-2.6/include/linux/cpumask.h	2008-07-29 19:03:16.000000000 +1000
+> @@ -287,7 +287,7 @@ static inline const cpumask_t *get_cpu_m
+>   * gcc optimizes it out (it's a constant) and there's no huge stack
+>   * variable created:
+>   */
+> -#define cpumask_of_cpu(cpu) ({ *get_cpu_mask(cpu); })
+> +#define cpumask_of_cpu(cpu) (*get_cpu_mask(cpu))
+>  
+>  
+>  #define CPU_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(NR_CPUS)
 
