@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbYG2Mzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758471AbYG2M5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758644AbYG2Mzo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 08:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbYG2Mzb
+	id S1758471AbYG2M5s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 08:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYG2M5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 08:55:31 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:59920 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758176AbYG2Mz3 (ORCPT
+	Tue, 29 Jul 2008 08:57:40 -0400
+Received: from userg502.nifty.com ([202.248.238.82]:17611 "EHLO
+	userg502.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751717AbYG2M5k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 08:55:29 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: "Darren Jenkins" <darrenrjenkins@gmail.com>
-Cc: kernel Janitors <kernel-janitors@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fs/fat/dir.c fix resource leak
-In-Reply-To: <1217289813.9367.9.camel@localhost.localdomain>
-	(darrenrjenkins@gmail.com's message of "Tue, 29 Jul 2008 10:03:33
-	+1000")
-References: <1217289813.9367.9.camel@localhost.localdomain>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-Date: Tue, 29 Jul 2008 21:55:25 +0900
-Message-ID: <87hca8alz6.fsf@devron.myhome.or.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+	Tue, 29 Jul 2008 08:57:40 -0400
+DomainKey-Signature: a=rsa-sha1; s=userg502; d=nifty.com; c=nofws; q=dns;
+	h=date:from:to:subject:message-id:in-reply-to:references:
+	x-mailer:mime-version:content-type:content-transfer-encoding;
+	b=t1jq2nFtIyn+btKlNfC9qbxHutkxuGltE6ZCr35F0m0zdVbe17QrywLtpw8XOD5tK
+	O7scQW3NIjG6RPCHDnouA==
+X-Nifty-SrcIP: [218.226.15.228]
+Date: Tue, 29 Jul 2008 21:53:15 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: RE: NETDEV WATCHDOG: wifi0: transmit timed out
+Message-Id: <20080729215315.5a505fe7.komurojun-mbn@nifty.com>
+In-Reply-To: <20080525112308.03a5fda7.komurojun-mbn@nifty.com>
+References: <20080525112308.03a5fda7.komurojun-mbn@nifty.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Darren Jenkins\" <darrenrjenkins@gmail.com> writes:
+Hi,
 
-> Coverity CID 2332 & 2333 RESOURCE_LEAK
+Please try to comment out the "WARN_ON_ONCE"
+at net/sched/sched_generic.c.
+
+
+--- linux-2.6.27-rc1/net/sched/sch_generic.c.orig	2008-07-29 21:45:36.000000000 +0900
++++ linux-2.6.27-rc1/net/sched/sch_generic.c	2008-07-29 21:45:54.000000000 +0900
+@@ -216,7 +216,6 @@ static void dev_watchdog(unsigned long a
+ 				printk(KERN_INFO "NETDEV WATCHDOG: %s (%s): transmit timed out\n",
+ 				       dev->name, netdev_drivername(dev, drivername, 64));
+ 				dev->tx_timeout(dev);
+-				WARN_ON_ONCE(1);
+ 			}
+ 			if (!mod_timer(&dev->watchdog_timer,
+ 				       round_jiffies(jiffies +
+
+
+
+>I should'nt be posting this, due to
+>having  tainted modules(madwifi), but
+>I figured I might as well:(below)
 >
-> In fat_search_long() if fat_parse_long() returns a -ve value we return
-> without first freeing unicode and bufname.
-> This patch free's them on this error path.
->
-> Signed-off-by: Darren Jenkins <darrenrjenkins@gmailcom>
+>[ 5000.986044] NETDEV WATCHDOG: wifi0: transmit timed out
+>[ 5000.991959] ------------[ cut here ]------------
+>[ 5000.991964] WARNING: at net/sched/sch_generic.c:222 dev_watchdog+0x95/0xe7()
 
-I'll apply to current code. Thanks.
-
-BTW, email address of Signed-off-by line is typo?
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Best Regards
+Komuro
