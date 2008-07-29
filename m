@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbYG2PBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624AbYG2PDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756226AbYG2PBS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 11:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbYG2PBE
+	id S1755624AbYG2PDq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 11:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYG2PDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 11:01:04 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:2426 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751323AbYG2PBC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 11:01:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=To+QzPXPNGv4e0bjVHKZVHqTQkHPyx2+V42TMkCyyL3c7tRPWvbYyu7PxHwjjSQ8Kj
-         v4Dl6cPGHDU+E3MpwXXSDX57pQCstFhzXXKeQQLHHsvCplqKslM9Rtq2dUj5uyUUa8Xg
-         DYRCxgl6BHX/ZpKQEnUo+w9gGOlwQ3MTP+AQs=
-Message-ID: <ef1cd66f0807290801q647d7efbn9f9058531bc6f32c@mail.gmail.com>
-Date: Tue, 29 Jul 2008 16:01:01 +0100
-From: "=?ISO-8859-1?Q?Jochen_Vo=DF?=" <jochen.voss@googlemail.com>
-To: schwidefsky@de.ibm.com
-Subject: Re: [patch 02/15] kmsg: Kernel message catalog script.
-Cc: "Sam Ravnborg" <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, "Michael Holzheu" <holzheu@de.ibm.com>
-In-Reply-To: <1217329750.10259.38.camel@localhost>
+	Tue, 29 Jul 2008 11:03:39 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:42837 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750886AbYG2PDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 11:03:38 -0400
+Message-ID: <488F3148.2050500@sgi.com>
+Date: Tue, 29 Jul 2008 08:03:36 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: cpu4096 + smp_affinity breakage
+References: <488F2A65.2090405@gmail.com>
+In-Reply-To: <488F2A65.2090405@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080728175355.734299984@de.ibm.com>
-	 <20080728175511.260174666@de.ibm.com>
-	 <20080728192828.GA11431@uranus.ravnborg.org>
-	 <1217320950.10259.15.camel@localhost>
-	 <20080729084536.GA29659@uranus.ravnborg.org>
-	 <1217329750.10259.38.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Martin,
+Jiri Slaby wrote:
+> Hi,
+> 
+> I see cpu4096 branches in -tip. Do you know about
+> /proc/irq/*/*smp_affinity (irq_affinity_read_proc,
+> default_affinity_read) breakage with NR_CPUS=4096? Reading by `cat' from
+> those files fails due to bitmap sent out is about 1150 bytes, but cat
+> provides only 1024B sized buffer. Can you think about any fix for this?
+> 
+> Using file offset and utilize only portion of that buffer returned to
+> the userspace will break atomicity I guess (does this matter?). If we
+> get a snapshot, it would get old if some reader breaks up. And if we use
+> per-reader buffer, we will be unable to free it. Any ideas?
+> 
+> I think the same problem is for not-at-once-writes.
 
-I think the changelog needs fixing, too:
+The best alternate is to use cpulist_scnprintf but even this has
+problems in the worst pathological case (where you want every other
+cpu listed, e.g. only one of the two hyper threads).  Another alternate
+would be to send only nr_cpu_ids mask bits [with obviously some way
+for the user to discover what nr_cpu_ids is.]
 
-2008/7/29 Martin Schwidefsky <schwidefsky@de.ibm.com>:
-> The kmsg check is invoked with "make K=1" and reads the source files for
-> all objects that are built by the current configuration and searches for
-> matching kmsg descriptions for the kmsg messages in the source which
-> have a messages id > 0. If a message description can not be found the
-> script prints a blueprint and causes a make error.
->
-> The kmsg man page creation is invoked with "make K=2" and reads the source
-> files for all built objects, looks up the message description and writes
-> a man page to $(objtree)/man.
-This should be "D=1" and "D=2" now, shouldn't it?
+There was strong objections to changing any of the /sys interfaces, but
+I don't know what the rules are for the /proc interfaces.  And (iirc),
+overflow was the user's responsibility.  How about using "dd bs=4k ..."?
 
-I hope this helps,
-Jochen
--- 
-http://seehuhn.de/
+Thanks,
+Mike
