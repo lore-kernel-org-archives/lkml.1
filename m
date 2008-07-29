@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbYG2AFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbYG2AGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753875AbYG2AFu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 20:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbYG2AFm
+	id S1754047AbYG2AGk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 20:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbYG2AGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 20:05:42 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:65231 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752144AbYG2AFm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 20:05:42 -0400
-Subject: scripts/mod/modpost.c: fix spelling of module and happens]
-Message-Id: <20080729000536.882624806@fluff.org.uk>
-User-Agent: quilt/0.46-1
-From: Ben Dooks <ben-linux@fluff.org>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Cc: Ben Dooks <ben-linux@fluff.org>
-Content-Disposition: inline; filename=simtec/simtec-modpost-spello-fix.patch
-Date: Tue, 29 Jul 2008 01:05:37 +0100
+	Mon, 28 Jul 2008 20:06:32 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:36455 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752077AbYG2AGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 20:06:31 -0400
+Date: Tue, 29 Jul 2008 09:05:47 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andi Kleen <ak@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, wli@holomorphy.com,
+       linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
+Subject: Re: [2.6 patch] mm/hugetlb.c must #include <asm/io.h>
+Message-ID: <20080729000547.GF28055@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian Bunk <bunk@kernel.org>, Andi Kleen <ak@suse.de>,
+	Nick Piggin <npiggin@suse.de>,
+	Andrew Morton <akpm@linux-foundation.org>, wli@holomorphy.com,
+	linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
+References: <20080727130438.GJ9301@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080727130438.GJ9301@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Spelling fixes in scripts/mod/modpost.c
-
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-
-Index: linux-2.6.26-quilt2/scripts/mod/modpost.c
-===================================================================
---- linux-2.6.26-quilt2.orig/scripts/mod/modpost.c	2008-07-15 21:52:19.000000000 +0100
-+++ linux-2.6.26-quilt2/scripts/mod/modpost.c	2008-07-15 21:52:40.000000000 +0100
-@@ -1468,7 +1468,7 @@ static void section_rel(const char *modn
-  * marked __initdata will be discarded when the module has been intialized.
-  * Likewise for modules used built-in the sections marked __exit
-  * are discarded because __exit marked function are supposed to be called
-- * only when a moduel is unloaded which never happes for built-in modules.
-+ * only when a module is unloaded which never happens for built-in modules.
-  * The check_sec_ref() function traverses all relocation records
-  * to find all references to a section that reference a section that will
-  * be discarded and warns about it.
-
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+On Sun, Jul 27, 2008 at 04:04:38PM +0300, Adrian Bunk wrote:
+> This patch fixes the following build error on sh caused by
+> commit aa888a74977a8f2120ae9332376e179c39a6b07d
+> (hugetlb: support larger than MAX_ORDER):
+> 
+> <--  snip  -->
+> 
+> ...
+>   CC      mm/hugetlb.o
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/mm/hugetlb.c: In function 'alloc_bootmem_huge_page':
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/mm/hugetlb.c:958: error: implicit declaration of function 'virt_to_phys'
+> make[2]: *** [mm/hugetlb.o] Error 1
+> 
+> <--  snip  -->
+> 
+> Reported-by: Adrian Bunk <bunk@kernel.org>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+Acked-by: Paul Mundt <lethal@linux-sh.org>
