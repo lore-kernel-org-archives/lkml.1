@@ -1,91 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbYG2GVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbYG2GXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991AbYG2GVA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 02:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbYG2GUw
+	id S1755419AbYG2GXZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 02:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYG2GXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 02:20:52 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:47919 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752383AbYG2GUv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 02:20:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=uUlpoOO+EhKo3WY+faCZahZIchozuDI8tHGDLkvXAd6ewM4Cc+9N/s2xYv4UMnBaX2
-         ZsYrlVeNSQhJ5JQK9MwrlPnxX/RzWirb0BTn/6ZB/v1WmtKo6BUJyukbskBBQrUxMcaB
-         Bv+kzX4AOStVst5fgbTbeq+JLE7NzrFHDwNlg=
-Message-ID: <7c86c4470807282320o2d072c7dp7a327f133d5969c5@mail.gmail.com>
-Date: Mon, 28 Jul 2008 23:20:50 -0700
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: [patch 00/19] perfmon2 minimal v3: introduction
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080729014730.76b879a4.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 29 Jul 2008 02:23:16 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:40150 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752172AbYG2GXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 02:23:15 -0400
+Date: Tue, 29 Jul 2008 16:23:00 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>, Mike Travis <travis@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: linux-next: build failure
+Message-Id: <20080729162300.733b3e09.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4868dbf6.0af5660a.1972.52f4@mx.google.com>
-	 <20080729014730.76b879a4.sfr@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen,
+Hi Dave,
 
+Today's linux-next build (sparc64 defconfig) failed like this:
 
-On Mon, Jul 28, 2008 at 8:47 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->
-> On Mon, 30 Jun 2008 06:13:26 -0700 (PDT) eranian@googlemail.com wrote:
->>
->> The following patches implement a minimal perfmon2 subsystem which provides
->> access to the hardware performance counters of modern processors.
->
-> First up, I cannot speak to the actual function of the patches, but just
-> to the mechanics of getting them into the kernel.  One good thing is that
-> with CONFIG_PERFMON turned off, it looks like the impact is very close to
-> zero. Two obvious things that would help these being accepted are:
->
-Yes, when CONFIG_PERFMON is off, there should be no penalty at all.
-The hooks are removed via empty inline functions. The extra field in
-task_struct is removed. In x86-specific code, the low-level interrupt
-code is removed. The TIF flags are unused, thus no impact on context
-switch because the thread_info cacheline is checked regardless of perfmon2.
+kernel/time/tick-common.c: In function `tick_check_new_device':
+kernel/time/tick-common.c:210: error: invalid lvalue in unary `&'
+kernel/time/tick-common.c:223: error: invalid lvalue in unary `&'
+kernel/time/tick-common.c:255: error: invalid lvalue in unary `&'
 
+gcc is version 3.4.5 sparc64 cross compiler (powercp64 host).
 
->        ordering - in the current incarnation, the patches produce places
-> where the kernel will not build.  We like things to be ordered so that
-> git bisection does not fail if at all possible - that means that an
-> allmod/yesconfig should build after the application of each patch.
-> Currently this is not so.  It could be mode to do so trivially by
-> delaying the "global" Kconfig/Makefile updates until later in the
-> sequence.  And you really should introduce the system calls *before*
-> wiring them up.
+The below patch fixes it.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I will restructure the patch series so it can be built at any one level of
-of th patch stack.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 29 Jul 2008 16:07:37 +1000
+Subject: [PATCH] cpumask: statement expressions confuse some versions of gcc
 
->
->        quite a few of the macros (especially for the dummy (non
-> CONFIG_PERFMON) versions of functions) should be "static inline"
-> functions unless they absolutely must be macros.  Andrew Morton said it
-> best - "write in C not C preprocessor".
->
-I will fix that as well.
+when you take the address of the result.  Noticed on a sparc64 compile
+using a version 3.4.5 cross compiler.
 
-> I can see that this infrastructure could be very useful and I appreciate
-> that it has been cut down for this initial merge.  These patches (even as
-> they are) compare favourably to some other new infrastructure that has
-> been introduced.
+kernel/time/tick-common.c: In function `tick_check_new_device':
+kernel/time/tick-common.c:210: error: invalid lvalue in unary `&'
+kernel/time/tick-common.c:223: error: invalid lvalue in unary `&'
+kernel/time/tick-common.c:255: error: invalid lvalue in unary `&'
 
-I think I can break it down a bit more especially for x86_64.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/linux/cpumask.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-As discussed with people on LKML and with Andi Kleen last week at OLS, I will
-see what can be done with the syscalls to make them a bit more extensible.
+diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
+index 96d0509..d3219d7 100644
+--- a/include/linux/cpumask.h
++++ b/include/linux/cpumask.h
+@@ -287,7 +287,7 @@ static inline const cpumask_t *get_cpu_mask(unsigned int cpu)
+  * gcc optimizes it out (it's a constant) and there's no huge stack
+  * variable created:
+  */
+-#define cpumask_of_cpu(cpu) ({ *get_cpu_mask(cpu); })
++#define cpumask_of_cpu(cpu) (*get_cpu_mask(cpu))
+ 
+ 
+ #define CPU_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(NR_CPUS)
+-- 
+1.5.6.3
 
-Thanks.
