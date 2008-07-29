@@ -1,65 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbYG2Q7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbYG2RCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754061AbYG2Q7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 12:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbYG2Q7I
+	id S1755111AbYG2RCU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 13:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYG2RCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 12:59:08 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:47280 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751035AbYG2Q7H (ORCPT
+	Tue, 29 Jul 2008 13:02:07 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:50045 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750933AbYG2RCF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 12:59:07 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5349"; a="5145418"
-Message-ID: <488F4C58.10705@qualcomm.com>
-Date: Tue, 29 Jul 2008 09:59:04 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, pj@sgi.com,
-       menage@google.com, vegard.nossum@gmail.com,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
-References: <1216852381-23445-1-git-send-email-maxk@qualcomm.com>	 <488B7DC5.20302@qualcomm.com>  <20080728140748.GB18144@elte.hu> <1217313654.18049.59.camel@twins>
-In-Reply-To: <1217313654.18049.59.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 29 Jul 2008 13:02:05 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ak0GAGDqjkhMRKxB/2dsb2JhbACBW4lEpVI
+Date: Tue, 29 Jul 2008 13:01:51 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Avi Kivity <avi@qumranet.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       linux-btrace@vger.kernel.org
+Subject: Re: [RFC] LTTng merge plan
+Message-ID: <20080729170151.GA24851@Krystal>
+References: <20080717155724.897537670@polymtl.ca> <48862A30.7050701@qumranet.com> <y0mabg991c3.fsf@ton.toronto.redhat.com> <488635A7.2030609@qumranet.com> <20080722221204.GA14661@Krystal> <488C49CC.8040800@qumranet.com> <20080728005405.GA7941@Krystal> <20080729161836.GA10751@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080729161836.GA10751@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:56:07 up 54 days, 21:37,  5 users,  load average: 1.04, 1.45,
+	1.73
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Mon, 2008-07-28 at 16:07 +0200, Ingo Molnar wrote:
->> * Max Krasnyansky <maxk@qualcomm.com> wrote:
->>
->>> Max Krasnyansky wrote:
->>>> This is an updated version of my previous cpuset patch:
->>>>   "Make rebuild_sched_domains() usable from any context (take 2)"
->>> Folks,
->>>
->>> Any comments on this patch ? We need this to complete sched domain 
->>> handling fixes/improvements that we started with the cpu_active_map, 
->>> and to avoid circular locking issues in the cpu hotplug -> 
->>> rebuild_sched_domains path.
->> Paul, Peter, any comments?
+* Frank Ch. Eigler (fche@redhat.com) wrote:
+> Hi, Mathieu -
 > 
-> I'm really not that at home with all that cgroup fiddling, so I'd like a
-> word from the two Pauls..
+> > [...]
+> > Currently, [my merge plan] looks like :
+> > 
+> > In Ingo's trees :
+> > - Tracepoints, scheduler tracepoints instrumentation, ftrace port to
+> >   tracepoints
+> >   - Should make it into 2.6.27 since ftrace needs those.
+> > [...]
 > 
-> Questions I have at the moment:
+> This is the tracepoints infrastructure, and ...
 > 
->  -  do we really need a new workqueue for this? Can't we use the regular
-> keventd stuff, now that Oleg fixed the get_online_cpus() thing?
-> (3da1c84c00c7e5fa8348336bd8c342f9128b0f14)
-No we do not. I was not sure when that will workqueue fix would go in.
-I'll send a delta patch on top.
+> > Short-term submission plan
+> > 
+> > In LTTng patchset
+> > (http://ltt.polymtl.ca/lttng/patch-2.6.26-0.12.tar.bz2)
+> > 
+> > - Instrumentation
+> >   - LTTng tracepoints
+> >     - Used by LTTng, SystemTAP and usable specialized probes.
+> > [...]
+> 
+> ... this is the "meat", which includes both the tracepoints
+> and the the tracepoint-to-marker conversion modules, such as those in
+> "lttng-instrumentation-*-tracepoint-probes.patch", right?
+> 
+> - FChE
 
-> - aren't there funny races with the async_rebuild_sched_domains()
-> stuff? 
-Rebuilds via cpu hotplug path are synchronous, which I believe is 
-important.
-Rebuilds caused by writes into /dev/cpuset do not have to be.  I cannot 
-think of a scenario where race in that path would be an issue.
+Exactly. The tracepoint-to-markers conversion modules bridge between
+the in-kernel API (tracepoints) which declares standard location for
+kernel instrumentation and user-space visible "markers", so that there
+is an indirection level between the instrumented kernel code and what is
+visible from userspace.
 
-Max
+For instance, we have
+
+in kernel/sched.c:context_switch()
+  trace_sched_switch(rq, prev, next);
+
+Which exports a struct rq * and two struct task_struct *. They are used
+by both ftrace, which needs access to these data structures, and by the
+LTTng probes, which extracts the previous PID and state (running,
+waiting..) and next PID to be scheduled in.
+
+Basically, these modules turn the data exported by tracepoints,
+meaningful only to kernel modules, into data useful for userspace trace
+analysis.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
