@@ -1,157 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYG2Egz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754275AbYG2EkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbYG2Egz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 00:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbYG2Egq
+	id S1754275AbYG2EkL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 00:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbYG2Ej6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 00:36:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45100 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751180AbYG2Egq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 00:36:46 -0400
-Date: Mon, 28 Jul 2008 21:35:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Marc Pignat <marc.pignat@hevs.ch>
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
-       David Brownell <david-b@pacbell.net>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>
-Subject: Re: [RFC,PATCH v1] hwmon: ADC124S501 generic driver
-Message-Id: <20080728213548.156af744.akpm@linux-foundation.org>
-In-Reply-To: <200807231307.54837.marc.pignat@hevs.ch>
-References: <200807231307.54837.marc.pignat@hevs.ch>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 29 Jul 2008 00:39:58 -0400
+Received: from sh.osrg.net ([192.16.179.4]:40700 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751435AbYG2Ej5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 00:39:57 -0400
+Date: Tue, 29 Jul 2008 13:38:53 +0900
+To: sfr@canb.auug.org.au
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, joerg.roedel@amd.com,
+       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       robert.richter@amd.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, jbarnes@virtuousgeek.org,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] add iommu_num_pages helper function
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080729135652.f89042c1.sfr@canb.auug.org.au>
+References: <20080729110749.728c54e6.sfr@canb.auug.org.au>
+	<20080729104722H.fujita.tomonori@lab.ntt.co.jp>
+	<20080729135652.f89042c1.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080729133909L.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jul 2008 13:07:54 +0200 Marc Pignat <marc.pignat@hevs.ch> wrote:
+On Tue, 29 Jul 2008 13:56:52 +1000
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> SPI driver for analog to digital converters national semiconductor ADC081S101,
-> ADC124S501, ...
+> Hi, 
 > 
-> Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
+> On Tue, 29 Jul 2008 10:46:31 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> >
+> > > So, I assume a patch created on July 25 is not destined for 2.6.27,
+> > 
+> > Hmm, seems that they will go into 2.6.27:
+> > 
+> > http://marc.info/?l=linux-kernel&m=121729275722287&w=2
+> > 
+> > 
+> > > right?  Especially since it breaks another architecture build and has
+> > > only made it to linux-next on July 29 ... and needs more work given the
+> > > comments already on this patch.
+> > 
+> > It doesn't break another architecture build since only x86 IOMMUs use
+> > the helper function. But as I pointed out, it doesn't work for some
+> > architectures.
 > 
-> Hi all!
+> Um, did you see the linux-next build report I posted (possibly not):
 > 
-> patch against 2.6.26, tested on a custom arm board and only compil-tested on
-> x86.
+> arch/powerpc/kernel/iommu.c:56: error: static declaration of 'iommu_num_pages' follows non-static declaration
+> include/linux/iommu-helper.h:11: error: previous declaration of 'iommu_num_pages' was here
 > 
-> This driver add support for National Semiconductor ADC<bb><c>S<sss> chip family,
-> where:
->  * bb  is the resolution in number of bits (8, 10, 12)
->  * c   is the number of channels (1, 2, 4)
->  * sss is the maximum conversion speed (021 for 200 kSPS, 051 for 500
->    kSPS and 101 for 1 MSPS)
+> This is now a build of 2.6.27-rc1 for powerpc64 ppc64_defconfig ...
+
+Ah, really sorry. Yeah, it breaks POWER and SPARC builds.
+
+
+> So we have a patch first posted to lkml on July 25 first hits linux-next
+> on July 29 and is no in Linus' tree on July 29.  A grep would have found
+> the problem.
 > 
-> Some remarks:
->  * The chip type (-> the number of inputs) are determined by the module alias,
->    is it a good idea? it could be implemented using platform data.
-> 
->  * The Makefile seems ordered alphabetically, what order should be used for
->    the Konfig file?
-> 
+> More care required ...
 
-That changelog is a bit of a mess.  I cleaned up up as:
+Agreed... As I said before, this is not urgent at all so we didn't
+need to rush.
 
-SPI driver for analog to digital converters national semiconductor
-ADC081S101, ADC124S501, ...
 
-This driver adds support for National Semiconductor ADC<bb><c>S<sss> chip
-family, where:
+A fix has already been posted?
 
- * bb  is the resolution in number of bits (8, 10, 12)
- * c   is the number of channels (1, 2, 4)
- * sss is the maximum conversion speed (021 for 200 kSPS, 051 for 500
-   kSPS and 101 for 1 MSPS)
+==
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] move iommu_num_pages helper to x86
 
-Some remarks:
+This IOMMU helper function doesn't work for some architectures:
 
-* The chip type (-> the number of inputs) are determined by the module
-  alias, is it a good idea?  it could be implemented using platform data.
+http://marc.info/?l=linux-kernel&m=121699304403202&w=2
 
-Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
-Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>
-Cc: Jean Delvare <khali@linux-fr.org>
-Cc: David Brownell <david-b@pacbell.net>
+It also breaks POWER and SPARC builds:
 
-but then didn't apply the patch.
+http://marc.info/?l=linux-kernel&m=121730388001890&w=2
 
->
-> ...
->
-> +/* sysfs hook function */
-> +static ssize_t adcxx_read(struct device *dev,
-> +		struct device_attribute *devattr, char *buf)
-> +{
-> +	struct spi_device *spi = to_spi_device(dev);
-> +	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
-> +	struct adcxx *adc = dev_get_drvdata(&spi->dev);
-> +
-> +	u8 tx_buf[2] = { attr->index << 3 }; /* other bits are don't care */
-> +	u8 rx_buf[2];
-> +	int status;
-> +	int value;
+Currently, only x86 IOMMUs use this so let's move it to x86 for
+now.
 
-The driver has rather a lot of inexplicable blank lines in the middle
-of the automatic variable definitions.  The preferred style is no blank
-lines within the definitions and a single blank line after them all,
-thanks.
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/x86/kernel/pci-dma.c    |    8 ++++++++
+ include/asm-x86/iommu.h      |    2 ++
+ include/linux/iommu-helper.h |    1 -
+ lib/iommu-helper.c           |    8 --------
+ 4 files changed, 10 insertions(+), 9 deletions(-)
 
->
-> ...
->
-> +static int __devinit adcxx_probe(struct spi_device *spi, int channels)
-> +{
-> +	struct adcxx *adc;
-> +	int status;
-> +	int i;
-> +
-> +	adc = kzalloc(sizeof *adc, GFP_KERNEL);
-> +	if (!adc)
-> +		return -ENOMEM;
-> +
-> +	/* set a default value for the reference */
-> +	adc->reference = 3300;
-> +
-> +	adc->channels = channels;
-> +
-> +	mutex_init(&adc->lock);
-> +
-> +	dev_set_drvdata(&spi->dev, adc);
-> +
-> +	for (i = 0; i < 3 + adc->channels; i++) {
-> +		status = device_create_file(&spi->dev, &ad_input[i].dev_attr);
-> +		if (status)
-> +			goto out_dev_create_file_failed;
-> +	}
-> +
-> +	adc->hwmon_dev = hwmon_device_register(&spi->dev);
-> +	if (IS_ERR(adc->hwmon_dev)) {
-> +		dev_dbg(&spi->dev, "hwmon_device_register failed.\n");
-> +		status = PTR_ERR(adc->hwmon_dev);
-> +		goto out_dev_reg_failed;
-> +	}
-> +
-> +	return 0;
-> +
-> +out_dev_create_file_failed:
-> +	hwmon_device_unregister(adc->hwmon_dev);
-> +	for (i = 0; i < 3 + adc->channels; i++)
-> +		device_remove_file(&spi->dev, &ad_input[i].dev_attr);
-> +out_dev_reg_failed:
-> +	dev_set_drvdata(&spi->dev, NULL);
-> +	kfree(adc);
-> +	return status;
-> +}
-
-The error recovery here is messed up.  The targets of the `goto's are
-reversed.  But even if that is fixed, we can end up doing
-device_remove_file() of objects which weren't successfully created. 
-That might work, or it might generate runtime warnings or it might
-crash.  I don't know.  It'd be best to just avoid doing it?
-
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index 8dbffb8..87d4d69 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -123,6 +123,14 @@ void __init pci_iommu_alloc(void)
+ 
+ 	pci_swiotlb_init();
+ }
++
++unsigned long iommu_num_pages(unsigned long addr, unsigned long len)
++{
++	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
++
++	return size >> PAGE_SHIFT;
++}
++EXPORT_SYMBOL(iommu_num_pages);
+ #endif
+ 
+ /*
+diff --git a/include/asm-x86/iommu.h b/include/asm-x86/iommu.h
+index ecc8061..5f888cc 100644
+--- a/include/asm-x86/iommu.h
++++ b/include/asm-x86/iommu.h
+@@ -7,6 +7,8 @@ extern struct dma_mapping_ops nommu_dma_ops;
+ extern int force_iommu, no_iommu;
+ extern int iommu_detected;
+ 
++extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
++
+ #ifdef CONFIG_GART_IOMMU
+ extern int gart_iommu_aperture;
+ extern int gart_iommu_aperture_allowed;
+diff --git a/include/linux/iommu-helper.h b/include/linux/iommu-helper.h
+index f8598f5..c975caf 100644
+--- a/include/linux/iommu-helper.h
++++ b/include/linux/iommu-helper.h
+@@ -8,4 +8,3 @@ extern unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
+ 				      unsigned long align_mask);
+ extern void iommu_area_free(unsigned long *map, unsigned long start,
+ 			    unsigned int nr);
+-extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
+diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
+index 889ddce..a3b8d4c 100644
+--- a/lib/iommu-helper.c
++++ b/lib/iommu-helper.c
+@@ -80,11 +80,3 @@ void iommu_area_free(unsigned long *map, unsigned long start, unsigned int nr)
+ 	}
+ }
+ EXPORT_SYMBOL(iommu_area_free);
+-
+-unsigned long iommu_num_pages(unsigned long addr, unsigned long len)
+-{
+-	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
+-
+-	return size >> PAGE_SHIFT;
+-}
+-EXPORT_SYMBOL(iommu_num_pages);
+-- 
+1.5.5.GIT
 
