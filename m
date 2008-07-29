@@ -1,91 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbYG2A25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752964AbYG2A3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753921AbYG2A25 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 20:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbYG2A2t
+	id S1752964AbYG2A3U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 20:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbYG2A3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 20:28:49 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:8079 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751160AbYG2A2s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 20:28:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=MDqcx2sMKBB5TGDWCxlNaWsabIRSB+xgzbCOGBwcYayoUyoBPb1pM1GMMQ7HgX2rsx
-         pmDMxRVoHv/xlH3mBEKlxf+4vdmcFACdAH2H9siZylHGb9dWF6Jp3MNNscO03u3zvalL
-         7nALBvUNb8QP2qbF8kOYM9Kg/c8qBLz6/R1i8=
-Subject: [PATCH] omfs: sparse annotations
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 28 Jul 2008 17:28:46 -0700
-Message-Id: <1217291327.23389.1.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 28 Jul 2008 20:29:06 -0400
+Received: from gw.goop.org ([64.81.55.164]:49752 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751192AbYG2A3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 20:29:05 -0400
+Message-ID: <488E644B.10801@goop.org>
+Date: Mon, 28 Jul 2008 17:28:59 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Cliff Wickman <cpw@sgi.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Comments on UV tlb flushing
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Missing cpu_to_be64 on some constant assignments.
-fs/omfs/dir.c:107:16: warning: incorrect type in assignment (different base types)
-fs/omfs/dir.c:107:16:    expected restricted __be64 [usertype] i_sibling
-fs/omfs/dir.c:107:16:    got unsigned long long
-fs/omfs/file.c:33:13: warning: incorrect type in assignment (different base types)
-fs/omfs/file.c:33:13:    expected restricted __be64 [usertype] e_next
-fs/omfs/file.c:33:13:    got unsigned long long
-fs/omfs/file.c:36:24: warning: incorrect type in assignment (different base types)
-fs/omfs/file.c:36:24:    expected restricted __be64 [usertype] e_cluster
-fs/omfs/file.c:36:24:    got unsigned long long
-fs/omfs/file.c:37:23: warning: incorrect type in assignment (different base types)
-fs/omfs/file.c:37:23:    expected restricted __be64 [usertype] e_blocks
-fs/omfs/file.c:37:23:    got unsigned long long
+I'm just reworking the x86 tlb code to use smp_call_function_mask, and I 
+see how the UV tlb flushing hooks in.  A few things occur to me:
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- fs/omfs/dir.c  |    2 +-
- fs/omfs/file.c |    6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+   1. There should be a CONFIG_X86_UV to select this code.  tlb_uv.o is
+      around 6k, which is not trivial overhead to subject every x86_64
+      kernel to.
+   2. CONFIG_X86_UV should either depend on or select CONFIG_PARAVIRT.
+   3. You should hook into paravirt_ops to enable your tlb-flush code. 
+      That is, in - say - uv_bau_init() you do
+      "pv_mmu_ops.flush_tlb_others = uv_flush_tlb_others".  This removes
+      a test/branch in the generic code.  Using paravirt_ops may open
+      other opportunities to put UV-optimised functions in place without
+      having to modify generic code.
 
-diff --git a/fs/omfs/dir.c b/fs/omfs/dir.c
-index 05a5bc3..c0757e9 100644
---- a/fs/omfs/dir.c
-+++ b/fs/omfs/dir.c
-@@ -104,7 +104,7 @@ int omfs_make_empty(struct inode *inode, struct super_block *sb)
- 
- 	oi = (struct omfs_inode *) bh->b_data;
- 	oi->i_head.h_self = cpu_to_be64(inode->i_ino);
--	oi->i_sibling = ~0ULL;
-+	oi->i_sibling = ~cpu_to_be64(0ULL);
- 
- 	mark_buffer_dirty(bh);
- 	brelse(bh);
-diff --git a/fs/omfs/file.c b/fs/omfs/file.c
-index 66e01fa..7e24990 100644
---- a/fs/omfs/file.c
-+++ b/fs/omfs/file.c
-@@ -30,11 +30,11 @@ void omfs_make_empty_table(struct buffer_head *bh, int offset)
- {
- 	struct omfs_extent *oe = (struct omfs_extent *) &bh->b_data[offset];
- 
--	oe->e_next = ~0ULL;
-+	oe->e_next = ~cpu_to_be64(0ULL);
- 	oe->e_extent_count = cpu_to_be32(1),
- 	oe->e_fill = cpu_to_be32(0x22),
--	oe->e_entry.e_cluster = ~0ULL;
--	oe->e_entry.e_blocks = ~0ULL;
-+	oe->e_entry.e_cluster = ~cpu_to_be64(0ULL);
-+	oe->e_entry.e_blocks = ~cpu_to_be64(0ULL);
- }
- 
- int omfs_shrink_inode(struct inode *inode)
--- 
-1.6.0.rc1.154.ge3fc
+My understanding is that the UV hardware has some kind of 
+payload-carrying IPI mechanism, which is a capability could be useful to 
+express in a higher-level way in the kernel.  Certainly I could imagine 
+using it in a virtual environment as a way to do inter-VCPU messaging 
+with less context switch overhead.
 
-
-
+Thanks,
+    J
