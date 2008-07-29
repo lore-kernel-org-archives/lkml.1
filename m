@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbYG2HOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbYG2HR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbYG2HOt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 03:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYG2HOj
+	id S1754549AbYG2HR1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 03:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbYG2HRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 03:14:39 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:36321 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbYG2HOi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 03:14:38 -0400
-Date: Tue, 29 Jul 2008 01:14:22 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: linux-ia64@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Is topology_core_siblings for use by drivers?
-Message-ID: <20080729071422.GD28989@parisc-linux.org>
+	Tue, 29 Jul 2008 03:17:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35240 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752687AbYG2HRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 03:17:19 -0400
+Date: Tue, 29 Jul 2008 09:16:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, mingo@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 0/5] x86 cleanup: convert round_up() to roundup()
+Message-ID: <20080729071659.GA23511@elte.hu>
+References: <1216997339-31427-1-git-send-email-joerg.roedel@amd.com> <20080726133932.GB4401@elte.hu> <86802c440807282341g65c90f10gbdcf72beecdd0852@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <86802c440807282341g65c90f10gbdcf72beecdd0852@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-allmodconfig currently dies with:
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-ERROR: "cpu_core_map" [drivers/net/sfc/sfc.ko] undefined!
+> On Sat, Jul 26, 2008 at 6:39 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> >
+> >> The x86 architecture declares its own round_up macro. But there is a
+> >> generic one in <linux/kernel.h> which can also be used. This patchset
+> >> replaces the x86 round_up() macro with the generic roundup() one where
+> >> possible. The patches have been compile-tested for 32 and 64 bit and
+> >> boot-tested for 64 bit. If we can fix the other places too we can get
+> >> rid of the x86 specific round_up() in the future.
+> >
+> > applied to tip/x86/cleanups - thanks Joerg!
+> >
+> these patches looks like some backward, aka wrong direction.
+> 
+> #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+> 
+> #define round_up(x, y) (((x) + (y) - 1) & ~((y) - 1))
+> #define round_down(x, y) ((x) & ~((y) - 1))
+> 
+> round_up looks more efficient.
 
-$ grep -r cpu_core_map include/asm-ia64/
-include/asm-ia64/smp.h:extern cpumask_t cpu_core_map[NR_CPUS];
-include/asm-ia64/topology.h:#define topology_core_siblings(cpu) (cpu_core_map[cpu])
+hm, does it ever make a difference to the compiled output?
 
-OK ... it's not exported to modules.  Do other architectures have this
-problem?
-
-$ grep topology_core_siblings include/asm-*/topology.h
-include/asm-ia64/topology.h:#define topology_core_siblings(cpu) (cpu_core_map[cpu])
-include/asm-powerpc/topology.h:#define topology_core_siblings(cpu) (per_cpu(cpu_core_map, cpu))
-include/asm-s390/topology.h:#define topology_core_siblings(cpu) (cpu_core_map[cpu])
-include/asm-x86/topology.h:#define topology_core_siblings(cpu) (per_cpu(cpu_core_map, cpu))
-
-s390, I guess.  But they don't have PCI device drivers.
-
-If device drivers are supposed to call this, please apply this patch:
-
-----
-
-Export cpu_core_map so modules can call topology_core_siblings()
-
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-
-diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
-index 03f1a99..6cb0927 100644
---- a/arch/ia64/kernel/smpboot.c
-+++ b/arch/ia64/kernel/smpboot.c
-@@ -138,6 +138,7 @@ cpumask_t cpu_possible_map = CPU_MASK_NONE;
- EXPORT_SYMBOL(cpu_possible_map);
- 
- cpumask_t cpu_core_map[NR_CPUS] __cacheline_aligned;
-+EXPORT_SYMBOL(cpu_core_map);
- DEFINE_PER_CPU_SHARED_ALIGNED(cpumask_t, cpu_sibling_map);
- EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
- 
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+	Ingo
