@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbYG2F6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbYG2GA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756492AbYG2F6y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 01:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbYG2F6p
+	id S1756353AbYG2GA1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 02:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbYG2GAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 01:58:45 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:55050 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753810AbYG2F6p (ORCPT
+	Tue, 29 Jul 2008 02:00:15 -0400
+Received: from mail.renesas.com ([202.234.163.13]:63460 "EHLO
+	mail03.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753902AbYG2GAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 01:58:45 -0400
-Subject: [PATCH] iwlwifi: fix iwl-led compile issue when
-	CONFIG_IWLWIFI_DEBUG is not set
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: yi.zhu@intel.com, reinette.chatre@intel.com
-Cc: ipw3945-devel@lists.sourceforge.net, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Tue, 29 Jul 2008 14:58:42 +0900
-Message-Id: <1217311122.3087.55.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jul 2008 02:00:14 -0400
+X-AuditID: ac140386-0000000b00001aa8-46-488eac9625ce
+Date: Tue, 29 Jul 2008 14:37:25 +0900
+From: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+Subject: [PATCH] sh: Fix compile error of Solution Engine
+To: linux-sh@vger.kernel.org
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       Paul Mundt <lethal@linux-sh.org>
+Message-id: <488EAC95.4060507@renesas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-2022-JP
+Content-transfer-encoding: 7bit
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix compile error when CONFIG_IWLWIFI_DEBUG not defined.
+When I compiled Solution Engine, this become compile error
+because plaform device of sh_eth device becomes enable.
+When sh7710/sh7712 which could use sh_eth was chosen,
+revised it so that platform device of sh_eth device became enable.
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
 ---
+ arch/sh/boards/se/770x/setup.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
---- linux-2.6.27-rc1/drivers/net/wireless/iwlwifi/iwl-led.c	2008-07-29 13:51:26.000000000 +0900
-+++ linux-2.6.27-rc1-iocontext/drivers/net/wireless/iwlwifi/iwl-led.c	2008-07-29 14:47:13.000000000 +0900
-@@ -194,9 +194,10 @@ static void iwl_led_brightness_set(struc
- 	if (test_bit(STATUS_EXIT_PENDING, &priv->status))
- 		return;
- 
--
-+#ifdef CONFIG_IWLWIFI_DEBUG
- 	IWL_DEBUG_LED("Led type = %s brightness = %d\n",
- 			led_type_str[led->type], brightness);
-+#endif /* CONFIG_IWLWIFI_DEBUG */
- 	switch (brightness) {
- 	case LED_FULL:
- 		if (led->type == IWL_LED_TRG_ASSOC)
+diff --git a/arch/sh/boards/se/770x/setup.c b/arch/sh/boards/se/770x/setup.c
+index cf4a5ba..6c64d77 100644
+--- a/arch/sh/boards/se/770x/setup.c
++++ b/arch/sh/boards/se/770x/setup.c
+@@ -113,6 +113,8 @@ static struct platform_device heartbeat_device = {
+ 	.resource	= heartbeat_resources,
+ };
 
++#if defined(CONFIG_CPU_SUBTYPE_SH7710) ||\
++	defined(CONFIG_CPU_SUBTYPE_SH7712)
+ /* SH771X Ethernet driver */
+ static struct resource sh_eth0_resources[] = {
+ 	[0] = {
+@@ -159,12 +161,16 @@ static struct platform_device sh_eth1_device = {
+ 	.num_resources = ARRAY_SIZE(sh_eth1_resources),
+ 	.resource = sh_eth1_resources,
+ };
++#endif
 
+ static struct platform_device *se_devices[] __initdata = {
+ 	&heartbeat_device,
+ 	&cf_ide_device,
++#if defined(CONFIG_CPU_SUBTYPE_SH7710) ||\
++	defined(CONFIG_CPU_SUBTYPE_SH7712)
+ 	&sh_eth0_device,
+ 	&sh_eth1_device,
++#endif
+ };
+
+ static int __init se_devices_setup(void)
+-- 1.5.6.2
