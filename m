@@ -1,112 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbYG2MSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757906AbYG2M3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758631AbYG2MSO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 08:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbYG2MR7
+	id S1757906AbYG2M3S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 08:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYG2M3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 08:17:59 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:50630 "EHLO mail.screens.ru"
+	Tue, 29 Jul 2008 08:29:05 -0400
+Received: from www.tglx.de ([62.245.132.106]:53922 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755002AbYG2MR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 08:17:58 -0400
-Date: Tue, 29 Jul 2008 16:21:12 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: wait_task_inactive() and !CONFIG_SMP && CONFIG_PREEMPT
-Message-ID: <20080729122010.GB177@tv-sign.ru>
-References: <200807260245.m6Q2jwB4012297@imap1.linux-foundation.org> <20080727121540.GB178@tv-sign.ru> <20080727200551.D3F6A154284@magilla.localdomain> <20080728125704.GA98@tv-sign.ru> <20080728233915.0D00015427E@magilla.localdomain>
-Mime-Version: 1.0
+	id S1752077AbYG2M3E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 08:29:04 -0400
+Date: Tue, 29 Jul 2008 14:28:06 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Uwe.Kleine-Koenig@digi.com, gregkh@suse.de,
+       akpm@linux-foundation.org, hjk@linutronix.de, lethal@linux-sh.org,
+       tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH][RESEND] uio: uio_pdrv_genirq V3
+Message-ID: <20080729122806.GB2221@local>
+References: <20080729121015.13443.91824.sendpatchset@rx1.opensource.se>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080728233915.0D00015427E@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080729121015.13443.91824.sendpatchset@rx1.opensource.se>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/28, Roland McGrath wrote:
->
-> I can't speak to the kthread case.  I suspect that set_task_cpu() is always
-> safe on !SMP PREEMPT, and that's why it's fine.
-
-Yes, kthread_bind() is fine, it changes nothing in *k if !SMP.
-
-> > I refer to this patch of the comment:
-> > 
-> > 	If a second call a short while later returns the same number, the
-> > 	caller can be sure that @p has remained unscheduled the whole time.
-> > 
-> > The dummy version always returns the same number == 1.
+On Tue, Jul 29, 2008 at 09:10:15PM +0900, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
 > 
-> Right.  For the general case where this is the contract wait_task_inactive
-> is expected to meet, it does matter.  I think task_current_syscall() does
-> want this checked for the preempted uniprocessor case, for example.
+> This is V3 of uio_pdrv_genirq.c, a platform driver for UIO with
+> generic IRQ handling code. This driver is very similar to the regular
+> UIO platform driver, but is only suitable for devices that are
+> connected to the interrupt controller using unique interrupt lines.
+
+Hi Magnus,
+I already sent this to Greg on July, 15. I guess this will be merged
+soon. Greg was probably busy with tons of other stuff during the merge
+window.
+
+Thanks,
+Hans
+
 > 
-> > So. I think that wait_task_inactive() needs "defined(SMP) || defined(PREEMPT)"
-> > and the dummy version should return ->nvcsw too.
+> The uio_pdrv_genirq driver includes generic interrupt handling code
+> which disables the serviced interrupt in the interrupt controller
+> and makes the user space driver responsible for acknowledging the
+> interrupt in the device and reenabling the interrupt in the interrupt
+> controller.
 > 
-> Is this what we want?
+> Shared interrupts are not supported since the in-kernel interrupt
+> handler will disable the interrupt line in the interrupt controller,
+> and in a shared interrupt configuration this will stop other devices
+> from delivering interrupts.
 > 
-> 	#ifdef CONFIG_SMP
-> 	extern unsigned long wait_task_inactive(struct task_struct *, long);
-> 	#else
-> 	static inline unsigned long wait_task_inactive(struct task_struct *p,
-> 						       long match_state)
-> 	{
-> 		unsigned long ret = 0;
-> 		if (match_state) {
-> 			preempt_disable();
-> 			if (p->state == match_state)
-> 				ret = (p->nvcsw << 1) | 1;
-> 			preempt_enable();
-> 		}
-> 		return ret;
-> 	}
-> 	#endif
-
-I dont think this is right.
-
-Firstly, the above always fails if match_state == 0, this is not right.
-
-But more importantly, we can't just check ->state == match_state. And
-preempt_disable() buys nothing.
-
-Let's look at task_current_syscall(). The "target" can set, say,
-TASK_UNINTERRUPTIBLE many times, do a lot of syscalls, and not once
-call schedule().
-
-And the task remains fully preemptible even if it runs in
-TASK_UNINTERRUPTIBLE state.
-
-
-Let's suppose we implement kthread_set_nice() in the same manner
-as kthread_bind(),
-
-	kthread_set_nice(struct task_struct *k, long nice)
-	{
-		wait_task_inactive(k, TASK_UNINTERRUPTIBLE);
-
-		... just change ->prio/static_prio ...
-	}
-
-the above is ugly of course, but should be correct correct even
-with !SMP && PREEMPT.
-
-
-I think we need
-
-	#if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
-	extern unsigned long wait_task_inactive(struct task_struct *, long);
-	#else
-	static inline unsigned long wait_task_inactive(struct task_struct *p,
-							long match_state)
-	{
-		if (match_state && p->state != match_state)
-			return 0;
-		return p->nvcsw | (LONG_MAX + 1); // the same in sched.c
-	}
-
-Oleg.
-
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+> ---
+> 
+>  Patch sent to lkml on July 11th, please pick up.
+>  Platform data already in place in arch/sh/kernel/cpu/sh4a/...
+> 
+>  Changes since V2
+>   - readded bitops
+>   - removed irq handler spinlock to fix potential deadlock
+>   - kept irq control spinlock to serialize user space access
+> 
+>  Changes since V1
+>   - allow user space to enable _and_ disable the interrupt
+>   - replaced bitops with spinlock + irq_disabled variable
+>   - renamed pdata variable name to priv
+> 
+>  drivers/uio/Kconfig           |   13 ++
+>  drivers/uio/Makefile          |    1 
+>  drivers/uio/uio_pdrv_genirq.c |  188 +++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 202 insertions(+)
+> 
+> --- 0001/drivers/uio/Kconfig
+> +++ work/drivers/uio/Kconfig	2008-07-29 20:59:36.000000000 +0900
+> @@ -33,6 +33,19 @@ config UIO_PDRV
+>  
+>  	  If you don't know what to do here, say N.
+>  
+> +config UIO_PDRV_GENIRQ
+> +	tristate "Userspace I/O platform driver with generic IRQ handling"
+> +	help
+> +	  Platform driver for Userspace I/O devices, including generic
+> +	  interrupt handling code. Shared interrupts are not supported.
+> +
+> +	  This kernel driver requires that the matching userspace driver
+> +	  handles interrupts in a special way. Userspace is responsible
+> +	  for acknowledging the hardware device if needed, and re-enabling
+> +	  interrupts in the interrupt controller using the write() syscall.
+> +
+> +	  If you don't know what to do here, say N.
+> +
+>  config UIO_SMX
+>  	tristate "SMX cryptengine UIO interface"
+>  	default n
+> --- 0001/drivers/uio/Makefile
+> +++ work/drivers/uio/Makefile	2008-07-29 20:59:36.000000000 +0900
+> @@ -1,4 +1,5 @@
+>  obj-$(CONFIG_UIO)	+= uio.o
+>  obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
+>  obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
+> +obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
+>  obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
+> --- /dev/null
+> +++ work/drivers/uio/uio_pdrv_genirq.c	2008-07-29 20:59:36.000000000 +0900
+> @@ -0,0 +1,188 @@
+> +/*
+> + * drivers/uio/uio_pdrv_genirq.c
+> + *
+> + * Userspace I/O platform driver with generic IRQ handling code.
+> + *
+> + * Copyright (C) 2008 Magnus Damm
+> + *
+> + * Based on uio_pdrv.c by Uwe Kleine-Koenig,
+> + * Copyright (C) 2008 by Digi International Inc.
+> + * All rights reserved.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License version 2 as published by
+> + * the Free Software Foundation.
+> + */
+> +
+> +#include <linux/platform_device.h>
+> +#include <linux/uio_driver.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/bitops.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/stringify.h>
+> +
+> +#define DRIVER_NAME "uio_pdrv_genirq"
+> +
+> +struct uio_pdrv_genirq_platdata {
+> +	struct uio_info *uioinfo;
+> +	spinlock_t lock;
+> +	unsigned long flags;
+> +};
+> +
+> +static irqreturn_t uio_pdrv_genirq_handler(int irq, struct uio_info *dev_info)
+> +{
+> +	struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
+> +
+> +	/* Just disable the interrupt in the interrupt controller, and
+> +	 * remember the state so we can allow user space to enable it later.
+> +	 */
+> +
+> +	if (!test_and_set_bit(0, &priv->flags))
+> +		disable_irq_nosync(irq);
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static int uio_pdrv_genirq_irqcontrol(struct uio_info *dev_info, s32 irq_on)
+> +{
+> +	struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
+> +	unsigned long flags;
+> +
+> +	/* Allow user space to enable and disable the interrupt
+> +	 * in the interrupt controller, but keep track of the
+> +	 * state to prevent per-irq depth damage.
+> +	 *
+> +	 * Serialize this operation to support multiple tasks.
+> +	 */
+> +
+> +	spin_lock_irqsave(&priv->lock, flags);
+> +	if (irq_on) {
+> +		if (test_and_clear_bit(0, &priv->flags))
+> +			enable_irq(dev_info->irq);
+> +	} else {
+> +		if (!test_and_set_bit(0, &priv->flags))
+> +			disable_irq(dev_info->irq);
+> +	}
+> +	spin_unlock_irqrestore(&priv->lock, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +static int uio_pdrv_genirq_probe(struct platform_device *pdev)
+> +{
+> +	struct uio_info *uioinfo = pdev->dev.platform_data;
+> +	struct uio_pdrv_genirq_platdata *priv;
+> +	struct uio_mem *uiomem;
+> +	int ret = -EINVAL;
+> +	int i;
+> +
+> +	if (!uioinfo || !uioinfo->name || !uioinfo->version) {
+> +		dev_err(&pdev->dev, "missing platform_data\n");
+> +		goto bad0;
+> +	}
+> +
+> +	if (uioinfo->handler || uioinfo->irqcontrol || uioinfo->irq_flags) {
+> +		dev_err(&pdev->dev, "interrupt configuration error\n");
+> +		goto bad0;
+> +	}
+> +
+> +	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+> +	if (!priv) {
+> +		ret = -ENOMEM;
+> +		dev_err(&pdev->dev, "unable to kmalloc\n");
+> +		goto bad0;
+> +	}
+> +
+> +	priv->uioinfo = uioinfo;
+> +	spin_lock_init(&priv->lock);
+> +	priv->flags = 0; /* interrupt is enabled to begin with */
+> +
+> +	uiomem = &uioinfo->mem[0];
+> +
+> +	for (i = 0; i < pdev->num_resources; ++i) {
+> +		struct resource *r = &pdev->resource[i];
+> +
+> +		if (r->flags != IORESOURCE_MEM)
+> +			continue;
+> +
+> +		if (uiomem >= &uioinfo->mem[MAX_UIO_MAPS]) {
+> +			dev_warn(&pdev->dev, "device has more than "
+> +					__stringify(MAX_UIO_MAPS)
+> +					" I/O memory resources.\n");
+> +			break;
+> +		}
+> +
+> +		uiomem->memtype = UIO_MEM_PHYS;
+> +		uiomem->addr = r->start;
+> +		uiomem->size = r->end - r->start + 1;
+> +		++uiomem;
+> +	}
+> +
+> +	while (uiomem < &uioinfo->mem[MAX_UIO_MAPS]) {
+> +		uiomem->size = 0;
+> +		++uiomem;
+> +	}
+> +
+> +	/* This driver requires no hardware specific kernel code to handle
+> +	 * interrupts. Instead, the interrupt handler simply disables the
+> +	 * interrupt in the interrupt controller. User space is responsible
+> +	 * for performing hardware specific acknowledge and re-enabling of
+> +	 * the interrupt in the interrupt controller.
+> +	 *
+> +	 * Interrupt sharing is not supported.
+> +	 */
+> +
+> +	uioinfo->irq_flags = IRQF_DISABLED;
+> +	uioinfo->handler = uio_pdrv_genirq_handler;
+> +	uioinfo->irqcontrol = uio_pdrv_genirq_irqcontrol;
+> +	uioinfo->priv = priv;
+> +
+> +	ret = uio_register_device(&pdev->dev, priv->uioinfo);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "unable to register uio device\n");
+> +		goto bad1;
+> +	}
+> +
+> +	platform_set_drvdata(pdev, priv);
+> +	return 0;
+> + bad1:
+> +	kfree(priv);
+> + bad0:
+> +	return ret;
+> +}
+> +
+> +static int uio_pdrv_genirq_remove(struct platform_device *pdev)
+> +{
+> +	struct uio_pdrv_genirq_platdata *priv = platform_get_drvdata(pdev);
+> +
+> +	uio_unregister_device(priv->uioinfo);
+> +	kfree(priv);
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver uio_pdrv_genirq = {
+> +	.probe = uio_pdrv_genirq_probe,
+> +	.remove = uio_pdrv_genirq_remove,
+> +	.driver = {
+> +		.name = DRIVER_NAME,
+> +		.owner = THIS_MODULE,
+> +	},
+> +};
+> +
+> +static int __init uio_pdrv_genirq_init(void)
+> +{
+> +	return platform_driver_register(&uio_pdrv_genirq);
+> +}
+> +
+> +static void __exit uio_pdrv_genirq_exit(void)
+> +{
+> +	platform_driver_unregister(&uio_pdrv_genirq);
+> +}
+> +
+> +module_init(uio_pdrv_genirq_init);
+> +module_exit(uio_pdrv_genirq_exit);
+> +
+> +MODULE_AUTHOR("Magnus Damm");
+> +MODULE_DESCRIPTION("Userspace I/O platform driver with generic IRQ handling");
+> +MODULE_LICENSE("GPL v2");
+> +MODULE_ALIAS("platform:" DRIVER_NAME);
