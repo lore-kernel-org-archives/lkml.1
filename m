@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758741AbYG2NH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbYG2NLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758741AbYG2NH6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 09:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbYG2NHs
+	id S1758054AbYG2NLt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 09:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbYG2NLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 09:07:48 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:39161 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753282AbYG2NHr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 09:07:47 -0400
-Date: Tue, 29 Jul 2008 23:07:45 +1000
-From: Simon Horman <horms@verge.net.au>
-To: Keith Owens <kaos@ocs.com.au>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tony Luck <tony.luck@intel.com>
-Subject: Re: [patch] IA64: only call up() in salinfo_work_to_do() if
-	down_trylock() was successful
-Message-ID: <20080729130742.GA20158@verge.net.au>
-References: <20080729094718.GA5247@verge.net.au> <1163.1217335629@ocs10w>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1163.1217335629@ocs10w>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 29 Jul 2008 09:11:42 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:47059 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752032AbYG2NLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 09:11:41 -0400
+Date: Tue, 29 Jul 2008 08:11:39 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: akpm@linux-foundation.org, menage@google.com,
+       seto.hidetoshi@jp.fujitsu.com, laijs@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] cpuset: fix wrong calculation of relax domain level
+Message-Id: <20080729081139.c858ddbe.pj@sgi.com>
+In-Reply-To: <488E7D92.8020501@cn.fujitsu.com>
+References: <488D3331.8000306@cn.fujitsu.com>
+	<20080728001530.bf7f5e44.pj@sgi.com>
+	<488E7D92.8020501@cn.fujitsu.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 10:47:09PM +1000, Keith Owens wrote:
-> Simon Horman (on Tue, 29 Jul 2008 19:47:20 +1000) wrote:
-> >Aesthetic issues aside is it safe to call up() if down_trylock() failed?
-> >
-> >arch/ia64/kernel/salinfo.c: In function `salinfo_work_to_do':
-> >arch/ia64/kernel/salinfo.c:195: warning: ignoring return value of `down_trylock'
-> >
-> >Signed-off-by: Simon Horman <horms@verge.net.au>
-> >
-> >Index: linux-2.6/arch/ia64/kernel/salinfo.c
-> >===================================================================
-> >--- linux-2.6.orig/arch/ia64/kernel/salinfo.c	2008-07-29 19:06:33.000000000 +1000
-> >+++ linux-2.6/arch/ia64/kernel/salinfo.c	2008-07-29 19:40:02.000000000 +1000
-> >@@ -192,8 +192,8 @@ struct salinfo_platform_oemdata_parms {
-> > static void
-> > salinfo_work_to_do(struct salinfo_data *data)
-> > {
-> >-	down_trylock(&data->mutex);
-> >-	up(&data->mutex);
-> >+	if (down_trylock(&data->mutex) == 0)
-> >+		up(&data->mutex);
-> > }
-> > 
-> > static void
+Li Zefan wrote:
+> > If so, then perhaps:
+> >  1) "update_domain_attr()" could be removed as a separate routine,
+> >     with its code folded into "update_domain_attr_tree()".
 > 
-> NAK.  The whole point of this function is to set the mutex to the up
-> state, irrespective of whether it was already down or not.  Tracking
-> the state of data->mutex in all the possible contexts is just too
-> fragile, especially since it can be modified from NMI context.
-> salinfo_work_to_do() ensures that the mtuex ends in the up state.
-> 
-> To remove the warning, just stick '(void)' in front of down_trylock().
+> It will be folded into update_domain_attr_tree() by gcc.
 
-Thanks, will do.
+My (mild) preference for folding "update_domain_attr()" into
+"update_domain_attr_tree()" was not to save runtime CPU cycles.
+This is not a hot code path.  It was to improve code readability.
 
--- 
-Horms
+Do what you think is best here ... I'm easy.
 
+> I think update_domain_attr_tree() rather than update_domain_attr() needs
+> a comment to state what is does, but as it is a helper function for
+> rebuild_sched_domains(), I don't think we need to state its locking needs.
+
+Then perhaps one could include in the comment for
+"update_domain_attr_tree()" that it is a helper function
+for rebuild_sched_domains(), where its locking is described.
+
+--
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
