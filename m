@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbYG2Sua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758710AbYG2Swb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757997AbYG2Sua (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 14:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYG2SuU
+	id S1758710AbYG2Swb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 14:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbYG2SwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 14:50:20 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:43330 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753363AbYG2SuT (ORCPT
+	Tue, 29 Jul 2008 14:52:21 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:62051 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753616AbYG2SwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 14:50:19 -0400
-Date: Tue, 29 Jul 2008 12:50:02 -0600
-From: Matthew Wilcox <matthew@wil.cx>
+	Tue, 29 Jul 2008 14:52:20 -0400
 To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Ric Wheeler <rwheeler@redhat.com>, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jim Meyering <jim@meyering.net>,
-       linux-kernel@vger.kernel.org, Martin Petersen <mkp@mkp.net>,
+Cc: Matthew Wilcox <matthew@wil.cx>, Ric Wheeler <rwheeler@redhat.com>,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jim Meyering <jim@meyering.net>, linux-kernel@vger.kernel.org,
        Jeff Garzik <jeff@garzik.org>, Matt Domsch <Matt_Domsch@Dell.com>
 Subject: Re: tools support for non-512 byte sector sizes
-Message-ID: <20080729185002.GD24924@parisc-linux.org>
-References: <488F524F.6020905@redhat.com> <20080729182611.GB24924@parisc-linux.org> <1217356645.6103.48.camel@localhost.localdomain> <20080729184243.GC24924@parisc-linux.org> <1217357078.6103.51.camel@localhost.localdomain>
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <488F524F.6020905@redhat.com>
+	<20080729182611.GB24924@parisc-linux.org>
+	<1217356645.6103.48.camel@localhost.localdomain>
+Date: Tue, 29 Jul 2008 14:48:31 -0400
+In-Reply-To: <1217356645.6103.48.camel@localhost.localdomain> (James Bottomley's message of "Tue\, 29 Jul 2008 13\:37\:25 -0500")
+Message-ID: <yq13alsr0g0.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217357078.6103.51.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 01:44:38PM -0500, James Bottomley wrote:
-> On Tue, 2008-07-29 at 12:42 -0600, Matthew Wilcox wrote:
-> > On Tue, Jul 29, 2008 at 01:37:25PM -0500, James Bottomley wrote:
-> > > scsi_debug does exactly the same thing, so it reports anything you tell
-> > > it (Martin Petersen actually added this so he could test with 4k
-> > > sectors).
-> > > 
-> > > The problem, which ata_ram also suffers, is that the tools we most need
-> > > to test are the ones for manipulating non volatile characteristics (like
-> > > partition tables).  We'd really like the disk contents to survive reboot
-> > > for this ...
-> > 
-> > Ummm... _reboot_, or _module unload/reload_?  I could certainly include
-> > an option to populate the ramdisc from a file.  Is the ioctl to re-read
-> > the partition table not enough?
-> 
-> reboot ... we'd like to take the tools through shutdown restart testing
-> to make sure they're all working ... of course, then there's the
-> bios ...
+>>>>> "James" == James Bottomley <James.Bottomley@HansenPartnership.com> writes:
 
-It's not up to us to fix the BIOS.
+James> The problem, which ata_ram also suffers, is that the tools we
+James> most need to test are the ones for manipulating non volatile
+James> characteristics (like partition tables).  We'd really like the
+James> disk contents to survive reboot for this ...
 
-Since the vast majority of users use a distro, and the vast majority of
-distros use a fully modular kernel, wouldn't initialising the contents
-of ata-ram from the initrd/initramfs solve the problem?
+Yeah, I should add that I wanted persistence too.  I went through a
+whole stack (well, 5-6 or so) fibre channel drives from various
+vendors and attempted to low-level format them to 4KB sectors.  Most
+of them laughed in my face.  One of them tried to comply and
+irreparably confused its firmware in the process.
+
+Just yesterday I received a couple of prototype drives in the mail.
+I'll ask the vendor whether they support 4KB and if so I'll give them
+a whirl.
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Martin K. Petersen	Oracle Linux Engineering
+
