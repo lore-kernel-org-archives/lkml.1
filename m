@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYG2CTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbYG2CT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755309AbYG2CTM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 22:19:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYG2CS4
+	id S1754292AbYG2CT3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 22:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbYG2CTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 22:18:56 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55726 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752326AbYG2CSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 22:18:55 -0400
-Message-ID: <488E7D92.8020501@cn.fujitsu.com>
-Date: Tue, 29 Jul 2008 10:16:50 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: akpm@linux-foundation.org, menage@google.com,
-       seto.hidetoshi@jp.fujitsu.com, laijs@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] cpuset: fix wrong calculation of relax domain level
-References: <488D3331.8000306@cn.fujitsu.com> <20080728001530.bf7f5e44.pj@sgi.com>
-In-Reply-To: <20080728001530.bf7f5e44.pj@sgi.com>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jul 2008 22:19:06 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:48739 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754085AbYG2CTF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 22:19:05 -0400
+Date: Mon, 28 Jul 2008 21:19:00 -0500
+From: David Fries <david@fries.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: [PATCH 9/30] W1: new module parameter search_count
+Message-ID: <20080729021900.GI24452@spacedout.fries.net>
+References: <20080729020433.GA24424@spacedout.fries.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="aFi3jz1oiPowsTUB"
+Content-Disposition: inline
+In-Reply-To: <20080729020433.GA24424@spacedout.fries.net>
+User-Agent: Mutt/1.5.4i
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Mon, 28 Jul 2008 21:19:01 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Seems ok to me:
-> 
-> Reviewed-by: Paul Jackson <pj@sgi.com>
-> 
-> 
-> Li Zefan wrote:
->> -			update_domain_attr(dattr, &top_cpuset);
->> +			update_domain_attr_tree(dattr, &top_cpuset);
-> 
-> Does this change mean that there is now only -one- place that calls
-> "update_domain_attr()", that being "update_domain_attr_tree()" ?
-> 
-> If so, then perhaps:
->  1) "update_domain_attr()" could be removed as a separate routine,
->     with its code folded into "update_domain_attr_tree()".
 
-It will be folded into update_domain_attr_tree() by gcc.
+--aFi3jz1oiPowsTUB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->  2) a proper opening comment could be provided "update_domain_attr()",
->     stating what it does, and its locking needs.
-> 
+Added a new module parameter search_count which allows overriding the
+default search count.  -1 continual, 0 disabled, N that many times.
 
-I think update_domain_attr_tree() rather than update_domain_attr() needs
-a comment to state what is does, but as it is a helper function for
-rebuild_sched_domains(), I don't think we need to state its locking needs.
+Signed-off-by: David Fries <david@fries.net>
+Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+---
+ drivers/w1/w1_int.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-> The above, if it makes sense, would be an additional PATCH, on top
-> of your present patches, further refining them.
-> 
-> 
-> Separate topic ...
-> 
-> It bothers me a little that there is a generic 'attributes' and related
-> *_attr() and dattr variable names, all speaking of some set of multiple
-> generic attributes, such as in:
-> 
->         struct sched_domain_attr *dattr;  /* attributes for custom domains */
-> 
-> even though, when all is said and done, there is only one attribute,
-> the relax_domain_level.  The generic, content-free word 'attributes'
-> just obfuscates the single specific value, relax_domain_level, being
-> managed here.
-> 
-> ... However, I'm too lazy to propose a patch to mess with this.
-> 
+diff --git a/drivers/w1/w1_int.c b/drivers/w1/w1_int.c
+index 9d723ef..3fd6e66 100644
+--- a/drivers/w1/w1_int.c
++++ b/drivers/w1/w1_int.c
+@@ -30,6 +30,8 @@
+ #include "w1_int.h"
+=20
+ static u32 w1_ids =3D 1;
++static int w1_search_count =3D -1; /* Default is continual scan */
++module_param_named(search_count, w1_search_count, int, 0);
+=20
+ static int w1_enable_pullup =3D 1;
+ module_param_named(enable_pullup, w1_enable_pullup, int, 0);
+@@ -62,8 +64,8 @@ static struct w1_master * w1_alloc_dev(u32 id, int slave_=
+count, int slave_ttl,
+ 	dev->initialized	=3D 0;
+ 	dev->id			=3D id;
+ 	dev->slave_ttl		=3D slave_ttl;
++	dev->search_count	=3D w1_search_count;
+ 	dev->enable_pullup	=3D w1_enable_pullup;
+-        dev->search_count	=3D -1; /* continual scan */
+=20
+ 	/* 1 for w1_process to decrement
+ 	 * 1 for __w1_remove_master_device to decrement
+--=20
+1.4.4.4
 
-But it doesn't bother me. ;)
+--aFi3jz1oiPowsTUB
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-IMO it's not good to mess things up by sending a patch to just rename all
-the sched_domain_attr to relax_domain_level without doing anything other
-useful work.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFIjn4UAI852cse6PARAqNPAKDQ5c/g0tUZz+pDBXrYXqhEyJYGdQCgrKn5
+lnyaRLWWGP6ZibXoeeJU/0U=
+=0jU5
+-----END PGP SIGNATURE-----
+
+--aFi3jz1oiPowsTUB--
