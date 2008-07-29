@@ -1,180 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756980AbYG2Qtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbYG2Qux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756980AbYG2Qtb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 12:49:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYG2QtV
+	id S1756191AbYG2Qux (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 12:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYG2Qup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 12:49:21 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:34876 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752047AbYG2QtT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 12:49:19 -0400
-Date: Tue, 29 Jul 2008 19:48:31 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] remove unneeded #include <linux/ide.h>'s
-Message-ID: <20080729164831.GC23951@cs181140183.pp.htv.fi>
-References: <20080727130448.GK9301@cs181140183.pp.htv.fi> <200807271632.16417.bzolnier@gmail.com>
+	Tue, 29 Jul 2008 12:50:45 -0400
+Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:16946
+	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751632AbYG2Qup (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 12:50:45 -0400
+X-Trace: 150606027/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6
+X-SBRS: None
+X-RemoteIP: 195.149.44.6
+X-IP-MAIL-FROM: alistair@devzero.co.uk
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqEEACznjkjDlSwG/2dsb2JhbACBWolFpUg
+X-IronPort-AV: E=Sophos;i="4.31,273,1215385200"; 
+   d="scan'208";a="150606027"
+X-IP-Direction: IN
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Pekka Paalanen <pq@iki.fi>
+Subject: Re: Oops in microcode sysfs registration,
+Date: Tue, 29 Jul 2008 17:50:41 +0100
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       shaohua.li@intel.com, tigran@aivazian.fsnet.co.uk,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>
+References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org> <200807291457.58408.alistair@devzero.co.uk> <20080729192214.2d3a4ca5@daedalus.pq.iki.fi>
+In-Reply-To: <20080729192214.2d3a4ca5@daedalus.pq.iki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200807271632.16417.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200807291750.41169.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 27, 2008 at 04:32:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Sunday 27 July 2008, Adrian Bunk wrote:
-> > The sh systemh_defconfig currently fails to build with the following 
-> > error:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> >   CC      arch/sh/boards/renesas/systemh/irq.o
-> > In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/boards/renesas/systemh/irq.c:16:
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/ide.h:645: error: 'CONFIG_IDE_MAX_HWIFS' undeclared here (not in a function)
-> > make[2]: *** [arch/sh/boards/renesas/systemh/irq.o] Error 1
-> 
-> Please also fix the source root of the problem:
-> 
-> arch/sh/boards/renesas/systemh/irq.c should have no bussiness in
-> including include/linux/ide.h (which is for drivers/ide/ _only_)
->...
+On Tuesday 29 July 2008 17:22:14 Pekka Paalanen wrote:
+> > Also, I'm sure this is reproducible without the NVIDIA garbage, but I was
+> > too lazy to test it. If you want me to repeat the experiment without the
+> > driver I would be more than happy to do so.
+>
+> I'm not sure people are willing to look into this without a clean report,
+> so this would be cool. There's even a test module for mmiotrace in the
+> kernel, but I doubt it would make difference to use it or not, when trying
+> to reproduce the crash without the blob.
 
-ide-scsi.c and the mediabay stuff might qualify as exceptions?
+Of course, and I should have attempted to reproduce without the driver.
+Fortunately that was easy: it is not an NVIDIA driver bug.
 
-For the rest a patch is below (on top of your #include <linux/hdreg.h> 
-removal patch).
+Steps to reproduce: have CONFIG_MICROCODE=y and a suitable Intel
+processor, then do:
 
-cu
-Adrian
+echo mmiotrace >/debug/tracing/current_tracer
+echo none >/debug/tracing/current_tracer
 
+And you get this (snipped) oops:
 
-<--  snip  -->
+in mmio_trace_init
+mmiotrace: Disabling non-boot CPUs...
+kvm: disabling virtualization on CPU1
+CPU 1 is now offline
+SMP alternatives: switching to UP code
+CPU0 attaching NULL sched-domain.
+CPU1 attaching NULL sched-domain.
+CPU0 attaching NULL sched-domain.
+mmiotrace: CPU1 is down.
+mmiotrace: enabled.
+in mmio_trace_reset
+mmiotrace: Re-enabling CPUs...
+SMP alternatives: switching to SMP code
+Booting processor 1/1 ip 6000
+Initializing CPU#1
+Calibrating delay using timer specific routine.. <6>7204.76 BogoMIPS (lpj=3602381)
+CPU: L1 I cache: 32K, L1 D cache: 32K
+CPU: L2 cache: 4096K
+CPU: Physical Processor ID: 0
+CPU: Processor Core ID: 1
+x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
+CPU1: Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz stepping 06
+checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+kvm: enabling virtualization on CPU1
+CPU0 attaching NULL sched-domain.
+Switched to high resolution mode on CPU 1
+CPU0 attaching sched-domain:
+ domain 0: span 0-1 level MC
+  groups: 0 1
+CPU1 attaching sched-domain:
+ domain 0: span 0-1 level MC
+  groups: 1 0
+------------[ cut here ]------------
+Kernel BUG at ffffffff8021a31d [verbose debug info unavailable]
+invalid opcode: 0000 [1] PREEMPT SMP
+CPU 0
+Modules linked in: rfcomm l2cap kvm_intel kvm ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack ip_tables x_tables bridge stp llc acpi_cpufreq freq_table coretemp hwmon 
+snd_pcm_oss snd_mixer_oss firewire_sbp2 hci_usb bluetooth arc4 ecb crypto_blkcipher cryptomgr crypto_algapi usbhid zd1211rw mac80211 crypto cfg80211 snd_emu10k1 snd_rawmidi 
+snd_ac97_codec ac97_bus sg snd_seq_device snd_hda_intel snd_pcm snd_util_mem snd_timer sr_mod snd_hwdep i2c_i801 ehci_hcd firewire_ohci uhci_hcd snd snd_page_alloc firewire_core 
+soundcore r8169 cdrom usbcore i2c_core crc_itu_t
+Pid: 2757, comm: bash Tainted: G       A  2.6.27-rc1-damocles #3
+RIP: 0010:[<ffffffff8021a31d>]  [<ffffffff8021a31d>] __mc_sysdev_add+0xc3/0x1f1
+RSP: 0018:ffff8800b8905ce8  EFLAGS: 00010297
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: ffff880080a04000
+RDX: ffffffff8062c680 RSI: 0000000000000003 RDI: ffffffff8059e830
+RBP: ffff8800b8905d48 R08: ffff8800b8904000 R09: ffffffff80229ca4
+R10: ffff8800010247b0 R11: ffff8800bf879de0 R12: 0000000000000018
+R13: 0000000000000001 R14: 0000000000000000 R15: 0000000000000000
+FS:  00007f8ddc78f6e0(0000) GS:ffffffff805da200(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00007f57cb9b2098 CR3: 00000000b8985000 CR4: 00000000000026e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process bash (pid: 2757, threadinfo ffff8800b8904000, task ffff8800bd125640)
+Stack:  ffffffff80627040 0000000000000000 0000000000000008 ffffffff8048bb28
+ 0000000000000003 ffffffff802ce910 ffff8800b8905d28 0000000000000002
+ 00000000ffffffe8 0000000000000001 0000000000000001 ffff880001028418
+Call Trace:
+ [<ffffffff802ce910>] ? sysfs_add_file+0xc/0xe
+ [<ffffffff8021a456>] mc_sysdev_add+0xb/0xd
+ [<ffffffff8047baaf>] mc_cpu_callback+0x4b/0x208
+ [<ffffffff8047b772>] ? mce_cpu_callback+0x3e/0xbc
+ [<ffffffff8024b787>] notifier_call_chain+0x33/0x5b
+ [<ffffffff8024b81f>] raw_notifier_call_chain+0xf/0x11
+ [<ffffffff8047e1dc>] _cpu_up+0xce/0x119
+ [<ffffffff8047e285>] cpu_up+0x5e/0x8a
+ [<ffffffff80224967>] disable_mmiotrace+0xfe/0x173
+ [<ffffffff80265279>] mmio_trace_reset+0x2d/0x44
+ [<ffffffff80262c4d>] tracing_set_trace_write+0xd3/0x10f
+ [<ffffffff80289cab>] ? filp_close+0x67/0x72
+ [<ffffffff8028bee3>] vfs_write+0xa7/0xe1
+ [<ffffffff8028bfe1>] sys_write+0x47/0x6f
+ [<ffffffff8020b6db>] system_call_fastpath+0x16/0x1b
+[   68.405002]
+[   68.405002]
+Code: e8 59 80 e8 fd 69 26 00 48 c7 c2 80 c6 62 80 48 8b 05 c0 00 3c 00 48 8b 04 d8 48 8b 48 08 65 8b 04 25 24 00 00 00 44 39 e8 74 04 <0f> 0b eb fe 4c 8d 04 0a 41 c7 84 24 7c 36 64 80 00 
+00 00 00 41
+RIP  [<ffffffff8021a31d>] __mc_sysdev_add+0xc3/0x1f1
+ RSP <ffff8800b8905ce8>
+---[ end trace ee9c9240024cb48c ]---
 
+I've replaced the originally tainted dmesg with this new clean one, so
+there's no proprietary smell about it :-)
 
-This patch remove unneeded #include <linux/ide.h>'s.
+http://devzero.co.uk/~alistair/2.6.27-rc1-mc-oops/
 
-It also adds a required #include <linux/interrupt.h> that was previously 
-implicitely pulled by ide.h
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-
- arch/arm/mach-pxa/pcm990-baseboard.c |    1 -
- arch/m68k/mac/baboon.c               |    1 -
- arch/m68k/mac/via.c                  |    1 -
- arch/mips/emma2rh/markeins/setup.c   |    1 -
- arch/mips/jazz/setup.c               |    1 -
- arch/sh/boards/renesas/systemh/irq.c |    2 +-
- arch/xtensa/kernel/xtensa_ksyms.c    |    1 -
- drivers/misc/lkdtm.c                 |    4 ----
- 8 files changed, 1 insertion(+), 11 deletions(-)
-
-5d4186cd22d575b6adbbeeee7dfa88299817a408 
-diff --git a/arch/arm/mach-pxa/pcm990-baseboard.c b/arch/arm/mach-pxa/pcm990-baseboard.c
-index 30023b0..90056d5 100644
---- a/arch/arm/mach-pxa/pcm990-baseboard.c
-+++ b/arch/arm/mach-pxa/pcm990-baseboard.c
-@@ -22,7 +22,6 @@
- 
- #include <linux/irq.h>
- #include <linux/platform_device.h>
--#include <linux/ide.h>
- #include <linux/i2c.h>
- #include <linux/pwm_backlight.h>
- 
-diff --git a/arch/m68k/mac/baboon.c b/arch/m68k/mac/baboon.c
-index dae9c98..c7b25b0 100644
---- a/arch/m68k/mac/baboon.c
-+++ b/arch/m68k/mac/baboon.c
-@@ -11,7 +11,6 @@
- #include <linux/mm.h>
- #include <linux/delay.h>
- #include <linux/init.h>
--#include <linux/ide.h>
- 
- #include <asm/traps.h>
- #include <asm/bootinfo.h>
-diff --git a/arch/m68k/mac/via.c b/arch/m68k/mac/via.c
-index f3b27d0..1bdb03c 100644
---- a/arch/m68k/mac/via.c
-+++ b/arch/m68k/mac/via.c
-@@ -27,7 +27,6 @@
- #include <linux/mm.h>
- #include <linux/delay.h>
- #include <linux/init.h>
--#include <linux/ide.h>
- #include <linux/module.h>
- 
- #include <asm/bootinfo.h>
-diff --git a/arch/mips/emma2rh/markeins/setup.c b/arch/mips/emma2rh/markeins/setup.c
-index 62bfb45..65d06d5 100644
---- a/arch/mips/emma2rh/markeins/setup.c
-+++ b/arch/mips/emma2rh/markeins/setup.c
-@@ -27,7 +27,6 @@
- #include <linux/types.h>
- #include <linux/initrd.h>
- #include <linux/irq.h>
--#include <linux/ide.h>
- #include <linux/ioport.h>
- #include <linux/param.h>	/* for HZ */
- #include <linux/root_dev.h>
-diff --git a/arch/mips/jazz/setup.c b/arch/mips/jazz/setup.c
-index d3a531a..b59ba6b 100644
---- a/arch/mips/jazz/setup.c
-+++ b/arch/mips/jazz/setup.c
-@@ -17,7 +17,6 @@
- #include <linux/mm.h>
- #include <linux/console.h>
- #include <linux/fb.h>
--#include <linux/ide.h>
- #include <linux/pm.h>
- #include <linux/screen_info.h>
- #include <linux/platform_device.h>
-diff --git a/arch/sh/boards/renesas/systemh/irq.c b/arch/sh/boards/renesas/systemh/irq.c
-index 82101cc..601c9c8 100644
---- a/arch/sh/boards/renesas/systemh/irq.c
-+++ b/arch/sh/boards/renesas/systemh/irq.c
-@@ -11,8 +11,8 @@
- 
- #include <linux/init.h>
- #include <linux/irq.h>
-+#include <linux/interrupt.h>
- 
--#include <linux/ide.h>
- #include <asm/io.h>
- #include <asm/systemh7751.h>
- #include <asm/smc37c93x.h>
-diff --git a/arch/xtensa/kernel/xtensa_ksyms.c b/arch/xtensa/kernel/xtensa_ksyms.c
-index 6e52cdd..c9a7c5b 100644
---- a/arch/xtensa/kernel/xtensa_ksyms.c
-+++ b/arch/xtensa/kernel/xtensa_ksyms.c
-@@ -18,7 +18,6 @@
- #include <linux/interrupt.h>
- #include <asm/irq.h>
- #include <linux/in6.h>
--#include <linux/ide.h>
- 
- #include <asm/uaccess.h>
- #include <asm/checksum.h>
-diff --git a/drivers/misc/lkdtm.c b/drivers/misc/lkdtm.c
-index 1bfe5d1..2a40d18 100644
---- a/drivers/misc/lkdtm.c
-+++ b/drivers/misc/lkdtm.c
-@@ -54,10 +54,6 @@
- #include <linux/hrtimer.h>
- #include <scsi/scsi_cmnd.h>
- 
--#ifdef CONFIG_IDE
--#include <linux/ide.h>
--#endif
--
- #define NUM_CPOINTS 8
- #define NUM_CPOINT_TYPES 5
- #define DEFAULT_COUNT 10
-
+-- 
+Cheers,
+Alistair.
