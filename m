@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760564AbYG2Uwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760637AbYG2Uw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760564AbYG2Uwb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 16:52:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758811AbYG2UwP
+	id S1760637AbYG2Uw6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 16:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbYG2Uws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 16:52:15 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:64852 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757438AbYG2UwN (ORCPT
+	Tue, 29 Jul 2008 16:52:48 -0400
+Received: from smtp1.tu-cottbus.de ([141.43.99.247]:59098 "EHLO
+	smtp1.TU-Cottbus.De" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755769AbYG2Uws (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 16:52:13 -0400
-Subject: Re: scheduling hrtimers while holding rq->lock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Daniel Rosenthal <danielrosenthal@acm.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Ulrich Drepper <drepper@redhat.com>
-In-Reply-To: <4b6fba110807291223g16ca0bf1o54c270efac409d45@mail.gmail.com>
-References: <4b6fba110807291223g16ca0bf1o54c270efac409d45@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 29 Jul 2008 22:52:10 +0200
-Message-Id: <1217364730.9348.1.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jul 2008 16:52:48 -0400
+X-Greylist: delayed 442 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Jul 2008 16:52:48 EDT
+Date: Tue, 29 Jul 2008 22:45:12 +0200
+From: Eugeniy Meshcheryakov <eugen@debian.org>
+To: alan@lxorguk.ukuu.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] try harder to load tty ldisc driver
+Message-ID: <20080729204512.GA6242@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-29 at 15:23 -0400, Daniel Rosenthal wrote:
-> What's the best way for scheduling code to start an hrtimer while
-> holding the rq->lock?  I am trying to implement SCHED_SPORADIC
-> (sporadic server) in the realtime scheduling class (rt_sched_class),
-> and it needs to schedule aperiodic, asynchronous replenishment
-> operations which are independent of timeslice expiration.  This is to
-> implement the functionality that when a SCHED_SPORADIC task blocks or
-> uses up its timeslice, one of these asynchronous events is scheduled
-> to happen at some time offset in the future that doesn't necessarily
-> correspond to any timeslice expiration.
-> 
-> Is there some way to schedule this event without duplicating the code
-> that the generic scheduler currently uses for its hrtick_timer?  As
-> in, is there a way to do this without adding a thread flag similar in
-> function to TIF_HRTICK_RESCHED and calling an rt_sched_class function
-> from do_notify_resume if the flag is set?
-> 
-> The code snippet below is what I am trying to do.
-> 
-> Please CC me explicitly in any replies.
+Currently function tty_ldisc_get() tries to load an ldisc driver module
+only when tty_ldisc_try_get() returns -EAGAIN. This happens only if
+module is being unloaded. If ldisc module is not loaded
+tty_ldisc_try_get() returns -EINVAL and this case is not handled in
+tty_ldisc_get(), so request_module() is not called.
 
-Look at .27-rc1 ;-)
+Attached patch fixes this by calling request_module() if
+tty_ldisc_try_get() returned any error code.
 
+I discovered this when my UMTS modem stopped working with 2.6.27-rc1
+because module ppp_async was not loaded.
+
+Signed-off-by: Eugeniy Meshcheryakov <eugen@debian.org>
+--
+diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
+index 241cbde..f307f13 100644
+--- a/drivers/char/tty_ldisc.c
++++ b/drivers/char/tty_ldisc.c
+@@ -169,7 +169,7 @@ static int tty_ldisc_get(int disc, struct tty_ldisc *ld)
+ 	if (disc < N_TTY || disc >= NR_LDISCS)
+ 		return -EINVAL;
+ 	err = tty_ldisc_try_get(disc, ld);
+-	if (err == -EAGAIN) {
++	if (err < 0) {
+ 		request_module("tty-ldisc-%d", disc);
+ 		err = tty_ldisc_try_get(disc, ld);
+ 	}
