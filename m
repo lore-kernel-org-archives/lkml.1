@@ -1,133 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbYG2FFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbYG2FQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158AbYG2FFn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 01:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYG2FFf
+	id S1754808AbYG2FQS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 01:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYG2FQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 01:05:35 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:25979 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751310AbYG2FFe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 01:05:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=mVAbHDjtERHW2Rsln7y9AcDmr5u8z9Gnelf77/8xCQdMFnNMtDb2tOu2zbV3KK5+AU
-         lSggpBlKMLWRuyqhKOvjDYcmUV8EWXi7L4e6FR1G3oa5cutZeOCZHbFWGRcL/kYD/6Q5
-         TJlLtez874WC4JIgACw2Asn/kRX6BJNqhYDmY=
-Message-ID: <9e4733910807282205g1f2b2e08y6ca61b38f098ffca@mail.gmail.com>
-Date: Tue, 29 Jul 2008 01:05:33 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Theodore Tso" <tytso@mit.edu>, "Al Viro" <viro@zeniv.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-In-Reply-To: <20080729041337.GC9378@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jul 2008 01:16:06 -0400
+Received: from 1wt.eu ([62.212.114.60]:1994 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752186AbYG2FQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 01:16:05 -0400
+Date: Tue, 29 Jul 2008 07:15:58 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: David W Studeman <avionicsdv@aim.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Keyboard Jammed error patch 2.4.35-pre4
+Message-ID: <20080729051558.GH29189@1wt.eu>
+References: <g6jqud$t5e$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <488E0BB6.7020006@simon.arlott.org.uk>
-	 <488E1147.5040803@simon.arlott.org.uk>
-	 <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com>
-	 <20080729011526.GF28946@ZenIV.linux.org.uk>
-	 <9e4733910807281825v42f9700al420ba48aebf3d790@mail.gmail.com>
-	 <20080729013650.GG28946@ZenIV.linux.org.uk>
-	 <9e4733910807281901i1a39ce93v902dd6bd240e1a34@mail.gmail.com>
-	 <20080729025016.GT9378@mit.edu>
-	 <9e4733910807282023h5479c755wde55e2324909b678@mail.gmail.com>
-	 <20080729041337.GC9378@mit.edu>
+In-Reply-To: <g6jqud$t5e$1@ger.gmane.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/29/08, Theodore Tso <tytso@mit.edu> wrote:
-> On Mon, Jul 28, 2008 at 11:23:31PM -0400, Jon Smirl wrote:
->  > The kernel already has a mailmap file, but it is not complete. So I
->  > should just take this work that makes the mailmap file a lot better
->  > and throw it away? The policy is that the log file should be messed up
->  > enough so that a computer can't process it and that a human can
->  > recover it only with several day's effort? That's a really hard line
->  > to define and we'll probably lose the identity of a bunch of
->  > contributors. I'll follow up with a patch that deletes the current
->  > .mailmap
->
->
-> Personally, I have no objection to the mailmap file as it's on the
->  whole an improvement; if it's been automatically generated and it
->  falsely maps multiple people to a single person, that would be highly
->  unfortunate, but maybe it fixes more problems than it creates.
+Hello David,
 
-The mapping multiple people to a single person problem was always
-there, the new mailmap file doesn't alter it. There simply isn't
-enough information in the kernel source to tell if there are two or
-one Mark Browns. The file would need to be extended to encode more
-information.
+On Sun, Jul 27, 2008 at 11:59:47PM -0700, David W Studeman wrote:
+>  Hello! The changes that were made on 04-25-2007 as "[PATCH 
+> 2.4.35-pre4] fix 'pc_keyb: controller jammed (0xA7)' error" have broken 
+> the ability to compile with no keyboard and no VT support. This mainly 
+> affects Cobalt machines which do not have dmi present as these use a 
+> flashrom to boot with and not a typical bios so dmi blacklisting would 
+> be pointless unless it allowed for no dmi present and then blacklist. I 
+> had to create a patch against 2.4.34 to restore the ability to compile 
+> with no keyboard and VT support.
 
-Mark Brown <broonie@opensource.wolfsonmicro.com>
-Mark Brown <broonie@sirena.org.uk>
+Grrr... I see what's happening. I remember having checked that the
+kbd_controller_present macro was really not used before merging the
+patch, but obviously I had not looked deep enough. It's defined by
+ia64, mips and mips64 in include/asm.
 
-If the Marks want to separate themselves they will need to alter the
-mailmap. With the new mailmap this is easily done. With the old one
-you would have need to identify all of the aliases first.
+Could you please test the patch below (untested here). It should revert
+to pre-2.4.35 behaviour on all architectures cited above. If you confirm
+that it works, I'll merge it.
 
-It's the higher level tools that are combining these into a single person.
+BTW, in the mean time, you can boot with the "nokeyb" option. It will
+disable the keyboard. This is what I use on some non-blacklisted systems,
+and the option was precisely provided by this patch.
 
->  I think the part most people are seriously objecting to is that the
->  supposition that Linus and some of his top lieutenants should be
->  enforcing some arbitrary rule that rejects commits if they come from
->  addresses outside of your .mailmap file (unless they first send a
->  patch to add their e-mail address to the .mailmap file), in some kind
->  of misguided attempt to enforce validation, which apparently the main
->  justification for which is so that you and others can runs some
->  statistical analysis, of which there seems to be some dispute whether
->  or not encouraging people to compete to get into the top 20
->  signed-off-by by splitting up commits into 100 different micro-patches
->  should be considered a desirable side effect of said statistical
->  analysis.
+Also, if you don't have any PC keyboard on your machines, you can
+build without support for any VT/keyboard. I'm already doing this
+on some embedded systems, and it works fine. If your platform still
+requires that some keyboard is enabled, you may want to try to enable
+CONFIG_DUMMY_KEYB which I've been using in the past.
 
-That whole thread was pointless, the scripts for doing validation
-don't exist. The stat tools are helpful in finding errors in the
-mailmap file. I never cared about the stat results, I already know who
-the top developers are. Let's drop the whole validation concept too
-since it is obviously upsetting people.
+Regards,
+Willy
 
-There are two types of entries in the file. Ones that alter the names
-associated with an email and ones that don't. You could argue that the
-ones that don't alter the names aren't needed. They're in there to
-make maintenance on the file easier.
+>From e4827f141dc86c540971082877124b213557ece0 Mon Sep 17 00:00:00 2001
+From: Willy Tarreau <w@1wt.eu>
+Date: Tue, 29 Jul 2008 07:06:00 +0200
+Subject: pc_keyb: fix breakage on ia64/mips/mips64
 
-Putting all emails in the file lets you do maintenance by extracting
-the complete list of emails from the log and then removing the ones
-already in the file. Now you only have to manually check these new
-emails. If the unchanged entries were removed from the file they'd get
-mixed in with the new emails. Each time you updated mailmap you'd have
-a couple thousand emails to check.
+Commit f8db8c9c81afb4b04c146cae0e2a1fd311de1f22 fixed the keyboard
+controller jammed issue on keyboard-less PCs, but introduced the
+problem for other architectures (ia64/mips/mips64) which already
+define their own keyboard probing method.
 
-Putting the unchanged entries in the file also makes it very easy for
-people who want to alter their name entry. Just edit the mailmap file.
-Everything is there and sorted by name. Change the name for all of
-your aliases to whatever you want. Just make sure the names are all
-identical on the aliases.
+This patch gives precedence to these archs' probing method and only
+defines the setup option if no arch-specific method was defined.
 
->  As I said earlier, the moment you started advocating enforcing
->  validation, you may have started to confuse which is the tail and
->  which is the dog.  People should be supplying patches to improve the
->  kernel; not to provide accurate fodder for statistical analysis.
+Problem reported by David W Studeman.
 
-These addresses have more purposes than statistical analysis. They
-also record the responsibility chain of who submitted the patch. It
-seems prudent to me that we should make some effort to attempt to keep
-that chain in a reasonably clean state.
+Signed-off-by: Willy Tarreau <w@1wt.eu>
+---
+ drivers/char/pc_keyb.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
-I believe that people can get their name/email right in a patch 99% of
-the time. The bulk of the 12% error rate appears to be coming from
-maintainer tools mangling the patches and exposed internal mail server
-names. The real message is that there are some tools that need to be
-fixed.
-
+diff --git a/drivers/char/pc_keyb.c b/drivers/char/pc_keyb.c
+index d4e1611..b90e659 100644
+--- a/drivers/char/pc_keyb.c
++++ b/drivers/char/pc_keyb.c
+@@ -61,6 +61,10 @@ unsigned char pckbd_sysrq_xlate[128] =
+ 	"\r\000/";					/* 0x60 - 0x6f */
+ #endif
+ 
++/* Warning: do not redefine kbd_controller_present on ia64, mips and mips64 */
++#ifndef kbd_controller_present
++#define kbd_controller_present() keyboard_controller_present
++
+ int keyboard_controller_present __initdata = 1;
+ static int __init removable_keyb(char *str)
+ {
+@@ -68,6 +72,7 @@ static int __init removable_keyb(char *str)
+         return 0;
+ }
+ __setup("nokeyb", removable_keyb);
++#endif
+ 
+ static void kbd_write_command_w(int data);
+ static void kbd_write_output_w(int data);
+@@ -77,8 +82,6 @@ static void __aux_write_ack(int val);
+ static int aux_reconnect = 0;
+ #endif
+ 
+-#define kbd_controller_present() keyboard_controller_present
+-
+ static spinlock_t kbd_controller_lock = SPIN_LOCK_UNLOCKED;
+ static unsigned char handle_kbd_event(void);
+ 
+@@ -905,7 +908,7 @@ static char * __init initialize_kbd(void)
+ 
+ void __init pckbd_init_hw(void)
+ {
+-	if (!keyboard_controller_present) {
++	if (!kbd_controller_present()) {
+ 		kbd_exists = 0;
+ 		return;
+ 	}
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+1.5.3.8
+
