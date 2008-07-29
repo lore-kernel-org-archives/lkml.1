@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbYG2Hs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbYG2HtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755824AbYG2Hs0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 03:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbYG2HsQ
+	id S1756396AbYG2HtF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 03:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYG2Hsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 03:48:16 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:59131 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753005AbYG2HsQ (ORCPT
+	Tue, 29 Jul 2008 03:48:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52346 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753259AbYG2Hsy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 03:48:16 -0400
-Subject: Re: linux-next: Tree for July 29
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080729172337.b3d74100.sfr@canb.auug.org.au>
-References: <20080729172337.b3d74100.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Organization: NTT Open Source Software Center
-Date: Tue, 29 Jul 2008 16:48:14 +0900
-Message-Id: <1217317694.11957.12.camel@sebastian.kern.oss.ntt.co.jp>
+	Tue, 29 Jul 2008 03:48:54 -0400
+Date: Tue, 29 Jul 2008 00:47:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Markus Lidel <Markus.Lidel@shadowconnect.com>,
+       Vasily Averin <vvs@sw.ru>
+Subject: Re: [PATCH]: Proposed fix to the I2O problems with > 4GB space
+Message-Id: <20080729004756.113d85a0.akpm@linux-foundation.org>
+In-Reply-To: <20080725131637.48072ef3@lxorguk.ukuu.org.uk>
+References: <20080725131637.48072ef3@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch below gets rid of a compile error that would be nice to get
-fixed in Linus' tree.
+On Fri, 25 Jul 2008 13:16:37 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
--------- Forwarded Message --------
-From: Fernando Luis Vázquez Cao <fernando@oss.ntt.co.jp>
-To: yi.zhu@intel.com, reinette.chatre@intel.com
-Cc: ipw3945-devel@lists.sourceforge.net, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] iwlwifi: fix iwl-led compile issue when CONFIG_IWLWIFI_DEBUG is not set
-Date: 	Tue, 29 Jul 2008 14:58:42 +0900
+> From: Alan Cox <alan@redhat.com>
+> 
+> The I2O ioctls assume 32bits. In itself that is fine as they are old cards
+> and nobody uses 64bit. However on LKML it was noted this assumption is also
+> made for some ioctl allocated memory and is unsafe on 64bit systems.
+> 
+> Fixing this is a mess. It turns out there is tons of crap buried in a header
+> file that does racy 32/64bit filtering on the masks.
+> 
+> So we:
+> - Verify all callers of the racy code can sleep (i2o_dma_[re]alloc)
+> - Move the code into a new i2o/memory.c file
+> - Remove the gfp_mask argument so nobody can try and misuse the function
+> - Wrap a mutex around the problem area (a single mutex is easy to do and
+>   none of this is performance relevant)
+> - Switch the remaining problem kmalloc holdout to use i2o_dma_alloc
+> 
+> There is a remaining race but that causes 32bit allocations to occur very
+> rarely during block I/O when 64bit could be used. I don't think that is worth
+> the cost of fixing as the impact is just a negligible performance loss.
+> 
+> Signed-off-by: Alan Cox <alan@redhat.com>
+> 
 
-Fix compile error when CONFIG_IWLWIFI_DEBUG not defined.
+I think you sent the wrong version of this patch - i2o_dma_alloc() is
+all mucked up.  Sometimes takes three args, sometimes four.  When it's
+four the fourth arg is sometimes a gfp_t, sometimes a PCI_DMA_foo.
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+It fell afoul of the dma_mapping_error() interface change too.
 
---- linux-2.6.27-rc1/drivers/net/wireless/iwlwifi/iwl-led.c	2008-07-29 13:51:26.000000000 +0900
-+++ linux-2.6.27-rc1-iocontext/drivers/net/wireless/iwlwifi/iwl-led.c	2008-07-29 14:47:13.000000000 +0900
-@@ -194,9 +194,10 @@ static void iwl_led_brightness_set(struc
- 	if (test_bit(STATUS_EXIT_PENDING, &priv->status))
- 		return;
- 
--
-+#ifdef CONFIG_IWLWIFI_DEBUG
- 	IWL_DEBUG_LED("Led type = %s brightness = %d\n",
- 			led_type_str[led->type], brightness);
-+#endif /* CONFIG_IWLWIFI_DEBUG */
- 	switch (brightness) {
- 	case LED_FULL:
- 		if (led->type == IWL_LED_TRG_ASSOC)
+> (but could do with more testing, especially on 64bit > 4GB boxes with 64bit
+> capable I2O cards)
 
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+A bit of git-trolling indicates that Vasily might be able to help out
+with a bit of testing?
 
