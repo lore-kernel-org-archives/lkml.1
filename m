@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbYG2TBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757519AbYG2TD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752703AbYG2TBE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 15:01:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbYG2TAt
+	id S1757519AbYG2TD5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 15:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbYG2TDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 15:00:49 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:43730 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751581AbYG2TAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 15:00:48 -0400
-Subject: Re: tools support for non-512 byte sector sizes
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
+	Tue, 29 Jul 2008 15:03:47 -0400
+Received: from waste.org ([66.93.16.53]:51451 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751051AbYG2TDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 15:03:46 -0400
+Subject: Re: [patch 2/4] Configure out file locking features
+From: Matt Mackall <mpm@selenic.com>
 To: Matthew Wilcox <matthew@wil.cx>
-Cc: Ric Wheeler <rwheeler@redhat.com>, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jim Meyering <jim@meyering.net>,
-       linux-kernel@vger.kernel.org, Martin Petersen <mkp@mkp.net>,
-       Jeff Garzik <jeff@garzik.org>, Matt Domsch <Matt_Domsch@Dell.com>
-In-Reply-To: <20080729185002.GD24924@parisc-linux.org>
-References: <488F524F.6020905@redhat.com>
-	 <20080729182611.GB24924@parisc-linux.org>
-	 <1217356645.6103.48.camel@localhost.localdomain>
-	 <20080729184243.GC24924@parisc-linux.org>
-	 <1217357078.6103.51.camel@localhost.localdomain>
-	 <20080729185002.GD24924@parisc-linux.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20080729181751.GA24924@parisc-linux.org>
+References: <20080729154520.728594017@free-electrons.com> >
+	 <20080729154747.872888047@free-electrons.com>
+	 <20080729181751.GA24924@parisc-linux.org>
 Content-Type: text/plain
-Date: Tue, 29 Jul 2008 14:00:19 -0500
-Message-Id: <1217358019.6103.56.camel@localhost.localdomain>
+Date: Tue, 29 Jul 2008 13:57:55 -0500
+Message-Id: <1217357875.15724.167.camel@calx>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-29 at 12:50 -0600, Matthew Wilcox wrote:
-> On Tue, Jul 29, 2008 at 01:44:38PM -0500, James Bottomley wrote:
-> > On Tue, 2008-07-29 at 12:42 -0600, Matthew Wilcox wrote:
-> > > On Tue, Jul 29, 2008 at 01:37:25PM -0500, James Bottomley wrote:
-> > > > scsi_debug does exactly the same thing, so it reports anything you tell
-> > > > it (Martin Petersen actually added this so he could test with 4k
-> > > > sectors).
-> > > > 
-> > > > The problem, which ata_ram also suffers, is that the tools we most need
-> > > > to test are the ones for manipulating non volatile characteristics (like
-> > > > partition tables).  We'd really like the disk contents to survive reboot
-> > > > for this ...
-> > > 
-> > > Ummm... _reboot_, or _module unload/reload_?  I could certainly include
-> > > an option to populate the ramdisc from a file.  Is the ioctl to re-read
-> > > the partition table not enough?
+
+On Tue, 2008-07-29 at 12:17 -0600, Matthew Wilcox wrote:
+> On Tue, Jul 29, 2008 at 05:45:22PM +0200, Thomas Petazzoni wrote:
+> > This patch adds the CONFIG_FILE_LOCKING option which allows to remove
+> > support for advisory locks. With this patch enabled, the flock()
+> > system call, the F_GETLK, F_SETLK and F_SETLKW operations of fcntl()
+> > and NFS support are disabled. These features are not necessarly needed
+> > on embedded systems. It allows to save ~11 Kb of kernel code and data:
 > > 
-> > reboot ... we'd like to take the tools through shutdown restart testing
-> > to make sure they're all working ... of course, then there's the
-> > bios ...
+> >    text	   data	    bss	    dec	    hex	filename
+> > 1125436	 118764	 212992	1457192	 163c28	vmlinux.old
+> > 1114299	 118564	 212992	1445855	 160fdf	vmlinux
+> >  -11137    -200       0  -11337   -2C49 +/-
+> > 
+> > This patch has originally been written by Matt Mackall
+> > <mpm@selenic.com>, and is part of the Linux Tiny project.
+> > 
+> > Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 > 
-> It's not up to us to fix the BIOS.
+> In principle, I think this is a great idea.
 > 
-> Since the vast majority of users use a distro, and the vast majority of
-> distros use a fully modular kernel, wouldn't initialising the contents
-> of ata-ram from the initrd/initramfs solve the problem?
+> >  config NFS_FS
+> >  	tristate "NFS client support"
+> > -	depends on INET
+> > +	depends on INET && FILE_LOCKING
+> >  	select LOCKD
+> >  	select SUNRPC
+> >  	select NFS_ACL_SUPPORT if NFS_V3_ACL
+> 
+> I think this part is a little lazy.  It should be possible to support
+> NFS without file locking.  I suspect that's really not in-scope for the
+> linux-tiny tree as currently envisaged with the focus on embedded
+> devices that probably don't use NFS anyway.  Do we want to care about
+> the situation of a machine with fixed workload, that doesn't need file
+> locking, but does use NFS?
 
-Well ... we'd really like it file backed to truly verify ... sort of
-like scsi_debug on a loopback.  But saving on shutdown and
-reinitialising from the saved image on boot would likely be perfect.
+I would lean towards no, but if someone comes along who cares, they're
+welcome to try it. This stuff all has to strike a balance between
+savings and effort/complexity/maintainability, so any time the submitter
+is too lazy to cover a less common use case, it's probably a good sign
+they're approaching that tipping point. 
 
-James
+On the other hand, if you think it's trivial to do a locking-ectomy on
+NFS, I'd be happy to see it.
 
+The typical embedded NFS-based devices are NAS servers and media players
+and are going to be more concerned about things like page cache
+balancing.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
 
