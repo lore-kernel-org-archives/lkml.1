@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760212AbYG2RoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759165AbYG2Rq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760212AbYG2RoI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 13:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759741AbYG2Rm6
+	id S1759165AbYG2Rq4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 13:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbYG2Rqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 13:42:58 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:53980 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760202AbYG2Rm4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 13:42:56 -0400
-Subject: Subtle but oops causing problem with class_device->device
-	conversion
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Kay Sievers <kay.sievers@vrfy.org>, Hannes Reinecke <hare@suse.de>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 29 Jul 2008 12:42:28 -0500
-Message-Id: <1217353348.6103.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Tue, 29 Jul 2008 13:46:47 -0400
+Received: from gw.goop.org ([64.81.55.164]:49698 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750932AbYG2Rqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 13:46:46 -0400
+Message-ID: <488F5781.2030909@goop.org>
+Date: Tue, 29 Jul 2008 10:46:41 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Cliff Wickman <cpw@sgi.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, steiner@sgi.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: Comments on UV tlb flushing
+References: <488E644B.10801@goop.org> <200807291412.18495.nickpiggin@yahoo.com.au> <20080729133204.GA13138@sgi.com> <488F2C9B.9070306@goop.org> <20080729173420.GA18296@sgi.com>
+In-Reply-To: <20080729173420.GA18296@sgi.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's taken me a while to track this down.  Basically there's an oops in
-scsi_transport_spi that's directly caused by this.
+Cliff Wickman wrote:
+> I don't know much about x86 configuration options.  It looks like
+> CONFIG_X86_GENERICARCH is fairly new, so I don't know where to look
+> for samples of how it will be set by RH and SuSE.
+>   
 
-What happened is that you made all class devices become real devices and
-be parented to devices they were formerly allied to through the class
-device dev pointer.  This means that effectively you expanded the child
-list of every device to include not only its real children but also its
-class devices.
+No, it's a very old option.  Certainly the Fedora Rawhide kernel I have 
+sitting here has it set, and I'm pretty sure RHEL always has it set, 
+since it's necessary to support the big iron hardware that people like 
+to run RHEL on.  Basically, if a distro doesn't have it set, then they 
+don't want to support big machines like yours and you should just 
+recommend your customers use something else.  There are a lot of other 
+config options which will affect whether a kernel is suitable for your 
+hardware, like max cpus.  A "desktop only" distro might set max cpus to 
+8 or 16, which I assume would be disappointingly small for someone who's 
+just bought a 4k cpu machine.
 
-This breaks in device_for_each_child *if* the routine in the iterator
-doesn't perform checks on the devices it gets back (scsi_transport_spi
-was assuming that every device it got was embedded in a struct
-scsi_device because they're the only logical children of a scsi_target).
+> But if the tlb_uv.o code should be present in "every" distro x86 kernel
+> I don't see the point of having to configure it in.  Why not just
+> configure it out for small (embedded) kernels?
 
-I can fix the SCSI breakage, but the whole tree will need auditing to
-check that nothing else is using this assumption.
+Because it's not an binary thing.  Lots of people who are compiling 
+their own kernels for specialized uses don't set CONFIG_EMBEDDED, but 
+also don't want a kitchen sink kernel.  6k isn't that much, but if every 
+obscure platform enabled some always-on code it rapidly starts to build up.
 
-James
+Basically, if you want to make sure if you're going to get some level of 
+distro support, you need to make contact with the distros directly and 
+talk about what you'd like them to do.
 
-
+    J
