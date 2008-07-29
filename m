@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYG2AfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbYG2Afo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbYG2AfA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 20:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbYG2Aes
+	id S1754883AbYG2Afo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 20:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYG2Aff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 20:34:48 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:3086 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751561AbYG2Aer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 20:34:47 -0400
-Date: Tue, 29 Jul 2008 09:33:46 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Jon Smirl <jonsmirl@gmail.com>, James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-Message-ID: <20080729003346.GA29389@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Rene Herman <rene.herman@keyaccess.nl>,
-	Jon Smirl <jonsmirl@gmail.com>, James Morris <jmorris@namei.org>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	Dave Jones <davej@redhat.com>, Theodore Tso <tytso@mit.edu>,
-	Simon Arlott <simon@fire.lp0.eu>,
-	lkml <linux-kernel@vger.kernel.org>
-References: <9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com> <488E1147.5040803@simon.arlott.org.uk> <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com> <20080728202236.GN9378@mit.edu> <20080728204624.GA11581@redhat.com> <20080728141414.d7e5def2.randy.dunlap@oracle.com> <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au> <20080728234131.GD28055@linux-sh.org> <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com> <488E644D.7000507@keyaccess.nl>
+	Mon, 28 Jul 2008 20:35:35 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:55789 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751893AbYG2Aff (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 20:35:35 -0400
+Date: Tue, 29 Jul 2008 10:35:33 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Muli Ben-Yehuda <muli@il.ibm.com>, Tony Luck <tony.luck@intel.com>,
+       linux-ia64@vger.kernel.org, Chandru <chandru@in.ibm.com>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Terry Loftin <terry.loftin@hp.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [patch] crashdump: fix undefined reference to `elfcorehdr_addr'
+Message-ID: <20080729003533.GH10434@verge.net.au>
+References: <20080727234529.GM6175@verge.net.au> <20080728015117.GA12055@verge.net.au> <20080728024526.GB3334@verge.net.au> <20080728034007.GA30450@verge.net.au> <20080728124856.GF5515@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <488E644D.7000507@keyaccess.nl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080728124856.GF5515@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 02:29:01AM +0200, Rene Herman wrote:
-> On 29-07-08 02:14, Jon Smirl wrote:
+On Mon, Jul 28, 2008 at 02:48:56PM +0200, Ingo Molnar wrote:
 > 
-> >Why do these all end in (none)?
-> >Craig Hughes <craig@com.rmk.(none)>
-> >Dave Neuer <dneuer@org.rmk.(none)>
-> >David Brownell <david-b@net.rmk.(none)>
-> >David Woodhouse <dwmw2@org.rmk.(none)>
-> >Deepak Saxena <dsaxena@net.rmk.(none)>
-> >Enrico Scholz <enrico.scholz@de.rmk.(none)>
+> * Simon Horman <horms@verge.net.au> wrote:
 > 
-> This is just yet another example of the senseless robotic crap people 
-> people just insist is "needed" and "valueable", but which is neither.
+> > On Mon, Jul 28, 2008 at 12:45:28PM +1000, Simon Horman wrote:
+> > > The rfc patch I made to rename is_kdump_kernel to kernel_has_vmcore,
+> > > which I appended to my previous post should have looked more like the
+> > > following. Although, as I noted in my previous post, its more a starting
+> > > point for discussion than a solution to the problem at hand.
+> > 
+> > Sorry, one more time. I forgot to quilt refresh.
 > 
-Speaking of which, lk-changelog did the same sort of thing back in the BK
-days, which was at least useful for generating a pretty short log.
-Perhaps it makes more sense to start from that if someone really wants to
-waste their time on this. I'm still not sure what the point is though.
+> doesnt apply cleanly to latest -git:
+> 
+>  Hunk #1 FAILED at 2070.
+>  1 out of 1 hunk FAILED -- saving rejects to file arch/ia64/hp/common/sba_iommu.c.rej
+> 
+> due to a crossing change i guess. Also, i guess this should go via -mm 
+> as it touches fs/proc/vmcore.c and include/linux/crash_dump.h. The x86 
+> bits look good to me.
+> 
+>  Acked-by: Ingo Molnar <mingo@elte.hu>
+
+Sorry about the messiness there. Vivek has a different patch
+set that renders most of this irrelevant. I'll fix up the
+arch/ia64/hp/common/sba_iommu.c portion to match his changes
+so that he can include it in his sereis / it can be included
+after his series.
+
+-- 
+Horms
+
