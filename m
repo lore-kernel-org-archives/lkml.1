@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759661AbYG2W1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759374AbYG2W3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759661AbYG2W1o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 18:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYG2W1g
+	id S1759374AbYG2W3c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 18:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYG2W3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 18:27:36 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:40465 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbYG2W1g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 18:27:36 -0400
-Message-ID: <488F99EB.2030808@keyaccess.nl>
-Date: Wed, 30 Jul 2008 00:30:03 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Tue, 29 Jul 2008 18:29:24 -0400
+Received: from www.tglx.de ([62.245.132.106]:35325 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753265AbYG2W3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 18:29:23 -0400
+Date: Wed, 30 Jul 2008 00:21:10 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Clark Williams <williams@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Carsten Emde <ce@ceag.ch>
+Subject: 2.6.26-rt1
+In-Reply-To: <alpine.LFD.1.10.0807291440240.14925@apollo.tec.linutronix.de>
+Message-ID: <alpine.LFD.1.10.0807300006180.14925@apollo.tec.linutronix.de>
+References: <alpine.LFD.1.10.0807252141420.574@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807271719130.574@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807291440240.14925@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Simon Arlott <simon@fire.lp0.eu>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [patch 5/3] fastboot: sync the async execution before late_initcall
- and move level 6s (sync) first
-References: <20080720085924.122feb2b@infradead.org>	<20080720090041.5924f5ff@infradead.org>	<488F84ED.9010200@keyaccess.nl>	<20080729140434.31022f55@infradead.org>	<488F87AB.9080309@keyaccess.nl> <20080729142123.5164b1a4@infradead.org>
-In-Reply-To: <20080729142123.5164b1a4@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: 1.0 (+)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29-07-08 23:21, Arjan van de Ven wrote:
+We are pleased to announce the 2.6.26-rt1 tree, which can be
+downloaded from the location:
+  
+   http://rt.et.redhat.com/download/
 
-> On Tue, 29 Jul 2008 23:12:11 +0200
-> Rene Herman <rene.herman@keyaccess.nl> wrote:
+Information on the RT patch can be found at:
 
->> After this patch, there are now 2 flush_workqueue(async_init_wq)
->> calls in do_initcalls. Should the other one remain as well?
-> 
-> yes because if you don't have any level 7's then you won't hit this
-> condition... you need the second one.
-> 
-> flush_workqueue is cheap for the nothing-in-there case.
+   http://rt.wiki.kernel.org/index.php/Main_Page
 
-Ah, yes.
+The merge was mostly done by Steven Rostedt, I just fixed it up, added
+the fixes from .24-rt17 and tested it on x86 32/64bit.
 
-For what it's worth by the way, I'm running that which is available from 
-your fastboot repo (12 patches currently) on top of 2.6.26. Not seen any 
-trouble. Nor improvements that I've noticed but this is a rather minimal 
-and fast booting kernel/system anyway.
+This is the first cut of .26-rt, so don't expect it to be perfect.
 
-Rene.
+I run out of time, so I dropped Peter's cpu-hotplug patches
+completely. The hotplug and rcupreempt code has changed radically, so
+we need to redo that lot. Peter, Paul can you please look into that ?
+
+I tried to address the non-x86 issues as far as I could, but I had no
+chance to compile test them. So please check the wreckage.
+
+to build a 2.6.26-rt1 tree, the following patches should be applied:
+ 
+   http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.26.tar.bz2
+   http://rt.et.redhat.com/download/patch-2.6.26-rt1.bz2
+  
+And like always, Steven's RT version of Matt Mackall's ketchup will get this
+for you nicely:
+
+  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
+
+As usual the broken out patches are also available.
+
+I'm going on vacation tomorrow so feel free to blame/curse/flame me,
+but please work with Steven to get it into shape.
+
+Thanks,
+
+	tglx
