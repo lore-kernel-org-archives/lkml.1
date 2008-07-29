@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbYG2BZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbYG2BZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754175AbYG2BZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 21:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbYG2BZb
+	id S1754744AbYG2BZy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 21:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbYG2BZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 21:25:31 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:46242 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751790AbYG2BZb (ORCPT
+	Mon, 28 Jul 2008 21:25:42 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:30894 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754205AbYG2BZk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 21:25:31 -0400
-Date: Tue, 29 Jul 2008 02:25:07 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Johannes Weiner <hannes@saeurebad.de>,
-       Alexey Dobriyan <adobriyan@gmail.com>, akpm@linuxfoundation.org,
-       torvalds@linuxfoundation.org, npiggin@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: do not overrun page table ranges in gup
-In-Reply-To: <alpine.LFD.1.10.0807281737480.3486@nehalem.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0807290220290.29017@blonde.site>
-References: <20080728184947.GA5041@martell.zuzino.mipt.ru>
- <20080728185316.GA19479@martell.zuzino.mipt.ru> <87y73l5zlj.fsf_-_@saeurebad.de>
- <87tze95yrk.fsf@saeurebad.de> <alpine.LFD.1.10.0807281721200.3486@nehalem.linux-foundation.org>
- <alpine.LFD.1.10.0807281737480.3486@nehalem.linux-foundation.org>
+	Mon, 28 Jul 2008 21:25:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YCbDjghkxEi7QEzeYYuWLmXgVEppZhDy/6pcXLpU5xVivEjTB5Uvl+0nN7xZYToPDe
+         SaImlPTT32dPA1kPVLW4l/zhXpcvJUTmfKWugII5rPmaGKSuKkGThRkTroVavmmE8UC7
+         JdVcJVBQtPCq+aTNwptnS+rlrytKOTn3R2Tus=
+Message-ID: <9e4733910807281825v42f9700al420ba48aebf3d790@mail.gmail.com>
+Date: Mon, 28 Jul 2008 21:25:39 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Al Viro" <viro@zeniv.linux.org.uk>
+Subject: Re: 463 kernel developers missing!
+Cc: "Simon Arlott" <simon@fire.lp0.eu>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080729011526.GF28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
+	 <488DF9CF.8020408@simon.arlott.org.uk>
+	 <9e4733910807281005y62dca90ar96f663908e644546@mail.gmail.com>
+	 <488DFD97.7080802@simon.arlott.org.uk>
+	 <9e4733910807281022v38d323c9sc7b63235824690f6@mail.gmail.com>
+	 <488E0BB6.7020006@simon.arlott.org.uk>
+	 <9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com>
+	 <488E1147.5040803@simon.arlott.org.uk>
+	 <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com>
+	 <20080729011526.GF28946@ZenIV.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008, Linus Torvalds wrote:
-> On Mon, 28 Jul 2008, Linus Torvalds wrote:
-> > 
-> > So no, the right fix would be to align 'start' first, which means that 
-> > everything else (including 'end') will be page-aligned. Aligning just one 
-> > or the other is very very wrong.
-> 
-> Does this work?
-> 
-> Not pretty, but it stands _some_ chance of being correct.
-> 
-> 		Linus
+On 7/28/08, Al Viro <viro@zeniv.linux.org.uk> wrote:
+> On Mon, Jul 28, 2008 at 03:00:13PM -0400, Jon Smirl wrote:
+>
+>
+> > Other people aren't perfect, I've found over 1,000 typos in the those
+>  > names and emails. We need a validation mechanism.
+>
+> Who's "we", luser, and why would I possibly give a damn for your needs?
 
-Acked-by: Hugh Dickins <hugh@veritas.com>
+Let's drop the whole Sign-off-by mechanism. If we can't be bothered to
+clean up the junk in Signed-off-by why should we bother recording
+them? Sign every patch Mickey Mouse, it has the same effect.
 
-Seeing the bug report, I was working up a patch along the same lines
-as this; but got the access_ok() issue backwards: yours looks right.
-I see Alexey has tested it, confess I haven't.
-
-> 
-> 
-> ---
->  arch/x86/mm/gup.c |    9 ++++++---
->  1 files changed, 6 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/x86/mm/gup.c b/arch/x86/mm/gup.c
-> index 3085f25..007bb06 100644
-> --- a/arch/x86/mm/gup.c
-> +++ b/arch/x86/mm/gup.c
-> @@ -223,14 +223,17 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
->  			struct page **pages)
->  {
->  	struct mm_struct *mm = current->mm;
-> -	unsigned long end = start + (nr_pages << PAGE_SHIFT);
-> -	unsigned long addr = start;
-> +	unsigned long addr, len, end;
->  	unsigned long next;
->  	pgd_t *pgdp;
->  	int nr = 0;
->  
-> +	start &= PAGE_MASK;
-> +	addr = start;
-> +	len = (unsigned long) nr_pages << PAGE_SHIFT;
-> +	end = start + len;
->  	if (unlikely(!access_ok(write ? VERIFY_WRITE : VERIFY_READ,
-> -					start, nr_pages*PAGE_SIZE)))
-> +					start, len)))
->  		goto slow_irqon;
->  
->  	/*
+-- 
+Jon Smirl
+jonsmirl@gmail.com
