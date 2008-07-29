@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbYG2B5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbYG2B6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753088AbYG2B5e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 21:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYG2B5L
+	id S1755552AbYG2B6U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 21:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYG2B6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 21:57:11 -0400
+	Mon, 28 Jul 2008 21:58:08 -0400
 Received: from fg-out-1718.google.com ([72.14.220.152]:15814 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753077AbYG2B5I (ORCPT
+	with ESMTP id S1752660AbYG2B6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 21:57:08 -0400
+	Mon, 28 Jul 2008 21:58:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=FDcv/PAOH/Q0Cx5eDf4mFh7Jc8f6z63VbbpoPzjR2qby9tkyUi3R3/3kpjQhIsXVhm
-         BDTcCPFVTpwFsTGdXcGa5znGkFh+FH5pi7FIw4pLkhyAF308FH+j83z+A87QAImJt4Kq
-         SpKmqh4KmoAVQxjexw2B8O5NdS2uw71bOUcwU=
-Date: Tue, 29 Jul 2008 05:57:15 +0400
+        b=WEODZPnnOo5YaP/y58k8PgX/DehHtjBtTW0eQhmrnn2ipB/jP6ViG3/NO7jVob+f7D
+         n9EpjIdnWrBFhFqyPkOVnyyqs49IqIl0wUyvHUPVo5SXphb8SJWKJ25zG+1ccnpgzipq
+         aPobFyYfCeffbEZVcrJdiAI37ql3cuwcC7sjU=
+Date: Tue, 29 Jul 2008 05:58:12 +0400
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: akpm@osdl.org, alan@lxorguk.ukuu.org.uk
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 03/13] proc tty: switch ip2 to ->proc_fops
-Message-ID: <20080729015715.GC3135@martell.zuzino.mipt.ru>
+Subject: [PATCH 04/13] proc tty: switch synclink_cs to ->proc_fops
+Message-ID: <20080729015812.GD3135@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,182 +34,151 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
 
- drivers/char/ip2/ip2main.c |   78 +++++++++++++++++++++++----------------------
- 1 file changed, 40 insertions(+), 38 deletions(-)
+ drivers/char/pcmcia/synclink_cs.c |   80 ++++++++++++++++++--------------------
+ 1 file changed, 38 insertions(+), 42 deletions(-)
 
---- a/drivers/char/ip2/ip2main.c
-+++ b/drivers/char/ip2/ip2main.c
-@@ -139,7 +139,9 @@
- #include <linux/seq_file.h>
+--- a/drivers/char/pcmcia/synclink_cs.c
++++ b/drivers/char/pcmcia/synclink_cs.c
+@@ -2752,17 +2752,13 @@ cleanup:
+ 	return retval;
+ }
  
- static const struct file_operations ip2mem_proc_fops;
--static int ip2_read_proc(char *, char **, off_t, int, int *, void * );
+-/*
+- * /proc fs routines....
+- */
+-
+-static inline int line_info(char *buf, MGSLPC_INFO *info)
 +#ifdef CONFIG_PROC_FS
-+static const struct file_operations ip2_proc_fops;
-+#endif
- 
- /********************/
- /* Type Definitions */
-@@ -453,7 +455,9 @@ static const struct tty_operations ip2_ops = {
- 	.stop            = ip2_stop,
- 	.start           = ip2_start,
- 	.hangup          = ip2_hangup,
--	.read_proc       = ip2_read_proc,
-+#ifdef CONFIG_PROC_FS
-+	.proc_fops	= &ip2_proc_fops,
-+#endif
- 	.tiocmget	 = ip2_tiocmget,
- 	.tiocmset	 = ip2_tiocmset,
- };
-@@ -3000,6 +3004,7 @@ static const struct file_operations ip2mem_proc_fops = {
- 	.release	= single_release,
- };
- 
-+#ifdef CONFIG_PROC_FS
- /*
-  * This is the handler for /proc/tty/driver/ip2
-  *
-@@ -3007,19 +3012,17 @@ static const struct file_operations ip2mem_proc_fops = {
-  * different sources including ip2mkdev.c and a couple of other drivers.
-  * The bugs are all mine.  :-)	=mhw=
-  */
--static int ip2_read_proc(char *page, char **start, off_t off,
--				int count, int *eof, void *data)
-+static int ip2_proc_show(struct seq_file *m, void *v)
++static inline int line_info(struct seq_file *m, MGSLPC_INFO *info)
  {
- 	int	i, j, box;
--	int	len = 0;
- 	int	boxes = 0;
- 	int	ports = 0;
- 	int	tports = 0;
+ 	char	stat_buf[30];
+-	int	ret;
+ 	unsigned long flags;
+ 
+-	ret = sprintf(buf, "%s:io:%04X irq:%d",
++	seq_printf(m, "%s:io:%04X irq:%d",
+ 		      info->device_name, info->io_base, info->irq_level);
+ 
+ 	/* output current serial signal states */
+@@ -2786,75 +2782,73 @@ static inline int line_info(char *buf, MGSLPC_INFO *info)
+ 		strcat(stat_buf, "|RI");
+ 
+ 	if (info->params.mode == MGSL_MODE_HDLC) {
+-		ret += sprintf(buf+ret, " HDLC txok:%d rxok:%d",
++		seq_printf(m, " HDLC txok:%d rxok:%d",
+ 			      info->icount.txok, info->icount.rxok);
+ 		if (info->icount.txunder)
+-			ret += sprintf(buf+ret, " txunder:%d", info->icount.txunder);
++			seq_printf(m, " txunder:%d", info->icount.txunder);
+ 		if (info->icount.txabort)
+-			ret += sprintf(buf+ret, " txabort:%d", info->icount.txabort);
++			seq_printf(m, " txabort:%d", info->icount.txabort);
+ 		if (info->icount.rxshort)
+-			ret += sprintf(buf+ret, " rxshort:%d", info->icount.rxshort);
++			seq_printf(m, " rxshort:%d", info->icount.rxshort);
+ 		if (info->icount.rxlong)
+-			ret += sprintf(buf+ret, " rxlong:%d", info->icount.rxlong);
++			seq_printf(m, " rxlong:%d", info->icount.rxlong);
+ 		if (info->icount.rxover)
+-			ret += sprintf(buf+ret, " rxover:%d", info->icount.rxover);
++			seq_printf(m, " rxover:%d", info->icount.rxover);
+ 		if (info->icount.rxcrc)
+-			ret += sprintf(buf+ret, " rxcrc:%d", info->icount.rxcrc);
++			seq_printf(m, " rxcrc:%d", info->icount.rxcrc);
+ 	} else {
+-		ret += sprintf(buf+ret, " ASYNC tx:%d rx:%d",
++		seq_printf(m, " ASYNC tx:%d rx:%d",
+ 			      info->icount.tx, info->icount.rx);
+ 		if (info->icount.frame)
+-			ret += sprintf(buf+ret, " fe:%d", info->icount.frame);
++			seq_printf(m, " fe:%d", info->icount.frame);
+ 		if (info->icount.parity)
+-			ret += sprintf(buf+ret, " pe:%d", info->icount.parity);
++			seq_printf(m, " pe:%d", info->icount.parity);
+ 		if (info->icount.brk)
+-			ret += sprintf(buf+ret, " brk:%d", info->icount.brk);
++			seq_printf(m, " brk:%d", info->icount.brk);
+ 		if (info->icount.overrun)
+-			ret += sprintf(buf+ret, " oe:%d", info->icount.overrun);
++			seq_printf(m, " oe:%d", info->icount.overrun);
+ 	}
+ 
+ 	/* Append serial signal status to end */
+-	ret += sprintf(buf+ret, " %s\n", stat_buf+1);
++	seq_printf(m, " %s\n", stat_buf+1);
+ 
+-	ret += sprintf(buf+ret, "txactive=%d bh_req=%d bh_run=%d pending_bh=%x\n",
++	seq_printf(m, "txactive=%d bh_req=%d bh_run=%d pending_bh=%x\n",
+ 		       info->tx_active,info->bh_requested,info->bh_running,
+ 		       info->pending_bh);
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ /* Called to print information about devices
+  */
+-static int mgslpc_read_proc(char *page, char **start, off_t off, int count,
+-		 int *eof, void *data)
++static int mgslpc_proc_show(struct seq_file *m, void *v)
+ {
+-	int len = 0, l;
 -	off_t	begin = 0;
- 	i2eBordStrPtr  pB;
-+	char *sep;
+ 	MGSLPC_INFO *info;
  
--	len += sprintf(page, "ip2info: 1.0 driver: %s\n", pcVersion );
--	len += sprintf(page+len, "Driver: SMajor=%d CMajor=%d IMajor=%d MaxBoards=%d MaxBoxes=%d MaxPorts=%d\n",
-+	seq_printf(m, "ip2info: 1.0 driver: %s\n", pcVersion );
-+	seq_printf(m, "Driver: SMajor=%d CMajor=%d IMajor=%d MaxBoards=%d MaxBoxes=%d MaxPorts=%d\n",
- 			IP2_TTY_MAJOR, IP2_CALLOUT_MAJOR, IP2_IPL_MAJOR,
- 			IP2_MAX_BOARDS, ABS_MAX_BOXES, ABS_BIGGEST_BOX);
+-	len += sprintf(page, "synclink driver:%s\n", driver_version);
++	seq_printf(m, "synclink driver:%s\n", driver_version);
  
-@@ -3031,7 +3034,8 @@ static int ip2_read_proc(char *page, char **start, off_t off,
- 			switch( pB->i2ePom.e.porID & ~POR_ID_RESERVED ) 
- 			{
- 			case POR_ID_FIIEX:
--				len += sprintf( page+len, "Board %d: EX ports=", i );
-+				seq_printf( m, "Board %d: EX ports=", i );
-+				sep = "";
- 				for( box = 0; box < ABS_MAX_BOXES; ++box )
- 				{
- 					ports = 0;
-@@ -3043,79 +3047,77 @@ static int ip2_read_proc(char *page, char **start, off_t off,
- 							++ports;
- 						}
- 					}
--					len += sprintf( page+len, "%d,", ports );
-+					seq_printf( m, "%s%d", sep, ports );
-+					sep = ",";
- 					tports += ports;
- 				}
- 
--				--len;	/* Backup over that last comma */
--
--				len += sprintf( page+len, " boxes=%d width=%d", boxes, pB->i2eDataWidth16 ? 16 : 8 );
-+				seq_printf( m, " boxes=%d width=%d", boxes, pB->i2eDataWidth16 ? 16 : 8 );
- 				break;
- 
- 			case POR_ID_II_4:
--				len += sprintf(page+len, "Board %d: ISA-4 ports=4 boxes=1", i );
-+				seq_printf(m, "Board %d: ISA-4 ports=4 boxes=1", i );
- 				tports = ports = 4;
- 				break;
- 
- 			case POR_ID_II_8:
--				len += sprintf(page+len, "Board %d: ISA-8-std ports=8 boxes=1", i );
-+				seq_printf(m, "Board %d: ISA-8-std ports=8 boxes=1", i );
- 				tports = ports = 8;
- 				break;
- 
- 			case POR_ID_II_8R:
--				len += sprintf(page+len, "Board %d: ISA-8-RJ11 ports=8 boxes=1", i );
-+				seq_printf(m, "Board %d: ISA-8-RJ11 ports=8 boxes=1", i );
- 				tports = ports = 8;
- 				break;
- 
- 			default:
--				len += sprintf(page+len, "Board %d: unknown", i );
-+				seq_printf(m, "Board %d: unknown", i );
- 				/* Don't try and probe for minor numbers */
- 				tports = ports = 0;
- 			}
- 
- 		} else {
- 			/* Don't try and probe for minor numbers */
--			len += sprintf(page+len, "Board %d: vacant", i );
-+			seq_printf(m, "Board %d: vacant", i );
- 			tports = ports = 0;
- 		}
- 
- 		if( tports ) {
--			len += sprintf(page+len, " minors=" );
-+			seq_puts(m, " minors=" );
- 
-+			sep = "";
- 			for ( box = 0; box < ABS_MAX_BOXES; ++box )
- 			{
- 				for ( j = 0; j < ABS_BIGGEST_BOX; ++j )
- 				{
- 					if ( pB->i2eChannelMap[box] & (1 << j) )
- 					{
--						len += sprintf (page+len,"%d,",
-+						seq_printf (m,"%s%d", sep,
- 							j + ABS_BIGGEST_BOX *
- 							(box+i*ABS_MAX_BOXES));
-+						sep = ",";
- 					}
- 				}
- 			}
--
--			page[ len - 1 ] = '\n';	/* Overwrite that last comma */
--		} else {
--			len += sprintf (page+len,"\n" );
--		}
--
+ 	info = mgslpc_device_list;
+ 	while( info ) {
+-		l = line_info(page + len, info);
+-		len += l;
 -		if (len+begin > off+count)
--			break;
+-			goto done;
 -		if (len+begin < off) {
 -			begin += len;
 -			len = 0;
- 		}
-+		seq_putc(m, '\n');
+-		}
++		line_info(m, info);
+ 		info = info->next_device;
  	}
 +	return 0;
-+ }
- 
--	if (i >= IP2_MAX_BOARDS)
--		*eof = 1;
--	if (off >= len+begin)
--		return 0;
-+static int ip2_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, ip2_proc_show, NULL);
 +}
  
+-	*eof = 1;
+-done:
+-	if (off >= len+begin)
+-		return 0;
 -	*start = page + (off-begin);
 -	return ((count < begin+len-off) ? count : begin+len-off);
-- }
-+static const struct file_operations ip2_proc_fops = {
++static int mgslpc_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, mgslpc_proc_show, NULL);
+ }
+ 
++static const struct file_operations mgslpc_proc_fops = {
 +	.owner		= THIS_MODULE,
-+	.open		= ip2_proc_open,
++	.open		= mgslpc_proc_open,
 +	.read		= seq_read,
 +	.llseek		= seq_lseek,
 +	.release	= single_release,
 +};
 +#endif
-  
- /******************************************************************************/
- /* Function:   ip2trace()                                                     */
++
+ static int rx_alloc_buffers(MGSLPC_INFO *info)
+ {
+ 	/* each buffer has header and data */
+@@ -2999,7 +2993,9 @@ static const struct tty_operations mgslpc_ops = {
+ 	.send_xchar = mgslpc_send_xchar,
+ 	.break_ctl = mgslpc_break,
+ 	.wait_until_sent = mgslpc_wait_until_sent,
+-	.read_proc = mgslpc_read_proc,
++#ifdef CONFIG_PROC_FS
++	.proc_fops = &mgslpc_proc_fops,
++#endif
+ 	.set_termios = mgslpc_set_termios,
+ 	.stop = tx_pause,
+ 	.start = tx_release,
 -- 
 1.5.4.5
 
