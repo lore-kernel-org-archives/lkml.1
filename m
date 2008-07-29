@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756813AbYG2Ppn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbYG2Pp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756813AbYG2Ppn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 11:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755480AbYG2PoW
+	id S1759941AbYG2Pp6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 11:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbYG2Poc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 11:44:22 -0400
-Received: from bay0-omc3-s3.bay0.hotmail.com ([65.54.246.203]:26934 "EHLO
-	bay0-omc3-s3.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755393AbYG2PoV (ORCPT
+	Tue, 29 Jul 2008 11:44:32 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:19741 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756848AbYG2Pob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 11:44:21 -0400
-Message-ID: <BAY103-DAV4F0ECBCAFB86B24C87D3EB2820@phx.gbl>
-X-Originating-IP: [85.32.103.134]
-X-Originating-Email: [pupilla@hotmail.com]
-From: "Marco Berizzi" <pupilla@hotmail.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: commit a29ccf6f823a84d89e1c7aaaf221cf7282022024 break console on slackware 12.1
-Date: Tue, 29 Jul 2008 17:42:54 +0200
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1123
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1123
-X-OriginalArrivalTime: 29 Jul 2008 15:44:20.0334 (UTC) FILETIME=[F76718E0:01C8F191]
+	Tue, 29 Jul 2008 11:44:31 -0400
+X-BigFish: VPS5(zz1cddkzz10d3izzz32i65h)
+X-Spam-TCS-SCL: 4:0
+X-FB-SS: 5,
+X-WSS-ID: 0K4RYDS-02-I3R-01
+Message-ID: <20080729154145.463988738@amd.com>
+User-Agent: quilt/0.46_cvs20080326-19.1
+Date: Tue, 29 Jul 2008 17:41:04 +0200
+From: Peter Oruba <peter.oruba@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
+CC: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Oruba <peter.oruba@amd.com>
+Subject: [patch 1/4] x86: AMD microcode patch loader style corrections.
+References: <20080729154103.007575982@amd.com>
+Content-Disposition: inline;
+	filename="0001-x86-AMD-microcode-patch-loader-style-corrections.patch"
+X-OriginalArrivalTime: 29 Jul 2008 15:43:49.0150 (UTC) FILETIME=[E4D0CBE0:01C8F191]
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Folks,
+Signed-off-by: Peter Oruba <peter.oruba@amd.com>
+---
+ arch/x86/kernel/microcode_amd.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-reverting commit a29ccf6f823a84d89e1c7aaaf221cf7282022024
-fix a problem with the text console on slackware 12.1
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index 07e52be..6789530 100644
+--- a/arch/x86/kernel/microcode_amd.c
++++ b/arch/x86/kernel/microcode_amd.c
+@@ -47,9 +47,9 @@ MODULE_LICENSE("GPL v2");
+ #define UCODE_UCODE_TYPE           0x00000001
+ 
+ #define UCODE_MAX_SIZE          (2048)
+-#define DEFAULT_UCODE_DATASIZE	(896)	  /* 896 bytes */
+-#define MC_HEADER_SIZE		(sizeof(struct microcode_header_amd))	  /* 64 bytes */
+-#define DEFAULT_UCODE_TOTALSIZE (DEFAULT_UCODE_DATASIZE + MC_HEADER_SIZE) /* 960 bytes */
++#define DEFAULT_UCODE_DATASIZE	(896)
++#define MC_HEADER_SIZE		(sizeof(struct microcode_header_amd))
++#define DEFAULT_UCODE_TOTALSIZE (DEFAULT_UCODE_DATASIZE + MC_HEADER_SIZE)
+ #define DWSIZE			(sizeof(u32))
+ /* For now we support a fixed ucode total size only */
+ #define get_totalsize(mc) \
+-- 
+1.5.4.5
 
-With 2.6.27-rc1/slackware 12.1, applications like
-mc or 'make menuconfig' are broken on text console
-(they are fine running inside an xterm).
 
-Just for record: 2.6.26 is fine
-
-a29ccf6f823a84d89e1c7aaaf221cf7282022024 is first bad commit
-commit a29ccf6f823a84d89e1c7aaaf221cf7282022024
-Author: David Woodhouse <dwmw2@infradead.org>
-Date:   Tue Jun 3 14:59:40 2008 +0100
-
-    Make console charset translation optional
-
-    By turning off the new CONSOLE_TRANSLATIONS option and dropping the
-    associated code and tables from the kernel, we can save about 7KiB.
-
-    Taken from linux-tiny project by Tim Bird and mangled further by
-dwmw2.
-
-    Signed-off-by: Tim Bird <tim.bird@am.sony.com>
-    Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-
-:040000 040000 4f86ab06f5af3f70d3b78c80ef60c38896c9bc1d
-019444ec49f3251609c6e0b6046f2fb447f065e2 M      drivers
-:040000 040000 e7149976d981052a6787c6e8207b6205ade0f1f1
-591a26addee0ba619d7d878967664dfba86b4f65 M      include
 
 
