@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759270AbYG2SqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbYG2Sua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759270AbYG2SqN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 14:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbYG2Sp6
+	id S1757997AbYG2Sua (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 14:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYG2SuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 14:45:58 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:59860 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754270AbYG2Sp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 14:45:57 -0400
-Message-ID: <488F6563.4000907@sgi.com>
-Date: Tue, 29 Jul 2008 11:45:55 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 29 Jul 2008 14:50:20 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:43330 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753363AbYG2SuT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 14:50:19 -0400
+Date: Tue, 29 Jul 2008 12:50:02 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Ric Wheeler <rwheeler@redhat.com>, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jim Meyering <jim@meyering.net>,
+       linux-kernel@vger.kernel.org, Martin Petersen <mkp@mkp.net>,
+       Jeff Garzik <jeff@garzik.org>, Matt Domsch <Matt_Domsch@Dell.com>
+Subject: Re: tools support for non-512 byte sector sizes
+Message-ID: <20080729185002.GD24924@parisc-linux.org>
+References: <488F524F.6020905@redhat.com> <20080729182611.GB24924@parisc-linux.org> <1217356645.6103.48.camel@localhost.localdomain> <20080729184243.GC24924@parisc-linux.org> <1217357078.6103.51.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Cliff Wickman <cpw@sgi.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, steiner@sgi.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: Comments on UV tlb flushing
-References: <488E644B.10801@goop.org>	 <200807291412.18495.nickpiggin@yahoo.com.au>	 <20080729133204.GA13138@sgi.com> <488F2C9B.9070306@goop.org> <86802c440807291113u59ba996dg340c8feba1039f3a@mail.gmail.com> <488F60A1.2080902@goop.org>
-In-Reply-To: <488F60A1.2080902@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217357078.6103.51.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Yinghai Lu wrote:
->> On Tue, Jul 29, 2008 at 7:43 AM, Jeremy Fitzhardinge <jeremy@goop.org>
->> wrote:
->>  
->>> Cliff Wickman wrote:
->>>    
->>>> I think that the Linux distributions are not going to build a special
->>>> UV kernel, are they?  So every distro would have to be prompted to
->>>> turn on
->>>> CONFIG_X86_UV, or else their kernel is not going to boot on UV.
->>>>
->>>>       
->>> Distros will generally turn on everything.  You could have it on by
->>> default
->>> if the kernel is built for CONFIG_X86_GENERICARCH which enables
->>> support for
->>> other big numa configurations.  I think distros generally build with
->>> that
->>> enabled anyway.
->>>     
->>
->> config X86_GENERICARCH
->>        bool "Generic architecture"
->>         depends on X86_32
->>   
+On Tue, Jul 29, 2008 at 01:44:38PM -0500, James Bottomley wrote:
+> On Tue, 2008-07-29 at 12:42 -0600, Matthew Wilcox wrote:
+> > On Tue, Jul 29, 2008 at 01:37:25PM -0500, James Bottomley wrote:
+> > > scsi_debug does exactly the same thing, so it reports anything you tell
+> > > it (Martin Petersen actually added this so he could test with 4k
+> > > sectors).
+> > > 
+> > > The problem, which ata_ram also suffers, is that the tools we most need
+> > > to test are the ones for manipulating non volatile characteristics (like
+> > > partition tables).  We'd really like the disk contents to survive reboot
+> > > for this ...
+> > 
+> > Ummm... _reboot_, or _module unload/reload_?  I could certainly include
+> > an option to populate the ramdisc from a file.  Is the ioctl to re-read
+> > the partition table not enough?
 > 
-> Ah, overlooked that.
-> 
-> OK, well, either way it still needs to be a separate config option.
-> 
->    J
+> reboot ... we'd like to take the tools through shutdown restart testing
+> to make sure they're all working ... of course, then there's the
+> bios ...
 
-Should there be a "generic" X86_ENTERPRISE_ARCH which turns on various
-capabilities?  Our licenses and support agreements with SuSE and RH are
-for their "Enterprise Editions" though the customer is free to run
-whatever (unsupported from us).  Asking distros to enable that option
-should be a no-brainer.  And it could be defaulted ON with the comment
-to turn it off if you have a small desktop system.  This way they won't
-forget... ;-)  [Actually, this could turn on MAXSMP as well.]
+It's not up to us to fix the BIOS.
 
-Thanks,
-Mike
+Since the vast majority of users use a distro, and the vast majority of
+distros use a fully modular kernel, wouldn't initialising the contents
+of ata-ram from the initrd/initramfs solve the problem?
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
