@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYG2KPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbYG2KSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858AbYG2KPf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 06:15:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbYG2KP1
+	id S1757272AbYG2KSL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 06:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbYG2KR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 06:15:27 -0400
-Received: from mail.phnxsoft.com ([195.227.45.4]:3192 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753847AbYG2KP0 (ORCPT
+	Tue, 29 Jul 2008 06:17:57 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:35774 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754023AbYG2KR4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 06:15:26 -0400
-Message-ID: <488EEDBA.9050604@imap.cc>
-Date: Tue, 29 Jul 2008 12:15:22 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11 Mnenhy/0.7.5.666
+	Tue, 29 Jul 2008 06:17:56 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=iIhjiJsfJkqWKZJ0yw0UaESq3IRdi5Uf4W8UUgGxzMajg9g32hAI4G1RUQcekU7bNVvx9p8/qqkIYoCbC9CXXdX0bs+tNScPYd/WGU426C2yePv5M75v97TOS4KOFuMpzxiW5zl4FIWfhcfeHT8PyOjOX0id/NcOhsJVo/DFeMc=  ;
+X-YMail-OSG: 91sLKwwVM1mznRdghdHjGXdrktWtFOcFdRP1PvgoBx7AJYtEdLWiDPuPUqOule_m1TtfEUuHwVODK2dKYZaMhcuayK.yTBm98k.81TFVjB2B8obIRhTkh1DRrDd_IswI_mM-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: x86: Is there still value in having a special tlb flush IPI vector?
+Date: Tue, 29 Jul 2008 20:17:41 +1000
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+References: <488E534F.2030204@goop.org> <200807292000.30690.nickpiggin@yahoo.com.au> <1217325853.7563.5.camel@twins>
+In-Reply-To: <1217325853.7563.5.camel@twins>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, Karsten Keil <kkeil@suse.de>
-Subject: Re: [PATCH 1/7] Add mISDN driver
-References: <20080727010837.GA3415@pingi.kke.suse.de>
-In-Reply-To: <20080727010837.GA3415@pingi.kke.suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigAE3A4D22E8722E1E5645A33A"
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807292017.42005.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigAE3A4D22E8722E1E5645A33A
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+On Tuesday 29 July 2008 20:04, Peter Zijlstra wrote:
+> On Tue, 2008-07-29 at 20:00 +1000, Nick Piggin wrote:
+> > On Tuesday 29 July 2008 19:54, Peter Zijlstra wrote:
+> > > On Tue, 2008-07-29 at 14:30 +1000, Nick Piggin wrote:
+> > > > Not to mention the minor problem that it still deadlocks when called
+> > > > with interrupts disabled ;)
+> > >
+> > > __smp_call_function_single has potential though..
+> >
+> > For reschedule interrupt? I don't really agree.
+>
+> Not specifically, for not deadlocking from irq-off, more so.
 
-On Sun, 27 Jul 2008 03:08:37 +0200, Karsten Keil wrote:
-> Please pull this and the following patches from=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6.git master=
+Oh, well yes it already does work from irq-off, so it has already
+realised its potential :)
 
->=20
-> mISDN is a new modular ISDN driver, in the long term it should replace
-> the old I4L driver architecture for passiv ISDN cards.
-
-At last. Thanks a lot for that effort!
-
->  Documentation/isdn/README.mISDN |    6 ++++++
->  drivers/isdn/Kconfig            |    4 +++-
->  drivers/isdn/Makefile           |    1 +
->  drivers/isdn/hardware/Makefile  |    1 +
->  4 files changed, 11 insertions(+), 1 deletions(-)
-
-As the maintainer of an old I4L driver which I would like to convert
-to mISDN as soon as possible, I would be very grateful if you could,
-in time, also add a file Documentation/isdn/INTERFACE.mISDN describing
-the in-kernel interface between the mISDN core and hardware specific
-modules. (Like Documentation/isdn/INTERFACE does for I4L.)
-
-Thanks again,
-Tilman
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigAE3A4D22E8722E1E5645A33A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFIju26Q3+did9BuFsRAgpsAJ9Yr9OLuif1F6/pQto67ep2yYbL5wCeIgmW
-rRHt1czX7o0vUDOHClU72LI=
-=k9tr
------END PGP SIGNATURE-----
-
---------------enigAE3A4D22E8722E1E5645A33A--
+Not sure exactly what kinds of users it is going to attract, but
+it should be interesting to see!
