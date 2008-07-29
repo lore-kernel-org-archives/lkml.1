@@ -1,125 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbYG2FQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbYG2FYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbYG2FQS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 01:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYG2FQG
+	id S1754905AbYG2FYu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 01:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYG2FYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 01:16:06 -0400
-Received: from 1wt.eu ([62.212.114.60]:1994 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752186AbYG2FQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 01:16:05 -0400
-Date: Tue, 29 Jul 2008 07:15:58 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: David W Studeman <avionicsdv@aim.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Keyboard Jammed error patch 2.4.35-pre4
-Message-ID: <20080729051558.GH29189@1wt.eu>
-References: <g6jqud$t5e$1@ger.gmane.org>
+	Tue, 29 Jul 2008 01:24:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56550
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751875AbYG2FYk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 01:24:40 -0400
+Date: Mon, 28 Jul 2008 22:24:39 -0700 (PDT)
+Message-Id: <20080728.222439.176200666.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, joerg.roedel@amd.com,
+       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       robert.richter@amd.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, jbarnes@virtuousgeek.org,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] add iommu_num_pages helper function
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080729135652.f89042c1.sfr@canb.auug.org.au>
+References: <20080729110749.728c54e6.sfr@canb.auug.org.au>
+	<20080729104722H.fujita.tomonori@lab.ntt.co.jp>
+	<20080729135652.f89042c1.sfr@canb.auug.org.au>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <g6jqud$t5e$1@ger.gmane.org>
-User-Agent: Mutt/1.5.11
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello David,
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 29 Jul 2008 13:56:52 +1000
 
-On Sun, Jul 27, 2008 at 11:59:47PM -0700, David W Studeman wrote:
->  Hello! The changes that were made on 04-25-2007 as "[PATCH 
-> 2.4.35-pre4] fix 'pc_keyb: controller jammed (0xA7)' error" have broken 
-> the ability to compile with no keyboard and no VT support. This mainly 
-> affects Cobalt machines which do not have dmi present as these use a 
-> flashrom to boot with and not a typical bios so dmi blacklisting would 
-> be pointless unless it allowed for no dmi present and then blacklist. I 
-> had to create a patch against 2.4.34 to restore the ability to compile 
-> with no keyboard and VT support.
+> Um, did you see the linux-next build report I posted (possibly not):
+> 
+> arch/powerpc/kernel/iommu.c:56: error: static declaration of 'iommu_num_pages' follows non-static declaration
+> include/linux/iommu-helper.h:11: error: previous declaration of 'iommu_num_pages' was here
+> 
+> This is now a build of 2.6.27-rc1 for powerpc64 ppc64_defconfig ...
 
-Grrr... I see what's happening. I remember having checked that the
-kbd_controller_present macro was really not used before merging the
-patch, but obviously I had not looked deep enough. It's defined by
-ia64, mips and mips64 in include/asm.
+It breaks sparc64 the same exact way. :-/
 
-Could you please test the patch below (untested here). It should revert
-to pre-2.4.35 behaviour on all architectures cited above. If you confirm
-that it works, I'll merge it.
+sparc64: Fix build after addition of iommu_num_pages() helper.
 
-BTW, in the mean time, you can boot with the "nokeyb" option. It will
-disable the keyboard. This is what I use on some non-blacklisted systems,
-and the option was precisely provided by this patch.
+It would have been much more pleasant if that new interface:
 
-Also, if you don't have any PC keyboard on your machines, you can
-build without support for any VT/keyboard. I'm already doing this
-on some embedded systems, and it works fine. If your platform still
-requires that some keyboard is enabled, you may want to try to enable
-CONFIG_DUMMY_KEYB which I've been using in the past.
+1) Took an "io_page_size" argument so powerpc and sparc64
+   could make use of it.
 
-Regards,
-Willy
+2) Was build tested on something other than x86.
 
->From e4827f141dc86c540971082877124b213557ece0 Mon Sep 17 00:00:00 2001
-From: Willy Tarreau <w@1wt.eu>
-Date: Tue, 29 Jul 2008 07:06:00 +0200
-Subject: pc_keyb: fix breakage on ia64/mips/mips64
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
-Commit f8db8c9c81afb4b04c146cae0e2a1fd311de1f22 fixed the keyboard
-controller jammed issue on keyboard-less PCs, but introduced the
-problem for other architectures (ia64/mips/mips64) which already
-define their own keyboard probing method.
-
-This patch gives precedence to these archs' probing method and only
-defines the setup option if no arch-specific method was defined.
-
-Problem reported by David W Studeman.
-
-Signed-off-by: Willy Tarreau <w@1wt.eu>
----
- drivers/char/pc_keyb.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/char/pc_keyb.c b/drivers/char/pc_keyb.c
-index d4e1611..b90e659 100644
---- a/drivers/char/pc_keyb.c
-+++ b/drivers/char/pc_keyb.c
-@@ -61,6 +61,10 @@ unsigned char pckbd_sysrq_xlate[128] =
- 	"\r\000/";					/* 0x60 - 0x6f */
- #endif
+diff --git a/arch/sparc64/kernel/iommu.c b/arch/sparc64/kernel/iommu.c
+index 2a37a6c..600f712 100644
+--- a/arch/sparc64/kernel/iommu.c
++++ b/arch/sparc64/kernel/iommu.c
+@@ -575,7 +575,7 @@ static int dma_4u_map_sg(struct device *dev, struct scatterlist *sglist,
+ 		}
+ 		/* Allocate iommu entries for that segment */
+ 		paddr = (unsigned long) SG_ENT_PHYS_ADDRESS(s);
+-		npages = iommu_num_pages(paddr, slen);
++		npages = sparc64_iommu_num_pages(paddr, slen);
+ 		entry = iommu_range_alloc(dev, iommu, npages, &handle);
  
-+/* Warning: do not redefine kbd_controller_present on ia64, mips and mips64 */
-+#ifndef kbd_controller_present
-+#define kbd_controller_present() keyboard_controller_present
-+
- int keyboard_controller_present __initdata = 1;
- static int __init removable_keyb(char *str)
+ 		/* Handle failure */
+@@ -647,7 +647,7 @@ iommu_map_failed:
+ 			iopte_t *base;
+ 
+ 			vaddr = s->dma_address & IO_PAGE_MASK;
+-			npages = iommu_num_pages(s->dma_address, s->dma_length);
++			npages = sparc64_iommu_num_pages(s->dma_address, s->dma_length);
+ 			iommu_range_free(iommu, vaddr, npages);
+ 
+ 			entry = (vaddr - iommu->page_table_map_base)
+@@ -715,7 +715,7 @@ static void dma_4u_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 
+ 		if (!len)
+ 			break;
+-		npages = iommu_num_pages(dma_handle, len);
++		npages = sparc64_iommu_num_pages(dma_handle, len);
+ 		iommu_range_free(iommu, dma_handle, npages);
+ 
+ 		entry = ((dma_handle - iommu->page_table_map_base)
+diff --git a/arch/sparc64/kernel/iommu_common.h b/arch/sparc64/kernel/iommu_common.h
+index 53b19c8..e64152b 100644
+--- a/arch/sparc64/kernel/iommu_common.h
++++ b/arch/sparc64/kernel/iommu_common.h
+@@ -35,8 +35,8 @@
+ 
+ #define SG_ENT_PHYS_ADDRESS(SG)	(__pa(sg_virt((SG))))
+ 
+-static inline unsigned long iommu_num_pages(unsigned long vaddr,
+-					    unsigned long slen)
++static inline unsigned long sparc64_iommu_num_pages(unsigned long vaddr,
++						    unsigned long slen)
  {
-@@ -68,6 +72,7 @@ static int __init removable_keyb(char *str)
-         return 0;
+ 	unsigned long npages;
+ 
+@@ -53,7 +53,7 @@ static inline int is_span_boundary(unsigned long entry,
+ 				   struct scatterlist *sg)
+ {
+ 	unsigned long paddr = SG_ENT_PHYS_ADDRESS(outs);
+-	int nr = iommu_num_pages(paddr, outs->dma_length + sg->length);
++	int nr = sparc64_iommu_num_pages(paddr, outs->dma_length + sg->length);
+ 
+ 	return iommu_is_span_boundary(entry, nr, shift, boundary_size);
  }
- __setup("nokeyb", removable_keyb);
-+#endif
+diff --git a/arch/sparc64/kernel/pci_sun4v.c b/arch/sparc64/kernel/pci_sun4v.c
+index a104c80..08dcdbd 100644
+--- a/arch/sparc64/kernel/pci_sun4v.c
++++ b/arch/sparc64/kernel/pci_sun4v.c
+@@ -382,7 +382,7 @@ static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
+ 		}
+ 		/* Allocate iommu entries for that segment */
+ 		paddr = (unsigned long) SG_ENT_PHYS_ADDRESS(s);
+-		npages = iommu_num_pages(paddr, slen);
++		npages = sparc64_iommu_num_pages(paddr, slen);
+ 		entry = iommu_range_alloc(dev, iommu, npages, &handle);
  
- static void kbd_write_command_w(int data);
- static void kbd_write_output_w(int data);
-@@ -77,8 +82,6 @@ static void __aux_write_ack(int val);
- static int aux_reconnect = 0;
- #endif
+ 		/* Handle failure */
+@@ -459,7 +459,7 @@ iommu_map_failed:
+ 			unsigned long vaddr, npages;
  
--#define kbd_controller_present() keyboard_controller_present
--
- static spinlock_t kbd_controller_lock = SPIN_LOCK_UNLOCKED;
- static unsigned char handle_kbd_event(void);
+ 			vaddr = s->dma_address & IO_PAGE_MASK;
+-			npages = iommu_num_pages(s->dma_address, s->dma_length);
++			npages = sparc64_iommu_num_pages(s->dma_address, s->dma_length);
+ 			iommu_range_free(iommu, vaddr, npages);
+ 			/* XXX demap? XXX */
+ 			s->dma_address = DMA_ERROR_CODE;
+@@ -498,7 +498,7 @@ static void dma_4v_unmap_sg(struct device *dev, struct scatterlist *sglist,
  
-@@ -905,7 +908,7 @@ static char * __init initialize_kbd(void)
+ 		if (!len)
+ 			break;
+-		npages = iommu_num_pages(dma_handle, len);
++		npages = sparc64_iommu_num_pages(dma_handle, len);
+ 		iommu_range_free(iommu, dma_handle, npages);
  
- void __init pckbd_init_hw(void)
- {
--	if (!keyboard_controller_present) {
-+	if (!kbd_controller_present()) {
- 		kbd_exists = 0;
- 		return;
- 	}
--- 
-1.5.3.8
-
+ 		entry = ((dma_handle - iommu->page_table_map_base) >> IO_PAGE_SHIFT);
