@@ -1,109 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbYG2TMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757582AbYG2TMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754064AbYG2TMK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 15:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYG2TL5
+	id S1757582AbYG2TMt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 15:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYG2TMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 15:11:57 -0400
-Received: from clem.clem-digital.net ([68.16.168.10]:33361 "EHLO
-	clem.clem-digital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750838AbYG2TL4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 15:11:56 -0400
-X-Greylist: delayed 1196 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Jul 2008 15:11:55 EDT
-From: Pete Clements <clem@clem.clem-digital.net>
-Message-Id: <200807291851.m6TIpvN7004222@clem.clem-digital.net>
-Subject: 2.6.26-rc1 oops on boot -- cs423x?
-To: linux-kernel@vger.kernel.org (linux-kernel)
-Date: Tue, 29 Jul 2008 14:51:57 -0400 (EDT)
-X-Mailer: ELM [version 2.5 PL7]
+	Tue, 29 Jul 2008 15:12:41 -0400
+Received: from gw.goop.org ([64.81.55.164]:49647 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751906AbYG2TMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 15:12:40 -0400
+Message-ID: <488F6BA1.4030708@goop.org>
+Date: Tue, 29 Jul 2008 12:12:33 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Mike Travis <travis@sgi.com>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Cliff Wickman <cpw@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, steiner@sgi.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: Comments on UV tlb flushing
+References: <488E644B.10801@goop.org>	 <200807291412.18495.nickpiggin@yahoo.com.au>	 <20080729133204.GA13138@sgi.com> <488F2C9B.9070306@goop.org> <86802c440807291113u59ba996dg340c8feba1039f3a@mail.gmail.com> <488F60A1.2080902@goop.org> <488F6563.4000907@sgi.com>
+In-Reply-To: <488F6563.4000907@sgi.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Missed most of the 26-git series, git6 first one tried and oops 
-showed in that one as well as those tried after. oops below.
+Mike Travis wrote:
+> Should there be a "generic" X86_ENTERPRISE_ARCH which turns on various
+> capabilities?  Our licenses and support agreements with SuSE and RH are
+> for their "Enterprise Editions" though the customer is free to run
+> whatever (unsupported from us).  Asking distros to enable that option
+> should be a no-brainer.  And it could be defaulted ON with the comment
+> to turn it off if you have a small desktop system.  This way they won't
+> forget... ;-)  [Actually, this could turn on MAXSMP as well.]
+>   
 
--- 
-Pete Clements 
+I don't have a strong opinion, but I suspect that distros actually pay 
+attention to each option being set, since they end up having to support 
+them all anyway.  As such, they'd generally prefer to explicitly turn 
+each thing on or off themselves, and big-switch config options aren't 
+all that useful.
 
- pnp: the driver 'cs4236_isapnp' has been registered
- cs4236_isapnp 01:01.00: driver attached
- cs4236_isapnp 01:01.02: driver attached
- cs4236_isapnp 01:01.00: pnp_assign_resources, try dependent set 0
- cs4236_isapnp 01:01.00:   add dma 1 flags 0x40000028
- cs4236_isapnp 01:01.00:   add dma 3 flags 0x40000028
- cs4236_isapnp 01:01.00:   add irq 5 flags 0x40000001
- cs4236_isapnp 01:01.00:   add io  0x534-0x537 flags 0x40000001
- cs4236_isapnp 01:01.00:   add io  0x388-0x38b flags 0x40000001
- cs4236_isapnp 01:01.00:   add io  0x220-0x22f flags 0x40000001
- cs4236_isapnp 01:01.00: pnp_assign_resources succeeded: current resources:
- cs4236_isapnp 01:01.00:   dma 1 flags 0x40000828
- cs4236_isapnp 01:01.00:   dma 1 flags 0x40000828  dma 3 flags 0x40000828
- cs4236_isapnp 01:01.00:   dma 1 flags 0x40000828  dma 3 flags 0x40000828  irq 5 flags 0x40000401
- cs4236_isapnp 01:01.00:   dma 1 flags 0x40000828  dma 3 flags 0x40000828  irq 5 flags 0x40000401  io  0x534-0x537 flags 0x40000101
- cs4236_isapnp 01:01.00:   dma 1 flags 0x40000828  dma 3 flags 0x40000828  irq 5 flags 0x40000401  io  0x534-0x537 flags 0x40000101  io  0x388-0x38b fla
- ------------[ cut here ]------------
- WARNING: at lib/vsprintf.c:609 vsnprintf+0x6c7/0x6d0()
- Modules linked in: snd_cs4236(+) snd_opl3_lib snd_seq_dummy snd_hwdep snd_cs4236_lib snd_mpu401_uart snd_seq_oss(+) snd_seq_midi snd_seq_midi_event snd_seq snd_rawmidi snd_seq_device snd_cs4231_lib snd_pcm_oss snd_mixer_oss snd_pcm snd_timer uhci_hcd snd i2c_piix4 usbcore soundcore sg snd_page_alloc 3c59x i2c_core mii
- Pid: 1885, comm: modprobe Not tainted 2.6.27-rc1 #1
-  [<c011f621>] warn_on_slowpath+0x61/0xa0
-  [<c011a017>] __dequeue_entity+0x57/0xd0
-  [<c011684d>] update_curr+0x4d/0x70
-  [<c011a18d>] pick_next_task_fair+0x8d/0x100
-  [<c01e17b7>] string+0x27/0xc0
-  [<c01e1c09>] vsnprintf+0x3b9/0x6d0
-  [<c01e1177>] number+0x2a7/0x2b0
-  [<c01e17b7>] string+0x27/0xc0
-  [<c01e1f17>] vsnprintf+0x6c7/0x6d0
-  [<c01dc4c0>] idr_get_new_above_int+0x10/0x80
-  [<c0136601>] up+0x11/0x40
-  [<c011fe6e>] release_console_sem+0x19e/0x1d0
-  [<c01dc8d3>] idr_remove+0x173/0x1d0
-  [<c01a442d>] xlate_proc_name+0x3d/0xc0
-  [<c01e1fab>] snprintf+0x1b/0x20
-  [<c01fca09>] dbg_pnp_show_resources+0x129/0x220
-  [<c01fbc2e>] pnp_assign_resources+0x18e/0x850
-  [<c017f16d>] iput+0x1d/0x50
-  [<c01ac33a>] sysfs_addrm_finish+0x3a/0x1f0
-  [<c02e18ee>] klist_node_init+0x2e/0x50
-  [<c01fc347>] pnp_auto_config_dev+0x57/0xb0
-  [<c01f9dfe>] pnp_request_card_device+0xbe/0xf0
-  [<c01fc3bf>] pnp_activate_dev+0x1f/0x50
-  [<f88ce50c>] snd_cs423x_pnpc_detect+0x11f/0x3b4 [snd_cs4236]
-  [<c01f9c0a>] card_probe+0xea/0x170
-  [<c01f9d2e>] pnp_register_card_driver+0x9e/0xb0
-  [<f8839027>] alsa_card_cs423x_init+0x27/0x49 [snd_cs4236]
-  [<c0140d46>] sys_init_module+0x136/0x1920
-  [<c0124f50>] __request_region+0x0/0xd0
-  [<c0103026>] syscall_call+0x7/0xb
-  =======================
- ---[ end trace b28563869b69121a ]---
- cs4236_isapnp 01:01.00:   dma 1 flags 0x40000828  dma 3 flags 0x40000828  irq 5 flags 0x40000401  io  0x534-0x537 flags 0x40000101  io  0x388-0x38b fla
- cs4236_isapnp 01:01.00: pnp_start_dev: current resources:
- cs4236_isapnp 01:01.00:   dma 1 flags 0x40000828
- cs4236_isapnp 01:01.00:   dma 1 flags 0x40000828  dma 3 flags 0x40000828
- cs4236_isapnp 01:01.00:   dma 1 flags 0x40000828  dma 3 flags 0x40000828  irq 5 flags 0x40000401
- cs4236_isapnp 01:01.00:   dma 1 flags 0x40000828  dma 3 flags 0x40000828  irq 5 flags 0x40000401  io  0x534-0x537 flags 0x40000101
- cs4236_isapnp 01:01.00:   dma 1 flags 0x40000828  dma 3 flags 0x40000828  irq 5 flags 0x40000401  io  0x534-0x537 flags 0x40000101  io  0x388-0x38b fla
- cs4236_isapnp 01:01.00:   dma 1 flags 0x40000828  dma 3 flags 0x40000828  irq 5 flags 0x40000401  io  0x534-0x537 flags 0x40000101  io  0x388-0x38b fla
- cs4236_isapnp 01:01.00: set resources
- cs4236_isapnp 01:01.00:   set io  0 to 0x534
- cs4236_isapnp 01:01.00:   set io  1 to 0x388
- cs4236_isapnp 01:01.00:   set io  2 to 0x220
- cs4236_isapnp 01:01.00:   set irq 0 to 5
- cs4236_isapnp 01:01.00:   set dma 0 to 1
- cs4236_isapnp 01:01.00:   set dma 1 to 3
- cs4236_isapnp 01:01.00: activated
- cs4236_isapnp 01:01.02: pnp_assign_resources, try dependent set 0
- cs4236_isapnp 01:01.02:   add io  0xf00-0xf07 flags 0x40000001
- cs4236_isapnp 01:01.02: pnp_assign_resources succeeded: current resources:
- cs4236_isapnp 01:01.02:   io  0xf00-0xf07 flags 0x40000101
- cs4236_isapnp 01:01.02: pnp_start_dev: current resources:
- cs4236_isapnp 01:01.02:   io  0xf00-0xf07 flags 0x40000101
- cs4236_isapnp 01:01.02: set resources
- cs4236_isapnp 01:01.02:   set io  0 to 0xf00
- cs4236_isapnp 01:01.02: activated
+But you would have to talk to a distro person to get confirmation ;)
+
+    J
