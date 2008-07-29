@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760544AbYG2VET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760761AbYG2VEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760544AbYG2VET (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 17:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbYG2VEK
+	id S1760761AbYG2VEx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 17:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYG2VEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 17:04:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33314 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754234AbYG2VEJ (ORCPT
+	Tue, 29 Jul 2008 17:04:44 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59555 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753074AbYG2VEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 17:04:09 -0400
-Date: Tue, 29 Jul 2008 14:01:00 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Linux v2.6.27-rc1: problem with firmware stuff
-In-Reply-To: <200807292301.36987.rjw@sisk.pl>
-Message-ID: <alpine.LFD.1.10.0807291359110.3334@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org> <200807292249.48050.rjw@sisk.pl> <200807292301.36987.rjw@sisk.pl>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 29 Jul 2008 17:04:44 -0400
+Date: Tue, 29 Jul 2008 14:04:34 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Simon Arlott <simon@fire.lp0.eu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [patch 5/3] fastboot: sync the async execution before
+ late_initcall and move level 6s (sync) first
+Message-ID: <20080729140434.31022f55@infradead.org>
+In-Reply-To: <488F84ED.9010200@keyaccess.nl>
+References: <20080720085924.122feb2b@infradead.org>
+	<20080720090041.5924f5ff@infradead.org>
+	<488F84ED.9010200@keyaccess.nl>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 29 Jul 2008, Rafael J. Wysocki wrote:
+On Tue, 29 Jul 2008 23:00:29 +0200
+> Isn't this a bit confusing? All the other sync levels are directly
+> after their respective levels. I can see why you want another level
+> now, but shouldn't that mean late_initcall now wants to be 8,
+> device_initcall 7 and your new 6s just 6 (device_core_initcall or
+> something...)?
 > 
-> Actually, this happened due to some firmware files being created as root during
-> installations of pre-rc -git kernels from the O= directory.  So, not a real
-> problem, but somewhat confusing.
 
-Yeah, I've had that happen myself. It used to be that "make 
-modules_install" (as root, obviously) would try build a new version of the 
-kernel, and as a result subsequent build attempts would fail horribly 
-because of various random files being now owned-by-root.
+yeah it is.. but nobody is using them
 
-I don't know if there is a whole lot we can do about it in general..
+I'll make a note to clean this up
 
-			Linus
+(by removing the unused ones)
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
