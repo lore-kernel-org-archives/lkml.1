@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbYG2Bh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbYG2Bht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842AbYG2Bh1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 21:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYG2Bg4
+	id S1755245AbYG2Bht (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 21:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYG2Bhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 21:36:56 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:52269 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752068AbYG2Bgx (ORCPT
+	Mon, 28 Jul 2008 21:37:35 -0400
+Received: from smtp112.mail.mud.yahoo.com ([209.191.84.65]:33888 "HELO
+	smtp112.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754986AbYG2Bhc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 21:36:53 -0400
-Date: Tue, 29 Jul 2008 02:36:50 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Simon Arlott <simon@fire.lp0.eu>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-Message-ID: <20080729013650.GG28946@ZenIV.linux.org.uk>
-References: <488DF9CF.8020408@simon.arlott.org.uk> <9e4733910807281005y62dca90ar96f663908e644546@mail.gmail.com> <488DFD97.7080802@simon.arlott.org.uk> <9e4733910807281022v38d323c9sc7b63235824690f6@mail.gmail.com> <488E0BB6.7020006@simon.arlott.org.uk> <9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com> <488E1147.5040803@simon.arlott.org.uk> <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com> <20080729011526.GF28946@ZenIV.linux.org.uk> <9e4733910807281825v42f9700al420ba48aebf3d790@mail.gmail.com>
+	Mon, 28 Jul 2008 21:37:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Umji3d2leAXTN3WrC1OvZoHAJMnISIMi7RL+W1EBrvg6HysvKM8FmMYEsA+DwwCc8FpITvMiQijmXoqbUkJGvKXs+4hBDPI/IKuiQMhvpFDa3u+cpyGWDY0Xf55Ec0MewIA7/3M59UfAQbPwzXdG2bEJJZ912eRuNONu4cgAOQA=  ;
+X-YMail-OSG: DO8TOHoVM1kMsTbun3bMjKxoZwNvwNHd2qM7KKzKG13UjfFrDyUuFMlx9I.qtDWZ1RPJSQJ3pL2GNPQBjrTciNKyfTQEPPuOtrHxz8Hp2.WN4UEgESPQmys3VAgmg2wr3JQ-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>, benh@kernel.crashing.org
+Subject: Re: [PATCH] x86: do not overrun page table ranges in gup
+Date: Tue, 29 Jul 2008 11:37:19 +1000
+User-Agent: KMail/1.9.5
+Cc: Johannes Weiner <hannes@saeurebad.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>, akpm@linuxfoundation.org,
+       torvalds@linuxfoundation.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org
+References: <20080728184947.GA5041@martell.zuzino.mipt.ru> <alpine.LFD.1.10.0807281721200.3486@nehalem.linux-foundation.org> <alpine.LFD.1.10.0807281737480.3486@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807281737480.3486@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <9e4733910807281825v42f9700al420ba48aebf3d790@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200807291137.20259.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 09:25:39PM -0400, Jon Smirl wrote:
-> On 7/28/08, Al Viro <viro@zeniv.linux.org.uk> wrote:
-> > On Mon, Jul 28, 2008 at 03:00:13PM -0400, Jon Smirl wrote:
-> >
-> >
-> > > Other people aren't perfect, I've found over 1,000 typos in the those
-> >  > names and emails. We need a validation mechanism.
-> >
-> > Who's "we", luser, and why would I possibly give a damn for your needs?
-> 
-> Let's drop the whole Sign-off-by mechanism. If we can't be bothered to
-> clean up the junk in Signed-off-by why should we bother recording
-> them? Sign every patch Mickey Mouse, it has the same effect.
+On Tuesday 29 July 2008 10:39, Linus Torvalds wrote:
+> On Mon, 28 Jul 2008, Linus Torvalds wrote:
+> > So no, the right fix would be to align 'start' first, which means that
+> > everything else (including 'end') will be page-aligned. Aligning just one
+> > or the other is very very wrong.
+>
+> Does this work?
+>
+> Not pretty, but it stands _some_ chance of being correct.
 
-That still doesn't answer either of my questions.  As for your question, the
-point is to have them good enough to make an individual changeset feasible
-to track.
+No, that's not particularly ugly and I think the fix is good. Thank you
+everyone involved in the thread.
+
+Acked-by: Nick Piggin <npiggin@suse.de>
