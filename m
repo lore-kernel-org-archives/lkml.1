@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYG2GUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbYG2GVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbYG2GUL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 02:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYG2GT7
+	id S1755991AbYG2GVA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 02:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbYG2GUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 02:19:59 -0400
-Received: from gw.goop.org ([64.81.55.164]:46260 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752052AbYG2GT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 02:19:58 -0400
-Message-ID: <488EB68A.2080301@goop.org>
-Date: Mon, 28 Jul 2008 23:19:54 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 29 Jul 2008 02:20:52 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:47919 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752383AbYG2GUv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 02:20:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=uUlpoOO+EhKo3WY+faCZahZIchozuDI8tHGDLkvXAd6ewM4Cc+9N/s2xYv4UMnBaX2
+         ZsYrlVeNSQhJ5JQK9MwrlPnxX/RzWirb0BTn/6ZB/v1WmtKo6BUJyukbskBBQrUxMcaB
+         Bv+kzX4AOStVst5fgbTbeq+JLE7NzrFHDwNlg=
+Message-ID: <7c86c4470807282320o2d072c7dp7a327f133d5969c5@mail.gmail.com>
+Date: Mon, 28 Jul 2008 23:20:50 -0700
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Subject: Re: [patch 00/19] perfmon2 minimal v3: introduction
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080729014730.76b879a4.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: x86: Is there still value in having a special tlb flush IPI vector?
-References: <488E534F.2030204@goop.org> <20080728233455.GA2919@elte.hu> <200807291430.08220.nickpiggin@yahoo.com.au>
-In-Reply-To: <200807291430.08220.nickpiggin@yahoo.com.au>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4868dbf6.0af5660a.1972.52f4@mx.google.com>
+	 <20080729014730.76b879a4.sfr@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> It definitely is not a clear win. They do not have the same characteristics.
-> So numbers will be needed.
+Stephen,
+
+
+On Mon, Jul 28, 2008 at 8:47 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 >
-> smp_call_function is now properly scalable in smp_call_function_single
-> form. The more general case of multiple targets is not so easy and it still
-> takes a global lock and touches global cachelines.
+> On Mon, 30 Jun 2008 06:13:26 -0700 (PDT) eranian@googlemail.com wrote:
+>>
+>> The following patches implement a minimal perfmon2 subsystem which provides
+>> access to the hardware performance counters of modern processors.
 >
-> I don't think it is a good use of time, honestly. Do you have a good reason?
->   
-
-Code cleanup, unification.  It took about 20 minutes to do.  It probably 
-won't take too much longer to unify kernel/tlb.c.  It seems that if 
-there's any performance loss in making the transition, then we can make 
-it up again by tuning smp_call_function_mask, benefiting all users.
-
-But, truth be told, the real reason is that I think there may be some 
-correctness issue around smp_call_function* - I've seen occasional 
-inexplicable crashes, all within generic_smp_call_function() - and I 
-just can't exercise that code enough to get a solid reproducing case.  
-But if it gets used for tlb flushes, then any bug is going to become 
-pretty obvious.  Regardless of whether these patches get accepted, I can 
-use it as a test vehicle.
-
-> No. The rewrite makes it now very good at synchronously sending a function
-> to a single other CPU.
+> First up, I cannot speak to the actual function of the patches, but just
+> to the mechanics of getting them into the kernel.  One good thing is that
+> with CONFIG_PERFMON turned off, it looks like the impact is very close to
+> zero. Two obvious things that would help these being accepted are:
 >
-> Sending asynchronously requires a slab allocation and then a remote slab free
-> (which is nasty for slab) at the other end, and bouncing of locks and
-> cachelines. No way you want to do that in the reschedule IPI.
+Yes, when CONFIG_PERFMON is off, there should be no penalty at all.
+The hooks are removed via empty inline functions. The extra field in
+task_struct is removed. In x86-specific code, the low-level interrupt
+code is removed. The TIF flags are unused, thus no impact on context
+switch because the thread_info cacheline is checked regardless of perfmon2.
+
+
+>        ordering - in the current incarnation, the patches produce places
+> where the kernel will not build.  We like things to be ordered so that
+> git bisection does not fail if at all possible - that means that an
+> allmod/yesconfig should build after the application of each patch.
+> Currently this is not so.  It could be mode to do so trivially by
+> delaying the "global" Kconfig/Makefile updates until later in the
+> sequence.  And you really should introduce the system calls *before*
+> wiring them up.
+
+I will restructure the patch series so it can be built at any one level of
+of th patch stack.
+
 >
-> Not to mention the minor problem that it still deadlocks when called with
-> interrupts disabled ;)
->   
+>        quite a few of the macros (especially for the dummy (non
+> CONFIG_PERFMON) versions of functions) should be "static inline"
+> functions unless they absolutely must be macros.  Andrew Morton said it
+> best - "write in C not C preprocessor".
+>
+I will fix that as well.
 
-In the async case?  Or because it can become spontaneously sync if 
-there's an allocation failure?
+> I can see that this infrastructure could be very useful and I appreciate
+> that it has been cut down for this initial merge.  These patches (even as
+> they are) compare favourably to some other new infrastructure that has
+> been introduced.
 
-    J
+I think I can break it down a bit more especially for x86_64.
+
+As discussed with people on LKML and with Andi Kleen last week at OLS, I will
+see what can be done with the syscalls to make them a bit more extensible.
+
+Thanks.
