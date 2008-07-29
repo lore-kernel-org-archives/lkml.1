@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758549AbYG2MFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbYG2MIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758549AbYG2MFX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 08:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbYG2MFI
+	id S1758273AbYG2MIU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 08:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbYG2MIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 08:05:08 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:48996 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756137AbYG2MFH (ORCPT
+	Tue, 29 Jul 2008 08:08:11 -0400
+Received: from web32606.mail.mud.yahoo.com ([68.142.207.233]:43458 "HELO
+	web32606.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756137AbYG2MIK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 08:05:07 -0400
-Date: Tue, 29 Jul 2008 08:04:42 -0400
-From: Theodore Tso <tytso@MIT.EDU>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Alistair John Strachan <alistair@devzero.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dsd@gentoo.org, kune@deine-taler.de, linux-wireless@vger.kernel.org
-Subject: Re: 2.6.27-rc1: zd1211rw association fails
-Message-ID: <20080729120442.GE9378@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Alistair John Strachan <alistair@devzero.co.uk>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	dsd@gentoo.org, kune@deine-taler.de, linux-wireless@vger.kernel.org
-References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org> <200807291049.47342.alistair@devzero.co.uk> <1217326195.10489.10.camel@johannes.berg>
+	Tue, 29 Jul 2008 08:08:10 -0400
+X-RocketYMMF: knobi.rm
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Tue, 29 Jul 2008 05:08:06 -0700 (PDT)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: Linux v2.6.27-rc1
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217326195.10489.10.camel@johannes.berg>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Message-ID: <320122.81433.qm@web32606.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 12:09:55PM +0200, Johannes Berg wrote:
-> This is about the 100 millionth time this is reported. Please try the
-> patch I just posted.
+----- Original Message ----
 
-Yeah, it's really too bad -rc1 got released just before you were able
-to post the fix to this, since if there were 100 million people who
-were trying out kernels starting with -git7 that use wireless, there
-will probably be 200 million people trying out -rc1.  :-)
+> From: Peter Zijlstra <peterz@infradead.org>
+> To: Martin Knoblauch <spamtrap@knobisoft.de>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+> Sent: Tuesday, July 29, 2008 1:57:38 PM
+> Subject: Re: Linux v2.6.27-rc1
+> 
+> On Tue, 2008-07-29 at 04:23 -0700, Martin Knoblauch wrote:
+> > ----- Original Message ----
+> > 
+> > > From: Linus Torvalds 
+> > > To: Linux Kernel Mailing List 
+> > > Sent: Tuesday, July 29, 2008 5:23:21 AM
+> > > Subject: Linux v2.6.27-rc1
+> > > 
+> > > 
+> > > It's two weeks (and one day), and the merge window is over.
+> > > 
+> > 
+> >   CHK     include/linux/version.h
+> >   CHK     include/linux/utsrelease.h
+> >   CALL    scripts/checksyscalls.sh
+> >   CHK     include/linux/compile.h
+> >   CC      arch/x86/kernel/ldt.o
+> > arch/x86/kernel/ldt.c: In function `alloc_ldt':
+> > arch/x86/kernel/ldt.c:67: error: invalid lvalue in unary `&'
+> > make[1]: *** [arch/x86/kernel/ldt.o] Error 1
+> > make: *** [arch/x86/kernel] Error 2
+> > 
+> > This is a x86_64 build on a RHEL4U3 userland (gcc version 3.4.5
+> > 20051201 (Red Hat 3.4.5-2)). Config is taken from 2.6.26.
+> 
+> Its due to your ancient compiler - fix can be found here:
+>
 
-Thanks for finding and fixing it, though.  I stopped trying out
-kernels after -git6 since I was travelling at OSCON, and not having
-wireless was a show-stopper for me....
+ That are the joys of "Enterprise Distributions" :-)
 
-						- Ted
+>   http://lkml.org/lkml/2008/7/29/48
+
+ Thanks. Seems to fix it. 
+
+Cheers
+Martin
+
