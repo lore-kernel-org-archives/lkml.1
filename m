@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbYG2MIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbYG2MJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758273AbYG2MIU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 08:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbYG2MIL
+	id S1758561AbYG2MJZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 08:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbYG2MJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 08:08:11 -0400
-Received: from web32606.mail.mud.yahoo.com ([68.142.207.233]:43458 "HELO
-	web32606.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756137AbYG2MIK (ORCPT
+	Tue, 29 Jul 2008 08:09:17 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57345 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756031AbYG2MJR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 08:08:10 -0400
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Tue, 29 Jul 2008 05:08:06 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: Linux v2.6.27-rc1
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
+	Tue, 29 Jul 2008 08:09:17 -0400
+Date: Tue, 29 Jul 2008 14:09:11 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Frederik Deweerdt <deweerdt@free.fr>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       suresh.b.siddha@intel.com, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference at 00000002
+Message-ID: <20080729120911.GI30344@one.firstfloor.org>
+References: <20080725095317.GA12636@skywalker> <20080728222643.GA6339@slug> <1217305335.5553.3.camel@marge.simson.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <320122.81433.qm@web32606.mail.mud.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <1217305335.5553.3.camel@marge.simson.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-
-> From: Peter Zijlstra <peterz@infradead.org>
-> To: Martin Knoblauch <spamtrap@knobisoft.de>
-> Cc: Linus Torvalds <torvalds@linux-foundation.org>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-> Sent: Tuesday, July 29, 2008 1:57:38 PM
-> Subject: Re: Linux v2.6.27-rc1
+On Tue, Jul 29, 2008 at 06:22:15AM +0200, Mike Galbraith wrote:
+> On Tue, 2008-07-29 at 00:26 +0200, Frederik Deweerdt wrote:
+> > Hello  Aneesh,
+> > 
+> > On Fri, Jul 25, 2008 at 03:23:17PM +0530, Aneesh Kumar K.V wrote:
+> > > [  163.378265] BUG: unable to handle kernel NULL pointer dereference at 00000002
+> > > [  163.378276] IP: [<c0124933>] sched_power_savings_store+0x13/0x70
+> > 
+> > Does the attached patch solve the problem?
 > 
-> On Tue, 2008-07-29 at 04:23 -0700, Martin Knoblauch wrote:
-> > ----- Original Message ----
-> > 
-> > > From: Linus Torvalds 
-> > > To: Linux Kernel Mailing List 
-> > > Sent: Tuesday, July 29, 2008 5:23:21 AM
-> > > Subject: Linux v2.6.27-rc1
-> > > 
-> > > 
-> > > It's two weeks (and one day), and the merge window is over.
-> > > 
-> > 
-> >   CHK     include/linux/version.h
-> >   CHK     include/linux/utsrelease.h
-> >   CALL    scripts/checksyscalls.sh
-> >   CHK     include/linux/compile.h
-> >   CC      arch/x86/kernel/ldt.o
-> > arch/x86/kernel/ldt.c: In function `alloc_ldt':
-> > arch/x86/kernel/ldt.c:67: error: invalid lvalue in unary `&'
-> > make[1]: *** [arch/x86/kernel/ldt.o] Error 1
-> > make: *** [arch/x86/kernel] Error 2
-> > 
-> > This is a x86_64 build on a RHEL4U3 userland (gcc version 3.4.5
-> > 20051201 (Red Hat 3.4.5-2)). Config is taken from 2.6.26.
-> 
-> Its due to your ancient compiler - fix can be found here:
->
+> Patch seems to have missed the boat for rc1 too.
 
- That are the joys of "Enterprise Distributions" :-)
+Hmm.  I'll resend. 
 
->   http://lkml.org/lkml/2008/7/29/48
+BTW i think it's clearly a  bug that distributions are even accessing
+that file. It doesn't make any sense in the context they are using
+it (like at every boot). 
 
- Thanks. Seems to fix it. 
-
-Cheers
-Martin
+-Andi
 
