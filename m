@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758074AbYG2N3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbYG2NcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758074AbYG2N3R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 09:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbYG2N3F
+	id S1758408AbYG2NcR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 09:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbYG2NcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 09:29:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56189 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752188AbYG2N3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 09:29:03 -0400
-Date: Tue, 29 Jul 2008 09:28:53 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: PERF: performance tests with the split LRU VM in -mm
-Message-ID: <20080729092853.0ddf7013@bree.surriel.com>
-In-Reply-To: <87y73k4yhg.fsf@saeurebad.de>
-References: <20080724222510.3bbbbedc@bree.surriel.com>
-	<20080728105742.50d6514e@cuia.bos.redhat.com>
-	<20080728164124.8240eabe.akpm@linux-foundation.org>
-	<20080728195713.42cbceed@cuia.bos.redhat.com>
-	<20080728200311.2218af4e@cuia.bos.redhat.com>
-	<87y73k4yhg.fsf@saeurebad.de>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jul 2008 09:32:07 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52896 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753732AbYG2NcG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 09:32:06 -0400
+Date: Tue, 29 Jul 2008 08:32:04 -0500
+From: Cliff Wickman <cpw@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>, jeremy@goop.org
+Cc: steiner@sgi.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: Comments on UV tlb flushing
+Message-ID: <20080729133204.GA13138@sgi.com>
+References: <488E644B.10801@goop.org> <200807291412.18495.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807291412.18495.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jul 2008 15:21:47 +0200
-Johannes Weiner <hannes@saeurebad.de> wrote:
-
-> Here is my original patch that just gets rid of it.  It did not cause
-> any problems to me on high pressure.  Rik, you said on IRC that you now
-> also think the patch is safe..?
-
-Yes.  Removing the "+ 1" is safe because we do not scan until
-zone->lru[l].nr_scan reaches swap_cluster_max, which means that
-the scan counter for small lists will also slowly increase and
-no list will be left behind.
-
-> From: Johannes Weiner <hannes@saeurebad.de>
-> Subject: mm: don't accumulate scan pressure on unrelated lists
+On Tue, Jul 29, 2008 at 02:12:18PM +1000, Nick Piggin wrote:
+> On Tuesday 29 July 2008 10:28, Jeremy Fitzhardinge wrote:
+> > I'm just reworking the x86 tlb code to use smp_call_function_mask, and I
+> > see how the UV tlb flushing hooks in.  A few things occur to me:
+> >
+> >    1. There should be a CONFIG_X86_UV to select this code.  tlb_uv.o is
+> >       around 6k, which is not trivial overhead to subject every x86_64
+> >       kernel to.
 > 
-> During each reclaim scan we accumulate scan pressure on unrelated
-> lists which will result in bogus scans and unwanted reclaims
-> eventually.
+> Definitely.
 
-This patch fixes the balancing issues that we have been seeing
-with the split LRU VM currently in -mm.
+I'd like to talk about this issue separate from the virtualization one.
 
-It is my preferred patch because it removes magic from the VM,
-instead of adding some.
+I think that the Linux distributions are not going to build a special
+UV kernel, are they?  So every distro would have to be prompted to 
+turn on CONFIG_X86_UV, or else their kernel is not going to boot on UV.
 
-> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+But you have a point about not linking the 6k UV object file where 
+size is an issue.
+Thanks for catching that.
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
+Perhaps the UV code should be excluded if CONFIG_EMBEDDED is set.
 
--- 
-All rights reversed.
+-Cliff
