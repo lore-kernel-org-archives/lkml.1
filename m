@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbYG2NLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbYG2NRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758054AbYG2NLt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 09:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbYG2NLm
+	id S1757447AbYG2NRl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 09:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYG2NRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 09:11:42 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:47059 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752032AbYG2NLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 09:11:41 -0400
-Date: Tue, 29 Jul 2008 08:11:39 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: akpm@linux-foundation.org, menage@google.com,
-       seto.hidetoshi@jp.fujitsu.com, laijs@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] cpuset: fix wrong calculation of relax domain level
-Message-Id: <20080729081139.c858ddbe.pj@sgi.com>
-In-Reply-To: <488E7D92.8020501@cn.fujitsu.com>
-References: <488D3331.8000306@cn.fujitsu.com>
-	<20080728001530.bf7f5e44.pj@sgi.com>
-	<488E7D92.8020501@cn.fujitsu.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Tue, 29 Jul 2008 09:17:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47683 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753236AbYG2NRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 09:17:32 -0400
+Date: Tue, 29 Jul 2008 09:16:50 -0400
+From: Rik van Riel <riel@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, akpm@linux-foundation.org
+Subject: Re: PERF: performance tests with the split LRU VM in -mm
+Message-ID: <20080729091650.0ddca3d8@bree.surriel.com>
+In-Reply-To: <20080729220012.F192.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080724222510.3bbbbedc@bree.surriel.com>
+	<20080729220012.F192.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,28 +28,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> > If so, then perhaps:
-> >  1) "update_domain_attr()" could be removed as a separate routine,
-> >     with its code folded into "update_domain_attr_tree()".
+On Tue, 29 Jul 2008 22:04:16 +0900
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+
+> >   TEST 1: dd if=/dev/sda of=/dev/null bs=1M
+> > 
+> > kernel  speed    swap used
+> > 
+> > 2.6.26  111MB/s  500kB
+> > -mm     110MB/s  59MB     (ouch, system noticably slower)
+> > noforce	111MB/s  128kB
+> > stream  108MB/s  0        (slight regression, not sure why yet)
 > 
-> It will be folded into update_domain_attr_tree() by gcc.
+> I tried to reproduce it, my ia64 result was
+> 
+> kernel                   speed        swap used
+> 2.6.26-rc8               49.8MB/s     1M
+> 2.6.26-rc8-mm1           47.6MB/s     168M
+> -mm with above two patch 50.2MB/s     0
+> 
+> 
+> So, I think it isn't regression.
 
-My (mild) preference for folding "update_domain_attr()" into
-"update_domain_attr_tree()" was not to save runtime CPU cycles.
-This is not a hot code path.  It was to improve code readability.
+Agreed.  It looked like it, but once I changed the cpuspeed
+governor from ondemand to performance, I saw that it had to
+be an artifact of something else.
 
-Do what you think is best here ... I'm easy.
+Getting rid of the swap use from a linear IO is the important
+part.
 
-> I think update_domain_attr_tree() rather than update_domain_attr() needs
-> a comment to state what is does, but as it is a helper function for
-> rebuild_sched_domains(), I don't think we need to state its locking needs.
-
-Then perhaps one could include in the comment for
-"update_domain_attr_tree()" that it is a helper function
-for rebuild_sched_domains(), where its locking is described.
-
---
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+-- 
+All rights reversed.
