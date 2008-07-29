@@ -1,292 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758931AbYG2MKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758594AbYG2MM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758931AbYG2MKY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 08:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756984AbYG2MKG
+	id S1758594AbYG2MM2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 08:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755002AbYG2MMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 08:10:06 -0400
-Received: from ti-out-0910.google.com ([209.85.142.190]:4297 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757469AbYG2MKD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 08:10:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:subject;
-        b=YpPyZcAkuu7OFkduyiKjSbFnBABs9A/w0iuI45Gr2kA+01sMCbbmhy/cKW6vU+sp/8
-         ge+Xrl/ZS6EQM8QwofeiUgABqOYscniLcBtf9P3jaP37LFkRuRVvurFL/mJgVYgv4Gai
-         t9MCml2GRoxR09Bz5X4M+piQ/VMJjhxqIAP2w=
-From: Magnus Damm <magnus.damm@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Uwe.Kleine-Koenig@digi.com, gregkh@suse.de, akpm@linux-foundation.org,
-       hjk@linutronix.de, lethal@linux-sh.org,
-       Magnus Damm <magnus.damm@gmail.com>, tglx@linutronix.de,
-       alan@lxorguk.ukuu.org.uk
-Date: Tue, 29 Jul 2008 21:10:15 +0900
-Message-Id: <20080729121015.13443.91824.sendpatchset@rx1.opensource.se>
-Subject: [PATCH][RESEND] uio: uio_pdrv_genirq V3
+	Tue, 29 Jul 2008 08:12:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59767 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752504AbYG2MMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 08:12:19 -0400
+Date: Tue, 29 Jul 2008 14:11:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Travis <travis@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [rfc git pull] cpus4096 fixes, take 2
+Message-ID: <20080729121156.GA367@elte.hu>
+References: <20080727190601.GA764@elte.hu> <alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org> <20080728205700.GA3613@elte.hu> <200807291145.20231.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807291145.20231.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
 
-This is V3 of uio_pdrv_genirq.c, a platform driver for UIO with
-generic IRQ handling code. This driver is very similar to the regular
-UIO platform driver, but is only suitable for devices that are
-connected to the interrupt controller using unique interrupt lines.
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-The uio_pdrv_genirq driver includes generic interrupt handling code
-which disables the serviced interrupt in the interrupt controller
-and makes the user space driver responsible for acknowledging the
-interrupt in the device and reenabling the interrupt in the interrupt
-controller.
+> On Tuesday 29 July 2008 06:57:00 Ingo Molnar wrote:
+> > +/*
+> > + * In cases where we take the address of the cpumask immediately,
+> > + * gcc optimizes it out (it's a constant) and there's no huge stack
+> > + * variable created:
+> > + */
+> > +#define cpumask_of_cpu(cpu) ({ *get_cpu_mask(cpu); })
+> 
+> Why use a statement expression here?  Isn't (*get_cpu_mask(cpu)) 
+> sufficient?
 
-Shared interrupts are not supported since the in-kernel interrupt
-handler will disable the interrupt line in the interrupt controller,
-and in a shared interrupt configuration this will stop other devices
-from delivering interrupts.
+Yeah, it's sufficient - no strong reasons - it felt a slightly bit more 
+correct to isolate the read-only data structure. Not that it makes any 
+real difference in practice - it's still possible to take the address of 
+get_cpu_mask() and abuse that - gcc will only issue a warning.
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
----
+But gcc 3.4.5 apparently craps out on this valid use of a gcc extension, 
+see the report and the fix at:
 
- Patch sent to lkml on July 11th, please pick up.
- Platform data already in place in arch/sh/kernel/cpu/sh4a/...
+  http://lkml.org/lkml/2008/7/29/154
 
- Changes since V2
-  - readded bitops
-  - removed irq handler spinlock to fix potential deadlock
-  - kept irq control spinlock to serialize user space access
-
- Changes since V1
-  - allow user space to enable _and_ disable the interrupt
-  - replaced bitops with spinlock + irq_disabled variable
-  - renamed pdata variable name to priv
-
- drivers/uio/Kconfig           |   13 ++
- drivers/uio/Makefile          |    1 
- drivers/uio/uio_pdrv_genirq.c |  188 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 202 insertions(+)
-
---- 0001/drivers/uio/Kconfig
-+++ work/drivers/uio/Kconfig	2008-07-29 20:59:36.000000000 +0900
-@@ -33,6 +33,19 @@ config UIO_PDRV
- 
- 	  If you don't know what to do here, say N.
- 
-+config UIO_PDRV_GENIRQ
-+	tristate "Userspace I/O platform driver with generic IRQ handling"
-+	help
-+	  Platform driver for Userspace I/O devices, including generic
-+	  interrupt handling code. Shared interrupts are not supported.
-+
-+	  This kernel driver requires that the matching userspace driver
-+	  handles interrupts in a special way. Userspace is responsible
-+	  for acknowledging the hardware device if needed, and re-enabling
-+	  interrupts in the interrupt controller using the write() syscall.
-+
-+	  If you don't know what to do here, say N.
-+
- config UIO_SMX
- 	tristate "SMX cryptengine UIO interface"
- 	default n
---- 0001/drivers/uio/Makefile
-+++ work/drivers/uio/Makefile	2008-07-29 20:59:36.000000000 +0900
-@@ -1,4 +1,5 @@
- obj-$(CONFIG_UIO)	+= uio.o
- obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
- obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
-+obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
- obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
---- /dev/null
-+++ work/drivers/uio/uio_pdrv_genirq.c	2008-07-29 20:59:36.000000000 +0900
-@@ -0,0 +1,188 @@
-+/*
-+ * drivers/uio/uio_pdrv_genirq.c
-+ *
-+ * Userspace I/O platform driver with generic IRQ handling code.
-+ *
-+ * Copyright (C) 2008 Magnus Damm
-+ *
-+ * Based on uio_pdrv.c by Uwe Kleine-Koenig,
-+ * Copyright (C) 2008 by Digi International Inc.
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ */
-+
-+#include <linux/platform_device.h>
-+#include <linux/uio_driver.h>
-+#include <linux/spinlock.h>
-+#include <linux/bitops.h>
-+#include <linux/interrupt.h>
-+#include <linux/stringify.h>
-+
-+#define DRIVER_NAME "uio_pdrv_genirq"
-+
-+struct uio_pdrv_genirq_platdata {
-+	struct uio_info *uioinfo;
-+	spinlock_t lock;
-+	unsigned long flags;
-+};
-+
-+static irqreturn_t uio_pdrv_genirq_handler(int irq, struct uio_info *dev_info)
-+{
-+	struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
-+
-+	/* Just disable the interrupt in the interrupt controller, and
-+	 * remember the state so we can allow user space to enable it later.
-+	 */
-+
-+	if (!test_and_set_bit(0, &priv->flags))
-+		disable_irq_nosync(irq);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int uio_pdrv_genirq_irqcontrol(struct uio_info *dev_info, s32 irq_on)
-+{
-+	struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
-+	unsigned long flags;
-+
-+	/* Allow user space to enable and disable the interrupt
-+	 * in the interrupt controller, but keep track of the
-+	 * state to prevent per-irq depth damage.
-+	 *
-+	 * Serialize this operation to support multiple tasks.
-+	 */
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+	if (irq_on) {
-+		if (test_and_clear_bit(0, &priv->flags))
-+			enable_irq(dev_info->irq);
-+	} else {
-+		if (!test_and_set_bit(0, &priv->flags))
-+			disable_irq(dev_info->irq);
-+	}
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int uio_pdrv_genirq_probe(struct platform_device *pdev)
-+{
-+	struct uio_info *uioinfo = pdev->dev.platform_data;
-+	struct uio_pdrv_genirq_platdata *priv;
-+	struct uio_mem *uiomem;
-+	int ret = -EINVAL;
-+	int i;
-+
-+	if (!uioinfo || !uioinfo->name || !uioinfo->version) {
-+		dev_err(&pdev->dev, "missing platform_data\n");
-+		goto bad0;
-+	}
-+
-+	if (uioinfo->handler || uioinfo->irqcontrol || uioinfo->irq_flags) {
-+		dev_err(&pdev->dev, "interrupt configuration error\n");
-+		goto bad0;
-+	}
-+
-+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-+	if (!priv) {
-+		ret = -ENOMEM;
-+		dev_err(&pdev->dev, "unable to kmalloc\n");
-+		goto bad0;
-+	}
-+
-+	priv->uioinfo = uioinfo;
-+	spin_lock_init(&priv->lock);
-+	priv->flags = 0; /* interrupt is enabled to begin with */
-+
-+	uiomem = &uioinfo->mem[0];
-+
-+	for (i = 0; i < pdev->num_resources; ++i) {
-+		struct resource *r = &pdev->resource[i];
-+
-+		if (r->flags != IORESOURCE_MEM)
-+			continue;
-+
-+		if (uiomem >= &uioinfo->mem[MAX_UIO_MAPS]) {
-+			dev_warn(&pdev->dev, "device has more than "
-+					__stringify(MAX_UIO_MAPS)
-+					" I/O memory resources.\n");
-+			break;
-+		}
-+
-+		uiomem->memtype = UIO_MEM_PHYS;
-+		uiomem->addr = r->start;
-+		uiomem->size = r->end - r->start + 1;
-+		++uiomem;
-+	}
-+
-+	while (uiomem < &uioinfo->mem[MAX_UIO_MAPS]) {
-+		uiomem->size = 0;
-+		++uiomem;
-+	}
-+
-+	/* This driver requires no hardware specific kernel code to handle
-+	 * interrupts. Instead, the interrupt handler simply disables the
-+	 * interrupt in the interrupt controller. User space is responsible
-+	 * for performing hardware specific acknowledge and re-enabling of
-+	 * the interrupt in the interrupt controller.
-+	 *
-+	 * Interrupt sharing is not supported.
-+	 */
-+
-+	uioinfo->irq_flags = IRQF_DISABLED;
-+	uioinfo->handler = uio_pdrv_genirq_handler;
-+	uioinfo->irqcontrol = uio_pdrv_genirq_irqcontrol;
-+	uioinfo->priv = priv;
-+
-+	ret = uio_register_device(&pdev->dev, priv->uioinfo);
-+	if (ret) {
-+		dev_err(&pdev->dev, "unable to register uio device\n");
-+		goto bad1;
-+	}
-+
-+	platform_set_drvdata(pdev, priv);
-+	return 0;
-+ bad1:
-+	kfree(priv);
-+ bad0:
-+	return ret;
-+}
-+
-+static int uio_pdrv_genirq_remove(struct platform_device *pdev)
-+{
-+	struct uio_pdrv_genirq_platdata *priv = platform_get_drvdata(pdev);
-+
-+	uio_unregister_device(priv->uioinfo);
-+	kfree(priv);
-+	return 0;
-+}
-+
-+static struct platform_driver uio_pdrv_genirq = {
-+	.probe = uio_pdrv_genirq_probe,
-+	.remove = uio_pdrv_genirq_remove,
-+	.driver = {
-+		.name = DRIVER_NAME,
-+		.owner = THIS_MODULE,
-+	},
-+};
-+
-+static int __init uio_pdrv_genirq_init(void)
-+{
-+	return platform_driver_register(&uio_pdrv_genirq);
-+}
-+
-+static void __exit uio_pdrv_genirq_exit(void)
-+{
-+	platform_driver_unregister(&uio_pdrv_genirq);
-+}
-+
-+module_init(uio_pdrv_genirq_init);
-+module_exit(uio_pdrv_genirq_exit);
-+
-+MODULE_AUTHOR("Magnus Damm");
-+MODULE_DESCRIPTION("Userspace I/O platform driver with generic IRQ handling");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:" DRIVER_NAME);
+	Ingo
