@@ -1,89 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbYG2KKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbYG2KKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757218AbYG2KKW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 06:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbYG2KKH
+	id S1757904AbYG2KKp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 06:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbYG2KKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 06:10:07 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:40149 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753621AbYG2KKF (ORCPT
+	Tue, 29 Jul 2008 06:10:10 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47928
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754653AbYG2KKI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 06:10:05 -0400
-Subject: Re: 2.6.27-rc1: zd1211rw association fails
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Alistair John Strachan <alistair@devzero.co.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dsd@gentoo.org, kune@deine-taler.de, linux-wireless@vger.kernel.org
-In-Reply-To: <200807291049.47342.alistair@devzero.co.uk> (sfid-20080729_115008_505138_9BF9DEAA)
-References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org>
-	 <200807291049.47342.alistair@devzero.co.uk>
-	 (sfid-20080729_115008_505138_9BF9DEAA)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-gDkbE49qw4JxY77sVrtp"
-Date: Tue, 29 Jul 2008 12:09:55 +0200
-Message-Id: <1217326195.10489.10.camel@johannes.berg>
+	Tue, 29 Jul 2008 06:10:08 -0400
+Date: Tue, 29 Jul 2008 03:10:05 -0700 (PDT)
+Message-Id: <20080729.031005.203132019.davem@davemloft.net>
+To: joerg.roedel@amd.com
+Cc: sfr@canb.auug.org.au, fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu,
+       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       robert.richter@amd.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, jbarnes@virtuousgeek.org,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] add iommu_num_pages helper function
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080729095027.GA4851@amd.com>
+References: <20080728.222439.176200666.davem@davemloft.net>
+	<20080729164523.bfd2d539.sfr@canb.auug.org.au>
+	<20080729095027.GA4851@amd.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Joerg Roedel <joerg.roedel@amd.com>
+Date: Tue, 29 Jul 2008 11:50:27 +0200
 
---=-gDkbE49qw4JxY77sVrtp
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> I think moving that function to x86-only code is the best solution for
+> now. Before moving it back to generic code we need an architecture
+> independent way to find out the IOMMU page size.
 
-
-> However, on 2.6.27-rc1 I see the following instead:
->=20
-> [   12.120189] firmware: requesting zd1211/zd1211b_ub
-> [   12.166388] firmware: requesting zd1211/zd1211b_uphr
-> [   12.218877] zd1211rw 4-2:1.0: firmware version 4725
-> [   12.258877] zd1211rw 4-2:1.0: zd1211b chip 050d:705c v4810 high 00-17-=
-3f AL2230_RF pa0 g--NS
-> [   13.097289] wlan0: authenticate with AP 00:17:3f:a4:d6:9d
-> [   13.296890] wlan0: authenticate with AP 00:17:3f:a4:d6:9d
-> [   13.496890] wlan0: authenticate with AP 00:17:3f:a4:d6:9d
-> [   13.696886] wlan0: authentication with AP 00:17:3f:a4:d6:9d timed out
->=20
-> And Debian's networking script fails to obtain an IP address. I notice th=
-e line:
->=20
-> [   18.613540] wlan0: Initial auth_alg=3D0
->=20
-> Is missing from the 2.6.27-rc1 dmesg, however my config should not have b=
-een
-> altered (I simply make oldconfig'ed it). Find attached anyway.
->=20
-> I'll start a bisection if nobody has any immediate ideas.
-
-This is about the 100 millionth time this is reported. Please try the
-patch I just posted.
-
-johannes
-
---=-gDkbE49qw4JxY77sVrtp
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJIjuxvAAoJEKVg1VMiehFYTfsQAIijYb1B7JUcbYZ+Wvmut5se
-4oa+NEu9E7NlFHDdRoI0OzH6q0THdxLvby1B0Ulxmf6NYIyDzdY+ON30rz8hjrdC
-i4j+ZjTf8HVpYgXNJt+aiR305jr954EZQcGO7u4u3/oze6UWDhrtGb9FjryxaL/o
-qrSxJTLc4J5Vd3qmY6Co8FaNPhwHzEplzts79qGgV5xHKaBPHyS0iDkXJcKH4miP
-YEIzczVT5HQp3e+Rls5dMf50tjGIsFwzvu9ULRR7b9JJzYwRnWCIUwEnJt0vvGVl
-zxcbc8M8E56iru4ord+1U+/mHrqYCYDLoemWv/teVryQuZK74Z1a7RtI3s5pmpht
-2i4wk8PGZhGEC9p/r9HJ3Y+z3SNqe510qrYpUbm6LoZ1+k/ZhiQktU+q0QnoBpmI
-nxgtS3xu4KMcV7JmouapFjhrAMeDGshA+oxiQ8dq6+5t6zgMZPMbClWqFMU7Mwdq
-qp2H3D7fhJNINRpfBqFbXMB65hZcl/PPv/IqfGDHFXsJHXs9g7AnwBsiBzdiAuCH
-W/4BdNqgbnagmseDQaT4z66mPB+pXMe2CMfzjC/YuTAZ+xBOaEIzSeXkCKJhH6PK
-mRNNEEY4HDpzhRiP5pr8pG0AEZv1bKZiNp7J2ub1fdojd9JW6jRexUgxO6wocMmP
-/I75EyH5qV3eTJ9zQauR
-=D0b7
------END PGP SIGNATURE-----
-
---=-gDkbE49qw4JxY77sVrtp--
-
+My suggestion (again) is to pass it in as a "const unsigned long
+io_page_size" argument and update the callers.
