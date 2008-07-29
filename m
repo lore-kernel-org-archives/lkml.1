@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758897AbYG2NFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759056AbYG2NGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758897AbYG2NFx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 09:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYG2NFq
+	id S1759056AbYG2NGd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 09:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYG2NGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 09:05:46 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:47150 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751529AbYG2NFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 09:05:45 -0400
-Date: Tue, 29 Jul 2008 08:05:43 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: akpm@linux-foundation.org, menage@google.com,
-       seto.hidetoshi@jp.fujitsu.com, laijs@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] cpuset: fix wrong calculation of relax domain level
-Message-Id: <20080729080543.67575625.pj@sgi.com>
-In-Reply-To: <488E7D92.8020501@cn.fujitsu.com>
-References: <488D3331.8000306@cn.fujitsu.com>
-	<20080728001530.bf7f5e44.pj@sgi.com>
-	<488E7D92.8020501@cn.fujitsu.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jul 2008 09:06:23 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:44923 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751529AbYG2NGW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 09:06:22 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: "Darren Jenkins" <darrenrjenkins@gmail.com>
+Cc: kernel Janitors <kernel-janitors@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fs/fat/dir.c fix resource leak
+References: <1217289813.9367.9.camel@localhost.localdomain>
+	<87hca8alz6.fsf@devron.myhome.or.jp>
+Date: Tue, 29 Jul 2008 22:06:18 +0900
+In-Reply-To: <87hca8alz6.fsf@devron.myhome.or.jp> (OGAWA Hirofumi's message of
+	"Tue, 29 Jul 2008 21:55:25 +0900")
+Message-ID: <87d4kwalh1.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan, replying to pj:
-> > ... However, I'm too lazy to propose a patch to mess with this.
-> > 
-> 
-> But it doesn't bother me. ;)
-> 
-> IMO it's not good to mess things up by sending a patch to just rename all
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
 
-Agreed - guess that 'attr' stuff will remain as it be for now.
+> "Darren Jenkins\" <darrenrjenkins@gmail.com> writes:
+>
+>> Coverity CID 2332 & 2333 RESOURCE_LEAK
+>>
+>> In fat_search_long() if fat_parse_long() returns a -ve value we return
+>> without first freeing unicode and bufname.
+>> This patch free's them on this error path.
+>>
+>> Signed-off-by: Darren Jenkins <darrenrjenkins@gmailcom>
+>
+> I'll apply to current code. Thanks.
 
+I noticed this is false positive. bufname is not used anymore, and
+fat_parse_long() never returns error after allocating unicode.
+
+Instead, I'll apply this as cleanup.
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
