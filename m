@@ -1,194 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbYG2WQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYG2WQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757222AbYG2WQT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 18:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYG2WQJ
+	id S1755385AbYG2WQk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 18:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754269AbYG2WQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 18:16:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44362 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752817AbYG2WQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 18:16:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ben Collins <ben.collins@canonical.com>
-Subject: Re: [PATCH 6/7] pm: Config option to disable handling of console during suspend/resume
-Date: Wed, 30 Jul 2008 00:18:34 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <24762.90.138.930.038.1036103001.ben.collins@canonical.com> <200807292315.36511.rjw@sisk.pl> <1217368310.6066.56.camel@cunning>
-In-Reply-To: <1217368310.6066.56.camel@cunning>
+	Tue, 29 Jul 2008 18:16:29 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:7147 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752332AbYG2WQ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 18:16:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Z5pHmNFVOP/9R9Gx8A/jIQOK7W2Gga/rKDAJKOpPyBXPxDTtmJev/liTgbMQcF02ND
+         a6JPjEg4eP3SD/3tygKZrtMWDgvf8DYfSzuVlL4Ip04zkbfPvf7l1X8hRGD49fJU5qE0
+         h4Dr9K9fr8RTduAewITLedId6oVehlhYShLtc=
+Message-ID: <86802c440807291516r74df37aaud26d282728ff822e@mail.gmail.com>
+Date: Tue, 29 Jul 2008 15:16:27 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
+Subject: Re: [PATCH] x86: 64bit support more than 256 irq v2
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200807291414.55479.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807300018.35086.rjw@sisk.pl>
+References: <200807291414.55479.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 29 of July 2008, Ben Collins wrote:
-> On Tue, 2008-07-29 at 23:15 +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, 29 of July 2008, Greg KH wrote:
-> > > On Sun, Jul 20, 2008 at 09:48:28PM -0400, Ben Collins wrote:
-> > > > Config option allows userspace to handle console during suspend/resume
-> > > > instead of the kernel.
-> > > > 
-> > > > Signed-off-by: Ben Collins <ben.collins@canonical.com>
-> > > > ---
-> > > >  kernel/power/Kconfig   |   15 +++++++++++++++
-> > > >  kernel/power/console.c |    4 ++++
-> > > >  2 files changed, 19 insertions(+), 0 deletions(-)
-> > > > 
-> > > > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> > > > index b45da40..6855299 100644
-> > > > --- a/kernel/power/Kconfig
-> > > > +++ b/kernel/power/Kconfig
-> > > > @@ -105,6 +105,21 @@ config SUSPEND_FREEZER
-> > > >  
-> > > >  	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
-> > > >  
-> > > > +config PM_DISABLE_CONSOLE
-> > > > +	bool "Disable Power Management messing with the active console"
-> > > > +	depends on PM
-> > > > +	default n
-> > > > +	---help---
-> > > > +	  By default, PM will take over the active console (generally, this means
-> > > > +	  switching to the console when suspending from X). This can at times cause
-> > > > +	  problems, especially if userspace suspend scripts try to do things with
-> > > > +	  the console before or after suspending (e.g. calling vbestate).
-> > > > +
-> > > > +	  To work around this, enable this option so that PM will not handle the
-> > > > +	  console.
-> > > > +
-> > > > +	  If unsure, say N.
-> > > > +
-> > > >  config HIBERNATION
-> > > >  	bool "Hibernation (aka 'suspend to disk')"
-> > > >  	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
-> > > > diff --git a/kernel/power/console.c b/kernel/power/console.c
-> > > > index b8628be..8b9706f 100644
-> > > > --- a/kernel/power/console.c
-> > > > +++ b/kernel/power/console.c
-> > > > @@ -33,6 +33,7 @@ EXPORT_SYMBOL(pm_set_vt_switch);
-> > > >  
-> > > >  int pm_prepare_console(void)
-> > > >  {
-> > > > +#ifndef CONFIG_PM_DISABLE_CONSOLE
-> > > 
-> > > Can't you do this in a .h file instead?
-> > > 
-> > > And is this really needed?  Why has no other distro needed this change?
-> > > What is so wierd about your suspend setup to require this?
-> > 
-> > Reportedly, some systems have problems with graphics restoration from user
-> > space if the switch is done.
-> > 
-> > Anyway, I'd prefer to use the (already existing) pm_set_vt_switch() thing for
-> > that, maybe with the help of a command line parameter, to adding the .config
-> > option like this.
-> 
-> Ah. I didn't notice pm_set_vt_switch(). Then what I would like better is
-> the config option to set a default. For us, not doing the vt switch is a
-> good default (I don't think we have a case where suspend/resume requires
-> it).
+On Tue, Jul 29, 2008 at 2:14 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+> Dhaval Giani got:
+> kernel BUG at arch/x86/kernel/io_apic_64.c:357!
+> invalid opcode: 0000 [1] SMP
+> CPU 24
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.27-rc1-autokern1 #1
+> RIP: 0010:[<ffffffff8021bb2e>]  [<ffffffff8021bb2e>] add_pin_to_irq+0x8e/0xa0
+> RSP: 0018:ffff88032e4b9b30  EFLAGS: 00010216
+> RAX: 00000000000000f0 RBX: 00000000000000f0 RCX: 0000000000000000
+> RDX: 000000000000afaf RSI: 0000000000000046 RDI: ffffffff80738234
+> RBP: 0000000000000006 R08: 0000000000000000 R09: ffff8800280992c0
+> R10: 0000000000000000 R11: ffffffff80372060 R12: 0000000000000018
+> R13: 0000000000000001 R14: 0000000000000018 R15: 0000000000000000
+> FS:  0000000000000000(0000) GS:ffff880bfe733540(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process swapper (pid: 1, threadinfo ffff88032e4b8000, task ffff880bfe4ca050)
+> Stack:  00000000000000f0 0000000000000006 0000000000000001 ffffffff8021bbbe
+>  00000000000000f0 0000000000000001 0000000000000000 ffff88032e4b9c0c
+>  00000000000000f0 ffffffff80218d81 00000000000000f0 0000000000000000
+> Call Trace:
+>  [<ffffffff8021bbbe>] ? io_apic_set_pci_routing+0x7e/0xa0
+>  [<ffffffff80218d81>] ? mp_register_gsi+0xb1/0xd0
+>  [<ffffffff80218e0c>] ? acpi_register_gsi+0x6c/0x70
+>  [<ffffffff80392f30>] ? acpi_pci_irq_enable+0x178/0x260
+>  [<ffffffff80392cdd>] ? acpi_pci_allocate_irq+0x0/0x4c
+>  [<ffffffff80370657>] ? pci_enable_resources+0x27/0x160
+>  [<ffffffff8036be6a>] ? do_pci_enable_device+0x4a/0x70
+>  [<ffffffff8036bee1>] ? __pci_enable_device_flags+0x51/0x60
+>  [<ffffffff804e01e8>] ? tg3_init_one+0x58/0x1640
+>  [<ffffffff8022a980>] ? default_wake_function+0x0/0x10
+>  [<ffffffff8022efd8>] ? set_cpus_allowed_ptr+0xe8/0x110
+>  [<ffffffff8036e28f>] ? pci_device_probe+0xdf/0x130
+>  [<ffffffff803c2416>] ? driver_probe_device+0x96/0x1a0
+>  [<ffffffff803c25a9>] ? __driver_attach+0x89/0x90
+>  [<ffffffff803c2520>] ? __driver_attach+0x0/0x90
+>  [<ffffffff803c1a8d>] ? bus_for_each_dev+0x4d/0x80
+>  [<ffffffff8028e168>] ? kmem_cache_alloc+0xc8/0xf0
+>  [<ffffffff803c1f7e>] ? bus_add_driver+0xae/0x220
+>  [<ffffffff803c2836>] ? driver_register+0x56/0x130
+>  [<ffffffff8036e548>] ? __pci_register_driver+0x68/0xb0
+>  [<ffffffff806cf8e0>] ? tg3_init+0x0/0x20
+>  [<ffffffff806b15b1>] ? do_one_initcall+0x41/0x180
+>  [<ffffffff802d8a08>] ? create_proc_entry+0x58/0xa0
+>  [<ffffffff80261cc4>] ? register_irq_proc+0xd4/0xf0
+>  [<ffffffff806b1b53>] ? kernel_init+0x133/0x190
+>  [<ffffffff8020c529>] ? child_rip+0xa/0x11
+>  [<ffffffff806b1a20>] ? kernel_init+0x0/0x190
+>  [<ffffffff8020c51f>] ? child_rip+0x0/0x11
+>
+>
+> Code: 89 05 2b 54 42 00 7f 27 48 0f bf c1 48 8d 14 00 48 c1 e0 03 48 29 d0 48 8d 90 c0 5e 73 80 66 89 2a 66 44 89 62 02 5b 5d 41 5c c3 <0f> 0b eb fe 48 c7 c7 c8 db 5c 80 31 c0 e8 60 7e 01 00 48 83 ec
+> RIP  [<ffffffff8021bb2e>] add_pin_to_irq+0x8e/0xa0
+>  RSP <ffff88032e4b9b30>
+>
+> his system (x3950) has 8 ioapic, irq > 256
+>
+> caused by
+>        commit 9b7dc567d03d74a1fbae84e88949b6a60d922d82
+>        Author: Thomas Gleixner <tglx@linutronix.de>
+>        Date:   Fri May 2 20:10:09 2008 +0200
+>
+>           x86: unify interrupt vector defines
+>
+>           The interrupt vector defines are copied 4 times around with minimal
+>           differences. Move them all into asm-x86/irq_vectors.h
+>
+>
+> 64bit allow same vector for different cpu to serve different irq
+>
+> also change next in irq_pin_list from short to int. because for 4096 NR_IRQS
+> is 2^(8+12).
+>
+> v2: accoding to Eric W. Biederman, change to NR_IRQ_VECTORS to NR_IRQS
+>    use NR_VECTORS*NR_CPUS directly
+>
+> need to create that array dynamically later
 
-As long as we freeze X, I don't think the switch is really necessary.  I might
-be wrong, though.
+seems MAX_SMP doesn't like it. even can not be built.
 
-> Something like:
+working on make NR_IRQS related array to be allocated dynamically.
 
-Well, why not.
-
-[/me makes a note to change disable_vt_switch to 'bool' at some point in
-future]
-
-
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index e7bea3e..6a042f8 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -2247,6 +2247,11 @@ and is between 256 and 4096 characters. It is defined in the file
->  	vmpoff=		[KNL,S390] Perform z/VM CP command after power off.
->  			Format: <command>
->  
-> +	vt_switch=	[PM] Switch vt's during suspend/resume
-> +			Format: { 0 | 1 }
-> +			Default is normally '1', but depends on value of
-> +			the PM_DISABLE_CONSOLE config option.
-> +
->  	waveartist=	[HW,OSS]
->  			Format: <io>,<irq>,<dma>,<dma2>
->  
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index dcd165f..202f9b3 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -116,6 +116,25 @@ config SUSPEND_FREEZER
->  
->  	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
->  
-> +config PM_DISABLE_CONSOLE
-> +	bool "Disable Power Management messing with the active console"
-> +	depends on PM
-> +	default n
-> +	---help---
-> +	  By default, PM will take over the active console (generally, this means
-> +	  switching to the console when suspending from X). This can at times cause
-> +	  problems, especially if userspace suspend scripts try to do things with
-> +	  the console before or after suspending (e.g. calling vbestate).
-> +
-> +	  To work around this, enable this option so that PM will not handle the
-> +	  console.
-> +
-> +	  Note, this is the same as passing vt_switch=0 command line option, but
-> +	  just hardcodes the default. You can still pass vt_switch=1 with this
-> +	  option to get original behavior.
-> +
-> +	  If unsure, say N.
-> +
->  config HIBERNATION
->  	bool "Hibernation (aka 'suspend to disk')"
->  	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
-> diff --git a/kernel/power/console.c b/kernel/power/console.c
-> index b8628be..db116d8 100644
-> --- a/kernel/power/console.c
-> +++ b/kernel/power/console.c
-> @@ -14,7 +14,11 @@
->  #define SUSPEND_CONSOLE	(MAX_NR_CONSOLES-1)
->  
->  static int orig_fgconsole, orig_kmsg;
-> +#ifdef CONFIG_PM_DISABLE_CONSOLE
-> +static int disable_vt_switch = 1;
-> +#else
->  static int disable_vt_switch;
-> +#endif
->  
->  /*
->   * Normally during a suspend, we allocate a new console and switch to it.
-> @@ -80,4 +84,17 @@ void pm_restore_console(void)
->  	release_console_sem();
->  	kmsg_redirect = orig_kmsg;
->  }
-> +
-> +static int __init set_vt_switch(char *str)
-> +{
-> +	if (str[0] == '0')
-> +		disable_vt_switch = 1;
-> +	else if (str[0] == '1')
-> +		disable_vt_switch = 0;
-> +	else
-> +		return -EINVAL;
-> +
-> +	return 0;
-> +}
-> +__setup("vt_switch=", set_vt_switch);
->  #endif
-> 
-> 
-> 
-> 
-
-
+YH
