@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757674AbYG2Cb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755116AbYG2ChD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757674AbYG2Cb2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 22:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbYG2CbO
+	id S1755116AbYG2ChD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 22:37:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYG2Cgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 22:31:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53376 "EHLO mx1.redhat.com"
+	Mon, 28 Jul 2008 22:36:53 -0400
+Received: from mga09.intel.com ([134.134.136.24]:22333 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003AbYG2CbN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 22:31:13 -0400
-Date: Mon, 28 Jul 2008 22:28:22 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Simon Horman <horms@verge.net.au>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Muli Ben-Yehuda <muli@il.ibm.com>, Tony Luck <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, Chandru <chandru@in.ibm.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Terry Loftin <terry.loftin@hp.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/5] Move elfcorehdr_addr out of vmcore.c (Was: Re:
-	[patch] crashdump: fix undefined reference to `elfcorehdr_addr')
-Message-ID: <20080729022822.GA25975@redhat.com>
-References: <20080727234529.GM6175@verge.net.au> <20080728015117.GA12055@verge.net.au> <20080728024526.GB3334@verge.net.au> <20080728034007.GA30450@verge.net.au> <20080728211025.GA9985@redhat.com> <m1vdypfwxe.fsf@frodo.ebiederm.org> <20080729012245.GI10434@verge.net.au>
+	id S1751893AbYG2Cgw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 22:36:52 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,269,1215414000"; 
+   d="scan'208";a="423076781"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080729012245.GI10434@verge.net.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 3/3] PCI: Add pci_read_base() API
+Date: Tue, 29 Jul 2008 10:36:49 +0800
+Message-ID: <7A25B56E4BE99C4283EB931CD1A40E1101587039@pdsmsx414.ccr.corp.intel.com>
+In-Reply-To: <20080729014931.GB28989@parisc-linux.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 3/3] PCI: Add pci_read_base() API
+Thread-Index: AcjxHV2jjoZ2V1bgRTeoOVjuOZ1DNwABn2yQ
+References: <1217266741-26519-1-git-send-email-matthew@wil.cx> <1217266741-26519-4-git-send-email-matthew@wil.cx> <7A25B56E4BE99C4283EB931CD1A40E1101586F18@pdsmsx414.ccr.corp.intel.com> <20080729014931.GB28989@parisc-linux.org>
+From: "Zhao, Yu" <yu.zhao@intel.com>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Cc: <linux-kernel@vger.kernel.org>, <eric@anholt.net>,
+       "Matthew Wilcox" <willy@linux.intel.com>, <jbarnes@virtuousgeek.org>
+X-OriginalArrivalTime: 29 Jul 2008 02:36:51.0231 (UTC) FILETIME=[F4BE22F0:01C8F123]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 11:22:48AM +1000, Simon Horman wrote:
-> On Mon, Jul 28, 2008 at 03:47:41PM -0700, Eric W. Biederman wrote:
-> > Vivek Goyal <vgoyal@redhat.com> writes:
-> > 
-> > > Hi All,
-> > >
-> > > How does following series of patches look like. I have moved
-> > > elfcorehdr_addr out of vmcore.c and pushed it to arch dependent section 
-> > > of crash dump to make sure that it can be worked with even when
-> > > CONFIG_PROC_VMCORE is disabled and CONFIG_CRASH_DUMP is enabled.
-> > >
-> > > I tested it on x86_64. Compile tested it on i386 and ppc64. ia64 and
-> > > sh versions are completely untested.
-> > 
-> > Given the current state of the code:
-> > Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
-> > 
-> > To process a kernel crash dump we pass the kernel elfcorehdr option,
-> > so testing to see if it was passed seems reasonable.
-> > 
-> > In general I think this method of handling the problems with kdump is
-> > too brittle to live, but in the case of iommus we certainly need to do
-> > something different, and unfortunately iommus were not common on x86
-> > when the original code was merged so we have not handled them well.
+On Tuesday, July 29, 2008 9:50 AM, Matthew Wilcox <mailto:matthew@wil.cx> wrote:
+
+> On Tue, Jul 29, 2008 at 09:22:03AM +0800, Zhao, Yu wrote:
+>> Greetings,
+>> 
+>> It would be nice if people can have an enhanced
+> pci_update_resource to update non-standard BARs probed by
+> pci_read_base. 
 > 
-> Agreed, however these patches look like they really ought to be merged
-> into a single patch for the sake of bisect. As things stand, applying
-> the first patch will break the build on each architecture with an
-> architecture specific until the latter is applied.
+> Yes, that would be a natural addition to the API.  However, we don't
+> tend to add APIs until we have a use case for them.  Do you have
+> anything in the pipeline that could use this feature?  I'm quite happy
+> to write the code for you if you do.
 
-That's a good point. I was not very sure because changes were in 
-different arches and I broke the patch. At the same time changes are
-really miniscule in each arch. 
+There is a new PCIe extended capability SR-IOV, which defines 6 additional BARs encapsulated inside the capability. I'm writing code to support it, and will be using your APIs to probe and update these non-standard BARs.
 
-So, for the sake of not breaking compilation for git-bisect, I will
-generate a single patch tomorrow. (Until and unless somebody has an
-objection).
+The SR-IOV specification can be found at:
+http://www.pcisig.com/members/downloads/specifications/iov/sr-iov1.0_11Sep07.pdf
 
-Thanks
-Vivek
+Thanks.
 
 > 
-> -- 
-> Horms
+> --
+> Intel are signing my paycheques ... these opinions are still mine
+> "Bill, look, we understand that you're interested in selling us this
+> operating system, but compare it to ours.  We can't possibly take such
+> a retrograde step."
+
