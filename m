@@ -1,83 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbYG2Aha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYG2Air@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755143AbYG2Aha (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 20:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbYG2AhL
+	id S1754982AbYG2Air (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 20:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYG2Aij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 20:37:11 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:35396 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754800AbYG2AhJ (ORCPT
+	Mon, 28 Jul 2008 20:38:39 -0400
+Received: from mga11.intel.com ([192.55.52.93]:26825 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751263AbYG2Aii convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 20:37:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=jk3djaYBDLiLCDj/Y6TnT2DfR24Q7USu7VO3iDdyN7iXUZpX413LIU9AoNCh8gffqo
-         WZ33AzpgmnU8cMD6RLo/itKkgGFSXNLn+JHPSpMhj8GfsIFLRByk5EUtjNWP02AeMRN4
-         G9ZM06Qej5xcS2q968m2D+usS1nElNsToNi7w=
-Subject: [PATCH] omfs: fix sparse signedness warnings
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 28 Jul 2008 17:37:08 -0700
-Message-Id: <1217291828.23389.2.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jul 2008 20:38:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,269,1215414000"; 
+   d="scan'208";a="365530663"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: David Woodhouse <dwmw2@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "arjan@infradead.org" <arjan@infradead.org>
+Date: Mon, 28 Jul 2008 17:36:57 -0700
+Subject: RE: [RFC] Imprecise timers.
+Thread-Topic: [RFC] Imprecise timers.
+Thread-Index: Acjrp614s2SPymxUQLGojLGKSVa62QFaDOOw
+Message-ID: <7E82351C108FA840AB1866AC776AEC4608E23BE7@orsmsx505.amr.corp.intel.com>
+References: <1216695757.18980.16.camel@shinybook.infradead.org>
+In-Reply-To: <1216695757.18980.16.camel@shinybook.infradead.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/omfs/bitmap.c:74:18: warning: incorrect type in argument 2 (different signedness)
-fs/omfs/bitmap.c:74:18:    expected unsigned long volatile *addr
-fs/omfs/bitmap.c:74:18:    got long *<noident>
-fs/omfs/bitmap.c:77:20: warning: incorrect type in argument 2 (different signedness)
-fs/omfs/bitmap.c:77:20:    expected unsigned long volatile *addr
-fs/omfs/bitmap.c:77:20:    got long *<noident>
-fs/omfs/bitmap.c:112:17: warning: incorrect type in argument 2 (different signedness)
-fs/omfs/bitmap.c:112:17:    expected unsigned long volatile *addr
-fs/omfs/bitmap.c:112:17:    got long *<noident>
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Sorry, missed these in my other sparse warning fixes, feel free to fold it
-with the other one.
-
- fs/omfs/bitmap.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/fs/omfs/bitmap.c b/fs/omfs/bitmap.c
-index dc75f22..697663b 100644
---- a/fs/omfs/bitmap.c
-+++ b/fs/omfs/bitmap.c
-@@ -71,10 +71,10 @@ static int set_run(struct super_block *sb, int map,
- 		}
- 		if (set) {
- 			set_bit(bit, sbi->s_imap[map]);
--			set_bit(bit, (long *) bh->b_data);
-+			set_bit(bit, (unsigned long *)bh->b_data);
- 		} else {
- 			clear_bit(bit, sbi->s_imap[map]);
--			clear_bit(bit, (long *) bh->b_data);
-+			clear_bit(bit, (unsigned long *)bh->b_data);
- 		}
- 	}
- 	mark_buffer_dirty(bh);
-@@ -109,7 +109,7 @@ int omfs_allocate_block(struct super_block *sb, u64 block)
- 		if (!bh)
- 			goto out;
- 
--		set_bit(bit, (long *) bh->b_data);
-+		set_bit(bit, (unsigned long *)bh->b_data);
- 		mark_buffer_dirty(bh);
- 		brelse(bh);
- 	}
--- 
-1.6.0.rc1.154.ge3fc
 
 
+>-----Original Message-----
+>From: linux-kernel-owner@vger.kernel.org
+>[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of David
+>Woodhouse
+>Sent: Monday, July 21, 2008 8:03 PM
+>To: linux-kernel@vger.kernel.org
+>Cc: Thomas Gleixner; Ingo Molnar; arjan@infradead.org
+>Subject: [RFC] Imprecise timers.
+>
+>Many users of timers don't really care too much about exactly
+>when their
+>timer fires -- and waking a CPU to satisfy such a timer is a waste of
+>power. This patch implements a 'range' timer which will fire
+>at a 'convenient'
+>moment within given constraints.
+>
+>It's implemented by a deferrable timer at the beginning of the range,
+>which will run some time later when the CPU happens to be awake. And a
+>non-deferrable timer at the hard deadline, to ensure it really does
+>happen by then.
+>
+
+One concern I have is drivers using range_timers thinking that they need
+some upper bound, while all they need is a simple deferrable timer. With that
+we will have multiple timers waking up the CPU all the time (say, on
+different CPUs) problem again. Even without the timers waking up all
+the time problem, we have extra overhead of one or more spinlocks
+just to delete one extra unused timer. I don't how, but
+we will have to restrict this somehow to only code that really needs this
+kind of deadline.
+
+Regarding implementation, I am thinking mod_range_timer should use
+ret &= mod_timer(). That is, if one of the timers has already fired and
+the other one is pending mod_range_timer return value should say it has
+already fired. Right?
+
+Also, do we need both mod_range_timer and __mod_range_timer.
+Original mod_timer version talks about optimization for networking code.
+I think we can do with only one of the two here...
+
+Thanks,
+Venki
 
