@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759278AbYG2W0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759661AbYG2W1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759278AbYG2W0u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 18:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbYG2W0m
+	id S1759661AbYG2W1o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 18:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYG2W1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 18:26:42 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46943 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbYG2W0m (ORCPT
+	Tue, 29 Jul 2008 18:27:36 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:40465 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751372AbYG2W1g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 18:26:42 -0400
-Subject: Re: Linux v2.6.27-rc1: problem with firmware stuff
-From: David Woodhouse <dwmw2@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807291359110.3334@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org>
-	 <200807292249.48050.rjw@sisk.pl> <200807292301.36987.rjw@sisk.pl>
-	 <alpine.LFD.1.10.0807291359110.3334@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 29 Jul 2008 23:26:37 +0100
-Message-Id: <1217370397.27925.139.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Tue, 29 Jul 2008 18:27:36 -0400
+Message-ID: <488F99EB.2030808@keyaccess.nl>
+Date: Wed, 30 Jul 2008 00:30:03 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Simon Arlott <simon@fire.lp0.eu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [patch 5/3] fastboot: sync the async execution before late_initcall
+ and move level 6s (sync) first
+References: <20080720085924.122feb2b@infradead.org>	<20080720090041.5924f5ff@infradead.org>	<488F84ED.9010200@keyaccess.nl>	<20080729140434.31022f55@infradead.org>	<488F87AB.9080309@keyaccess.nl> <20080729142123.5164b1a4@infradead.org>
+In-Reply-To: <20080729142123.5164b1a4@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: 1.0 (+)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-29 at 14:01 -0700, Linus Torvalds wrote:
-> 
-> On Tue, 29 Jul 2008, Rafael J. Wysocki wrote:
-> > 
-> > Actually, this happened due to some firmware files being created as root during
-> > installations of pre-rc -git kernels from the O= directory.  So, not a real
-> > problem, but somewhat confusing.
-> 
-> Yeah, I've had that happen myself. It used to be that "make 
-> modules_install" (as root, obviously) would try build a new version of the 
-> kernel, and as a result subsequent build attempts would fail horribly 
-> because of various random files being now owned-by-root.
-> 
-> I don't know if there is a whole lot we can do about it in general..
+On 29-07-08 23:21, Arjan van de Ven wrote:
 
-Not in general. I _think_ I fixed the specific problem which led to
-Rafael's situation, but I'm still waiting for confirmation of that.
+> On Tue, 29 Jul 2008 23:12:11 +0200
+> Rene Herman <rene.herman@keyaccess.nl> wrote:
 
--- 
-dwmw2
+>> After this patch, there are now 2 flush_workqueue(async_init_wq)
+>> calls in do_initcalls. Should the other one remain as well?
+> 
+> yes because if you don't have any level 7's then you won't hit this
+> condition... you need the second one.
+> 
+> flush_workqueue is cheap for the nothing-in-there case.
 
+Ah, yes.
+
+For what it's worth by the way, I'm running that which is available from 
+your fastboot repo (12 patches currently) on top of 2.6.26. Not seen any 
+trouble. Nor improvements that I've noticed but this is a rather minimal 
+and fast booting kernel/system anyway.
+
+Rene.
