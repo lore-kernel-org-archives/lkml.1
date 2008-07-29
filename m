@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759023AbYG2OcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759453AbYG2Ocr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759023AbYG2OcE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 10:32:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbYG2Obx
+	id S1759453AbYG2Ocr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 10:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbYG2Ocg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 10:31:53 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:33942 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754968AbYG2Obw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 10:31:52 -0400
-Message-ID: <488F29D5.1080105@sgi.com>
-Date: Tue, 29 Jul 2008 07:31:49 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 29 Jul 2008 10:32:36 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:58536 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755448AbYG2Ocg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 10:32:36 -0400
+Message-ID: <488F2A76.8060906@keyaccess.nl>
+Date: Tue, 29 Jul 2008 16:34:30 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Miller <davem@davemloft.net>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next: build failure
-References: <20080729180317.94c64634.sfr@canb.auug.org.au> <20080729085815.GA1301@elte.hu> <20080729202731.F18F.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080729114029.GA3836@elte.hu>
-In-Reply-To: <20080729114029.GA3836@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jon Smirl <jonsmirl@gmail.com>
+CC: Paul Mundt <lethal@linux-sh.org>, James Morris <jmorris@namei.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 463 kernel developers missing!
+References: <488DFD97.7080802@simon.arlott.org.uk>	 <20080728202236.GN9378@mit.edu> <20080728204624.GA11581@redhat.com>	 <20080728141414.d7e5def2.randy.dunlap@oracle.com>	 <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au>	 <20080728234131.GD28055@linux-sh.org>	 <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com>	 <488E644D.7000507@keyaccess.nl>	 <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com>	 <488EF377.5080603@keyaccess.nl> <9e4733910807290644l55c73299h6bb8f8562aa9e49a@mail.gmail.com>
+In-Reply-To: <9e4733910807290644l55c73299h6bb8f8562aa9e49a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
->>> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->>>
->>>> Hi Ingo,
->>>>
->>>> On Tue, 29 Jul 2008 10:00:55 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->>>>>> -#define cpumask_of_cpu(cpu) ({ *get_cpu_mask(cpu); })
->>>>>> +#define cpumask_of_cpu(cpu) (*get_cpu_mask(cpu))
->>>>> hm, i'm wondering - is this a compiler bug?
->>>> Or maybe a deficiency in such an old compiler (v3.4.5) but the fix 
->>>> makes sense anyway, right?
->>> yeah, i was just wondering.
->> in linux/README
->>
->> COMPILING the kernel:
->>
->>  - Make sure you have at least gcc 3.2 available.
->>    For more information, refer to Documentation/Changes.
->>
->> So, if 3.4.5 is old, Should we change readme?
-> 
-> the fix is simple enough.
-> 
-> but the question is, wont it generate huge artificial stackframes with 
-> CONFIG_MAXSMP and NR_CPUS=4096? Maybe it is unable to figure out and 
-> simplify the arithmetics there - or something like that.
-> 
-> 	Ingo
+On 29-07-08 15:44, Jon Smirl wrote:
 
-I've looked at stack frames quite extensively and usually they are
-not generated unless you explicitly use a named cpumask variable,
-pass a cpumask by value, expect a cpumask function return, create
-an initializer that contains a cpumask field, and (probably a couple
-more I missed).
+> Google got the list the second it was mailed on LKML.  Why haven't you
+> told Google to remove the 1,054 pages that contain your email?
+> 
+> http://www.google.com/support/webmasters/bin/answer.py?answer=508&topic=13511
+> 
+> If you really want to spam kernel developers there is a much easier
+> way, just send the message to LKML.
 
-Almost all others are done efficiently via pointers or simple
-struct copies:
+Right, so you say that google got it the first time you fucked it up. 
+How exactly do you consider that to be a reason for continuing to fuck 
+it up and putting it in few hundred nicely fully indexed linux kernel 
+trees out there on the web making the fuck up rank at number 1 in the 
+results?
 
-	cpus_xxx(*cpumask_of_cpu(), ...
-	struct->cpumask_var = *cpumask_of_cpu()
-	global_cpumask_var = *cpumask_of_cpu()
-	etc.
+Now fortunately, from the discussion it seems that most sensible people 
+will be ignoring you anyway so I guess I can and should stop bothering 
+with this but please...
 
-Thanks,
-Mike
+That which is not white is not black and my keyaccess.nl address being 
+public already anyway is NOT the same as it being veryveryvery public.
+
+Rene.
