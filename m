@@ -1,172 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbYG2CQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbYG2CQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756780AbYG2CQf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 22:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbYG2CQO
+	id S1756922AbYG2CQv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 22:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756645AbYG2CQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 22:16:14 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:48728 "EHLO
+	Mon, 28 Jul 2008 22:16:28 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:48729 "EHLO
 	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752326AbYG2CQN (ORCPT
+	with ESMTP id S1756388AbYG2CQ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 22:16:13 -0400
-Date: Mon, 28 Jul 2008 21:15:29 -0500
+	Mon, 28 Jul 2008 22:16:27 -0400
+Date: Mon, 28 Jul 2008 21:14:43 -0500
 From: David Fries <david@fries.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: [PATCH 6/30] W1: feature, w1_therm.c use strong pullup and documentation
-Message-ID: <20080729021529.GF24452@spacedout.fries.net>
+Subject: [PATCH 4/30] W1: w1_process, block or sleep
+Message-ID: <20080729021443.GD24452@spacedout.fries.net>
 References: <20080729020433.GA24424@spacedout.fries.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="tmoQ0UElFV5VgXgH"
+	protocol="application/pgp-signature"; boundary="7DO5AaGCk89r4vaK"
 Content-Disposition: inline
 In-Reply-To: <20080729020433.GA24424@spacedout.fries.net>
 User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Mon, 28 Jul 2008 21:15:30 -0500 (CDT)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Mon, 28 Jul 2008 21:14:44 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---tmoQ0UElFV5VgXgH
+--7DO5AaGCk89r4vaK
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Added strong pullup to thermal sensor driver and general documentation
-on the sensor.
+The w1_process thread's sleeping and termination has been modified.
+msleep_interruptible was replaced by schedule_timeout and schedule to
+allow for kthread_stop and wake_up_process to interrupt the sleep and
+the unbounded sleeping when a bus search is disabled.  The
+W1_MASTER_NEED_EXIT and flags variable were removed as they were
+redundant with kthread_should_stop and kthread_stop.  If w1_process is
+sleeping, requesting a search will immediately wake it up rather than
+waiting for the end of msleep_interruptible previously.
 
 Signed-off-by: David Fries <david@fries.net>
 Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 ---
- Documentation/w1/00-INDEX        |    2 +
- Documentation/w1/slaves/00-INDEX |    4 +++
- Documentation/w1/slaves/w1_therm |   41 ++++++++++++++++++++++++++++++++++=
-++++
- drivers/w1/slaves/w1_therm.c     |   15 ++++++++++++-
- 4 files changed, 60 insertions(+), 2 deletions(-)
+ drivers/w1/w1.c     |   20 +++++++++++++++++---
+ drivers/w1/w1.h     |    4 ----
+ drivers/w1/w1_int.c |    2 --
+ 3 files changed, 17 insertions(+), 9 deletions(-)
 
-diff --git a/Documentation/w1/00-INDEX b/Documentation/w1/00-INDEX
-index 5270cf4..cb49802 100644
---- a/Documentation/w1/00-INDEX
-+++ b/Documentation/w1/00-INDEX
-@@ -1,5 +1,7 @@
- 00-INDEX
- 	- This file
-+slaves/
-+	- Drivers that provide support for specific family codes.
- masters/
- 	- Individual chips providing 1-wire busses.
- w1.generic
-diff --git a/Documentation/w1/slaves/00-INDEX b/Documentation/w1/slaves/00-=
-INDEX
-new file mode 100644
-index 0000000..f8101d6
---- /dev/null
-+++ b/Documentation/w1/slaves/00-INDEX
-@@ -0,0 +1,4 @@
-+00-INDEX
-+	- This file
-+w1_therm
-+	- The Maxim/Dallas Semiconductor ds18*20 temperature sensor.
-diff --git a/Documentation/w1/slaves/w1_therm b/Documentation/w1/slaves/w1_=
-therm
-new file mode 100644
-index 0000000..0403aaa
---- /dev/null
-+++ b/Documentation/w1/slaves/w1_therm
-@@ -0,0 +1,41 @@
-+Kernel driver w1_therm
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+Supported chips:
-+  * Maxim ds18*20 based temperature sensors.
-+
-+Author: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-+
-+
-+Description
-+-----------
-+
-+w1_therm provides basic temperature conversion for ds18*20 devices.
-+supported family codes:
-+W1_THERM_DS18S20	0x10
-+W1_THERM_DS1822		0x22
-+W1_THERM_DS18B20	0x28
-+
-+Support is provided through the sysfs w1_slave file.  Each open and
-+read sequence will initiate a temperature conversion then provide two
-+lines of ASCII output.  The first line contains the nine hex bytes
-+read along with a calculated crc value and YES or NO if it matched.
-+If the crc matched the returned values are retained.  The second line
-+displays the retained values along with a temperature in millidegrees
-+Centigrade after t=3D.
-+
-+Parasite powered devices are limited to one slave performing a
-+temperature conversion at a time.  If none of the devices are parasite
-+powered it would be possible to convert all the devices at the same
-+time and then go back to read individual sensors.  That isn't
-+currently supported.  The driver also doesn't support reduced
-+precision (which would also reduce the conversion time).
-+
-+The module parameter strong_pullup can be set to 0 to disable the
-+strong pullup or 1 to enable.  If enabled the 5V strong pullup will be
-+enabled when the conversion is taking place provided the master driver
-+must support the strong pullup (or it falls back to a pullup
-+resistor).  The DS18b20 temperature sensor specification lists a
-+maximum current draw of 1.5mA and that a 5k pullup resistor is not
-+sufficient.  The strong pullup is designed to provide the additional
-+current required.
-diff --git a/drivers/w1/slaves/w1_therm.c b/drivers/w1/slaves/w1_therm.c
-index fb28aca..e87f464 100644
---- a/drivers/w1/slaves/w1_therm.c
-+++ b/drivers/w1/slaves/w1_therm.c
-@@ -37,6 +37,14 @@ MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Evgeniy Polyakov <johnpol@2ka.mipt.ru>");
- MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol, temperature=
- family.");
+diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
+index 730faa4..9b5c117 100644
+--- a/drivers/w1/w1.c
++++ b/drivers/w1/w1.c
+@@ -251,6 +251,7 @@ static ssize_t w1_master_attribute_store_search(struct =
+device * dev,
+ 	mutex_lock(&md->mutex);
+ 	md->search_count =3D simple_strtol(buf, NULL, 0);
+ 	mutex_unlock(&md->mutex);
++	wake_up_process(md->thread);
 =20
-+/* Allow the strong pullup to be disabled, but default to enabled.
-+ * If it was disabled a parasite powered device might not get the require
-+ * current to do a temperature conversion.  If it is enabled parasite powe=
-red
-+ * devices have a better chance of getting the current required.
-+ */
-+static int w1_strong_pullup =3D 1;
-+module_param_named(strong_pullup, w1_strong_pullup, int, 0);
-+
- static u8 bad_roms[][9] =3D {
- 				{0xaa, 0x00, 0x4b, 0x46, 0xff, 0xff, 0x0c, 0x10, 0x87},
- 				{}
-@@ -192,9 +200,12 @@ static ssize_t w1_therm_read_bin(struct kobject *kobj,
- 			int count =3D 0;
- 			unsigned int tm =3D 750;
+ 	return count;
+ }
+@@ -773,7 +774,7 @@ void w1_search(struct w1_master *dev, u8 search_type, w=
+1_slave_found_callback cb
+ 			tmp64 =3D (triplet_ret >> 2);
+ 			rn |=3D (tmp64 << i);
 =20
-+			/* 750ms strong pullup (or delay) after the convert */
-+			if (w1_strong_pullup)
-+				w1_next_pullup(dev, tm);
- 			w1_write_8(dev, W1_CONVERT_TEMP);
+-			if (test_bit(W1_MASTER_NEED_EXIT, &dev->flags)) {
++			if (kthread_should_stop()) {
+ 				printk(KERN_INFO "Abort w1_search (exiting)\n");
+ 				return;
+ 			}
+@@ -811,8 +812,12 @@ void w1_search_process(struct w1_master *dev, u8 searc=
+h_type)
+ int w1_process(void *data)
+ {
+ 	struct w1_master *dev =3D (struct w1_master *) data;
++	/* As long as w1_timeout is only set by a module parameter the sleep
++	 * time can be calculated in jiffies once.
++	 */
++	const unsigned long jtime =3D msecs_to_jiffies(w1_timeout * 1000);
+=20
+-	while (!kthread_should_stop() && !test_bit(W1_MASTER_NEED_EXIT, &dev->fla=
+gs)) {
++	while (!kthread_should_stop()) {
+ 		if (dev->search_count) {
+ 			mutex_lock(&dev->mutex);
+ 			w1_search_process(dev, W1_SEARCH);
+@@ -820,7 +825,16 @@ int w1_process(void *data)
+ 		}
+=20
+ 		try_to_freeze();
+-		msleep_interruptible(w1_timeout * 1000);
++		__set_current_state(TASK_INTERRUPTIBLE);
++
++		if (kthread_should_stop())
++			break;
++
++		/* Only sleep when the search is active. */
++		if (dev->search_count)
++			schedule_timeout(jtime);
++		else
++			schedule();
+ 	}
+=20
+ 	atomic_dec(&dev->refcnt);
+diff --git a/drivers/w1/w1.h b/drivers/w1/w1.h
+index 13e0ea8..34ee01e 100644
+--- a/drivers/w1/w1.h
++++ b/drivers/w1/w1.h
+@@ -149,8 +149,6 @@ struct w1_bus_master
+ 		u8, w1_slave_found_callback);
+ };
+=20
+-#define W1_MASTER_NEED_EXIT		0
 -
--			msleep(tm);
-+			if (!w1_strong_pullup)
-+				msleep(tm);
+ struct w1_master
+ {
+ 	struct list_head	w1_master_entry;
+@@ -169,8 +167,6 @@ struct w1_master
+ 	void			*priv;
+ 	int			priv_size;
 =20
- 			if (!w1_reset_select_slave(sl)) {
+-	long			flags;
+-
+ 	struct task_struct	*thread;
+ 	struct mutex		mutex;
 =20
+diff --git a/drivers/w1/w1_int.c b/drivers/w1/w1_int.c
+index 36ff402..bd877b2 100644
+--- a/drivers/w1/w1_int.c
++++ b/drivers/w1/w1_int.c
+@@ -142,7 +142,6 @@ int w1_add_master_device(struct w1_bus_master *master)
+=20
+ #if 0 /* Thread cleanup code, not required currently. */
+ err_out_kill_thread:
+-	set_bit(W1_MASTER_NEED_EXIT, &dev->flags);
+ 	kthread_stop(dev->thread);
+ #endif
+ err_out_rm_attr:
+@@ -158,7 +157,6 @@ void __w1_remove_master_device(struct w1_master *dev)
+ 	struct w1_netlink_msg msg;
+ 	struct w1_slave *sl, *sln;
+=20
+-	set_bit(W1_MASTER_NEED_EXIT, &dev->flags);
+ 	kthread_stop(dev->thread);
+=20
+ 	mutex_lock(&w1_mlock);
 --=20
 1.4.4.4
 
---tmoQ0UElFV5VgXgH
+--7DO5AaGCk89r4vaK
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.1 (GNU/Linux)
 
-iD8DBQFIjn1BAI852cse6PARAlI3AJ9P6VA8BOMx9TmO5JN57nkaKfS1aQCgwd7j
-Z9wgWeAqf+8LgnKobzva2y0=
-=UicA
+iD8DBQFIjn0TAI852cse6PARAhmyAKCAG6wbyIz+GeSQqL+g9HoOJ96bwgCeP3/f
+Jyr9vMmSWeRaCv2PC/nxw70=
+=1OZM
 -----END PGP SIGNATURE-----
 
---tmoQ0UElFV5VgXgH--
+--7DO5AaGCk89r4vaK--
