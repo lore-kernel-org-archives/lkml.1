@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbYG2NcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbYG2Nev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758408AbYG2NcR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 09:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbYG2NcH
+	id S1758577AbYG2Nev (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 09:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYG2Nel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 09:32:07 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52896 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753732AbYG2NcG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 09:32:06 -0400
-Date: Tue, 29 Jul 2008 08:32:04 -0500
-From: Cliff Wickman <cpw@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>, jeremy@goop.org
-Cc: steiner@sgi.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: Comments on UV tlb flushing
-Message-ID: <20080729133204.GA13138@sgi.com>
-References: <488E644B.10801@goop.org> <200807291412.18495.nickpiggin@yahoo.com.au>
+	Tue, 29 Jul 2008 09:34:41 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60169 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753525AbYG2Nel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 09:34:41 -0400
+Message-ID: <488F1C6C.9000002@garzik.org>
+Date: Tue, 29 Jul 2008 09:34:36 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807291412.18495.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: gshan <gshan@alcatel-lucent.com>
+CC: linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: PIIX4: DMA timeout issue
+References: <488ED837.2060509@alcatel-lucent.com>
+In-Reply-To: <488ED837.2060509@alcatel-lucent.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 02:12:18PM +1000, Nick Piggin wrote:
-> On Tuesday 29 July 2008 10:28, Jeremy Fitzhardinge wrote:
-> > I'm just reworking the x86 tlb code to use smp_call_function_mask, and I
-> > see how the UV tlb flushing hooks in.  A few things occur to me:
-> >
-> >    1. There should be a CONFIG_X86_UV to select this code.  tlb_uv.o is
-> >       around 6k, which is not trivial overhead to subject every x86_64
-> >       kernel to.
+gshan wrote:
+> Hello, I sent mails on this issue before, but nobody made response.
+> There are 2 types of board for me. The hardware configuration for
+> those 2 boards are almost same except that one of them has 100GB
+> harddisk, and another type of board has 60GB harddisk. All harddisk
+> was access through PIIX4. I found this issue on board with 60GB
+> disk, but can't reproduce it on that with 100GB disk.
 > 
-> Definitely.
+> When I uncompressed a large file (600MB) to a logic partition with 8GB
+> size, following errors was report on middle way (5 minutes about from 
+> start).
+> Anybody has ideas?
+> 
+> hdc: dma_timer_expiry: dma status == 0x21
+> hdc: DMA timeout error
+> hdc: dma timeout error: status=0x58 { DriveReady SeekComplete DataRequest }
+> ide: failed opcode was: unknown
+> hdc: DMA disabled
+> ide1: reset: success
 
-I'd like to talk about this issue separate from the virtualization one.
+Can you try disabling the IDE driver (CONFIG_IDE) and enabling the newer 
+libata driver?  (CONFIG_ATA)
 
-I think that the Linux distributions are not going to build a special
-UV kernel, are they?  So every distro would have to be prompted to 
-turn on CONFIG_X86_UV, or else their kernel is not going to boot on UV.
+	Jeff
 
-But you have a point about not linking the 6k UV object file where 
-size is an issue.
-Thanks for catching that.
 
-Perhaps the UV code should be excluded if CONFIG_EMBEDDED is set.
 
--Cliff
+
