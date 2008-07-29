@@ -1,98 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbYG2N4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320AbYG2N5D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758585AbYG2N4o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 09:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbYG2N4e
+	id S1756320AbYG2N5D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 09:57:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758670AbYG2N4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 09:56:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38101 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753361AbYG2N4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 09:56:33 -0400
-Date: Tue, 29 Jul 2008 09:53:05 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Simon Horman <horms@verge.net.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Muli Ben-Yehuda <muli@il.ibm.com>, Tony Luck <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, Chandru <chandru@in.ibm.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Terry Loftin <terry.loftin@hp.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/5] ia64: Define elfcorehdr_addr in arch dependent
-	section
-Message-ID: <20080729135305.GL25975@redhat.com>
-References: <20080727234529.GM6175@verge.net.au> <20080728015117.GA12055@verge.net.au> <20080728024526.GB3334@verge.net.au> <20080728034007.GA30450@verge.net.au> <20080728211025.GA9985@redhat.com> <20080728211156.GB9985@redhat.com> <20080728211314.GC9985@redhat.com> <20080729044241.GA23514@verge.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080729044241.GA23514@verge.net.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 29 Jul 2008 09:56:51 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37264 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753633AbYG2N4u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 09:56:50 -0400
+Date: Tue, 29 Jul 2008 06:56:35 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Mike Galbraith <efault@gmx.de>, Frederik Deweerdt <deweerdt@free.fr>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       suresh.b.siddha@intel.com, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
+ 00000002
+Message-ID: <20080729065635.27630e33@infradead.org>
+In-Reply-To: <20080729120911.GI30344@one.firstfloor.org>
+References: <20080725095317.GA12636@skywalker>
+	<20080728222643.GA6339@slug>
+	<1217305335.5553.3.camel@marge.simson.net>
+	<20080729120911.GI30344@one.firstfloor.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 02:42:43PM +1000, Simon Horman wrote:
-> On Mon, Jul 28, 2008 at 05:13:14PM -0400, Vivek Goyal wrote:
-> > 
-> > o Move elfcorehdr_addr definition in arch dependent crash dump file. This is
-> >   equivalent to defining elfcorehdr_addr under CONFIG_CRASH_DUMP instead of
-> >   CONFIG_PROC_VMCORE. This is needed by is_kdump_kernel() which can be
-> >   used irrespective of the fact whether CONFIG_PROC_VMCORE is enabled or
-> >   not.
-> > 
-> > Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> > ---
-> > 
-> >  arch/ia64/kernel/setup.c |    9 ++++++++-
-> >  1 file changed, 8 insertions(+), 1 deletion(-)
-> > 
-> > diff -puN arch/ia64/kernel/setup.c~fix-elfcorehdr_addr-parsing-ia64 arch/ia64/kernel/setup.c
-> > --- linux-2.6.27-pre-rc1/arch/ia64/kernel/setup.c~fix-elfcorehdr_addr-parsing-ia64	2008-07-28 12:16:40.000000000 -0400
-> > +++ linux-2.6.27-pre-rc1-root/arch/ia64/kernel/setup.c	2008-07-28 12:16:40.000000000 -0400
-> > @@ -478,7 +478,12 @@ static __init int setup_nomca(char *s)
-> >  }
-> >  early_param("nomca", setup_nomca);
-> >  
-> > -#ifdef CONFIG_PROC_VMCORE
-> > +/*
-> > + * Note: elfcorehdr_addr is not just limited to vmcore. It is also used by
-> > + * is_kdump_kernel() to determine if we are booting after a panic. Hence
-> > + * ifdef it under CONFIG_CRASH_DUMP and not CONFIG_PROC_VMCORE.
-> > + */
-> > +#ifdef CONFIG_CRASH_DUMP
-> >  /* elfcorehdr= specifies the location of elf core header
-> >   * stored by the crashed kernel.
-> >   */
-> > @@ -491,7 +496,9 @@ static int __init parse_elfcorehdr(char 
-> >  	return 0;
-> >  }
-> >  early_param("elfcorehdr", parse_elfcorehdr);
-> > +#endif
-> >  
-> > +#ifdef CONFIG_PROC_VMCORE
-> >  int __init reserve_elfcorehdr(unsigned long *start, unsigned long *end)
-> >  {
-> >  	unsigned long length;
-> > _
-> 
-> Hi Vivek,
-> 
-> I think that you also need the following in arch/ia64/kernel/crash_dump.c.
-> With this change your code compiles on ia64.
-> 
-> Signed-off-by: Simon Horman <horms@verge.net.au>
-> 
-> 
+On Tue, 29 Jul 2008 14:09:11 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-Thanks Simon. I had done these changes locally but somehow forgot to
-include the changes in patches.
+> On Tue, Jul 29, 2008 at 06:22:15AM +0200, Mike Galbraith wrote:
+> > On Tue, 2008-07-29 at 00:26 +0200, Frederik Deweerdt wrote:
+> > > Hello  Aneesh,
+> > > 
+> > > On Fri, Jul 25, 2008 at 03:23:17PM +0530, Aneesh Kumar K.V wrote:
+> > > > [  163.378265] BUG: unable to handle kernel NULL pointer
+> > > > dereference at 00000002 [  163.378276] IP: [<c0124933>]
+> > > > sched_power_savings_store+0x13/0x70
+> > > 
+> > > Does the attached patch solve the problem?
+> > 
+> > Patch seems to have missed the boat for rc1 too.
+> 
+> Hmm.  I'll resend. 
+> 
+> BTW i think it's clearly a  bug that distributions are even accessing
+> that file. It doesn't make any sense in the context they are using
+> it (like at every boot). 
 
-I will include these changes in my next posting of consolidated single
-patch.
+it's a power saving feature that they very likely turn on by default...
 
-Thanks
-Vivek
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
