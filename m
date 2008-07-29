@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758074AbYG2Rea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757008AbYG2Rke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758074AbYG2Rea (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 13:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbYG2ReW
+	id S1757008AbYG2Rke (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 13:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYG2RkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 13:34:22 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33124 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752703AbYG2ReW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 13:34:22 -0400
-Date: Tue, 29 Jul 2008 12:34:20 -0500
-From: Cliff Wickman <cpw@sgi.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, steiner@sgi.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: Comments on UV tlb flushing
-Message-ID: <20080729173420.GA18296@sgi.com>
-References: <488E644B.10801@goop.org> <200807291412.18495.nickpiggin@yahoo.com.au> <20080729133204.GA13138@sgi.com> <488F2C9B.9070306@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <488F2C9B.9070306@goop.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 29 Jul 2008 13:40:22 -0400
+Received: from mga09.intel.com ([134.134.136.24]:6214 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752503AbYG2RkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 13:40:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,273,1215414000"; 
+   d="scan'208";a="423495860"
+Message-Id: <20080729172917.185593000@linux-os.sc.intel.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 29 Jul 2008 10:29:17 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       arjan@linux.intel.com, roland@redhat.com, drepper@redhat.com,
+       mikpe@it.uu.se, chrisw@sous-sol.org, andi@firstfloor.org
+Cc: linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
+Subject: [patch 0/9] x86, xsave: xsave/xrstor support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 07:43:39AM -0700, Jeremy Fitzhardinge wrote:
-> Cliff Wickman wrote:
->> I think that the Linux distributions are not going to build a special
->> UV kernel, are they?  So every distro would have to be prompted to  
->> turn on CONFIG_X86_UV, or else their kernel is not going to boot on UV.
->>   
->
-> Distros will generally turn on everything.  You could have it on by  
-> default if the kernel is built for CONFIG_X86_GENERICARCH which enables  
-> support for other big numa configurations.  I think distros generally  
-> build with that enabled anyway.
->
->    J
+This patchset adds the support for xsave/xrstor infrastructure for x86.
+xsave/xrstor manages the existing and future processor extended states in x86
+architecutre.
 
-I don't know much about x86 configuration options.  It looks like
-CONFIG_X86_GENERICARCH is fairly new, so I don't know where to look
-for samples of how it will be set by RH and SuSE.
+More info on xsave/xrstor can be found in the Intel SDM's located at
+http://www.intel.com/products/processor/manuals/index.htm
 
-But if the tlb_uv.o code should be present in "every" distro x86 kernel
-I don't see the point of having to configure it in.  Why not just
-configure it out for small (embedded) kernels?
+The layout of the xsave/xrstor area extends from the 512-byte FXSAVE/FXRSTOR
+layout.  xsave/xrstor area layout consists of:
 
--Cliff
--- 
-Cliff Wickman
-Silicon Graphics, Inc.
-cpw@sgi.com
-(651) 683-3824
+     - fxsave/fxrstor area (512 bytes)
+     - xsave header area (64 bytes)
+     - set of save areas, each corresponding to a processor extended state
+
+The number of save areas, the offset and the size of each save area is
+enumerated by CPUID leaf function 0xd. 
+
+This patch includes the basic xsave/xrstor infrastructure(supporting FP/SSE),
+which includes:
+      - context switch support,  extending traditional lazy restore mechanism
+      - signal handling support, extending(using the software reserved bytes
+	464..511 in the current 512byte layout of fxsave frame) the memory
+	layout pointed out by the fpstate pointer in the sigcontext
+
+More details in the patches to follow.
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
