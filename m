@@ -1,66 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755116AbYG2ChD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbYG2CqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755116AbYG2ChD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 22:37:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYG2Cgx
+	id S1754085AbYG2CqJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 22:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYG2Cpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 22:36:53 -0400
-Received: from mga09.intel.com ([134.134.136.24]:22333 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751893AbYG2Cgw convert rfc822-to-8bit (ORCPT
+	Mon, 28 Jul 2008 22:45:55 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43254 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751783AbYG2Cpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 22:36:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,269,1215414000"; 
-   d="scan'208";a="423076781"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 28 Jul 2008 22:45:54 -0400
+Message-ID: <488E83E9.6030108@jp.fujitsu.com>
+Date: Tue, 29 Jul 2008 11:43:53 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH 3/3] PCI: Add pci_read_base() API
-Date: Tue, 29 Jul 2008 10:36:49 +0800
-Message-ID: <7A25B56E4BE99C4283EB931CD1A40E1101587039@pdsmsx414.ccr.corp.intel.com>
-In-Reply-To: <20080729014931.GB28989@parisc-linux.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 3/3] PCI: Add pci_read_base() API
-Thread-Index: AcjxHV2jjoZ2V1bgRTeoOVjuOZ1DNwABn2yQ
-References: <1217266741-26519-1-git-send-email-matthew@wil.cx> <1217266741-26519-4-git-send-email-matthew@wil.cx> <7A25B56E4BE99C4283EB931CD1A40E1101586F18@pdsmsx414.ccr.corp.intel.com> <20080729014931.GB28989@parisc-linux.org>
-From: "Zhao, Yu" <yu.zhao@intel.com>
-To: "Matthew Wilcox" <matthew@wil.cx>
-Cc: <linux-kernel@vger.kernel.org>, <eric@anholt.net>,
-       "Matthew Wilcox" <willy@linux.intel.com>, <jbarnes@virtuousgeek.org>
-X-OriginalArrivalTime: 29 Jul 2008 02:36:51.0231 (UTC) FILETIME=[F4BE22F0:01C8F123]
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Pierre Ossman <drzeus-list@drzeus.cx>, Alex Chiang <achiang@hp.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
+       Kristen Accardi <kristen.c.accardi@intel.com>
+Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
+References: <20080724134737.4b91f30d@mjolnir.drzeus.cx> <200807251518.53462.jbarnes@virtuousgeek.org> <488D86EC.1010903@jp.fujitsu.com> <200807280916.44664.jbarnes@virtuousgeek.org>
+In-Reply-To: <200807280916.44664.jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, July 29, 2008 9:50 AM, Matthew Wilcox <mailto:matthew@wil.cx> wrote:
-
-> On Tue, Jul 29, 2008 at 09:22:03AM +0800, Zhao, Yu wrote:
->> Greetings,
->> 
->> It would be nice if people can have an enhanced
-> pci_update_resource to update non-standard BARs probed by
-> pci_read_base. 
+Jesse Barnes wrote:
+> On Monday, July 28, 2008 1:44 am Kenji Kaneshige wrote:
+>> Jesse Barnes wrote:
+>>> I think that's fine (automatically creating duplicate devices with names
+>>> to differentiate them), but I think we should also try harder to avoid
+>>> adding duplicates.
+>>>
+>>> In Pierre's case, and on my T61, there's only one actual hotplug slot
+>>> available, but the firmware creates duplicate physical slot numbers and
+>>> sets the HP_CAP bit on everything, both of which are obviously wrong
+>>> (well I suppose you could pop these chips off the board, but it's not
+>>> very practical).  However, afaict that "other" OS uses the _RMV method to
+>>> determine whether a given slot is actually hot pluggable.  On my T61 at
+>>> least, this seems to be accurate: only one of my EXP* objects has a _RMV
+>>> method.
+>>>
+>>> So maybe the PCIe hotplug driver should be checking for that method when
+>>> ACPI is available?  We already try to use _OSC etc., so checking for _RMV
+>>> first would make sense...
+>> As you pointed out, the root cause might not a problem of slot naming,
+>> but a problem of slots detection, because pciehp driver detects multiple
+>> PCIe hotplug slots even thought your and Pierre's system seems to have
+>> only one hotplug slot. So I think we should also consider the problem
+>> from this view point (slot detection).
+>>
+>> But, I think simply checking for _RMV method first is dangerous because
+>> I think there are many systems that doesn't implement _RMV for PCIe
+>> hotplug slots (at least, my system doesn't implement that. Anyway,
+>> I would like to look at the documents/specifications that mention _RMV
+>> method for determining whether a given slot is hot pluggable. Do you
+>> have any information about that? I think PCI Local Bus, PCI Express and
+>> PCI Firmware specification don't mention that. I think hot pluggable slots
+>> on your, Pierre's and Matthew's system are ExpressCard slots. So I guess
+>> ExpressCard specification might define something about this. But
+>> unfortunately, I don't have ExpressCard specification. Can anyone access
+>> ExpressCard spec?
 > 
-> Yes, that would be a natural addition to the API.  However, we don't
-> tend to add APIs until we have a use case for them.  Do you have
-> anything in the pipeline that could use this feature?  I'm quite happy
-> to write the code for you if you do.
-
-There is a new PCIe extended capability SR-IOV, which defines 6 additional BARs encapsulated inside the capability. I'm writing code to support it, and will be using your APIs to probe and update these non-standard BARs.
-
-The SR-IOV specification can be found at:
-http://www.pcisig.com/members/downloads/specifications/iov/sr-iov1.0_11Sep07.pdf
-
-Thanks.
-
+> Your systems don't have _RMV methods for the hotpluggable PCIe slots in the 
+> DSDT?  That's a shame; the Windows docs I found on PCIe hotplug seemed to 
+> indicate that _RMV and _OSC (under Vista) were used to detect whether a given 
+> slot was hot pluggable (I just googled for "windows pcie hotplug" or 
+> something) so I was hoping that would be a reliable method...  Any other 
+> ideas?  I'll go see if I can dig up some ExpressCard info.
 > 
-> --
-> Intel are signing my paycheques ... these opinions are still mine
-> "Bill, look, we understand that you're interested in selling us this
-> operating system, but compare it to ours.  We can't possibly take such
-> a retrograde step."
+
+My systems don't have _RMV methods for the hot pluggable PCIe slots in the
+DSDT, but I don't think that's a shame. I suppose that the document you are
+referring describes how Windows handles ExpressCard slots. In my
+understanding, Hot Plug Surprise bit in the Slot Capabilities register is
+set to 1b on ExpressCard slots, and I believe that ACPI _RVM method is for
+the device that only supports surprise-style removal. I think this is why
+your system implements _RMV method for slots.
+
+On the other hand, hot pluggable slots on my servers are *not* ExpressCard
+slots, and all of them have Power Controller instead of surprise-style
+removal (Hot Plug Surprise bit in the Slot Capabilities register is set to
+0b). So I believe there is no reason to implement _RMV methods for the hot
+pluggable PCIe slots on my systems.
+
+Here is an idea. How about using _RMV method to determine whether a given
+slot is actually hot pluggable when Hot Plug Surprise bit in the Slot
+Capabilities register is set to 1b on the slot? This is based on a little
+rough assumption that all PCIe slots that support surprise-style removal
+have _RMV method, though. Does this work for you?
+
+Thanks,
+Kenji Kaneshige
 
