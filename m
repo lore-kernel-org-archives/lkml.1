@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757908AbYG2MlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbYG2MqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757908AbYG2MlP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 08:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbYG2MlA
+	id S1756755AbYG2MqU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 08:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYG2MqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 08:41:00 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:43569 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751529AbYG2Mk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 08:40:59 -0400
-Date: Tue, 29 Jul 2008 21:40:07 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
-       Uwe.Kleine-Koenig@digi.com, gregkh@suse.de, akpm@linux-foundation.org,
-       tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH][RESEND] uio: uio_pdrv_genirq V3
-Message-ID: <20080729124007.GB902@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	"Hans J. Koch" <hjk@linutronix.de>,
-	Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
-	Uwe.Kleine-Koenig@digi.com, gregkh@suse.de,
-	akpm@linux-foundation.org, tglx@linutronix.de,
-	alan@lxorguk.ukuu.org.uk
-References: <20080729121015.13443.91824.sendpatchset@rx1.opensource.se> <20080729122806.GB2221@local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080729122806.GB2221@local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 29 Jul 2008 08:46:10 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47411 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751214AbYG2MqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 08:46:09 -0400
+Date: Tue, 29 Jul 2008 22:45:56 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: mingo@elte.hu, fujita.tomonori@lab.ntt.co.jp, joerg.roedel@amd.com,
+       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       robert.richter@amd.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, jbarnes@virtuousgeek.org,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] add iommu_num_pages helper function
+Message-Id: <20080729224556.bcdf582a.sfr@canb.auug.org.au>
+In-Reply-To: <20080729.033342.21049184.davem@davemloft.net>
+References: <20080729.031005.203132019.davem@davemloft.net>
+	<20080729192834M.fujita.tomonori@lab.ntt.co.jp>
+	<20080729103146.GA32407@elte.hu>
+	<20080729.033342.21049184.davem@davemloft.net>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__29_Jul_2008_22_45_56_+1000_RZbBp/BXQfb/x1HK"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 02:28:06PM +0200, Hans J. Koch wrote:
-> On Tue, Jul 29, 2008 at 09:10:15PM +0900, Magnus Damm wrote:
-> > From: Magnus Damm <damm@igel.co.jp>
-> > 
-> > This is V3 of uio_pdrv_genirq.c, a platform driver for UIO with
-> > generic IRQ handling code. This driver is very similar to the regular
-> > UIO platform driver, but is only suitable for devices that are
-> > connected to the interrupt controller using unique interrupt lines.
-> 
-> Hi Magnus,
-> I already sent this to Greg on July, 15. I guess this will be merged
-> soon. Greg was probably busy with tons of other stuff during the merge
-> window.
-> 
-Note that I've already pushed the platform bits, so this is the only
-outstanding part.
+--Signature=_Tue__29_Jul_2008_22_45_56_+1000_RZbBp/BXQfb/x1HK
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 29 Jul 2008 03:33:42 -0700 (PDT) David Miller <davem@davemloft.net>=
+ wrote:
+>
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Tue, 29 Jul 2008 12:31:46 +0200
+>=20
+> > i've queued up your quick fix in tip/x86/urgent to resolve the immediat=
+e=20
+> > -git build breakage. The wider patch can then be done on top of that,=20
+> > without being rushed. Any objections to this approach?
+>=20
+> I do not object :-)
+
+Neither do I. :-)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__29_Jul_2008_22_45_56_+1000_RZbBp/BXQfb/x1HK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiPEQQACgkQjjKRsyhoI8xNZwCfY3P7QCLB6HRFLuc/V0PStl/u
+xNgAn0UdWxTaWsI8nU+hRiYwh+txTdTg
+=ftIL
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__29_Jul_2008_22_45_56_+1000_RZbBp/BXQfb/x1HK--
