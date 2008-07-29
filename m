@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760079AbYG2Uii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759360AbYG2Ul2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760079AbYG2Uii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 16:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYG2Uib
+	id S1759360AbYG2Ul2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 16:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbYG2UlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 16:38:31 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:35652 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640AbYG2Uia (ORCPT
+	Tue, 29 Jul 2008 16:41:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50001 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752383AbYG2UlT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 16:38:30 -0400
-Date: Tue, 29 Jul 2008 16:36:53 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Calvin Walton <calvin.walton@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] FILESYSTEMS: Make "advanced partitions" immediately
- unselectable.
-In-Reply-To: <20080729091707.d82b389a.randy.dunlap@oracle.com>
-Message-ID: <alpine.LFD.1.10.0807291635550.13165@localhost.localdomain>
-References: <alpine.LFD.1.10.0807241135540.5289@localhost.localdomain> <20080726094718.b617c1e7.randy.dunlap@oracle.com> <alpine.LFD.1.10.0807261750340.3493@localhost.localdomain> <1217214689.22927.3.camel@zem.phub.net.cable.rogers.com>
- <alpine.LFD.1.10.0807280531210.3402@localhost.localdomain> <20080728103731.7bafd577.randy.dunlap@oracle.com> <alpine.LFD.1.10.0807281437070.10586@localhost.localdomain> <1217282540.22927.13.camel@zem.phub.net.cable.rogers.com> <20080728151441.03410ecd.randy.dunlap@oracle.com>
- <alpine.LFD.1.10.0807290634510.7057@localhost.localdomain> <20080729091707.d82b389a.randy.dunlap@oracle.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Tue, 29 Jul 2008 16:41:19 -0400
+Date: Tue, 29 Jul 2008 13:40:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       broonie@opensource.wolfsonmicro.com, sfr@canb.auug.org.au,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH 0/13] Updated V4  - Regulator Framework
+Message-Id: <20080729134043.d677323b.akpm@linux-foundation.org>
+In-Reply-To: <1217363626.7498.47.camel@odin>
+References: <1209742841.12502.40.camel@odin>
+	<20080710020848.066cfc8c.akpm@linux-foundation.org>
+	<1217363626.7498.47.camel@odin>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jul 2008, Randy Dunlap wrote:
+On Tue, 29 Jul 2008 21:33:46 +0100
+Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
 
-> On Tue, 29 Jul 2008 06:36:09 -0400 (EDT) Robert P. J. Day wrote:
+> On Thu, 2008-07-10 at 02:08 -0700, Andrew Morton wrote:
+> > On Fri, 02 May 2008 16:40:41 +0100 Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
+> > 
+> > > This is an updated version of the kernel voltage & current regulator
+> > > framework based on comments received from version 3 of the patch series.
+> > 
+> > git-regulator.patch has been in -mm for two months without incident.  I'd
+> > forgotten about it.   This is bad - we should have put it into linux-next.
+> > 
+> > If you hope to get this into 2.6.27 then please send the git URL to Stephen
+> > and the linux-next list asap.  Please also resend the patches to this list
+> > for re-review.  Then, if it doesn't get shot down, send Linux a pull
+> > request during the 2.6.27 merge window.  ie: about one week from today.
+> 
+> Would there be any chance of this going in for rc2 ? (2 pull requests
+> sent recently prior to rc1) or would it be better now waiting for the
+> 2.6.28 merge window ?
+> 
 
-> > so, just to be clear, the consensus is to just leave it alone as
-> > it's more trouble than it's worth to do anything about?
->
-> Probably.
->
-> I don't see the "if PARTITION_ADVANCED" block as being compatible
-> with the need to have default partition types per $ARCH. Do you see
-> some way around that problem?
+Oh, I'd assumed that it had been merged already.
 
-not presently.  and if i was going to invest more effort, i'd probably
-be more tempted to try to reorg the train wreck that is the "Kernel
-hacking" submenu, anyway.
-
-rday
---
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+Linus was probably wondering "who is this Liam person and why is he
+sending me stuff".  It should be OK for 2.6.27-rc1 unless Linus had
+some specific reason for skipping it?  Please retry.
