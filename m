@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755130AbYG2G7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYG2HIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755130AbYG2G7c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 02:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbYG2G7W
+	id S1755448AbYG2HIi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 03:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYG2HIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 02:59:22 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:35822 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbYG2G7V (ORCPT
+	Tue, 29 Jul 2008 03:08:30 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:57949 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752596AbYG2HI3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 02:59:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=eVli0HZVy79wxEQI0YbJFuxvonf8OGMh978uCU6aynCDZJmOuMNIKRMjlDNm61K4db
-         nm5cZ/23XjkBltJwRQ62LgCk2cZIdCjpNaCV65/59RdPwjKYTsWKP7yrm624jYh9xCEd
-         SCDQ379sofyCaK33tnkSGpIZ9osfxDpxobPD0=
-Date: Tue, 29 Jul 2008 10:59:14 +0400
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: davem@davemloft.net, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: sparc64: build failure at sys_sparc32.c
-Message-ID: <20080729065914.GA30878@orion>
+	Tue, 29 Jul 2008 03:08:29 -0400
+Message-ID: <488EC1DA.7000708@manoweb.com>
+Date: Tue, 29 Jul 2008 00:08:10 -0700
+From: Alessio Sangalli <alesan@manoweb.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Iwo Mergler <iwo@call-direct.com.au>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: interrupt overhead on ARM architecture
+References: <488E7F08.7060309@manoweb.com> <488EA477.7070101@call-direct.com.au>
+In-Reply-To: <488EA477.7070101@call-direct.com.au>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19uImL3OdVpCphg4lU7ZPtAQvec0f65A19NEFx
+ 05KFdCTOs1uDs+aIule6dPDqx2VXil5rGTIS4pPrgs5qhddB/R
+ XXpVieWyyfnfrP1aYC2eA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Iwo Mergler wrote:
 
-I am testing build using randconfig.
+> In other words, you can't even measure the latency on a particular
+> system and then assume it will stay anywhere near constant. Comparing
+> different systems with the same processor core is hopeless.
 
-arch/sparc64/kernel/sys_sparc32.c: In function 'sys32_chown16':
-arch/sparc64/kernel/sys_sparc32.c:63: error: implicit declaration of
-function 'low2highuid'
-arch/sparc64/kernel/sys_sparc32.c:63: error: implicit declaration of
-function 'low2highgid'
-arch/sparc64/kernel/sys_sparc32.c: In function 'sys32_getresuid16':
-arch/sparc64/kernel/sys_sparc32.c:106: error: implicit declaration of
-function 'high2lowuid'
-arch/sparc64/kernel/sys_sparc32.c: In function 'sys32_getresgid16':
-arch/sparc64/kernel/sys_sparc32.c:123: error: implicit declaration of
-function 'high2lowgid'
+Everything makes perfect sense. For this reason, I am willing to do some
+tests on my own platform. How would you suggest to proceed? I would need
+an extremely accurate way to measure time to begin with and then:
 
-These functions are defined in linux/highuid.h only if CONFIG_UID16 is enabled.
+- read that time reference
+- generate an interrupt by placing some data in a device or so
+- reading again that time reference as first thing in the ISR
+- save the result
+
+- do the above in various scenarios, with different drivers enabled, CPU
+load, etc etc
+
+bye
+Alessio
+
