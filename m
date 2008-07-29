@@ -1,52 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbYG2IMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756785AbYG2IPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756988AbYG2IMx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 04:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbYG2IMi
+	id S1756785AbYG2IPa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 04:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbYG2IPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 04:12:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44248 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753771AbYG2IMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 04:12:38 -0400
-Date: Tue, 29 Jul 2008 10:12:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Oruba <peter.oruba@amd.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patch 00/11] x86: AMD microcode patch loading support v2
-Message-ID: <20080729081223.GD14838@elte.hu>
-References: <20080728164411.490752571@amd.com> <20080728180141.GB2937@elte.hu>
+	Tue, 29 Jul 2008 04:15:12 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:11917 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753712AbYG2IPK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 04:15:10 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 2/7] drivers/net/ehea/ehea_main.c: Release mutex in error handling code
+Date: Tue, 29 Jul 2008 10:14:55 +0200
+User-Agent: KMail/1.8.2
+Cc: jgarzik@pobox.com, raisch@de.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0807210957060.24625@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0807210957060.24625@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080728180141.GB2937@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200807291014.55388.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> and do something like:
+On Monday 21 July 2008 09:57, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
->   git-checkout tip/master
->   git-merge tip/x86/microcode
+> The mutex is released on a successful return, so it would seem that it
+> should be released on an error return as well.
 > 
-> to get the latest code plus your changes.
+> The semantic patch finds this problem is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @@
+> expression l;
+> @@
+> 
+> mutex_lock(l);
+> ... when != mutex_unlock(l)
+>     when any
+>     when strict
+> (
+> if (...) { ... when != mutex_unlock(l)
+> +   mutex_unlock(l);
+>     return ...;
+> }
+> |
+> mutex_unlock(l);
+> )
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> ---
+> diff -u -p a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+> --- a/drivers/net/ehea/ehea_main.c
+> +++ b/drivers/net/ehea/ehea_main.c
+> @@ -2937,9 +2937,9 @@ static void ehea_rereg_mrs(struct work_s
+>  				}
+>  			}
+>  		}
+> -       mutex_unlock(&dlpar_mem_lock);
+> -       ehea_info("re-initializing driver complete");
+> +	ehea_info("re-initializing driver complete");
+>  out:
+> +	mutex_unlock(&dlpar_mem_lock);
+>  	return;
+>  }
+> 
+> --
 
-i've pushed out 3 build fixes into tip/x86/microcode and test-merged it 
-into tip/master. I'll test it some more today before pushing out its 
-integration.
+The patch looks good. 
 
-	Ingo
+Acked-by: Jan-Bernd Themann <themann@de.ibm.com>
+
+Thanks,
+Jan-Bernd
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
