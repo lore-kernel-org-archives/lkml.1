@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758356AbYG2Kip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbYG2Kq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758356AbYG2Kip (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 06:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999AbYG2KiZ
+	id S1756881AbYG2Kq1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 06:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbYG2KqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 06:38:25 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:58082 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755602AbYG2KiY (ORCPT
+	Tue, 29 Jul 2008 06:46:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36964 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754883AbYG2KqT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 06:38:24 -0400
-Message-ID: <488EF377.5080603@keyaccess.nl>
-Date: Tue, 29 Jul 2008 12:39:51 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-CC: Paul Mundt <lethal@linux-sh.org>, James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-References: <488DFD97.7080802@simon.arlott.org.uk>	 <488E1147.5040803@simon.arlott.org.uk>	 <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com>	 <20080728202236.GN9378@mit.edu> <20080728204624.GA11581@redhat.com>	 <20080728141414.d7e5def2.randy.dunlap@oracle.com>	 <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au>	 <20080728234131.GD28055@linux-sh.org>	 <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com>	 <488E644D.7000507@keyaccess.nl> <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com>
-In-Reply-To: <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Tue, 29 Jul 2008 06:46:19 -0400
+Subject: Re: x86: Is there still value in having a special tlb flush IPI
+	vector?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <200807292000.30690.nickpiggin@yahoo.com.au>
+References: <488E534F.2030204@goop.org>
+	 <200807291430.08220.nickpiggin@yahoo.com.au>
+	 <1217325288.7563.2.camel@twins>
+	 <200807292000.30690.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Tue, 29 Jul 2008 12:45:51 +0200
+Message-Id: <1217328351.7563.12.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29-07-08 02:50, Jon Smirl wrote:
+On Tue, 2008-07-29 at 20:00 +1000, Nick Piggin wrote:
+> On Tuesday 29 July 2008 19:54, Peter Zijlstra wrote:
+> > On Tue, 2008-07-29 at 14:30 +1000, Nick Piggin wrote:
+> > > Not to mention the minor problem that it still deadlocks when called with
+> > > interrupts disabled ;)
+> >
+> > __smp_call_function_single has potential though..
+> 
+> For reschedule interrupt? I don't really agree.
 
->>> Why do these all end in (none)?
->>> Craig Hughes <craig@com.rmk.(none)>
->>> Dave Neuer <dneuer@org.rmk.(none)>
->>> David Brownell <david-b@net.rmk.(none)>
->>> David Woodhouse <dwmw2@org.rmk.(none)>
->>> Deepak Saxena <dsaxena@net.rmk.(none)>
->>> Enrico Scholz <enrico.scholz@de.rmk.(none)>
->>>
->>  Because rmk rewrites addresses to comply with privacy laws. Another good
->> example of why this nonsense of yours is exactly that.
->>
->>  I checked and am personally in there three times, once even without any
->> valid email address listed. And any time there's anything other than my
->> gmail address in some submission it at least recently means that someone
->> _else_ took my from: address and stuck it on there and while I don't
->> terribly mind that generally, I find it really annoying to see even those
->> mistakes harvested into your hugely google-accessible resource.
+How about using just arch_send_call_function_single_ipi() to implement
+smp_send_reschedule() ?
 
-[ .. ]
+The overhead of that is a smp_mb() and a list_empty() check in
+generic_smp_call_function_single_interrupt() if there is indeed no work
+to do.
 
-> As for privacy, if you don't want your email address in a file like
-> this don't put it into a GPL'd public project.
 
-Like I told you, I don't. Others do. And while that's not a huge issue 
-in itself, you harvesting it into your nicely formatted google and 
-spam-base MAKES it an issue. Just stop this crap. Be away.
 
-Rene.
