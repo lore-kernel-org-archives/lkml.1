@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbYG2DSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754828AbYG2DXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755167AbYG2DSo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 23:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbYG2DSf
+	id S1754828AbYG2DXm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 23:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYG2DXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 23:18:35 -0400
-Received: from ns2.suse.de ([195.135.220.15]:39137 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751955AbYG2DSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 23:18:34 -0400
-Date: Mon, 28 Jul 2008 20:17:52 -0700
-From: Greg KH <gregkh@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ben Collins <ben.collins@canonical.com>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH 5/7] [airprime] Add support for more devices
-Message-ID: <20080729031752.GA11980@suse.de>
-References: <24762.90.138.930.038.1036103001.ben.collins@canonical.com> <E1KKl4J-00068N-2b@swissweb.swissdisk.com> <20080728195813.6c51450b.akpm@linux-foundation.org>
+	Mon, 28 Jul 2008 23:23:33 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:1780 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbYG2DXc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 23:23:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jqTpuc0rwEDe+zRDmN88RBYmDFheD/oHIQcH4t7fyr5IeWmExJa/3FNPw1PSAm8+r9
+         t4/gheuC0vNkqcL4FpUYtMTHwwVRcnbbL0gCyIJ0ov6rrQKbEMU7F/0r0Af6vGPUQunf
+         8qmDPSBHjfBgm7uqI0EOqleoZEbMX9K6a0u1A=
+Message-ID: <9e4733910807282023h5479c755wde55e2324909b678@mail.gmail.com>
+Date: Mon, 28 Jul 2008 23:23:31 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Theodore Tso" <tytso@mit.edu>, "Al Viro" <viro@zeniv.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 463 kernel developers missing!
+In-Reply-To: <20080729025016.GT9378@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080728195813.6c51450b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <488DFD97.7080802@simon.arlott.org.uk>
+	 <488E0BB6.7020006@simon.arlott.org.uk>
+	 <9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com>
+	 <488E1147.5040803@simon.arlott.org.uk>
+	 <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com>
+	 <20080729011526.GF28946@ZenIV.linux.org.uk>
+	 <9e4733910807281825v42f9700al420ba48aebf3d790@mail.gmail.com>
+	 <20080729013650.GG28946@ZenIV.linux.org.uk>
+	 <9e4733910807281901i1a39ce93v902dd6bd240e1a34@mail.gmail.com>
+	 <20080729025016.GT9378@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 07:58:13PM -0700, Andrew Morton wrote:
-> On Sun, 20 Jul 2008 21:54:48 -0400 Ben Collins <ben.collins@canonical.com> wrote:
-> 
-> > Reference: https://launchpad.net/bugs/208250
-> > 
-> > Add support for:
-> > - Audiovox PC5740
-> > - Huawei E220
-> > - Momo design
-> > - AirPrime 5220
-> > - Dell Wireless HSDPA 5500
-> > - Sprint Pantech PX-500
-> > - Novatel U727
-> > - Onda MT505UP
-> 
-> airprime.c got deleted.
+On 7/28/08, Theodore Tso <tytso@mit.edu> wrote:
+> On Mon, Jul 28, 2008 at 10:01:06PM -0400, Jon Smirl wrote:
+>  > I should also point out that external information (Google) was needed
+>  > to identify several hundred names, there was insufficient information
+>  > in the log or kernel source. If we have to reconstruct this mapping
+>  > ten years from now for some random lawsuit, the external information
+>  > may not be there.
+>
+>
+> Jon,
+>
+>         The reality is ten years from now, many e-mail addresses won't
+>  be accurate anyway.  We will have to track people down by hand, if it
+>  ever comes down to that.  The signed-off-by needs to be enough so we
+>  can track down someone (very likely only a few set of people); via a
+>  manual method is quite acceptable.  I don't think it is really
+>  necessary to try force fit the signed-off-by just so we can collect
+>  better mode.
 
-Ben, why did you not cc: the linux-usb mailing list if you are sending
-USB patches out?  Or at least the USB or USB-serial maintainer :)
+The kernel already has a mailmap file, but it is not complete. So I
+should just take this work that makes the mailmap file a lot better
+and throw it away? The policy is that the log file should be messed up
+enough so that a computer can't process it and that a human can
+recover it only with several day's effort? That's a really hard line
+to define and we'll probably lose the identity of a bunch of
+contributors. I'll follow up with a patch that deletes the current
+.mailmap
 
->   commit 640c1bce86d1e11ee6a1263fdf6170d3210b1684
->   Author: Greg Kroah-Hartman <gregkh@suse.de>
->   Date:   Thu Jun 19 11:21:16 2008 -0700
-> 
->       USB: delete airprime driver
->     
->       This driver is only for one device id, and the option driver should be
->       used instead for it.
-> 
-> It'd be good if we can verify that the option driver presently supports
-> all these new devices.
-
-If it doesn't, it should be very simple to add the device ids to it.
-
-airprime.c is dead and gone.
-
-thanks,
-
-greg k-h
+-- 
+Jon Smirl
+jonsmirl@gmail.com
