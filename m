@@ -1,83 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbYG2Hbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755745AbYG2HcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754748AbYG2Hbg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 03:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbYG2Hb2
+	id S1755745AbYG2HcB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 03:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYG2Hbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 03:31:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59605 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752705AbYG2Hb1 (ORCPT
+	Tue, 29 Jul 2008 03:31:51 -0400
+Received: from wr-out-0506.google.com ([64.233.184.224]:34206 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752706AbYG2Hbu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 03:31:27 -0400
-Date: Tue, 29 Jul 2008 00:31:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@tungstengraphics.com>
-Cc: Dave Airlie <airlied@gmail.com>, Jiri Slaby <jirislaby@gmail.com>,
-       airlied@linux.ie, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1 repost #1] DRM: don't enable irqs in locking
-Message-Id: <20080729003113.d39851b5.akpm@linux-foundation.org>
-In-Reply-To: <488E2CED.1040207@tungstengraphics.com>
-References: <1216975369-6749-1-git-send-email-jirislaby@gmail.com>
-	<21d7e9970807250154q4a1958f5k45f62408e97ae3c7@mail.gmail.com>
-	<488E2CED.1040207@tungstengraphics.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jul 2008 03:31:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Gw1D8q8WdZgBiQssMpPEdK7JeF/oTCQuIp3cBqvCKPNcsQ+y7Q6vFU0LbxgN8dU98L
+         BC54TMZvH4UTdR4XOJ1ntjsHImWCHM1D1wYcZ51xaJX7REnzGPCRDh74kllb3WB7/4+K
+         X5S13GySv7eQ571fnInepDs2acJ1BG99iXdO4=
+Date: Tue, 29 Jul 2008 03:31:46 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Henrik Rydberg <rydberg@euromail.se>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, robfitz@273k.net, akpm@osdl.org,
+       jikos@jikos.cz, vojtech@suse.cz, dmonakhov@openvz.org
+Subject: Re: [PATCH] bcm5974-0.58: name changes, open/close and
+	suspend/resume serialized
+Message-ID: <20080729073146.GA5776@anvil.corenet.prv>
+References: <4888311E.9010005@euromail.se> <20080725154250.GA1861@anvil.corenet.prv> <488A1A99.2070609@euromail.se> <20080725143015.ZZRA012@mailhub.coreip.homeip.net> <488AD712.1020102@euromail.se> <20080729054132.GA5345@anvil.corenet.prv> <1217313973.15381.9.camel@johannes.berg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217313973.15381.9.camel@johannes.berg>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008 22:32:45 +0200 Thomas Hellstr__m <thomas@tungstengraphics.com> wrote:
-
-> Dave Airlie wrote:
-> > On Fri, Jul 25, 2008 at 6:42 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> >   
-> >> drm_lock_take(); and drm_lock_free(); are called from
-> >> drm_locked_tasklet_func(); which disables interrupts when grabbing its
-> >> spinlock.
-> >>
-> >> Don't allow these locking functions to re-enable interrupts when
-> >> the tasklet expects them disabled. I.e. use spin_lock_irqsave instead of
-> >> spin_lock_bh (with their unlock opposites).
-> >>     
-> >
-> > Hmm this has bounced through 2-3 variations.. Thomas any ideas what
-> > the final correct answer is?
-> >
-> > Dave.
-> >   
-> Hmm,
-> Yes, this bug could occur, but the remedy is not to use 
-> spin_lock_irqsave() for lock_data::spinlock but to avoid calling 
-> drm_lock_take with the drm_device::tasklet_lock held with irqs disabled.
-> I'll see if I can come up with a patch.
+On Tue, Jul 29, 2008 at 08:46:13AM +0200, Johannes Berg wrote:
+> On Tue, 2008-07-29 at 01:41 -0400, Dmitry Torokhov wrote:
+> 
+> > > one thing about the drivers/input/mouse/Kconfig patch:
+> > > 
+> > > The original version contained "select USB", which was later changed
+> > > to "depends on USB" by Andrew Morton. I saw it reappear as "select USB"
+> > > in your latest patch, and simply considered it a change back, but
+> > > maybe it was an oversight?
+> > > 
+> > 
+> > I am of the opinion that it is OK to "select" high-level subsystems that
+> > don't have additional dependencies, especially if they are "past" the
+> > original driver in menuconfig. I don't really like the idea of forcing
+> > users revisiting earlier sub-menus after they selected a new subsystem
+> > to see if there are any new options. Plus, if user wants driver for his
+> > touchpad he does not really care whether it is PS/2 or USB, [s]he just
+> > wants it to work.
+> 
+> USB tends to have implicit dependencies like the ehci/ohci/uhci
+> controller though, so it's not going to work like that anyway starting
+> from a minimal config, and all defconfigs probably have USB anyway.
+> 
+> Therefore, I personally would keep it as "depends on" rather than
+> "select". YMMV.
 > 
 
-The code in drivers/gpu/drm/drm_lock.c needs some serious help in the
-kerneldoc department.
+It should work fine I think. The full dependancy of most USB input
+devices is:
 
+        depends on USB_ARCH_HAS_HCD
+        select USB
 
-/**
- * Take the heavyweight lock.
- *
- * \param lock lock pointer.
- * \param context locking context.
- * \return one if the lock is held, or zero otherwise.
- *
- * Attempt to mark the lock as held by the given context, via the \p cmpxchg instruction.
- */
+You do need to select the host controller, that is correct, but you
+don't need to go to USB menu, select HCD, then go back to input menu
+(which you already visited) and select your USB input device.
 
-The /** leadin specifically introduces a kerneldoc-formatted comment. 
-Yet that comment uses some strange home-made way of denoting function
-arguments.
-
-The comments could quite easily be converted to kerneldoc form, which
-would be the best thing to do here.
-
-While you're there, please reformat the comments (drm_idlelock_take(),
-mainly) to fit in 80-cols.  The code carefully does this, but the block
-comments then go and ruin it all.
-
+-- 
+Dmitry
