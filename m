@@ -1,102 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbYG2XW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbYG2XXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754560AbYG2XW3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 19:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbYG2XWR
+	id S1755631AbYG2XXI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 19:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbYG2XWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 19:22:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56497 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754379AbYG2XWQ (ORCPT
+	Tue, 29 Jul 2008 19:22:55 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:47740 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752356AbYG2XWy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 19:22:16 -0400
-Date: Tue, 29 Jul 2008 16:21:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Fries <david@fries.net>
-Cc: linux-kernel@vger.kernel.org, johnpol@2ka.mipt.ru
-Subject: Re: [PATCH 5/30] W1: feature, enable hardware strong pullup
-Message-Id: <20080729162130.8ab6de8f.akpm@linux-foundation.org>
-In-Reply-To: <20080729021451.GE24452@spacedout.fries.net>
-References: <20080729020433.GA24424@spacedout.fries.net>
-	<20080729021451.GE24452@spacedout.fries.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jul 2008 19:22:54 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Mike Travis" <travis@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>, "Jack Steiner" <steiner@sgi.com>,
+       "Alan Mayer" <ajm@sgi.com>, "Cliff Wickman" <cpw@sgi.com>
+References: <20080729160939.GA4484@linux.vnet.ibm.com>
+	<86802c440807291135m7f8e2163xdde14545e311649a@mail.gmail.com>
+	<86802c440807291220t7813effcwb32ae6c18e3cddfe@mail.gmail.com>
+	<m1d4kwbg8f.fsf@frodo.ebiederm.org> <488F96DD.6020505@sgi.com>
+	<86802c440807291521k6e6277b5ta05b180d0d1c963a@mail.gmail.com>
+Date: Tue, 29 Jul 2008 16:12:50 -0700
+In-Reply-To: <86802c440807291521k6e6277b5ta05b180d0d1c963a@mail.gmail.com>
+	(Yinghai Lu's message of "Tue, 29 Jul 2008 15:21:02 -0700")
+Message-ID: <m17ib48etp.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Yinghai Lu" <yhlu.kernel@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0149]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: kernel BUG at arch/x86/kernel/io_apic_64.c:357!
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008 21:14:51 -0500
-David Fries <david@fries.net> wrote:
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-> Add a strong pullup option to the w1 system.  This supplies extra
-> power for parasite powered devices.  There is a w1_master_pullup sysfs
-> entry and enable_pullup module parameter to enable or disable the
-> strong pullup.
-> 
-> The one wire bus requires at a minimum one wire and ground.  The
-> common wire is used for sending and receiving data as well as
-> supplying power to devices that are parasite powered of which
-> temperature sensors can be one example.  The bus must be idle and left
-> high while a temperature conversion is in progress, in addition the
-> normal pullup resister on larger networks or even higher temperatures
-> might not supply enough power.  The pullup resister can't provide too
-> much pullup current, because devices need to pull the bus down to
-> write a value.  This enables the strong pullup for supported hardware,
-> which can supply more current when requested.  Unsupported hardware
-> will just delay with the bus high.
-> 
-> The hardware USB 2490 one wire bus master has a bit on some commands
-> which will enable the strong pullup as soon as the command finishes
-> executing.  To use strong pullup, call the new w1_next_pullup function
-> to register the duration.  The next write command will call set_pullup
-> before sending the data, and reset the duration to zero once it
-> returns.
-> 
-> Signed-off-by: David Fries <david@fries.net>
-> Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-> ---
->  drivers/w1/w1.c     |   30 ++++++++++++++++++++++
->  drivers/w1/w1.h     |   12 +++++++++
->  drivers/w1/w1_int.c |   16 ++++++++++++
->  drivers/w1/w1_io.c  |   68 ++++++++++++++++++++++++++++++++++++++++++++++++---
->  4 files changed, 122 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
-> index 9b5c117..76274ae 100644
-> --- a/drivers/w1/w1.c
-> +++ b/drivers/w1/w1.c
-> @@ -270,6 +270,34 @@ static ssize_t w1_master_attribute_show_search(struct device *dev,
->  	return count;
->  }
->  
-> +static ssize_t w1_master_attribute_store_pullup(struct device *dev,
-> +						struct device_attribute *attr,
-> +						const char *buf, size_t count)
-> +{
-> +	struct w1_master *md = dev_to_w1_master(dev);
-> +
-> +	mutex_lock(&md->mutex);
-> +	md->enable_pullup = simple_strtol(buf, NULL, 0);
-> +	mutex_unlock(&md->mutex);
-> +	wake_up_process(md->thread);
-> +
-> +	return count;
-> +}
+>> But this would be a show stopper for SGI being able to ship systems if the
+>> distros do not want to waste this much memory and won't set NR_CPUS=4096.
+>
+> wonder if nr_irqs need to be probed dynamically too.
 
-checkpatch says:
+NR_IRQS simply needs to die.
 
-WARNING: consider using strict_strtol in preference to simple_strtol
-#49: FILE: drivers/w1/w1.c:280:
-+       md->enable_pullup = simple_strtol(buf, NULL, 0);
-
-for good reasons.  The code which you have implemented will treat the
-value "45foo" as 45, which is sloppy.  strict_strtoul() (if
-handled appropriately) will perform the necessary checking.
-
-A simple_strtol->strict_strtol conversion is a non-backward-compatible
-userspace interface change (albeit a pretty non-risky one) and should
-be done with caution.
-
-Please use checkpatch.
+Eric
