@@ -1,48 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYG2D0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbYG2D1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbYG2D0v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 23:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYG2D0l
+	id S1756138AbYG2D1N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 23:27:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbYG2D0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 23:26:41 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:57305 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751477AbYG2D0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 23:26:40 -0400
-Date: Tue, 29 Jul 2008 05:27:26 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
-Message-ID: <20080729032726.GA27460@uranus.ravnborg.org>
-References: <20080728200500.GA14284@uranus.ravnborg.org> <20080729030647.GA11425@phobos.i.cabal.ca>
-Mime-Version: 1.0
+	Mon, 28 Jul 2008 23:26:46 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:54937 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755572AbYG2D0o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 23:26:44 -0400
+Date: Tue, 29 Jul 2008 13:26:41 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Muli Ben-Yehuda <muli@il.ibm.com>, Tony Luck <tony.luck@intel.com>,
+       linux-ia64@vger.kernel.org, Chandru <chandru@in.ibm.com>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Terry Loftin <terry.loftin@hp.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/5] Move elfcorehdr_addr out of vmcore.c (Was: Re:
+	[patch] crashdump: fix undefined reference to `elfcorehdr_addr')
+Message-ID: <20080729032639.GA4356@verge.net.au>
+References: <20080727234529.GM6175@verge.net.au> <20080728015117.GA12055@verge.net.au> <20080728024526.GB3334@verge.net.au> <20080728034007.GA30450@verge.net.au> <20080728211025.GA9985@redhat.com> <m1vdypfwxe.fsf@frodo.ebiederm.org> <20080729012245.GI10434@verge.net.au> <20080729022822.GA25975@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080729030647.GA11425@phobos.i.cabal.ca>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080729022822.GA25975@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 11:06:47PM -0400, Kyle McMartin wrote:
-> On Mon, Jul 28, 2008 at 10:05:00PM +0200, Sam Ravnborg wrote:
-> > I am limited in time and resources at the moment but I
-> > would be glad to help out as time permits should there
-> > be any questions.
+On Mon, Jul 28, 2008 at 10:28:22PM -0400, Vivek Goyal wrote:
+> On Tue, Jul 29, 2008 at 11:22:48AM +1000, Simon Horman wrote:
+> > On Mon, Jul 28, 2008 at 03:47:41PM -0700, Eric W. Biederman wrote:
+> > > Vivek Goyal <vgoyal@redhat.com> writes:
+> > > 
+> > > > Hi All,
+> > > >
+> > > > How does following series of patches look like. I have moved
+> > > > elfcorehdr_addr out of vmcore.c and pushed it to arch dependent section 
+> > > > of crash dump to make sure that it can be worked with even when
+> > > > CONFIG_PROC_VMCORE is disabled and CONFIG_CRASH_DUMP is enabled.
+> > > >
+> > > > I tested it on x86_64. Compile tested it on i386 and ppc64. ia64 and
+> > > > sh versions are completely untested.
+> > > 
+> > > Given the current state of the code:
+> > > Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+> > > 
+> > > To process a kernel crash dump we pass the kernel elfcorehdr option,
+> > > so testing to see if it was passed seems reasonable.
+> > > 
+> > > In general I think this method of handling the problems with kdump is
+> > > too brittle to live, but in the case of iommus we certainly need to do
+> > > something different, and unfortunately iommus were not common on x86
+> > > when the original code was merged so we have not handled them well.
 > > 
+> > Agreed, however these patches look like they really ought to be merged
+> > into a single patch for the sake of bisect. As things stand, applying
+> > the first patch will break the build on each architecture with an
+> > architecture specific until the latter is applied.
 > 
-> Just a quick one... I moved the files on parisc, but found we're still
-> using include/asm-$foo/asm-offsets.h. A quick glance at Kbuild seems to
-> indicate so. Is this expected?
-Yes.
+> That's a good point. I was not very sure because changes were in 
+> different arches and I broke the patch. At the same time changes are
+> really miniscule in each arch. 
 
-asm-offsets.h is a generated file and I wanted to avoid adding
-generated files to arch/$ARCH/include.
+I guessed that was why you split them up. But really the
+per-arch change is very small.
 
-It was also a less intrusive patch to keep it at the old location.
-But I recall that it troubles me a bit before I got it
-correct but the kbuild changes all take care of this.
+> So, for the sake of not breaking compilation for git-bisect, I will
+> generate a single patch tomorrow. (Until and unless somebody has an
+> objection).
 
-	Sam
+For combiled patch:
+
+Acked-by: Simon Horman <horms@verge.net.au>
+
+-- 
+Horms
+
