@@ -1,99 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758889AbYG2Nom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758374AbYG2Nvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758889AbYG2Nom (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 09:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbYG2Noe
+	id S1758374AbYG2Nvv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 09:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbYG2Nvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 09:44:34 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:64922 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753140AbYG2Nod (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 09:44:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=O+vg27Z+eQjEup18MhafjPk5GrVXPzuePwgbt5Qt1chPaAYpePxyDEJPvt5s76wiXl
-         rL5EMhyqF4wMOqOaOhs14MA0+dN7QoXAgs7XNr0YTST0Mn158zKbh7j2j/T8/tUPB6Ji
-         0jltObHuipALIrBuN9NYEwdgCjQll51G6/oc0=
-Message-ID: <9e4733910807290644l55c73299h6bb8f8562aa9e49a@mail.gmail.com>
-Date: Tue, 29 Jul 2008 09:44:32 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Rene Herman" <rene.herman@keyaccess.nl>
-Subject: Re: 463 kernel developers missing!
-Cc: "Paul Mundt" <lethal@linux-sh.org>, "James Morris" <jmorris@namei.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Dave Jones" <davej@redhat.com>, "Theodore Tso" <tytso@mit.edu>,
-       "Simon Arlott" <simon@fire.lp0.eu>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <488EF377.5080603@keyaccess.nl>
+	Tue, 29 Jul 2008 09:51:42 -0400
+Received: from saeurebad.de ([85.214.36.134]:59854 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753247AbYG2Nvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 09:51:42 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org
+Subject: Re: PERF: performance tests with the split LRU VM in -mm
+References: <20080724222510.3bbbbedc@bree.surriel.com>
+Date: Tue, 29 Jul 2008 15:51:16 +0200
+In-Reply-To: <20080724222510.3bbbbedc@bree.surriel.com> (Rik van Riel's
+	message of "Thu, 24 Jul 2008 22:25:10 -0400")
+Message-ID: <87tze84x4b.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <488DFD97.7080802@simon.arlott.org.uk>
-	 <20080728202236.GN9378@mit.edu> <20080728204624.GA11581@redhat.com>
-	 <20080728141414.d7e5def2.randy.dunlap@oracle.com>
-	 <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au>
-	 <20080728234131.GD28055@linux-sh.org>
-	 <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com>
-	 <488E644D.7000507@keyaccess.nl>
-	 <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com>
-	 <488EF377.5080603@keyaccess.nl>
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/29/08, Rene Herman <rene.herman@keyaccess.nl> wrote:
-> On 29-07-08 02:50, Jon Smirl wrote:
->
->
-> >
-> > >
-> > > > Why do these all end in (none)?
-> > > > Craig Hughes <craig@com.rmk.(none)>
-> > > > Dave Neuer <dneuer@org.rmk.(none)>
-> > > > David Brownell <david-b@net.rmk.(none)>
-> > > > David Woodhouse <dwmw2@org.rmk.(none)>
-> > > > Deepak Saxena <dsaxena@net.rmk.(none)>
-> > > > Enrico Scholz <enrico.scholz@de.rmk.(none)>
-> > > >
-> > > >
-> > >  Because rmk rewrites addresses to comply with privacy laws. Another
-> good
-> > > example of why this nonsense of yours is exactly that.
-> > >
-> > >  I checked and am personally in there three times, once even without any
-> > > valid email address listed. And any time there's anything other than my
-> > > gmail address in some submission it at least recently means that someone
-> > > _else_ took my from: address and stuck it on there and while I don't
-> > > terribly mind that generally, I find it really annoying to see even
-> those
-> > > mistakes harvested into your hugely google-accessible resource.
-> > >
-> >
->
->  [ .. ]
->
->
-> > As for privacy, if you don't want your email address in a file like
-> > this don't put it into a GPL'd public project.
-> >
->
->  Like I told you, I don't. Others do. And while that's not a huge issue in
-> itself, you harvesting it into your nicely formatted google and spam-base
-> MAKES it an issue. Just stop this crap. Be away.
+Hi,
 
-Google got the list the second it was mailed on LKML.  Why haven't you
-told Google to remove the 1,054 pages that contain your email?
+Rik van Riel <riel@redhat.com> writes:
 
-http://www.google.com/support/webmasters/bin/answer.py?answer=508&topic=13511
+> In order to get the performance of the split LRU VM (in -mm) better,
+> I have performed several performance tests with the following kernels:
+> - 2.6.26                                                    "2.6.26"
+> - 2.6.26-rc8-mm1                                            "-mm"
+> - 2.6.26-rc8-mm1 w/ "evict streaming IO cache first" patch  "stream"
+>       Patch at: http://lkml.org/lkml/2008/7/15/465
+> - 2.6.26-rc8-mm1 w/ "fix swapout on sequential IO" patch    "noforce"
+>       Patch at: http://marc.info/?l=linux-mm&m=121683855132630&w=2
+>
+> I have run the performance tests on a Dell pe1950 system
+> with 2 quad-core CPUs, 16GB of RAM and a hardware RAID 1
+> array of 146GB disks.
+>
+> The tests are fairly simple, but took a fair amount of time to
+> run due to the size of the data set involved (full disk for dd,
+> 55GB innodb file for the database tests).
+>
+>
+>   TEST 1: dd if=/dev/sda of=/dev/null bs=1M
+>
+> kernel  speed    swap used
+>
+> 2.6.26  111MB/s  500kB
+> -mm     110MB/s  59MB     (ouch, system noticably slower)
+> noforce	111MB/s  128kB
+> stream  108MB/s  0        (slight regression, not sure why yet)
+>
+> This patch shows that the split LRU VM in -mm has a problem
+> with large streaming IOs: the working set gets pushed out of
+> memory, which makes doing anything else during the big streaming
+> IO kind of painful.
+>
+> However, either of the two patches posted fixes that problem,
+> though at a slight performance penalty for the "stream" patch.
 
-If you really want to spam kernel developers there is a much easier
-way, just send the message to LKML.
+Btw, my desktop machine runs -mm (+ the patch I have posted later in
+this thread) for over a week now and I have not yet encountered any
+notable regressions in normal usage patterns.
 
+I have not collected hard numbers but just tried to work normally with
+it.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+I also employed a massive memory eater (besides emacs and firefox) that
+spawns children that eat, serialized, ~120% of RAM each.
+
+Continuing normal work on both kernels was a bit harder, sure, but not
+impossible.
+
+The box never died on me nor did it thrash perceivably harder/longer
+near oom than .26.  The oom killer was never invoked.
+
+	Hannes
