@@ -1,53 +1,489 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbYG2CJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYG2CLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756189AbYG2CJM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 22:09:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbYG2CI6
+	id S1755309AbYG2CLK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 22:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYG2CK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 22:08:58 -0400
-Received: from outbound-mail-11.bluehost.com ([69.89.18.111]:51133 "HELO
-	outbound-mail-11.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752024AbYG2CI5 (ORCPT
+	Mon, 28 Jul 2008 22:10:56 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:33300 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752326AbYG2CKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 22:08:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=U6XNYmSRhiEcyucJ2j1xlZJf036kqR+3vR1akdnD/OAE9IEi3CQcc1HzVpJ6B2hx20LXJm+femmxRii/x4QBu7mYq1Ryq1ovknPCoNFxwu9it02WK5lfIdXWABMHy8vy;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [git pull] PCI code for 2.6.27-rc1
-Date: Mon, 28 Jul 2008 19:08:51 -0700
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-References: <200807281750.14142.jbarnes@virtuousgeek.org> <20080729012945.GA28989@parisc-linux.org>
-In-Reply-To: <20080729012945.GA28989@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jul 2008 22:10:55 -0400
+Date: Mon, 28 Jul 2008 21:10:16 -0500
+From: David Fries <david@fries.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: [PATCH 1/30] W1: fix deadlocks and remove w1_control_thread
+Message-ID: <20080729021016.GA24452@spacedout.fries.net>
+References: <20080729020433.GA24424@spacedout.fries.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
 Content-Disposition: inline
-Message-Id: <200807281908.51780.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20080729020433.GA24424@spacedout.fries.net>
+User-Agent: Mutt/1.5.4i
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Mon, 28 Jul 2008 21:10:17 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, July 28, 2008 6:29 pm Matthew Wilcox wrote:
-> On Mon, Jul 28, 2008 at 05:50:14PM -0700, Jesse Barnes wrote:
-> > Dmitry Baryshkov (7):
-> >       generic: per-device coherent dma allocator
-> >       x86: use generic per-device dma coherent allocator
-> >       Generic dma-coherent: fix DMA_MEMORY_EXCLUSIVE
-> >       ARM: support generic per-device coherent dma mem
-> >       Sh: use generic per-device coherent dma allocator
-> >       Cris: convert to using generic dma-coherent mem allocator
-> >       dma-coherent: add documentation to new interfaces
->
-> Were these patches posted to linux-pci?  I don't think I ever saw them.
 
-No, but they're not really PCI specific patches.  They did go to lkml several 
-times and have been sitting in one of Ingo's test trees for awhile.  There 
-are no outstanding complaints that I'm aware of.
+--OgqxwSJOaUobr8KG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Jesse
+w1_control_thread was removed which would wake up every second
+and process newly registered family codes and complete some final
+cleanup for a removed master.  Those routines were moved to the
+threads that were previously requesting those operations.  A new
+function w1_reconnect_slaves takes care of reconnecting existing slave
+devices when a new family code is registered or removed.  The removal
+case was missing and would cause a deadlock waiting for the family
+code reference count to decrease, which will now happen.  A problem
+with registering a family code was fixed.  A slave device would be
+unattached if it wasn't yet claimed, then attached at the end of the
+list, two unclaimed slaves would cause an infinite loop.
+
+The struct w1_bus_master.search now takes a pointer to the struct
+w1_master device to avoid searching for it, which would have caused a
+lock ordering deadlock with the removal of w1_control_thread.
+
+Signed-off-by: David Fries <david@fries.net>
+Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+---
+ drivers/w1/masters/ds1wm.c |    6 +-
+ drivers/w1/w1.c            |  146 ++++++++++------------------------------=
+---
+ drivers/w1/w1.h            |   19 +++++-
+ drivers/w1/w1_family.c     |    6 ++-
+ drivers/w1/w1_family.h     |    1 -
+ drivers/w1/w1_int.c        |   12 ++++
+ drivers/w1/w1_io.c         |    3 +-
+ 7 files changed, 71 insertions(+), 122 deletions(-)
+
+diff --git a/drivers/w1/masters/ds1wm.c b/drivers/w1/masters/ds1wm.c
+index 10211e4..ea894bf 100644
+--- a/drivers/w1/masters/ds1wm.c
++++ b/drivers/w1/masters/ds1wm.c
+@@ -274,8 +274,8 @@ static u8 ds1wm_reset_bus(void *data)
+ 	return 0;
+ }
+=20
+-static void ds1wm_search(void *data, u8 search_type,
+-			 w1_slave_found_callback slave_found)
++static void ds1wm_search(void *data, struct w1_master *master_dev,
++			u8 search_type, w1_slave_found_callback slave_found)
+ {
+ 	struct ds1wm_data *ds1wm_data =3D data;
+ 	int i;
+@@ -313,7 +313,7 @@ static void ds1wm_search(void *data, u8 search_type,
+ 	ds1wm_write_register(ds1wm_data, DS1WM_CMD, ~DS1WM_CMD_SRA);
+ 	ds1wm_reset(ds1wm_data);
+=20
+-	slave_found(ds1wm_data, rom_id);
++	slave_found(master_dev, rom_id);
+ }
+=20
+ /* --------------------------------------------------------------------- */
+diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
+index 7293c9b..25640f6 100644
+--- a/drivers/w1/w1.c
++++ b/drivers/w1/w1.c
+@@ -46,20 +46,16 @@ MODULE_AUTHOR("Evgeniy Polyakov <johnpol@2ka.mipt.ru>");
+ MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol.");
+=20
+ static int w1_timeout =3D 10;
+-static int w1_control_timeout =3D 1;
+ int w1_max_slave_count =3D 10;
+ int w1_max_slave_ttl =3D 10;
+=20
+ module_param_named(timeout, w1_timeout, int, 0);
+-module_param_named(control_timeout, w1_control_timeout, int, 0);
+ module_param_named(max_slave_count, w1_max_slave_count, int, 0);
+ module_param_named(slave_ttl, w1_max_slave_ttl, int, 0);
+=20
+ DEFINE_MUTEX(w1_mlock);
+ LIST_HEAD(w1_masters);
+=20
+-static struct task_struct *w1_control_thread;
+-
+ static int w1_master_match(struct device *dev, struct device_driver *drv)
+ {
+ 	return 1;
+@@ -390,7 +386,7 @@ int w1_create_master_attributes(struct w1_master *maste=
+r)
+ 	return sysfs_create_group(&master->dev.kobj, &w1_master_defattr_group);
+ }
+=20
+-static void w1_destroy_master_attributes(struct w1_master *master)
++void w1_destroy_master_attributes(struct w1_master *master)
+ {
+ 	sysfs_remove_group(&master->dev.kobj, &w1_master_defattr_group);
+ }
+@@ -567,7 +563,7 @@ static int w1_attach_slave_device(struct w1_master *dev=
+, struct w1_reg_num *rn)
+ 	return 0;
+ }
+=20
+-static void w1_slave_detach(struct w1_slave *sl)
++void w1_slave_detach(struct w1_slave *sl)
+ {
+ 	struct w1_netlink_msg msg;
+=20
+@@ -591,24 +587,6 @@ static void w1_slave_detach(struct w1_slave *sl)
+ 	kfree(sl);
+ }
+=20
+-static struct w1_master *w1_search_master(void *data)
+-{
+-	struct w1_master *dev;
+-	int found =3D 0;
+-
+-	mutex_lock(&w1_mlock);
+-	list_for_each_entry(dev, &w1_masters, w1_master_entry) {
+-		if (dev->bus_master->data =3D=3D data) {
+-			found =3D 1;
+-			atomic_inc(&dev->refcnt);
+-			break;
+-		}
+-	}
+-	mutex_unlock(&w1_mlock);
+-
+-	return (found)?dev:NULL;
+-}
+-
+ struct w1_master *w1_search_master_id(u32 id)
+ {
+ 	struct w1_master *dev;
+@@ -656,34 +634,49 @@ struct w1_slave *w1_search_slave(struct w1_reg_num *i=
+d)
+ 	return (found)?sl:NULL;
+ }
+=20
+-void w1_reconnect_slaves(struct w1_family *f)
++void w1_reconnect_slaves(struct w1_family *f, int attach)
+ {
++	struct w1_slave *sl, *sln;
+ 	struct w1_master *dev;
+=20
+ 	mutex_lock(&w1_mlock);
+ 	list_for_each_entry(dev, &w1_masters, w1_master_entry) {
+-		dev_dbg(&dev->dev, "Reconnecting slaves in %s into new family %02x.\n",
+-				dev->name, f->fid);
+-		set_bit(W1_MASTER_NEED_RECONNECT, &dev->flags);
++		dev_dbg(&dev->dev, "Reconnecting slaves in device %s "
++			"for family %02x.\n", dev->name, f->fid);
++		mutex_lock(&dev->mutex);
++		list_for_each_entry_safe(sl, sln, &dev->slist, w1_slave_entry) {
++			/* If it is a new family, slaves with the default
++			 * family driver and are that family will be
++			 * connected.  If the family is going away, devices
++			 * matching that family are reconneced.
++			 */
++			if ((attach && sl->family->fid =3D=3D W1_FAMILY_DEFAULT
++				&& sl->reg_num.family =3D=3D f->fid) ||
++				(!attach && sl->family->fid =3D=3D f->fid)) {
++				struct w1_reg_num rn;
++
++				memcpy(&rn, &sl->reg_num, sizeof(rn));
++				w1_slave_detach(sl);
++
++				w1_attach_slave_device(dev, &rn);
++			}
++		}
++		dev_dbg(&dev->dev, "Reconnecting slaves in device %s "
++			"has been finished.\n", dev->name);
++		mutex_unlock(&dev->mutex);
+ 	}
+ 	mutex_unlock(&w1_mlock);
+ }
+=20
+-static void w1_slave_found(void *data, u64 rn)
++static void w1_slave_found(struct w1_master *dev, u64 rn)
+ {
+ 	int slave_count;
+ 	struct w1_slave *sl;
+ 	struct list_head *ent;
+ 	struct w1_reg_num *tmp;
+-	struct w1_master *dev;
+ 	u64 rn_le =3D cpu_to_le64(rn);
+=20
+-	dev =3D w1_search_master(data);
+-	if (!dev) {
+-		printk(KERN_ERR "Failed to find w1 master device for data %p, "
+-		       "it is impossible.\n", data);
+-		return;
+-	}
++	atomic_inc(&dev->refcnt);
+=20
+ 	tmp =3D (struct w1_reg_num *) &rn;
+=20
+@@ -785,76 +778,11 @@ void w1_search(struct w1_master *dev, u8 search_type,=
+ w1_slave_found_callback cb
+ 			if ( (desc_bit =3D=3D last_zero) || (last_zero < 0))
+ 				last_device =3D 1;
+ 			desc_bit =3D last_zero;
+-			cb(dev->bus_master->data, rn);
++			cb(dev, rn);
+ 		}
+ 	}
+ }
+=20
+-static int w1_control(void *data)
+-{
+-	struct w1_slave *sl, *sln;
+-	struct w1_master *dev, *n;
+-	int have_to_wait =3D 0;
+-
+-	set_freezable();
+-	while (!kthread_should_stop() || have_to_wait) {
+-		have_to_wait =3D 0;
+-
+-		try_to_freeze();
+-		msleep_interruptible(w1_control_timeout * 1000);
+-
+-		list_for_each_entry_safe(dev, n, &w1_masters, w1_master_entry) {
+-			if (!kthread_should_stop() && !dev->flags)
+-				continue;
+-			/*
+-			 * Little race: we can create thread but not set the flag.
+-			 * Get a chance for external process to set flag up.
+-			 */
+-			if (!dev->initialized) {
+-				have_to_wait =3D 1;
+-				continue;
+-			}
+-
+-			if (kthread_should_stop() || test_bit(W1_MASTER_NEED_EXIT, &dev->flags)=
+) {
+-				set_bit(W1_MASTER_NEED_EXIT, &dev->flags);
+-
+-				mutex_lock(&w1_mlock);
+-				list_del(&dev->w1_master_entry);
+-				mutex_unlock(&w1_mlock);
+-
+-				mutex_lock(&dev->mutex);
+-				list_for_each_entry_safe(sl, sln, &dev->slist, w1_slave_entry) {
+-					w1_slave_detach(sl);
+-				}
+-				w1_destroy_master_attributes(dev);
+-				mutex_unlock(&dev->mutex);
+-				atomic_dec(&dev->refcnt);
+-				continue;
+-			}
+-
+-			if (test_bit(W1_MASTER_NEED_RECONNECT, &dev->flags)) {
+-				dev_dbg(&dev->dev, "Reconnecting slaves in device %s.\n", dev->name);
+-				mutex_lock(&dev->mutex);
+-				list_for_each_entry_safe(sl, sln, &dev->slist, w1_slave_entry) {
+-					if (sl->family->fid =3D=3D W1_FAMILY_DEFAULT) {
+-						struct w1_reg_num rn;
+-
+-						memcpy(&rn, &sl->reg_num, sizeof(rn));
+-						w1_slave_detach(sl);
+-
+-						w1_attach_slave_device(dev, &rn);
+-					}
+-				}
+-				dev_dbg(&dev->dev, "Reconnecting slaves in device %s has been finished=
+=2E\n", dev->name);
+-				clear_bit(W1_MASTER_NEED_RECONNECT, &dev->flags);
+-				mutex_unlock(&dev->mutex);
+-			}
+-		}
+-	}
+-
+-	return 0;
+-}
+-
+ void w1_search_process(struct w1_master *dev, u8 search_type)
+ {
+ 	struct w1_slave *sl, *sln;
+@@ -932,18 +860,13 @@ static int w1_init(void)
+ 		goto err_out_master_unregister;
+ 	}
+=20
+-	w1_control_thread =3D kthread_run(w1_control, NULL, "w1_control");
+-	if (IS_ERR(w1_control_thread)) {
+-		retval =3D PTR_ERR(w1_control_thread);
+-		printk(KERN_ERR "Failed to create control thread. err=3D%d\n",
+-			retval);
+-		goto err_out_slave_unregister;
+-	}
+-
+ 	return 0;
+=20
++#if 0
++/* For undoing the slave register if there was a step after it. */
+ err_out_slave_unregister:
+ 	driver_unregister(&w1_slave_driver);
++#endif
+=20
+ err_out_master_unregister:
+ 	driver_unregister(&w1_master_driver);
+@@ -959,13 +882,12 @@ static void w1_fini(void)
+ {
+ 	struct w1_master *dev;
+=20
++	/* Set netlink removal messages and some cleanup */
+ 	list_for_each_entry(dev, &w1_masters, w1_master_entry)
+ 		__w1_remove_master_device(dev);
+=20
+ 	w1_fini_netlink();
+=20
+-	kthread_stop(w1_control_thread);
+-
+ 	driver_unregister(&w1_slave_driver);
+ 	driver_unregister(&w1_master_driver);
+ 	bus_unregister(&w1_bus_type);
+diff --git a/drivers/w1/w1.h b/drivers/w1/w1.h
+index f1df534..13e0ea8 100644
+--- a/drivers/w1/w1.h
++++ b/drivers/w1/w1.h
+@@ -77,7 +77,7 @@ struct w1_slave
+ 	struct completion	released;
+ };
+=20
+-typedef void (* w1_slave_found_callback)(void *, u64);
++typedef void (*w1_slave_found_callback)(struct w1_master *, u64);
+=20
+=20
+ /**
+@@ -142,12 +142,14 @@ struct w1_bus_master
+ 	 */
+ 	u8		(*reset_bus)(void *);
+=20
+-	/** Really nice hardware can handles the different types of ROM search */
+-	void		(*search)(void *, u8, w1_slave_found_callback);
++	/** Really nice hardware can handles the different types of ROM search
++	 *  w1_master* is passed to the slave found callback.
++	 */
++	void		(*search)(void *, struct w1_master *,
++		u8, w1_slave_found_callback);
+ };
+=20
+ #define W1_MASTER_NEED_EXIT		0
+-#define W1_MASTER_NEED_RECONNECT	1
+=20
+ struct w1_master
+ {
+@@ -181,12 +183,21 @@ struct w1_master
+ };
+=20
+ int w1_create_master_attributes(struct w1_master *);
++void w1_destroy_master_attributes(struct w1_master *master);
+ void w1_search(struct w1_master *dev, u8 search_type, w1_slave_found_callb=
+ack cb);
+ void w1_search_devices(struct w1_master *dev, u8 search_type, w1_slave_fou=
+nd_callback cb);
+ struct w1_slave *w1_search_slave(struct w1_reg_num *id);
+ void w1_search_process(struct w1_master *dev, u8 search_type);
+ struct w1_master *w1_search_master_id(u32 id);
+=20
++/* Disconnect and reconnect devices in the given family.  Used for finding
++ * unclaimed devices after a family has been registered or releasing devic=
+es
++ * after a family has been unregistered.  Set attach to 1 when a new family
++ * has just been registered, to 0 when it has been unregistered.
++ */
++void w1_reconnect_slaves(struct w1_family *f, int attach);
++void w1_slave_detach(struct w1_slave *sl);
++
+ u8 w1_triplet(struct w1_master *dev, int bdir);
+ void w1_write_8(struct w1_master *, u8);
+ int w1_reset_bus(struct w1_master *);
+diff --git a/drivers/w1/w1_family.c b/drivers/w1/w1_family.c
+index a3c95bd..8c35f9c 100644
+--- a/drivers/w1/w1_family.c
++++ b/drivers/w1/w1_family.c
+@@ -53,7 +53,8 @@ int w1_register_family(struct w1_family *newf)
+ 	}
+ 	spin_unlock(&w1_flock);
+=20
+-	w1_reconnect_slaves(newf);
++	/* check default devices against the new set of drivers */
++	w1_reconnect_slaves(newf, 1);
+=20
+ 	return ret;
+ }
+@@ -77,6 +78,9 @@ void w1_unregister_family(struct w1_family *fent)
+=20
+ 	spin_unlock(&w1_flock);
+=20
++	/* deatch devices using this family code */
++	w1_reconnect_slaves(fent, 0);
++
+ 	while (atomic_read(&fent->refcnt)) {
+ 		printk(KERN_INFO "Waiting for family %u to become free: refcnt=3D%d.\n",
+ 				fent->fid, atomic_read(&fent->refcnt));
+diff --git a/drivers/w1/w1_family.h b/drivers/w1/w1_family.h
+index ef1e1da..296a87e 100644
+--- a/drivers/w1/w1_family.h
++++ b/drivers/w1/w1_family.h
+@@ -63,6 +63,5 @@ void __w1_family_get(struct w1_family *);
+ struct w1_family * w1_family_registered(u8);
+ void w1_unregister_family(struct w1_family *);
+ int w1_register_family(struct w1_family *);
+-void w1_reconnect_slaves(struct w1_family *f);
+=20
+ #endif /* __W1_FAMILY_H */
+diff --git a/drivers/w1/w1_int.c b/drivers/w1/w1_int.c
+index 6840dfe..ed32280 100644
+--- a/drivers/w1/w1_int.c
++++ b/drivers/w1/w1_int.c
+@@ -148,10 +148,22 @@ err_out_free_dev:
+ void __w1_remove_master_device(struct w1_master *dev)
+ {
+ 	struct w1_netlink_msg msg;
++	struct w1_slave *sl, *sln;
+=20
+ 	set_bit(W1_MASTER_NEED_EXIT, &dev->flags);
+ 	kthread_stop(dev->thread);
+=20
++	mutex_lock(&w1_mlock);
++	list_del(&dev->w1_master_entry);
++	mutex_unlock(&w1_mlock);
++
++	mutex_lock(&dev->mutex);
++	list_for_each_entry_safe(sl, sln, &dev->slist, w1_slave_entry)
++		w1_slave_detach(sl);
++	w1_destroy_master_attributes(dev);
++	mutex_unlock(&dev->mutex);
++	atomic_dec(&dev->refcnt);
++
+ 	while (atomic_read(&dev->refcnt)) {
+ 		dev_info(&dev->dev, "Waiting for %s to become free: refcnt=3D%d.\n",
+ 				dev->name, atomic_read(&dev->refcnt));
+diff --git a/drivers/w1/w1_io.c b/drivers/w1/w1_io.c
+index 30b6fbf..0056ef6 100644
+--- a/drivers/w1/w1_io.c
++++ b/drivers/w1/w1_io.c
+@@ -277,7 +277,8 @@ void w1_search_devices(struct w1_master *dev, u8 search=
+_type, w1_slave_found_cal
+ {
+ 	dev->attempts++;
+ 	if (dev->bus_master->search)
+-		dev->bus_master->search(dev->bus_master->data, search_type, cb);
++		dev->bus_master->search(dev->bus_master->data, dev,
++			search_type, cb);
+ 	else
+ 		w1_search(dev, search_type, cb);
+ }
+--=20
+1.4.4.4
+
+--OgqxwSJOaUobr8KG
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFIjnwIAI852cse6PARAqy3AJ9nYTLRHUWVYOGFmAO5wOuLDGegZgCgnIKJ
+MeAgTXtF6oNqdbsW4QILhik=
+=CB9V
+-----END PGP SIGNATURE-----
+
+--OgqxwSJOaUobr8KG--
