@@ -1,33 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbYG2B5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbYG2B5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755050AbYG2B5T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 21:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYG2B5C
+	id S1753088AbYG2B5e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 21:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYG2B5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 21:57:02 -0400
-Received: from [61.183.207.101] ([61.183.207.101]:24130 "EHLO
-	mail.fiberhome.com.cn" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752494AbYG2B5B (ORCPT
+	Mon, 28 Jul 2008 21:57:11 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:15814 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753077AbYG2B5I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 21:57:01 -0400
-X-Greylist: delayed 3955 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jul 2008 21:57:00 EDT
-Date: Tue, 29 Jul 2008 08:45:31 +0800
-From: "cyx" <cyx@fiberhome.com.cn>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>
-Subject: help, multicast routing not work.
-Message-ID: <200807290845312961772@fiberhome.com.cn>
-X-mailer: Foxmail 6, 13, 102, 15 [cn]
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Jul 2008 00:41:07.0475 (UTC) FILETIME=[C9F10E30:01C8F113]
+	Mon, 28 Jul 2008 21:57:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=FDcv/PAOH/Q0Cx5eDf4mFh7Jc8f6z63VbbpoPzjR2qby9tkyUi3R3/3kpjQhIsXVhm
+         BDTcCPFVTpwFsTGdXcGa5znGkFh+FH5pi7FIw4pLkhyAF308FH+j83z+A87QAImJt4Kq
+         SpKmqh4KmoAVQxjexw2B8O5NdS2uw71bOUcwU=
+Date: Tue, 29 Jul 2008 05:57:15 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org, alan@lxorguk.ukuu.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 03/13] proc tty: switch ip2 to ->proc_fops
+Message-ID: <20080729015715.GC3135@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,all
-    I don't know it is the right place to post this question:)
-	I got igmpproxy runs on a Linux box which has eth0 and eth1, 2 VIFs. eth0 to wan and eth1 to lan.But I can't play the multicast media stream that comes from eth0.
-	I have checked /proc/net/ip_mr_vif & /proc/net/ip_mr_cache and seems igmpproxy have done the right configuration about multicast routing in the kernel. All config are OK but muticast udp data can't forward. Any ideas? I'm exhausted to make all things right, help me! 
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
+
+ drivers/char/ip2/ip2main.c |   78 +++++++++++++++++++++++----------------------
+ 1 file changed, 40 insertions(+), 38 deletions(-)
+
+--- a/drivers/char/ip2/ip2main.c
++++ b/drivers/char/ip2/ip2main.c
+@@ -139,7 +139,9 @@
+ #include <linux/seq_file.h>
+ 
+ static const struct file_operations ip2mem_proc_fops;
+-static int ip2_read_proc(char *, char **, off_t, int, int *, void * );
++#ifdef CONFIG_PROC_FS
++static const struct file_operations ip2_proc_fops;
++#endif
+ 
+ /********************/
+ /* Type Definitions */
+@@ -453,7 +455,9 @@ static const struct tty_operations ip2_ops = {
+ 	.stop            = ip2_stop,
+ 	.start           = ip2_start,
+ 	.hangup          = ip2_hangup,
+-	.read_proc       = ip2_read_proc,
++#ifdef CONFIG_PROC_FS
++	.proc_fops	= &ip2_proc_fops,
++#endif
+ 	.tiocmget	 = ip2_tiocmget,
+ 	.tiocmset	 = ip2_tiocmset,
+ };
+@@ -3000,6 +3004,7 @@ static const struct file_operations ip2mem_proc_fops = {
+ 	.release	= single_release,
+ };
+ 
++#ifdef CONFIG_PROC_FS
+ /*
+  * This is the handler for /proc/tty/driver/ip2
+  *
+@@ -3007,19 +3012,17 @@ static const struct file_operations ip2mem_proc_fops = {
+  * different sources including ip2mkdev.c and a couple of other drivers.
+  * The bugs are all mine.  :-)	=mhw=
+  */
+-static int ip2_read_proc(char *page, char **start, off_t off,
+-				int count, int *eof, void *data)
++static int ip2_proc_show(struct seq_file *m, void *v)
+ {
+ 	int	i, j, box;
+-	int	len = 0;
+ 	int	boxes = 0;
+ 	int	ports = 0;
+ 	int	tports = 0;
+-	off_t	begin = 0;
+ 	i2eBordStrPtr  pB;
++	char *sep;
+ 
+-	len += sprintf(page, "ip2info: 1.0 driver: %s\n", pcVersion );
+-	len += sprintf(page+len, "Driver: SMajor=%d CMajor=%d IMajor=%d MaxBoards=%d MaxBoxes=%d MaxPorts=%d\n",
++	seq_printf(m, "ip2info: 1.0 driver: %s\n", pcVersion );
++	seq_printf(m, "Driver: SMajor=%d CMajor=%d IMajor=%d MaxBoards=%d MaxBoxes=%d MaxPorts=%d\n",
+ 			IP2_TTY_MAJOR, IP2_CALLOUT_MAJOR, IP2_IPL_MAJOR,
+ 			IP2_MAX_BOARDS, ABS_MAX_BOXES, ABS_BIGGEST_BOX);
+ 
+@@ -3031,7 +3034,8 @@ static int ip2_read_proc(char *page, char **start, off_t off,
+ 			switch( pB->i2ePom.e.porID & ~POR_ID_RESERVED ) 
+ 			{
+ 			case POR_ID_FIIEX:
+-				len += sprintf( page+len, "Board %d: EX ports=", i );
++				seq_printf( m, "Board %d: EX ports=", i );
++				sep = "";
+ 				for( box = 0; box < ABS_MAX_BOXES; ++box )
+ 				{
+ 					ports = 0;
+@@ -3043,79 +3047,77 @@ static int ip2_read_proc(char *page, char **start, off_t off,
+ 							++ports;
+ 						}
+ 					}
+-					len += sprintf( page+len, "%d,", ports );
++					seq_printf( m, "%s%d", sep, ports );
++					sep = ",";
+ 					tports += ports;
+ 				}
+ 
+-				--len;	/* Backup over that last comma */
+-
+-				len += sprintf( page+len, " boxes=%d width=%d", boxes, pB->i2eDataWidth16 ? 16 : 8 );
++				seq_printf( m, " boxes=%d width=%d", boxes, pB->i2eDataWidth16 ? 16 : 8 );
+ 				break;
+ 
+ 			case POR_ID_II_4:
+-				len += sprintf(page+len, "Board %d: ISA-4 ports=4 boxes=1", i );
++				seq_printf(m, "Board %d: ISA-4 ports=4 boxes=1", i );
+ 				tports = ports = 4;
+ 				break;
+ 
+ 			case POR_ID_II_8:
+-				len += sprintf(page+len, "Board %d: ISA-8-std ports=8 boxes=1", i );
++				seq_printf(m, "Board %d: ISA-8-std ports=8 boxes=1", i );
+ 				tports = ports = 8;
+ 				break;
+ 
+ 			case POR_ID_II_8R:
+-				len += sprintf(page+len, "Board %d: ISA-8-RJ11 ports=8 boxes=1", i );
++				seq_printf(m, "Board %d: ISA-8-RJ11 ports=8 boxes=1", i );
+ 				tports = ports = 8;
+ 				break;
+ 
+ 			default:
+-				len += sprintf(page+len, "Board %d: unknown", i );
++				seq_printf(m, "Board %d: unknown", i );
+ 				/* Don't try and probe for minor numbers */
+ 				tports = ports = 0;
+ 			}
+ 
+ 		} else {
+ 			/* Don't try and probe for minor numbers */
+-			len += sprintf(page+len, "Board %d: vacant", i );
++			seq_printf(m, "Board %d: vacant", i );
+ 			tports = ports = 0;
+ 		}
+ 
+ 		if( tports ) {
+-			len += sprintf(page+len, " minors=" );
++			seq_puts(m, " minors=" );
+ 
++			sep = "";
+ 			for ( box = 0; box < ABS_MAX_BOXES; ++box )
+ 			{
+ 				for ( j = 0; j < ABS_BIGGEST_BOX; ++j )
+ 				{
+ 					if ( pB->i2eChannelMap[box] & (1 << j) )
+ 					{
+-						len += sprintf (page+len,"%d,",
++						seq_printf (m,"%s%d", sep,
+ 							j + ABS_BIGGEST_BOX *
+ 							(box+i*ABS_MAX_BOXES));
++						sep = ",";
+ 					}
+ 				}
+ 			}
+-
+-			page[ len - 1 ] = '\n';	/* Overwrite that last comma */
+-		} else {
+-			len += sprintf (page+len,"\n" );
+-		}
+-
+-		if (len+begin > off+count)
+-			break;
+-		if (len+begin < off) {
+-			begin += len;
+-			len = 0;
+ 		}
++		seq_putc(m, '\n');
+ 	}
++	return 0;
++ }
+ 
+-	if (i >= IP2_MAX_BOARDS)
+-		*eof = 1;
+-	if (off >= len+begin)
+-		return 0;
++static int ip2_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, ip2_proc_show, NULL);
++}
+ 
+-	*start = page + (off-begin);
+-	return ((count < begin+len-off) ? count : begin+len-off);
+- }
++static const struct file_operations ip2_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= ip2_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++#endif
+  
+ /******************************************************************************/
+ /* Function:   ip2trace()                                                     */
+-- 
+1.5.4.5
+
 
