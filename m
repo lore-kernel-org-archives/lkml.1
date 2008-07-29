@@ -1,134 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753399AbYG2ASl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbYG2ASz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753399AbYG2ASl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 20:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYG2ASc
+	id S1753419AbYG2ASz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 20:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYG2ASe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 20:18:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41761 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751076AbYG2ASc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 20:18:32 -0400
-Date: Mon, 28 Jul 2008 17:17:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: PERF: performance tests with the split LRU VM in -mm
-Message-Id: <20080728171728.7d0452bc.akpm@linux-foundation.org>
-In-Reply-To: <20080728200311.2218af4e@cuia.bos.redhat.com>
-References: <20080724222510.3bbbbedc@bree.surriel.com>
-	<20080728105742.50d6514e@cuia.bos.redhat.com>
-	<20080728164124.8240eabe.akpm@linux-foundation.org>
-	<20080728195713.42cbceed@cuia.bos.redhat.com>
-	<20080728200311.2218af4e@cuia.bos.redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jul 2008 20:18:34 -0400
+Received: from saeurebad.de ([85.214.36.134]:54282 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752713AbYG2ASd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 20:18:33 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@osdl.org, torvalds@osdl.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: do not overrun page table ranges in gup
+References: <20080728184947.GA5041@martell.zuzino.mipt.ru>
+	<20080728185316.GA19479@martell.zuzino.mipt.ru>
+	<87y73l5zlj.fsf_-_@saeurebad.de>
+Date: Tue, 29 Jul 2008 02:18:07 +0200
+In-Reply-To: <87y73l5zlj.fsf_-_@saeurebad.de> (Johannes Weiner's message of
+	"Tue, 29 Jul 2008 02:00:08 +0200")
+Message-ID: <87tze95yrk.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008 20:03:11 -0400
-Rik van Riel <riel@redhat.com> wrote:
+Johannes Weiner <hannes@saeurebad.de> writes:
 
-> On Mon, 28 Jul 2008 19:57:13 -0400
-> Rik van Riel <riel@redhat.com> wrote:
-> > On Mon, 28 Jul 2008 16:41:24 -0700
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > > Andrew, what is your preference between:
-> > > > 	http://lkml.org/lkml/2008/7/15/465
-> > > > and
-> > > > 	http://marc.info/?l=linux-mm&m=121683855132630&w=2
-> > > > 
-> > > 
-> > > Boy.  They both seem rather hacky special-cases.  But that doesn't mean
-> > > that they're undesirable hacky special-cases.  I guess the second one
-> > > looks a bit more "algorithmic" and a bit less hacky-special-case.  But
-> > > it all depends on testing..
-> > 
-> > I prefer the second one, since it removes the + 1 magic (at least,
-> > for the higher priorities), instead of adding new magic like the
-> > other patch does.
-> 
-> Btw, didn't you add that "+ 1" originally early on in the 2.6 VM?
+> Hi,
+>
+> Alexey Dobriyan <adobriyan@gmail.com> writes:
+>
+>> On Mon, Jul 28, 2008 at 10:49:47PM +0400, Alexey Dobriyan wrote:
+>>> Version: 2.6.26-837b41b5de356aa67abb2cadb5eef3efc7776f91
+>>> Core2 Duo, x86_64, 4 GB of RAM.
+>>> 
+>>> Kernel is "tainted" with ZFS driver, but it can so little, and
+>>> probability of screwup is very little too. :-)
+>>> 
+>>> 
+>>> Long LTP session finally ended with
+>>> 
+>>> BUG: unable to handle kernel paging request at ffff88012b60c000
+>>> IP: [<ffffffff80223ff4>] gup_pte_range+0x54/0x120
+>>> PGD 202063 PUD a067 PMD 17cedc163 PTE 800000012b60c160
+>>> Oops: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+>>> CPU 0 
+>>> Modules linked in: zfs iptable_raw xt_state iptable_filter ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 ip_tables x_tables nf_conntrack_irc nf_conntrack fuse usblp uhci_hcd ehci_hcd usbcore sr_mod cdrom [last unloaded: zfs]
+>>> Pid: 16863, comm: vmsplice01 Tainted: G        W 2.6.26-zfs #2
+>>> RIP: 0010:[<ffffffff80223ff4>]  [<ffffffff80223ff4>] gup_pte_range+0x54/0x120
+>>> RSP: 0018:ffff88012ff57c68  EFLAGS: 00010096
+>>> RAX: 0000000000000008 RBX: 00007fff4a800000 RCX: 0000000000000001
+>>> RDX: ffffe200040b5f00 RSI: 00007fff4a800310 RDI: ffff88012b60c000
+>>> RBP: ffff88012ff57c78 R08: 0000000000000005 R09: ffff88012ff57cec
+>>> R10: 0000000000000024 R11: 0000000000000205 R12: ffff88012ff57e58
+>>> R13: 00007fff4a807310 R14: 00007fff4a80730f R15: ffff88012ff57e58
+>>> FS:  00007fbb4280b6f0(0000) GS:ffffffff805dec40(0000) knlGS:0000000000000000
+>>> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+>>> CR2: ffff88012b60c000 CR3: 000000017e294000 CR4: 00000000000006e0
+>>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>>> Process vmsplice01 (pid: 16863, threadinfo ffff88012ff56000, task ffff88015f9db360)
+>>> Stack:  00007fff4a800000 ffff88010e6cf298 ffff88012ff57d18 ffffffff802243cb
+>>>  0000000000000002 ffff88015f9db360 0000000004f23a08 00007fff4a7f7310
+>>>  ffff88017d582880 00007fff4a807310 00007fff4a807310 ffff88017e2947f8
+>>> Call Trace:
+>>>  [<ffffffff802243cb>] get_user_pages_fast+0x1db/0x300
+>>>  [<ffffffff802b1bfd>] sys_vmsplice+0x32d/0x420
+>>>  [<ffffffff80262acd>] ? unlock_page+0x2d/0x40
+>>>  [<ffffffff80275d78>] ? __do_fault+0x1c8/0x450
+>>>  [<ffffffff8030e20c>] ? __up_read+0x4c/0xb0
+>>>  [<ffffffff802495c6>] ? up_read+0x26/0x30
+>>>  [<ffffffff802b0780>] ? spd_release_page+0x0/0x20
+>>>  [<ffffffff80463f0d>] ? lockdep_sys_exit_thunk+0x35/0x67
+>>>  [<ffffffff8020b65b>] system_call_fastpath+0x16/0x1b
+>>
+>> Very reproducible and ZFS driver doesn't matter:
+>>
+>> 	# vmsplice01 from LTP 20080630
+>> 	# while true; do ./vmsplice01; done
+>
+> I think this is the right fix, but my thinking might be buggy, please
+> verify.
+>
+> ---
+> From: Johannes Weiner <hannes@saeurebad.de>
+> Subject: x86: do not overrun page table ranges in gup
+>
+> Walking the addresses in PAGE_SIZE steps and checking for addr != end
+> assumes that the distance between addr and end is a multiple of
+> PAGE_SIZE.
+>
+> This is not garuanteed, though, if the end of this level walk is not the
+> total end (for which we know that the distance to the starting address
+> is a multiple of PAGE_SIZE) but that of the range the upper level entry
+> maps.
 
-You mean this?
+Actually, I think the prettier fix would be to just establish that
+garuantee:
 
-		/*
-		 * Add one to nr_to_scan just to make sure that the kernel
-		 * will slowly sift through the active list.
-		 */
-		zone->nr_scan_active +=
-			(zone_page_state(zone, NR_ACTIVE) >> priority) + 1;
+--- a/arch/x86/mm/gup.c
++++ b/arch/x86/mm/gup.c
+@@ -223,7 +223,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 			struct page **pages)
+ {
+ 	struct mm_struct *mm = current->mm;
+-	unsigned long end = start + (nr_pages << PAGE_SHIFT);
++	unsigned long end = PAGE_ALIGN(start + (nr_pages << PAGE_SHIFT));
+ 	unsigned long addr = start;
+ 	unsigned long next;
+ 	pgd_t *pgdp;
 
+What do you think, Nick?
 
-> Do you remember its purpose?  
-
-erm, not specifically, but I tended to lavishly describe changes like
-this in the changelogging.
-
-> Does it still make sense to have that "+ 1" in the split LRU VM?
-> 
-> Could we get away with just removing it unconditionally?
-
-We should do the necessary git dumpster-diving before tossing out
-hard-won changes.  Otherwise we might need to spend a year
-re-discovering and re-fixing already-discovered-and-fixed things.
-
-That code has been there in one way or another for some time.
-
-In June 2004, 385c0449 did this:
-
-        /*
--        * Try to keep the active list 2/3 of the size of the cache.  And
--        * make sure that refill_inactive is given a decent number of pages.
--        *
--        * The "scan_active + 1" here is important.  With pagecache-intensive
--        * workloads the inactive list is huge, and `ratio' evaluates to zero
--        * all the time.  Which pins the active list memory.  So we add one to
--        * `scan_active' just to make sure that the kernel will slowly sift
--        * through the active list.
-+        * Add one to `nr_to_scan' just to make sure that the kernel will
-+        * slowly sift through the active list.
-         */
--       if (zone->nr_active >= 4*(zone->nr_inactive*2 + 1)) {
--               /* Don't scan more than 4 times the inactive list scan size */
--               scan_active = 4*scan_inactive;
-
-(there was some regrettable information loss there).
-
-Is the scenario which that fix addresses no longer possible?
-
-
-On a different topic, I am staring in frustration at
-introduce-__get_user_pages.patch, which says:
-
-  New munlock processing need to GUP_FLAGS_IGNORE_VMA_PERMISSIONS. 
-  because current get_user_pages() can't grab PROT_NONE pages theresore
-  it cause PROT_NONE pages can't munlock.
-
-could someone please work out for me which of these patches:
-
-vmscan-move-isolate_lru_page-to-vmscanc.patch
-vmscan-use-an-indexed-array-for-lru-variables.patch
-swap-use-an-array-for-the-lru-pagevecs.patch
-vmscan-free-swap-space-on-swap-in-activation.patch
-define-page_file_cache-function.patch
-vmscan-split-lru-lists-into-anon-file-sets.patch
-vmscan-second-chance-replacement-for-anonymous-pages.patch
-vmscan-fix-pagecache-reclaim-referenced-bit-check.patch
-vmscan-add-newly-swapped-in-pages-to-the-inactive-list.patch
-more-aggressively-use-lumpy-reclaim.patch
-pageflag-helpers-for-configed-out-flags.patch
-unevictable-lru-infrastructure.patch
-unevictable-lru-page-statistics.patch
-ramfs-and-ram-disk-pages-are-unevictable.patch
-shm_locked-pages-are-unevictable.patch
-mlock-mlocked-pages-are-unevictable.patch
-mlock-downgrade-mmap-sem-while-populating-mlocked-regions.patch
-mmap-handle-mlocked-pages-during-map-remap-unmap.patch
-
-that patch fixes?
+	Hannes
