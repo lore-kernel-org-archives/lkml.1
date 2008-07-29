@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760129AbYG2VJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760606AbYG2VLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760129AbYG2VJv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 17:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754629AbYG2VJo
+	id S1760606AbYG2VLA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 17:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYG2VKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 17:09:44 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:56185 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752679AbYG2VJn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 17:09:43 -0400
-Message-ID: <488F87AB.9080309@keyaccess.nl>
-Date: Tue, 29 Jul 2008 23:12:11 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Simon Arlott <simon@fire.lp0.eu>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [patch 5/3] fastboot: sync the async execution before late_initcall
- and move level 6s (sync) first
-References: <20080720085924.122feb2b@infradead.org>	<20080720090041.5924f5ff@infradead.org>	<488F84ED.9010200@keyaccess.nl> <20080729140434.31022f55@infradead.org>
-In-Reply-To: <20080729140434.31022f55@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Tue, 29 Jul 2008 17:10:53 -0400
+Received: from xenotime.net ([66.160.160.81]:42555 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752765AbYG2VKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 17:10:52 -0400
+Date: Tue, 29 Jul 2008 14:10:45 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: petkovbb@gmail.com
+Cc: Borislav Petkov <petkovbb@googlemail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 1/5] docsrc: build Documentation/ sources
+Message-Id: <20080729141045.9341663b.rdunlap@xenotime.net>
+In-Reply-To: <20080729202732.GB6007@gollum.tnic>
+References: <12173619152424@xenotime.net>
+	<20080729202732.GB6007@gollum.tnic>
+Organization: YPO4
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: 1.0 (+)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29-07-08 23:04, Arjan van de Ven wrote:
+On Tue, 29 Jul 2008 22:27:32 +0200 Borislav Petkov wrote:
 
-> On Tue, 29 Jul 2008 23:00:29 +0200
->> Isn't this a bit confusing? All the other sync levels are directly
->> after their respective levels. I can see why you want another level
->> now, but shouldn't that mean late_initcall now wants to be 8,
->> device_initcall 7 and your new 6s just 6 (device_core_initcall or
->> something...)?
->>
+> On Tue, Jul 29, 2008 at 01:05:15PM -0700, Randy Dunlap wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Currently source files in the Documentation/ sub-dir can easily bit-rot
+> > since they are not generally buildable, either because they are hidden
+> > in text files or because there are no Makefile rules for them.
+> > This needs to be fixed so that the source files remain usable and good
+> > examples of code instead of bad examples.
+> > 
+> > Add the ability to build source files that are in the Documentation/ dir.
+> > Add to Kconfig as "BUILD_DOCSRC" config symbol.
+> > 
+> > Use "CONFIG_BUILD_DOCSRC=1 make ..." to build objects from the
+> > Documentation/ sources.  Or enable BUILD_DOCSRC in the *config system.
 > 
-> yeah it is.. but nobody is using them
+> How about simply adding another makefile target instead? This is more
+> intuitive, imho, and complies with the Kbuild conventions so far.
+> Something like:
 > 
-> I'll make a note to clean this up
+> make docsrc
 > 
-> (by removing the unused ones)
+> similar to 'make help' or 'make pdfdocs' etc.
 
-Fair enough. By the way:
+Hi Boris,
 
-> @@ -775,6 +776,11 @@ static void __init do_initcalls(void)
->  		}
->  		if (phase == 1 && call >= __async_initcall_end)
->  			phase = 2;
-> +		if (phase == 2 && call >= __device_initcall_end) {
-> +			phase = 3;
-> +			/* make sure all async work is done before level 7 */
-> +			flush_workqueue(async_init_wq);
-> +		}
->  		if (phase != 1)
->  			do_one_initcall(*call);
+I happen to have a previous version of the patch that does that, so yes, I can
+post that if that's the preferred solution.  I'll wait for other comments before
+reposting.
 
-After this patch, there are now 2 flush_workqueue(async_init_wq) calls 
-in do_initcalls. Should the other one remain as well?
-
-Rene.
-
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
