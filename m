@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759370AbYG2UIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759733AbYG2UJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759370AbYG2UIt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 16:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYG2UIk
+	id S1759733AbYG2UJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 16:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbYG2UJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 16:08:40 -0400
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:27849 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751906AbYG2UIk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 16:08:40 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=nQ75WpprWo6RHtZROEq4hs+8Si2M9rhNaoVIvNTuIneHYcBe1dja2iJ+aHe/6SIE/xOovqSR22zrc2bUokm1YwlA4DVZmVJZTyZViisy0lqzBZ55b1sdhoaSsYhhp8wj5ynOSyg6s8uvXjU9q/j1RZrpKUEPZhgOWupwpbhAoi4=  ;
-X-YMail-OSG: qRD8fdgVM1n2_3swOUtya1PeSOVDUUF15H9b6pWPKhQHGPX9KraAdVbedtU9CFovRXzmIe1x2ONNaHSD.fL4f_wYLP2Qk.gmEspqmYV7VQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: =?utf-8?q?Tom=C3=A1=C5=A1_Janou=C5=A1ek?= <tomi@nomi.cz>
-Subject: Re: [PATCH] rtc-dev: stop periodic interrupts on device release
-Date: Tue, 29 Jul 2008 13:08:38 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org,
-       Alessandro Zummo <alessandro.zummo@towertech.it>
-References: <20080726154617.GA5613@notes.lisk.in> <200807281505.37122.david-b@pacbell.net> <20080728233638.GA10327@nomi.cz>
-In-Reply-To: <20080728233638.GA10327@nomi.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200807291308.38134.david-b@pacbell.net>
+	Tue, 29 Jul 2008 16:09:11 -0400
+Received: from xenotime.net ([66.160.160.81]:60805 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752640AbYG2UJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 16:09:10 -0400
+Date: Tue, 29 Jul 2008 13:05:15 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, Sam Ravnborg <sam@ravnborg.org>,
+       davem@davemloft.net
+Subject: [PATCH 3/5] docsrc: fix ifenslave type
+Message-ID: <12173619152734@xenotime.net>
+In-Reply-To: <12173619152424@xenotime.net>
+X-Mailer: gregkh_patchbomb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 July 2008, Tomáš Janoušek wrote:
-> Hello,
-> 
-> On Mon, Jul 28, 2008 at 03:05:36PM -0700, David Brownell wrote:
-> > Surely you agree that having the framework shut down only *emulated*
-> > update IRQs, not "real" ones, is inconsistent?  And hence undesirable?
-> 
-> The idea was that if the "real" ones get turned on using some ioctl magic the
-> framework has no exact control over, they shouldn't be shut down by it. But
-> yeah, your point of view looks fine as well.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-The /dev/rtcN support *is* part of the framework.  ;)
+Documentation/networking/ifenslave.c:1084: warning: pointer targets in assignment differ in signedness
+
+>From include/linux/socket.h:
+ *	1003.1g requires sa_family_t and that sa_data is char.
+
+and from SUSv3:
+(http://www.opengroup.org/onlinepubs/009695399/basedefs/sys/socket.h.html)
+
+The <sys/socket.h> header shall define the sockaddr structure that includes at least the following members:
+
+sa_family_t  sa_family  Address family. 
+char         sa_data[]  Socket address (variable-length data).
+<end SUSv3>
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/networking/ifenslave.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-next-20080729.orig/Documentation/networking/ifenslave.c
++++ linux-next-20080729/Documentation/networking/ifenslave.c
+@@ -1081,7 +1081,7 @@ static int set_if_addr(char *master_ifna
+ 
+ 		}
+ 
+-		ipaddr = ifr.ifr_addr.sa_data;
++		ipaddr = (unsigned char *)ifr.ifr_addr.sa_data;
+ 		v_print("Interface '%s': set IP %s to %d.%d.%d.%d\n",
+ 			slave_ifname, ifra[i].desc,
+ 			ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3]);
 
 
-> So I guess I'll post the current patch to Andrew and then, someone (not me,
-> for time and competence reasons, sorry) can prepare a patch removing the
-> release op and changing the calls in framework's release to call
-> rtc_dev_ioctl.
-> 
-> Is this ok?
+-- 
 
-Yep.
-
-- Dave
