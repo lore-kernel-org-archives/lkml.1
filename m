@@ -1,85 +1,292 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbYG2MJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758931AbYG2MKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758814AbYG2MJu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 08:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757608AbYG2MJk
+	id S1758931AbYG2MKY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 08:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756984AbYG2MKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 08:09:40 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:46179 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756145AbYG2MJi (ORCPT
+	Tue, 29 Jul 2008 08:10:06 -0400
+Received: from ti-out-0910.google.com ([209.85.142.190]:4297 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757469AbYG2MKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 08:09:38 -0400
-Subject: Re: 2.6.27-rc1: zd1211rw association fails
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Theodore Tso <tytso@MIT.EDU>
-Cc: Alistair John Strachan <alistair@devzero.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dsd@gentoo.org, kune@deine-taler.de, linux-wireless@vger.kernel.org
-In-Reply-To: <20080729120442.GE9378@mit.edu>
-References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org>
-	 <200807291049.47342.alistair@devzero.co.uk>
-	 <1217326195.10489.10.camel@johannes.berg>  <20080729120442.GE9378@mit.edu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-dqFTqhpDYuxtj2ErFIQS"
-Date: Tue, 29 Jul 2008 14:09:19 +0200
-Message-Id: <1217333359.10489.38.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 29 Jul 2008 08:10:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=YpPyZcAkuu7OFkduyiKjSbFnBABs9A/w0iuI45Gr2kA+01sMCbbmhy/cKW6vU+sp/8
+         ge+Xrl/ZS6EQM8QwofeiUgABqOYscniLcBtf9P3jaP37LFkRuRVvurFL/mJgVYgv4Gai
+         t9MCml2GRoxR09Bz5X4M+piQ/VMJjhxqIAP2w=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Uwe.Kleine-Koenig@digi.com, gregkh@suse.de, akpm@linux-foundation.org,
+       hjk@linutronix.de, lethal@linux-sh.org,
+       Magnus Damm <magnus.damm@gmail.com>, tglx@linutronix.de,
+       alan@lxorguk.ukuu.org.uk
+Date: Tue, 29 Jul 2008 21:10:15 +0900
+Message-Id: <20080729121015.13443.91824.sendpatchset@rx1.opensource.se>
+Subject: [PATCH][RESEND] uio: uio_pdrv_genirq V3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Magnus Damm <damm@igel.co.jp>
 
---=-dqFTqhpDYuxtj2ErFIQS
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This is V3 of uio_pdrv_genirq.c, a platform driver for UIO with
+generic IRQ handling code. This driver is very similar to the regular
+UIO platform driver, but is only suitable for devices that are
+connected to the interrupt controller using unique interrupt lines.
 
-On Tue, 2008-07-29 at 08:04 -0400, Theodore Tso wrote:
-> On Tue, Jul 29, 2008 at 12:09:55PM +0200, Johannes Berg wrote:
-> > This is about the 100 millionth time this is reported. Please try the
-> > patch I just posted.
->=20
-> Yeah, it's really too bad -rc1 got released just before you were able
-> to post the fix to this, since if there were 100 million people who
-> were trying out kernels starting with -git7 that use wireless, there
-> will probably be 200 million people trying out -rc1.  :-)
->=20
-> Thanks for finding and fixing it, though.  I stopped trying out
-> kernels after -git6 since I was travelling at OSCON, and not having
-> wireless was a show-stopper for me....
+The uio_pdrv_genirq driver includes generic interrupt handling code
+which disables the serviced interrupt in the interrupt controller
+and makes the user space driver responsible for acknowledging the
+interrupt in the device and reenabling the interrupt in the interrupt
+controller.
 
-If everybody's going to decide now to hit on _me_, I'll point out that
-davem's MQ TX changes broke it, I only heard about the problem once that
-was out because nobody had found it earlier, and I was also travelling
-at OLS.
+Shared interrupts are not supported since the in-kernel interrupt
+handler will disable the interrupt line in the interrupt controller,
+and in a shared interrupt configuration this will stop other devices
+from delivering interrupts.
 
-Maybe the lesson we could learn from this is to not release an rc1 while
-a bunch of important people are at various conferences.
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+---
 
-johannes
+ Patch sent to lkml on July 11th, please pick up.
+ Platform data already in place in arch/sh/kernel/cpu/sh4a/...
 
---=-dqFTqhpDYuxtj2ErFIQS
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+ Changes since V2
+  - readded bitops
+  - removed irq handler spinlock to fix potential deadlock
+  - kept irq control spinlock to serialize user space access
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+ Changes since V1
+  - allow user space to enable _and_ disable the interrupt
+  - replaced bitops with spinlock + irq_disabled variable
+  - renamed pdata variable name to priv
 
-iQIcBAABAgAGBQJIjwhrAAoJEKVg1VMiehFY6dEP/2lg8SaEuRNLLFo2T8H9863W
-5n88QtaULrVamQV4F9TCvuWsshGqzWes6DABsONyY426SyvmUwzitUIYRQjV8DHt
-HxdfTy0PuK9kEO542koJZEsBPSMLz84biAXOiV6aIVQnl1wbZk/N3MLl/+RM1MJe
-QW3cwzWZQUz7PpId/EqkVM3AngMQ5jl/IiuxrR1aRNdGN+yIMr+nquZB4m9LnGlL
-CIHZnCZc27FsNY45YSpUIcKqPGN7ptLQsOQfx3u2zDuuaJOvhwdqKlbsVdyYMZIF
-wPbMQNOCiphfzp1zNyaa/Gj3plbQJYN4+lTMSCGk4JuXZSZQA62xQlbaEY5E1gjp
-vQ/4TI+dRk6xrLH1nG1SZ6OJybyBC316+lt6ocXonNZCqMRqC+u+zArWnYlE8RuE
-4jan/bBa/e9AnjF/sAyPzAMfXNQqMFjsLaZxap+QdY1WGXZCeIGlwmUH1UeHGDJ6
-hFLz/frZSLn+BhR9iOde//Mni9aAnNHTWDVHW6ZKmUcn2sfeNZEZ3uaIPb6Q3lrv
-/AETQ9FBjJNiLm5ApSjrMwQp2vLFIy0iDsGuixRL48vGRXQwZzMvx9Mv7HbvDGHO
-fjbFvCPtVVfG+7GXuJ7Cm3FMxX+IwHY8zUdWMDZl+rSe4EUXIaX76UFK7wwSkPhT
-lb91bhvsuuCajFtgqLjh
-=K2l+
------END PGP SIGNATURE-----
+ drivers/uio/Kconfig           |   13 ++
+ drivers/uio/Makefile          |    1 
+ drivers/uio/uio_pdrv_genirq.c |  188 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 202 insertions(+)
 
---=-dqFTqhpDYuxtj2ErFIQS--
-
+--- 0001/drivers/uio/Kconfig
++++ work/drivers/uio/Kconfig	2008-07-29 20:59:36.000000000 +0900
+@@ -33,6 +33,19 @@ config UIO_PDRV
+ 
+ 	  If you don't know what to do here, say N.
+ 
++config UIO_PDRV_GENIRQ
++	tristate "Userspace I/O platform driver with generic IRQ handling"
++	help
++	  Platform driver for Userspace I/O devices, including generic
++	  interrupt handling code. Shared interrupts are not supported.
++
++	  This kernel driver requires that the matching userspace driver
++	  handles interrupts in a special way. Userspace is responsible
++	  for acknowledging the hardware device if needed, and re-enabling
++	  interrupts in the interrupt controller using the write() syscall.
++
++	  If you don't know what to do here, say N.
++
+ config UIO_SMX
+ 	tristate "SMX cryptengine UIO interface"
+ 	default n
+--- 0001/drivers/uio/Makefile
++++ work/drivers/uio/Makefile	2008-07-29 20:59:36.000000000 +0900
+@@ -1,4 +1,5 @@
+ obj-$(CONFIG_UIO)	+= uio.o
+ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
+ obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
++obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
+ obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
+--- /dev/null
++++ work/drivers/uio/uio_pdrv_genirq.c	2008-07-29 20:59:36.000000000 +0900
+@@ -0,0 +1,188 @@
++/*
++ * drivers/uio/uio_pdrv_genirq.c
++ *
++ * Userspace I/O platform driver with generic IRQ handling code.
++ *
++ * Copyright (C) 2008 Magnus Damm
++ *
++ * Based on uio_pdrv.c by Uwe Kleine-Koenig,
++ * Copyright (C) 2008 by Digi International Inc.
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ */
++
++#include <linux/platform_device.h>
++#include <linux/uio_driver.h>
++#include <linux/spinlock.h>
++#include <linux/bitops.h>
++#include <linux/interrupt.h>
++#include <linux/stringify.h>
++
++#define DRIVER_NAME "uio_pdrv_genirq"
++
++struct uio_pdrv_genirq_platdata {
++	struct uio_info *uioinfo;
++	spinlock_t lock;
++	unsigned long flags;
++};
++
++static irqreturn_t uio_pdrv_genirq_handler(int irq, struct uio_info *dev_info)
++{
++	struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
++
++	/* Just disable the interrupt in the interrupt controller, and
++	 * remember the state so we can allow user space to enable it later.
++	 */
++
++	if (!test_and_set_bit(0, &priv->flags))
++		disable_irq_nosync(irq);
++
++	return IRQ_HANDLED;
++}
++
++static int uio_pdrv_genirq_irqcontrol(struct uio_info *dev_info, s32 irq_on)
++{
++	struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
++	unsigned long flags;
++
++	/* Allow user space to enable and disable the interrupt
++	 * in the interrupt controller, but keep track of the
++	 * state to prevent per-irq depth damage.
++	 *
++	 * Serialize this operation to support multiple tasks.
++	 */
++
++	spin_lock_irqsave(&priv->lock, flags);
++	if (irq_on) {
++		if (test_and_clear_bit(0, &priv->flags))
++			enable_irq(dev_info->irq);
++	} else {
++		if (!test_and_set_bit(0, &priv->flags))
++			disable_irq(dev_info->irq);
++	}
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	return 0;
++}
++
++static int uio_pdrv_genirq_probe(struct platform_device *pdev)
++{
++	struct uio_info *uioinfo = pdev->dev.platform_data;
++	struct uio_pdrv_genirq_platdata *priv;
++	struct uio_mem *uiomem;
++	int ret = -EINVAL;
++	int i;
++
++	if (!uioinfo || !uioinfo->name || !uioinfo->version) {
++		dev_err(&pdev->dev, "missing platform_data\n");
++		goto bad0;
++	}
++
++	if (uioinfo->handler || uioinfo->irqcontrol || uioinfo->irq_flags) {
++		dev_err(&pdev->dev, "interrupt configuration error\n");
++		goto bad0;
++	}
++
++	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
++	if (!priv) {
++		ret = -ENOMEM;
++		dev_err(&pdev->dev, "unable to kmalloc\n");
++		goto bad0;
++	}
++
++	priv->uioinfo = uioinfo;
++	spin_lock_init(&priv->lock);
++	priv->flags = 0; /* interrupt is enabled to begin with */
++
++	uiomem = &uioinfo->mem[0];
++
++	for (i = 0; i < pdev->num_resources; ++i) {
++		struct resource *r = &pdev->resource[i];
++
++		if (r->flags != IORESOURCE_MEM)
++			continue;
++
++		if (uiomem >= &uioinfo->mem[MAX_UIO_MAPS]) {
++			dev_warn(&pdev->dev, "device has more than "
++					__stringify(MAX_UIO_MAPS)
++					" I/O memory resources.\n");
++			break;
++		}
++
++		uiomem->memtype = UIO_MEM_PHYS;
++		uiomem->addr = r->start;
++		uiomem->size = r->end - r->start + 1;
++		++uiomem;
++	}
++
++	while (uiomem < &uioinfo->mem[MAX_UIO_MAPS]) {
++		uiomem->size = 0;
++		++uiomem;
++	}
++
++	/* This driver requires no hardware specific kernel code to handle
++	 * interrupts. Instead, the interrupt handler simply disables the
++	 * interrupt in the interrupt controller. User space is responsible
++	 * for performing hardware specific acknowledge and re-enabling of
++	 * the interrupt in the interrupt controller.
++	 *
++	 * Interrupt sharing is not supported.
++	 */
++
++	uioinfo->irq_flags = IRQF_DISABLED;
++	uioinfo->handler = uio_pdrv_genirq_handler;
++	uioinfo->irqcontrol = uio_pdrv_genirq_irqcontrol;
++	uioinfo->priv = priv;
++
++	ret = uio_register_device(&pdev->dev, priv->uioinfo);
++	if (ret) {
++		dev_err(&pdev->dev, "unable to register uio device\n");
++		goto bad1;
++	}
++
++	platform_set_drvdata(pdev, priv);
++	return 0;
++ bad1:
++	kfree(priv);
++ bad0:
++	return ret;
++}
++
++static int uio_pdrv_genirq_remove(struct platform_device *pdev)
++{
++	struct uio_pdrv_genirq_platdata *priv = platform_get_drvdata(pdev);
++
++	uio_unregister_device(priv->uioinfo);
++	kfree(priv);
++	return 0;
++}
++
++static struct platform_driver uio_pdrv_genirq = {
++	.probe = uio_pdrv_genirq_probe,
++	.remove = uio_pdrv_genirq_remove,
++	.driver = {
++		.name = DRIVER_NAME,
++		.owner = THIS_MODULE,
++	},
++};
++
++static int __init uio_pdrv_genirq_init(void)
++{
++	return platform_driver_register(&uio_pdrv_genirq);
++}
++
++static void __exit uio_pdrv_genirq_exit(void)
++{
++	platform_driver_unregister(&uio_pdrv_genirq);
++}
++
++module_init(uio_pdrv_genirq_init);
++module_exit(uio_pdrv_genirq_exit);
++
++MODULE_AUTHOR("Magnus Damm");
++MODULE_DESCRIPTION("Userspace I/O platform driver with generic IRQ handling");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:" DRIVER_NAME);
