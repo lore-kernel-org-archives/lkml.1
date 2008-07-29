@@ -1,145 +1,343 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbYG2XdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755760AbYG2Xd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbYG2XdF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 19:33:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbYG2Xcx
+	id S1755760AbYG2Xd0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 19:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYG2XdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 19:32:53 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:33579 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752069AbYG2Xcx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 19:32:53 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-References: <200807291414.55479.yhlu.kernel@gmail.com>
-Date: Tue, 29 Jul 2008 16:22:11 -0700
-In-Reply-To: <200807291414.55479.yhlu.kernel@gmail.com> (Yinghai Lu's message
-	of "Tue, 29 Jul 2008 14:14:54 -0700")
-Message-ID: <m1ej5c6zto.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 29 Jul 2008 19:33:00 -0400
+Received: from gw.goop.org ([64.81.55.164]:54668 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753661AbYG2Xc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 19:32:59 -0400
+Message-ID: <488FA8A5.6060204@goop.org>
+Date: Tue, 29 Jul 2008 16:32:53 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Yinghai Lu <yhlu.kernel@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0177]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] x86: 64bit support more than 256 irq v2
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] generic smp function call: add multiple queues for scaling
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu <yhlu.kernel@gmail.com> writes:
+This patch allows an architecture to have multiple smp_call_function
+queues, in order to reduce contention on a single queue and lock.  By
+default there is still one queue, so this patch makes no functional
+change.
 
-> Dhaval Giani got:
-> kernel BUG at arch/x86/kernel/io_apic_64.c:357!
-> invalid opcode: 0000 [1] SMP
-> CPU 24
-> Modules linked in:
-> Pid: 1, comm: swapper Not tainted 2.6.27-rc1-autokern1 #1
-> RIP: 0010:[<ffffffff8021bb2e>]  [<ffffffff8021bb2e>] add_pin_to_irq+0x8e/0xa0
-> RSP: 0018:ffff88032e4b9b30  EFLAGS: 00010216
-> RAX: 00000000000000f0 RBX: 00000000000000f0 RCX: 0000000000000000
-> RDX: 000000000000afaf RSI: 0000000000000046 RDI: ffffffff80738234
-> RBP: 0000000000000006 R08: 0000000000000000 R09: ffff8800280992c0
-> R10: 0000000000000000 R11: ffffffff80372060 R12: 0000000000000018
-> R13: 0000000000000001 R14: 0000000000000018 R15: 0000000000000000
-> FS:  0000000000000000(0000) GS:ffff880bfe733540(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process swapper (pid: 1, threadinfo ffff88032e4b8000, task ffff880bfe4ca050)
-> Stack:  00000000000000f0 0000000000000006 0000000000000001 ffffffff8021bbbe
->  00000000000000f0 0000000000000001 0000000000000000 ffff88032e4b9c0c
->  00000000000000f0 ffffffff80218d81 00000000000000f0 0000000000000000
-> Call Trace:
->  [<ffffffff8021bbbe>] ? io_apic_set_pci_routing+0x7e/0xa0
->  [<ffffffff80218d81>] ? mp_register_gsi+0xb1/0xd0
->  [<ffffffff80218e0c>] ? acpi_register_gsi+0x6c/0x70
->  [<ffffffff80392f30>] ? acpi_pci_irq_enable+0x178/0x260
->  [<ffffffff80392cdd>] ? acpi_pci_allocate_irq+0x0/0x4c
->  [<ffffffff80370657>] ? pci_enable_resources+0x27/0x160
->  [<ffffffff8036be6a>] ? do_pci_enable_device+0x4a/0x70
->  [<ffffffff8036bee1>] ? __pci_enable_device_flags+0x51/0x60
->  [<ffffffff804e01e8>] ? tg3_init_one+0x58/0x1640
->  [<ffffffff8022a980>] ? default_wake_function+0x0/0x10
->  [<ffffffff8022efd8>] ? set_cpus_allowed_ptr+0xe8/0x110
->  [<ffffffff8036e28f>] ? pci_device_probe+0xdf/0x130
->  [<ffffffff803c2416>] ? driver_probe_device+0x96/0x1a0
->  [<ffffffff803c25a9>] ? __driver_attach+0x89/0x90
->  [<ffffffff803c2520>] ? __driver_attach+0x0/0x90
->  [<ffffffff803c1a8d>] ? bus_for_each_dev+0x4d/0x80
->  [<ffffffff8028e168>] ? kmem_cache_alloc+0xc8/0xf0
->  [<ffffffff803c1f7e>] ? bus_add_driver+0xae/0x220
->  [<ffffffff803c2836>] ? driver_register+0x56/0x130
->  [<ffffffff8036e548>] ? __pci_register_driver+0x68/0xb0
->  [<ffffffff806cf8e0>] ? tg3_init+0x0/0x20
->  [<ffffffff806b15b1>] ? do_one_initcall+0x41/0x180
->  [<ffffffff802d8a08>] ? create_proc_entry+0x58/0xa0
->  [<ffffffff80261cc4>] ? register_irq_proc+0xd4/0xf0
->  [<ffffffff806b1b53>] ? kernel_init+0x133/0x190
->  [<ffffffff8020c529>] ? child_rip+0xa/0x11
->  [<ffffffff806b1a20>] ? kernel_init+0x0/0x190
->  [<ffffffff8020c51f>] ? child_rip+0x0/0x11
->
->
-> Code: 89 05 2b 54 42 00 7f 27 48 0f bf c1 48 8d 14 00 48 c1 e0 03 48 29 d0 48 8d
-> 90 c0 5e 73 80 66 89 2a 66 44 89 62 02 5b 5d 41 5c c3 <0f> 0b eb fe 48 c7 c7 c8
-> db 5c 80 31 c0 e8 60 7e 01 00 48 83 ec
-> RIP  [<ffffffff8021bb2e>] add_pin_to_irq+0x8e/0xa0
->  RSP <ffff88032e4b9b30>
->
-> his system (x3950) has 8 ioapic, irq > 256
->
-> caused by
-> 	commit 9b7dc567d03d74a1fbae84e88949b6a60d922d82
-> 	Author: Thomas Gleixner <tglx@linutronix.de>
-> 	Date:   Fri May 2 20:10:09 2008 +0200
->
-> 	   x86: unify interrupt vector defines
->
-> 	   The interrupt vector defines are copied 4 times around with minimal
-> 	   differences. Move them all into asm-x86/irq_vectors.h
->
->
-> 64bit allow same vector for different cpu to serve different irq
->
-> also change next in irq_pin_list from short to int. because for 4096 NR_IRQS
-> is 2^(8+12).
->
-> v2: accoding to Eric W. Biederman, change to NR_IRQ_VECTORS to NR_IRQS
->     use NR_VECTORS*NR_CPUS directly
+However, an architecture can set CONFIG_GENERIC_SMP_QUEUES to enable a
+certain number of queues.  It's expected it will will set up an IPI
+vector for each queue, and it should pass the appropriate queue number
+into generic_smp_call_function_interrupt.
 
-Apologies I didn't mean to set NR_IRQS to NR_VECTORS*NR_CPUS literally.
-That simply is a waste of space in current systems.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/alpha/kernel/smp.c             |    2 -
+ arch/arm/kernel/smp.c               |    2 -
+ arch/ia64/kernel/smp.c              |    2 -
+ arch/m32r/kernel/smp.c              |    2 -
+ arch/mips/kernel/smp.c              |    2 -
+ arch/parisc/kernel/smp.c            |    2 -
+ arch/powerpc/kernel/smp.c           |    2 -
+ arch/sparc64/kernel/smp.c           |    2 -
+ arch/x86/kernel/smp.c               |    2 -
+ arch/x86/mach-voyager/voyager_smp.c |    2 -
+ arch/x86/xen/smp.c                  |    2 -
+ include/linux/smp.h                 |    2 -
+ kernel/smp.c                        |   70 ++++++++++++++++++++++++++++-------
+ 13 files changed, 69 insertions(+), 25 deletions(-)
 
-The original (NR_CPUS*32)+224 is much more reasonable and should cover all of
-the real world cases.
+===================================================================
+--- a/arch/alpha/kernel/smp.c
++++ b/arch/alpha/kernel/smp.c
+@@ -588,7 +588,7 @@
+ 			break;
+ 
+ 		case IPI_CALL_FUNC:
+-			generic_smp_call_function_interrupt();
++			generic_smp_call_function_interrupt(0);
+ 			break;
+ 
+ 		case IPI_CALL_FUNC_SINGLE:
+===================================================================
+--- a/arch/arm/kernel/smp.c
++++ b/arch/arm/kernel/smp.c
+@@ -481,7 +481,7 @@
+ 				break;
+ 
+ 			case IPI_CALL_FUNC:
+-				generic_smp_call_function_interrupt();
++				generic_smp_call_function_interrupt(0);
+ 				break;
+ 
+ 			case IPI_CALL_FUNC_SINGLE:
+===================================================================
+--- a/arch/ia64/kernel/smp.c
++++ b/arch/ia64/kernel/smp.c
+@@ -114,7 +114,7 @@
+ 				stop_this_cpu();
+ 				break;
+ 			case IPI_CALL_FUNC:
+-				generic_smp_call_function_interrupt();
++				generic_smp_call_function_interrupt(0);
+ 				break;
+ 			case IPI_CALL_FUNC_SINGLE:
+ 				generic_smp_call_function_single_interrupt();
+===================================================================
+--- a/arch/m32r/kernel/smp.c
++++ b/arch/m32r/kernel/smp.c
+@@ -576,7 +576,7 @@
+ void smp_call_function_interrupt(void)
+ {
+ 	irq_enter();
+-	generic_smp_call_function_interrupt();
++	generic_smp_call_function_interrupt(0);
+ 	irq_exit();
+ }
+ 
+===================================================================
+--- a/arch/mips/kernel/smp.c
++++ b/arch/mips/kernel/smp.c
+@@ -151,7 +151,7 @@
+ {
+ 	irq_enter();
+ 	generic_smp_call_function_single_interrupt();
+-	generic_smp_call_function_interrupt();
++	generic_smp_call_function_interrupt(0);
+ 	irq_exit();
+ }
+ 
+===================================================================
+--- a/arch/parisc/kernel/smp.c
++++ b/arch/parisc/kernel/smp.c
+@@ -179,7 +179,7 @@
+ 
+ 			case IPI_CALL_FUNC:
+ 				smp_debug(100, KERN_DEBUG "CPU%d IPI_CALL_FUNC\n", this_cpu);
+-				generic_smp_call_function_interrupt();
++				generic_smp_call_function_interrupt(0);
+ 				break;
+ 
+ 			case IPI_CALL_FUNC_SINGLE:
+===================================================================
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -95,7 +95,7 @@
+ {
+ 	switch(msg) {
+ 	case PPC_MSG_CALL_FUNCTION:
+-		generic_smp_call_function_interrupt();
++		generic_smp_call_function_interrupt(0);
+ 		break;
+ 	case PPC_MSG_RESCHEDULE:
+ 		/* XXX Do we have to do this? */
+===================================================================
+--- a/arch/sparc64/kernel/smp.c
++++ b/arch/sparc64/kernel/smp.c
+@@ -811,7 +811,7 @@
+ void smp_call_function_client(int irq, struct pt_regs *regs)
+ {
+ 	clear_softint(1 << irq);
+-	generic_smp_call_function_interrupt();
++	generic_smp_call_function_interrupt(0);
+ }
+ 
+ void smp_call_function_single_client(int irq, struct pt_regs *regs)
+===================================================================
+--- a/arch/x86/kernel/smp.c
++++ b/arch/x86/kernel/smp.c
+@@ -189,7 +189,7 @@
+ {
+ 	ack_APIC_irq();
+ 	irq_enter();
+-	generic_smp_call_function_interrupt();
++	generic_smp_call_function_interrupt(0);
+ #ifdef CONFIG_X86_32
+ 	__get_cpu_var(irq_stat).irq_call_count++;
+ #else
+===================================================================
+--- a/arch/x86/mach-voyager/voyager_smp.c
++++ b/arch/x86/mach-voyager/voyager_smp.c
+@@ -957,7 +957,7 @@
+ static void smp_call_function_interrupt(void)
+ {
+ 	irq_enter();
+-	generic_smp_call_function_interrupt();
++	generic_smp_call_function_interrupt(0);
+ 	__get_cpu_var(irq_stat).irq_call_count++;
+ 	irq_exit();
+ }
+===================================================================
+--- a/arch/x86/xen/smp.c
++++ b/arch/x86/xen/smp.c
+@@ -401,7 +401,7 @@
+ static irqreturn_t xen_call_function_interrupt(int irq, void *dev_id)
+ {
+ 	irq_enter();
+-	generic_smp_call_function_interrupt();
++	generic_smp_call_function_interrupt(0);
+ #ifdef CONFIG_X86_32
+ 	__get_cpu_var(irq_stat).irq_call_count++;
+ #else
+===================================================================
+--- a/include/linux/smp.h
++++ b/include/linux/smp.h
+@@ -73,7 +73,7 @@
+  */
+ #ifdef CONFIG_USE_GENERIC_SMP_HELPERS
+ void generic_smp_call_function_single_interrupt(void);
+-void generic_smp_call_function_interrupt(void);
++void generic_smp_call_function_interrupt(unsigned queue);
+ void ipi_call_lock(void);
+ void ipi_call_unlock(void);
+ void ipi_call_lock_irq(void);
+===================================================================
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -11,9 +11,19 @@
+ #include <linux/rculist.h>
+ #include <linux/smp.h>
+ 
++#ifdef CONFIG_GENERIC_SMP_QUEUES
++#define	NQUEUES	CONFIG_GENERIC_SMP_QUEUES
++#else
++#define	NQUEUES	1
++#endif
++
+ static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
+-static LIST_HEAD(call_function_queue);
+-__cacheline_aligned_in_smp DEFINE_SPINLOCK(call_function_lock);
++struct queue {
++	struct list_head list;
++	spinlock_t lock;
++};
++
++static __cacheline_aligned_in_smp struct queue call_function_queues[NQUEUES];
+ 
+ enum {
+ 	CSD_FLAG_WAIT		= 0x01,
+@@ -96,17 +106,20 @@
+  * Invoked by arch to handle an IPI for call function. Must be called with
+  * interrupts disabled.
+  */
+-void generic_smp_call_function_interrupt(void)
++void generic_smp_call_function_interrupt(unsigned queue_no)
+ {
+ 	struct call_function_data *data;
++	struct queue *queue;
+ 	int cpu = get_cpu();
++
++	queue = &call_function_queues[queue_no];
+ 
+ 	/*
+ 	 * It's ok to use list_for_each_rcu() here even though we may delete
+ 	 * 'pos', since list_del_rcu() doesn't clear ->next
+ 	 */
+ 	rcu_read_lock();
+-	list_for_each_entry_rcu(data, &call_function_queue, csd.list) {
++	list_for_each_entry_rcu(data, &queue->list, csd.list) {
+ 		int refs;
+ 
+ 		if (!cpu_isset(cpu, data->cpumask))
+@@ -124,9 +137,9 @@
+ 		if (refs)
+ 			continue;
+ 
+-		spin_lock(&call_function_lock);
++		spin_lock(&queue->lock);
+ 		list_del_rcu(&data->csd.list);
+-		spin_unlock(&call_function_lock);
++		spin_unlock(&queue->lock);
+ 
+ 		if (data->csd.flags & CSD_FLAG_WAIT) {
+ 			/*
+@@ -285,6 +298,8 @@
+ 	cpumask_t allbutself;
+ 	unsigned long flags;
+ 	int cpu, num_cpus;
++	unsigned queue_no;
++	struct queue *queue;
+ 
+ 	/* Can deadlock when called with interrupts disabled */
+ 	WARN_ON(irqs_disabled());
+@@ -294,6 +309,9 @@
+ 	cpu_clear(cpu, allbutself);
+ 	cpus_and(mask, mask, allbutself);
+ 	num_cpus = cpus_weight(mask);
++
++	queue_no = cpu % NQUEUES;
++	queue = &call_function_queues[queue_no];
+ 
+ 	/*
+ 	 * If zero CPUs, return. If just a single CPU, turn this request
+@@ -323,9 +341,9 @@
+ 	data->refs = num_cpus;
+ 	data->cpumask = mask;
+ 
+-	spin_lock_irqsave(&call_function_lock, flags);
+-	list_add_tail_rcu(&data->csd.list, &call_function_queue);
+-	spin_unlock_irqrestore(&call_function_lock, flags);
++	spin_lock_irqsave(&queue->lock, flags);
++	list_add_tail_rcu(&data->csd.list, &queue->list);
++	spin_unlock_irqrestore(&queue->lock, flags);
+ 
+ 	/* Send a message to all CPUs in the map */
+ 	arch_send_call_function_ipi(mask);
+@@ -366,20 +384,46 @@
+ 
+ void ipi_call_lock(void)
+ {
+-	spin_lock(&call_function_lock);
++	int i;
++
++	for(i = 0; i < NQUEUES; i++)
++		spin_lock(&call_function_queues[i].lock);
+ }
+ 
+ void ipi_call_unlock(void)
+ {
+-	spin_unlock(&call_function_lock);
++	int i;
++
++	for(i = 0; i < NQUEUES; i++)
++		spin_unlock(&call_function_queues[i].lock);
+ }
+ 
+ void ipi_call_lock_irq(void)
+ {
+-	spin_lock_irq(&call_function_lock);
++	int i;
++
++	for(i = 0; i < NQUEUES; i++)
++		spin_lock_irq(&call_function_queues[i].lock);
+ }
+ 
+ void ipi_call_unlock_irq(void)
+ {
+-	spin_unlock_irq(&call_function_lock);
++	int i;
++
++	for(i = 0; i < NQUEUES; i++)
++		spin_unlock_irq(&call_function_queues[i].lock);
+ }
++
++
++static int __init init_smp_function_call(void)
++{
++	int i;
++
++	for(i = 0; i < NQUEUES; i++) {
++		INIT_LIST_HEAD(&call_function_queues[i].list);
++		spin_lock_init(&call_function_queues[i].lock);
++	}
++
++	return 0;
++}
++early_initcall(init_smp_function_call);
 
-With respect to NR_IRQ_VECTORS if we can get per_irq vectors on x86_32
-we can kill it.  I had forgotten a detail.
 
-irq_vector on x86_32 needs to be sized with NR_IRQS.
-However acpi_table_parse_madt needs to the true limit on the number
-of irq sources we can handle which is NR_IRQ_VECTORS.  It works because
-we have cool irq merging and other weird nonsense on x86_32 to fit within
-256 irqs.
-
-On x86_64 they are the same.
-
-Eric
