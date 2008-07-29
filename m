@@ -1,88 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbYG2NBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbYG2NE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758736AbYG2NBd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 09:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbYG2NB0
+	id S1758054AbYG2NE0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 09:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752961AbYG2NES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 09:01:26 -0400
-Received: from ozlabs.org ([203.10.76.45]:35490 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752798AbYG2NBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 09:01:25 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Paul Menage" <menage@google.com>
-Subject: Re: [PATCH] Introduce down_try() so we can move away from down_trylock()
-Date: Tue, 29 Jul 2008 23:01:17 +1000
-User-Agent: KMail/1.9.9
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Matthew Wilcox" <matthew@wil.cx>,
-       "Randy.Dunlap" <rdunlap@xenotime.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Hellwig" <hch@infradead.org>
-References: <200807291015.02865.rusty@rustcorp.com.au> <6599ad830807281727r63a57a1g11972c5395828aae@mail.gmail.com>
-In-Reply-To: <6599ad830807281727r63a57a1g11972c5395828aae@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 29 Jul 2008 09:04:18 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52175 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752876AbYG2NER (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 09:04:17 -0400
+Date: Tue, 29 Jul 2008 08:04:15 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: akpm@linux-foundation.org, menage@google.com,
+       seto.hidetoshi@jp.fujitsu.com, laijs@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] cpuset: clean up cpuset hierarchy traversal code
+Message-Id: <20080729080415.409f25fc.pj@sgi.com>
+In-Reply-To: <488E72BE.9070108@cn.fujitsu.com>
+References: <488D332A.1030008@cn.fujitsu.com>
+	<20080728010141.fbd33866.pj@sgi.com>
+	<488E72BE.9070108@cn.fujitsu.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807292301.18733.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 July 2008 10:27:15 Paul Menage wrote:
-> On Mon, Jul 28, 2008 at 5:15 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > +/**
-> > + * down_try - try to down a semaphore, but don't block
-> > + * @sem: the semaphore
->
-> Is there a reason to avoid using a return type of "bool" for this?
+Li Zefan wrote:
+> Yes, but I just noticed Max removes that comment completely in his patch,
+> so I guess I can leave it as it is.
 
-Probably, but not a good one.
+Yeah - leave it as it is.
 
-This incorporates Andrew's whitespace fix as well (ie:
-introduce-down_try-so-we-can-move-away-from-down_trylock.patch and
-introduce-down_try-so-we-can-move-away-from-down_trylock-checkpatch-fixes.patch)
-
-Introduce down_try()
-
-I planned on removing the much-disliked down_trylock() (with its
-backwards return codes) in 2.6.27, but it's creating something of a
-logjam with other patches in -mm and linux-next.
-
-Andrew suggested introducing "down_try" as a wrapper now, to make
-the transition easier.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
----
- include/linux/semaphore.h |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
-
-diff -r 92664ae4130b include/linux/semaphore.h
---- a/include/linux/semaphore.h	Wed May 21 14:54:40 2008 +1000
-+++ b/include/linux/semaphore.h	Wed May 21 15:07:31 2008 +1000
-@@ -48,4 +48,18 @@ extern int __must_check down_timeout(str
- extern int __must_check down_timeout(struct semaphore *sem, long jiffies);
- extern void up(struct semaphore *sem);
- 
-+/**
-+ * down_try - try to down a semaphore, but don't block
-+ * @sem: the semaphore
-+ *
-+ * This is equivalent to down_trylock(), but has the same return codes as
-+ * spin_trylock and mutex_trylock: 1 if semaphore acquired, 0 if not.
-+ *
-+ * down_trylock() with its confusing return codes will be deprecated
-+ * soon.  It will not be missed.
-+ */
-+static inline bool __must_check down_try(struct semaphore *sem)
-+{
-+	return !down_trylock(sem);
-+}
- #endif /* __LINUX_SEMAPHORE_H */
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
