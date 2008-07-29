@@ -1,88 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbYG2RDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbYG2RIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756492AbYG2RDW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 13:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYG2RDO
+	id S1754807AbYG2RIl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 13:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbYG2RId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 13:03:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45006 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751665AbYG2RDO (ORCPT
+	Tue, 29 Jul 2008 13:08:33 -0400
+Received: from outbound-mail-126.bluehost.com ([67.222.38.26]:56849 "HELO
+	outbound-mail-126.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751035AbYG2RIc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 13:03:14 -0400
-Date: Tue, 29 Jul 2008 09:59:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Linux v2.6.27-rc1
-In-Reply-To: <200807290927.12101.jbarnes@virtuousgeek.org>
-Message-ID: <alpine.LFD.1.10.0807290945030.3334@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org> <200807290927.12101.jbarnes@virtuousgeek.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 29 Jul 2008 13:08:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=JYmh0JE9lLm9TObS8BRkpqSM8z8Vgk+z+Xv+VVbplkOugJd/EHQ3ya14Y4k0s91VEWWA8GYwTE7PqIsP0zgzUPyANs7hhxvTeaLN14P7mEKZgG6LivmMRRLctebizE25;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
+Date: Tue, 29 Jul 2008 10:08:25 -0700
+User-Agent: KMail/1.9.9
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, joro@8bytes.org,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+References: <20080723111928.15828.42561.sendpatchset@prarit.bos.redhat.com> <200807281523.35469.jbarnes@virtuousgeek.org> <488F2819.2090303@redhat.com>
+In-Reply-To: <488F2819.2090303@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807291008.25583.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday, July 29, 2008 7:24 am Prarit Bhargava wrote:
+> > Prarit, what's the latest here?  The v3 patch I have from you doesn't
+> > apply to my tree but it looks like a good fix.  Care to send me a new
+> > patch against my for-linus branch?
+>
+> New patch.
 
+Thanks Prarit, I pushed this out to my for-linus branch.
 
-On Tue, 29 Jul 2008, Jesse Barnes wrote:
-> 
-> I think linux-next has been a *huge* help.  It's been great at catching merge 
-> conflicts and build bugs (though not so much when you don't use it[1]!), and 
-> Stephen is really easy to work with.  So I, for one, would love to see it 
-> continue.
-
-I don't think anybody wants it to go away. The question in my mind is more 
-along the way of how/whether it should be changed. There was some 
-bickering about patches that weren't there, and some about how _partial_ 
-series were there but then the finishing touches broke things.
-
-I don't personally really think that it's reasonable to expect everything 
-to be in -next (but hey, I'm willing to be convinced otherwise). And don't 
-get me wrong - it certainly wouldn't bother _me_ to have everything go 
-through next, since it just makes it likelier that I have less to worry 
-about.
-
-BUT. I do think 'next' as it is has a few issues that either need to be 
-fixed (unlikely - it's not the point of next) or just need to be aired as 
-issues and understood:
-
- - I don't think it does 'quality control', and I think that's pretty 
-   fundamental.
-
-   Now, admittedly I don't look much at the patches of people I trust 
-   either (that's what the whole point of that 'trust' is, after all - to 
-   make me not be the part that limits development speed), but that's 
-   still different from 'largely automated merging'.
-
-   So I _do_ check the things that aren't obvious "maintainer works on his 
-   own subsystem" or are so core that I really feel like I need to know 
-   what's up. I seldom actually say "that's so broken that I refuse to 
-   pull it", but I tend to do that a couple of times per release.
-
-   That may not sound like much, but it's enough to make me worry about 
-   'next'. I worry that 'it has been in next' has become a code-word for 
-   "pull this, because it's good", and I'm not at all convinced that 
-   'next' sees any real critical checking.
-
- - I don't think the 'next' thing works as well for the occasional 
-   developer that just has a few patches pending as it works for subsystem 
-   maintainers that are used to it.
-
-   IOW, I think 'next' needs enough infrastructure setup from the 
-   developer side that I don't think it's reasonable for _everything_ to 
-   go through next. And that in turn means that I'm not entirely thrilled 
-   when people then complain "that wasn't in next". I think people should 
-   accept that not everything will be in next.
-
-But I don't think either of the above issues is a 'problem' - I just think 
-they should be acknowledged. I think 'next' is a good way for the big 
-subsystem developers to be able to see problems early, but I really hope 
-that nobody will _ever_ see next as a "that's the way into Linus' tree", 
-because for the above two reasons I do not think it can really work that 
-way.
-
-			Linus
+Jesse
