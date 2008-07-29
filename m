@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYG2Jme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbYG2Jrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbYG2Jme (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 05:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbYG2JmQ
+	id S1756703AbYG2Jrc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 05:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbYG2JrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 05:42:16 -0400
-Received: from il.qumranet.com ([212.179.150.194]:17415 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755084AbYG2JmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 05:42:14 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] KVM MMU notifiers support for 2.6.27-rc1
-Date: Tue, 29 Jul 2008 12:42:13 +0300
-Message-Id: <1217324533-17229-1-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.6.1
+	Tue, 29 Jul 2008 05:47:23 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:51817 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753005AbYG2JrW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 05:47:22 -0400
+Date: Tue, 29 Jul 2008 19:47:20 +1000
+From: Simon Horman <horms@verge.net.au>
+To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Tony Luck <tony.luck@intel.com>
+Subject: [patch] IA64: only call up() in salinfo_work_to_do() if
+	down_trylock() was successful
+Message-ID: <20080729094718.GA5247@verge.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from repo & branch at:
+Aesthetic issues aside is it safe to call up() if down_trylock() failed?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git kvm-updates-2.6.27
+arch/ia64/kernel/salinfo.c: In function `salinfo_work_to_do':
+arch/ia64/kernel/salinfo.c:195: warning: ignoring return value of `down_trylock'
 
-to receive the mmu notifiers support for kvm.  This allows the full range
-of Linux virtual memory management, such as swapping and page migration,
-to apply to kvm virtual machines.
+Signed-off-by: Simon Horman <horms@verge.net.au>
 
-Andrea Arcangeli (3):
-      KVM: Allow reading aliases with mmu_lock
-      KVM: Allow browsing memslots with mmu_lock
-      KVM: Synchronize guest physical memory map to host virtual memory map
-
-Avi Kivity (1):
-      KVM: Advertise synchronized mmu support to userspace
-
- arch/x86/kvm/mmu.c         |  100 ++++++++++++++++++++++++++++
- arch/x86/kvm/paging_tmpl.h |   12 ++++
- arch/x86/kvm/x86.c         |   24 +++++--
- include/asm-x86/kvm_host.h |    6 ++
- include/linux/kvm.h        |    1 +
- include/linux/kvm_host.h   |   24 +++++++
- virt/kvm/kvm_main.c        |  155 ++++++++++++++++++++++++++++++++++++++++++-
- 7 files changed, 311 insertions(+), 11 deletions(-)
+Index: linux-2.6/arch/ia64/kernel/salinfo.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/salinfo.c	2008-07-29 19:06:33.000000000 +1000
++++ linux-2.6/arch/ia64/kernel/salinfo.c	2008-07-29 19:40:02.000000000 +1000
+@@ -192,8 +192,8 @@ struct salinfo_platform_oemdata_parms {
+ static void
+ salinfo_work_to_do(struct salinfo_data *data)
+ {
+-	down_trylock(&data->mutex);
+-	up(&data->mutex);
++	if (down_trylock(&data->mutex) == 0)
++		up(&data->mutex);
+ }
+ 
+ static void
