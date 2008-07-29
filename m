@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbYG2BZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbYG2B0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754744AbYG2BZy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jul 2008 21:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbYG2BZm
+	id S1754483AbYG2B0w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jul 2008 21:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYG2B0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jul 2008 21:25:42 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:30894 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754205AbYG2BZk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jul 2008 21:25:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YCbDjghkxEi7QEzeYYuWLmXgVEppZhDy/6pcXLpU5xVivEjTB5Uvl+0nN7xZYToPDe
-         SaImlPTT32dPA1kPVLW4l/zhXpcvJUTmfKWugII5rPmaGKSuKkGThRkTroVavmmE8UC7
-         JdVcJVBQtPCq+aTNwptnS+rlrytKOTn3R2Tus=
-Message-ID: <9e4733910807281825v42f9700al420ba48aebf3d790@mail.gmail.com>
-Date: Mon, 28 Jul 2008 21:25:39 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Al Viro" <viro@zeniv.linux.org.uk>
-Subject: Re: 463 kernel developers missing!
-Cc: "Simon Arlott" <simon@fire.lp0.eu>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080729011526.GF28946@ZenIV.linux.org.uk>
+	Mon, 28 Jul 2008 21:26:43 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58333 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751893AbYG2B0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jul 2008 21:26:43 -0400
+Message-ID: <488E7172.30104@cn.fujitsu.com>
+Date: Tue, 29 Jul 2008 09:25:06 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Max Krasnyansky <maxk@qualcomm.com>
+CC: Paul Jackson <pj@sgi.com>, akpm@linux-foundation.org, menage@google.com,
+       seto.hidetoshi@jp.fujitsu.com, laijs@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] cpuset: clean up cpuset hierarchy traversal code
+References: <488D332A.1030008@cn.fujitsu.com> <20080728010141.fbd33866.pj@sgi.com> <488DFFD2.7070004@qualcomm.com>
+In-Reply-To: <488DFFD2.7070004@qualcomm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9e4733910807280745l248801ebp134e77fc1ac70c02@mail.gmail.com>
-	 <488DF9CF.8020408@simon.arlott.org.uk>
-	 <9e4733910807281005y62dca90ar96f663908e644546@mail.gmail.com>
-	 <488DFD97.7080802@simon.arlott.org.uk>
-	 <9e4733910807281022v38d323c9sc7b63235824690f6@mail.gmail.com>
-	 <488E0BB6.7020006@simon.arlott.org.uk>
-	 <9e4733910807281119m10f9b6e3v98fc892a42476c86@mail.gmail.com>
-	 <488E1147.5040803@simon.arlott.org.uk>
-	 <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com>
-	 <20080729011526.GF28946@ZenIV.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/28/08, Al Viro <viro@zeniv.linux.org.uk> wrote:
-> On Mon, Jul 28, 2008 at 03:00:13PM -0400, Jon Smirl wrote:
->
->
-> > Other people aren't perfect, I've found over 1,000 typos in the those
->  > names and emails. We need a validation mechanism.
->
-> Who's "we", luser, and why would I possibly give a damn for your needs?
+> Paul, please take a look at
+>     cpuset: Rework sched domains and CPU hotplug handling
+> patch I sent out last week.
+> I'd appreciate if we applied that one first. It simplifies lock nesting
+> and rearranges the way sched domains are rebuilt. It is IMO a bit higher
+> priority than this patch because scheduler depends on the
+> rebuild_sched_domains() call and we have to call rebuild_sched_domains()
+> from cpu hotplug handlers.
+> 
 
-Let's drop the whole Sign-off-by mechanism. If we can't be bothered to
-clean up the junk in Signed-off-by why should we bother recording
-them? Sign every patch Mickey Mouse, it has the same effect.
+I don't mind which one gets first. :)
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
