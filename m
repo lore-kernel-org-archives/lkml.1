@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759509AbYG3JOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760815AbYG3JP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759509AbYG3JOp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 05:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760945AbYG3JOS
+	id S1760815AbYG3JP4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 05:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757863AbYG3JPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 05:14:18 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:57608 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760200AbYG3JOQ (ORCPT
+	Wed, 30 Jul 2008 05:15:47 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:41389 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756671AbYG3JPq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 05:14:16 -0400
-Subject: Re: [patch 01/15] kmsg: Kernel message catalog macros.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Michael Holzheu <holzheu@de.ibm.com>
-In-Reply-To: <20080730013059.4d411750.akpm@linux-foundation.org>
-References: <20080728175355.734299984@de.ibm.com>
-	 <20080728175511.023246676@de.ibm.com>
-	 <20080730013059.4d411750.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 30 Jul 2008 11:13:41 +0200
-Message-Id: <1217409221.11260.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jul 2008 05:15:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=A2EcN93AxIkC0OeYH/cd16dAMutSRQKghBwmK1O3/YEBzOMSz9WHnGV81EDSqktHJA
+         lCws6i0E7gnveltxt1c0FcvmlfI178dTUPwR7pRn1b6Cz+rP9tzifsbxnWwOQFVWXB04
+         Jm/Xw6WnvDlltl2IRQY0BdtOaR8U+P4ph6UOE=
+Message-ID: <82faac5b0807300215j6cd9d938t7058080a65ffff74@mail.gmail.com>
+Date: Wed, 30 Jul 2008 19:15:46 +1000
+From: "Darren Jenkins" <darrenrjenkins@gmail.com>
+To: "OGAWA Hirofumi" <hirofumi@mail.parknet.co.jp>
+Subject: Re: [PATCH] fs/fat/dir.c fix resource leak
+Cc: "kernel Janitors" <kernel-janitors@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <87d4kwalh1.fsf@devron.myhome.or.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <1217289813.9367.9.camel@localhost.localdomain>
+	 <87hca8alz6.fsf@devron.myhome.or.jp>
+	 <87d4kwalh1.fsf@devron.myhome.or.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m6U9Fxfq032602
 
-On Wed, 2008-07-30 at 01:30 -0700, Andrew Morton wrote:
-> On Mon, 28 Jul 2008 19:53:56 +0200 Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-> Numerous people want a facility like this for other-than-s390 use. 
-> Progress has been intermittent and appears to have stopped.  The
-> apparently-dead mailing list is archived here:
-> https://lists.linux-foundation.org/pipermail/lf_kernel_messages/.
-> 
-> I don't know what the future holds for that development effort, but the
-> requirement won't go away.  So one day someone is going to go and yank
-> your implementation out of arch/s390 and into generic code.
-> 
-> So I'd suggest that you start out that way.
-
-Somehow I have hoped for an answer like that :-) The only thing that
-we'd have to do is find a proper place for the kmsg header file,
-include/linux/kmsg.h comes to mind. The kmsg-doc script can easily be
-change to check for multiple documentation directories, I was thinking
-about Documentation/kmsg/$ARCH for the architecture specific things and
-Documentation/kmsg for the generic parts.
-
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
+> BTW, email address of Signed-off-by line is typo?
+Yes, my mistake.
+ï»¿ï»¿ï»¿ï»¿Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com>
 
 
+> I noticed this is false positive. bufname is not used anymore, and> fat_parse_long() never returns error after allocating unicode.
+Yes you are right about unicode, I should of picked that up.
+bufname is not used anymore ? I'm not sure what you mean? are youtalking about an external tree ?
+
+Darren Jenkinsÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
