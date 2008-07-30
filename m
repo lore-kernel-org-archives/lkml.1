@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762878AbYGaAPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbYGaAQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762878AbYGaAPs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760902AbYGaAOh
+	id S1754053AbYGaAQK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760212AbYGaAPC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:14:37 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36790 "EHLO mx2.suse.de"
+	Wed, 30 Jul 2008 20:15:02 -0400
+Received: from mx2.suse.de ([195.135.220.15]:36843 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762919AbYGaAOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:14:35 -0400
-Date: Wed, 30 Jul 2008 16:58:53 -0700
+	id S1762854AbYGaAPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:15:00 -0400
+Date: Wed, 30 Jul 2008 16:58:55 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Nickolay Vinogradov <nickolay@protei.ru>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [patch 29/62] ARM: fix fls() for 64-bit arguments
-Message-ID: <20080730235853.GC12896@suse.de>
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 30/62] tcp: Clear probes_out more aggressively in tcp_ack().
+Message-ID: <20080730235855.GD12896@suse.de>
 References: <20080730233050.332789722@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="arm-fix-fls-for-64-bit-arguments.patch"
+Content-Disposition: inline; filename="tcp-clear-probes_out-more-aggressively-in-tcp_ack.patch"
 In-Reply-To: <20080730234915.GA12426@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,42 +39,231 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 us know.
 
 ------------------
-From: Andrew Morton <akpm@linux-foundation.org>
+From: David S. Miller <davem@davemloft.net>
 
-commit 0c65f459ce6c8bd873a61b3ae1e57858ab1debf3 upstream
+[ Upstream commit 4b53fb67e385b856a991d402096379dab462170a ]
 
-arm's fls() is implemented as a macro, causing it to misbehave when passed
-64-bit arguments.  Fix.
+This is based upon an excellent bug report from Eric Dumazet.
 
-Cc: Nickolay Vinogradov <nickolay@protei.ru>
-Tested-by: Krzysztof Halasa <khc@pm.waw.pl>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+tcp_ack() should clear ->icsk_probes_out even if there are packets
+outstanding.  Otherwise if we get a sequence of ACKs while we do have
+packets outstanding over and over again, we'll never clear the
+probes_out value and eventually think the connection is too sick and
+we'll reset it.
+
+This appears to be some "optimization" added to tcp_ack() in the 2.4.x
+timeframe.  In 2.2.x, probes_out is pretty much always cleared by
+tcp_ack().
+
+Here is Eric's original report:
+
+----------------------------------------
+Apparently, we can in some situations reset TCP connections in a couple of seconds when some frames are lost.
+
+In order to reproduce the problem, please try the following program on linux-2.6.25.*
+
+Setup some iptables rules to allow two frames per second sent on loopback interface to tcp destination port 12000
+
+iptables -N SLOWLO
+iptables -A SLOWLO -m hashlimit --hashlimit 2 --hashlimit-burst 1 --hashlimit-mode dstip --hashlimit-name slow2 -j ACCEPT
+iptables -A SLOWLO -j DROP
+
+iptables -A OUTPUT -o lo -p tcp --dport 12000 -j SLOWLO
+
+Then run the attached program and see the output :
+
+# ./loop
+State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
+ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,200ms,1)
+State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
+ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,200ms,3)
+State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
+ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,200ms,5)
+State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
+ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,200ms,7)
+State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
+ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,200ms,9)
+State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
+ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,200ms,11)
+State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
+ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,201ms,13)
+State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
+ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,188ms,15)
+write(): Connection timed out
+wrote 890 bytes but was interrupted after 9 seconds
+ESTAB      0      0                 127.0.0.1:12000            127.0.0.1:54455
+Exiting read() because no data available (4000 ms timeout).
+read 860 bytes
+
+While this tcp session makes progress (sending frames with 50 bytes of payload, every 500ms), linux tcp stack decides to reset it, when tcp_retries 2 is reached (default value : 15)
+
+tcpdump :
+
+15:30:28.856695 IP 127.0.0.1.56554 > 127.0.0.1.12000: S 33788768:33788768(0) win 32792 <mss 16396,nop,nop,sackOK,nop,wscale 7>
+15:30:28.856711 IP 127.0.0.1.12000 > 127.0.0.1.56554: S 33899253:33899253(0) ack 33788769 win 32792 <mss 16396,nop,nop,sackOK,nop,wscale 7>
+15:30:29.356947 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 1:61(60) ack 1 win 257
+15:30:29.356966 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 61 win 257
+15:30:29.866415 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 61:111(50) ack 1 win 257
+15:30:29.866427 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 111 win 257
+15:30:30.366516 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 111:161(50) ack 1 win 257
+15:30:30.366527 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 161 win 257
+15:30:30.876196 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 161:211(50) ack 1 win 257
+15:30:30.876207 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 211 win 257
+15:30:31.376282 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 211:261(50) ack 1 win 257
+15:30:31.376290 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 261 win 257
+15:30:31.885619 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 261:311(50) ack 1 win 257
+15:30:31.885631 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 311 win 257
+15:30:32.385705 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 311:361(50) ack 1 win 257
+15:30:32.385715 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 361 win 257
+15:30:32.895249 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 361:411(50) ack 1 win 257
+15:30:32.895266 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 411 win 257
+15:30:33.395341 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 411:461(50) ack 1 win 257
+15:30:33.395351 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 461 win 257
+15:30:33.918085 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 461:511(50) ack 1 win 257
+15:30:33.918096 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 511 win 257
+15:30:34.418163 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 511:561(50) ack 1 win 257
+15:30:34.418172 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 561 win 257
+15:30:34.927685 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 561:611(50) ack 1 win 257
+15:30:34.927698 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 611 win 257
+15:30:35.427757 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 611:661(50) ack 1 win 257
+15:30:35.427766 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 661 win 257
+15:30:35.937359 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 661:711(50) ack 1 win 257
+15:30:35.937376 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 711 win 257
+15:30:36.437451 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 711:761(50) ack 1 win 257
+15:30:36.437464 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 761 win 257
+15:30:36.947022 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 761:811(50) ack 1 win 257
+15:30:36.947039 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 811 win 257
+15:30:37.447135 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 811:861(50) ack 1 win 257
+15:30:37.447203 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 861 win 257
+15:30:41.448171 IP 127.0.0.1.12000 > 127.0.0.1.56554: F 1:1(0) ack 861 win 257
+15:30:41.448189 IP 127.0.0.1.56554 > 127.0.0.1.12000: R 33789629:33789629(0) win 0
+
+Source of program :
+
+/*
+ * small producer/consumer program.
+ * setup a listener on 127.0.0.1:12000
+ * Forks a child
+ *   child connect to 127.0.0.1, and sends 10 bytes on this tcp socket every 100 ms
+ * Father accepts connection, and read all data
+ */
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <time.h>
+#include <sys/poll.h>
+
+int port = 12000;
+char buffer[4096];
+int main(int argc, char *argv[])
+{
+        int lfd = socket(AF_INET, SOCK_STREAM, 0);
+        struct sockaddr_in socket_address;
+        time_t t0, t1;
+        int on = 1, sfd, res;
+        unsigned long total = 0;
+        socklen_t alen = sizeof(socket_address);
+        pid_t pid;
+
+        time(&t0);
+        socket_address.sin_family = AF_INET;
+        socket_address.sin_port = htons(port);
+        socket_address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+        if (lfd == -1) {
+                perror("socket()");
+                return 1;
+        }
+        setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(int));
+        if (bind(lfd, (struct sockaddr *)&socket_address, sizeof(socket_address)) == -1) {
+                perror("bind");
+                close(lfd);
+                return 1;
+        }
+        if (listen(lfd, 1) == -1) {
+                perror("listen()");
+                close(lfd);
+                return 1;
+        }
+        pid = fork();
+        if (pid == 0) {
+                int i, cfd = socket(AF_INET, SOCK_STREAM, 0);
+                close(lfd);
+                if (connect(cfd, (struct sockaddr *)&socket_address, sizeof(socket_address)) == -1) {
+                        perror("connect()");
+                        return 1;
+                        }
+                for (i = 0 ; ;) {
+                        res = write(cfd, "blablabla\n", 10);
+                        if (res > 0) total += res;
+                        else if (res == -1) {
+                                perror("write()");
+                                break;
+                        } else break;
+                        usleep(100000);
+                        if (++i == 10) {
+                                system("ss -on dst 127.0.0.1:12000");
+                                i = 0;
+                        }
+                }
+                time(&t1);
+                fprintf(stderr, "wrote %lu bytes but was interrupted after %g seconds\n", total, difftime(t1, t0));
+                system("ss -on | grep 127.0.0.1:12000");
+                close(cfd);
+                return 0;
+        }
+        sfd = accept(lfd, (struct sockaddr *)&socket_address, &alen);
+        if (sfd == -1) {
+                perror("accept");
+                return 1;
+        }
+        close(lfd);
+        while (1) {
+                struct pollfd pfd[1];
+                pfd[0].fd = sfd;
+                pfd[0].events = POLLIN;
+                if (poll(pfd, 1, 4000) == 0) {
+                        fprintf(stderr, "Exiting read() because no data available (4000 ms timeout).\n");
+                        break;
+                }
+                res = read(sfd, buffer, sizeof(buffer));
+                if (res > 0) total += res;
+                else if (res == 0) break;
+                else perror("read()");
+        }
+        fprintf(stderr, "read %lu bytes\n", total);
+        close(sfd);
+        return 0;
+}
+----------------------------------------
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/asm-arm/bitops.h |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ net/ipv4/tcp_input.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/include/asm-arm/bitops.h
-+++ b/include/asm-arm/bitops.h
-@@ -277,9 +277,16 @@ static inline int constant_fls(int x)
-  * the clz instruction for much better code efficiency.
-  */
+--- a/net/ipv4/tcp_input.c
++++ b/net/ipv4/tcp_input.c
+@@ -3273,6 +3273,7 @@ static int tcp_ack(struct sock *sk, stru
+ 	 * log. Something worked...
+ 	 */
+ 	sk->sk_err_soft = 0;
++	icsk->icsk_probes_out = 0;
+ 	tp->rcv_tstamp = tcp_time_stamp;
+ 	prior_packets = tp->packets_out;
+ 	if (!prior_packets)
+@@ -3305,8 +3306,6 @@ static int tcp_ack(struct sock *sk, stru
+ 	return 1;
  
--#define fls(x) \
-+#define __fls(x) \
- 	( __builtin_constant_p(x) ? constant_fls(x) : \
- 	  ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 32-__r; }) )
-+
-+/* Implement fls() in C so that 64-bit args are suitably truncated */
-+static inline int fls(int x)
-+{
-+	return __fls(x);
-+}
-+
- #define ffs(x) ({ unsigned long __t = (x); fls(__t & -__t); })
- #define __ffs(x) (ffs(x) - 1)
- #define ffz(x) __ffs( ~(x) )
+ no_queue:
+-	icsk->icsk_probes_out = 0;
+-
+ 	/* If this ack opens up a zero window, clear backoff.  It was
+ 	 * being used to time the probes, and is probably far higher than
+ 	 * it needs to be for normal retransmission.
 
 -- 
