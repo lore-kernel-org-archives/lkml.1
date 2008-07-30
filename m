@@ -1,108 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761071AbYG3XkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761756AbYG3Xkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761071AbYG3XkF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:40:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760628AbYG3Xjt
+	id S1761756AbYG3Xkw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761619AbYG3Xkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:39:49 -0400
-Received: from mx2.suse.de ([195.135.220.15]:34351 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760412AbYG3Xjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:39:48 -0400
-Date: Wed, 30 Jul 2008 16:27:26 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Luotao Fu <l.fu@pengutronix.de>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [patch 20/29] mpc52xx_psc_spi: fix block transfer
-Message-ID: <20080730232726.GU30670@suse.de>
-References: <20080730231003.655833364@mini.kroah.org>
+	Wed, 30 Jul 2008 19:40:33 -0400
+Received: from relay03.mail-hub.dodo.com.au ([123.2.6.238]:45918 "EHLO
+	relay03.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761599AbYG3Xkc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:40:32 -0400
+From: Grant Coady <grant_lkml@dodo.com.au>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Grant Coady <gcoady.lk@gmail.com>, Tim Bird <tim.bird@am.sony.com>,
+       Marco Berizzi <pupilla@hotmail.com>,
+       Alistair John Strachan <alistair@devzero.co.uk>,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org
+Subject: Re: commit a29ccf6f823a84d89e1c7aaaf221cf7282022024 break console on slackware 12.1
+Date: Thu, 31 Jul 2008 09:40:01 +1000
+Organization: http://bugsplatter.mine.nu/
+Reply-To: Grant Coady <gcoady.lk@gmail.com>
+Message-ID: <gqu1945hdec05madj71f8ajgqsqom3plfo@4ax.com>
+References: <BAY103-DAV4F0ECBCAFB86B24C87D3EB2820@phx.gbl> <200807291815.13907.alistair@devzero.co.uk> <BAY103-W38794846AA924235B38E47B2820@phx.gbl> <488FAFE3.4040001@am.sony.com> <ntcv845p7kpiob7iqf6d1m8buj116ug4nv@4ax.com> <4890E32C.5060602@keyaccess.nl>
+In-Reply-To: <4890E32C.5060602@keyaccess.nl>
+X-Mailer: Forte Agent 2.0/32.652
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mpc52xx_psc_spi-fix-block-transfer.patch"
-In-Reply-To: <20080730232451.GA30670@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.25-stable review patch.  If anyone has any objections, please let us 
-know.
+On Wed, 30 Jul 2008 23:54:52 +0200, Rene Herman <rene.herman@keyaccess.nl> wrote:
 
-------------------
-From: Luotao Fu <l.fu@pengutronix.de>
+>On 30-07-08 02:30, Grant Coady wrote:
+>> On Tue, 29 Jul 2008 17:03:47 -0700, Tim Bird <tim.bird@am.sony.com> wrote:
+>> 
+>>> Marco Berizzi wrote:
+>>>> alistair@devzero.co.uk wrote:
+>>>>
+>>>>> You don't actually say whether you had CONFIG_CONSOLE_TRANSLATIONS=y or not?
+>>>> yes console_translation is set to yes. It cannot be changed if embedded is not
+>>>> set.
+>>> If console_translation is set to yes, the behavior should be unchanged from
+>>> 2.6.26.  Can you please send me your .config?
+>>>
+>>> Also, can you please describe what breakage you are seeing?
+>> 
+>> I have the same issue, the line drawing characters are displayed as an odd 
+>> looking C with a tail.  Slackware-12.1 and Slamd64-12.1.
+>> 
+>> .configs:
+>>   http://bugsplatter.mine.nu/test/boxen/pooh/config-2.6.27-rc1a.gz
+>>   http://bugsplatter.mine.nu/test/boxen/pooh64/config-2.6.27-rc1a.gz
+>> 
+>> CONFIG_CONSOLE_TRANSLATIONS=y ?? yes it's on
+>
+>Sorry, didn't read the thread so just hoping to say something useful:
+>
+>slackware 12.1 installes by default with "vt.default_utf8=0" as a kernel 
+>param which may be involved here. I saw that picture that someone posted 
+>and to me that was nothing new -- my console has always looked that way 
+>if I set my locale to a UTF8 locale but do not change the console font.
 
-commit 9a7867e1b34c3575e7e76a05c0c54c6edbdae2a4 upstream
+I tried booting with that var set or commented out, the problem stayed.
+>
+>"LANG=C menuconfig" works for me when I can't, won't or just don't start 
+>X with it's terminals with UTF8 fonts...
 
-The block transfer routine in the mpc52xx psc spi driver misinterpret
-the datasheet.  According to the processor datasheet the chipselect is
-held as long as the EOF is not written.
+I don't normally use console as I run linux boxes headless most of the 
+time via PuTTY terminals, and they're fine.  
 
-Theoretically blocks of any sizes can be transferred in this way.  The
-old routine however writes an EOF after every word, which has the size
-of size_of_word.  This makes the transfer slow.
-
-Also fixed some duplicate code.
-
-Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/spi/mpc52xx_psc_spi.c |   22 +++++++---------------
- 1 file changed, 7 insertions(+), 15 deletions(-)
-
---- a/drivers/spi/mpc52xx_psc_spi.c
-+++ b/drivers/spi/mpc52xx_psc_spi.c
-@@ -148,7 +148,6 @@ static int mpc52xx_psc_spi_transfer_rxtx
- 	unsigned rfalarm;
- 	unsigned send_at_once = MPC52xx_PSC_BUFSIZE;
- 	unsigned recv_at_once;
--	unsigned bpw = mps->bits_per_word / 8;
- 
- 	if (!t->tx_buf && !t->rx_buf && t->len)
- 		return -EINVAL;
-@@ -164,22 +163,15 @@ static int mpc52xx_psc_spi_transfer_rxtx
- 		}
- 
- 		dev_dbg(&spi->dev, "send %d bytes...\n", send_at_once);
--		if (tx_buf) {
--			for (; send_at_once; sb++, send_at_once--) {
--				/* set EOF flag */
--				if (mps->bits_per_word
--						&& (sb + 1) % bpw == 0)
--					out_8(&psc->ircr2, 0x01);
-+		for (; send_at_once; sb++, send_at_once--) {
-+			/* set EOF flag before the last word is sent */
-+			if (send_at_once == 1)
-+				out_8(&psc->ircr2, 0x01);
-+
-+			if (tx_buf)
- 				out_8(&psc->mpc52xx_psc_buffer_8, tx_buf[sb]);
--			}
--		} else {
--			for (; send_at_once; sb++, send_at_once--) {
--				/* set EOF flag */
--				if (mps->bits_per_word
--						&& ((sb + 1) % bpw) == 0)
--					out_8(&psc->ircr2, 0x01);
-+			else
- 				out_8(&psc->mpc52xx_psc_buffer_8, 0);
--			}
- 		}
- 
- 
-
--- 
+Grant.
