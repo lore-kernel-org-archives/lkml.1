@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbYG3Rus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760186AbYG3Rvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757773AbYG3Rus (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 13:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYG3Ruk
+	id S1760186AbYG3Rvs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 13:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYG3Rvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 13:50:40 -0400
-Received: from qb-out-0506.google.com ([72.14.204.231]:11233 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751819AbYG3Ruj (ORCPT
+	Wed, 30 Jul 2008 13:51:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35027 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752023AbYG3Rvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 13:50:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=TZzcYJwx7iqufkf1n0wUwoaW/zkCZz0/of/tQz4/rSPbTzHQWHI7Idf89G6uHuM/ak
-         rN7U6v8sfQf0IhIvOMLY1/gyNqSOEqXeoVb3BWy/3wq0erH+X0Jzv1aypQAIawyWFlUi
-         shUpD7+4USYO/odhRhhich/8L3OAi4BIBEsB0=
-Date: Wed, 30 Jul 2008 20:48:21 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: penberg@cs.helsinki.fi, akpm@linux-foundation.org,
-       compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org,
-       righi.andrea@gmail.com
-Subject: Re: [PATCH 1/3] relay: Fix 4 off-by-one errors occuring when
-	writing to a CPU buffer.
-Message-ID: <20080730174821.GA5222@localhost>
-References: <20080613040947.7465b9a5@linux360.ro> <1213418437.8237.51.camel@charm-linux> <20080614175223.4d3c6084@linux360.ro> <1213593748.7744.34.camel@charm-linux> <20080621050632.4a7a6c16@linux360.ro> <1216876176.6392.38.camel@charm-linux>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1216876176.6392.38.camel@charm-linux>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 30 Jul 2008 13:51:39 -0400
+Date: Wed, 30 Jul 2008 10:50:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 1/2] Export get_user_pages_fast
+Message-Id: <20080730105052.f05865d4.akpm@linux-foundation.org>
+In-Reply-To: <20080730173944.GC28604@cs181140183.pp.htv.fi>
+References: <200807301438.55941.rusty@rustcorp.com.au>
+	<20080730033523.0f38f7e4.akpm@linux-foundation.org>
+	<20080730154736.GC21597@cs181140183.pp.htv.fi>
+	<20080730100355.f1402dcf.akpm@linux-foundation.org>
+	<20080730170939.GA28604@cs181140183.pp.htv.fi>
+	<20080730101438.e1484440.akpm@linux-foundation.org>
+	<20080730171845.GB28604@cs181140183.pp.htv.fi>
+	<20080730102817.c74a9e33.akpm@linux-foundation.org>
+	<20080730173944.GC28604@cs181140183.pp.htv.fi>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 24, 2008 at 12:09:36AM -0500, Tom Zanussi wrote:
+On Wed, 30 Jul 2008 20:39:44 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+
+> > On non-CONFIG_HAVE_GET_USER_PAGES_FAST architectures a
+> > get_user_pages_fast() call will in fact call get_user_pages().
+> > 
+> > On CONFIG_HAVE_GET_USER_PAGES_FAST architectures, get_user_pages_fast()
+> > is a real function.  All architectures which implement that function
+> > should export it to modules.  Hence it should be exported from within
+> > generic code.
 > 
-> On Sat, 2008-06-21 at 05:06 +0300, Eduard - Gabriel Munteanu wrote:
-> > On Mon, 16 Jun 2008 00:22:27 -0500
-> > Tom Zanussi <tzanussi@gmail.com> wrote:
-> > 
-> > > So apparently what you're seeing is zeroes being read when there's a
-> > > buffer-full condition?  If so, we need to figure out exactly why
-> > > that's happening to see whether your fix is really what's needed; I
-> > > haven't seen problems in the buffer-full case before and I think your
-> > > fix would break it even if it fixed your read problem.  So it would
-> > > be good to be able to reproduce it first.
-> > > 
-> > > Tom  
-> > 
-> > Hi,
-> > 
-> > Sorry for being so late, there were some exams I had to cope with.
-> > 
-> > Although I couldn't reproduce zeros, I've come up with something I'd
-> > say is equally good. This has been done on a vanilla 2.6.26-rc6.
-> > 
-> > Please look at the testcase below and tell me what you think.
-> > 
-> 
-> Hi,
-> 
-> Yes, this is a bug - thanks for sending the nice test case.  This patch
-> should fix it.  BTW, if the output still looks a little different from
-> what you were expecting, it might make more sense after adding a
-> relay_test printk for each dropped event, something like this:
+> Are we talking at cross purposes?
 
-The all-zeros problem happened when poll() with infinite timeout is not
-used before reading. I fixed the user app I was writing, but the docs should
-really reflect this. Relay has a kinda strange interface.
+Apparently.
 
+> I thought you were talking an error due to a missing function.
 
-	Cheers,
-	Eduard
+Nope.
 
+> If you think about an error where the function is present but only the 
+> EXPORT_SYMBOL is missing
+
+yup.
+
+> then I get your point (although I do not 
+> consider it a huge problem).
+
+Me either.
