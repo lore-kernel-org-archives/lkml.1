@@ -1,79 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbYG3Pjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762382AbYG3Pkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbYG3Pjw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 11:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbYG3Pjn
+	id S1762382AbYG3Pkl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 11:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbYG3Pkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 11:39:43 -0400
-Received: from web83206.mail.mud.yahoo.com ([216.252.101.62]:38434 "HELO
-	web83206.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751986AbYG3Pjn (ORCPT
+	Wed, 30 Jul 2008 11:40:33 -0400
+Received: from mail.free-electrons.com ([88.191.46.45]:43775 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753013AbYG3Pkc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 11:39:43 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=bv32D3hnNs8MqlMCXo5kxolDJTt58/ifr0CZ7ZJj6m2YgfVXum7lzPW6X0kiD0QzOaE/CjFneyFQsgApy/+gfa+mV2/ieaFGwbYrbDAU1hfmST38i6mQbw+E6f3Ytfhg8vdxEXHSqc+DwSDjjGDEPeKr7FRn9ISnjn0tzja2qM4=;
-X-YMail-OSG: CXPEBr0VM1lqvqZg8G_q3jKwL.58BiKh5fNgMlIS21AkZOo5BXopJP8RAPrQ9jUZyLFhhkgtOEmsaOZr.ViU_QEzp366wQmsx87Gp2tF27NIC7cbHOkFYFk-
-Date: Wed, 30 Jul 2008 08:39:42 -0700 (PDT)
-From: Matthew Frost <artusemrys@yahoo.com>
-Subject: Re: BUG: SCSI: usb storage SDHC card doesn't work in 2.6.27-rc1
-To: Alan Stern <stern@rowland.harvard.edu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel@vger.kernel.org, Matt Frost <artusemrys@sbcglobal.net>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>
-In-Reply-To: <Pine.LNX.4.44L0.0807301014420.2584-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <749062.6878.qm@web83206.mail.mud.yahoo.com>
+	Wed, 30 Jul 2008 11:40:32 -0400
+Date: Wed, 30 Jul 2008 17:40:28 +0200
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       mpm@selenic.com, akpm@linux-foundation.org
+Subject: Re: [patch 2/4] Configure out file locking features
+Message-ID: <20080730174028.67184ea2@surf>
+In-Reply-To: <20080730142754.GD19966@cs181140183.pp.htv.fi>
+References: <20080729154520.728594017@free-electrons.com>
+	<20080729154747.872888047@free-electrons.com>
+	<20080729181751.GA24924@parisc-linux.org>
+	<20080730142754.GD19966@cs181140183.pp.htv.fi>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/KkKrxzsZy/AgKq_3jGyWbPG";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Alan Stern <stern@rowland.harvard.edu> wrote:
+--Sig_/KkKrxzsZy/AgKq_3jGyWbPG
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, 29 Jul 2008, James Bottomley wrote:
-> 
-> > > Summary:
-> > > Between 2.6.26-rc9-git10 and rc9-git11, the kernel stopped properly
-> > > recognizing my USB-card-reader-mounted SDHC 4GB card.  The problem
-> seems to
-> > > come up between usb-storage recognizing the device, and the handoff to
-> scsi
-> > > to read the disk properties.  The bug remains in 2.6.26 and 2.6.27-rc1;
-> > > kernels before 2.6.26-rc9-git10 are unaffected.  On the same EHCI
-> controller,
-> > > an old-spec SD 1GB card and its reader are unaffected by this bug.
-> 
-> > > After the bug, initialization looks the same until the device scan
-> finishes. 
-> > > Handoff to scsi produces the following (taken from rc9-git12):
-> 
-> > > sd 5:0:0:0: [sdf] Sector size 0 reported, assuming 512.
-> > > sd 5:0:0:0: [sdf] 1 512-byte hardware sectors (0 MB)
-> > > sd 5:0:0:0: [sdf] Write Protect is off
-> > > sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
-> > > sd 5:0:0:0: [sdf] Assuming drive cache: write through
-> > > sd 5:0:0:0: [sdf] Sector size 0 reported, assuming 512.
-> > > sd 5:0:0:0: [sdf] 1 512-byte hardware sectors (0 MB)
-> > > sd 5:0:0:0: [sdf] Write Protect is off
-> > > sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
-> > > sd 5:0:0:0: [sdf] Assuming drive cache: write through
-> > >  sdf: sdf1
-> > >  sdf: p1 exceeds device capacity
-> > > sd 5:0:0:0: [sdf] Attached SCSI removable disk
-> > > sd 5:0:0:0: Attached scsi generic sg7 type 0
-> 
-> The problem will most likely be fixed by this patch:
-> 
-> 	http://marc.info/?l=linux-usb&m=121734710306509&w=2
-> 
-> Alan Stern
-> 
-> 
+Le Wed, 30 Jul 2008 17:27:54 +0300,
+Adrian Bunk <bunk@kernel.org> a =C3=A9crit :
 
-Thanks.  Giving it a try now.
+> It seems the emails containing the patches never made it to the vger=20
+> lists, which makes it a bit hard to comment on them.
 
-Matt Frost
+Yes, they didn't make it to the lists, for some reason. Maybe it's
+because I sent them using "quilt mail --send", which uses my local
+exim4 mail server, and for some reason, vger doesn't like that kind of
+e-mails. However, my exim4 is configured to sent the e-mails through by
+ISP SMTP. From my exim4 mainlog:
+
+2008-07-29 17:47:57 1KNrQS-0007kt-Kg =3D> linux-kernel@vger.kernel.org R=3D=
+smarthost T=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
+2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> linux-embedded@vger.kernel.org R=3D=
+smarthost T=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
+2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> netdev@vger.kernel.org R=3Dsmarthos=
+t T=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
+2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> davem@davemloft.net R=3Dsmarthost T=
+=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
+2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> mpm@selenic.com R=3Dsmarthost T=3Dr=
+emote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
+2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> akpm@linux-foundation.org R=3Dsmart=
+host T=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
+2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> thomas.petazzoni@free-electrons.com=
+ R=3Dsmarthost T=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
+2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> michael@free-electrons.com R=3Dsmar=
+thost T=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
+2008-07-29 17:47:57 1KNrQS-0007kt-Kg Completed
+
+So from my side, everything seemed to work well. Does anybody has a
+clue ?
+
+> Thomas, can you try to figure out what went wrong and resend them
+> then?
+
+I will send them again through my normal MUA, using quilt mail --mbox.
+Hopefully it'll work.
+
+Sincerly,
+
+Thomas
+--=20
+Thomas Petazzoni, Free Electrons
+Kernel, drivers and embedded Linux development,
+consulting, training and support.
+http://free-electrons.com
+
+--Sig_/KkKrxzsZy/AgKq_3jGyWbPG
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIkIts9lPLMJjT96cRAu+gAKCSr8z5X4fgX7KGFQ4svShUTmPovwCfQD0m
+i1EN/4GQJAdVZZwhE2QxjY8=
+=OwXs
+-----END PGP SIGNATURE-----
+
+--Sig_/KkKrxzsZy/AgKq_3jGyWbPG--
