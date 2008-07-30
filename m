@@ -1,81 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624AbYG3PqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYG3Psh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755624AbYG3PqR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 11:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbYG3PqA
+	id S1756846AbYG3Psh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 11:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbYG3Ps3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 11:46:00 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:48858 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752304AbYG3Pp7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 11:45:59 -0400
-Date: Wed, 30 Jul 2008 08:45:08 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Tim Wright <timw@splhi.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Fix miscalculation of sg_io timeout in
- CDROM_SEND_PACKET handler.
-Message-Id: <20080730084508.ce14b30b.randy.dunlap@oracle.com>
-In-Reply-To: <48908C27.2060308@splhi.com>
-References: <488D17DE.5000801@splhi.com>
-	<1217431134.3335.15.camel@localhost.localdomain>
-	<48908C27.2060308@splhi.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 30 Jul 2008 11:48:29 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:58950 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751149AbYG3Ps2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 11:48:28 -0400
+Date: Wed, 30 Jul 2008 18:47:36 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 1/2] Export get_user_pages_fast
+Message-ID: <20080730154736.GC21597@cs181140183.pp.htv.fi>
+References: <200807301438.55941.rusty@rustcorp.com.au> <20080730033523.0f38f7e4.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080730033523.0f38f7e4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008 08:43:35 -0700 Tim Wright wrote:
+On Wed, Jul 30, 2008 at 03:35:23AM -0700, Andrew Morton wrote:
+> On Wed, 30 Jul 2008 14:38:55 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> 
+> > After all, it was made for lguest wasn't it?  Still think it should be
+> > called get_current_pages() though.
+> > 
+> > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> > ---
+> >  arch/x86/mm/gup.c |    2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
+> > diff -r cb465381f6d5 arch/x86/mm/gup.c
+> > --- a/arch/x86/mm/gup.c	Wed Jul 30 10:18:44 2008 +1000
+> > +++ b/arch/x86/mm/gup.c	Wed Jul 30 14:22:53 2008 +1000
+> > @@ -8,6 +8,7 @@
+> >  #include <linux/mm.h>
+> >  #include <linux/vmstat.h>
+> >  #include <linux/highmem.h>
+> > +#include <linux/module.h>
+> >  
+> >  #include <asm/pgtable.h>
+> >  
+> > @@ -296,3 +303,4 @@ slow_irqon:
+> >  		return ret;
+> >  	}
+> >  }
+> > +EXPORT_SYMBOL_GPL(get_user_pages_fast);
+> 
+> A regularly-occurring problem with an export like this is that someone
+> writes a driver and tests it on x86, then the driver explodes on an
+> architecture which didn't export the same symbol.
+> 
+> So a better implementation might be to put
+> 
+> #ifdef CONFIG_HAVE_GET_USER_PAGES_FAST
+> EXPORT_SYMBOL_GPL(get_user_pages_fast);
+> #endif
+> 
+> into generic code somewhere.
 
-> James Bottomley wrote:
-> > On Sun, 2008-07-27 at 17:50 -0700, Tim Wright wrote:
-> >   
-> >> @@ -629,7 +629,7 @@ int scsi_cmd_ioctl(struct file *file, st
-> >>                         hdr.sbp = cgc.sense;
-> >>                         if (hdr.sbp)
-> >>                                 hdr.mx_sb_len = sizeof(struct 
-> >> request_sense);
-> >> -                       hdr.timeout = cgc.timeout;
-> >> +                       hdr.timeout = jiffies_to_msecs(cgc.timeout);
-> >>                         hdr.cmdp = ((struct cdrom_generic_command 
-> >> __user*) arg)->cmd;
-> >>                         hdr.cmd_len = sizeof(cgc.cmd);
-> >>     
-> >
-> > I'm afraid this patch is completely whitespace damaged:  the tabs have
-> > all become spaces and the mailer has broken some of the lines.
-> >
-> > Since it's a one liner, I can make the fix directly, but if you look at
-> >
-> > Documentation/SubmittingPatches
-> >
-> > It has some good advice about how to fix your email tool to prevent this
-> > from happening in future.
-> >
-> > James
-> >
-> >
-> >   
-> Ugh, mea culpa! Thanks James. I haven't submitted anything in a while, 
-> and was using Thunderbird. I will
-> go off and figure out how to make it leave the contents alone, or I'll 
-> use a less "clever" client in future.
-> Many thanks for the response and the gentle coaching :-)
+How would that help?
 
-also see Documentation/email-clients.txt
+cu
+Adrian
 
+-- 
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
