@@ -1,81 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbYG3HZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYG3H2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756283AbYG3HZr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 03:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYG3HZj
+	id S1755936AbYG3H2z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 03:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbYG3H2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 03:25:39 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:39232 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751075AbYG3HZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 03:25:38 -0400
-Date: Wed, 30 Jul 2008 10:24:48 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Jon Smirl <jonsmirl@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
-       James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-Message-ID: <20080730072448.GB1564@cs181140183.pp.htv.fi>
-References: <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com> <20080728202236.GN9378@mit.edu> <20080728204624.GA11581@redhat.com> <20080728141414.d7e5def2.randy.dunlap@oracle.com> <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au> <20080728234131.GD28055@linux-sh.org> <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com> <488E644D.7000507@keyaccess.nl> <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com> <488EF377.5080603@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <488EF377.5080603@keyaccess.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 30 Jul 2008 03:28:47 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56825 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751075AbYG3H2q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 03:28:46 -0400
+Subject: Re: [PATCH 0/5] ftrace: do not trace NMI handlers
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+In-Reply-To: <20080730012939.885172468@goodmis.org>
+References: <20080730012939.885172468@goodmis.org>
+Content-Type: text/plain
+Date: Wed, 30 Jul 2008 09:28:05 +0200
+Message-Id: <1217402885.6364.14.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 12:39:51PM +0200, Rene Herman wrote:
-> On 29-07-08 02:50, Jon Smirl wrote:
->
->>>> Why do these all end in (none)?
->>>> Craig Hughes <craig@com.rmk.(none)>
->>>> Dave Neuer <dneuer@org.rmk.(none)>
->>>> David Brownell <david-b@net.rmk.(none)>
->>>> David Woodhouse <dwmw2@org.rmk.(none)>
->>>> Deepak Saxena <dsaxena@net.rmk.(none)>
->>>> Enrico Scholz <enrico.scholz@de.rmk.(none)>
->>>>
->>>  Because rmk rewrites addresses to comply with privacy laws. Another good
->>> example of why this nonsense of yours is exactly that.
->>>
->>>  I checked and am personally in there three times, once even without any
->>> valid email address listed. And any time there's anything other than my
->>> gmail address in some submission it at least recently means that someone
->>> _else_ took my from: address and stuck it on there and while I don't
->>> terribly mind that generally, I find it really annoying to see even those
->>> mistakes harvested into your hugely google-accessible resource.
->
-> [ .. ]
->
->> As for privacy, if you don't want your email address in a file like
->> this don't put it into a GPL'd public project.
->
-> Like I told you, I don't. Others do. And while that's not a huge issue  
-> in itself, you harvesting it into your nicely formatted google and  
-> spam-base MAKES it an issue. Just stop this crap. Be away.
+On Tue, 2008-07-29 at 21:29 -0400, Steven Rostedt wrote:
+> The dynamic ftrace code modifies code text at run time. Arjan informed
+> me that there is no safe way to modify code text on an SMP system when
+> the other CPUs might execute that same code. The reason has to do with
+> pipeline caches and CPUs might do funny things if the code being pushed
+> in the pipeline also happens to be modified at that same time. (Arjan
+> correct me if I'm wrong here).
 
-Whether Jon's patch is a good idea one might discuss, but as soon as 
-someone puts an email address into a kernel commit Google will anyway 
-find it:
+How does the immediate value stuff get around this issue?
 
-The ChangeLog-* files at http://ftp.kernel.org/pub/linux/kernel/v2.6/ 
-also contain all addresses in Jon's list, and Google harvests them.
-The same goes for mailing list archives of git-commits-head.
-
-> Rene.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> We use kstop_machine to put the system into a UP like mode. This prevents
+> other CPUs from executing code while we modify it. Under stress testing
+> Ingo discovered that NMIs can cause the system to crash. This was due
+> to NMIs calling code that is being modified. Some boxes are more prone to
+> failure than others.
+> 
+> This series of patches performs two tasks:
+> 
+>  1) Add notrace to functions called by NMI, or simply remove the tracing
+>     completely from files that are primarily used by NMI.
+> 
+>  2) Add a warning when code that will be modified is called by an NMI.
+>     This also disables ftraced when it is detected, to prevent the
+>     race with the NMI and code modification from happneing.
+> 
+> The warning looks something like this:
+> 
+> --------------- cut here ---------------
+> WARNING: ftraced code called from NMI context lapic_wd_event+0xd/0x65
+>          Please report this to the ftrace maintainer.
+>          Disabling ftraced. Boot with ftrace_keep_on_nmi to not disable.
+> Pid: 0, comm: swapper Not tainted 2.6.26-tip #96
+> 
+> Call Trace:
+>  <NMI>  [<ffffffff8021c6d0>] ? lapic_wd_event+0xd/0x65
+>  [<ffffffff8027b9c1>] ftrace_record_ip+0xa3/0x357
+>  [<ffffffff8020c0f4>] mcount_call+0x5/0x31
+>  [<ffffffff8021c6d5>] ? lapic_wd_event+0x12/0x65
+>  [<ffffffff804b90d4>] nmi_watchdog_tick+0x21b/0x230
+>  [<ffffffff804b8487>] default_do_nmi+0x73/0x1e0
+>  [<ffffffff804b8a04>] do_nmi+0x64/0x91
+>  [<ffffffff804b80bf>] nmi+0x7f/0x80
+>  [<ffffffff80212c14>] ? default_idle+0x35/0x4f
+>  <<EOE>>  [<ffffffff8020ae42>] cpu_idle+0x8a/0xc9
+>  [<ffffffff804b15a6>] start_secondary+0x172/0x177
+> 
+> --------------- end cut here ---------------
+> 
+> 
+> This appears once when it is caught. We are hoping that this will not
+> appear often, and are running code to catch it as it does.
+> 
+> -- Steve
+> 
 
