@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760670AbYG3Mru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760832AbYG3Muq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760670AbYG3Mru (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 08:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbYG3Mrm
+	id S1760832AbYG3Muq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 08:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbYG3Muj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 08:47:42 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:57761 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753362AbYG3Mrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 08:47:42 -0400
-Date: Wed, 30 Jul 2008 15:46:50 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Rene Herman <rene.herman@keyaccess.nl>, Jon Smirl <jonsmirl@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-Message-ID: <20080730124650.GB19966@cs181140183.pp.htv.fi>
-References: <20080728204624.GA11581@redhat.com> <20080728141414.d7e5def2.randy.dunlap@oracle.com> <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au> <20080728234131.GD28055@linux-sh.org> <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com> <488E644D.7000507@keyaccess.nl> <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com> <488EF377.5080603@keyaccess.nl> <20080730072448.GB1564@cs181140183.pp.htv.fi> <4890284E.3050806@s5r6.in-berlin.de>
+	Wed, 30 Jul 2008 08:50:39 -0400
+Received: from venus.billgatliff.com ([209.251.101.201]:50812 "EHLO
+	venus.billgatliff.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752852AbYG3Mui (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 08:50:38 -0400
+X-Greylist: delayed 1465 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Jul 2008 08:50:38 EDT
+Message-ID: <48905DE9.2030503@billgatliff.com>
+Date: Wed, 30 Jul 2008 07:26:17 -0500
+From: Bill Gatliff <bgat@billgatliff.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4890284E.3050806@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, vatsa@linux.vnet.ibm.com,
+       efault@gmx.de, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: Fwd: Commit 76a2a6ee8a0660a29127f05989ac59ae1ce865fa breaks PXA270
+ (at least)?
+References: <20080729223105.GK10982@flint.arm.linux.org.uk> <20080729154605.d540cf6d.akpm@linux-foundation.org> <20080729225623.GO10982@flint.arm.linux.org.uk> <1217401810.6364.3.camel@twins> <1217404554.6364.18.camel@twins> <20080730080032.GC2274@flint.arm.linux.org.uk>
+In-Reply-To: <20080730080032.GC2274@flint.arm.linux.org.uk>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 10:37:34AM +0200, Stefan Richter wrote:
-> Adrian Bunk wrote:
->...
-> > but as soon as someone puts an email address into a kernel commit
-> > Google will anyway find it:
-> 
-> This doesn't justify what Jon did though.
-> 
-> Jon created a new database out of formerly disparate datasets, even
-> though we didn't provide him these datasets for this purpose.  The fact
-> that the means to create this database are rather trivial and cheap do
-> not mean that we implicitly agreed to what he did or that it wouldn't
-> matter whether we agree to it or not.
->...
+Russell King - ARM Linux wrote:
+> On Wed, Jul 30, 2008 at 09:55:54AM +0200, Peter Zijlstra wrote:
+>> Sorry - that's only relevant for HAVE_UNSTABLE_SCHED_CLOCK and x86 seems
+>> to be the only one using that (which just shows the platforms quality
+>> </sarcasm>).
 
-You certified:
-
-  I understand and agree that this project and the contribution
-  are public and that a record of the contribution (including all
-  personal information I submit with it, including my sign-off) is
-  maintained indefinitely and may be redistributed consistent with
-  this project or the open source license(s) involved.
+Hmmm.  That one defaults to =y, right?  It has for me for years...  :)
 
 
-And if you think this doesn't cover Jon's patch you should also 
-complain to LWN and the Linux Foundation who published data
-generated from the same datasets as Jon's patch.
-
-
-> Stefan Richter
-
-cu
-Adrian
-
+b.g.
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Bill Gatliff
+bgat@billgatliff.com
