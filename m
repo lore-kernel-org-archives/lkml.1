@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763009AbYGaAWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763160AbYGaAWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763009AbYGaAWl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760812AbYGaAU6
+	id S1763160AbYGaAWS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758289AbYGaAUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:20:58 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37369 "EHLO mx2.suse.de"
+	Wed, 30 Jul 2008 20:20:37 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37339 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762882AbYGaAU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:20:57 -0400
-Date: Wed, 30 Jul 2008 16:59:29 -0700
+	id S1755164AbYGaAUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:20:33 -0400
+Date: Wed, 30 Jul 2008 16:59:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,18 +22,18 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Simon Arlott <simon@fire.lp0.eu>,
+       alan@lxorguk.ukuu.org.uk,
        v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       Hermann Pitton <hermann-pitton@arcor.de>,
-       Brian Marete <bgmarete@gmail.com>,
+       Tim Gardner <tim.gardner@canonical.com>,
+       Laurent Pinchart <laurent.pinchart@skynet.be>,
        Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [patch 45/62] V4L: saa7134: Copy tuner data earlier to avoid
-	overwriting manual tuner type
-Message-ID: <20080730235929.GS12896@suse.de>
+Subject: [patch 44/62] V4L: uvcvideo: Add support for Medion Akoya Mini
+	E1210 integrated webcam
+Message-ID: <20080730235926.GR12896@suse.de>
 References: <20080730233050.332789722@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="v4l-saa7134-copy-tuner-data-earlier-to-avoid-overwriting-manual-tuner-type.patch"
+Content-Disposition: inline; filename="v4l-uvcvideo-add-support-for-medion-akoya-mini-e1210-integrated-webcam.patch"
 In-Reply-To: <20080730234915.GA12426@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,68 +45,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 us know.
 
 ------------------
-From: Simon Arlott <simon@fire.lp0.eu>
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
 
-V4L: saa7134: Copy tuner data earlier to avoid overwriting manual tuner type
+(cherry picked from commit bdf2fe4a0b9d23e69c77eaec76212216c9a957ef)
 
-(cherry picked from commit d53687d1d22c3204394658a31654de2f1efb0e8f)
+V4L: uvcvideo: Add support for Medion Akoya Mini E1210 integrated webcam
 
-Copy tuner data earlier in init to avoid overwriting manual tuner type
-
-When saa7134_board_init2 runs, it immediately overwrites the
-current value (set earlier from module parameter) of tuner_type
-with the static values, and then does autodetection. This patch
-moves the tuner_addr copy to earlier in saa7134_initdev and
-removes the tuner_type copy from saa7134_board_init2.
-
-Autodetection could still potentially change to the wrong tuner
-type, but it is now possible to override the default type for
-the card again.
-
-My card's tuner is configured with autodetection from eeprom,
-so I don't need to manually set the tuner. I've checked that
-the autodetection still works for my card.
-
-Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
-Reviewed-by: Hermann Pitton <hermann-pitton@arcor.de>
-Cc: Brian Marete <bgmarete@gmail.com>
+Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@skynet.be>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
 Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/saa7134/saa7134-cards.c |    3 ---
- drivers/media/video/saa7134/saa7134-core.c  |    5 +++--
- 2 files changed, 3 insertions(+), 5 deletions(-)
+ drivers/media/video/uvc/uvc_driver.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
---- a/drivers/media/video/saa7134/saa7134-cards.c
-+++ b/drivers/media/video/saa7134/saa7134-cards.c
-@@ -5703,9 +5703,6 @@ int saa7134_board_init2(struct saa7134_d
- 	unsigned char buf;
- 	int board;
- 
--	dev->tuner_type = saa7134_boards[dev->board].tuner_type;
--	dev->tuner_addr = saa7134_boards[dev->board].tuner_addr;
--
- 	switch (dev->board) {
- 	case SAA7134_BOARD_BMK_MPEX_NOTUNER:
- 	case SAA7134_BOARD_BMK_MPEX_TUNER:
---- a/drivers/media/video/saa7134/saa7134-core.c
-+++ b/drivers/media/video/saa7134/saa7134-core.c
-@@ -946,11 +946,12 @@ static int __devinit saa7134_initdev(str
- 		dev->board = SAA7134_BOARD_UNKNOWN;
- 	}
- 	dev->autodetected = card[dev->nr] != dev->board;
--	dev->tuner_type   = saa7134_boards[dev->board].tuner_type;
-+	dev->tuner_type = saa7134_boards[dev->board].tuner_type;
-+	dev->tuner_addr = saa7134_boards[dev->board].tuner_addr;
- 	dev->tda9887_conf = saa7134_boards[dev->board].tda9887_conf;
- 	if (UNSET != tuner[dev->nr])
- 		dev->tuner_type = tuner[dev->nr];
--		printk(KERN_INFO "%s: subsystem: %04x:%04x, board: %s [card=%d,%s]\n",
-+	printk(KERN_INFO "%s: subsystem: %04x:%04x, board: %s [card=%d,%s]\n",
- 		dev->name,pci_dev->subsystem_vendor,
- 		pci_dev->subsystem_device,saa7134_boards[dev->board].name,
- 		dev->board, dev->autodetected ?
+--- a/drivers/media/video/uvc/uvc_driver.c
++++ b/drivers/media/video/uvc/uvc_driver.c
+@@ -1892,6 +1892,15 @@ static struct usb_device_id uvc_ids[] = 
+ 	  .bInterfaceSubClass	= 1,
+ 	  .bInterfaceProtocol	= 0,
+ 	  .driver_info		= UVC_QUIRK_PROBE_MINMAX },
++	/* Medion Akoya Mini E1210 */
++	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
++				| USB_DEVICE_ID_MATCH_INT_INFO,
++	  .idVendor		= 0x5986,
++	  .idProduct		= 0x0141,
++	  .bInterfaceClass	= USB_CLASS_VIDEO,
++	  .bInterfaceSubClass	= 1,
++	  .bInterfaceProtocol	= 0,
++	  .driver_info		= UVC_QUIRK_PROBE_MINMAX },
+ 	/* Acer OrbiCam - Unknown vendor */
+ 	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
+ 				| USB_DEVICE_ID_MATCH_INT_INFO,
 
 -- 
