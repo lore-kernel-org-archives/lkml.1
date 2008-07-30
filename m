@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762862AbYGaAPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762878AbYGaAPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762862AbYGaAPQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762130AbYGaAON
+	id S1762878AbYGaAPs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760902AbYGaAOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:14:13 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36734 "EHLO mx2.suse.de"
+	Wed, 30 Jul 2008 20:14:37 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36790 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761877AbYGaAOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:14:12 -0400
-Date: Wed, 30 Jul 2008 16:58:50 -0700
+	id S1762919AbYGaAOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:14:35 -0400
+Date: Wed, 30 Jul 2008 16:58:53 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jan Beulich <jbeulich@novell.com>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: [patch 28/62] vmlinux.lds: move __attribute__((__cold__))
-	functions back into final .text section
-Message-ID: <20080730235850.GB12896@suse.de>
+       alan@lxorguk.ukuu.org.uk, Nickolay Vinogradov <nickolay@protei.ru>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: [patch 29/62] ARM: fix fls() for 64-bit arguments
+Message-ID: <20080730235853.GC12896@suse.de>
 References: <20080730233050.332789722@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="vmlinux.lds-move-__attribute__-functions-back-into-final-.text-section.patch"
+Content-Disposition: inline; filename="arm-fix-fls-for-64-bit-arguments.patch"
 In-Reply-To: <20080730234915.GA12426@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,48 +40,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 us know.
 
 ------------------
-From: Jan Beulich <jbeulich@novell.com>
+From: Andrew Morton <akpm@linux-foundation.org>
 
-commit fb5e2b379732e1a6ea32392980bb42e0212db842 upstream
+commit 0c65f459ce6c8bd873a61b3ae1e57858ab1debf3 upstream
 
-Due to the addition of __attribute__((__cold__)) to a few symbols
-without adjusting the linker scripts, those symbols currently may end
-up outside the [_stext,_etext) range, as they get placed in
-.text.unlikely by (at least) gcc 4.3.0. This may confuse code not only
-outside of the kernel, symbol_put_addr()'s BUG() could also trigger.
-Hence we need to add .text.unlikely (and for future uses of
-__attribute__((__hot__)) also .text.hot) to the TEXT_TEXT() macro.
+arm's fls() is implemented as a macro, causing it to misbehave when passed
+64-bit arguments.  Fix.
 
-Issue observed by Lukas Lipavsky.
-
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Tested-by: Lukas Lipavsky <llipavsky@suse.cz>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Nickolay Vinogradov <nickolay@protei.ru>
+Tested-by: Krzysztof Halasa <khc@pm.waw.pl>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/asm-generic/vmlinux.lds.h |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ include/asm-arm/bitops.h |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -204,6 +204,7 @@
-  * during second ld run in second ld pass when generating System.map */
- #define TEXT_TEXT							\
- 		ALIGN_FUNCTION();					\
-+		*(.text.hot)						\
- 		*(.text)						\
- 		*(.ref.text)						\
- 		*(.text.init.refok)					\
-@@ -213,7 +214,8 @@
- 	CPU_KEEP(init.text)						\
- 	CPU_KEEP(exit.text)						\
- 	MEM_KEEP(init.text)						\
--	MEM_KEEP(exit.text)
-+	MEM_KEEP(exit.text)						\
-+		*(.text.unlikely)
+--- a/include/asm-arm/bitops.h
++++ b/include/asm-arm/bitops.h
+@@ -277,9 +277,16 @@ static inline int constant_fls(int x)
+  * the clz instruction for much better code efficiency.
+  */
  
- 
- /* sched.text is aling to function alignment to secure we have same
+-#define fls(x) \
++#define __fls(x) \
+ 	( __builtin_constant_p(x) ? constant_fls(x) : \
+ 	  ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 32-__r; }) )
++
++/* Implement fls() in C so that 64-bit args are suitably truncated */
++static inline int fls(int x)
++{
++	return __fls(x);
++}
++
+ #define ffs(x) ({ unsigned long __t = (x); fls(__t & -__t); })
+ #define __ffs(x) (ffs(x) - 1)
+ #define ffz(x) __ffs( ~(x) )
 
 -- 
