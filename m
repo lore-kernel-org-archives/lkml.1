@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbYG3UId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758525AbYG3UJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758240AbYG3UId (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 16:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756181AbYG3UIL
+	id S1758525AbYG3UJY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 16:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbYG3UJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 16:08:11 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:12310 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756131AbYG3UIK convert rfc822-to-8bit (ORCPT
+	Wed, 30 Jul 2008 16:09:12 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:42553 "EHLO
+	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754343AbYG3UJL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 16:08:10 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Roland Dreier <rdreier@cisco.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>
-Date: Wed, 30 Jul 2008 20:07:28 +0000
-Subject: RE: Problems building 2.6.26 and 2.6.27-rc1
-Thread-Topic: Problems building 2.6.26 and 2.6.27-rc1
-Thread-Index: Acjyd2E8khjUc+hJTDayTJzv3DKuAwAB7X1A
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A778826B3E811B0@GVW0547EXC.americas.hpqcorp.net>
-References: <20080730184833.GA936@roadking.ldev.net>
- <adaiqunyyxd.fsf@cisco.com>
-In-Reply-To: <adaiqunyyxd.fsf@cisco.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 30 Jul 2008 16:09:11 -0400
+X-BigFish: VPS-25(z37d4l34a4l518kz1432R98dR4015M1805M655Ozz10d3izzz2fh6bh66h)
+X-Spam-TCS-SCL: 5:0
+Message-ID: <4890CB06.9040106@am.sony.com>
+Date: Wed, 30 Jul 2008 13:11:50 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+To: Grant Coady <gcoady.lk@gmail.com>
+CC: Marco Berizzi <pupilla@hotmail.com>,
+       Alistair John Strachan <alistair@devzero.co.uk>,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org
+Subject: Re: commit a29ccf6f823a84d89e1c7aaaf221cf7282022024 break console
+ on slackware 12.1
+References: <BAY103-DAV4F0ECBCAFB86B24C87D3EB2820@phx.gbl> <200807291815.13907.alistair@devzero.co.uk> <BAY103-W38794846AA924235B38E47B2820@phx.gbl> <488FAFE3.4040001@am.sony.com> <ntcv845p7kpiob7iqf6d1m8buj116ug4nv@4ax.com>
+In-Reply-To: <ntcv845p7kpiob7iqf6d1m8buj116ug4nv@4ax.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Jul 2008 20:08:57.0302 (UTC) FILETIME=[1939E760:01C8F280]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland wrote:
+Grant Coady wrote:
+> I have the same issue, the line drawing characters are displayed as an odd 
+> looking C with a tail.  Slackware-12.1 and Slamd64-12.1.
+> 
+> .configs:
+>   http://bugsplatter.mine.nu/test/boxen/pooh/config-2.6.27-rc1a.gz
+>   http://bugsplatter.mine.nu/test/boxen/pooh64/config-2.6.27-rc1a.gz
+> 
+> CONFIG_CONSOLE_TRANSLATIONS=y ?? yes it's on
 
->
->  > I'm getting the following error when trying to build
-> either 2.6.26 or  > 2.6.27-rc1:
->  >
->  > arch/x86/kernel/head64.c: In function 'x86_64_start_kernel':
->  > arch/x86/kernel/head64.c:88: error: size of array 'type
-> name' is negative
->
-> It looks like you're hitting
->
->         BUILD_BUG_ON(!(MODULES_VADDR > __START_KERNEL));
->
-> No idea why you're hitting that though.  What's your .config
-> and compiler?
->
-I think maybe I've figured out what's breaking my build. If use "make -jN" I hit the error. I usually set N to the number of processors (real and HT). So if /proc/cpuinfo display info about 4 processors I use -j4, etc. If I don't specify the number of jobs to run simultaneously the build completes with just the usual warnings.
+This looks like an operator precedence bug introduced by
+the patch.
 
-Any experts on parallelism out there?
+Normally I would test this myself before sending it out, but
+I can't test 2.6.27-rc1 right now on my hardware due to another
+bug in the 2.6.27-rc1 tree.
 
--- mikem
+Can you please try the following patch and let me know if that
+fixes the problem?
+
+Thanks,
+ -- Tim
+
+diff --git a/include/linux/vt_kern.h b/include/linux/vt_kern.h
+index 14c0e91..8c8119f 100644
+--- a/include/linux/vt_kern.h
++++ b/include/linux/vt_kern.h
+@@ -74,7 +74,7 @@ void con_protect_unimap(struct vc_data *vc, int rdonly);
+ int con_copy_unimap(struct vc_data *dst_vc, struct vc_data *src_vc);
+
+ #define vc_translate(vc, c) ((vc)->vc_translate[(c) |			\
+-					(vc)->vc_toggle_meta ? 0x80 : 0])
++					((vc)->vc_toggle_meta ? 0x80 : 0)])
+ #else
+ #define con_set_trans_old(arg) (0)
+ #define con_get_trans_old(arg) (-EINVAL)
+
+
+
