@@ -1,61 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbYG3Idb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbYG3IiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757876AbYG3Idb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 04:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbYG3IdW
+	id S1758791AbYG3IiV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 04:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYG3IiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 04:33:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57826 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751559AbYG3IdV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 04:33:21 -0400
-Date: Wed, 30 Jul 2008 01:30:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Michael Holzheu <holzheu@de.ibm.com>
-Subject: Re: [patch 01/15] kmsg: Kernel message catalog macros.
-Message-Id: <20080730013059.4d411750.akpm@linux-foundation.org>
-In-Reply-To: <20080728175511.023246676@de.ibm.com>
-References: <20080728175355.734299984@de.ibm.com>
-	<20080728175511.023246676@de.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 30 Jul 2008 04:38:11 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:34495 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752507AbYG3IiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 04:38:10 -0400
+Date: Wed, 30 Jul 2008 10:38:53 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Greg Ungerer <gerg@snapgear.com>
+Cc: linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
+Message-ID: <20080730083853.GB18366@uranus.ravnborg.org>
+References: <20080728200500.GA14284@uranus.ravnborg.org> <48900EE4.8030606@snapgear.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48900EE4.8030606@snapgear.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008 19:53:56 +0200 Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-
-> Introduce a new family of printk macros which prefixes each kmsg message
-> with a component name and allows to tag the printk with a message id.
+On Wed, Jul 30, 2008 at 04:49:08PM +1000, Greg Ungerer wrote:
+> Hi Sam,
 > 
-> The kmsg component name is defined per source file with the KMSG_COMPONENT
-> macro. The first argument of each kmsg printk is the message id. The
-> message id "0" is special as it will suppress the message id prefix.
+> Sam Ravnborg wrote:
+> >The traditional location of the arch specific Makefiles
+> >has been at:
+> >
+> >	include/asm-$ARCH
+> >
+> >But as suggested by several people over time and lately
+> >by Linus in the following post:
+> >http://kerneltrap.org/mailarchive/linux-kernel/2008/5/21/1903924
+> >
+> >is is suggested to move the arch specific files under arch/
+> >and for the header files this is arch/$ARCH/include.
+> >
+> >So I have hacked up support for this in kbuild so
+> >for the simpler cases a simple move of header files as
+> >in:
+> >	git mv include/asm-$ARCH arch/$ARCH/include/asm
+> >
+> >is enough.
+> >
+> >If Linus will accept it then I think -rc1 is a perfect
+> >time to do it as people has less stuff pending touching
+> >the header files that are moved.
+> >Validation is easy - does the usual configs build?
+> >
+> >For the archs that plays games with symlinks this is a
+> >splendid opportunity to get rid af these.
+> >The receipe is simple:
+> >Use 
+> >	KBUILD_CFLAGS += -Iarch/$ARCH/include/$CPU
+> >
+> >to select the CPU and then do a copy of the header files
+> >like this:
+> >
+> >	git mv include/asm-$ARCH/$CPU arch/$ARCH/include/$CPU/cpu
+> >
+> >Then the code can continue to use:
+> >
+> >	#include <cpu/foo.h>
+> >
+> >I already converted sparc to use arch/sparc/include -
+> >while I merged the header files for sparc and sparc64.
+> >This change is already upstream.
+> >
+> >And for SH I posted a receipe which you can read here:
+> >http://lkml.org/lkml/2008/7/28/83
+> >
+> >It is SH specific but anyway pretty generic.
+> >
+> >I am limited in time and resources at the moment but I
+> >would be glad to help out as time permits should there
+> >be any questions.
 > 
-> If the message id will be printed to the console / syslog at all depends
-> on CONFIG_MSG_IDS. If it is "n" then a kmsg_xxx call is just another
-> printk wrapper. These macros are intended to be used uniformly in the
-> s390 architecture and the s390 device drivers.
+> I just tried moving the include/asm-m68knommu directory
+> to arch/m68knommu/include/asm and it all worked fine.
+> Clean compile first go :-)  Nice.  (As noted
+> asm-offsets.h was still generated in incldue/asm-m68knommu
+> afterwards though).
 > 
-> Signed-off-by: Michael Holzheu <holzheu@de.ibm.com>
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> ---
-> 
->  arch/s390/Kconfig       |    9 +++
->  include/asm-s390/kmsg.h |  124 ++++++++++++++++++++++++++++++++++++++++++++++++
+> So what is the status, should I prepare git/patch
+> for Linus?
+Yes please do so.
 
-Numerous people want a facility like this for other-than-s390 use. 
-Progress has been intermittent and appears to have stopped.  The
-apparently-dead mailing list is archived here:
-https://lists.linux-foundation.org/pipermail/lf_kernel_messages/.
+Then we can address m68k and fix the breakage that
+the sparc changes introduced.
 
-I don't know what the future holds for that development effort, but the
-requirement won't go away.  So one day someone is going to go and yank
-your implementation out of arch/s390 and into generic code.
-
-So I'd suggest that you start out that way.
+	Sam
