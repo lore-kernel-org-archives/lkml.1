@@ -1,196 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759892AbYG3RS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760234AbYG3RTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759892AbYG3RS7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 13:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbYG3RSu
+	id S1760234AbYG3RTr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 13:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756132AbYG3RTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 13:18:50 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:36067 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752322AbYG3RSs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 13:18:48 -0400
-Date: Wed, 30 Jul 2008 22:48:42 +0530
-From: Chirag Jog <chirag@linux.vnet.ibm.com>
-To: J?rgen Mell <j.mell@t-online.de>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Clark Williams <williams@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Josh Triplett <josht@linux.vnet.ibm.com>,
-       "Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>
-Subject: [PATCH] Fix Bug messages
-Message-ID: <20080730171842.GB3420@linux.vnet.ibm.com>
-Reply-To: Chirag Jog <chirag@linux.vnet.ibm.com>
-Mail-Followup-To: J?rgen Mell <j.mell@t-online.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	LKML <linux-kernel@vger.kernel.org>,
-	rt-users <linux-rt-users@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Clark Williams <williams@redhat.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Josh Triplett <josht@linux.vnet.ibm.com>,
-	"Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>
-References: <alpine.LFD.1.10.0807252141420.574@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807291440240.14925@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807300006180.14925@apollo.tec.linutronix.de> <200807301101.32417.j.mell@t-online.de>
+	Wed, 30 Jul 2008 13:19:38 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:35399 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754229AbYG3RTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 13:19:37 -0400
+Date: Wed, 30 Jul 2008 20:18:45 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 1/2] Export get_user_pages_fast
+Message-ID: <20080730171845.GB28604@cs181140183.pp.htv.fi>
+References: <200807301438.55941.rusty@rustcorp.com.au> <20080730033523.0f38f7e4.akpm@linux-foundation.org> <20080730154736.GC21597@cs181140183.pp.htv.fi> <20080730100355.f1402dcf.akpm@linux-foundation.org> <20080730170939.GA28604@cs181140183.pp.htv.fi> <20080730101438.e1484440.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200807301101.32417.j.mell@t-online.de>
-Organization: IBM LTC
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080730101438.e1484440.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* J?rgen Mell <j.mell@t-online.de> [2008-07-30 11:01:32]:
+On Wed, Jul 30, 2008 at 10:14:38AM -0700, Andrew Morton wrote:
+> On Wed, 30 Jul 2008 20:09:39 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > On Wed, Jul 30, 2008 at 10:03:55AM -0700, Andrew Morton wrote:
+> > > On Wed, 30 Jul 2008 18:47:36 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+> > > 
+> > > > On Wed, Jul 30, 2008 at 03:35:23AM -0700, Andrew Morton wrote:
+> > > > > On Wed, 30 Jul 2008 14:38:55 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > > > > 
+> > > > > > After all, it was made for lguest wasn't it?  Still think it should be
+> > > > > > called get_current_pages() though.
+> > > > > > 
+> > > > > > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> > > > > > ---
+> > > > > >  arch/x86/mm/gup.c |    2 ++
+> > > > > >  1 file changed, 2 insertions(+)
+> > > > > > 
+> > > > > > diff -r cb465381f6d5 arch/x86/mm/gup.c
+> > > > > > --- a/arch/x86/mm/gup.c	Wed Jul 30 10:18:44 2008 +1000
+> > > > > > +++ b/arch/x86/mm/gup.c	Wed Jul 30 14:22:53 2008 +1000
+> > > > > > @@ -8,6 +8,7 @@
+> > > > > >  #include <linux/mm.h>
+> > > > > >  #include <linux/vmstat.h>
+> > > > > >  #include <linux/highmem.h>
+> > > > > > +#include <linux/module.h>
+> > > > > >  
+> > > > > >  #include <asm/pgtable.h>
+> > > > > >  
+> > > > > > @@ -296,3 +303,4 @@ slow_irqon:
+> > > > > >  		return ret;
+> > > > > >  	}
+> > > > > >  }
+> > > > > > +EXPORT_SYMBOL_GPL(get_user_pages_fast);
+> > > > > 
+> > > > > A regularly-occurring problem with an export like this is that someone
+> > > > > writes a driver and tests it on x86, then the driver explodes on an
+> > > > > architecture which didn't export the same symbol.
+> > > > > 
+> > > > > So a better implementation might be to put
+> > > > > 
+> > > > > #ifdef CONFIG_HAVE_GET_USER_PAGES_FAST
+> > > > > EXPORT_SYMBOL_GPL(get_user_pages_fast);
+> > > > > #endif
+> > > > > 
+> > > > > into generic code somewhere.
+> > > > 
+> > > > How would that help?
+> > > 
+> > > It would fix the problem which I described.
+> > 
+> > The export would still only be available on x86 since no other arch 
+> > would define CONFIG_HAVE_GET_USER_PAGES_FAST.
+> > 
+> 
+> That's presently true in Linus mainline.  The powerpc implementation is
+> in -mm, but apprarently needs a bit more work.
 
-> Hello Thomas,
-> 
-> On Wednesday, 30. July 2008, Thomas Gleixner wrote:
-> > We are pleased to announce the 2.6.26-rt1 tree, which can be
-> > downloaded from the location:
-> 
-> I have tried the new kernel and have some good news and some bad news:
-> 
-> The good news: The machine boots and seems to run without major problems.
-> 
-> The bad news: It produces continuously lots of bug messages in the error 
-> logs (cf. attached dmesg.tgz). The error at rtmutex.c:743 was already 
-> present in 2.6.25-rt* when ACPI was enabled. The 'using smp_processor_id 
-> ()  in preemptible code' is new here with 2.6.26.
-> 
-> Machine is an old Athlon XP (single core) on an EPOX mainboard with VIA 
-> chipset.
-> 
-> If I can help with testing, please let me know.
-> 
-> Bye,
->          Jürgen
-> 
-> 
-This patch should solve some of the bug messages.
-It does two things:
-1. Change rt_runtime_lock to be a raw spinlock as the comment above it
-says: it is nested inside the rq lock.
+I still don't get the advantage of your suggestion.
 
-2. Change mnt_writers to be a per_cpu locked variable.
-This eliminates the need for the codepath to disable preemption and
-then potentially sleep, leading to the BUG messages
+With the powerpc implementation included your suggestion doesn't change 
+the fact that the export is available only on x86 and powerpc, and if a 
+driver author mistakenly uses it and only tests it's driver on x86 it 
+will still break on architectures other than x86 or powerpc.
 
-Signed-Off-By: Chirag <chirag@linux.vnet.ibm.com>
+cu
+Adrian
 
+-- 
 
-
-Index: linux-2.6.26-rt1/kernel/sched.c
-===================================================================
---- linux-2.6.26-rt1.orig/kernel/sched.c	2008-07-30 22:37:19.000000000 +0530
-+++ linux-2.6.26-rt1/kernel/sched.c	2008-07-30 22:37:24.000000000 +0530
-@@ -208,7 +208,7 @@
- 
- struct rt_bandwidth {
- 	/* nests inside the rq lock: */
--	spinlock_t		rt_runtime_lock;
-+	raw_spinlock_t		rt_runtime_lock;
- 	ktime_t			rt_period;
- 	u64			rt_runtime;
- 	struct hrtimer		rt_period_timer;
-@@ -472,7 +472,7 @@
- 	u64 rt_time;
- 	u64 rt_runtime;
- 	/* Nests inside the rq lock: */
--	spinlock_t rt_runtime_lock;
-+	raw_spinlock_t rt_runtime_lock;
- 
- #ifdef CONFIG_RT_GROUP_SCHED
- 	unsigned long rt_nr_boosted;
-Index: linux-2.6.26-rt1/fs/namespace.c
-===================================================================
---- linux-2.6.26-rt1.orig/fs/namespace.c	2008-07-30 22:39:30.000000000 +0530
-+++ linux-2.6.26-rt1/fs/namespace.c	2008-07-30 22:39:36.000000000 +0530
-@@ -178,13 +178,13 @@
- 	unsigned long count;
- 	struct vfsmount *mnt;
- } ____cacheline_aligned_in_smp;
--static DEFINE_PER_CPU(struct mnt_writer, mnt_writers);
-+static DEFINE_PER_CPU_LOCKED(struct mnt_writer, mnt_writers);
- 
- static int __init init_mnt_writers(void)
- {
- 	int cpu;
- 	for_each_possible_cpu(cpu) {
--		struct mnt_writer *writer = &per_cpu(mnt_writers, cpu);
-+		struct mnt_writer *writer = &per_cpu_var_locked(mnt_writers, cpu);
- 		spin_lock_init(&writer->lock);
- 		lockdep_set_class(&writer->lock, &writer->lock_class);
- 		writer->count = 0;
-@@ -199,7 +199,7 @@
- 	struct mnt_writer *cpu_writer;
- 
- 	for_each_possible_cpu(cpu) {
--		cpu_writer = &per_cpu(mnt_writers, cpu);
-+		cpu_writer = &per_cpu_var_locked(mnt_writers, cpu);
- 		spin_unlock(&cpu_writer->lock);
- 	}
- }
-@@ -251,8 +251,8 @@
- {
- 	int ret = 0;
- 	struct mnt_writer *cpu_writer;
--
--	cpu_writer = &get_cpu_var(mnt_writers);
-+	int cpu = 0;
-+	cpu_writer = &get_cpu_var_locked(mnt_writers, &cpu);
- 	spin_lock(&cpu_writer->lock);
- 	if (__mnt_is_readonly(mnt)) {
- 		ret = -EROFS;
-@@ -262,7 +262,7 @@
- 	cpu_writer->count++;
- out:
- 	spin_unlock(&cpu_writer->lock);
--	put_cpu_var(mnt_writers);
-+	put_cpu_var_locked(mnt_writers, cpu);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(mnt_want_write);
-@@ -273,7 +273,7 @@
- 	struct mnt_writer *cpu_writer;
- 
- 	for_each_possible_cpu(cpu) {
--		cpu_writer = &per_cpu(mnt_writers, cpu);
-+		cpu_writer = &per_cpu_var_locked(mnt_writers, cpu);
- 		spin_lock(&cpu_writer->lock);
- 		__clear_mnt_count(cpu_writer);
- 		cpu_writer->mnt = NULL;
-@@ -332,8 +332,8 @@
- {
- 	int must_check_underflow = 0;
- 	struct mnt_writer *cpu_writer;
--
--	cpu_writer = &get_cpu_var(mnt_writers);
-+	int cpu = 0;
-+	cpu_writer = &get_cpu_var_locked(mnt_writers, &cpu);
- 	spin_lock(&cpu_writer->lock);
- 
- 	use_cpu_writer_for_mount(cpu_writer, mnt);
-@@ -360,7 +360,7 @@
- 	 * __mnt_writers can underflow.  Without it,
- 	 * we could theoretically wrap __mnt_writers.
- 	 */
--	put_cpu_var(mnt_writers);
-+	put_cpu_var_locked(mnt_writers, cpu);
- }
- EXPORT_SYMBOL_GPL(mnt_drop_write);
- 
-@@ -612,7 +612,7 @@
- 	 * can come in.
- 	 */
- 	for_each_possible_cpu(cpu) {
--		struct mnt_writer *cpu_writer = &per_cpu(mnt_writers, cpu);
-+		struct mnt_writer *cpu_writer = &per_cpu_var_locked(mnt_writers, cpu);
- 		if (cpu_writer->mnt != mnt)
- 			continue;
- 		spin_lock(&cpu_writer->lock);
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
