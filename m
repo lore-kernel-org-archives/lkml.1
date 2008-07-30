@@ -1,136 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752459AbYG3Si1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbYG3Sim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752459AbYG3Si1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 14:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbYG3SiF
+	id S1758388AbYG3Sim (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 14:38:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbYG3Sic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 14:38:05 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:46720 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753478AbYG3SiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 14:38:04 -0400
-Message-ID: <4890B500.7040100@sgi.com>
-Date: Wed, 30 Jul 2008 11:37:52 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 30 Jul 2008 14:38:32 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:61161 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756908AbYG3Sia (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 14:38:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=GPjA9Nf0aGkOjYnZXdBCYmnz0hIgLlJ6sut9SFRQd6DwIIA8w/NctDRvg0GMN2gu+c
+         c06FWSo3b7hwevlLv/WRkz+BgSOANBGOFr/E6N8fqZDi6KVCszTN699tUXxeGZKSW526
+         V4nwtUxq4S0OLJQ7kmxvm2+Ko24lJknYscvG8=
+Message-ID: <b647ffbd0807301138i5f721a39p9b20e4e918aa07b7@mail.gmail.com>
+Date: Wed, 30 Jul 2008 20:38:28 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Max Krasnyansky" <maxk@qualcomm.com>
+Subject: Re: [patch 0/4] x86: AMD microcode patch loading v2 fixes
+Cc: "Peter Oruba" <peter.oruba@amd.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Tigran Aivazian" <tigran@aivazian.fsnet.co.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <48909854.2040201@qualcomm.com>
 MIME-Version: 1.0
-To: Dave Jones <davej@codemonkey.org.uk>, Mike Travis <travis@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>,
-       Lennert Buytenhek <kernel@wantstofly.org>, Paul Jackson <pj@sgi.com>,
-       Tony Luck <tony.luck@intel.com>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Robert Richter <robert.richter@amd.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Sam Creasey <sammy@sammy.net>, Greg Banks <gnb@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Adrian Bunk <bunk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Andreas Schwab <schwab@suse.de>, Johannes Weiner <hannes@saeurebad.de>
-Subject: Re: [PATCH 1/1] cpumask: Change cpumask_of_cpu to use	cpumask_of_cpu_map
-References: <20080723171841.815234000@polaris-admin.engr.sgi.com> <20080723171841.997896000@polaris-admin.engr.sgi.com> <20080730165539.GA10079@codemonkey.org.uk> <4890A0A8.4000502@sgi.com>
-In-Reply-To: <4890A0A8.4000502@sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080729154103.007575982@amd.com>
+	 <b647ffbd0807290918kaa0a05es3cebf7a6f15fb790@mail.gmail.com>
+	 <488F581B.7060009@qualcomm.com> <48903431.9060707@amd.com>
+	 <b647ffbd0807300257x43dd6018o59533bec11b7a504@mail.gmail.com>
+	 <b647ffbd0807300334q57cdca6fu474cc7b6bed36102@mail.gmail.com>
+	 <48909854.2040201@qualcomm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Dave Jones wrote:
->> On Wed, Jul 23, 2008 at 10:18:42AM -0700, Mike Travis wrote:
->>  >   * The previous "lvalue replacement for cpumask_of_cpu()" was not usable
->>  >     in certain situations and generally added unneeded complexity.  So
->>  >     this patch replaces the cpumask_of_cpu_ptr* macros with a generic
->>  >     cpumask_of_cpu_map[].  The only config option is whether this is a
->>  >     static map, or allocated at boot up time:
+2008/7/30 Max Krasnyansky <maxk@qualcomm.com>:
+>
+>
+> Dmitry Adamushko wrote:
+>> 2008/7/30 Dmitry Adamushko <dmitry.adamushko@gmail.com>:
+>>> 2008/7/30 Peter Oruba <peter.oruba@amd.com>:
+>>>>> [ ... ]
+>>>> Since ucode updates may fix severe issues, it is supposed to happen as early
+>>>> as possible. If you re-plug your CPU into your socket, your BIOS also
+>>>> applies a ucode patch, but that won't necessarily be the latest and critical
+>>>> one.
+>>> Hum, let's say we don't do it from cpu-hotplug handlers [1] but from
+>>> start_secondary() before calling cpu_idle()? [*]
+>>>
+>>> This way, we do it before any other task may have a chance to run on a
+>>> cpu which is not a case with cpu-hotplug handlers
+>>> (and we don't mess-up with cpu-hotplug events :-)
+>>>
+>>> [ the drawback is that 'microcode' subsystem is not local to
+>>> microcode.c anymore ]
+>>>
+>>> [1] if we need a sync. operation in cpu-hotplug handlers and IPI is
+>>> not ok (say, we need to run in a sleepablel context) then perhaps it's
+>>> workqueues + wait_on_cpu_work(). But then it's not a bit later than
+>>> could have been with [*].
+>>>
+>>> heh, this issue has already popped up in another thread so it should
+>>> be fixed asap, imho.
+>>>
+>>> Ingo, Peter? What would be the best way from your pov?
 >>
->> I've lost the plot on what's going on with these cpumask patches.
->> But I just saw this on -rc1.
+>> or let's just use smth like a patch below so far:
 >>
->> arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c:206:33: error: not addressable
->> arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c:274:32: error: not addressable
->> arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c:352:34: error: not addressable
+>> (non-white-space-damaged version is enclosed)
 >>
->> 	Dave
+>> --- kernel/cpu.c-old    2008-07-30 12:31:15.000000000 +0200
+>> +++ kernel/cpu.c        2008-07-30 12:32:02.000000000 +0200
+>> @@ -349,6 +349,8 @@ static int __cpuinit _cpu_up(unsigned in
+>>                 goto out_notify;
+>>         BUG_ON(!cpu_online(cpu));
 >>
-> 
-> It looks like some old code is still there (patch dropped?).  I'll send a fix asap.
-> 
-> Thanks,
-> Mike
+>> +       cpu_set(cpu, cpu_active_map);
+>> +
+>>         /* Now call notifier in preparation. */
+>>         raw_notifier_call_chain(&cpu_chain, CPU_ONLINE | mod, hcpu);
+>>
+>> @@ -383,9 +385,6 @@ int __cpuinit cpu_up(unsigned int cpu)
+>>
+>>         err = _cpu_up(cpu, 0);
+>>
+>> -       if (cpu_online(cpu))
+>> -               cpu_set(cpu, cpu_active_map);
+>> -
+>>  out:
+>>         cpu_maps_update_done();
+>>         return err;
+>
+> That was the first thing I thought of when you pointed out what the problem is
+> (ie when original bug report showed up).
+> But I immediately rejected the idea because it changes the rules of the game.
+>  active bit is set even before the cpu is "truly" online.
 
-After I recreated linux-next the changes all appear to be there now.
-One problem though, is !SMP config does not build (something about
-DECLARE_BITMAP with NR_CPUS=1.)  I wasn't sure how to create a constant
-"(cpumask_t)1" that worked as an lvalue, so the following patch is
-somewhat a kluge, but fulfills the requirements.
+hm, it depends on what is "truly" in this context :-) Tasks (kernel
+threads) may start running on this 'cpu' as a result of some
+CPU_ONLINE notifications (CPU_ONLINE notification kind of says "hey,
+this 'cpu' is online :-)
 
-If anyone has a better suggestion, please let me know.
+Sure, If we imagine that some CPU_ONLINE callbacks do additional
+initialization (e.g. load-balancer related) for 'cpu' and only after
+their completion the 'cpu' is "really" online (e.g. tasks can be
+migrated onto it).
 
-Subject: [PATCH] cpmask: add cpumask_of_cpu(0) for non-SMP
+I don't have a strong feeling here. I think it's just a matter of
+specifying the rules/interface.
 
-  * Fix cpumask_of_cpu(0) when CONFIG_SMP is not set by providing a
-    pointer to a cpumask_t with cpu 0 bit set.
+>
+> I'd say we fix the microcode instead.
+>
 
-Signed-of-by: Mike Travis <travis@sgi.com
----
- include/linux/cpumask.h |    6 ++++++
- kernel/cpu.c            |    7 +++++--
- 2 files changed, 11 insertions(+), 2 deletions(-)
+Yeah, not that this use of set_cpus_allowed_ptr() in hotplug callbacks
+looks pretty to me (not that I'm saying I have a good taste though :-)
 
---- linux-2.6.tip.orig/include/linux/cpumask.h
-+++ linux-2.6.tip/include/linux/cpumask.h
-@@ -265,6 +265,7 @@ static inline void __cpus_shift_left(cpu
- 	bitmap_shift_left(dstp->bits, srcp->bits, n, nbits);
- }
- 
-+#ifdef CONFIG_SMP
- /*
-  * Special-case data structure for "single bit set only" constant CPU masks.
-  *
-@@ -288,6 +289,11 @@ static inline const cpumask_t *get_cpu_m
-  * variable created:
-  */
- #define cpumask_of_cpu(cpu)	(*get_cpu_mask(cpu))
-+#else
-+
-+extern const cpumask_t cpu_bit_bitmap_of_one;
-+#define cpumask_of_cpu(cpu)	cpu_bit_bitmap_of_one
-+#endif
- 
- 
- #define CPU_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(NR_CPUS)
---- linux-2.6.tip.orig/kernel/cpu.c
-+++ linux-2.6.tip/kernel/cpu.c
-@@ -35,6 +35,8 @@ EXPORT_SYMBOL(cpu_online_map);
- cpumask_t cpu_possible_map __read_mostly = CPU_MASK_ALL;
- EXPORT_SYMBOL(cpu_possible_map);
- 
-+const cpumask_t cpu_bit_bitmap_of_one = { { [0] = 1 } };
-+
- #else /* CONFIG_SMP */
- 
- /* Serializes the updates to cpu_online_map, cpu_present_map */
-@@ -454,8 +456,6 @@ out:
- }
- #endif /* CONFIG_PM_SLEEP_SMP */
- 
--#endif /* CONFIG_SMP */
--
- /*
-  * cpu_bit_bitmap[] is a special, "compressed" data structure that
-  * represents all NR_CPUS bits binary values of 1<<nr.
-@@ -480,3 +480,6 @@ const unsigned long cpu_bit_bitmap[BITS_
- #endif
- };
- EXPORT_SYMBOL_GPL(cpu_bit_bitmap);
-+
-+#endif /* CONFIG_SMP */
-+
+I've even suggested to consider doing microcode update somewhere
+earlier in start_secondary() (say, right before cpu_idle()). So it'd
+be done as ealry as possible + we don't mess up with cpu-hotplug
+events.
 
+
+>
+> Max
+>
+
+-- 
+Best regards,
+Dmitry Adamushko
