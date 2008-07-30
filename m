@@ -1,133 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761069AbYG3KBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbYG3KEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761069AbYG3KBw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 06:01:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756632AbYG3KBk
+	id S1760864AbYG3KEX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 06:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbYG3KEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 06:01:40 -0400
-Received: from po-out-1718.google.com ([72.14.252.157]:16702 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755789AbYG3KBi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 06:01:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=wqb8FeAAokrFrPDsMF+I5yWJmA8R3KDlyozxjl8ZTJHOeSqN6xb6r3SXrthpjNdDPP
-         AfP+QnMFuNb/+s/ZPUy/XaRdfyLVSQPUALOgehgvH22OckNFcHxS019kqrCJ3Mg4Umm3
-         /yyl1IBpDg6QoLdiAe4tNLpHWK/ZjIGO1NH9I=
-Message-ID: <c4e36d110807300301n344aa27ei8740f1a5a72c2112@mail.gmail.com>
-Date: Wed, 30 Jul 2008 12:01:37 +0200
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: INFO: possible recursive locking detected dev_deactivate
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <20080730024724.519f0662.akpm@linux-foundation.org>
+	Wed, 30 Jul 2008 06:04:14 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40345 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752648AbYG3KEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 06:04:13 -0400
+Date: Wed, 30 Jul 2008 12:03:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "drepper@redhat.com" <drepper@redhat.com>,
+       "mikpe@it.uu.se" <mikpe@it.uu.se>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 0/9] x86, xsave: xsave/xrstor support
+Message-ID: <20080730100326.GA9683@elte.hu>
+References: <20080729172917.185593000@linux-os.sc.intel.com> <488FA318.3040905@zytor.com> <20080729232951.GB11223@linux-os.sc.intel.com> <488FAB2B.7050405@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <c4e36d110807290453h7381adb8l8b8785f434e968ac@mail.gmail.com>
-	 <20080730024724.519f0662.akpm@linux-foundation.org>
+In-Reply-To: <488FAB2B.7050405@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/30 Andrew Morton <akpm@linux-foundation.org>:
+
+* H. Peter Anvin <hpa@zytor.com> wrote:
+
+>> hpa, these patches just apply fine to tip/master. Can you please 
+>> arrange the tip/x86/xsave tree accordingly? or do I need to do 
+>> something else to smooth this process?
 >
-> (cc's added)
->
-> On Tue, 29 Jul 2008 13:53:39 +0200 "Zdenek Kabelac" <zdenek.kabelac@gmail.com> wrote:
->
->> Hi
->>
->> With kernel from yesterdays' git (08/07/28) (sorry I've already
->> deleted any traces for more precise commit number) - I've just found
->> the bactrace in the log running already today's 2.6.27-rc1.
->>
->> Happened during the reboot of 2.6.26
->> As usually T61, 2GB, C2D
->>
->> =============================================
->> [ INFO: possible recursive locking detected ]
->> 2.6.26 #47
+> This is awkward, since that means this is "derived topic".  Most of 
+> the changes are orthogonal and relatively trivial to fix up at merge 
+> time, so I would prefer to keep them separate.
 
-Update - happens with 2.6.27-rc1 (commit:
-6e86841d05f371b5b9b86ce76c02aaee83352298)
+Well, in this case the conflicts seem to be quite heavy, so i'd suggest 
+to use the method we have used for x86/x2apic and for xen-64bit:
 
-Zdenek
+Merge the affected topics into tip/x86/core. Then merge x86/core into 
+x86/xsave, and put the xsave patches ontop of that base.
 
+This way x86/xsave is a 'derived' topic and optional until it's proven, 
+but one that is still mergable once all the dependent topics go 
+upstream. We'd only have to rebase it in the (unlikely) event of there 
+being some major problem with any of the topics merged into x86/core.
 
+ok?
 
-
-
-
-
-
-
-
-
-
-
-
->> ---------------------------------------------
->> NetworkManager/2623 is trying to acquire lock:
->>  (_xmit_IEEE80211#2){-...}, at: [<ffffffff812a3cd2>] dev_deactivate+0x82/0x150
->>
->> but task is already holding lock:
->>  (_xmit_IEEE80211#2){-...}, at: [<ffffffff812a3cd2>] dev_deactivate+0x82/0x150
->>
->> other info that might help us debug this:
->> 2 locks held by NetworkManager/2623:
->>  #0:  (rtnl_mutex){--..}, at: [<ffffffff8129ca0a>] rtnetlink_rcv+0x1a/0x40
->>  #1:  (_xmit_IEEE80211#2){-...}, at: [<ffffffff812a3cd2>]
->> dev_deactivate+0x82/0x150
->>
->> stack backtrace:
->> Pid: 2623, comm: NetworkManager Not tainted 2.6.26 #47
->>
->> Call Trace:
->>  [<ffffffff81068b4a>] __lock_acquire+0xcea/0x13b0
->>  [<ffffffff810674fd>] ? mark_held_locks+0x4d/0x90
->>  [<ffffffff810657a4>] ? get_lock_stats+0x34/0x70
->>  [<ffffffff812a3cd2>] ? dev_deactivate+0x82/0x150
->>  [<ffffffff810692a6>] lock_acquire+0x96/0xe0
->>  [<ffffffff812a3cd2>] ? dev_deactivate+0x82/0x150
->>  [<ffffffff81315161>] _spin_lock+0x31/0x60
->>  [<ffffffff812a3cd2>] dev_deactivate+0x82/0x150
->>  [<ffffffff81292885>] dev_close+0x65/0xc0
->>  [<ffffffffa013a9d9>] ieee80211_stop+0x339/0x4e0 [mac80211]
->>  [<ffffffff81292896>] dev_close+0x76/0xc0
->>  [<ffffffff81292461>] dev_change_flags+0xa1/0x1e0
->>  [<ffffffff8129b774>] do_setlink+0x214/0x3a0
->>  [<ffffffff81318c60>] ? sub_preempt_count+0x80/0x120
->>  [<ffffffff81314e40>] ? _read_unlock+0x30/0x60
->>  [<ffffffff8129bacd>] rtnl_setlink+0x10d/0x150
->>  [<ffffffff8129cbbd>] rtnetlink_rcv_msg+0x18d/0x240
->>  [<ffffffff8129ca30>] ? rtnetlink_rcv_msg+0x0/0x240
->>  [<ffffffff812a77e9>] netlink_rcv_skb+0x89/0xb0
->>  [<ffffffff8129ca19>] rtnetlink_rcv+0x29/0x40
->>  [<ffffffff812a720d>] netlink_unicast+0x2cd/0x2e0
->>  [<ffffffff8128b01e>] ? __alloc_skb+0x6e/0x150
->>  [<ffffffff812a7424>] netlink_sendmsg+0x204/0x300
->>  [<ffffffff81314e5e>] ? _read_unlock+0x4e/0x60
->>  [<ffffffff812827d7>] sock_sendmsg+0x127/0x140
->>  [<ffffffff81057120>] ? autoremove_wake_function+0x0/0x40
->>  [<ffffffff810677ad>] ? trace_hardirqs_on+0xd/0x10
->>  [<ffffffff8106773b>] ? trace_hardirqs_on_caller+0x14b/0x1b0
->>  [<ffffffff812835f7>] ? move_addr_to_kernel+0x57/0x60
->>  [<ffffffff8128c04f>] ? verify_iovec+0x3f/0xe0
->>  [<ffffffff81282979>] sys_sendmsg+0x189/0x320
->>  [<ffffffff812836fd>] ? sys_sendto+0xfd/0x120
->>  [<ffffffff810e1a8c>] ? d_free+0x6c/0x80
->>  [<ffffffff810cec01>] ? __fput+0x171/0x1c0
->>  [<ffffffff8106773b>] ? trace_hardirqs_on_caller+0x14b/0x1b0
->>  [<ffffffff813148d6>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->>  [<ffffffff8100c5bb>] system_call_fastpath+0x16/0x1b
->>
->> iwl3945 0000:03:00.0: PCI INT A disabled
->
->
+	Ingo
