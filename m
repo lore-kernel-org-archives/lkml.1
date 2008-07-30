@@ -1,106 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759420AbYG3Sx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbYG3S6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759420AbYG3Sx4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 14:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYG3Sxq
+	id S1755369AbYG3S6u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 14:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbYG3S6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 14:53:46 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:34396 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752731AbYG3Sxp (ORCPT
+	Wed, 30 Jul 2008 14:58:42 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:6124 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750969AbYG3S6l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 14:53:45 -0400
+	Wed, 30 Jul 2008 14:58:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :message-id:from;
-        b=oEzCBbtEkQeHhR7mgadzY4KCNmfg5gi1wbshTcjhg9PIoLX/L22vrjeXHpzEvVay4c
-         jSNdRTMPkbR1gcf8P23Negj5G/iVXW99rMbFDay99l+snvJibLQAJWB7JT5bRXn7szqF
-         WwwRkp23gOMQ55WAYNfk6laiVXVQzlG/dGTDA=
-To: Peter Chubb <peterc@gelato.unsw.edu.au>
-Subject: Re: Fixing rt2500pci
-Date: Wed, 30 Jul 2008 21:15:03 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       John Linville <linville@tuxdriver.com>
-References: <87tze8vu18.wl%peterc@chubb.wattle.id.au> <200807302105.56909.IvDoorn@gmail.com>
-In-Reply-To: <200807302105.56909.IvDoorn@gmail.com>
+         :references;
+        b=G8WsLsSVNQbMI01+Fz4v9YaRFEbREnokUaFN4o/M+ziQSA2KzMN7CwchL2ldtiyoHy
+         K7XiJHi6q3F6L7PvtM5QXNBGsf83a/kwhfwZWhOjd7VLG9QZKxCE9XAyZGcB74Ucd5PD
+         b+3UuAt1OMaekeCF4ug3jluA4CC1hmS+Y6BkQ=
+Message-ID: <9e4733910807301158w7512fd1l78cc8f092383f871@mail.gmail.com>
+Date: Wed, 30 Jul 2008 14:58:40 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Alan Cox" <alan@letsannoyjonsmirl.ukuu.org.uk>
+Subject: Re: 463 kernel developers missing!
+Cc: "Theodore Tso" <tytso@mit.edu>, davids@webmaster.com,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080730174957.3d1d63ee@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807302115.03865.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+References: <4890284E.3050806@s5r6.in-berlin.de>
+	 <MDEHLPKNGKAHNMBLJOLKAEDIOJAC.davids@webmaster.com>
+	 <20080730155359.7c0206f4@lxorguk.ukuu.org.uk>
+	 <9e4733910807300823x516eb45dx877898f9d7c8be57@mail.gmail.com>
+	 <20080730161408.4dfa6fe8@lxorguk.ukuu.org.uk>
+	 <20080730164056.GB8283@mit.edu>
+	 <20080730174957.3d1d63ee@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 July 2008, Ivo van Doorn wrote:
-> On Wednesday 30 July 2008, Peter Chubb wrote:
-> > 
-> > In kernel version 2.6.26-rc9 my wireless LAN card worked; but in the
-> > released 2.6.26, my RaLink rt2500 card wouldn't associate.
-> > 
-> > Git-bisect led me to this patch:
-> > 
-> > 	61486e0f68d1f8966c09b734566a187d42d65c54
-> > 	rt2x00: Remove ieee80211_tx_control argument from write_tx_desc()
-> > 
-> > I believe that there are two problems with that patch.  Setting the Tx
-> > Length has been removed inadvertently, and one of the conditions for
-> > when to set ifs to IFS_SIFS has also been removed.
-> > 
-> > This patch fixes those things, and with it my card works again.
-> > 
-> > Signed-off-by: Peter Chubb <peterc@gelato.unsw.edu.au>
-> > 
-> > diff --git a/drivers/net/wireless/rt2x00/rt2500pci.c b/drivers/net/wireless/rt2x00/rt2500pci.c
-> > index 1724ce9..4ba2165 100644
-> > --- a/drivers/net/wireless/rt2x00/rt2500pci.c
-> > +++ b/drivers/net/wireless/rt2x00/rt2500pci.c
-> > @@ -1198,6 +1198,7 @@ static void rt2500pci_write_tx_desc(struct rt2x00_dev *rt2x00dev,
-> >  	rt2x00_set_field32(&word, TXD_W0_IFS, txdesc->ifs);
-> >  	rt2x00_set_field32(&word, TXD_W0_RETRY_MODE,
-> >  			   test_bit(ENTRY_TXD_RETRY_MODE, &txdesc->flags));
-> > +	rt2x00_set_field32(&word, TXD_W0_DATABYTE_COUNT, skbdesc->data_len);
-> >  	rt2x00_set_field32(&word, TXD_W0_CIPHER_ALG, CIPHER_NONE);
-> >  	rt2x00_desc_write(txd, 0, word);
-> >  }
-> 
-> How could that have disappeared? good catch.
-> The above change is:
-> 
-> Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
-> 
-> But:
-> 
-> > diff --git a/drivers/net/wireless/rt2x00/rt2x00dev.c b/drivers/net/wireless/rt2x00/rt2x00dev.c
-> > index e1368f7..a11d6ff 100644
-> > --- a/drivers/net/wireless/rt2x00/rt2x00dev.c
-> > +++ b/drivers/net/wireless/rt2x00/rt2x00dev.c
-> > @@ -691,7 +691,8 @@ void rt2x00lib_write_tx_desc(struct rt2x00_dev *rt2x00dev,
-> >  	 * Set ifs to IFS_SIFS when the this is not the first fragment,
-> >  	 * or this fragment came after RTS/CTS.
-> >  	 */
-> > -	if (test_bit(ENTRY_TXD_RTS_FRAME, &txdesc.flags)) {
-> > +	if ((seq_ctrl & IEEE80211_SCTL_FRAG)  ||
-> > +		test_bit(ENTRY_TXD_RTS_FRAME, &txdesc.flags)) {
-> >  		txdesc.ifs = IFS_SIFS;
-> >  	} else if (control->flags & IEEE80211_TXCTL_FIRST_FRAGMENT) {
-> >  		__set_bit(ENTRY_TXD_FIRST_FRAGMENT, &txdesc.flags);
-> 
-> The above does not correspond with legacy driver, so I am hesitant in accepting this change.
-> Unless you are _absolutely_ sure this change does fix the issue, and the databate count
-> initialization is not sufficient on its own. If that is not the case, please resend the patch with the
-> rt2x00dev.c change ommitted and my ack added. (Please add John Linville to the CC list as well,
-> so it can be merged faster :) )
+On 7/30/08, Alan Cox <alan@letsannoyjonsmirl.ukuu.org.uk> wrote:
+> > debate it in a bar at some future conference.  But does it really make
+>  > sense to argue about it here?
+>
+>
+> No but perhaps Jon could simply show some manners when people request him
+>  politely not to do that. He doesn't seem to want to debate manners, just
+>  law.
 
-Correction, the code does correspond with the legacy driver, but the codechange in:
-61486e0f68d1f8966c09b734566a187d42d65c54 was correct since it still applies IFS_SIFS to
-frames with fragments (excluding the first fragment).
+I didn't handle the removing the people from the list issue very well.
+I got caught in the fact the log immutably records history and I
+objected to editing history. I viewed this along the lines of George
+Washington asking to be removed from text books. He was the first
+president; we can't change that and we have to include him in the list
+of presidents.
 
-So please resend the patch with only the rt2500pci change.
+I still don't have a good solution for how to track the people who
+don't want their names to appear without creating yet another list.
 
-Ivo
+-- 
+Jon Smirl
+jonsmirl@gmail.com
