@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762151AbYG3PD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762574AbYG3PEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762151AbYG3PD4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 11:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbYG3PDr
+	id S1762574AbYG3PEb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 11:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbYG3PEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 11:03:47 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:38248 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753308AbYG3PDr (ORCPT
+	Wed, 30 Jul 2008 11:04:21 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:48576 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753725AbYG3PET (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 11:03:47 -0400
-Message-ID: <4890829F.3040308@s5r6.in-berlin.de>
-Date: Wed, 30 Jul 2008 17:02:55 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Wed, 30 Jul 2008 11:04:19 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: "Darren Jenkins" <darrenrjenkins@gmail.com>
+Cc: "kernel Janitors" <kernel-janitors@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fs/fat/dir.c fix resource leak
+References: <1217289813.9367.9.camel@localhost.localdomain>
+	<87hca8alz6.fsf@devron.myhome.or.jp>
+	<87d4kwalh1.fsf@devron.myhome.or.jp>
+	<82faac5b0807300215j6cd9d938t7058080a65ffff74@mail.gmail.com>
+Date: Thu, 31 Jul 2008 00:04:15 +0900
+In-Reply-To: <82faac5b0807300215j6cd9d938t7058080a65ffff74@mail.gmail.com>
+	(Darren Jenkins's message of "Wed, 30 Jul 2008 19:15:46 +1000")
+Message-ID: <87wsj3l8gg.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Rene Herman <rene.herman@keyaccess.nl>, Jon Smirl <jonsmirl@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-References: <20080728204624.GA11581@redhat.com> <20080728141414.d7e5def2.randy.dunlap@oracle.com> <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au> <20080728234131.GD28055@linux-sh.org> <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com> <488E644D.7000507@keyaccess.nl> <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com> <488EF377.5080603@keyaccess.nl> <20080730072448.GB1564@cs181140183.pp.htv.fi> <4890284E.3050806@s5r6.in-berlin.de> <20080730124650.GB19966@cs181140183.pp.htv.fi>
-In-Reply-To: <20080730124650.GB19966@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Wed, Jul 30, 2008 at 10:37:34AM +0200, Stefan Richter wrote:
-[That I signed off -> on a contribution <- does...]
->> not mean that we implicitly agreed to what he did or that it wouldn't
->> matter whether we agree to it or not.
->>...
-> 
-> You certified:
-> 
->   I understand and agree that this project and the contribution
->   are public and that a record of the contribution (including all
->   personal information I submit with it, including my sign-off) is
->   maintained indefinitely and may be redistributed consistent with
->   this project or the open source license(s) involved.
+"Darren Jenkins" <darrenrjenkins@gmail.com> writes:
 
-Yes.
+> bufname is not used anymore ? I'm not sure what you mean? are you
+> talking about an external tree ?
 
-Copyright doesn't have a lot to do with personality rights though.
-And then there is also ethics besides laws.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=fs/fat/dir.c;h=cd4a0162e10d6dea7507507cf25a13fd93d93f04;hb=HEAD#l356
+
+No, about current Linus tree. I meant, bufname is used actually, but
+it's not allocated dynamically by __getname().
+
+Thanks.
 -- 
-Stefan Richter
--=====-==--- -=== ====-
-http://arcgraph.de/sr/
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
