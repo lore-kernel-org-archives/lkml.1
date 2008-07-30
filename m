@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbYG3UDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbYG3UFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758290AbYG3UDw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 16:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755410AbYG3UDm
+	id S1756087AbYG3UFZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 16:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbYG3UFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 16:03:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35929 "EHLO
+	Wed, 30 Jul 2008 16:05:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56936 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753819AbYG3UDl (ORCPT
+	by vger.kernel.org with ESMTP id S1752940AbYG3UFI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 16:03:41 -0400
-Date: Wed, 30 Jul 2008 13:02:55 -0700
+	Wed, 30 Jul 2008 16:05:08 -0400
+Date: Wed, 30 Jul 2008 13:04:19 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: petkovbb@gmail.com, gregkh@suse.de, ptesarik@suse.cz,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       jens.axboe@oracle.com, jack@suse.cz
-Subject: Re: [PATCH] ide-cd: fix endianity for the error message in
- cdrom_read_capacity
-Message-Id: <20080730130255.9538678a.akpm@linux-foundation.org>
-In-Reply-To: <200807302125.54124.bzolnier@gmail.com>
-References: <1217405406.11834.11.camel@elijah.suse.cz>
-	<20080730011832.0ee55d47.akpm@linux-foundation.org>
-	<9ea470500807300152p5d5414aaq2d0d0053c12ef3f5@mail.gmail.com>
-	<200807302125.54124.bzolnier@gmail.com>
+Cc: bwalle@suse.de, greg@kroah.com, hugh@veritas.com, gregkh@suse.de,
+       sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, haveblue@us.ibm.com
+Subject: Re: linux-next: Tree for July 29
+Message-Id: <20080730130419.49986a25.akpm@linux-foundation.org>
+In-Reply-To: <200807302127.42148.bzolnier@gmail.com>
+References: <20080729172337.b3d74100.sfr@canb.auug.org.au>
+	<20080730090650.79a5a749@kopernikus.site>
+	<20080730021947.def99edc.akpm@linux-foundation.org>
+	<200807302127.42148.bzolnier@gmail.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -32,18 +31,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008 21:25:53 +0200
+On Wed, 30 Jul 2008 21:27:41 +0200
 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-> > > Bart owns this patch now.  It got lost for a month and it has already
-> > > been fixed twice and it is also on the route to 2.6.25.x and 2.6.26.x,
-> > > so it'll get complicated.  Not a happy little patch.
+> On Wednesday 30 July 2008, Andrew Morton wrote:
+> > On Wed, 30 Jul 2008 09:06:50 +0200 Bernhard Walle <bwalle@suse.de> wrote:
 > > 
-> > Greg, can you please apply this one on top of -stable.
+> > > * Greg KH <greg@kroah.com> [2008-07-29 21:48]:
+> > > > > Isn't this the opposite end of the same problem for which Bernhard
+> > > > > has been repeatedly trying to find a taker for his patch:
+> > > > > 
+> > > > > http://article.gmane.org/gmane.linux.kernel.kexec/1882
+> > > > 
+> > > > Yes.  It's not the kobject patch at fault here, it's the use of kobjects
+> > > > so early in the boot process.  That needs to be fixed.
+> > 
+> > It was a bit optimistic to stick an unconditional GFP_KERNEL allocation
+> > into the previously-atomic kobject_init().
+> > 
+> > It's only 128 bytes, so why can't we fix both problems thusly?
 > 
-> The usual policy is to not apply to -stable patches which are not in
-> Linus' tree so please notify stable@kernelorg team after patch hits
-> mainline.
+> Fixes the bug for me (also true for previous patch from Bernhard).
+> 
 
-Please put a Cc: <stable@kernel.org> into the changelog.  Then the
-stable people will notice it when Linus commits it.
+Cool.
+
+The offending patch has just got itself turfed from linux-next so my
+fix now has nothing to fix.
+
+We'll see what happens!
