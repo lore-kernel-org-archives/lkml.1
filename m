@@ -1,102 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbYG3Gv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbYG3Gwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754214AbYG3Gv1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 02:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbYG3GvS
+	id S1755711AbYG3Gwv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 02:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbYG3Gwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 02:51:18 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:41928 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751208AbYG3GvS (ORCPT
+	Wed, 30 Jul 2008 02:52:43 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:26573 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751075AbYG3Gwn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 02:51:18 -0400
-Message-ID: <48900EE4.8030606@snapgear.com>
-Date: Wed, 30 Jul 2008 16:49:08 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 30 Jul 2008 02:52:43 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=yHVOkdMRbTlCKCQFBN+TvUPXLqj/wf7SpDHkc+Dr9l12qX/PqXG8E5pfpHRmhkYVxIWq4mpXMfY7L7Xivg7APlnxNxr2bdhih+Kky2051Ysg6r3cFk5CB/5xjKzXTT5oflzur7yudI0j/HBuq/DTWslklM3BWH+OBJAUKb0lC5k=  ;
+X-YMail-OSG: j7wmeAkVM1mc.F1L11.zMGORRdjYR2iEJ53xOKNFcE0SYRhDdrqzhu7NkatYUBTNsR2ccNwoi1sfXlwOgbABtlrodcQG46sjvYkMJO1Ley.HIr5kEJPKFKQC6XqgBCeENaA-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: hooanon05@yahoo.co.jp
+Subject: Re: bug? 2.6.26-rc8-mm1, corrupted dcache
+Date: Wed, 30 Jul 2008 16:52:22 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <9886.1217400028@jrobl>
+In-Reply-To: <9886.1217400028@jrobl>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
-References: <20080728200500.GA14284@uranus.ravnborg.org>
-In-Reply-To: <20080728200500.GA14284@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807301652.23024.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+On Wednesday 30 July 2008 16:40, hooanon05@yahoo.co.jp wrote:
+> Hello,
+>
+> A filesystem stress test script racer.sh caused a problem in
+> 2.6.26-rc8-mm1. I am not sure it is caused by some changes to memory
+> management or handling dentry in proc_flush_task_mnt().
+> Is this problem already known and fixed?
 
-Sam Ravnborg wrote:
-> The traditional location of the arch specific Makefiles
-> has been at:
-> 
-> 	include/asm-$ARCH
-> 
-> But as suggested by several people over time and lately
-> by Linus in the following post:
-> http://kerneltrap.org/mailarchive/linux-kernel/2008/5/21/1903924
-> 
-> is is suggested to move the arch specific files under arch/
-> and for the header files this is arch/$ARCH/include.
-> 
-> So I have hacked up support for this in kbuild so
-> for the simpler cases a simple move of header files as
-> in:
-> 	git mv include/asm-$ARCH arch/$ARCH/include/asm
-> 
-> is enough.
-> 
-> If Linus will accept it then I think -rc1 is a perfect
-> time to do it as people has less stuff pending touching
-> the header files that are moved.
-> Validation is easy - does the usual configs build?
-> 
-> For the archs that plays games with symlinks this is a
-> splendid opportunity to get rid af these.
-> The receipe is simple:
-> Use 
-> 	KBUILD_CFLAGS += -Iarch/$ARCH/include/$CPU
-> 
-> to select the CPU and then do a copy of the header files
-> like this:
-> 
-> 	git mv include/asm-$ARCH/$CPU arch/$ARCH/include/$CPU/cpu
-> 
-> Then the code can continue to use:
-> 
-> 	#include <cpu/foo.h>
-> 
-> I already converted sparc to use arch/sparc/include -
-> while I merged the header files for sparc and sparc64.
-> This change is already upstream.
-> 
-> And for SH I posted a receipe which you can read here:
-> http://lkml.org/lkml/2008/7/28/83
-> 
-> It is SH specific but anyway pretty generic.
-> 
-> I am limited in time and resources at the moment but I
-> would be glad to help out as time permits should there
-> be any questions.
-
-I just tried moving the include/asm-m68knommu directory
-to arch/m68knommu/include/asm and it all worked fine.
-Clean compile first go :-)  Nice.  (As noted
-asm-offsets.h was still generated in incldue/asm-m68knommu
-afterwards though).
-
-So what is the status, should I prepare git/patch
-for Linus?
-
-Regards
-Greg
-
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-Secure Computing Corporation                PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+This looks a bit like the PREEMPT_RCU problem that was fixed just
+before 2.6.26. Do you have PREEMPT_RCU=y and HOTPLUG_CPU=n in your
+config?
