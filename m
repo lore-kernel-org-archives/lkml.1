@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbYG3Uzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbYG3U4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbYG3Uzf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 16:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYG3UzZ
+	id S1756573AbYG3U4R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 16:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYG3U4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 16:55:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60281 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750967AbYG3UzY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 16:55:24 -0400
-Date: Wed, 30 Jul 2008 13:51:36 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: jens.axboe@oracle.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch v3] splice: fix race with page invalidation
-In-Reply-To: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu>
-Message-ID: <alpine.LFD.1.10.0807301349020.3334@nehalem.linux-foundation.org>
-References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807300958390.3334@nehalem.linux-foundation.org> <E1KOFUi-0000EU-0p@pomaz-ex.szeredi.hu> <20080730175406.GN20055@kernel.dk> <E1KOGT8-0000rd-0Z@pomaz-ex.szeredi.hu> <E1KOGeO-0000yi-EM@pomaz-ex.szeredi.hu>
- <20080730194516.GO20055@kernel.dk> <E1KOHvq-0001oX-OW@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807301310130.3334@nehalem.linux-foundation.org> <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Jul 2008 16:56:04 -0400
+Received: from vena.lwn.net ([206.168.112.25]:35231 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752244AbYG3U4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 16:56:03 -0400
+Date: Wed, 30 Jul 2008 14:56:00 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Amanda McPherson <amanda@amcpherson.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH, RFC] A development process document
+Message-ID: <20080730145600.7b61a43a@bike.lwn.net>
+In-Reply-To: <Pine.LNX.4.64.0807301307060.26427@twin.jikos.cz>
+References: <20080729143015.0f79cf37@bike.lwn.net>
+	<Pine.LNX.4.64.0807301307060.26427@twin.jikos.cz>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.5; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 30 Jul 2008 13:09:13 +0200 (CEST)
+Jiri Kosina <jkosina@suse.cz> wrote:
 
+> On the other hand, the drivers for completely new hardware (that has
+> been totally unsupported by the kernel previously, so there is no
+> possibility for introducing regressions) are still allowed even after
+> -rc1, right? 
 
-On Wed, 30 Jul 2008, Miklos Szeredi wrote:
-> 
-> It _is_ a bug fix.
+Clearly it's been known to happen (can you say GRU?).  But I don't know
+that has ever really been adopted as an "official" policy.  My
+preference would be to lay down the merge window rules as a fairly firm
+thing rather than suggest to people that there might be ways to slip
+around them sometimes.  But, certainly, I'm not tied to that if we want
+to send a different message.
 
-No it's not.
+Thanks,
 
-It's still papering over a totally unrelated bug. It's not a "fix", it's a 
-"paper-over". It doesn't matter if _behaviour_ changes.
-
-Can you really not see the difference?
-
-Afaik, everybody pretty much agreed what the real fix should be (don't 
-mark the page not up-to-date, just remove it from the radix tree), I'm not 
-seeing why you continue to push the patch that ALREADY GOT NAK'ed.
-
-			Linus
+jon
