@@ -1,62 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbYG3DFD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYG3D0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758239AbYG3DFD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 23:05:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYG3DEy
+	id S1755929AbYG3D0k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 23:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYG3D0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 23:04:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:33807 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752690AbYG3DEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 23:04:54 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH] Module : call synchronize_sched() between module exit() and free.
-Date: Wed, 30 Jul 2008 13:04:50 +1000
-User-Agent: KMail/1.9.9
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <20080717155724.897537670@polymtl.ca> <200807301140.59745.rusty@rustcorp.com.au> <20080730022751.GA15866@Krystal>
-In-Reply-To: <20080730022751.GA15866@Krystal>
+	Tue, 29 Jul 2008 23:26:30 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33575 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752644AbYG3D03 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 23:26:29 -0400
+Date: Wed, 30 Jul 2008 12:16:52 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Subject: Re: memory hotplug: hot-remove fails on lowest chunk in ZONE_MOVABLE
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <1217347653.4829.17.camel@localhost.localdomain>
+References: <20080723105318.81BC.E1E9C6FF@jp.fujitsu.com> <1217347653.4829.17.camel@localhost.localdomain>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080730110444.27DE.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807301304.51014.rusty@rustcorp.com.au>
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 July 2008 12:27:51 Mathieu Desnoyers wrote:
-> > Hi Mathieu,
-> >
-> >    Yes: stop_machine is merely used to atomically check the module
-> > refcount for zero and set the state so it can't be incremented again (ie.
-> > try_module_get will fail).
-> >
-> >    So placing a tracepoint or marker in a module does not bump the module
-> > refcount?  If that's true, then there needs to be some kind of
-> > remove_markers_from_module() call after module->exit(), which should do
-> > the synchronize_sched() or whatever, right?
-> >
-> > Rusty.
->
-> Actually, it's not placing a marker/tracepoint in a module which causes
-> a problem, this is a simple function call after all, and correctly dealt
-> with by current module.c code.
->
-> The problem comes from a probe function (the callback) that would be
-> registered to be called from a marker and would sit in an unloadable
-> kernel module. I would not want to tie the refcount of the probe modules
-> to the fact that they are connected to a marker because it would then
-> become impossible to unload them due to the fact that unregistration is
-> done in module exit().
+> On Wed, 2008-07-23 at 11:48 +0900, Yasunori Goto wrote:
+> > > Memory hot-remove of the lowest memory chunk in ZONE_MOVABLE will fail
+> > > because of some reserved pages at the beginning of each zone
+> > > (MIGRATE_RESERVED).
+> > > 
+> > I believe you are right. Current hot-remove code is NOT perfect.
+> > You may remove some sections, but may not other sections,
+> > because there are some un-removable pages by some reasons
+> > (not only MIGRATE_RESERVED).
+> > 
+> > I think MIGRATE_RESERVED pages should be move to MIGRATE_MOVABLE when 
+> > those pages must be removed, and should recalculate MIGRATE_RESERVED pages.
+> 
+> Hi,
+> 
+> Would it be an option to set pages_min to 0 for ZONE_MOVABLE in
+> setup_per_zone_pages_min()? This would avoid the MIGRATE_RESERVED vs.
+> MIGRATE_MOVABLE conflict on memory hot-remove. If I understand it
+> correctly, the kernel wouldn't be able to use the reserved pages in
+> ZONE_MOVABLE for __GFP_HIGH and PF_MEMALLOC allocations anyway, right?
+> 
+> At the moment, ZONE_MOVABLE pages will also account for the lowmem_pages
+> calculation in setup_per_zone_pages_min(). The recalculation will then
+> redistribute and reduce the amount of reserved pages for the other zones.
+> Won't this effectively reduce the amount of reserved min_free_kbytes memory
+> that is available to the kernel, even getting worse the more memory is
+> added to ZONE_MOVABLE?
+> 
+> With the following patch, ZONE_MOVABLE will be skipped for the
+> lowmem_pages calculation, just like it is already done for highmem.
+> It will also set pages_min to 0 for ZONE_MOVABLE. But I have an uneasy
+> feeling about this, because I may be missing side effects from this.
+> Any opinions?
 
-Hi Mathieu,
+Well, I didn't mean changing pages_min value. There may be side effect as
+you are saying.
+I meant if some pages were MIGRATE_RESERVE attribute when hot-remove are
+-executing-, their attribute should be changed.
 
-    Still confused, sorry.  Why don't you don't do a synchronize_sched() at 
-the end of your module's exit routine?  "You must be completely finished by 
-the time ->exit() returns" is the rule so far...
+For example, how is like following dummy code?  Is it impossible?
+(Not only here, some places will have to be modified..)
 
-Rusty.
+Thanks.
+
+---
+ mm/page_alloc.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: current/mm/page_alloc.c
+===================================================================
+--- current.orig/mm/page_alloc.c        2008-07-29 22:17:54.000000000 +0900
++++ current/mm/page_alloc.c     2008-07-30 12:04:03.000000000 +0900
+@@ -4828,7 +4828,9 @@ int set_migratetype_isolate(struct page
+        /*
+         * In future, more migrate types will be able to be isolation target.
+         */
+-       if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE)
++       if ((get_pageblock_migratetype(page) != MIGRATE_MOVABLE) ||
++           !((removing section is the last section on the zone) &&
++             get_pageblock_migratetype(page) == MIGRATE_RESREVE))
+                goto out;
+        set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+        move_freepages_block(zone, page, MIGRATE_ISOLATE);
+
+
+-- 
+Yasunori Goto 
+
+
