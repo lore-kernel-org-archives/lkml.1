@@ -1,257 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752787AbYG3EI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468AbYG3EQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752787AbYG3EI7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 00:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbYG3EIs
+	id S1752468AbYG3EQd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 00:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbYG3EQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 00:08:48 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:60261 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750767AbYG3EIr (ORCPT
+	Wed, 30 Jul 2008 00:16:24 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:60521 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750767AbYG3EQX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 00:08:47 -0400
-Subject: Re: BUG: SCSI: usb storage SDHC card doesn't work in 2.6.27-rc1
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Matthew Frost <artusemrys@yahoo.com>
-Cc: linux-kernel@vger.kernel.org, Matt Frost <artusemrys@sbcglobal.net>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       Alan Stern <stern@rowland.harvard.edu>
-In-Reply-To: <103966.68801.qm@web83207.mail.mud.yahoo.com>
-References: <103966.68801.qm@web83207.mail.mud.yahoo.com>
-Content-Type: text/plain
-Date: Tue, 29 Jul 2008 23:08:42 -0500
-Message-Id: <1217390922.6103.79.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jul 2008 00:16:23 -0400
+To: linux-kernel@vger.kernel.org
+Subject: Oops in 2.6.26-rc1: in kernel/sched.c:sched_power_savings_store()
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1KO36q-0004K6-DL@closure.thunk.org>
+Date: Wed, 30 Jul 2008 00:16:20 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-29 at 17:06 -0700, Matthew Frost wrote:
-> James and co., 
-> 
-> Bug report: regression in 2.6.27-rc1 -- scsi WRT usb-storage
-> Origin: Commit de72aa4c2b82a6cffe15d86a8d391ded4fb57602, "[SCSI] erase
-> invalid data returned by device"
-> Location: drivers/scsi_lib.c
-> Device: Secure Digital HC 4GB card in USB 2.0 card reader
 
-Actually, this is a USB issue ... I've added the correct cc's
+Here is the dmesg; the oops seems to be from this shell script (see
+below) when writing to /sys/devices/system/cpu/sched_mc_power_savings.
 
-James
+       	    					- Ted
+
+[   44.145128] [drm] Initialized i915 1.6.0 20060119 on minor 0
+[   44.940413] mtrr: type mismatch for e0000000,10000000 old: write-back new: write-combining
+[   53.008495] input: Virtual ThinkFinger Keyboard as /class/input/input10
+[   66.063378] BUG: unable to handle kernel NULL pointer dereference at 00000002
+[   66.063394] IP: [<c0123016>] sched_power_savings_store+0x7/0x49
+[   66.063410] *pdpt = 000000002c5b7001 *pde = 0000000000000000 
+[   66.063426] Oops: 0000 [#1] SMP 
+[   66.063436] Modules linked in: i915 drm nfsd auth_rpcgss exportfs kvm_intel kvm autofs4 sbshc pci_slot container wmi cpufreq_stats cpufreq_conservative cpufreq_userspace cpufreq_powersave nfs lockd sunrpc iptable_filter ip_tables x_tables deflate zlib_deflate ctr twofish twofish_common camellia serpent blowfish des_generic cbc aes_i586 aes_generic xcbc rmd160 sha256_generic sha1_generic crypto_null crypto_blkcipher af_key ext3 jbd uinput acpi_cpufreq loop snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc snd_hwdep serio_raw snd_seq_dummy psmouse snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq battery shpchp snd_timer pci_hotplug snd_seq_device snd soundcore video output button intel_agp thinkpad_acpi evdev rfkill led_class nvram ide_pci_generic piix ide_core sg sd_mod crc_t10dif ata_piix ata_generic ahci libata scsi_mod dock dm_mirror dm_log dm_snapshot dm_mod thermal processor fan fuse ext4dev mbcache jbd2 crc16
+[   66.063586] 
+[   66.063590] Pid: 8095, comm: sched-powersave Not tainted (2.6.27-rc1-00041-g12d06f6 #34)
+[   66.063594] EIP: 0060:[<c0123016>] EFLAGS: 00010246 CPU: 0
+[   66.063601] EIP is at sched_power_savings_store+0x7/0x49
+[   66.063605] EAX: 00000002 EBX: c012306c ECX: 00000000 EDX: c0400938
+[   66.063608] ESI: c0400938 EDI: ec568000 EBP: ec56cf28 ESP: ec56cf20
+[   66.063612]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+[   66.063616] Process sched-powersave (pid: 8095, ti=ec56c000 task=ec5dc5c0 task.ti=ec56c000)
+[   66.063619] Stack: c012306c c0400cdc ec56cf30 c012307b ec56cf44 c02647f3 c0400938 f740b6f0 
+[   66.063633]        00000002 ec56cf74 c01cef23 00000002 00000002 080fc408 ec56e540 f5445814 
+[   66.063645]        c0400938 c0400cdc 00000002 ec56e540 080fc408 ec56cf90 c0191df7 ec56cf9c 
+[   66.063658] Call Trace:
+[   66.063664]  [<c012306c>] ? sched_mc_power_savings_store+0x0/0x11
+[   66.063673]  [<c012307b>] ? sched_mc_power_savings_store+0xf/0x11
+[   66.063681]  [<c02647f3>] ? sysdev_class_store+0x25/0x2a
+[   66.063690]  [<c01cef23>] ? sysfs_write_file+0xbd/0xe8
+[   66.063698]  [<c0191df7>] ? vfs_write+0x7f/0xaf
+[   66.063706]  [<c01cee66>] ? sysfs_write_file+0x0/0xe8
+[   66.063713]  [<c0191ec5>] ? sys_write+0x40/0x62
+[   66.063720]  [<c0103a63>] ? sysenter_do_call+0x12/0x3f
+[   66.063728]  =======================
+[   66.063731] Code: 40 ba 34 c6 3e c0 e8 43 c4 0a 00 5b 5d c3 55 89 e5 e8 ef 6f 00 00 e8 b8 57 03 00 e8 2d 70 00 00 31 c0 5d c3 55 89 e5 56 89 d6 53 <8a> 10 89 cb b9 ea ff ff ff 8d 42 d0 3c 01 77 2c 85 db 74 0f 31 
+[   66.063814] EIP: [<c0123016>] sched_power_savings_store+0x7/0x49 SS:ESP 0068:ec56cf20
+[   66.063830] ---[ end trace 82b9c50266b3c24a ]---
 
 
-> Summary:
-> Between 2.6.26-rc9-git10 and rc9-git11, the kernel stopped properly
-> recognizing my USB-card-reader-mounted SDHC 4GB card.  The problem seems to
-> come up between usb-storage recognizing the device, and the handoff to scsi
-> to read the disk properties.  The bug remains in 2.6.26 and 2.6.27-rc1;
-> kernels before 2.6.26-rc9-git10 are unaffected.  On the same EHCI controller,
-> an old-spec SD 1GB card and its reader are unaffected by this bug.
-> 
-> The normal recognition and initialization of the device (from rc9-git9 dmesg)
-> goes like this:
-> 
-> PCI: Setting latency timer of device 0000:00:1d.7 to 64
-> ehci_hcd 0000:00:1d.7: EHCI Host Controller
-> ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 1
-> PCI: cache line size of 128 is not supported by device 0000:00:1d.7
-> ehci_hcd 0000:00:1d.7: irq 23, io mem 0xe4000000
-> ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-> usb usb1: configuration #1 chosen from 1 choice
-> hub 1-0:1.0: USB hub found
-> hub 1-0:1.0: 6 ports detected
-> usb usb1: New USB device found, idVendor=1d6b, idProduct=0002
-> usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-> usb usb1: Product: EHCI Host Controller
-> usb usb1: Manufacturer: Linux 2.6.26-rc9-git9 ehci_hcd
-> usb usb1: SerialNumber: 0000:00:1d.7
-> --%<--
-> usb 1-1: new high speed USB device using ehci_hcd and address 2
-> usb 1-1: configuration #1 chosen from 1 choice
-> usb 1-1: New USB device found, idVendor=058f, idProduct=6331
-> usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-> usb 1-1: Product: Mass Storage Device
-> usb 1-1: Manufacturer: Generic
-> usb 1-1: SerialNumber: 058F091111B
-> --%<--
-> usb 1-2: new high speed USB device using ehci_hcd and address 3
-> usb 1-2: configuration #1 chosen from 1 choice
-> usb 1-2: New USB device found, idVendor=090c, idProduct=6000
-> usb 1-2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-> usb 1-2: Product: USB2.0 Card Reader
-> usb 1-2: Manufacturer: Generic       ,   .
-> usb 1-2: SerialNumber: 12345678901234567890
-> --%<--
-> Initializing USB Mass Storage driver...
-> scsi4 : SCSI emulation for USB Mass Storage devices
-> usb-storage: device found at 2
-> usb-storage: waiting for device to settle before scanning
-> scsi5 : SCSI emulation for USB Mass Storage devices
-> usb-storage: device found at 3
-> usb-storage: waiting for device to settle before scanning
-> --%<--
-> usbcore: registered new interface driver usb-storage
-> USB Mass Storage support registered.
-> usbcore: registered new interface driver libusual
-> --%<--
-> usb-storage: device scan complete
-> scsi 4:0:0:0: Direct-Access     Multi    Flash Reader     1.00 PQ: 0 ANSI: 0
-> usb-storage: device scan complete
-> scsi 5:0:0:0: Direct-Access     Generic                   6000 PQ: 0 ANSI: 0
-> CCS
-> sd 4:0:0:0: [sde] 1953792 512-byte hardware sectors (1000 MB)
-> sd 4:0:0:0: [sde] Write Protect is off
-> sd 4:0:0:0: [sde] Mode Sense: 03 00 00 00
-> sd 4:0:0:0: [sde] Assuming drive cache: write through
-> sd 4:0:0:0: [sde] 1953792 512-byte hardware sectors (1000 MB)
-> sd 4:0:0:0: [sde] Write Protect is off
-> sd 4:0:0:0: [sde] Mode Sense: 03 00 00 00
-> sd 4:0:0:0: [sde] Assuming drive cache: write through
->  sde: sde1
-> sd 4:0:0:0: [sde] Attached SCSI removable disk
-> sd 4:0:0:0: Attached scsi generic sg6 type 0
-> sd 5:0:0:0: [sdf] 7861248 512-byte hardware sectors (4025 MB)
-> sd 5:0:0:0: [sdf] Write Protect is off
-> sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
-> sd 5:0:0:0: [sdf] Assuming drive cache: write through
-> sd 5:0:0:0: [sdf] 7861248 512-byte hardware sectors (4025 MB)
-> sd 5:0:0:0: [sdf] Write Protect is off
-> sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
-> sd 5:0:0:0: [sdf] Assuming drive cache: write through
->  sdf: sdf1
-> sd 5:0:0:0: [sdf] Attached SCSI removable disk
-> sd 5:0:0:0: Attached scsi generic sg7 type 0
-> 
-> (sde is the 1GB SD card/reader, sdf is the 4GB SDHC card/reader.)
-> 
-> After the bug, initialization looks the same until the device scan finishes. 
-> Handoff to scsi produces the following (taken from rc9-git12):
-> 
-> usb-storage: device scan complete
-> scsi 4:0:0:0: Direct-Access     Multi    Flash Reader     1.00 PQ: 0 ANSI: 0
-> usb-storage: device scan complete
-> scsi 5:0:0:0: Direct-Access     Generic                   6000 PQ: 0 ANSI: 0
-> CCS
-> sd 4:0:0:0: [sde] 1953792 512-byte hardware sectors (1000 MB)
-> sd 4:0:0:0: [sde] Write Protect is off
-> sd 4:0:0:0: [sde] Mode Sense: 03 00 00 00
-> sd 4:0:0:0: [sde] Assuming drive cache: write through
-> sd 4:0:0:0: [sde] 1953792 512-byte hardware sectors (1000 MB)
-> sd 4:0:0:0: [sde] Write Protect is off
-> sd 4:0:0:0: [sde] Mode Sense: 03 00 00 00
-> sd 4:0:0:0: [sde] Assuming drive cache: write through
->  sde: sde1
-> sd 4:0:0:0: [sde] Attached SCSI removable disk
-> sd 4:0:0:0: Attached scsi generic sg6 type 0
-> sd 5:0:0:0: [sdf] Sector size 0 reported, assuming 512.
-> sd 5:0:0:0: [sdf] 1 512-byte hardware sectors (0 MB)
-> sd 5:0:0:0: [sdf] Write Protect is off
-> sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
-> sd 5:0:0:0: [sdf] Assuming drive cache: write through
-> sd 5:0:0:0: [sdf] Sector size 0 reported, assuming 512.
-> sd 5:0:0:0: [sdf] 1 512-byte hardware sectors (0 MB)
-> sd 5:0:0:0: [sdf] Write Protect is off
-> sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
-> sd 5:0:0:0: [sdf] Assuming drive cache: write through
->  sdf: sdf1
->  sdf: p1 exceeds device capacity
-> sd 5:0:0:0: [sdf] Attached SCSI removable disk
-> sd 5:0:0:0: Attached scsi generic sg7 type 0
-> 
-> And after boot, the following set of errors recurs until device removal.
-> Device removal, in this case, was necessary to get LILO to update (-git12
-> again):
-> 
-> attempt to access beyond end of device
-> sdf: rw=0, want=8200, limit=1
-> Buffer I/O error on device sdf1, logical block 0
-> attempt to access beyond end of device
-> sdf: rw=0, want=8208, limit=1
-> Buffer I/O error on device sdf1, logical block 1
-> attempt to access beyond end of device
-> sdf: rw=0, want=8216, limit=1
-> Buffer I/O error on device sdf1, logical block 2
-> attempt to access beyond end of device
-> sdf: rw=0, want=8224, limit=1
-> Buffer I/O error on device sdf1, logical block 3
-> attempt to access beyond end of device
-> sdf: rw=0, want=8200, limit=1
-> Buffer I/O error on device sdf1, logical block 0
-> attempt to access beyond end of device
-> sdf: rw=0, want=8200, limit=1
-> Buffer I/O error on device sdf1, logical block 0
-> attempt to access beyond end of device
-> sdf: rw=0, want=8208, limit=1
-> Buffer I/O error on device sdf1, logical block 1
-> attempt to access beyond end of device
-> sdf: rw=0, want=8216, limit=1
-> Buffer I/O error on device sdf1, logical block 2
-> attempt to access beyond end of device
-> sdf: rw=0, want=8224, limit=1
-> Buffer I/O error on device sdf1, logical block 3
-> attempt to access beyond end of device
-> sdf: rw=0, want=8200, limit=1
-> Buffer I/O error on device sdf1, logical block 0
-> attempt to access beyond end of device
-> sdf: rw=0, want=8200, limit=1
-> Buffer I/O error on device sdf1, logical block 0
-> attempt to access beyond end of device
-> sdf: rw=0, want=8208, limit=1
-> Buffer I/O error on device sdf1, logical block 1
-> attempt to access beyond end of device
-> sdf: rw=0, want=8216, limit=1
-> Buffer I/O error on device sdf1, logical block 2
-> attempt to access beyond end of device
-> sdf: rw=0, want=8224, limit=1
-> Buffer I/O error on device sdf1, logical block 3
-> attempt to access beyond end of device
-> sdf: rw=0, want=8200, limit=1
-> Buffer I/O error on device sdf1, logical block 0
-> usb 1-2: USB disconnect, address 3
-> 
-> I'm not well-versed in git, so I looked through the diff between rc9-git10
-> and rc9-git11.  This is what looks like the offending addition:
-> 
-> > diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-> > index a82d2fe..cbf55d5 100644
-> > --- a/drivers/scsi/scsi_lib.c
-> > +++ b/drivers/scsi/scsi_lib.c
-> > @@ -207,6 +207,15 @@ int scsi_execute(struct scsi_device *sdev, const
-> unsigned char *cmd,
-> >  	 */
-> >  	blk_execute_rq(req->q, NULL, req, 1);
-> >  
-> > +	/*
-> > +	 * Some devices (USB mass-storage in particular) may transfer
-> > +	 * garbage data together with a residue indicating that the data
-> > +	 * is invalid.  Prevent the garbage from being misinterpreted
-> > +	 * and prevent security leaks by zeroing out the excess data.
-> > +	 */
-> > +	if (unlikely(req->data_len > 0 && req->data_len <= bufflen))
-> > +		memset(buffer + (bufflen - req->data_len), 0, req->data_len);
-> > +
-> >  	ret = req->errors;
-> >   out:
-> >  	blk_put_request(req);
-> 
-> I looked through the online git log, and it's part of commit
-> de72aa4c2b82a6cffe15d86a8d391ded4fb57602, under "[SCSI] erase invalid data
-> returned by device".  Reverting this part by itself restores the correct
-> handling of the device in 2.6.27-rc1.
-> 
-> Perhaps there's a better way to do what this patch is trying to do, because
-> it seems to be erasing the valid data returned by my device.  If you want me
-> to test out options, I'd be glad to, since I have the "offending" hardware. 
-> Specifics: A-Data 4GB TurboSD Class 6 SDHC card, 4GB, in a Rosewill RSD-CR102
-> card reader.
-> 
-> (Please include me on replies, I've stopped being a subscriber.)
-> 
-> Thanks!
-> 
-> Matthew Frost
-> artusemrys sbcglobal net
+------------------- Begin /usr/lib/pm-utils/power.d/sched-powersave
+#!/bin/bash
 
+path_mc="/sys/devices/system/cpu/sched_mc_power_savings"
+path_smp="/sys/devices/system/cpu/sched_smp_power_savings"
+val=0
+
+case "$1" in
+	true)
+		echo "**sched policy powersave ON"
+		val=1
+		;;
+	false)
+		echo "**sched policy powersave OFF"
+		val=0
+		;;
+esac
+
+# Based on the values (1-enable, 0-disable) for these controls,
+# sched groups cpu power will be determined for different domains.
+# When power savings policy is enabled and under light load conditions,
+# scheduler will minimize the physical packages/cpu cores carrying the
+# load and thus conserving power
+
+if [ -w "$path_mc" ] ; then
+	echo $val > $path_mc
+fi
+if [ -w "$path_smp" ] ; then
+	echo $val > $path_smp
+fi
+
+exit 0
+------------------- End /usr/lib/pm-utils/power.d/sched-powersave
