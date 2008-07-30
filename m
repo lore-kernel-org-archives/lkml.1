@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760005AbYG3JEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018AbYG3JE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760005AbYG3JEm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 05:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYG3JEd
+	id S1755018AbYG3JE6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 05:04:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbYG3JEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 05:04:33 -0400
-Received: from beru.its.uow.edu.au ([130.130.68.31]:43089 "EHLO
+	Wed, 30 Jul 2008 05:04:35 -0400
+Received: from beru.its.uow.edu.au ([130.130.68.31]:43092 "EHLO
 	beru.its.uow.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752312AbYG3JEc (ORCPT
+	with ESMTP id S1753823AbYG3JEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 05:04:32 -0400
-Subject: [patch 26/31] pci_ids.h, kernel 2.6.27-rc1, sort DEVICE_IDs within VENDOR_IDs
-Message-Id: <E1KO7Qd-0007Iy-IZ@wraith.cs.uow.edu.au>
+	Wed, 30 Jul 2008 05:04:34 -0400
+Subject: [patch 14/31] pci_ids.h, kernel 2.6.27-rc1, sort DEVICE_IDs within VENDOR_IDs
+Message-Id: <E1KO7Pd-0007FT-R4@wraith.cs.uow.edu.au>
 From: mcs6502@gmail.com
-Date: Wed, 30 Jul 2008 18:53:03 +1000
+Date: Wed, 30 Jul 2008 18:52:01 +1000
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- linux-p25/include/linux/pci_ids.h	2008-07-30 13:42:14.072787000 +1000
-+++ linux-p26/include/linux/pci_ids.h	2008-07-30 13:44:49.874660000 +1000
-@@ -465,18 +465,18 @@
- 
- #define PCI_VENDOR_ID_IBM		0x1014
- #define PCI_DEVICE_ID_IBM_TR		0x0018
-+#define PCI_DEVICE_ID_IBM_ICOM_DEV_ID_1	0x0031
- #define PCI_DEVICE_ID_IBM_TR_WAKE	0x003e
- #define PCI_DEVICE_ID_IBM_CPC710_PCI64	0x00fc
- #define PCI_DEVICE_ID_IBM_SNIPE		0x0180
--#define PCI_DEVICE_ID_IBM_CITRINE		0x028C
--#define PCI_DEVICE_ID_IBM_GEMSTONE		0xB166
--#define PCI_DEVICE_ID_IBM_OBSIDIAN		0x02BD
--#define PCI_DEVICE_ID_IBM_ICOM_DEV_ID_1	0x0031
- #define PCI_DEVICE_ID_IBM_ICOM_DEV_ID_2	0x0219
- #define PCI_DEVICE_ID_IBM_ICOM_V2_TWO_PORTS_RVX		0x021A
- #define PCI_DEVICE_ID_IBM_ICOM_V2_ONE_PORT_RVX_ONE_PORT_MDM	0x0251
-+#define PCI_DEVICE_ID_IBM_ICOM_FOUR_PORT_MODEL	0x0252
-+#define PCI_DEVICE_ID_IBM_CITRINE		0x028C
-+#define PCI_DEVICE_ID_IBM_OBSIDIAN		0x02BD
- #define PCI_DEVICE_ID_IBM_ICOM_V2_ONE_PORT_RVX_ONE_PORT_MDM_PCIE 0x0361
--#define PCI_DEVICE_ID_IBM_ICOM_FOUR_PORT_MODEL	0x252
-+#define PCI_DEVICE_ID_IBM_GEMSTONE		0xB166
- 
- #define PCI_VENDOR_ID_UNISYS		0x1018
- #define PCI_DEVICE_ID_UNISYS_DMA_DIRECTOR 0x001C
+--- linux-p13/include/linux/pci_ids.h	2008-07-30 13:17:43.998171000 +1000
++++ linux-p14/include/linux/pci_ids.h	2008-07-30 13:19:49.088675000 +1000
+@@ -1288,15 +1288,15 @@
+ #define PCI_DEVICE_ID_VIA_8380_0	0x0204
+ #define PCI_DEVICE_ID_VIA_3238_0	0x0238
+ #define PCI_DEVICE_ID_VIA_PT880		0x0258
+-#define PCI_DEVICE_ID_VIA_PT880ULTRA	0x0308
+ #define PCI_DEVICE_ID_VIA_PX8X0_0	0x0259
+ #define PCI_DEVICE_ID_VIA_3269_0	0x0269
+ #define PCI_DEVICE_ID_VIA_K8T800PRO_0	0x0282
+ #define PCI_DEVICE_ID_VIA_3296_0	0x0296
+ #define PCI_DEVICE_ID_VIA_8363_0	0x0305
++#define PCI_DEVICE_ID_VIA_PT880ULTRA	0x0308
+ #define PCI_DEVICE_ID_VIA_P4M800CE	0x0314
+-#define PCI_DEVICE_ID_VIA_P4M890	0x0327
+ #define PCI_DEVICE_ID_VIA_VT3324	0x0324
++#define PCI_DEVICE_ID_VIA_P4M890	0x0327
+ #define PCI_DEVICE_ID_VIA_VT3336	0x0336
+ #define PCI_DEVICE_ID_VIA_VT3351	0x0351
+ #define PCI_DEVICE_ID_VIA_VT3364	0x0364
+@@ -1305,6 +1305,7 @@
+ #define PCI_DEVICE_ID_VIA_82C561	0x0561
+ #define PCI_DEVICE_ID_VIA_82C586_1	0x0571
+ #define PCI_DEVICE_ID_VIA_82C576	0x0576
++#define PCI_DEVICE_ID_VIA_CX700_IDE	0x0581
+ #define PCI_DEVICE_ID_VIA_82C586_0	0x0586
+ #define PCI_DEVICE_ID_VIA_82C596	0x0596
+ #define PCI_DEVICE_ID_VIA_82C597_0	0x0597
+@@ -1353,7 +1354,6 @@
+ #define PCI_DEVICE_ID_VIA_8231_4	0x8235
+ #define PCI_DEVICE_ID_VIA_8365_1	0x8305
+ #define PCI_DEVICE_ID_VIA_CX700		0x8324
+-#define PCI_DEVICE_ID_VIA_CX700_IDE	0x0581
+ #define PCI_DEVICE_ID_VIA_VX800		0x8353
+ #define PCI_DEVICE_ID_VIA_8371_1	0x8391
+ #define PCI_DEVICE_ID_VIA_82C598_1	0x8598
