@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbYG3XdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759851AbYG3Xdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757883AbYG3XdN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:33:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbYG3Xcz
+	id S1759851AbYG3Xdf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757639AbYG3XdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:32:55 -0400
-Received: from cantor.suse.de ([195.135.220.2]:35422 "EHLO mx1.suse.de"
+	Wed, 30 Jul 2008 19:33:22 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33775 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759014AbYG3Xcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:32:53 -0400
-Date: Wed, 30 Jul 2008 16:26:48 -0700
+	id S1754691AbYG3XdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:33:21 -0400
+Date: Wed, 30 Jul 2008 16:26:50 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jan Kratochvil <jan.kratochvil@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 03/29] x86: fix crash due to missing debugctlmsr on AMD K6-3
-Message-ID: <20080730232648.GD30670@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jan Beulich <jbeulich@novell.com>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: [patch 04/29] vmlinux.lds: move __attribute__((__cold__))
+	functions back into final .text section
+Message-ID: <20080730232650.GE30670@suse.de>
 References: <20080730231003.655833364@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-fix-crash-due-to-missing-debugctlmsr-on-amd-k6-3.patch"
+Content-Disposition: inline; filename="vmlinux.lds-move-__attribute__-functions-back-into-final-.text-section.patch"
 In-Reply-To: <20080730232451.GA30670@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,35 +41,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Jan Kratochvil <jan.kratochvil@redhat.com>
+From: Jan Beulich <jbeulich@novell.com>
 
-commit d536b1f86591fb081c7a56eab04e711eb4dab951 upstream
+commit fb5e2b379732e1a6ea32392980bb42e0212db842 upstream
 
-currently if you use PTRACE_SINGLEBLOCK on AMD K6-3 (i586) it will crash.
-Kernel now wrongly assumes existing DEBUGCTLMSR MSR register there.
+Due to the addition of __attribute__((__cold__)) to a few symbols
+without adjusting the linker scripts, those symbols currently may end
+up outside the [_stext,_etext) range, as they get placed in
+.text.unlikely by (at least) gcc 4.3.0. This may confuse code not only
+outside of the kernel, symbol_put_addr()'s BUG() could also trigger.
+Hence we need to add .text.unlikely (and for future uses of
+__attribute__((__hot__)) also .text.hot) to the TEXT_TEXT() macro.
 
-Removed the assumption also for some other non-K6 CPUs but I am not sure there
-(but it can only bring small inefficiency there if my assumption is wrong).
+Issue observed by Lukas Lipavsky.
 
-Based on info from Roland McGrath, Chuck Ebbert and Mikulas Patocka.
-More info at:
-	https://bugzilla.redhat.com/show_bug.cgi?id=456175
-
-Signed-off-by: Jan Kratochvil <jan.kratochvil@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Tested-by: Lukas Lipavsky <llipavsky@suse.cz>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/Kconfig.cpu |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/asm-generic/vmlinux.lds.h |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -409,4 +409,4 @@ config X86_MINIMUM_CPU_FAMILY
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -204,6 +204,7 @@
+  * during second ld run in second ld pass when generating System.map */
+ #define TEXT_TEXT							\
+ 		ALIGN_FUNCTION();					\
++		*(.text.hot)						\
+ 		*(.text)						\
+ 		*(.ref.text)						\
+ 		*(.text.init.refok)					\
+@@ -213,7 +214,8 @@
+ 	CPU_KEEP(init.text)						\
+ 	CPU_KEEP(exit.text)						\
+ 	MEM_KEEP(init.text)						\
+-	MEM_KEEP(exit.text)
++	MEM_KEEP(exit.text)						\
++		*(.text.unlikely)
  
- config X86_DEBUGCTLMSR
- 	def_bool y
--	depends on !(M586MMX || M586TSC || M586 || M486 || M386)
-+	depends on !(MK6 || MWINCHIPC6 || MWINCHIP2 || MWINCHIP3D || MCYRIXIII || M586MMX || M586TSC || M586 || M486 || M386)
+ 
+ /* sched.text is aling to function alignment to secure we have same
 
 -- 
