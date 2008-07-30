@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbYG3Xc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYG3Xct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756143AbYG3Xc2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYG3XcG
+	id S1756110AbYG3Xct (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756989AbYG3Xca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:32:06 -0400
-Received: from mx1.suse.de ([195.135.220.2]:35302 "EHLO mx1.suse.de"
+	Wed, 30 Jul 2008 19:32:30 -0400
+Received: from ns.suse.de ([195.135.220.2]:35351 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756847AbYG3XcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:32:04 -0400
-Date: Wed, 30 Jul 2008 16:26:39 -0700
+	id S1756565AbYG3Xc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:32:29 -0400
+Date: Wed, 30 Jul 2008 16:26:45 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,77 +22,103 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jan Kara <jack@suse.cz>
-Subject: [patch 01/29] quota: fix possible infinite loop in quota code
-Message-ID: <20080730232639.GB30670@suse.de>
+       alan@lxorguk.ukuu.org.uk, Adam Greenblatt <adam.greenblatt@gmail.com>
+Subject: [patch 02/29] isofs: fix minor filesystem corruption
+Message-ID: <20080730232645.GC30670@suse.de>
 References: <20080730231003.655833364@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="quota-fix-possible-infinite-loop-in-quota-code.patch"
+Content-Disposition: inline; filename="isofs-fix-minor-filesystem-corruption.patch"
 In-Reply-To: <20080730232451.GA30670@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-2.6.25-stable review patch.  If anyone has any objections, please let us
+2.6.25-stable review patch.  If anyone has any objections, please let us 
 know.
 
 ------------------
+From: Adam Greenblatt <adam.greenblatt@gmail.com>
 
-From: Jan Kara <jack@suse.cz>
+commit c0a1633b6201ef79e31b7da464d44fdf5953054d upstream
 
-commit b48d380541f634663b71766005838edbb7261685 upstream
+Some iso9660 images contain files with rockridge data that is either
+incorrect or incompletely parsed.  Prior to commit
+f2966632a134e865db3c819346a1dc7d96e05309 ("[PATCH] rock: handle directory
+overflows") (included with kernel 2.6.13) the kernel ignored the rockridge
+data for these files, while still allowing the files to be accessed under
+their non-rockridge names.  That commit inadvertently changed things so
+that files with invalid rockridge data could not be accessed at all.  (I
+ran across the problem when comparing some old CDs with hard disk copies I
+had made long ago under kernel 2.4: a few of the files on the hard disk
+copies were no longer visible on the CDs.)
 
-When quota structure is going to be dropped and it is dirty, quota code tries
-to write it.  If the write fails for some reason (e.  g.  transaction cannot
-be started because the journal is aborted), we try writing again and again and
-again...  Fix the problem by clearing the dirty bit even if the write failed.
+This change reverts to the pre-2.6.13 behavior.
 
-(akpm: for 2.6.27, 2.6.26.x and 2.6.25.x)
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-Reviewed-by: dingdinghua <dingdinghua85@gmail.com>
+Signed-off-by: Adam Greenblatt <adam.greenblatt@gmail.com>
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/dquot.c |   16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+ fs/isofs/rock.c |   22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
 
---- a/fs/dquot.c
-+++ b/fs/dquot.c
-@@ -554,6 +554,8 @@ static struct shrinker dqcache_shrinker 
-  */
- static void dqput(struct dquot *dquot)
- {
-+	int ret;
-+
- 	if (!dquot)
- 		return;
- #ifdef __DQUOT_PARANOIA
-@@ -586,7 +588,19 @@ we_slept:
- 	if (test_bit(DQ_ACTIVE_B, &dquot->dq_flags) && dquot_dirty(dquot)) {
- 		spin_unlock(&dq_list_lock);
- 		/* Commit dquot before releasing */
--		dquot->dq_sb->dq_op->write_dquot(dquot);
-+		ret = dquot->dq_sb->dq_op->write_dquot(dquot);
-+		if (ret < 0) {
-+			printk(KERN_ERR "VFS: cannot write quota structure on "
-+				"device %s (error %d). Quota may get out of "
-+				"sync!\n", dquot->dq_sb->s_id, ret);
-+			/*
-+			 * We clear dirty bit anyway, so that we avoid
-+			 * infinite loop here
-+			 */
-+			spin_lock(&dq_list_lock);
-+			clear_dquot_dirty(dquot);
-+			spin_unlock(&dq_list_lock);
-+		}
- 		goto we_slept;
- 	}
- 	/* Clear flag in case dquot was inactive (something bad happened) */
+--- a/fs/isofs/rock.c
++++ b/fs/isofs/rock.c
+@@ -209,6 +209,11 @@ repeat:
+ 
+ 	while (rs.len > 2) { /* There may be one byte for padding somewhere */
+ 		rr = (struct rock_ridge *)rs.chr;
++		/*
++		 * Ignore rock ridge info if rr->len is out of range, but
++		 * don't return -EIO because that would make the file
++		 * invisible.
++		 */
+ 		if (rr->len < 3)
+ 			goto out;	/* Something got screwed up here */
+ 		sig = isonum_721(rs.chr);
+@@ -216,8 +221,12 @@ repeat:
+ 			goto eio;
+ 		rs.chr += rr->len;
+ 		rs.len -= rr->len;
++		/*
++		 * As above, just ignore the rock ridge info if rr->len
++		 * is bogus.
++		 */
+ 		if (rs.len < 0)
+-			goto eio;	/* corrupted isofs */
++			goto out;	/* Something got screwed up here */
+ 
+ 		switch (sig) {
+ 		case SIG('R', 'R'):
+@@ -307,6 +316,11 @@ parse_rock_ridge_inode_internal(struct i
+ repeat:
+ 	while (rs.len > 2) { /* There may be one byte for padding somewhere */
+ 		rr = (struct rock_ridge *)rs.chr;
++		/*
++		 * Ignore rock ridge info if rr->len is out of range, but
++		 * don't return -EIO because that would make the file
++		 * invisible.
++		 */
+ 		if (rr->len < 3)
+ 			goto out;	/* Something got screwed up here */
+ 		sig = isonum_721(rs.chr);
+@@ -314,8 +328,12 @@ repeat:
+ 			goto eio;
+ 		rs.chr += rr->len;
+ 		rs.len -= rr->len;
++		/*
++		 * As above, just ignore the rock ridge info if rr->len
++		 * is bogus.
++		 */
+ 		if (rs.len < 0)
+-			goto eio;	/* corrupted isofs */
++			goto out;	/* Something got screwed up here */
+ 
+ 		switch (sig) {
+ #ifndef CONFIG_ZISOFS		/* No flag for SF or ZF */
 
 -- 
