@@ -1,98 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762382AbYG3Pkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbYG3Plt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762382AbYG3Pkl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 11:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbYG3Pkd
+	id S1756460AbYG3Plt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 11:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbYG3Plk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 11:40:33 -0400
-Received: from mail.free-electrons.com ([88.191.46.45]:43775 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753013AbYG3Pkc (ORCPT
+	Wed, 30 Jul 2008 11:41:40 -0400
+Received: from qmta06.emeryville.ca.mail.comcast.net ([76.96.30.56]:35031 "EHLO
+	QMTA06.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751158AbYG3Plj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 11:40:32 -0400
-Date: Wed, 30 Jul 2008 17:40:28 +0200
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       mpm@selenic.com, akpm@linux-foundation.org
-Subject: Re: [patch 2/4] Configure out file locking features
-Message-ID: <20080730174028.67184ea2@surf>
-In-Reply-To: <20080730142754.GD19966@cs181140183.pp.htv.fi>
-References: <20080729154520.728594017@free-electrons.com>
-	<20080729154747.872888047@free-electrons.com>
-	<20080729181751.GA24924@parisc-linux.org>
-	<20080730142754.GD19966@cs181140183.pp.htv.fi>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/KkKrxzsZy/AgKq_3jGyWbPG";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Wed, 30 Jul 2008 11:41:39 -0400
+X-Authority-Analysis: v=1.0 c=1 a=BYonhTRQpbAA:10 a=IhWaeWlHaAEA:10
+ a=jV8d13ai_0P2_Nw8ZgEA:9 a=8y8HHg5i13rYfAtYVzYA:9 a=nqZCXiU78Dqf5DtkGpIA:7
+ a=VCtWmC6FdnRalRiH9lM-BglSAGcA:4 a=Mz_smNXqyOQA:10
+Message-ID: <48908C27.2060308@splhi.com>
+Date: Wed, 30 Jul 2008 08:43:35 -0700
+From: Tim Wright <timw@splhi.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] Fix miscalculation of sg_io timeout in	CDROM_SEND_PACKET
+ handler.
+References: <488D17DE.5000801@splhi.com> <1217431134.3335.15.camel@localhost.localdomain>
+In-Reply-To: <1217431134.3335.15.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/KkKrxzsZy/AgKq_3jGyWbPG
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+James Bottomley wrote:
+> On Sun, 2008-07-27 at 17:50 -0700, Tim Wright wrote:
+>   
+>> @@ -629,7 +629,7 @@ int scsi_cmd_ioctl(struct file *file, st
+>>                         hdr.sbp = cgc.sense;
+>>                         if (hdr.sbp)
+>>                                 hdr.mx_sb_len = sizeof(struct 
+>> request_sense);
+>> -                       hdr.timeout = cgc.timeout;
+>> +                       hdr.timeout = jiffies_to_msecs(cgc.timeout);
+>>                         hdr.cmdp = ((struct cdrom_generic_command 
+>> __user*) arg)->cmd;
+>>                         hdr.cmd_len = sizeof(cgc.cmd);
+>>     
+>
+> I'm afraid this patch is completely whitespace damaged:  the tabs have
+> all become spaces and the mailer has broken some of the lines.
+>
+> Since it's a one liner, I can make the fix directly, but if you look at
+>
+> Documentation/SubmittingPatches
+>
+> It has some good advice about how to fix your email tool to prevent this
+> from happening in future.
+>
+> James
+>
+>
+>   
+Ugh, mea culpa! Thanks James. I haven't submitted anything in a while, 
+and was using Thunderbird. I will
+go off and figure out how to make it leave the contents alone, or I'll 
+use a less "clever" client in future.
+Many thanks for the response and the gentle coaching :-)
 
-Le Wed, 30 Jul 2008 17:27:54 +0300,
-Adrian Bunk <bunk@kernel.org> a =C3=A9crit :
+Regards,
 
-> It seems the emails containing the patches never made it to the vger=20
-> lists, which makes it a bit hard to comment on them.
+Tim
 
-Yes, they didn't make it to the lists, for some reason. Maybe it's
-because I sent them using "quilt mail --send", which uses my local
-exim4 mail server, and for some reason, vger doesn't like that kind of
-e-mails. However, my exim4 is configured to sent the e-mails through by
-ISP SMTP. From my exim4 mainlog:
-
-2008-07-29 17:47:57 1KNrQS-0007kt-Kg =3D> linux-kernel@vger.kernel.org R=3D=
-smarthost T=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
-2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> linux-embedded@vger.kernel.org R=3D=
-smarthost T=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
-2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> netdev@vger.kernel.org R=3Dsmarthos=
-t T=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
-2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> davem@davemloft.net R=3Dsmarthost T=
-=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
-2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> mpm@selenic.com R=3Dsmarthost T=3Dr=
-emote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
-2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> akpm@linux-foundation.org R=3Dsmart=
-host T=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
-2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> thomas.petazzoni@free-electrons.com=
- R=3Dsmarthost T=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
-2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> michael@free-electrons.com R=3Dsmar=
-thost T=3Dremote_smtp_smarthost H=3Dsmtp.free.fr [212.27.48.4]*
-2008-07-29 17:47:57 1KNrQS-0007kt-Kg Completed
-
-So from my side, everything seemed to work well. Does anybody has a
-clue ?
-
-> Thomas, can you try to figure out what went wrong and resend them
-> then?
-
-I will send them again through my normal MUA, using quilt mail --mbox.
-Hopefully it'll work.
-
-Sincerly,
-
-Thomas
---=20
-Thomas Petazzoni, Free Electrons
-Kernel, drivers and embedded Linux development,
-consulting, training and support.
-http://free-electrons.com
-
---Sig_/KkKrxzsZy/AgKq_3jGyWbPG
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIkIts9lPLMJjT96cRAu+gAKCSr8z5X4fgX7KGFQ4svShUTmPovwCfQD0m
-i1EN/4GQJAdVZZwhE2QxjY8=
-=OwXs
------END PGP SIGNATURE-----
-
---Sig_/KkKrxzsZy/AgKq_3jGyWbPG--
