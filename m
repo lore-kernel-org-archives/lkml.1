@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762468AbYG3XnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762662AbYG3Xn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762468AbYG3XnW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762162AbYG3XmQ
+	id S1762662AbYG3Xn6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760982AbYG3XnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:42:16 -0400
-Received: from mx1.suse.de ([195.135.220.2]:36318 "EHLO mx1.suse.de"
+	Wed, 30 Jul 2008 19:43:08 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34761 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762155AbYG3XmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:42:15 -0400
-Date: Wed, 30 Jul 2008 16:27:40 -0700
+	id S1761878AbYG3XnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:43:06 -0400
+Date: Wed, 30 Jul 2008 16:27:45 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,69 +22,74 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Pavel Roskin <proski@gnu.org>,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 26/29] ath5k: dont enable MSI, we cannot handle it yet
-Message-ID: <20080730232740.GA30670@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Patrick McHardy <kaber@trash.net>
+Subject: [patch 28/29] netfilter -stable: nf_conntrack_tcp: fix endless loop
+Message-ID: <20080730232745.GC30670@suse.de>
 References: <20080730231003.655833364@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ath5k-don-t-enable-msi-we-cannot-handle-it-yet.patch"
+Content-Disposition: inline; filename="netfilter-stable-nf_conntrack_tcp-fix-endless-loop.patch"
 In-Reply-To: <20080730232451.GA30670@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.25-stable review patch.  If anyone has any objections, please let us 
 know.
 
 ------------------
-From: Pavel Roskin <proski@gnu.org>
+From: Patrick McHardy <kaber@trash.net>
 
-commit 256b152b005e319f985f50f2a910a75ba0def74f upstream
+netfilter: nf_conntrack_tcp: fix endless loop
 
-MSI is a nice thing, but we cannot enable it without changing the
-interrupt handler.  If we do it, we break MSI capable hardware,
-specifically AR5006 chipset.
+Upstream commit 6b69fe0:
 
-Signed-off-by: Pavel Roskin <proski@gnu.org>
-Acked-by: Nick Kossifidis <mickflemm@gmail.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+When a conntrack entry is destroyed in process context and destruction
+is interrupted by packet processing and the packet is an attempt to
+reopen a closed connection, TCP conntrack tries to kill the old entry
+itself and returns NF_REPEAT to pass the packet through the hook
+again. This may lead to an endless loop: TCP conntrack repeatedly
+finds the old entry, but can not kill it itself since destruction
+is already in progress, but destruction in process context can not
+complete since TCP conntrack is keeping the CPU busy.
+
+Drop the packet in TCP conntrack if we can't kill the connection
+ourselves to avoid this.
+
+Reported by: hemao77@gmail.com [ Kernel bugzilla #11058 ]
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath5k/base.c |    5 -----
- 1 file changed, 5 deletions(-)
+ net/netfilter/nf_conntrack_proto_tcp.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
---- a/drivers/net/wireless/ath5k/base.c
-+++ b/drivers/net/wireless/ath5k/base.c
-@@ -484,9 +484,6 @@ ath5k_pci_probe(struct pci_dev *pdev,
- 	/* Set private data */
- 	pci_set_drvdata(pdev, hw);
- 
--	/* Enable msi for devices that support it */
--	pci_enable_msi(pdev);
--
- 	/* Setup interrupt handler */
- 	ret = request_irq(pdev->irq, ath5k_intr, IRQF_SHARED, "ath", sc);
- 	if (ret) {
-@@ -553,7 +550,6 @@ err_ah:
- err_irq:
- 	free_irq(pdev->irq, sc);
- err_free:
--	pci_disable_msi(pdev);
- 	ieee80211_free_hw(hw);
- err_map:
- 	pci_iounmap(pdev, mem);
-@@ -575,7 +571,6 @@ ath5k_pci_remove(struct pci_dev *pdev)
- 	ath5k_detach(pdev, hw);
- 	ath5k_hw_detach(sc->ah);
- 	free_irq(pdev->irq, sc);
--	pci_disable_msi(pdev);
- 	pci_iounmap(pdev, sc->iobase);
- 	pci_release_region(pdev, 0);
- 	pci_disable_device(pdev);
+--- a/net/netfilter/nf_conntrack_proto_tcp.c
++++ b/net/netfilter/nf_conntrack_proto_tcp.c
+@@ -845,9 +845,15 @@ static int tcp_packet(struct nf_conn *ct
+ 			/* Attempt to reopen a closed/aborted connection.
+ 			 * Delete this connection and look up again. */
+ 			write_unlock_bh(&tcp_lock);
+-			if (del_timer(&ct->timeout))
++			/* Only repeat if we can actually remove the timer.
++			 * Destruction may already be in progress in process
++			 * context and we must give it a chance to terminate.
++			 */
++			if (del_timer(&ct->timeout)) {
+ 				ct->timeout.function((unsigned long)ct);
+-			return -NF_REPEAT;
++				return -NF_REPEAT;
++			}
++			return -NF_DROP;
+ 		}
+ 		/* Fall through */
+ 	case TCP_CONNTRACK_IGNORE:
 
 -- 
