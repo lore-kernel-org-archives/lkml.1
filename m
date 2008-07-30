@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbYGaALq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYGaAMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbYGaALq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757485AbYGaAK6
+	id S1756056AbYGaAMJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:12:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762337AbYGaALZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:10:58 -0400
-Received: from ns2.suse.de ([195.135.220.15]:36474 "EHLO mx2.suse.de"
+	Wed, 30 Jul 2008 20:11:25 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36517 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762291AbYGaAK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:10:57 -0400
-Date: Wed, 30 Jul 2008 16:58:31 -0700
+	id S1760257AbYGaALY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:11:24 -0400
+Date: Wed, 30 Jul 2008 16:58:34 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,15 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 20/62] x86, suspend, acpi: enter Big Real Mode
-Message-ID: <20080730235831.GT12896@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Roland McGrath <roland@redhat.com>,
+       Wenji Huang <wenji.huang@oracle.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
+Subject: [patch 21/62] markers: fix duplicate modpost entry
+Message-ID: <20080730235834.GU12896@suse.de>
 References: <20080730233050.332789722@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-suspend-acpi-enter-big-real-mode.patch"
+Content-Disposition: inline; filename="markers-fix-duplicate-modpost-entry.patch"
 In-Reply-To: <20080730234915.GA12426@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,80 +43,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 us know.
 
 ------------------
-From: H. Peter Anvin <hpa@zytor.com>
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 
-Commit 3bf2e77453a87c22eb57ed4926760ac131c84459 upstream
+commit: d35cb360c29956510b2fe1a953bd4968536f7216
 
-x86, suspend, acpi: enter Big Real Mode
+When a kernel was rebuilt, the previous Module.markers was not cleared.
+It caused markers with different format strings to appear as duplicates
+when a markers was changed.  This problem is present since
+scripts/mod/modpost.c started to generate Module.markers, commit
+b2e3e658b344c6bcfb8fb694100ab2f2b5b2edb0
 
-The explanation for recent video BIOS suspend quirk failures is that
-the VESA BIOS expects to be entered in Big Real Mode (*.limit = 0xffffffff)
-instead of ordinary Real Mode (*.limit = 0xffff).
+It therefore applies to 2.6.25, 2.6.26 and linux-next.
 
-This patch changes the segment descriptors to Big Real Mode instead.
+I merely merged the patches from Roland, Wenji and Takashi here.
 
-The segment descriptor registers (what Intel calls "segment cache") is
-always active.  The only thing that changes based on CR0.PE is how it is
-*loaded* and the interpretation of the CS flags.
+Credits to
+Roland McGrath <roland@redhat.com>
+Wenji Huang <wenji.huang@oracle.com>
+and
+Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 
-The segment descriptor registers contain of the following sub-registers:
-selector (the "visible" part), base, limit and flags.  In protected mode
-or long mode, they are loaded from descriptors (or fs.base or gs.base can
-be manipulated directly in long mode.)  In real mode, the only thing
-changed by a segment register load is the selector and the base, where the
-base <- selector << 4.  In particular, *the limit and the flags are not
-changed*.
+for providing the individual fixes.
 
-As far as the handling of the CS flags: a code segment cannot be writable
-in protected mode, whereas it is "just another segment" in real mode, so
-there is some kind of quirk that kicks in for this when CR0.PE <- 0.  I'm
-not sure if this is accomplished by actually changing the cs.flags register
-or just changing the interpretation; it might be something that is
-CPU-specific.  In particular, the Transmeta CPUs had an explicit "CS is
-writable if you're in real mode" override, so even if you had loaded CS
-with an execute-only segment it'd be writable (but not readable!) on return
-to real mode.  I'm not at all sure if that is how other CPUs behave.
+- Changelog :
+  - Integrated Takashi's Makefile modification to clear Module.markers upon
+    make clean.
 
-Signed-off-by: "H. Peter Anvin" <hpa@zytor.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Roland McGrath <roland@redhat.com>
+Cc: Wenji Huang <wenji.huang@oracle.com>
+Cc: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/acpi/sleep.c |   17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ Makefile                 |    3 ++-
+ scripts/Makefile.modpost |    1 +
+ scripts/mod/modpost.c    |    3 ++-
+ 3 files changed, 5 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kernel/acpi/sleep.c
-+++ b/arch/x86/kernel/acpi/sleep.c
-@@ -23,6 +23,15 @@ static unsigned long acpi_realmode;
- static char temp_stack[10240];
- #endif
+--- a/Makefile
++++ b/Makefile
+@@ -1133,7 +1133,8 @@ clean: archclean $(clean-dirs)
+ 	@find . $(RCS_FIND_IGNORE) \
+ 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
+ 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
+-		-o -name '*.symtypes' -o -name 'modules.order' \) \
++		-o -name '*.symtypes' -o -name 'modules.order' \
++		-o -name 'Module.markers' \) \
+ 		-type f -print | xargs rm -f
  
-+/* XXX: this macro should move to asm-x86/segment.h and be shared with the
-+   boot code... */
-+#define GDT_ENTRY(flags, base, limit)		\
-+	(((u64)(base & 0xff000000) << 32) |	\
-+	 ((u64)flags << 40) |			\
-+	 ((u64)(limit & 0x00ff0000) << 32) |	\
-+	 ((u64)(base & 0x00ffffff) << 16) |	\
-+	 ((u64)(limit & 0x0000ffff)))
-+
- /**
-  * acpi_save_state_mem - save kernel state
-  *
-@@ -58,11 +67,11 @@ int acpi_save_state_mem(void)
- 			((char *)&header->wakeup_gdt - (char *)acpi_realmode))
- 				<< 16);
- 	/* GDT[1]: real-mode-like code segment */
--	header->wakeup_gdt[1] = (0x009bULL << 40) +
--		((u64)acpi_wakeup_address << 16) + 0xffff;
-+	header->wakeup_gdt[1] =
-+		GDT_ENTRY(0x809b, acpi_wakeup_address, 0xfffff);
- 	/* GDT[2]: real-mode-like data segment */
--	header->wakeup_gdt[2] = (0x0093ULL << 40) +
--		((u64)acpi_wakeup_address << 16) + 0xffff;
-+	header->wakeup_gdt[2] =
-+		GDT_ENTRY(0x8093, acpi_wakeup_address, 0xfffff);
+ # mrproper - Delete all generated files, including .config
+--- a/scripts/Makefile.modpost
++++ b/scripts/Makefile.modpost
+@@ -101,6 +101,7 @@ quiet_cmd_kernel-mod = MODPOST $@
+       cmd_kernel-mod = $(modpost) $@
  
- #ifndef CONFIG_64BIT
- 	store_gdt((struct desc_ptr *)&header->pmode_gdt);
+ vmlinux.o: FORCE
++	@rm -fr $(kernelmarkersfile)
+ 	$(call cmd,kernel-mod)
+ 
+ # Declare generated files as targets for modpost
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -1992,7 +1992,8 @@ static void read_markers(const char *fna
+ 			mod->skip = 1;
+ 		}
+ 
+-		add_marker(mod, marker, fmt);
++		if (!mod->skip)
++			add_marker(mod, marker, fmt);
+ 	}
+ 	return;
+ fail:
 
 -- 
