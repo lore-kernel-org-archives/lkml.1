@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760384AbYG3Xfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbYG3XgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760384AbYG3Xfv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759550AbYG3XfV
+	id S1757941AbYG3XgQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760743AbYG3Xfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:35:21 -0400
-Received: from cantor.suse.de ([195.135.220.2]:35629 "EHLO mx1.suse.de"
+	Wed, 30 Jul 2008 19:35:44 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33976 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759108AbYG3XfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:35:17 -0400
-Date: Wed, 30 Jul 2008 16:27:01 -0700
+	id S1760328AbYG3Xfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:35:43 -0400
+Date: Wed, 30 Jul 2008 16:27:04 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jeff Garzik <jgarzik@redhat.com>,
-       Alan Cox <alan@redhat.com>
-Subject: [patch 09/29] pata_atiixp: Dont disable
-Message-ID: <20080730232701.GJ30670@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Roland McGrath <roland@redhat.com>,
+       Wenji Huang <wenji.huang@oracle.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
+Subject: [patch 10/29] markers: fix duplicate modpost entry
+Message-ID: <20080730232704.GK30670@suse.de>
 References: <20080730231003.655833364@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pata_atiixp-don-t-disable.patch"
+Content-Disposition: inline; filename="markers-fix-duplicate-modpost-entry.patch"
 In-Reply-To: <20080730232451.GA30670@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,70 +43,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 
-Commit 05177f178efe1459d2d0ac05430027ba201889a4 upstream
+commit: d35cb360c29956510b2fe1a953bd4968536f7216
 
-pata_atiixp: Don't disable
+When a kernel was rebuilt, the previous Module.markers was not cleared.
+It caused markers with different format strings to appear as duplicates
+when a markers was changed.  This problem is present since
+scripts/mod/modpost.c started to generate Module.markers, commit
+b2e3e658b344c6bcfb8fb694100ab2f2b5b2edb0
 
-A couple of distributions (Fedora, Ubuntu) were having weird problems with the
-ATI IXP series PATA controllers being reported as simplex.  At the heart of
-the problem is that both distros ignored the recommendations to load pata_acpi
-and ata_generic *AFTER* specific host drivers.
+It therefore applies to 2.6.25, 2.6.26 and linux-next.
 
-The underlying cause however is that if you D3 and then D0 an ATI IXP it
-helpfully throws away some configuration and won't let you rewrite it.
+I merely merged the patches from Roland, Wenji and Takashi here.
 
-Add checks to ata_generic and pata_acpi to pin ATIIXP devices.  Possibly the
-real answer here is to quirk them and pin them, but right now we can't do that
-before they've been pcim_enable()'d by a driver.
+Credits to
+Roland McGrath <roland@redhat.com>
+Wenji Huang <wenji.huang@oracle.com>
+and
+Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 
-I'm indebted to David Gero for this.  His bug report not only reported the
-problem but identified the cause correctly and he had tested the right values
-to prove what was going on
+for providing the individual fixes.
 
-[If you backport this for 2.6.24 you will need to pull in the 2.6.25
-removal of the bogus WARN_ON() in pcim_enagle]
+- Changelog :
+  - Integrated Takashi's Makefile modification to clear Module.markers upon
+    make clean.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
-Tested-by: David Gero <davidg@havidave.com>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Roland McGrath <roland@redhat.com>
+Cc: Wenji Huang <wenji.huang@oracle.com>
+Cc: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/ata_generic.c |    6 ++++++
- drivers/ata/pata_acpi.c   |    6 ++++++
- 2 files changed, 12 insertions(+)
+ Makefile                 |    3 ++-
+ scripts/Makefile.modpost |    1 +
+ scripts/mod/modpost.c    |    3 ++-
+ 3 files changed, 5 insertions(+), 2 deletions(-)
 
---- a/drivers/ata/ata_generic.c
-+++ b/drivers/ata/ata_generic.c
-@@ -193,6 +193,12 @@ static int ata_generic_init_one(struct p
- 	if (dev->vendor == PCI_VENDOR_ID_AL)
- 	    	ata_pci_clear_simplex(dev);
+--- a/Makefile
++++ b/Makefile
+@@ -1126,7 +1126,8 @@ clean: archclean $(clean-dirs)
+ 	@find . $(RCS_FIND_IGNORE) \
+ 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
+ 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
+-		-o -name '*.symtypes' -o -name 'modules.order' \) \
++		-o -name '*.symtypes' -o -name 'modules.order' \
++		-o -name 'Module.markers' \) \
+ 		-type f -print | xargs rm -f
  
-+	if (dev->vendor == PCI_VENDOR_ID_ATI) {
-+		int rc = pcim_enable_device(dev);
-+		if (rc < 0)
-+			return rc;
-+		pcim_pin_device(dev);
-+	}
- 	return ata_pci_init_one(dev, ppi);
- }
+ # mrproper - Delete all generated files, including .config
+--- a/scripts/Makefile.modpost
++++ b/scripts/Makefile.modpost
+@@ -87,6 +87,7 @@ quiet_cmd_kernel-mod = MODPOST $@
+       cmd_kernel-mod = $(modpost) $@
  
---- a/drivers/ata/pata_acpi.c
-+++ b/drivers/ata/pata_acpi.c
-@@ -314,6 +314,12 @@ static int pacpi_init_one (struct pci_de
- 		.port_ops	= &pacpi_ops,
- 	};
- 	const struct ata_port_info *ppi[] = { &info, NULL };
-+	if (pdev->vendor == PCI_VENDOR_ID_ATI) {
-+		int rc = pcim_enable_device(pdev);
-+		if (rc < 0)
-+			return rc;
-+		pcim_pin_device(pdev);
-+	}
- 	return ata_pci_init_one(pdev, ppi);
- }
+ vmlinux.o: FORCE
++	@rm -fr $(kernelmarkersfile)
+ 	$(call cmd,kernel-mod)
  
+ # Declare generated files as targets for modpost
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -1973,7 +1973,8 @@ static void read_markers(const char *fna
+ 			mod->skip = 1;
+ 		}
+ 
+-		add_marker(mod, marker, fmt);
++		if (!mod->skip)
++			add_marker(mod, marker, fmt);
+ 	}
+ 	return;
+ fail:
 
 -- 
