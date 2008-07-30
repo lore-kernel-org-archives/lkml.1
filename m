@@ -1,102 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbYG3HvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbYG3Hwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754417AbYG3HvS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 03:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbYG3HvI
+	id S1757386AbYG3Hwv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 03:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYG3Hwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 03:51:08 -0400
-Received: from 1wt.eu ([62.212.114.60]:2271 "EHLO 1wt.eu"
+	Wed, 30 Jul 2008 03:52:43 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34451 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751233AbYG3HvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 03:51:07 -0400
-Date: Wed, 30 Jul 2008 09:51:01 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: David W Studeman <avionicsdv@aim.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Keyboard Jammed error patch 2.4.35-pre4
-Message-ID: <20080730075101.GA31668@1wt.eu>
-References: <g6jqud$t5e$1@ger.gmane.org> <20080729051558.GH29189@1wt.eu> <489016AB.6050309@aim.com>
+	id S1750969AbYG3Hwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 03:52:42 -0400
+Date: Wed, 30 Jul 2008 17:52:33 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: m68k build failure
+Message-Id: <20080730175233.02dbf021.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <489016AB.6050309@aim.com>
-User-Agent: Mutt/1.5.11
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__30_Jul_2008_17_52_33_+1000_8OF1eZogOgpDeFji"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 12:22:19AM -0700, David W Studeman wrote:
-> No I can't use the nokeybd option as a Cobalt uses no bootloader on the 
-> mbr. The arguments would have to be embedded into the flashrom image and 
-> it isn't something most people want to deal with.
+--Signature=_Wed__30_Jul_2008_17_52_33_+1000_8OF1eZogOgpDeFji
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-OK, I was not talking about a solution but about a temporary workaround
-anyway :-)
+Hi Dave,
 
-> >Also, if you don't have any PC keyboard on your machines, you can
-> >build without support for any VT/keyboard. I'm already doing this
-> >on some embedded systems, and it works fine. If your platform still
-> >requires that some keyboard is enabled, you may want to try to enable
-> >CONFIG_DUMMY_KEYB which I've been using in the past.
-> >   
-> That didn't work either, what did save me was patching back to 2.4.34 
-> for the dmi and keyboard headers and compiling without any keyboard 
-> support at all. Also, since this is essentially a PC without a normal 
-> bios, the kernel reports that there is no dmi present. The boot method 
-> here reminds me of EFI but it isn't.
+linux-next (version next-20080729) build (m68k defconfig) failed like this;
 
-Just so that I understand, when you say it is a PC, is it x86-based or
-a different arch ? I thought it was a mips, but now you're speaking about
-a PC I'm confused. If it's x86, I don't see why the patch caused a regression
-since it does not change the default behaviour for x86. If it's a mips, I don't
-see why the proposed patch does not work as it was supposed to revert to
-previous behaviour :-/
+In file included from arch/m68k/sun3/idprom.c:16:
+include2/asm/idprom.h:3:30: error: asm-sparc/idprom.h: No such file or dire=
+ctory
 
-> >@@ -905,7 +908,7 @@ static char * __init initialize_kbd(void)
-> >
-> >  void __init pckbd_init_hw(void)
-> >  {
-> >-   if (!keyboard_controller_present) {
-> >+   if (!kbd_controller_present()) {
-> >         kbd_exists = 0;
-> >         return;
-> >     }
-> >   
-> The last hunk at 905 fails to apply, line 61 passes due to some fuzz 
-> factor although I can't see what is different and why it needs to fuzz 
-> but line 61 still passes. Here is a snip from the log:
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-hmm sorry, I did it in a hurry against next 2.4.37-rc1. I'll check.
+--Signature=_Wed__30_Jul_2008_17_52_33_+1000_8OF1eZogOgpDeFji
+Content-Type: application/pgp-signature
 
-> patching file drivers/char/pc_keyb.c
-> Hunk #1 succeeded at 61 with fuzz 1.
-> Hunk #4 FAILED at 908.
-> 1 out of 4 hunks FAILED -- saving rejects to file drivers/char/pc_keyb.c.rej
-> make: *** [/usr/src/log/linux-2.4.36.6] Error 1
-> 
-> And here is the pc_keyb.c.rej:
-> 
-> ***************
-> *** 905,911 ****
-> 
->   void __init pckbd_init_hw(void)
->   {
-> -    if (!keyboard_controller_present) {
->          kbd_exists = 0;
->          return;
->      }
-> --- 908,914 ----
-> 
->   void __init pckbd_init_hw(void)
->   {
-> +    if (!kbd_controller_present()) {
->          kbd_exists = 0;
->          return;
->      }
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-This was the important part. Did you fix it by hand ? If not, it would
-explain why it did not change the behaviour.
+iEYEARECAAYFAkiQHcEACgkQjjKRsyhoI8wvZgCfTEXT+gNyG5mc1JBJ4sUcuIu5
+QAkAnjon32xp/l7ZSQLWEMZSxxvuqkjZ
+=LWc7
+-----END PGP SIGNATURE-----
 
-Regards,
-Willy
-
+--Signature=_Wed__30_Jul_2008_17_52_33_+1000_8OF1eZogOgpDeFji--
