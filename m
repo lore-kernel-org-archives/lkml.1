@@ -1,46 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbYG3RID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbYG3RIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757196AbYG3RID (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 13:08:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758471AbYG3RHR
+	id S1758856AbYG3RIs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 13:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbYG3RIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 13:07:17 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38145 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758420AbYG3RHQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 13:07:16 -0400
-Date: Wed, 30 Jul 2008 17:49:57 +0100
-From: Alan Cox <alan@letsannoyjonsmirl.ukuu.org.uk>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Jon Smirl <jonsmirl@gmail.com>, davids@webmaster.com,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-Message-ID: <20080730174957.3d1d63ee@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080730164056.GB8283@mit.edu>
-References: <4890284E.3050806@s5r6.in-berlin.de>
-	<MDEHLPKNGKAHNMBLJOLKAEDIOJAC.davids@webmaster.com>
-	<20080730155359.7c0206f4@lxorguk.ukuu.org.uk>
-	<9e4733910807300823x516eb45dx877898f9d7c8be57@mail.gmail.com>
-	<20080730161408.4dfa6fe8@lxorguk.ukuu.org.uk>
-	<20080730164056.GB8283@mit.edu>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 30 Jul 2008 13:08:37 -0400
+Received: from mga11.intel.com ([192.55.52.93]:34818 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752194AbYG3RIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 13:08:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,280,1215414000"; 
+   d="scan'208";a="366367135"
+Date: Wed, 30 Jul 2008 10:08:36 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "drepper@redhat.com" <drepper@redhat.com>,
+       "mikpe@it.uu.se" <mikpe@it.uu.se>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 0/9] x86, xsave: xsave/xrstor support
+Message-ID: <20080730170833.GD11223@linux-os.sc.intel.com>
+References: <20080729172917.185593000@linux-os.sc.intel.com> <488FA318.3040905@zytor.com> <20080729232951.GB11223@linux-os.sc.intel.com> <488FAB2B.7050405@zytor.com> <20080730100326.GA9683@elte.hu> <4890976D.70103@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4890976D.70103@zytor.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> debate it in a bar at some future conference.  But does it really make
-> sense to argue about it here?
+On Wed, Jul 30, 2008 at 09:31:41AM -0700, H. Peter Anvin wrote:
+> Ingo Molnar wrote:
+> > * H. Peter Anvin <hpa@zytor.com> wrote:
+> >
+> >>> hpa, these patches just apply fine to tip/master. Can you please
+> >>> arrange the tip/x86/xsave tree accordingly? or do I need to do
+> >>> something else to smooth this process?
+> >> This is awkward, since that means this is "derived topic".  Most of
+> >> the changes are orthogonal and relatively trivial to fix up at merge
+> >> time, so I would prefer to keep them separate.
+> >
+> > Well, in this case the conflicts seem to be quite heavy, so i'd suggest
+> > to use the method we have used for x86/x2apic and for xen-64bit:
+> >
+> > Merge the affected topics into tip/x86/core. Then merge x86/core into
+> > x86/xsave, and put the xsave patches ontop of that base.
+> >
+> > This way x86/xsave is a 'derived' topic and optional until it's proven,
+> > but one that is still mergable once all the dependent topics go
+> > upstream. We'd only have to rebase it in the (unlikely) event of there
+> > being some major problem with any of the topics merged into x86/core.
+> >
+> > ok?
+> 
+> It somewhat concerns me, because one of the conflicts is generated by
+> collision with x2apic.  The rest of them I don't think are too problematic.
 
-No but perhaps Jon could simply show some manners when people request him
-politely not to do that. He doesn't seem to want to debate manners, just
-law.
+hpa, confilicts with x2apic branch are very small and related to cpuid bits.
 
-Alan
+commit 04df16d2465cbb59b84c9c57ad865dbbeebadad8
+Author: Suresh Siddha <suresh.b.siddha@intel.com>
+Date:   Tue Jul 29 10:29:18 2008 -0700
+
+    x86, xsave: xsave cpuid feature bits
+
+    Add xsave CPU feature bits.
+    
+and 
+
+commit 32e1d0a0651004f5fe47f85a2a5c725ad579a90c
+Author: Suresh Siddha <suresh.b.siddha@intel.com>
+Date:   Thu Jul 10 11:16:50 2008 -0700
+
+    x64, x2apic/intr-remap: cpuid bits for x2apic feature
+    
+    cpuid feature for x2apic.
+
+Both of these patches are straight forward, simple and can be moved
+to x86/core(?) now, if that helps.
+
+thanks,
+suresh
