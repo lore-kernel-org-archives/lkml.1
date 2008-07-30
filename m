@@ -1,155 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbYG3Tkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756489AbYG3Tlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756232AbYG3Tkh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 15:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYG3TkW
+	id S1756489AbYG3Tlf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 15:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520AbYG3TlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 15:40:22 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:11907 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753073AbYG3TkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 15:40:20 -0400
-Date: Wed, 30 Jul 2008 21:39:21 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jeff Dike <jdike@addtoit.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] x86: use arch/x86/include
-Message-ID: <20080730193921.GA4475@uranus.ravnborg.org>
-References: <20080730124952.GA23413@uranus.ravnborg.org> <20080730180411.GA7896@elte.hu> <20080730184700.GA29710@uranus.ravnborg.org> <20080730191907.GD26389@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080730191907.GD26389@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 30 Jul 2008 15:41:25 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55167 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753305AbYG3TlY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 15:41:24 -0400
+Date: Wed, 30 Jul 2008 15:41:22 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Simon Arlott <simon@fire.lp0.eu>
+cc: Rene Herman <rene.herman@keyaccess.nl>,
+       Arjan van de Ven <arjan@infradead.org>, <linux-kernel@vger.kernel.org>,
+       <mingo@elte.hu>, Daniel Walker <dwalker@mvista.com>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [patch 5/3] fastboot: sync the async execution before late_initcall
+ and move level 6s (sync) first
+In-Reply-To: <4890B20C.7060308@simon.arlott.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0807301522230.2322-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> > How we do it in the best way for such a fragile codebase as x86 is I 
-> > am not sure. [...]
+On Wed, 30 Jul 2008, Simon Arlott wrote:
+
+> > The USB stack _already_ initializes USB devices (i.e., not host
+> > controllers) in a separate thread.
 > 
-> huh, fragile codebase? Is that a flamebait? :-) What do you mean 
-> exactly?
-I only wanted to say that x86 see more changes than any other arch
-in the kernel like you also nicely says below.
+> With fastboot:
+> 162 ohci_hcd_mod_init+0x0/0xa6
+> 167 pcie_portdrv_init+0x0/0x4d
+> 182 saa7134_init+0x0/0x4a
+> 205 ehci_hcd_init+0x0/0x8b
+> 299 snd_usb_audio_init+0x0/0x3d
+> 557 e1000_init_module+0x0/0x88
+> 1227 amd74xx_ide_init+0x0/0x1b
+> 2306 nv_init+0x0/0x1b
 > 
-> The timing problems come from the fact that 90% of Linux development and 
-> 95% of Linux testing happens on x86. So we've already got a ton of stuff 
-> queued up for the next merge window. (and some cleanups for this cycle 
-> as well)
+> Without fastboot:
+> 103 ehci_hcd_init+0x0/0x8b
+> 113 raid5_init+0x0/0x3e
+> 127 pci_iommu_init+0x0/0x17
+> 148 ohci_hcd_mod_init+0x0/0xa4
+> 183 saa7134_init+0x0/0x4a
+> 297 snd_usb_audio_init+0x0/0x3d
+> 557 e1000_init_module+0x0/0x88
+> 1227 amd74xx_ide_init+0x0/0x1b
+> 2303 nv_init+0x0/0x1b
+> 2859 usblp_init+0x0/0x1b
 > 
-> But fortunately you've scripted all this, so i guess we can do it at any 
-> stage. Could you send the script we should run?
+> Boot log attached.
 
-It is a combination of a scrip and a patch.
-The script:
-#####
-set -e
-for D in include/asm-x86/mach-*; do
-	echo $D
-	DD=$(echo $D | cut -d '-' -f 3)
-        mkdir -p arch/x86/include/mach-$DD/arch
-        git mv include/asm-x86/mach-$DD/* arch/x86/include/mach-$DD
-        rmdir include/asm-x86/mach-$DD
-done
+The timings in the boot log agree with your "Without fastboot:" 
+figures, so I assume that's the log you attached.  The only timings at 
+issue here are ehci_hcd_init and ohci_hcd_mod_init.  It's not clear 
+that the with-fastboot and without-fastboot values are directly 
+comparable; during startup there's a lot of activity, and interrupt 
+handlers can throw the timings off.
 
-mkdir -p arch/x86/include/asm
-git mv include/asm-x86/* arch/x86/include/asm
-#####
+> It looks like usb device driver init requires it to immediately block and 
+> wait for all devices to have completed init
 
-And the patch (same as I included in the original posting:
-diff --git a/arch/um/Makefile b/arch/um/Makefile
-index ca40397..4a19886 100644
---- a/arch/um/Makefile
-+++ b/arch/um/Makefile
-@@ -156,9 +156,21 @@ include/asm-um/arch:
- 	@echo '  SYMLINK $@'
- ifneq ($(KBUILD_SRC),)
- 	$(Q)mkdir -p $(objtree)/include/asm-um
--	$(Q)ln -fsn $(srctree)/include/asm-$(HEADER_ARCH) include/asm-um/arch
-+	$(Q)if [ -d $(srctree)/arch/$(HEADER_ARCH)/include/asm ]; then  \
-+		ln -fsn $(srctree)/arch/$(HEADER_ARCH)/include/asm      \
-+		        include/asm-um/arch;                            \
-+	else                                                            \
-+		ln -fsn $(srctree)/include/asm-$(HEADER_ARCH)           \
-+		        include/asm-um/arch;                            \
-+	fi
- else
--	$(Q)cd $(srctree)/include/asm-um && ln -fsn ../asm-$(HEADER_ARCH) arch
-+	$(Q)if [ -d arch/$(HEADER_ARCH)/include/asm ]; then             \
-+		ln -fsn $(srctree)/arch/$(HEADER_ARCH)/include/asm      \
-+                        include/asm-um/arch;                            \
-+	else                                                            \
-+		cd $(srctree)/include/asm-um &&                         \
-+		ln -fsn ../asm-$(HEADER_ARCH) arch;                     \
-+	fi
- endif
+Which USB device driver init are you talking about?  Your log includes 
+usblp_init, usb_stor_init, usb_usual_init, hid_init (for a USB mouse), 
+and snd_usb_audio_init.  Each one completed before the next one 
+started; none of them blocked waiting for any devices (other than their 
+own, of course) to finish initializing.
+
+>  - so regardless of where we 
+> put the usb/ directory in the initcall order, it will always wait a while 
+> because the drivers will be immediately after the hcd init...
+
+No, you're wrong.  To prove it, try patching the start of hub_events() 
+in drivers/usb/core/hub.c like this:
+
+ 	 * Not the most efficient, but avoids deadlocks.
+ 	 */
+ 	while (1) {
++		ssleep(5);
  
- $(objtree)/$(ARCH_DIR)/include:
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index f5631da..c7493e7 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -110,16 +110,16 @@ KBUILD_CFLAGS += $(call cc-option,-mno-sse -mno-mmx -mno-sse2 -mno-3dnow,)
- mcore-y  := arch/x86/mach-default/
- 
- # Voyager subarch support
--mflags-$(CONFIG_X86_VOYAGER)	:= -Iinclude/asm-x86/mach-voyager
-+mflags-$(CONFIG_X86_VOYAGER)	:= -Iarch/x86/include/mach-voyager
- mcore-$(CONFIG_X86_VOYAGER)	:= arch/x86/mach-voyager/
- 
- # generic subarchitecture
--mflags-$(CONFIG_X86_GENERICARCH):= -Iinclude/asm-x86/mach-generic
-+mflags-$(CONFIG_X86_GENERICARCH):= -Iarch/x86/include/mach-generic
- fcore-$(CONFIG_X86_GENERICARCH)	+= arch/x86/mach-generic/
- mcore-$(CONFIG_X86_GENERICARCH)	:= arch/x86/mach-default/
- 
- # default subarch .h files
--mflags-y += -Iinclude/asm-x86/mach-default
-+mflags-y += -Iarch/x86/include/mach-default
- 
- # 64 bit does not support subarch support - clear sub arch variables
- fcore-$(CONFIG_X86_64)  :=
-diff --git a/scripts/checksyscalls.sh b/scripts/checksyscalls.sh
-index 366f8c7..41564b1 100755
---- a/scripts/checksyscalls.sh
-+++ b/scripts/checksyscalls.sh
-@@ -119,5 +119,5 @@ sed -n -e '/^\#define/ { s/[^_]*__NR_\([^[:space:]]*\).*/\
- \#endif/p }' $1
- }
- 
--(ignore_list && syscall_list ${srctree}/include/asm-x86/unistd_32.h) | \
-+(ignore_list && syscall_list ${srctree}/arch/x86/include/asm/unistd_32.h) | \
- $* -E -x c - > /dev/null
+ 		/* Grab the first entry at the beginning of the list */
+ 		spin_lock_irq(&hub_event_lock);
 
+Then see what happens.
 
-I by the way tried a simple git grep asm-x86:
-[Manually edited to remove where asm-x86 occured in comments]
+> perhaps 
+> if we moved the hcd init to before net/, sata/, ide/ etc. (all the things 
+> that take time themselves) but left usb device drivers to the end it 
+> would actually get the benefit of that separate thread.
 
-Documentation/DocBook/deviceiobook.tmpl:!Iinclude/asm-x86/io_32.h
-Documentation/DocBook/kernel-api.tmpl:!Iinclude/asm-x86/atomic_32.h
-Documentation/DocBook/kernel-api.tmpl:!Iinclude/asm-x86/unaligned.h
-Documentation/DocBook/kernel-api.tmpl:!Iinclude/asm-x86/bitops.h
-Documentation/DocBook/kernel-api.tmpl:!Iinclude/asm-x86/uaccess_32.h
-Documentation/DocBook/kernel-api.tmpl:!Iinclude/asm-x86/mca_dma.h
-Documentation/DocBook/kernel-hacking.tmpl:   <filename>include/asm-x86/delay_32.h:</filename>
-Documentation/DocBook/kernel-hacking.tmpl:   <filename>include/asm-x86/uaccess_32.h:</filename>
-Documentation/DocBook/mcabook.tmpl:!Iinclude/asm-x86/mca_dma.h
-Documentation/kernel-parameters.txt:                    include/asm-x86/cpufeature.h for the valid
-Documentation/lguest/lguest.c:#include "asm-x86/bootparam.h"
-Documentation/x86/i386/zero-page.txt:  include/asm-x86/bootparam.h
+They are already running in a separate thread.  Of course, the 
+different threads will contend for CPU resources -- just putting things 
+into multiple threads doesn't mean they will necessarily run 
+concurrently.
 
-arch/ia64/ia32/audit.c:#include <asm-x86/unistd_32.h>
+> I don't have the time to rework how usb/ is linked in order to try that, 
+> but moving usb/ to before net/ and sata/ while making all the usb device 
+> drivers that get used be late initcalls could be used to test it.
 
-arch/um/sys-x86_64/syscall_table.c:#include <asm-x86/unistd_64.h>
-arch/um/sys-x86_64/syscall_table.c:#include <asm-x86/unistd_64.h>
+You seem to have a completely mixed-up idea of how the USB stack works.  
+All the device drivers you're worried about are initialized within the 
+khubd kernel thread.
 
-So um needs a few more changes to build.
-And ia64 needs a fix too.
-Documentation is trivial and can be done in a seperate commit.
+Alan Stern
 
-	Sam
