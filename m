@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752330AbYG3AOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbYG3AUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752330AbYG3AOZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 20:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYG3AOJ
+	id S1756231AbYG3AUh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 20:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYG3AU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 20:14:09 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38530 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752746AbYG3AOF (ORCPT
+	Tue, 29 Jul 2008 20:20:28 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58396 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752489AbYG3AU1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 20:14:05 -0400
-Date: Wed, 30 Jul 2008 02:13:58 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] x86: implement multiple queues for smp function call IPIs
-Message-ID: <20080730001358.GA23938@one.firstfloor.org>
-References: <488FA8A9.6000005@goop.org>
+	Tue, 29 Jul 2008 20:20:27 -0400
+Date: Wed, 30 Jul 2008 01:00:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>, "Mike Travis" <travis@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>, "Jack Steiner" <steiner@sgi.com>,
+       "Alan Mayer" <ajm@sgi.com>, "Cliff Wickman" <cpw@sgi.com>
+Subject: Re: kernel BUG at arch/x86/kernel/io_apic_64.c:357!
+Message-ID: <20080730010044.06e7442b@lxorguk.ukuu.org.uk>
+In-Reply-To: <m17ib48etp.fsf@frodo.ebiederm.org>
+References: <20080729160939.GA4484@linux.vnet.ibm.com>
+	<86802c440807291135m7f8e2163xdde14545e311649a@mail.gmail.com>
+	<86802c440807291220t7813effcwb32ae6c18e3cddfe@mail.gmail.com>
+	<m1d4kwbg8f.fsf@frodo.ebiederm.org>
+	<488F96DD.6020505@sgi.com>
+	<86802c440807291521k6e6277b5ta05b180d0d1c963a@mail.gmail.com>
+	<m17ib48etp.fsf@frodo.ebiederm.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <488FA8A9.6000005@goop.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 04:32:57PM -0700, Jeremy Fitzhardinge wrote:
-> This adds 8 queues for smp_call_function(), in order to avoid a
+On Tue, 29 Jul 2008 16:12:50 -0700
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-Now that we have per CPU IDT and there's no global bottleneck anymore
-I think it would be actually fine to use
-more than 8 vectors. 32 or 64 might be a better default.
+> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+> 
+> >> But this would be a show stopper for SGI being able to ship systems if the
+> >> distros do not want to waste this much memory and won't set NR_CPUS=4096.
+> >
+> > wonder if nr_irqs need to be probed dynamically too.
+> 
+> NR_IRQS simply needs to die.
 
-> void native_send_call_func_ipi(cpumask_t mask)
-> {
-> 	cpumask_t allbutself;
-> +	unsigned queue = smp_processor_id() % CONFIG_GENERIC_SMP_QUEUES;
+Agreed - it would also be nice to bite the bullet at the same time and
+stop using dev->irq as an integer in an increasingly fake and imaginary
+numberspace and instead make it an object with a description and other
+properties. That would make "no IRQ" NULL, let us display meaningful IRQ
+strings and the like as well as ensuring nobody tries to abuse NR_IRQ and
+hardcoded similar knowledge for arrays
 
-Does this really always run with preemption disabled?
-
-Did I miss it but where is the per vector lock? 
-
--Andi
+Alan
