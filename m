@@ -1,125 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbYG3JCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbYG3JD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754575AbYG3JCt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 05:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759233AbYG3JC1
+	id S1754819AbYG3JD1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 05:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbYG3JDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 05:02:27 -0400
-Received: from beru.its.uow.edu.au ([130.130.68.31]:42969 "EHLO
-	beru.its.uow.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753823AbYG3JC0 (ORCPT
+	Wed, 30 Jul 2008 05:03:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43155 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752753AbYG3JDP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 05:02:26 -0400
-Subject: [patch 01/31] pci_ids.h, kernel 2.6.27-rc1, sort DEVICE_IDs within VENDOR_IDs
-Message-Id: <E1KO7OZ-0007CE-Jg@wraith.cs.uow.edu.au>
-From: mcs6502@gmail.com
-Date: Wed, 30 Jul 2008 18:50:55 +1000
-To: unlisted-recipients:; (no To-header on input)
+	Wed, 30 Jul 2008 05:03:15 -0400
+Date: Wed, 30 Jul 2008 02:03:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Linux v2.6.27-rc1
+Message-Id: <20080730020308.a552c4d8.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807290945030.3334@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org>
+	<200807290927.12101.jbarnes@virtuousgeek.org>
+	<alpine.LFD.1.10.0807290945030.3334@nehalem.linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- linux/include/linux/pci_ids.h	2008-07-30 07:18:49.000000000 +1000
-+++ linux-p1/include/linux/pci_ids.h	2008-07-30 12:57:57.308494000 +1000
-@@ -2280,8 +2280,6 @@
- #define PCI_DEVICE_ID_INTEL_82815_MC	0x1130
- #define PCI_DEVICE_ID_INTEL_82815_CGC	0x1132
- #define PCI_DEVICE_ID_INTEL_82092AA_0	0x1221
--#define PCI_DEVICE_ID_INTEL_7505_0	0x2550  
--#define PCI_DEVICE_ID_INTEL_7205_0	0x255d
- #define PCI_DEVICE_ID_INTEL_82437	0x122d
- #define PCI_DEVICE_ID_INTEL_82371FB_0	0x122e
- #define PCI_DEVICE_ID_INTEL_82371FB_1	0x1230
-@@ -2339,16 +2337,13 @@
- #define PCI_DEVICE_ID_INTEL_82801EB_11	0x24db
- #define PCI_DEVICE_ID_INTEL_82801EB_12	0x24dc
- #define PCI_DEVICE_ID_INTEL_82801EB_13	0x24dd
--#define PCI_DEVICE_ID_INTEL_ESB_1	0x25a1
--#define PCI_DEVICE_ID_INTEL_ESB_2	0x25a2
--#define PCI_DEVICE_ID_INTEL_ESB_4	0x25a4
--#define PCI_DEVICE_ID_INTEL_ESB_5	0x25a6
--#define PCI_DEVICE_ID_INTEL_ESB_9	0x25ab
- #define PCI_DEVICE_ID_INTEL_82820_HB	0x2500
- #define PCI_DEVICE_ID_INTEL_82820_UP_HB	0x2501
- #define PCI_DEVICE_ID_INTEL_82850_HB	0x2530
- #define PCI_DEVICE_ID_INTEL_82860_HB	0x2531
- #define PCI_DEVICE_ID_INTEL_E7501_MCH	0x254c
-+#define PCI_DEVICE_ID_INTEL_7505_0	0x2550  
-+#define PCI_DEVICE_ID_INTEL_7205_0	0x255d
- #define PCI_DEVICE_ID_INTEL_82845G_HB	0x2560
- #define PCI_DEVICE_ID_INTEL_82845G_IG	0x2562
- #define PCI_DEVICE_ID_INTEL_82865_HB	0x2570
-@@ -2358,14 +2353,14 @@
- #define PCI_DEVICE_ID_INTEL_82915G_IG	0x2582
- #define PCI_DEVICE_ID_INTEL_82915GM_HB	0x2590
- #define PCI_DEVICE_ID_INTEL_82915GM_IG	0x2592
-+#define PCI_DEVICE_ID_INTEL_ESB_1	0x25a1
-+#define PCI_DEVICE_ID_INTEL_ESB_2	0x25a2
-+#define PCI_DEVICE_ID_INTEL_ESB_4	0x25a4
-+#define PCI_DEVICE_ID_INTEL_ESB_5	0x25a6
-+#define PCI_DEVICE_ID_INTEL_ESB_9	0x25ab
- #define PCI_DEVICE_ID_INTEL_5000_ERR	0x25F0
- #define PCI_DEVICE_ID_INTEL_5000_FBD0	0x25F5
- #define PCI_DEVICE_ID_INTEL_5000_FBD1	0x25F6
--#define PCI_DEVICE_ID_INTEL_82945G_HB	0x2770
--#define PCI_DEVICE_ID_INTEL_82945G_IG	0x2772
--#define PCI_DEVICE_ID_INTEL_3000_HB	0x2778
--#define PCI_DEVICE_ID_INTEL_82945GM_HB	0x27A0
--#define PCI_DEVICE_ID_INTEL_82945GM_IG	0x27A2
- #define PCI_DEVICE_ID_INTEL_ICH6_0	0x2640
- #define PCI_DEVICE_ID_INTEL_ICH6_1	0x2641
- #define PCI_DEVICE_ID_INTEL_ICH6_2	0x2642
-@@ -2377,9 +2372,14 @@
- #define PCI_DEVICE_ID_INTEL_ESB2_14	0x2698
- #define PCI_DEVICE_ID_INTEL_ESB2_17	0x269b
- #define PCI_DEVICE_ID_INTEL_ESB2_18	0x269e
-+#define PCI_DEVICE_ID_INTEL_82945G_HB	0x2770
-+#define PCI_DEVICE_ID_INTEL_82945G_IG	0x2772
-+#define PCI_DEVICE_ID_INTEL_3000_HB	0x2778
-+#define PCI_DEVICE_ID_INTEL_82945GM_HB	0x27A0
-+#define PCI_DEVICE_ID_INTEL_82945GM_IG	0x27A2
-+#define PCI_DEVICE_ID_INTEL_ICH7_30	0x27b0
- #define PCI_DEVICE_ID_INTEL_ICH7_0	0x27b8
- #define PCI_DEVICE_ID_INTEL_ICH7_1	0x27b9
--#define PCI_DEVICE_ID_INTEL_ICH7_30	0x27b0
- #define PCI_DEVICE_ID_INTEL_ICH7_31	0x27bd
- #define PCI_DEVICE_ID_INTEL_ICH7_17	0x27da
- #define PCI_DEVICE_ID_INTEL_ICH7_19	0x27dd
-@@ -2393,14 +2393,14 @@
- #define PCI_DEVICE_ID_INTEL_ICH8_5	0x283e
- #define PCI_DEVICE_ID_INTEL_ICH8_6	0x2850
- #define PCI_DEVICE_ID_INTEL_ICH9_0	0x2910
--#define PCI_DEVICE_ID_INTEL_ICH9_1	0x2917
- #define PCI_DEVICE_ID_INTEL_ICH9_2	0x2912
- #define PCI_DEVICE_ID_INTEL_ICH9_3	0x2913
- #define PCI_DEVICE_ID_INTEL_ICH9_4	0x2914
--#define PCI_DEVICE_ID_INTEL_ICH9_5	0x2919
--#define PCI_DEVICE_ID_INTEL_ICH9_6	0x2930
- #define PCI_DEVICE_ID_INTEL_ICH9_7	0x2916
-+#define PCI_DEVICE_ID_INTEL_ICH9_1	0x2917
- #define PCI_DEVICE_ID_INTEL_ICH9_8	0x2918
-+#define PCI_DEVICE_ID_INTEL_ICH9_5	0x2919
-+#define PCI_DEVICE_ID_INTEL_ICH9_6	0x2930
- #define PCI_DEVICE_ID_INTEL_82855PM_HB	0x3340
- #define PCI_DEVICE_ID_INTEL_IOAT_TBG4	0x3429
- #define PCI_DEVICE_ID_INTEL_IOAT_TBG5	0x342a
-@@ -2431,15 +2431,15 @@
- #define PCI_DEVICE_ID_INTEL_ICH10_4	0x3a30
- #define PCI_DEVICE_ID_INTEL_ICH10_5	0x3a60
- #define PCI_DEVICE_ID_INTEL_IOAT_SNB	0x402f
--#define PCI_DEVICE_ID_INTEL_5100_16	0x65f0
--#define PCI_DEVICE_ID_INTEL_5100_21	0x65f5
--#define PCI_DEVICE_ID_INTEL_5100_22	0x65f6
- #define PCI_DEVICE_ID_INTEL_5400_ERR	0x4030
- #define PCI_DEVICE_ID_INTEL_5400_FBD0	0x4035
- #define PCI_DEVICE_ID_INTEL_5400_FBD1	0x4036
--#define PCI_DEVICE_ID_INTEL_IOAT_SCNB	0x65ff
- #define PCI_DEVICE_ID_INTEL_TOLAPAI_0	0x5031
- #define PCI_DEVICE_ID_INTEL_TOLAPAI_1	0x5032
-+#define PCI_DEVICE_ID_INTEL_5100_16	0x65f0
-+#define PCI_DEVICE_ID_INTEL_5100_21	0x65f5
-+#define PCI_DEVICE_ID_INTEL_5100_22	0x65f6
-+#define PCI_DEVICE_ID_INTEL_IOAT_SCNB	0x65ff
- #define PCI_DEVICE_ID_INTEL_82371SB_0	0x7000
- #define PCI_DEVICE_ID_INTEL_82371SB_1	0x7010
- #define PCI_DEVICE_ID_INTEL_82371SB_2	0x7020
+On Tue, 29 Jul 2008 09:59:18 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+>  - I don't think the 'next' thing works as well for the occasional 
+>    developer that just has a few patches pending as it works for subsystem 
+>    maintainers that are used to it.
+
+Those people's patches are in -mm, which now holds maybe 100 or more
+"trees", many of which are small or empty.
+
+My project within the next couple of weeks is to get most of that
+material into linux-next.  Stephen will be involved ;)
+
+>    IOW, I think 'next' needs enough infrastructure setup from the 
+>    developer side that I don't think it's reasonable for _everything_ to 
+>    go through next.
+
+True.  But
+
+a) some of the problematic changes which we've seen simply _should_
+   have been in linux-next.  Some of them were even coming from
+   developers whose trees are already in linux-next.
+
+b) A lot of the bugs which hit your tree would have been quickly
+   found in linux-next too.
+
+
+But it's all shuffling deckchairs, really.  Are we actually merging
+better code as a reasult of all of this?  Are we being more careful and
+reviewing better and testing better?
+
+Don't think so.
+
+> And that in turn means that I'm not entirely thrilled 
+>    when people then complain "that wasn't in next". I think people should 
+>    accept that not everything will be in next.
+
+Oh sure.  But it depends on the _reason_ why it wasn't in linux-next. 
+If the reason is a good one then fine.  But if the reason is "I was too
+slack", or "I only wrote it five minutes ago" then the system is good,
+and the developer isn't.
+
