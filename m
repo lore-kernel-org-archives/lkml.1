@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbYG3DBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbYG3DFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758032AbYG3DBz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 23:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbYG3DBp
+	id S1758239AbYG3DFD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 23:05:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYG3DEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 23:01:45 -0400
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:41920 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083AbYG3DBo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 23:01:44 -0400
-X-AuditID: 0ac90648-ab4a1ba000004920-b2-488fd995411e
-Message-ID: <488FD98D.3080708@hitachi.com>
-Date: Wed, 30 Jul 2008 12:01:33 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Tue, 29 Jul 2008 23:04:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:33807 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752690AbYG3DEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 23:04:54 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] Module : call synchronize_sched() between module exit() and free.
+Date: Wed, 30 Jul 2008 13:04:50 +1000
+User-Agent: KMail/1.9.9
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <20080717155724.897537670@polymtl.ca> <200807301140.59745.rusty@rustcorp.com.au> <20080730022751.GA15866@Krystal>
+In-Reply-To: <20080730022751.GA15866@Krystal>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org, sct@redhat.com
-Cc: adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jack@suse.cz, jbacik@redhat.com,
-       cmm@us.ibm.com, tytso@mit.edu, snitzer@gmail.com, tglx@linutronix.de,
-       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
-Subject: [PATCH 2/2] jbd: ordered data integrity fix
-References: <488FD756.9060106@hitachi.com>
-In-Reply-To: <488FD756.9060106@hitachi.com>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+Content-Disposition: inline
+Message-Id: <200807301304.51014.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In ordered mode, if a file data buffer being dirtied exists in
-the committing transaction, we write the buffer to the disk, move
-it from the committing transaction to the running transaction,
-then dirty it.  But we don't have to remove the buffer from the
-committing transaction when the buffer couldn't be written out,
-otherwise it would miss the error and the committing transaction
-would not abort.
+On Wednesday 30 July 2008 12:27:51 Mathieu Desnoyers wrote:
+> > Hi Mathieu,
+> >
+> >    Yes: stop_machine is merely used to atomically check the module
+> > refcount for zero and set the state so it can't be incremented again (ie.
+> > try_module_get will fail).
+> >
+> >    So placing a tracepoint or marker in a module does not bump the module
+> > refcount?  If that's true, then there needs to be some kind of
+> > remove_markers_from_module() call after module->exit(), which should do
+> > the synchronize_sched() or whatever, right?
+> >
+> > Rusty.
+>
+> Actually, it's not placing a marker/tracepoint in a module which causes
+> a problem, this is a simple function call after all, and correctly dealt
+> with by current module.c code.
+>
+> The problem comes from a probe function (the callback) that would be
+> registered to be called from a marker and would sit in an unloadable
+> kernel module. I would not want to tie the refcount of the probe modules
+> to the fact that they are connected to a marker because it would then
+> become impossible to unload them due to the fact that unregistration is
+> done in module exit().
 
-This patch adds an error check before removing the buffer from the
-committing transaction.
+Hi Mathieu,
 
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Acked-by: Jan Kara <jack@suse.cz>
----
-This patch is the same as patch 2/5 of possible filesystem corruption
-fixes (take 2).  It can be found at:
-http://kerneltrap.org/mailarchive/linux-kernel/2008/6/2/2002144
+    Still confused, sorry.  Why don't you don't do a synchronize_sched() at 
+the end of your module's exit routine?  "You must be completely finished by 
+the time ->exit() returns" is the rule so far...
 
- fs/jbd/transaction.c |   16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.27-rc1/fs/jbd/transaction.c
-===================================================================
---- linux-2.6.27-rc1.orig/fs/jbd/transaction.c
-+++ linux-2.6.27-rc1/fs/jbd/transaction.c
-@@ -954,9 +954,10 @@ int journal_dirty_data(handle_t *handle,
- 	journal_t *journal = handle->h_transaction->t_journal;
- 	int need_brelse = 0;
- 	struct journal_head *jh;
-+	int ret = 0;
- 
- 	if (is_handle_aborted(handle))
--		return 0;
-+		return ret;
- 
- 	jh = journal_add_journal_head(bh);
- 	JBUFFER_TRACE(jh, "entry");
-@@ -1067,7 +1068,16 @@ int journal_dirty_data(handle_t *handle,
- 				   time if it is redirtied */
- 			}
- 
--			/* journal_clean_data_list() may have got there first */
-+			/*
-+			 * We cannot remove the buffer with io error from the
-+			 * committing transaction, because otherwise it would
-+			 * miss the error and the commit would not abort.
-+			 */
-+			if (unlikely(!buffer_uptodate(bh))) {
-+				ret = -EIO;
-+				goto no_journal;
-+			}
-+
- 			if (jh->b_transaction != NULL) {
- 				JBUFFER_TRACE(jh, "unfile from commit");
- 				__journal_temp_unlink_buffer(jh);
-@@ -1108,7 +1118,7 @@ no_journal:
- 	}
- 	JBUFFER_TRACE(jh, "exit");
- 	journal_put_journal_head(jh);
--	return 0;
-+	return ret;
- }
- 
- /**
-
-
+Rusty.
