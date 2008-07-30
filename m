@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbYGaANS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762850AbYGaANk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762098AbYGaANS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759937AbYGaAMO
+	id S1762850AbYGaANk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbYGaAMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:12:14 -0400
-Received: from mail.suse.de ([195.135.220.2]:38560 "EHLO mx1.suse.de"
+	Wed, 30 Jul 2008 20:12:37 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36603 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759574AbYGaAMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:12:13 -0400
-Date: Wed, 30 Jul 2008 16:58:38 -0700
+	id S1762693AbYGaAMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:12:36 -0400
+Date: Wed, 30 Jul 2008 16:58:41 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Miao Xie <miaox@cn.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Paul Jackson <pj@sgi.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       alan@lxorguk.ukuu.org.uk, Jan Kratochvil <jan.kratochvil@redhat.com>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [patch 24/62] cpusets: fix wrong domain attr updates
-Message-ID: <20080730235838.GW12896@suse.de>
+Subject: [patch 25/62] x86: fix crash due to missing debugctlmsr on AMD K6-3
+Message-ID: <20080730235841.GX12896@suse.de>
 References: <20080730233050.332789722@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cpusets-fix-wrong-domain-attr-updates.patch"
+Content-Disposition: inline; filename="x86-fix-crash-due-to-missing-debugctlmsr-on-amd-k6-3.patch"
 In-Reply-To: <20080730234915.GA12426@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,38 +40,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 us know.
 
 ------------------
-From: Miao Xie <miaox@cn.fujitsu.com>
+From: Jan Kratochvil <jan.kratochvil@redhat.com>
 
-commit 91cd4d6ef0abb1f65e81f8fe37e7d3c10344e38c upstream
+commit d536b1f86591fb081c7a56eab04e711eb4dab951 upstream
 
-Fix wrong domain attr updates, or we will always update the first sched
-domain attr.
+currently if you use PTRACE_SINGLEBLOCK on AMD K6-3 (i586) it will crash.
+Kernel now wrongly assumes existing DEBUGCTLMSR MSR register there.
 
-Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Paul Jackson <pj@sgi.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Removed the assumption also for some other non-K6 CPUs but I am not sure there
+(but it can only bring small inefficiency there if my assumption is wrong).
+
+Based on info from Roland McGrath, Chuck Ebbert and Mikulas Patocka.
+More info at:
+	https://bugzilla.redhat.com/show_bug.cgi?id=456175
+
+Signed-off-by: Jan Kratochvil <jan.kratochvil@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/cpuset.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/x86/Kconfig.cpu |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -679,7 +679,9 @@ restart:
- 				if (apn == b->pn) {
- 					cpus_or(*dp, *dp, b->cpus_allowed);
- 					b->pn = -1;
--					update_domain_attr(dattr, b);
-+					if (dattr)
-+						update_domain_attr(dattr
-+								   + nslot, b);
- 				}
- 			}
- 			nslot++;
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -414,4 +414,4 @@ config X86_MINIMUM_CPU_FAMILY
+ 
+ config X86_DEBUGCTLMSR
+ 	def_bool y
+-	depends on !(M586MMX || M586TSC || M586 || M486 || M386)
++	depends on !(MK6 || MWINCHIPC6 || MWINCHIP2 || MWINCHIP3D || MCYRIXIII || M586MMX || M586TSC || M586 || M486 || M386)
 
 -- 
