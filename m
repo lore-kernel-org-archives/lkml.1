@@ -1,122 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760565AbYG3Xek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760271AbYG3XeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760565AbYG3Xek (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbYG3XeO
+	id S1760271AbYG3XeY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbYG3XeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:34:14 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:4101 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759085AbYG3XeN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:34:13 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: <alan@lxorguk.ukuu.org.uk>
-Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: 463 kernel developers missing!
-Date: Wed, 30 Jul 2008 16:33:42 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKMEHLOJAC.davids@webmaster.com>
+	Wed, 30 Jul 2008 19:34:08 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35536 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753500AbYG3XeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:34:06 -0400
+Date: Wed, 30 Jul 2008 16:26:55 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 06/29] sparc64: Fix lockdep issues in LDC protocol layer.
+Message-ID: <20080730232655.GG30670@suse.de>
+References: <20080730231003.655833364@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20080730233229.5ebe4465@lxorguk.ukuu.org.uk>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Wed, 30 Jul 2008 16:35:48 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Wed, 30 Jul 2008 16:35:48 -0700
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="sparc64-fix-lockdep-issues-in-ldc-protocol-layer.patch"
+In-Reply-To: <20080730232451.GA30670@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2.6.25-stable review patch.  If anyone has any objections, please let us 
+know.
 
-> > Precisely. And others who wish to exercise rights under the GPL
-> > forfeit any
-> > legal mechanism (whether copyright, DMCA, contract, data
-> > privacy laws, or
-> > whatever theory) to impose "further restrictions" on those who wish to
-> > similarly use GPL works.
+------------------
+From: David S. Miller <davem@davemloft.net>
 
-> I don't know where you get that paticular idea from. Try sending GPL code
-> from the USA to Cuba. Seems the US government is using GPL code but
-> imposing further restrictions...
+[ Upstream commit b7c2a75725dee9b5643a0aae3a4cb47f52e00a49 ]
 
-I'm not sure how you think this is relevent. I could go to the effort of
-explaining in detail why it's irrelevent, but I can't imagine you intended
-this comment as a genuine response in good faith.
+We're calling request_irq() with a IRQs disabled.
 
-For one thing, even if this was a violation of the GPL, there would be no
-recourse. The only conceivable recourse would be a suit by an author for
-copyright infringement. The government has sovereign immunity against such a
-claim. The government is immune because it has sovereign immunity. Jon is
-immune because the GPL grants him the right he is exercising. (Of course, it
-can't make him immune from any laws he violates, but my argument is that
-because he has consent he isn't violating any laws.)
+No straightforward fix exists because we want to
+enable these IRQs and setup state atomically before
+getting into the IRQ handler the first time.
 
-> > have no control. But you cannot invoke copyright -- or any
-> > other law -- to
-> > restrict someone else's exercise of rights granter by the GPL. You get
-> > copyright, but you give up it all. No "further restrictions", period.
+What happens now is that we mark the VIRQ to not be
+automatically enabled by request_irq().  Then we
+make explicit enable_irq() calls when we grab the
+LDC channel.
 
-> Some rights in laws are absolute. I cannot "give up" my right to be
-> identified as the author of a work I create in many countries. Its an
-> absolute.
+This way we don't need to call request_irq() illegally
+under the LDC channel lock any more.
 
-Yes, but you can give up your right to pursue that right. And certainly some
-terms of the GPL might be unenforceable in some jurisdictions. But the GPL
-says Jon can do what he's doing, and it means what he says. As I said, I
-don't know the data privacy laws in your jurisdiction, but I do know the GPL
-made you give up your right to use them to impose restrictions on Jon's
-imposition of his GPL rights.
+Bump LDC version and release date.
 
-You may or may not be able to stop some operation of law from happening. You
-are not responsible for things outside your control. And some jurisdictions
-may find some GPL terms unconscionable when used in this way.
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-> > When you submit a unit to a GPL project, you place that unit
-> > under the GPL.
-> > That is what the DCoO is trying to say. There cannot be some things that
-> > some parts of the GPL apply to and some don't. There is no "sort of GPL,
-> > sort of not" that applies to some parts of some submissions. If
-> > something is
-> > part of or all of a submission made under the GPL, then all of the GPL
-> > applies to it.
+---
+ arch/sparc64/kernel/irq.c |   10 +++++++++-
+ arch/sparc64/kernel/ldc.c |   38 +++++++++++++++++++-------------------
+ 2 files changed, 28 insertions(+), 20 deletions(-)
 
-> The metadata licensing isn't clear in my view.
+--- a/arch/sparc64/kernel/irq.c
++++ b/arch/sparc64/kernel/irq.c
+@@ -621,8 +621,9 @@ unsigned int sun4v_build_irq(u32 devhand
+ unsigned int sun4v_build_virq(u32 devhandle, unsigned int devino)
+ {
+ 	struct irq_handler_data *data;
+-	struct ino_bucket *bucket;
+ 	unsigned long hv_err, cookie;
++	struct ino_bucket *bucket;
++	struct irq_desc *desc;
+ 	unsigned int virt_irq;
+ 
+ 	bucket = kzalloc(sizeof(struct ino_bucket), GFP_ATOMIC);
+@@ -643,6 +644,13 @@ unsigned int sun4v_build_virq(u32 devhan
+ 	if (unlikely(!data))
+ 		return 0;
+ 
++	/* In order to make the LDC channel startup sequence easier,
++	 * especially wrt. locking, we do not let request_irq() enable
++	 * the interrupt.
++	 */
++	desc = irq_desc + virt_irq;
++	desc->status |= IRQ_NOAUTOEN;
++
+ 	set_irq_chip_data(virt_irq, data);
+ 
+ 	/* Catch accidental accesses to these things.  IMAP/ICLR handling
+--- a/arch/sparc64/kernel/ldc.c
++++ b/arch/sparc64/kernel/ldc.c
+@@ -1,6 +1,6 @@
+ /* ldc.c: Logical Domain Channel link-layer protocol driver.
+  *
+- * Copyright (C) 2007 David S. Miller <davem@davemloft.net>
++ * Copyright (C) 2007, 2008 David S. Miller <davem@davemloft.net>
+  */
+ 
+ #include <linux/kernel.h>
+@@ -23,8 +23,8 @@
+ 
+ #define DRV_MODULE_NAME		"ldc"
+ #define PFX DRV_MODULE_NAME	": "
+-#define DRV_MODULE_VERSION	"1.0"
+-#define DRV_MODULE_RELDATE	"June 25, 2007"
++#define DRV_MODULE_VERSION	"1.1"
++#define DRV_MODULE_RELDATE	"July 22, 2008"
+ 
+ static char version[] __devinitdata =
+ 	DRV_MODULE_NAME ".c:v" DRV_MODULE_VERSION " (" DRV_MODULE_RELDATE ")\n";
+@@ -1235,13 +1235,9 @@ int ldc_bind(struct ldc_channel *lp, con
+ 	unsigned long hv_err, flags;
+ 	int err = -EINVAL;
+ 
+-	spin_lock_irqsave(&lp->lock, flags);
+-
+-	if (!name)
+-		goto out_err;
+-
+-	if (lp->state != LDC_STATE_INIT)
+-		goto out_err;
++	if (!name ||
++	    (lp->state != LDC_STATE_INIT))
++		return -EINVAL;
+ 
+ 	snprintf(lp->rx_irq_name, LDC_IRQ_NAME_MAX, "%s RX", name);
+ 	snprintf(lp->tx_irq_name, LDC_IRQ_NAME_MAX, "%s TX", name);
+@@ -1250,25 +1246,32 @@ int ldc_bind(struct ldc_channel *lp, con
+ 			  IRQF_SAMPLE_RANDOM | IRQF_SHARED,
+ 			  lp->rx_irq_name, lp);
+ 	if (err)
+-		goto out_err;
++		return err;
+ 
+ 	err = request_irq(lp->cfg.tx_irq, ldc_tx,
+ 			  IRQF_SAMPLE_RANDOM | IRQF_SHARED,
+ 			  lp->tx_irq_name, lp);
+-	if (err)
+-		goto out_free_rx_irq;
++	if (err) {
++		free_irq(lp->cfg.rx_irq, lp);
++		return err;
++	}
++
+ 
++	spin_lock_irqsave(&lp->lock, flags);
++
++	enable_irq(lp->cfg.rx_irq);
++	enable_irq(lp->cfg.tx_irq);
+ 
+ 	lp->flags |= LDC_FLAG_REGISTERED_IRQS;
+ 
+ 	err = -ENODEV;
+ 	hv_err = sun4v_ldc_tx_qconf(lp->id, 0, 0);
+ 	if (hv_err)
+-		goto out_free_tx_irq;
++		goto out_free_irqs;
+ 
+ 	hv_err = sun4v_ldc_tx_qconf(lp->id, lp->tx_ra, lp->tx_num_entries);
+ 	if (hv_err)
+-		goto out_free_tx_irq;
++		goto out_free_irqs;
+ 
+ 	hv_err = sun4v_ldc_rx_qconf(lp->id, 0, 0);
+ 	if (hv_err)
+@@ -1304,14 +1307,11 @@ out_unmap_rx:
+ out_unmap_tx:
+ 	sun4v_ldc_tx_qconf(lp->id, 0, 0);
+ 
+-out_free_tx_irq:
++out_free_irqs:
+ 	lp->flags &= ~LDC_FLAG_REGISTERED_IRQS;
+ 	free_irq(lp->cfg.tx_irq, lp);
+-
+-out_free_rx_irq:
+ 	free_irq(lp->cfg.rx_irq, lp);
+ 
+-out_err:
+ 	spin_unlock_irqrestore(&lp->lock, flags);
+ 
+ 	return err;
 
-Perhaps you can invent some other meaning it might have and then claim it's
-unclear because it can mean that. But I don't think it matters. The GPL is
-really what matters here, at least in my opinion. The GPL is clearly all of
-apiece -- it either applies to something or it doesn't. And if you want to
-argue that people must parse GPL submissions to figure out what's really
-covered by the GPL and what's not, you can certainly argue that. I find that
-argument fairly unconvincing.
-
-> I think what you are more likely to get sensible results with is arguing
-> estoppel ? That was always the intent of that DCO wording. To ensure that
-> rights or otherwise you couldn't turn around and say "hey you published
-> my name and I didn't expect that implied by my actions".
-
-> However publishing a name and performing data processing on personal data
-> databases for other purposes is not the same thing at least in some
-> jurisdictions. In the EU you collect data "for a purpose".
-
-GPL submissions are for the purposes specified in the GPL -- so that other
-people may freely redistribute, copy, and modify them. You forfeit the right
-to claim you made GPL submissions "for a purpose" as the GPL specifically
-requires you to consent to their use for any purpose (save those the GPL
-itself prohibits, of course).
-
-DS
-
-
+-- 
