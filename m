@@ -1,139 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbYG3Sim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbYG3Sj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758388AbYG3Sim (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 14:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbYG3Sic
+	id S1757468AbYG3Sj3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 14:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbYG3SjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 14:38:32 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:61161 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756908AbYG3Sia (ORCPT
+	Wed, 30 Jul 2008 14:39:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40394 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752806AbYG3SjT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 14:38:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=GPjA9Nf0aGkOjYnZXdBCYmnz0hIgLlJ6sut9SFRQd6DwIIA8w/NctDRvg0GMN2gu+c
-         c06FWSo3b7hwevlLv/WRkz+BgSOANBGOFr/E6N8fqZDi6KVCszTN699tUXxeGZKSW526
-         V4nwtUxq4S0OLJQ7kmxvm2+Ko24lJknYscvG8=
-Message-ID: <b647ffbd0807301138i5f721a39p9b20e4e918aa07b7@mail.gmail.com>
-Date: Wed, 30 Jul 2008 20:38:28 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Max Krasnyansky" <maxk@qualcomm.com>
-Subject: Re: [patch 0/4] x86: AMD microcode patch loading v2 fixes
-Cc: "Peter Oruba" <peter.oruba@amd.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Tigran Aivazian" <tigran@aivazian.fsnet.co.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <48909854.2040201@qualcomm.com>
+	Wed, 30 Jul 2008 14:39:19 -0400
+Date: Wed, 30 Jul 2008 11:35:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Dike <jdike@addtoit.com>
+Subject: Re: [GIT PULL] x86: use arch/x86/include
+In-Reply-To: <4890B153.6050305@zytor.com>
+Message-ID: <alpine.LFD.1.10.0807301125090.3334@nehalem.linux-foundation.org>
+References: <20080730124952.GA23413@uranus.ravnborg.org> <20080730180411.GA7896@elte.hu> <4890B153.6050305@zytor.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080729154103.007575982@amd.com>
-	 <b647ffbd0807290918kaa0a05es3cebf7a6f15fb790@mail.gmail.com>
-	 <488F581B.7060009@qualcomm.com> <48903431.9060707@amd.com>
-	 <b647ffbd0807300257x43dd6018o59533bec11b7a504@mail.gmail.com>
-	 <b647ffbd0807300334q57cdca6fu474cc7b6bed36102@mail.gmail.com>
-	 <48909854.2040201@qualcomm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/30 Max Krasnyansky <maxk@qualcomm.com>:
->
->
-> Dmitry Adamushko wrote:
->> 2008/7/30 Dmitry Adamushko <dmitry.adamushko@gmail.com>:
->>> 2008/7/30 Peter Oruba <peter.oruba@amd.com>:
->>>>> [ ... ]
->>>> Since ucode updates may fix severe issues, it is supposed to happen as early
->>>> as possible. If you re-plug your CPU into your socket, your BIOS also
->>>> applies a ucode patch, but that won't necessarily be the latest and critical
->>>> one.
->>> Hum, let's say we don't do it from cpu-hotplug handlers [1] but from
->>> start_secondary() before calling cpu_idle()? [*]
->>>
->>> This way, we do it before any other task may have a chance to run on a
->>> cpu which is not a case with cpu-hotplug handlers
->>> (and we don't mess-up with cpu-hotplug events :-)
->>>
->>> [ the drawback is that 'microcode' subsystem is not local to
->>> microcode.c anymore ]
->>>
->>> [1] if we need a sync. operation in cpu-hotplug handlers and IPI is
->>> not ok (say, we need to run in a sleepablel context) then perhaps it's
->>> workqueues + wait_on_cpu_work(). But then it's not a bit later than
->>> could have been with [*].
->>>
->>> heh, this issue has already popped up in another thread so it should
->>> be fixed asap, imho.
->>>
->>> Ingo, Peter? What would be the best way from your pov?
->>
->> or let's just use smth like a patch below so far:
->>
->> (non-white-space-damaged version is enclosed)
->>
->> --- kernel/cpu.c-old    2008-07-30 12:31:15.000000000 +0200
->> +++ kernel/cpu.c        2008-07-30 12:32:02.000000000 +0200
->> @@ -349,6 +349,8 @@ static int __cpuinit _cpu_up(unsigned in
->>                 goto out_notify;
->>         BUG_ON(!cpu_online(cpu));
->>
->> +       cpu_set(cpu, cpu_active_map);
->> +
->>         /* Now call notifier in preparation. */
->>         raw_notifier_call_chain(&cpu_chain, CPU_ONLINE | mod, hcpu);
->>
->> @@ -383,9 +385,6 @@ int __cpuinit cpu_up(unsigned int cpu)
->>
->>         err = _cpu_up(cpu, 0);
->>
->> -       if (cpu_online(cpu))
->> -               cpu_set(cpu, cpu_active_map);
->> -
->>  out:
->>         cpu_maps_update_done();
->>         return err;
->
-> That was the first thing I thought of when you pointed out what the problem is
-> (ie when original bug report showed up).
-> But I immediately rejected the idea because it changes the rules of the game.
->  active bit is set even before the cpu is "truly" online.
-
-hm, it depends on what is "truly" in this context :-) Tasks (kernel
-threads) may start running on this 'cpu' as a result of some
-CPU_ONLINE notifications (CPU_ONLINE notification kind of says "hey,
-this 'cpu' is online :-)
-
-Sure, If we imagine that some CPU_ONLINE callbacks do additional
-initialization (e.g. load-balancer related) for 'cpu' and only after
-their completion the 'cpu' is "really" online (e.g. tasks can be
-migrated onto it).
-
-I don't have a strong feeling here. I think it's just a matter of
-specifying the rules/interface.
-
->
-> I'd say we fix the microcode instead.
->
-
-Yeah, not that this use of set_cpus_allowed_ptr() in hotplug callbacks
-looks pretty to me (not that I'm saying I have a good taste though :-)
-
-I've even suggested to consider doing microcode update somewhere
-earlier in start_secondary() (say, right before cpu_idle()). So it'd
-be done as ealry as possible + we don't mess up with cpu-hotplug
-events.
 
 
->
-> Max
->
+On Wed, 30 Jul 2008, H. Peter Anvin wrote:
+> 
+> Git *should* be able to track those changes across a rename and even with a
+> rename on one branch and changes on another; in my experience it works well
+> for filename renames, but git doesn't understand directory renames at all, so
+> new files do have to be moved to their new locations manually.
 
--- 
-Best regards,
-Dmitry Adamushko
+Yes. Note that this is true only for merging (and some operations that can 
+use the merge infrastructure, like cherry-picking). It's obviously not 
+true for pure patches that are just pending in mailboxes etc.
+
+The big x86 architecture rename (i386->x86) had some problems just due to 
+the huge number of files involved, but the include directory should not 
+just be easier, on the git side we also fixed some of the scalability 
+issues we had with lots of renames.
+
+[ However, fairly old versions of git may still have trouble due to 
+  limiting rename detection to a smallish number of files (ie 100 or 
+  something).
+
+  Note, though, that the only person who needs a reasonably modern version 
+  of git is the person actually doing any merges that take renames into 
+  account. So "normal users" can use old versions without even realising. 
+
+  And we're really talking about git versions about a year old - the whole 
+  arch/x86 rename thing was June last year. So by "modern" I definitely 
+  don't mean "last week", but "updated in any kind of reasonable manner", 
+  which I assume everybody involved in any x86 merging would have ]
+
+> > I missed the discussion on this, what's the point of renaming all these
+> > files?
+> 
+> I know there has been talk about this on and off for a long time (to get all
+> the arch code into arch/).  I don't know if there are any mechanical reasons
+> for it, on top of that.
+
+My big reason is that it makes it much easier for me to see when merges 
+only touch a specific architecture (git will always sort things by 
+pathname, so if the first pathname is arch/xyz/something and the last one 
+is arch/xyz/somethingelse, then I don't even need to look any closer). It 
+also makes it much nicer for my statistics generator.
+
+IOW, it helps the "overview" people, probably not so much anybody else. 
+
+It also ends up allowing some extra flexibility, ie we can put 
+architecture header files in other places than <asm/xyz.h> (eg the whole 
+<mach/xyz.h> thing), so there _are_ technical reasons for it, but at least 
+to me those are just frosting on the cake.
+
+			Linus
