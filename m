@@ -1,155 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760935AbYG3Ct7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbYG3Cu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760935AbYG3Ct7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 22:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbYG3CpG
+	id S1758863AbYG3Cu1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 22:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbYG3CpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 22:45:06 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:43270 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754034AbYG3Cov (ORCPT
+	Tue, 29 Jul 2008 22:45:13 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:36973 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757189AbYG3Con (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 22:44:51 -0400
-Date: Tue, 29 Jul 2008 20:44:50 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: [PATCH 2/2] shpchp: Rename duplicate slot name N as N-1, N-2,
-	N-M...
-Message-ID: <20080730024450.GC4269@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	Matthew Wilcox <matthew@wil.cx>,
-	Pierre Ossman <drzeus-list@drzeus.cx>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-References: <200807241407.18543.jbarnes@virtuousgeek.org> <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org> <48895D3C.7040100@jp.fujitsu.com> <20080730023842.GA4269@ldl.fc.hp.com>
+	Tue, 29 Jul 2008 22:44:43 -0400
+X-AuditID: 0ac90647-abea2ba0000028e2-d0-488fd5993c74
+Message-ID: <488FD589.2040200@hitachi.com>
+Date: Wed, 30 Jul 2008 11:44:25 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080730023842.GA4269@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+To: akpm@linux-foundation.org
+Cc: mm-commits@vger.kernel.org, jack@suse.cz, linux-ext4@vger.kernel.org,
+       sct@redhat.com, adilger@clusterfs.com, linux-kernel@vger.kernel.org,
+       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu, snitzer@gmail.com,
+       tglx@linutronix.de, yumiko.sugita.yf@hitachi.com,
+       satoshi.oshima.fk@hitachi.com
+Subject: Re: + ext3-abort-ext3-if-the-journal-has-aborted.patch added to -mm
+    tree
+References: <200807290657.m6T6vmlk019831@imap1.linux-foundation.org>
+In-Reply-To: <200807290657.m6T6vmlk019831@imap1.linux-foundation.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit ef0ff95f136f0f2d035667af5d18b824609de320 introduces the
-shpchp_slot_with_bus module parameter, which was intended to help
-work around broken firmware that assigns the same name to multiple
-slots.
+Hi Andrew,
 
-Commit b3bd307c628af2f0a581c42d5d7e4bcdbbf64b6a tells the user to
-use the above parameter in the event of a name collision.
+akpm@linux-foundation.org wrote:
 
-This approach is sub-optimal because it requires too much work from
-the user.
+> The patch titled
+>      ext3: abort ext3 if the journal has aborted
+> has been added to the -mm tree.  Its filename is
+>      ext3-abort-ext3-if-the-journal-has-aborted.patch
 
-Instead, let's rename the slot on behalf of the user. If firmware
-assigns the name N to multiple slots, then:
+A problem was found in this patch:
 
-        The first registered slot is assigned N
-        The second registered slot is assigned N-1
-        The third registered slot is assigned N-2
-        The Mth registered slot becomes N-M
+http://lkml.org/lkml/2008/7/28/15
+> 4. when checkpointing fails, notify this error to the ext3 layer so
+>>   that ext3 don't clear the needs_recovery flag, otherwise the
+>>   journaled contents are ignored and cleaned in the recovery phase
+>
+> Mike Snitzer noticed that ext3_mark_recovery_complete() doesn't
+> check checkpointing failure and it clears needs_recovery flag 
+> (thanks, Mike!).  I need an additional fix.
+>
+> I also found ext3_quota_on() forces checkpointing by journal_flush()
+> but it doesn't check the error.  This will appear in 2.6.27-rc1,
+> so I'll send the revised patch set for 2.6.27-rc1 (it may be
+> a separate patch).
 
-In the event we overflow the slot->name parameter, we report an
-error to the user.
+I attached the revised version below.  Could you replace the patch
+titled `ext3: abort ext3 if the journal has aborted' with this
+new one?  Please note that the patch's title also changed.
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
+
+Subject: [PATCH 3/4] ext3: add checks for errors from jbd
+
+If the journal has aborted due to a checkpointing failure, we
+have to keep the contents of the journal space.  Otherwise, the
+filesystem will lose uncheckpointed metadata completely and
+become inconsistent.  To avoid this, we need to keep needs_recovery
+flag if checkpoint has failed.
+
+With this patch, ext3_put_super() detects a checkpointing failure
+from the return value of journal_destroy(), then it invokes
+ext3_abort() to make the filesystem read only and keep
+needs_recovery flag.  Errors from journal_flush() are also handled
+by this patch in some places.
+
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 ---
- drivers/pci/hotplug/shpchp_core.c |   34 +++++++++++++++-------------------
- 1 files changed, 15 insertions(+), 19 deletions(-)
+ fs/ext3/ioctl.c |   12 ++++++++----
+ fs/ext3/super.c |   23 +++++++++++++++++++----
+ 2 files changed, 27 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/pci/hotplug/shpchp_core.c b/drivers/pci/hotplug/shpchp_core.c
-index a8cbd03..cc38615 100644
---- a/drivers/pci/hotplug/shpchp_core.c
-+++ b/drivers/pci/hotplug/shpchp_core.c
-@@ -39,7 +39,6 @@
- int shpchp_debug;
- int shpchp_poll_mode;
- int shpchp_poll_time;
--static int shpchp_slot_with_bus;
- struct workqueue_struct *shpchp_wq;
+Index: linux-2.6.27-rc1/fs/ext3/ioctl.c
+===================================================================
+--- linux-2.6.27-rc1.orig/fs/ext3/ioctl.c
++++ linux-2.6.27-rc1/fs/ext3/ioctl.c
+@@ -239,7 +239,7 @@ setrsvsz_out:
+ 	case EXT3_IOC_GROUP_EXTEND: {
+ 		ext3_fsblk_t n_blocks_count;
+ 		struct super_block *sb = inode->i_sb;
+-		int err;
++		int err, err2;
  
- #define DRIVER_VERSION	"0.4"
-@@ -53,11 +52,9 @@ MODULE_LICENSE("GPL");
- module_param(shpchp_debug, bool, 0644);
- module_param(shpchp_poll_mode, bool, 0644);
- module_param(shpchp_poll_time, int, 0644);
--module_param(shpchp_slot_with_bus, bool, 0644);
- MODULE_PARM_DESC(shpchp_debug, "Debugging mode enabled or not");
- MODULE_PARM_DESC(shpchp_poll_mode, "Using polling mechanism for hot-plug events or not");
- MODULE_PARM_DESC(shpchp_poll_time, "Polling mechanism frequency, in seconds");
--MODULE_PARM_DESC(shpchp_slot_with_bus, "Use bus number in the slot name");
+ 		if (!capable(CAP_SYS_RESOURCE))
+ 			return -EPERM;
+@@ -254,8 +254,10 @@ setrsvsz_out:
+ 		}
+ 		err = ext3_group_extend(sb, EXT3_SB(sb)->s_es, n_blocks_count);
+ 		journal_lock_updates(EXT3_SB(sb)->s_journal);
+-		journal_flush(EXT3_SB(sb)->s_journal);
++		err2 = journal_flush(EXT3_SB(sb)->s_journal);
+ 		journal_unlock_updates(EXT3_SB(sb)->s_journal);
++		if (err == 0)
++			err = err2;
+ group_extend_out:
+ 		mnt_drop_write(filp->f_path.mnt);
+ 		return err;
+@@ -263,7 +265,7 @@ group_extend_out:
+ 	case EXT3_IOC_GROUP_ADD: {
+ 		struct ext3_new_group_data input;
+ 		struct super_block *sb = inode->i_sb;
+-		int err;
++		int err, err2;
  
- #define SHPC_MODULE_NAME "shpchp"
+ 		if (!capable(CAP_SYS_RESOURCE))
+ 			return -EPERM;
+@@ -280,8 +282,10 @@ group_extend_out:
  
-@@ -99,23 +96,13 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
- 	kfree(slot);
+ 		err = ext3_group_add(sb, &input);
+ 		journal_lock_updates(EXT3_SB(sb)->s_journal);
+-		journal_flush(EXT3_SB(sb)->s_journal);
++		err2 = journal_flush(EXT3_SB(sb)->s_journal);
+ 		journal_unlock_updates(EXT3_SB(sb)->s_journal);
++		if (err == 0)
++			err = err2;
+ group_add_out:
+ 		mnt_drop_write(filp->f_path.mnt);
+ 		return err;
+Index: linux-2.6.27-rc1/fs/ext3/super.c
+===================================================================
+--- linux-2.6.27-rc1.orig/fs/ext3/super.c
++++ linux-2.6.27-rc1/fs/ext3/super.c
+@@ -393,7 +393,8 @@ static void ext3_put_super (struct super
+ 	int i;
+ 
+ 	ext3_xattr_put_super(sb);
+-	journal_destroy(sbi->s_journal);
++	if (journal_destroy(sbi->s_journal) < 0)
++		ext3_abort(sb, __func__, "Couldn't clean up the journal");
+ 	if (!(sb->s_flags & MS_RDONLY)) {
+ 		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
+ 		es->s_state = cpu_to_le16(sbi->s_mount_state);
+@@ -2280,7 +2281,9 @@ static void ext3_mark_recovery_complete(
+ 	journal_t *journal = EXT3_SB(sb)->s_journal;
+ 
+ 	journal_lock_updates(journal);
+-	journal_flush(journal);
++	if (journal_flush(journal) < 0)
++		goto out;
++
+ 	lock_super(sb);
+ 	if (EXT3_HAS_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER) &&
+ 	    sb->s_flags & MS_RDONLY) {
+@@ -2289,6 +2292,8 @@ static void ext3_mark_recovery_complete(
+ 		ext3_commit_super(sb, es, 1);
+ 	}
+ 	unlock_super(sb);
++
++out:
+ 	journal_unlock_updates(journal);
  }
  
--static void make_slot_name(struct slot *slot)
--{
--	if (shpchp_slot_with_bus)
--		snprintf(slot->hotplug_slot->name, SLOT_NAME_SIZE, "%04d_%04d",
--			 slot->bus, slot->number);
--	else
--		snprintf(slot->hotplug_slot->name, SLOT_NAME_SIZE, "%d",
--			 slot->number);
--}
--
- static int init_slots(struct controller *ctrl)
- {
- 	struct slot *slot;
- 	struct hotplug_slot *hotplug_slot;
- 	struct hotplug_slot_info *info;
- 	int retval = -ENOMEM;
--	int i;
-+	int i, len, dup = 1;
+@@ -2388,7 +2393,13 @@ static void ext3_write_super_lockfs(stru
  
- 	for (i = 0; i < ctrl->num_slots; i++) {
- 		slot = kzalloc(sizeof(*slot), GFP_KERNEL);
-@@ -146,7 +133,7 @@ static int init_slots(struct controller *ctrl)
- 		/* register this slot with the hotplug pci core */
- 		hotplug_slot->private = slot;
- 		hotplug_slot->release = &release_slot;
--		make_slot_name(slot);
-+		snprintf(slot->name, SLOT_NAME_SIZE, "%d", slot->number);
- 		hotplug_slot->ops = &shpchp_hotplug_slot_ops;
+ 		/* Now we set up the journal barrier. */
+ 		journal_lock_updates(journal);
+-		journal_flush(journal);
++
++		/*
++		 * We don't want to clear needs_recovery flag when we failed
++		 * to flush the journal.
++		 */
++		if (journal_flush(journal) < 0)
++			return;
  
- 		get_power_status(hotplug_slot, &info->power_status);
-@@ -157,14 +144,23 @@ static int init_slots(struct controller *ctrl)
- 		dbg("Registering bus=%x dev=%x hp_slot=%x sun=%x "
- 		    "slot_device_offset=%x\n", slot->bus, slot->device,
- 		    slot->hp_slot, slot->number, ctrl->slot_device_offset);
-+duplicate_name:
- 		retval = pci_hp_register(slot->hotplug_slot,
- 				ctrl->pci_dev->subordinate, slot->device);
- 		if (retval) {
-+			/*
-+			 * If slot N already exists, we'll try to create
-+			 * slot N-1, N-2 ... N-M, until we overflow.
-+			 */
-+			if (retval == -EEXIST) {
-+				len = snprintf(slot->name, SLOT_NAME_SIZE,
-+					       "%d-%d", slot->number, dup++);
-+				if (len < SLOT_NAME_SIZE)
-+					goto duplicate_name;
-+				else
-+					err("duplicate slot name overflow\n");
-+			}
- 			err("pci_hp_register failed with error %d\n", retval);
--			if (retval == -EEXIST)
--				err("Failed to register slot because of name "
--                                    "collision. Try \'shpchp_slot_with_bus\' "
--				    "module option.\n");
- 			goto error_info;
- 		}
+ 		/* Journal blocked and flushed, clear needs_recovery flag. */
+ 		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
+@@ -2806,8 +2817,12 @@ static int ext3_quota_on(struct super_bl
+ 		 * otherwise be livelocked...
+ 		 */
+ 		journal_lock_updates(EXT3_SB(sb)->s_journal);
+-		journal_flush(EXT3_SB(sb)->s_journal);
++		err = journal_flush(EXT3_SB(sb)->s_journal);
+ 		journal_unlock_updates(EXT3_SB(sb)->s_journal);
++		if (err) {
++			path_put(&nd.path);
++			return err;
++		}
+ 	}
  
--- 
-1.6.0.rc0.g95f8
+ 	path_put(&nd.path);
+
+
+
 
