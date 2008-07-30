@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758057AbYG3SEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759177AbYG3SF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758057AbYG3SEz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 14:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbYG3SEr
+	id S1759177AbYG3SF7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 14:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbYG3SFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 14:04:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39619 "EHLO mx3.mail.elte.hu"
+	Wed, 30 Jul 2008 14:05:52 -0400
+Received: from vena.lwn.net ([206.168.112.25]:32842 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003AbYG3SEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 14:04:47 -0400
-Date: Wed, 30 Jul 2008 20:04:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jeff Dike <jdike@addtoit.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] x86: use arch/x86/include
-Message-ID: <20080730180411.GA7896@elte.hu>
-References: <20080730124952.GA23413@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080730124952.GA23413@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751688AbYG3SFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 14:05:51 -0400
+Date: Wed, 30 Jul 2008 12:05:48 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Amanda McPherson <amanda@amcpherson.com>
+Subject: Re: [PATCH, RFC] A development process document
+Message-ID: <20080730120548.7478917a@bike.lwn.net>
+In-Reply-To: <20080730001508.9095f571.akpm@linux-foundation.org>
+References: <20080729143015.0f79cf37@bike.lwn.net>
+	<20080730001508.9095f571.akpm@linux-foundation.org>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.5; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 30 Jul 2008 00:15:08 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+> I wonder a bit whether a ./Documentation update is the best way to
+> present this.  Rather than, say,
+> http://www.kernel.org/read-this.html. The latter may be easier for
+> you to update, and we won't have the problem of people reading
+> two-year-old versions of the document.
 
-> Hi x86 guys.
+I think LF wants to put it up somewhere; kernel.org is certainly a
+possibility too.  OTOH if it's in the kernel source, others could update it
+too.  I've always really liked the way stuff in Documentation/ stays
+current... 
+
+> > +The Linux kernel, at over 6 million lines of code and 2000 active
+> > +contributors,
 > 
-> It turned out to be easy to enable um to use arch/x86/include so here 
-> is a git pull.
+> I suspect the "2000 active developers" is a bit hypey.  Is a 0.5
+> patch/annum developer "active"?
 
-hm, we have a _ton_ of changes to include files queued up already, so 
-this is rather inconvenient.
+I was going with 1.0/year as a working number.  The period v2.6.22..v2.6.26
+(July 8, 2007 to July 13, 2008) had 2294 distinct contributors.  About 1000
+of those were a single patch.  If we say that >= 2.0 is active, then the
+number goes to 1200.  I could just say "over 1000" and be happy with that,
+I guess.
+ 
+> Also: if the code is kept out-of-tree then there is a risk that
+> someone else's similar feature will be merged in mainline.  
 
-I missed the discussion on this, what's the point of renaming all these 
-files?
+Good point, I'll add that.  Everything else you pointed out is good too,
+consider it all added.  After LWN comes out, anyway.  Thanks for taking the
+time to read through it all.
 
-	Ingo
+jon
