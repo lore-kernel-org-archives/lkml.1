@@ -1,58 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbYG3Tul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbYG3Tu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbYG3Tul (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 15:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbYG3TuX
+	id S1757571AbYG3Tu5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 15:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756860AbYG3Tub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 15:50:23 -0400
-Received: from elrond2.infotech.no ([82.134.31.41]:57159 "EHLO
-	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756163AbYG3TuV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 15:50:21 -0400
-Message-ID: <4890C5EC.70305@torque.net>
-Date: Wed, 30 Jul 2008 15:50:04 -0400
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Wed, 30 Jul 2008 15:50:31 -0400
+Received: from mx1.suse.de ([195.135.220.2]:45274 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753177AbYG3Tu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 15:50:28 -0400
+Date: Wed, 30 Jul 2008 12:39:42 -0700
+From: Greg KH <gregkh@suse.de>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Joe Perches <joe@perches.com>,
+       Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+Message-ID: <20080730193942.GA22441@suse.de>
+References: <20080730165656.118280544@de.ibm.com> <20080730171156.824640459@de.ibm.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Alan Stern <stern@rowland.harvard.edu>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Matthew Frost <artusemrys@yahoo.com>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
-       Matt Frost <artusemrys@sbcglobal.net>
-Subject: Re: [usb-storage] BUG: SCSI: usb storage SDHC card doesn't work in
- 2.6.27-rc1
-References: <Pine.LNX.4.44L0.0807301016010.2584-100000@iolanthe.rowland.org> <1217429722.3335.3.camel@localhost.localdomain>
-In-Reply-To: <1217429722.3335.3.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080730171156.824640459@de.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Wed, 2008-07-30 at 10:17 -0400, Alan Stern wrote:
->> On Tue, 29 Jul 2008, Matthew Dharm wrote:
->>
->>> Actually, I'm seriously starting to think that US_FL_IGNORE_RESIDUE should
->>> just become a sysfs parameter which defaults to the 'ignore' state...
->> We have to be careful; there definitely are devices out there which 
->> need to use the Residue.
+On Wed, Jul 30, 2008 at 06:56:57PM +0200, Martin Schwidefsky wrote:
+> From: Michael Holzheu <holzheu@de.ibm.com>
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > 
-> This is sort of a tradeoff ... there was one complaint I saw where a
-> device turned read only without the fix idenitifed in this report.
-> Devices broken by the fix are definitely crawling out of the woodwork
-> now.  Either this patch needs to be reverted or a new fix needs to be
-> applied soon (and to stable).
+> Introduce a new family of printk macros which prefixes each kmsg message
+> with a component name and allows to tag the printk with a message id.
+> 
+> The kmsg component name is defined per source file with the KMSG_COMPONENT
+> macro. The first argument of each kmsg printk is the message id. The
+> message id "0" is special as it will suppress the message id prefix.
+> 
+> If the message id will be printed to the console / syslog at all depends
+> on CONFIG_MSG_IDS. If it is "n" then a kmsg_xxx call is just another
+> printk wrapper. These macros are intended to be used uniformly in the
+> s390 architecture and the s390 device drivers.
+> 
+> Signed-off-by: Michael Holzheu <holzheu@de.ibm.com>
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
+> 
+>  arch/s390/Kconfig    |    9 +++
+>  include/linux/kmsg.h |  124 +++++++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 133 insertions(+)
+> 
+> Index: linux-2.6/arch/s390/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/arch/s390/Kconfig
+> +++ linux-2.6/arch/s390/Kconfig
+> @@ -568,6 +568,15 @@ bool "s390 guest support (EXPERIMENTAL)"
+>  	select VIRTIO_CONSOLE
+>  	help
+>  	  Select this option if you want to run the kernel under s390 linux
+> +
+> +config KMSG_IDS
+> +	bool "Kernel message numbers"
+> +	default y
+> +	help
+> +	  Select this option if you want to include a message number to the
+> +	  prefix for kernel messages issued by the s390 architecture and
+> +	  driver code. See "Documentation/s390/kmsg.txt" for more details.
+> +
+>  endmenu
+>  
+>  source "net/Kconfig"
+> Index: linux-2.6/include/linux/kmsg.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/include/linux/kmsg.h
+> @@ -0,0 +1,124 @@
+> +#ifndef _LINUX_KMSG_H
+> +#define _LINUX_KMSG_H
+> +
+> +#ifndef __KMSG_CHECKER
+> +#define __KMSG_CHECK(level, id) KERN_##level
+> +#endif
 
-The patches to fix this that I have tried do not apply
-cleanly to lk 2.6.26 (and break during compile if forced:
-"us->fflags" is not defined).
+What if __KMSG_CHECKER is enabled?  What does __KMSG_CHECK resolve to
+then?
 
-Is there a lk 2.6.26 patch available?
+And what sets __KMSG_CHECKER?
 
-Doug Gilbert
+thanks,
+
+greg k-h
