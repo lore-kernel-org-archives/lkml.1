@@ -1,52 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759031AbYG3LhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760056AbYG3Lie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759031AbYG3LhX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 07:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbYG3LhL
+	id S1760056AbYG3Lie (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 07:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbYG3Li1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 07:37:11 -0400
-Received: from mail-in-11.arcor-online.net ([151.189.21.51]:37558 "EHLO
-	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752558AbYG3LhJ (ORCPT
+	Wed, 30 Jul 2008 07:38:27 -0400
+Received: from clem.clem-digital.net ([68.16.168.10]:49190 "EHLO
+	clem.clem-digital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752756AbYG3Li0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 07:37:09 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: 463 kernel developers missing!
-To: Jon Smirl <jonsmirl@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
-       James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
-       lkml <linux-kernel@vger.kernel.org>
-Reply-To: 7eggert@gmx.de
-Date: Wed, 30 Jul 2008 13:41:02 +0200
-References: <aUEyc-iW-5@gated-at.bofh.it> <aUFum-2wO-19@gated-at.bofh.it> <aUFE5-2PN-29@gated-at.bofh.it> <aUFNF-33Z-13@gated-at.bofh.it> <aUGgE-4dW-3@gated-at.bofh.it> <aUHwg-6IQ-13@gated-at.bofh.it> <aUHZh-7my-17@gated-at.bofh.it> <aUIsm-ej-21@gated-at.bofh.it> <aUJ4P-1xe-7@gated-at.bofh.it> <aUKDI-4oQ-21@gated-at.bofh.it> <aUL6P-5f2-19@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Wed, 30 Jul 2008 07:38:26 -0400
+From: Pete Clements <clem@clem.clem-digital.net>
+Message-Id: <200807301138.m6UBc8xe012173@clem.clem-digital.net>
+Subject: Re: 2.6.27-rc1 oops on boot -- cs423x? (Corrected subject)
+To: bjorn.helgaas@hp.com (Bjorn Helgaas)
+Date: Wed, 30 Jul 2008 07:38:08 -0400 (EDT)
+Cc: rene.herman@keyaccess.nl (Rene Herman),
+       clem@clem.clem-digital.net (Pete Clements),
+       linux-kernel@vger.kernel.org (linux-kernel)
+In-Reply-To: <200807292159.43226.bjorn.helgaas@hp.com>
+X-Mailer: ELM [version 2.5 PL7]
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1KOA3D-0001ZX-03@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl <jonsmirl@gmail.com> wrote:
+Quoting Bjorn Helgaas
+  > On Tuesday 29 July 2008 6:02:46 pm Rene Herman wrote:
+  > > On 29-07-08 22:52, Pete Clements wrote:
+  > > > [Previously sent with wrong subject line (2.6.26-rc1...) applicable
+  > > > to post 2.6.26 series]
+  > > >
+  > > > Missed most of the 26-git series, git6 first one tried and oops
+  > > > showed in that one as well as those tried after. oops below.
+  > >
+  > 
+  > Thanks very much for the report.  Can I trouble you to test the
+  > patch below and see whether it fixes the problem?
+  > 
 
-> Are the tools case sensitive or insensitive on email addresses? Some
-> are are some aren't, so I need these cases...
-> Al Viro <viro@zeniv.linux.org.uk>
-> Al Viro <viro@zenIV.linux.org.uk>
-> Al Viro <viro@ZenIV.linux.org.uk>
+Patch clears the problem. Thanks.
+--
+Pete Clements
 
-Domain names are case-insensitive, local parts may be case sensitive.
-You can lowercase all domains and the localparts of some known domains.
-
-> Another problem is internal machine names...
-> David S. Miller <davem@sunset.davemloft.net>
-> David S. Miller <davem@davemloft.net>
-
-If it's a common problem, you should have a function doing
-$domain =~ s/.*\.davemloft\.net$/davemloft.net/; (not that simple, off cause)
-
+  > 
+  > PNP: fix formatting of dbg_pnp_show_resources() output
+  > 
+  > From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+  > 
+  > Each resource should be printed on its own line, so start snprintf'ing
+  > at the beginning of the buffer every time through the loop.
+  > 
+  > Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+  > ---
+  > 
+  >  drivers/pnp/support.c |    3 ++-
+  >  1 files changed, 2 insertions(+), 1 deletions(-)
+  > 
+  > 
+  > diff --git a/drivers/pnp/support.c b/drivers/pnp/support.c
+  > index bbf78ef..57b775b 100644
+  > --- a/drivers/pnp/support.c
+  > +++ b/drivers/pnp/support.c
+  > @@ -77,7 +77,7 @@ void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc)
+  >  {
+  >  #ifdef DEBUG
+  >  	char buf[128];
+  > -	int len = 0;
+  > +	int len;
+  >  	struct pnp_resource *pnp_res;
+  >  	struct resource *res;
+  >  
+  > @@ -89,6 +89,7 @@ void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc)
+  >  	dev_dbg(&dev->dev, "%s: current resources:\n", desc);
+  >  	list_for_each_entry(pnp_res, &dev->resources, list) {
+  >  		res = &pnp_res->res;
+  > +		len = 0;
+  >  
+  >  		len += snprintf(buf + len, sizeof(buf) - len, "  %-3s ",
+  >  				pnp_resource_type_name(res));
+  > 
