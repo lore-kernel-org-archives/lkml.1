@@ -1,86 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751920AbYG3EAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbYG3EFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751920AbYG3EAt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 00:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbYG3EAk
+	id S1752011AbYG3EFb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 00:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbYG3EFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 00:00:40 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:24711 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732AbYG3EAj (ORCPT
+	Wed, 30 Jul 2008 00:05:23 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:61547 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750804AbYG3EFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 00:00:39 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: 2.6.27-rc1 oops on boot -- cs423x? (Corrected subject)
-Date: Tue, 29 Jul 2008 21:59:43 -0600
-User-Agent: KMail/1.9.9
-Cc: Pete Clements <clem@clem.clem-digital.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200807292052.m6TKq1J3005288@clem.clem-digital.net> <488FAFA6.4070300@keyaccess.nl>
-In-Reply-To: <488FAFA6.4070300@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Wed, 30 Jul 2008 00:05:23 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiUFABCFj0hMRKxB/2dsb2JhbACBW4lEpTQ
+Date: Wed, 30 Jul 2008 00:05:18 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Module : call synchronize_sched() between module
+	exit() and free.
+Message-ID: <20080730040518.GA20490@Krystal>
+References: <20080717155724.897537670@polymtl.ca> <200807301140.59745.rusty@rustcorp.com.au> <20080730022751.GA15866@Krystal> <200807301304.51014.rusty@rustcorp.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807292159.43226.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+In-Reply-To: <200807301304.51014.rusty@rustcorp.com.au>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 00:02:30 up 55 days,  8:43,  3 users,  load average: 1.24, 1.11,
+	1.03
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 July 2008 6:02:46 pm Rene Herman wrote:
-> On 29-07-08 22:52, Pete Clements wrote:
-> > [Previously sent with wrong subject line (2.6.26-rc1...) applicable
-> > to post 2.6.26 series]
+* Rusty Russell (rusty@rustcorp.com.au) wrote:
+> On Wednesday 30 July 2008 12:27:51 Mathieu Desnoyers wrote:
+> > > Hi Mathieu,
+> > >
+> > >    Yes: stop_machine is merely used to atomically check the module
+> > > refcount for zero and set the state so it can't be incremented again (ie.
+> > > try_module_get will fail).
+> > >
+> > >    So placing a tracepoint or marker in a module does not bump the module
+> > > refcount?  If that's true, then there needs to be some kind of
+> > > remove_markers_from_module() call after module->exit(), which should do
+> > > the synchronize_sched() or whatever, right?
+> > >
+> > > Rusty.
 > >
-> > Missed most of the 26-git series, git6 first one tried and oops
-> > showed in that one as well as those tried after. oops below.
->
-> http://marc.info/?l=linux-kernel&m=121736480005656&w=2
->
-> For now just adding a CC as I'm off to bed. Note -- snd-cs4236 has been
-> one of the most tested drivers with the new PNP code.
+> > Actually, it's not placing a marker/tracepoint in a module which causes
+> > a problem, this is a simple function call after all, and correctly dealt
+> > with by current module.c code.
+> >
+> > The problem comes from a probe function (the callback) that would be
+> > registered to be called from a marker and would sit in an unloadable
+> > kernel module. I would not want to tie the refcount of the probe modules
+> > to the fact that they are connected to a marker because it would then
+> > become impossible to unload them due to the fact that unregistration is
+> > done in module exit().
+> 
+> Hi Mathieu,
+> 
+>     Still confused, sorry.  Why don't you don't do a synchronize_sched() at 
+> the end of your module's exit routine?  "You must be completely finished by 
+> the time ->exit() returns" is the rule so far...
+> 
 
-Thanks very much for the report.  Can I trouble you to test the
-patch below and see whether it fixes the problem?
+Hi Rusty,
 
+Yes, this is I think the right solution. Sorry for the title of the
+previous email : I started writing a patch and changed my mind half-way.
+Doing a synchronize_sched() at the end of the exit() function seems like
+the right thing to do. I'll have to update the documentation and
+examples accordingly.
 
+Thanks,
 
-PNP: fix formatting of dbg_pnp_show_resources() output
+Mathieu
 
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> Rusty.
 
-Each resource should be printed on its own line, so start snprintf'ing
-at the beginning of the buffer every time through the loop.
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
----
-
- drivers/pnp/support.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-
-diff --git a/drivers/pnp/support.c b/drivers/pnp/support.c
-index bbf78ef..57b775b 100644
---- a/drivers/pnp/support.c
-+++ b/drivers/pnp/support.c
-@@ -77,7 +77,7 @@ void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc)
- {
- #ifdef DEBUG
- 	char buf[128];
--	int len = 0;
-+	int len;
- 	struct pnp_resource *pnp_res;
- 	struct resource *res;
- 
-@@ -89,6 +89,7 @@ void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc)
- 	dev_dbg(&dev->dev, "%s: current resources:\n", desc);
- 	list_for_each_entry(pnp_res, &dev->resources, list) {
- 		res = &pnp_res->res;
-+		len = 0;
- 
- 		len += snprintf(buf + len, sizeof(buf) - len, "  %-3s ",
- 				pnp_resource_type_name(res));
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
