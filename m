@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760271AbYG3Bpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759719AbYG3Bp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760271AbYG3Bpn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 21:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbYG3Bn4
+	id S1759719AbYG3Bp7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 21:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758257AbYG3Boo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 21:43:56 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:38337 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753865AbYG3Bnx (ORCPT
+	Tue, 29 Jul 2008 21:44:44 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:33454 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759612AbYG3Bon (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 21:43:53 -0400
-Message-Id: <20080730014351.248109376@goodmis.org>
-References: <20080730012939.885172468@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Tue, 29 Jul 2008 21:29:43 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Cc: Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 4/5] ftrace: do not trace nmi callers in kernel directory
-Content-Disposition: inline; filename=ftrace-no-trace-nmi-kernel.patch
+	Tue, 29 Jul 2008 21:44:43 -0400
+Date: Wed, 30 Jul 2008 02:44:39 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ben Collins <ben.collins@canonical.com>,
+       Marcel Holtmann <marcel@holtmann.org>, linux-kernel@vger.kernel.org,
+       Samuel Ortiz <samuel@sortiz.org>
+Subject: Re: [PATCH 4/7] nsc-ircc: Default to dongle type 9 on IBM hardware
+Message-ID: <20080730014439.GA24409@srcf.ucam.org>
+References: <E1KKl4I-00068K-V7@swissweb.swissdisk.com> <1216618176.8411.124.camel@violet.holtmann.net> <1216662057.7585.153.camel@cunning> <20080728194612.01068283.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080728194612.01068283.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The dynamic ftrace code performs run time modification of the code text
-section. This is not safe to do unless all other CPUS are halted. Because
-there is no good way to halt NMIs while doing the modification, we must
-make sure that the NMIs will not execute code that will be modified.
+On Mon, Jul 28, 2008 at 07:46:12PM -0700, Andrew Morton wrote:
+> The changelog doesn't exist^Wexplain the reasons for this patch.
+> 
+> I assume it fixes some bug?  What is it?
 
-This patch adds notrace annotation to functions called by NMIs in the
-kernel directory.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/Makefile |    7 +++++++
- 1 file changed, 7 insertions(+)
-
-Index: linux-tip.git/kernel/Makefile
-===================================================================
---- linux-tip.git.orig/kernel/Makefile	2008-07-29 20:13:14.000000000 -0400
-+++ linux-tip.git/kernel/Makefile	2008-07-29 20:33:51.000000000 -0400
-@@ -15,6 +15,8 @@ CFLAGS_REMOVE_sched.o = -mno-spe
- 
- ifdef CONFIG_FTRACE
- # Do not trace debug files and internal ftrace files
-+CFLAGS_REMOVE_kprobes.o = -pg
-+CFLAGS_REMOVE_test_kprobes.o = -pg
- CFLAGS_REMOVE_lockdep.o = -pg
- CFLAGS_REMOVE_lockdep_proc.o = -pg
- CFLAGS_REMOVE_mutex-debug.o = -pg
-@@ -22,6 +24,11 @@ CFLAGS_REMOVE_rtmutex-debug.o = -pg
- CFLAGS_REMOVE_cgroup-debug.o = -pg
- CFLAGS_REMOVE_sched_clock.o = -pg
- CFLAGS_REMOVE_sched.o = -mno-spe -pg
-+ifdef CONFIG_DYNAMIC_FTRACE
-+# NMI called files
-+CFLAGS_REMOVE_notifier.o = -pg
-+CFLAGS_REMOVE_spinlock.o = -pg
-+endif
- endif
- 
- obj-$(CONFIG_PROFILING) += profile.o
+It's necessary to set the dongle type on the nsc driver in order to get 
+it to work correctly. Thinkpads all appear to use dongle type 9. This 
+patch defaults nsc devices with an IBM PnP descriptor to use type 9.
 
 -- 
+Matthew Garrett | mjg59@srcf.ucam.org
