@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761230AbYG3XhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761249AbYG3Xhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761230AbYG3XhW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761138AbYG3Xg6
+	id S1761249AbYG3Xhx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761229AbYG3XhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:36:58 -0400
-Received: from mail.suse.de ([195.135.220.2]:35755 "EHLO mx1.suse.de"
+	Wed, 30 Jul 2008 19:37:22 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34117 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761123AbYG3Xg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:36:56 -0400
-Date: Wed, 30 Jul 2008 16:27:10 -0700
+	id S1761204AbYG3XhU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:37:20 -0400
+Date: Wed, 30 Jul 2008 16:27:12 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, tiwai@suse.de
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Nickolay Vinogradov <nickolay@protei.ru>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [patch 13/29] ARM: fix fls() for 64-bit arguments
-Message-ID: <20080730232710.GN30670@suse.de>
+       alan@lxorguk.ukuu.org.uk, Akio Idehara <zbe64533@gmail.com>
+Subject: [patch 14/29] ALSA: hda - Fix "alc262_sony_unsol" hda_verb array
+Message-ID: <20080730232712.GO30670@suse.de>
 References: <20080730231003.655833364@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="arm-fix-fls-for-64-bit-arguments.patch"
+Content-Disposition: inline; filename="alsa-hda-fix-alc262_sony_unsol-hda_verb-array.patch"
 In-Reply-To: <20080730232451.GA30670@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,42 +39,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Akio Idehara <zbe64533@gmail.com>
 
-commit 0c65f459ce6c8bd873a61b3ae1e57858ab1debf3 upstream
+[ALSA] hda - Fix "alc262_sony_unsol[]" hda_verb array
 
-arm's fls() is implemented as a macro, causing it to misbehave when passed
-64-bit arguments.  Fix.
+commit 7b1e8795ebfe1705153d1001f2a899119f4d9012 upstream
 
-Cc: Nickolay Vinogradov <nickolay@protei.ru>
-Tested-by: Krzysztof Halasa <khc@pm.waw.pl>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+I think that hda_verb array must have "terminator (empty array)".
+But alc262_sony_unsol[] does not have it.
+And it causes gcc-4.3's buggy behavior
+with snd_hda_sequence_write().
+
+Signed-off-by: Akio Idehara <zbe64533@gmail.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- include/asm-arm/bitops.h |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ sound/pci/hda/patch_realtek.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/include/asm-arm/bitops.h
-+++ b/include/asm-arm/bitops.h
-@@ -277,9 +277,16 @@ static inline int constant_fls(int x)
-  * the clz instruction for much better code efficiency.
-  */
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -8517,6 +8517,7 @@ static struct hda_verb alc262_sony_unsol
  
--#define fls(x) \
-+#define __fls(x) \
- 	( __builtin_constant_p(x) ? constant_fls(x) : \
- 	  ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 32-__r; }) )
-+
-+/* Implement fls() in C so that 64-bit args are suitably truncated */
-+static inline int fls(int x)
-+{
-+	return __fls(x);
-+}
-+
- #define ffs(x) ({ unsigned long __t = (x); fls(__t & -__t); })
- #define __ffs(x) (ffs(x) - 1)
- #define ffz(x) __ffs( ~(x) )
+ 	{0x15, AC_VERB_SET_UNSOLICITED_ENABLE, AC_USRSP_EN | ALC880_HP_EVENT},
+ 	{0x15, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_HP},
++	{}
+ };
+ 
+ /* mute/unmute internal speaker according to the hp jack and mute state */
 
 -- 
