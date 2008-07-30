@@ -1,55 +1,313 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759799AbYG3WD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbYG3WEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759799AbYG3WD7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 18:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbYG3WDu
+	id S1757219AbYG3WEV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 18:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758468AbYG3WDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 18:03:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36086 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753368AbYG3WDt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 18:03:49 -0400
-Date: Wed, 30 Jul 2008 15:00:05 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-cc: Matt Mackall <mpm@selenic.com>, Christoph Lameter <clameter@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>, Hugh Dickins <hugh@veritas.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       vegard.nossum@gmail.com, hannes@saeurebad.de
-Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
-In-Reply-To: <Pine.LNX.4.64.0807310045020.22702@sbz-30.cs.Helsinki.FI>
-Message-ID: <alpine.LFD.1.10.0807301457020.3277@nehalem.linux-foundation.org>
-References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>  <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com>  <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org>  <1199314218.4497.109.camel@cinder.waste.org> 
- <20080103085239.GA10813@elte.hu>  <1199378818.8274.25.camel@cinder.waste.org>  <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>  <1199419890.4608.77.camel@cinder.waste.org>  <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI> 
- <1199641910.8215.28.camel@cinder.waste.org>  <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>  <1199906151.6245.57.camel@cinder.waste.org>  <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI> <1199919548.6245.74.camel@cinder.waste.org>
- <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI> <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org> <Pine.LNX.4.64.0807310045020.22702@sbz-30.cs.Helsinki.FI>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 30 Jul 2008 18:03:55 -0400
+Received: from ns2.suse.de ([195.135.220.15]:57132 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756970AbYG3WDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 18:03:54 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs / Novell
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [genksyms patch 1/4] parser: fix the __attribute__ rule
+Date: Thu, 31 Jul 2008 00:03:49 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
+       akpm@linux-foundation.org
+References: <20080721022823.896799736@suse.de> <20080721025912.739333284@suse.de> <20080730204311.GA17287@uranus.ravnborg.org>
+In-Reply-To: <20080730204311.GA17287@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807310003.49279.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 30 July 2008 10:43:11 pm Sam Ravnborg wrote:
+> Can I ask you to update the _shipped files and resend the patch.
+
+Sure, here is the version from Andrew's tree, with parse.c_shipped added.
+
+Thanks,
+Andreas
+
+---------------------------
+
+From: Andreas Gruenbacher <agruen@suse.de>
+
+We are having two kinds of problems with genksyms today: fake checksum
+changes without actual ABI changes, and changes which we would rather like
+to ignore (such as an additional field at the end of a structure that
+modules are not supposed to touch, for example).
+
+I have thought about ways to improve genksyms and compute checksums
+differently to avoid those problems, but in the end I don't see a
+fundamentally better way.  So here are some genksyms patches for at least
+making the checksums more easily manageable, if we cannot fully fix them.
+
+In addition to the bugfixes (the first two patches), this allows genksyms
+to track checksum changes and report why a checksum changed (third patch),
+and to selectively ignore changes (fourth patch).
 
 
-On Thu, 31 Jul 2008, Pekka J Enberg wrote:
-> 
-> Subject: [PATCH] binalloc: best-fit allocation with binning
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
+This patch:
 
-Shoot me now. 
+Gcc __attribute__ definitions may occur repeatedly, e.g.,
 
-> As suggested by Linus,
+	static int foo __attribute__((__used__))
+		       __attribute__((aligned (16)));
 
-I'm happy to hear that the thing worked, but I'm not sure how happy I 
-should be about yet _another_ allocator. Will it ever end?
+The genksyms parser does not understand this, and generates a syntax error.
+Fix this case.
 
-But seriously, it looks simple and small enough, so in that sense there 
-doesn't seem to be a problem. But I really don't look forward to another 
-one of these, at least not without somebody deciding that yes, we can 
-prune one of the old ones as never being better. Hmm?
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-		Linus
+ scripts/genksyms/parse.c_shipped |  144 +++++++++++++++++++--------------------
+ scripts/genksyms/parse.y         |    2 
+ 2 files changed, 73 insertions(+), 73 deletions(-)
+
+Index: b/scripts/genksyms/parse.y
+===================================================================
+--- a/scripts/genksyms/parse.y
++++ b/scripts/genksyms/parse.y
+@@ -446,7 +446,7 @@ member_bitfield_declarator:
+ 
+ attribute_opt:
+ 	/* empty */					{ $$ = NULL; }
+-	| ATTRIBUTE_PHRASE
++	| attribute_opt ATTRIBUTE_PHRASE
+ 	;
+ 
+ asm_definition:
+Index: b/scripts/genksyms/parse.c_shipped
+===================================================================
+--- a/scripts/genksyms/parse.c_shipped
++++ b/scripts/genksyms/parse.c_shipped
+@@ -504,7 +504,7 @@ static const yytype_uint16 yyprhs[] =
+      239,   242,   245,   247,   248,   250,   252,   257,   262,   265,
+      269,   273,   277,   278,   280,   283,   287,   291,   292,   294,
+      296,   299,   303,   306,   307,   309,   311,   315,   318,   321,
+-     323,   326,   327,   329,   332,   333,   335
++     323,   326,   327,   330,   333,   334,   336
+ };
+ 
+ /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
+@@ -542,9 +542,9 @@ static const yytype_int8 yyrhs[] =
+       -1,    -1,    89,    -1,    90,    -1,    89,    90,    -1,    64,
+       91,    44,    -1,     1,    44,    -1,    -1,    92,    -1,    93,
+       -1,    92,    46,    93,    -1,    76,    95,    -1,    37,    94,
+-      -1,    94,    -1,    52,    34,    -1,    -1,    31,    -1,    30,
+-      44,    -1,    -1,    30,    -1,    29,    47,    37,    49,    44,
+-      -1
++      -1,    94,    -1,    52,    34,    -1,    -1,    95,    31,    -1,
++      30,    44,    -1,    -1,    30,    -1,    29,    47,    37,    49,
++      44,    -1
+ };
+ 
+ /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
+@@ -647,7 +647,7 @@ static const yytype_uint8 yyr2[] =
+        2,     2,     1,     0,     1,     1,     4,     4,     2,     3,
+        3,     3,     0,     1,     2,     3,     3,     0,     1,     1,
+        2,     3,     2,     0,     1,     1,     3,     2,     2,     1,
+-       2,     0,     1,     2,     0,     1,     5
++       2,     0,     2,     2,     0,     1,     5
+ };
+ 
+ /* YYDEFACT[STATE-NAME] -- Default rule to reduce with in state
+@@ -667,9 +667,9 @@ static const yytype_uint8 yydefact[] =
+        0,    66,   125,   101,   121,    71,     0,     7,   112,   106,
+       76,    77,     0,     0,     0,   121,    75,     0,   114,   115,
+      119,   105,     0,   110,   124,     0,    36,     0,    73,    72,
+-      61,    20,   122,   102,     0,    93,     0,    84,    87,    88,
+-     118,     0,    76,     0,   120,    74,   117,    80,     0,   111,
+-       0,    35,   126,     0,    21,   103,    70,    94,    56,     0,
++      61,    20,   102,     0,    93,     0,    84,    87,    88,   118,
++       0,    76,     0,   120,    74,   117,    80,     0,   111,     0,
++      35,   126,   122,     0,    21,   103,    70,    94,    56,     0,
+       93,    90,    92,    69,    83,     0,    82,    81,     0,     0,
+      116,   104,     0,    95,     0,    91,    98,     0,    85,    89,
+       79,    78,   100,    99,     0,     0,    97,    96
+@@ -680,44 +680,44 @@ static const yytype_int16 yydefgoto[] =
+ {
+       -1,     1,     2,     3,    35,    72,    55,    36,    64,    65,
+       66,    75,    38,    39,    40,    41,    42,    67,    86,    87,
+-      43,   114,    69,   105,   106,   126,   127,   128,   129,   151,
++      43,   114,    69,   105,   106,   125,   126,   127,   128,   151,
+      152,    44,   144,   145,    54,    76,    77,    78,   107,   108,
+-     109,   110,   123,    45,    94,    46
++     109,   110,   122,    45,    94,    46
+ };
+ 
+ /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
+    STATE-NUM.  */
+-#define YYPACT_NINF -135
++#define YYPACT_NINF -134
+ static const yytype_int16 yypact[] =
+ {
+-    -135,    11,  -135,   312,  -135,  -135,    24,  -135,  -135,  -135,
+-    -135,  -135,   -23,  -135,    -2,  -135,  -135,  -135,  -135,  -135,
+-    -135,  -135,  -135,  -135,   -17,  -135,   -11,  -135,  -135,  -135,
+-      -3,    16,    26,  -135,  -135,  -135,  -135,    34,   482,  -135,
+-    -135,  -135,  -135,  -135,  -135,  -135,  -135,  -135,  -135,  -135,
+-      -8,  -135,    22,    97,  -135,   482,    22,  -135,   482,    56,
+-    -135,  -135,    12,    10,    50,    49,  -135,    34,   -13,    15,
+-    -135,  -135,   482,  -135,    47,   -25,    51,   145,  -135,  -135,
+-      34,  -135,   356,    52,    71,    77,  -135,    10,  -135,  -135,
+-      34,  -135,  -135,  -135,    68,  -135,   193,  -135,  -135,  -135,
+-      48,  -135,     6,    93,    37,    68,    18,    85,    84,  -135,
+-    -135,  -135,    87,  -135,   102,    86,  -135,    89,  -135,  -135,
+-    -135,  -135,  -135,    90,    88,   401,    94,   100,   101,  -135,
+-    -135,    99,  -135,   108,  -135,  -135,  -135,  -135,   230,  -135,
+-     -25,  -135,  -135,   105,  -135,  -135,  -135,  -135,  -135,     9,
+-      42,  -135,    28,  -135,  -135,   445,  -135,  -135,   119,   125,
+-    -135,  -135,   126,  -135,   128,  -135,  -135,   267,  -135,  -135,
+-    -135,  -135,  -135,  -135,   129,   130,  -135,  -135
++    -134,    16,  -134,   312,  -134,  -134,    20,  -134,  -134,  -134,
++    -134,  -134,   -18,  -134,    -3,  -134,  -134,  -134,  -134,  -134,
++    -134,  -134,  -134,  -134,   -26,  -134,   -25,  -134,  -134,  -134,
++      -7,     5,    27,  -134,  -134,  -134,  -134,    46,   482,  -134,
++    -134,  -134,  -134,  -134,  -134,  -134,  -134,  -134,  -134,  -134,
++      -8,  -134,    30,    97,  -134,   482,    30,  -134,   482,     7,
++    -134,  -134,    12,    10,    42,    55,  -134,    46,   -15,    15,
++    -134,  -134,   482,  -134,    25,    26,    47,   145,  -134,  -134,
++      46,  -134,   356,    39,    71,    77,  -134,    10,  -134,  -134,
++      46,  -134,  -134,  -134,  -134,  -134,   193,  -134,  -134,  -134,
++      75,  -134,     6,    95,    43,  -134,    28,    86,    85,  -134,
++    -134,  -134,    88,  -134,   103,    87,  -134,    91,  -134,  -134,
++    -134,  -134,   -23,    90,   401,    94,   101,   102,  -134,  -134,
++      98,  -134,   108,  -134,  -134,   109,  -134,   230,  -134,    26,
++    -134,  -134,  -134,   134,  -134,  -134,  -134,  -134,  -134,     9,
++      48,  -134,    35,  -134,  -134,   445,  -134,  -134,   125,   126,
++    -134,  -134,   128,  -134,   129,  -134,  -134,   267,  -134,  -134,
++    -134,  -134,  -134,  -134,   130,   131,  -134,  -134
+ };
+ 
+ /* YYPGOTO[NTERM-NUM].  */
+ static const yytype_int16 yypgoto[] =
+ {
+-    -135,  -135,   179,  -135,  -135,  -135,  -135,   -47,  -135,  -135,
+-      91,     0,   -58,   -37,  -135,  -135,  -135,   -73,  -135,  -135,
+-     -48,   -32,  -135,   -38,  -135,  -134,  -135,  -135,    29,   -63,
+-    -135,  -135,  -135,  -135,   -20,  -135,  -135,   106,  -135,  -135,
+-      45,    95,    82,  -135,  -135,  -135
++    -134,  -134,   180,  -134,  -134,  -134,  -134,   -33,  -134,  -134,
++      93,     0,   -58,   -37,  -134,  -134,  -134,   -73,  -134,  -134,
++     -54,   -32,  -134,   -81,  -134,  -133,  -134,  -134,    29,   -50,
++    -134,  -134,  -134,  -134,   -20,  -134,  -134,   110,  -134,  -134,
++      49,    96,    80,  -134,  -134,  -134
+ };
+ 
+ /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
+@@ -727,26 +727,26 @@ static const yytype_int16 yypgoto[] =
+ #define YYTABLE_NINF -109
+ static const yytype_int16 yytable[] =
+ {
+-      82,    70,   104,    37,   159,    68,    57,   131,    79,    49,
+-     162,     4,   100,    84,    50,    88,   101,    92,    10,    93,
+-      52,    51,   102,    63,    71,    97,    56,   103,    20,   104,
+-      85,   104,    73,   175,    53,    91,    81,    29,   125,   120,
+-      53,    33,   -93,   132,    58,    70,   147,   101,    95,    61,
+-     163,   137,   150,   102,    63,    80,   149,    63,   -93,    62,
+-      63,   166,    96,    59,   133,   138,   135,   104,    47,    48,
+-      60,    61,    80,    53,   132,   167,   150,   150,   101,   147,
+-     125,    62,    63,   163,   102,    63,   164,   165,    70,   149,
+-      63,    98,    99,    83,    89,    90,   111,   125,    74,   122,
+-     103,   117,     7,     8,     9,    10,    11,    12,    13,   125,
++      82,    70,   104,    37,   159,    68,    57,   130,   142,    88,
++     162,    52,    56,    84,    49,    92,     4,    93,    10,    50,
++      51,   132,    79,   134,    71,    53,    53,   143,    20,   104,
++      85,   104,    73,   120,   175,    91,    81,    29,   124,    97,
++      58,    33,   -93,   131,    83,    70,   147,   101,    95,    61,
++     163,   150,    59,   102,    63,    80,   149,    63,   -93,    62,
++      63,   136,    96,   100,    47,    48,   104,   101,   166,    98,
++      99,    60,    80,   102,    63,   137,   150,   150,   103,   124,
++     131,    53,   167,    61,   101,   147,    89,    70,   117,   163,
++     102,    63,   111,    62,    63,   149,    63,   124,    74,   164,
++     165,    90,     7,     8,     9,    10,    11,    12,    13,   124,
+       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
+-     118,    26,    27,    28,    29,    30,   119,   134,    33,   139,
+-     140,    98,    92,   142,   -22,   141,   154,   146,    34,   161,
+-     143,   -22,  -107,   153,   -22,   -22,   112,   155,   156,   -22,
++     118,    26,    27,    28,    29,    30,   119,   103,    33,   133,
++     138,   139,    98,    92,   -22,   141,   140,   154,    34,   146,
++     142,   -22,  -107,   153,   -22,   -22,   112,   156,   155,   -22,
+        7,     8,     9,    10,    11,    12,    13,   157,    15,    16,
+-      17,    18,    19,    20,    21,    22,    23,    24,   170,    26,
+-      27,    28,    29,    30,   171,   172,    33,   173,   176,   177,
+-       5,   121,   -22,   113,   169,   160,    34,   136,     0,   -22,
+-    -108,     0,   -22,   -22,   124,   130,     0,   -22,     7,     8,
++      17,    18,    19,    20,    21,    22,    23,    24,   161,    26,
++      27,    28,    29,    30,   170,   171,    33,   172,   173,   176,
++     177,     5,   -22,   121,   169,   135,    34,   113,   160,   -22,
++    -108,     0,   -22,   -22,   123,     0,   129,   -22,     7,     8,
+        9,    10,    11,    12,    13,     0,    15,    16,    17,    18,
+       19,    20,    21,    22,    23,    24,     0,    26,    27,    28,
+       29,    30,     0,     0,    33,     0,     0,     0,     0,   -86,
+@@ -784,26 +784,26 @@ static const yytype_int16 yytable[] =
+ 
+ static const yytype_int16 yycheck[] =
+ {
+-      58,    38,    75,     3,   138,    37,    26,     1,    55,    32,
+-       1,     0,    37,     1,    37,    63,    41,    30,     8,    32,
+-      37,    23,    47,    48,    32,    72,    37,    52,    18,   102,
+-      62,   104,    52,   167,    51,    67,    56,    27,    96,    87,
+-      51,    31,    33,    37,    47,    82,    37,    41,    33,    37,
+-      41,    33,   125,    47,    48,    55,    47,    48,    49,    47,
+-      48,    33,    47,    47,   102,    47,   104,   140,    44,    45,
+-      44,    37,    72,    51,    37,    47,   149,   150,    41,    37,
+-     138,    47,    48,    41,    47,    48,   149,   150,   125,    47,
+-      48,    44,    45,    37,    44,    46,    45,   155,     1,    31,
+-      52,    49,     5,     6,     7,     8,     9,    10,    11,   167,
++      58,    38,    75,     3,   137,    37,    26,     1,    31,    63,
++       1,    37,    37,     1,    32,    30,     0,    32,     8,    37,
++      23,   102,    55,   104,    32,    51,    51,    50,    18,   102,
++      62,   104,    52,    87,   167,    67,    56,    27,    96,    72,
++      47,    31,    33,    37,    37,    82,    37,    41,    33,    37,
++      41,   124,    47,    47,    48,    55,    47,    48,    49,    47,
++      48,    33,    47,    37,    44,    45,   139,    41,    33,    44,
++      45,    44,    72,    47,    48,    47,   149,   150,    52,   137,
++      37,    51,    47,    37,    41,    37,    44,   124,    49,    41,
++      47,    48,    45,    47,    48,    47,    48,   155,     1,   149,
++     150,    46,     5,     6,     7,     8,     9,    10,    11,   167,
+       13,    14,    15,    16,    17,    18,    19,    20,    21,    22,
+-      49,    24,    25,    26,    27,    28,    49,    34,    31,    44,
+-      46,    44,    30,    44,    37,    49,    36,    49,    41,    34,
+-      50,    44,    45,    49,    47,    48,     1,    46,    49,    52,
++      49,    24,    25,    26,    27,    28,    49,    52,    31,    34,
++      44,    46,    44,    30,    37,    44,    49,    36,    41,    49,
++      31,    44,    45,    49,    47,    48,     1,    49,    46,    52,
+        5,     6,     7,     8,     9,    10,    11,    49,    13,    14,
+-      15,    16,    17,    18,    19,    20,    21,    22,    49,    24,
++      15,    16,    17,    18,    19,    20,    21,    22,    34,    24,
+       25,    26,    27,    28,    49,    49,    31,    49,    49,    49,
+-       1,    90,    37,    77,   155,   140,    41,   105,    -1,    44,
+-      45,    -1,    47,    48,     1,   100,    -1,    52,     5,     6,
++      49,     1,    37,    90,   155,   105,    41,    77,   139,    44,
++      45,    -1,    47,    48,     1,    -1,   100,    52,     5,     6,
+        7,     8,     9,    10,    11,    -1,    13,    14,    15,    16,
+       17,    18,    19,    20,    21,    22,    -1,    24,    25,    26,
+       27,    28,    -1,    -1,    31,    -1,    -1,    -1,    -1,    36,
+@@ -855,9 +855,9 @@ static const yytype_uint8 yystos[] =
+       46,    74,    30,    32,    97,    33,    47,    60,    44,    45,
+       37,    41,    47,    52,    70,    76,    77,    91,    92,    93,
+       94,    45,     1,    90,    74,    48,    49,    49,    49,    49,
+-      73,    63,    31,    95,     1,    65,    78,    79,    80,    81,
+-      94,     1,    37,    76,    34,    76,    95,    33,    47,    44,
+-      46,    49,    44,    50,    85,    86,    49,    37,    41,    47,
++      73,    63,    95,     1,    65,    78,    79,    80,    81,    94,
++       1,    37,    76,    34,    76,    95,    33,    47,    44,    46,
++      49,    44,    31,    50,    85,    86,    49,    37,    41,    47,
+       70,    82,    83,    49,    36,    46,    49,    49,     1,    78,
+       93,    34,     1,    41,    82,    82,    33,    47,    36,    81,
+       49,    49,    49,    49,     1,    78,    49,    49
+_
