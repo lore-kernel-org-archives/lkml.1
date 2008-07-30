@@ -1,135 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbYG3OCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761769AbYG3OEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761284AbYG3OCa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 10:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbYG3OCR
+	id S1761769AbYG3OEO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 10:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbYG3OD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 10:02:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45539 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751529AbYG3OCQ (ORCPT
+	Wed, 30 Jul 2008 10:03:59 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:15728 "EHLO
+	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750848AbYG3OD6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 10:02:16 -0400
-Message-ID: <489073CD.1040108@linux-foundation.org>
-Date: Wed, 30 Jul 2008 08:59:41 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 30 Jul 2008 10:03:58 -0400
+X-BigFish: VPS-33(zz1102L1432R98dR4015M1805M936fQ873fnzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K4TOE2-03-LBM-01
+Date: Wed, 30 Jul 2008 16:03:39 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: davem@davemloft.net, sfr@canb.auug.org.au, mingo@elte.hu, mingo@redhat.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       robert.richter@amd.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, jbarnes@virtuousgeek.org,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] add iommu_num_pages helper function
+Message-ID: <20080730140339.GN4851@amd.com>
+References: <20080729095027.GA4851@amd.com> <20080729.031005.203132019.davem@davemloft.net> <20080730121805.GM4851@amd.com> <20080730221540S.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH 04/30] mm: slub: trivial cleanups
-References: <20080724140042.408642539@chello.nl>	 <20080724141529.560025894@chello.nl>	 <1217238223.7813.16.camel@penberg-laptop> <1217240353.6331.34.camel@twins>
-In-Reply-To: <1217240353.6331.34.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080730221540S.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 30 Jul 2008 14:03:39.0876 (UTC) FILETIME=[116C1A40:01C8F24D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
+On Wed, Jul 30, 2008 at 10:16:05PM +0900, FUJITA Tomonori wrote:
+> On Wed, 30 Jul 2008 14:18:05 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
 
->> Christoph?
+> > Ok, after setting up cross compile environments for sparc64 and
+> > powerpc64 I wrote a patch which adds the io_page_size argument to the
+> > iommu_num pages function and moves the function back to
+> > lib/iommu-helper.c.
+> 
+> You need ia64, parisc, and alpha too. :) 
+> 
+> I have cross compile environments for them so I can take care of them
+> if you like.
 
-Sorry for the delay but this moving stuff is unending....
+Ok, so you suggest to create a patchset to convert the other IOMMU
+implementations too. Thats fine for me, I will try to do it :)
+Do you have hardware to do runtime tests of the code? I have hardware
+only for x86, sparc64 and alpha.
 
+> 
+> > The patch touches all 3 architectures and can not be
+> > split in a bisectable way.
+> 
+> How about naming a new helper function iommu_nr_pages (or something)?
+> 
+> Then you can do the conversion independently. If we like, we use
+> iommu_num_pages name after the conversion.
 
->>> Index: linux-2.6/mm/slub.c
->>> ===================================================================
->>> --- linux-2.6.orig/mm/slub.c
->>> +++ linux-2.6/mm/slub.c
->>> @@ -27,7 +27,7 @@
->>>  /*
->>>   * Lock order:
->>>   *   1. slab_lock(page)
->>> - *   2. slab->list_lock
->>> + *   2. node->list_lock
->>>   *
->>>   *   The slab_lock protects operations on the object of a particular
->>>   *   slab and its metadata in the page struct. If the slab lock
+Ok, this would mean only 3 renaming patches to keep the patch series
+bisectable. This should be acceptable.
 
-Hmmm..... node? Maybe use the struct name? kmem_cache_node?
+> 
+> > Who is the best person to send this patch to?
+> 
+> The -mm is an appropriate tree, I think.
 
->>> @@ -163,11 +163,11 @@ static struct notifier_block slab_notifi
->>>  #endif
->>>  
->>>  static enum {
->>> -	DOWN,		/* No slab functionality available */
->>> +	DOWN = 0,	/* No slab functionality available */
->>>  	PARTIAL,	/* kmem_cache_open() works but kmalloc does not */
->>>  	UP,		/* Everything works but does not show up in sysfs */
->>>  	SYSFS		/* Sysfs up */
->>> -} slab_state = DOWN;
->>> +} slab_state;
->>>  
->>>  /* A list of all slab caches on the system */
->>>  static DECLARE_RWSEM(slub_lock);
+Ok, then I submit it to Andrew once its tested.
 
-It defaults to the first enum value. We also do not initialize statics with zero.
+Thanks,
 
->>> @@ -288,21 +288,22 @@ static inline int slab_index(void *p, st
->>>  static inline struct kmem_cache_order_objects oo_make(int order,
->>>  						unsigned long size)
->>>  {
->>> -	struct kmem_cache_order_objects x = {
->>> -		(order << 16) + (PAGE_SIZE << order) / size
->>> -	};
->>> +	struct kmem_cache_order_objects x;
->>> +
->>> +	x.order = order;
->>> +	x.objects = (PAGE_SIZE << order) / size;
->>>  
->>>  	return x;
->>>  }
->>>  
+Joerg
 
-Another width limitation that will limit the number of objects in a slab to 64k.
-Also gcc does not get the fields, wont be able to optimize this as well and it will emit conversion from 16 bit loads.
-
-
->>> @@ -1076,8 +1077,7 @@ static struct page *allocate_slab(struct
->>>  
->>>  	flags |= s->allocflags;
->>>  
->>> -	page = alloc_slab_page(flags | __GFP_NOWARN | __GFP_NORETRY, node,
->>> -									oo);
->>> +	page = alloc_slab_page(flags | __GFP_NOWARN | __GFP_NORETRY, node, oo);
->>>  	if (unlikely(!page)) {
->>>  		oo = s->min;
->>>  		/*
-
-ok.
-
->>> @@ -1099,8 +1099,7 @@ static struct page *allocate_slab(struct
->>>  	return page;
->>>  }
->>>  
->>> -static void setup_object(struct kmem_cache *s, struct page *page,
->>> -				void *object)
->>> +static void setup_object(struct kmem_cache *s, struct page *page, void *object)
->>>  {
->>>  	setup_object_debug(s, page, object);
->>>  	if (unlikely(s->ctor))
-
-Hmmm. You are moving it back on one line and Andrew will cut it up again later? This seems to be oscillating...
-
->>> @@ -1799,11 +1796,11 @@ static int slub_nomerge;
->>>   * slub_max_order specifies the order where we begin to stop considering the
->>>   * number of objects in a slab as critical. If we reach slub_max_order then
->>>   * we try to keep the page order as low as possible. So we accept more waste
->>> - * of space in favor of a small page order.
->>> + * of space in favour of a small page order.
->>>   *
->>>   * Higher order allocations also allow the placement of more objects in a
->>>   * slab and thereby reduce object handling overhead. If the user has
->>> - * requested a higher mininum order then we start with that one instead of
->>> + * requested a higher minimum order then we start with that one instead of
->>>   * the smallest order which will fit the object.
->>>   */
->>>  static inline int slab_order(int size, int min_objects,
-
-Ack.
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
