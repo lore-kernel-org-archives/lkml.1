@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762739AbYG3POT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761648AbYG3PO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762739AbYG3POT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 11:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbYG3POG
+	id S1761648AbYG3PO5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 11:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbYG3POs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 11:14:06 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:10170 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752044AbYG3POE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 11:14:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=fHOywnyRLl4UOjvYXKSLQr5RVEuOmj2PdnZ8fXc/xvydT7joGJoRlHQaShqkDYH+ED
-         G+74K3unf7zsulK2M+LxCBJ4rVSABhLi8ZZm52Ovg82ISU/JTCgiFv27jrHqWHmjyMq3
-         gQI3sd06YwJ3EU8DEFDeJWeem+n8QjuuyDacg=
-Message-ID: <170fa0d20807300814o7741859eu8ad5d5b3b95e401c@mail.gmail.com>
-Date: Wed, 30 Jul 2008 11:14:02 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Hidehiro Kawai" <hidehiro.kawai.ez@hitachi.com>
-Subject: Re: [PATCH 1/2] ext3: add an option to control error handling on file data
-Cc: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
-       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu, tglx@linutronix.de,
-       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
-In-Reply-To: <488FD756.9060106@hitachi.com>
+	Wed, 30 Jul 2008 11:14:48 -0400
+Received: from styx.suse.cz ([82.119.242.94]:48115 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751260AbYG3POr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 11:14:47 -0400
+Date: Wed, 30 Jul 2008 17:14:46 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: dsterba@suse.cz, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Travis <travis@sgi.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [build error] drivers/char/pcmcia/ipwireless/hardware.c:571:
+ error: invalid use of undefined type 'struct ipw_network'
+In-Reply-To: <1217430670.3335.11.camel@localhost.localdomain>
+Message-ID: <alpine.LNX.1.10.0807301712080.3768@jikos.suse.cz>
+References: <20080727190601.GA764@elte.hu>  <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org>  <200807281042.12860.rusty@rustcorp.com.au> <488E06F0.4070404@sgi.com>  <alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org> 
+ <20080728205700.GA3613@elte.hu> <20080728213532.GA24744@elte.hu>  <20080728214153.GA30511@elte.hu>  <20080730145953.GA15151@ds.suse.cz> <1217430670.3335.11.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <488FD756.9060106@hitachi.com>
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 10:52 PM, Hidehiro Kawai
-<hidehiro.kawai.ez@hitachi.com> wrote:
-> If the journal doesn't abort when it gets an IO error in file data
-> blocks, the file data corruption will spread silently.  Because
-> most of applications and commands do buffered writes without fsync(),
-> they don't notice the IO error.  It's scary for mission critical
-> systems.  On the other hand, if the journal aborts whenever it gets
-> an IO error in file data blocks, the system will easily become
-> inoperable.  So this patch introduces a filesystem option to
-> determine whether it aborts the journal or just call printk() when
-> it gets an IO error in file data.
->
-> If you mount a ext3 fs with data_err=abort option, it aborts on file
-> data write error.  If you mount it with data_err=ignore, it doesn't
-> abort, just call printk().  data_err=abort is default, because
-> people have used this error handling policy for three years.
+On Wed, 30 Jul 2008, James Bottomley wrote:
 
-Hidehiro,
+> I see the patches came in via a straight email sequence.  They really 
+> need to be in a tree somewhere that's pulled into linux-next so this 
+> type of thing gets noticed.  Since they're wireless patches, why not 
+> send them through John Linville's wireless tree?
 
-Thanks for making this configurable!
+Well, the 'wireless' in the name of the driver is misleading, it's not 
+'wireless' device at all, it's just a serial modem (character device), 
+with 'wireless' in its product name.
 
-But given how surprised many of us were when we found out that
-jbd/ext3 has been aborting on file data blocks isn't this our chance
-to correct that long-standing oversight?  Shouldn't the default be
-data_err=ignore?  Or would changing this behavior cause more harm than
-good?
+I used to have git tree for this driver some time ago, but after the 
+driver has been merged, I have dropped it, as I didn't expect any massive 
+further development of it. Apparently, David is going on with improving 
+the driver (thanks!), so I'll probably resurrect it and ask Stephen to 
+pull it into -next again.
 
-I don't feel strongly either way, having the "data_err" option makes
-this issue moot for me, but I figured I'd raise the question (in the
-interest of review).
+Thanks,
 
-Mike
+-- 
+Jiri Kosina
