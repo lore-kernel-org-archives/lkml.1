@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbYG3Sd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754331AbYG3SiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbYG3Sd1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 14:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYG3SdR
+	id S1754331AbYG3SiJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 14:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYG3Sh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 14:33:17 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:52071 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752678AbYG3SdQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 14:33:16 -0400
-To: jens.axboe@oracle.com
-CC: miklos@szeredi.hu, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-reply-to: <20080730175406.GN20055@kernel.dk> (message from Jens Axboe on
-	Wed, 30 Jul 2008 19:54:07 +0200)
-Subject: Re: [patch v3] splice: fix race with page invalidation
-References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807300958390.3334@nehalem.linux-foundation.org> <E1KOFUi-0000EU-0p@pomaz-ex.szeredi.hu> <20080730175406.GN20055@kernel.dk>
-Message-Id: <E1KOGT8-0000rd-0Z@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 30 Jul 2008 20:32:14 +0200
+	Wed, 30 Jul 2008 14:37:56 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:53673 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751812AbYG3Sh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 14:37:56 -0400
+Date: Wed, 30 Jul 2008 20:37:21 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Karsten Keil <kkeil@suse.de>
+Cc: David Woodhouse <dwmw2@infradead.org>, isdn4linux@listserv.isdn4linux.de,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mISDN cleanup user interface
+Message-ID: <20080730183721.GA29639@uranus.ravnborg.org>
+References: <20080729195637.GB25929@pingi.kke.suse.de> <1217362946.27925.137.camel@pmac.infradead.org> <1217365330.417.8.camel@californication> <1217409211.27925.177.camel@pmac.infradead.org> <20080730163314.GB9491@pingi.kke.suse.de> <1217437021.3454.8.camel@pmac.infradead.org> <20080730175138.GA12800@pingi.kke.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080730175138.GA12800@pingi.kke.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008, Jens Axboe wrote:
-> On Wed, Jul 30 2008, Miklos Szeredi wrote:
-> > On Wed, 30 Jul 2008, Linus Torvalds wrote:
-> > > On Wed, 30 Jul 2008, Miklos Szeredi wrote:
-> > > > 
-> > > > There are no real disadvantages: splice() from a file was
-> > > > originally meant to be asynchronous, but in reality it only did
-> > > > that for non-readahead pages, which happen rarely.
-> > > 
-> > > I still don't like this. I still don't see the point, and I still
-> > > think there is something fundamentally wrong elsewhere.
-> 
-> You snipped the part where Linus objected to dismissing the async
-> nature, I fully agree with that part.
-> 
-> > We discussed the possible solutions with Nick, and came to the
-> > conclusion, that short term (i.e. 2.6.27) this is probably the best
-> > solution.
-> 
-> Ehm where?
-
-http://lkml.org/lkml/2008/7/7/476
-
->  Nick also said that he didn't like removing the ->confirm()
-> bits as they are completely related to the async nature of splice. You
-> already submitted this exact patch earlier and it was nak'ed.
-
-That's not true.  The resubmitted patch didn't remove the ->confirm()
-calls, which is what Nick objected to, I think.
-
-> > Long term sure, I have no problem with implementing async splice.
+On Wed, Jul 30, 2008 at 07:51:38PM +0200, Karsten Keil wrote:
+> On Wed, Jul 30, 2008 at 05:57:01PM +0100, David Woodhouse wrote:
+> > On Wed, 2008-07-30 at 18:33 +0200, Karsten Keil wrote:
+> > > What about this implementation ?
 > > 
-> > In fact, I may even have personal interest in looking at splice,
-> > because people are asking for a zero-copy interface for fuse.
-> > 
-> > But that is definitely not 2.6.27, so I think you should reconsider
-> > taking this patch, which is obviously correct due to its simplicity,
-> > and won't cause any performance regressions either.
+> > Looks a lot saner... although it does seem to confirm my earlier
+> > suspicion that you're not even _using_ the fact that it's a bitmap at
+> > all. You set the bits for the present channels at init time, which are
+> > always contiguous, and you never seem to change them them later -- why
+> > couldn't you do this with a simple 'number of channels' integer?
 > 
-> Then please just fix the issue, instead of removing the bits that make
-> this possible.
+> No it is not contineous on different PRI line setups (E1,T1 ...)
+> e.g a E1 has the D-channel on channel 15 position, so this bit is not set
+> then.
+timeslot 16 in my book actually - but maybe that your timeslot to
+channel mapping.
 
-I tried to fix it, but Nick didn't like my fix.  Ideas are of course
-welcome.
+Not that it has anything to do with the topic discussed!
 
-Thanks,
-Miklos
+	Sam
