@@ -1,44 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYG3Gma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbYG3Gpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385AbYG3Gma (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 02:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbYG3GmV
+	id S1754792AbYG3Gpr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 02:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbYG3Gpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 02:42:21 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35390
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751075AbYG3GmU (ORCPT
+	Wed, 30 Jul 2008 02:45:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:34978 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751428AbYG3Gpg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 02:42:20 -0400
-Date: Tue, 29 Jul 2008 23:42:17 -0700 (PDT)
-Message-Id: <20080729.234217.93335312.davem@davemloft.net>
-To: sfr@au1.ibm.com
-Cc: wli@holomorphy.com, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sparc: merge of_platform_{32,64}.h
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080730145913.10c124a9.sfr@au.ibm.com>
-References: <20080730145913.10c124a9.sfr@au.ibm.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 30 Jul 2008 02:45:36 -0400
+Subject: Re: [PATCH] typhoon: use request_firmware
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: David Dillow <dave@thedillows.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, becker@scyld.com,
+       davidpmclean@yahoo.com, Jeff Garzik <jeff@garzik.org>,
+       netdev <netdev@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1217395511.31350.6.camel@obelisk.thedillows.org>
+References: <1217170232.3537.6.camel@jaswinder.satnam>
+	 <1217209400.22789.47.camel@obelisk.thedillows.org>
+	 <1217215009.2970.7.camel@jaswinder.satnam>
+	 <1217248585.22789.58.camel@obelisk.thedillows.org>
+	 <1217253260.17632.6.camel@jaswinder.satnam>
+	 <1217295498.28682.16.camel@obelisk.thedillows.org>
+	 <1217347786.2885.11.camel@jaswinder.satnam>
+	 <1217395511.31350.6.camel@obelisk.thedillows.org>
+Content-Type: text/plain
+Date: Wed, 30 Jul 2008 12:14:11 +0530
+Message-Id: <1217400251.2595.3.camel@jaswinder.satnam>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@au1.ibm.com>
-Date: Wed, 30 Jul 2008 14:59:13 +1000
+Hello Dave,
 
-> The only difference between these files is that the 64 bit version has an
-> extra declaration.
+On Wed, 2008-07-30 at 01:25 -0400, David Dillow wrote:
+
+> That's fine, and makes sense. However, you need to check if you've
+> already loaded it (typhoon_fw != NULL), so you don't leak memory if
+> there is more than one NIC. Part of me feels like there should be a
+> mutex around loading the firmware, to avoid surprises if PCI probing
+> gets multi-threaded again, but a comment to that effect may suffice for
+> now.
 > 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-The isa_bus_type is a vestige which I forgot to delete when I
-removed the ISA bus layer from sparc and sparc64.  It can be
-safely deleted.
+OK, fixed.
 
-I'm going to kill it, then rework your patch to go on top of that.
+diff --git a/drivers/net/typhoon.c b/drivers/net/typhoon.c
+index a57941a..50f1943 100644
+--- a/drivers/net/typhoon.c
++++ b/drivers/net/typhoon.c
+@@ -2461,9 +2461,17 @@ typhoon_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	 */
+ 	tp->name = pci_name(pdev);
+ 
+-	err = typhoon_init_firmware(tp);
+-	if (err)
+-		goto error_out_reset;
++	/*
++	 * Need to check request_firmware should be called only once
++	 * so you don't leak memory if there is more than one NIC.
++	 * Need to check if PCI probing gets multi-threaded as
++	 * mutex is used while loading the firmware.
++	 */
++	if (typhoon_fw != NULL) {
++		err = typhoon_init_firmware(tp);
++		if (err)
++			goto error_out_reset;
++	}
+ 
+ 	typhoon_init_interface(tp);
+ 	typhoon_init_rings(tp);
 
-Thanks!
+> Also, if not adding a mutex, then this can be folded into
+> typhoon_init_one(), rather than living in a separate function. 
+> 
+
+request_firmware is using mutex.
+
+> All in all, this is getting better, my reservations about the goal
+> aside.
+> 
+
+Without you help this was not possible :)
+
+Thank you,
+
+Jaswinder Singh.
+
