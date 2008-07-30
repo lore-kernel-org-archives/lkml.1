@@ -1,93 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbYG3RIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758993AbYG3RJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758856AbYG3RIs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 13:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbYG3RIh
+	id S1758993AbYG3RJc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 13:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYG3RJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 13:08:37 -0400
-Received: from mga11.intel.com ([192.55.52.93]:34818 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752194AbYG3RIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 13:08:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,280,1215414000"; 
-   d="scan'208";a="366367135"
-Date: Wed, 30 Jul 2008 10:08:36 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "drepper@redhat.com" <drepper@redhat.com>,
-       "mikpe@it.uu.se" <mikpe@it.uu.se>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 0/9] x86, xsave: xsave/xrstor support
-Message-ID: <20080730170833.GD11223@linux-os.sc.intel.com>
-References: <20080729172917.185593000@linux-os.sc.intel.com> <488FA318.3040905@zytor.com> <20080729232951.GB11223@linux-os.sc.intel.com> <488FAB2B.7050405@zytor.com> <20080730100326.GA9683@elte.hu> <4890976D.70103@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4890976D.70103@zytor.com>
-User-Agent: Mutt/1.4.1i
+	Wed, 30 Jul 2008 13:09:23 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:33960 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbYG3RJX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 13:09:23 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <48909F74.8060702@s5r6.in-berlin.de>
+Date: Wed, 30 Jul 2008 19:05:56 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Rene Herman <rene.herman@keyaccess.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jon Smirl <jonsmirl@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       James Morris <jmorris@namei.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 463 kernel developers missing!
+References: <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au> <20080728234131.GD28055@linux-sh.org> <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com> <488E644D.7000507@keyaccess.nl> <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com> <488EF377.5080603@keyaccess.nl> <20080730072448.GB1564@cs181140183.pp.htv.fi> <4890284E.3050806@s5r6.in-berlin.de> <20080730124650.GB19966@cs181140183.pp.htv.fi> <4890646D.3060000@keyaccess.nl> <20080730153247.GA21597@cs181140183.pp.htv.fi>
+In-Reply-To: <20080730153247.GA21597@cs181140183.pp.htv.fi>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 09:31:41AM -0700, H. Peter Anvin wrote:
-> Ingo Molnar wrote:
-> > * H. Peter Anvin <hpa@zytor.com> wrote:
-> >
-> >>> hpa, these patches just apply fine to tip/master. Can you please
-> >>> arrange the tip/x86/xsave tree accordingly? or do I need to do
-> >>> something else to smooth this process?
-> >> This is awkward, since that means this is "derived topic".  Most of
-> >> the changes are orthogonal and relatively trivial to fix up at merge
-> >> time, so I would prefer to keep them separate.
-> >
-> > Well, in this case the conflicts seem to be quite heavy, so i'd suggest
-> > to use the method we have used for x86/x2apic and for xen-64bit:
-> >
-> > Merge the affected topics into tip/x86/core. Then merge x86/core into
-> > x86/xsave, and put the xsave patches ontop of that base.
-> >
-> > This way x86/xsave is a 'derived' topic and optional until it's proven,
-> > but one that is still mergable once all the dependent topics go
-> > upstream. We'd only have to rebase it in the (unlikely) event of there
-> > being some major problem with any of the topics merged into x86/core.
-> >
-> > ok?
-> 
-> It somewhat concerns me, because one of the conflicts is generated by
-> collision with x2apic.  The rest of them I don't think are too problematic.
+Adrian Bunk wrote:
+> On Wed, Jul 30, 2008 at 02:54:05PM +0200, Rene Herman wrote:
+>> You only certify anything when _you_ put your address in. Given that  
+>> it's a very common occurence that not you but _others_ do, this does not  
+>> mean a _single_ thing. Tested-by, Bisected-by, what have you...
+[...]
+> stuff like e.g. Tested-by or Bisected-by tags actually undermine what
+> the DCE 1.1 update should have accomplished.
+[...]
 
-hpa, confilicts with x2apic branch are very small and related to cpuid bits.
-
-commit 04df16d2465cbb59b84c9c57ad865dbbeebadad8
-Author: Suresh Siddha <suresh.b.siddha@intel.com>
-Date:   Tue Jul 29 10:29:18 2008 -0700
-
-    x86, xsave: xsave cpuid feature bits
-
-    Add xsave CPU feature bits.
-    
-and 
-
-commit 32e1d0a0651004f5fe47f85a2a5c725ad579a90c
-Author: Suresh Siddha <suresh.b.siddha@intel.com>
-Date:   Thu Jul 10 11:16:50 2008 -0700
-
-    x64, x2apic/intr-remap: cpuid bits for x2apic feature
-    
-    cpuid feature for x2apic.
-
-Both of these patches are straight forward, simple and can be moved
-to x86/core(?) now, if that helps.
-
-thanks,
-suresh
+Last time when I read a discussion about these tags, people at least at 
+this side of the pond seemed to come to the conclusion that we ask 
+testers for their consent if in doubt, before adding such a tag if they 
+didn't do so themselves.  (That's different from how we handle Acked-by: 
+from fellow developers which we often imply from an informally given OK.)
+-- 
+Stefan Richter
+-=====-==--- -=== ====-
+http://arcgraph.de/sr/
