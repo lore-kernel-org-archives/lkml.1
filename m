@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbYG3RKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759392AbYG3RLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758216AbYG3RKl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 13:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbYG3RKd
+	id S1759392AbYG3RLW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 13:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbYG3RLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 13:10:33 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:46339 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751075AbYG3RKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 13:10:32 -0400
-Date: Wed, 30 Jul 2008 20:09:39 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 1/2] Export get_user_pages_fast
-Message-ID: <20080730170939.GA28604@cs181140183.pp.htv.fi>
-References: <200807301438.55941.rusty@rustcorp.com.au> <20080730033523.0f38f7e4.akpm@linux-foundation.org> <20080730154736.GC21597@cs181140183.pp.htv.fi> <20080730100355.f1402dcf.akpm@linux-foundation.org>
+	Wed, 30 Jul 2008 13:11:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39056 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753046AbYG3RLL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 13:11:11 -0400
+Message-ID: <4890A0A8.4000502@sgi.com>
+Date: Wed, 30 Jul 2008 10:11:04 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080730100355.f1402dcf.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Dave Jones <davej@codemonkey.org.uk>, Mike Travis <travis@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>,
+       Lennert Buytenhek <kernel@wantstofly.org>, Paul Jackson <pj@sgi.com>,
+       Tony Luck <tony.luck@intel.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Sam Creasey <sammy@sammy.net>, Greg Banks <gnb@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Adrian Bunk <bunk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Andreas Schwab <schwab@suse.de>, Johannes Weiner <hannes@saeurebad.de>
+Subject: Re: [PATCH 1/1] cpumask: Change cpumask_of_cpu to use	cpumask_of_cpu_map
+References: <20080723171841.815234000@polaris-admin.engr.sgi.com> <20080723171841.997896000@polaris-admin.engr.sgi.com> <20080730165539.GA10079@codemonkey.org.uk>
+In-Reply-To: <20080730165539.GA10079@codemonkey.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 10:03:55AM -0700, Andrew Morton wrote:
-> On Wed, 30 Jul 2008 18:47:36 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+Dave Jones wrote:
+> On Wed, Jul 23, 2008 at 10:18:42AM -0700, Mike Travis wrote:
+>  >   * The previous "lvalue replacement for cpumask_of_cpu()" was not usable
+>  >     in certain situations and generally added unneeded complexity.  So
+>  >     this patch replaces the cpumask_of_cpu_ptr* macros with a generic
+>  >     cpumask_of_cpu_map[].  The only config option is whether this is a
+>  >     static map, or allocated at boot up time:
 > 
-> > On Wed, Jul 30, 2008 at 03:35:23AM -0700, Andrew Morton wrote:
-> > > On Wed, 30 Jul 2008 14:38:55 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > > 
-> > > > After all, it was made for lguest wasn't it?  Still think it should be
-> > > > called get_current_pages() though.
-> > > > 
-> > > > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> > > > ---
-> > > >  arch/x86/mm/gup.c |    2 ++
-> > > >  1 file changed, 2 insertions(+)
-> > > > 
-> > > > diff -r cb465381f6d5 arch/x86/mm/gup.c
-> > > > --- a/arch/x86/mm/gup.c	Wed Jul 30 10:18:44 2008 +1000
-> > > > +++ b/arch/x86/mm/gup.c	Wed Jul 30 14:22:53 2008 +1000
-> > > > @@ -8,6 +8,7 @@
-> > > >  #include <linux/mm.h>
-> > > >  #include <linux/vmstat.h>
-> > > >  #include <linux/highmem.h>
-> > > > +#include <linux/module.h>
-> > > >  
-> > > >  #include <asm/pgtable.h>
-> > > >  
-> > > > @@ -296,3 +303,4 @@ slow_irqon:
-> > > >  		return ret;
-> > > >  	}
-> > > >  }
-> > > > +EXPORT_SYMBOL_GPL(get_user_pages_fast);
-> > > 
-> > > A regularly-occurring problem with an export like this is that someone
-> > > writes a driver and tests it on x86, then the driver explodes on an
-> > > architecture which didn't export the same symbol.
-> > > 
-> > > So a better implementation might be to put
-> > > 
-> > > #ifdef CONFIG_HAVE_GET_USER_PAGES_FAST
-> > > EXPORT_SYMBOL_GPL(get_user_pages_fast);
-> > > #endif
-> > > 
-> > > into generic code somewhere.
-> > 
-> > How would that help?
+> I've lost the plot on what's going on with these cpumask patches.
+> But I just saw this on -rc1.
 > 
-> It would fix the problem which I described.
+> arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c:206:33: error: not addressable
+> arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c:274:32: error: not addressable
+> arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c:352:34: error: not addressable
+> 
+> 	Dave
+> 
 
-The export would still only be available on x86 since no other arch 
-would define CONFIG_HAVE_GET_USER_PAGES_FAST.
+It looks like some old code is still there (patch dropped?).  I'll send a fix asap.
 
-Or what do I miss?
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks,
+Mike
