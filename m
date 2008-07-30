@@ -1,74 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbYG3Wbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758931AbYG3Wcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757970AbYG3Wbt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 18:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbYG3Wbk
+	id S1758931AbYG3Wcp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 18:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYG3Wci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 18:31:40 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:22052 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752269AbYG3Wbj (ORCPT
+	Wed, 30 Jul 2008 18:32:38 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:27358 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751587AbYG3Wch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 18:31:39 -0400
+	Wed, 30 Jul 2008 18:32:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=odsmijDxcR3G7YbWtK6wZr9fBQ7UMNX4edS3ns9qQlO2WiYZjctn+cbMNx/5ypvGUu
-         Pf7G7lEoxfe74eBe3WhiLpGxdDC0+k4DE0utDR4X9yeMY73om7P1dtmR15G1lkodZdko
-         6xnq6y2wwM8Na8tCy6Tv0NU8srQzStyNqpD/Y=
-Message-ID: <7c86c4470807301531i232ebd44m869affe95f036484@mail.gmail.com>
-Date: Wed, 30 Jul 2008 15:31:36 -0700
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.26 new perfmon kernel patch + libpfm + pfmon available
-Cc: ia64 <linux-ia64@vger.kernel.org>
-In-Reply-To: <7c86c4470807301530s224f5104wdd5004419464bc2e@mail.gmail.com>
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RzjvrGvUtOwzSovdKd1Pw6hSWYiNzyMHoakh61Nj44OzzstP05F7oY4zsfXHmcRt4t
+         YLzv9YOZkfm2Uu1mlL3nSPimiy/MNWkV33QLHbJQBiJiJgEwmorVctYZKYHA+NJjfTut
+         U3YaXL979hkZk/SSyRX4agI+nyWs4jufWdt8E=
+Date: Thu, 31 Jul 2008 02:32:33 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: akpm@linuxfoundation.org, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: Re: 2.6.27-rc1: IP: iov_iter_advance+0x2e/0x90
+Message-ID: <20080730223233.GA3580@martell.zuzino.mipt.ru>
+References: <20080730195457.GA3517@martell.zuzino.mipt.ru> <alpine.LFD.1.10.0807301255560.3334@nehalem.linux-foundation.org> <20080730213745.GA20546@martell.zuzino.mipt.ru> <alpine.LFD.1.10.0807301442130.3277@nehalem.linux-foundation.org> <alpine.LFD.1.10.0807301500480.3277@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <7c86c4470807301530s224f5104wdd5004419464bc2e@mail.gmail.com>
+In-Reply-To: <alpine.LFD.1.10.0807301500480.3277@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, Jul 30, 2008 at 03:02:32PM -0700, Linus Torvalds wrote:
+> On Wed, 30 Jul 2008, Linus Torvalds wrote:
+> > 
+> > Ok, I'll commit it as obvious, ugly as it may be. And hope that Nick or 
+> > some other god of iov_iter will think about trying to make these things 
+> > more reliable and easier to use.
+> 
+> Oh, and I think it's stable material. Unless I misread something, this 
+> area hasn't changed since 2.6.25. But somebody should double-check me, 
+> that just sounds wrong.
 
-I have released the perfmon2 kernel patch for kernel v2.6.26. There is
-no new major features.  Concerning the merge with mainline, we use a different
-code base which contains only code to  supports only per-thread counting on
-X86 processors. The patch is distributed as a quilt patchset and is
-posted on LKML.
+2.6.26 fails the same way and patch also seems to help.
 
-Here are some of the kernel changes:
- - Support for Intel architectural perfmon v3 (as per IA-32 Vol3b June 2008)
- - base syscall exported in /sys/kernel/perfmon/syscall
- - experimental utrace support
- - added dep_pmcs[] to PMD definitions to avoid picking up stale config
- - important IBM Power updates to solve counter overflow issues (Corey Ashford)
- - AMD64 APIC/PCI cleanups for IBS support (Robert Richter)
- - new API for handler routine of sampling formats to accomodate IBM
-Cell (Carl Love)
+> commit 94ad374a0751f40d25e22e036c37f7263569d24c
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Wed Jul 30 14:45:12 2008 -0700
+> 
+>     Fix off-by-one error in iov_iter_advance()
+>     
+>     The iov_iter_advance() function would look at the iov->iov_len entry
+>     even though it might have iterated over the whole array, and iov was
+>     pointing past the end.  This would cause DEBUG_PAGEALLOC to trigger a
+>     kernel page fault if the allocation was at the end of a page, and the
+>     next page was unallocated.
+>     
+>     The quick fix is to just change the order of the tests: check that there
+>     is any iovec data left before we check the iov entry itself.
+>     
+>     Thanks to Alexey Dobriyan for finding this case, and testing the fix.
+>     
+>     Reported-and-tested-by: Alexey Dobriyan <adobriyan@gmail.com>
+>     Cc: Nick Piggin <npiggin@suse.de>
+>     Cc: Andrew Morton <akpm@linux-foundation.org>
+>     Cc: <stable@kernel.org> [2.6.25.x, 2.6.26.x]
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> ---
+>  mm/filemap.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/mm/filemap.c b/mm/filemap.c
+> index 42bbc69..d97d1ad 100644
+> --- a/mm/filemap.c
+> +++ b/mm/filemap.c
+> @@ -1879,7 +1879,7 @@ void iov_iter_advance(struct iov_iter *i, size_t bytes)
+>  		 * The !iov->iov_len check ensures we skip over unlikely
+>  		 * zero-length segments (without overruning the iovec).
+>  		 */
+> -		while (bytes || unlikely(!iov->iov_len && i->count)) {
+> +		while (bytes || unlikely(i->count && !iov->iov_len)) {
+>  			int copy;
+>  
+>  			copy = min(bytes, iov->iov_len - base);
 
-There is also a new release for libpfm, now at version 3.5.
-The changes include:
- - support for AMD K7 (Vince Weaver)
- - support for Intel architectural perfmon v3
- - support for SiCortex (ICA9A, ICA9B) (Phil Mucci)
- - dynamic perfmon syscall support via /sys
- - new environment variable to control debugging and force particular PMU model
-
-Finally, a new major version of pfmon, now at pfmon-3.5 with some minor
-changes:
- - group unknown symbols as UNKNOWN when sampling (Andrzej Nowak)
- - lots of bug fixes
-
-As usual all files and more detailed changelogs can be downloaded from our
-website at:
-
-       http://perfmon2.sourceforge.net
-
-Enjoy,
