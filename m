@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbYG3A53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758512AbYG3A5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759089AbYG3A53 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 20:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757069AbYG3Azf
+	id S1758512AbYG3A5o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 20:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757282AbYG3Azh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 20:55:35 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:59233 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756979AbYG3Aze (ORCPT
+	Tue, 29 Jul 2008 20:55:37 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:51866 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757140AbYG3Azg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 20:55:34 -0400
+	Tue, 29 Jul 2008 20:55:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=ouTbdoKo6AgQWsebEBPV/FCA4wCChYp0vLN+hxjd9yTEXwXFRP6jdD7nCNpUyMykye
-         anp/C2b1u2E2J1kAITvq6JC40AxLQKPGrBgflxwOw4PD7sg6oG4BVkBjAiUfkvDuHYYA
-         wXef66OeDXomUQpaZ8OO1Yq5VJjrYm2iByFkU=
-Subject: [PATCH 07/24] frv: use the new byteorder headers
+        b=DMME9O/3qBCavsDoLcDpuLRDLpPMOETIK+gxzNFKp5k2imQ1d4obvilnCywL8xQJzX
+         CG/C/E4TKHclqC6xYFctdfpZ39RBHFf4PdVZNhiPLJzxtR+CTYJkmbvRKHIPYUipUGEi
+         dWXFVHVUeFv+oHWucpwVvxf/ZBgV7XQChv9Mg=
+Subject: [PATCH 08/24] h8300: use the new byteorder headers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, David Howells <dhowells@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Tue, 29 Jul 2008 17:55:20 -0700
-Message-Id: <1217379320.23389.118.camel@brick>
+Date: Tue, 29 Jul 2008 17:55:21 -0700
+Message-Id: <1217379321.23389.119.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -33,16 +33,16 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- include/asm-frv/byteorder.h |   10 +++-------
+ include/asm-h8300/byteorder.h |   10 +++-------
  1 files changed, 3 insertions(+), 7 deletions(-)
 
-diff --git a/include/asm-frv/byteorder.h b/include/asm-frv/byteorder.h
-index 411bec3..cb197c3 100644
---- a/include/asm-frv/byteorder.h
-+++ b/include/asm-frv/byteorder.h
+diff --git a/include/asm-h8300/byteorder.h b/include/asm-h8300/byteorder.h
+index 36e597d..465b7af 100644
+--- a/include/asm-h8300/byteorder.h
++++ b/include/asm-h8300/byteorder.h
 @@ -1,13 +1,9 @@
- #ifndef _ASM_BYTEORDER_H
- #define _ASM_BYTEORDER_H
+ #ifndef _H8300_BYTEORDER_H
+ #define _H8300_BYTEORDER_H
  
 -#include <asm/types.h>
 +#define __BIG_ENDIAN
@@ -56,7 +56,7 @@ index 411bec3..cb197c3 100644
 -#include <linux/byteorder/big_endian.h>
 +#include <linux/byteorder.h>
  
- #endif /* _ASM_BYTEORDER_H */
+ #endif /* _H8300_BYTEORDER_H */
 -- 
 1.6.0.rc1.154.ge3fc
 
