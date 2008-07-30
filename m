@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbYG3FZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbYG3FZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbYG3FZd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 01:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYG3FZS
+	id S1758200AbYG3FZq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 01:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbYG3FZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 01:25:18 -0400
-Received: from smtp.knology.net ([24.214.63.101]:48331 "EHLO smtp.knology.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751428AbYG3FZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 01:25:16 -0400
-Subject: Re: [PATCH] typhoon: use request_firmware
-From: David Dillow <dave@thedillows.org>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, becker@scyld.com,
-       davidpmclean@yahoo.com, Jeff Garzik <jeff@garzik.org>,
-       netdev <netdev@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1217347786.2885.11.camel@jaswinder.satnam>
-References: <1217170232.3537.6.camel@jaswinder.satnam>
-	 <1217209400.22789.47.camel@obelisk.thedillows.org>
-	 <1217215009.2970.7.camel@jaswinder.satnam>
-	 <1217248585.22789.58.camel@obelisk.thedillows.org>
-	 <1217253260.17632.6.camel@jaswinder.satnam>
-	 <1217295498.28682.16.camel@obelisk.thedillows.org>
-	 <1217347786.2885.11.camel@jaswinder.satnam>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 30 Jul 2008 01:25:11 -0400
-Message-Id: <1217395511.31350.6.camel@obelisk.thedillows.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 8bit
+	Wed, 30 Jul 2008 01:25:25 -0400
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:21719 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752204AbYG3FZW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 01:25:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Subject:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=ycKkBVeh0mb5GVbTXxK6TfJIINm7SSfY+Y0zTFa5zI41GKZgn7q0ZEs3/aAaEkqOItLZkFjw69BLtjUSaZ3BJXRoi7lMA4CfkBoYrywivAl/QeOa9ju7bHGitCuvOJnlTirIxnfqxejuIW8rbuUC0CUAs1/vqP1ZiVvrxOv5qW8=  ;
+X-YMail-OSG: xON7eLkVM1ki3Ypydb0BnzjuQ62eUuZ3uzrGffNEWGqNria_engx7iAxw3BfMPTu3zvfSiWHHehtSOjF.cjyaQISIvnr6gNSP.16r9_12ZCRsuq8LvekuvLcfVpQ4XWRtIM-
+X-Yahoo-Newman-Property: ymail-3
+Date: Tue, 29 Jul 2008 22:28:12 -0700
+From: David Brownell <david-b@pacbell.net>
+To: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
+       akpm@linux-foundation.org
+Subject: [PATCH 2.6.26-git] MTD_DEBUG always does compile-time typechecks
+Cc: michael.hennerich@analog.com, linux-kernel@vger.kernel.org,
+       cooloney@kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080730052812.0D64C360E2D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-29 at 21:39 +0530, Jaswinder Singh wrote:
-> On Mon, 2008-07-28 at 21:38 -0400, David Dillow wrote:
-> > This should move to either typhoon_init() or typhoon_init_one(). Putting
-> > it in typhoon_init() means we waste memory when the module is loaded if
-> > there is no typhoon NIC; putting it in typhoon_init_one() means it needs
-> > protection from threaded probing, should that ever be put back in. Given
-> > that most modern distros don't do probing by blinding loading modules,
-> > typhoon_init() seems a safe bet.
-> > 
-> 
-> Sorry Dave, I need tp->pdev so ﻿typhoon_init_one() seems better.
-> I hope you do not mind this.
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-That's fine, and makes sense. However, you need to check if you've
-already loaded it (typhoon_fw != NULL), so you don't leak memory if
-there is more than one NIC. Part of me feels like there should be a
-mutex around loading the firmware, to avoid surprises if PCI probing
-gets multi-threaded again, but a comment to that effect may suffice for
-now.
+The current style for debug messages is to ensure they're always
+parsed by the compiler and then subjected to dead code removal.
+That way builds won't break only when debug options get enabled,
+which is common when they are stripped out early by CPP.
 
-Also, if not adding a mutex, then this can be folded into
-typhoon_init_one(), rather than living in a separate function. 
+This patch makes CONFIG_MTD_DEBUG adopt that convention.
 
-All in all, this is getting better, my reservations about the goal
-aside.
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ include/linux/mtd/mtd.h |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-Dave
-
+--- a/include/linux/mtd/mtd.h	2008-07-29 22:06:43.000000000 -0700
++++ b/include/linux/mtd/mtd.h	2008-07-29 22:19:21.000000000 -0700
+@@ -272,7 +272,11 @@ static inline void mtd_erase_callback(st
+ 			printk(KERN_INFO args);		\
+ 	} while(0)
+ #else /* CONFIG_MTD_DEBUG */
+-#define DEBUG(n, args...) do { } while(0)
++#define DEBUG(n, args...)				\
++	do {						\
++		if (0)					\
++			printk(KERN_INFO args);		\
++	} while(0)
+ 
+ #endif /* CONFIG_MTD_DEBUG */
+ 
