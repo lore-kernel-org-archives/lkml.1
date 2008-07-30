@@ -1,59 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759008AbYG3OA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbYG3OCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759008AbYG3OA6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 10:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbYG3OAt
+	id S1761284AbYG3OCa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 10:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbYG3OCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 10:00:49 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:30615 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752107AbYG3OAt (ORCPT
+	Wed, 30 Jul 2008 10:02:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45539 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751529AbYG3OCQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 10:00:49 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: 2.6.27-rc1 oops on boot -- cs423x? (Corrected subject)
-Date: Wed, 30 Jul 2008 07:59:55 -0600
-User-Agent: KMail/1.9.9
-Cc: Pete Clements <clem@clem.clem-digital.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200807292052.m6TKq1J3005288@clem.clem-digital.net> <200807292159.43226.bjorn.helgaas@hp.com> <48905B4B.9090203@keyaccess.nl>
-In-Reply-To: <48905B4B.9090203@keyaccess.nl>
+	Wed, 30 Jul 2008 10:02:16 -0400
+Message-ID: <489073CD.1040108@linux-foundation.org>
+Date: Wed, 30 Jul 2008 08:59:41 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH 04/30] mm: slub: trivial cleanups
+References: <20080724140042.408642539@chello.nl>	 <20080724141529.560025894@chello.nl>	 <1217238223.7813.16.camel@penberg-laptop> <1217240353.6331.34.camel@twins>
+In-Reply-To: <1217240353.6331.34.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807300759.55649.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 July 2008 6:15:07 am Rene Herman wrote:
-> On 30-07-08 05:59, Bjorn Helgaas wrote:
-> > PNP: fix formatting of dbg_pnp_show_resources() output
-> >
-> > From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> >
-> > Each resource should be printed on its own line, so start snprintf'ing
-> > at the beginning of the buffer every time through the loop.
-> >
-> > Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
->
-> Good WARN_ON() that...
->
-> I was looking at why I hadn't seen this here even with the same hardware
-> when I _did_ see it here. Most definitely did not back when I was paying
-> attention -- although there seems to be little opportunity for that.
->
-> Just for my own education; did something recent happen to bring this on
-> or must this have been present always? Serious buglet it seems.
+Peter Zijlstra wrote:
 
-That function used to printk the resource piece-meal -- first the
-resource type, then the value, then the flags, etc.  I made a late
-change to snprintf everything into the buffer, then do a single
-printk to keep everything atomic, and I didn't test it well enough.
+>> Christoph?
 
-Bjorn
+Sorry for the delay but this moving stuff is unending....
+
+
+>>> Index: linux-2.6/mm/slub.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/mm/slub.c
+>>> +++ linux-2.6/mm/slub.c
+>>> @@ -27,7 +27,7 @@
+>>>  /*
+>>>   * Lock order:
+>>>   *   1. slab_lock(page)
+>>> - *   2. slab->list_lock
+>>> + *   2. node->list_lock
+>>>   *
+>>>   *   The slab_lock protects operations on the object of a particular
+>>>   *   slab and its metadata in the page struct. If the slab lock
+
+Hmmm..... node? Maybe use the struct name? kmem_cache_node?
+
+>>> @@ -163,11 +163,11 @@ static struct notifier_block slab_notifi
+>>>  #endif
+>>>  
+>>>  static enum {
+>>> -	DOWN,		/* No slab functionality available */
+>>> +	DOWN = 0,	/* No slab functionality available */
+>>>  	PARTIAL,	/* kmem_cache_open() works but kmalloc does not */
+>>>  	UP,		/* Everything works but does not show up in sysfs */
+>>>  	SYSFS		/* Sysfs up */
+>>> -} slab_state = DOWN;
+>>> +} slab_state;
+>>>  
+>>>  /* A list of all slab caches on the system */
+>>>  static DECLARE_RWSEM(slub_lock);
+
+It defaults to the first enum value. We also do not initialize statics with zero.
+
+>>> @@ -288,21 +288,22 @@ static inline int slab_index(void *p, st
+>>>  static inline struct kmem_cache_order_objects oo_make(int order,
+>>>  						unsigned long size)
+>>>  {
+>>> -	struct kmem_cache_order_objects x = {
+>>> -		(order << 16) + (PAGE_SIZE << order) / size
+>>> -	};
+>>> +	struct kmem_cache_order_objects x;
+>>> +
+>>> +	x.order = order;
+>>> +	x.objects = (PAGE_SIZE << order) / size;
+>>>  
+>>>  	return x;
+>>>  }
+>>>  
+
+Another width limitation that will limit the number of objects in a slab to 64k.
+Also gcc does not get the fields, wont be able to optimize this as well and it will emit conversion from 16 bit loads.
+
+
+>>> @@ -1076,8 +1077,7 @@ static struct page *allocate_slab(struct
+>>>  
+>>>  	flags |= s->allocflags;
+>>>  
+>>> -	page = alloc_slab_page(flags | __GFP_NOWARN | __GFP_NORETRY, node,
+>>> -									oo);
+>>> +	page = alloc_slab_page(flags | __GFP_NOWARN | __GFP_NORETRY, node, oo);
+>>>  	if (unlikely(!page)) {
+>>>  		oo = s->min;
+>>>  		/*
+
+ok.
+
+>>> @@ -1099,8 +1099,7 @@ static struct page *allocate_slab(struct
+>>>  	return page;
+>>>  }
+>>>  
+>>> -static void setup_object(struct kmem_cache *s, struct page *page,
+>>> -				void *object)
+>>> +static void setup_object(struct kmem_cache *s, struct page *page, void *object)
+>>>  {
+>>>  	setup_object_debug(s, page, object);
+>>>  	if (unlikely(s->ctor))
+
+Hmmm. You are moving it back on one line and Andrew will cut it up again later? This seems to be oscillating...
+
+>>> @@ -1799,11 +1796,11 @@ static int slub_nomerge;
+>>>   * slub_max_order specifies the order where we begin to stop considering the
+>>>   * number of objects in a slab as critical. If we reach slub_max_order then
+>>>   * we try to keep the page order as low as possible. So we accept more waste
+>>> - * of space in favor of a small page order.
+>>> + * of space in favour of a small page order.
+>>>   *
+>>>   * Higher order allocations also allow the placement of more objects in a
+>>>   * slab and thereby reduce object handling overhead. If the user has
+>>> - * requested a higher mininum order then we start with that one instead of
+>>> + * requested a higher minimum order then we start with that one instead of
+>>>   * the smallest order which will fit the object.
+>>>   */
+>>>  static inline int slab_order(int size, int min_objects,
+
+Ack.
+
