@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760173AbYG3K0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbYG3K2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760173AbYG3K0q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 06:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYG3K0h
+	id S1760909AbYG3K2P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 06:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbYG3K17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 06:26:37 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:52337 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752858AbYG3K0g (ORCPT
+	Wed, 30 Jul 2008 06:27:59 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33110 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752756AbYG3K17 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 06:26:36 -0400
-To: viro@ZenIV.linux.org.uk
-Cc: akpm@linux-foundation.org, sage@newdream.net, zach.brown@oracle.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch resend] vfs: fix vfs_rename_dir for FS_RENAME_DOES_D_MOVE filesystems
-Message-Id: <E1KO8sx-0004VF-Tu@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 30 Jul 2008 12:26:23 +0200
+	Wed, 30 Jul 2008 06:27:59 -0400
+Subject: [RFT][PATCH] sched: scale sysctl_sched_shares_ratelimit with
+	nr_cpus
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Miller <davem@davemloft.net>, vatsa <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain
+Date: Wed, 30 Jul 2008 12:27:55 +0200
+Message-Id: <1217413675.8157.9.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+[And now with proper lkml address - so much for auto-add address entries]
 
-vfs_rename_dir() doesn't properly account for filesystems with
-FS_RENAME_DOES_D_MOVE.  If new_dentry has a target inode attached, it
-unhashes the new_dentry prior to the rename() iop and rehashes it
-after, but doesn't account for the possibility that rename() may have
-swapped {old,new}_dentry.  For FS_RENAME_DOES_D_MOVE filesystems, it
-rehashes new_dentry (now the old renamed-from name, which d_move()
-expected to go away), such that a subsequent lookup will find it.
+Dhaval, Vatsa,
 
-This was caught by the recently posted POSIX fstest suite, rename/10.t 
-test 62 (and others) on ceph.
+Could you guys give this patch a spin on the big iron and possibly tune
+the default shares_ratelimit value to give satisfactory fairness on your
+large machines while considering the overhead?
 
-The bug was introduced by: commit 349457ccf2592c14bdf13b6706170ae2e94931b1
-"[PATCH] Allow file systems to manually d_move() inside of ->rename()"
 
-Fix by not rehashing the new dentry.  Rehashing used to be needed by
-d_move() but isn't anymore.
-
-Reported-by: Sage Weil <sage@newdream.net>
-CC: Zach Brown <zach.brown@oracle.com>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
- fs/namei.c |    2 --
- 1 file changed, 2 deletions(-)
+Subject: sched: scale sysctl_sched_shares_ratelimit with nr_cpus
 
-Index: linux-2.6/fs/namei.c
+David reported that his Niagra spend a little too much time in
+tg_shares_up(), which considering he has a large cpu count makes sense.
+
+So scale the ratelimit value with the number of cpus like we do for
+other controls as well.
+
+Reported-by: David Miller <davem@davemloft.net>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/sched.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/kernel/sched.c
 ===================================================================
---- linux-2.6.orig/fs/namei.c	2008-07-29 21:28:55.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-07-29 21:36:50.000000000 +0200
-@@ -2542,8 +2542,6 @@ static int vfs_rename_dir(struct inode *
- 		if (!error)
- 			target->i_flags |= S_DEAD;
- 		mutex_unlock(&target->i_mutex);
--		if (d_unhashed(new_dentry))
--			d_rehash(new_dentry);
- 		dput(new_dentry);
- 	}
- 	if (!error)
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -809,9 +809,9 @@ const_debug unsigned int sysctl_sched_nr
+ 
+ /*
+  * ratelimit for updating the group shares.
+- * default: 0.5ms
++ * default: 0.25ms
+  */
+-const_debug unsigned int sysctl_sched_shares_ratelimit = 500000;
++const_debug unsigned int sysctl_sched_shares_ratelimit = 250000;
+ 
+ /*
+  * period over which we measure -rt task cpu usage in us.
+@@ -5732,6 +5732,8 @@ static inline void sched_init_granularit
+ 		sysctl_sched_latency = limit;
+ 
+ 	sysctl_sched_wakeup_granularity *= factor;
++
++	sysctl_sched_shares_ratelimit *= factor;
+ }
+ 
+ #ifdef CONFIG_SMP
+
+
