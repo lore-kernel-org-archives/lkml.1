@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759428AbYG3VRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbYG3VSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759428AbYG3VRh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 17:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757423AbYG3VRT
+	id S1757255AbYG3VSZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 17:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbYG3VSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 17:17:19 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:43281 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757155AbYG3VRR (ORCPT
+	Wed, 30 Jul 2008 17:18:13 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:52034 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751739AbYG3VSM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 17:17:17 -0400
-Date: Wed, 30 Jul 2008 15:17:03 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH 1/2] ext3: add an option to control error handling on	file
- data
-In-reply-to: <170fa0d20807300814o7741859eu8ad5d5b3b95e401c@mail.gmail.com>
-To: Mike Snitzer <snitzer@gmail.com>
-Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, akpm@linux-foundation.org,
-       sct@redhat.com, adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jack@suse.cz, jbacik@redhat.com,
-       cmm@us.ibm.com, tytso@mit.edu, tglx@linutronix.de,
-       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
-Message-id: <20080730211703.GZ3342@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <488FD756.9060106@hitachi.com>
- <170fa0d20807300814o7741859eu8ad5d5b3b95e401c@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 30 Jul 2008 17:18:12 -0400
+Date: Wed, 30 Jul 2008 17:18:10 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+cc: Robert Hancock <hancockr@shaw.ca>, <usb-storage@lists.one-eyed-alien.net>,
+       Tomas Styblo <tripie@cpan.org>, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [usb-storage] [PATCH] JMicron JM20337 USB-SATA data corruption
+ bugfix - device 152d:2338
+In-Reply-To: <20080730200033.GD7578@one-eyed-alien.net>
+Message-ID: <Pine.LNX.4.44L0.0807301707350.2322-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 30, 2008  11:14 -0400, Mike Snitzer wrote:
-> On Tue, Jul 29, 2008 at 10:52 PM, Hidehiro Kawai
-> <hidehiro.kawai.ez@hitachi.com> wrote:
-> > If the journal doesn't abort when it gets an IO error in file data
-> > blocks, the file data corruption will spread silently.  Because
-> > most of applications and commands do buffered writes without fsync(),
-> > they don't notice the IO error.  It's scary for mission critical
-> > systems.  On the other hand, if the journal aborts whenever it gets
-> > an IO error in file data blocks, the system will easily become
-> > inoperable.  So this patch introduces a filesystem option to
-> > determine whether it aborts the journal or just call printk() when
-> > it gets an IO error in file data.
-> >
-> > If you mount a ext3 fs with data_err=abort option, it aborts on file
-> > data write error.  If you mount it with data_err=ignore, it doesn't
-> > abort, just call printk().  data_err=abort is default, because
-> > people have used this error handling policy for three years.
-> 
-> Thanks for making this configurable!
-> 
-> But given how surprised many of us were when we found out that
-> jbd/ext3 has been aborting on file data blocks isn't this our chance
-> to correct that long-standing oversight?  Shouldn't the default be
-> data_err=ignore?  Or would changing this behavior cause more harm than
-> good?
-> 
-> I don't feel strongly either way, having the "data_err" option makes
-> this issue moot for me, but I figured I'd raise the question (in the
-> interest of review).
+On Wed, 30 Jul 2008, Matthew Dharm wrote:
 
-Yes, good point.  I don't think any of the ext3 maintainers were aware
-that the 3-years-old patch had introduced "abort on data error" behaviour.
-The default for ext4 is only now going to errors=remount-ro from
-errors=continue (as it is on ext2/3) so I think it is inconsistent to
-have the journal abort on data errors when the filesystem itself does not.
+> The code path to supress the reporting of an error when auto-sense shows no
+> ASC/ASCQ was added for a reason.  That reason has likely been lost to time,
+> but I worry about devices that are out there that rely on the current
+> behavior to function properly....
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+In this case we shouldn't have to worry about that code path.  It 
+applies to situations where there actually is no error.  In fact, if 
+you follow the logic flow you'll see that the supression code gets 
+invoked only for CB-like transports, i.e., unsolicited auto-sense.
+
+But in this situation there really _is_ an error: We get an underflow.  
+The existing logic checks for underflow only when the device reports 
+Okay status; my patch changes the logic so that it also checks for 
+underflow when the device reports Check Condition status with no sense 
+data.
+
+The idea is that the higher SCSI layers don't know what to do with
+Check Condition plus no-sense -- so they treat the transfer as a
+success.  But that's definitely the wrong thing to do when there was an
+underflow; in that situation we want to report the underflow so that
+the midlayer will retry the command.
+
+Alan Stern
 
