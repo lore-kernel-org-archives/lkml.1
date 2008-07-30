@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758886AbYG3BAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbYG3BAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758886AbYG3BAP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 21:00:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757742AbYG3Azs
+	id S1758089AbYG3BAg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 21:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757817AbYG3Azt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 20:55:48 -0400
+	Tue, 29 Jul 2008 20:55:49 -0400
 Received: from wa-out-1112.google.com ([209.85.146.183]:59233 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757680AbYG3Azr (ORCPT
+	with ESMTP id S1756730AbYG3Azs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 20:55:47 -0400
+	Tue, 29 Jul 2008 20:55:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=HQU5g0W7ZcGkT2y40qHFPIDse3xqOamIw1xYP+gVDt7D+yuGfu2L6IPZMSVdVOnc9c
-         Z/ECNaFIAlFDqyD+vHmVxL/hqrXA65wyW9TYI26tRHG1LQsu+U7dN+o/ZoapRswRXf2H
-         88yk25iGe91AbaNdKeIpogVCZn5UZ10HJHyyM=
-Subject: [PATCH 15/24] parisc: use the new byteorder headers
+        b=vNuUj9uqMpi1XuNm6UjeE2vuwiTAtvjs629ejoTE/exdL1f5Fgy3WzH5O423d1LNdr
+         DLgf6IR2QmHEUAOUfG2PAMOB7Lbkui2oXA3CoLmZ5+hNoVNp2dOCc6FKOdj+NhuFlGQd
+         sp65v7VpPhIKllVgkp5O7pJrqRQ96cQD3f2m8=
+Subject: [PATCH 16/24] powerpc: use the new byteorder headers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
 Date: Tue, 29 Jul 2008 17:55:26 -0700
-Message-Id: <1217379326.23389.126.camel@brick>
+Message-Id: <1217379326.23389.127.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -33,94 +33,107 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- include/asm-parisc/byteorder.h |   37 ++++++++++++-------------------------
- 1 files changed, 12 insertions(+), 25 deletions(-)
+ include/asm-powerpc/byteorder.h |   49 ++++++++++++++------------------------
+ 1 files changed, 18 insertions(+), 31 deletions(-)
 
-diff --git a/include/asm-parisc/byteorder.h b/include/asm-parisc/byteorder.h
-index db14831..e626ba6 100644
---- a/include/asm-parisc/byteorder.h
-+++ b/include/asm-parisc/byteorder.h
-@@ -4,9 +4,10 @@
+diff --git a/include/asm-powerpc/byteorder.h b/include/asm-powerpc/byteorder.h
+index b377522..1d39300 100644
+--- a/include/asm-powerpc/byteorder.h
++++ b/include/asm-powerpc/byteorder.h
+@@ -11,36 +11,43 @@
  #include <asm/types.h>
  #include <linux/compiler.h>
  
 -#ifdef __GNUC__
-+#define __LITTLE_ENDIAN
-+#define __SWAB_64_THRU_32__
+-#ifdef __KERNEL__
++#define __BIG_ENDIAN
  
--static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 x)
-+static inline __attribute_const__ __u16 __arch_swab16(__u16 x)
+-static __inline__ __u16 ld_le16(const volatile __u16 *addr)
++#ifndef __powerpc64__
++# define __SWAB_64_THRU_32__
++#endif
++
++static inline __u16 __arch_swab16p(const volatile __u16 *addr)
  {
- 	__asm__("dep %0, 15, 8, %0\n\t"		/* deposit 00ab -> 0bab */
- 		"shd %%r0, %0, 8, %0"		/* shift 000000ab -> 00ba */
-@@ -14,8 +15,9 @@ static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 x)
- 		: "0" (x));
- 	return x;
+ 	__u16 val;
+ 
+ 	__asm__ __volatile__ ("lhbrx %0,0,%1" : "=r" (val) : "r" (addr), "m" (*addr));
+ 	return val;
+ }
++#define __arch_swab16p __arch_swab16p
+ 
+-static __inline__ void st_le16(volatile __u16 *addr, const __u16 val)
++static inline void __arch_swab16s(volatile __u16 *addr, const __u16 val)
+ {
+ 	__asm__ __volatile__ ("sthbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
+ }
++#define __arch_swab16s __arch_swab16s
+ 
+-static __inline__ __u32 ld_le32(const volatile __u32 *addr)
++static inline __u32 __arch_swab32p(const volatile __u32 *addr)
+ {
+ 	__u32 val;
+ 
+ 	__asm__ __volatile__ ("lwbrx %0,0,%1" : "=r" (val) : "r" (addr), "m" (*addr));
+ 	return val;
+ }
++#define __arch_swab32p __arch_swab32p
+ 
+-static __inline__ void st_le32(volatile __u32 *addr, const __u32 val)
++static inline void __arch_swab32s(volatile __u32 *addr, const __u32 val)
+ {
+ 	__asm__ __volatile__ ("stwbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
+ }
++#define __arch_swab32s __arch_swab32s
+ 
+-static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 value)
++static inline __attribute_const__ __u16 __arch_swab16(__u16 value)
+ {
+ 	__u16 result;
+ 
+@@ -49,8 +56,9 @@ static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 value)
+ 	    : "r" (value), "0" (value >> 8));
+ 	return result;
  }
 +#define __arch_swab16 __arch_swab16
  
--static __inline__ __attribute_const__ __u32 ___arch__swab24(__u32 x)
-+static inline __attribute_const__ __u32 __arch_swab24(__u32 x)
+-static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 value)
++static inline __attribute_const__ __u32 __arch_swab32(__u32 value)
  {
- 	__asm__("shd %0, %0, 8, %0\n\t"		/* shift xabcxabc -> cxab */
- 		"dep %0, 15, 8, %0\n\t"		/* deposit cxab -> cbab */
-@@ -25,7 +27,7 @@ static __inline__ __attribute_const__ __u32 ___arch__swab24(__u32 x)
- 	return x;
- }
+ 	__u32 result;
  
--static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
-+static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
- {
- 	unsigned int temp;
- 	__asm__("shd %0, %0, 16, %1\n\t"	/* shift abcdabcd -> cdab */
-@@ -35,7 +37,7 @@ static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
- 		: "0" (x));
- 	return x;
+@@ -61,29 +69,8 @@ static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 value)
+ 	    : "r" (value), "0" (value >> 24));
+ 	return result;
  }
--
 +#define __arch_swab32 __arch_swab32
  
- #if BITS_PER_LONG > 32
- /*
-@@ -48,7 +50,8 @@ static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
- **      HSHR    67452301 -> *6*4*2*0 into %0
- **      OR      %0 | %1  -> 76543210 into %0 (all done!)
- */
--static __inline__ __attribute_const__ __u64 ___arch__swab64(__u64 x) {
-+static inline __attribute_const__ __u64 __arch_swab64(__u64 x)
-+{
- 	__u64 temp;
- 	__asm__("permh,3210 %0, %0\n\t"
- 		"hshl %0, 8, %1\n\t"
-@@ -58,25 +61,9 @@ static __inline__ __attribute_const__ __u64 ___arch__swab64(__u64 x) {
- 		: "0" (x));
- 	return x;
- }
--#define __arch__swab64(x) ___arch__swab64(x)
--#define __BYTEORDER_HAS_U64__
--#elif !defined(__STRICT_ANSI__)
--static __inline__ __attribute_const__ __u64 ___arch__swab64(__u64 x)
--{
--	__u32 t1 = ___arch__swab32((__u32) x);
--	__u32 t2 = ___arch__swab32((__u32) (x >> 32));
--	return (((__u64) t1 << 32) | t2);
--}
--#define __arch__swab64(x) ___arch__swab64(x)
--#define __BYTEORDER_HAS_U64__
--#endif
--
 -#define __arch__swab16(x) ___arch__swab16(x)
--#define __arch__swab24(x) ___arch__swab24(x)
 -#define __arch__swab32(x) ___arch__swab32(x)
 -
+-/* The same, but returns converted value from the location pointer by addr. */
+-#define __arch__swab16p(addr) ld_le16(addr)
+-#define __arch__swab32p(addr) ld_le32(addr)
+-
+-/* The same, but do the conversion in situ, ie. put the value back to addr. */
+-#define __arch__swab16s(addr) st_le16(addr,*addr)
+-#define __arch__swab32s(addr) st_le32(addr,*addr)
+-
+-#endif /* __KERNEL__ */
+-
+-#ifndef __STRICT_ANSI__
+-#define __BYTEORDER_HAS_U64__
+-#ifndef __powerpc64__
+-#define __SWAB_64_THRU_32__
+-#endif /* __powerpc64__ */
+-#endif /* __STRICT_ANSI__ */
+-
 -#endif /* __GNUC__ */
-+#define __arch_swab64 __arch_swab64
-+#endif /* BITS_PER_LONG > 32 */
- 
+-
 -#include <linux/byteorder/big_endian.h>
 +#include <linux/byteorder.h>
  
- #endif /* _PARISC_BYTEORDER_H */
+ #endif /* _ASM_POWERPC_BYTEORDER_H */
 -- 
 1.6.0.rc1.154.ge3fc
 
