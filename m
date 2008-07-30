@@ -1,106 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYG3AvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbYG3Aza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbYG3AvP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 20:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYG3Au7
+	id S1756563AbYG3Aza (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 20:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYG3AzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 20:50:59 -0400
-Received: from gw.goop.org ([64.81.55.164]:49084 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753024AbYG3Au7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 20:50:59 -0400
-Message-ID: <488FBAEC.5000306@goop.org>
-Date: Tue, 29 Jul 2008 17:50:52 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Mike Travis <travis@sgi.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>, Jack Steiner <steiner@sgi.com>,
-       Alan Mayer <ajm@sgi.com>, Cliff Wickman <cpw@sgi.com>
-Subject: Re: kernel BUG at arch/x86/kernel/io_apic_64.c:357!
-References: <20080729160939.GA4484@linux.vnet.ibm.com>	<86802c440807291135m7f8e2163xdde14545e311649a@mail.gmail.com>	<86802c440807291220t7813effcwb32ae6c18e3cddfe@mail.gmail.com>	<m1d4kwbg8f.fsf@frodo.ebiederm.org> <488F96DD.6020505@sgi.com>	<m1bq0g8euy.fsf@frodo.ebiederm.org> <488FAAD9.4090907@goop.org> <m1vdyo44v4.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1vdyo44v4.fsf@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 29 Jul 2008 20:55:21 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:59233 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753024AbYG3AzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 20:55:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=Gq4VrMeyBQgTgxot+ZGbZ7sOnJF9lDZ1hSTajkNAjsMA/POFGw81IKKSPNkcwuq4yp
+         od73yIJlvngniq7WoXQMwy37h/79TpTxJOLUBWJoS/YYTkHZwHtNXknKEAF3OGM5ru7z
+         9OLzyP3F1yHgdJnaL392tQLmTuiFrm16i5Hk4=
+Subject: [PATCH 01/24] byteorder: update arch override definitions
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 29 Jul 2008 17:55:17 -0700
+Message-Id: <1217379317.23389.112.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
->> I'm still interested in making Xen's event channel-based interrupts fit better
->> into the rest of the interrupt handling scheme.  In particular, event channels
->> map very closely to the x86-64 notion of a vector.  There's 1024 of them per
->> domain, and each is bound to a cpu.  At the moment, I map them to irqs, which
->> means that I need to allocate around 5-6 irqs per cpu, which makes everything
->> very cluttered.  I'd like to map event channels to vectors, and then map vectors
->> to (irq,cpu) tuples.
->>     
->
-> Uh....  I'm not certain this applies.
->   
+Linus prefers the actual function name be used as the guard.
 
-No, but, hey, it's a hook.
+Makes it greppable for all places that define/use the __arch
+version.
 
->> From what I've seen this is exactly how x86-64 currently has things set up, and
->> I'm interested in making sure that 32-bit does the same thing.
->>     
->
-> Yes. x86_32 needs work to get cleaned up.
->
-> The architecture on x86_64 is as follows.
->
-> We have interrupt sources:  GSIs in the case of acpi.
-> We have linux interupts:  something with an irq number.
->
-> Vectors are an internal implementation detail.
->
-> I don't know if your event channels more closely resemble interrupt sources or internal
-> implementation details.  If they are an implementation detail that interrupt sources
-> just flow through we should hide them like we do vectors.  If event channels actually are
-> the sources of interrupts we should do something different.
->   
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Andrew, an update for byteorder-add-a-new-include-linux-swabh-to-define-byteswapping-functions.patch
 
-They're an interrupt source, I guess.  They need to be behind some layer 
-of indirection because they can be reassigned at arbitrary times (like 
-suspend/resume, or if the backend driver just decided to disconnect 
-itself), and so they need to get rebound to at least the same irq.
+Linus expressed his dislike for the HAVE_ARCH_ format as it becomes ungreppable to
+see who actually uses it.
 
->> I'm also interested in having vectors being sourced from multiple interrupt
->> controllers.  So, some vectors would be sourced from APICs, and other are
->> sourced from event channels.  This would be useful for Xen domains which have
->> direct access to hardware (ie, the dom0 control domain in the short term, and
->> disaggregated driver domains later on), and fully emulated domains which have
->> paravirtual drivers.
->>     
->
-> Generally easy except for the disparate methods of catching interrupts.
->   
+New versions of all the arch wire-ups as well, with acks for avr32 and mips from
+arch maintainers.
 
-Catching in what sense?  I assume the interrupt gets raised in some 
-source-specific way, and then passed into a generic layer where it 
-eventually gets matched with an appropriate handler.  I'm sure there's 
-some subtlety I'm missing.
+ include/linux/swab.h |   40 ++++++++++++++++++++--------------------
+ 1 files changed, 20 insertions(+), 20 deletions(-)
 
->> I haven't studied the current code to see if this notion already exists or not.
->>
->> While the APIC interrupt model is the most architecturally important for the x86
->> platform, I'd like to make sure we don't build in the assumption that it's the
->> *only* interrupt model.
->>     
->
-> Well with iommus starting to show up in our irq paths it looks we are going to get
-> a lot of diversity.
->
-> Eric
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
+diff --git a/include/linux/swab.h b/include/linux/swab.h
+index 8f955b2..270d5c2 100644
+--- a/include/linux/swab.h
++++ b/include/linux/swab.h
+@@ -45,9 +45,9 @@
+ 
+ static inline __attribute_const__ __u16 ___swab16(__u16 val)
+ {
+-#ifdef HAVE_ARCH_SWAB16
++#ifdef __arch_swab16
+ 	return __arch_swab16(val);
+-#elif defined(HAVE_ARCH_SWAB16P)
++#elif defined(__arch_swab16p)
+ 	return __arch_swab16p(&val);
+ #else
+ 	return __const_swab16(val);
+@@ -56,9 +56,9 @@ static inline __attribute_const__ __u16 ___swab16(__u16 val)
+ 
+ static inline __attribute_const__ __u32 ___swab32(__u32 val)
+ {
+-#ifdef HAVE_ARCH_SWAB32
++#ifdef __arch_swab32
+ 	return __arch_swab32(val);
+-#elif defined(HAVE_ARCH_SWAB32P)
++#elif defined(__arch_swab32p)
+ 	return __arch_swab32p(&val);
+ #else
+ 	return __const_swab32(val);
+@@ -67,9 +67,9 @@ static inline __attribute_const__ __u32 ___swab32(__u32 val)
+ 
+ static inline __attribute_const__ __u64 ___swab64(__u64 val)
+ {
+-#ifdef HAVE_ARCH_SWAB64
++#ifdef __arch_swab64
+ 	return __arch_swab64(val);
+-#elif defined(HAVE_ARCH_SWAB64P)
++#elif defined(__arch_swab64p)
+ 	return __arch_swab64p(&val);
+ #elif defined(__SWAB_64_THRU_32__)
+ 	__u32 h = val >> 32;
+@@ -82,9 +82,9 @@ static inline __attribute_const__ __u64 ___swab64(__u64 val)
+ 
+ static inline __attribute_const__ __u32 ___swahw32(__u32 val)
+ {
+-#ifdef HAVE_ARCH_SWAHW32
++#ifdef __arch_swahw32
+ 	return __arch_swahw32(val);
+-#elif defined(HAVE_ARCH_SWAHW32P)
++#elif defined(__arch_swahw32p)
+ 	return __arch_swahw32p(&val);
+ #else
+ 	return __const_swahw32(val);
+@@ -93,9 +93,9 @@ static inline __attribute_const__ __u32 ___swahw32(__u32 val)
+ 
+ static inline __attribute_const__ __u32 ___swahb32(__u32 val)
+ {
+-#ifdef HAVE_ARCH_SWAHB32
++#ifdef __arch_swahb32
+ 	return __arch_swahb32(val);
+-#elif defined(HAVE_ARCH_SWAHB32P)
++#elif defined(__arch_swahb32p)
+ 	return __arch_swahb32p(&val);
+ #else
+ 	return __const_swahb32(val);
+@@ -157,7 +157,7 @@ static inline __attribute_const__ __u32 ___swahb32(__u32 val)
+  */
+ static inline __u16 __swab16p(const __u16 *p)
+ {
+-#ifdef HAVE_ARCH_SWAB16P
++#ifdef __arch_swab16p
+ 	return __arch_swab16p(p);
+ #else
+ 	return __swab16(*p);
+@@ -170,7 +170,7 @@ static inline __u16 __swab16p(const __u16 *p)
+  */
+ static inline __u32 __swab32p(const __u32 *p)
+ {
+-#ifdef HAVE_ARCH_SWAB32P
++#ifdef __arch_swab32p
+ 	return __arch_swab32p(p);
+ #else
+ 	return __swab32(*p);
+@@ -183,7 +183,7 @@ static inline __u32 __swab32p(const __u32 *p)
+  */
+ static inline __u64 __swab64p(const __u64 *p)
+ {
+-#ifdef HAVE_ARCH_SWAB64P
++#ifdef __arch_swab64p
+ 	return __arch_swab64p(p);
+ #else
+ 	return __swab64(*p);
+@@ -198,7 +198,7 @@ static inline __u64 __swab64p(const __u64 *p)
+  */
+ static inline __u32 __swahw32p(const __u32 *p)
+ {
+-#ifdef HAVE_ARCH_SWAHW32P
++#ifdef __arch_swahw32p
+ 	return __arch_swahw32p(p);
+ #else
+ 	return __swahw32(*p);
+@@ -213,7 +213,7 @@ static inline __u32 __swahw32p(const __u32 *p)
+  */
+ static inline __u32 __swahb32p(const __u32 *p)
+ {
+-#ifdef HAVE_ARCH_SWAHB32P
++#ifdef __arch_swahb32p
+ 	return __arch_swahb32p(p);
+ #else
+ 	return __swahb32(*p);
+@@ -226,7 +226,7 @@ static inline __u32 __swahb32p(const __u32 *p)
+  */
+ static inline void __swab16s(__u16 *p)
+ {
+-#ifdef HAVE_ARCH_SWAB16S
++#ifdef __arch_swab16s
+ 	__arch_swab16s(p);
+ #else
+ 	*p = __swab16p(p);
+@@ -238,7 +238,7 @@ static inline void __swab16s(__u16 *p)
+  */
+ static inline void __swab32s(__u32 *p)
+ {
+-#ifdef HAVE_ARCH_SWAB32S
++#ifdef __arch_swab32s
+ 	__arch_swab32s(p);
+ #else
+ 	*p = __swab32p(p);
+@@ -251,7 +251,7 @@ static inline void __swab32s(__u32 *p)
+  */
+ static inline void __swab64s(__u64 *p)
+ {
+-#ifdef HAVE_ARCH_SWAB64S
++#ifdef __arch_swab64s
+ 	__arch_swab64s(p);
+ #else
+ 	*p = __swab64p(p);
+@@ -266,7 +266,7 @@ static inline void __swab64s(__u64 *p)
+  */
+ static inline void __swahw32s(__u32 *p)
+ {
+-#ifdef HAVE_ARCH_SWAHW32S
++#ifdef __arch_swahw32s
+ 	__arch_swahw32s(p);
+ #else
+ 	*p = __swahw32p(p);
+@@ -281,7 +281,7 @@ static inline void __swahw32s(__u32 *p)
+  */
+ static inline void __swahb32s(__u32 *p)
+ {
+-#ifdef HAVE_ARCH_SWAHB32S
++#ifdef __arch_swahb32s
+ 	__arch_swahb32s(p);
+ #else
+ 	*p = __swahb32p(p);
+-- 
+1.6.0.rc1.154.ge3fc
+
 
