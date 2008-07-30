@@ -1,242 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759182AbYG3Vdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758931AbYG3VgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759182AbYG3Vdw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 17:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYG3Vdo
+	id S1758931AbYG3VgV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 17:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbYG3VgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 17:33:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54268 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403AbYG3Vdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 17:33:43 -0400
-From: Eduardo Habkost <ehabkost@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, Eduardo Habkost <ehabkost@redhat.com>
-Subject: [PATCH] paravirt_ops: Use unsigned long instead of u32 for alloc_p*() pfn args
-Date: Wed, 30 Jul 2008 18:32:27 -0300
-Message-Id: <1217453547-22231-1-git-send-email-ehabkost@redhat.com>
-X-Mailer: git-send-email 1.5.4.rc3
+	Wed, 30 Jul 2008 17:36:01 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:24249 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755384AbYG3Vf7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 17:35:59 -0400
+X-IronPort-AV: E=Sophos;i="4.31,281,1215388800"; 
+   d="scan'208";a="133699450"
+From: Roland Dreier <rdreier@cisco.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Karen Xie <kxie@chelsio.com>, netdev@vger.kernel.org,
+       open-iscsi@googlegroups.com, davem@davemloft.net, michaelc@cs.wisc.edu,
+       swise@opengridcomputing.com, daisyc@us.ibm.com, wenxiong@us.ibm.com,
+       bhua@us.ibm.com, divy@chelsio.com, dm@chelsio.com, leedom@chelsio.com,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+References: <200807300019.m6U0JkdY012558@localhost.localdomain>
+	<4890C287.60508@pobox.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 30 Jul 2008 14:35:51 -0700
+In-Reply-To: <4890C287.60508@pobox.com> (Jeff Garzik's message of "Wed, 30 Jul
+	2008 15:35:35 -0400")
+Message-ID: <aday73jxdfs.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 30 Jul 2008 21:35:51.0834 (UTC) FILETIME=[3D5457A0:01C8F28C]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes the pfn args from 'u32' to 'unsigned long'
-on alloc_p*() functions on paravirt_ops, and the corresponding
-implementations for Xen and VMI. The prototypes for CONFIG_PARAVIRT=n
-are already using unsigned long, so paravirt.h now matches the prototypes
-on asm-x86/pgalloc.h.
+ > * From a networking standpoint, our main concern becomes how this
+ > interacts with the networking stack.  In particular, I'm concerned
+ > based on reading the source that this driver uses "TCP port stealing"
+ > rather than using a totally separate MAC address (and IP).
+ > 
+ > Stealing a TCP port on an IP/interface already assigned is a common
+ > solution in this space, but also a flawed one.  Precisely because the
+ > kernel and applications are unaware of this "special, magic TCP port"
+ > you open the potential for application problems that are very
+ > difficult for an admin to diagnose based on observed behavior.
 
-It shouldn't result in any changes on generated code on 32-bit, with
-or without CONFIG_PARAVIRT. On both cases, 'codiff -f' didn't show any
-change after applying this patch.
+That's true, but using a separate MAC and IP opens up a bunch of other
+operational problems.  I don't think the right answer for iSCSI offload
+is clear yet.
 
-On 64-bit, there are (expected) binary changes only when CONFIG_PARAVIRT
-is enabled, as the patch is really supposed to change the size of the
-pfn args.
-
-Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
----
- arch/x86/kernel/vmi_32.c   |   10 +++++-----
- arch/x86/xen/enlighten.c   |   20 ++++++++++----------
- include/asm-x86/paravirt.h |   30 +++++++++++++++---------------
- 3 files changed, 30 insertions(+), 30 deletions(-)
-
-diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
-index 6832228..c6a758b 100644
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -394,13 +394,13 @@ static void *vmi_kmap_atomic_pte(struct page *page, enum km_type type)
- }
- #endif
- 
--static void vmi_allocate_pte(struct mm_struct *mm, u32 pfn)
-+static void vmi_allocate_pte(struct mm_struct *mm, unsigned long pfn)
- {
- 	vmi_set_page_type(pfn, VMI_PAGE_L1);
- 	vmi_ops.allocate_page(pfn, VMI_PAGE_L1, 0, 0, 0);
- }
- 
--static void vmi_allocate_pmd(struct mm_struct *mm, u32 pfn)
-+static void vmi_allocate_pmd(struct mm_struct *mm, unsigned long pfn)
- {
-  	/*
- 	 * This call comes in very early, before mem_map is setup.
-@@ -411,20 +411,20 @@ static void vmi_allocate_pmd(struct mm_struct *mm, u32 pfn)
- 	vmi_ops.allocate_page(pfn, VMI_PAGE_L2, 0, 0, 0);
- }
- 
--static void vmi_allocate_pmd_clone(u32 pfn, u32 clonepfn, u32 start, u32 count)
-+static void vmi_allocate_pmd_clone(unsigned long pfn, unsigned long clonepfn, unsigned long start, unsigned long count)
- {
-  	vmi_set_page_type(pfn, VMI_PAGE_L2 | VMI_PAGE_CLONE);
- 	vmi_check_page_type(clonepfn, VMI_PAGE_L2);
- 	vmi_ops.allocate_page(pfn, VMI_PAGE_L2 | VMI_PAGE_CLONE, clonepfn, start, count);
- }
- 
--static void vmi_release_pte(u32 pfn)
-+static void vmi_release_pte(unsigned long pfn)
- {
- 	vmi_ops.release_page(pfn, VMI_PAGE_L1);
- 	vmi_set_page_type(pfn, VMI_PAGE_NORMAL);
- }
- 
--static void vmi_release_pmd(u32 pfn)
-+static void vmi_release_pmd(unsigned long pfn)
- {
- 	vmi_ops.release_page(pfn, VMI_PAGE_L2);
- 	vmi_set_page_type(pfn, VMI_PAGE_NORMAL);
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 4b50c0a..33f9559 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -908,7 +908,7 @@ static int xen_write_msr_safe(unsigned int msr, unsigned low, unsigned high)
- 
- /* Early in boot, while setting up the initial pagetable, assume
-    everything is pinned. */
--static __init void xen_alloc_pte_init(struct mm_struct *mm, u32 pfn)
-+static __init void xen_alloc_pte_init(struct mm_struct *mm, unsigned long pfn)
- {
- #ifdef CONFIG_FLATMEM
- 	BUG_ON(mem_map);	/* should only be used early */
-@@ -918,7 +918,7 @@ static __init void xen_alloc_pte_init(struct mm_struct *mm, u32 pfn)
- 
- /* Early release_pte assumes that all pts are pinned, since there's
-    only init_mm and anything attached to that is pinned. */
--static void xen_release_pte_init(u32 pfn)
-+static void xen_release_pte_init(unsigned long pfn)
- {
- 	make_lowmem_page_readwrite(__va(PFN_PHYS(pfn)));
- }
-@@ -934,7 +934,7 @@ static void pin_pagetable_pfn(unsigned cmd, unsigned long pfn)
- 
- /* This needs to make sure the new pte page is pinned iff its being
-    attached to a pinned pagetable. */
--static void xen_alloc_ptpage(struct mm_struct *mm, u32 pfn, unsigned level)
-+static void xen_alloc_ptpage(struct mm_struct *mm, unsigned long pfn, unsigned level)
- {
- 	struct page *page = pfn_to_page(pfn);
- 
-@@ -952,12 +952,12 @@ static void xen_alloc_ptpage(struct mm_struct *mm, u32 pfn, unsigned level)
- 	}
- }
- 
--static void xen_alloc_pte(struct mm_struct *mm, u32 pfn)
-+static void xen_alloc_pte(struct mm_struct *mm, unsigned long pfn)
- {
- 	xen_alloc_ptpage(mm, pfn, PT_PTE);
- }
- 
--static void xen_alloc_pmd(struct mm_struct *mm, u32 pfn)
-+static void xen_alloc_pmd(struct mm_struct *mm, unsigned long pfn)
- {
- 	xen_alloc_ptpage(mm, pfn, PT_PMD);
- }
-@@ -1005,7 +1005,7 @@ static void xen_pgd_free(struct mm_struct *mm, pgd_t *pgd)
- }
- 
- /* This should never happen until we're OK to use struct page */
--static void xen_release_ptpage(u32 pfn, unsigned level)
-+static void xen_release_ptpage(unsigned long pfn, unsigned level)
- {
- 	struct page *page = pfn_to_page(pfn);
- 
-@@ -1019,23 +1019,23 @@ static void xen_release_ptpage(u32 pfn, unsigned level)
- 	}
- }
- 
--static void xen_release_pte(u32 pfn)
-+static void xen_release_pte(unsigned long pfn)
- {
- 	xen_release_ptpage(pfn, PT_PTE);
- }
- 
--static void xen_release_pmd(u32 pfn)
-+static void xen_release_pmd(unsigned long pfn)
- {
- 	xen_release_ptpage(pfn, PT_PMD);
- }
- 
- #if PAGETABLE_LEVELS == 4
--static void xen_alloc_pud(struct mm_struct *mm, u32 pfn)
-+static void xen_alloc_pud(struct mm_struct *mm, unsigned long pfn)
- {
- 	xen_alloc_ptpage(mm, pfn, PT_PUD);
- }
- 
--static void xen_release_pud(u32 pfn)
-+static void xen_release_pud(unsigned long pfn)
- {
- 	xen_release_ptpage(pfn, PT_PUD);
- }
-diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
-index e40691c..eca8c4f 100644
---- a/include/asm-x86/paravirt.h
-+++ b/include/asm-x86/paravirt.h
-@@ -255,13 +255,13 @@ struct pv_mmu_ops {
- 	 * Hooks for allocating/releasing pagetable pages when they're
- 	 * attached to a pagetable
- 	 */
--	void (*alloc_pte)(struct mm_struct *mm, u32 pfn);
--	void (*alloc_pmd)(struct mm_struct *mm, u32 pfn);
--	void (*alloc_pmd_clone)(u32 pfn, u32 clonepfn, u32 start, u32 count);
--	void (*alloc_pud)(struct mm_struct *mm, u32 pfn);
--	void (*release_pte)(u32 pfn);
--	void (*release_pmd)(u32 pfn);
--	void (*release_pud)(u32 pfn);
-+	void (*alloc_pte)(struct mm_struct *mm, unsigned long pfn);
-+	void (*alloc_pmd)(struct mm_struct *mm, unsigned long pfn);
-+	void (*alloc_pmd_clone)(unsigned long pfn, unsigned long clonepfn, unsigned long start, unsigned long count);
-+	void (*alloc_pud)(struct mm_struct *mm, unsigned long pfn);
-+	void (*release_pte)(unsigned long pfn);
-+	void (*release_pmd)(unsigned long pfn);
-+	void (*release_pud)(unsigned long pfn);
- 
- 	/* Pagetable manipulation functions */
- 	void (*set_pte)(pte_t *ptep, pte_t pteval);
-@@ -988,35 +988,35 @@ static inline void paravirt_pgd_free(struct mm_struct *mm, pgd_t *pgd)
- 	PVOP_VCALL2(pv_mmu_ops.pgd_free, mm, pgd);
- }
- 
--static inline void paravirt_alloc_pte(struct mm_struct *mm, unsigned pfn)
-+static inline void paravirt_alloc_pte(struct mm_struct *mm, unsigned long pfn)
- {
- 	PVOP_VCALL2(pv_mmu_ops.alloc_pte, mm, pfn);
- }
--static inline void paravirt_release_pte(unsigned pfn)
-+static inline void paravirt_release_pte(unsigned long pfn)
- {
- 	PVOP_VCALL1(pv_mmu_ops.release_pte, pfn);
- }
- 
--static inline void paravirt_alloc_pmd(struct mm_struct *mm, unsigned pfn)
-+static inline void paravirt_alloc_pmd(struct mm_struct *mm, unsigned long pfn)
- {
- 	PVOP_VCALL2(pv_mmu_ops.alloc_pmd, mm, pfn);
- }
- 
--static inline void paravirt_alloc_pmd_clone(unsigned pfn, unsigned clonepfn,
--					    unsigned start, unsigned count)
-+static inline void paravirt_alloc_pmd_clone(unsigned long pfn, unsigned long clonepfn,
-+					    unsigned long start, unsigned long count)
- {
- 	PVOP_VCALL4(pv_mmu_ops.alloc_pmd_clone, pfn, clonepfn, start, count);
- }
--static inline void paravirt_release_pmd(unsigned pfn)
-+static inline void paravirt_release_pmd(unsigned long pfn)
- {
- 	PVOP_VCALL1(pv_mmu_ops.release_pmd, pfn);
- }
- 
--static inline void paravirt_alloc_pud(struct mm_struct *mm, unsigned pfn)
-+static inline void paravirt_alloc_pud(struct mm_struct *mm, unsigned long pfn)
- {
- 	PVOP_VCALL2(pv_mmu_ops.alloc_pud, mm, pfn);
- }
--static inline void paravirt_release_pud(unsigned pfn)
-+static inline void paravirt_release_pud(unsigned long pfn)
- {
- 	PVOP_VCALL1(pv_mmu_ops.release_pud, pfn);
- }
--- 
-1.5.5.GIT
-
+ - R.
