@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761148AbYG3Lal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbYG3Le4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761148AbYG3Lal (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 07:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758642AbYG3LaW
+	id S1758064AbYG3Le4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 07:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbYG3Let
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 07:30:22 -0400
-Received: from smtp4.int-evry.fr ([157.159.10.71]:34501 "EHLO
-	smtp4.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757386AbYG3LaU convert rfc822-to-8bit (ORCPT
+	Wed, 30 Jul 2008 07:34:49 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56127
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752753AbYG3Les (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 07:30:20 -0400
-From: Florian Fainelli <florian.fainelli@telecomint.eu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH -next V2] Ignore drivers/video/console/promcon_tbl.c conmakehash generated file
-Date: Wed, 30 Jul 2008 13:29:38 +0200
-User-Agent: KMail/1.9.9
-Cc: "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200807301156.13432.florian.fainelli@telecomint.eu> <20080730112620.GB19465@uranus.ravnborg.org>
-In-Reply-To: <20080730112620.GB19465@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200807301329.38642.florian.fainelli@telecomint.eu>
-X-INT-MailScanner-Information: Please contact the ISP for more information
-X-MailScanner-ID: BDB433EEC6E.12F69
-X-INT-MailScanner: Found to be clean
-X-INT-MailScanner-SpamCheck: 
-X-INT-MailScanner-From: florian.fainelli@telecomint.eu
+	Wed, 30 Jul 2008 07:34:48 -0400
+Date: Wed, 30 Jul 2008 04:34:48 -0700 (PDT)
+Message-Id: <20080730.043448.217891740.davem@davemloft.net>
+To: peterz@infradead.org
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] lockdep: change scheduler annotation
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1217417217.8157.23.camel@twins>
+References: <20080728.174415.154327359.davem@davemloft.net>
+	<20080729.214503.126934382.davem@davemloft.net>
+	<1217417217.8157.23.camel@twins>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+From: Peter Zijlstra <peterz@infradead.org>
+Date: Wed, 30 Jul 2008 13:26:57 +0200
 
-Le Wednesday 30 July 2008 13:26:20 Sam Ravnborg, vous avez écrit :
-> Did you test this?
-> I recall you should specify filenames relative to the
-> path of .gitignore.
+> While thinking about David's patch it _finally_ dawned on me that there
+> is no reason we have a lock class per cpu..
+> 
+> Sorry for being dense :-/
+> 
+> The below changes the annotation from a lock class per cpu, to a single
+> nested lock, as the scheduler never holds more that 2 rq locks at a time
+> anyway.
+> 
+> If there was code requiring holding all rq locks this would not work and
+> the original annotation would be the only option, but that not being the
+> case, this is a much lighter one.
+> 
+> Compiles and boots on a 2-way x86_64.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Yes it works here with git client version 1.5.6.2.
+I had been wondering this entire debugging session why the
+per-rq lock classes were even there, thanks for getting
+rid of them :)
