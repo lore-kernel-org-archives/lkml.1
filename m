@@ -1,38 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbYG3VMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758427AbYG3VLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbYG3VMA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 17:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbYG3VJq
+	id S1758427AbYG3VLo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 17:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbYG3VJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 17:09:46 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:3608 "EHLO
+	Wed, 30 Jul 2008 17:09:45 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:3175 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753095AbYG3VJn (ORCPT
+	with ESMTP id S1757427AbYG3VJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 17:09:43 -0400
+	Wed, 30 Jul 2008 17:09:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
          :mime-version:content-disposition:message-id:content-type
          :content-transfer-encoding;
-        b=qhBlkJzouTMDtI9L/kJpAV9I/BBffivYHfEvvqa9ZzRO+A3FGBhJutQgxi5at1rRNE
-         KWpQmY6Mz5GHSJWB2+QtWQdKZriVoOmoBnIIEAxhhHECI2VN2vu78VOrJNMh/Vahb55x
-         q6ntWiB9AkLoNjVGHJTp9KL7rCChdRDfF51/Q=
+        b=JetXB/0Hz/So2r0xKfKhV+WJK0X9mEMYsfqRqnszeV0v0GCnCudqCkLwVP7ausTq08
+         vazKwQ+WnWR6T0qZwcFwQHFcqpsFGK8cz2FK/THZopgK1RG+PY0PPzSJiBgGMjR3C0JB
+         ujInSfNfQ87pRN/H3F+rS3atkkcA+f5eHjVHE=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 6/7] irq: make irq_desc to use dyn_array
-Date: Wed, 30 Jul 2008 12:40:20 -0700
+Subject: [PATCH 3/7] add dyn_array support
+Date: Wed, 30 Jul 2008 12:37:18 -0700
 User-Agent: KMail/1.9.9
 Cc: linux-kernel@vger.kernel.org
 References: <200807291414.55479.yhlu.kernel@gmail.com> <200807300311.48510.yhlu.kernel@gmail.com> <200807301210.31511.yhlu.kernel@gmail.com>
 In-Reply-To: <200807301210.31511.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200807301240.20875.yhlu.kernel@gmail.com>
+Message-Id: <200807301237.20139.yhlu.kernel@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
@@ -40,77 +40,111 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[
+so could put some crazy big array in bootmem in init stage.
 
+use CONFIG_HAVE_DYN_ARRAY to enable it or not
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
- include/linux/irq.h |    4 ++++
- kernel/irq/handle.c |   31 +++++++++++++++++++++++++++++++
- 2 files changed, 35 insertions(+)
+ include/asm-generic/vmlinux.lds.h |    7 +++++++
+ include/linux/init.h              |   23 +++++++++++++++++++++++
+ init/main.c                       |   25 +++++++++++++++++++++++++
+ 3 files changed, 55 insertions(+)
 
-Index: linux-2.6/include/linux/irq.h
+Index: linux-2.6/include/asm-generic/vmlinux.lds.h
 ===================================================================
---- linux-2.6.orig/include/linux/irq.h
-+++ linux-2.6/include/linux/irq.h
-@@ -181,7 +181,11 @@ struct irq_desc {
- 	const char		*name;
- } ____cacheline_internodealigned_in_smp;
+--- linux-2.6.orig/include/asm-generic/vmlinux.lds.h
++++ linux-2.6/include/asm-generic/vmlinux.lds.h
+@@ -214,6 +214,13 @@
+  * All archs are supposed to use RO_DATA() */
+ #define RODATA RO_DATA(4096)
  
-+#ifdef CONFIG_HAVE_DYN_ARRAY
-+extern struct irq_desc *irq_desc;
-+#else
- extern struct irq_desc irq_desc[NR_IRQS];
-+#endif
- 
- /*
-  * Migration helpers for obsolete names, they will go away:
-Index: linux-2.6/kernel/irq/handle.c
++#define DYN_ARRAY_INIT(align)							\
++	. = ALIGN((align));						\
++	.dyn_array.init : AT(ADDR(.dyn_array.init) - LOAD_OFFSET) {	\
++		VMLINUX_SYMBOL(__dyn_array_start) = .;			\
++		*(.dyn_array.init)					\
++		VMLINUX_SYMBOL(__dyn_array_end) = .;			\
++	}
+ #define SECURITY_INIT							\
+ 	.security_initcall.init : AT(ADDR(.security_initcall.init) - LOAD_OFFSET) { \
+ 		VMLINUX_SYMBOL(__security_initcall_start) = .;		\
+Index: linux-2.6/include/linux/init.h
 ===================================================================
---- linux-2.6.orig/kernel/irq/handle.c
-+++ linux-2.6/kernel/irq/handle.c
-@@ -48,6 +48,36 @@ handle_bad_irq(unsigned int irq, struct
-  * Controller mappings for all interrupt sources:
-  */
- int nr_irqs = NR_IRQS;
+--- linux-2.6.orig/include/linux/init.h
++++ linux-2.6/include/linux/init.h
+@@ -249,6 +249,29 @@ struct obs_kernel_param {
+ 
+ /* Relies on boot_command_line being set */
+ void __init parse_early_param(void);
 +
-+#ifdef CONFIG_HAVE_DYN_ARRAY
-+static struct irq_desc irq_desc_init = {
-+	.status = IRQ_DISABLED,
-+	.chip = &no_irq_chip,
-+	.handle_irq = handle_bad_irq,
-+	.depth = 1,
-+	.lock = __SPIN_LOCK_UNLOCKED(irq_desc->lock),
-+#ifdef CONFIG_SMP
-+	.affinity = CPU_MASK_ALL
-+#endif
++struct dyn_array {
++        void **name;
++        unsigned long size;
++        unsigned int *nr;
++        unsigned long align;
++        void (*init_work)(void *);
 +};
++extern struct dyn_array *__dyn_array_start[], *__dyn_array_end[];
 +
-+static void __init init_work(void *data)
++#define DEFINE_DYN_ARRAY(nameX, sizeX, nrX, alignX, init_workX) \
++		static struct dyn_array __dyn_array_##nameX __initdata = \
++		{	.name = (void **)&nameX,\
++			.size = sizeX,\
++			.nr   = &nrX,\
++			.align = alignX,\
++			.init_work = init_workX,\
++		}; \
++		static struct dyn_array *__dyn_array_ptr_##nameX __used \
++		__attribute__((__section__(".dyn_array.init"))) = \
++			&__dyn_array_##nameX
++
++extern void pre_alloc_dyn_array(void);
+ #endif /* __ASSEMBLY__ */
+ 
+ /**
+Index: linux-2.6/init/main.c
+===================================================================
+--- linux-2.6.orig/init/main.c
++++ linux-2.6/init/main.c
+@@ -539,6 +539,29 @@ void __init __weak thread_info_cache_ini
+ {
+ }
+ 
++void pre_alloc_dyn_array(void)
 +{
-+	struct dyn_array *da = data;
-+	int i;
-+	struct  irq_desc *desc;
++#ifdef CONFIG_HAVE_DYN_ARRAY
++	unsigned long size, phys = 0;
++	struct dyn_array **daa;
 +
-+	desc = *da->name;
++	for (daa = __dyn_array_start ; daa < __dyn_array_end; daa++) {
++		struct dyn_array *da = *daa;
 +
-+	for (i = 0; i < *da->nr; i++)
-+		memcpy(&desc[i], &irq_desc_init, sizeof(struct irq_desc));
++		size = da->size * (*da->nr);
++		print_fn_descriptor_symbol("dyna_array %s ", da->name);
++		printk(KERN_CONT "size:%#lx nr:%d align:%#lx",
++			da->size, *da->nr, da->align);
++		*da->name = __alloc_bootmem_nopanic(size, da->align, phys);
++		phys = virt_to_phys(*da->name);
++		printk(KERN_CONT " ==> [%#lx - %#lx]\n", phys, phys + size);
++
++		if (da->init_work)
++			da->init_work(da);
++	}
++#endif
 +}
 +
-+struct irq_desc *irq_desc;
-+DEFINE_DYN_ARRAY(irq_desc, sizeof(struct irq_desc), nr_irqs, PAGE_SIZE, init_work);
-+
-+#else
-+
- struct irq_desc irq_desc[NR_IRQS] __cacheline_aligned_in_smp = {
- 	[0 ... NR_IRQS-1] = {
- 		.status = IRQ_DISABLED,
-@@ -60,6 +90,7 @@ struct irq_desc irq_desc[NR_IRQS] __cach
- #endif
- 	}
- };
-+#endif
- 
- /*
-  * What should we do if we get a hw irq event on an illegal vector?
+ asmlinkage void __init start_kernel(void)
+ {
+ 	char * command_line;
+@@ -576,6 +599,8 @@ asmlinkage void __init start_kernel(void
+ 	printk(KERN_NOTICE);
+ 	printk(linux_banner);
+ 	setup_arch(&command_line);
++	printk(KERN_INFO "nr_irqs: %d\n", nr_irqs);
++	pre_alloc_dyn_array();
+ 	mm_init_owner(&init_mm, &init_task);
+ 	setup_command_line(command_line);
+ 	unwind_setup();
