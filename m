@@ -1,100 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbYG3Tu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYG3Tv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757571AbYG3Tu5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 15:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756860AbYG3Tub
+	id S1754611AbYG3Tv1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 15:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbYG3Tun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 15:50:31 -0400
-Received: from mx1.suse.de ([195.135.220.2]:45274 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753177AbYG3Tu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 15:50:28 -0400
-Date: Wed, 30 Jul 2008 12:39:42 -0700
-From: Greg KH <gregkh@suse.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
+	Wed, 30 Jul 2008 15:50:43 -0400
+Received: from testure.choralone.org ([194.9.77.134]:42093 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755670AbYG3Tum (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 15:50:42 -0400
+Date: Wed, 30 Jul 2008 15:50:37 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Mike Travis <travis@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Joe Perches <joe@perches.com>,
-       Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
-Message-ID: <20080730193942.GA22441@suse.de>
-References: <20080730165656.118280544@de.ibm.com> <20080730171156.824640459@de.ibm.com>
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>,
+       Lennert Buytenhek <kernel@wantstofly.org>, Paul Jackson <pj@sgi.com>,
+       Tony Luck <tony.luck@intel.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Sam Creasey <sammy@sammy.net>, Greg Banks <gnb@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Adrian Bunk <bunk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Andreas Schwab <schwab@suse.de>, Johannes Weiner <hannes@saeurebad.de>
+Subject: Re: [PATCH 1/1] cpumask: Change cpumask_of_cpu to use
+	cpumask_of_cpu_map
+Message-ID: <20080730195037.GB18162@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>,
+	Lennert Buytenhek <kernel@wantstofly.org>,
+	Paul Jackson <pj@sgi.com>, Tony Luck <tony.luck@intel.com>,
+	Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+	Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Robert Richter <robert.richter@amd.com>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Sam Creasey <sammy@sammy.net>, Greg Banks <gnb@sgi.com>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Adrian Bunk <bunk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+	Andreas Schwab <schwab@suse.de>,
+	Johannes Weiner <hannes@saeurebad.de>
+References: <20080723171841.815234000@polaris-admin.engr.sgi.com> <20080723171841.997896000@polaris-admin.engr.sgi.com> <20080730165539.GA10079@codemonkey.org.uk> <4890A0A8.4000502@sgi.com> <4890B500.7040100@sgi.com> <20080730185003.GA18162@codemonkey.org.uk> <4890C03D.6090307@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080730171156.824640459@de.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <4890C03D.6090307@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 06:56:57PM +0200, Martin Schwidefsky wrote:
-> From: Michael Holzheu <holzheu@de.ibm.com>
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> 
-> Introduce a new family of printk macros which prefixes each kmsg message
-> with a component name and allows to tag the printk with a message id.
-> 
-> The kmsg component name is defined per source file with the KMSG_COMPONENT
-> macro. The first argument of each kmsg printk is the message id. The
-> message id "0" is special as it will suppress the message id prefix.
-> 
-> If the message id will be printed to the console / syslog at all depends
-> on CONFIG_MSG_IDS. If it is "n" then a kmsg_xxx call is just another
-> printk wrapper. These macros are intended to be used uniformly in the
-> s390 architecture and the s390 device drivers.
-> 
-> Signed-off-by: Michael Holzheu <holzheu@de.ibm.com>
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> ---
-> 
->  arch/s390/Kconfig    |    9 +++
->  include/linux/kmsg.h |  124 +++++++++++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 133 insertions(+)
-> 
-> Index: linux-2.6/arch/s390/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/arch/s390/Kconfig
-> +++ linux-2.6/arch/s390/Kconfig
-> @@ -568,6 +568,15 @@ bool "s390 guest support (EXPERIMENTAL)"
->  	select VIRTIO_CONSOLE
->  	help
->  	  Select this option if you want to run the kernel under s390 linux
-> +
-> +config KMSG_IDS
-> +	bool "Kernel message numbers"
-> +	default y
-> +	help
-> +	  Select this option if you want to include a message number to the
-> +	  prefix for kernel messages issued by the s390 architecture and
-> +	  driver code. See "Documentation/s390/kmsg.txt" for more details.
-> +
->  endmenu
->  
->  source "net/Kconfig"
-> Index: linux-2.6/include/linux/kmsg.h
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6/include/linux/kmsg.h
-> @@ -0,0 +1,124 @@
-> +#ifndef _LINUX_KMSG_H
-> +#define _LINUX_KMSG_H
-> +
-> +#ifndef __KMSG_CHECKER
-> +#define __KMSG_CHECK(level, id) KERN_##level
-> +#endif
+On Wed, Jul 30, 2008 at 12:25:49PM -0700, Mike Travis wrote:
 
-What if __KMSG_CHECKER is enabled?  What does __KMSG_CHECK resolve to
-then?
+ > But the errors you were seeing are fixed in the latest linux-next.
 
-And what sets __KMSG_CHECKER?
+I swear I'm going to start taxing people for saying that.
 
-thanks,
+	Dave
 
-greg k-h
+-- 
+http://www.codemonkey.org.uk
