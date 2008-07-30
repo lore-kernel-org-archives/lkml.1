@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYG3Xct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbYG3XdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbYG3Xct (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756989AbYG3Xca
+	id S1757883AbYG3XdN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbYG3Xcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:32:30 -0400
-Received: from ns.suse.de ([195.135.220.2]:35351 "EHLO mx1.suse.de"
+	Wed, 30 Jul 2008 19:32:55 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35422 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756565AbYG3Xc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:32:29 -0400
-Date: Wed, 30 Jul 2008 16:26:45 -0700
+	id S1759014AbYG3Xcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:32:53 -0400
+Date: Wed, 30 Jul 2008 16:26:48 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Adam Greenblatt <adam.greenblatt@gmail.com>
-Subject: [patch 02/29] isofs: fix minor filesystem corruption
-Message-ID: <20080730232645.GC30670@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jan Kratochvil <jan.kratochvil@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 03/29] x86: fix crash due to missing debugctlmsr on AMD K6-3
+Message-ID: <20080730232648.GD30670@suse.de>
 References: <20080730231003.655833364@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="isofs-fix-minor-filesystem-corruption.patch"
+Content-Disposition: inline; filename="x86-fix-crash-due-to-missing-debugctlmsr-on-amd-k6-3.patch"
 In-Reply-To: <20080730232451.GA30670@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,86 +40,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Adam Greenblatt <adam.greenblatt@gmail.com>
+From: Jan Kratochvil <jan.kratochvil@redhat.com>
 
-commit c0a1633b6201ef79e31b7da464d44fdf5953054d upstream
+commit d536b1f86591fb081c7a56eab04e711eb4dab951 upstream
 
-Some iso9660 images contain files with rockridge data that is either
-incorrect or incompletely parsed.  Prior to commit
-f2966632a134e865db3c819346a1dc7d96e05309 ("[PATCH] rock: handle directory
-overflows") (included with kernel 2.6.13) the kernel ignored the rockridge
-data for these files, while still allowing the files to be accessed under
-their non-rockridge names.  That commit inadvertently changed things so
-that files with invalid rockridge data could not be accessed at all.  (I
-ran across the problem when comparing some old CDs with hard disk copies I
-had made long ago under kernel 2.4: a few of the files on the hard disk
-copies were no longer visible on the CDs.)
+currently if you use PTRACE_SINGLEBLOCK on AMD K6-3 (i586) it will crash.
+Kernel now wrongly assumes existing DEBUGCTLMSR MSR register there.
 
-This change reverts to the pre-2.6.13 behavior.
+Removed the assumption also for some other non-K6 CPUs but I am not sure there
+(but it can only bring small inefficiency there if my assumption is wrong).
 
-Signed-off-by: Adam Greenblatt <adam.greenblatt@gmail.com>
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Based on info from Roland McGrath, Chuck Ebbert and Mikulas Patocka.
+More info at:
+	https://bugzilla.redhat.com/show_bug.cgi?id=456175
+
+Signed-off-by: Jan Kratochvil <jan.kratochvil@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/isofs/rock.c |   22 ++++++++++++++++++++--
- 1 file changed, 20 insertions(+), 2 deletions(-)
+ arch/x86/Kconfig.cpu |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/isofs/rock.c
-+++ b/fs/isofs/rock.c
-@@ -209,6 +209,11 @@ repeat:
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -409,4 +409,4 @@ config X86_MINIMUM_CPU_FAMILY
  
- 	while (rs.len > 2) { /* There may be one byte for padding somewhere */
- 		rr = (struct rock_ridge *)rs.chr;
-+		/*
-+		 * Ignore rock ridge info if rr->len is out of range, but
-+		 * don't return -EIO because that would make the file
-+		 * invisible.
-+		 */
- 		if (rr->len < 3)
- 			goto out;	/* Something got screwed up here */
- 		sig = isonum_721(rs.chr);
-@@ -216,8 +221,12 @@ repeat:
- 			goto eio;
- 		rs.chr += rr->len;
- 		rs.len -= rr->len;
-+		/*
-+		 * As above, just ignore the rock ridge info if rr->len
-+		 * is bogus.
-+		 */
- 		if (rs.len < 0)
--			goto eio;	/* corrupted isofs */
-+			goto out;	/* Something got screwed up here */
- 
- 		switch (sig) {
- 		case SIG('R', 'R'):
-@@ -307,6 +316,11 @@ parse_rock_ridge_inode_internal(struct i
- repeat:
- 	while (rs.len > 2) { /* There may be one byte for padding somewhere */
- 		rr = (struct rock_ridge *)rs.chr;
-+		/*
-+		 * Ignore rock ridge info if rr->len is out of range, but
-+		 * don't return -EIO because that would make the file
-+		 * invisible.
-+		 */
- 		if (rr->len < 3)
- 			goto out;	/* Something got screwed up here */
- 		sig = isonum_721(rs.chr);
-@@ -314,8 +328,12 @@ repeat:
- 			goto eio;
- 		rs.chr += rr->len;
- 		rs.len -= rr->len;
-+		/*
-+		 * As above, just ignore the rock ridge info if rr->len
-+		 * is bogus.
-+		 */
- 		if (rs.len < 0)
--			goto eio;	/* corrupted isofs */
-+			goto out;	/* Something got screwed up here */
- 
- 		switch (sig) {
- #ifndef CONFIG_ZISOFS		/* No flag for SF or ZF */
+ config X86_DEBUGCTLMSR
+ 	def_bool y
+-	depends on !(M586MMX || M586TSC || M586 || M486 || M386)
++	depends on !(MK6 || MWINCHIPC6 || MWINCHIP2 || MWINCHIP3D || MCYRIXIII || M586MMX || M586TSC || M586 || M486 || M386)
 
 -- 
