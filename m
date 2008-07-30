@@ -1,86 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761116AbYG3Miw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761294AbYG3Mlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761116AbYG3Miw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 08:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYG3Mio
+	id S1761294AbYG3Mlr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 08:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbYG3Mlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 08:38:44 -0400
-Received: from 1wt.eu ([62.212.114.60]:2273 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752858AbYG3Mio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 08:38:44 -0400
-Date: Wed, 30 Jul 2008 14:38:39 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: David W Studeman <avionicsdv@aim.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Keyboard Jammed error patch 2.4.35-pre4
-Message-ID: <20080730123839.GA2397@1wt.eu>
-References: <g6jqud$t5e$1@ger.gmane.org> <20080729051558.GH29189@1wt.eu> <489016AB.6050309@aim.com> <20080730075101.GA31668@1wt.eu> <489044C8.7090006@aim.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <489044C8.7090006@aim.com>
-User-Agent: Mutt/1.5.11
+	Wed, 30 Jul 2008 08:41:36 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:57527 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752852AbYG3Mlf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 08:41:35 -0400
+Message-ID: <489061E0.5000501@keyaccess.nl>
+Date: Wed, 30 Jul 2008 14:43:12 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Jon Smirl <jonsmirl@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       James Morris <jmorris@namei.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 463 kernel developers missing!
+References: <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com> <20080728202236.GN9378@mit.edu> <20080728204624.GA11581@redhat.com> <20080728141414.d7e5def2.randy.dunlap@oracle.com> <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au> <20080728234131.GD28055@linux-sh.org> <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com> <488E644D.7000507@keyaccess.nl> <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com> <488EF377.5080603@keyaccess.nl> <20080730072448.GB1564@cs181140183.pp.htv.fi>
+In-Reply-To: <20080730072448.GB1564@cs181140183.pp.htv.fi>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: 1.0 (+)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 03:39:04AM -0700, David W Studeman wrote:
-> >This was the important part. Did you fix it by hand ? If not, it would
-> >explain why it did not change the behaviour.
-> >
->  It didn't change the behaviour because it would not apply cleanly, 
-> kernel compilation stopped there.
+On 30-07-08 09:24, Adrian Bunk wrote:
 
-Ah OK, so if you applied half of the patch, it's expected that the fix is
-not applied !
+> Whether Jon's patch is a good idea one might discuss
 
-> A raq/qube3, raq4, raq550, and xtr are all x86 based
+<discussion>it is not</discussion>
 
-OK, that's what I wanted to know, because I needed to understand whether
-the compiled code was in the i386 directory or in another one.
+> but as soon as someone puts an email address into a kernel commit
+> Google will anyway find it:
 
-> but they do not use 
-> a typical bios and a bootloader to start the boot process but that part 
-> is not important here.
+It will and note this is not a privacy issue "as such" at least for me 
+(for rmk rewriting addresses is a privacy issue, directly or via law, 
+and whether or not needed in this specific example or not)
 
-that's what I understood.
+Google find lots of things, most of which do not end up at the top of 
+the search results. This address I'm now posting with is definitely 
+public (or I wouldn't be posting with it) but given that it shouldn't 
+even exist at the moment I have been careful for some time to put a 
+relay address into anything which I intend to be long lived.
 
-> When I made the regression patch, I simply diffed 
-> the dmi scan and keyboard drivers between the two kernels. The stock 
-> 2.4.36.6 kernel cannot be compiled for x86 with no keyboard and vt 
-> support
+Since outside its non-existence it's the best address I have available I 
+do still use it though. This is not a problem, since all mailing list 
+archives go to great trouble to obscure addresses anyway and my gmail 
+address will feature as the "most public" from it being in _content_. 
+Sometimes others use this address in content as well but given that they 
+can't be expected to know about any of my peculiar mail fetishes I'm not 
+going to whine about it and it's not a practical problem anyway.
 
-Why? I have it running on several machines! What error do you get ? Or
-perhaps it's just a matter of not finding the appropriate configuration
-(which is not obvious, I agree) ?
+Then Jon comes along, puts _all_ addresses in content inside a hugely 
+publicized, widely web-indexed tree and fucks it up.
 
-> and I need no dummy driver even though it would not compile by 
-> choosing the dummy driver by itself either.
+Anyways... yesterday I had to turn the fan on my monitor to keep it from 
+damage in this bloody furnace while today it's some 5 degrees cooler and 
+the fan's aimed at me again so I'll stop cursing and shouting now. But 
+still a damn bad idea.
 
-Why would it not compile ?
-
-I'm sorry, but you keep saying that solution XXX would not work but you
-don't indicate what issue you encounter when you try it. If there are
-problems, obviously they need to be fixed, but I cannot fix problems
-based on suppositions.
-
-> Regression patching to 
-> 2.4.34 restored the ability to compile without keyboard and vt support. 
-> This is what it took:
-
-I'm well aware of the patch you reverted. But in my opinion, you fix
-symptoms and not the cause. This patch fixed a problem. Reverting it
-causes either :
-  - kbd_controller_present being uncondtionally defined to 1, meaning
-    it would not change anything for you
-
-  - kbd_controller_present being defined to zero by some obscure other
-    configuration that we just need to find out. However, the last patch
-    I sent to you would have taken care of it, had it applied correctly
-    (please apply it by hand in this case, it's just a matter of changing
-    one macro name in the "if").
-
-Thanks,
-Willy
-
+Rene.
