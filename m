@@ -1,42 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbYG3Ssq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbYG3SuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756704AbYG3Ssq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 14:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYG3Ssh
+	id S1757967AbYG3SuR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 14:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbYG3SuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 14:48:37 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:33624 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbYG3Ssg (ORCPT
+	Wed, 30 Jul 2008 14:50:04 -0400
+Received: from testure.choralone.org ([194.9.77.134]:38779 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750969AbYG3SuD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 14:48:36 -0400
-Date: Wed, 30 Jul 2008 13:48:33 -0500
-From: Mike Miller <mike.miller@hp.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: LKML-scsi <linux-scsi@vger.kernel.org>
-Subject: Problems building 2.6.26 and 2.6.27-rc1
-Message-ID: <20080730184833.GA936@roadking.ldev.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 30 Jul 2008 14:50:03 -0400
+Date: Wed, 30 Jul 2008 14:50:03 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Mike Travis <travis@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>,
+       Lennert Buytenhek <kernel@wantstofly.org>, Paul Jackson <pj@sgi.com>,
+       Tony Luck <tony.luck@intel.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Sam Creasey <sammy@sammy.net>, Greg Banks <gnb@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Adrian Bunk <bunk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Andreas Schwab <schwab@suse.de>, Johannes Weiner <hannes@saeurebad.de>
+Subject: Re: [PATCH 1/1] cpumask: Change cpumask_of_cpu to use
+	cpumask_of_cpu_map
+Message-ID: <20080730185003.GA18162@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>,
+	Lennert Buytenhek <kernel@wantstofly.org>,
+	Paul Jackson <pj@sgi.com>, Tony Luck <tony.luck@intel.com>,
+	Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+	Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Robert Richter <robert.richter@amd.com>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Sam Creasey <sammy@sammy.net>, Greg Banks <gnb@sgi.com>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Adrian Bunk <bunk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+	Andreas Schwab <schwab@suse.de>,
+	Johannes Weiner <hannes@saeurebad.de>
+References: <20080723171841.815234000@polaris-admin.engr.sgi.com> <20080723171841.997896000@polaris-admin.engr.sgi.com> <20080730165539.GA10079@codemonkey.org.uk> <4890A0A8.4000502@sgi.com> <4890B500.7040100@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.9i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+In-Reply-To: <4890B500.7040100@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm getting the following error when trying to build either 2.6.26 or
-2.6.27-rc1:
+On Wed, Jul 30, 2008 at 11:37:52AM -0700, Mike Travis wrote:
+ 
+ > >> I've lost the plot on what's going on with these cpumask patches.
+ > >> But I just saw this on -rc1.
+ > >>
+ > >> arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c:206:33: error: not addressable
+ > >> arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c:274:32: error: not addressable
+ > >> arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c:352:34: error: not addressable
+ > >>
+ > 
+ > After I recreated linux-next the changes all appear to be there now.
+ > One problem though, is !SMP config does not build (something about
+ > DECLARE_BITMAP with NR_CPUS=1.)  I wasn't sure how to create a constant
+ > "(cpumask_t)1" that worked as an lvalue, so the following patch is
+ > somewhat a kluge, but fulfills the requirements.
+ > 
+ > If anyone has a better suggestion, please let me know.
+ > 
+ > Subject: [PATCH] cpmask: add cpumask_of_cpu(0) for non-SMP
+ > 
+ >   * Fix cpumask_of_cpu(0) when CONFIG_SMP is not set by providing a
+ >     pointer to a cpumask_t with cpu 0 bit set.
 
-arch/x86/kernel/head64.c: In function ‘x86_64_start_kernel’:
-arch/x86/kernel/head64.c:88: error: size of array ‘type name’ is negative
+confused.  I saw the error above with a make allyesconfig, which
+sets CONFIG_SMP=y
 
-Systems I've tried are DL585 G5 with dual-core Opterons and ML370 G5 with
-dual-core Intel. Both were originally installed using an x86_64 distro.
+	Dave
 
-Anybody else seen this? Any workarounds?
-
-Thanks,
-mikem
+-- 
+http://www.codemonkey.org.uk
