@@ -1,181 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761380AbYG3Cwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761025AbYG3CxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761380AbYG3Cwb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 22:52:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761317AbYG3CwR
+	id S1761025AbYG3CxN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 22:53:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756982AbYG3Cwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 22:52:17 -0400
-Received: from mail4.hitachi.co.jp ([133.145.228.5]:60860 "EHLO
-	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758961AbYG3CwP (ORCPT
+	Tue, 29 Jul 2008 22:52:54 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:47770 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754410AbYG3Cwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 22:52:15 -0400
-X-AuditID: 0ac90648-ac8a3ba000004920-04-488fd75ccff3
-Message-ID: <488FD756.9060106@hitachi.com>
-Date: Wed, 30 Jul 2008 11:52:06 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
-MIME-Version: 1.0
-To: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
-       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu, snitzer@gmail.com,
-       tglx@linutronix.de, yumiko.sugita.yf@hitachi.com,
-       satoshi.oshima.fk@hitachi.com
-Subject: [PATCH 1/2] ext3: add an option to control error handling on file
-    data
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+	Tue, 29 Jul 2008 22:52:53 -0400
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, hch@infradead.org, miklos@szeredi.hu,
+       Hugh Dickins <hugh@veritas.com>, Erez Zadok <ezk@cs.sunysb.edu>,
+       Michael Halcrow <mhalcrow@us.ibm.com>, <hooanon05@yahoo.co.jp>,
+       Christoph Hellwig <hch@lst.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 01/19] LTP's iogen01 doio tests used to hang nicely on 32-bit SMP when /tmp was a
+Date: Tue, 29 Jul 2008 22:43:31 -0400
+Message-Id: <12173858301951-git-send-email-ezk@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.2
+X-MailKey: Erez_Zadok
+In-Reply-To: <12173858291233-git-send-email-ezk@cs.sunysb.edu>
+References: <12173858291233-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the journal doesn't abort when it gets an IO error in file data
-blocks, the file data corruption will spread silently.  Because
-most of applications and commands do buffered writes without fsync(),
-they don't notice the IO error.  It's scary for mission critical
-systems.  On the other hand, if the journal aborts whenever it gets
-an IO error in file data blocks, the system will easily become
-inoperable.  So this patch introduces a filesystem option to
-determine whether it aborts the journal or just call printk() when
-it gets an IO error in file data.
+From: Hugh Dickins <hugh@veritas.com>
 
-If you mount a ext3 fs with data_err=abort option, it aborts on file
-data write error.  If you mount it with data_err=ignore, it doesn't
-abort, just call printk().  data_err=abort is default, because
-people have used this error handling policy for three years.
+But akpm was dissatisfied with the resulting patch: its lack of
+commentary, the #ifs, the nesting around i_size_read, the lack of
+attention to i_blocks.  I promised to redo it with the general
+spin_lock_32bit() he proposed; but disliked the result, partly because
+"32bit" obscures the real constraints, which are best commented within
+fsstack_copy_inode_size itself.
 
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+This version adds those comments, and uses sizeof comparisons which the
+compiler can optimize out, instead of CONFIG_SMP, CONFIG_LSF.
+BITS_PER_LONG.
+
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: Michael Halcrow <mhalcrow@us.ibm.com>
+Cc: <hooanon05@yahoo.co.jp>
+Cc: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- Documentation/filesystems/ext3.txt |    5 +++++
- fs/ext3/super.c                    |   18 ++++++++++++++++++
- fs/jbd/commit.c                    |    2 ++
- include/linux/ext3_fs.h            |    2 ++
- include/linux/jbd.h                |    3 +++
- 5 files changed, 30 insertions(+)
+ fs/stack.c               |   58 ++++++++++++++++++++++++++++++++++++++-------
+ include/linux/fs_stack.h |    3 +-
+ 2 files changed, 50 insertions(+), 11 deletions(-)
 
-Index: linux-2.6.27-rc1/Documentation/filesystems/ext3.txt
-===================================================================
---- linux-2.6.27-rc1.orig/Documentation/filesystems/ext3.txt
-+++ linux-2.6.27-rc1/Documentation/filesystems/ext3.txt
-@@ -96,6 +96,11 @@ errors=remount-ro(*)	Remount the filesys
- errors=continue		Keep going on a filesystem error.
- errors=panic		Panic and halt the machine if an error occurs.
- 
-+data_err=abort(*)	Abort the journal if an error occurs in a file
-+			data buffer in ordered mode.
-+data_err=ignore		Just print an error message if an error occurs
-+			in a file data buffer in ordered mode.
+diff --git a/fs/stack.c b/fs/stack.c
+index 4336f2b..a66ff6c 100644
+--- a/fs/stack.c
++++ b/fs/stack.c
+@@ -19,16 +19,56 @@
+  * This function cannot be inlined since i_size_{read,write} is rather
+  * heavy-weight on 32-bit systems
+  */
+-void fsstack_copy_inode_size(struct inode *dst, const struct inode *src)
++void fsstack_copy_inode_size(struct inode *dst, struct inode *src)
+ {
+-#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
+-	spin_lock(&dst->i_lock);
+-#endif
+-	i_size_write(dst, i_size_read(src));
+-	dst->i_blocks = src->i_blocks;
+-#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
+-	spin_unlock(&dst->i_lock);
+-#endif
++	loff_t i_size;
++	blkcnt_t i_blocks;
 +
- grpid			Give objects the same group ID as their creator.
- bsdgroups
- 
-Index: linux-2.6.27-rc1/fs/ext3/super.c
-===================================================================
---- linux-2.6.27-rc1.orig/fs/ext3/super.c
-+++ linux-2.6.27-rc1/fs/ext3/super.c
-@@ -625,6 +625,9 @@ static int ext3_show_options(struct seq_
- 	else if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_WRITEBACK_DATA)
- 		seq_puts(seq, ",data=writeback");
- 
-+	if (!test_opt(sb, DATA_ERR_ABORT))
-+		seq_puts(seq, ",data_err=ignore");
++	/*
++	 * i_size_read() includes its own seqlocking and protection from
++	 * preemption (see include/linux/fs.h): we need nothing extra for
++	 * that here, and prefer to avoid nesting locks than attempt to
++	 * keep i_size and i_blocks in synch together.
++	 */
++	i_size = i_size_read(src);
 +
- 	ext3_show_quota_options(seq, sb);
- 
- 	return 0;
-@@ -754,6 +757,7 @@ enum {
- 	Opt_reservation, Opt_noreservation, Opt_noload, Opt_nobh, Opt_bh,
- 	Opt_commit, Opt_journal_update, Opt_journal_inum, Opt_journal_dev,
- 	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,
-+	Opt_data_err_abort, Opt_data_err_ignore,
- 	Opt_usrjquota, Opt_grpjquota, Opt_offusrjquota, Opt_offgrpjquota,
- 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
- 	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
-@@ -796,6 +800,8 @@ static match_table_t tokens = {
- 	{Opt_data_journal, "data=journal"},
- 	{Opt_data_ordered, "data=ordered"},
- 	{Opt_data_writeback, "data=writeback"},
-+	{Opt_data_err_abort, "data_err=abort"},
-+	{Opt_data_err_ignore, "data_err=ignore"},
- 	{Opt_offusrjquota, "usrjquota="},
- 	{Opt_usrjquota, "usrjquota=%s"},
- 	{Opt_offgrpjquota, "grpjquota="},
-@@ -1011,6 +1017,12 @@ static int parse_options (char *options,
- 				sbi->s_mount_opt |= data_opt;
- 			}
- 			break;
-+		case Opt_data_err_abort:
-+			set_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
-+			break;
-+		case Opt_data_err_ignore:
-+			clear_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
-+			break;
- #ifdef CONFIG_QUOTA
- 		case Opt_usrjquota:
- 			qtype = USRQUOTA;
-@@ -1600,6 +1612,8 @@ static int ext3_fill_super (struct super
- 	else
- 		set_opt(sbi->s_mount_opt, ERRORS_RO);
- 
-+	set_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
++	/*
++	 * But if CONFIG_LSF (on 32-bit), we ought to make an effort to keep
++	 * the two halves of i_blocks in synch despite SMP or PREEMPT - though
++	 * stat's generic_fillattr() doesn't bother, and we won't be applying
++	 * quotas (where i_blocks does become important) at the upper level.
++	 *
++	 * We don't actually know what locking is used at the lower level; but
++	 * if it's a filesystem that supports quotas, it will be using i_lock
++	 * as in inode_add_bytes().  tmpfs uses other locking, and its 32-bit
++	 * is (just) able to exceed 2TB i_size with the aid of holes; but its
++	 * i_blocks cannot carry into the upper long without almost 2TB swap -
++	 * let's ignore that case.
++	 */
++	if (sizeof(i_blocks) > sizeof(long))
++		spin_lock(&src->i_lock);
++	i_blocks = src->i_blocks;
++	if (sizeof(i_blocks) > sizeof(long))
++		spin_unlock(&src->i_lock);
 +
- 	sbi->s_resuid = le16_to_cpu(es->s_def_resuid);
- 	sbi->s_resgid = le16_to_cpu(es->s_def_resgid);
- 
-@@ -1986,6 +2000,10 @@ static void ext3_init_journal_params(str
- 		journal->j_flags |= JFS_BARRIER;
- 	else
- 		journal->j_flags &= ~JFS_BARRIER;
-+	if (test_opt(sb, DATA_ERR_ABORT))
-+		journal->j_flags |= JFS_ABORT_ON_SYNCDATA_ERR;
-+	else
-+		journal->j_flags &= ~JFS_ABORT_ON_SYNCDATA_ERR;
- 	spin_unlock(&journal->j_state_lock);
++	/*
++	 * If CONFIG_SMP on 32-bit, it's vital for fsstack_copy_inode_size()
++	 * to hold some lock around i_size_write(), otherwise i_size_read()
++	 * may spin forever (see include/linux/fs.h).  We don't necessarily
++	 * hold i_mutex when this is called, so take i_lock for that case.
++	 *
++	 * And if CONFIG_LSF (on 32-bit), continue our effort to keep the
++	 * two halves of i_blocks in synch despite SMP or PREEMPT: use i_lock
++	 * for that case too, and do both at once by combining the tests.
++	 *
++	 * There is none of this locking overhead in the 64-bit case.
++	 */
++	if (sizeof(i_size) > sizeof(long) || sizeof(i_blocks) > sizeof(long))
++		spin_lock(&dst->i_lock);
++	i_size_write(dst, i_size);
++	dst->i_blocks = i_blocks;
++	if (sizeof(i_size) > sizeof(long) || sizeof(i_blocks) > sizeof(long))
++		spin_unlock(&dst->i_lock);
  }
+ EXPORT_SYMBOL_GPL(fsstack_copy_inode_size);
  
-Index: linux-2.6.27-rc1/include/linux/ext3_fs.h
-===================================================================
---- linux-2.6.27-rc1.orig/include/linux/ext3_fs.h
-+++ linux-2.6.27-rc1/include/linux/ext3_fs.h
-@@ -380,6 +380,8 @@ struct ext3_inode {
- #define EXT3_MOUNT_QUOTA		0x80000 /* Some quota option set */
- #define EXT3_MOUNT_USRQUOTA		0x100000 /* "old" user quota */
- #define EXT3_MOUNT_GRPQUOTA		0x200000 /* "old" group quota */
-+#define EXT3_MOUNT_DATA_ERR_ABORT	0x400000 /* Abort on file data write
-+						  * error in ordered mode */
+diff --git a/include/linux/fs_stack.h b/include/linux/fs_stack.h
+index 6b52faf..6615a52 100644
+--- a/include/linux/fs_stack.h
++++ b/include/linux/fs_stack.h
+@@ -21,8 +21,7 @@
  
- /* Compatibility, for having both ext2_fs.h and ext3_fs.h included at once */
- #ifndef _LINUX_EXT2_FS_H
-Index: linux-2.6.27-rc1/include/linux/jbd.h
-===================================================================
---- linux-2.6.27-rc1.orig/include/linux/jbd.h
-+++ linux-2.6.27-rc1/include/linux/jbd.h
-@@ -816,6 +816,9 @@ struct journal_s
- #define JFS_FLUSHED	0x008	/* The journal superblock has been flushed */
- #define JFS_LOADED	0x010	/* The journal superblock has been loaded */
- #define JFS_BARRIER	0x020	/* Use IDE barriers */
-+#define JFS_ABORT_ON_SYNCDATA_ERR	0x040  /* Abort the journal on file
-+						* data write error in ordered
-+						* mode */
+ /* externs for fs/stack.c */
+ extern void fsstack_copy_attr_all(struct inode *dest, const struct inode *src);
+-extern void fsstack_copy_inode_size(struct inode *dst,
+-				    const struct inode *src);
++extern void fsstack_copy_inode_size(struct inode *dst, struct inode *src);
  
- /*
-  * Function declarations for the journaling transaction and buffer
-Index: linux-2.6.27-rc1/fs/jbd/commit.c
-===================================================================
---- linux-2.6.27-rc1.orig/fs/jbd/commit.c
-+++ linux-2.6.27-rc1/fs/jbd/commit.c
-@@ -482,6 +482,8 @@ void journal_commit_transaction(journal_
- 		printk(KERN_WARNING
- 			"JBD: Detected IO errors while flushing file data "
- 			"on %s\n", bdevname(journal->j_fs_dev, b));
-+		if (journal->j_flags & JFS_ABORT_ON_SYNCDATA_ERR)
-+			journal_abort(journal, err);
- 		err = 0;
- 	}
- 
-
-
+ /* inlines */
+ static inline void fsstack_copy_attr_atime(struct inode *dest,
+-- 
+1.5.2.2
 
