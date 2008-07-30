@@ -1,134 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbYG3WYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759311AbYG3W0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759493AbYG3WYT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 18:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbYG3WXO
+	id S1759311AbYG3W0O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 18:26:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbYG3WZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 18:23:14 -0400
-Received: from fk-out-0910.google.com ([209.85.128.188]:25437 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752853AbYG3WXH (ORCPT
+	Wed, 30 Jul 2008 18:25:58 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4422 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752001AbYG3WZ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 18:23:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=xfQd3Ps1A4BTpeGUZnO0CxzNGPJfOmG9mhiNuo3e91xzfngAxvryu+rw1CkPReJNDB
-         nmK2VnpdF1PbEEQKexrkSOmPJKBf5qpCG6zwSiFdiOE3bqg7yiUwBeVJD4YtbVMB/JkE
-         hSnONHmthKGazQDzcbFZBz9BRfXEpXSTygJ9M=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 3/3] ide: ide_id_has_flush_cache_ext() -> ata_id_flush_ext_enabled()
-Date: Wed, 30 Jul 2008 23:26:56 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
+	Wed, 30 Jul 2008 18:25:58 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Cc: <alan@lxorguk.ukuu.org.uk>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: 463 kernel developers missing!
+Date: Wed, 30 Jul 2008 15:25:28 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKOEHCOJAC.davids@webmaster.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807302326.56498.bzolnier@gmail.com>
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <4890C5E2.3030501@s5r6.in-berlin.de>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Wed, 30 Jul 2008 15:27:32 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Wed, 30 Jul 2008 15:27:32 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Add ata_id_flush_ext_enabled() inline helper to <linux/ata.h>.
 
-* ide_id_has_flush_cache_ext() -> ata_id_flush_ext_enabled()
+I'll try to make this my last response on the issue, if possible.
 
-  The latter one also checks if the command is marked as
-  supported in word 83 and validity of words 83 & 86.
+Stefan Richter wrote:
 
-Cc: Jeff Garzik <jgarzik@pobox.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-disk.c |    6 +++---
- drivers/ide/ide-io.c   |    2 +-
- include/linux/ata.h    |   13 +++++++++++++
- include/linux/ide.h    |    4 ----
- 4 files changed, 17 insertions(+), 8 deletions(-)
+> David Schwartz wrote:
 
-Index: b/drivers/ide/ide-disk.c
-===================================================================
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -582,7 +582,7 @@ static void idedisk_prepare_flush(struct
- 	BUG_ON(task == NULL);
- 
- 	memset(task, 0, sizeof(*task));
--	if (ide_id_has_flush_cache_ext(drive->id) &&
-+	if (ata_id_flush_ext_enabled(drive->id) &&
- 	    (drive->capacity64 >= (1UL << 28)))
- 		task->tf.command = ATA_CMD_FLUSH_EXT;
- 	else
-@@ -659,7 +659,7 @@ static void update_ordered(ide_drive_t *
- 		capacity = idedisk_capacity(drive);
- 		barrier = ata_id_flush_enabled(id) && !drive->noflush &&
- 			(drive->addressing == 0 || capacity <= (1ULL << 28) ||
--			 ide_id_has_flush_cache_ext(id));
-+			 ata_id_flush_ext_enabled(id));
- 
- 		printk(KERN_INFO "%s: cache flushes %ssupported\n",
- 		       drive->name, barrier ? "" : "not ");
-@@ -705,7 +705,7 @@ static int do_idedisk_flushcache(ide_dri
- 	ide_task_t args;
- 
- 	memset(&args, 0, sizeof(ide_task_t));
--	if (ide_id_has_flush_cache_ext(drive->id))
-+	if (ata_id_flush_ext_enabled(drive->id))
- 		args.tf.command = ATA_CMD_FLUSH_EXT;
- 	else
- 		args.tf.command = ATA_CMD_FLUSH;
-Index: b/drivers/ide/ide-io.c
-===================================================================
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -188,7 +188,7 @@ static ide_startstop_t ide_start_power_s
- 			ide_complete_power_step(drive, rq, 0, 0);
- 			return ide_stopped;
- 		}
--		if (ide_id_has_flush_cache_ext(drive->id))
-+		if (ata_id_flush_ext_enabled(drive->id))
- 			args->tf.command = ATA_CMD_FLUSH_EXT;
- 		else
- 			args->tf.command = ATA_CMD_FLUSH;
-Index: b/include/linux/ata.h
-===================================================================
---- a/include/linux/ata.h
-+++ b/include/linux/ata.h
-@@ -573,6 +573,19 @@ static inline int ata_id_has_flush_ext(c
- 	return id[ATA_ID_COMMAND_SET_2] & (1 << 13);
- }
- 
-+static inline int ata_id_flush_ext_enabled(const u16 *id)
-+{
-+	if (ata_id_has_flush_ext(id) == 0)
-+		return 0;
-+	if ((id[ATA_ID_CSF_DEFAULT] & 0xC000) != 0x4000)
-+		return 0;
-+	/*
-+	 * some Maxtor disks have bit 13 defined incorrectly
-+	 * so check bit 10 too
-+	 */
-+	return (id[ATA_ID_CFS_ENABLE_2] & 0x2400) == 0x2400;
-+}
-+
- static inline int ata_id_has_lba48(const u16 *id)
- {
- 	if ((id[ATA_ID_COMMAND_SET_2] & 0xC000) != 0x4000)
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1451,10 +1451,6 @@ extern struct mutex ide_cfg_mtx;
- extern struct bus_type ide_bus_type;
- extern struct class *ide_port_class;
- 
--/* some Maxtor disks have bit 13 defined incorrectly so check bit 10 too */
--#define ide_id_has_flush_cache_ext(id)	\
--	(((id)[ATA_ID_CFS_ENABLE_2] & 0x2400) == 0x2400)
--
- static inline void ide_dump_identify(u8 *id)
- {
- 	print_hex_dump(KERN_INFO, "", DUMP_PREFIX_NONE, 16, 2, id, 512, 0);
+> > I think it's terribly bad manners to submit something to a GPL
+> > project and
+> > then complain when someone else uses it the way they want to.
+> > ...
+> > Enforcing data protection laws to restrict rights granted under
+> > the GPL is
+> > no different from enforcing an EULA to do ths same thing.
+
+> It's not the same thing, by far.  EULA = "end user license agreement";
+> while "data protection law" is... law.  Obviously, licenses (contracts)
+> must not be unlawful.
+
+An EULA itself is not law, but neither would someone's request to be removed
+from such a list be itself a law. EULA's operate under law, and so would a
+request for data confidentiality. This difference is no difference. Both are
+attempts to invoke a law other than copyright to restrict rights guaranteed
+by the GPL. You may not use any law or provision to restrict another
+person's GPL rights. That's what the GPL says, and it means it.
+
+If a law, any law, permits you to impose restrictions on something the GPL
+allows, then you give up the right to use that law in exchange for the
+license the GPL grants. This obviously applies to your copyright in
+derivative works. But it would also apply to any attempt to use any law to
+encumber GPL rights.
+
+As the GPL states, the license grants you permission to copy, distribute,
+and/or modify the covered work. This is against any rights the authors might
+have to prevent you from doing so.
+
+> PS:  You may use a GPL'd program any way you want --- although not for
+> unlawful purposes.  But that's not a matter between you and the
+> copyright holder, it's between you and the law.
+
+Precisely. And others who wish to exercise rights under the GPL forfeit any
+legal mechanism (whether copyright, DMCA, contract, data privacy laws, or
+whatever theory) to impose "further restrictions" on those who wish to
+similarly use GPL works.
+
+Copyright is the carrot the GPL uses to get you agree to the stick. The
+stick is no "further restrictions" of any kind, imposed by any law.
+Obviously, you aren't responsible for an operation of law over which you
+have no control. But you cannot invoke copyright -- or any other law -- to
+restrict someone else's exercise of rights granter by the GPL. You get
+copyright, but you give up it all. No "further restrictions", period.
+
+> PPS:  SCM metadata are not part of the program.  The DCoO states that
+> the personal data submitted along with the contribution may be
+> redistributed "consistent... with the open source license(s) involved",
+> but it isn't discussed whether other terms of the licenses, notably
+> those on modification and derivatives, apply to the data supplied for
+> the certificate of origin.
+
+When you submit a unit to a GPL project, you place that unit under the GPL.
+That is what the DCoO is trying to say. There cannot be some things that
+some parts of the GPL apply to and some don't. There is no "sort of GPL,
+sort of not" that applies to some parts of some submissions. If something is
+part of or all of a submission made under the GPL, then all of the GPL
+applies to it.
+
+DS
+
+
