@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761426AbYG3Xmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762033AbYG3Xmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761426AbYG3Xmd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761941AbYG3Xl1
+	id S1762033AbYG3Xmy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762107AbYG3Xlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:41:27 -0400
-Received: from mx2.suse.de ([195.135.220.15]:34550 "EHLO mx2.suse.de"
+	Wed, 30 Jul 2008 19:41:52 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34633 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761396AbYG3Xl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:41:26 -0400
-Date: Wed, 30 Jul 2008 16:27:36 -0700
+	id S1760980AbYG3Xlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:41:51 -0400
+Date: Wed, 30 Jul 2008 16:27:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Renninger <trenn@suse.de>,
-       Andi Kleen <andi@firstfloor.org>, Len Brown <lenb@kernel.org>,
-       Dave Jones <davej@codemonkey.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [patch 24/29] cpufreq acpi: only call _PPC after cpufreq ACPI init
-	funcs got called already
-Message-ID: <20080730232736.GY30670@suse.de>
+       alan@lxorguk.ukuu.org.uk, Julia Lawall <julia@diku.dk>,
+       Michael Buesch <mb@bu3sch.de>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 25/29] b43legacy: Release mutex in error handling code
+Message-ID: <20080730232738.GZ30670@suse.de>
 References: <20080730231003.655833364@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cpufreq-acpi-only-call-_ppc-after-cpufreq-acpi-init-funcs-got-called-already.patch"
+Content-Disposition: inline; filename="b43legacy-release-mutex-in-error-handling-code.patch"
 In-Reply-To: <20080730232451.GA30670@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,110 +41,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Thomas Renninger <trenn@suse.de>
+From: Julia Lawall <julia@diku.dk>
 
-commit a1531acd43310a7e4571d52e8846640667f4c74b upstream
+commit 4104863fb4a724723d1d5f3cba9d3c5084087e45 upstream
 
-Ingo Molnar provided a fix to not call _PPC at processor driver
-initialization time in "[PATCH] ACPI: fix cpufreq regression" (git
-commit e4233dec749a3519069d9390561b5636a75c7579)
+The mutex is released on a successful return, so it would seem that it
+should be released on an error return as well.
 
-But it can still happen that _PPC is called at processor driver
-initialization time.
+The semantic patch finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-This patch should make sure that this is not possible anymore.
+// <smpl>
+@@
+expression l;
+@@
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Dave Jones <davej@codemonkey.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+mutex_lock(l);
+.. when != mutex_unlock(l)
+    when any
+    when strict
+(
+if (...) { ... when != mutex_unlock(l)
++   mutex_unlock(l);
+    return ...;
+}
+|
+mutex_unlock(l);
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c |    6 ++++++
- drivers/acpi/processor_perflib.c              |   15 +++++++++++++--
- drivers/cpufreq/cpufreq.c                     |    3 +++
- include/linux/cpufreq.h                       |    1 +
- 4 files changed, 23 insertions(+), 2 deletions(-)
+ drivers/net/wireless/b43legacy/main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-+++ b/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-@@ -96,6 +96,12 @@ static int pmi_notifier(struct notifier_
- 	struct cpufreq_frequency_table *cbe_freqs;
- 	u8 node;
+--- a/drivers/net/wireless/b43legacy/main.c
++++ b/drivers/net/wireless/b43legacy/main.c
+@@ -3792,10 +3792,10 @@ static int b43legacy_resume(struct ssb_d
+ 			goto out;
+ 		}
+ 	}
+-	mutex_unlock(&wl->mutex);
  
-+	/* Should this really be called for CPUFREQ_ADJUST, CPUFREQ_INCOMPATIBLE
-+	 * and CPUFREQ_NOTIFY policy events?)
-+	 */
-+	if (event == CPUFREQ_START)
-+		return 0;
-+
- 	cbe_freqs = cpufreq_frequency_get_table(policy->cpu);
- 	node = cbe_cpu_to_node(policy->cpu);
+ 	b43legacydbg(wl, "Device resumed.\n");
+ out:
++	mutex_unlock(&wl->mutex);
+ 	return err;
+ }
  
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -64,7 +64,13 @@ static DEFINE_MUTEX(performance_mutex);
-  * policy is adjusted accordingly.
-  */
- 
--static unsigned int ignore_ppc = 0;
-+/* ignore_ppc:
-+ * -1 -> cpufreq low level drivers not initialized -> _PSS, etc. not called yet
-+ *       ignore _PPC
-+ *  0 -> cpufreq low level drivers initialized -> consider _PPC values
-+ *  1 -> ignore _PPC totally -> forced by user through boot param
-+ */
-+static unsigned int ignore_ppc = -1;
- module_param(ignore_ppc, uint, 0644);
- MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
- 		 "limited by BIOS, this should help");
-@@ -72,7 +78,7 @@ MODULE_PARM_DESC(ignore_ppc, "If the fre
- #define PPC_REGISTERED   1
- #define PPC_IN_USE       2
- 
--static int acpi_processor_ppc_status = 0;
-+static int acpi_processor_ppc_status;
- 
- static int acpi_processor_ppc_notifier(struct notifier_block *nb,
- 				       unsigned long event, void *data)
-@@ -81,6 +87,11 @@ static int acpi_processor_ppc_notifier(s
- 	struct acpi_processor *pr;
- 	unsigned int ppc = 0;
- 
-+	if (event == CPUFREQ_START && ignore_ppc <= 0) {
-+		ignore_ppc = 0;
-+		return 0;
-+	}
-+
- 	if (ignore_ppc)
- 		return 0;
- 
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -806,6 +806,9 @@ static int cpufreq_add_dev (struct sys_d
- 	policy->user_policy.min = policy->cpuinfo.min_freq;
- 	policy->user_policy.max = policy->cpuinfo.max_freq;
- 
-+	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-+				     CPUFREQ_START, policy);
-+
- #ifdef CONFIG_SMP
- 
- #ifdef CONFIG_HOTPLUG_CPU
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -108,6 +108,7 @@ struct cpufreq_policy {
- #define CPUFREQ_ADJUST		(0)
- #define CPUFREQ_INCOMPATIBLE	(1)
- #define CPUFREQ_NOTIFY		(2)
-+#define CPUFREQ_START		(3)
- 
- #define CPUFREQ_SHARED_TYPE_NONE (0) /* None */
- #define CPUFREQ_SHARED_TYPE_HW	 (1) /* HW does needed coordination */
 
 -- 
