@@ -1,100 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbYG3VRE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759428AbYG3VRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756077AbYG3VRE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 17:17:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757641AbYG3VQm
+	id S1759428AbYG3VRh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 17:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757423AbYG3VRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 17:16:42 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:35380 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757404AbYG3VQl (ORCPT
+	Wed, 30 Jul 2008 17:17:19 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:43281 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757155AbYG3VRR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 17:16:41 -0400
-Date: Wed, 30 Jul 2008 16:16:40 -0500
-From: Mike Miller <mike.miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>
-Subject: [PATCH 5/6] cciss: add support for multi lun tape devices
-Message-ID: <20080730211640.GE1758@roadking.ldev.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Wed, 30 Jul 2008 17:17:17 -0400
+Date: Wed, 30 Jul 2008 15:17:03 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 1/2] ext3: add an option to control error handling on	file
+ data
+In-reply-to: <170fa0d20807300814o7741859eu8ad5d5b3b95e401c@mail.gmail.com>
+To: Mike Snitzer <snitzer@gmail.com>
+Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, akpm@linux-foundation.org,
+       sct@redhat.com, adilger@clusterfs.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jack@suse.cz, jbacik@redhat.com,
+       cmm@us.ibm.com, tytso@mit.edu, tglx@linutronix.de,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Message-id: <20080730211703.GZ3342@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <488FD756.9060106@hitachi.com>
+ <170fa0d20807300814o7741859eu8ad5d5b3b95e401c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch 5 of 6
+On Jul 30, 2008  11:14 -0400, Mike Snitzer wrote:
+> On Tue, Jul 29, 2008 at 10:52 PM, Hidehiro Kawai
+> <hidehiro.kawai.ez@hitachi.com> wrote:
+> > If the journal doesn't abort when it gets an IO error in file data
+> > blocks, the file data corruption will spread silently.  Because
+> > most of applications and commands do buffered writes without fsync(),
+> > they don't notice the IO error.  It's scary for mission critical
+> > systems.  On the other hand, if the journal aborts whenever it gets
+> > an IO error in file data blocks, the system will easily become
+> > inoperable.  So this patch introduces a filesystem option to
+> > determine whether it aborts the journal or just call printk() when
+> > it gets an IO error in file data.
+> >
+> > If you mount a ext3 fs with data_err=abort option, it aborts on file
+> > data write error.  If you mount it with data_err=ignore, it doesn't
+> > abort, just call printk().  data_err=abort is default, because
+> > people have used this error handling policy for three years.
+> 
+> Thanks for making this configurable!
+> 
+> But given how surprised many of us were when we found out that
+> jbd/ext3 has been aborting on file data blocks isn't this our chance
+> to correct that long-standing oversight?  Shouldn't the default be
+> data_err=ignore?  Or would changing this behavior cause more harm than
+> good?
+> 
+> I don't feel strongly either way, having the "data_err" option makes
+> this issue moot for me, but I figured I'd raise the question (in the
+> interest of review).
 
-This patch adds support for multi-lun devices in a SAS environment. It's
-required for the support of media changers.
-Please consider this patch for inclusion.
+Yes, good point.  I don't think any of the ext3 maintainers were aware
+that the 3-years-old patch had introduced "abort on data error" behaviour.
+The default for ext4 is only now going to errors=remount-ro from
+errors=continue (as it is on ext2/3) so I think it is inconsistent to
+have the journal abort on data errors when the filesystem itself does not.
 
-Thanks,
-mikem
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
-Signed-off-by: Stephen M. Cameron <scameron@beardog.cca.cpqcorp.net>
-Signed-off-by: Mike Miller <mike.miller@hp.com>
-
-diff --git a/drivers/block/cciss_scsi.c b/drivers/block/cciss_scsi.c
-index c673ff1..e1233aa 100644
---- a/drivers/block/cciss_scsi.c
-+++ b/drivers/block/cciss_scsi.c
-@@ -371,16 +371,50 @@ cciss_scsi_add_entry(int ctlr, int hostno,
- 	/* assumes hba[ctlr]->scsi_ctlr->lock is held */ 
- 	int n = ccissscsi[ctlr].ndevices;
- 	struct cciss_scsi_dev_t *sd;
-+	int i, bus, target, lun;
-+	unsigned char addr1[8], addr2[8];
- 
- 	if (n >= CCISS_MAX_SCSI_DEVS_PER_HBA) {
- 		printk("cciss%d: Too many devices, "
- 			"some will be inaccessible.\n", ctlr);
- 		return -1;
- 	}
--	sd = &ccissscsi[ctlr].dev[n];
--	if (find_bus_target_lun(ctlr, &sd->bus, &sd->target, &sd->lun) != 0)
--		return -1;
- 
-+	bus = target = -1;
-+	lun = 0;
-+	/* Is this device a non-zero lun of a multi-lun device */
-+	/* byte 4 of the 8-byte LUN addr will contain the logical unit no. */
-+	if (scsi3addr[4] != 0) {
-+		/* Search through our list and find the device which */
-+		/* has the same 8 byte LUN address, excepting byte 4. */
-+		/* Assign the same bus and target for this new LUN. */
-+		/* Use the logical unit number from the firmware. */
-+		memcpy(addr1, scsi3addr, 8);
-+		addr1[4] = 0;
-+		for (i = 0; i < n; i++) {
-+			sd = &ccissscsi[ctlr].dev[i];
-+			memcpy(addr2, sd->scsi3addr, 8);
-+			addr2[4] = 0;
-+			/* differ only in byte 4? */
-+			if (memcmp(addr1, addr2, 8) == 0) {
-+				bus = sd->bus;
-+				target = sd->target;
-+				lun = scsi3addr[4];
-+				break;
-+			}
-+		}
-+	}
-+
-+	sd = &ccissscsi[ctlr].dev[n];
-+	if (lun == 0) {
-+		if (find_bus_target_lun(ctlr,
-+			&sd->bus, &sd->target, &sd->lun) != 0)
-+			return -1;
-+	} else {
-+		sd->bus = bus;
-+		sd->target = target;
-+		sd->lun = lun;
-+	}
- 	added[*nadded].bus = sd->bus;
- 	added[*nadded].target = sd->target;
- 	added[*nadded].lun = sd->lun;
