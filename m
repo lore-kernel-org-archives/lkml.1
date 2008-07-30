@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbYG3Azr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbYG3A4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909AbYG3Azr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 20:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbYG3AzX
+	id S1757221AbYG3A4K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 20:56:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbYG3Az1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 20:55:23 -0400
+	Tue, 29 Jul 2008 20:55:27 -0400
 Received: from wa-out-1112.google.com ([209.85.146.183]:59233 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753865AbYG3AzW (ORCPT
+	with ESMTP id S1754582AbYG3Az0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 20:55:22 -0400
+	Tue, 29 Jul 2008 20:55:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=oXd7H9Io8n/wJsg7N3TiTTmoxjDnRUbZPbOBWpLS1MKXsxwea8thz15lCoORQpEuvd
-         sotF7IlnLlMlGy/XltGrRpnTnYpS65G8TYkFBiSHjteVHuFROibA6eUKHlTJ2LPz9uzz
-         3AcWw3g8pKm3pb55s+89Rsv/eKJgvHIfLq+54=
-Subject: [PATCH 02/24] alpha: use the new byteorder headers
+        b=WPJpEuLaZbujuXrmMU/imj5e0ZbqchKaGI1mCS/sFpdN9/aS3D5K0IFAC3/8dfwmJU
+         nym7C70n8K0ANaZGnvZ4fMTPXVcv8lPhQXtfswJQpTCnMiVjlsxhOK2/UmKkqq40eLTi
+         JYvUM4qlDuJtly7xlzi6g3YrYdIl0q9Ia32MU=
+Subject: [PATCH 03/24] arm: use the new byteorder headers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, "rth@twiddle.net" <rth@twiddle.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Russell King <rmk@arm.linux.org.uk>
 Content-Type: text/plain
-Date: Tue, 29 Jul 2008 17:55:17 -0700
-Message-Id: <1217379317.23389.113.camel@brick>
+Date: Tue, 29 Jul 2008 17:55:18 -0700
+Message-Id: <1217379318.23389.114.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -33,41 +33,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- include/asm-alpha/byteorder.h |   13 ++++---------
- 1 files changed, 4 insertions(+), 9 deletions(-)
+ include/asm-arm/byteorder.h |   25 +++++++++++--------------
+ 1 files changed, 11 insertions(+), 14 deletions(-)
 
-diff --git a/include/asm-alpha/byteorder.h b/include/asm-alpha/byteorder.h
-index 58e958f..0e6996f 100644
---- a/include/asm-alpha/byteorder.h
-+++ b/include/asm-alpha/byteorder.h
-@@ -5,9 +5,9 @@
+diff --git a/include/asm-arm/byteorder.h b/include/asm-arm/byteorder.h
+index e6f7fcd..e3fb7c6 100644
+--- a/include/asm-arm/byteorder.h
++++ b/include/asm-arm/byteorder.h
+@@ -18,7 +18,15 @@
  #include <linux/compiler.h>
- #include <asm/compiler.h>
+ #include <asm/types.h>
  
--#ifdef __GNUC__
-+#define __LITTLE_ENDIAN
- 
--static inline __attribute_const__ __u32 __arch__swab32(__u32 x)
+-static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
++#ifdef __ARMEB__
++# define __BIG_ENDIAN
++#else
++# define __LITTLE_ENDIAN
++#endif
++
++#define __SWAB_64_THRU_32__
++
 +static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
  {
- 	/*
- 	 * Unfortunately, we can't use the 6 instruction sequence
-@@ -35,13 +35,8 @@ static inline __attribute_const__ __u32 __arch__swab32(__u32 x)
+ 	__u32 t;
  
- 	return t1;
+@@ -40,19 +48,8 @@ static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
+ 
+ 	return x;
  }
 +#define __arch_swab32 __arch_swab32
  
--#define __arch__swab32 __arch__swab32
+-#define __arch__swab32(x) ___arch__swab32(x)
 -
--#endif /* __GNUC__ */
+-#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
+-#  define __BYTEORDER_HAS_U64__
+-#  define __SWAB_64_THRU_32__
+-#endif
 -
--#define __BYTEORDER_HAS_U64__
--
+-#ifdef __ARMEB__
+-#include <linux/byteorder/big_endian.h>
+-#else
 -#include <linux/byteorder/little_endian.h>
+-#endif
 +#include <linux/byteorder.h>
  
- #endif /* _ALPHA_BYTEORDER_H */
+ #endif
+-
 -- 
 1.6.0.rc1.154.ge3fc
 
