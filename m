@@ -1,34 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbYG3Ciz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbYG3Cm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755834AbYG3Ciz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 22:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbYG3Cir
+	id S1754664AbYG3Cm7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 22:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbYG3Cmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 22:38:47 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:22890 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751826AbYG3Ciq (ORCPT
+	Tue, 29 Jul 2008 22:42:51 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:4013 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbYG3Cmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 22:38:46 -0400
-Date: Tue, 29 Jul 2008 20:38:42 -0600
+	Tue, 29 Jul 2008 22:42:50 -0400
+Date: Tue, 29 Jul 2008 20:42:48 -0600
 From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
        LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
-Message-ID: <20080730023842.GA4269@ldl.fc.hp.com>
+Subject: [PATCH 1/2] pciehp: Rename duplicate slot name N as N-1, N-2,
+	N-M...
+Message-ID: <20080730024248.GB4269@ldl.fc.hp.com>
 Mail-Followup-To: Alex Chiang <achiang@hp.com>,
 	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
 	Matthew Wilcox <matthew@wil.cx>,
 	Pierre Ossman <drzeus-list@drzeus.cx>,
 	Jesse Barnes <jbarnes@virtuousgeek.org>,
 	LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-References: <20080724134737.4b91f30d@mjolnir.drzeus.cx> <200807241407.18543.jbarnes@virtuousgeek.org> <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org> <48895D3C.7040100@jp.fujitsu.com>
+References: <200807241407.18543.jbarnes@virtuousgeek.org> <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org> <48895D3C.7040100@jp.fujitsu.com> <20080730023842.GA4269@ldl.fc.hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48895D3C.7040100@jp.fujitsu.com>
+In-Reply-To: <20080730023842.GA4269@ldl.fc.hp.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
@@ -36,51 +37,138 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> Matthew Wilcox wrote:
->> So we need a way to find if there's already a slot of this
->> name.  I don't see a kobject routine to do that.  Maybe we can
->> do it internally to the pci slot code.
+Commit 3800345f723fd130d50434d4717b99d4a9f383c8 introduces the
+pciehp_slot_with_bus module parameter, which was intended to help
+work around broken firmware that assigns the same name to multiple
+slots.
 
-pci_hp_register already does this with get_slot_from_name().
+Commit 9e4f2e8d4ddb04ad16a3828cd9a369a5a5287009 tells the user to
+use the above parameter in the event of a name collision.
 
->> Then we need to pick a new name for the kobject if it does
->> collide.  My suggestion is that the second time we find an
->> object named "2", we call it "2dup1" (the third time "2dup2",
->> etc.)  Other opinions I've seen include "2a", "2b", ... or
->> "2-1", "2-2", ... or "2-brokenfw1", "2-brokenfw2".
->
-> That looks quite better than using bus number.
+This approach is sub-optimal because it requires too much work from
+the user.
 
-I went with:
+Instead, let's rename the slot on behalf of the user. If firmware
+assigns the name N to multiple slots, then:
 
-	- first slot to register gets "2"
-	- second slot to register gets "2-1"
-	- Mth slot to register gets "2-M"
+	The first registered slot is assigned N
+	The second registered slot is assigned N-1
+	The third registered slot is assigned N-2
+	The Mth registered slot becomes N-M
 
-At first, I thought it would have been better to put this logic
-inside of pci_hp_register, since it knows about the collision,
-and could just fix stuff up for the caller.
+In the event we overflow the slot->name parameter, we report an
+error to the user.
 
-However, the problem is that each hotplug driver can have a
-different length for "name", and it got messy quickly.
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+ drivers/pci/hotplug/pciehp.h      |    1 -
+ drivers/pci/hotplug/pciehp_core.c |   21 ++++++++++++++-------
+ drivers/pci/hotplug/pciehp_hpc.c  |   11 +----------
+ 3 files changed, 15 insertions(+), 18 deletions(-)
 
-So, I just patched the two drivers that are known to be
-problematic.
-
-Two patches follow, against 2.6.27-rc1.
-
-Compile tested only -- I don't have hardware to replicate this.
-
-I'd say they're somewhere between RFC and requested for
-inclusion. I'm certainly not tied to them, just trying to show
-some code to implement the approach described above. If we decide
-that looking at _RMV + other bits is the way to go, then I'm fine
-with that.
-
-It would be great if Pierre and Kenji-san could try them out.
-
-Thanks.
-
-/ac
+diff --git a/drivers/pci/hotplug/pciehp.h b/drivers/pci/hotplug/pciehp.h
+index e3a1e7e..9e6cec6 100644
+--- a/drivers/pci/hotplug/pciehp.h
++++ b/drivers/pci/hotplug/pciehp.h
+@@ -43,7 +43,6 @@ extern int pciehp_poll_mode;
+ extern int pciehp_poll_time;
+ extern int pciehp_debug;
+ extern int pciehp_force;
+-extern int pciehp_slot_with_bus;
+ extern struct workqueue_struct *pciehp_wq;
+ 
+ #define dbg(format, arg...)						\
+diff --git a/drivers/pci/hotplug/pciehp_core.c b/drivers/pci/hotplug/pciehp_core.c
+index 3677495..4fd5355 100644
+--- a/drivers/pci/hotplug/pciehp_core.c
++++ b/drivers/pci/hotplug/pciehp_core.c
+@@ -41,7 +41,6 @@ int pciehp_debug;
+ int pciehp_poll_mode;
+ int pciehp_poll_time;
+ int pciehp_force;
+-int pciehp_slot_with_bus;
+ struct workqueue_struct *pciehp_wq;
+ 
+ #define DRIVER_VERSION	"0.4"
+@@ -56,12 +55,10 @@ module_param(pciehp_debug, bool, 0644);
+ module_param(pciehp_poll_mode, bool, 0644);
+ module_param(pciehp_poll_time, int, 0644);
+ module_param(pciehp_force, bool, 0644);
+-module_param(pciehp_slot_with_bus, bool, 0644);
+ MODULE_PARM_DESC(pciehp_debug, "Debugging mode enabled or not");
+ MODULE_PARM_DESC(pciehp_poll_mode, "Using polling mechanism for hot-plug events or not");
+ MODULE_PARM_DESC(pciehp_poll_time, "Polling mechanism frequency, in seconds");
+ MODULE_PARM_DESC(pciehp_force, "Force pciehp, even if _OSC and OSHP are missing");
+-MODULE_PARM_DESC(pciehp_slot_with_bus, "Use bus number in the slot name");
+ 
+ #define PCIE_MODULE_NAME "pciehp"
+ 
+@@ -194,6 +191,7 @@ static int init_slots(struct controller *ctrl)
+ 	struct slot *slot;
+ 	struct hotplug_slot *hotplug_slot;
+ 	struct hotplug_slot_info *info;
++	int len, dup = 1;
+ 	int retval = -ENOMEM;
+ 
+ 	list_for_each_entry(slot, &ctrl->slot_list, slot_list) {
+@@ -220,15 +218,24 @@ static int init_slots(struct controller *ctrl)
+ 		dbg("Registering bus=%x dev=%x hp_slot=%x sun=%x "
+ 		    "slot_device_offset=%x\n", slot->bus, slot->device,
+ 		    slot->hp_slot, slot->number, ctrl->slot_device_offset);
++duplicate_name:
+ 		retval = pci_hp_register(hotplug_slot,
+ 					 ctrl->pci_dev->subordinate,
+ 					 slot->device);
+ 		if (retval) {
++			/*
++			 * If slot N already exists, we'll try to create
++			 * slot N-1, N-2 ... N-M, until we overflow.
++			 */
++			if (retval == -EEXIST) {
++				len = snprintf(slot->name, SLOT_NAME_SIZE,
++					       "%d-%d", slot->number, dup++);
++				if (len < SLOT_NAME_SIZE)
++					goto duplicate_name;
++				else
++					err("duplicate slot name overflow\n");
++			}
+ 			err("pci_hp_register failed with error %d\n", retval);
+-			if (retval == -EEXIST)
+-				err("Failed to register slot because of name "
+-				    "collision. Try \'pciehp_slot_with_bus\' "
+-				    "module option.\n");
+ 			goto error_info;
+ 		}
+ 		/* create additional sysfs entries */
+diff --git a/drivers/pci/hotplug/pciehp_hpc.c b/drivers/pci/hotplug/pciehp_hpc.c
+index ad27e9e..ab31f5b 100644
+--- a/drivers/pci/hotplug/pciehp_hpc.c
++++ b/drivers/pci/hotplug/pciehp_hpc.c
+@@ -1030,15 +1030,6 @@ static void pcie_shutdown_notification(struct controller *ctrl)
+ 	pciehp_free_irq(ctrl);
+ }
+ 
+-static void make_slot_name(struct slot *slot)
+-{
+-	if (pciehp_slot_with_bus)
+-		snprintf(slot->name, SLOT_NAME_SIZE, "%04d_%04d",
+-			 slot->bus, slot->number);
+-	else
+-		snprintf(slot->name, SLOT_NAME_SIZE, "%d", slot->number);
+-}
+-
+ static int pcie_init_slot(struct controller *ctrl)
+ {
+ 	struct slot *slot;
+@@ -1053,7 +1044,7 @@ static int pcie_init_slot(struct controller *ctrl)
+ 	slot->device = ctrl->slot_device_offset + slot->hp_slot;
+ 	slot->hpc_ops = ctrl->hpc_ops;
+ 	slot->number = ctrl->first_slot;
+-	make_slot_name(slot);
++	snprintf(slot->name, SLOT_NAME_SIZE, "%d", slot->number);
+ 	mutex_init(&slot->lock);
+ 	INIT_DELAYED_WORK(&slot->work, pciehp_queue_pushbutton_work);
+ 	list_add(&slot->slot_list, &ctrl->slot_list);
+-- 
+1.6.0.rc0.g95f8
 
