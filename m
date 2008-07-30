@@ -1,68 +1,344 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761097AbYG3LK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbYG3LPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761097AbYG3LK2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 07:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYG3LKU
+	id S1759416AbYG3LPc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 07:15:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbYG3LPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 07:10:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47949 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752858AbYG3LKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 07:10:19 -0400
-Date: Wed, 30 Jul 2008 13:10:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] x86: 2.6.27-rc1 does not build with gcc-3.2.3 any more
-Message-ID: <20080730111003.GA23933@elte.hu>
-References: <200807301102.m6UB2AiI022512@harpo.it.uu.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807301102.m6UB2AiI022512@harpo.it.uu.se>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 30 Jul 2008 07:15:24 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60847 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752753AbYG3LPY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 07:15:24 -0400
+Subject: Re: combinatorial explosion in lockdep
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, stable <stable@kernel.org>
+In-Reply-To: <20080729.214503.126934382.davem@davemloft.net>
+References: <20080728.161318.38361710.davem@davemloft.net>
+	 <20080728235133.GA7956@elte.hu>
+	 <20080728.174415.154327359.davem@davemloft.net>
+	 <20080729.214503.126934382.davem@davemloft.net>
+Content-Type: text/plain
+Date: Wed, 30 Jul 2008 13:15:19 +0200
+Message-Id: <1217416519.8157.15.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mikael Pettersson <mikpe@it.uu.se> wrote:
-
-> static inline __attribute__((always_inline))
-> unsigned char readb(const volatile void *addr)
-> {
-> 	unsigned char ret;
-> 	asm volatile("mov" "b" " %1,%0"
-> 		     : "=" "q" (ret)
-> 		     : "m" (*(volatile unsigned char *)addr)
-> 		     : "memory");
-> 	return ret;
-> }
+On Tue, 2008-07-29 at 21:45 -0700, David Miller wrote:
+> From: David Miller <davem@davemloft.net>
+> Date: Mon, 28 Jul 2008 17:44:15 -0700 (PDT)
 > 
-> The problem is that "=q" has been broken up into two adjacent
-> string literals, and apparently gcc-3.2.3 hasn't done string
-> literal concatenation at the time it processes the asm().
-> Hence the syntax error. (This is clearly a gcc bug.)
+> > From: Ingo Molnar <mingo@elte.hu>
+> > Date: Tue, 29 Jul 2008 01:51:33 +0200
+> > 
+> > > Any chance to get the "cat /proc/lockdep*" output, so that we could see 
+> > > and check the expected behavior of the full graph?
+> > 
+> > /proc/lockdep loops forever in count_forward_deps() :-)
+> > 
+> > I was able to capture a copy of lockdep_chains:
+> > 
+> > http://vger.kernel.org/~davem/lockdep_chains.bz2
 > 
-> Switching to gcc-3.3.6 or newer fixes the problem.
+> As a followup I dumped the full backwards search graph once the cost
+> got up to about (1 * 1024 * 1024) checks or so.
 > 
-> The question is, should the kernel be fixed to compile with 3.2.3
-> again (by generating "=q" not "=" "q"), or should the minimum supported
-> gcc version be bumped to 3.3.6?
+> I didn't find any loops, but it is clear that the cost is huge because
+> of the runqueue lock double-locking, without the generation count
+> patch I posted the other day.
 > 
-> I have no strong feeling about this, except that I want to use the
-> oldest (== least bloated) gcc possible on my 486 test box.
+> For example, if you start with the first runqueue lock you search one
+> entry:
+> 
+> 	1
+> 
+> Next, if you start with the second runqueue lock you search two
+> entries:
+> 
+> 	2, 1
+> 
+> Next, if you start with the third runqueue lock you search
+> 4 entries:
+> 
+> 	3, 2, 1, 1
+> 
+> And the next series is:
+> 
+> 	4, 3, 2, 1, 1, 2, 1, 1
+> 
+> and so on and so forth.  So the cost of a full backwards graph
+> traversal for N cpus is on the order of "1 << (N - 1)".  So with just
+> 32 cpus the cost is on the order of a few billions of checks.
+> 
+> And then you have to factor in all of those runqueue locks's backwards
+> graphs that don't involve other runqueue locks (on my machine each
+> such sub-graph is about 200 locks deep).
+> 
+> Here is an updated version of my patch to solve this problem.  The only
+> unnice bit is that I had to move the procfs dep counting code into
+> lockdep.c and run it under the lockdep_lock.  This is the only way to
+> safely employ the dependency generation ID marking algorithm the
+> short-circuiting uses.
+> 
+> If we can agree on this as a fix, it should definitely be backported
+> and submitted for -stable :-)
 
-yeah, please send a fix. We could move the '=' from build_mmio_read into 
-the argument (explicitly).
+Agreed adding the stable team to the CC
 
-	Ingo
+> ----------------------------------------
+> 
+> lockdep: Fix combinatorial explosion in lock subgraph traversal.
+> 
+> When we traverse the graph, either forwards or backwards, we
+> are interested in whether a certain property exists somewhere
+> in a node reachable in the graph.
+> 
+> Therefore it is never necessary to traverse through a node more
+> than once to get a correct answer to the given query.
+> 
+> Take advantage of this property using a global ID counter so that we
+> need not clear all the markers in all the lock_class entries before
+> doing a traversal.  A new ID is choosen when we start to traverse, and
+> we continue through a lock_class only if it's ID hasn't been marked
+> with the new value yet.
+> 
+> This short-circuiting is essential especially for high CPU count
+> systems.  The scheduler has a runqueue per cpu, and needs to take
+> two runqueue locks at a time, which leads to long chains of
+> backwards and forwards subgraphs from these runqueue lock nodes.
+> Without the short-circuit implemented here, a graph traversal on
+> a runqueue lock can take up to (1 << (N - 1)) checks on a system
+> with N cpus.
+> 
+> For anything more than 16 cpus or so, lockdep will eventually bring
+> the machine to a complete standstill.
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+> diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
+> index 2486eb4..1bfdc30 100644
+> --- a/include/linux/lockdep.h
+> +++ b/include/linux/lockdep.h
+> @@ -89,6 +89,7 @@ struct lock_class {
+>  
+>  	struct lockdep_subclass_key	*key;
+>  	unsigned int			subclass;
+> +	unsigned int			dep_gen_id;
+>  
+>  	/*
+>  	 * IRQ/softirq usage tracking bits:
+> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+> index d38a643..6999e64 100644
+> --- a/kernel/lockdep.c
+> +++ b/kernel/lockdep.c
+> @@ -372,6 +372,19 @@ unsigned int nr_process_chains;
+>  unsigned int max_lockdep_depth;
+>  unsigned int max_recursion_depth;
+>  
+> +static unsigned int lockdep_dependency_gen_id;
+> +
+> +static bool lockdep_dependency_visit(struct lock_class *source,
+> +				     unsigned int depth)
+> +{
+> +	if (!depth)
+> +		lockdep_dependency_gen_id++;
+> +	if (source->dep_gen_id == lockdep_dependency_gen_id)
+> +		return true;
+> +	source->dep_gen_id = lockdep_dependency_gen_id;
+> +	return false;
+> +}
+> +
+>  #ifdef CONFIG_DEBUG_LOCKDEP
+>  /*
+>   * We cannot printk in early bootup code. Not even early_printk()
+> @@ -558,6 +571,9 @@ static void print_lock_dependencies(struct lock_class *class, int depth)
+>  {
+>  	struct lock_list *entry;
+>  
+> +	if (lockdep_dependency_visit(class, depth))
+> +		return;
+> +
+>  	if (DEBUG_LOCKS_WARN_ON(depth >= 20))
+>  		return;
+>  
+> @@ -959,6 +975,67 @@ static int noinline print_infinite_recursion_bug(void)
+>  	return 0;
+>  }
+>  
+> +unsigned long __lockdep_count_forward_deps(struct lock_class *class,
+> +					   unsigned int depth)
+> +{
+> +	struct lock_list *entry;
+> +	unsigned long ret = 1;
+> +
+> +	if (lockdep_dependency_visit(class, depth))
+> +		return 0;
+> +
+> +	/*
+> +	 * Recurse this class's dependency list:
+> +	 */
+> +	list_for_each_entry(entry, &class->locks_after, entry)
+> +		ret += __lockdep_count_forward_deps(entry->class, depth + 1);
+> +
+> +	return ret;
+> +}
+> +
+> +unsigned long lockdep_count_forward_deps(struct lock_class *class)
+> +{
+> +	unsigned long ret, flags;
+> +
+> +	local_irq_save(flags);
+> +	__raw_spin_lock(&lockdep_lock);
+> +	ret = __lockdep_count_forward_deps(class, 0);
+> +	__raw_spin_unlock(&lockdep_lock);
+> +	local_irq_restore(flags);
+> +
+> +	return ret;
+> +}
+> +
+> +unsigned long __lockdep_count_backward_deps(struct lock_class *class,
+> +					    unsigned int depth)
+> +{
+> +	struct lock_list *entry;
+> +	unsigned long ret = 1;
+> +
+> +	if (lockdep_dependency_visit(class, depth))
+> +		return 0;
+> +	/*
+> +	 * Recurse this class's dependency list:
+> +	 */
+> +	list_for_each_entry(entry, &class->locks_before, entry)
+> +		ret += __lockdep_count_backward_deps(entry->class, depth + 1);
+> +
+> +	return ret;
+> +}
+> +
+> +unsigned long lockdep_count_backward_deps(struct lock_class *class)
+> +{
+> +	unsigned long ret, flags;
+> +
+> +	local_irq_save(flags);
+> +	__raw_spin_lock(&lockdep_lock);
+> +	ret = __lockdep_count_backward_deps(class, 0);
+> +	__raw_spin_unlock(&lockdep_lock);
+> +	local_irq_restore(flags);
+> +
+> +	return ret;
+> +}
+> +
+>  /*
+>   * Prove that the dependency graph starting at <entry> can not
+>   * lead to <target>. Print an error and return 0 if it does.
+> @@ -968,6 +1045,9 @@ check_noncircular(struct lock_class *source, unsigned int depth)
+>  {
+>  	struct lock_list *entry;
+>  
+> +	if (lockdep_dependency_visit(source, depth))
+> +		return 1;
+> +
+>  	debug_atomic_inc(&nr_cyclic_check_recursions);
+>  	if (depth > max_recursion_depth)
+>  		max_recursion_depth = depth;
+> @@ -1011,6 +1091,9 @@ find_usage_forwards(struct lock_class *source, unsigned int depth)
+>  	struct lock_list *entry;
+>  	int ret;
+>  
+> +	if (lockdep_dependency_visit(source, depth))
+> +		return 1;
+> +
+>  	if (depth > max_recursion_depth)
+>  		max_recursion_depth = depth;
+>  	if (depth >= RECURSION_LIMIT)
+> @@ -1050,6 +1133,9 @@ find_usage_backwards(struct lock_class *source, unsigned int depth)
+>  	struct lock_list *entry;
+>  	int ret;
+>  
+> +	if (lockdep_dependency_visit(source, depth))
+> +		return 1;
+> +
+>  	if (!__raw_spin_is_locked(&lockdep_lock))
+>  		return DEBUG_LOCKS_WARN_ON(1);
+>  
+> diff --git a/kernel/lockdep_internals.h b/kernel/lockdep_internals.h
+> index c3600a0..68d44ec 100644
+> --- a/kernel/lockdep_internals.h
+> +++ b/kernel/lockdep_internals.h
+> @@ -53,6 +53,9 @@ extern unsigned int nr_process_chains;
+>  extern unsigned int max_lockdep_depth;
+>  extern unsigned int max_recursion_depth;
+>  
+> +extern unsigned long lockdep_count_forward_deps(struct lock_class *);
+> +extern unsigned long lockdep_count_backward_deps(struct lock_class *);
+> +
+>  #ifdef CONFIG_DEBUG_LOCKDEP
+>  /*
+>   * Various lockdep statistics:
+> diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
+> index 9b0e940..6252ff7 100644
+> --- a/kernel/lockdep_proc.c
+> +++ b/kernel/lockdep_proc.c
+> @@ -63,34 +63,6 @@ static void l_stop(struct seq_file *m, void *v)
+>  {
+>  }
+>  
+> -static unsigned long count_forward_deps(struct lock_class *class)
+> -{
+> -	struct lock_list *entry;
+> -	unsigned long ret = 1;
+> -
+> -	/*
+> -	 * Recurse this class's dependency list:
+> -	 */
+> -	list_for_each_entry(entry, &class->locks_after, entry)
+> -		ret += count_forward_deps(entry->class);
+> -
+> -	return ret;
+> -}
+> -
+> -static unsigned long count_backward_deps(struct lock_class *class)
+> -{
+> -	struct lock_list *entry;
+> -	unsigned long ret = 1;
+> -
+> -	/*
+> -	 * Recurse this class's dependency list:
+> -	 */
+> -	list_for_each_entry(entry, &class->locks_before, entry)
+> -		ret += count_backward_deps(entry->class);
+> -
+> -	return ret;
+> -}
+> -
+>  static void print_name(struct seq_file *m, struct lock_class *class)
+>  {
+>  	char str[128];
+> @@ -124,10 +96,10 @@ static int l_show(struct seq_file *m, void *v)
+>  #ifdef CONFIG_DEBUG_LOCKDEP
+>  	seq_printf(m, " OPS:%8ld", class->ops);
+>  #endif
+> -	nr_forward_deps = count_forward_deps(class);
+> +	nr_forward_deps = lockdep_count_forward_deps(class);
+>  	seq_printf(m, " FD:%5ld", nr_forward_deps);
+>  
+> -	nr_backward_deps = count_backward_deps(class);
+> +	nr_backward_deps = lockdep_count_backward_deps(class);
+>  	seq_printf(m, " BD:%5ld", nr_backward_deps);
+>  
+>  	get_usage_chars(class, &c1, &c2, &c3, &c4);
+> @@ -350,7 +322,7 @@ static int lockdep_stats_show(struct seq_file *m, void *v)
+>  		if (class->usage_mask & LOCKF_ENABLED_HARDIRQS_READ)
+>  			nr_hardirq_read_unsafe++;
+>  
+> -		sum_forward_deps += count_forward_deps(class);
+> +		sum_forward_deps += lockdep_count_forward_deps(class);
+>  	}
+>  #ifdef CONFIG_DEBUG_LOCKDEP
+>  	DEBUG_LOCKS_WARN_ON(debug_atomic_read(&nr_unused_locks) != nr_unused);
+
