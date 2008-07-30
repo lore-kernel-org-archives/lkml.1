@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbYG3HHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbYG3HHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757545AbYG3HHa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 03:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYG3HGy
+	id S1758060AbYG3HHt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 03:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757564AbYG3HHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 03:06:54 -0400
-Received: from mx2.suse.de ([195.135.220.15]:39507 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751877AbYG3HGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 03:06:53 -0400
-Date: Wed, 30 Jul 2008 09:06:50 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Greg KH <greg@kroah.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Greg KH <gregkh@suse.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: linux-next: Tree for July 29
-Message-ID: <20080730090650.79a5a749@kopernikus.site>
-In-Reply-To: <20080730044834.GB2954@kroah.com>
-References: <20080729172337.b3d74100.sfr@canb.auug.org.au>
-	<200807291825.14281.bzolnier@gmail.com>
-	<20080729181639.GA21311@suse.de>
-	<Pine.LNX.4.64.0807292145220.28604@blonde.site>
-	<20080730044834.GB2954@kroah.com>
-Organization: SUSE LINUX Products GmbH
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jul 2008 03:07:32 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:60495 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757538AbYG3HH3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 03:07:29 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Greg Ungerer <gerg@snapgear.com>
+Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
+Date: Wed, 30 Jul 2008 09:07:24 +0200
+User-Agent: KMail/1.9.9
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <20080728200500.GA14284@uranus.ravnborg.org> <48900EE4.8030606@snapgear.com>
+In-Reply-To: <48900EE4.8030606@snapgear.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200807300907.25186.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19AVT9f2G1IPMjq9oTKSRFzC1ZAElowXlOntuO
+ 7h8n1K7gAbvndzUMnWfKgktAJ2d+zlUmmJG1S9mM1EDufnuzEw
+ w2n7KEeiVmSFWAwaVo07Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH <greg@kroah.com> [2008-07-29 21:48]:
-> > Isn't this the opposite end of the same problem for which Bernhard
-> > has been repeatedly trying to find a taker for his patch:
-> > 
-> > http://article.gmane.org/gmane.linux.kernel.kexec/1882
-> 
-> Yes.  It's not the kobject patch at fault here, it's the use of kobjects
-> so early in the boot process.  That needs to be fixed.
+On Wednesday 30 July 2008, Greg Ungerer wrote:
+> I just tried moving the include/asm-m68knommu directory
+> to arch/m68knommu/include/asm and it all worked fine.
+> Clean compile first go :-)  Nice.  (As noted
+> asm-offsets.h was still generated in incldue/asm-m68knommu
+> afterwards though).
 
-Yes, but if somebody could tell me why nobody takes the patch, I would
-be happy. Then I would be able to improve the patch. :)
+I think the more interesting aspect in m68knommu is what happens
+when asm-m68k gets moved. Does that work as well?
 
+I think the best way to deal with it is to remove all files
+that just include an asm-m68k file with the same name, and
+add -Iarch/m68k/include to your CFLAGS. Not sure about 'make
+headers_install', if there is an easy way to install the
+files from each of the two directories correctly.
 
-
-
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
+	Arnd <><
