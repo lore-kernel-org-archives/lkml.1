@@ -1,177 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbYG3XcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbYG3Xc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757037AbYG3XcM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:32:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbYG3Xbx
+	id S1756143AbYG3Xc2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYG3XcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:31:53 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:36671 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755817AbYG3Xbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:31:52 -0400
-Date: Wed, 30 Jul 2008 18:31:51 -0500
-From: Russ Anderson <rja@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org
-Cc: Russ Anderson <rja@sgi.com>
-Subject: [PATCH] mm: Avoid putting a bad page back on the LRU v8
-Message-ID: <20080730233150.GA86120@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-Mime-Version: 1.0
+	Wed, 30 Jul 2008 19:32:06 -0400
+Received: from mx1.suse.de ([195.135.220.2]:35302 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756847AbYG3XcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:32:04 -0400
+Date: Wed, 30 Jul 2008 16:26:39 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Jan Kara <jack@suse.cz>
+Subject: [patch 01/29] quota: fix possible infinite loop in quota code
+Message-ID: <20080730232639.GB30670@suse.de>
+References: <20080730231003.655833364@mini.kroah.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Content-Disposition: inline; filename="quota-fix-possible-infinite-loop-in-quota-code.patch"
+In-Reply-To: <20080730232451.GA30670@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] mm: Avoid putting a bad page back on the LRU v8
 
-Prevent a page with a physical memory error from being placed back
-on the LRU.  A new page flag (PG_memerror) is added if
-CONFIG_PAGEFLAGS_EXTENDED is defined.  
+2.6.25-stable review patch.  If anyone has any objections, please let us
+know.
 
-Version 8 change:  Removed hot path check for pages with memory
-errors on the free list.
+------------------
 
-Signed-off-by: Russ Anderson <rja@sgi.com>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+From: Jan Kara <jack@suse.cz>
+
+commit b48d380541f634663b71766005838edbb7261685 upstream
+
+When quota structure is going to be dropped and it is dirty, quota code tries
+to write it.  If the write fails for some reason (e.  g.  transaction cannot
+be started because the journal is aborted), we try writing again and again and
+again...  Fix the problem by clearing the dirty bit even if the write failed.
+
+(akpm: for 2.6.27, 2.6.26.x and 2.6.25.x)
+
+Signed-off-by: Jan Kara <jack@suse.cz>
+Reviewed-by: dingdinghua <dingdinghua85@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/page-flags.h |   15 ++++++++++++++-
- mm/migrate.c               |   36 +++++++++++++++++++++++++++++++++++-
- 2 files changed, 49 insertions(+), 2 deletions(-)
+ fs/dquot.c |   16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
-Index: linux/mm/migrate.c
-===================================================================
---- linux.orig/mm/migrate.c	2008-07-29 13:18:23.000000000 -0500
-+++ linux/mm/migrate.c	2008-07-29 13:21:03.000000000 -0500
-@@ -65,6 +65,7 @@ int isolate_lru_page(struct page *page, 
- 	}
- 	return ret;
- }
-+EXPORT_SYMBOL(isolate_lru_page);
- 
- /*
-  * migrate_prep() needs to be called before we start compiling a list of pages
-@@ -82,6 +83,7 @@ int migrate_prep(void)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(migrate_prep);
- 
- static inline void move_to_lru(struct page *page)
+--- a/fs/dquot.c
++++ b/fs/dquot.c
+@@ -554,6 +554,8 @@ static struct shrinker dqcache_shrinker 
+  */
+ static void dqput(struct dquot *dquot)
  {
-@@ -116,6 +118,7 @@ int putback_lru_pages(struct list_head *
- 	}
- 	return count;
- }
-+EXPORT_SYMBOL(putback_lru_pages);
- 
- /*
-  * Restore a potential migration pte to a working pte entry
-@@ -741,7 +744,26 @@ unlock:
-  		 * restored.
-  		 */
-  		list_del(&page->lru);
-- 		move_to_lru(page);
-+		if (PageMemError(page)) {
-+			if (rc == 0)
-+				/*
-+				 * A page with a memory error that has
-+				 * been migrated will not be moved to
-+				 * the LRU.
-+				 */
-+				goto move_newpage;
-+			else
-+				/*
-+				 * The page failed to migrate and will not
-+				 * be added to the bad page list.  Clearing
-+				 * the error bit will allow another attempt
-+				 * to migrate if it gets another correctable
-+				 * error.
-+				 */
-+				ClearPageMemError(page);
++	int ret;
++
+ 	if (!dquot)
+ 		return;
+ #ifdef __DQUOT_PARANOIA
+@@ -586,7 +588,19 @@ we_slept:
+ 	if (test_bit(DQ_ACTIVE_B, &dquot->dq_flags) && dquot_dirty(dquot)) {
+ 		spin_unlock(&dq_list_lock);
+ 		/* Commit dquot before releasing */
+-		dquot->dq_sb->dq_op->write_dquot(dquot);
++		ret = dquot->dq_sb->dq_op->write_dquot(dquot);
++		if (ret < 0) {
++			printk(KERN_ERR "VFS: cannot write quota structure on "
++				"device %s (error %d). Quota may get out of "
++				"sync!\n", dquot->dq_sb->s_id, ret);
++			/*
++			 * We clear dirty bit anyway, so that we avoid
++			 * infinite loop here
++			 */
++			spin_lock(&dq_list_lock);
++			clear_dquot_dirty(dquot);
++			spin_unlock(&dq_list_lock);
 +		}
-+
-+		move_to_lru(page);
+ 		goto we_slept;
  	}
- 
- move_newpage:
-@@ -813,6 +835,17 @@ int migrate_pages(struct list_head *from
- 			}
- 		}
- 	}
-+
-+	if (rc != 0)
-+		list_for_each_entry_safe(page, page2, from, lru)
-+			if (PageMemError(page))
-+				/*
-+				 * The page failed to migrate.  Clearing
-+				 * the error bit will allow another attempt
-+				 * to migrate if it gets another correctable
-+				 * error.
-+				 */
-+				ClearPageMemError(page);
- 	rc = 0;
- out:
- 	if (!swapwrite)
-@@ -825,6 +858,7 @@ out:
- 
- 	return nr_failed + retry;
- }
-+EXPORT_SYMBOL(migrate_pages);
- 
- #ifdef CONFIG_NUMA
- /*
-Index: linux/include/linux/page-flags.h
-===================================================================
---- linux.orig/include/linux/page-flags.h	2008-07-29 13:18:23.000000000 -0500
-+++ linux/include/linux/page-flags.h	2008-07-29 13:21:03.000000000 -0500
-@@ -84,6 +84,7 @@ enum pageflags {
- 	PG_private,		/* If pagecache, has fs-private data */
- 	PG_writeback,		/* Page is under writeback */
- #ifdef CONFIG_PAGEFLAGS_EXTENDED
-+	PG_memerror,		/* Page has a physical memory error */
- 	PG_head,		/* A head page */
- 	PG_tail,		/* A tail page */
- #else
-@@ -147,15 +148,21 @@ static inline int TestSetPage##uname(str
- static inline int TestClearPage##uname(struct page *page)		\
- 		{ return test_and_clear_bit(PG_##lname, &page->flags); }
- 
-+#define PAGEFLAGMASK(uname, lname)					\
-+static inline int PAGEMASK_##uname(void)				\
-+		{ return (1 << PG_##lname); }
- 
- #define PAGEFLAG(uname, lname) TESTPAGEFLAG(uname, lname)		\
--	SETPAGEFLAG(uname, lname) CLEARPAGEFLAG(uname, lname)
-+	SETPAGEFLAG(uname, lname) CLEARPAGEFLAG(uname, lname)		\
-+	PAGEFLAGMASK(uname, lname)
- 
- #define __PAGEFLAG(uname, lname) TESTPAGEFLAG(uname, lname)		\
- 	__SETPAGEFLAG(uname, lname)  __CLEARPAGEFLAG(uname, lname)
- 
- #define PAGEFLAG_FALSE(uname) 						\
- static inline int Page##uname(struct page *page) 			\
-+			{ return 0; }					\
-+static inline int PAGEMASK_##uname(void)				\
- 			{ return 0; }
- 
- #define TESTSCFLAG(uname, lname)					\
-@@ -325,6 +332,12 @@ static inline void __ClearPageTail(struc
- }
- 
- #endif /* !PAGEFLAGS_EXTENDED */
-+
-+#ifdef CONFIG_PAGEFLAGS_EXTENDED
-+PAGEFLAG(MemError, memerror)
-+#else
-+PAGEFLAG_FALSE(MemError)
-+#endif
- 
- #define PAGE_FLAGS	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
- 			 1 << PG_buddy | 1 << PG_writeback | \
+ 	/* Clear flag in case dquot was inactive (something bad happened) */
+
 -- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
