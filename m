@@ -1,75 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbYG3CwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761380AbYG3Cwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758159AbYG3CwL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 22:52:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759376AbYG3Cqf
+	id S1761380AbYG3Cwb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 22:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761317AbYG3CwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 22:46:35 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59979 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759322AbYG3Cqe (ORCPT
+	Tue, 29 Jul 2008 22:52:17 -0400
+Received: from mail4.hitachi.co.jp ([133.145.228.5]:60860 "EHLO
+	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758961AbYG3CwP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 22:46:34 -0400
-Message-ID: <488FD59B.4080302@jp.fujitsu.com>
-Date: Wed, 30 Jul 2008 11:44:43 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Tue, 29 Jul 2008 22:52:15 -0400
+X-AuditID: 0ac90648-ac8a3ba000004920-04-488fd75ccff3
+Message-ID: <488FD756.9060106@hitachi.com>
+Date: Wed, 30 Jul 2008 11:52:06 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Pierre Ossman <drzeus-list@drzeus.cx>, Alex Chiang <achiang@hp.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
-       Kristen Accardi <kristen.c.accardi@intel.com>
-Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
-References: <20080724134737.4b91f30d@mjolnir.drzeus.cx> <200807280916.44664.jbarnes@virtuousgeek.org> <488E83E9.6030108@jp.fujitsu.com> <200807290814.33098.jbarnes@virtuousgeek.org>
-In-Reply-To: <200807290814.33098.jbarnes@virtuousgeek.org>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
+       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu, snitzer@gmail.com,
+       tglx@linutronix.de, yumiko.sugita.yf@hitachi.com,
+       satoshi.oshima.fk@hitachi.com
+Subject: [PATCH 1/2] ext3: add an option to control error handling on file
+    data
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Monday, July 28, 2008 7:43 pm Kenji Kaneshige wrote:
->>> Your systems don't have _RMV methods for the hotpluggable PCIe slots in
->>> the DSDT?  That's a shame; the Windows docs I found on PCIe hotplug
->>> seemed to indicate that _RMV and _OSC (under Vista) were used to detect
->>> whether a given slot was hot pluggable (I just googled for "windows pcie
->>> hotplug" or something) so I was hoping that would be a reliable method...
->>>  Any other ideas?  I'll go see if I can dig up some ExpressCard info.
->> My systems don't have _RMV methods for the hot pluggable PCIe slots in the
->> DSDT, but I don't think that's a shame. I suppose that the document you are
->> referring describes how Windows handles ExpressCard slots. In my
->> understanding, Hot Plug Surprise bit in the Slot Capabilities register is
->> set to 1b on ExpressCard slots, and I believe that ACPI _RVM method is for
->> the device that only supports surprise-style removal. I think this is why
->> your system implements _RMV method for slots.
-> 
-> Yeah, that may be.  The document wasn't very clear; I was hoping that 
-> something simple would be available.
-> 
->> On the other hand, hot pluggable slots on my servers are *not* ExpressCard
->> slots, and all of them have Power Controller instead of surprise-style
->> removal (Hot Plug Surprise bit in the Slot Capabilities register is set to
->> 0b). So I believe there is no reason to implement _RMV methods for the hot
->> pluggable PCIe slots on my systems.
->>
->> Here is an idea. How about using _RMV method to determine whether a given
->> slot is actually hot pluggable when Hot Plug Surprise bit in the Slot
->> Capabilities register is set to 1b on the slot? This is based on a little
->> rough assumption that all PCIe slots that support surprise-style removal
->> have _RMV method, though. Does this work for you?
-> 
-> It's worth a try.  We need *some* sort of better method to detect hot 
-> pluggable slots...
+If the journal doesn't abort when it gets an IO error in file data
+blocks, the file data corruption will spread silently.  Because
+most of applications and commands do buffered writes without fsync(),
+they don't notice the IO error.  It's scary for mission critical
+systems.  On the other hand, if the journal aborts whenever it gets
+an IO error in file data blocks, the system will easily become
+inoperable.  So this patch introduces a filesystem option to
+determine whether it aborts the journal or just call printk() when
+it gets an IO error in file data.
 
-OK. I'll try to make a patch.
+If you mount a ext3 fs with data_err=abort option, it aborts on file
+data write error.  If you mount it with data_err=ignore, it doesn't
+abort, just call printk().  data_err=abort is default, because
+people have used this error handling policy for three years.
 
-According to PCI Express and PCI firmware spec, I think Hot Plug Capable
-bit in the Slot Capabilities register and ACPI _OSC are enough to detect
-hot pluggable slots. But I might be missing something especially about
-ExpressCard, or BIOS is just broken...
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+---
+ Documentation/filesystems/ext3.txt |    5 +++++
+ fs/ext3/super.c                    |   18 ++++++++++++++++++
+ fs/jbd/commit.c                    |    2 ++
+ include/linux/ext3_fs.h            |    2 ++
+ include/linux/jbd.h                |    3 +++
+ 5 files changed, 30 insertions(+)
 
-Thanks,
-Kenji Kaneshige
+Index: linux-2.6.27-rc1/Documentation/filesystems/ext3.txt
+===================================================================
+--- linux-2.6.27-rc1.orig/Documentation/filesystems/ext3.txt
++++ linux-2.6.27-rc1/Documentation/filesystems/ext3.txt
+@@ -96,6 +96,11 @@ errors=remount-ro(*)	Remount the filesys
+ errors=continue		Keep going on a filesystem error.
+ errors=panic		Panic and halt the machine if an error occurs.
+ 
++data_err=abort(*)	Abort the journal if an error occurs in a file
++			data buffer in ordered mode.
++data_err=ignore		Just print an error message if an error occurs
++			in a file data buffer in ordered mode.
++
+ grpid			Give objects the same group ID as their creator.
+ bsdgroups
+ 
+Index: linux-2.6.27-rc1/fs/ext3/super.c
+===================================================================
+--- linux-2.6.27-rc1.orig/fs/ext3/super.c
++++ linux-2.6.27-rc1/fs/ext3/super.c
+@@ -625,6 +625,9 @@ static int ext3_show_options(struct seq_
+ 	else if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_WRITEBACK_DATA)
+ 		seq_puts(seq, ",data=writeback");
+ 
++	if (!test_opt(sb, DATA_ERR_ABORT))
++		seq_puts(seq, ",data_err=ignore");
++
+ 	ext3_show_quota_options(seq, sb);
+ 
+ 	return 0;
+@@ -754,6 +757,7 @@ enum {
+ 	Opt_reservation, Opt_noreservation, Opt_noload, Opt_nobh, Opt_bh,
+ 	Opt_commit, Opt_journal_update, Opt_journal_inum, Opt_journal_dev,
+ 	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,
++	Opt_data_err_abort, Opt_data_err_ignore,
+ 	Opt_usrjquota, Opt_grpjquota, Opt_offusrjquota, Opt_offgrpjquota,
+ 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
+ 	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
+@@ -796,6 +800,8 @@ static match_table_t tokens = {
+ 	{Opt_data_journal, "data=journal"},
+ 	{Opt_data_ordered, "data=ordered"},
+ 	{Opt_data_writeback, "data=writeback"},
++	{Opt_data_err_abort, "data_err=abort"},
++	{Opt_data_err_ignore, "data_err=ignore"},
+ 	{Opt_offusrjquota, "usrjquota="},
+ 	{Opt_usrjquota, "usrjquota=%s"},
+ 	{Opt_offgrpjquota, "grpjquota="},
+@@ -1011,6 +1017,12 @@ static int parse_options (char *options,
+ 				sbi->s_mount_opt |= data_opt;
+ 			}
+ 			break;
++		case Opt_data_err_abort:
++			set_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
++			break;
++		case Opt_data_err_ignore:
++			clear_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
++			break;
+ #ifdef CONFIG_QUOTA
+ 		case Opt_usrjquota:
+ 			qtype = USRQUOTA;
+@@ -1600,6 +1612,8 @@ static int ext3_fill_super (struct super
+ 	else
+ 		set_opt(sbi->s_mount_opt, ERRORS_RO);
+ 
++	set_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
++
+ 	sbi->s_resuid = le16_to_cpu(es->s_def_resuid);
+ 	sbi->s_resgid = le16_to_cpu(es->s_def_resgid);
+ 
+@@ -1986,6 +2000,10 @@ static void ext3_init_journal_params(str
+ 		journal->j_flags |= JFS_BARRIER;
+ 	else
+ 		journal->j_flags &= ~JFS_BARRIER;
++	if (test_opt(sb, DATA_ERR_ABORT))
++		journal->j_flags |= JFS_ABORT_ON_SYNCDATA_ERR;
++	else
++		journal->j_flags &= ~JFS_ABORT_ON_SYNCDATA_ERR;
+ 	spin_unlock(&journal->j_state_lock);
+ }
+ 
+Index: linux-2.6.27-rc1/include/linux/ext3_fs.h
+===================================================================
+--- linux-2.6.27-rc1.orig/include/linux/ext3_fs.h
++++ linux-2.6.27-rc1/include/linux/ext3_fs.h
+@@ -380,6 +380,8 @@ struct ext3_inode {
+ #define EXT3_MOUNT_QUOTA		0x80000 /* Some quota option set */
+ #define EXT3_MOUNT_USRQUOTA		0x100000 /* "old" user quota */
+ #define EXT3_MOUNT_GRPQUOTA		0x200000 /* "old" group quota */
++#define EXT3_MOUNT_DATA_ERR_ABORT	0x400000 /* Abort on file data write
++						  * error in ordered mode */
+ 
+ /* Compatibility, for having both ext2_fs.h and ext3_fs.h included at once */
+ #ifndef _LINUX_EXT2_FS_H
+Index: linux-2.6.27-rc1/include/linux/jbd.h
+===================================================================
+--- linux-2.6.27-rc1.orig/include/linux/jbd.h
++++ linux-2.6.27-rc1/include/linux/jbd.h
+@@ -816,6 +816,9 @@ struct journal_s
+ #define JFS_FLUSHED	0x008	/* The journal superblock has been flushed */
+ #define JFS_LOADED	0x010	/* The journal superblock has been loaded */
+ #define JFS_BARRIER	0x020	/* Use IDE barriers */
++#define JFS_ABORT_ON_SYNCDATA_ERR	0x040  /* Abort the journal on file
++						* data write error in ordered
++						* mode */
+ 
+ /*
+  * Function declarations for the journaling transaction and buffer
+Index: linux-2.6.27-rc1/fs/jbd/commit.c
+===================================================================
+--- linux-2.6.27-rc1.orig/fs/jbd/commit.c
++++ linux-2.6.27-rc1/fs/jbd/commit.c
+@@ -482,6 +482,8 @@ void journal_commit_transaction(journal_
+ 		printk(KERN_WARNING
+ 			"JBD: Detected IO errors while flushing file data "
+ 			"on %s\n", bdevname(journal->j_fs_dev, b));
++		if (journal->j_flags & JFS_ABORT_ON_SYNCDATA_ERR)
++			journal_abort(journal, err);
+ 		err = 0;
+ 	}
+ 
+
 
 
