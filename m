@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761653AbYG3Mwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761752AbYG3MyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761653AbYG3Mwi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 08:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbYG3Mw2
+	id S1761752AbYG3MyU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 08:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYG3MyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 08:52:28 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:34309 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755014AbYG3Mw2 (ORCPT
+	Wed, 30 Jul 2008 08:54:11 -0400
+Received: from venus.billgatliff.com ([209.251.101.201]:51385 "EHLO
+	venus.billgatliff.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756759AbYG3MyK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 08:52:28 -0400
-Message-ID: <4890646D.3060000@keyaccess.nl>
-Date: Wed, 30 Jul 2008 14:54:05 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Wed, 30 Jul 2008 08:54:10 -0400
+Message-ID: <48906477.8010203@billgatliff.com>
+Date: Wed, 30 Jul 2008 07:54:15 -0500
+From: Bill Gatliff <bgat@billgatliff.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, Jon Smirl <jonsmirl@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-References: <20080728204624.GA11581@redhat.com> <20080728141414.d7e5def2.randy.dunlap@oracle.com> <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au> <20080728234131.GD28055@linux-sh.org> <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com> <488E644D.7000507@keyaccess.nl> <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com> <488EF377.5080603@keyaccess.nl> <20080730072448.GB1564@cs181140183.pp.htv.fi> <4890284E.3050806@s5r6.in-berlin.de> <20080730124650.GB19966@cs181140183.pp.htv.fi>
-In-Reply-To: <20080730124650.GB19966@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, vatsa@linux.vnet.ibm.com,
+       efault@gmx.de, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: Fwd: Commit 76a2a6ee8a0660a29127f05989ac59ae1ce865fa breaks PXA270
+ (at least)?
+References: <20080729223105.GK10982@flint.arm.linux.org.uk> <20080729154605.d540cf6d.akpm@linux-foundation.org> <20080729225623.GO10982@flint.arm.linux.org.uk> <1217401810.6364.3.camel@twins> <1217404554.6364.18.camel@twins> <20080730080032.GC2274@flint.arm.linux.org.uk>
+In-Reply-To: <20080730080032.GC2274@flint.arm.linux.org.uk>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30-07-08 14:46, Adrian Bunk wrote:
+Guys:
 
-> On Wed, Jul 30, 2008 at 10:37:34AM +0200, Stefan Richter wrote:
->> Adrian Bunk wrote:
->> ...
->>> but as soon as someone puts an email address into a kernel commit
->>> Google will anyway find it:
->> This doesn't justify what Jon did though.
->>
->> Jon created a new database out of formerly disparate datasets, even
->> though we didn't provide him these datasets for this purpose.  The fact
->> that the means to create this database are rather trivial and cheap do
->> not mean that we implicitly agreed to what he did or that it wouldn't
->> matter whether we agree to it or not.
->> ...
-> 
-> You certified:
 
-You only certify anything when _you_ put your address in. Given that 
-it's a very common occurence that not you but _others_ do, this does not 
-mean a _single_ thing. Tested-by, Bisected-by, what have you...
+I just turned off PRINTK_TIME, and verified that the platform boots.
 
-But let us leave this discussion be. It's not going anywhere anyway.
+I can live with this workaround short-term, especially if doing so provides time
+to find the right fix.  I wouldn't want to see this still broken in .28, of
+course...  ;)
 
-Rene.
 
+b.g.
+-- 
+Bill Gatliff
+bgat@billgatliff.com
