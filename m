@@ -1,73 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763489AbYGaAXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbYGaAYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763489AbYGaAXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761551AbYGaAWE
+	id S1762171AbYGaAYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762787AbYGaAWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:22:04 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:32797 "EHLO smtps.tip.net.au"
+	Wed, 30 Jul 2008 20:22:09 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37493 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757423AbYGaAWD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:22:03 -0400
-Date: Thu, 31 Jul 2008 10:21:54 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: eranian@gmail.com
-Cc: "stephane eranian" <eranian@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/19] perfmon2 minimal v3: introduction
-Message-Id: <20080731102154.b06476dd.sfr@canb.auug.org.au>
-In-Reply-To: <7c86c4470807301659t232a8dabw5272988d164898e@mail.gmail.com>
-References: <4868dbf6.0af5660a.1972.52f4@mx.google.com>
-	<20080729014730.76b879a4.sfr@canb.auug.org.au>
-	<7c86c4470807282320o2d072c7dp7a327f133d5969c5@mail.gmail.com>
-	<7c86c4470807301659t232a8dabw5272988d164898e@mail.gmail.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__31_Jul_2008_10_21_54_+1000_UztBWDODjaHoed7q"
+	id S1760471AbYGaAWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:22:08 -0400
+Date: Wed, 30 Jul 2008 16:59:39 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Steven Toth <stoth@hauppauge.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: [patch 48/62] DVB: cx23885: DVB Transport cards using DVB port
+	VIDB/TS1 did not stream
+Message-ID: <20080730235939.GV12896@suse.de>
+References: <20080730233050.332789722@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="dvb-cx23885-dvb-transport-cards-using-dvb-port-vidb-ts1-did-not-stream.patch"
+In-Reply-To: <20080730234915.GA12426@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__31_Jul_2008_10_21_54_+1000_UztBWDODjaHoed7q
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Stephane,
+2.6.26 -stable review patch.  If anyone has any objections, please let
+us know.
 
-On Wed, 30 Jul 2008 16:59:34 -0700 "stephane eranian" <eranian@googlemail.c=
-om> wrote:
->
-> On Mon, Jul 28, 2008 at 11:20 PM, stephane eranian
-> <eranian@googlemail.com> wrote:
-> >>        quite a few of the macros (especially for the dummy (non
-> >> CONFIG_PERFMON) versions of functions) should be "static inline"
-> >> functions unless they absolutely must be macros.  Andrew Morton said it
-> >> best - "write in C not C preprocessor".
-> >>
-> Do you also have a problem with the debug printk statements using macros?
+------------------
+From: Steven Toth <stoth@hauppauge.com>
 
-Not really, they would be a pain to write as C code.
+(cherry picked from commit 52ce27bfc4d302a3e28267a5820a8b031ceccee9)
 
-The advantage of using C code for the dummy versions of things is that we
-still get type checking and we eliminate "unused variable" warnings for
-parameters of the functions.
+DVB: cx23885: DVB Transport cards using DVB port VIDB/TS1 did not stream
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Certain DVB cards that have demodulators on TS1/VIDB were not
+streaming packets.
 
---Signature=_Thu__31_Jul_2008_10_21_54_+1000_UztBWDODjaHoed7q
-Content-Type: application/pgp-signature
+This ensure the pin directions on PAD_CTRL are set correctly,
+solving the issue.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Signed-off-by: Steven Toth <stoth@hauppauge.com>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-iEYEARECAAYFAkiRBaIACgkQjjKRsyhoI8yl2gCeP8cfpqGQJKFAHufrUCT61Goi
-5wIAnj4e4twdmZ3zubxAW/QY98D+58VA
-=ZnIv
------END PGP SIGNATURE-----
+---
+ drivers/media/video/cx23885/cx23885-core.c |   18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
---Signature=_Thu__31_Jul_2008_10_21_54_+1000_UztBWDODjaHoed7q--
+--- a/drivers/media/video/cx23885/cx23885-core.c
++++ b/drivers/media/video/cx23885/cx23885-core.c
+@@ -1084,7 +1084,21 @@ static int cx23885_start_dma(struct cx23
+ 	cx_write(port->reg_gpcnt_ctl, 3);
+ 	q->count = 1;
+ 
+-	if (cx23885_boards[dev->board].portb & CX23885_MPEG_ENCODER) {
++	/* Set VIDB pins to input */
++	if (cx23885_boards[dev->board].portb == CX23885_MPEG_DVB) {
++		reg = cx_read(PAD_CTRL);
++		reg &= ~0x3; /* Clear TS1_OE & TS1_SOP_OE */
++		cx_write(PAD_CTRL, reg);
++	}
++
++	/* Set VIDC pins to input */
++	if (cx23885_boards[dev->board].portc == CX23885_MPEG_DVB) {
++		reg = cx_read(PAD_CTRL);
++		reg &= ~0x4; /* Clear TS2_SOP_OE */
++		cx_write(PAD_CTRL, reg);
++	}
++
++	if (cx23885_boards[dev->board].portb == CX23885_MPEG_ENCODER) {
+ 
+ 		reg = cx_read(PAD_CTRL);
+ 		reg = reg & ~0x1;    /* Clear TS1_OE */
+@@ -1134,7 +1148,7 @@ static int cx23885_stop_dma(struct cx238
+ 	cx_clear(port->reg_ts_int_msk, port->ts_int_msk_val);
+ 	cx_clear(port->reg_dma_ctl, port->dma_ctl_val);
+ 
+-	if (cx23885_boards[dev->board].portb & CX23885_MPEG_ENCODER) {
++	if (cx23885_boards[dev->board].portb == CX23885_MPEG_ENCODER) {
+ 
+ 		reg = cx_read(PAD_CTRL);
+ 
+
+-- 
