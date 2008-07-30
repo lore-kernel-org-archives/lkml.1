@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbYG3Rko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758082AbYG3Roc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758066AbYG3Rko (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 13:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbYG3Rkg
+	id S1758082AbYG3Roc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 13:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbYG3RoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 13:40:36 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:36401 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751819AbYG3Rkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 13:40:36 -0400
-Date: Wed, 30 Jul 2008 20:39:44 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 1/2] Export get_user_pages_fast
-Message-ID: <20080730173944.GC28604@cs181140183.pp.htv.fi>
-References: <200807301438.55941.rusty@rustcorp.com.au> <20080730033523.0f38f7e4.akpm@linux-foundation.org> <20080730154736.GC21597@cs181140183.pp.htv.fi> <20080730100355.f1402dcf.akpm@linux-foundation.org> <20080730170939.GA28604@cs181140183.pp.htv.fi> <20080730101438.e1484440.akpm@linux-foundation.org> <20080730171845.GB28604@cs181140183.pp.htv.fi> <20080730102817.c74a9e33.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080730102817.c74a9e33.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 30 Jul 2008 13:44:21 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39791 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752345AbYG3RoU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 13:44:20 -0400
+Date: Wed, 30 Jul 2008 18:24:54 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matt Domsch <Matt_Domsch@dell.com>
+Cc: Jim Meyering <jim@meyering.net>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Wilcox <matthew@wil.cx>, Ric Wheeler <rwheeler@redhat.com>,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
+Subject: Re: tools support for non-512 byte sector sizes
+Message-ID: <20080730182454.25809628@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080730172922.GA20191@auslistsprd01.us.dell.com>
+References: <488F524F.6020905@redhat.com>
+	<20080729182611.GB24924@parisc-linux.org>
+	<1217356645.6103.48.camel@localhost.localdomain>
+	<yq13alsr0g0.fsf@sermon.lab.mkp.net>
+	<20080730135147.GA4513@auslistsprd01.us.dell.com>
+	<87zlnzb8ce.fsf@rho.meyering.net>
+	<20080730172922.GA20191@auslistsprd01.us.dell.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 10:28:17AM -0700, Andrew Morton wrote:
-> On Wed, 30 Jul 2008 20:18:45 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+>    read/modify/write.  T10 and T13 are looking to add commands to
+>    expose this different underlying physical sector size so the OS
+>    could be aware of it.  This is primarily being driven to mitigate
+
+The identify bits are already there for reporting both size and offset.
+
+> 3) those that report a 4096-byte sector size, and are really a
+>    4096-byte size.  This seems ideal for aware OSs.
 > 
-> > > > The export would still only be available on x86 since no other arch 
-> > > > would define CONFIG_HAVE_GET_USER_PAGES_FAST.
-> > > > 
-> > > 
-> > > That's presently true in Linus mainline.  The powerpc implementation is
-> > > in -mm, but apprarently needs a bit more work.
-> > 
-> > I still don't get the advantage of your suggestion.
-> > 
-> > With the powerpc implementation included your suggestion doesn't change 
-> > the fact that the export is available only on x86 and powerpc, and if a 
-> > driver author mistakenly uses it and only tests it's driver on x86 it 
-> > will still break on architectures other than x86 or powerpc.
-> 
-> On non-CONFIG_HAVE_GET_USER_PAGES_FAST architectures a
-> get_user_pages_fast() call will in fact call get_user_pages().
-> 
-> On CONFIG_HAVE_GET_USER_PAGES_FAST architectures, get_user_pages_fast()
-> is a real function.  All architectures which implement that function
-> should export it to modules.  Hence it should be exported from within
-> generic code.
+> Which of 2) or 3) hit the market in mass remains to be seen.  I want
+> Linux to be able to handle either painlessly.
 
-Are we talking at cross purposes?
+I am expecting 3 to turn up some _minor_ problem cases. Many older ATA
+controllers magically know the sector size of media and the internal
+state machines and FIFO they use for performance is potentially going to
+go gaga in this case when we do a PIO transfer.
 
-I thought you were talking an error due to a missing function.
-
-If you think about an error where the function is present but only the 
-EXPORT_SYMBOL is missing then I get your point (although I do not 
-consider it a huge problem).
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Alan
