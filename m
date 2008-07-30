@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759670AbYG3Csg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760798AbYG3Csw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759670AbYG3Csg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 22:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbYG3Cor
+	id S1760798AbYG3Csw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 22:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757300AbYG3Cos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 22:44:47 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:46302 "EHLO
+	Tue, 29 Jul 2008 22:44:48 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:46304 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756878AbYG3Col (ORCPT
+	with ESMTP id S1757087AbYG3Com (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 22:44:41 -0400
+	Tue, 29 Jul 2008 22:44:42 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@zeniv.linux.org.uk, hch@infradead.org, miklos@szeredi.hu,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 05/19] Unionfs: create and consolidate helpers to path-put lower objects
-Date: Tue, 29 Jul 2008 22:43:35 -0400
-Message-Id: <12173858351856-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 04/19] Unionfs: create and consolidate helpers to iput lower objects
+Date: Tue, 29 Jul 2008 22:43:34 -0400
+Message-Id: <12173858343750-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <12173858291233-git-send-email-ezk@cs.sunysb.edu>
@@ -28,223 +28,212 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/commonfops.c |    9 +------
- fs/unionfs/copyup.c     |   23 ++++++------------
- fs/unionfs/dentry.c     |   31 ++------------------------
- fs/unionfs/fanout.h     |   55 +++++++++++++++++++++++++++++++++++++++++++++++
- fs/unionfs/lookup.c     |   14 +++--------
- 5 files changed, 71 insertions(+), 61 deletions(-)
+ fs/unionfs/commonfops.c |    5 +---
+ fs/unionfs/copyup.c     |    5 +--
+ fs/unionfs/dentry.c     |   25 +-----------------------
+ fs/unionfs/fanout.h     |   49 +++++++++++++++++++++++++++++++++++++++++++++++
+ fs/unionfs/super.c      |    6 +----
+ fs/unionfs/unlink.c     |   22 ++------------------
+ 6 files changed, 57 insertions(+), 55 deletions(-)
 
 diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
-index 585c5c9..5816d41 100644
+index 6f61fb0..585c5c9 100644
 --- a/fs/unionfs/commonfops.c
 +++ b/fs/unionfs/commonfops.c
-@@ -275,15 +275,8 @@ static int do_delayed_copyup(struct file *file)
- 			fput(unionfs_lower_file_idx(file, bindex));
- 			unionfs_set_lower_file_idx(file, bindex, NULL);
+@@ -280,14 +280,11 @@ static int do_delayed_copyup(struct file *file)
+ 			unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
  		}
--		if (unionfs_lower_mnt_idx(dentry, bindex)) {
--			unionfs_mntput(dentry, bindex);
--			unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
--		}
--		if (unionfs_lower_dentry_idx(dentry, bindex)) {
--			dput(unionfs_lower_dentry_idx(dentry, bindex));
--			unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
--		}
+ 		if (unionfs_lower_dentry_idx(dentry, bindex)) {
+-			BUG_ON(!dentry->d_inode);
+-			iput(unionfs_lower_inode_idx(dentry->d_inode, bindex));
+-			unionfs_set_lower_inode_idx(dentry->d_inode, bindex,
+-						    NULL);
+ 			dput(unionfs_lower_dentry_idx(dentry, bindex));
+ 			unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
+ 		}
  	}
-+	path_put_lowers(dentry, bstart, bend, false);
- 	iput_lowers(dentry->d_inode, bstart, bend, false);
++	iput_lowers(dentry->d_inode, bstart, bend, false);
  	/* for reg file, we only open it "once" */
  	fbend(file) = fbstart(file);
+ 	dbend(dentry) = dbstart(dentry);
 diff --git a/fs/unionfs/copyup.c b/fs/unionfs/copyup.c
-index f20b984..55d48aa 100644
+index b918897..f20b984 100644
 --- a/fs/unionfs/copyup.c
 +++ b/fs/unionfs/copyup.c
-@@ -866,22 +866,15 @@ void unionfs_postcopyup_setmnt(struct dentry *dentry)
-  */
- void unionfs_postcopyup_release(struct dentry *dentry)
- {
--	int bindex;
-+	int bstart, bend;
- 
- 	BUG_ON(S_ISDIR(dentry->d_inode->i_mode));
--	for (bindex = dbstart(dentry)+1; bindex <= dbend(dentry); bindex++) {
--		if (unionfs_lower_mnt_idx(dentry, bindex)) {
--			unionfs_mntput(dentry, bindex);
--			unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
--		}
--		if (unionfs_lower_dentry_idx(dentry, bindex)) {
--			dput(unionfs_lower_dentry_idx(dentry, bindex));
--			unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
--		}
--	}
--	iput_lowers(dentry->d_inode, dbstart(dentry)+1, dbend(dentry), false);
-+	bstart = dbstart(dentry);
-+	bend = dbend(dentry);
+@@ -877,11 +877,10 @@ void unionfs_postcopyup_release(struct dentry *dentry)
+ 		if (unionfs_lower_dentry_idx(dentry, bindex)) {
+ 			dput(unionfs_lower_dentry_idx(dentry, bindex));
+ 			unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
+-			iput(unionfs_lower_inode_idx(dentry->d_inode, bindex));
+-			unionfs_set_lower_inode_idx(dentry->d_inode, bindex,
+-						    NULL);
+ 		}
+ 	}
++	iput_lowers(dentry->d_inode, dbstart(dentry)+1, dbend(dentry), false);
 +
-+	path_put_lowers(dentry, bstart + 1, bend, false);
-+	iput_lowers(dentry->d_inode, bstart + 1, bend, false);
- 
--	bindex = dbstart(dentry);
--	dbend(dentry) = bindex;
--	ibend(dentry->d_inode) = ibstart(dentry->d_inode) = bindex;
-+	dbend(dentry) = bstart;
-+	ibend(dentry->d_inode) = ibstart(dentry->d_inode) = bstart;
- }
+ 	bindex = dbstart(dentry);
+ 	dbend(dentry) = bindex;
+ 	ibend(dentry->d_inode) = ibstart(dentry->d_inode) = bindex;
 diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
-index a7960ac..51c0baf 100644
+index 44b17ce..a7960ac 100644
 --- a/fs/unionfs/dentry.c
 +++ b/fs/unionfs/dentry.c
-@@ -455,8 +455,6 @@ static int unionfs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
- 
- static void unionfs_d_release(struct dentry *dentry)
- {
--	int bindex, bstart, bend;
--
- 	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_CHILD);
- 	if (unlikely(!UNIONFS_D(dentry)))
- 		goto out;	/* skip if no lower branches */
-@@ -471,20 +469,7 @@ static void unionfs_d_release(struct dentry *dentry)
+@@ -35,22 +35,6 @@ static inline void __dput_lowers(struct dentry *dentry, int start, int end)
  	}
- 
- 	/* Release all the lower dentries */
--	bstart = dbstart(dentry);
--	bend = dbend(dentry);
--	for (bindex = bstart; bindex <= bend; bindex++) {
--		dput(unionfs_lower_dentry_idx(dentry, bindex));
--		unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
--		/* NULL lower mnt is ok if this is a negative dentry */
--		if (!dentry->d_inode && !unionfs_lower_mnt_idx(dentry, bindex))
--			continue;
--		unionfs_mntput(dentry, bindex);
--		unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
--	}
--	/* free private data (unionfs_dentry_info) here */
--	kfree(UNIONFS_D(dentry)->lower_paths);
--	UNIONFS_D(dentry)->lower_paths = NULL;
-+	path_put_lowers_all(dentry, true);
- 
- 	unionfs_unlock_dentry(dentry);
- 
-@@ -500,7 +485,7 @@ out:
-  */
- static void unionfs_d_iput(struct dentry *dentry, struct inode *inode)
- {
--	int bindex, rc;
-+	int rc;
- 
- 	BUG_ON(!dentry);
- 	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_CHILD);
-@@ -508,17 +493,7 @@ static void unionfs_d_iput(struct dentry *dentry, struct inode *inode)
- 
- 	if (!UNIONFS_D(dentry) || dbstart(dentry) < 0)
- 		goto drop_lower_inodes;
--	for (bindex = dbstart(dentry); bindex <= dbend(dentry); bindex++) {
--		if (unionfs_lower_mnt_idx(dentry, bindex)) {
--			unionfs_mntput(dentry, bindex);
--			unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
--		}
--		if (unionfs_lower_dentry_idx(dentry, bindex)) {
--			dput(unionfs_lower_dentry_idx(dentry, bindex));
--			unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
--		}
--	}
--	dbstart(dentry) = dbend(dentry) = -1;
-+	path_put_lowers_all(dentry, false);
- 
- drop_lower_inodes:
- 	rc = atomic_read(&inode->i_count);
-diff --git a/fs/unionfs/fanout.h b/fs/unionfs/fanout.h
-index 94421f8..d8977bd 100644
---- a/fs/unionfs/fanout.h
-+++ b/fs/unionfs/fanout.h
-@@ -326,4 +326,59 @@ static inline void iput_lowers_all(struct inode *inode, bool free_lower)
- 	ibstart(inode) = ibend(inode) = -1;
  }
  
+-static inline void __iput_lowers(struct inode *inode, int start, int end)
+-{
+-	struct inode *lower_inode;
+-	int bindex;
+-
+-	if (start < 0)
+-		return;
+-	for (bindex = start; bindex <= end; bindex++) {
+-		lower_inode = unionfs_lower_inode_idx(inode, bindex);
+-		if (!lower_inode)
+-			continue;
+-		unionfs_set_lower_inode_idx(inode, bindex, NULL);
+-		iput(lower_inode);
+-	}
+-}
+-
+ /*
+  * Revalidate a single dentry.
+  * Assume that dentry's info node is locked.
+@@ -111,14 +95,7 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
+ 		interpose_flag = INTERPOSE_REVAL_NEG;
+ 		if (positive) {
+ 			interpose_flag = INTERPOSE_REVAL;
+-
+-			bstart = ibstart(dentry->d_inode);
+-			bend = ibend(dentry->d_inode);
+-			__iput_lowers(dentry->d_inode, bstart, bend);
+-			kfree(UNIONFS_I(dentry->d_inode)->lower_inodes);
+-			UNIONFS_I(dentry->d_inode)->lower_inodes = NULL;
+-			ibstart(dentry->d_inode) = -1;
+-			ibend(dentry->d_inode) = -1;
++			iput_lowers_all(dentry->d_inode, true);
+ 		}
+ 
+ 		result = unionfs_lookup_backend(dentry, &lowernd,
+diff --git a/fs/unionfs/fanout.h b/fs/unionfs/fanout.h
+index 69a8e8f..94421f8 100644
+--- a/fs/unionfs/fanout.h
++++ b/fs/unionfs/fanout.h
+@@ -277,4 +277,53 @@ static inline void verify_locked(struct dentry *d)
+ 	BUG_ON(!mutex_is_locked(&UNIONFS_D(d)->lock));
+ }
+ 
++/* macros to put lower objects */
++
 +/*
-+ * dput/mntput all lower dentries and vfsmounts of an unionfs dentry, from
-+ * bstart to bend.  If @free_lower is true, then also kfree the memory used
-+ * to hold the lower object pointers.
-+ *
-+ * XXX: implement using path_put VFS macros
++ * iput lower inodes of an unionfs dentry, from bstart to bend.  If
++ * @free_lower is true, then also kfree the memory used to hold the lower
++ * object pointers.
 + */
-+static inline void path_put_lowers(struct dentry *dentry,
-+				   int bstart, int bend, bool free_lower)
++static inline void iput_lowers(struct inode *inode,
++			       int bstart, int bend, bool free_lower)
 +{
-+	struct dentry *lower_dentry;
-+	struct vfsmount *lower_mnt;
++	struct inode *lower_inode;
 +	int bindex;
 +
-+	BUG_ON(!dentry);
-+	BUG_ON(!UNIONFS_D(dentry));
++	BUG_ON(!inode);
++	BUG_ON(!UNIONFS_I(inode));
 +	BUG_ON(bstart < 0);
 +
 +	for (bindex = bstart; bindex <= bend; bindex++) {
-+		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
-+		if (lower_dentry) {
-+			unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
-+			dput(lower_dentry);
-+		}
-+		lower_mnt = unionfs_lower_mnt_idx(dentry, bindex);
-+		if (lower_mnt) {
-+			unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
-+			mntput(lower_mnt);
++		lower_inode = unionfs_lower_inode_idx(inode, bindex);
++		if (lower_inode) {
++			unionfs_set_lower_inode_idx(inode, bindex, NULL);
++			/* see Documentation/filesystems/unionfs/issues.txt */
++			lockdep_off();
++			iput(lower_inode);
++			lockdep_on();
 +		}
 +	}
 +
 +	if (free_lower) {
-+		kfree(UNIONFS_D(dentry)->lower_paths);
-+		UNIONFS_D(dentry)->lower_paths = NULL;
++		kfree(UNIONFS_I(inode)->lower_inodes);
++		UNIONFS_I(inode)->lower_inodes = NULL;
 +	}
 +}
 +
-+/*
-+ * dput/mntput all lower dentries and vfsmounts, and reset start/end branch
-+ * indices to -1.
-+ */
-+static inline void path_put_lowers_all(struct dentry *dentry, bool free_lower)
++/* iput all lower inodes, and reset start/end branch indices to -1 */
++static inline void iput_lowers_all(struct inode *inode, bool free_lower)
 +{
 +	int bstart, bend;
 +
-+	BUG_ON(!dentry);
-+	BUG_ON(!UNIONFS_D(dentry));
-+	bstart = dbstart(dentry);
-+	bend = dbend(dentry);
++	BUG_ON(!inode);
++	BUG_ON(!UNIONFS_I(inode));
++	bstart = ibstart(inode);
++	bend = ibend(inode);
 +	BUG_ON(bstart < 0);
 +
-+	path_put_lowers(dentry, bstart, bend, free_lower);
-+	dbstart(dentry) = dbend(dentry) = -1;
++	iput_lowers(inode, bstart, bend, free_lower);
++	ibstart(inode) = ibend(inode) = -1;
 +}
 +
  #endif	/* not _FANOUT_H */
-diff --git a/fs/unionfs/lookup.c b/fs/unionfs/lookup.c
-index 33be53c..f6bb748 100644
---- a/fs/unionfs/lookup.c
-+++ b/fs/unionfs/lookup.c
-@@ -407,18 +407,12 @@ out_drop:
- 	d_drop(dentry);
- 
- out_free:
--	/* should dput all the underlying dentries on error condition */
--	bstart = dbstart(dentry);
--	if (bstart >= 0) {
--		bend = dbend(dentry);
--		for (bindex = bstart; bindex <= bend; bindex++) {
--			dput(unionfs_lower_dentry_idx(dentry, bindex));
--			unionfs_mntput(dentry, bindex);
--		}
+diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
+index 1a172af..9715529 100644
+--- a/fs/unionfs/super.c
++++ b/fs/unionfs/super.c
+@@ -789,11 +789,7 @@ out_no_change:
+ 		new_lower_inodes[i] = lower_dentry->d_inode;
+ 	}
+ 	/* 2. release reference on all older lower inodes */
+-	for (i = old_ibstart; i <= old_ibend; i++) {
+-		iput(unionfs_lower_inode_idx(sb->s_root->d_inode, i));
+-		unionfs_set_lower_inode_idx(sb->s_root->d_inode, i, NULL);
 -	}
-+	/* should dput/mntput all the underlying dentries on error condition */
-+	if (dbstart(dentry) >= 0)
-+		path_put_lowers_all(dentry, false);
-+	/* free lower_paths unconditionally */
- 	kfree(UNIONFS_D(dentry)->lower_paths);
- 	UNIONFS_D(dentry)->lower_paths = NULL;
--	dbstart(dentry) = dbend(dentry) = -1;
- 
- out:
- 	if (!err && UNIONFS_D(dentry)) {
+-	kfree(UNIONFS_I(sb->s_root->d_inode)->lower_inodes);
++	iput_lowers(sb->s_root->d_inode, old_ibstart, old_ibend, true);
+ 	/* 3. update root dentry's inode to new lower_inodes array */
+ 	UNIONFS_I(sb->s_root->d_inode)->lower_inodes = new_lower_inodes;
+ 	new_lower_inodes = NULL;
+diff --git a/fs/unionfs/unlink.c b/fs/unionfs/unlink.c
+index cad0386..3d6ca5f 100644
+--- a/fs/unionfs/unlink.c
++++ b/fs/unionfs/unlink.c
+@@ -146,12 +146,8 @@ int unionfs_unlink(struct inode *dir, struct dentry *dentry)
+ 	/* call d_drop so the system "forgets" about us */
+ 	if (!err) {
+ 		unionfs_postcopyup_release(dentry);
+-		if (inode->i_nlink == 0) {
+-			/* drop lower inodes */
+-			iput(unionfs_lower_inode(inode));
+-			unionfs_set_lower_inode(inode, NULL);
+-			ibstart(inode) = ibend(inode) = -1;
+-		}
++		if (inode->i_nlink == 0) /* drop lower inodes */
++			iput_lowers_all(inode, false);
+ 		d_drop(dentry);
+ 		/*
+ 		 * if unlink/whiteout succeeded, parent dir mtime has
+@@ -264,21 +260,9 @@ out:
+ 	 * about us.
+ 	 */
+ 	if (!err) {
+-		struct inode *inode = dentry->d_inode;
+-		BUG_ON(!inode);
+-		iput(unionfs_lower_inode_idx(inode, dstart));
+-		unionfs_set_lower_inode_idx(inode, dstart, NULL);
++		iput_lowers_all(dentry->d_inode, false);
+ 		dput(unionfs_lower_dentry_idx(dentry, dstart));
+ 		unionfs_set_lower_dentry_idx(dentry, dstart, NULL);
+-		/*
+-		 * If the last directory is unlinked, then mark istart/end
+-		 * as -1, (to maintain the invariant that if there are no
+-		 * lower objects, then branch index start and end are set to
+-		 * -1).
+-		 */
+-		if (!unionfs_lower_inode_idx(inode, dstart) &&
+-		    !unionfs_lower_inode_idx(inode, dend))
+-			ibstart(inode) = ibend(inode) = -1;
+ 		d_drop(dentry);
+ 		/* update our lower vfsmnts, in case a copyup took place */
+ 		unionfs_postcopyup_setmnt(dentry);
 -- 
 1.5.2.2
 
