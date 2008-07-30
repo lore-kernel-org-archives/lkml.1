@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbYG3CfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbYG3Ciz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335AbYG3CfE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 22:35:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYG3Cex
+	id S1755834AbYG3Ciz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 22:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbYG3Cir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 22:34:53 -0400
-Received: from ozlabs.org ([203.10.76.45]:49975 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751860AbYG3Cex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 22:34:53 -0400
-Subject: Re: [PATCH] powerpc/lpar - defer prefered console setup
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Bastian Blank <waldi@debian.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080728185651.GA29530@wavehammer.waldi.eu.org>
-References: <20080728185651.GA29530@wavehammer.waldi.eu.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Y3b41xOQjJnxNaVmOM9m"
-Date: Wed, 30 Jul 2008 12:34:51 +1000
-Message-Id: <1217385291.10646.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 29 Jul 2008 22:38:47 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:22890 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751826AbYG3Ciq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 22:38:46 -0400
+Date: Tue, 29 Jul 2008 20:38:42 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
+Message-ID: <20080730023842.GA4269@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	Matthew Wilcox <matthew@wil.cx>,
+	Pierre Ossman <drzeus-list@drzeus.cx>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+References: <20080724134737.4b91f30d@mjolnir.drzeus.cx> <200807241407.18543.jbarnes@virtuousgeek.org> <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org> <48895D3C.7040100@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48895D3C.7040100@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+> Matthew Wilcox wrote:
+>> So we need a way to find if there's already a slot of this
+>> name.  I don't see a kobject routine to do that.  Maybe we can
+>> do it internally to the pci slot code.
 
---=-Y3b41xOQjJnxNaVmOM9m
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+pci_hp_register already does this with get_slot_from_name().
 
-On Mon, 2008-07-28 at 20:56 +0200, Bastian Blank wrote:
-> Hi
+>> Then we need to pick a new name for the kobject if it does
+>> collide.  My suggestion is that the second time we find an
+>> object named "2", we call it "2dup1" (the third time "2dup2",
+>> etc.)  Other opinions I've seen include "2a", "2b", ... or
+>> "2-1", "2-2", ... or "2-brokenfw1", "2-brokenfw2".
+>
+> That looks quite better than using bus number.
 
-Hi Bastian,
+I went with:
 
-> The powerpc lpar code adds a prefered console at a very early state,
-> during arch_setup. This runs even before the console setup from the
-> command line and takes preference.
+	- first slot to register gets "2"
+	- second slot to register gets "2-1"
+	- Mth slot to register gets "2-M"
 
-It runs before the command line parsing, and so /does not/ take
-preference. I thought.
+At first, I thought it would have been better to put this logic
+inside of pci_hp_register, since it knows about the collision,
+and could just fix stuff up for the caller.
 
-/**
- * add_preferred_console - add a device to the list of preferred consoles.
- ...
- * The last preferred console added will be used for kernel messages
- * and stdin/out/err for init.=20
+However, the problem is that each hotplug driver can have a
+different length for "name", and it got messy quickly.
 
-The last console will be added by the console=3D parsing, and so that will
-be used. The console we add in the pseries setup is only used if nothing
-is specified on the command line.
+So, I just patched the two drivers that are known to be
+problematic.
 
-cheers
+Two patches follow, against 2.6.27-rc1.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Compile tested only -- I don't have hardware to replicate this.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+I'd say they're somewhere between RFC and requested for
+inclusion. I'm certainly not tied to them, just trying to show
+some code to implement the approach described above. If we decide
+that looking at _RMV + other bits is the way to go, then I'm fine
+with that.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+It would be great if Pierre and Kenji-san could try them out.
 
---=-Y3b41xOQjJnxNaVmOM9m
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Thanks.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIj9NLdSjSd0sB4dIRAunJAJ94BN9WrelhYf0rWSgTLAt0XmtyrgCgp603
-po+W7JX3TSKq5q+01o9UNHQ=
-=e8ud
------END PGP SIGNATURE-----
-
---=-Y3b41xOQjJnxNaVmOM9m--
+/ac
 
