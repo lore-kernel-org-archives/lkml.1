@@ -1,79 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761552AbYG3Pds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762611AbYG3PeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761552AbYG3Pds (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 11:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYG3Pdk
+	id S1762611AbYG3PeU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 11:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbYG3PeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 11:33:40 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:38216 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751431AbYG3Pdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 11:33:39 -0400
-Date: Wed, 30 Jul 2008 18:32:47 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Rene Herman <rene.herman@keyaccess.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Jon Smirl <jonsmirl@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-Message-ID: <20080730153247.GA21597@cs181140183.pp.htv.fi>
-References: <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au> <20080728234131.GD28055@linux-sh.org> <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com> <488E644D.7000507@keyaccess.nl> <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com> <488EF377.5080603@keyaccess.nl> <20080730072448.GB1564@cs181140183.pp.htv.fi> <4890284E.3050806@s5r6.in-berlin.de> <20080730124650.GB19966@cs181140183.pp.htv.fi> <4890646D.3060000@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4890646D.3060000@keyaccess.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 30 Jul 2008 11:34:09 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:24361 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753092AbYG3PeI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 11:34:08 -0400
+Date: Wed, 30 Jul 2008 08:23:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Simon Arlott <simon@fire.lp0.eu>, Daniel Walker <dwalker@mvista.com>,
+       Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [patch 1/4] fastboot: make fastboot a config option
+Message-Id: <20080730082335.4da1296f.randy.dunlap@oracle.com>
+In-Reply-To: <20080720151234.4535ee73@infradead.org>
+References: <20080720151140.4aa7c682@infradead.org>
+	<20080720151234.4535ee73@infradead.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 02:54:05PM +0200, Rene Herman wrote:
-> On 30-07-08 14:46, Adrian Bunk wrote:
->
->> On Wed, Jul 30, 2008 at 10:37:34AM +0200, Stefan Richter wrote:
->>> Adrian Bunk wrote:
->>> ...
->>>> but as soon as someone puts an email address into a kernel commit
->>>> Google will anyway find it:
->>> This doesn't justify what Jon did though.
->>>
->>> Jon created a new database out of formerly disparate datasets, even
->>> though we didn't provide him these datasets for this purpose.  The fact
->>> that the means to create this database are rather trivial and cheap do
->>> not mean that we implicitly agreed to what he did or that it wouldn't
->>> matter whether we agree to it or not.
->>> ...
->>
->> You certified:
->
-> You only certify anything when _you_ put your address in. Given that  
-> it's a very common occurence that not you but _others_ do, this does not  
-> mean a _single_ thing. Tested-by, Bisected-by, what have you...
->
-> But let us leave this discussion be. It's not going anywhere anyway.
+On Sun, 20 Jul 2008 15:12:34 -0700 Arjan van de Ven wrote:
 
-There's one thing where it might actually go further:
+> 
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Sun, 20 Jul 2008 10:20:49 -0700
+> Subject: [PATCH] fastboot: make fastboot a config option
+> 
+> to mitigate the risks of async bootup, make fastboot a configuration
+> option...
+> 
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  init/Kconfig |   11 +++++++++++
+>  init/main.c  |    4 ++++
+>  2 files changed, 15 insertions(+), 0 deletions(-)
+> 
+> diff --git a/init/Kconfig b/init/Kconfig
+> index 6199d11..7545c8b 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -524,6 +524,17 @@ config CC_OPTIMIZE_FOR_SIZE
+>  
+>  	  If unsure, say N.
+>  
+> +config FASTBOOT
+> +	bool "Fast boot support"
+> +	help
+> +	  The fastboot option will cause the kernel to try to optimize
+> +	  for faster boot. 
+> +
+> +	  This includes doing some of the device initialization asynchronous
 
-You actually have a good point here, and I'm not disagreeing with it.
+	                                                        asynchronously
 
-I've added Linus to the recipients since stuff like e.g. Tested-by or 
-Bisected-by tags actually undermine what the DCE 1.1 update should
-have accomplished. So if DCE 1.1 (d) is considered to be legally 
-required for public indefinite storage of name and email address
-we have a problem here.
+> +	  as well as opportunistically trying to mount the root fs early.
+> +
+> +	  If unsure, say N.
+> +
+>  config SYSCTL
+>  	bool
+>  
+> diff --git a/init/main.c b/init/main.c
+> index 6be1756..bb97add 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -776,7 +776,11 @@ static void __init do_initcalls(void)
+>  	for (call = __initcall_start; call < __initcall_end; call++) {
+>  		if (phase == 0 && call >= __async_initcall_start) {
+>  			phase = 1;
+> +#ifdef CONFIG_FASTBOOT
+>  			queue_work(async_init_wq, &async_work);
+> +#else
+> +			do_async_initcalls(NULL);
+> +#endif
+>  		}
+>  		if (phase == 1 && call >= __async_initcall_end)
+>  			phase = 2;
+> -- 
 
-> Rene.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
