@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbYG3BD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761350AbYG3BDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760953AbYG3BD4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 21:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbYG3BAp
+	id S1761350AbYG3BDi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 21:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758169AbYG3A67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 21:00:45 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45202 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760735AbYG3BAn (ORCPT
+	Tue, 29 Jul 2008 20:58:59 -0400
+Received: from cnrelay03.alcatel-sbell.com.cn ([211.144.215.19]:52817 "EHLO
+	mail.alcatel-sbell.com.cn" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758112AbYG3A65 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 21:00:43 -0400
-Date: Tue, 29 Jul 2008 21:00:27 -0400
-Message-Id: <200807300100.m6U10R8A015358@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Erez Zadok <ezk@cs.sunysb.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] unionfs: build fixes 
-In-reply-to: Your message of "Tue, 29 Jul 2008 19:12:47 BST."
-             <Pine.LNX.4.64.0807291907440.13365@blonde.site> 
-X-MailKey: Erez_Zadok
+	Tue, 29 Jul 2008 20:58:57 -0400
+Message-ID: <488FBCB4.4080609@alcatel-lucent.com>
+Date: Wed, 30 Jul 2008 08:58:28 +0800
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: PIIX4: DMA timeout issue
+References: <488ED837.2060509@alcatel-lucent.com> 
+	<488F1C6C.9000002@garzik.org>
+In-Reply-To: <488F1C6C.9000002@garzik.org>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Jul 2008 00:58:18.0459 (UTC) 
+	FILETIME=[5ADE7AB0:01C8F1DF]
+X-imss-version: 2.051
+X-imss-result: Passed
+X-imss-scores: Clean:78.33446 C:2 M:3 S:5 R:5
+X-imss-settings: Baseline:2 C:1 M:1 S:1 R:1 (0.1500 0.1500)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <Pine.LNX.4.64.0807291907440.13365@blonde.site>, Hugh Dickins writes:
-> Get unionfs building and working in mmotm with the 2.6.27-rc1 VFS changes:
-> permission() has been replaced by inode_permission() without nameidata arg;
-> unionfs_permission() without nameidata arg; vfs_symlink() without mode arg;
-> LOOKUP_ACCESS no longer defined; and kmem_cache_create() no longer passes
-> kmem_cachep to the init_once() constructor.
-> 
-> Note: while okay for inclusion in -mm for now, unionfs_permission() mods
-> will need review and perhaps correction by Erez: without a nameidata arg,
-> some locking vanishes from unionfs_permission(), and a MNT_NOEXEC check on
-> its lower_inode; I have not studied the VFS changes enough to tell whether
-> that amounts to a real issue for unionfs, or just removal of dead code.
+Jeff Garzik wrote:
+> gshan wrote:
+>> Hello, I sent mails on this issue before, but nobody made response.
+>> There are 2 types of board for me. The hardware configuration for
+>> those 2 boards are almost same except that one of them has 100GB
+>> harddisk, and another type of board has 60GB harddisk. All harddisk
+>> was access through PIIX4. I found this issue on board with 60GB
+>> disk, but can't reproduce it on that with 100GB disk.
+>>
+>> When I uncompressed a large file (600MB) to a logic partition with 8GB
+>> size, following errors was report on middle way (5 minutes about from 
+>> start).
+>> Anybody has ideas?
+>>
+>> hdc: dma_timer_expiry: dma status == 0x21
+>> hdc: DMA timeout error
+>> hdc: dma timeout error: status=0x58 { DriveReady SeekComplete 
+>> DataRequest }
+>> ide: failed opcode was: unknown
+>> hdc: DMA disabled
+>> ide1: reset: success
+>
+> Can you try disabling the IDE driver (CONFIG_IDE) and enabling the 
+> newer libata driver?  (CONFIG_ATA)
+Jeff, thanks a lot for your suggestions. I will try it if possible.
+>
+>     Jeff
+>
+>
+>
+>
 
-Thanks Hugh.  You beat me by few hours. :-) I've been testing similar fixes
-for several days already (and was waiting for the dust to settle in the
-merge window, b/c patches flying b/t linus's tree, -next, and -mm).
-
-I've also looked at the inode_permission() locking, and tested it, and I
-think it should be safe as long as the refcnt on the inode doesn't go to
-zero.  In fact, I think unionfs_permission can be possibly further trimmed.
-
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> Cc: Erez Zadok <ezk@cs.sunysb.edu>
-> ---
-> This should follow git-unionfs.patch
-> I notice my unionfs-fix-memory-leak.patch
-> and fsstack-fsstack_copy_inode_size-locking.patch
-> are currently commented out, yet I don't recall the
-> mm-commits dispatch rider bringing me a telegram to explain why?
-
-Both of those patches are in my tree now (not yet pushed to korg).
-
-Note: your fsstack-fsstack_copy_inode_size-locking patch should really go to
-mainline, but the one you sent depends on code in unionfs.  So temporarily
-I'm folding it into my tree.  In a couple of days (once I switch from using
-git to something like quilt) I'll extract it out into a separate patch which
-can be applied cleanly against linux-next, so that Andrew can hopefully send
-it upstream.
-
-Erez.
