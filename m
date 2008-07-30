@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbYG3Tzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbYG3T4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528AbYG3Tzu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 15:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424AbYG3Tzi
+	id S1758026AbYG3T4V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 15:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbYG3T4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 15:55:38 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:3217 "EHLO
-	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755575AbYG3Tzh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 15:55:37 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=VwQbUJbxAAAA:8 a=4SEYrVf_bg6V_80FIRsA:9 a=ltV_l5kj8GDCY0jjnNEbiQ6BVf0A:4 a=Gr1l-fY1kBQA:10 a=CDgK0yFw8z8A:10
-Message-ID: <4890C72D.7040604@shaw.ca>
-Date: Wed, 30 Jul 2008 13:55:25 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Tomas Styblo <tripie@cpan.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net
-Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device
- 152d:2338
-References: <Pine.LNX.4.44L0.0807232337110.25883-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0807232337110.25883-100000@netrider.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jul 2008 15:56:00 -0400
+Received: from 1wt.eu ([62.212.114.60]:2277 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755424AbYG3Tz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 15:55:59 -0400
+Date: Wed, 30 Jul 2008 21:55:48 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Richard Hartmann <richih.mailinglist@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: iptables, NAT, DNS & Dan Kaminsky
+Message-ID: <20080730195548.GA615@1wt.eu>
+References: <2d460de70807300753w33c43340xaa52c54add501306@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2d460de70807300753w33c43340xaa52c54add501306@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Wed, 23 Jul 2008, Robert Hancock wrote:
+On Wed, Jul 30, 2008 at 04:53:57PM +0200, Richard Hartmann wrote:
+> Hi all,
 > 
->> It remains an issue, though, that if there's no underflow, if the device 
->> reports an error in the CSW but doesn't provide sense data, we assume 
->> nothing bad happened and don't retry. That definitely does not seem 
->> correct. The device is not supposed to do this, but with how crappily 
->> some of these devices are designed we should be more defensive.
+> as you are very likely all aware, Dan Kaminsky uncovered a major exploit
+> in RFC-compliant DNS caching servers the successful execution of which
+> relies on port prediction/guessing.
 > 
-> The problem is, what can you do?  The device has said that something 
-> was wrong, but it hasn't told you what.  Without knowing what went 
-> wrong, you can't know how to recover.
+> After quite some research, I have come up with the following facts which
+> I want to cross-check with you guys so I can be _sure_.
 > 
-> I suppose in such cases we could simply report that the command failed
-> completely.
+> 
+> 1) The --random target for SNAT exists since 2.6.22 to allow 'fixing' of
+> broken DNS servers in your NATted LAN along the lines of
+> 
+> iptables -t nat -I POSTROUTING 1 -p udp -s 1.2.3.4 --dport 53 -j SNAT \
+> --to 1.2.3.4 --random
+> 
+> Is that correct?
+> 
+> 
+> 2) Unless there is a collision, the original UDP source ports for
+> requests are kept the same. I.e. boxes within the NATted LAN which use
+> random UDP ports are secure and neither the 2.4.x nor the 2.6.x series
+> of kernels will make those ports predictable while NATting the packets.
+> Is that correct?
+> 
+> 
+> 3) Ever since a commit that went into 2.6.24 [1], UDP ports that are
+> NATted are randomized by the NATting forewarder, anyway. This means that
+> any DNS lookup made from within a NATted LAN secured with iptables to a
+> DNS server outside of said NAT is secure by default.
+> Is that correct?
+> 
+> 
+> Thanks for any and all input. I am sure many people would like
+> clarification on those points.
 
-I think that is what we need to do. The SCSI/block layers should retry 
-the command or report a failure to userspace. Above all else we can't 
-just continue on our merry way and assume success, otherwise data will 
-get silently corrupted.
+Richard,
 
-It could be that's what Windows is doing, and it's just silently 
-retrying commands. Though, some people have reported corruption on these 
-chipsets on Windows too, so maybe it has the same issue.
+you should re-post your question to relevant lists. I think that
+the netfilter ML would be more appropriate. The list you posted to
+is about Linux kernel development, which has nothing to do with
+how to setup iptables rules, so I don't think you'll find useful
+answers here, if any. And BTW I don't think that many of the people
+reading LKML care a dime about the "exploit" for poorly configured
+DNS servers.
 
-Is that SCSI/USB underflow fix from 
-http://bugzilla.kernel.org/show_bug.cgi?id=9638 being pushed forward by 
-anybody? If not, I can try and cook up a patch to take care of that as 
-well as the non-underflow failed CSW/no sense data issue.
+Regards,
+Willy
+
