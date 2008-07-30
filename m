@@ -1,67 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbYG3VM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759460AbYG3VNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759251AbYG3VM2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 17:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757612AbYG3VJr
+	id S1759460AbYG3VNM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 17:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759347AbYG3VMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 17:09:47 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:3175 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757507AbYG3VJo (ORCPT
+	Wed, 30 Jul 2008 17:12:41 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:14714 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759349AbYG3VMk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 17:09:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=Ua9HMdTluJCgjdn4uJhsLQy2gS3h61iuR6/RP1J3txXslrrJk+HpKAa48fsIwjYO5V
-         zVny7lMCqu1lkAXs7Ryc2numh0sYGfbuLLwt7yyeVMPwzpRXcfFhooijG37F065hdP53
-         b5C+eVvb+KxXdPVPlEHoCOmxUZneHSPtbX5PY=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 4/7] random: make irq_timer_state to use dyn_array
-Date: Wed, 30 Jul 2008 12:40:51 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200807291414.55479.yhlu.kernel@gmail.com> <200807300311.48510.yhlu.kernel@gmail.com> <200807301210.31511.yhlu.kernel@gmail.com>
-In-Reply-To: <200807301210.31511.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
+	Wed, 30 Jul 2008 17:12:40 -0400
+Date: Wed, 30 Jul 2008 16:12:39 -0500
+From: Mike Miller <mike.miller@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Cc: LKML-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 3/6] cciss: fix negative logical drive count in procfs
+Message-ID: <20080730211239.GC1758@roadking.ldev.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807301240.53062.yhlu.kernel@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.9i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Patch 3 of 6
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+This patch fixes a problem where the logical volume count may go negative.
+In some instances if several logical are configured on a controller and all
+of them are deleted using the online utilities the volume count in /proc may
+go negative with no way get it correct again.
+Please condider this patch for inclusion. It is dependent upon patch 2 in
+this set.
 
----
- drivers/char/random.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+Thanks,
+mikem
 
-Index: linux-2.6/drivers/char/random.c
-===================================================================
---- linux-2.6.orig/drivers/char/random.c
-+++ linux-2.6/drivers/char/random.c
-@@ -558,7 +558,13 @@ struct timer_rand_state {
- };
+Signed-off-by: Stephen M. Cameron <scameron@beardog.cca.cpqcorp.net>
+Signed-off-by: Mike Miller <mike.miller@hp.com>
+
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index d372db0..ae663db 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -1535,15 +1535,18 @@ mem_msg:
+  * where new drives will be added.  If the index to be returned is greater
+  * than the highest_lun index for the controller then highest_lun is set
+  * to this new index.  If there are no available indexes then -1 is returned.
++ * "controller_node" is used to know if this is a real logical drive, or just
++ * the controller node, which determines if this counts towards highest_lun.
+  */
+-static int cciss_find_free_drive_index(int ctlr)
++static int cciss_find_free_drive_index(int ctlr, int controller_node)
+ {
+ 	int i;
  
- static struct timer_rand_state input_timer_state;
-+
-+#ifdef CONFIG_HAVE_DYN_ARRAY
-+static struct timer_rand_state **irq_timer_state;
-+DEFINE_DYN_ARRAY(irq_timer_state, sizeof(struct timer_rand_state *), nr_irqs, PAGE_SIZE, NULL);
-+#else
- static struct timer_rand_state *irq_timer_state[NR_IRQS];
-+#endif
+ 	for (i = 0; i < CISS_MAX_LUN; i++) {
+ 		if (hba[ctlr]->drv[i].raid_level == -1) {
+ 			if (i > hba[ctlr]->highest_lun)
+-				hba[ctlr]->highest_lun = i;
++				if (!controller_node)
++					hba[ctlr]->highest_lun = i;
+ 			return i;
+ 		}
+ 	}
+@@ -1559,11 +1562,11 @@ static int cciss_find_free_drive_index(int ctlr)
+  * a means to talk to the controller in case no logical
+  * drives have yet been configured.
+  */
+-static int cciss_add_gendisk(ctlr_info_t *h, __u32 lunid)
++static int cciss_add_gendisk(ctlr_info_t *h, __u32 lunid, int controller_node)
+ {
+ 	int drv_index;
  
- /*
-  * This function adds entropy to the entropy "pool" by using timing
+-	drv_index = cciss_find_free_drive_index(h->ctlr);
++	drv_index = cciss_find_free_drive_index(h->ctlr, controller_node);
+ 	if (drv_index == -1)
+ 		return -1;
+ 	/*Check if the gendisk needs to be allocated */
+@@ -1600,7 +1603,7 @@ static void cciss_add_controller_node(ctlr_info_t *h)
+ 	if (h->gendisk[0] != NULL) /* already did this? Then bail. */
+ 		return;
+ 
+-	drv_index = cciss_add_gendisk(h, 0);
++	drv_index = cciss_add_gendisk(h, 0, 1);
+ 	if (drv_index == -1) {
+ 		printk(KERN_WARNING "cciss%d: could not "
+ 			"add disk 0.\n", h->ctlr);
+@@ -1734,7 +1737,7 @@ static int rebuild_lun_table(ctlr_info_t *h, int first_time)
+ 
+ 		/* check if the drive was found already in the array */
+ 		if (!drv_found) {
+-			drv_index = cciss_add_gendisk(h, lunid);
++			drv_index = cciss_add_gendisk(h, lunid, 0);
+ 			if (drv_index == -1)
+ 				goto freeret;
+ 		}
