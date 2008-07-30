@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760549AbYG3Rzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbYG3R4D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760549AbYG3Rzr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 13:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbYG3Rzh
+	id S1755768AbYG3R4D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 13:56:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760373AbYG3Rzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 13:55:37 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:39633 "EHLO proxima.lp0.eu"
+	Wed, 30 Jul 2008 13:55:45 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34485 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751616AbYG3Rzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 13:55:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	b=TrhifMvm8AZWDleEJcSc1v8RUkunfICbRWxgN7kQAhZ2Upgfu1BBSP3ugQwVSVyvTNKyXIjEh04khMeOcktYDwW+vkIYZBFyCayhWXHrWKR4GnCjbPXwsOoBB0PSwMNe;
-Message-ID: <4890AAB5.7070001@simon.arlott.org.uk>
-Date: Wed, 30 Jul 2008 18:53:57 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
+	id S1758806AbYG3Rzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 13:55:43 -0400
+Message-ID: <4890AB14.1030009@garzik.org>
+Date: Wed, 30 Jul 2008 13:55:32 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Paul Rolland <rol@as2917.net>
-CC: Rene Herman <rene.herman@keyaccess.nl>, Adrian Bunk <bunk@kernel.org>,
-       Jon Smirl <jonsmirl@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
-       James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, lkml <linux-kernel@vger.kernel.org>,
-       rol@witbe.net, Linus Torvalds <torvalds@linux-foundation.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: 463 kernel developers missing!
-References: <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com>	<20080728202236.GN9378@mit.edu>	<20080728204624.GA11581@redhat.com>	<20080728141414.d7e5def2.randy.dunlap@oracle.com>	<Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au>	<20080728234131.GD28055@linux-sh.org>	<9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com>	<488E644D.7000507@keyaccess.nl>	<9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com>	<488EF377.5080603@keyaccess.nl>	<20080730072448.GB1564@cs181140183.pp.htv.fi>	<489061E0.5000501@keyaccess.nl> <20080730145822.3c3253f2@tux.DEF.witbe.net>
-In-Reply-To: <20080730145822.3c3253f2@tux.DEF.witbe.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.27-rc1]: fix NE2000 linkage error
+References: <200807301144.m6UBitOG022822@harpo.it.uu.se>
+In-Reply-To: <200807301144.m6UBitOG022822@harpo.it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30/07/08 13:58, Paul Rolland wrote:
-> We could blame Jon for publishing the his list on the list without prior 
-> information, but not for creating it. 
-> And I certainly would like to see the .mailmap appear at my next git pull ;)
+Mikael Pettersson wrote:
+> Trying to build with CONFIG_NE2000=m fails with:
+> 
+>   scripts/mod/modpost   -o /tmp/tmp/linux-2.6.27-rc1/Module.symvers    -S     -s
+> ERROR: "NS8390_init" [drivers/net/ne.ko] undefined!
+> 
+> This is because the split of 8390 into pausing and non-pausing
+> versions was incompletely propagated to ne.c. This fixes it.
+> 
+> Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+> ---
+> 
+> --- linux-2.6.27-rc1/drivers/net/ne.c.~1~	2008-07-29 10:40:11.000000000 +0200
+> +++ linux-2.6.27-rc1/drivers/net/ne.c	2008-07-30 13:17:16.000000000 +0200
+> @@ -536,7 +536,7 @@ static int __init ne_probe1(struct net_d
+>  #ifdef CONFIG_NET_POLL_CONTROLLER
+>  	dev->poll_controller = eip_poll;
+>  #endif
+> -	NS8390_init(dev, 0);
+> +	NS8390p_init(dev, 0);
+>  
+>  	ret = register_netdev(dev);
+>  	if (ret)
+> @@ -794,7 +794,7 @@ retry:
+>  		if (time_after(jiffies, dma_start + 2*HZ/100)) {		/* 20ms */
+>  			printk(KERN_WARNING "%s: timeout waiting for Tx RDC.\n", dev->name);
+>  			ne_reset_8390(dev);
+> -			NS8390_init(dev,1);
+> +			NS8390p_init(dev, 1);
+>  			break;
+>  		}
+>  
+> @@ -855,7 +855,7 @@ static int ne_drv_resume(struct platform
+>  
+>  	if (netif_running(dev)) {
+>  		ne_reset_8390(dev);
+> -		NS8390_init(dev, 1);
+> +		NS8390p_init(dev, 1);
+>  		netif_device_attach(dev);
 
-The fact still remains that most of the entries in Jon's .mailmap file are 
-redundant. I may have three email addresses referred to in git, but my name 
-is the same in all cases. Until "git shortlog" is changed to link an author's 
-commits without using their name there is no need to include me and several 
-other people in there. Especially not anyone with only one email address 
-in the commit log.
+Yep, already got this one, but thanks!
 
-(It would also be easy to sha1 hash all the email addresses in the shortlog 
-mailmap, using a hash lookup to find the name, although it would make it 
-a bit difficult to find what any one address is without grepping the log.)
 
-The ChangeLogs do include all email addresses contributing to that release, 
-but in general I think a big list of them which people can use with no 
-effort to spam every developer is a bad thing. On the other hand maybe 
-those people don't know what .files are ;)
-
--- 
-Simon Arlott
