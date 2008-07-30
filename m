@@ -1,100 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756330AbYG3ADF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbYG3AN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756330AbYG3ADF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 20:03:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYG3ACy
+	id S1755131AbYG3AN3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 20:13:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYG3ANU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 20:02:54 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:40781 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752330AbYG3ACx (ORCPT
+	Tue, 29 Jul 2008 20:13:20 -0400
+Received: from web83207.mail.mud.yahoo.com ([216.252.101.63]:34408 "HELO
+	web83207.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753100AbYG3ANT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 20:02:53 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Mike Travis <travis@sgi.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>, Jack Steiner <steiner@sgi.com>,
-       Alan Mayer <ajm@sgi.com>, Cliff Wickman <cpw@sgi.com>
-References: <20080729160939.GA4484@linux.vnet.ibm.com>
-	<86802c440807291135m7f8e2163xdde14545e311649a@mail.gmail.com>
-	<86802c440807291220t7813effcwb32ae6c18e3cddfe@mail.gmail.com>
-	<m1d4kwbg8f.fsf@frodo.ebiederm.org> <488F96DD.6020505@sgi.com>
-	<m1bq0g8euy.fsf@frodo.ebiederm.org> <488FAAD9.4090907@goop.org>
-Date: Tue, 29 Jul 2008 17:01:35 -0700
-In-Reply-To: <488FAAD9.4090907@goop.org> (Jeremy Fitzhardinge's message of
-	"Tue, 29 Jul 2008 16:42:17 -0700")
-Message-ID: <m1vdyo44v4.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 29 Jul 2008 20:13:19 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Jul 2008 20:13:19 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=T8CSVy5bwRU2OBFEddrAqKnOyoKd/qhmZBNkiXPBQFdiZ5e7GUBfFbykVG05I86g9XmjNJsPqWYs734MC+lLaADAZ4FnGbhv91EXFKz9W5cc2rkN0p5RT1zzj6zs3gg7JpIHAPDtxH57T89eQvsyFwy9/F2qyo/G+pFCyGa9dYY=;
+X-YMail-OSG: MSyunqQVM1mGEfJvx9674.2JPgi_WUp_jbG19BkfQaHhmBKdHQnaimKywiswtivSKrAf6cObpP3WN4.mwTWqR9CTKjHPHo_g6.r7IQ6vmwluknxZvxN9LZY-
+Date: Tue, 29 Jul 2008 17:06:37 -0700 (PDT)
+From: Matthew Frost <artusemrys@yahoo.com>
+Subject: BUG: SCSI: usb storage SDHC card doesn't work in 2.6.27-rc1
+To: James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org
+Cc: Matt Frost <artusemrys@sbcglobal.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jeremy Fitzhardinge <jeremy@goop.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.2 SARE_LWSHORTT BODY: SARE_LWSHORTT
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.5000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: kernel BUG at arch/x86/kernel/io_apic_64.c:357!
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <103966.68801.qm@web83207.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+James and co., 
 
-> I'm still interested in making Xen's event channel-based interrupts fit better
-> into the rest of the interrupt handling scheme.  In particular, event channels
-> map very closely to the x86-64 notion of a vector.  There's 1024 of them per
-> domain, and each is bound to a cpu.  At the moment, I map them to irqs, which
-> means that I need to allocate around 5-6 irqs per cpu, which makes everything
-> very cluttered.  I'd like to map event channels to vectors, and then map vectors
-> to (irq,cpu) tuples.
+Bug report: regression in 2.6.27-rc1 -- scsi WRT usb-storage
+Origin: Commit de72aa4c2b82a6cffe15d86a8d391ded4fb57602, "[SCSI] erase
+invalid data returned by device"
+Location: drivers/scsi_lib.c
+Device: Secure Digital HC 4GB card in USB 2.0 card reader
 
-Uh....  I'm not certain this applies.
+Summary:
+Between 2.6.26-rc9-git10 and rc9-git11, the kernel stopped properly
+recognizing my USB-card-reader-mounted SDHC 4GB card.  The problem seems to
+come up between usb-storage recognizing the device, and the handoff to scsi
+to read the disk properties.  The bug remains in 2.6.26 and 2.6.27-rc1;
+kernels before 2.6.26-rc9-git10 are unaffected.  On the same EHCI controller,
+an old-spec SD 1GB card and its reader are unaffected by this bug.
 
-> From what I've seen this is exactly how x86-64 currently has things set up, and
-> I'm interested in making sure that 32-bit does the same thing.
+The normal recognition and initialization of the device (from rc9-git9 dmesg)
+goes like this:
 
-Yes. x86_32 needs work to get cleaned up.
+PCI: Setting latency timer of device 0000:00:1d.7 to 64
+ehci_hcd 0000:00:1d.7: EHCI Host Controller
+ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 1
+PCI: cache line size of 128 is not supported by device 0000:00:1d.7
+ehci_hcd 0000:00:1d.7: irq 23, io mem 0xe4000000
+ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 6 ports detected
+usb usb1: New USB device found, idVendor=1d6b, idProduct=0002
+usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+usb usb1: Product: EHCI Host Controller
+usb usb1: Manufacturer: Linux 2.6.26-rc9-git9 ehci_hcd
+usb usb1: SerialNumber: 0000:00:1d.7
+--%<--
+usb 1-1: new high speed USB device using ehci_hcd and address 2
+usb 1-1: configuration #1 chosen from 1 choice
+usb 1-1: New USB device found, idVendor=058f, idProduct=6331
+usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+usb 1-1: Product: Mass Storage Device
+usb 1-1: Manufacturer: Generic
+usb 1-1: SerialNumber: 058F091111B
+--%<--
+usb 1-2: new high speed USB device using ehci_hcd and address 3
+usb 1-2: configuration #1 chosen from 1 choice
+usb 1-2: New USB device found, idVendor=090c, idProduct=6000
+usb 1-2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+usb 1-2: Product: USB2.0 Card Reader
+usb 1-2: Manufacturer: Generic       ,   .
+usb 1-2: SerialNumber: 12345678901234567890
+--%<--
+Initializing USB Mass Storage driver...
+scsi4 : SCSI emulation for USB Mass Storage devices
+usb-storage: device found at 2
+usb-storage: waiting for device to settle before scanning
+scsi5 : SCSI emulation for USB Mass Storage devices
+usb-storage: device found at 3
+usb-storage: waiting for device to settle before scanning
+--%<--
+usbcore: registered new interface driver usb-storage
+USB Mass Storage support registered.
+usbcore: registered new interface driver libusual
+--%<--
+usb-storage: device scan complete
+scsi 4:0:0:0: Direct-Access     Multi    Flash Reader     1.00 PQ: 0 ANSI: 0
+usb-storage: device scan complete
+scsi 5:0:0:0: Direct-Access     Generic                   6000 PQ: 0 ANSI: 0
+CCS
+sd 4:0:0:0: [sde] 1953792 512-byte hardware sectors (1000 MB)
+sd 4:0:0:0: [sde] Write Protect is off
+sd 4:0:0:0: [sde] Mode Sense: 03 00 00 00
+sd 4:0:0:0: [sde] Assuming drive cache: write through
+sd 4:0:0:0: [sde] 1953792 512-byte hardware sectors (1000 MB)
+sd 4:0:0:0: [sde] Write Protect is off
+sd 4:0:0:0: [sde] Mode Sense: 03 00 00 00
+sd 4:0:0:0: [sde] Assuming drive cache: write through
+ sde: sde1
+sd 4:0:0:0: [sde] Attached SCSI removable disk
+sd 4:0:0:0: Attached scsi generic sg6 type 0
+sd 5:0:0:0: [sdf] 7861248 512-byte hardware sectors (4025 MB)
+sd 5:0:0:0: [sdf] Write Protect is off
+sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
+sd 5:0:0:0: [sdf] Assuming drive cache: write through
+sd 5:0:0:0: [sdf] 7861248 512-byte hardware sectors (4025 MB)
+sd 5:0:0:0: [sdf] Write Protect is off
+sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
+sd 5:0:0:0: [sdf] Assuming drive cache: write through
+ sdf: sdf1
+sd 5:0:0:0: [sdf] Attached SCSI removable disk
+sd 5:0:0:0: Attached scsi generic sg7 type 0
 
-The architecture on x86_64 is as follows.
+(sde is the 1GB SD card/reader, sdf is the 4GB SDHC card/reader.)
 
-We have interrupt sources:  GSIs in the case of acpi.
-We have linux interupts:  something with an irq number.
+After the bug, initialization looks the same until the device scan finishes. 
+Handoff to scsi produces the following (taken from rc9-git12):
 
-Vectors are an internal implementation detail.
+usb-storage: device scan complete
+scsi 4:0:0:0: Direct-Access     Multi    Flash Reader     1.00 PQ: 0 ANSI: 0
+usb-storage: device scan complete
+scsi 5:0:0:0: Direct-Access     Generic                   6000 PQ: 0 ANSI: 0
+CCS
+sd 4:0:0:0: [sde] 1953792 512-byte hardware sectors (1000 MB)
+sd 4:0:0:0: [sde] Write Protect is off
+sd 4:0:0:0: [sde] Mode Sense: 03 00 00 00
+sd 4:0:0:0: [sde] Assuming drive cache: write through
+sd 4:0:0:0: [sde] 1953792 512-byte hardware sectors (1000 MB)
+sd 4:0:0:0: [sde] Write Protect is off
+sd 4:0:0:0: [sde] Mode Sense: 03 00 00 00
+sd 4:0:0:0: [sde] Assuming drive cache: write through
+ sde: sde1
+sd 4:0:0:0: [sde] Attached SCSI removable disk
+sd 4:0:0:0: Attached scsi generic sg6 type 0
+sd 5:0:0:0: [sdf] Sector size 0 reported, assuming 512.
+sd 5:0:0:0: [sdf] 1 512-byte hardware sectors (0 MB)
+sd 5:0:0:0: [sdf] Write Protect is off
+sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
+sd 5:0:0:0: [sdf] Assuming drive cache: write through
+sd 5:0:0:0: [sdf] Sector size 0 reported, assuming 512.
+sd 5:0:0:0: [sdf] 1 512-byte hardware sectors (0 MB)
+sd 5:0:0:0: [sdf] Write Protect is off
+sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
+sd 5:0:0:0: [sdf] Assuming drive cache: write through
+ sdf: sdf1
+ sdf: p1 exceeds device capacity
+sd 5:0:0:0: [sdf] Attached SCSI removable disk
+sd 5:0:0:0: Attached scsi generic sg7 type 0
 
-I don't know if your event channels more closely resemble interrupt sources or internal
-implementation details.  If they are an implementation detail that interrupt sources
-just flow through we should hide them like we do vectors.  If event channels actually are
-the sources of interrupts we should do something different.
+And after boot, the following set of errors recurs until device removal.
+Device removal, in this case, was necessary to get LILO to update (-git12
+again):
 
-> I'm also interested in having vectors being sourced from multiple interrupt
-> controllers.  So, some vectors would be sourced from APICs, and other are
-> sourced from event channels.  This would be useful for Xen domains which have
-> direct access to hardware (ie, the dom0 control domain in the short term, and
-> disaggregated driver domains later on), and fully emulated domains which have
-> paravirtual drivers.
+attempt to access beyond end of device
+sdf: rw=0, want=8200, limit=1
+Buffer I/O error on device sdf1, logical block 0
+attempt to access beyond end of device
+sdf: rw=0, want=8208, limit=1
+Buffer I/O error on device sdf1, logical block 1
+attempt to access beyond end of device
+sdf: rw=0, want=8216, limit=1
+Buffer I/O error on device sdf1, logical block 2
+attempt to access beyond end of device
+sdf: rw=0, want=8224, limit=1
+Buffer I/O error on device sdf1, logical block 3
+attempt to access beyond end of device
+sdf: rw=0, want=8200, limit=1
+Buffer I/O error on device sdf1, logical block 0
+attempt to access beyond end of device
+sdf: rw=0, want=8200, limit=1
+Buffer I/O error on device sdf1, logical block 0
+attempt to access beyond end of device
+sdf: rw=0, want=8208, limit=1
+Buffer I/O error on device sdf1, logical block 1
+attempt to access beyond end of device
+sdf: rw=0, want=8216, limit=1
+Buffer I/O error on device sdf1, logical block 2
+attempt to access beyond end of device
+sdf: rw=0, want=8224, limit=1
+Buffer I/O error on device sdf1, logical block 3
+attempt to access beyond end of device
+sdf: rw=0, want=8200, limit=1
+Buffer I/O error on device sdf1, logical block 0
+attempt to access beyond end of device
+sdf: rw=0, want=8200, limit=1
+Buffer I/O error on device sdf1, logical block 0
+attempt to access beyond end of device
+sdf: rw=0, want=8208, limit=1
+Buffer I/O error on device sdf1, logical block 1
+attempt to access beyond end of device
+sdf: rw=0, want=8216, limit=1
+Buffer I/O error on device sdf1, logical block 2
+attempt to access beyond end of device
+sdf: rw=0, want=8224, limit=1
+Buffer I/O error on device sdf1, logical block 3
+attempt to access beyond end of device
+sdf: rw=0, want=8200, limit=1
+Buffer I/O error on device sdf1, logical block 0
+usb 1-2: USB disconnect, address 3
 
-Generally easy except for the disparate methods of catching interrupts.
+I'm not well-versed in git, so I looked through the diff between rc9-git10
+and rc9-git11.  This is what looks like the offending addition:
 
-> I haven't studied the current code to see if this notion already exists or not.
->
-> While the APIC interrupt model is the most architecturally important for the x86
-> platform, I'd like to make sure we don't build in the assumption that it's the
-> *only* interrupt model.
+> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+> index a82d2fe..cbf55d5 100644
+> --- a/drivers/scsi/scsi_lib.c
+> +++ b/drivers/scsi/scsi_lib.c
+> @@ -207,6 +207,15 @@ int scsi_execute(struct scsi_device *sdev, const
+unsigned char *cmd,
+>  	 */
+>  	blk_execute_rq(req->q, NULL, req, 1);
+>  
+> +	/*
+> +	 * Some devices (USB mass-storage in particular) may transfer
+> +	 * garbage data together with a residue indicating that the data
+> +	 * is invalid.  Prevent the garbage from being misinterpreted
+> +	 * and prevent security leaks by zeroing out the excess data.
+> +	 */
+> +	if (unlikely(req->data_len > 0 && req->data_len <= bufflen))
+> +		memset(buffer + (bufflen - req->data_len), 0, req->data_len);
+> +
+>  	ret = req->errors;
+>   out:
+>  	blk_put_request(req);
 
-Well with iommus starting to show up in our irq paths it looks we are going to get
-a lot of diversity.
+I looked through the online git log, and it's part of commit
+de72aa4c2b82a6cffe15d86a8d391ded4fb57602, under "[SCSI] erase invalid data
+returned by device".  Reverting this part by itself restores the correct
+handling of the device in 2.6.27-rc1.
 
-Eric
+Perhaps there's a better way to do what this patch is trying to do, because
+it seems to be erasing the valid data returned by my device.  If you want me
+to test out options, I'd be glad to, since I have the "offending" hardware. 
+Specifics: A-Data 4GB TurboSD Class 6 SDHC card, 4GB, in a Rosewill RSD-CR102
+card reader.
+
+(Please include me on replies, I've stopped being a subscriber.)
+
+Thanks!
+
+Matthew Frost
+artusemrys sbcglobal net
 
