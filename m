@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761805AbYG3Ohl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762222AbYG3OiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761805AbYG3Ohl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 10:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYG3Ohd
+	id S1762222AbYG3OiH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 10:38:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761967AbYG3Oht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 10:37:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45715 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752312AbYG3Ohc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 10:37:32 -0400
-Message-ID: <48907C9E.3050301@linux-foundation.org>
-Date: Wed, 30 Jul 2008 09:37:18 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] madvise: update function comment of madvise_dontneed
-References: <1217243241.3087.6.camel@sebastian.kern.oss.ntt.co.jp>
-In-Reply-To: <1217243241.3087.6.camel@sebastian.kern.oss.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Wed, 30 Jul 2008 10:37:49 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:47961 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753259AbYG3Ohr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 10:37:47 -0400
+Subject: Re: [patch] vfs: make security_inode_setattr() calling consistent
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: viro@ZenIV.linux.org.uk, akpm@linux-foundation.org, jmorris@namei.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <E1KOARi-0004wu-1G@pomaz-ex.szeredi.hu>
+References: <E1KOARi-0004wu-1G@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 30 Jul 2008 10:37:27 -0400
+Message-Id: <1217428647.20373.235.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fernando Luis Vázquez Cao wrote:
-> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-> ---
-> 
-> diff -urNp linux-2.6.26/mm/madvise.c linux-2.6.26-fixes/mm/madvise.c
-> --- linux-2.6.26/mm/madvise.c	2008-07-14 06:51:29.000000000 +0900
-> +++ linux-2.6.26-fixes/mm/madvise.c	2008-07-28 19:53:27.000000000 +0900
-> @@ -132,10 +132,10 @@ static long madvise_willneed(struct vm_a
->   * Application no longer needs these pages.  If the pages are dirty,
->   * it's OK to just throw them away.  The app will be more careful about
->   * data it wants to keep.  Be sure to free swap resources too.  The
-> - * zap_page_range call sets things up for refill_inactive to actually free
-> + * zap_page_range call sets things up for shrink_active_list to actually free
->   * these pages later if no one else has touched them in the meantime,
->   * although we could add these pages to a global reuse list for
-> - * refill_inactive to pick up before reclaiming other pages.
-> + * shrink_active_list to pick up before reclaiming other pages.
->   *
->   * NB: This interface discards data rather than pushes it out to swap,
->   * as some implementations do.  This has performance implications for
-> 
-> 
 
-Well shrink_page_list actually does the freeing of the pages.
+On Wed, 2008-07-30 at 14:06 +0200, Miklos Szeredi wrote:
+> From: Miklos Szeredi <mszeredi@suse.cz>
+> 
+> Call security_inode_setattr() consistetly before inode_change_ok().
+> It doesn't make sense to try to "optimize" the i_op->setattr == NULL
+> case, as most filesystem do define their own setattr function.
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+
+Unfortunate since we'd prefer to have the DAC checks applied first, and
+since inode_change_ok() may alter the ia_mode in response to those
+checks, but it does seem inconsistent at present and it doesn't yield
+any difference in the ltp selinux testsuite results.
+
+Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
+
+> ---
+>  fs/attr.c |   10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+> 
+> Index: linux-2.6/fs/attr.c
+> ===================================================================
+> --- linux-2.6.orig/fs/attr.c	2008-07-30 13:52:35.000000000 +0200
+> +++ linux-2.6/fs/attr.c	2008-07-30 13:52:41.000000000 +0200
+> @@ -159,17 +159,17 @@ int notify_change(struct dentry * dentry
+>  	if (!(attr->ia_valid & ~(ATTR_KILL_SUID | ATTR_KILL_SGID)))
+>  		return 0;
+>  
+> +	error = security_inode_setattr(dentry, attr);
+> +	if (error)
+> +		return error;
+> +
+>  	if (ia_valid & ATTR_SIZE)
+>  		down_write(&dentry->d_inode->i_alloc_sem);
+>  
+>  	if (inode->i_op && inode->i_op->setattr) {
+> -		error = security_inode_setattr(dentry, attr);
+> -		if (!error)
+> -			error = inode->i_op->setattr(dentry, attr);
+> +		error = inode->i_op->setattr(dentry, attr);
+>  	} else {
+>  		error = inode_change_ok(inode, attr);
+> -		if (!error)
+> -			error = security_inode_setattr(dentry, attr);
+>  		if (!error) {
+>  			if ((ia_valid & ATTR_UID && attr->ia_uid != inode->i_uid) ||
+>  			    (ia_valid & ATTR_GID && attr->ia_gid != inode->i_gid))
+-- 
+Stephen Smalley
+National Security Agency
 
