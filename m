@@ -1,81 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbYG3SrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757867AbYG3SsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbYG3SrD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 14:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYG3Sqx
+	id S1757867AbYG3SsE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 14:48:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbYG3Srw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 14:46:53 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:54788 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751559AbYG3Sqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 14:46:52 -0400
-Date: Wed, 30 Jul 2008 20:47:00 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jeff Dike <jdike@addtoit.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] x86: use arch/x86/include
-Message-ID: <20080730184700.GA29710@uranus.ravnborg.org>
-References: <20080730124952.GA23413@uranus.ravnborg.org> <20080730180411.GA7896@elte.hu>
-Mime-Version: 1.0
+	Wed, 30 Jul 2008 14:47:52 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:48072 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752369AbYG3Srv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 14:47:51 -0400
+Date: Wed, 30 Jul 2008 14:45:51 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Matt Domsch <Matt_Domsch@dell.com>, Jim Meyering <jim@meyering.net>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: tools support for non-512 byte sector sizes
+Message-ID: <20080730184551.GB5347@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Ric Wheeler <rwheeler@redhat.com>,
+	Matt Domsch <Matt_Domsch@dell.com>, Jim Meyering <jim@meyering.net>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	James Bottomley <James.Bottomley@HansenPartnership.com>,
+	Matthew Wilcox <matthew@wil.cx>, linux-scsi@vger.kernel.org,
+	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Jeff Garzik <jeff@garzik.org>
+References: <488F524F.6020905@redhat.com> <20080729182611.GB24924@parisc-linux.org> <1217356645.6103.48.camel@localhost.localdomain> <yq13alsr0g0.fsf@sermon.lab.mkp.net> <20080730135147.GA4513@auslistsprd01.us.dell.com> <87zlnzb8ce.fsf@rho.meyering.net> <20080730172922.GA20191@auslistsprd01.us.dell.com> <20080730181351.GA5347@mit.edu> <4890B2BC.10808@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080730180411.GA7896@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <4890B2BC.10808@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 08:04:11PM +0200, Ingo Molnar wrote:
-> 
-> * Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > Hi x86 guys.
-> > 
-> > It turned out to be easy to enable um to use arch/x86/include so here 
-> > is a git pull.
-> 
-> hm, we have a _ton_ of changes to include files queued up already, so 
-> this is rather inconvenient.
-git should cope with this if changes come in via git. I do not
-know about "git am" applied patches.
-
-> 
-> I missed the discussion on this, what's the point of renaming all these 
-> files?
-
-It has been discussed many times to keep arch and arch include files
-under arch/.
-Lately Linus outlined this:
-
-    http://kerneltrap.org/mailarchive/linux-kernel/2008/5/21/1903924
-
-I took the ball and did the kbuild side of this so we could do this
-gradually.
-sparc are already converted. sh has it ready to be pulled and others
-are playing with it.
-
-How we do it in the best way for such a fragile codebase as x86 is
-I am not sure. I would assume to do it late in the merge window where
-the minimum set of patches are queued up would be best (and this is now).
-
-And Linus already said he would like to take it sooner.
-Quote:
-
-====================================================================
-On Tue, 29 Jul 2008, Sam Ravnborg wrote:
+On Wed, Jul 30, 2008 at 02:28:12PM -0400, Ric Wheeler wrote:
+> If I remember correctly, the MS Vista new alignment for data partitions  
+> is on a 0 offset, 1MB aligned boundary. The support for 4096 byte  
+> sectors is only for data partitions (not boot).
 >
-> But will you accept this stuff now or will we have to wait until
-> next merge window?
+> Array vendors, who consume a fair amount of drives, are most likely more  
+> friendly to native 4k drives. The big fear from disk vendors is getting  
+> a wave of returns from Best Buy, etc when people go and plug in a new,  
+> native 4k drive into an old box....
 
-if the patches are really small adn the resulting build is well tested
-(ignoring the actual _move_ operation), I'm ok with taking them.
+Or a new box running XP, either via the Dell "upgrade to XP" program,
+or from a corporate I/T load[1].  :-)
 
-In fact, in many ways I'd _prefer_ to do it now, rather than have it
-pending and then do it durign the next merge window when there are a lot
-of non-movement changes too.
-====================================================================
+[1] http://www.theinquirer.net/gb/inquirer/news/2008/06/23/intel-dumps-vista
 
-	Sam
+More to the point for Linux, are *our* partition table programs (i.e.,
+fdisk, cfdisk, et. al) fixed with better defaults in upstream, and
+what are the upcoming enterprise distributions going to ship with?
+Since that's what a large number of Linux customers will end up using
+for the next 3-5 years....
+
+						- Ted
