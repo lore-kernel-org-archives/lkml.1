@@ -1,61 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbYG3M0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760606AbYG3MgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761329AbYG3M0T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 08:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbYG3M0J
+	id S1760606AbYG3MgQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 08:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbYG3Mf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 08:26:09 -0400
-Received: from winston.telenet-ops.be ([195.130.137.75]:56242 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754291AbYG3M0I (ORCPT
+	Wed, 30 Jul 2008 08:35:59 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:37854 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755209AbYG3Mf6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 08:26:08 -0400
-Date: Wed, 30 Jul 2008 14:26:04 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: David Howells <dhowells@redhat.com>
-cc: Arnd Bergmann <arnd@arndb.de>, Greg Ungerer <gerg@snapgear.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       uClinux list <uclinux-dev@uclinux.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
-In-Reply-To: <3995.1217410495@redhat.com>
-Message-ID: <Pine.LNX.4.64.0807301422380.3316@anakin>
-References: <200807300907.25186.arnd@arndb.de> <20080728200500.GA14284@uranus.ravnborg.org>
- <48900EE4.8030606@snapgear.com> <3995.1217410495@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Jul 2008 08:35:58 -0400
+Subject: Re: [PATCH 08/30] mm: serialize access to min_free_kbytes
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Neil Brown <neilb@suse.de>
+In-Reply-To: <20080724141529.855634756@chello.nl>
+References: <20080724140042.408642539@chello.nl>
+	 <20080724141529.855634756@chello.nl>
+Date: Wed, 30 Jul 2008 15:36:00 +0300
+Message-Id: <1217421360.7813.171.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008, David Howells wrote:
-> Arnd Bergmann <arnd@arndb.de> wrote:
+On Thu, 2008-07-24 at 16:00 +0200, Peter Zijlstra wrote:
+> plain text document attachment (mm-setup_per_zone_pages_min.patch)
+> There is a small race between the procfs caller and the memory hotplug caller
+> of setup_per_zone_pages_min(). Not a big deal, but the next patch will add yet
+> another caller. Time to close the gap.
 > 
-> > I think the more interesting aspect in m68knommu is what happens
-> > when asm-m68k gets moved. Does that work as well?
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+Looks good to me.
+
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+
+> ---
+>  mm/page_alloc.c |   16 +++++++++++++---
+>  1 file changed, 13 insertions(+), 3 deletions(-)
 > 
-> Can m68knommu be merged into m68k and be made contingent on CONFIG_MMU?  This
-> is what FRV does.
+> Index: linux-2.6/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.orig/mm/page_alloc.c
+> +++ linux-2.6/mm/page_alloc.c
+> @@ -118,6 +118,7 @@ static char * const zone_names[MAX_NR_ZO
+>  	 "Movable",
+>  };
+>  
+> +static DEFINE_SPINLOCK(min_free_lock);
+>  int min_free_kbytes = 1024;
+>  
+>  unsigned long __meminitdata nr_kernel_pages;
+> @@ -4333,12 +4334,12 @@ static void setup_per_zone_lowmem_reserv
+>  }
+>  
+>  /**
+> - * setup_per_zone_pages_min - called when min_free_kbytes changes.
+> + * __setup_per_zone_pages_min - called when min_free_kbytes changes.
+>   *
+>   * Ensures that the pages_{min,low,high} values for each zone are set correctly
+>   * with respect to min_free_kbytes.
+>   */
+> -void setup_per_zone_pages_min(void)
+> +static void __setup_per_zone_pages_min(void)
+>  {
+>  	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
+>  	unsigned long lowmem_pages = 0;
+> @@ -4433,6 +4434,15 @@ void setup_per_zone_inactive_ratio(void)
+>  	}
+>  }
+>  
+> +void setup_per_zone_pages_min(void)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&min_free_lock, flags);
+> +	__setup_per_zone_pages_min();
+> +	spin_unlock_irqrestore(&min_free_lock, flags);
+> +}
+> +
+>  /*
+>   * Initialise min_free_kbytes.
+>   *
+> @@ -4468,7 +4478,7 @@ static int __init init_per_zone_pages_mi
+>  		min_free_kbytes = 128;
+>  	if (min_free_kbytes > 65536)
+>  		min_free_kbytes = 65536;
+> -	setup_per_zone_pages_min();
+> +	__setup_per_zone_pages_min();
+>  	setup_per_zone_lowmem_reserve();
+>  	setup_per_zone_inactive_ratio();
+>  	return 0;
+> 
 
-Sure it can ;-)
-
-Actually I did a bit of work to add nommu support to m68k to make it
-boot on old MMU-less Amigas, but it dates back to the 2.6.8.1 era...
-
-The bigger issue is in those parts that are done differently by m68k and
-m68knommu (esp. head.S).
-
-Who's gonna take the work? :-)
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
