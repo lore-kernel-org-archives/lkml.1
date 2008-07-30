@@ -1,57 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbYG3UKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbYG3ULp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbYG3UKl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 16:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYG3UKd
+	id S1757346AbYG3ULp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 16:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbYG3ULh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 16:10:33 -0400
-Received: from smtp.daktronics.com ([63.85.214.24]:4285 "HELO
-	smtp.daktronics.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750885AbYG3UKc (ORCPT
+	Wed, 30 Jul 2008 16:11:37 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:15625 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753615AbYG3ULg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 16:10:32 -0400
-Subject: Re: map keyboard to stdin
-From: Kevin Holland <khollan@daktronics.com>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LNX.1.10.0807230050450.23410@fbirervta.pbzchgretzou.qr>
-References: <1216760127.6242.18.camel@kevin-laptop>
-	 <alpine.LNX.1.10.0807230050450.23410@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
+	Wed, 30 Jul 2008 16:11:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Yz7E/KlSLyp9l0gXiNksBsd4Ro+hzw5Nck93rp2QXMM3p/wim3wfm6qANxfBqTaGFZ
+         1Q9BnDtywlMjHJoXYuApZTDgtmHf7p6m76+4cEqGAN7YR798QulV1woddZY2M04NwBsn
+         KNO50G+9Qmlnz3IRRZcqIJAstH0RIgKdpfGPE=
+Message-ID: <f19298770807301311j1c742979je87ec7edfbf85173@mail.gmail.com>
+Date: Thu, 31 Jul 2008 00:11:34 +0400
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: commit a352def21a642133758b868c71bee12ab34ad5c5 broke pptp.
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <f19298770807280350r79b2811er79061bb4fa363369@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Date: Wed, 30 Jul 2008 15:09:46 -0500
-Message-Id: <1217448586.6245.16.camel@kevin-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Disposition: inline
+References: <f19298770807231111p2aaa2a3eyc4bf0c084c626c9b@mail.gmail.com>
+	 <f19298770807280350r79b2811er79061bb4fa363369@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jul 28, 2008 at 2:50 PM, Alexey Zaytsev
+<alexey.zaytsev@gmail.com> wrote:
+> On Wed, Jul 23, 2008 at 10:11 PM, Alexey Zaytsev
+> <alexey.zaytsev@gmail.com> wrote:
+>> Hello.
+>>
+>>
+>> Pptp breaks for me on the current git (c010b2f76):
+>>
+>> root@nx:~# pppd call semunlim defaultroute nodetach debug
+>> Couldn't set tty to PPP discipline: Invalid argument
+>> Waiting for 1 child processes...
+>>  script pptp 172.18.2.2 --nolaunchpppd, pid 4359
+>> root@nx:~#
+>>
+>> It bisects to:
+>> a352def21a642133758b868c71bee12ab34ad5c5 tty: Ldisc revamp
+>>
+>> Revetring this commit, along with
+>> 7a4d29f426f17479395980ded8fa5e3bdd6d94e4
+>> and 01e1abb2c27e43339b8829a2e3b1c6f53806b77a fixes the problem.
+>>
+>
+> Still there (c9272c4f). Could you maybe revert this for the -rc1? If not the
+> problem, this would probably be the first -rc1 ever that actually
+> works for me. ;)
+>
+
+Hai, I fixd ur kernel.
+The problem was with the screwd up ldisc modules autoloading.
+Pls apply the patch. Kthx bai.
 
 
-On Wed, 2008-07-23 at 00:52 +0200, Jan Engelhardt wrote:
-> On Tuesday 2008-07-22 22:55, Kevin Holland wrote:
-> 
-> >Hi all,
-> >I have an embedded Linux board that uses 2.6.21, the console is output
-> >the serial port.  How can I set it up so a USB keyboard will be accepted
-> >as input as well as anything received from the serial port and it will
-> >be echoed to the output of the serial port as well.  Basically I want to
-> >issue commands either through a terminal program to the embedded board
-> >or a USB keyboard that is connected to the board, but I still want to
-> >see what was typed on the keyboard out the serial terminal. I have
-> >enabled USB HID support in the Kernel as well.
-> 
-> Try booting with  console=tty0 console=ttyS0
-> I am not sure whether this will accept input from both (that's for you 
-> to test), though it definitely outputs to both.
+    Fix ldisc module autoloading.
 
-This method doesn't seem to work on my setup since I'm only using the
-serial port as the console, and have no frame buffer.  I can
-cat /dev/input/event0 and get what appears to be scan codes when I press
-keys on my keyboard.  How can I translate this into specific commands
-for my serial console?
+    Signed-off-by: Alexey Zaytsev <alexey.zaytsev@gmail.com>
 
-Thanks
+diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
+index 241cbde..a858893 100644
+--- a/drivers/char/tty_ldisc.c
++++ b/drivers/char/tty_ldisc.c
+@@ -164,14 +164,16 @@ static int tty_ldisc_try_get(int disc, struct
+tty_ldisc *ld)
 
-Kevin
+ static int tty_ldisc_get(int disc, struct tty_ldisc *ld)
+ {
+-       int err;
++       int err = 0;
+
+        if (disc < N_TTY || disc >= NR_LDISCS)
+                return -EINVAL;
+-       err = tty_ldisc_try_get(disc, ld);
+-       if (err == -EAGAIN) {
+-               request_module("tty-ldisc-%d", disc);
+-               err = tty_ldisc_try_get(disc, ld);
++       tty_ldisc_try_get(disc, ld);
++       if (!ld->ops) {
++               do {
++                       request_module("tty-ldisc-%d", disc);
++                       err = tty_ldisc_try_get(disc, ld);
++               } while (err == -EAGAIN);
+        }
+        return err;
+ }
