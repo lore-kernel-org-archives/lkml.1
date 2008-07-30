@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbYG3Qgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbYG3Qjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbYG3Qgj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 12:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbYG3Qgb
+	id S1754829AbYG3Qjd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 12:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbYG3QjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 12:36:31 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58456 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbYG3Qga (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 12:36:30 -0400
-Message-ID: <4890976D.70103@zytor.com>
-Date: Wed, 30 Jul 2008 09:31:41 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 30 Jul 2008 12:39:24 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:60709 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750818AbYG3QjY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 12:39:24 -0400
+Date: Wed, 30 Jul 2008 09:31:52 -0700
+From: Greg KH <gregkh@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Frederik Deweerdt <deweerdt@free.fr>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       suresh.b.siddha@intel.com, Andi Kleen <andi@firstfloor.org>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference at
+	00000002
+Message-ID: <20080730163152.GA23036@suse.de>
+References: <20080725095317.GA12636@skywalker> <20080728222643.GA6339@slug> <1217305335.5553.3.camel@marge.simson.net> <20080730090549.GA26904@elte.hu> <20080730022631.821d34a7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "drepper@redhat.com" <drepper@redhat.com>,
-       "mikpe@it.uu.se" <mikpe@it.uu.se>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 0/9] x86, xsave: xsave/xrstor support
-References: <20080729172917.185593000@linux-os.sc.intel.com> <488FA318.3040905@zytor.com> <20080729232951.GB11223@linux-os.sc.intel.com> <488FAB2B.7050405@zytor.com> <20080730100326.GA9683@elte.hu>
-In-Reply-To: <20080730100326.GA9683@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080730022631.821d34a7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * H. Peter Anvin <hpa@zytor.com> wrote:
+On Wed, Jul 30, 2008 at 02:26:31AM -0700, Andrew Morton wrote:
+> On Wed, 30 Jul 2008 11:05:49 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 > 
->>> hpa, these patches just apply fine to tip/master. Can you please 
->>> arrange the tip/x86/xsave tree accordingly? or do I need to do 
->>> something else to smooth this process?
->> This is awkward, since that means this is "derived topic".  Most of 
->> the changes are orthogonal and relatively trivial to fix up at merge 
->> time, so I would prefer to keep them separate.
+> > 
+> > * Mike Galbraith <efault@gmx.de> wrote:
+> > 
+> > > On Tue, 2008-07-29 at 00:26 +0200, Frederik Deweerdt wrote:
+> > > > Hello  Aneesh,
+> > > > 
+> > > > On Fri, Jul 25, 2008 at 03:23:17PM +0530, Aneesh Kumar K.V wrote:
+> > > > > [  163.378265] BUG: unable to handle kernel NULL pointer dereference at 00000002
+> > > > > [  163.378276] IP: [<c0124933>] sched_power_savings_store+0x13/0x70
+> > > > 
+> > > > Does the attached patch solve the problem?
+> > > 
+> > > Patch seems to have missed the boat for rc1 too.
 > 
-> Well, in this case the conflicts seem to be quite heavy, so i'd suggest 
-> to use the method we have used for x86/x2apic and for xen-64bit:
+> I grabbed Andi's 53rd copy and have sent it Linuswards.
 > 
-> Merge the affected topics into tip/x86/core. Then merge x86/core into 
-> x86/xsave, and put the xsave patches ontop of that base.
+> > Greg?
 > 
-> This way x86/xsave is a 'derived' topic and optional until it's proven, 
-> but one that is still mergable once all the dependent topics go 
-> upstream. We'd only have to rebase it in the (unlikely) event of there 
-> being some major problem with any of the topics merged into x86/core.
-> 
-> ok?
+> We should make him maintain 2.6.27-rc1.1 ;)
 
-It somewhat concerns me, because one of the conflicts is generated by 
-collision with x2apic.  The rest of them I don't think are too problematic.
+I know I've been slow in getting back up to speed due to vacations and
+work issues, but that's just cruel to suggest such a thing :)
 
-Most of the conflicts are of the type "orthogonal transformations to the 
-same chunk of code", which doesn't make them less annoying.
+thanks,
 
-	-hpa
+greg k-h
