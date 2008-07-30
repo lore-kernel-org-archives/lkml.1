@@ -1,78 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbYG3JCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbYG3JCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757552AbYG3JCe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 05:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYG3JCY
+	id S1754575AbYG3JCt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 05:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759233AbYG3JC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 05:02:24 -0400
-Received: from beru.its.uow.edu.au ([130.130.68.31]:42966 "EHLO
+	Wed, 30 Jul 2008 05:02:27 -0400
+Received: from beru.its.uow.edu.au ([130.130.68.31]:42969 "EHLO
 	beru.its.uow.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752755AbYG3JCX (ORCPT
+	with ESMTP id S1753823AbYG3JC0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 05:02:23 -0400
-X-Greylist: delayed 689 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Jul 2008 05:02:23 EDT
-Subject: [patch 00/31] pci_ids.h, kernel 2.6.27-rc1, sort DEVICE_IDs within VENDOR_IDs
-Message-Id: <E1KO7OU-0007BT-Ff@wraith.cs.uow.edu.au>
+	Wed, 30 Jul 2008 05:02:26 -0400
+Subject: [patch 01/31] pci_ids.h, kernel 2.6.27-rc1, sort DEVICE_IDs within VENDOR_IDs
+Message-Id: <E1KO7OZ-0007CE-Jg@wraith.cs.uow.edu.au>
 From: mcs6502@gmail.com
-Date: Wed, 30 Jul 2008 18:50:50 +1000
+Date: Wed, 30 Jul 2008 18:50:55 +1000
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following 31 patches attempt to bring pci_ids.h back into order.
-
-patch-01-31: INTEL
-patch-02-31: S2IO
-patch-03-31: RDC
-patch-04-31: ADDIDATA
-patch-05-31: MELLANOX
-patch-06-31: TIGON3
-patch-07-31: TITAN
-patch-08-31: SEALEVEL
-patch-09-31: SIIG
-patch-10-31: ITE
-patch-11-31: ENSONIQ
-patch-12-31: MARVELL
-patch-13-31: SBE
-patch-14-31: VIA
-patch-15-31: NVIDIA
-patch-16-31: CMD/SII
-patch-17-31: QLOGIC
-patch-18-31: YAMAHA
-patch-19-31: MYLEX
-patch-20-31: PROMISE
-patch-21-31: HP
-patch-22-31: SI
-patch-23-31: MATROX
-patch-24-31: TRIDENT
-patch-25-31: AMD
-patch-26-31: IBM
-patch-27-31: DEC/COMPAQ
-patch-28-31: NS
-patch-29-31: LSI
-patch-30-31: COMPAQ
-patch-31-31: ESS
-
-Note 1: I have not attempted a build with these changes. I have done
-	a sort -u on both the original and fully patched files and there
-	are only two lines that differ due to padding the ID number to
-	4 digits.
-
-544c544
-< #define PCI_DEVICE_ID_COMPAQ_CISSC    0x46
----
-> #define PCI_DEVICE_ID_COMPAQ_CISSC    0x0046
-720c720
-< #define PCI_DEVICE_ID_IBM_ICOM_FOUR_PORT_MODEL        0x252
----
-> #define PCI_DEVICE_ID_IBM_ICOM_FOUR_PORT_MODEL        0x0252
-
-Note 2:	I have not made any changes to the ATI section as this appears
-	to be sorted into chip families.
-
-Note 3:	I have not moved the following:
-
-PCI_VENDOR_ID_TOSHIBA_2 (it is adjacent to PCI_VENDOR_ID_TOSHIBA)
-PCI_DEVICE_ID_SEGA_BBA  (it seems to be missing a PCI_VENDOR_ID_SEGA line)
-PCI_VENDOR_ID_ADDIDATA_OLD (it is adjacent to PCI_VENDOR_ID_ADDIDATA)
+--- linux/include/linux/pci_ids.h	2008-07-30 07:18:49.000000000 +1000
++++ linux-p1/include/linux/pci_ids.h	2008-07-30 12:57:57.308494000 +1000
+@@ -2280,8 +2280,6 @@
+ #define PCI_DEVICE_ID_INTEL_82815_MC	0x1130
+ #define PCI_DEVICE_ID_INTEL_82815_CGC	0x1132
+ #define PCI_DEVICE_ID_INTEL_82092AA_0	0x1221
+-#define PCI_DEVICE_ID_INTEL_7505_0	0x2550  
+-#define PCI_DEVICE_ID_INTEL_7205_0	0x255d
+ #define PCI_DEVICE_ID_INTEL_82437	0x122d
+ #define PCI_DEVICE_ID_INTEL_82371FB_0	0x122e
+ #define PCI_DEVICE_ID_INTEL_82371FB_1	0x1230
+@@ -2339,16 +2337,13 @@
+ #define PCI_DEVICE_ID_INTEL_82801EB_11	0x24db
+ #define PCI_DEVICE_ID_INTEL_82801EB_12	0x24dc
+ #define PCI_DEVICE_ID_INTEL_82801EB_13	0x24dd
+-#define PCI_DEVICE_ID_INTEL_ESB_1	0x25a1
+-#define PCI_DEVICE_ID_INTEL_ESB_2	0x25a2
+-#define PCI_DEVICE_ID_INTEL_ESB_4	0x25a4
+-#define PCI_DEVICE_ID_INTEL_ESB_5	0x25a6
+-#define PCI_DEVICE_ID_INTEL_ESB_9	0x25ab
+ #define PCI_DEVICE_ID_INTEL_82820_HB	0x2500
+ #define PCI_DEVICE_ID_INTEL_82820_UP_HB	0x2501
+ #define PCI_DEVICE_ID_INTEL_82850_HB	0x2530
+ #define PCI_DEVICE_ID_INTEL_82860_HB	0x2531
+ #define PCI_DEVICE_ID_INTEL_E7501_MCH	0x254c
++#define PCI_DEVICE_ID_INTEL_7505_0	0x2550  
++#define PCI_DEVICE_ID_INTEL_7205_0	0x255d
+ #define PCI_DEVICE_ID_INTEL_82845G_HB	0x2560
+ #define PCI_DEVICE_ID_INTEL_82845G_IG	0x2562
+ #define PCI_DEVICE_ID_INTEL_82865_HB	0x2570
+@@ -2358,14 +2353,14 @@
+ #define PCI_DEVICE_ID_INTEL_82915G_IG	0x2582
+ #define PCI_DEVICE_ID_INTEL_82915GM_HB	0x2590
+ #define PCI_DEVICE_ID_INTEL_82915GM_IG	0x2592
++#define PCI_DEVICE_ID_INTEL_ESB_1	0x25a1
++#define PCI_DEVICE_ID_INTEL_ESB_2	0x25a2
++#define PCI_DEVICE_ID_INTEL_ESB_4	0x25a4
++#define PCI_DEVICE_ID_INTEL_ESB_5	0x25a6
++#define PCI_DEVICE_ID_INTEL_ESB_9	0x25ab
+ #define PCI_DEVICE_ID_INTEL_5000_ERR	0x25F0
+ #define PCI_DEVICE_ID_INTEL_5000_FBD0	0x25F5
+ #define PCI_DEVICE_ID_INTEL_5000_FBD1	0x25F6
+-#define PCI_DEVICE_ID_INTEL_82945G_HB	0x2770
+-#define PCI_DEVICE_ID_INTEL_82945G_IG	0x2772
+-#define PCI_DEVICE_ID_INTEL_3000_HB	0x2778
+-#define PCI_DEVICE_ID_INTEL_82945GM_HB	0x27A0
+-#define PCI_DEVICE_ID_INTEL_82945GM_IG	0x27A2
+ #define PCI_DEVICE_ID_INTEL_ICH6_0	0x2640
+ #define PCI_DEVICE_ID_INTEL_ICH6_1	0x2641
+ #define PCI_DEVICE_ID_INTEL_ICH6_2	0x2642
+@@ -2377,9 +2372,14 @@
+ #define PCI_DEVICE_ID_INTEL_ESB2_14	0x2698
+ #define PCI_DEVICE_ID_INTEL_ESB2_17	0x269b
+ #define PCI_DEVICE_ID_INTEL_ESB2_18	0x269e
++#define PCI_DEVICE_ID_INTEL_82945G_HB	0x2770
++#define PCI_DEVICE_ID_INTEL_82945G_IG	0x2772
++#define PCI_DEVICE_ID_INTEL_3000_HB	0x2778
++#define PCI_DEVICE_ID_INTEL_82945GM_HB	0x27A0
++#define PCI_DEVICE_ID_INTEL_82945GM_IG	0x27A2
++#define PCI_DEVICE_ID_INTEL_ICH7_30	0x27b0
+ #define PCI_DEVICE_ID_INTEL_ICH7_0	0x27b8
+ #define PCI_DEVICE_ID_INTEL_ICH7_1	0x27b9
+-#define PCI_DEVICE_ID_INTEL_ICH7_30	0x27b0
+ #define PCI_DEVICE_ID_INTEL_ICH7_31	0x27bd
+ #define PCI_DEVICE_ID_INTEL_ICH7_17	0x27da
+ #define PCI_DEVICE_ID_INTEL_ICH7_19	0x27dd
+@@ -2393,14 +2393,14 @@
+ #define PCI_DEVICE_ID_INTEL_ICH8_5	0x283e
+ #define PCI_DEVICE_ID_INTEL_ICH8_6	0x2850
+ #define PCI_DEVICE_ID_INTEL_ICH9_0	0x2910
+-#define PCI_DEVICE_ID_INTEL_ICH9_1	0x2917
+ #define PCI_DEVICE_ID_INTEL_ICH9_2	0x2912
+ #define PCI_DEVICE_ID_INTEL_ICH9_3	0x2913
+ #define PCI_DEVICE_ID_INTEL_ICH9_4	0x2914
+-#define PCI_DEVICE_ID_INTEL_ICH9_5	0x2919
+-#define PCI_DEVICE_ID_INTEL_ICH9_6	0x2930
+ #define PCI_DEVICE_ID_INTEL_ICH9_7	0x2916
++#define PCI_DEVICE_ID_INTEL_ICH9_1	0x2917
+ #define PCI_DEVICE_ID_INTEL_ICH9_8	0x2918
++#define PCI_DEVICE_ID_INTEL_ICH9_5	0x2919
++#define PCI_DEVICE_ID_INTEL_ICH9_6	0x2930
+ #define PCI_DEVICE_ID_INTEL_82855PM_HB	0x3340
+ #define PCI_DEVICE_ID_INTEL_IOAT_TBG4	0x3429
+ #define PCI_DEVICE_ID_INTEL_IOAT_TBG5	0x342a
+@@ -2431,15 +2431,15 @@
+ #define PCI_DEVICE_ID_INTEL_ICH10_4	0x3a30
+ #define PCI_DEVICE_ID_INTEL_ICH10_5	0x3a60
+ #define PCI_DEVICE_ID_INTEL_IOAT_SNB	0x402f
+-#define PCI_DEVICE_ID_INTEL_5100_16	0x65f0
+-#define PCI_DEVICE_ID_INTEL_5100_21	0x65f5
+-#define PCI_DEVICE_ID_INTEL_5100_22	0x65f6
+ #define PCI_DEVICE_ID_INTEL_5400_ERR	0x4030
+ #define PCI_DEVICE_ID_INTEL_5400_FBD0	0x4035
+ #define PCI_DEVICE_ID_INTEL_5400_FBD1	0x4036
+-#define PCI_DEVICE_ID_INTEL_IOAT_SCNB	0x65ff
+ #define PCI_DEVICE_ID_INTEL_TOLAPAI_0	0x5031
+ #define PCI_DEVICE_ID_INTEL_TOLAPAI_1	0x5032
++#define PCI_DEVICE_ID_INTEL_5100_16	0x65f0
++#define PCI_DEVICE_ID_INTEL_5100_21	0x65f5
++#define PCI_DEVICE_ID_INTEL_5100_22	0x65f6
++#define PCI_DEVICE_ID_INTEL_IOAT_SCNB	0x65ff
+ #define PCI_DEVICE_ID_INTEL_82371SB_0	0x7000
+ #define PCI_DEVICE_ID_INTEL_82371SB_1	0x7010
+ #define PCI_DEVICE_ID_INTEL_82371SB_2	0x7020
