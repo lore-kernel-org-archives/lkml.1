@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760845AbYG3BBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760305AbYG3BBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760845AbYG3BBQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 21:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757898AbYG3Azw
+	id S1760305AbYG3BBf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 21:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757916AbYG3Azy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 20:55:52 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:59233 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757889AbYG3Azv (ORCPT
+	Tue, 29 Jul 2008 20:55:54 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:51866 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753816AbYG3Azw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 20:55:51 -0400
+	Tue, 29 Jul 2008 20:55:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=Y1E7XnauPGuKSmfUK3b3lcg3a4oZvVFXk0UNkKb6cw9RqUor8HVDyNtFRMPMc3Tg2Z
-         raB/MxSoZaCqd6/vSPfA/Mhy1gbjaEPlPPfo59hHGnMXW97kPG2Kz1T1uqa+I7BilqGL
-         SScQde61T7veXRpChjqPMRrfX+moYniligCxE=
-Subject: [PATCH 18/24] sh: use the new byteorder headers
+        b=g7A1j80RSkVyGzRR/NqGVCqomvuV/JSbYN6uP4USx2FpMUKRRojTxngvG+6G35FsLM
+         GkwjSM6P0VVcBjTks+8BRWZzbTE+yBQIfk0XGUMKeSnfvv1CvMFiUMct5ahPn5SEs0RE
+         IL2D4vQNBMdKh7EXdh1bPz95X+I3Wvnm9eY2U=
+Subject: [PATCH 19/24] sparc: use the new byteorder headers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
 Content-Type: text/plain
-Date: Tue, 29 Jul 2008 17:55:27 -0700
-Message-Id: <1217379327.23389.129.camel@brick>
+Date: Tue, 29 Jul 2008 17:55:28 -0700
+Message-Id: <1217379328.23389.130.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -33,75 +33,73 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- arch/sh/include/asm/byteorder.h |   32 +++++++++++++++-----------------
- 1 files changed, 15 insertions(+), 17 deletions(-)
+ arch/sparc/include/asm/byteorder.h |   22 ++++++++--------------
+ 1 files changed, 8 insertions(+), 14 deletions(-)
 
-diff --git a/arch/sh/include/asm/byteorder.h b/arch/sh/include/asm/byteorder.h
-index 4c13e61..60f040a 100644
---- a/arch/sh/include/asm/byteorder.h
-+++ b/arch/sh/include/asm/byteorder.h
-@@ -8,7 +8,15 @@
- #include <linux/compiler.h>
- #include <linux/types.h>
+diff --git a/arch/sparc/include/asm/byteorder.h b/arch/sparc/include/asm/byteorder.h
+index bcd83aa..5a70f13 100644
+--- a/arch/sparc/include/asm/byteorder.h
++++ b/arch/sparc/include/asm/byteorder.h
+@@ -4,15 +4,14 @@
+ #include <asm/types.h>
+ #include <asm/asi.h>
  
--static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
-+#ifdef __LITTLE_ENDIAN__
-+# define __LITTLE_ENDIAN
-+#else
-+# define __BIG_ENDIAN
-+#endif
-+
-+#define __SWAB_64_THRU_32__
-+
-+static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
- {
- 	__asm__(
- #ifdef __SH5__
-@@ -24,8 +32,9 @@ static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
+-#ifdef __GNUC__
++#define __BIG_ENDIAN
  
- 	return x;
- }
-+#define __arch_swab32 __arch_swab32
+ #ifdef CONFIG_SPARC32
+ #define __SWAB_64_THRU_32__
+ #endif
  
--static inline __attribute_const__ __u16 ___arch__swab16(__u16 x)
-+static inline __attribute_const__ __u16 __arch_swab16(__u16 x)
- {
- 	__asm__(
- #ifdef __SH5__
-@@ -39,8 +48,9 @@ static inline __attribute_const__ __u16 ___arch__swab16(__u16 x)
- 
- 	return x;
- }
-+#define __arch_swab16 __arch_swab16
- 
--static inline __u64 ___arch__swab64(__u64 val)
-+static inline __u64 __arch_swab64(__u64 val)
- {
- 	union {
- 		struct { __u32 a,b; } s;
-@@ -51,20 +61,8 @@ static inline __u64 ___arch__swab64(__u64 val)
- 	w.s.a = ___arch__swab32(v.s.b);
- 	return w.u;
- }
-+#define __arch_swab64 __arch_swab64
- 
--#define __arch__swab64(x) ___arch__swab64(x)
--#define __arch__swab32(x) ___arch__swab32(x)
--#define __arch__swab16(x) ___arch__swab16(x)
+ #ifdef CONFIG_SPARC64
 -
--#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
--#  define __BYTEORDER_HAS_U64__
--#  define __SWAB_64_THRU_32__
+-static inline __u16 ___arch__swab16p(const __u16 *addr)
++static inline __u16 __arch_swab16p(const __u16 *addr)
+ {
+ 	__u16 ret;
+ 
+@@ -21,8 +20,9 @@ static inline __u16 ___arch__swab16p(const __u16 *addr)
+ 			      : "r" (addr), "i" (ASI_PL));
+ 	return ret;
+ }
++#define __arch_swab16p __arch_swab16p
+ 
+-static inline __u32 ___arch__swab32p(const __u32 *addr)
++static inline __u32 __arch_swab32p(const __u32 *addr)
+ {
+ 	__u32 ret;
+ 
+@@ -31,8 +31,9 @@ static inline __u32 ___arch__swab32p(const __u32 *addr)
+ 			      : "r" (addr), "i" (ASI_PL));
+ 	return ret;
+ }
++#define __arch_swab32p __arch_swab32p
+ 
+-static inline __u64 ___arch__swab64p(const __u64 *addr)
++static inline __u64 __arch_swab64p(const __u64 *addr)
+ {
+ 	__u64 ret;
+ 
+@@ -41,17 +42,10 @@ static inline __u64 ___arch__swab64p(const __u64 *addr)
+ 			      : "r" (addr), "i" (ASI_PL));
+ 	return ret;
+ }
+-
+-#define __arch__swab16p(x) ___arch__swab16p(x)
+-#define __arch__swab32p(x) ___arch__swab32p(x)
+-#define __arch__swab64p(x) ___arch__swab64p(x)
++#define __arch_swab64p __arch_swab64p
+ 
+ #endif /* CONFIG_SPARC64 */
+ 
+-#define __BYTEORDER_HAS_U64__
+-
 -#endif
 -
--#ifdef __LITTLE_ENDIAN__
--#include <linux/byteorder/little_endian.h>
--#else
 -#include <linux/byteorder/big_endian.h>
--#endif
 +#include <linux/byteorder.h>
  
- #endif /* __ASM_SH_BYTEORDER_H */
+ #endif /* _SPARC_BYTEORDER_H */
 -- 
 1.6.0.rc1.154.ge3fc
 
