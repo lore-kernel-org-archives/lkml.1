@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760305AbYG3BBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760379AbYG3BBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760305AbYG3BBf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 21:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757916AbYG3Azy
+	id S1760379AbYG3BBt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 21:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757954AbYG3Az4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 20:55:54 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:51866 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753816AbYG3Azw (ORCPT
+	Tue, 29 Jul 2008 20:55:56 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:59233 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757922AbYG3Azy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 20:55:52 -0400
+	Tue, 29 Jul 2008 20:55:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=g7A1j80RSkVyGzRR/NqGVCqomvuV/JSbYN6uP4USx2FpMUKRRojTxngvG+6G35FsLM
-         GkwjSM6P0VVcBjTks+8BRWZzbTE+yBQIfk0XGUMKeSnfvv1CvMFiUMct5ahPn5SEs0RE
-         IL2D4vQNBMdKh7EXdh1bPz95X+I3Wvnm9eY2U=
-Subject: [PATCH 19/24] sparc: use the new byteorder headers
+        b=wdJVnZArscEV1baKGrr2z/VWsQGoeM7ostLQqRyxS+68KTbHiCvg0C0+szup9GIfRV
+         /kt3Tzi9SUuiw/FwWjANX60VigdaYj5BNcVWlXZzixbxHmyVoV7Ee/9OoMxYEZ/efHCz
+         wvJ8COlRL8Y2YUfUScLFbT40t1FFuejJx7UWo=
+Subject: [PATCH 20/24] x86: use the new byteorder headers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
 Content-Type: text/plain
-Date: Tue, 29 Jul 2008 17:55:28 -0700
-Message-Id: <1217379328.23389.130.camel@brick>
+Date: Tue, 29 Jul 2008 17:55:29 -0700
+Message-Id: <1217379329.23389.131.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -33,73 +33,118 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- arch/sparc/include/asm/byteorder.h |   22 ++++++++--------------
- 1 files changed, 8 insertions(+), 14 deletions(-)
+ include/asm-x86/byteorder.h |   69 +++++++++++++++++--------------------------
+ 1 files changed, 27 insertions(+), 42 deletions(-)
 
-diff --git a/arch/sparc/include/asm/byteorder.h b/arch/sparc/include/asm/byteorder.h
-index bcd83aa..5a70f13 100644
---- a/arch/sparc/include/asm/byteorder.h
-+++ b/arch/sparc/include/asm/byteorder.h
-@@ -4,15 +4,14 @@
+diff --git a/include/asm-x86/byteorder.h b/include/asm-x86/byteorder.h
+index e02ae2d..7187b3a 100644
+--- a/include/asm-x86/byteorder.h
++++ b/include/asm-x86/byteorder.h
+@@ -4,26 +4,33 @@
  #include <asm/types.h>
- #include <asm/asi.h>
+ #include <linux/compiler.h>
  
 -#ifdef __GNUC__
-+#define __BIG_ENDIAN
++#define __LITTLE_ENDIAN
  
- #ifdef CONFIG_SPARC32
- #define __SWAB_64_THRU_32__
+-#ifdef __i386__
+-
+-static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
++static inline __attribute_const__ __u32 __arch_swab32(__u32 val)
+ {
+-#ifdef CONFIG_X86_BSWAP
+-	asm("bswap %0" : "=r" (x) : "0" (x));
+-#else
++#ifdef __i386__
++# ifdef CONFIG_X86_BSWAP
++	asm("bswap %0" : "=r" (val) : "0" (val));
++# else
+ 	asm("xchgb %b0,%h0\n\t"	/* swap lower bytes	*/
+ 	    "rorl $16,%0\n\t"	/* swap words		*/
+ 	    "xchgb %b0,%h0"	/* swap higher bytes	*/
+-	    : "=q" (x)
+-	    : "0" (x));
++	    : "=q" (val)
++	    : "0" (val));
++# endif
++
++#else /* __i386__ */
++	asm("bswapl %0"
++	    : "=r" (val)
++	    : "0" (val));
  #endif
+-	return x;
++	return val;
+ }
++#define __arch_swab32 __arch_swab32
  
- #ifdef CONFIG_SPARC64
+-static inline __attribute_const__ __u64 ___arch__swab64(__u64 val)
++static inline __attribute_const__ __u64 __arch_swab64(__u64 val)
+ {
++#ifdef __i386__
+ 	union {
+ 		struct {
+ 			__u32 a;
+@@ -32,50 +39,28 @@ static inline __attribute_const__ __u64 ___arch__swab64(__u64 val)
+ 		__u64 u;
+ 	} v;
+ 	v.u = val;
+-#ifdef CONFIG_X86_BSWAP
++# ifdef CONFIG_X86_BSWAP
+ 	asm("bswapl %0 ; bswapl %1 ; xchgl %0,%1"
+ 	    : "=r" (v.s.a), "=r" (v.s.b)
+ 	    : "0" (v.s.a), "1" (v.s.b));
+-#else
++# else
+ 	v.s.a = ___arch__swab32(v.s.a);
+ 	v.s.b = ___arch__swab32(v.s.b);
+ 	asm("xchgl %0,%1"
+ 	    : "=r" (v.s.a), "=r" (v.s.b)
+ 	    : "0" (v.s.a), "1" (v.s.b));
+-#endif
++# endif
+ 	return v.u;
+-}
+ 
+ #else /* __i386__ */
 -
--static inline __u16 ___arch__swab16p(const __u16 *addr)
-+static inline __u16 __arch_swab16p(const __u16 *addr)
- {
- 	__u16 ret;
- 
-@@ -21,8 +20,9 @@ static inline __u16 ___arch__swab16p(const __u16 *addr)
- 			      : "r" (addr), "i" (ASI_PL));
- 	return ret;
- }
-+#define __arch_swab16p __arch_swab16p
- 
--static inline __u32 ___arch__swab32p(const __u32 *addr)
-+static inline __u32 __arch_swab32p(const __u32 *addr)
- {
- 	__u32 ret;
- 
-@@ -31,8 +31,9 @@ static inline __u32 ___arch__swab32p(const __u32 *addr)
- 			      : "r" (addr), "i" (ASI_PL));
- 	return ret;
- }
-+#define __arch_swab32p __arch_swab32p
- 
--static inline __u64 ___arch__swab64p(const __u64 *addr)
-+static inline __u64 __arch_swab64p(const __u64 *addr)
- {
- 	__u64 ret;
- 
-@@ -41,17 +42,10 @@ static inline __u64 ___arch__swab64p(const __u64 *addr)
- 			      : "r" (addr), "i" (ASI_PL));
- 	return ret;
- }
+-static inline __attribute_const__ __u64 ___arch__swab64(__u64 x)
+-{
+ 	asm("bswapq %0"
+-	    : "=r" (x)
+-	    : "0" (x));
+-	return x;
+-}
 -
--#define __arch__swab16p(x) ___arch__swab16p(x)
--#define __arch__swab32p(x) ___arch__swab32p(x)
--#define __arch__swab64p(x) ___arch__swab64p(x)
-+#define __arch_swab64p __arch_swab64p
+-static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
+-{
+-	asm("bswapl %0"
+-	    : "=r" (x)
+-	    : "0" (x));
+-	return x;
+-}
+-
++	    : "=r" (val)
++	    : "0" (val));
++	return val;
+ #endif
++}
++#define __arch_swab64 __arch_swab64
  
- #endif /* CONFIG_SPARC64 */
- 
+-/* Do not define swab16.  Gcc is smart enough to recognize "C" version and
+-   convert it into rotation or exhange.  */
+-
+-#define __arch__swab64(x) ___arch__swab64(x)
+-#define __arch__swab32(x) ___arch__swab32(x)
+-
 -#define __BYTEORDER_HAS_U64__
 -
--#endif
+-#endif /* __GNUC__ */
 -
--#include <linux/byteorder/big_endian.h>
+-#include <linux/byteorder/little_endian.h>
 +#include <linux/byteorder.h>
  
- #endif /* _SPARC_BYTEORDER_H */
+ #endif /* _ASM_X86_BYTEORDER_H */
 -- 
 1.6.0.rc1.154.ge3fc
 
