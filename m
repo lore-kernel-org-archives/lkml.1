@@ -1,101 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbYG3AoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbYG3Ao1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbYG3AoI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 20:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbYG3An4
+	id S1757281AbYG3Ao1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 20:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756108AbYG3AoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 20:43:56 -0400
-Received: from sh.osrg.net ([192.16.179.4]:54496 "EHLO sh.osrg.net"
+	Tue, 29 Jul 2008 20:44:18 -0400
+Received: from gw.goop.org ([64.81.55.164]:51491 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752104AbYG3Anz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 20:43:55 -0400
-Date: Wed, 30 Jul 2008 09:43:34 +0900
-To: jbarnes@virtuousgeek.org
-Cc: fujita.tomonori@lab.ntt.co.jp, joro@8bytes.org, prarit@redhat.com,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <200807281523.35469.jbarnes@virtuousgeek.org>
-References: <20080723221033.GD13662@8bytes.org>
-	<20080724081528F.fujita.tomonori@lab.ntt.co.jp>
-	<200807281523.35469.jbarnes@virtuousgeek.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1753161AbYG3AoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 20:44:17 -0400
+Message-ID: <488FB95A.1000402@goop.org>
+Date: Tue, 29 Jul 2008 17:44:10 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] x86: implement multiple queues for smp function call
+ IPIs
+References: <488FA8A9.6000005@goop.org> <20080730001358.GA23938@one.firstfloor.org>
+In-Reply-To: <20080730001358.GA23938@one.firstfloor.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080730094303W.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008 15:23:35 -0700
-Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+Andi Kleen wrote:
+> On Tue, Jul 29, 2008 at 04:32:57PM -0700, Jeremy Fitzhardinge wrote:
+>   
+>> This adds 8 queues for smp_call_function(), in order to avoid a
+>>     
+>
+> Now that we have per CPU IDT and there's no global bottleneck anymore
+> I think it would be actually fine to use
+> more than 8 vectors. 32 or 64 might be a better default.
+>   
 
-> On Wednesday, July 23, 2008 4:14 pm FUJITA Tomonori wrote:
-> > On Thu, 24 Jul 2008 00:10:33 +0200
-> >
-> > Joerg Roedel <joro@8bytes.org> wrote:
-> > > On Wed, Jul 23, 2008 at 07:19:43AM -0400, Prarit Bhargava wrote:
-> > > > pci_alloc_consistent/dma_alloc_coherent does not return size aligned
-> > > > addresses.
-> > > >
-> > > > >From Documentation/DMA-mapping.txt:
-> > > >
-> > > > "pci_alloc_consistent returns two values: the virtual address which you
-> > > > can use to access it from the CPU and dma_handle which you pass to the
-> > > > card.
-> > > >
-> > > > The cpu return address and the DMA bus master address are both
-> > > > guaranteed to be aligned to the smallest PAGE_SIZE order which
-> > > > is greater than or equal to the requested size.  This invariant
-> > > > exists (for example) to guarantee that if you allocate a chunk
-> > > > which is smaller than or equal to 64 kilobytes, the extent of the
-> > > > buffer you receive will not cross a 64K boundary."
-> > >
-> > > Interesting. Have you experienced any problems because of that
-> > > misbehavior in the GART code? AMD IOMMU currently also violates this
-> > > requirement. I will send a patch to fix that there too.
-> >
-> > IIRC, only PARISC and POWER IOMMUs follow the above rule. So I also
-> > wondered what problem he hit.
-> 
-> Prarit, what's the latest here?  The v3 patch I have from you doesn't apply to 
-> my tree but it looks like a good fix.  Care to send me a new patch against my 
-> for-linus branch?
+Well, there's no point in having more vectors than CPUs, and a bit of 
+doubling up doesn't hurt too much.  So I think 8 is a good default for 
+normal sized machines.  But I can see that being able to add more 
+vectors for large machines might be helpful.  I guess it really depends 
+on what the fan-out is for multicast messages.
 
-I'm not sure how the following cast to 'unsigned long long' fixes
-something on X86_64.
+I dunno, maybe it makes sense to take numa topology into account, on the 
+assumption that 1) most cross-cpu function calls will be tlb flushes now 
+(or at least, sending to mm->cpu_vm_mask), and 2) most tlb flushes will 
+be between cpus within one node.
 
-> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-> 
-> diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-> index 744126e..d3eb527 100644
-> --- a/arch/x86/kernel/pci-gart_64.c
-> +++ b/arch/x86/kernel/pci-gart_64.c
-> @@ -85,7 +85,8 @@ AGPEXTERN __u32 *agp_gatt_table;
->  static unsigned long next_bit;  /* protected by iommu_bitmap_lock */
->  static int need_flush;		/* global flush state. set for each gart wrap */
->  
-> -static unsigned long alloc_iommu(struct device *dev, int size)
-> +static unsigned long alloc_iommu(struct device *dev, int size,
-> +				 unsigned long mask)
->  {
->  	unsigned long offset, flags;
->  	unsigned long boundary_size;
-> @@ -93,16 +94,17 @@ static unsigned long alloc_iommu(struct device *dev, int size)
->  
->  	base_index = ALIGN(iommu_bus_base & dma_get_seg_boundary(dev),
->  			   PAGE_SIZE) >> PAGE_SHIFT;
-> -	boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
-> +	boundary_size = ALIGN((unsigned long long)dma_get_seg_boundary(dev) + 1,
->  			      PAGE_SIZE) >> PAGE_SHIFT;
+>> void native_send_call_func_ipi(cpumask_t mask)
+>> {
+>> 	cpumask_t allbutself;
+>> +	unsigned queue = smp_processor_id() % CONFIG_GENERIC_SMP_QUEUES;
+>>     
+>
+> Does this really always run with preemption disabled?
 
-I don't think that the following code works since the size is not
-always a power of 2.
+Think so, but I'll check again.  One of my TODO list items is to check 
+whether smp_call_function_mask should disable preemption for itself, or 
+at least WARN_ON if its called with preemption enabled.
 
-
-> @@ -265,7 +268,7 @@ static dma_addr_t dma_map_area(struct device *dev, dma_addr_t phys_mem,
->  static dma_addr_t
->  gart_map_simple(struct device *dev, phys_addr_t paddr, size_t size, int dir)
->  {
-> -	dma_addr_t map = dma_map_area(dev, paddr, size, dir);
-> +	dma_addr_t map = dma_map_area(dev, paddr, size, dir, size - 1);
+    J
