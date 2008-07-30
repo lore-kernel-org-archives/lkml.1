@@ -1,140 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759713AbYG3NG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761866AbYG3NIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759713AbYG3NG1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 09:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbYG3NGR
+	id S1761866AbYG3NIA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 09:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbYG3NHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 09:06:17 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:40640 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750804AbYG3NGQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 09:06:16 -0400
-Date: Wed, 30 Jul 2008 15:06:03 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [regression] CD-DA delay needed after insertion
- (http://bugzilla.kernel.org/show_bug.cgi?id=10974)
-In-Reply-To: <1214841102.3381.5.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0807301505110.1993@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
- <1213540781.3517.18.camel@localhost.localdomain>
- <Pine.LNX.4.64.0806161659440.30122@vixen.sonytel.be>
- <1213648258.3420.12.camel@localhost.localdomain>
- <Pine.LNX.4.64.0806171530340.22840@vixen.sonytel.be>
- <1214605634.3394.91.camel@localhost.localdomain>
- <Pine.LNX.4.64.0806301120570.10868@vixen.sonytel.be>
- <1214841102.3381.5.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-159658398-1217423163=:1993"
+	Wed, 30 Jul 2008 09:07:51 -0400
+Received: from smtp.witbe.net ([81.88.96.48]:50600 "EHLO smtp.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751953AbYG3NHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 09:07:50 -0400
+X-Greylist: delayed 344 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Jul 2008 09:07:49 EDT
+Date: Wed, 30 Jul 2008 14:58:22 +0200
+From: Paul Rolland <rol@as2917.net>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Adrian Bunk <bunk@kernel.org>, Jon Smirl <jonsmirl@gmail.com>,
+       Paul Mundt <lethal@linux-sh.org>, James Morris <jmorris@namei.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
+       lkml <linux-kernel@vger.kernel.org>, rol@witbe.net
+Subject: Re: 463 kernel developers missing!
+Message-ID: <20080730145822.3c3253f2@tux.DEF.witbe.net>
+In-Reply-To: <489061E0.5000501@keyaccess.nl>
+References: <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com>
+	<20080728202236.GN9378@mit.edu>
+	<20080728204624.GA11581@redhat.com>
+	<20080728141414.d7e5def2.randy.dunlap@oracle.com>
+	<Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au>
+	<20080728234131.GD28055@linux-sh.org>
+	<9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com>
+	<488E644D.7000507@keyaccess.nl>
+	<9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com>
+	<488EF377.5080603@keyaccess.nl>
+	<20080730072448.GB1564@cs181140183.pp.htv.fi>
+	<489061E0.5000501@keyaccess.nl>
+Organization: AS2917.net
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.8; x86_64-unknown-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hello,
 
----584349381-159658398-1217423163=:1993
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+First, please note that my name and addresses are _in_ the list published
+by Jon.
 
-	Hi James,
+On Wed, 30 Jul 2008 14:43:12 +0200
+Rene Herman <rene.herman@keyaccess.nl> wrote:
 
-On Mon, 30 Jun 2008, James Bottomley wrote:
-> On Mon, 2008-06-30 at 11:25 +0200, Geert Uytterhoeven wrote:
-> > On Fri, 27 Jun 2008, James Bottomley wrote:
-> > > > git-bisect taught me it was introduced by
-> > > > 
-> > > > commit 38582a62ecd337de4212004c7d4844899dc57890
-> > > > Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > > Date:   Wed Feb 6 13:01:58 2008 -0600
-> > > > 
-> > > >     [SCSI] sr: fix test unit ready responses
-> > > >     
-> > > >     Commit 210ba1d1724f5c4ed87a2ab1a21ca861a915f734 updated sr.c to use
-> > > >     the scsi_test_unit_ready() function.  Unfortunately, this has the
-> > > >     wrong characteristic of eating NOT_READY returns which sr.c relies on
-> > > >     for tray status.
-> > > >     
-> > > >     Fix by rolling an internal sr_test_unit_ready() that doesn't do this.
-> > > 
-> > > OK, I thought I had a test case for this, but when I revert this commit
-> > > on git head (and fix up the one reject which just leaves the sr_
-> > > function in place) I still produce the same behaviour.
-> > > 
-> > > What I'm trying is 
-> > > 
-> > > sg_start -i -l <cdrom>
-> > > 
-> > > to close the tray followed by your cdparanoia command
-> > > 
-> > > Could you see if reverting this commit on git head works for you (in
-> > > which case I'm not reproducing it correctly)?
-> > 
-> > On 9bedbcb207ed9a571b239231d99c8fd4a34ae24d, the sequence
-> > 
-> >     eject; sg_start -i -l /dev/scd0; cdparanoia \
-> > 	-d /dev/scd0 -Z -q 1-1[:1] /dev/null || echo failed
-> > 
-> > fails with
-> > 
-> >     004: Unable to read table of contents header
-> > 
-> > After reverting 38582a62ecd337de4212004c7d4844899dc57890, it works.
-> > 
-> > I added the eject as the PS3 has a slot-loading drive.
-> > 
-> > With kind regards,
+> On 30-07-08 09:24, Adrian Bunk wrote:
 > 
-> OK ... but this doesn't happen for me with or without this commit
-> reverted.  This is what I see from stracing cdparanoia:
+> > Whether Jon's patch is a good idea one might discuss
 > 
-> lstat64("/dev/scd0", {st_mode=S_IFBLK|0660, st_rdev=makedev(11, 0), ...}) = 0
-> open("/dev/scd0", O_RDWR|O_NONBLOCK)    = 3
-> ioctl(3, SG_IO, 0xbfc0afdc)             = -1 EINVAL (Invalid argument)
-> close(3)                                = 0
-> open("/dev/scd0", O_RDWR|O_NONBLOCK)    = 3
-> dup(3)                                  = 4
-> ioctl(3, CDROMAUDIOBUFSIZ or SCSI_IOCTL_GET_IDLUN, 0xbfc0b240) = 0
-> ioctl(3, SCSI_IOCTL_GET_BUS_NUMBER, 0xbfc0b248) = 0
-> ioctl(3, SG_IO, 0xbfc0af8c)             = 0
-> ioctl(4, SG_EMULATED_HOST, 0xbfc0b2b8)  = 0
-> ioctl(3, SG_IO, 0xbfc0b07c)             = 0
-> ioctl(3, SG_IO, 0xbfc0b04c)             = 0
-> write(2, "004: Unable to read table of con"..., 45004: Unable to read table of contents header) = 45
+> <discussion>it is not</discussion>
+
+And you dare using <discussion> ? Where is this a discussion ?
+
+> > but as soon as someone puts an email address into a kernel commit
+> > Google will anyway find it:
 > 
-> The O_NONBLOCK tells the cdrom layer not to do drive ready processing.
+> It will and note this is not a privacy issue "as such" at least for me 
+> (for rmk rewriting addresses is a privacy issue, directly or via law, 
+> and whether or not needed in this specific example or not)
 > 
-> The three SG_IOs are INQUIRY, MODE_SENSE(10) and READ TOC/PMA/ATIP
+[...]
 > 
-> The latter one is returned with a check condition and sense data not
-> ready; medium not present - tray open.
+> Then Jon comes along, puts _all_ addresses in content inside a hugely 
+> publicized, widely web-indexed tree and fucks it up.
 > 
-> There's no way the drive ready processing can have an effect on this
-> sequence unless cdparanoia either invokes it from the cdrom layer or
-> processes the not ready itself.  Could you strace your cdparanoia and
-> see what sequence it is using?
+> Anyways... yesterday I had to turn the fan on my monitor to keep it from 
+> damage in this bloody furnace while today it's some 5 degrees cooler and 
+> the fan's aimed at me again so I'll stop cursing and shouting now. But 
+> still a damn bad idea.
 
-My cdparanioa is using the exact same sequence.
+Sorry, I don't agree. First, because using Google to collect a list of emails
+is damn easy, and wether this list is handy or not is not changing for people
+using it for Spam.
+Second, because it takes just a few seconds to extract it nearly as complete
+as Jon's version from git : git log | grep Author: | sort | uniq -c 
+gives something very useful : about 5800 emails. So let's not consider Jon is
+saving a complicated job for people searching for this list.
 
-Sorry it took that long to get back to you (holidays and OLS).
+Linux is an open project. Everything that's related to it is open, and public.
+If you don't want your name/email to be associated with it, that's another
+issue. 
 
-With kind regards,
+We could blame Jon for publishing the his list on the list without prior 
+information, but not for creating it. 
+And I certainly would like to see the .mailmap appear at my next git pull ;)
 
-Geert Uytterhoeven
-Software Architect
+Regards,
+Paul
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+-- 
+Paul Rolland                                E-Mail : rol(at)witbe.net
+CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
+Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
+F-92057 Paris La Defense                    RIPE : PR12-RIPE
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@eu.sony.com
-Internet: http://www.sony-europe.com/
+Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un navigateur 
+"Some people dream of success... while others wake up and work hard at it" 
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-159658398-1217423163=:1993--
+"I worry about my child and the Internet all the time, even though she's too 
+young to have logged on yet. Here's what I worry about. I worry that 10 or 15 
+years from now, she will come to me and say 'Daddy, where were you when they 
+took freedom of the press away from the Internet?'"
+--Mike Godwin, Electronic Frontier Foundation 
