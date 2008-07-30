@@ -1,66 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbYG3S6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbYG3TNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755369AbYG3S6u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 14:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbYG3S6m
+	id S1753263AbYG3TNF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 15:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbYG3TMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 14:58:42 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:6124 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969AbYG3S6l (ORCPT
+	Wed, 30 Jul 2008 15:12:52 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:24138 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751974AbYG3TMv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 14:58:41 -0400
+	Wed, 30 Jul 2008 15:12:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=G8WsLsSVNQbMI01+Fz4v9YaRFEbREnokUaFN4o/M+ziQSA2KzMN7CwchL2ldtiyoHy
-         K7XiJHi6q3F6L7PvtM5QXNBGsf83a/kwhfwZWhOjd7VLG9QZKxCE9XAyZGcB74Ucd5PD
-         b+3UuAt1OMaekeCF4ug3jluA4CC1hmS+Y6BkQ=
-Message-ID: <9e4733910807301158w7512fd1l78cc8f092383f871@mail.gmail.com>
-Date: Wed, 30 Jul 2008 14:58:40 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Alan Cox" <alan@letsannoyjonsmirl.ukuu.org.uk>
-Subject: Re: 463 kernel developers missing!
-Cc: "Theodore Tso" <tytso@mit.edu>, davids@webmaster.com,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080730174957.3d1d63ee@lxorguk.ukuu.org.uk>
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
+         :mime-version:content-type:content-disposition
+         :content-transfer-encoding:in-reply-to:user-agent:from;
+        b=oYTB0aQPeaHtTKqxhtvFs2y0+0oiYTDr2nOKMKq87XmAbcrZKQJPfg5ZoUej3VAuAz
+         HdRl4YSDOdGW079szABIgzCUA2lqiYT+/WnboYIkNG+j9xVx/JWf6fCHwcBnhmAtrbkB
+         ikmr1lLA/Yl0ggEsfblZ88KQ/wmUmT+FQ3FKs=
+Date: Wed, 30 Jul 2008 21:12:57 +0200
+To: Greg KH <gregkh@suse.de>
+Cc: stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Petr Tesarik <ptesarik@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Jan Kara <jack@suse.cz>, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH] ide-cd: fix endianity for the error message in
+	cdrom_read_capacity
+Message-ID: <20080730191257.GA1205@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Greg KH <gregkh@suse.de>,
+	stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	Petr Tesarik <ptesarik@suse.cz>, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+	Jan Kara <jack@suse.cz>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+References: <1217405406.11834.11.camel@elijah.suse.cz> <20080730011832.0ee55d47.akpm@linux-foundation.org> <9ea470500807300152p5d5414aaq2d0d0053c12ef3f5@mail.gmail.com> <20080730163327.GA23086@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <4890284E.3050806@s5r6.in-berlin.de>
-	 <MDEHLPKNGKAHNMBLJOLKAEDIOJAC.davids@webmaster.com>
-	 <20080730155359.7c0206f4@lxorguk.ukuu.org.uk>
-	 <9e4733910807300823x516eb45dx877898f9d7c8be57@mail.gmail.com>
-	 <20080730161408.4dfa6fe8@lxorguk.ukuu.org.uk>
-	 <20080730164056.GB8283@mit.edu>
-	 <20080730174957.3d1d63ee@lxorguk.ukuu.org.uk>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080730163327.GA23086@suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/30/08, Alan Cox <alan@letsannoyjonsmirl.ukuu.org.uk> wrote:
-> > debate it in a bar at some future conference.  But does it really make
->  > sense to argue about it here?
->
->
-> No but perhaps Jon could simply show some manners when people request him
->  politely not to do that. He doesn't seem to want to debate manners, just
->  law.
+On Wed, Jul 30, 2008 at 09:33:28AM -0700, Greg KH wrote:
+> On Wed, Jul 30, 2008 at 10:52:50AM +0200, Boris Petkov wrote:
+> > On Wed, Jul 30, 2008 at 10:18 AM, Andrew Morton
+> > <akpm@linux-foundation.org> wrote:
+> > > On Wed, 30 Jul 2008 10:10:06 +0200 Petr Tesarik <ptesarik@suse.cz> wrote:
+> > >
+> > >> Resent because of a typo in the LKML address. :(
+> > >
+> > > Thanks.
+> > >
+> > >>
+> > >> Aesthetic regards aside, commit e8e7b9eb11c34ee18bde8b7011af41938d1ad667
+> > >> still leaves a bug in the error message, because it uses the unconverted
+> > >> big-endian value for printk.
+> > >>
+> > >> Fix this by using a local variable in machine byte order. The result is
+> > >> correct, more readable, and also produces slightly shorter code on i386.
+> > >>
+> > >> Cc: Jens Axboe <jens.axboe@oracle.com>
+> > >> Cc: Jan Kara <jack@suse.cz>
+> > >> Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
+> > 
+> > I definitely like this one better, thanks.
+> > 
+> > Acked-by: Borislav Petkov <petkovbb@gmail.com>
+> > 
+> > 
+> > >
+> > > Bart owns this patch now.  It got lost for a month and it has already
+> > > been fixed twice and it is also on the route to 2.6.25.x and 2.6.26.x,
+> > > so it'll get complicated.  Not a happy little patch.
+> > 
+> > Greg, can you please apply this one on top of -stable.
+> 
+> What one?  Do you have a git commit id?
 
-I didn't handle the removing the people from the list issue very well.
-I got caught in the fact the log immutably records history and I
-objected to editing history. I viewed this along the lines of George
-Washington asking to be removed from text books. He was the first
-president; we can't change that and we have to include him in the list
-of presidents.
+Oh, sorry about that. Ok, you should have in both 2.6.25 and .26 the patch with
+upstream commit id e8e7b9eb11c34ee18bde8b7011af41938d1ad667. I rediffed the new
+one on top, here's the 2.6.26 version, the 2.6.25 one follows.
 
-I still don't have a good solution for how to track the people who
-don't want their names to appear without creating yet another list.
+--
+From: Petr Tesarik <ptesarik@suse.cz>
+
+Aesthetic regards aside, commit e8e7b9eb11c34ee18bde8b7011af41938d1ad667
+still leaves a bug in the error message, because it uses the unconverted
+big-endian value for printk.
+
+Fix this by using a local variable in machine byte order. The result is
+correct, more readable, and also produces slightly shorter code on i386.
+
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jan Kara <jack@suse.cz>
+Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
+Acked-by: Borislav Petkov <petkovbb@gmail.com>
+---
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 0cc854e..59875bb 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -1298,6 +1298,7 @@ static int cdrom_read_capacity(ide_drive_t *drive, unsigned long *capacity,
+ 
+ 	int stat;
+ 	struct request req;
++	__u32 blocklen;
+ 
+ 	ide_cd_init_rq(drive, &req);
+ 
+@@ -1314,23 +1315,24 @@ static int cdrom_read_capacity(ide_drive_t *drive, unsigned long *capacity,
+ 	/*
+ 	 * Sanity check the given block size
+ 	 */
+-	switch (capbuf.blocklen) {
+-	case __constant_cpu_to_be32(512):
+-	case __constant_cpu_to_be32(1024):
+-	case __constant_cpu_to_be32(2048):
+-	case __constant_cpu_to_be32(4096):
++	blocklen = be32_to_cpu(capbuf.blocklen);
++	switch (blocklen) {
++	case 512:
++	case 1024:
++	case 2048:
++	case 4096:
+ 		break;
+ 	default:
+ 		printk(KERN_ERR "%s: weird block size %u\n",
+-			drive->name, capbuf.blocklen);
++			drive->name, blocklen);
+ 		printk(KERN_ERR "%s: default to 2kb block size\n",
+ 			drive->name);
+-		capbuf.blocklen = __constant_cpu_to_be32(2048);
++		blocklen = 2048;
+ 		break;
+ 	}
+ 
+ 	*capacity = 1 + be32_to_cpu(capbuf.lba);
+-	*sectors_per_frame = be32_to_cpu(capbuf.blocklen) >> SECTOR_BITS;
++	*sectors_per_frame = blocklen >> SECTOR_BITS;
+ 	return 0;
+ }
+ 
+
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Regards/Gruﬂ,
+    Boris.
