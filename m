@@ -1,39 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761716AbYG3KEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761918AbYG3KE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761716AbYG3KEj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 06:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbYG3KEZ
+	id S1761918AbYG3KE4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 06:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761480AbYG3KE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 06:04:25 -0400
-Received: from evaki.its.uow.edu.au ([130.130.68.32]:41863 "EHLO
-	evaki.its.uow.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761326AbYG3KEZ (ORCPT
+	Wed, 30 Jul 2008 06:04:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53804
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1761445AbYG3KE2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 06:04:25 -0400
-Subject: [patch 04/31] pci_ids.h, kernel 2.6.27-rc1, sort DEVICE_IDs within VENDOR_IDs
-Message-Id: <E1KO7Oo-0007Cs-Sz@wraith.cs.uow.edu.au>
-From: mcs6502@gmail.com
-Date: Wed, 30 Jul 2008 18:51:10 +1000
-To: unlisted-recipients:; (no To-header on input)
+	Wed, 30 Jul 2008 06:04:28 -0400
+Date: Wed, 30 Jul 2008 03:04:28 -0700 (PDT)
+Message-Id: <20080730.030428.20242736.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: zdenek.kabelac@gmail.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: INFO: possible recursive locking detected dev_deactivate
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080730024724.519f0662.akpm@linux-foundation.org>
+References: <c4e36d110807290453h7381adb8l8b8785f434e968ac@mail.gmail.com>
+	<20080730024724.519f0662.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- linux-p3/include/linux/pci_ids.h	2008-07-30 13:00:56.679087000 +1000
-+++ linux-p4/include/linux/pci_ids.h	2008-07-30 13:04:29.063645000 +1000
-@@ -2091,7 +2091,6 @@
- #define PCI_DEVICE_ID_ADDIDATA_APCI7500        0x7000
- #define PCI_DEVICE_ID_ADDIDATA_APCI7420        0x7001
- #define PCI_DEVICE_ID_ADDIDATA_APCI7300        0x7002
--#define PCI_DEVICE_ID_ADDIDATA_APCI7800        0x818E
- #define PCI_DEVICE_ID_ADDIDATA_APCI7500_2      0x7009
- #define PCI_DEVICE_ID_ADDIDATA_APCI7420_2      0x700A
- #define PCI_DEVICE_ID_ADDIDATA_APCI7300_2      0x700B
-@@ -2099,6 +2098,7 @@
- #define PCI_DEVICE_ID_ADDIDATA_APCI7420_3      0x700D
- #define PCI_DEVICE_ID_ADDIDATA_APCI7300_3      0x700E
- #define PCI_DEVICE_ID_ADDIDATA_APCI7800_3      0x700F
-+#define PCI_DEVICE_ID_ADDIDATA_APCI7800        0x818E
- 
- #define PCI_VENDOR_ID_PDC		0x15e9
- 
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Wed, 30 Jul 2008 02:47:24 -0700
+
+> 
+> (cc's added)
+
+Well known problem and one that is being worked on.
+
+The warnings are harmless, please ignore them for now.
