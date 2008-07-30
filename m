@@ -1,103 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762118AbYG3NK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761815AbYG3NRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762118AbYG3NK7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 09:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760509AbYG3NJ0
+	id S1761815AbYG3NRZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 09:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbYG3NRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 09:09:26 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:57682 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758606AbYG3NJZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 09:09:25 -0400
-Message-Id: <20080730130915.714685009@szeredi.hu>
-References: <20080730130845.905327725@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Wed, 30 Jul 2008 15:08:48 +0200
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: viro@ZenIV.linux.org.uk
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [patch 3/4] vfs: remove unused nameidata argument of may_create()
-Content-Disposition: inline; filename=may_create_remove_nameidata.patch
+	Wed, 30 Jul 2008 09:17:16 -0400
+Received: from sh.osrg.net ([192.16.179.4]:39703 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750804AbYG3NRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 09:17:16 -0400
+Date: Wed, 30 Jul 2008 22:16:05 +0900
+To: joerg.roedel@amd.com
+Cc: davem@davemloft.net, sfr@canb.auug.org.au, fujita.tomonori@lab.ntt.co.jp,
+       mingo@elte.hu, mingo@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       bhavna.sarathy@amd.com, robert.richter@amd.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       jbarnes@virtuousgeek.org, linux-next@vger.kernel.org
+Subject: Re: [PATCH] add iommu_num_pages helper function
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080730121805.GM4851@amd.com>
+References: <20080729095027.GA4851@amd.com>
+	<20080729.031005.203132019.davem@davemloft.net>
+	<20080730121805.GM4851@amd.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080730221540S.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+On Wed, 30 Jul 2008 14:18:05 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/namei.c |   15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+> On Tue, Jul 29, 2008 at 03:10:05AM -0700, David Miller wrote:
+> > From: Joerg Roedel <joerg.roedel@amd.com>
+> > Date: Tue, 29 Jul 2008 11:50:27 +0200
+> > 
+> > > I think moving that function to x86-only code is the best solution for
+> > > now. Before moving it back to generic code we need an architecture
+> > > independent way to find out the IOMMU page size.
+> > 
+> > My suggestion (again) is to pass it in as a "const unsigned long
+> > io_page_size" argument and update the callers.
+> 
+> Ok, after setting up cross compile environments for sparc64 and
+> powerpc64 I wrote a patch which adds the io_page_size argument to the
+> iommu_num pages function and moves the function back to
+> lib/iommu-helper.c.
 
-Index: linux-2.6/fs/namei.c
-===================================================================
---- linux-2.6.orig/fs/namei.c	2008-07-30 13:52:36.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-07-30 13:52:40.000000000 +0200
-@@ -1431,8 +1431,7 @@ static int may_delete(struct inode *dir,
-  *  3. We should have write and exec permissions on dir
-  *  4. We can't do it if dir is immutable (done in permission())
-  */
--static inline int may_create(struct inode *dir, struct dentry *child,
--			     struct nameidata *nd)
-+static inline int may_create(struct inode *dir, struct dentry *child)
- {
- 	if (child->d_inode)
- 		return -EEXIST;
-@@ -1504,7 +1503,7 @@ void unlock_rename(struct dentry *p1, st
- int vfs_create(struct inode *dir, struct dentry *dentry, int mode,
- 		struct nameidata *nd)
- {
--	int error = may_create(dir, dentry, nd);
-+	int error = may_create(dir, dentry);
- 
- 	if (error)
- 		return error;
-@@ -1948,7 +1947,7 @@ EXPORT_SYMBOL_GPL(lookup_create);
- 
- int vfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
- {
--	int error = may_create(dir, dentry, NULL);
-+	int error = may_create(dir, dentry);
- 
- 	if (error)
- 		return error;
-@@ -2049,7 +2048,7 @@ asmlinkage long sys_mknod(const char __u
- 
- int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
- {
--	int error = may_create(dir, dentry, NULL);
-+	int error = may_create(dir, dentry);
- 
- 	if (error)
- 		return error;
-@@ -2316,7 +2315,7 @@ asmlinkage long sys_unlink(const char __
- 
- int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname)
- {
--	int error = may_create(dir, dentry, NULL);
-+	int error = may_create(dir, dentry);
- 
- 	if (error)
- 		return error;
-@@ -2386,7 +2385,7 @@ int vfs_link(struct dentry *old_dentry, 
- 	if (!inode)
- 		return -ENOENT;
- 
--	error = may_create(dir, new_dentry, NULL);
-+	error = may_create(dir, new_dentry);
- 	if (error)
- 		return error;
- 
-@@ -2595,7 +2594,7 @@ int vfs_rename(struct inode *old_dir, st
- 		return error;
- 
- 	if (!new_dentry->d_inode)
--		error = may_create(new_dir, new_dentry, NULL);
-+		error = may_create(new_dir, new_dentry);
- 	else
- 		error = may_delete(new_dir, new_dentry, is_dir);
- 	if (error)
+You need ia64, parisc, and alpha too. :) 
 
---
+I have cross compile environments for them so I can take care of them
+if you like.
+
+
+> The patch touches all 3 architectures and can not be
+> split in a bisectable way.
+
+How about naming a new helper function iommu_nr_pages (or something)?
+
+Then you can do the conversion independently. If we like, we use
+iommu_num_pages name after the conversion.
+
+
+> Who is the best person to send this patch to?
+
+The -mm is an appropriate tree, I think.
