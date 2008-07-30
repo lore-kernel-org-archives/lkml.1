@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763148AbYGaAYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763191AbYGaAZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763148AbYGaAYl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763498AbYGaAWe
+	id S1763191AbYGaAZA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762025AbYGaAW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:22:34 -0400
-Received: from ns2.suse.de ([195.135.220.15]:37528 "EHLO mx2.suse.de"
+	Wed, 30 Jul 2008 20:22:59 -0400
+Received: from ns.suse.de ([195.135.220.2]:39573 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763494AbYGaAWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:22:33 -0400
-Date: Wed, 30 Jul 2008 16:59:41 -0700
+	id S1763267AbYGaAW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:22:57 -0400
+Date: Wed, 30 Jul 2008 16:59:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,13 +26,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
        Steven Toth <stoth@hauppauge.com>,
        Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [patch 49/62] DVB: cx23885: Reallocated the sram to avoid
-	concurrent VIDB/C issues
-Message-ID: <20080730235941.GW12896@suse.de>
+Subject: [patch 50/62] DVB: cx23885: SRAM changes for the 885 and 887
+	silicon parts
+Message-ID: <20080730235943.GX12896@suse.de>
 References: <20080730233050.332789722@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="dvb-cx23885-reallocated-the-sram-to-avoid-concurrent-vidb-c-issues.patch"
+Content-Disposition: inline; filename="dvb-cx23885-sram-changes-for-the-885-and-887-silicon-parts.patch"
 In-Reply-To: <20080730234915.GA12426@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -46,12 +46,14 @@ us know.
 ------------------
 From: Steven Toth <stoth@hauppauge.com>
 
-(cherry picked from commit d8d12b4367e2e759f65c5f9dcb94d21ec237bbc5)
+(cherry picked from commit 7e994302ed3fc6d209ce247ad5b6d9c2499bf7c2)
 
-DVB: cx23885: Reallocated the sram to avoid concurrent VIDB/C issues
+DVB: cx23885: SRAM changes for the 885 and 887 silicon parts
 
-This may be cx23885 chip specific and may not work on the cx23887.
-Analog and mpeg encoder streaming are still to be tested.
+In a previous patch I merged both memory maps into a single struct,
+believing that they could be combined. We've since found problems
+with streaming multiple channels on the 885. I'm restoring the
+multiple memory map structs - in line with the windows driver.
 
 Signed-off-by: Steven Toth <stoth@hauppauge.com>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
@@ -59,53 +61,159 @@ Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/cx23885/cx23885-core.c |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ drivers/media/video/cx23885/cx23885-core.c |  116 ++++++++++++++++++++++++++++-
+ 1 file changed, 114 insertions(+), 2 deletions(-)
 
 --- a/drivers/media/video/cx23885/cx23885-core.c
 +++ b/drivers/media/video/cx23885/cx23885-core.c
-@@ -80,8 +80,8 @@ static struct sram_channel cx23887_sram_
+@@ -76,7 +76,7 @@ LIST_HEAD(cx23885_devlist);
+  * 0x00010ea0 0x00010xxx Free
+  */
+ 
+-static struct sram_channel cx23887_sram_channels[] = {
++static struct sram_channel cx23885_sram_channels[] = {
  	[SRAM_CH01] = {
  		.name		= "VID A",
  		.cmds_start	= 0x10000,
--		.ctrl_start	= 0x105b0,
--		.cdt		= 0x107b0,
-+		.ctrl_start	= 0x10380,
-+		.cdt		= 0x104c0,
- 		.fifo_start	= 0x40,
- 		.fifo_size	= 0x2800,
- 		.ptr1_reg	= DMA1_PTR1,
-@@ -104,8 +104,8 @@ static struct sram_channel cx23887_sram_
- 	[SRAM_CH03] = {
- 		.name		= "TS1 B",
- 		.cmds_start	= 0x100A0,
--		.ctrl_start	= 0x10670,
--		.cdt		= 0x10810,
-+		.ctrl_start	= 0x10400,
-+		.cdt		= 0x10580,
- 		.fifo_start	= 0x5000,
- 		.fifo_size	= 0x1000,
- 		.ptr1_reg	= DMA3_PTR1,
-@@ -140,8 +140,8 @@ static struct sram_channel cx23887_sram_
- 	[SRAM_CH06] = {
- 		.name		= "TS2 C",
- 		.cmds_start	= 0x10140,
--		.ctrl_start	= 0x10680,
--		.cdt		= 0x108d0,
-+		.ctrl_start	= 0x10440,
-+		.cdt		= 0x105e0,
- 		.fifo_start	= 0x6000,
- 		.fifo_size	= 0x1000,
- 		.ptr1_reg	= DMA5_PTR1,
-@@ -1043,6 +1043,9 @@ static int cx23885_start_dma(struct cx23
- 	dprintk(1, "%s() w: %d, h: %d, f: %d\n", __func__,
- 		buf->vb.width, buf->vb.height, buf->vb.field);
+@@ -187,6 +187,117 @@ static struct sram_channel cx23887_sram_
+ 	},
+ };
  
-+	/* Stop the fifo and risc engine for this port */
-+	cx_clear(port->reg_dma_ctl, port->dma_ctl_val);
++static struct sram_channel cx23887_sram_channels[] = {
++	[SRAM_CH01] = {
++		.name		= "VID A",
++		.cmds_start	= 0x10000,
++		.ctrl_start	= 0x105b0,
++		.cdt		= 0x107b0,
++		.fifo_start	= 0x40,
++		.fifo_size	= 0x2800,
++		.ptr1_reg	= DMA1_PTR1,
++		.ptr2_reg	= DMA1_PTR2,
++		.cnt1_reg	= DMA1_CNT1,
++		.cnt2_reg	= DMA1_CNT2,
++	},
++	[SRAM_CH02] = {
++		.name		= "ch2",
++		.cmds_start	= 0x0,
++		.ctrl_start	= 0x0,
++		.cdt		= 0x0,
++		.fifo_start	= 0x0,
++		.fifo_size	= 0x0,
++		.ptr1_reg	= DMA2_PTR1,
++		.ptr2_reg	= DMA2_PTR2,
++		.cnt1_reg	= DMA2_CNT1,
++		.cnt2_reg	= DMA2_CNT2,
++	},
++	[SRAM_CH03] = {
++		.name		= "TS1 B",
++		.cmds_start	= 0x100A0,
++		.ctrl_start	= 0x10630,
++		.cdt		= 0x10870,
++		.fifo_start	= 0x5000,
++		.fifo_size	= 0x1000,
++		.ptr1_reg	= DMA3_PTR1,
++		.ptr2_reg	= DMA3_PTR2,
++		.cnt1_reg	= DMA3_CNT1,
++		.cnt2_reg	= DMA3_CNT2,
++	},
++	[SRAM_CH04] = {
++		.name		= "ch4",
++		.cmds_start	= 0x0,
++		.ctrl_start	= 0x0,
++		.cdt		= 0x0,
++		.fifo_start	= 0x0,
++		.fifo_size	= 0x0,
++		.ptr1_reg	= DMA4_PTR1,
++		.ptr2_reg	= DMA4_PTR2,
++		.cnt1_reg	= DMA4_CNT1,
++		.cnt2_reg	= DMA4_CNT2,
++	},
++	[SRAM_CH05] = {
++		.name		= "ch5",
++		.cmds_start	= 0x0,
++		.ctrl_start	= 0x0,
++		.cdt		= 0x0,
++		.fifo_start	= 0x0,
++		.fifo_size	= 0x0,
++		.ptr1_reg	= DMA5_PTR1,
++		.ptr2_reg	= DMA5_PTR2,
++		.cnt1_reg	= DMA5_CNT1,
++		.cnt2_reg	= DMA5_CNT2,
++	},
++	[SRAM_CH06] = {
++		.name		= "TS2 C",
++		.cmds_start	= 0x10140,
++		.ctrl_start	= 0x10670,
++		.cdt		= 0x108d0,
++		.fifo_start	= 0x6000,
++		.fifo_size	= 0x1000,
++		.ptr1_reg	= DMA5_PTR1,
++		.ptr2_reg	= DMA5_PTR2,
++		.cnt1_reg	= DMA5_CNT1,
++		.cnt2_reg	= DMA5_CNT2,
++	},
++	[SRAM_CH07] = {
++		.name		= "ch7",
++		.cmds_start	= 0x0,
++		.ctrl_start	= 0x0,
++		.cdt		= 0x0,
++		.fifo_start	= 0x0,
++		.fifo_size	= 0x0,
++		.ptr1_reg	= DMA6_PTR1,
++		.ptr2_reg	= DMA6_PTR2,
++		.cnt1_reg	= DMA6_CNT1,
++		.cnt2_reg	= DMA6_CNT2,
++	},
++	[SRAM_CH08] = {
++		.name		= "ch8",
++		.cmds_start	= 0x0,
++		.ctrl_start	= 0x0,
++		.cdt		= 0x0,
++		.fifo_start	= 0x0,
++		.fifo_size	= 0x0,
++		.ptr1_reg	= DMA7_PTR1,
++		.ptr2_reg	= DMA7_PTR2,
++		.cnt1_reg	= DMA7_CNT1,
++		.cnt2_reg	= DMA7_CNT2,
++	},
++	[SRAM_CH09] = {
++		.name		= "ch9",
++		.cmds_start	= 0x0,
++		.ctrl_start	= 0x0,
++		.cdt		= 0x0,
++		.fifo_start	= 0x0,
++		.fifo_size	= 0x0,
++		.ptr1_reg	= DMA8_PTR1,
++		.ptr2_reg	= DMA8_PTR2,
++		.cnt1_reg	= DMA8_CNT1,
++		.cnt2_reg	= DMA8_CNT2,
++	},
++};
 +
- 	/* setup fifo + format */
- 	cx23885_sram_channel_setup(dev,
- 				   &dev->sram_channels[ port->sram_chno ],
+ static int cx23885_risc_decode(u32 risc)
+ {
+ 	static char *instr[16] = {
+@@ -626,7 +737,6 @@ static int cx23885_dev_setup(struct cx23
+ 	atomic_inc(&dev->refcount);
+ 
+ 	dev->nr = cx23885_devcount++;
+-	dev->sram_channels = cx23887_sram_channels;
+ 	sprintf(dev->name, "cx23885[%d]", dev->nr);
+ 
+ 	mutex_lock(&devlist);
+@@ -638,11 +748,13 @@ static int cx23885_dev_setup(struct cx23
+ 		dev->bridge = CX23885_BRIDGE_887;
+ 		/* Apply a sensible clock frequency for the PCIe bridge */
+ 		dev->clk_freq = 25000000;
++		dev->sram_channels = cx23887_sram_channels;
+ 	} else
+ 	if(dev->pci->device == 0x8852) {
+ 		dev->bridge = CX23885_BRIDGE_885;
+ 		/* Apply a sensible clock frequency for the PCIe bridge */
+ 		dev->clk_freq = 28000000;
++		dev->sram_channels = cx23885_sram_channels;
+ 	} else
+ 		BUG();
+ 
 
 -- 
