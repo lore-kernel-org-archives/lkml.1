@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbYG3Co5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbYG3Cpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142AbYG3Co5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 22:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbYG3CoT
+	id S1757494AbYG3Cpe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 22:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbYG3CoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 22:44:19 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:46237 "EHLO
+	Tue, 29 Jul 2008 22:44:21 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:46238 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753074AbYG3CoQ (ORCPT
+	with ESMTP id S1753069AbYG3CoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 Jul 2008 22:44:16 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
@@ -15,9 +15,9 @@ To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@zeniv.linux.org.uk, hch@infradead.org, miklos@szeredi.hu,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 10/19] Unionfs: cache coherency fixes
-Date: Tue, 29 Jul 2008 22:43:40 -0400
-Message-Id: <12173858381175-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 11/19] Unionfs: remove old lookup code
+Date: Tue, 29 Jul 2008 22:43:41 -0400
+Message-Id: <1217385839384-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <12173858291233-git-send-email-ezk@cs.sunysb.edu>
@@ -26,161 +26,374 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handle unhashed or silly-renamed lower dentries properly.
-
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/commonfops.c |    3 +-
- fs/unionfs/debug.c      |    2 +-
- fs/unionfs/dentry.c     |   49 +++++++++++++++++++++++++++++++++++++++++-----
- fs/unionfs/main.c       |    3 --
- 4 files changed, 46 insertions(+), 11 deletions(-)
+ fs/unionfs/lookup.c |  337 ---------------------------------------------------
+ fs/unionfs/union.h  |    3 -
+ 2 files changed, 0 insertions(+), 340 deletions(-)
 
-diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
-index df002d5..d64272b 100644
---- a/fs/unionfs/commonfops.c
-+++ b/fs/unionfs/commonfops.c
-@@ -466,7 +466,8 @@ reval_dentry:
- 	dgen = atomic_read(&UNIONFS_D(dentry)->generation);
- 
- 	if (unlikely(sbgen > dgen)) {
--		pr_debug("unionfs: retry (locked) dentry revalidation\n");
-+		pr_debug("unionfs: retry (locked) dentry %s revalidation\n",
-+			 dentry->d_name.name);
- 		schedule();
- 		goto reval_dentry;
- 	}
-diff --git a/fs/unionfs/debug.c b/fs/unionfs/debug.c
-index d154c32..4da4f0b 100644
---- a/fs/unionfs/debug.c
-+++ b/fs/unionfs/debug.c
-@@ -313,7 +313,7 @@ check_inode:
- 			}
- 		}
- 	/* check if lower inode is newer than upper one (it shouldn't) */
--	if (unlikely(is_newer_lower(dentry))) {
-+	if (unlikely(is_newer_lower(dentry) && !is_negative_lower(dentry))) {
- 		PRINT_CALLER(fname, fxn, line);
- 		for (bindex = ibstart(inode); bindex <= ibend(inode);
- 		     bindex++) {
-diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
-index cd4611b..dfa4755 100644
---- a/fs/unionfs/dentry.c
-+++ b/fs/unionfs/dentry.c
-@@ -23,11 +23,16 @@ bool is_negative_lower(const struct dentry *dentry)
- 	int bindex;
- 	struct dentry *lower_dentry;
- 
--	BUG_ON(!dentry || dbstart(dentry) < 0);
-+	BUG_ON(!dentry);
-+	/* cache coherency: check if file was deleted on lower branch */
-+	if (dbstart(dentry) < 0)
-+		return true;
- 	for (bindex = dbstart(dentry); bindex <= dbend(dentry); bindex++) {
- 		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
--		/* XXX: what if lower_dentry is NULL? */
--		if (lower_dentry && lower_dentry->d_inode)
-+		/* unhashed (i.e., unlinked) lower dentries don't count */
-+		if (lower_dentry && lower_dentry->d_inode &&
-+		    !d_deleted(lower_dentry) &&
-+		    !(lower_dentry->d_flags & DCACHE_NFSFS_RENAMED))
- 			return false;
- 	}
- 	return true;
-@@ -75,6 +80,7 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
- 	verify_locked(dentry);
- 	verify_locked(dentry->d_parent);
- 
-+	sbgen = atomic_read(&UNIONFS_SB(dentry->d_sb)->generation);
- 	/* if the dentry is unhashed, do NOT revalidate */
- 	if (d_deleted(dentry))
- 		goto out;
-@@ -83,7 +89,6 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
- 	if (dentry->d_inode)
- 		positive = 1;
- 	dgen = atomic_read(&UNIONFS_D(dentry)->generation);
--	sbgen = atomic_read(&UNIONFS_SB(dentry->d_sb)->generation);
- 	/*
- 	 * If we are working on an unconnected dentry, then there is no
- 	 * revalidation to be done, because this file does not exist within
-@@ -103,6 +108,21 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
- 		/* Free the pointers for our inodes and this dentry. */
- 		bstart = dbstart(dentry);
- 		bend = dbend(dentry);
-+
-+		/*
-+		 * mntput unhashed lower dentries, because those files got
-+		 * deleted or rmdir'ed.
-+		 */
-+		for (bindex = bstart; bindex <= bend; bindex++) {
-+			lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
-+			if (!lower_dentry)
-+				continue;
-+			if (!d_deleted(lower_dentry) &&
-+			    !(lower_dentry->d_flags & DCACHE_NFSFS_RENAMED))
-+			    continue;
-+			unionfs_mntput(dentry, bindex);
-+		}
-+
- 		__dput_lowers(dentry, bstart, bend);
- 		dbstart(dentry) = dbend(dentry) = -1;
- 
-@@ -112,8 +132,12 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
- 			iput_lowers_all(dentry->d_inode, true);
- 		}
- 
--		result = unionfs_lookup_backend(dentry, &lowernd,
--						interpose_flag);
-+		if (realloc_dentry_private_data(dentry) != 0) {
-+			valid = false;
-+			goto out;
-+		}
-+
-+		result = unionfs_lookup_full(dentry, &lowernd, interpose_flag);
- 		if (result) {
- 			if (IS_ERR(result)) {
- 				valid = false;
-@@ -179,6 +203,9 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
- 	}
- 
- out:
-+	if (valid)
-+		atomic_set(&UNIONFS_D(dentry)->generation, sbgen);
-+
- 	return valid;
+diff --git a/fs/unionfs/lookup.c b/fs/unionfs/lookup.c
+index b5f64c9..93c3a14 100644
+--- a/fs/unionfs/lookup.c
++++ b/fs/unionfs/lookup.c
+@@ -63,343 +63,6 @@ struct dentry *__lookup_one(struct dentry *base, struct vfsmount *mnt,
  }
  
-@@ -241,6 +268,16 @@ bool is_newer_lower(const struct dentry *dentry)
- 			return true;
- 		}
- 	}
-+
-+	/*
-+	 * Last check: if this is a positive dentry, but somehow all lower
-+	 * dentries are negative or unhashed, then this dentry needs to be
-+	 * revalidated, because someone probably deleted the objects from
-+	 * the lower branches directly.
-+	 */
-+	if (is_negative_lower(dentry))
-+		return true;
-+
- 	return false;		/* default: lower is not newer */
- }
- 
-diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
-index a9d2cb6..1fd67c6 100644
---- a/fs/unionfs/main.c
-+++ b/fs/unionfs/main.c
-@@ -88,9 +88,6 @@ struct dentry *unionfs_interpose(struct dentry *dentry, struct super_block *sb,
- 
- 	verify_locked(dentry);
- 
--	/* Make sure that we didn't get a negative dentry. */
--	BUG_ON(is_negative_lower(dentry));
+ /*
+- * Main (and complex) driver function for Unionfs's lookup
+- *
+- * Returns: NULL (ok), ERR_PTR if an error occurred, or a non-null non-error
+- * PTR if d_splice returned a different dentry.
+- *
+- * If lookupmode is INTERPOSE_PARTIAL/REVAL/REVAL_NEG, the passed dentry's
+- * inode info must be locked.  If lookupmode is INTERPOSE_LOOKUP (i.e., a
+- * newly looked-up dentry), then unionfs_lookup_backend will return a locked
+- * dentry's info, which the caller must unlock.
+- */
+-struct dentry *unionfs_lookup_backend(struct dentry *dentry,
+-				      struct nameidata *nd_unused,
+-				      int lookupmode)
+-{
+-	int err = 0;
+-	struct dentry *lower_dentry = NULL;
+-	struct dentry *wh_lower_dentry = NULL;
+-	struct dentry *lower_dir_dentry = NULL;
+-	struct dentry *parent_dentry = NULL;
+-	struct dentry *d_interposed = NULL;
+-	int bindex, bstart = -1, bend, bopaque;
+-	int dentry_count = 0;	/* Number of positive dentries. */
+-	int first_dentry_offset = -1; /* -1 is uninitialized */
+-	struct dentry *first_dentry = NULL;
+-	struct dentry *first_lower_dentry = NULL;
+-	struct vfsmount *first_lower_mnt = NULL;
+-	int opaque;
+-	const char *name;
+-	int namelen;
 -
- 	/*
- 	 * We allocate our new inode below by calling unionfs_iget,
- 	 * which will initialize some of the new inode's fields
+-	/*
+-	 * We should already have a lock on this dentry in the case of a
+-	 * partial lookup, or a revalidation. Otherwise it is returned from
+-	 * new_dentry_private_data already locked.
+-	 */
+-	if (lookupmode == INTERPOSE_PARTIAL || lookupmode == INTERPOSE_REVAL ||
+-	    lookupmode == INTERPOSE_REVAL_NEG)
+-		verify_locked(dentry);
+-	else			/* this could only be INTERPOSE_LOOKUP */
+-		BUG_ON(UNIONFS_D(dentry) != NULL);
+-
+-	switch (lookupmode) {
+-	case INTERPOSE_PARTIAL:
+-		break;
+-	case INTERPOSE_LOOKUP:
+-		err = new_dentry_private_data(dentry, UNIONFS_DMUTEX_CHILD);
+-		if (unlikely(err))
+-			goto out;
+-		break;
+-	default:
+-		/* default: can only be INTERPOSE_REVAL/REVAL_NEG */
+-		err = realloc_dentry_private_data(dentry);
+-		if (unlikely(err))
+-			goto out;
+-		break;
+-	}
+-
+-	/* must initialize dentry operations */
+-	dentry->d_op = &unionfs_dops;
+-
+-	parent_dentry = dget_parent(dentry);
+-	/* We never partial lookup the root directory. */
+-	if (parent_dentry == dentry) {
+-		dput(parent_dentry);
+-		parent_dentry = NULL;
+-		goto out;
+-	}
+-
+-	name = dentry->d_name.name;
+-	namelen = dentry->d_name.len;
+-
+-	/* No dentries should get created for possible whiteout names. */
+-	if (!is_validname(name)) {
+-		err = -EPERM;
+-		goto out_free;
+-	}
+-
+-	/* Now start the actual lookup procedure. */
+-	bstart = dbstart(parent_dentry);
+-	bend = dbend(parent_dentry);
+-	bopaque = dbopaque(parent_dentry);
+-	BUG_ON(bstart < 0);
+-
+-	/*
+-	 * It would be ideal if we could convert partial lookups to only have
+-	 * to do this work when they really need to.  It could probably improve
+-	 * performance quite a bit, and maybe simplify the rest of the code.
+-	 */
+-	if (lookupmode == INTERPOSE_PARTIAL) {
+-		bstart++;
+-		if ((bopaque != -1) && (bopaque < bend))
+-			bend = bopaque;
+-	}
+-
+-	for (bindex = bstart; bindex <= bend; bindex++) {
+-		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
+-		if (lookupmode == INTERPOSE_PARTIAL && lower_dentry)
+-			continue;
+-		BUG_ON(lower_dentry != NULL);
+-
+-		lower_dir_dentry =
+-			unionfs_lower_dentry_idx(parent_dentry, bindex);
+-
+-		/* if the parent lower dentry does not exist skip this */
+-		if (!(lower_dir_dentry && lower_dir_dentry->d_inode))
+-			continue;
+-
+-		/* also skip it if the parent isn't a directory. */
+-		if (!S_ISDIR(lower_dir_dentry->d_inode->i_mode))
+-			continue;
+-
+-		/* check for whiteouts: stop lookup if found */
+-		wh_lower_dentry = lookup_whiteout(name, lower_dir_dentry);
+-		if (IS_ERR(wh_lower_dentry)) {
+-			dput(first_lower_dentry);
+-			unionfs_mntput(first_dentry, first_dentry_offset);
+-			err = PTR_ERR(wh_lower_dentry);
+-			goto out_free;
+-		}
+-		if (wh_lower_dentry->d_inode) {
+-			dbend(dentry) = dbopaque(dentry) = bindex;
+-			dput(wh_lower_dentry);
+-			break;
+-		}
+-		dput(wh_lower_dentry);
+-		wh_lower_dentry = NULL;
+-
+-		/* Now do regular lookup; lookup foo */
+-		BUG_ON(!lower_dir_dentry);
+-		lower_dentry = lookup_one_len(name, lower_dir_dentry, namelen);
+-		if (IS_ERR(lower_dentry)) {
+-			dput(first_lower_dentry);
+-			unionfs_mntput(first_dentry, first_dentry_offset);
+-			err = PTR_ERR(lower_dentry);
+-			goto out_free;
+-		}
+-
+-		/*
+-		 * Store the first negative dentry specially, because if they
+-		 * are all negative we need this for future creates.
+-		 */
+-		if (!lower_dentry->d_inode) {
+-			if (!first_lower_dentry && (dbstart(dentry) == -1)) {
+-				first_lower_dentry = lower_dentry;
+-				/*
+-				 * FIXME: following line needs to be changed
+-				 * to allow mount-point crossing
+-				 */
+-				first_dentry = parent_dentry;
+-				first_lower_mnt =
+-					unionfs_mntget(parent_dentry, bindex);
+-				first_dentry_offset = bindex;
+-			} else {
+-				dput(lower_dentry);
+-			}
+-
+-			continue;
+-		}
+-
+-		/*
+-		 * If we already found at least one positive dentry
+-		 * (dentry_count is non-zero), then we skip all remaining
+-		 * positive dentries if their type is a non-dir.  This is
+-		 * because only directories are allowed to stack on multiple
+-		 * branches, but we have to skip non-dirs (to avoid, say,
+-		 * calling readdir on a regular file).
+-		 */
+-		if ((lookupmode != INTERPOSE_PARTIAL) &&
+-		    !S_ISDIR(lower_dentry->d_inode->i_mode) &&
+-		    dentry_count) {
+-			dput(lower_dentry);
+-			continue;
+-		}
+-
+-		/* number of positive dentries */
+-		dentry_count++;
+-
+-		/* store underlying dentry */
+-		if (dbstart(dentry) == -1)
+-			dbstart(dentry) = bindex;
+-		unionfs_set_lower_dentry_idx(dentry, bindex, lower_dentry);
+-		/*
+-		 * FIXME: the following line needs to get fixed to allow
+-		 * mount-point crossing
+-		 */
+-		unionfs_set_lower_mnt_idx(dentry, bindex,
+-					  unionfs_mntget(parent_dentry,
+-							 bindex));
+-		dbend(dentry) = bindex;
+-
+-		/* update parent directory's atime with the bindex */
+-		fsstack_copy_attr_atime(parent_dentry->d_inode,
+-					lower_dir_dentry->d_inode);
+-
+-		/* We terminate file lookups here. */
+-		if (!S_ISDIR(lower_dentry->d_inode->i_mode)) {
+-			if (lookupmode == INTERPOSE_PARTIAL)
+-				continue;
+-			if (dentry_count == 1)
+-				goto out_positive;
+-		}
+-
+-		opaque = is_opaque_dir(dentry, bindex);
+-		if (opaque < 0) {
+-			dput(first_lower_dentry);
+-			unionfs_mntput(first_dentry, first_dentry_offset);
+-			err = opaque;
+-			goto out_free;
+-		} else if (opaque) {
+-			dbend(dentry) = dbopaque(dentry) = bindex;
+-			break;
+-		}
+-	}
+-
+-	if (dentry_count)
+-		goto out_positive;
+-	else
+-		goto out_negative;
+-
+-out_negative:
+-	if (lookupmode == INTERPOSE_PARTIAL)
+-		goto out;
+-
+-	/* If we've only got negative dentries, then use the leftmost one. */
+-	if (lookupmode == INTERPOSE_REVAL)
+-		goto out;
+-
+-	if (!lower_dir_dentry) {
+-		err = -ENOENT;
+-		goto out;
+-	}
+-	/* This should only happen if we found a whiteout. */
+-	if (first_dentry_offset == -1) {
+-		first_lower_dentry = lookup_one_len(name, lower_dir_dentry,
+-						    namelen);
+-		first_dentry_offset = bindex;
+-		if (IS_ERR(first_lower_dentry)) {
+-			err = PTR_ERR(first_lower_dentry);
+-			goto out;
+-		}
+-
+-		/*
+-		 * FIXME: the following line needs to be changed to allow
+-		 * mount-point crossing
+-		 */
+-		first_dentry = dentry;
+-		first_lower_mnt = unionfs_mntget(dentry->d_sb->s_root,
+-						 bindex);
+-	}
+-	unionfs_set_lower_dentry_idx(dentry, first_dentry_offset,
+-				     first_lower_dentry);
+-	unionfs_set_lower_mnt_idx(dentry, first_dentry_offset,
+-				  first_lower_mnt);
+-	dbstart(dentry) = dbend(dentry) = first_dentry_offset;
+-
+-	if (lookupmode == INTERPOSE_REVAL_NEG)
+-		BUG_ON(dentry->d_inode != NULL);
+-	else
+-		d_add(dentry, NULL);
+-	goto out;
+-
+-/* This part of the code is for positive dentries. */
+-out_positive:
+-	BUG_ON(dentry_count <= 0);
+-
+-	/*
+-	 * If we're holding onto the first negative dentry & corresponding
+-	 * vfsmount - throw it out.
+-	 */
+-	dput(first_lower_dentry);
+-	unionfs_mntput(first_dentry, first_dentry_offset);
+-
+-	/* Partial lookups need to re-interpose, or throw away older negs. */
+-	if (lookupmode == INTERPOSE_PARTIAL) {
+-		if (dentry->d_inode) {
+-			unionfs_reinterpose(dentry);
+-			goto out;
+-		}
+-
+-		/*
+-		 * This somehow turned positive, so it is as if we had a
+-		 * negative revalidation.
+-		 */
+-		lookupmode = INTERPOSE_REVAL_NEG;
+-
+-		update_bstart(dentry);
+-		bstart = dbstart(dentry);
+-		bend = dbend(dentry);
+-	}
+-
+-	/*
+-	 * Interpose can return a dentry if d_splice returned a different
+-	 * dentry.
+-	 */
+-	d_interposed = unionfs_interpose(dentry, dentry->d_sb, lookupmode);
+-	if (IS_ERR(d_interposed))
+-		err = PTR_ERR(d_interposed);
+-	else if (d_interposed)
+-		dentry = d_interposed;
+-
+-	if (err)
+-		goto out_drop;
+-
+-	goto out;
+-
+-out_drop:
+-	d_drop(dentry);
+-
+-out_free:
+-	/* should dput/mntput all the underlying dentries on error condition */
+-	if (dbstart(dentry) >= 0)
+-		path_put_lowers_all(dentry, false);
+-	/* free lower_paths unconditionally */
+-	kfree(UNIONFS_D(dentry)->lower_paths);
+-	UNIONFS_D(dentry)->lower_paths = NULL;
+-
+-out:
+-	if (!err && UNIONFS_D(dentry)) {
+-		BUG_ON(dbend(dentry) > UNIONFS_D(dentry)->bcount);
+-		BUG_ON(dbend(dentry) > sbmax(dentry->d_sb));
+-		if (dbstart(dentry) < 0 &&
+-		    dentry->d_inode && bstart >= 0 &&
+-		    (!UNIONFS_I(dentry->d_inode) ||
+-		     !UNIONFS_I(dentry->d_inode)->lower_inodes)) {
+-			unionfs_mntput(dentry->d_sb->s_root, bstart);
+-			dput(first_lower_dentry);
+-		}
+-	}
+-	dput(parent_dentry);
+-	if (err && (lookupmode == INTERPOSE_LOOKUP))
+-		unionfs_unlock_dentry(dentry);
+-	if (!err && d_interposed)
+-		return d_interposed;
+-	return ERR_PTR(err);
+-}
+-
+-/*
+  * This is a utility function that fills in a unionfs dentry.
+  * Caller must lock this dentry with unionfs_lock_dentry.
+  *
+diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+index 81f34c4..356a146 100644
+--- a/fs/unionfs/union.h
++++ b/fs/unionfs/union.h
+@@ -415,9 +415,6 @@ static inline int d_deleted(struct dentry *d)
+ 	return d_unhashed(d) && (d != d->d_sb->s_root);
+ }
+ 
+-struct dentry *unionfs_lookup_backend(struct dentry *dentry,
+-				      struct nameidata *nd, int lookupmode);
+-
+ /* unionfs_permission, check if we should bypass error to facilitate copyup */
+ #define IS_COPYUP_ERR(err) ((err) == -EROFS)
+ 
 -- 
 1.5.2.2
 
