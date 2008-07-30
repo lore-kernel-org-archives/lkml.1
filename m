@@ -1,98 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbYG3IiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752835AbYG3Iih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758791AbYG3IiV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 04:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYG3IiL
+	id S1752835AbYG3Iih (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 04:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759188AbYG3Ii1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 04:38:11 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:34495 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752507AbYG3IiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 04:38:10 -0400
-Date: Wed, 30 Jul 2008 10:38:53 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
-Message-ID: <20080730083853.GB18366@uranus.ravnborg.org>
-References: <20080728200500.GA14284@uranus.ravnborg.org> <48900EE4.8030606@snapgear.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48900EE4.8030606@snapgear.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 30 Jul 2008 04:38:27 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:37451 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759182AbYG3Ii0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 04:38:26 -0400
+Message-ID: <4890284E.3050806@s5r6.in-berlin.de>
+Date: Wed, 30 Jul 2008 10:37:34 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Rene Herman <rene.herman@keyaccess.nl>, Jon Smirl <jonsmirl@gmail.com>,
+       Paul Mundt <lethal@linux-sh.org>, James Morris <jmorris@namei.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 463 kernel developers missing!
+References: <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com> <20080728202236.GN9378@mit.edu> <20080728204624.GA11581@redhat.com> <20080728141414.d7e5def2.randy.dunlap@oracle.com> <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au> <20080728234131.GD28055@linux-sh.org> <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com> <488E644D.7000507@keyaccess.nl> <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com> <488EF377.5080603@keyaccess.nl> <20080730072448.GB1564@cs181140183.pp.htv.fi>
+In-Reply-To: <20080730072448.GB1564@cs181140183.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 04:49:08PM +1000, Greg Ungerer wrote:
-> Hi Sam,
-> 
-> Sam Ravnborg wrote:
-> >The traditional location of the arch specific Makefiles
-> >has been at:
-> >
-> >	include/asm-$ARCH
-> >
-> >But as suggested by several people over time and lately
-> >by Linus in the following post:
-> >http://kerneltrap.org/mailarchive/linux-kernel/2008/5/21/1903924
-> >
-> >is is suggested to move the arch specific files under arch/
-> >and for the header files this is arch/$ARCH/include.
-> >
-> >So I have hacked up support for this in kbuild so
-> >for the simpler cases a simple move of header files as
-> >in:
-> >	git mv include/asm-$ARCH arch/$ARCH/include/asm
-> >
-> >is enough.
-> >
-> >If Linus will accept it then I think -rc1 is a perfect
-> >time to do it as people has less stuff pending touching
-> >the header files that are moved.
-> >Validation is easy - does the usual configs build?
-> >
-> >For the archs that plays games with symlinks this is a
-> >splendid opportunity to get rid af these.
-> >The receipe is simple:
-> >Use 
-> >	KBUILD_CFLAGS += -Iarch/$ARCH/include/$CPU
-> >
-> >to select the CPU and then do a copy of the header files
-> >like this:
-> >
-> >	git mv include/asm-$ARCH/$CPU arch/$ARCH/include/$CPU/cpu
-> >
-> >Then the code can continue to use:
-> >
-> >	#include <cpu/foo.h>
-> >
-> >I already converted sparc to use arch/sparc/include -
-> >while I merged the header files for sparc and sparc64.
-> >This change is already upstream.
-> >
-> >And for SH I posted a receipe which you can read here:
-> >http://lkml.org/lkml/2008/7/28/83
-> >
-> >It is SH specific but anyway pretty generic.
-> >
-> >I am limited in time and resources at the moment but I
-> >would be glad to help out as time permits should there
-> >be any questions.
-> 
-> I just tried moving the include/asm-m68knommu directory
-> to arch/m68knommu/include/asm and it all worked fine.
-> Clean compile first go :-)  Nice.  (As noted
-> asm-offsets.h was still generated in incldue/asm-m68knommu
-> afterwards though).
-> 
-> So what is the status, should I prepare git/patch
-> for Linus?
-Yes please do so.
+Adrian Bunk wrote:
+> Whether Jon's patch is a good idea one might discuss,
 
-Then we can address m68k and fix the breakage that
-the sparc changes introduced.
+There isn't a lot to discuss.  From a purely technical standpoint,
+duplicating SCM metadata into a source file and aiming to be
+comprehensive and up to date is naive at best.
 
-	Sam
+> but as soon as someone puts an email address into a kernel commit
+> Google will anyway find it:
+
+This doesn't justify what Jon did though.
+
+Jon created a new database out of formerly disparate datasets, even
+though we didn't provide him these datasets for this purpose.  The fact
+that the means to create this database are rather trivial and cheap do
+not mean that we implicitly agreed to what he did or that it wouldn't
+matter whether we agree to it or not.
+
+Jon even suggested that his database is then used to combine with
+further databases (bugzilla accounts, mailinglist archives).  Again, the
+fact that something like this is possible without great difficulties
+doesn't make it right.
+-- 
+Stefan Richter
+-=====-==--- -=== ====-
+http://arcgraph.de/sr/
