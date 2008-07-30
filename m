@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbYG3Tfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbYG3TgF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755244AbYG3Tfg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 15:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbYG3Tf0
+	id S1753073AbYG3TgF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 15:36:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbYG3Tfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 15:35:26 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:14509 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752944AbYG3TfY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 15:35:24 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Roland Dreier <rdreier@cisco.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>
-Date: Wed, 30 Jul 2008 19:34:29 +0000
-Subject: RE: Problems building 2.6.26 and 2.6.27-rc1
-Thread-Topic: Problems building 2.6.26 and 2.6.27-rc1
-Thread-Index: AcjyeeXD3Jp9uIJYT5mI9vPg5QvvJQAAIIPQ
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A778826B3E8115C@GVW0547EXC.americas.hpqcorp.net>
-References: <20080730184833.GA936@roadking.ldev.net>
-	<adaiqunyyxd.fsf@cisco.com>
-	<0F5B06BAB751E047AB5C87D1F77A778826B3E81120@GVW0547EXC.americas.hpqcorp.net>
- <ada7ib3yy3v.fsf@cisco.com>
-In-Reply-To: <ada7ib3yy3v.fsf@cisco.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 30 Jul 2008 15:35:46 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37998 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754256AbYG3Tfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 15:35:45 -0400
+Message-ID: <4890C287.60508@pobox.com>
+Date: Wed, 30 Jul 2008 15:35:35 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+To: Karen Xie <kxie@chelsio.com>
+CC: netdev@vger.kernel.org, open-iscsi@googlegroups.com, davem@davemloft.net,
+       michaelc@cs.wisc.edu, swise@opengridcomputing.com, rdreier@cisco.com,
+       daisyc@us.ibm.com, wenxiong@us.ibm.com, bhua@us.ibm.com,
+       divy@chelsio.com, dm@chelsio.com, leedom@chelsio.com,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+References: <200807300019.m6U0JkdY012558@localhost.localdomain>
+In-Reply-To: <200807300019.m6U0JkdY012558@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland wrote:
+Karen Xie wrote:
+> Cxgb3i iSCSI driver
+> 
+> Signed-off-by: Karen Xie <kxie@chelsio.com>
+> ---
+> 
+>  drivers/scsi/cxgb3i/Kconfig          |    6 
+>  drivers/scsi/cxgb3i/Makefile         |    5 
+>  drivers/scsi/cxgb3i/cxgb3i.h         |  155 +++
+>  drivers/scsi/cxgb3i/cxgb3i_init.c    |  109 ++
+>  drivers/scsi/cxgb3i/cxgb3i_iscsi.c   |  800 ++++++++++++++
+>  drivers/scsi/cxgb3i/cxgb3i_offload.c | 2001 ++++++++++++++++++++++++++++++++++
+>  drivers/scsi/cxgb3i/cxgb3i_offload.h |  242 ++++
+>  drivers/scsi/cxgb3i/cxgb3i_ulp2.c    |  692 ++++++++++++
+>  drivers/scsi/cxgb3i/cxgb3i_ulp2.h    |  106 ++
+>  9 files changed, 4116 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/scsi/cxgb3i/Kconfig
+>  create mode 100644 drivers/scsi/cxgb3i/Makefile
+>  create mode 100644 drivers/scsi/cxgb3i/cxgb3i.h
+>  create mode 100644 drivers/scsi/cxgb3i/cxgb3i_init.c
+>  create mode 100644 drivers/scsi/cxgb3i/cxgb3i_iscsi.c
+>  create mode 100644 drivers/scsi/cxgb3i/cxgb3i_offload.c
+>  create mode 100644 drivers/scsi/cxgb3i/cxgb3i_offload.h
+>  create mode 100644 drivers/scsi/cxgb3i/cxgb3i_ulp2.c
+>  create mode 100644 drivers/scsi/cxgb3i/cxgb3i_ulp2.h
 
->
-> Hmm, doesn't reproduce here with your config and gcc 4.1.
->
-> No idea, sorry.
+Comments:
 
-Thanks for taking a look. This is perplexing. I know I've built this kernel, but sometimes I hit the build bug and sometimes I don't. I can't pinpoint any differences between working and non-working builds.
+* SCSI drivers should be submitted via the linux-scsi@vger.kernel.org 
+mailing list.
 
-Anybody else? :)
+* The driver is clean and readable, well done
 
--- mikem
+* From a networking standpoint, our main concern becomes how this 
+interacts with the networking stack.  In particular, I'm concerned based 
+on reading the source that this driver uses "TCP port stealing" rather 
+than using a totally separate MAC address (and IP).
+
+Stealing a TCP port on an IP/interface already assigned is a common 
+solution in this space, but also a flawed one.  Precisely because the 
+kernel and applications are unaware of this "special, magic TCP port" 
+you open the potential for application problems that are very difficult 
+for an admin to diagnose based on observed behavior.
+
+So, additional information on your TCP port usage would be greatly 
+appreciated.  Also, how does this interact with IPv6?  Clearly it 
+interacts with IPv4...
+
+	Jeff
+
+
+
+
