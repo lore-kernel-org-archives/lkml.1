@@ -1,92 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753744AbYG3VAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbYG3VET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753744AbYG3VAu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 17:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbYG3VAN
+	id S1756062AbYG3VET (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 17:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYG3VEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 17:00:13 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:51696 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754861AbYG3VAL (ORCPT
+	Wed, 30 Jul 2008 17:04:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:59627 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbYG3VEF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 17:00:11 -0400
-Date: Wed, 30 Jul 2008 17:00:10 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Douglas Gilbert <dougg@torque.net>
-cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Matthew Frost <artusemrys@yahoo.com>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       <linux-kernel@vger.kernel.org>, linux-scsi <linux-scsi@vger.kernel.org>,
-       Matt Frost <artusemrys@sbcglobal.net>
-Subject: Re: [usb-storage] BUG: SCSI: usb storage SDHC card doesn't work in
- 2.6.27-rc1
-In-Reply-To: <4890C5EC.70305@torque.net>
-Message-ID: <Pine.LNX.4.44L0.0807301656030.2322-100000@iolanthe.rowland.org>
+	Wed, 30 Jul 2008 17:04:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=G7y4aXOmC15S6Fb2kK1TQ26C6wXzmQE6DK6siToaY61Ch9+djQsl0qccFqgmKvbSAa
+         /1IUOf4oXQvgk+nwxxQF10tkLkm26qNqie6NSrSFxkod9XPJwBjuxMhtAUpEIAKCfOwF
+         m5Wdvk0jyN3Z4tWdmwkP1z6xOJ9zClmFzHris=
+Date: Thu, 31 Jul 2008 01:03:52 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: syrjala@sci.fi, adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] atyfb_base.c: fix warning
+Message-ID: <20080730210352.GA29355@orion>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008, Douglas Gilbert wrote:
+From: Alexander Beregalov <a.beregalov@gmail.com>
 
-> James Bottomley wrote:
-> > On Wed, 2008-07-30 at 10:17 -0400, Alan Stern wrote:
-> >> On Tue, 29 Jul 2008, Matthew Dharm wrote:
-> >>
-> >>> Actually, I'm seriously starting to think that US_FL_IGNORE_RESIDUE should
-> >>> just become a sysfs parameter which defaults to the 'ignore' state...
-> >> We have to be careful; there definitely are devices out there which 
-> >> need to use the Residue.
-> > 
-> > This is sort of a tradeoff ... there was one complaint I saw where a
-> > device turned read only without the fix idenitifed in this report.
-> > Devices broken by the fix are definitely crawling out of the woodwork
-> > now.  Either this patch needs to be reverted or a new fix needs to be
-> > applied soon (and to stable).
-> 
-> The patches to fix this that I have tried do not apply
-> cleanly to lk 2.6.26 (and break during compile if forced:
-> "us->fflags" is not defined).
-> 
-> Is there a lk 2.6.26 patch available?
+atyfb_base.c: fix warning
 
-Sorry about that; my patches are against the USB development tree and
-I tend to forget to redo them against the vanilla kernel.  Below is a
-patch against 2.6.26.  Or you can just edit the original patch and
-change the occurrences of "fflags" to "flags".
+drivers/video/aty/atyfb_base.c:2663: warning: 'aty_resume_chip' defined
+but not used
 
-Alan Stern
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Ville Syrjala <syrjala@sci.fi>
+Cc: Antonino A. Daplas <adaplas@pol.net>
+---
 
+ drivers/video/aty/atyfb_base.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-Index: 2.6.26/drivers/usb/storage/transport.c
-===================================================================
---- 2.6.26.orig/drivers/usb/storage/transport.c
-+++ 2.6.26/drivers/usb/storage/transport.c
-@@ -1034,8 +1034,21 @@ int usb_stor_Bulk_transport(struct scsi_
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index 620ba81..9e5dfb1 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -244,7 +244,9 @@ static int atyfb_sync(struct fb_info *info);
+      */
  
- 	/* try to compute the actual residue, based on how much data
- 	 * was really transferred and what the device tells us */
--	if (residue) {
--		if (!(us->flags & US_FL_IGNORE_RESIDUE)) {
-+	if (residue && !(us->flags & US_FL_IGNORE_RESIDUE)) {
-+
-+		/* Heuristically detect devices that generate bogus residues
-+		 * by seeing what happens with INQUIRY and READ CAPACITY
-+		 * commands.
-+		 */
-+		if (bcs->Status == US_BULK_STAT_OK &&
-+				scsi_get_resid(srb) == 0 &&
-+					((srb->cmnd[0] == INQUIRY &&
-+						transfer_length == 36) ||
-+					(srb->cmnd[0] == READ_CAPACITY &&
-+						transfer_length == 8))) {
-+			us->flags |= US_FL_IGNORE_RESIDUE;
-+
-+		} else {
- 			residue = min(residue, transfer_length);
- 			scsi_set_resid(srb, max(scsi_get_resid(srb),
- 			                                       (int) residue));
-
+ static int aty_init(struct fb_info *info);
++#if defined(CONFIG_PM) && defined(CONFIG_PCI)
+ static void aty_resume_chip(struct fb_info *info);
++#endif
+ #ifdef CONFIG_ATARI
+ static int store_video_par(char *videopar, unsigned char m64_num);
+ #endif
+@@ -2659,6 +2661,7 @@ aty_init_exit:
+ 	return ret;
+ }
+ 
++#if defined(CONFIG_PM) && defined(CONFIG_PCI)
+ static void aty_resume_chip(struct fb_info *info)
+ {
+ 	struct atyfb_par *par = info->par;
+@@ -2671,6 +2674,7 @@ static void aty_resume_chip(struct fb_info *info)
+ 	if (par->aux_start)
+ 		aty_st_le32(BUS_CNTL, aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
+ }
++#endif /* defined(CONFIG_PM) && defined(CONFIG_PCI) */
+ 
+ #ifdef CONFIG_ATARI
+ static int __devinit store_video_par(char *video_str, unsigned char m64_num)
