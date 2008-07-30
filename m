@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYGaAZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762708AbYGaA0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbYGaAZl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762735AbYGaAXY
+	id S1762708AbYGaA0I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761849AbYGaAXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:23:24 -0400
-Received: from ns2.suse.de ([195.135.220.15]:37629 "EHLO mx2.suse.de"
+	Wed, 30 Jul 2008 20:23:52 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37672 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756314AbYGaAXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:23:22 -0400
-Date: Wed, 30 Jul 2008 16:59:46 -0700
+	id S1755072AbYGaAXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:23:50 -0400
+Date: Wed, 30 Jul 2008 16:59:48 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Oliver Pinter <oliver.pntr@gmail.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org,
-       Jack Steiner <steiner@sgi.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 51/62] x86: fix kernel_physical_mapping_init() for large
-	x86 systems
-Message-ID: <20080730235946.GY12896@suse.de>
+       alan@lxorguk.ukuu.org.uk, Eric Sandeen <sandeen@redhat.com>,
+       Michael Halcrow <mhalcrow@us.ibm.com>, Rik van Riel <riel@redhat.com>
+Subject: [patch 52/62] eCryptfs: use page_alloc not kmalloc to get a page
+	of memory
+Message-ID: <20080730235948.GZ12896@suse.de>
 References: <20080730233050.332789722@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-fix-kernel_physical_mapping_init-for-large-x86-systems.patch"
+Content-Disposition: inline; filename="ecryptfs-use-page_alloc-not-kmalloc-to-get-a-page-of-memory.patch"
 In-Reply-To: <20080730234915.GA12426@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,35 +41,117 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 us know.
 
 ------------------
-From: Ingo Molnar <mingo@elte.hu>
+From: Eric Sandeen <sandeen@redhat.com>
 
-based on e22146e610bb7aed63282148740ab1d1b91e1d90 upstream
+commit 7fcba054373d5dfc43d26e243a5c9b92069972ee upstream
+Date: Mon, 28 Jul 2008 15:46:39 -0700
+Subject: [patch 52/62] eCryptfs: use page_alloc not kmalloc to get a page of memory
 
-Fix bug in kernel_physical_mapping_init() that causes kernel
-page table to be built incorrectly for systems with greater
-than 512GB of memory.
+With SLUB debugging turned on in 2.6.26, I was getting memory corruption
+when testing eCryptfs.  The root cause turned out to be that eCryptfs was
+doing kmalloc(PAGE_CACHE_SIZE); virt_to_page() and treating that as a nice
+page-aligned chunk of memory.  But at least with SLUB debugging on, this
+is not always true, and the page we get from virt_to_page does not
+necessarily match the PAGE_CACHE_SIZE worth of memory we got from kmalloc.
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
-Cc: linux-mm@kvack.org
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Cc: Oliver Pinter <oliver.pntr@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+My simple testcase was 2 loops doing "rm -f fileX; cp /tmp/fileX ." for 2
+different multi-megabyte files.  With this change I no longer see the
+corruption.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
+Acked-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/mm/init_64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/ecryptfs/crypto.c |   30 ++++++++++++++++++------------
+ 1 file changed, 18 insertions(+), 12 deletions(-)
 
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -579,7 +579,7 @@ unsigned long __init_refok init_memory_m
- 		else
- 			pud = alloc_low_page(&pud_phys);
+--- a/fs/ecryptfs/crypto.c
++++ b/fs/ecryptfs/crypto.c
+@@ -474,8 +474,8 @@ int ecryptfs_encrypt_page(struct page *p
+ {
+ 	struct inode *ecryptfs_inode;
+ 	struct ecryptfs_crypt_stat *crypt_stat;
+-	char *enc_extent_virt = NULL;
+-	struct page *enc_extent_page;
++	char *enc_extent_virt;
++	struct page *enc_extent_page = NULL;
+ 	loff_t extent_offset;
+ 	int rc = 0;
  
--		next = start + PGDIR_SIZE;
-+		next = (start + PGDIR_SIZE) & PGDIR_MASK;
- 		if (next > end)
- 			next = end;
- 		last_map_addr = phys_pud_init(pud, __pa(start), __pa(next));
+@@ -491,14 +491,14 @@ int ecryptfs_encrypt_page(struct page *p
+ 			       page->index);
+ 		goto out;
+ 	}
+-	enc_extent_virt = kmalloc(PAGE_CACHE_SIZE, GFP_USER);
+-	if (!enc_extent_virt) {
++	enc_extent_page = alloc_page(GFP_USER);
++	if (!enc_extent_page) {
+ 		rc = -ENOMEM;
+ 		ecryptfs_printk(KERN_ERR, "Error allocating memory for "
+ 				"encrypted extent\n");
+ 		goto out;
+ 	}
+-	enc_extent_page = virt_to_page(enc_extent_virt);
++	enc_extent_virt = kmap(enc_extent_page);
+ 	for (extent_offset = 0;
+ 	     extent_offset < (PAGE_CACHE_SIZE / crypt_stat->extent_size);
+ 	     extent_offset++) {
+@@ -526,7 +526,10 @@ int ecryptfs_encrypt_page(struct page *p
+ 		}
+ 	}
+ out:
+-	kfree(enc_extent_virt);
++	if (enc_extent_page) {
++		kunmap(enc_extent_page);
++		__free_page(enc_extent_page);
++	}
+ 	return rc;
+ }
+ 
+@@ -608,8 +611,8 @@ int ecryptfs_decrypt_page(struct page *p
+ {
+ 	struct inode *ecryptfs_inode;
+ 	struct ecryptfs_crypt_stat *crypt_stat;
+-	char *enc_extent_virt = NULL;
+-	struct page *enc_extent_page;
++	char *enc_extent_virt;
++	struct page *enc_extent_page = NULL;
+ 	unsigned long extent_offset;
+ 	int rc = 0;
+ 
+@@ -626,14 +629,14 @@ int ecryptfs_decrypt_page(struct page *p
+ 			       page->index);
+ 		goto out;
+ 	}
+-	enc_extent_virt = kmalloc(PAGE_CACHE_SIZE, GFP_USER);
+-	if (!enc_extent_virt) {
++	enc_extent_page = alloc_page(GFP_USER);
++	if (!enc_extent_page) {
+ 		rc = -ENOMEM;
+ 		ecryptfs_printk(KERN_ERR, "Error allocating memory for "
+ 				"encrypted extent\n");
+ 		goto out;
+ 	}
+-	enc_extent_page = virt_to_page(enc_extent_virt);
++	enc_extent_virt = kmap(enc_extent_page);
+ 	for (extent_offset = 0;
+ 	     extent_offset < (PAGE_CACHE_SIZE / crypt_stat->extent_size);
+ 	     extent_offset++) {
+@@ -661,7 +664,10 @@ int ecryptfs_decrypt_page(struct page *p
+ 		}
+ 	}
+ out:
+-	kfree(enc_extent_virt);
++	if (enc_extent_page) {
++		kunmap(enc_extent_page);
++		__free_page(enc_extent_page);
++	}
+ 	return rc;
+ }
+ 
 
 -- 
