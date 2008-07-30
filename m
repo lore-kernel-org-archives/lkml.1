@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760505AbYG3XlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762016AbYG3Xlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760505AbYG3XlR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761396AbYG3Xkn
+	id S1762016AbYG3Xlg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759578AbYG3XlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:40:43 -0400
-Received: from ns1.suse.de ([195.135.220.2]:36187 "EHLO mx1.suse.de"
+	Wed, 30 Jul 2008 19:41:06 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34501 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761446AbYG3Xki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:40:38 -0400
-Date: Wed, 30 Jul 2008 16:27:30 -0700
+	id S1760828AbYG3XlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:41:04 -0400
+Date: Wed, 30 Jul 2008 16:27:32 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 22/29] ixgbe: remove device ID for unsupported device
-Message-ID: <20080730232730.GW30670@suse.de>
+       alan@lxorguk.ukuu.org.uk, Eric Sandeen <sandeen@redhat.com>,
+       Michael Halcrow <mhalcrow@us.ibm.com>, Rik van Riel <riel@redhat.com>
+Subject: [patch 23/29] eCryptfs: use page_alloc not kmalloc to get a page
+	of memory
+Message-ID: <20080730232732.GX30670@suse.de>
 References: <20080730231003.655833364@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ixgbe-remove-device-id-for-unsupported-device.patch"
+Content-Disposition: inline; filename="ecryptfs-use-page_alloc-not-kmalloc-to-get-a-page-of-memory.patch"
 In-Reply-To: <20080730232451.GA30670@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,35 +41,117 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Eric Sandeen <sandeen@redhat.com>
 
-commit bb5d10ac8cc315d53306963001fe650d88a1cbb2 upstream
+commit 7fcba054373d5dfc43d26e243a5c9b92069972ee upstream
+Date: Mon, 28 Jul 2008 15:46:39 -0700
+Subject: [patch 23/29] eCryptfs: use page_alloc not kmalloc to get a page of memory
 
-The ixgbe driver was untested with device ID 8086:10c8 but still advertises
-support.  Currently if this device is present in the system when the driver
-is loaded, the system will panic.
-Remove this device ID until full support can be tested with available
-hardware.  This patch is necessary for 2.6.24, 2.6.25 and 2.6.26
+With SLUB debugging turned on in 2.6.26, I was getting memory corruption
+when testing eCryptfs.  The root cause turned out to be that eCryptfs was
+doing kmalloc(PAGE_CACHE_SIZE); virt_to_page() and treating that as a nice
+page-aligned chunk of memory.  But at least with SLUB debugging on, this
+is not always true, and the page we get from virt_to_page does not
+necessarily match the PAGE_CACHE_SIZE worth of memory we got from kmalloc.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+My simple testcase was 2 loops doing "rm -f fileX; cp /tmp/fileX ." for 2
+different multi-megabyte files.  With this change I no longer see the
+corruption.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
+Acked-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/ixgbe/ixgbe_main.c |    2 --
- 1 file changed, 2 deletions(-)
+ fs/ecryptfs/crypto.c |   30 ++++++++++++++++++------------
+ 1 file changed, 18 insertions(+), 12 deletions(-)
 
---- a/drivers/net/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ixgbe/ixgbe_main.c
-@@ -70,8 +70,6 @@ static struct pci_device_id ixgbe_pci_tb
- 	 board_82598 },
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598AF_SINGLE_PORT),
- 	 board_82598 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598AT_DUAL_PORT),
--	 board_82598 },
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598EB_CX4),
- 	 board_82598 },
+--- a/fs/ecryptfs/crypto.c
++++ b/fs/ecryptfs/crypto.c
+@@ -474,8 +474,8 @@ int ecryptfs_encrypt_page(struct page *p
+ {
+ 	struct inode *ecryptfs_inode;
+ 	struct ecryptfs_crypt_stat *crypt_stat;
+-	char *enc_extent_virt = NULL;
+-	struct page *enc_extent_page;
++	char *enc_extent_virt;
++	struct page *enc_extent_page = NULL;
+ 	loff_t extent_offset;
+ 	int rc = 0;
+ 
+@@ -491,14 +491,14 @@ int ecryptfs_encrypt_page(struct page *p
+ 			       page->index);
+ 		goto out;
+ 	}
+-	enc_extent_virt = kmalloc(PAGE_CACHE_SIZE, GFP_USER);
+-	if (!enc_extent_virt) {
++	enc_extent_page = alloc_page(GFP_USER);
++	if (!enc_extent_page) {
+ 		rc = -ENOMEM;
+ 		ecryptfs_printk(KERN_ERR, "Error allocating memory for "
+ 				"encrypted extent\n");
+ 		goto out;
+ 	}
+-	enc_extent_page = virt_to_page(enc_extent_virt);
++	enc_extent_virt = kmap(enc_extent_page);
+ 	for (extent_offset = 0;
+ 	     extent_offset < (PAGE_CACHE_SIZE / crypt_stat->extent_size);
+ 	     extent_offset++) {
+@@ -526,7 +526,10 @@ int ecryptfs_encrypt_page(struct page *p
+ 		}
+ 	}
+ out:
+-	kfree(enc_extent_virt);
++	if (enc_extent_page) {
++		kunmap(enc_extent_page);
++		__free_page(enc_extent_page);
++	}
+ 	return rc;
+ }
+ 
+@@ -608,8 +611,8 @@ int ecryptfs_decrypt_page(struct page *p
+ {
+ 	struct inode *ecryptfs_inode;
+ 	struct ecryptfs_crypt_stat *crypt_stat;
+-	char *enc_extent_virt = NULL;
+-	struct page *enc_extent_page;
++	char *enc_extent_virt;
++	struct page *enc_extent_page = NULL;
+ 	unsigned long extent_offset;
+ 	int rc = 0;
+ 
+@@ -626,14 +629,14 @@ int ecryptfs_decrypt_page(struct page *p
+ 			       page->index);
+ 		goto out;
+ 	}
+-	enc_extent_virt = kmalloc(PAGE_CACHE_SIZE, GFP_USER);
+-	if (!enc_extent_virt) {
++	enc_extent_page = alloc_page(GFP_USER);
++	if (!enc_extent_page) {
+ 		rc = -ENOMEM;
+ 		ecryptfs_printk(KERN_ERR, "Error allocating memory for "
+ 				"encrypted extent\n");
+ 		goto out;
+ 	}
+-	enc_extent_page = virt_to_page(enc_extent_virt);
++	enc_extent_virt = kmap(enc_extent_page);
+ 	for (extent_offset = 0;
+ 	     extent_offset < (PAGE_CACHE_SIZE / crypt_stat->extent_size);
+ 	     extent_offset++) {
+@@ -661,7 +664,10 @@ int ecryptfs_decrypt_page(struct page *p
+ 		}
+ 	}
+ out:
+-	kfree(enc_extent_virt);
++	if (enc_extent_page) {
++		kunmap(enc_extent_page);
++		__free_page(enc_extent_page);
++	}
+ 	return rc;
+ }
  
 
 -- 
