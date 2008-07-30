@@ -1,70 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbYG3KEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761716AbYG3KEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760864AbYG3KEX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 06:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbYG3KEO
+	id S1761716AbYG3KEj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 06:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbYG3KEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 06:04:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40345 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752648AbYG3KEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 06:04:13 -0400
-Date: Wed, 30 Jul 2008 12:03:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "drepper@redhat.com" <drepper@redhat.com>,
-       "mikpe@it.uu.se" <mikpe@it.uu.se>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 0/9] x86, xsave: xsave/xrstor support
-Message-ID: <20080730100326.GA9683@elte.hu>
-References: <20080729172917.185593000@linux-os.sc.intel.com> <488FA318.3040905@zytor.com> <20080729232951.GB11223@linux-os.sc.intel.com> <488FAB2B.7050405@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <488FAB2B.7050405@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 30 Jul 2008 06:04:25 -0400
+Received: from evaki.its.uow.edu.au ([130.130.68.32]:41863 "EHLO
+	evaki.its.uow.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761326AbYG3KEZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 06:04:25 -0400
+Subject: [patch 04/31] pci_ids.h, kernel 2.6.27-rc1, sort DEVICE_IDs within VENDOR_IDs
+Message-Id: <E1KO7Oo-0007Cs-Sz@wraith.cs.uow.edu.au>
+From: mcs6502@gmail.com
+Date: Wed, 30 Jul 2008 18:51:10 +1000
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* H. Peter Anvin <hpa@zytor.com> wrote:
-
->> hpa, these patches just apply fine to tip/master. Can you please 
->> arrange the tip/x86/xsave tree accordingly? or do I need to do 
->> something else to smooth this process?
->
-> This is awkward, since that means this is "derived topic".  Most of 
-> the changes are orthogonal and relatively trivial to fix up at merge 
-> time, so I would prefer to keep them separate.
-
-Well, in this case the conflicts seem to be quite heavy, so i'd suggest 
-to use the method we have used for x86/x2apic and for xen-64bit:
-
-Merge the affected topics into tip/x86/core. Then merge x86/core into 
-x86/xsave, and put the xsave patches ontop of that base.
-
-This way x86/xsave is a 'derived' topic and optional until it's proven, 
-but one that is still mergable once all the dependent topics go 
-upstream. We'd only have to rebase it in the (unlikely) event of there 
-being some major problem with any of the topics merged into x86/core.
-
-ok?
-
-	Ingo
+--- linux-p3/include/linux/pci_ids.h	2008-07-30 13:00:56.679087000 +1000
++++ linux-p4/include/linux/pci_ids.h	2008-07-30 13:04:29.063645000 +1000
+@@ -2091,7 +2091,6 @@
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7500        0x7000
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7420        0x7001
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7300        0x7002
+-#define PCI_DEVICE_ID_ADDIDATA_APCI7800        0x818E
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7500_2      0x7009
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7420_2      0x700A
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7300_2      0x700B
+@@ -2099,6 +2098,7 @@
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7420_3      0x700D
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7300_3      0x700E
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7800_3      0x700F
++#define PCI_DEVICE_ID_ADDIDATA_APCI7800        0x818E
+ 
+ #define PCI_VENDOR_ID_PDC		0x15e9
+ 
