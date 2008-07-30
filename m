@@ -1,45 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761287AbYG3Jel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbYG3Jf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761287AbYG3Jel (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 05:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbYG3Je2
+	id S1760775AbYG3Jf3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 05:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbYG3JfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 05:34:28 -0400
-Received: from ip189.mtgcontacts.com ([76.164.237.189]:45244 "HELO
-	ip189.mtgcontacts.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757874AbYG3Je1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 05:34:27 -0400
-Date: Wed, 30 Jul 2008 02:24:04 -0700
-From: "anita m houston" <anamhouston1@mtgcontacts.com>
-To: linux-kernel@vger.kernel.org
-Subject: conference 
-MIME-Version: 1.0
-X-Mailer: rld v8.3.3.1000.5359131
-Reply-To: r.437.5359131@mtgcontacts.com
-Message-Id: <20080730033001.wtuwzxgblp@mtgcontacts.com>
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Wed, 30 Jul 2008 05:35:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48405 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752478AbYG3JfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 05:35:07 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200807300907.25186.arnd@arndb.de>
+References: <200807300907.25186.arnd@arndb.de> <20080728200500.GA14284@uranus.ravnborg.org> <48900EE4.8030606@snapgear.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: dhowells@redhat.com, Greg Ungerer <gerg@snapgear.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Wed, 30 Jul 2008 10:34:55 +0100
+Message-ID: <3995.1217410495@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the way to go is from broker to banker, learn how at our national conference.
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-Reserve seats today at:
-http://becomeahardmoneylender.com/
+> I think the more interesting aspect in m68knommu is what happens
+> when asm-m68k gets moved. Does that work as well?
 
-or call: 858..736..7788
+Can m68knommu be merged into m68k and be made contingent on CONFIG_MMU?  This
+is what FRV does.
 
-to be taken of our list please: 
-http://becomeahardmoneylender.com/uns/ or, send us a letter to: 
-PBMSII, 5451 Weuery Ave., La JoIIa, CA 92037
-
-
---------------------------------------------
-. 
-
-
-
-
-
+David
