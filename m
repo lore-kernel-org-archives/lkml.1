@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760583AbYG3XsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761161AbYG3Xsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760583AbYG3XsP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYG3Xr5
+	id S1761161AbYG3Xsm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbYG3Xs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:47:57 -0400
-Received: from relay03.mail-hub.dodo.com.au ([123.2.6.238]:54039 "EHLO
-	relay03.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753742AbYG3Xr4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:47:56 -0400
-From: Grant Coady <grant_lkml@dodo.com.au>
+	Wed, 30 Jul 2008 19:48:27 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:35509 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754761AbYG3Xs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:48:26 -0400
+Date: Thu, 31 Jul 2008 09:48:16 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Tim Bird <tim.bird@am.sony.com>
-Cc: Grant Coady <gcoady.lk@gmail.com>, Marco Berizzi <pupilla@hotmail.com>,
-       Alistair John Strachan <alistair@devzero.co.uk>,
-       linux-kernel@vger.kernel.org, dwmw2@infradead.org
-Subject: Re: commit a29ccf6f823a84d89e1c7aaaf221cf7282022024 break console on slackware 12.1
-Date: Thu, 31 Jul 2008 09:47:45 +1000
-Organization: http://bugsplatter.mine.nu/
-Reply-To: Grant Coady <gcoady.lk@gmail.com>
-Message-ID: <o9v194tb7pd82d6ohopqarfinb1smd3lkr@4ax.com>
-References: <BAY103-DAV4F0ECBCAFB86B24C87D3EB2820@phx.gbl> <200807291815.13907.alistair@devzero.co.uk> <BAY103-W38794846AA924235B38E47B2820@phx.gbl> <488FAFE3.4040001@am.sony.com> <ntcv845p7kpiob7iqf6d1m8buj116ug4nv@4ax.com> <4890CB06.9040106@am.sony.com>
-In-Reply-To: <4890CB06.9040106@am.sony.com>
-X-Mailer: Forte Agent 2.0/32.652
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>,
+       Lennert Buytenhek <kernel@wantstofly.org>,
+       Dave Jones <davej@codemonkey.org.uk>, Paul Jackson <pj@sgi.com>,
+       Tony Luck <tony.luck@intel.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Sam Creasey <sammy@sammy.net>, Greg Banks <gnb@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Adrian Bunk <bunk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Andreas Schwab <schwab@suse.de>, Johannes Weiner <hannes@saeurebad.de>
+Subject: Re: [PATCH 1/1] cpumask: Change cpumask_of_cpu to use
+ cpumask_of_cpu_map - build breakage
+Message-Id: <20080731094816.3b5a53f4.sfr@canb.auug.org.au>
+In-Reply-To: <4890E539.6060905@am.sony.com>
+References: <20080723171841.815234000@polaris-admin.engr.sgi.com>
+	<20080723171841.997896000@polaris-admin.engr.sgi.com>
+	<4890C8E4.50503@am.sony.com>
+	<4890DC09.2020700@sgi.com>
+	<4890E539.6060905@am.sony.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008 13:11:50 -0700, Tim Bird <tim.bird@am.sony.com> wrote:
-
->Grant Coady wrote:
->> I have the same issue, the line drawing characters are displayed as an odd 
->> looking C with a tail.  Slackware-12.1 and Slamd64-12.1.
->> 
->> .configs:
->>   http://bugsplatter.mine.nu/test/boxen/pooh/config-2.6.27-rc1a.gz
->>   http://bugsplatter.mine.nu/test/boxen/pooh64/config-2.6.27-rc1a.gz
->> 
->> CONFIG_CONSOLE_TRANSLATIONS=y ?? yes it's on
->
->This looks like an operator precedence bug introduced by
->the patch.
->
->Normally I would test this myself before sending it out, but
->I can't test 2.6.27-rc1 right now on my hardware due to another
->bug in the 2.6.27-rc1 tree.
->
->Can you please try the following patch and let me know if that
->fixes the problem?
-
 Hi Tim,
-Yep, this patch fixes the issue.  Tested on slackware-12.1 with the 
-default lilo option '#append=" vt.default_utf8=0"' commented out.
 
-Grant.
+On Wed, 30 Jul 2008 15:03:37 -0700 Tim Bird <tim.bird@am.sony.com> wrote:
+>
+> I don't see 1eddd657 anywhere in the commit log for cpumask.h
+> Is it in linux-next?
 
->
->Thanks,
-> -- Tim
->
->diff --git a/include/linux/vt_kern.h b/include/linux/vt_kern.h
->index 14c0e91..8c8119f 100644
->--- a/include/linux/vt_kern.h
->+++ b/include/linux/vt_kern.h
->@@ -74,7 +74,7 @@ void con_protect_unimap(struct vc_data *vc, int rdonly);
-> int con_copy_unimap(struct vc_data *dst_vc, struct vc_data *src_vc);
->
-> #define vc_translate(vc, c) ((vc)->vc_translate[(c) |			\
->-					(vc)->vc_toggle_meta ? 0x80 : 0])
->+					((vc)->vc_toggle_meta ? 0x80 : 0)])
-> #else
-> #define con_set_trans_old(arg) (0)
-> #define con_get_trans_old(arg) (-EINVAL)
->
->
+Yeah, that was the commit from next-20080730.  (one less patch I need to
+apply :-))
 
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
