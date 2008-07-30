@@ -1,53 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762023AbYG3NDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759713AbYG3NG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762023AbYG3NDn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 09:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758906AbYG3ND0
+	id S1759713AbYG3NG1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 09:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbYG3NGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 09:03:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50248 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758431AbYG3NDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 09:03:25 -0400
-Date: Wed, 30 Jul 2008 09:03:21 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Simon Horman <horms@verge.net.au>
-Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org
-Subject: Re: [patch] kdump: update elfcorehdr documentation to reflect
-	supported architectures
-Message-ID: <20080730130321.GC16373@redhat.com>
-References: <20080730003026.GA22106@verge.net.au>
+	Wed, 30 Jul 2008 09:06:17 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:40640 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750804AbYG3NGQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 09:06:16 -0400
+Date: Wed, 30 Jul 2008 15:06:03 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [regression] CD-DA delay needed after insertion
+ (http://bugzilla.kernel.org/show_bug.cgi?id=10974)
+In-Reply-To: <1214841102.3381.5.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0807301505110.1993@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
+ <1213540781.3517.18.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0806161659440.30122@vixen.sonytel.be>
+ <1213648258.3420.12.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0806171530340.22840@vixen.sonytel.be>
+ <1214605634.3394.91.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0806301120570.10868@vixen.sonytel.be>
+ <1214841102.3381.5.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080730003026.GA22106@verge.net.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-159658398-1217423163=:1993"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 10:30:28AM +1000, Simon Horman wrote:
-> IA64, PPC and SH also support the elfcorehdr command line.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584349381-159658398-1217423163=:1993
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+	Hi James,
+
+On Mon, 30 Jun 2008, James Bottomley wrote:
+> On Mon, 2008-06-30 at 11:25 +0200, Geert Uytterhoeven wrote:
+> > On Fri, 27 Jun 2008, James Bottomley wrote:
+> > > > git-bisect taught me it was introduced by
+> > > > 
+> > > > commit 38582a62ecd337de4212004c7d4844899dc57890
+> > > > Author: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > > > Date:   Wed Feb 6 13:01:58 2008 -0600
+> > > > 
+> > > >     [SCSI] sr: fix test unit ready responses
+> > > >     
+> > > >     Commit 210ba1d1724f5c4ed87a2ab1a21ca861a915f734 updated sr.c to use
+> > > >     the scsi_test_unit_ready() function.  Unfortunately, this has the
+> > > >     wrong characteristic of eating NOT_READY returns which sr.c relies on
+> > > >     for tray status.
+> > > >     
+> > > >     Fix by rolling an internal sr_test_unit_ready() that doesn't do this.
+> > > 
+> > > OK, I thought I had a test case for this, but when I revert this commit
+> > > on git head (and fix up the one reject which just leaves the sr_
+> > > function in place) I still produce the same behaviour.
+> > > 
+> > > What I'm trying is 
+> > > 
+> > > sg_start -i -l <cdrom>
+> > > 
+> > > to close the tray followed by your cdparanoia command
+> > > 
+> > > Could you see if reverting this commit on git head works for you (in
+> > > which case I'm not reproducing it correctly)?
+> > 
+> > On 9bedbcb207ed9a571b239231d99c8fd4a34ae24d, the sequence
+> > 
+> >     eject; sg_start -i -l /dev/scd0; cdparanoia \
+> > 	-d /dev/scd0 -Z -q 1-1[:1] /dev/null || echo failed
+> > 
+> > fails with
+> > 
+> >     004: Unable to read table of contents header
+> > 
+> > After reverting 38582a62ecd337de4212004c7d4844899dc57890, it works.
+> > 
+> > I added the eject as the PS3 has a slot-loading drive.
+> > 
+> > With kind regards,
 > 
-> Signed-off-by: Simon Horman <horms@verge.net.au>
+> OK ... but this doesn't happen for me with or without this commit
+> reverted.  This is what I see from stracing cdparanoia:
 > 
-> Index: linux-2.6/Documentation/kernel-parameters.txt
-> ===================================================================
-> --- linux-2.6.orig/Documentation/kernel-parameters.txt	2008-07-30 09:48:40.000000000 +1000
-> +++ linux-2.6/Documentation/kernel-parameters.txt	2008-07-30 09:48:45.000000000 +1000
-> @@ -688,7 +688,7 @@ and is between 256 and 4096 characters. 
->  			See Documentation/block/as-iosched.txt and
->  			Documentation/block/deadline-iosched.txt for details.
->  
-> -	elfcorehdr=	[X86-32, X86_64]
-> +	elfcorehdr=	[IA64,PPC,SH,X86-32,X86_64]
->  			Specifies physical address of start of kernel core
->  			image elf header. Generally kexec loader will
->  			pass this option to capture kernel.
+> lstat64("/dev/scd0", {st_mode=S_IFBLK|0660, st_rdev=makedev(11, 0), ...}) = 0
+> open("/dev/scd0", O_RDWR|O_NONBLOCK)    = 3
+> ioctl(3, SG_IO, 0xbfc0afdc)             = -1 EINVAL (Invalid argument)
+> close(3)                                = 0
+> open("/dev/scd0", O_RDWR|O_NONBLOCK)    = 3
+> dup(3)                                  = 4
+> ioctl(3, CDROMAUDIOBUFSIZ or SCSI_IOCTL_GET_IDLUN, 0xbfc0b240) = 0
+> ioctl(3, SCSI_IOCTL_GET_BUS_NUMBER, 0xbfc0b248) = 0
+> ioctl(3, SG_IO, 0xbfc0af8c)             = 0
+> ioctl(4, SG_EMULATED_HOST, 0xbfc0b2b8)  = 0
+> ioctl(3, SG_IO, 0xbfc0b07c)             = 0
+> ioctl(3, SG_IO, 0xbfc0b04c)             = 0
+> write(2, "004: Unable to read table of con"..., 45004: Unable to read table of contents header) = 45
+> 
+> The O_NONBLOCK tells the cdrom layer not to do drive ready processing.
+> 
+> The three SG_IOs are INQUIRY, MODE_SENSE(10) and READ TOC/PMA/ATIP
+> 
+> The latter one is returned with a check condition and sense data not
+> ready; medium not present - tray open.
+> 
+> There's no way the drive ready processing can have an effect on this
+> sequence unless cdparanoia either invokes it from the cdrom layer or
+> processes the not ready itself.  Could you strace your cdparanoia and
+> see what sequence it is using?
 
-Thanks Simon.
+My cdparanioa is using the exact same sequence.
 
-Acked-by: Vivek Goyal <vgoyal@redhat.com>
+Sorry it took that long to get back to you (holidays and OLS).
 
-Vivek
+With kind regards,
 
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@eu.sony.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis 293-0376800-10 GEBA-BE-BB
+---584349381-159658398-1217423163=:1993--
