@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760301AbYG3Xjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761071AbYG3XkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760301AbYG3Xjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760401AbYG3XjZ
+	id S1761071AbYG3XkF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760628AbYG3Xjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:39:25 -0400
-Received: from ns.suse.de ([195.135.220.2]:36016 "EHLO mx1.suse.de"
+	Wed, 30 Jul 2008 19:39:49 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34351 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760412AbYG3XjY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:39:24 -0400
-Date: Wed, 30 Jul 2008 16:27:23 -0700
+	id S1760412AbYG3Xjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:39:48 -0400
+Date: Wed, 30 Jul 2008 16:27:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Hugh Dickins <hugh@veritas.com>
-Subject: [patch 19/29] tmpfs: fix kernel BUG in shmem_delete_inode
-Message-ID: <20080730232723.GT30670@suse.de>
+       alan@lxorguk.ukuu.org.uk, Luotao Fu <l.fu@pengutronix.de>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 20/29] mpc52xx_psc_spi: fix block transfer
+Message-ID: <20080730232726.GU30670@suse.de>
 References: <20080730231003.655833364@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tmpfs-fix-kernel-bug-in-shmem_delete_inode.patch"
+Content-Disposition: inline; filename="mpc52xx_psc_spi-fix-block-transfer.patch"
 In-Reply-To: <20080730232451.GA30670@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,56 +40,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Hugh Dickins <hugh@veritas.com>
+From: Luotao Fu <l.fu@pengutronix.de>
 
-commit 14fcc23fdc78e9d32372553ccf21758a9bd56fa1 upstream
+commit 9a7867e1b34c3575e7e76a05c0c54c6edbdae2a4 upstream
 
-SuSE's insserve initscript ordering program hits kernel BUG at mm/shmem.c:814
-on 2.6.26.  It's using posix_fadvise on directories, and the shmem_readpage
-method added in 2.6.23 is letting POSIX_FADV_WILLNEED allocate useless pages
-to a tmpfs directory, incrementing i_blocks count but never decrementing it.
+The block transfer routine in the mpc52xx psc spi driver misinterpret
+the datasheet.  According to the processor datasheet the chipselect is
+held as long as the EOF is not written.
 
-Fix this by assigning shmem_aops (pointing to readpage and writepage and
-set_page_dirty) only when it's needed, on a regular file or a long symlink.
+Theoretically blocks of any sizes can be transferred in this way.  The
+old routine however writes an EOF after every word, which has the size
+of size_of_word.  This makes the transfer slow.
 
-Many thanks to Kel for outstanding bugreport and steps to reproduce it.
+Also fixed some duplicate code.
 
-Reported-by: Kel Modderman <kel@otaku42.de>
-Tested-by: Kel Modderman <kel@otaku42.de>
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/shmem.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/spi/mpc52xx_psc_spi.c |   22 +++++++---------------
+ 1 file changed, 7 insertions(+), 15 deletions(-)
 
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -1559,7 +1559,6 @@ shmem_get_inode(struct super_block *sb, 
- 		inode->i_uid = current->fsuid;
- 		inode->i_gid = current->fsgid;
- 		inode->i_blocks = 0;
--		inode->i_mapping->a_ops = &shmem_aops;
- 		inode->i_mapping->backing_dev_info = &shmem_backing_dev_info;
- 		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
- 		inode->i_generation = get_seconds();
-@@ -1574,6 +1573,7 @@ shmem_get_inode(struct super_block *sb, 
- 			init_special_inode(inode, mode, dev);
- 			break;
- 		case S_IFREG:
-+			inode->i_mapping->a_ops = &shmem_aops;
- 			inode->i_op = &shmem_inode_operations;
- 			inode->i_fop = &shmem_file_operations;
- 			mpol_shared_policy_init(&info->policy, sbinfo->policy,
-@@ -1964,6 +1964,7 @@ static int shmem_symlink(struct inode *d
- 			return error;
+--- a/drivers/spi/mpc52xx_psc_spi.c
++++ b/drivers/spi/mpc52xx_psc_spi.c
+@@ -148,7 +148,6 @@ static int mpc52xx_psc_spi_transfer_rxtx
+ 	unsigned rfalarm;
+ 	unsigned send_at_once = MPC52xx_PSC_BUFSIZE;
+ 	unsigned recv_at_once;
+-	unsigned bpw = mps->bits_per_word / 8;
+ 
+ 	if (!t->tx_buf && !t->rx_buf && t->len)
+ 		return -EINVAL;
+@@ -164,22 +163,15 @@ static int mpc52xx_psc_spi_transfer_rxtx
  		}
- 		unlock_page(page);
-+		inode->i_mapping->a_ops = &shmem_aops;
- 		inode->i_op = &shmem_symlink_inode_operations;
- 		kaddr = kmap_atomic(page, KM_USER0);
- 		memcpy(kaddr, symname, len);
+ 
+ 		dev_dbg(&spi->dev, "send %d bytes...\n", send_at_once);
+-		if (tx_buf) {
+-			for (; send_at_once; sb++, send_at_once--) {
+-				/* set EOF flag */
+-				if (mps->bits_per_word
+-						&& (sb + 1) % bpw == 0)
+-					out_8(&psc->ircr2, 0x01);
++		for (; send_at_once; sb++, send_at_once--) {
++			/* set EOF flag before the last word is sent */
++			if (send_at_once == 1)
++				out_8(&psc->ircr2, 0x01);
++
++			if (tx_buf)
+ 				out_8(&psc->mpc52xx_psc_buffer_8, tx_buf[sb]);
+-			}
+-		} else {
+-			for (; send_at_once; sb++, send_at_once--) {
+-				/* set EOF flag */
+-				if (mps->bits_per_word
+-						&& ((sb + 1) % bpw) == 0)
+-					out_8(&psc->ircr2, 0x01);
++			else
+ 				out_8(&psc->mpc52xx_psc_buffer_8, 0);
+-			}
+ 		}
+ 
+ 
 
 -- 
