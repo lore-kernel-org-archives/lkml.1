@@ -1,34 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbYG3Jdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760616AbYG3Jd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760930AbYG3Jdj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 05:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756973AbYG3JdA
+	id S1760616AbYG3Jd4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 05:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760152AbYG3JdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 05:33:00 -0400
-Received: from beru.its.uow.edu.au ([130.130.68.31]:45565 "EHLO
+	Wed, 30 Jul 2008 05:33:07 -0400
+Received: from beru.its.uow.edu.au ([130.130.68.31]:45579 "EHLO
 	beru.its.uow.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756533AbYG3Jc7 (ORCPT
+	with ESMTP id S1760062AbYG3JdG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 05:32:59 -0400
-Subject: [patch 08/31] pci_ids.h, kernel 2.6.27-rc1, sort DEVICE_IDs within VENDOR_IDs
-Message-Id: <E1KO7P9-0007Di-8G@wraith.cs.uow.edu.au>
+	Wed, 30 Jul 2008 05:33:06 -0400
+Subject: [patch 21/31] pci_ids.h, kernel 2.6.27-rc1, sort DEVICE_IDs within VENDOR_IDs
+Message-Id: <E1KO7QE-0007HO-38@wraith.cs.uow.edu.au>
 From: mcs6502@gmail.com
-Date: Wed, 30 Jul 2008 18:51:31 +1000
+Date: Wed, 30 Jul 2008 18:52:38 +1000
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- linux-p7/include/linux/pci_ids.h	2008-07-30 13:10:46.722167000 +1000
-+++ linux-p8/include/linux/pci_ids.h	2008-07-30 13:11:35.923753000 +1000
-@@ -1776,9 +1776,9 @@
- #define PCI_VENDOR_ID_SEALEVEL		0x135e
- #define PCI_DEVICE_ID_SEALEVEL_U530	0x7101
- #define PCI_DEVICE_ID_SEALEVEL_UCOMM2	0x7201
--#define PCI_DEVICE_ID_SEALEVEL_UCOMM422	0x7402
- #define PCI_DEVICE_ID_SEALEVEL_UCOMM232	0x7202
- #define PCI_DEVICE_ID_SEALEVEL_COMM4	0x7401
-+#define PCI_DEVICE_ID_SEALEVEL_UCOMM422	0x7402
- #define PCI_DEVICE_ID_SEALEVEL_COMM8	0x7801
- #define PCI_DEVICE_ID_SEALEVEL_UCOMM8	0x7804
- 
+--- linux-p20/include/linux/pci_ids.h	2008-07-30 13:34:07.224952000 +1000
++++ linux-p21/include/linux/pci_ids.h	2008-07-30 13:35:33.641989000 +1000
+@@ -701,8 +701,8 @@
+ #define PCI_DEVICE_ID_HP_DIVA_TOSCA1	0x1049
+ #define PCI_DEVICE_ID_HP_DIVA_TOSCA2	0x104A
+ #define PCI_DEVICE_ID_HP_DIVA_MAESTRO	0x104B
+-#define PCI_DEVICE_ID_HP_REO_IOC	0x10f1
+ #define PCI_DEVICE_ID_HP_VISUALIZE_FXE	0x108b
++#define PCI_DEVICE_ID_HP_REO_IOC	0x10f1
+ #define PCI_DEVICE_ID_HP_DIVA_HALFDOME	0x1223
+ #define PCI_DEVICE_ID_HP_DIVA_KEYSTONE	0x1226
+ #define PCI_DEVICE_ID_HP_DIVA_POWERBAR	0x1227
