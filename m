@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbYG3EiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbYG3EjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752597AbYG3EiA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 00:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbYG3Ehw
+	id S1753291AbYG3EjR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 00:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbYG3EjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 00:37:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58761 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751106AbYG3Ehv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 00:37:51 -0400
-Date: Tue, 29 Jul 2008 21:37:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
-       Bryan Wu <cooloney@kernel.org>,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RESEND x2 PATCH 2.6.26-git 1/2] MTD DataFlash: bugfix, binary
- page sizes now handled (v3)
-Message-Id: <20080729213733.3345546a.akpm@linux-foundation.org>
-In-Reply-To: <200807270325.13790.david-b@pacbell.net>
-References: <200807270325.13790.david-b@pacbell.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Jul 2008 00:39:05 -0400
+Received: from ozlabs.org ([203.10.76.45]:34420 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751165AbYG3EjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 00:39:04 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: lguest <lguest@ozlabs.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: [PATCH 1/2] Export get_user_pages_fast
+Date: Wed, 30 Jul 2008 14:38:55 +1000
+User-Agent: KMail/1.9.9
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807301438.55941.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Jul 2008 03:25:13 -0700 David Brownell <david-b@pacbell.net> wrote:
+After all, it was made for lguest wasn't it?  Still think it should be
+called get_current_pages() though.
 
-> From: David Brownell <dbrownell@users.sourceforge.net>
-> 
-> The wrong version of the "teach dataflash about binary density" patch
-> just got merged (v2 not v3) ... this restores the missing updates:
-> 
->   * Fix the cmdlinepart *regression* that caused testing failures (!!)
->     by restoring the original part labels in relevant cases.
-> 
->   * Don't reference things that don't exist (!)
-> 	- An opcode that doesn't even exist for DataFlash
-> 	- The part is "at45db642" not "at45db641"
-> 	- ID zero in this JEDEC table
-> 
->   * Make the JEDEC probe routine report and handle errors better:
-> 	- If the SPI calls fail, return the error codes.
-> 	- Don't depend on ordering of table entries.
-> 	- Unrecognized ids are different from parts that have no ID.
->           We won't actually know how to handle them correctly; display
-> 	  the ID and ignore the chip.
-> 
->   * Move the original block comment about the "legacy" chip ID scheme
->     back next to the code to which it applies ... not next to the new
->     JEDEC query code, which uses an entirely different strategy.
-> 
->   * Don't print a guessed erasesize; /proc/mtd has the real value.
-> 
-> And add a few more comments.
-> 
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ arch/x86/mm/gup.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-drivers/mtd/devices/mtd_dataflash.c: In function 'jedec_probe':
-drivers/mtd/devices/mtd_dataflash.c:611: error: incompatible type for argument 1 of 'dev_name'
-drivers/mtd/devices/mtd_dataflash.c:619: error: incompatible type for argument 1 of 'dev_name'
-
+diff -r cb465381f6d5 arch/x86/mm/gup.c
+--- a/arch/x86/mm/gup.c	Wed Jul 30 10:18:44 2008 +1000
++++ b/arch/x86/mm/gup.c	Wed Jul 30 14:22:53 2008 +1000
+@@ -8,6 +8,7 @@
+ #include <linux/mm.h>
+ #include <linux/vmstat.h>
+ #include <linux/highmem.h>
++#include <linux/module.h>
+ 
+ #include <asm/pgtable.h>
+ 
+@@ -296,3 +303,4 @@ slow_irqon:
+ 		return ret;
+ 	}
+ }
++EXPORT_SYMBOL_GPL(get_user_pages_fast);
