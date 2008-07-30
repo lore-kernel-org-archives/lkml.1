@@ -1,134 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759880AbYG3IxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759400AbYG3I4D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759880AbYG3IxK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 04:53:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758978AbYG3Iww
+	id S1759400AbYG3I4D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 04:56:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYG3Izy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 04:52:52 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:36710 "EHLO
+	Wed, 30 Jul 2008 04:55:54 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:36589 "EHLO
 	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753702AbYG3Iwv convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752899AbYG3Izx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 04:52:51 -0400
+	Wed, 30 Jul 2008 04:55:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
          :mime-version:content-type:content-transfer-encoding
          :content-disposition:references;
-        b=aD7j3SfDTe84gKVyrSqxaArTwlpy/44uMEHnXrNcKqAt88or0KHVqP+kJwYze2nofK
-         56CzDSznVa577bbcHtxCDXdeXV5GcyAGH+MHI/49/Bo27gyoLwQv/y4hso1/X38HDAuG
-         G8CwnFXuueaS/kdfF3Aeig/Sbfk4/vYBuBfBQ=
-Message-ID: <9ea470500807300152p5d5414aaq2d0d0053c12ef3f5@mail.gmail.com>
-Date: Wed, 30 Jul 2008 10:52:50 +0200
+        b=t7WNY1xZbDQEbfC89hYwiv4WwlZpZXZfdzk9/pU5f2ai3jmmtv6G3EI5sbsXKdLE1G
+         NK0/A3E4kLns3PQaqtguJm8+hrlHKwUlUht4tey/KVNsrF8A5zN6Pryt4+tkU4p/JrP4
+         Dgx4DN9No8zTguPjL1fsnkJcXkVl0NNsKu2Bc=
+Message-ID: <9ea470500807300155t60732956m67d196f87aed9fa4@mail.gmail.com>
+Date: Wed, 30 Jul 2008 10:55:52 +0200
 From: "Boris Petkov" <petkovbb@googlemail.com>
 Reply-To: petkovbb@gmail.com
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>
-Subject: Re: [PATCH] ide-cd: fix endianity for the error message in cdrom_read_capacity
-Cc: "Petr Tesarik" <ptesarik@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>,
-       "Jan Kara" <jack@suse.cz>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-In-Reply-To: <20080730011832.0ee55d47.akpm@linux-foundation.org>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [PATCH 1/5] docsrc: build Documentation/ sources
+Cc: "Randy Dunlap" <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20080730084405.GD18366@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <1217405406.11834.11.camel@elijah.suse.cz>
-	 <20080730011832.0ee55d47.akpm@linux-foundation.org>
+References: <12173619152424@xenotime.net> <20080729202732.GB6007@gollum.tnic>
+	 <20080730084405.GD18366@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 10:18 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Wed, 30 Jul 2008 10:10:06 +0200 Petr Tesarik <ptesarik@suse.cz> wrote:
+On Wed, Jul 30, 2008 at 10:44 AM, Sam Ravnborg <sam@ravnborg.org> wrote:
+> On Tue, Jul 29, 2008 at 10:27:32PM +0200, Borislav Petkov wrote:
+>> On Tue, Jul 29, 2008 at 01:05:15PM -0700, Randy Dunlap wrote:
+>> > From: Randy Dunlap <randy.dunlap@oracle.com>
+>> >
+>> > Currently source files in the Documentation/ sub-dir can easily bit-rot
+>> > since they are not generally buildable, either because they are hidden
+>> > in text files or because there are no Makefile rules for them.
+>> > This needs to be fixed so that the source files remain usable and good
+>> > examples of code instead of bad examples.
+>> >
+>> > Add the ability to build source files that are in the Documentation/ dir.
+>> > Add to Kconfig as "BUILD_DOCSRC" config symbol.
+>> >
+>> > Use "CONFIG_BUILD_DOCSRC=1 make ..." to build objects from the
+>> > Documentation/ sources.  Or enable BUILD_DOCSRC in the *config system.
+>>
+>> How about simply adding another makefile target instead? This is more
+>> intuitive, imho, and complies with the Kbuild conventions so far.
+>> Something like:
+>>
+>> make docsrc
+>>
+>> similar to 'make help' or 'make pdfdocs' etc.
 >
->> Resent because of a typo in the LKML address. :(
->
-> Thanks.
->
->>
->> Aesthetic regards aside, commit e8e7b9eb11c34ee18bde8b7011af41938d1ad667
->> still leaves a bug in the error message, because it uses the unconverted
->> big-endian value for printk.
->>
->> Fix this by using a local variable in machine byte order. The result is
->> correct, more readable, and also produces slightly shorter code on i386.
->>
->> Cc: Jens Axboe <jens.axboe@oracle.com>
->> Cc: Jan Kara <jack@suse.cz>
->> Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
+> With the current approach we have much better build coverage.
+> All "allyesconfig" and "allmodconfig" builds will do the test
+> builds which is a good think.
+> If we introduce "make docsrc" then almost only Randy will do the
+> test builds and report the breakage - which is not good.
 
-I definitely like this one better, thanks.
+Well, i don't see anymore people than Randy doing
 
-Acked-by: Borislav Petkov <petkovbb@gmail.com>
+CONFIG_BUILD_DOCSRC=1 make ...
 
-
->
-> Bart owns this patch now.  It got lost for a month and it has already
-> been fixed twice and it is also on the route to 2.6.25.x and 2.6.26.x,
-> so it'll get complicated.  Not a happy little patch.
-
-Greg, can you please apply this one on top of -stable.
-
->
->>
->>  ide-cd.c |   18 ++++++++++--------
->>  1 file changed, 10 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
->> --- a/drivers/ide/ide-cd.c
->> +++ b/drivers/ide/ide-cd.c
->> @@ -1305,6 +1305,7 @@ static int cdrom_read_capacity(ide_drive_t *drive, unsigned long *capacity,
->>       int stat;
->>       unsigned char cmd[BLK_MAX_CDB];
->>       unsigned len = sizeof(capbuf);
->> +     __u32 blocklen;
->>
->>       memset(cmd, 0, BLK_MAX_CDB);
->>       cmd[0] = GPCMD_READ_CDVD_CAPACITY;
->> @@ -1317,23 +1318,24 @@ static int cdrom_read_capacity(ide_drive_t *drive, unsigned long *capacity,
->>       /*
->>        * Sanity check the given block size
->>        */
->> -     switch (capbuf.blocklen) {
->> -     case __constant_cpu_to_be32(512):
->> -     case __constant_cpu_to_be32(1024):
->> -     case __constant_cpu_to_be32(2048):
->> -     case __constant_cpu_to_be32(4096):
->> +     blocklen = be32_to_cpu(capbuf.blocklen);
->> +     switch (blocklen) {
->> +     case 512:
->> +     case 1024:
->> +     case 2048:
->> +     case 4096:
->>               break;
->>       default:
->>               printk(KERN_ERR "%s: weird block size %u\n",
->> -                     drive->name, capbuf.blocklen);
->> +                     drive->name, blocklen);
->>               printk(KERN_ERR "%s: default to 2kb block size\n",
->>                       drive->name);
->> -             capbuf.blocklen = __constant_cpu_to_be32(2048);
->> +             blocklen = 2048;
->>               break;
->>       }
->>
->>       *capacity = 1 + be32_to_cpu(capbuf.lba);
->> -     *sectors_per_frame = be32_to_cpu(capbuf.blocklen) >> SECTOR_BITS;
->> +     *sectors_per_frame = blocklen >> SECTOR_BITS;
->>       return 0;
->>  }
->>
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
+either so only the other option remains, which means CONFIG_BUILD_DOCSRC
+should be "default y" for more coverage...
 
 
 -- 
