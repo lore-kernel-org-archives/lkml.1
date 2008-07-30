@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757326AbYG3VYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbYG3VY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757326AbYG3VYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 17:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbYG3VYB
+	id S1759505AbYG3VY6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 17:24:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758051AbYG3VYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 17:24:01 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:57050 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752491AbYG3VYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 17:24:00 -0400
-Message-ID: <4890DBE6.4080408@pobox.com>
-Date: Wed, 30 Jul 2008 17:23:50 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 30 Jul 2008 17:24:33 -0400
+Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:2998 "EHLO
+	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751899AbYG3VYc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 17:24:32 -0400
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: v4l <video4linux-list@redhat.com>, linux-kernel@vger.kernel.org
+Subject: V4L2 & request_module("char-major-...")
+Date: Wed, 30 Jul 2008 23:24:15 +0200
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-To: Julia Lawall <julia@diku.dk>
-CC: raisch@de.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 2/7] drivers/net/ehea/ehea_main.c: Release mutex in error
- handling code
-References: <Pine.LNX.4.64.0807210957060.24625@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0807210957060.24625@ask.diku.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200807302324.15221.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> The mutex is released on a successful return, so it would seem that it
-> should be released on an error return as well.
-> 
-> The semantic patch finds this problem is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @@
-> expression l;
-> @@
-> 
-> mutex_lock(l);
-> ... when != mutex_unlock(l)
->     when any
->     when strict
-> (
-> if (...) { ... when != mutex_unlock(l)
-> +   mutex_unlock(l);
->     return ...;
-> }
-> |
-> mutex_unlock(l);
-> )
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+Hi all,
 
-applied
+I'm in the process of converting v4l2-dev.c (2.6.27, in earlier kernels 
+it was called videodev.c) from using register_chrdev() to using 
+register_chrdev_region() and cdev_add().
 
+The problem I have is that register_chrdev provides a file_operations 
+struct. The video_open() function in there performs this piece of code 
+when a video device is opened:
 
+        vfl = video_device[minor];
+        if (vfl == NULL) {
+                mutex_unlock(&videodev_lock);
+                request_module("char-major-%d-%d", VIDEO_MAJOR, minor);
+                mutex_lock(&videodev_lock);
+                vfl = video_device[minor];
+                if (vfl == NULL) {
+                        mutex_unlock(&videodev_lock);
+                        unlock_kernel();
+                        return -ENODEV;
+                }
+        }
+
+It checks if a V4L2 driver registered this particular minor, if not then 
+it tries to load the appropriate module with a char-major-x-x alias. If 
+still no luck, then we bail out.
+
+Now, as I understand it this can only happen if someone used mknod to 
+create device nodes and is not using udev. It's not clear to me however 
+how this can ever work: the char-major alias relies on the fact that 
+someone has to link the minor number with an actual V4L driver, but you 
+do not generally know what minor number will be used by a specific 
+driver (depends on load order, etc). Or am I missing something?
+
+My questions are:
+
+1) is this code still relevant?
+
+2) if so, how can I replace this code when I switch to cdev since in 
+that case there is no longer a video_open() that can be used for this.
+
+3) I also saw after some googling this proposed patch: 
+http://linux.derkeiler.com/Mailing-Lists/Kernel/2003-09/2925.html
+It adds a MODULE_ALIAS_CHARDEV_MAJOR line for videodev.c. Either this 
+patch was never applied or quickly removed in videodev.c since it's not 
+there. I'm not sure how this relates to the request_module in the 
+current code and whether it should be added after all or not.
+
+I had a hard time finding any useful information about this, so I hope 
+someone can shed some light on this. It's the last piece of the puzzle 
+that I need before I can drag the old and venerable v4l2-dev.c formerly 
+known as videodev.c into the 21st century :-)
+
+Regards,
+
+	Hans
