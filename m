@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbYG3Vqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759092AbYG3Vqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757366AbYG3Vqa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 17:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbYG3VqU
+	id S1759092AbYG3Vqy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 17:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbYG3Vqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 17:46:20 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46314 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751162AbYG3VqT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 17:46:19 -0400
-To: torvalds@linux-foundation.org
-CC: miklos@szeredi.hu, jens.axboe@oracle.com, akpm@linux-foundation.org,
-       nickpiggin@yahoo.com.au, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-reply-to: <alpine.LFD.1.10.0807301418270.3277@nehalem.linux-foundation.org>
-	(message from Linus Torvalds on Wed, 30 Jul 2008 14:22:13 -0700 (PDT))
-Subject: Re: [patch v3] splice: fix race with page invalidation
-References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807300958390.3334@nehalem.linux-foundation.org> <E1KOFUi-0000EU-0p@pomaz-ex.szeredi.hu> <20080730175406.GN20055@kernel.dk> <E1KOGT8-0000rd-0Z@pomaz-ex.szeredi.hu> <E1KOGeO-0000yi-EM@pomaz-ex.szeredi.hu>
- <20080730194516.GO20055@kernel.dk> <E1KOHvq-0001oX-OW@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807301310130.3334@nehalem.linux-foundation.org> <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807301349020.3334@nehalem.linux-foundation.org>
- <E1KOJ1s-0002a5-Im@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807301418270.3277@nehalem.linux-foundation.org>
-Message-Id: <E1KOJUk-0002vA-8w@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 30 Jul 2008 23:46:06 +0200
+	Wed, 30 Jul 2008 17:46:43 -0400
+Received: from mga03.intel.com ([143.182.124.21]:18059 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755576AbYG3Vqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 17:46:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,281,1215414000"; 
+   d="scan'208";a="27581322"
+Date: Wed, 30 Jul 2008 14:46:41 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "drepper@redhat.com" <drepper@redhat.com>,
+       "mikpe@it.uu.se" <mikpe@it.uu.se>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 0/9] x86, xsave: xsave/xrstor support
+Message-ID: <20080730214641.GE11223@linux-os.sc.intel.com>
+References: <20080729172917.185593000@linux-os.sc.intel.com> <488FA318.3040905@zytor.com> <20080729232951.GB11223@linux-os.sc.intel.com> <488FAB2B.7050405@zytor.com> <20080730100326.GA9683@elte.hu> <20080730182539.GA17140@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080730182539.GA17140@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008, Linus Torvalds wrote:
-> On Wed, 30 Jul 2008, Miklos Szeredi wrote:
-> > 
-> > Huh?  I did exactly that, and that patch got NAK'ed by you and Nick:
+On Wed, Jul 30, 2008 at 11:25:39AM -0700, Ingo Molnar wrote:
 > 
-> Umm. That was during the late -rc sequence (what, -rc8?) where I wanted a 
-> minimal "let's fix it". Not that anybody then apparently cared, which is 
-> probably just as well.
-> 
-> Then you did NOTHING AT ALL about it, now the merge window is over, and 
-> you complain again, with what looks like basically the same patch that was 
-> already rejected earlier.
-> 
-> Hellooo..
+> I've restructured tip/x86/xsave to be like this, and it can now be
+> merged into tip/master without conficts.
 
-You are being unfair: after having talked it over with Nick I
-resubmitted this patch (not the same), which was added to -mm and
-nobody complained then. Then it got thrown out of -mm during the merge
-window because of a conflict, and then now I got around to
-resubmitting it again.
+thanks.
 
-But you're the boss, if you don't like it it won't go in.  I'll have a
-look at the "don't clear PG_uptodate" solution again and see if we can
-get an agreement there.
+> I briefly merged it into tip/master to test it, but after about 10
+> randconfig iterations it ran into a spontaneous reboot crash. There's
+> nothing in the log, the box (an Athlon64 X2) just reboots spontaneously.
+> Removing the x86/xsave changes makes the system boot up fine.
 
-Miklos
+I am also seeing this reboot issue and am hitting this both on tip/master
+aswell as the tip/tmp.x86/xsave.broken
+
+It seems to be timing related. Will look further.
+
+thanks,
+suresh
