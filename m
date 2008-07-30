@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbYG3L1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758680AbYG3LaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756350AbYG3L1m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 07:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYG3L1d
+	id S1758680AbYG3LaW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 07:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYG3LaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 07:27:33 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:16599 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753820AbYG3L1c (ORCPT
+	Wed, 30 Jul 2008 07:30:09 -0400
+Received: from hu-out-0506.google.com ([72.14.214.238]:63830 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753259AbYG3LaI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 07:27:32 -0400
+	Wed, 30 Jul 2008 07:30:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=qKE4tp2Mm/XMnzW962ysg+k7JIV9Feoo+iMbl1IDwbC/wnrAiSzmUTqH2Bx3/9b4eL
-         lOi6bk757Pu9RzylmBCJ55gw53/714cjI32jai/a7yErS7kHSjv49cioF1aWHSumA75U
-         SQTbocIs8e0XNZYwNJzvTEwwihN3Fi1Oo+PUY=
-Message-ID: <48905028.5060908@gmail.com>
-Date: Wed, 30 Jul 2008 13:27:36 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+        h=from:to:cc:subject:date:message-id:user-agent:mime-version
+         :content-type;
+        b=X1aYF6puTqGHDjKE5+vPWVNTkQvdwzQ2vpOxEr/OAXdsdVDCPYXOZDPNE0ZF5nALLL
+         rHwGdu+IUToflzGjBUL/pLkbdb1mqyjsklkDK8ACmiBbIh7tOVlYarE2/mHWnXATY6Rg
+         h1R++OO86VHZlTz03mIgdF3lIsmvHh3iqKkTU=
+From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] x86: wrong register was used in align macro
+Date: Wed, 30 Jul 2008 13:30:14 +0200
+Message-ID: <m3sktr6249.fsf@gravicappa.englab.brq.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, xsonnek@gmail.com,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 1/1] semaphore: declare down_try
-References: <1217417115-28574-1-git-send-email-jirislaby@gmail.com>
-In-Reply-To: <1217417115-28574-1-git-send-email-jirislaby@gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby napsal(a):
-> Maybe you already fixed this, in todays mmotm there is a fix of duplicate
-> down_try definiton, but this problem still persist.
+New ALIGN_DESTINATION macro has sad typo: r8d register was used instead
+of ecx in fixup section. This can be considered as a regression.
 
-BTW. there is still bunch of down_trylock(); users, are you about to 
-eliminate them?
+Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
 
-    2    182  /home/latest/xxx/drivers/watchdog/ar7_wdt.c <<ar7_wdt_open>>
-              if (down_trylock(&open_semaphore))
-    3    309  /home/latest/xxx/drivers/watchdog/it8712f_wdt.c
-              <<it8712f_wdt_open>>
-              if (down_trylock(&it8712f_wdt_sem))
-    4    214  /home/latest/xxx/drivers/watchdog/s3c2410_wdt.c
-              <<s3c2410wdt_open>>
-              if(down_trylock(&open_lock))
-    5    154  /home/latest/xxx/drivers/watchdog/sc1200wdt.c <<sc1200wdt_open>>
-              if (down_trylock(&open_sem))
-    6     95  /home/latest/xxx/drivers/watchdog/scx200_wdt.c <<scx200_wdt_open>>
-              if (down_trylock(&open_semaphore))
-    7    429  /home/latest/xxx/drivers/watchdog/wdt_pci.c <<wdtpci_open>>
-              if (down_trylock(&open_sem))
+diff --git a/arch/x86/lib/copy_user_64.S b/arch/x86/lib/copy_user_64.S
+index dfdf428..f118c11 100644
+--- a/arch/x86/lib/copy_user_64.S
++++ b/arch/x86/lib/copy_user_64.S
+@@ -52,7 +52,7 @@
+ 	jnz 100b
+ 102:
+ 	.section .fixup,"ax"
+-103:	addl %r8d,%edx			/* ecx is zerorest also */
++103:	addl %ecx,%edx			/* ecx is zerorest also */
+ 	jmp copy_user_handle_tail
+ 	.previous
+ 
+diff --git a/arch/x86/lib/copy_user_nocache_64.S b/arch/x86/lib/copy_user_nocache_64.S
+index 40e0e30..108ad1c 100644
+--- a/arch/x86/lib/copy_user_nocache_64.S
++++ b/arch/x86/lib/copy_user_nocache_64.S
+@@ -32,7 +32,7 @@
+ 	jnz 100b
+ 102:
+ 	.section .fixup,"ax"
+-103:	addl %r8d,%edx			/* ecx is zerorest also */
++103:	addl %ecx,%edx			/* ecx is zerorest also */
+ 	jmp copy_user_handle_tail
+ 	.previous
+ 
+
+-- 
+wbr, Vitaly
