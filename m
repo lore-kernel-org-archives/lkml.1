@@ -1,46 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbYG3VxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759022AbYG3V4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755771AbYG3VxZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 17:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbYG3VxN
+	id S1759022AbYG3V4T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 17:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbYG3V4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 17:53:13 -0400
-Received: from namei.org ([69.55.235.186]:47977 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752349AbYG3VxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 17:53:11 -0400
-Date: Thu, 31 Jul 2008 07:52:42 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Stephen Smalley <sds@tycho.nsa.gov>
-cc: Miklos Szeredi <miklos@szeredi.hu>, viro@ZenIV.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] vfs: make security_inode_setattr() calling consistent
-In-Reply-To: <1217428647.20373.235.camel@moss-spartans.epoch.ncsc.mil>
-Message-ID: <Xine.LNX.4.64.0807310736520.28737@us.intercode.com.au>
-References: <E1KOARi-0004wu-1G@pomaz-ex.szeredi.hu>
- <1217428647.20373.235.camel@moss-spartans.epoch.ncsc.mil>
+	Wed, 30 Jul 2008 17:56:08 -0400
+Received: from tone.orchestra.cse.unsw.EDU.AU ([129.94.242.59]:55468 "EHLO
+	tone.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752951AbYG3V4H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 17:56:07 -0400
+From: Shehjar Tikoo <shehjart@cse.unsw.edu.au>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Date: Thu, 31 Jul 2008 07:40:23 +1000
+Message-ID: <4890DFC7.3020309@cse.unsw.edu.au>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+CC: Michael Shuey <shuey@purdue.edu>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, rees@citi.umich.edu, aglo@citi.umich.edu
+Subject: Re: high latency NFS
+References: <200807241311.31457.shuey@purdue.edu> <20080730192110.GA17061@fieldses.org>
+In-Reply-To: <20080730192110.GA17061@fieldses.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008, Stephen Smalley wrote:
+J. Bruce Fields wrote:
+> You might get more responses from the linux-nfs list (cc'd).
+> 
+> --b.
+> 
+> On Thu, Jul 24, 2008 at 01:11:31PM -0400, Michael Shuey wrote:
+>> I'm currently toying with Linux's NFS, to see just how fast it 
+>> can go in a high-latency environment.  Right now, I'm simulating
+>>  a 100ms delay between client and server with netem (just 100ms
+>> on the outbound packets from the client, rather than 50ms each
+>> way). Oddly enough, I'm running into performance problems. :-)
+>> 
+>> According to iozone, my server can sustain about 90/85 MB/s 
+>> (reads/writes) without any latency added.  After a pile of 
+>> tweaks, and injecting 100ms of netem latency, I'm getting 6/40 
+>> MB/s (reads/writes).  I'd really like to know why writes are now
+>>  so much faster than reads, and what sort of things might boost 
+>> the read throughput.  Any suggestions?
 
-> Unfortunate since we'd prefer to have the DAC checks applied first, and
-> since inode_change_ok() may alter the ia_mode in response to those
-> checks, but it does seem inconsistent at present and it doesn't yield
-> any difference in the ltp selinux testsuite results.
+Is the server sync or async mounted? I've seen such performance
+inversion between read and write when the mount mode is async.
 
-No LSM seems to be using ia_mode, so that aspect is ok.  The DAC checks 
-are generally not being applied first currently, so common case behaviour 
-doesn't change with this patch.
+What is the number of nfsd threads at the server?
 
-Acked-by: James Morris <jmorris@namei.org>
+Which file system are you using at the server?
 
--- 
-James Morris
-<jmorris@namei.org>
+>> 1 The read throughput seems to be proportional to the latency - 
+>> adding only 10ms of delay gives 61 MB/s reads, in limited testing
+>>  (need to look at it further).  While that's to be expected, to 
+>> some extent, I'm hoping there's some form of readahead that can 
+>> help me out here (assume big sequential reads).
+>> 
+>> iozone is reading/writing a file twice the size of memory on the
+>>  client with a 32k block size.  I've tried raising this as high
+>> as 16 MB, but I still see around 6 MB/sec reads.
+
+In iozone, are you running the read and write test during the same run
+of iozone? Iozone runs read tests, after writes so that the file for
+the read test exists on the server. You should try running write and
+read tests in separate runs to prevent client side caching issues from
+influencing raw server read(and read-ahead) performance. You can use
+the -w option in iozone to prevent iozone from calling unlink on the
+file after the write test has finished, so you can use the same file
+in a separate read test run.
+
+
+>> 
+>> I'm using a 2.6.9 derivative (yes, I'm a RHEL4 fan).  Testing 
+>> with a stock 2.6, client and server, is the next order of 
+>> business.
+
+You can try building the kernel with oprofile support and use it to
+measure where the client CPU is spending its time. It is possible that
+client-side locking or other algorithm issues are resulting in such
+low read throughput. Note, when you start oprofile profiling, use a
+CPU_CYCLES count of 5000. I've observed more accurate results with
+this sample size for NFS performance.
+
+>> 
+>> NFS mount is tcp, version 3.  rsize/wsize are 32k.  Both client 
+>> and server have had tcp_rmem, tcp_wmem, wmem_max, rmem_max, 
+>> wmem_default, and rmem_default tuned - tuning values are 12500000
+>>  for defaults (and minimum window sizes), 25000000 for the 
+>> maximums.  Inefficient, yes, but I'm not concerned with memory 
+>> efficiency at the moment.
+>> 
+>> Both client and server kernels have been modified to provide 
+>> larger-than-normal RPC slot tables.  I allow a max of 1024, but 
+>> I've found that actually enabling more than 490 entries in /proc
+>>  causes mount to complain it can't allocate memory and die.  That
+>>  was somewhat suprising, given I had 122 GB of free memory at the
+>>  time...
+>> 
+>> I've also applied a couple patches to allow the NFS readahead to
+>>  be a tunable number of RPC slots.  Currently, I set this to 489
+>>  on client and server (so it's one less than the max number of
+>> RPC slots).  Bandwidth delay product math says 380ish slots
+>> should be enough to keep a gigabit line full, so I suspect
+>> something else is preventing me from seeing the readahead I
+>> expect.
+>> 
+>> FYI, client and server are connected via gigabit ethernet. 
+>> There's a couple routers in the way, but they talk at 10gigE and
+>>  can route wire speed. Traffic is IPv4, path MTU size is 9000 
+>> bytes.
+>> 
+
+The following are not completely relevant here but just to get some
+more info:
+What is the raw TCP throughput that you get between the server and
+client machine on this network?
+
+You could run the tests with bare minimum number of network
+elements between the server and the client to see whats the best
+network performance for NFS you can extract from this server and
+client machine.
+
+
+>> Is there anything I'm missing?
+>> 
+>> -- Mike Shuey Purdue University/ITaP
