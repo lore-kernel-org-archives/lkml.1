@@ -1,91 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbYG3TVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbYG3TVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754320AbYG3TVU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 15:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbYG3TVM
+	id S1754690AbYG3TVo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 15:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbYG3TVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 15:21:12 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:51473 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752243AbYG3TVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 15:21:11 -0400
-Date: Wed, 30 Jul 2008 15:21:10 -0400
-To: Michael Shuey <shuey@purdue.edu>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       rees@citi.umich.edu, aglo@citi.umich.edu
-Subject: Re: high latency NFS
-Message-ID: <20080730192110.GA17061@fieldses.org>
-References: <200807241311.31457.shuey@purdue.edu>
+	Wed, 30 Jul 2008 15:21:34 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:30471 "EHLO
+	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754492AbYG3TVd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 15:21:33 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=dkSNLZc3JAWxmWpFRhoA:9 a=nz7t8EDBJrqaCecqCqpDuyP7W3UA:4
+Message-ID: <4890BF39.6060608@shaw.ca>
+Date: Wed, 30 Jul 2008 13:21:29 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807241311.31457.shuey@purdue.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: "V.Radhakrishnan" <rk@atr-labs.com>
+CC: Sanka Piyaratna <cesanka@yahoo.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PCIe device driver question
+References: <fa.PmBLCqOb4Xo53y3W9hAdnsU50Og@ifi.uio.no> <fa.42mxuHHJP7XQmYeyxNoEC/NFUHA@ifi.uio.no>
+In-Reply-To: <fa.42mxuHHJP7XQmYeyxNoEC/NFUHA@ifi.uio.no>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You might get more responses from the linux-nfs list (cc'd).
+V.Radhakrishnan wrote:
+>>> am testing this in an X86_64 architecture machine with 4 GB of RAM. I
+>>> am able to successfully dma data into any memory (dma) address >
+>>> 0x0000_0001_0000_0000.
+> 
+> How can you DMA "successfully" into this address which is > 4 GB when
+> you have only 4 GB RAM ? Or am I missing something ?
 
---b.
-
-On Thu, Jul 24, 2008 at 01:11:31PM -0400, Michael Shuey wrote:
-> I'm currently toying with Linux's NFS, to see just how fast it can go in a 
-> high-latency environment.  Right now, I'm simulating a 100ms delay between 
-> client and server with netem (just 100ms on the outbound packets from the 
-> client, rather than 50ms each way).  Oddly enough, I'm running into 
-> performance problems. :-)
-> 
-> According to iozone, my server can sustain about 90/85 MB/s (reads/writes) 
-> without any latency added.  After a pile of tweaks, and injecting 100ms of 
-> netem latency, I'm getting 6/40 MB/s (reads/writes).  I'd really like to 
-> know why writes are now so much faster than reads, and what sort of things 
-> might boost the read throughput.  Any suggestions?
-> 1
-> The read throughput seems to be proportional to the latency - adding only 
-> 10ms of delay gives 61 MB/s reads, in limited testing (need to look at it 
-> further).  While that's to be expected, to some extent, I'm hoping there's 
-> some form of readahead that can help me out here (assume big sequential 
-> reads).
-> 
-> iozone is reading/writing a file twice the size of memory on the client with 
-> a 32k block size.  I've tried raising this as high as 16 MB, but I still 
-> see around 6 MB/sec reads.
-> 
-> I'm using a 2.6.9 derivative (yes, I'm a RHEL4 fan).  Testing with a stock 
-> 2.6, client and server, is the next order of business.
-> 
-> NFS mount is tcp, version 3.  rsize/wsize are 32k.  Both client and server 
-> have had tcp_rmem, tcp_wmem, wmem_max, rmem_max, wmem_default, and 
-> rmem_default tuned - tuning values are 12500000 for defaults (and minimum 
-> window sizes), 25000000 for the maximums.  Inefficient, yes, but I'm not 
-> concerned with memory efficiency at the moment.
-> 
-> Both client and server kernels have been modified to provide 
-> larger-than-normal RPC slot tables.  I allow a max of 1024, but I've found 
-> that actually enabling more than 490 entries in /proc causes mount to 
-> complain it can't allocate memory and die.  That was somewhat suprising, 
-> given I had 122 GB of free memory at the time...
-> 
-> I've also applied a couple patches to allow the NFS readahead to be a 
-> tunable number of RPC slots.  Currently, I set this to 489 on client and 
-> server (so it's one less than the max number of RPC slots).  Bandwidth 
-> delay product math says 380ish slots should be enough to keep a gigabit 
-> line full, so I suspect something else is preventing me from seeing the 
-> readahead I expect.
-> 
-> FYI, client and server are connected via gigabit ethernet.  There's a couple 
-> routers in the way, but they talk at 10gigE and can route wire speed.  
-> Traffic is IPv4, path MTU size is 9000 bytes.
-> 
-> Is there anything I'm missing?
-> 
-> -- 
-> Mike Shuey
-> Purdue University/ITaP
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+The MMIO and other reserved memory space at the top of the 32-bit memory 
+space will cause the top part of memory to be relocated above 4GB.
