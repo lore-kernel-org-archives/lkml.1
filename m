@@ -1,269 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbYG3Xdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760565AbYG3Xek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760130AbYG3Xdy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbYG3Xdn
+	id S1760565AbYG3Xek (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbYG3XeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:33:43 -0400
-Received: from ns.suse.de ([195.135.220.2]:35498 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754523AbYG3Xdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:33:41 -0400
-Date: Wed, 30 Jul 2008 16:26:52 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 05/29] tcp: Clear probes_out more aggressively in tcp_ack().
-Message-ID: <20080730232652.GF30670@suse.de>
-References: <20080730231003.655833364@mini.kroah.org>
+	Wed, 30 Jul 2008 19:34:14 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4101 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759085AbYG3XeN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:34:13 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <alan@lxorguk.ukuu.org.uk>
+Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: 463 kernel developers missing!
+Date: Wed, 30 Jul 2008 16:33:42 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKMEHLOJAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tcp-clear-probes_out-more-aggressively-in-tcp_ack.patch"
-In-Reply-To: <20080730232451.GA30670@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <20080730233229.5ebe4465@lxorguk.ukuu.org.uk>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Wed, 30 Jul 2008 16:35:48 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Wed, 30 Jul 2008 16:35:48 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.25-stable review patch.  If anyone has any objections, please let us 
-know.
 
-------------------
-From: David S. Miller <davem@davemloft.net>
+> > Precisely. And others who wish to exercise rights under the GPL
+> > forfeit any
+> > legal mechanism (whether copyright, DMCA, contract, data
+> > privacy laws, or
+> > whatever theory) to impose "further restrictions" on those who wish to
+> > similarly use GPL works.
 
-[ Upstream commit 4b53fb67e385b856a991d402096379dab462170a ]
+> I don't know where you get that paticular idea from. Try sending GPL code
+> from the USA to Cuba. Seems the US government is using GPL code but
+> imposing further restrictions...
 
-This is based upon an excellent bug report from Eric Dumazet.
+I'm not sure how you think this is relevent. I could go to the effort of
+explaining in detail why it's irrelevent, but I can't imagine you intended
+this comment as a genuine response in good faith.
 
-tcp_ack() should clear ->icsk_probes_out even if there are packets
-outstanding.  Otherwise if we get a sequence of ACKs while we do have
-packets outstanding over and over again, we'll never clear the
-probes_out value and eventually think the connection is too sick and
-we'll reset it.
+For one thing, even if this was a violation of the GPL, there would be no
+recourse. The only conceivable recourse would be a suit by an author for
+copyright infringement. The government has sovereign immunity against such a
+claim. The government is immune because it has sovereign immunity. Jon is
+immune because the GPL grants him the right he is exercising. (Of course, it
+can't make him immune from any laws he violates, but my argument is that
+because he has consent he isn't violating any laws.)
 
-This appears to be some "optimization" added to tcp_ack() in the 2.4.x
-timeframe.  In 2.2.x, probes_out is pretty much always cleared by
-tcp_ack().
+> > have no control. But you cannot invoke copyright -- or any
+> > other law -- to
+> > restrict someone else's exercise of rights granter by the GPL. You get
+> > copyright, but you give up it all. No "further restrictions", period.
 
-Here is Eric's original report:
+> Some rights in laws are absolute. I cannot "give up" my right to be
+> identified as the author of a work I create in many countries. Its an
+> absolute.
 
-----------------------------------------
-Apparently, we can in some situations reset TCP connections in a couple of seconds when some frames are lost.
+Yes, but you can give up your right to pursue that right. And certainly some
+terms of the GPL might be unenforceable in some jurisdictions. But the GPL
+says Jon can do what he's doing, and it means what he says. As I said, I
+don't know the data privacy laws in your jurisdiction, but I do know the GPL
+made you give up your right to use them to impose restrictions on Jon's
+imposition of his GPL rights.
 
-In order to reproduce the problem, please try the following program on linux-2.6.25.*
+You may or may not be able to stop some operation of law from happening. You
+are not responsible for things outside your control. And some jurisdictions
+may find some GPL terms unconscionable when used in this way.
 
-Setup some iptables rules to allow two frames per second sent on loopback interface to tcp destination port 12000
+> > When you submit a unit to a GPL project, you place that unit
+> > under the GPL.
+> > That is what the DCoO is trying to say. There cannot be some things that
+> > some parts of the GPL apply to and some don't. There is no "sort of GPL,
+> > sort of not" that applies to some parts of some submissions. If
+> > something is
+> > part of or all of a submission made under the GPL, then all of the GPL
+> > applies to it.
 
-iptables -N SLOWLO
-iptables -A SLOWLO -m hashlimit --hashlimit 2 --hashlimit-burst 1 --hashlimit-mode dstip --hashlimit-name slow2 -j ACCEPT
-iptables -A SLOWLO -j DROP
+> The metadata licensing isn't clear in my view.
 
-iptables -A OUTPUT -o lo -p tcp --dport 12000 -j SLOWLO
+Perhaps you can invent some other meaning it might have and then claim it's
+unclear because it can mean that. But I don't think it matters. The GPL is
+really what matters here, at least in my opinion. The GPL is clearly all of
+apiece -- it either applies to something or it doesn't. And if you want to
+argue that people must parse GPL submissions to figure out what's really
+covered by the GPL and what's not, you can certainly argue that. I find that
+argument fairly unconvincing.
 
-Then run the attached program and see the output :
+> I think what you are more likely to get sensible results with is arguing
+> estoppel ? That was always the intent of that DCO wording. To ensure that
+> rights or otherwise you couldn't turn around and say "hey you published
+> my name and I didn't expect that implied by my actions".
 
-# ./loop
-State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
-ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,200ms,1)
-State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
-ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,200ms,3)
-State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
-ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,200ms,5)
-State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
-ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,200ms,7)
-State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
-ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,200ms,9)
-State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
-ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,200ms,11)
-State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
-ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,201ms,13)
-State      Recv-Q Send-Q                                  Local Address:Port                                    Peer Address:Port
-ESTAB      0      40                                          127.0.0.1:54455                                      127.0.0.1:12000  timer:(persist,188ms,15)
-write(): Connection timed out
-wrote 890 bytes but was interrupted after 9 seconds
-ESTAB      0      0                 127.0.0.1:12000            127.0.0.1:54455
-Exiting read() because no data available (4000 ms timeout).
-read 860 bytes
+> However publishing a name and performing data processing on personal data
+> databases for other purposes is not the same thing at least in some
+> jurisdictions. In the EU you collect data "for a purpose".
 
-While this tcp session makes progress (sending frames with 50 bytes of payload, every 500ms), linux tcp stack decides to reset it, when tcp_retries 2 is reached (default value : 15)
+GPL submissions are for the purposes specified in the GPL -- so that other
+people may freely redistribute, copy, and modify them. You forfeit the right
+to claim you made GPL submissions "for a purpose" as the GPL specifically
+requires you to consent to their use for any purpose (save those the GPL
+itself prohibits, of course).
 
-tcpdump :
+DS
 
-15:30:28.856695 IP 127.0.0.1.56554 > 127.0.0.1.12000: S 33788768:33788768(0) win 32792 <mss 16396,nop,nop,sackOK,nop,wscale 7>
-15:30:28.856711 IP 127.0.0.1.12000 > 127.0.0.1.56554: S 33899253:33899253(0) ack 33788769 win 32792 <mss 16396,nop,nop,sackOK,nop,wscale 7>
-15:30:29.356947 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 1:61(60) ack 1 win 257
-15:30:29.356966 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 61 win 257
-15:30:29.866415 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 61:111(50) ack 1 win 257
-15:30:29.866427 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 111 win 257
-15:30:30.366516 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 111:161(50) ack 1 win 257
-15:30:30.366527 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 161 win 257
-15:30:30.876196 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 161:211(50) ack 1 win 257
-15:30:30.876207 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 211 win 257
-15:30:31.376282 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 211:261(50) ack 1 win 257
-15:30:31.376290 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 261 win 257
-15:30:31.885619 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 261:311(50) ack 1 win 257
-15:30:31.885631 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 311 win 257
-15:30:32.385705 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 311:361(50) ack 1 win 257
-15:30:32.385715 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 361 win 257
-15:30:32.895249 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 361:411(50) ack 1 win 257
-15:30:32.895266 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 411 win 257
-15:30:33.395341 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 411:461(50) ack 1 win 257
-15:30:33.395351 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 461 win 257
-15:30:33.918085 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 461:511(50) ack 1 win 257
-15:30:33.918096 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 511 win 257
-15:30:34.418163 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 511:561(50) ack 1 win 257
-15:30:34.418172 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 561 win 257
-15:30:34.927685 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 561:611(50) ack 1 win 257
-15:30:34.927698 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 611 win 257
-15:30:35.427757 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 611:661(50) ack 1 win 257
-15:30:35.427766 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 661 win 257
-15:30:35.937359 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 661:711(50) ack 1 win 257
-15:30:35.937376 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 711 win 257
-15:30:36.437451 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 711:761(50) ack 1 win 257
-15:30:36.437464 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 761 win 257
-15:30:36.947022 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 761:811(50) ack 1 win 257
-15:30:36.947039 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 811 win 257
-15:30:37.447135 IP 127.0.0.1.56554 > 127.0.0.1.12000: P 811:861(50) ack 1 win 257
-15:30:37.447203 IP 127.0.0.1.12000 > 127.0.0.1.56554: . ack 861 win 257
-15:30:41.448171 IP 127.0.0.1.12000 > 127.0.0.1.56554: F 1:1(0) ack 861 win 257
-15:30:41.448189 IP 127.0.0.1.56554 > 127.0.0.1.12000: R 33789629:33789629(0) win 0
 
-Source of program :
-
-/*
- * small producer/consumer program.
- * setup a listener on 127.0.0.1:12000
- * Forks a child
- *   child connect to 127.0.0.1, and sends 10 bytes on this tcp socket every 100 ms
- * Father accepts connection, and read all data
- */
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <time.h>
-#include <sys/poll.h>
-
-int port = 12000;
-char buffer[4096];
-int main(int argc, char *argv[])
-{
-        int lfd = socket(AF_INET, SOCK_STREAM, 0);
-        struct sockaddr_in socket_address;
-        time_t t0, t1;
-        int on = 1, sfd, res;
-        unsigned long total = 0;
-        socklen_t alen = sizeof(socket_address);
-        pid_t pid;
-
-        time(&t0);
-        socket_address.sin_family = AF_INET;
-        socket_address.sin_port = htons(port);
-        socket_address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-
-        if (lfd == -1) {
-                perror("socket()");
-                return 1;
-        }
-        setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(int));
-        if (bind(lfd, (struct sockaddr *)&socket_address, sizeof(socket_address)) == -1) {
-                perror("bind");
-                close(lfd);
-                return 1;
-        }
-        if (listen(lfd, 1) == -1) {
-                perror("listen()");
-                close(lfd);
-                return 1;
-        }
-        pid = fork();
-        if (pid == 0) {
-                int i, cfd = socket(AF_INET, SOCK_STREAM, 0);
-                close(lfd);
-                if (connect(cfd, (struct sockaddr *)&socket_address, sizeof(socket_address)) == -1) {
-                        perror("connect()");
-                        return 1;
-                        }
-                for (i = 0 ; ;) {
-                        res = write(cfd, "blablabla\n", 10);
-                        if (res > 0) total += res;
-                        else if (res == -1) {
-                                perror("write()");
-                                break;
-                        } else break;
-                        usleep(100000);
-                        if (++i == 10) {
-                                system("ss -on dst 127.0.0.1:12000");
-                                i = 0;
-                        }
-                }
-                time(&t1);
-                fprintf(stderr, "wrote %lu bytes but was interrupted after %g seconds\n", total, difftime(t1, t0));
-                system("ss -on | grep 127.0.0.1:12000");
-                close(cfd);
-                return 0;
-        }
-        sfd = accept(lfd, (struct sockaddr *)&socket_address, &alen);
-        if (sfd == -1) {
-                perror("accept");
-                return 1;
-        }
-        close(lfd);
-        while (1) {
-                struct pollfd pfd[1];
-                pfd[0].fd = sfd;
-                pfd[0].events = POLLIN;
-                if (poll(pfd, 1, 4000) == 0) {
-                        fprintf(stderr, "Exiting read() because no data available (4000 ms timeout).\n");
-                        break;
-                }
-                res = read(sfd, buffer, sizeof(buffer));
-                if (res > 0) total += res;
-                else if (res == 0) break;
-                else perror("read()");
-        }
-        fprintf(stderr, "read %lu bytes\n", total);
-        close(sfd);
-        return 0;
-}
-----------------------------------------
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- net/ipv4/tcp_input.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -3259,6 +3259,7 @@ static int tcp_ack(struct sock *sk, stru
- 	 * log. Something worked...
- 	 */
- 	sk->sk_err_soft = 0;
-+	icsk->icsk_probes_out = 0;
- 	tp->rcv_tstamp = tcp_time_stamp;
- 	prior_packets = tp->packets_out;
- 	if (!prior_packets)
-@@ -3291,8 +3292,6 @@ static int tcp_ack(struct sock *sk, stru
- 	return 1;
- 
- no_queue:
--	icsk->icsk_probes_out = 0;
--
- 	/* If this ack opens up a zero window, clear backoff.  It was
- 	 * being used to time the probes, and is probably far higher than
- 	 * it needs to be for normal retransmission.
-
--- 
