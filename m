@@ -1,175 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbYG3Hck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbYG3Heu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757024AbYG3Hck (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 03:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbYG3Hcc
+	id S1758200AbYG3Heu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 03:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbYG3Hem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 03:32:32 -0400
-Received: from imo-m27.mx.aol.com ([64.12.137.8]:38465 "EHLO
-	imo-m27.mx.aol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751397AbYG3Hcc (ORCPT
+	Wed, 30 Jul 2008 03:34:42 -0400
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:45858 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751075AbYG3Hel (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 03:32:32 -0400
-X-Greylist: delayed 481 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Jul 2008 03:32:32 EDT
-Message-ID: <489016AB.6050309@aim.com>
-Date: Wed, 30 Jul 2008 00:22:19 -0700
-From: David W Studeman <avionicsdv@aim.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1a2pre) Gecko/2008072700 SeaMonkey/2.0a1pre
+	Wed, 30 Jul 2008 03:34:41 -0400
+Date: Wed, 30 Jul 2008 09:34:38 +0200
+From: Bastian Blank <waldi@debian.org>
+To: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] hvc - register all available consoles (was: Re: [PATCH]
+	powerpc/lpar - defer prefered console setup)
+Message-ID: <20080730073438.GA29700@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <waldi@debian.org>,
+	Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linux-kernel@vger.kernel.org
+References: <20080728185651.GA29530@wavehammer.waldi.eu.org> <1217385291.10646.2.camel@localhost> <20080730062313.GA26044@wavehammer.waldi.eu.org> <20080730062919.GA27281@wavehammer.waldi.eu.org>
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Keyboard Jammed error patch 2.4.35-pre4
-References: <g6jqud$t5e$1@ger.gmane.org> <20080729051558.GH29189@1wt.eu>
-In-Reply-To: <20080729051558.GH29189@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AOL-IP: 71.112.171.94
-X-Mailer: Unknown (No Version)
-X-Spam-Flag: NO
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080730062919.GA27281@wavehammer.waldi.eu.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> Hello David,
->
-> On Sun, Jul 27, 2008 at 11:59:47PM -0700, David W Studeman wrote:
->    
->>   Hello! The changes that were made on 04-25-2007 as "[PATCH
->> 2.4.35-pre4] fix 'pc_keyb: controller jammed (0xA7)' error" have broken
->> the ability to compile with no keyboard and no VT support. This mainly
->> affects Cobalt machines which do not have dmi present as these use a
->> flashrom to boot with and not a typical bios so dmi blacklisting would
->> be pointless unless it allowed for no dmi present and then blacklist. I
->> had to create a patch against 2.4.34 to restore the ability to compile
->> with no keyboard and VT support.
->>      
->
-> Grrr... I see what's happening. I remember having checked that the
-> kbd_controller_present macro was really not used before merging the
-> patch, but obviously I had not looked deep enough. It's defined by
-> ia64, mips and mips64 in include/asm.
->
-> Could you please test the patch below (untested here). It should revert
-> to pre-2.4.35 behaviour on all architectures cited above. If you confirm
-> that it works, I'll merge it.
->
-> BTW, in the mean time, you can boot with the "nokeyb" option. It will
-> disable the keyboard. This is what I use on some non-blacklisted systems,
-> and the option was precisely provided by this patch.
->
->    
-No I can't use the nokeybd option as a Cobalt uses no bootloader on the 
-mbr. The arguments would have to be embedded into the flashrom image and 
-it isn't something most people want to deal with.
-> Also, if you don't have any PC keyboard on your machines, you can
-> build without support for any VT/keyboard. I'm already doing this
-> on some embedded systems, and it works fine. If your platform still
-> requires that some keyboard is enabled, you may want to try to enable
-> CONFIG_DUMMY_KEYB which I've been using in the past.
->    
-That didn't work either, what did save me was patching back to 2.4.34 
-for the dmi and keyboard headers and compiling without any keyboard 
-support at all. Also, since this is essentially a PC without a normal 
-bios, the kernel reports that there is no dmi present. The boot method 
-here reminds me of EFI but it isn't.
-> Regards,
-> Willy
->
->  From e4827f141dc86c540971082877124b213557ece0 Mon Sep 17 00:00:00 2001
-> From: Willy Tarreau<w@1wt.eu>
-> Date: Tue, 29 Jul 2008 07:06:00 +0200
-> Subject: pc_keyb: fix breakage on ia64/mips/mips64
->
-> Commit f8db8c9c81afb4b04c146cae0e2a1fd311de1f22 fixed the keyboard
-> controller jammed issue on keyboard-less PCs, but introduced the
-> problem for other architectures (ia64/mips/mips64) which already
-> define their own keyboard probing method.
->
-> This patch gives precedence to these archs' probing method and only
-> defines the setup option if no arch-specific method was defined.
->
-> Problem reported by David W Studeman.
->
-> Signed-off-by: Willy Tarreau<w@1wt.eu>
-> ---
->   drivers/char/pc_keyb.c |    9 ++++++---
->   1 files changed, 6 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/char/pc_keyb.c b/drivers/char/pc_keyb.c
-> index d4e1611..b90e659 100644
-> --- a/drivers/char/pc_keyb.c
-> +++ b/drivers/char/pc_keyb.c
-> @@ -61,6 +61,10 @@ unsigned char pckbd_sysrq_xlate[128] =
->      "\r\000/";                  /* 0x60 - 0x6f */
->   #endif
->
-> +/* Warning: do not redefine kbd_controller_present on ia64, mips and mips64 */
-> +#ifndef kbd_controller_present
-> +#define kbd_controller_present() keyboard_controller_present
-> +
->   int keyboard_controller_present __initdata = 1;
->   static int __init removable_keyb(char *str)
->   {
-> @@ -68,6 +72,7 @@ static int __init removable_keyb(char *str)
->           return 0;
->   }
->   __setup("nokeyb", removable_keyb);
-> +#endif
->
->   static void kbd_write_command_w(int data);
->   static void kbd_write_output_w(int data);
-> @@ -77,8 +82,6 @@ static void __aux_write_ack(int val);
->   static int aux_reconnect = 0;
->   #endif
->
-> -#define kbd_controller_present() keyboard_controller_present
-> -
->   static spinlock_t kbd_controller_lock = SPIN_LOCK_UNLOCKED;
->   static unsigned char handle_kbd_event(void);
->
-> @@ -905,7 +908,7 @@ static char * __init initialize_kbd(void)
->
->   void __init pckbd_init_hw(void)
->   {
-> -   if (!keyboard_controller_present) {
-> +   if (!kbd_controller_present()) {
->          kbd_exists = 0;
->          return;
->      }
->    
-The last hunk at 905 fails to apply, line 61 passes due to some fuzz 
-factor although I can't see what is different and why it needs to fuzz 
-but line 61 still passes. Here is a snip from the log:
+On Wed, Jul 30, 2008 at 08:29:19AM +0200, Bastian Blank wrote:
+> Okay, so hvc_console is the culprit. It don't register a preferred
+> console if it knows it is not the first in the list.
 
-patching file drivers/char/pc_keyb.c
-Hunk #1 succeeded at 61 with fuzz 1.
-Hunk #4 FAILED at 908.
-1 out of 4 hunks FAILED -- saving rejects to file drivers/char/pc_keyb.c.rej
-make: *** [/usr/src/log/linux-2.4.36.6] Error 1
+The patch registers all available hvc consoles. It adds one "struct
+console" for all possible hvc consoles.
 
-And here is the pc_keyb.c.rej:
+Signed-off-by: Bastian Blank <waldi@debian.org>
 
-***************
-*** 905,911 ****
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index 44160d5..143a4b2 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -137,15 +137,36 @@ static struct hvc_struct *hvc_get_by_index(int index)
+ }
+ 
+ 
++static void hvc_console_print(struct console *co, const char *b,
++			      unsigned count);
++static struct tty_driver *hvc_console_device(struct console *c, int *index);
++static int __init hvc_console_setup(struct console *co, char *options);
++
+ /*
+  * Initial console vtermnos for console API usage prior to full console
+  * initialization.  Any vty adapter outside this range will not have usable
+  * console interfaces but can still be used as a tty device.  This has to be
+  * static because kmalloc will not work during early console init.
+  */
+-static struct hv_ops *cons_ops[MAX_NR_HVC_CONSOLES];
+-static uint32_t vtermnos[MAX_NR_HVC_CONSOLES] =
+-	{[0 ... MAX_NR_HVC_CONSOLES - 1] = -1};
++struct hvc_console
++{
++	uint32_t vtermno;
++	struct hv_ops *ops;
++	struct console console;
++};
++static struct hvc_console consoles[MAX_NR_HVC_CONSOLES] = {
++	[0 ... MAX_NR_HVC_CONSOLES - 1] = {
++		.vtermno = -1,
++		.console = {
++			.name		= "hvc",
++			.write		= hvc_console_print,
++			.device		= hvc_console_device,
++			.setup		= hvc_console_setup,
++			.flags		= CON_PRINTBUFFER,
++			.index		= -1,
++		},
++	}
++};
+ 
+ /*
+  * Console APIs, NOT TTY.  These APIs are available immediately when
+@@ -164,7 +185,7 @@ static void hvc_console_print(struct console *co, const char *b,
+ 		return;
+ 
+ 	/* This console adapter was removed so it is not usable. */
+-	if (vtermnos[index] < 0)
++	if (consoles[index].vtermno < 0)
+ 		return;
+ 
+ 	while (count > 0 || i > 0) {
+@@ -178,7 +199,7 @@ static void hvc_console_print(struct console *co, const char *b,
+ 				--count;
+ 			}
+ 		} else {
+-			r = cons_ops[index]->put_chars(vtermnos[index], c, i);
++			r = consoles[index].ops->put_chars(consoles[index].vtermno, c, i);
+ 			if (r < 0) {
+ 				/* throw away chars on error */
+ 				i = 0;
+@@ -193,7 +214,7 @@ static void hvc_console_print(struct console *co, const char *b,
+ 
+ static struct tty_driver *hvc_console_device(struct console *c, int *index)
+ {
+-	if (vtermnos[c->index] == -1)
++	if (consoles[c->index].vtermno == -1)
+ 		return NULL;
+ 
+ 	*index = c->index;
+@@ -205,43 +226,12 @@ static int __init hvc_console_setup(struct console *co, char *options)
+ 	if (co->index < 0 || co->index >= MAX_NR_HVC_CONSOLES)
+ 		return -ENODEV;
+ 
+-	if (vtermnos[co->index] == -1)
++	if (consoles[co->index].vtermno == -1)
+ 		return -ENODEV;
+ 
+ 	return 0;
+ }
+ 
+-static struct console hvc_con_driver = {
+-	.name		= "hvc",
+-	.write		= hvc_console_print,
+-	.device		= hvc_console_device,
+-	.setup		= hvc_console_setup,
+-	.flags		= CON_PRINTBUFFER,
+-	.index		= -1,
+-};
+-
+-/*
+- * Early console initialization.  Precedes driver initialization.
+- *
+- * (1) we are first, and the user specified another driver
+- * -- index will remain -1
+- * (2) we are first and the user specified no driver
+- * -- index will be set to 0, then we will fail setup.
+- * (3)  we are first and the user specified our driver
+- * -- index will be set to user specified driver, and we will fail
+- * (4) we are after driver, and this initcall will register us
+- * -- if the user didn't specify a driver then the console will match
+- *
+- * Note that for cases 2 and 3, we will match later when the io driver
+- * calls hvc_instantiate() and call register again.
+- */
+-static int __init hvc_console_init(void)
+-{
+-	register_console(&hvc_con_driver);
+-	return 0;
+-}
+-console_initcall(hvc_console_init);
+-
+ /* callback when the kboject ref count reaches zero. */
+ static void destroy_hvc_struct(struct kref *kref)
+ {
+@@ -267,12 +257,13 @@ static void destroy_hvc_struct(struct kref *kref)
+  */
+ int hvc_instantiate(uint32_t vtermno, int index, struct hv_ops *ops)
+ {
++	struct hvc_console *hc;
+ 	struct hvc_struct *hp;
+ 
+ 	if (index < 0 || index >= MAX_NR_HVC_CONSOLES)
+ 		return -1;
+ 
+-	if (vtermnos[index] != -1)
++	if (consoles[index].vtermno != -1)
+ 		return -1;
+ 
+ 	/* make sure no no tty has been registered in this index */
+@@ -282,19 +273,17 @@ int hvc_instantiate(uint32_t vtermno, int index, struct hv_ops *ops)
+ 		return -1;
+ 	}
+ 
+-	vtermnos[index] = vtermno;
+-	cons_ops[index] = ops;
++	hc = &consoles[index];
++
++	hc->vtermno = vtermno;
++	hc->ops = ops;
++	hc->console.index = index;
+ 
+ 	/* reserve all indices up to and including this index */
+ 	if (last_hvc < index)
+ 		last_hvc = index;
+ 
+-	/* if this index is what the user requested, then register
+-	 * now (setup won't fail at this point).  It's ok to just
+-	 * call register again if previously .setup failed.
+-	 */
+-	if (index == hvc_con_driver.index)
+-		register_console(&hvc_con_driver);
++	register_console(&hc->console);
+ 
+ 	return 0;
+ }
+@@ -637,7 +626,7 @@ static int hvc_poll(struct hvc_struct *hp)
+ 		}
+ 		for (i = 0; i < n; ++i) {
+ #ifdef CONFIG_MAGIC_SYSRQ
+-			if (hp->index == hvc_con_driver.index) {
++			if (consoles[hp->index].console.flags & CON_CONSDEV) {
+ 				/* Handle the SysRq Hack */
+ 				/* XXX should support a sequence */
+ 				if (buf[i] == '\x0f') {	/* ^O */
+@@ -775,8 +764,8 @@ struct hvc_struct __devinit *hvc_alloc(uint32_t vtermno, int irq,
+ 	 * see if this vterm id matches one registered for console.
+ 	 */
+ 	for (i=0; i < MAX_NR_HVC_CONSOLES; i++)
+-		if (vtermnos[i] == hp->vtermno &&
+-		    cons_ops[i] == hp->ops)
++		if (consoles[i].vtermno == hp->vtermno &&
++		    consoles[i].ops == hp->ops)
+ 			break;
+ 
+ 	/* no matching slot, just use a counter */
+@@ -800,7 +789,7 @@ int __devexit hvc_remove(struct hvc_struct *hp)
+ 	tty = hp->tty;
+ 
+ 	if (hp->index < MAX_NR_HVC_CONSOLES)
+-		vtermnos[hp->index] = -1;
++		consoles[hp->index].vtermno = -1;
+ 
+ 	/* Don't whack hp->irq because tty_hangup() will need to free the irq. */
+ 
+@@ -881,13 +870,16 @@ out:
+  */
+ static void __exit hvc_exit(void)
+ {
++	int i;
++
+ 	if (hvc_driver) {
+ 		kthread_stop(hvc_task);
+ 
+ 		tty_unregister_driver(hvc_driver);
+ 		/* return tty_struct instances allocated in hvc_init(). */
+ 		put_tty_driver(hvc_driver);
+-		unregister_console(&hvc_con_driver);
++		for (i = 0; i < MAX_NR_HVC_CONSOLES; i++)
++			unregister_console(&consoles->console);
+ 	}
+ }
+ module_exit(hvc_exit);
 
-   void __init pckbd_init_hw(void)
-   {
--    if (!keyboard_controller_present) {
-          kbd_exists = 0;
-          return;
-      }
---- 908,914 ----
-
-   void __init pckbd_init_hw(void)
-   {
-+    if (!kbd_controller_present()) {
-          kbd_exists = 0;
-          return;
-      }
-
-
-Dave
-
-
-
+-- 
+There is an order of things in this universe.
+		-- Apollo, "Who Mourns for Adonais?" stardate 3468.1
