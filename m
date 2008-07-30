@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758680AbYG3LaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761148AbYG3Lal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758680AbYG3LaW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 07:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYG3LaJ
+	id S1761148AbYG3Lal (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 07:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758642AbYG3LaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 07:30:09 -0400
-Received: from hu-out-0506.google.com ([72.14.214.238]:63830 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753259AbYG3LaI (ORCPT
+	Wed, 30 Jul 2008 07:30:22 -0400
+Received: from smtp4.int-evry.fr ([157.159.10.71]:34501 "EHLO
+	smtp4.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757386AbYG3LaU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 07:30:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:user-agent:mime-version
-         :content-type;
-        b=X1aYF6puTqGHDjKE5+vPWVNTkQvdwzQ2vpOxEr/OAXdsdVDCPYXOZDPNE0ZF5nALLL
-         rHwGdu+IUToflzGjBUL/pLkbdb1mqyjsklkDK8ACmiBbIh7tOVlYarE2/mHWnXATY6Rg
-         h1R++OO86VHZlTz03mIgdF3lIsmvHh3iqKkTU=
-From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] x86: wrong register was used in align macro
-Date: Wed, 30 Jul 2008 13:30:14 +0200
-Message-ID: <m3sktr6249.fsf@gravicappa.englab.brq.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 30 Jul 2008 07:30:20 -0400
+From: Florian Fainelli <florian.fainelli@telecomint.eu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH -next V2] Ignore drivers/video/console/promcon_tbl.c conmakehash generated file
+Date: Wed, 30 Jul 2008 13:29:38 +0200
+User-Agent: KMail/1.9.9
+Cc: "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200807301156.13432.florian.fainelli@telecomint.eu> <20080730112620.GB19465@uranus.ravnborg.org>
+In-Reply-To: <20080730112620.GB19465@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200807301329.38642.florian.fainelli@telecomint.eu>
+X-INT-MailScanner-Information: Please contact the ISP for more information
+X-MailScanner-ID: BDB433EEC6E.12F69
+X-INT-MailScanner: Found to be clean
+X-INT-MailScanner-SpamCheck: 
+X-INT-MailScanner-From: florian.fainelli@telecomint.eu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-New ALIGN_DESTINATION macro has sad typo: r8d register was used instead
-of ecx in fixup section. This can be considered as a regression.
+Hi Sam,
 
-Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+Le Wednesday 30 July 2008 13:26:20 Sam Ravnborg, vous avez écrit :
+> Did you test this?
+> I recall you should specify filenames relative to the
+> path of .gitignore.
 
-diff --git a/arch/x86/lib/copy_user_64.S b/arch/x86/lib/copy_user_64.S
-index dfdf428..f118c11 100644
---- a/arch/x86/lib/copy_user_64.S
-+++ b/arch/x86/lib/copy_user_64.S
-@@ -52,7 +52,7 @@
- 	jnz 100b
- 102:
- 	.section .fixup,"ax"
--103:	addl %r8d,%edx			/* ecx is zerorest also */
-+103:	addl %ecx,%edx			/* ecx is zerorest also */
- 	jmp copy_user_handle_tail
- 	.previous
- 
-diff --git a/arch/x86/lib/copy_user_nocache_64.S b/arch/x86/lib/copy_user_nocache_64.S
-index 40e0e30..108ad1c 100644
---- a/arch/x86/lib/copy_user_nocache_64.S
-+++ b/arch/x86/lib/copy_user_nocache_64.S
-@@ -32,7 +32,7 @@
- 	jnz 100b
- 102:
- 	.section .fixup,"ax"
--103:	addl %r8d,%edx			/* ecx is zerorest also */
-+103:	addl %ecx,%edx			/* ecx is zerorest also */
- 	jmp copy_user_handle_tail
- 	.previous
- 
-
--- 
-wbr, Vitaly
+Yes it works here with git client version 1.5.6.2.
