@@ -1,103 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762692AbYG3PEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762452AbYG3PGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762692AbYG3PEt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 11:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762393AbYG3PE0
+	id S1762452AbYG3PGT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 11:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbYG3PGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 11:04:26 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:39662 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762349AbYG3PEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 11:04:25 -0400
-Date: Wed, 30 Jul 2008 08:04:05 -0700
-From: Eric B Munson <ebmunson@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       libhugetlbfs-devel@lists.sourceforge.net
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Message-ID: <20080730150405.GA20465@us.ibm.com>
-References: <cover.1216928613.git.ebmunson@us.ibm.com> <20080730014139.39b3edc5.akpm@linux-foundation.org>
+	Wed, 30 Jul 2008 11:06:09 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3643 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754373AbYG3PGI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 11:06:08 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: 463 kernel developers missing!
+Date: Wed, 30 Jul 2008 08:04:48 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKAEDIOJAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="1yeeQ81UyVL57Vl7"
-Content-Disposition: inline
-In-Reply-To: <20080730014139.39b3edc5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+Importance: Normal
+In-Reply-To: <4890284E.3050806@s5r6.in-berlin.de>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Wed, 30 Jul 2008 08:07:06 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Wed, 30 Jul 2008 08:07:08 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---1yeeQ81UyVL57Vl7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Stefan Richter wrote:
 
-On Wed, 30 Jul 2008, Andrew Morton wrote:
+> This doesn't justify what Jon did though.
 
-> On Mon, 28 Jul 2008 12:17:10 -0700 Eric Munson <ebmunson@us.ibm.com> wrot=
-e:
->=20
-> > Certain workloads benefit if their data or text segments are backed by
-> > huge pages. The stack is no exception to this rule but there is no
-> > mechanism currently that allows the backing of a stack reliably with
-> > huge pages.  Doing this from userspace is excessively messy and has some
-> > awkward restrictions.  Particularly on POWER where 256MB of address spa=
-ce
-> > gets wasted if the stack is setup there.
-> >=20
-> > This patch stack introduces a personality flag that indicates the kernel
-> > should setup the stack as a hugetlbfs-backed region. A userspace utility
-> > may set this flag then exec a process whose stack is to be backed by
-> > hugetlb pages.
-> >=20
-> > Eric Munson (5):
-> >   Align stack boundaries based on personality
-> >   Add shared and reservation control to hugetlb_file_setup
-> >   Split boundary checking from body of do_munmap
-> >   Build hugetlb backed process stacks
-> >   [PPC] Setup stack memory segment for hugetlb pages
-> >=20
-> >  arch/powerpc/mm/hugetlbpage.c |    6 +
-> >  arch/powerpc/mm/slice.c       |   11 ++
-> >  fs/exec.c                     |  209 +++++++++++++++++++++++++++++++++=
-+++++---
-> >  fs/hugetlbfs/inode.c          |   52 +++++++----
-> >  include/asm-powerpc/hugetlb.h |    3 +
-> >  include/linux/hugetlb.h       |   22 ++++-
-> >  include/linux/mm.h            |    1 +
-> >  include/linux/personality.h   |    3 +
-> >  ipc/shm.c                     |    2 +-
-> >  mm/mmap.c                     |   11 ++-
-> >  10 files changed, 284 insertions(+), 36 deletions(-)
->=20
-> That all looks surprisingly straightforward.
->=20
-> Might there exist an x86 port which people can play with?
->=20
+No, but the GPL does.
+ 
+> Jon created a new database out of formerly disparate datasets, even
+> though we didn't provide him these datasets for this purpose.  The fact
+> that the means to create this database are rather trivial and cheap do
+> not mean that we implicitly agreed to what he did or that it wouldn't
+> matter whether we agree to it or not.
 
-I have tested these patches on x86, x86_64, and ppc64, but not yet on ia64.
-There is a user space utility that I have been using to test which would be
-included in libhugetlbfs if this is merged into the kernel.  I will send it
-out as a reply to this thread, performance numbers are also on the way.
+Yes, it does. If you contribute to a GPL project, you *explicitly* agree to exactly this. Anything you submit may be pieced together, changed, made public, processed, and used for purposes other than you intended.
+ 
+> Jon even suggested that his database is then used to combine with
+> further databases (bugzilla accounts, mailinglist archives).  Again, the
+> fact that something like this is possible without great difficulties
+> doesn't make it right.
 
---=20
-Eric B Munson
-IBM Linux Technology Center
-ebmunson@us.ibm.com
+No, but that all the submissions were made under the GPL, whose explicit purpose is to allow information to be changed, processed, and reused for other purposes does.
+
+If you don't want your submissions to be in the public record for all eternity to be used for any lawful purpose, don't make them to a GPL project.
+
+You have no right whatsoever to look at how one person chooses to use them and say "I didn't agree to that". Yes, you did. You gave up the right to approve or reject each use when you made the submission. If you don't like it, submit under some other license.
+
+DS
 
 
---1yeeQ81UyVL57Vl7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIkILlsnv9E83jkzoRAnu+AJ43tJhIvKC/V/l/tvEzpOLo1AfDugCgky73
-1/w9s6N+iJutNNsYfJdCkx0=
-=nEy7
------END PGP SIGNATURE-----
-
---1yeeQ81UyVL57Vl7--
