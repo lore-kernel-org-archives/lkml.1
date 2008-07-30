@@ -1,83 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762548AbYG3O4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbYG3PAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762548AbYG3O4E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 10:56:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbYG3Ozs
+	id S1756803AbYG3PAH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 11:00:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYG3O74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 10:55:48 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:6638 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761561AbYG3Ozr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 10:55:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=e8vYSiRyXk6e1XYyLY6cxfgADQURYHx0SVCECu/7ojhR2bX+vfZePh8kgh6LxMHhsk
-         Rvtm29N8aj/YGGitbzt7y3QnnmStZP64kiBnm9214LSWvdmZHsUtdWfFy4+c41X1E3v2
-         wiKmSELcc/8B5+aeAw8rLDHQVDSETuXOyqBrw=
-Message-ID: <dd18b0c30807300755y5dace2f0ma5f2c287f33f14d7@mail.gmail.com>
-Date: Wed, 30 Jul 2008 07:55:45 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: NETDEV WATCHDOG: wifi0: transmit timed out
-Cc: Komuro <komurojun-mbn@nifty.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20080730062220.08b2779a@infradead.org>
+	Wed, 30 Jul 2008 10:59:56 -0400
+Received: from styx.suse.cz ([82.119.242.94]:47418 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751550AbYG3O7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 10:59:55 -0400
+Date: Wed, 30 Jul 2008 16:59:54 +0200
+From: David Sterba <dsterba@suse.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Travis <travis@sgi.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, David Sterba <dsterba@suse.cz>,
+       Jiri Kosina <jkosina@suse.cz>, James.Bottomley@HansenPartnership.com
+Subject: Re: [build error] drivers/char/pcmcia/ipwireless/hardware.c:571:
+	error: invalid use of undefined type 'struct ipw_network'
+Message-ID: <20080730145953.GA15151@ds.suse.cz>
+Reply-To: dsterba@suse.cz
+References: <20080727190601.GA764@elte.hu> <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org> <200807281042.12860.rusty@rustcorp.com.au> <488E06F0.4070404@sgi.com> <alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org> <20080728205700.GA3613@elte.hu> <20080728213532.GA24744@elte.hu> <20080728214153.GA30511@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080729065859.2bcc65ed@infradead.org>
-	 <20080525112308.03a5fda7.komurojun-mbn@nifty.com>
-	 <20080729215315.5a505fe7.komurojun-mbn@nifty.com>
-	 <16453842.205951217418535898.komurojun-mbn@nifty.com>
-	 <20080730062220.08b2779a@infradead.org>
+In-Reply-To: <20080728214153.GA30511@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 6:22 AM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Wed, 30 Jul 2008 20:48:55 +0900 (JST)
-> Komuro <komurojun-mbn@nifty.com> wrote:
->
->>
->> >
->> >"I have a hardware failure so I'll comment out the message that says
->> >so, and then I won't have a failure". Yeah that'll work well.
->>
->>
->> O.K. The madwifi should be fixed.
->> Thanks,
->
-> madwifi has many bigger issues; it's been number 1 in the kerneloops
-> top 10 for months and months now.
->
-> Feel free to fix it.. I can't.. it's a proprietary/binary driver.
->
-> --
-> If you want to reach me at my work email, use arjan@linux.intel.com
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Hi,
 
-I should of written down the error that it was
-giving(I can pull again to get the exact error)
-from what I remember it was able to do the handshake
-but wpa_supplicant would say CTRL-EVENT-CONNECTED then
-CTRL-EVENT-DISCONNECTED
-if its possible I would like to pull the wireless testing directory
-and add that to 2.6.27-rc1. this way I can run ath9k, and the fresh
-git "hot out of the oven",
-I do have another computer now so reporting problems
-makes it a whole lot easier than having one computer.
+I'm sorry for the build error and thank you all for prompt fix.
 
--- 
-Justin P. Mattock
+It was not a last-moment change, the patches were waiting a
+few weeks for the merge window. Hm, I probably did not test this
+one, will do better next time.
+
+Dave
+
