@@ -1,88 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbYG3EFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbYG3EHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752011AbYG3EFb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 00:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbYG3EFX
+	id S1752503AbYG3EHe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 00:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbYG3EH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 00:05:23 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:61547 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750804AbYG3EFX (ORCPT
+	Wed, 30 Jul 2008 00:07:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49167 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750818AbYG3EHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 00:05:23 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiUFABCFj0hMRKxB/2dsb2JhbACBW4lEpTQ
-Date: Wed, 30 Jul 2008 00:05:18 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Module : call synchronize_sched() between module
-	exit() and free.
-Message-ID: <20080730040518.GA20490@Krystal>
-References: <20080717155724.897537670@polymtl.ca> <200807301140.59745.rusty@rustcorp.com.au> <20080730022751.GA15866@Krystal> <200807301304.51014.rusty@rustcorp.com.au>
+	Wed, 30 Jul 2008 00:07:25 -0400
+Date: Tue, 29 Jul 2008 21:06:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>, Greg Kroah-Hartman <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: bad dereference in sched_mc_power_savings_store()
+Message-Id: <20080729210657.7839239d.akpm@linux-foundation.org>
+In-Reply-To: <20080724202634.GH20882@one.firstfloor.org>
+References: <20080724120217.163a03f3@mjolnir.drzeus.cx>
+	<20080724202634.GH20882@one.firstfloor.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <200807301304.51014.rusty@rustcorp.com.au>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 00:02:30 up 55 days,  8:43,  3 users,  load average: 1.24, 1.11,
-	1.03
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rusty Russell (rusty@rustcorp.com.au) wrote:
-> On Wednesday 30 July 2008 12:27:51 Mathieu Desnoyers wrote:
-> > > Hi Mathieu,
-> > >
-> > >    Yes: stop_machine is merely used to atomically check the module
-> > > refcount for zero and set the state so it can't be incremented again (ie.
-> > > try_module_get will fail).
-> > >
-> > >    So placing a tracepoint or marker in a module does not bump the module
-> > > refcount?  If that's true, then there needs to be some kind of
-> > > remove_markers_from_module() call after module->exit(), which should do
-> > > the synchronize_sched() or whatever, right?
-> > >
-> > > Rusty.
-> >
-> > Actually, it's not placing a marker/tracepoint in a module which causes
-> > a problem, this is a simple function call after all, and correctly dealt
-> > with by current module.c code.
-> >
-> > The problem comes from a probe function (the callback) that would be
-> > registered to be called from a marker and would sit in an unloadable
-> > kernel module. I would not want to tie the refcount of the probe modules
-> > to the fact that they are connected to a marker because it would then
-> > become impossible to unload them due to the fact that unregistration is
-> > done in module exit().
-> 
-> Hi Mathieu,
-> 
->     Still confused, sorry.  Why don't you don't do a synchronize_sched() at 
-> the end of your module's exit routine?  "You must be completely finished by 
-> the time ->exit() returns" is the rule so far...
-> 
+On Thu, 24 Jul 2008 22:26:34 +0200 Andi Kleen <andi@firstfloor.org> wrote:
 
-Hi Rusty,
+> From: Andi Kleen <andi@firstfloor.org>
+> Author: Andi Kleen <ak@gargoyle.(none)>
+>     Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-Yes, this is I think the right solution. Sorry for the title of the
-previous email : I started writing a patch and changed my mind half-way.
-Doing a synchronize_sched() at the end of the exit() function seems like
-the right thing to do. I'll have to update the documentation and
-examples accordingly.
+Multiple personality disorder.  Which is your preferred address for git
+commits?
 
-Thanks,
+Nobody seems to have merged this patch into anything yet.  I guess I
+can take care of that.
 
-Mathieu
-
-> Rusty.
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
