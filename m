@@ -1,41 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbYG3Drm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751920AbYG3EAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756709AbYG3Drm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 23:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYG3Dre
+	id S1751920AbYG3EAt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 00:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbYG3EAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 23:47:34 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51680 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751577AbYG3Dre (ORCPT
+	Wed, 30 Jul 2008 00:00:40 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:24711 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750732AbYG3EAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 23:47:34 -0400
-Date: Tue, 29 Jul 2008 23:43:59 -0400
-Message-Id: <200807300343.m6U3hxuA013627@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: bharata@linux.vnet.ibm.com
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>, unionfs@filesystems.org,
-       linux-kernel@vger.kernel.org, Jan Blunck <jblunck@suse.de>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [Unionfs] Re: [PATCH -mm] unionfs: build fixes 
-In-reply-to: Your message of "Wed, 30 Jul 2008 08:57:38 +0530."
-             <20080730032738.GA3977@in.ibm.com> 
-X-MailKey: Erez_Zadok
+	Wed, 30 Jul 2008 00:00:39 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: 2.6.27-rc1 oops on boot -- cs423x? (Corrected subject)
+Date: Tue, 29 Jul 2008 21:59:43 -0600
+User-Agent: KMail/1.9.9
+Cc: Pete Clements <clem@clem.clem-digital.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <200807292052.m6TKq1J3005288@clem.clem-digital.net> <488FAFA6.4070300@keyaccess.nl>
+In-Reply-To: <488FAFA6.4070300@keyaccess.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807292159.43226.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080730032738.GA3977@in.ibm.com>, Bharata B Rao writes:
-> On Tue, Jul 29, 2008 at 09:02:03PM -0400, Erez Zadok wrote:
-[...]
+On Tuesday 29 July 2008 6:02:46 pm Rene Herman wrote:
+> On 29-07-08 22:52, Pete Clements wrote:
+> > [Previously sent with wrong subject line (2.6.26-rc1...) applicable
+> > to post 2.6.26 series]
+> >
+> > Missed most of the 26-git series, git6 first one tried and oops
+> > showed in that one as well as those tried after. oops below.
+>
+> http://marc.info/?l=linux-kernel&m=121736480005656&w=2
+>
+> For now just adding a CC as I'm off to bed. Note -- snd-cs4236 has been
+> one of the most tested drivers with the new PNP code.
 
-> When I last checked, David Woodhouse/Jan Blunck were working on this.
-> Looks like they have become busy with other work now. I can take that work
-> forward.
+Thanks very much for the report.  Can I trouble you to test the
+patch below and see whether it fixes the problem?
 
-Now that I've restructured and refactored the whiteout code in unionfs, I
-can easily be your Guinea pig. :-)
 
-Thanks,
-Erez.
+
+PNP: fix formatting of dbg_pnp_show_resources() output
+
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+Each resource should be printed on its own line, so start snprintf'ing
+at the beginning of the buffer every time through the loop.
+
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+---
+
+ drivers/pnp/support.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+
+diff --git a/drivers/pnp/support.c b/drivers/pnp/support.c
+index bbf78ef..57b775b 100644
+--- a/drivers/pnp/support.c
++++ b/drivers/pnp/support.c
+@@ -77,7 +77,7 @@ void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc)
+ {
+ #ifdef DEBUG
+ 	char buf[128];
+-	int len = 0;
++	int len;
+ 	struct pnp_resource *pnp_res;
+ 	struct resource *res;
+ 
+@@ -89,6 +89,7 @@ void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc)
+ 	dev_dbg(&dev->dev, "%s: current resources:\n", desc);
+ 	list_for_each_entry(pnp_res, &dev->resources, list) {
+ 		res = &pnp_res->res;
++		len = 0;
+ 
+ 		len += snprintf(buf + len, sizeof(buf) - len, "  %-3s ",
+ 				pnp_resource_type_name(res));
