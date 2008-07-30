@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbYG3Ao1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757768AbYG3Ao4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757281AbYG3Ao1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 20:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756108AbYG3AoS
+	id S1757768AbYG3Ao4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 20:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbYG3Aop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 20:44:18 -0400
-Received: from gw.goop.org ([64.81.55.164]:51491 "EHLO mail.goop.org"
+	Tue, 29 Jul 2008 20:44:45 -0400
+Received: from gw.goop.org ([64.81.55.164]:34767 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753161AbYG3AoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 20:44:17 -0400
-Message-ID: <488FB95A.1000402@goop.org>
-Date: Tue, 29 Jul 2008 17:44:10 -0700
+	id S1753024AbYG3Aon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 20:44:43 -0400
+Message-ID: <488FB976.7080803@goop.org>
+Date: Tue, 29 Jul 2008 17:44:38 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
 To: Andi Kleen <andi@firstfloor.org>
 CC: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] x86: implement multiple queues for smp function call
- IPIs
-References: <488FA8A9.6000005@goop.org> <20080730001358.GA23938@one.firstfloor.org>
-In-Reply-To: <20080730001358.GA23938@one.firstfloor.org>
+Subject: Re: [PATCH 1/2] generic smp function call: add multiple queues for
+ scaling
+References: <488FA8A5.6060204@goop.org> <20080730002603.GB23938@one.firstfloor.org>
+In-Reply-To: <20080730002603.GB23938@one.firstfloor.org>
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -29,37 +29,53 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Andi Kleen wrote:
-> On Tue, Jul 29, 2008 at 04:32:57PM -0700, Jeremy Fitzhardinge wrote:
+> Ah I see the locking is here. Never mind the earlier comment.
+>
 >   
->> This adds 8 queues for smp_call_function(), in order to avoid a
+>> +#define	NQUEUES	CONFIG_GENERIC_SMP_QUEUES
+>> +#else
+>> +#define	NQUEUES	1
+>> +#endif
+>> +
+>> static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
+>> -static LIST_HEAD(call_function_queue);
+>> -__cacheline_aligned_in_smp DEFINE_SPINLOCK(call_function_lock);
+>> +struct queue {
+>> +	struct list_head list;
+>> +	spinlock_t lock;
+>> +};
+>> +
+>> +static __cacheline_aligned_in_smp struct queue 
+>> call_function_queues[NQUEUES];
 >>     
 >
-> Now that we have per CPU IDT and there's no global bottleneck anymore
-> I think it would be actually fine to use
-> more than 8 vectors. 32 or 64 might be a better default.
+> Hmm are you sure this aligns the individual elements and not the whole
+> array? 
 >   
 
-Well, there's no point in having more vectors than CPUs, and a bit of 
-doubling up doesn't hurt too much.  So I think 8 is a good default for 
-normal sized machines.  But I can see that being able to add more 
-vectors for large machines might be helpful.  I guess it really depends 
-on what the fan-out is for multicast messages.
+Hm, that's a point.  I guess the __cacheline_aligned_in_smp should be on 
+the struct definition.
 
-I dunno, maybe it makes sense to take numa topology into account, on the 
-assumption that 1) most cross-cpu function calls will be tlb flushes now 
-(or at least, sending to mm->cpu_vm_mask), and 2) most tlb flushes will 
-be between cpus within one node.
-
->> void native_send_call_func_ipi(cpumask_t mask)
->> {
->> 	cpumask_t allbutself;
->> +	unsigned queue = smp_processor_id() % CONFIG_GENERIC_SMP_QUEUES;
+>> +static int __init init_smp_function_call(void)
+>> +{
+>> +	int i;
+>> +
+>> +	for(i = 0; i < NQUEUES; i++) {
+>> +		INIT_LIST_HEAD(&call_function_queues[i].list);
+>> +		spin_lock_init(&call_function_queues[i].lock);
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +early_initcall(init_smp_function_call);
 >>     
 >
-> Does this really always run with preemption disabled?
+> You can avoid all that init gunk by using the [0 ... NQUEUES] = ..
+> gcc extension in the initializer.
+>   
 
-Think so, but I'll check again.  One of my TODO list items is to check 
-whether smp_call_function_mask should disable preemption for itself, or 
-at least WARN_ON if its called with preemption enabled.
+Are you sure?  I tried using it, but couldn't work out how.  Remember 
+the list head init needs to point to itself, which means it's not 
+constant across the array.
 
     J
