@@ -1,110 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759311AbYG3W0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbYG3Wbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759311AbYG3W0O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 18:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbYG3WZ6
+	id S1757970AbYG3Wbt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 18:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbYG3Wbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 18:25:58 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:4422 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752001AbYG3WZ6 (ORCPT
+	Wed, 30 Jul 2008 18:31:40 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:22052 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752269AbYG3Wbj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 18:25:58 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Cc: <alan@lxorguk.ukuu.org.uk>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: 463 kernel developers missing!
-Date: Wed, 30 Jul 2008 15:25:28 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKOEHCOJAC.davids@webmaster.com>
+	Wed, 30 Jul 2008 18:31:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=odsmijDxcR3G7YbWtK6wZr9fBQ7UMNX4edS3ns9qQlO2WiYZjctn+cbMNx/5ypvGUu
+         Pf7G7lEoxfe74eBe3WhiLpGxdDC0+k4DE0utDR4X9yeMY73om7P1dtmR15G1lkodZdko
+         6xnq6y2wwM8Na8tCy6Tv0NU8srQzStyNqpD/Y=
+Message-ID: <7c86c4470807301531i232ebd44m869affe95f036484@mail.gmail.com>
+Date: Wed, 30 Jul 2008 15:31:36 -0700
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.26 new perfmon kernel patch + libpfm + pfmon available
+Cc: ia64 <linux-ia64@vger.kernel.org>
+In-Reply-To: <7c86c4470807301530s224f5104wdd5004419464bc2e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <4890C5E2.3030501@s5r6.in-berlin.de>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Wed, 30 Jul 2008 15:27:32 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Wed, 30 Jul 2008 15:27:32 -0700
+Content-Disposition: inline
+References: <7c86c4470807301530s224f5104wdd5004419464bc2e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-I'll try to make this my last response on the issue, if possible.
+I have released the perfmon2 kernel patch for kernel v2.6.26. There is
+no new major features.  Concerning the merge with mainline, we use a different
+code base which contains only code to  supports only per-thread counting on
+X86 processors. The patch is distributed as a quilt patchset and is
+posted on LKML.
 
-Stefan Richter wrote:
+Here are some of the kernel changes:
+ - Support for Intel architectural perfmon v3 (as per IA-32 Vol3b June 2008)
+ - base syscall exported in /sys/kernel/perfmon/syscall
+ - experimental utrace support
+ - added dep_pmcs[] to PMD definitions to avoid picking up stale config
+ - important IBM Power updates to solve counter overflow issues (Corey Ashford)
+ - AMD64 APIC/PCI cleanups for IBS support (Robert Richter)
+ - new API for handler routine of sampling formats to accomodate IBM
+Cell (Carl Love)
 
-> David Schwartz wrote:
+There is also a new release for libpfm, now at version 3.5.
+The changes include:
+ - support for AMD K7 (Vince Weaver)
+ - support for Intel architectural perfmon v3
+ - support for SiCortex (ICA9A, ICA9B) (Phil Mucci)
+ - dynamic perfmon syscall support via /sys
+ - new environment variable to control debugging and force particular PMU model
 
-> > I think it's terribly bad manners to submit something to a GPL
-> > project and
-> > then complain when someone else uses it the way they want to.
-> > ...
-> > Enforcing data protection laws to restrict rights granted under
-> > the GPL is
-> > no different from enforcing an EULA to do ths same thing.
+Finally, a new major version of pfmon, now at pfmon-3.5 with some minor
+changes:
+ - group unknown symbols as UNKNOWN when sampling (Andrzej Nowak)
+ - lots of bug fixes
 
-> It's not the same thing, by far.  EULA = "end user license agreement";
-> while "data protection law" is... law.  Obviously, licenses (contracts)
-> must not be unlawful.
+As usual all files and more detailed changelogs can be downloaded from our
+website at:
 
-An EULA itself is not law, but neither would someone's request to be removed
-from such a list be itself a law. EULA's operate under law, and so would a
-request for data confidentiality. This difference is no difference. Both are
-attempts to invoke a law other than copyright to restrict rights guaranteed
-by the GPL. You may not use any law or provision to restrict another
-person's GPL rights. That's what the GPL says, and it means it.
+       http://perfmon2.sourceforge.net
 
-If a law, any law, permits you to impose restrictions on something the GPL
-allows, then you give up the right to use that law in exchange for the
-license the GPL grants. This obviously applies to your copyright in
-derivative works. But it would also apply to any attempt to use any law to
-encumber GPL rights.
-
-As the GPL states, the license grants you permission to copy, distribute,
-and/or modify the covered work. This is against any rights the authors might
-have to prevent you from doing so.
-
-> PS:  You may use a GPL'd program any way you want --- although not for
-> unlawful purposes.  But that's not a matter between you and the
-> copyright holder, it's between you and the law.
-
-Precisely. And others who wish to exercise rights under the GPL forfeit any
-legal mechanism (whether copyright, DMCA, contract, data privacy laws, or
-whatever theory) to impose "further restrictions" on those who wish to
-similarly use GPL works.
-
-Copyright is the carrot the GPL uses to get you agree to the stick. The
-stick is no "further restrictions" of any kind, imposed by any law.
-Obviously, you aren't responsible for an operation of law over which you
-have no control. But you cannot invoke copyright -- or any other law -- to
-restrict someone else's exercise of rights granter by the GPL. You get
-copyright, but you give up it all. No "further restrictions", period.
-
-> PPS:  SCM metadata are not part of the program.  The DCoO states that
-> the personal data submitted along with the contribution may be
-> redistributed "consistent... with the open source license(s) involved",
-> but it isn't discussed whether other terms of the licenses, notably
-> those on modification and derivatives, apply to the data supplied for
-> the certificate of origin.
-
-When you submit a unit to a GPL project, you place that unit under the GPL.
-That is what the DCoO is trying to say. There cannot be some things that
-some parts of the GPL apply to and some don't. There is no "sort of GPL,
-sort of not" that applies to some parts of some submissions. If something is
-part of or all of a submission made under the GPL, then all of the GPL
-applies to it.
-
-DS
-
-
+Enjoy,
