@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbYG3SwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760011AbYG3SxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756407AbYG3SwS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 14:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbYG3SwF
+	id S1760011AbYG3SxQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 14:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYG3Sw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 14:52:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47004 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751035AbYG3SwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 14:52:03 -0400
-Date: Wed, 30 Jul 2008 20:51:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Glauber Costa <gcosta@redhat.com>
-Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       x86@kernel.org
-Subject: Re: [GIT-PULL] time.c integration
-Message-ID: <20080730185148.GA12336@elte.hu>
-References: <200807290103.m6T13vt3000862@file.rdu.redhat.com> <20080730185007.GB26389@elte.hu>
+	Wed, 30 Jul 2008 14:52:58 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:62687 "EHLO
+	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752317AbYG3Sw5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 14:52:57 -0400
+X-BigFish: VPS-24(zz1432R98dR1805M936fQ873fnzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K4U1RS-03-36P-01
+Date: Wed, 30 Jul 2008 20:52:44 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: davem@davemloft.net, sfr@canb.auug.org.au, mingo@elte.hu, mingo@redhat.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       robert.richter@amd.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, jbarnes@virtuousgeek.org,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] add iommu_num_pages helper function
+Message-ID: <20080730185244.GP4851@amd.com>
+References: <20080729095027.GA4851@amd.com> <20080729.031005.203132019.davem@davemloft.net> <20080730121805.GM4851@amd.com> <20080730221540S.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20080730185007.GB26389@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0002]
+In-Reply-To: <20080730221540S.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 30 Jul 2008 18:52:44.0730 (UTC) FILETIME=[73C2C9A0:01C8F275]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 30, 2008 at 10:16:05PM +0900, FUJITA Tomonori wrote:
+> On Wed, 30 Jul 2008 14:18:05 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > 
+> > Ok, after setting up cross compile environments for sparc64 and
+> > powerpc64 I wrote a patch which adds the io_page_size argument to the
+> > iommu_num pages function and moves the function back to
+> > lib/iommu-helper.c.
+> 
+> You need ia64, parisc, and alpha too. :) 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Ok, I looked into the different IOMMU drivers for pa-risc and ia64. The
+changes needed there are non-trival and I can't test them on real
+hardware (I only have an pa-risc 1.1). So I think I skip these 2
+architectures for now. They can be changed by somebody who has the
+hardware :)
+(Alpha instead was trival. I changed this driver)
 
-> Also, please do smaller steps while bringing both time_32.c and 
-> time_64.c up into their final forms (and do it in multiple commits), 
-> and make sure each step compiles on their respective defconfig. time.c 
-> details are historically fragile, i'd not be surprised if this series 
-> was the target of bisection efforts.
+Joerg
 
-i briefly put your current variant into tip/master, but it has build 
-problems as well:
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
-arch/x86/kernel/io_apic_64.c: In function 'check_timer':
-arch/x86/kernel/io_apic_64.c:2016: error: 'timer_ack' undeclared (first use in this function)
-arch/x86/kernel/io_apic_64.c:2016: error: (Each undeclared identifier is reported only once
-arch/x86/kernel/io_apic_64.c:2016: error: for each function it appears in.)
-
-with:
-
-  http://redhat.com/~mingo/misc/config-Wed_Jul_30_20_50_17_CEST_2008.bad
-
-	Ingo
