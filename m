@@ -1,81 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbYG3Tj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbYG3Tkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756089AbYG3Tj1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 15:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYG3TjT
+	id S1756232AbYG3Tkh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 15:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYG3TkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 15:39:19 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:38338 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753117AbYG3TjT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 15:39:19 -0400
-Message-ID: <4890C3D0.6070306@keyaccess.nl>
-Date: Wed, 30 Jul 2008 21:41:04 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Adrian Bunk <bunk@kernel.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jon Smirl <jonsmirl@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
-       James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-References: <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au> <20080728234131.GD28055@linux-sh.org> <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com> <488E644D.7000507@keyaccess.nl> <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com> <488EF377.5080603@keyaccess.nl> <20080730072448.GB1564@cs181140183.pp.htv.fi> <4890284E.3050806@s5r6.in-berlin.de> <20080730124650.GB19966@cs181140183.pp.htv.fi> <4890646D.3060000@keyaccess.nl> <20080730153247.GA21597@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0807300942450.3334@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807300942450.3334@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+	Wed, 30 Jul 2008 15:40:22 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:11907 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753073AbYG3TkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 15:40:20 -0400
+Date: Wed, 30 Jul 2008 21:39:21 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jeff Dike <jdike@addtoit.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] x86: use arch/x86/include
+Message-ID: <20080730193921.GA4475@uranus.ravnborg.org>
+References: <20080730124952.GA23413@uranus.ravnborg.org> <20080730180411.GA7896@elte.hu> <20080730184700.GA29710@uranus.ravnborg.org> <20080730191907.GD26389@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080730191907.GD26389@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30-07-08 18:56, Linus Torvalds wrote:
+> > 
+> > How we do it in the best way for such a fragile codebase as x86 is I 
+> > am not sure. [...]
+> 
+> huh, fragile codebase? Is that a flamebait? :-) What do you mean 
+> exactly?
+I only wanted to say that x86 see more changes than any other arch
+in the kernel like you also nicely says below.
+> 
+> The timing problems come from the fact that 90% of Linux development and 
+> 95% of Linux testing happens on x86. So we've already got a ton of stuff 
+> queued up for the next merge window. (and some cleanups for this cycle 
+> as well)
+> 
+> But fortunately you've scripted all this, so i guess we can do it at any 
+> stage. Could you send the script we should run?
 
-> The fact is, people who are involved in Linux know it's public.
-> People make public bug-reports, and they _expect_ to get attributed.
+It is a combination of a scrip and a patch.
+The script:
+#####
+set -e
+for D in include/asm-x86/mach-*; do
+	echo $D
+	DD=$(echo $D | cut -d '-' -f 3)
+        mkdir -p arch/x86/include/mach-$DD/arch
+        git mv include/asm-x86/mach-$DD/* arch/x86/include/mach-$DD
+        rmdir include/asm-x86/mach-$DD
+done
 
-The problem here is just the _scale_ of publicness. Yes, Adrian's worry 
-can be shrugged of I'd say but this thread is about Jon Smirl collecting 
-addresses into a hugely public (because in tree) and hugely accessible 
-format and while your statement above might be true for 95% of cases 
-(99, I don't care) the use of people's personalia is just something you 
-cannot decide on yourself ever. It's theirs.
+mkdir -p arch/x86/include/asm
+git mv include/asm-x86/* arch/x86/include/asm
+#####
 
-I'm in this thread because the from address on this message is in Jon's 
-file and while I've used it myself in the past, any time it's been part 
-of some Fooed-by tag recently it's because someone else put it there. 
-While it's the best address I have for these uses (and so I still use 
-it) it shouldn't work anymore even today, so I've been careful to put a 
-future proof relay address in when I advertise a contact myself.
+And the patch (same as I included in the original posting:
+diff --git a/arch/um/Makefile b/arch/um/Makefile
+index ca40397..4a19886 100644
+--- a/arch/um/Makefile
++++ b/arch/um/Makefile
+@@ -156,9 +156,21 @@ include/asm-um/arch:
+ 	@echo '  SYMLINK $@'
+ ifneq ($(KBUILD_SRC),)
+ 	$(Q)mkdir -p $(objtree)/include/asm-um
+-	$(Q)ln -fsn $(srctree)/include/asm-$(HEADER_ARCH) include/asm-um/arch
++	$(Q)if [ -d $(srctree)/arch/$(HEADER_ARCH)/include/asm ]; then  \
++		ln -fsn $(srctree)/arch/$(HEADER_ARCH)/include/asm      \
++		        include/asm-um/arch;                            \
++	else                                                            \
++		ln -fsn $(srctree)/include/asm-$(HEADER_ARCH)           \
++		        include/asm-um/arch;                            \
++	fi
+ else
+-	$(Q)cd $(srctree)/include/asm-um && ln -fsn ../asm-$(HEADER_ARCH) arch
++	$(Q)if [ -d arch/$(HEADER_ARCH)/include/asm ]; then             \
++		ln -fsn $(srctree)/arch/$(HEADER_ARCH)/include/asm      \
++                        include/asm-um/arch;                            \
++	else                                                            \
++		cd $(srctree)/include/asm-um &&                         \
++		ln -fsn ../asm-$(HEADER_ARCH) arch;                     \
++	fi
+ endif
+ 
+ $(objtree)/$(ARCH_DIR)/include:
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index f5631da..c7493e7 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -110,16 +110,16 @@ KBUILD_CFLAGS += $(call cc-option,-mno-sse -mno-mmx -mno-sse2 -mno-3dnow,)
+ mcore-y  := arch/x86/mach-default/
+ 
+ # Voyager subarch support
+-mflags-$(CONFIG_X86_VOYAGER)	:= -Iinclude/asm-x86/mach-voyager
++mflags-$(CONFIG_X86_VOYAGER)	:= -Iarch/x86/include/mach-voyager
+ mcore-$(CONFIG_X86_VOYAGER)	:= arch/x86/mach-voyager/
+ 
+ # generic subarchitecture
+-mflags-$(CONFIG_X86_GENERICARCH):= -Iinclude/asm-x86/mach-generic
++mflags-$(CONFIG_X86_GENERICARCH):= -Iarch/x86/include/mach-generic
+ fcore-$(CONFIG_X86_GENERICARCH)	+= arch/x86/mach-generic/
+ mcore-$(CONFIG_X86_GENERICARCH)	:= arch/x86/mach-default/
+ 
+ # default subarch .h files
+-mflags-y += -Iinclude/asm-x86/mach-default
++mflags-y += -Iarch/x86/include/mach-default
+ 
+ # 64 bit does not support subarch support - clear sub arch variables
+ fcore-$(CONFIG_X86_64)  :=
+diff --git a/scripts/checksyscalls.sh b/scripts/checksyscalls.sh
+index 366f8c7..41564b1 100755
+--- a/scripts/checksyscalls.sh
++++ b/scripts/checksyscalls.sh
+@@ -119,5 +119,5 @@ sed -n -e '/^\#define/ { s/[^_]*__NR_\([^[:space:]]*\).*/\
+ \#endif/p }' $1
+ }
+ 
+-(ignore_list && syscall_list ${srctree}/include/asm-x86/unistd_32.h) | \
++(ignore_list && syscall_list ${srctree}/arch/x86/include/asm/unistd_32.h) | \
+ $* -E -x c - > /dev/null
 
-As said before, I'm also not going to whine about it when others do put 
-it in because they shouldn't need to concern themselves with my odd 
-needs and wants and it's not a real problem anyway as long as the future 
-proof one is much _more_ public. I am, therefore, just not glad that 
-it's now being put into a file in the root of your highly publicized 
-tree of files.
 
-Just a silly example, I know, but it doesn't really matter -- even if 
-someone tells me he fears cosmic channeling will get the better of him 
-if his personalia are in some resource I maintain, I jump to attention, 
-salute, shout "SIR YES SIR!" and remove it. It's his.
+I by the way tried a simple git grep asm-x86:
+[Manually edited to remove where asm-x86 occured in comments]
 
-So now for example I'm debugging a problem with an ALSA driver with a 
-few users at least one of which has used different email addresses 
-during it and if I'm going to attribute any of their testing and effort, 
-I'm going to have to ask for permission and which address was meant to 
-be the public one. And sure, sure, I'd probably do that even today 
-anyway but right now it's mostly a principled thing while with the 
-addresses in the tree I'd sort of insist that anyone would, what with 
-them being top google hits for ever more.
+Documentation/DocBook/deviceiobook.tmpl:!Iinclude/asm-x86/io_32.h
+Documentation/DocBook/kernel-api.tmpl:!Iinclude/asm-x86/atomic_32.h
+Documentation/DocBook/kernel-api.tmpl:!Iinclude/asm-x86/unaligned.h
+Documentation/DocBook/kernel-api.tmpl:!Iinclude/asm-x86/bitops.h
+Documentation/DocBook/kernel-api.tmpl:!Iinclude/asm-x86/uaccess_32.h
+Documentation/DocBook/kernel-api.tmpl:!Iinclude/asm-x86/mca_dma.h
+Documentation/DocBook/kernel-hacking.tmpl:   <filename>include/asm-x86/delay_32.h:</filename>
+Documentation/DocBook/kernel-hacking.tmpl:   <filename>include/asm-x86/uaccess_32.h:</filename>
+Documentation/DocBook/mcabook.tmpl:!Iinclude/asm-x86/mca_dma.h
+Documentation/kernel-parameters.txt:                    include/asm-x86/cpufeature.h for the valid
+Documentation/lguest/lguest.c:#include "asm-x86/bootparam.h"
+Documentation/x86/i386/zero-page.txt:  include/asm-x86/bootparam.h
 
-So, if you were doing more than responding to Adrian's DCO worry here 
-(which I do not share) the above is what I have against harvesting the 
-addresses into a _way_ too public place/format. It's a matter of scale; 
-as opposed to the SCM metadata, your tree itself is way too public to 
-put anything in without very definite and explicit approval. I feel.
+arch/ia64/ia32/audit.c:#include <asm-x86/unistd_32.h>
 
-Rene.
+arch/um/sys-x86_64/syscall_table.c:#include <asm-x86/unistd_64.h>
+arch/um/sys-x86_64/syscall_table.c:#include <asm-x86/unistd_64.h>
+
+So um needs a few more changes to build.
+And ia64 needs a fix too.
+Documentation is trivial and can be done in a seperate commit.
+
+	Sam
