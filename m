@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbYG3LJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761097AbYG3LK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759915AbYG3LJf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 07:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYG3LJ1
+	id S1761097AbYG3LK2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 07:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYG3LKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 07:09:27 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:56615 "EHLO twin.jikos.cz"
+	Wed, 30 Jul 2008 07:10:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47949 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751220AbYG3LJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 07:09:27 -0400
-Date: Wed, 30 Jul 2008 13:09:13 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Jonathan Corbet <corbet@lwn.net>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Amanda McPherson <amanda@amcpherson.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH, RFC] A development process document
-In-Reply-To: <20080729143015.0f79cf37@bike.lwn.net>
-Message-ID: <Pine.LNX.4.64.0807301307060.26427@twin.jikos.cz>
-References: <20080729143015.0f79cf37@bike.lwn.net>
+	id S1752858AbYG3LKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 07:10:19 -0400
+Date: Wed, 30 Jul 2008 13:10:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] x86: 2.6.27-rc1 does not build with gcc-3.2.3 any more
+Message-ID: <20080730111003.GA23933@elte.hu>
+References: <200807301102.m6UB2AiI022512@harpo.it.uu.se>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807301102.m6UB2AiI022512@harpo.it.uu.se>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jul 2008, Jonathan Corbet wrote:
 
-> +Over the next six to ten weeks, only patches which fix problems should be
-> +submitted to the mainline.  On occasion a more significant change will be
-> +allowed, but such occasions are rare; developers who try to merge new
-> +features outside of the merge window tend to get an unfriendly reception.
-> +As a general rule, if you miss the merge window for a given feature, the
-> +best thing to do is to wait for the next development cycle.
+* Mikael Pettersson <mikpe@it.uu.se> wrote:
 
-On the other hand, the drivers for completely new hardware (that has been 
-totally unsupported by the kernel previously, so there is no possibility 
-for introducing regressions) are still allowed even after -rc1, right? 
+> static inline __attribute__((always_inline))
+> unsigned char readb(const volatile void *addr)
+> {
+> 	unsigned char ret;
+> 	asm volatile("mov" "b" " %1,%0"
+> 		     : "=" "q" (ret)
+> 		     : "m" (*(volatile unsigned char *)addr)
+> 		     : "memory");
+> 	return ret;
+> }
+> 
+> The problem is that "=q" has been broken up into two adjacent
+> string literals, and apparently gcc-3.2.3 hasn't done string
+> literal concatenation at the time it processes the asm().
+> Hence the syntax error. (This is clearly a gcc bug.)
+> 
+> Switching to gcc-3.3.6 or newer fixes the problem.
+> 
+> The question is, should the kernel be fixed to compile with 3.2.3
+> again (by generating "=q" not "=" "q"), or should the minimum supported
+> gcc version be bumped to 3.3.6?
+> 
+> I have no strong feeling about this, except that I want to use the
+> oldest (== least bloated) gcc possible on my 486 test box.
 
-This might be worth explicit note here.
+yeah, please send a fix. We could move the '=' from build_mmio_read into 
+the argument (explicitly).
 
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
-
+	Ingo
