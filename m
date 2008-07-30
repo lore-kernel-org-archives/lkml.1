@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbYG3QJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbYG3QLJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754653AbYG3QJp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 12:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbYG3QJh
+	id S1756173AbYG3QLJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 12:11:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYG3QK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 12:09:37 -0400
-Received: from web31708.mail.mud.yahoo.com ([68.142.201.188]:49074 "HELO
-	web31708.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751829AbYG3QJg convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 12:09:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=kauAwvq643SoNx5SMxqsT93UK8oHZuT0CkbubdAVc3xUi2lV5wm/K9fJ2sdE6TqmmVPDTRRe8+d4iE5nxCG/Z0EbWPqLqqj++MBURDgC1tunqaIORHMRYaoJv9kDzYAmTwlpU4AwoaQpamJCh6ZmA0ThxN5YKeIo7Jyg1Cg62W4=;
-X-Mailer: YahooMailRC/1042.48 YahooMailWebService/0.7.218
-Date: Wed, 30 Jul 2008 09:09:36 -0700 (PDT)
-From: Sanka Piyaratna <cesanka@yahoo.com>
-Subject: Re: PCIe device driver question
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
+	Wed, 30 Jul 2008 12:10:56 -0400
+Received: from chimx.wms.com ([208.46.59.21]:31260 "EHLO chimx.wms.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751550AbYG3QKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 12:10:55 -0400
+Date: Wed, 30 Jul 2008 11:10:52 -0500
+From: Chris Fester <cfester@wms.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matt Waddel <matt.waddel@freescale.com>,
+       Greg Ungerer <gerg@snapgear.com>
+Subject: [PATCH] ROMFS 0 byte file read error
+Message-ID: <20080730161051.GA3133@kaboom.dhcp.chi.wms.com>
+Reply-To: cfester@wms.com
+Mail-Followup-To: lkml <linux-kernel@vger.kernel.org>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Matt Waddel <matt.waddel@freescale.com>,
+	Greg Ungerer <gerg@snapgear.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Message-ID: <257182.1206.qm@web31708.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 30 Jul 2008 16:10:53.0683 (UTC) FILETIME=[D7869C30:01C8F25E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+I've verified that the git tree at:
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 
-Actually the failures occur at addresses lot higher than this range, I am noticing the failure at dma address 0x0000000037845000. This would be at around 900MB ?
+also has the zero byte file problem for romfs.  This patch
+fixes the problem.  Avoids calling romfs_copyfrom when in 
+the 0 size case.
 
-Thanks
+Thanks!
+Chris Fester
 
-Sanka
+Signed-off-by: Chris Fester <cfester@wms.com>
+---
 
+diff --git a/fs/romfs/inode.c b/fs/romfs/inode.c
+index 8e51a2a..5d24113 100644
+--- a/fs/romfs/inode.c
++++ b/fs/romfs/inode.c
+@@ -430,10 +430,10 @@ romfs_readpage(struct file *file, struct page * page)
+ 
+        /* 32 bit warning -- but not for us :) */
+        offset = page_offset(page);
+-       if (offset < i_size_read(inode)) {
++       if (offset <= i_size_read(inode)) {
+                avail = inode->i_size-offset;
+                readlen = min_t(unsigned long, avail, PAGE_SIZE);
+-               if (romfs_copyfrom(inode, buf, ROMFS_I(inode)->i_dataoffset+offset, readlen) == readlen) {
++               if (!readlen || romfs_copyfrom(inode, buf, ROMFS_I(inode)->i_dataoffset+offset, readlen) == readlen) {
+                        if (readlen < PAGE_SIZE) {
+                                memset(buf + readlen,0,PAGE_SIZE-readlen);
+                        }
 
-
------ Original Message ----
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sanka Piyaratna <cesanka@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Sent: Thursday, 31 July, 2008 1:17:18 AM
-Subject: Re: PCIe device driver question
-
-On Wed, 30 Jul 2008 09:00:58 -0700 (PDT)
-Sanka Piyaratna <cesanka@yahoo.com> wrote:
-
-> Hi,
-> 
-> I am currently developing a PCIe data capture card hardware and the
-> device drivers to drive this. I have implemented DMA on the data
-> capture and the scatter-gather DMA is implemented in the hardware.  I
-> am testing this in an X86_64 architecture machine with 4 GB of RAM. I
-> am able to successfully dma data into any memory (dma) address >
-> 0x0000_0001_0000_0000. However, my problem is to dma data to any
-> address less than this. When I try to DMA data to an address less than
-> 0x0000_0001_0000_0000, the hardware device hangs indicating that the
-> address does not exist.
-
-Assuming the failures are in the range 640K-1MB then I would imagine your
-bridge doesn't permit transfers via DMA to the ISA hole.
-
-
-
-      Find a better answer, faster with the new Yahoo!7 Search. www.yahoo7.com.au/search
