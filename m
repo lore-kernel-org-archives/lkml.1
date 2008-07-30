@@ -1,97 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYG3Xbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbYG3XcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755250AbYG3Xbt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbYG3Xbl
+	id S1757037AbYG3XcM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:32:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbYG3Xbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:31:41 -0400
-Received: from ns.suse.de ([195.135.220.2]:35263 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752001AbYG3Xbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:31:40 -0400
-Date: Wed, 30 Jul 2008 16:24:51 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/29] 2.6.25-stable review
-Message-ID: <20080730232451.GA30670@suse.de>
-MIME-Version: 1.0
+	Wed, 30 Jul 2008 19:31:53 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:36671 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755817AbYG3Xbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:31:52 -0400
+Date: Wed, 30 Jul 2008 18:31:51 -0500
+From: Russ Anderson <rja@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org
+Cc: Russ Anderson <rja@sgi.com>
+Subject: [PATCH] mm: Avoid putting a bad page back on the LRU v8
+Message-ID: <20080730233150.GA86120@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.25.14 release.
-There are 29 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+[PATCH] mm: Avoid putting a bad page back on the LRU v8
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+Prevent a page with a physical memory error from being placed back
+on the LRU.  A new page flag (PG_memerror) is added if
+CONFIG_PAGEFLAGS_EXTENDED is defined.  
 
-Responses should be made by August 1, 12:00:00 UTC.  Anything received
-after that time might be too late.
+Version 8 change:  Removed hot path check for pages with memory
+errors on the free list.
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.14-rc1.gz
-and the diffstat can be found below.
+Signed-off-by: Russ Anderson <rja@sgi.com>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 
+---
+ include/linux/page-flags.h |   15 ++++++++++++++-
+ mm/migrate.c               |   36 +++++++++++++++++++++++++++++++++++-
+ 2 files changed, 49 insertions(+), 2 deletions(-)
 
-thanks,
-
-the -stable release team
-
-
- Makefile                                      |    5 ++-
- arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c |    6 ++++
- arch/sparc64/kernel/irq.c                     |   10 ++++++
- arch/sparc64/kernel/ldc.c                     |   38 +++++++++++++-------------
- arch/sparc64/kernel/time.c                    |   15 ++++++----
- arch/x86/Kconfig.cpu                          |    2 -
- arch/x86/mm/init_64.c                         |    2 -
- drivers/acpi/processor_perflib.c              |   15 ++++++++--
- drivers/ata/ahci.c                            |   15 ++++++++--
- drivers/ata/ata_generic.c                     |    6 ++++
- drivers/ata/pata_acpi.c                       |    6 ++++
- drivers/cpufreq/cpufreq.c                     |    3 ++
- drivers/ide/ide-cd.c                          |   27 +++++++++++++++---
- drivers/net/ixgbe/ixgbe_main.c                |    2 -
- drivers/net/wireless/ath5k/base.c             |    5 ---
- drivers/net/wireless/b43legacy/main.c         |    2 -
- drivers/spi/mpc52xx_psc_spi.c                 |   22 ++++-----------
- fs/dquot.c                                    |   16 ++++++++++
- fs/ecryptfs/crypto.c                          |   30 ++++++++++++--------
- fs/isofs/rock.c                               |   22 +++++++++++++--
- fs/libfs.c                                    |    4 +-
- include/asm-arm/bitops.h                      |    9 +++++-
- include/asm-generic/vmlinux.lds.h             |    4 ++
- include/asm-powerpc/pgtable-ppc64.h           |   11 +++++++
- include/asm-sparc64/io.h                      |    1 
- include/linux/cpufreq.h                       |    1 
- kernel/marker.c                               |   12 ++++++--
- kernel/sys_ni.c                               |    1 
- mm/filemap.c                                  |    2 -
- mm/hugetlb.c                                  |    6 +++-
- mm/shmem.c                                    |    3 +-
- net/ipv4/tcp_input.c                          |    3 --
- net/netfilter/nf_conntrack_proto_tcp.c        |   10 +++++-
- scripts/Makefile.modpost                      |    1 
- scripts/mod/modpost.c                         |    3 +-
- sound/pci/hda/patch_realtek.c                 |    1 
- sound/pci/trident/trident_main.c              |    5 ++-
- 37 files changed, 234 insertions(+), 92 deletions(-)
+Index: linux/mm/migrate.c
+===================================================================
+--- linux.orig/mm/migrate.c	2008-07-29 13:18:23.000000000 -0500
++++ linux/mm/migrate.c	2008-07-29 13:21:03.000000000 -0500
+@@ -65,6 +65,7 @@ int isolate_lru_page(struct page *page, 
+ 	}
+ 	return ret;
+ }
++EXPORT_SYMBOL(isolate_lru_page);
+ 
+ /*
+  * migrate_prep() needs to be called before we start compiling a list of pages
+@@ -82,6 +83,7 @@ int migrate_prep(void)
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(migrate_prep);
+ 
+ static inline void move_to_lru(struct page *page)
+ {
+@@ -116,6 +118,7 @@ int putback_lru_pages(struct list_head *
+ 	}
+ 	return count;
+ }
++EXPORT_SYMBOL(putback_lru_pages);
+ 
+ /*
+  * Restore a potential migration pte to a working pte entry
+@@ -741,7 +744,26 @@ unlock:
+  		 * restored.
+  		 */
+  		list_del(&page->lru);
+- 		move_to_lru(page);
++		if (PageMemError(page)) {
++			if (rc == 0)
++				/*
++				 * A page with a memory error that has
++				 * been migrated will not be moved to
++				 * the LRU.
++				 */
++				goto move_newpage;
++			else
++				/*
++				 * The page failed to migrate and will not
++				 * be added to the bad page list.  Clearing
++				 * the error bit will allow another attempt
++				 * to migrate if it gets another correctable
++				 * error.
++				 */
++				ClearPageMemError(page);
++		}
++
++		move_to_lru(page);
+ 	}
+ 
+ move_newpage:
+@@ -813,6 +835,17 @@ int migrate_pages(struct list_head *from
+ 			}
+ 		}
+ 	}
++
++	if (rc != 0)
++		list_for_each_entry_safe(page, page2, from, lru)
++			if (PageMemError(page))
++				/*
++				 * The page failed to migrate.  Clearing
++				 * the error bit will allow another attempt
++				 * to migrate if it gets another correctable
++				 * error.
++				 */
++				ClearPageMemError(page);
+ 	rc = 0;
+ out:
+ 	if (!swapwrite)
+@@ -825,6 +858,7 @@ out:
+ 
+ 	return nr_failed + retry;
+ }
++EXPORT_SYMBOL(migrate_pages);
+ 
+ #ifdef CONFIG_NUMA
+ /*
+Index: linux/include/linux/page-flags.h
+===================================================================
+--- linux.orig/include/linux/page-flags.h	2008-07-29 13:18:23.000000000 -0500
++++ linux/include/linux/page-flags.h	2008-07-29 13:21:03.000000000 -0500
+@@ -84,6 +84,7 @@ enum pageflags {
+ 	PG_private,		/* If pagecache, has fs-private data */
+ 	PG_writeback,		/* Page is under writeback */
+ #ifdef CONFIG_PAGEFLAGS_EXTENDED
++	PG_memerror,		/* Page has a physical memory error */
+ 	PG_head,		/* A head page */
+ 	PG_tail,		/* A tail page */
+ #else
+@@ -147,15 +148,21 @@ static inline int TestSetPage##uname(str
+ static inline int TestClearPage##uname(struct page *page)		\
+ 		{ return test_and_clear_bit(PG_##lname, &page->flags); }
+ 
++#define PAGEFLAGMASK(uname, lname)					\
++static inline int PAGEMASK_##uname(void)				\
++		{ return (1 << PG_##lname); }
+ 
+ #define PAGEFLAG(uname, lname) TESTPAGEFLAG(uname, lname)		\
+-	SETPAGEFLAG(uname, lname) CLEARPAGEFLAG(uname, lname)
++	SETPAGEFLAG(uname, lname) CLEARPAGEFLAG(uname, lname)		\
++	PAGEFLAGMASK(uname, lname)
+ 
+ #define __PAGEFLAG(uname, lname) TESTPAGEFLAG(uname, lname)		\
+ 	__SETPAGEFLAG(uname, lname)  __CLEARPAGEFLAG(uname, lname)
+ 
+ #define PAGEFLAG_FALSE(uname) 						\
+ static inline int Page##uname(struct page *page) 			\
++			{ return 0; }					\
++static inline int PAGEMASK_##uname(void)				\
+ 			{ return 0; }
+ 
+ #define TESTSCFLAG(uname, lname)					\
+@@ -325,6 +332,12 @@ static inline void __ClearPageTail(struc
+ }
+ 
+ #endif /* !PAGEFLAGS_EXTENDED */
++
++#ifdef CONFIG_PAGEFLAGS_EXTENDED
++PAGEFLAG(MemError, memerror)
++#else
++PAGEFLAG_FALSE(MemError)
++#endif
+ 
+ #define PAGE_FLAGS	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
+ 			 1 << PG_buddy | 1 << PG_writeback | \
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
