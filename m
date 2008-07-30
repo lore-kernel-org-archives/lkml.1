@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbYG3BAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbYG3BAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758089AbYG3BAg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 21:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757817AbYG3Azt
+	id S1759000AbYG3BAx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 21:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757841AbYG3Azv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 20:55:49 -0400
+	Tue, 29 Jul 2008 20:55:51 -0400
 Received: from wa-out-1112.google.com ([209.85.146.183]:59233 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756730AbYG3Azs (ORCPT
+	with ESMTP id S1757824AbYG3Azu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 20:55:48 -0400
+	Tue, 29 Jul 2008 20:55:50 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=vNuUj9uqMpi1XuNm6UjeE2vuwiTAtvjs629ejoTE/exdL1f5Fgy3WzH5O423d1LNdr
-         DLgf6IR2QmHEUAOUfG2PAMOB7Lbkui2oXA3CoLmZ5+hNoVNp2dOCc6FKOdj+NhuFlGQd
-         sp65v7VpPhIKllVgkp5O7pJrqRQ96cQD3f2m8=
-Subject: [PATCH 16/24] powerpc: use the new byteorder headers
+        b=J201p5HcxNus1BbE4Pm5dc6e+j5RY/GrgPC1f77MtNqSdaNvHcJo6lOi9I238wbbX9
+         aiYYdqj6xcbnPDp0ZZd7kHu/7Sbct2CgpJF5PCkHGjwK8blbz9Vt3gYzW9N6nPm4Qreh
+         nQ2b01vv8si8yzFu36s9vfFgT1BE9gXigCdhg=
+Subject: [PATCH 17/24] s390: use the new byteorder headers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
 Content-Type: text/plain
-Date: Tue, 29 Jul 2008 17:55:26 -0700
-Message-Id: <1217379326.23389.127.camel@brick>
+Date: Tue, 29 Jul 2008 17:55:27 -0700
+Message-Id: <1217379327.23389.128.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -33,107 +34,133 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- include/asm-powerpc/byteorder.h |   49 ++++++++++++++------------------------
- 1 files changed, 18 insertions(+), 31 deletions(-)
+ include/asm-s390/byteorder.h |   70 ++++++++++++------------------------------
+ 1 files changed, 20 insertions(+), 50 deletions(-)
 
-diff --git a/include/asm-powerpc/byteorder.h b/include/asm-powerpc/byteorder.h
-index b377522..1d39300 100644
---- a/include/asm-powerpc/byteorder.h
-+++ b/include/asm-powerpc/byteorder.h
-@@ -11,36 +11,43 @@
+diff --git a/include/asm-s390/byteorder.h b/include/asm-s390/byteorder.h
+index 1fe2492..5f23282 100644
+--- a/include/asm-s390/byteorder.h
++++ b/include/asm-s390/byteorder.h
+@@ -11,32 +11,39 @@
+ 
  #include <asm/types.h>
- #include <linux/compiler.h>
  
 -#ifdef __GNUC__
--#ifdef __KERNEL__
 +#define __BIG_ENDIAN
- 
--static __inline__ __u16 ld_le16(const volatile __u16 *addr)
-+#ifndef __powerpc64__
++
++#ifndef __s390x__
 +# define __SWAB_64_THRU_32__
 +#endif
-+
-+static inline __u16 __arch_swab16p(const volatile __u16 *addr)
- {
- 	__u16 val;
  
- 	__asm__ __volatile__ ("lhbrx %0,0,%1" : "=r" (val) : "r" (addr), "m" (*addr));
- 	return val;
+ #ifdef __s390x__
+-static inline __u64 ___arch__swab64p(const __u64 *x)
++static inline __u64 __arch_swab64p(const __u64 *x)
+ {
+ 	__u64 result;
+ 
+ 	asm volatile("lrvg %0,%1" : "=d" (result) : "m" (*x));
+ 	return result;
  }
-+#define __arch_swab16p __arch_swab16p
++#define __arch_swab64p __arch_swab64p
  
--static __inline__ void st_le16(volatile __u16 *addr, const __u16 val)
-+static inline void __arch_swab16s(volatile __u16 *addr, const __u16 val)
+-static inline __u64 ___arch__swab64(__u64 x)
++static inline __u64 __arch_swab64(__u64 x)
  {
- 	__asm__ __volatile__ ("sthbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
+ 	__u64 result;
+ 
+ 	asm volatile("lrvgr %0,%1" : "=d" (result) : "d" (x));
+ 	return result;
  }
-+#define __arch_swab16s __arch_swab16s
++#define __arch_swab64 __arch_swab64
  
--static __inline__ __u32 ld_le32(const volatile __u32 *addr)
-+static inline __u32 __arch_swab32p(const volatile __u32 *addr)
+-static inline void ___arch__swab64s(__u64 *x)
++static inline void __arch_swab64s(__u64 *x)
  {
- 	__u32 val;
+ 	*x = ___arch__swab64p(x);
+ }
++#define __arch_swab64s __arch_swab64s
+ #endif /* __s390x__ */
  
- 	__asm__ __volatile__ ("lwbrx %0,0,%1" : "=r" (val) : "r" (addr), "m" (*addr));
- 	return val;
+-static inline __u32 ___arch__swab32p(const __u32 *x)
++static inline __u32 __arch_swab32p(const __u32 *x)
+ {
+ 	__u32 result;
+ 	
+@@ -53,25 +60,20 @@ static inline __u32 ___arch__swab32p(const __u32 *x)
+ #endif /* __s390x__ */
+ 	return result;
  }
 +#define __arch_swab32p __arch_swab32p
  
--static __inline__ void st_le32(volatile __u32 *addr, const __u32 val)
-+static inline void __arch_swab32s(volatile __u32 *addr, const __u32 val)
+-static inline __u32 ___arch__swab32(__u32 x)
++#ifdef __s390x__
++static inline __u32 __arch_swab32(__u32 x)
  {
- 	__asm__ __volatile__ ("stwbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
- }
-+#define __arch_swab32s __arch_swab32s
- 
--static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 value)
-+static inline __attribute_const__ __u16 __arch_swab16(__u16 value)
- {
- 	__u16 result;
- 
-@@ -49,8 +56,9 @@ static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 value)
- 	    : "r" (value), "0" (value >> 8));
- 	return result;
- }
-+#define __arch_swab16 __arch_swab16
- 
--static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 value)
-+static inline __attribute_const__ __u32 __arch_swab32(__u32 value)
- {
+-#ifndef __s390x__
+-	return ___arch__swab32p(&x);
+-#else /* __s390x__ */
  	__u32 result;
- 
-@@ -61,29 +69,8 @@ static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 value)
- 	    : "r" (value), "0" (value >> 24));
+ 	
+ 	asm volatile("lrvr  %0,%1" : "=d" (result) : "d" (x));
  	return result;
+-#endif /* __s390x__ */
+-}
+-
+-static __inline__ void ___arch__swab32s(__u32 *x)
+-{
+-	*x = ___arch__swab32p(x);
  }
 +#define __arch_swab32 __arch_swab32
++#endif /* __s390x__ */
  
--#define __arch__swab16(x) ___arch__swab16(x)
+-static __inline__ __u16 ___arch__swab16p(const __u16 *x)
++static inline __u16 __arch_swab16p(const __u16 *x)
+ {
+ 	__u16 result;
+ 	
+@@ -86,40 +88,8 @@ static __inline__ __u16 ___arch__swab16p(const __u16 *x)
+ #endif /* __s390x__ */
+ 	return result;
+ }
++#define __arch_swab16p __arch_swab16p
+ 
+-static __inline__ __u16 ___arch__swab16(__u16 x)
+-{
+-	return ___arch__swab16p(&x);
+-}
+-
+-static __inline__ void ___arch__swab16s(__u16 *x)
+-{
+-	*x = ___arch__swab16p(x);
+-}
+-
+-#ifdef __s390x__
+-#define __arch__swab64(x) ___arch__swab64(x)
+-#define __arch__swab64p(x) ___arch__swab64p(x)
+-#define __arch__swab64s(x) ___arch__swab64s(x)
+-#endif /* __s390x__ */
 -#define __arch__swab32(x) ___arch__swab32(x)
+-#define __arch__swab16(x) ___arch__swab16(x)
+-#define __arch__swab32p(x) ___arch__swab32p(x)
+-#define __arch__swab16p(x) ___arch__swab16p(x)
+-#define __arch__swab32s(x) ___arch__swab32s(x)
+-#define __arch__swab16s(x) ___arch__swab16s(x)
 -
--/* The same, but returns converted value from the location pointer by addr. */
--#define __arch__swab16p(addr) ld_le16(addr)
--#define __arch__swab32p(addr) ld_le32(addr)
--
--/* The same, but do the conversion in situ, ie. put the value back to addr. */
--#define __arch__swab16s(addr) st_le16(addr,*addr)
--#define __arch__swab32s(addr) st_le32(addr,*addr)
--
--#endif /* __KERNEL__ */
--
--#ifndef __STRICT_ANSI__
+-#ifndef __s390x__
+-#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
+-#  define __BYTEORDER_HAS_U64__
+-#  define __SWAB_64_THRU_32__
+-#endif
+-#else /* __s390x__ */
 -#define __BYTEORDER_HAS_U64__
--#ifndef __powerpc64__
--#define __SWAB_64_THRU_32__
--#endif /* __powerpc64__ */
--#endif /* __STRICT_ANSI__ */
+-#endif /* __s390x__ */
 -
 -#endif /* __GNUC__ */
 -
 -#include <linux/byteorder/big_endian.h>
 +#include <linux/byteorder.h>
  
- #endif /* _ASM_POWERPC_BYTEORDER_H */
+ #endif /* _S390_BYTEORDER_H */
 -- 
 1.6.0.rc1.154.ge3fc
 
