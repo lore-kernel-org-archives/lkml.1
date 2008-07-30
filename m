@@ -1,90 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758931AbYG3Wcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbYG3Wha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758931AbYG3Wcp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 18:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYG3Wci
+	id S1757084AbYG3Wha (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 18:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYG3WhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 18:32:38 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:27358 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751587AbYG3Wch (ORCPT
+	Wed, 30 Jul 2008 18:37:20 -0400
+Received: from smtp108.prem.mail.sp1.yahoo.com ([98.136.44.63]:36702 "HELO
+	smtp108.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752410AbYG3WhT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 18:32:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=RzjvrGvUtOwzSovdKd1Pw6hSWYiNzyMHoakh61Nj44OzzstP05F7oY4zsfXHmcRt4t
-         YLzv9YOZkfm2Uu1mlL3nSPimiy/MNWkV33QLHbJQBiJiJgEwmorVctYZKYHA+NJjfTut
-         U3YaXL979hkZk/SSyRX4agI+nyWs4jufWdt8E=
-Date: Thu, 31 Jul 2008 02:32:33 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: akpm@linuxfoundation.org, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-Subject: Re: 2.6.27-rc1: IP: iov_iter_advance+0x2e/0x90
-Message-ID: <20080730223233.GA3580@martell.zuzino.mipt.ru>
-References: <20080730195457.GA3517@martell.zuzino.mipt.ru> <alpine.LFD.1.10.0807301255560.3334@nehalem.linux-foundation.org> <20080730213745.GA20546@martell.zuzino.mipt.ru> <alpine.LFD.1.10.0807301442130.3277@nehalem.linux-foundation.org> <alpine.LFD.1.10.0807301500480.3277@nehalem.linux-foundation.org>
+	Wed, 30 Jul 2008 18:37:19 -0400
+X-YMail-OSG: R9Tu2NQVM1kWAh1wAhPLp0N2y7DOIlaLaBorwWPaxk6WvNQVUC6tPhrz42sRk1TZ_QQ2bExn8j5LpYgCUx.0khZM6O_jV3i5KlcQhiZ8bjqkcYoYwugiT.se3rZqm_5Mx9M7riLPjtsJtKEbOjwiGGGg2mLFn4tCzOAw1n8QFfyGeVKohA--
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4890ED17.6050305@schaufler-ca.com>
+Date: Wed, 30 Jul 2008 15:37:11 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807301500480.3277@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Peter.Wahl@oracle.com
+Subject: [PATCH] smack: limit privilege by label
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 03:02:32PM -0700, Linus Torvalds wrote:
-> On Wed, 30 Jul 2008, Linus Torvalds wrote:
-> > 
-> > Ok, I'll commit it as obvious, ugly as it may be. And hope that Nick or 
-> > some other god of iov_iter will think about trying to make these things 
-> > more reliable and easier to use.
-> 
-> Oh, and I think it's stable material. Unless I misread something, this 
-> area hasn't changed since 2.6.25. But somebody should double-check me, 
-> that just sounds wrong.
+From: Casey Schaufler <casey@schaufler-ca.com>
 
-2.6.26 fails the same way and patch also seems to help.
+There have been a number of requests to make the Smack LSM
+enforce MAC even in the face of privilege, either capability
+based or superuser based. This is not universally desired,
+however, so it seems desirable to make it optional. Further,
+at least one legacy OS implemented a scheme whereby only
+processes running with one particular label could be exempt
+from MAC. This patch supports these three cases.
 
-> commit 94ad374a0751f40d25e22e036c37f7263569d24c
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Wed Jul 30 14:45:12 2008 -0700
-> 
->     Fix off-by-one error in iov_iter_advance()
->     
->     The iov_iter_advance() function would look at the iov->iov_len entry
->     even though it might have iterated over the whole array, and iov was
->     pointing past the end.  This would cause DEBUG_PAGEALLOC to trigger a
->     kernel page fault if the allocation was at the end of a page, and the
->     next page was unallocated.
->     
->     The quick fix is to just change the order of the tests: check that there
->     is any iovec data left before we check the iov entry itself.
->     
->     Thanks to Alexey Dobriyan for finding this case, and testing the fix.
->     
->     Reported-and-tested-by: Alexey Dobriyan <adobriyan@gmail.com>
->     Cc: Nick Piggin <npiggin@suse.de>
->     Cc: Andrew Morton <akpm@linux-foundation.org>
->     Cc: <stable@kernel.org> [2.6.25.x, 2.6.26.x]
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> ---
->  mm/filemap.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/filemap.c b/mm/filemap.c
-> index 42bbc69..d97d1ad 100644
-> --- a/mm/filemap.c
-> +++ b/mm/filemap.c
-> @@ -1879,7 +1879,7 @@ void iov_iter_advance(struct iov_iter *i, size_t bytes)
->  		 * The !iov->iov_len check ensures we skip over unlikely
->  		 * zero-length segments (without overruning the iovec).
->  		 */
-> -		while (bytes || unlikely(!iov->iov_len && i->count)) {
-> +		while (bytes || unlikely(i->count && !iov->iov_len)) {
->  			int copy;
->  
->  			copy = min(bytes, iov->iov_len - base);
+If /smack/onlycap is empty (unset or null-string) privilege
+is enforced in the normal way.
+
+If /smack/onlycap contains a label only processes running with
+that label may be MAC exempt.
+
+If the label in /smack/onlycap is the star label ("*") the
+semantics of the star label combine with the privilege
+restrictions to prevent any violations of MAC, even in the
+presence of privilege.
+
+Again, this will be independent of the privilege scheme.
+
+
+
+Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+
+---
+
+ security/smack/smack.h        |    1 
+ security/smack/smack_access.c |   10 +++
+ security/smack/smackfs.c      |   92 ++++++++++++++++++++++++++++++++
+ 3 files changed, 102 insertions(+), 1 deletion(-)
+
+diff -uprN -X linux-2.6.26/Documentation/dontdiff linux-2.6.26/security/smack/smack_access.c linux-2.6.26-new/security/smack/smack_access.c
+--- linux-2.6.26/security/smack/smack_access.c	2008-07-13 14:51:29.000000000 -0700
++++ linux-2.6.26-new/security/smack/smack_access.c	2008-07-18 12:44:49.000000000 -0700
+@@ -157,7 +157,7 @@ int smk_access(char *subject_label, char
+  *
+  * This function checks the current subject label/object label pair
+  * in the access rule list and returns 0 if the access is permitted,
+- * non zero otherwise. It allows that current my have the capability
++ * non zero otherwise. It allows that current may have the capability
+  * to override the rules.
+  */
+ int smk_curacc(char *obj_label, u32 mode)
+@@ -168,6 +168,14 @@ int smk_curacc(char *obj_label, u32 mode
+ 	if (rc == 0)
+ 		return 0;
+ 
++	/*
++	 * Return if a specific label has been designated as the
++	 * only one that gets privilege and current does not
++	 * have that label.
++	 */
++	if (smack_onlycap != NULL && smack_onlycap != current->security)
++		return rc;
++
+ 	if (capable(CAP_MAC_OVERRIDE))
+ 		return 0;
+ 
+diff -uprN -X linux-2.6.26/Documentation/dontdiff linux-2.6.26/security/smack/smackfs.c linux-2.6.26-new/security/smack/smackfs.c
+--- linux-2.6.26/security/smack/smackfs.c	2008-07-13 14:51:29.000000000 -0700
++++ linux-2.6.26-new/security/smack/smackfs.c	2008-07-19 06:06:50.000000000 -0700
+@@ -39,6 +39,7 @@ enum smk_inos {
+ 	SMK_DIRECT	= 6,	/* CIPSO level indicating direct label */
+ 	SMK_AMBIENT	= 7,	/* internet ambient label */
+ 	SMK_NLTYPE	= 8,	/* label scheme to use by default */
++	SMK_ONLYCAP	= 9,	/* the only "capable" label */
+ };
+ 
+ /*
+@@ -68,6 +69,16 @@ int smack_net_nltype = NETLBL_NLTYPE_CIP
+  */
+ int smack_cipso_direct = SMACK_CIPSO_DIRECT_DEFAULT;
+ 
++/*
++ * Unless a process is running with this label even
++ * having CAP_MAC_OVERRIDE isn't enough to grant
++ * privilege to violate MAC policy. If no label is
++ * designated (the NULL case) capabilities apply to
++ * everyone. It is expected that the hat (^) label
++ * will be used if any label is used.
++ */
++char *smack_onlycap;
++
+ static int smk_cipso_doi_value = SMACK_CIPSO_DOI_DEFAULT;
+ struct smk_list_entry *smack_list;
+ 
+@@ -787,6 +798,85 @@ static const struct file_operations smk_
+ 	.write		= smk_write_ambient,
+ };
+ 
++/**
++ * smk_read_onlycap - read() for /smack/onlycap
++ * @filp: file pointer, not actually used
++ * @buf: where to put the result
++ * @cn: maximum to send along
++ * @ppos: where to start
++ *
++ * Returns number of bytes read or error code, as appropriate
++ */
++static ssize_t smk_read_onlycap(struct file *filp, char __user *buf,
++				size_t cn, loff_t *ppos)
++{
++	char *smack = "";
++	ssize_t rc = -EINVAL;
++	int asize;
++
++	if (*ppos != 0)
++		return 0;
++
++	if (smack_onlycap != NULL)
++		smack = smack_onlycap;
++
++	asize = strlen(smack) + 1;
++
++	if (cn >= asize)
++		rc = simple_read_from_buffer(buf, cn, ppos, smack, asize);
++
++	return rc;
++}
++
++/**
++ * smk_write_onlycap - write() for /smack/onlycap
++ * @filp: file pointer, not actually used
++ * @buf: where to get the data from
++ * @count: bytes sent
++ * @ppos: where to start
++ *
++ * Returns number of bytes written or error code, as appropriate
++ */
++static ssize_t smk_write_onlycap(struct file *file, const char __user *buf,
++				 size_t count, loff_t *ppos)
++{
++	char in[SMK_LABELLEN];
++	char *sp = current->security;
++
++	if (!capable(CAP_MAC_ADMIN))
++		return -EPERM;
++
++	/*
++	 * This can be done using smk_access() but is done
++	 * explicitly for clarity. The smk_access() implementation
++	 * would use smk_access(smack_onlycap, MAY_WRITE)
++	 */
++	if (smack_onlycap != NULL && smack_onlycap != sp)
++		return -EPERM;
++
++	if (count >= SMK_LABELLEN)
++		return -EINVAL;
++
++	if (copy_from_user(in, buf, count) != 0)
++		return -EFAULT;
++
++	/*
++	 * Should the null string be passed in unset the onlycap value.
++	 * This seems like something to be careful with as usually
++	 * smk_import only expects to return NULL for errors. It
++	 * is usually the case that a nullstring or "\n" would be
++	 * bad to pass to smk_import but in fact this is useful here.
++	 */
++	smack_onlycap = smk_import(in, count);
++
++	return count;
++}
++
++static const struct file_operations smk_onlycap_ops = {
++	.read		= smk_read_onlycap,
++	.write		= smk_write_onlycap,
++};
++
+ struct option_names {
+ 	int	o_number;
+ 	char	*o_name;
+@@ -919,6 +1009,8 @@ static int smk_fill_super(struct super_b
+ 			{"ambient", &smk_ambient_ops, S_IRUGO|S_IWUSR},
+ 		[SMK_NLTYPE]	=
+ 			{"nltype", &smk_nltype_ops, S_IRUGO|S_IWUSR},
++		[SMK_ONLYCAP]	=
++			{"onlycap", &smk_onlycap_ops, S_IRUGO|S_IWUSR},
+ 		/* last one */ {""}
+ 	};
+ 
+diff -uprN -X linux-2.6.26/Documentation/dontdiff linux-2.6.26/security/smack/smack.h linux-2.6.26-new/security/smack/smack.h
+--- linux-2.6.26/security/smack/smack.h	2008-07-13 14:51:29.000000000 -0700
++++ linux-2.6.26-new/security/smack/smack.h	2008-07-18 12:14:02.000000000 -0700
+@@ -178,6 +178,7 @@ u32 smack_to_secid(const char *);
+ extern int smack_cipso_direct;
+ extern int smack_net_nltype;
+ extern char *smack_net_ambient;
++extern char *smack_onlycap;
+ 
+ extern struct smack_known *smack_known;
+ extern struct smack_known smack_known_floor;
 
