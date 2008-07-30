@@ -1,40 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbYG3Jf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760789AbYG3JgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760775AbYG3Jf3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 05:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbYG3JfJ
+	id S1760789AbYG3JgU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 05:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbYG3JgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 05:35:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48405 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752478AbYG3JfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 05:35:07 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200807300907.25186.arnd@arndb.de>
-References: <200807300907.25186.arnd@arndb.de> <20080728200500.GA14284@uranus.ravnborg.org> <48900EE4.8030606@snapgear.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: dhowells@redhat.com, Greg Ungerer <gerg@snapgear.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Wed, 30 Jul 2008 10:34:55 +0100
-Message-ID: <3995.1217410495@redhat.com>
+	Wed, 30 Jul 2008 05:36:09 -0400
+Received: from 215.47.DSNET ([211.144.215.47]:34433 "EHLO
+	cnshjsmin03.cn.alcatel-lucent.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751812AbYG3JgI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 05:36:08 -0400
+X-Greylist: delayed 1842 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Jul 2008 05:36:07 EDT
+X-AuditID: ac189297-aea02bb000003fd3-a3-48903b9bed5f
+Message-ID: <48902EB5.8070102@alcatel-lucent.com>
+Date: Wed, 30 Jul 2008 17:04:53 +0800
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: PIIX4: DMA timeout issue
+References: <488ED837.2060509@alcatel-lucent.com> <488F1C6C.9000002@garzik.org>
+In-Reply-To: <488F1C6C.9000002@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Jul 2008 09:04:44.0695 (UTC) FILETIME=[4F38AA70:01C8F223]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann <arnd@arndb.de> wrote:
 
-> I think the more interesting aspect in m68knommu is what happens
-> when asm-m68k gets moved. Does that work as well?
+>
+> Can you try disabling the IDE driver (CONFIG_IDE) and enabling the 
+> newer libata driver?  (CONFIG_ATA)
+>
+Jeff, I tried moving to ATA driver for PIIX4 today and found ATA need to 
+request
+2 IRQ lines, each one of them belongs to primary and secondary channel. 
+However,
+when I make PIIX4 worked under IDE driver, it also need to request one 
+IRQ for "ide1".
+So it's necessary to disable secondary channel manually?
 
-Can m68knommu be merged into m68k and be made contingent on CONFIG_MMU?  This
-is what FRV does.
+Another question is my PIIX4 chip has device ID + vendor ID of 
+0x71108086. But it finally
+was mapped to following ID of piix_pci_tbl[] array. Device of 0x7110 and 
+0x7010 should
+be quit different, right?
 
-David
+ { 0x8086, 0x7010, PCI_ANY_ID, PCI_ANY_ID, 0, 0, piix_pata_mwdma },
+
+Gavin
