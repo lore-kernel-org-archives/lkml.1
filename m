@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763347AbYGaATf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762000AbYGaATz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763347AbYGaATf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762778AbYGaASe
+	id S1762000AbYGaATz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932166AbYGaAS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:18:34 -0400
-Received: from mx2.suse.de ([195.135.220.15]:37143 "EHLO mx2.suse.de"
+	Wed, 30 Jul 2008 20:18:57 -0400
+Received: from ns2.suse.de ([195.135.220.15]:37196 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763066AbYGaASd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:18:33 -0400
-Date: Wed, 30 Jul 2008 16:59:15 -0700
+	id S932160AbYGaAS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:18:56 -0400
+Date: Wed, 30 Jul 2008 16:59:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,14 +24,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
        v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Laurent Pinchart <laurent.pinchart@skynet.be>,
        Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [patch 39/62] DVB: dib0700: add support for Hauppauge Nova-TD
-	Stick 52009
-Message-ID: <20080730235915.GM12896@suse.de>
+Subject: [patch 40/62] V4L: uvcvideo: Fix a buffer overflow in format
+	descriptor parsing
+Message-ID: <20080730235917.GN12896@suse.de>
 References: <20080730233050.332789722@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="dvb-dib0700-add-support-for-hauppauge-nova-td-stick-52009.patch"
+Content-Disposition: inline; filename="v4l-uvcvideo-fix-a-buffer-overflow-in-format-descriptor-parsing.patch"
 In-Reply-To: <20080730234915.GA12426@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,60 +43,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 us know.
 
 ------------------
-From: Michael Krufky <mkrufky@linuxtv.org>
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
 
-(cherry picked from commit d01eb2dc7d5265ec3bee9ec1b8ab79155e1310d6)
+(cherry picked from commit 233548a2fd934a0220db8b1521c0bc88c82e5e53)
 
-DVB: dib0700: add support for Hauppauge Nova-TD Stick 52009
+V4L: uvcvideo: Fix a buffer overflow in format descriptor parsing
 
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Thanks to Oliver Neukum for catching and reporting this bug.
+
+Signed-off-by: Laurent Pinchart <laurent.pinchart@skynet.be>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/dvb/dvb-usb/dib0700_devices.c |    7 ++++++-
- drivers/media/dvb/dvb-usb/dvb-usb-ids.h     |    1 +
- 2 files changed, 7 insertions(+), 1 deletion(-)
+ drivers/media/video/uvc/uvc_driver.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/media/dvb/dvb-usb/dib0700_devices.c
-+++ b/drivers/media/dvb/dvb-usb/dib0700_devices.c
-@@ -1117,6 +1117,7 @@ struct usb_device_id dib0700_usb_id_tabl
- 	{ USB_DEVICE(USB_VID_TERRATEC,	USB_PID_TERRATEC_CINERGY_HT_EXPRESS) },
- 	{ USB_DEVICE(USB_VID_TERRATEC,	USB_PID_TERRATEC_CINERGY_T_XXS) },
- 	{ USB_DEVICE(USB_VID_LEADTEK,   USB_PID_WINFAST_DTV_DONGLE_STK7700P_2) },
-+	{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_NOVA_TD_STICK_52009) },
- 	{ 0 }		/* Terminating entry */
- };
- MODULE_DEVICE_TABLE(usb, dib0700_usb_id_table);
-@@ -1372,7 +1373,7 @@ struct dvb_usb_device_properties dib0700
- 			}
- 		},
- 
--		.num_device_descs = 2,
-+		.num_device_descs = 3,
- 		.devices = {
- 			{   "DiBcom STK7070PD reference design",
- 				{ &dib0700_usb_id_table[17], NULL },
-@@ -1381,6 +1382,10 @@ struct dvb_usb_device_properties dib0700
- 			{   "Pinnacle PCTV Dual DVB-T Diversity Stick",
- 				{ &dib0700_usb_id_table[18], NULL },
- 				{ NULL },
-+			},
-+			{   "Hauppauge Nova-TD Stick (52009)",
-+				{ &dib0700_usb_id_table[35], NULL },
-+				{ NULL },
- 			}
- 		}
- 	}, { DIB0700_DEFAULT_DEVICE_PROPERTIES,
---- a/drivers/media/dvb/dvb-usb/dvb-usb-ids.h
-+++ b/drivers/media/dvb/dvb-usb/dvb-usb-ids.h
-@@ -132,6 +132,7 @@
- #define USB_PID_HAUPPAUGE_NOVA_T_STICK_3		0x7070
- #define USB_PID_HAUPPAUGE_MYTV_T			0x7080
- #define USB_PID_HAUPPAUGE_NOVA_TD_STICK			0x9580
-+#define USB_PID_HAUPPAUGE_NOVA_TD_STICK_52009		0x5200
- #define USB_PID_AVERMEDIA_EXPRESS			0xb568
- #define USB_PID_AVERMEDIA_VOLAR				0xa807
- #define USB_PID_AVERMEDIA_VOLAR_2			0xb808
+--- a/drivers/media/video/uvc/uvc_driver.c
++++ b/drivers/media/video/uvc/uvc_driver.c
+@@ -298,7 +298,8 @@ static int uvc_parse_format(struct uvc_d
+ 	switch (buffer[2]) {
+ 	case VS_FORMAT_UNCOMPRESSED:
+ 	case VS_FORMAT_FRAME_BASED:
+-		if (buflen < 27) {
++		n = buffer[2] == VS_FORMAT_UNCOMPRESSED ? 27 : 28;
++		if (buflen < n) {
+ 			uvc_trace(UVC_TRACE_DESCR, "device %d videostreaming"
+ 			       "interface %d FORMAT error\n",
+ 			       dev->udev->devnum,
 
 -- 
