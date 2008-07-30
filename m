@@ -1,64 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbYG3T7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbYG3UBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758092AbYG3T7S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 15:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbYG3T7F
+	id S1757466AbYG3UBB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 16:01:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbYG3UAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 15:59:05 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:34266 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754125AbYG3T7E (ORCPT
+	Wed, 30 Jul 2008 16:00:51 -0400
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:54797
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753117AbYG3UAu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 15:59:04 -0400
-Message-ID: <4890C877.3080609@keyaccess.nl>
-Date: Wed, 30 Jul 2008 22:00:55 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jon Smirl <jonsmirl@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
-       James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-References: <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au>	 <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com>	 <488EF377.5080603@keyaccess.nl>	 <20080730072448.GB1564@cs181140183.pp.htv.fi>	 <4890284E.3050806@s5r6.in-berlin.de>	 <20080730124650.GB19966@cs181140183.pp.htv.fi>	 <4890646D.3060000@keyaccess.nl>	 <20080730153247.GA21597@cs181140183.pp.htv.fi>	 <alpine.LFD.1.10.0807300942450.3334@nehalem.linux-foundation.org>	 <4890C3D0.6070306@keyaccess.nl> <2c0942db0807301247o429052c8y943c997123a03642@mail.gmail.com>
-In-Reply-To: <2c0942db0807301247o429052c8y943c997123a03642@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+	Wed, 30 Jul 2008 16:00:50 -0400
+Date: Wed, 30 Jul 2008 13:00:33 -0700
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       usb-storage@lists.one-eyed-alien.net, Tomas Styblo <tripie@cpan.org>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [usb-storage] [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device 152d:2338
+Message-ID: <20080730200033.GD7578@one-eyed-alien.net>
+Mail-Followup-To: Robert Hancock <hancockr@shaw.ca>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	usb-storage@lists.one-eyed-alien.net,
+	Tomas Styblo <tripie@cpan.org>, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0807232337110.25883-100000@netrider.rowland.org> <4890C72D.7040604@shaw.ca>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="5vNYLRcllDrimb99"
+Content-Disposition: inline
+In-Reply-To: <4890C72D.7040604@shaw.ca>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Wed, 30 Jul 2008 13:00:34 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30-07-08 21:47, Ray Lee wrote:
 
-> On Wed, Jul 30, 2008 at 12:41 PM, Rene Herman <rene.herman@keyaccess.nl> wrote:
+--5vNYLRcllDrimb99
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->> So, if you were doing more than responding to Adrian's DCO worry here (which
->> I do not share) the above is what I have against harvesting the addresses
->> into a _way_ too public place/format.
-> 
-> Er, what? Are you saying that a mailcap file inside a .gz or .bz2 or a
-> git repository is *more* public than a mailing list?
+On Wed, Jul 30, 2008 at 01:55:25PM -0600, Robert Hancock wrote:
+> Alan Stern wrote:
+> > On Wed, 23 Jul 2008, Robert Hancock wrote:
+> >=20
+> >> It remains an issue, though, that if there's no underflow, if the devi=
+ce=20
+> >> reports an error in the CSW but doesn't provide sense data, we assume=
+=20
+> >> nothing bad happened and don't retry. That definitely does not seem=20
+> >> correct. The device is not supposed to do this, but with how crappily=
+=20
+> >> some of these devices are designed we should be more defensive.
+> >=20
+> > The problem is, what can you do?  The device has said that something=20
+> > was wrong, but it hasn't told you what.  Without knowing what went=20
+> > wrong, you can't know how to recover.
 
-Inside a .gz of .bz2? But yes, definitely. Have you ever noticed exactly 
-how many fully indexed linux source trees there are out there on the 
-web? And how not any mailinglist archive does _not_ take the trouble to 
-obscure addresses?
+Yes and no.  If ASC/ASCQ is clear, then it's telling you that nothing is
+wrong.  The device is contradicting itself. That doesn't really help us
+here, but it's a point I like to be clear on.
 
-> or the already existing gitweb history of the main tree?
-> 
-> I've noticed correlated (lagged) spikes in my spam volume to the
-> email address I use for this list whenever I post from it, so please 
-> consider that you are perhaps being penny-wise and pound-foolish
-> here.
+> > I suppose in such cases we could simply report that the command failed
+> > completely.
+>=20
+> I think that is what we need to do. The SCSI/block layers should retry=20
+> the command or report a failure to userspace. Above all else we can't=20
+> just continue on our merry way and assume success, otherwise data will=20
+> get silently corrupted.
 
-I'm not talking about spam. Spammers will get anything that's not 
-private. As said, I'm talking about scale of publicness.
+The code path to supress the reporting of an error when auto-sense shows no
+ASC/ASCQ was added for a reason.  That reason has likely been lost to time,
+but I worry about devices that are out there that rely on the current
+behavior to function properly....
 
-Rene.
+Matt
 
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
+
+A:  The most ironic oxymoron wins ...
+DP: "Microsoft Works"
+A:  Uh, okay, you win.
+					-- A.J. & Dust Puppy
+User Friendly, 1/18/1998
+
+--5vNYLRcllDrimb99
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFIkMhhHL9iwnUZqnkRAhupAKCaoSoLn6vlwakvkODfvnHP3iynbACgkSyO
+xXOV9y4/nOQoW1BW6MrhG6c=
+=8g2Z
+-----END PGP SIGNATURE-----
+
+--5vNYLRcllDrimb99--
