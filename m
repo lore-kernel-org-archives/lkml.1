@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760774AbYG3Jw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761504AbYG3Jwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760774AbYG3Jw2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 05:52:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYG3JwU
+	id S1761504AbYG3Jwl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 05:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759983AbYG3JwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 05:52:20 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:35967 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753216AbYG3JwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 05:52:19 -0400
-Date: Wed, 30 Jul 2008 13:56:14 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: David Howells <dhowells@redhat.com>, jmorris@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Request for documentation of PID handling functions
-Message-ID: <20080730095614.GA82@tv-sign.ru>
-References: <21590.1217285986@redhat.com> <488FCC14.3070208@openvz.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <488FCC14.3070208@openvz.org>
-User-Agent: Mutt/1.5.11
+	Wed, 30 Jul 2008 05:52:25 -0400
+Received: from evaki.its.uow.edu.au ([130.130.68.32]:40937 "EHLO
+	evaki.its.uow.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759834AbYG3JwY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 05:52:24 -0400
+Subject: [patch 09/31] pci_ids.h, kernel 2.6.27-rc1, sort DEVICE_IDs within VENDOR_IDs
+Message-Id: <E1KO7PE-0007Dv-BE@wraith.cs.uow.edu.au>
+From: mcs6502@gmail.com
+Date: Wed, 30 Jul 2008 18:51:36 +1000
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/30, Pavel Emelyanov wrote:
->
-> David Howells wrote:
-> > Hi Pavel,
-> > 
-> > Can you please provide documentation for the PID handling functions you
-> > supplied in commit:
-> > 
-> > 	7af5729474b5b8ad385adadab78d6e723e7655a3
-> > 
-> > In particular I'd like to know what locks are required when.  I'm trying to
-> > determine if in this piece of code:
-> > 
-> > 		read_lock(&tasklist_lock);
-> > 		ret = 0;
-> > 		if (pid != task_pid_vnr(current))
-> > 			ret = -EPERM;
-> > 		read_unlock(&tasklist_lock);
-> > 
-> > the lock of tasklist_lock is necessary.
-> 
-> The RCU protection is enough to get pids from tasks. However, the pids
-> are detached under the tasklist lock write-locked, so provided you're
-> *already* sitting under it the RCU is excessive.
-
-Yes, tasklist OR rcu is enough.
-
-But, since the task == current, the code above doesn't need any locks at all.
-
-Unless this code runs after exit_notify() of course, in that case we need
-rcu/tasklist and task_pid_vnr(current) can return 0.
-
-Oleg.
-
+--- linux-p8/include/linux/pci_ids.h	2008-07-30 13:11:35.923753000 +1000
++++ linux-p9/include/linux/pci_ids.h	2008-07-30 13:12:24.429345000 +1000
+@@ -1730,6 +1730,9 @@
+ #define PCI_DEVICE_ID_SIIG_1S_20x_550	0x2000
+ #define PCI_DEVICE_ID_SIIG_1S_20x_650	0x2001
+ #define PCI_DEVICE_ID_SIIG_1S_20x_850	0x2002
++#define PCI_DEVICE_ID_SIIG_1S1P_20x_550	0x2010
++#define PCI_DEVICE_ID_SIIG_1S1P_20x_650	0x2011
++#define PCI_DEVICE_ID_SIIG_1S1P_20x_850	0x2012
+ #define PCI_DEVICE_ID_SIIG_1P_20x	0x2020
+ #define PCI_DEVICE_ID_SIIG_2P_20x	0x2021
+ #define PCI_DEVICE_ID_SIIG_2S_20x_550	0x2030
+@@ -1738,9 +1741,6 @@
+ #define PCI_DEVICE_ID_SIIG_2P1S_20x_550	0x2040
+ #define PCI_DEVICE_ID_SIIG_2P1S_20x_650	0x2041
+ #define PCI_DEVICE_ID_SIIG_2P1S_20x_850	0x2042
+-#define PCI_DEVICE_ID_SIIG_1S1P_20x_550	0x2010
+-#define PCI_DEVICE_ID_SIIG_1S1P_20x_650	0x2011
+-#define PCI_DEVICE_ID_SIIG_1S1P_20x_850	0x2012
+ #define PCI_DEVICE_ID_SIIG_4S_20x_550	0x2050
+ #define PCI_DEVICE_ID_SIIG_4S_20x_650	0x2051
+ #define PCI_DEVICE_ID_SIIG_4S_20x_850	0x2052
