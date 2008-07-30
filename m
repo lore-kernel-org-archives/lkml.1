@@ -1,90 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbYG3C2C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbYG3CfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755701AbYG3C2C (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 22:28:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYG3C1y
+	id S1756335AbYG3CfE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 22:35:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYG3Cex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 22:27:54 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:56457 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751860AbYG3C1x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 22:27:53 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiUFABduj0hMRKxB/2dsb2JhbACBW4lEpUY
-Date: Tue, 29 Jul 2008 22:27:51 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH] Module : call synchronize_sched() between module exit()
-	and free.
-Message-ID: <20080730022751.GA15866@Krystal>
-References: <20080717155724.897537670@polymtl.ca> <20080729211543.GB17097@redhat.com> <20080729224115.GA5209@Krystal> <200807301140.59745.rusty@rustcorp.com.au>
+	Tue, 29 Jul 2008 22:34:53 -0400
+Received: from ozlabs.org ([203.10.76.45]:49975 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751860AbYG3Cex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 22:34:53 -0400
+Subject: Re: [PATCH] powerpc/lpar - defer prefered console setup
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Bastian Blank <waldi@debian.org>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080728185651.GA29530@wavehammer.waldi.eu.org>
+References: <20080728185651.GA29530@wavehammer.waldi.eu.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Y3b41xOQjJnxNaVmOM9m"
+Date: Wed, 30 Jul 2008 12:34:51 +1000
+Message-Id: <1217385291.10646.2.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <200807301140.59745.rusty@rustcorp.com.au>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 21:56:41 up 55 days,  6:37,  4 users,  load average: 1.29, 1.03,
-	1.02
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi Mathieu,
-> 
->    Yes: stop_machine is merely used to atomically check the module refcount 
-> for zero and set the state so it can't be incremented again (ie. 
-> try_module_get will fail).
-> 
->    So placing a tracepoint or marker in a module does not bump the module 
-> refcount?  If that's true, then there needs to be some kind of 
-> remove_markers_from_module() call after module->exit(), which should do the 
-> synchronize_sched() or whatever, right?
-> 
-> Rusty.
 
-Actually, it's not placing a marker/tracepoint in a module which causes
-a problem, this is a simple function call after all, and correctly dealt
-with by current module.c code.
+--=-Y3b41xOQjJnxNaVmOM9m
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The problem comes from a probe function (the callback) that would be
-registered to be called from a marker and would sit in an unloadable 
-kernel module. I would not want to tie the refcount of the probe modules
-to the fact that they are connected to a marker because it would then
-become impossible to unload them due to the fact that unregistration is
-done in module exit().
+On Mon, 2008-07-28 at 20:56 +0200, Bastian Blank wrote:
+> Hi
 
-This is one of the reasons why I disable preemption around the marker
-site (the function call) : to make sure I can can unregister the
-callback, wait for a quiescent state (with synchronize_sched()) and then
-free the module memory.
+Hi Bastian,
 
-This would give the following supplementary guarantee about module
-teardown : every function called with preemption off and unregistered in
-the module exit() would reach a quiescent state before the module is
-freed. Given this does apply to rarely used code (module unload), I
-think it might be ok to simply add a call to synchronize_sched() before
-the module memory is freed. Not tying this to markers/tracepoints would
-keep the behavior consistant across various build options, which is IMHO
-a good thing.
+> The powerpc lpar code adds a prefered console at a very early state,
+> during arch_setup. This runs even before the console setup from the
+> command line and takes preference.
 
-I could also just document that a mandatory "synchronize_sched()" should
-be called at the end of the probe module exit() function which makes
-sure the probes has reached a quiescent state.
+It runs before the command line parsing, and so /does not/ take
+preference. I thought.
 
-I don't want to add a synchronize_sched() into the marker/tracepoint
-probe unregistration code because I want to keep batch probe
-unregistration fast enough so it does no take ~5 seconds to unload ~100
-probes. (may take longer on a loaded SMP system)
+/**
+ * add_preferred_console - add a device to the list of preferred consoles.
+ ...
+ * The last preferred console added will be used for kernel messages
+ * and stdin/out/err for init.=20
 
-Mathieu
+The last console will be added by the console=3D parsing, and so that will
+be used. The console we add in the pseries setup is only used if nothing
+is specified on the command line.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-Y3b41xOQjJnxNaVmOM9m
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIj9NLdSjSd0sB4dIRAunJAJ94BN9WrelhYf0rWSgTLAt0XmtyrgCgp603
+po+W7JX3TSKq5q+01o9UNHQ=
+=e8ud
+-----END PGP SIGNATURE-----
+
+--=-Y3b41xOQjJnxNaVmOM9m--
+
