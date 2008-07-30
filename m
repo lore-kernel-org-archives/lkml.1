@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763173AbYGaAV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbYGaAUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763173AbYGaAV2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763059AbYGaAUL
+	id S1760137AbYGaAUz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762968AbYGaATq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:20:11 -0400
-Received: from ns.suse.de ([195.135.220.2]:39297 "EHLO mx1.suse.de"
+	Wed, 30 Jul 2008 20:19:46 -0400
+Received: from ns2.suse.de ([195.135.220.15]:37252 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753408AbYGaAUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:20:09 -0400
-Date: Wed, 30 Jul 2008 16:59:24 -0700
+	id S1763460AbYGaATp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:19:45 -0400
+Date: Wed, 30 Jul 2008 16:59:22 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,12 +26,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
        Laurent Pinchart <laurent.pinchart@skynet.be>,
        Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [patch 43/62] V4L: uvcvideo: Make input device support optional
-Message-ID: <20080730235924.GQ12896@suse.de>
+Subject: [patch 42/62] V4L: uvcvideo: Dont free URB buffers on suspend
+Message-ID: <20080730235922.GP12896@suse.de>
 References: <20080730233050.332789722@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="v4l-uvcvideo-make-input-device-support-optional.patch"
+Content-Disposition: inline; filename="v4l-uvcvideo-don-t-free-urb-buffers-on-suspend.patch"
 In-Reply-To: <20080730234915.GA12426@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,13 +45,13 @@ us know.
 ------------------
 From: Laurent Pinchart <laurent.pinchart@skynet.be>
 
-(cherry picked from commit 6833c917b4de1757febdbf946d709ece6dc7a86f)
+(cherry picked from commit e01117c81676dc9897f567e32cdc13a26e85280b)
 
-V4L: uvcvideo: Make input device support optional
+V4L: uvcvideo: Don't free URB buffers on suspend.
 
-UVC devices can report button events. The uvcvideo driver depends on
-CONFIG_INPUT to report events to the input layer. This patch removes the hard
-dependency by introducing a new CONFIG_USB_VIDEO_CLASS_INPUT_EVDEV option.
+All submitted URBs must be killed at suspend time, but URB buffers don't
+have to be freed. Avoiding a free on suspend/reallocate on resume lowers
+the pressure on system memory.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@skynet.be>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
@@ -59,87 +59,194 @@ Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/Kconfig          |    8 +-------
- drivers/media/video/uvc/Kconfig      |   17 +++++++++++++++++
- drivers/media/video/uvc/uvc_status.c |   17 +++++++++++++++--
- 3 files changed, 33 insertions(+), 9 deletions(-)
+ drivers/media/video/uvc/uvc_video.c |   96 ++++++++++++++++++++++++------------
+ drivers/media/video/uvc/uvcvideo.h  |    2 
+ 2 files changed, 66 insertions(+), 32 deletions(-)
 
---- a/drivers/media/video/Kconfig
-+++ b/drivers/media/video/Kconfig
-@@ -793,13 +793,7 @@ menuconfig V4L_USB_DRIVERS
- 
- if V4L_USB_DRIVERS && USB
- 
--config USB_VIDEO_CLASS
--	tristate "USB Video Class (UVC)"
--	---help---
--	  Support for the USB Video Class (UVC).  Currently only video
--	  input devices, such as webcams, are supported.
--
--	  For more information see: <http://linux-uvc.berlios.de/>
-+source "drivers/media/video/uvc/Kconfig"
- 
- source "drivers/media/video/pvrusb2/Kconfig"
- 
---- /dev/null
-+++ b/drivers/media/video/uvc/Kconfig
-@@ -0,0 +1,17 @@
-+config USB_VIDEO_CLASS
-+	tristate "USB Video Class (UVC)"
-+	---help---
-+	  Support for the USB Video Class (UVC).  Currently only video
-+	  input devices, such as webcams, are supported.
-+
-+	  For more information see: <http://linux-uvc.berlios.de/>
-+
-+config USB_VIDEO_CLASS_INPUT_EVDEV
-+	bool "UVC input events device support"
-+	default y
-+	depends on USB_VIDEO_CLASS && INPUT
-+	---help---
-+	  This option makes USB Video Class devices register an input device
-+	  to report button events.
-+
-+	  If you are in doubt, say Y.
---- a/drivers/media/video/uvc/uvc_status.c
-+++ b/drivers/media/video/uvc/uvc_status.c
-@@ -22,6 +22,7 @@
- /* --------------------------------------------------------------------------
-  * Input device
-  */
-+#ifdef CONFIG_USB_VIDEO_CLASS_INPUT_EVDEV
- static int uvc_input_init(struct uvc_device *dev)
- {
- 	struct usb_device *udev = dev->udev;
-@@ -67,6 +68,19 @@ static void uvc_input_cleanup(struct uvc
- 		input_unregister_device(dev->input);
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -554,9 +554,56 @@ static void uvc_video_complete(struct ur
  }
  
-+static void uvc_input_report_key(struct uvc_device *dev, unsigned int code,
-+	int value)
+ /*
++ * Free transfer buffers.
++ */
++static void uvc_free_urb_buffers(struct uvc_video_device *video)
 +{
-+	if (dev->input)
-+		input_report_key(dev->input, code, value);
++	unsigned int i;
++
++	for (i = 0; i < UVC_URBS; ++i) {
++		if (video->urb_buffer[i]) {
++			usb_buffer_free(video->dev->udev, video->urb_size,
++				video->urb_buffer[i], video->urb_dma[i]);
++			video->urb_buffer[i] = NULL;
++		}
++	}
++
++	video->urb_size = 0;
 +}
 +
-+#else
-+#define uvc_input_init(dev)
-+#define uvc_input_cleanup(dev)
-+#define uvc_input_report_key(dev, code, value)
-+#endif /* CONFIG_USB_VIDEO_CLASS_INPUT_EVDEV */
++/*
++ * Allocate transfer buffers. This function can be called with buffers
++ * already allocated when resuming from suspend, in which case it will
++ * return without touching the buffers.
++ *
++ * Return 0 on success or -ENOMEM when out of memory.
++ */
++static int uvc_alloc_urb_buffers(struct uvc_video_device *video,
++	unsigned int size)
++{
++	unsigned int i;
 +
- /* --------------------------------------------------------------------------
-  * Status interrupt endpoint
++	/* Buffers are already allocated, bail out. */
++	if (video->urb_size)
++		return 0;
++
++	for (i = 0; i < UVC_URBS; ++i) {
++		video->urb_buffer[i] = usb_buffer_alloc(video->dev->udev,
++			size, GFP_KERNEL, &video->urb_dma[i]);
++		if (video->urb_buffer[i] == NULL) {
++			uvc_free_urb_buffers(video);
++			return -ENOMEM;
++		}
++	}
++
++	video->urb_size = size;
++	return 0;
++}
++
++/*
+  * Uninitialize isochronous/bulk URBs and free transfer buffers.
   */
-@@ -83,8 +97,7 @@ static void uvc_event_streaming(struct u
- 			return;
- 		uvc_trace(UVC_TRACE_STATUS, "Button (intf %u) %s len %d\n",
- 			data[1], data[3] ? "pressed" : "released", len);
--		if (dev->input)
--			input_report_key(dev->input, BTN_0, data[3]);
-+		uvc_input_report_key(dev, BTN_0, data[3]);
- 	} else {
- 		uvc_trace(UVC_TRACE_STATUS, "Stream %u error event %02x %02x "
- 			"len %d.\n", data[1], data[2], data[3], len);
+-static void uvc_uninit_video(struct uvc_video_device *video)
++static void uvc_uninit_video(struct uvc_video_device *video, int free_buffers)
+ {
+ 	struct urb *urb;
+ 	unsigned int i;
+@@ -566,19 +613,12 @@ static void uvc_uninit_video(struct uvc_
+ 			continue;
+ 
+ 		usb_kill_urb(urb);
+-		/* urb->transfer_buffer_length is not touched by USB core, so
+-		 * we can use it here as the buffer length.
+-		 */
+-		if (video->urb_buffer[i]) {
+-			usb_buffer_free(video->dev->udev,
+-				urb->transfer_buffer_length,
+-				video->urb_buffer[i], urb->transfer_dma);
+-			video->urb_buffer[i] = NULL;
+-		}
+-
+ 		usb_free_urb(urb);
+ 		video->urb[i] = NULL;
+ 	}
++
++	if (free_buffers)
++		uvc_free_urb_buffers(video);
+ }
+ 
+ /*
+@@ -610,18 +650,13 @@ static int uvc_init_video_isoc(struct uv
+ 
+ 	size = npackets * psize;
+ 
++	if (uvc_alloc_urb_buffers(video, size) < 0)
++		return -ENOMEM;
++
+ 	for (i = 0; i < UVC_URBS; ++i) {
+ 		urb = usb_alloc_urb(npackets, gfp_flags);
+ 		if (urb == NULL) {
+-			uvc_uninit_video(video);
+-			return -ENOMEM;
+-		}
+-
+-		video->urb_buffer[i] = usb_buffer_alloc(video->dev->udev,
+-			size, gfp_flags, &urb->transfer_dma);
+-		if (video->urb_buffer[i] == NULL) {
+-			usb_free_urb(urb);
+-			uvc_uninit_video(video);
++			uvc_uninit_video(video, 1);
+ 			return -ENOMEM;
+ 		}
+ 
+@@ -632,6 +667,7 @@ static int uvc_init_video_isoc(struct uv
+ 		urb->transfer_flags = URB_ISO_ASAP | URB_NO_TRANSFER_DMA_MAP;
+ 		urb->interval = ep->desc.bInterval;
+ 		urb->transfer_buffer = video->urb_buffer[i];
++		urb->transfer_dma = video->urb_dma[i];
+ 		urb->complete = uvc_video_complete;
+ 		urb->number_of_packets = npackets;
+ 		urb->transfer_buffer_length = size;
+@@ -671,20 +707,15 @@ static int uvc_init_video_bulk(struct uv
+ 	if (size > psize * UVC_MAX_ISO_PACKETS)
+ 		size = psize * UVC_MAX_ISO_PACKETS;
+ 
++	if (uvc_alloc_urb_buffers(video, size) < 0)
++		return -ENOMEM;
++
+ 	pipe = usb_rcvbulkpipe(video->dev->udev, ep->desc.bEndpointAddress);
+ 
+ 	for (i = 0; i < UVC_URBS; ++i) {
+ 		urb = usb_alloc_urb(0, gfp_flags);
+ 		if (urb == NULL) {
+-			uvc_uninit_video(video);
+-			return -ENOMEM;
+-		}
+-
+-		video->urb_buffer[i] = usb_buffer_alloc(video->dev->udev,
+-			size, gfp_flags, &urb->transfer_dma);
+-		if (video->urb_buffer[i] == NULL) {
+-			usb_free_urb(urb);
+-			uvc_uninit_video(video);
++			uvc_uninit_video(video, 1);
+ 			return -ENOMEM;
+ 		}
+ 
+@@ -692,6 +723,7 @@ static int uvc_init_video_bulk(struct uv
+ 			video->urb_buffer[i], size, uvc_video_complete,
+ 			video);
+ 		urb->transfer_flags = URB_NO_TRANSFER_DMA_MAP;
++		urb->transfer_dma = video->urb_dma[i];
+ 
+ 		video->urb[i] = urb;
+ 	}
+@@ -766,7 +798,7 @@ static int uvc_init_video(struct uvc_vid
+ 		if ((ret = usb_submit_urb(video->urb[i], gfp_flags)) < 0) {
+ 			uvc_printk(KERN_ERR, "Failed to submit URB %u "
+ 					"(%d).\n", i, ret);
+-			uvc_uninit_video(video);
++			uvc_uninit_video(video, 1);
+ 			return ret;
+ 		}
+ 	}
+@@ -791,7 +823,7 @@ int uvc_video_suspend(struct uvc_video_d
+ 		return 0;
+ 
+ 	video->frozen = 1;
+-	uvc_uninit_video(video);
++	uvc_uninit_video(video, 0);
+ 	usb_set_interface(video->dev->udev, video->streaming->intfnum, 0);
+ 	return 0;
+ }
+@@ -920,7 +952,7 @@ int uvc_video_enable(struct uvc_video_de
+ 	int ret;
+ 
+ 	if (!enable) {
+-		uvc_uninit_video(video);
++		uvc_uninit_video(video, 1);
+ 		usb_set_interface(video->dev->udev,
+ 			video->streaming->intfnum, 0);
+ 		uvc_queue_enable(&video->queue, 0);
+--- a/drivers/media/video/uvc/uvcvideo.h
++++ b/drivers/media/video/uvc/uvcvideo.h
+@@ -602,6 +602,8 @@ struct uvc_video_device {
+ 
+ 	struct urb *urb[UVC_URBS];
+ 	char *urb_buffer[UVC_URBS];
++	dma_addr_t urb_dma[UVC_URBS];
++	unsigned int urb_size;
+ 
+ 	__u8 last_fid;
+ };
 
 -- 
