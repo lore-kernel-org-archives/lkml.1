@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752835AbYG3Iih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759386AbYG3Ik0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752835AbYG3Iih (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 04:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759188AbYG3Ii1
+	id S1759386AbYG3Ik0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 04:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYG3IkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 04:38:27 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:37451 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759182AbYG3Ii0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 04:38:26 -0400
-Message-ID: <4890284E.3050806@s5r6.in-berlin.de>
-Date: Wed, 30 Jul 2008 10:37:34 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Rene Herman <rene.herman@keyaccess.nl>, Jon Smirl <jonsmirl@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-References: <9e4733910807281200m25f7f16bwa6678694bb25a61@mail.gmail.com> <20080728202236.GN9378@mit.edu> <20080728204624.GA11581@redhat.com> <20080728141414.d7e5def2.randy.dunlap@oracle.com> <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au> <20080728234131.GD28055@linux-sh.org> <9e4733910807281714h2918fcbey77c8d1cea902a3fd@mail.gmail.com> <488E644D.7000507@keyaccess.nl> <9e4733910807281750p52cf150lacd0e237732046e7@mail.gmail.com> <488EF377.5080603@keyaccess.nl> <20080730072448.GB1564@cs181140183.pp.htv.fi>
-In-Reply-To: <20080730072448.GB1564@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jul 2008 04:40:16 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:34701 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752634AbYG3IkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 04:40:15 -0400
+Date: Wed, 30 Jul 2008 10:40:05 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>,
+       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] docsrc: fix crc32hash type
+Message-ID: <20080730084005.GC18366@uranus.ravnborg.org>
+References: <12173619152424@xenotime.net> <1217361915584@xenotime.net> <20080730064720.GA13409@isilmar.linta.de> <20080730001850.c24fc671.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080730001850.c24fc671.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> Whether Jon's patch is a good idea one might discuss,
+On Wed, Jul 30, 2008 at 12:18:50AM -0700, Andrew Morton wrote:
+> On Wed, 30 Jul 2008 08:47:20 +0200 Dominik Brodowski <linux@dominikbrodowski.net> wrote:
+> 
+> > Hi,
+> > 
+> > On Tue, Jul 29, 2008 at 01:05:15PM -0700, Randy Dunlap wrote:
+> > > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > > 
+> > > Fix differing signedness warning:
+> > > 
+> > > Documentation/pcmcia/crc32hash.c:29: warning: pointer targets in passing argument 1 of 'crc32' differ in signedness
+> > > 
+> > > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > Acked-by: Dominik Brodowski <linux@dominikbrodowski.net>
+> > 
+> > Shall this go in via the pcmcia git tree, or with the other doc patches?
+> > 
+> 
+> I was planning on merging them up in a week or so, if they don't appear
+> in anyone else's tree.
+Would be good.
+I would usually postpone this till next merge window if I
+carried them in a kbuild tree.
 
-There isn't a lot to discuss.  From a purely technical standpoint,
-duplicating SCM metadata into a source file and aiming to be
-comprehensive and up to date is naive at best.
-
-> but as soon as someone puts an email address into a kernel commit
-> Google will anyway find it:
-
-This doesn't justify what Jon did though.
-
-Jon created a new database out of formerly disparate datasets, even
-though we didn't provide him these datasets for this purpose.  The fact
-that the means to create this database are rather trivial and cheap do
-not mean that we implicitly agreed to what he did or that it wouldn't
-matter whether we agree to it or not.
-
-Jon even suggested that his database is then used to combine with
-further databases (bugzilla accounts, mailinglist archives).  Again, the
-fact that something like this is possible without great difficulties
-doesn't make it right.
--- 
-Stefan Richter
--=====-==--- -=== ====-
-http://arcgraph.de/sr/
+	Sam
