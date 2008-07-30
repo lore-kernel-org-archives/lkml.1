@@ -1,88 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbYG3RPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbYG3RRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759597AbYG3RPH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 13:15:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbYG3RO4
+	id S1759161AbYG3RRG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 13:17:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbYG3RQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 13:14:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36558 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751080AbYG3ROz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 13:14:55 -0400
-Date: Wed, 30 Jul 2008 10:14:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 1/2] Export get_user_pages_fast
-Message-Id: <20080730101438.e1484440.akpm@linux-foundation.org>
-In-Reply-To: <20080730170939.GA28604@cs181140183.pp.htv.fi>
-References: <200807301438.55941.rusty@rustcorp.com.au>
-	<20080730033523.0f38f7e4.akpm@linux-foundation.org>
-	<20080730154736.GC21597@cs181140183.pp.htv.fi>
-	<20080730100355.f1402dcf.akpm@linux-foundation.org>
-	<20080730170939.GA28604@cs181140183.pp.htv.fi>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jul 2008 13:16:52 -0400
+Received: from smtp2-g19.free.fr ([212.27.42.28]:41953 "EHLO smtp2-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751106AbYG3RQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 13:16:51 -0400
+From: Jim Meyering <jim@meyering.net>
+To: Matt Domsch <Matt_Domsch@dell.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Wilcox <matthew@wil.cx>, Ric Wheeler <rwheeler@redhat.com>,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
+Subject: Re: tools support for non-512 byte sector sizes
+In-Reply-To: <20080730135147.GA4513@auslistsprd01.us.dell.com> (Matt Domsch's
+	message of "Wed, 30 Jul 2008 08:51:47 -0500")
+References: <488F524F.6020905@redhat.com>
+	<20080729182611.GB24924@parisc-linux.org>
+	<1217356645.6103.48.camel@localhost.localdomain>
+	<yq13alsr0g0.fsf@sermon.lab.mkp.net>
+	<20080730135147.GA4513@auslistsprd01.us.dell.com>
+Date: Wed, 30 Jul 2008 19:16:49 +0200
+Message-ID: <87zlnzb8ce.fsf@rho.meyering.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008 20:09:39 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+Matt Domsch <Matt_Domsch@dell.com> wrote:
+> On Tue, Jul 29, 2008 at 02:48:31PM -0400, Martin K. Petersen wrote:
+...
+>> Just yesterday I received a couple of prototype drives in the mail.
+>> I'll ask the vendor whether they support 4KB and if so I'll give them
+>> a whirl.
+>
+> I have access to disks with native 4KB sectors now too.  Would
 
-> On Wed, Jul 30, 2008 at 10:03:55AM -0700, Andrew Morton wrote:
-> > On Wed, 30 Jul 2008 18:47:36 +0300 Adrian Bunk <bunk@kernel.org> wrote:
-> > 
-> > > On Wed, Jul 30, 2008 at 03:35:23AM -0700, Andrew Morton wrote:
-> > > > On Wed, 30 Jul 2008 14:38:55 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > > > 
-> > > > > After all, it was made for lguest wasn't it?  Still think it should be
-> > > > > called get_current_pages() though.
-> > > > > 
-> > > > > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> > > > > ---
-> > > > >  arch/x86/mm/gup.c |    2 ++
-> > > > >  1 file changed, 2 insertions(+)
-> > > > > 
-> > > > > diff -r cb465381f6d5 arch/x86/mm/gup.c
-> > > > > --- a/arch/x86/mm/gup.c	Wed Jul 30 10:18:44 2008 +1000
-> > > > > +++ b/arch/x86/mm/gup.c	Wed Jul 30 14:22:53 2008 +1000
-> > > > > @@ -8,6 +8,7 @@
-> > > > >  #include <linux/mm.h>
-> > > > >  #include <linux/vmstat.h>
-> > > > >  #include <linux/highmem.h>
-> > > > > +#include <linux/module.h>
-> > > > >  
-> > > > >  #include <asm/pgtable.h>
-> > > > >  
-> > > > > @@ -296,3 +303,4 @@ slow_irqon:
-> > > > >  		return ret;
-> > > > >  	}
-> > > > >  }
-> > > > > +EXPORT_SYMBOL_GPL(get_user_pages_fast);
-> > > > 
-> > > > A regularly-occurring problem with an export like this is that someone
-> > > > writes a driver and tests it on x86, then the driver explodes on an
-> > > > architecture which didn't export the same symbol.
-> > > > 
-> > > > So a better implementation might be to put
-> > > > 
-> > > > #ifdef CONFIG_HAVE_GET_USER_PAGES_FAST
-> > > > EXPORT_SYMBOL_GPL(get_user_pages_fast);
-> > > > #endif
-> > > > 
-> > > > into generic code somewhere.
-> > > 
-> > > How would that help?
-> > 
-> > It would fix the problem which I described.
-> 
-> The export would still only be available on x86 since no other arch 
-> would define CONFIG_HAVE_GET_USER_PAGES_FAST.
-> 
+Do they expose that sector size?
+I.e., does ioctl(fd,BLKSSZGET,&ss) set ss to 4096?
 
-That's presently true in Linus mainline.  The powerpc implementation is
-in -mm, but apprarently needs a bit more work.
+I'm interested because I'm preparing GNU Parted's partition table
+manipulation code (not its FS code) for just that.
+In particular, now I've heard two stories:
+
+  - disk makers will eventually sell drives with >512-byte sectors
+
+  - some disk makers have sort of agreed not to do that, and
+      expect forever to hide the larger underlying sector size
+      behind a virtual 512 (of course, this imposes alignment
+      restrictions, but that's a smaller problem)
+
+Even if the latter is the case, we still have to deal with
+optical and flash, both of which can already have larger sectors.
+
+> interested parties be willing to share test plans, so we could be sure
+> we have coverage wrt correctness: kernel internals, userspace tools like parted,
+> fdisk, kpartx, apps using O_DIRECT)?  Benchmarking winds up being an
+> NDA activity this early in the game so I don't want the focus of any
+> joint work to be benchmarks yet.
+
+Speaking of O_DIRECT, both dd and shred (both in coreutils), use
+O_DIRECT, so you could get _some_ coverage just by running shred
+and experimenting with dd's oflag=direct and iflag=direct options.
