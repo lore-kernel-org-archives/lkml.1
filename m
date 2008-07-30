@@ -1,101 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761087AbYG3MIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760218AbYG3MMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761087AbYG3MIP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 08:08:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbYG3MIA
+	id S1760218AbYG3MMs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 08:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbYG3MMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 08:08:00 -0400
-Received: from qb-out-0506.google.com ([72.14.204.229]:17157 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753946AbYG3MH7 (ORCPT
+	Wed, 30 Jul 2008 08:12:40 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:54482 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753715AbYG3MMj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 08:07:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:references:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=CtD0/CsBiyTR4Rllelu+q5FX0aYkOvmT/oKtUyIv6XKuhY8zGucw//b3TlTW19IuD5
-         v1cb3fc8icuolRhe293ZhfZT25IDOGs9+cgbksUPAssN1PEZygQtrvS0jQq8/06bggOc
-         Z+SAkRbj+GFuE42DN5EPkgcjRnq6JXqRjki3Q=
-From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Vitaly Mayatskikh <v.mayatskih@gmail.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Optimize tail handling for copy_user
-References: <m3ljzmdrqh.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0807280846320.3486@nehalem.linux-foundation.org>
-Date: Wed, 30 Jul 2008 14:07:58 +0200
-In-Reply-To: <alpine.LFD.1.10.0807280846320.3486@nehalem.linux-foundation.org>
-	(Linus Torvalds's message of "Mon, 28 Jul 2008 08:48:41 -0700 (PDT)")
-Message-ID: <m3hca760dd.fsf@gravicappa.englab.brq.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 30 Jul 2008 08:12:39 -0400
+Message-ID: <48905B4B.9090203@keyaccess.nl>
+Date: Wed, 30 Jul 2008 14:15:07 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Pete Clements <clem@clem.clem-digital.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27-rc1 oops on boot -- cs423x? (Corrected subject)
+References: <200807292052.m6TKq1J3005288@clem.clem-digital.net> <488FAFA6.4070300@keyaccess.nl> <200807292159.43226.bjorn.helgaas@hp.com>
+In-Reply-To: <200807292159.43226.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On 30-07-08 05:59, Bjorn Helgaas wrote:
 
-> On Mon, 28 Jul 2008, Vitaly Mayatskikh wrote:
->>
->> Reduce protection faults count in copy_user_handle_tail routine by
->> limiting clear length to the end of page as was suggested by Linus.
->
-> No, you did it wrong.
+> PNP: fix formatting of dbg_pnp_show_resources() output
+> 
+> From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> 
+> Each resource should be printed on its own line, so start snprintf'ing
+> at the beginning of the buffer every time through the loop.
+> 
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Optimize tail handling with regarding to flags passed to handler
-routine.
+Good WARN_ON() that...
 
-Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+I was looking at why I hadn't seen this here even with the same hardware 
+when I _did_ see it here. Most definitely did not back when I was paying 
+attention -- although there seems to be little opportunity for that.
 
-diff --git a/arch/x86/lib/usercopy_64.c b/arch/x86/lib/usercopy_64.c
-index f4df6e7..d793900 100644
---- a/arch/x86/lib/usercopy_64.c
-+++ b/arch/x86/lib/usercopy_64.c
-@@ -161,23 +161,32 @@ EXPORT_SYMBOL(copy_in_user);
- /*
-  * Try to copy last bytes and clear the rest if needed.
-  * Since protection fault in copy_from/to_user is not a normal situation,
-- * it is not necessary to optimize tail handling.
-+ * it is not necessary to do low level optimization of tail handling.
-  */
- unsigned long
--copy_user_handle_tail(char *to, char *from, unsigned len, unsigned zerorest)
-+copy_user_handle_tail(char *dst, char *src, unsigned remainder, unsigned flags)
- {
- 	char c;
--	unsigned zero_len;
-+	unsigned max_copy = remainder;
- 
--	for (; len; --len) {
--		if (__get_user_nocheck(c, from++, sizeof(char)))
-+	/* Don't even bother trying to cross a page in user space! */
-+	if (flags & DEST_IS_USERSPACE)
-+		max_copy = min(max_copy, BYTES_LEFT_IN_PAGE(dst));
-+	if (flags & SOURCE_IS_USERSPACE)
-+		max_copy = min(max_copy, BYTES_LEFT_IN_PAGE(src));
-+
-+	while (max_copy--) {
-+		if (__get_user(c, src))
- 			break;
--		if (__put_user_nocheck(c, to++, sizeof(char)))
-+		if (__put_user(c, dst))
- 			break;
-+		src++;
-+		dst++;
-+		remainder--;
- 	}
- 
--	for (c = 0, zero_len = len; zerorest && zero_len; --zero_len)
--		if (__put_user_nocheck(c, to++, sizeof(char)))
--			break;
--	return len;
-+	if (flags & CLEAR_REMAINDER)
-+		memset(dst, 0, remainder);
-+
-+	return remainder;
- }
+Just for my own education; did something recent happen to bring this on 
+or must this have been present always? Serious buglet it seems.
 
--- 
-wbr, Vitaly
+Rene
