@@ -1,40 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbYG3GqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbYG3Grb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756543AbYG3GqJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 02:46:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYG3Gpz
+	id S1756185AbYG3Grb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 02:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbYG3GrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 02:45:55 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:34024 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751075AbYG3Gpy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 02:45:54 -0400
-Date: Wed, 30 Jul 2008 08:45:53 +0200
-From: Sebastian Siewior <lkml@ml.breakpoint.cc>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Oops in 2.6.26-rc1: in
-	kernel/sched.c:sched_power_savings_store()
-Message-ID: <20080730064553.GA23828@Chamillionaire.breakpoint.cc>
-References: <E1KO36q-0004K6-DL@closure.thunk.org>
+	Wed, 30 Jul 2008 02:47:23 -0400
+Received: from isilmar.linta.de ([213.133.102.198]:50300 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751233AbYG3GrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 02:47:23 -0400
+Date: Wed, 30 Jul 2008 08:47:20 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 4/5] docsrc: fix crc32hash type
+Message-ID: <20080730064720.GA13409@isilmar.linta.de>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org, Sam Ravnborg <sam@ravnborg.org>
+References: <12173619152424@xenotime.net> <1217361915584@xenotime.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1KO36q-0004K6-DL@closure.thunk.org>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1217361915584@xenotime.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Theodore Ts'o | 2008-07-30 00:16:20 [-0400]:
+Hi,
 
->
->Here is the dmesg; the oops seems to be from this shell script (see
->below) when writing to /sys/devices/system/cpu/sched_mc_power_savings.
-Could this be the fix: http://lkml.org/lkml/2008/7/29/423
+On Tue, Jul 29, 2008 at 01:05:15PM -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix differing signedness warning:
+> 
+> Documentation/pcmcia/crc32hash.c:29: warning: pointer targets in passing argument 1 of 'crc32' differ in signedness
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: Dominik Brodowski <linux@dominikbrodowski.net>
 
->       	    					- Ted
-Sebastian
+Shall this go in via the pcmcia git tree, or with the other doc patches?
+
+Best,
+	Dominik
