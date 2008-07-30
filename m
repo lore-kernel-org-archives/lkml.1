@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbYG3UlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbYG3Ula@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753148AbYG3UlP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 16:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbYG3Uk7
+	id S1754530AbYG3Ula (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 16:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbYG3UlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 16:40:59 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:36873 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbYG3Uk6 (ORCPT
+	Wed, 30 Jul 2008 16:41:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44566 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753003AbYG3UlO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 16:40:58 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4890D139.7050006@s5r6.in-berlin.de>
-Date: Wed, 30 Jul 2008 22:38:17 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
-MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-CC: Rene Herman <rene.herman@keyaccess.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Paul Mundt <lethal@linux-sh.org>,
-       James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Dave Jones <davej@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Simon Arlott <simon@fire.lp0.eu>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 463 kernel developers missing!
-References: <Xine.LNX.4.64.0807290751510.31732@us.intercode.com.au>	 <488EF377.5080603@keyaccess.nl>	 <20080730072448.GB1564@cs181140183.pp.htv.fi>	 <4890284E.3050806@s5r6.in-berlin.de>	 <20080730124650.GB19966@cs181140183.pp.htv.fi>	 <4890646D.3060000@keyaccess.nl>	 <20080730153247.GA21597@cs181140183.pp.htv.fi>	 <alpine.LFD.1.10.0807300942450.3334@nehalem.linux-foundation.org>	 <4890C3D0.6070306@keyaccess.nl> <4890CDF4.3010407@keyaccess.nl> <9e4733910807301327k4f7e9d38h2453d46b98750c05@mail.gmail.com>
-In-Reply-To: <9e4733910807301327k4f7e9d38h2453d46b98750c05@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 30 Jul 2008 16:41:14 -0400
+Date: Wed, 30 Jul 2008 13:40:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org, vgoyal@redhat.com,
+       x86@kernel.org
+Subject: Re: [PATCH 2/2] firmware/memmap: Move kobject initialisation before
+ kobject_add()
+Message-Id: <20080730134011.24d10dfe.akpm@linux-foundation.org>
+In-Reply-To: <20080730221424.0d997fb0@kopernikus.site>
+References: <1217448752-13859-1-git-send-email-bwalle@suse.de>
+	<1217448752-13859-3-git-send-email-bwalle@suse.de>
+	<20080730221424.0d997fb0@kopernikus.site>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl wrote:
-> The decision to keep it in .mailmap format was made before I was
-> involved. A smaller .mailmap has been in the tree since 2007. Existing
-> tools will need to be changed if the location is moved.
+On Wed, 30 Jul 2008 22:14:24 +0200
+Bernhard Walle <bwalle@suse.de> wrote:
 
-You were talking about new uses all the time, hence new tools.
--- 
-Stefan Richter
--=====-==--- -=== ====-
-http://arcgraph.de/sr/
+> * Bernhard Walle <bwalle@suse.de> [2008-07-30 22:12]:
+> >
+> > Because kobject_init() call could be done from firmware_map_add_entry()
+> > which is called before kmalloc() can be used (we use the early bootmem allocator
+> > here), move that call to memmap_init() which is a late_initcall.
+> 
+> You can leave out that patch now since kobject_init() was adapted with
+> the other patch ... But I think it would still make sense to include
+> that one.
+
+What one?  Your thises and thats are confusing.
+
+If you think that "firmware/memmap: Move kobject initialisation before
+kobject_add()" should still be applied then I'd disagree.  Adding a
+GFP_KERNEL allocation into kobject_init() was a fairly significant
+backward step.  It's _good_ that kobject_init() can be called this
+early.  Let us strive to retain that robustness.
+
+
+
