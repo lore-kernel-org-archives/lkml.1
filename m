@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbYG3WAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759920AbYG3WAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758561AbYG3WAa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 18:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYG3WAU
+	id S1759920AbYG3WAv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 18:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758028AbYG3WAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 18:00:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56970 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753698AbYG3WAT (ORCPT
+	Wed, 30 Jul 2008 18:00:38 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:19657 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758240AbYG3WAh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 18:00:19 -0400
-Date: Wed, 30 Jul 2008 14:56:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: jens.axboe@oracle.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch v3] splice: fix race with page invalidation
-In-Reply-To: <E1KOJUk-0002vA-8w@pomaz-ex.szeredi.hu>
-Message-ID: <alpine.LFD.1.10.0807301453510.3277@nehalem.linux-foundation.org>
-References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807300958390.3334@nehalem.linux-foundation.org> <E1KOFUi-0000EU-0p@pomaz-ex.szeredi.hu> <20080730175406.GN20055@kernel.dk> <E1KOGT8-0000rd-0Z@pomaz-ex.szeredi.hu> <E1KOGeO-0000yi-EM@pomaz-ex.szeredi.hu>
- <20080730194516.GO20055@kernel.dk> <E1KOHvq-0001oX-OW@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807301310130.3334@nehalem.linux-foundation.org> <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807301349020.3334@nehalem.linux-foundation.org>
- <E1KOJ1s-0002a5-Im@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807301418270.3277@nehalem.linux-foundation.org> <E1KOJUk-0002vA-8w@pomaz-ex.szeredi.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 30 Jul 2008 18:00:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=TCTHN7dg0vjw0K0i1zWrNgp7zqPOasBAYOa2ENMbaTXI1CMXCmCaVRtyA4XrcLtOyY
+         /8lsMj5D+wOMI2CpQXfw6nid//ETd0OrXqC8JQJSvtHxzjr+QQvJ2dLn/YmIgu42F7Is
+         SaTXJz4M34Gu18BFQpw05LBpf7lZw6zSlPNGs=
+Message-ID: <86802c440807301500t17108f4el2f4178154b8b164f@mail.gmail.com>
+Date: Wed, 30 Jul 2008 15:00:36 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [GIT-PULL] time.c integration
+Cc: "Glauber Costa" <gcosta@redhat.com>, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, x86@kernel.org
+In-Reply-To: <20080730185148.GA12336@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200807290103.m6T13vt3000862@file.rdu.redhat.com>
+	 <20080730185007.GB26389@elte.hu> <20080730185148.GA12336@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 30, 2008 at 11:51 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>> Also, please do smaller steps while bringing both time_32.c and
+>> time_64.c up into their final forms (and do it in multiple commits),
+>> and make sure each step compiles on their respective defconfig. time.c
+>> details are historically fragile, i'd not be surprised if this series
+>> was the target of bisection efforts.
+>
+> i briefly put your current variant into tip/master, but it has build
+> problems as well:
+>
+> arch/x86/kernel/io_apic_64.c: In function 'check_timer':
+> arch/x86/kernel/io_apic_64.c:2016: error: 'timer_ack' undeclared (first use in this function)
+> arch/x86/kernel/io_apic_64.c:2016: error: (Each undeclared identifier is reported only once
+> arch/x86/kernel/io_apic_64.c:2016: error: for each function it appears in.)
+>
+> with:
+>
+>  http://redhat.com/~mingo/misc/config-Wed_Jul_30_20_50_17_CEST_2008.bad
+>
+>        Ingo
+> --
+diff --git a/include/asm-x86/timer.h b/include/asm-x86/timer.h
+index d0babce..e4eb6ab 100644
+--- a/include/asm-x86/timer.h
++++ b/include/asm-x86/timer.h
+@@ -9,8 +9,8 @@
+ unsigned long long native_sched_clock(void);
+ unsigned long native_calibrate_tsc(void);
 
-
-On Wed, 30 Jul 2008, Miklos Szeredi wrote:
-> 
-> You are being unfair: after having talked it over with Nick I
-> resubmitted this patch (not the same), which was added to -mm and
-> nobody complained then. Then it got thrown out of -mm during the merge
-> window because of a conflict, and then now I got around to
-> resubmitting it again.
-
-Ok, fair enough. I don't follow -mm myself (since as far as I'm concerned, 
-a lot of the point of -mm is that Andrew takes a lot of load off me). So 
-yes, it was unfair and yes, I'd never have reacted to it in -mm.
-
-But I'd really like to get that PG_uptodate bit just fixed - both wrt 
-writeout errors and wrt truncate/holepunch. We had some similar issues wrt 
-ext3 (?) inode buffers, where removing the uptodate bit actually ended up 
-being a mistake.
-
-			Linus
+-#ifdef CONFIG_X86_32
+ extern int timer_ack;
++#ifdef CONFIG_X86_32
+ extern int recalibrate_cpu_khz(void);
+ #endif /* CONFIG_X86_32 */
