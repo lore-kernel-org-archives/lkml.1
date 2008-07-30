@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761630AbYG3Kp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761250AbYG3Krk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761630AbYG3Kp3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 06:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbYG3KpR
+	id S1761250AbYG3Krk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 06:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYG3Kr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 06:45:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35711 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754058AbYG3KpP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 06:45:15 -0400
-Date: Wed, 30 Jul 2008 03:44:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "jay kumar" <jaykumarks@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc1 inconsistent lock state during boot time
-Message-Id: <20080730034443.748d9a19.akpm@linux-foundation.org>
-In-Reply-To: <6f31812b0807300237k54a5350fsc12189ea4b5479cd@mail.gmail.com>
-References: <6f31812b0807300237k54a5350fsc12189ea4b5479cd@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 30 Jul 2008 06:47:26 -0400
+Received: from www.tglx.de ([62.245.132.106]:39570 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753097AbYG3KrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 06:47:25 -0400
+Date: Wed, 30 Jul 2008 12:44:07 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Marc Pignat <marc.pignat@hevs.ch>
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Tobias Himmer <tobias@himmer-online.de>
+Subject: Re: [RFC,PATCH v2] hwmon: ADC124S501 generic driver
+Message-ID: <20080730124407.4a96494e@bluebox.local>
+In-Reply-To: <200807301216.01125.marc.pignat@hevs.ch>
+References: <200807301216.01125.marc.pignat@hevs.ch>
+Organization: Linutronix GmbH
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,83 +30,402 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008 15:07:14 +0530 "jay kumar" <jaykumarks@gmail.com> wrote:
+Am Wed, 30 Jul 2008 12:16:00 +0200
+schrieb Marc Pignat <marc.pignat@hevs.ch>:
 
->          While  testing  2.6.27-rc1 ,  "inconsistent lock state"
-> warning appeared at boot time
->          posting: dmesg  along with .config and hardware info.
+> SPI driver for analog to digital converters national semiconductor
+> ADC081S101, ADC124S501, ...
 > 
->          commit 6e86841d05f371b5b9b86ce76c02aaee83352298
->          Author: Linus Torvalds <torvalds@linux-foundation.org>
->          Date:   Mon Jul 28 19:40:31 2008 -0700
+> Code for 8 channels by : Tobias Himmer <tobias@himmer-online.de>
 > 
-> ..
+> Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
+> ---
 > 
-> [    7.317402] debug: unmapping init memory c0571000..c0625000
-> [    7.324903]
-> [    7.324904] =================================
-> [    7.330825] [ INFO: inconsistent lock state ]
-> [    7.335218] 2.6.27-rc1 #5
-> [    7.337873] ---------------------------------
-> [    7.342273] inconsistent {hardirq-on-W} -> {in-hardirq-W} usage.
-> [    7.348325] swapper/0 [HC1[1]:SC0[0]:HE0:SE1] takes:
-> [    7.353331]  (&port_lock_key){+-..}, at: [<c02e2eee>]
-> serial8250_interrupt+0x6e/0x160
-> [    7.361383] {hardirq-on-W} state was registered at:
-> [    7.366303]   [<c0155b65>] __lock_acquire+0x3b5/0x12e0
-> [    7.371559]   [<c0156b28>] lock_acquire+0x98/0xd0
-> [    7.376383]   [<c0404be2>] _spin_lock+0x32/0x60
-> [    7.381036]   [<c02e2a1d>] serial8250_startup+0x29d/0x640
-> [    7.386559]   [<c02dda91>] uart_startup+0x51/0x170
-> [    7.391471]   [<c02df58f>] uart_open+0xef/0x420
-> [    7.396124]   [<c02c9599>] tty_open+0x159/0x300
-> [    7.401396]   [<c01aac81>] chrdev_open+0x91/0x190
-> [    7.406220]   [<c01a63d6>] __dentry_open+0xb6/0x230
-> [    7.411220]   [<c01a6597>] nameidata_to_filp+0x47/0x60
-> [    7.416481]   [<c01b30de>] do_filp_open+0x19e/0x710
-> [    7.421480]   [<c01a61cd>] do_sys_open+0x4d/0xe0
-> [    7.426218]   [<c01a62c9>] sys_open+0x29/0x40
-> [    7.430698]   [<c0101146>] init_post+0x36/0x100
-> [    7.435353]   [<ffffffff>] 0xffffffff
-> [    7.439137] irq event stamp: 177720
+> Hi all!
+> 
+> patch against 2.6.27-rc1, tested on a custom arm board and only
+> compile-tested on x86.
+> 
+> This driver add support for National Semiconductor ADC<bb><c>S<sss>
+> chip family, where:
+>  * bb  is the resolution in number of bits (8, 10, 12)
+>  * c   is the number of channels (1, 2, 4, 8)
+>  * sss is the maximum conversion speed (021 for 200 kSPS, 051 for 500
+>    kSPS and 101 for 1 MSPS)
+> 
+> Changes from v1:
+>  * error recovery fixed
+>  * support for 8 channels, thanks to Tobias
 
-Does this fix it?
+Hm, but you didn't merge Tobias' patch. Was that intentional?
+Do you plan to integrate his patch, or do we have two separate patches?
 
-From: Borislav Petkov <petkovbb@googlemail.com>
+Thanks,
+Hans
 
-serial8250_startup() doesn't disable interrupts while taking the &up->port.lock
-which might race against the interrupt handler serial8250_interrupt(), which
-when entered, will deadlock waiting for the lock to be released.
-
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-Tested-by: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/serial/8250.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff -puN drivers/serial/8250.c~8250c-portlock-is-irq-safe drivers/serial/8250.c
---- a/drivers/serial/8250.c~8250c-portlock-is-irq-safe
-+++ a/drivers/serial/8250.c
-@@ -1885,7 +1885,7 @@ static int serial8250_startup(struct uar
- 		 * the interrupt is enabled.  Delays are necessary to
- 		 * allow register changes to become visible.
- 		 */
--		spin_lock(&up->port.lock);
-+		spin_lock_irqsave(&up->port.lock, flags);
- 		if (up->port.flags & UPF_SHARE_IRQ)
- 			disable_irq_nosync(up->port.irq);
- 
-@@ -1901,7 +1901,7 @@ static int serial8250_startup(struct uar
- 
- 		if (up->port.flags & UPF_SHARE_IRQ)
- 			enable_irq(up->port.irq);
--		spin_unlock(&up->port.lock);
-+		spin_unlock_irqrestore(&up->port.lock, flags);
- 
- 		/*
- 		 * If the interrupt is not reasserted, setup a timer to
-_
-
+>  * better CodingStyle
+> 
+> Thanks for your comments and testing ;)
+> 
+> Best regards
+> 
+> Marc
+> 
+> 
+> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+> index 00ff533..9c4a579 100644
+> --- a/drivers/hwmon/Kconfig
+> +++ b/drivers/hwmon/Kconfig
+> @@ -390,6 +390,22 @@ config SENSORS_LM70
+>  	  This driver can also be built as a module.  If so, the
+> module will be called lm70.
+>  
+> +config SENSORS_ADCXX
+> +	tristate "National Semiconductor ADCxxxSxxx"
+> +	depends on SPI_MASTER && EXPERIMENTAL
+> +	help
+> +	  If you say yes here you get support for the National
+> Semiconductor
+> +	  ADC<bb><c>S<sss> chip family, where
+> +	  * bb  is the resolution in number of bits (8, 10, 12)
+> +	  * c   is the number of channels (1, 2, 4)
+> +	  * sss is the maximum conversion speed (021 for 200 kSPS,
+> 051 for 500
+> +	    kSPS and 101 for 1 MSPS)
+> +
+> +	  Examples : ADC081S101, ADC124S501, ...
+> +
+> +	  This driver can also be built as a module.  If so, the
+> module
+> +	  will be called adcxx.
+> +
+>  config SENSORS_LM75
+>  	tristate "National Semiconductor LM75 and compatibles"
+>  	depends on I2C
+> diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
+> index d098677..026ba1e 100644
+> --- a/drivers/hwmon/Makefile
+> +++ b/drivers/hwmon/Makefile
+> @@ -16,6 +16,7 @@ obj-$(CONFIG_SENSORS_W83791D)	+= w83791d.o
+>  obj-$(CONFIG_SENSORS_ABITUGURU)	+= abituguru.o
+>  obj-$(CONFIG_SENSORS_ABITUGURU3)+= abituguru3.o
+>  obj-$(CONFIG_SENSORS_AD7418)	+= ad7418.o
+> +obj-$(CONFIG_SENSORS_ADCXX)	+= adcxx.o
+>  obj-$(CONFIG_SENSORS_ADM1021)	+= adm1021.o
+>  obj-$(CONFIG_SENSORS_ADM1025)	+= adm1025.o
+>  obj-$(CONFIG_SENSORS_ADM1026)	+= adm1026.o
+> diff --git a/drivers/hwmon/adcxx.c b/drivers/hwmon/adcxx.c
+> new file mode 100644
+> index 0000000..d920fe5
+> --- /dev/null
+> +++ b/drivers/hwmon/adcxx.c
+> @@ -0,0 +1,292 @@
+> +/*
+> + * adcxx.c
+> + *
+> + * The adcxx4s is an AD converter family from National Semiconductor
+> (NS).
+> + *
+> + * Copyright (c) 2008 Marc Pignat <marc.pignat@hevs.ch>
+> + *
+> + * The adcxx4s communicates with a host processor via an
+> SPI/Microwire Bus
+> + * interface. This driver supports the whole family of devices with
+> name
+> + * ADC<bb><c>S<sss>, where
+> + * * bb is the resolution in number of bits (8, 10, 12)
+> + * * c is the number of channels (1, 2, 4)
+> + * * sss is the maximum conversion speed (021 for 200 kSPS, 051 for
+> 500 kSPS
+> + *   and 101 for 1 MSPS)
+> + *
+> + * Complete datasheets are available at National's website here:
+> + * http://www.national.com/ds/DC/ADC<bb><c>S<sss>.pdf
+> + *
+> + * Handling of 8, 10 and 12 bits converters are the same, the
+> + * unavailable bits are 0 :)
+> + *
+> + * This program is free software; you can redistribute it and/or
+> modify
+> + * it under the terms of the GNU General Public License as published
+> by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +
+> +#include <linux/init.h>
+> +#include <linux/module.h>
+> +#include <linux/kernel.h>
+> +#include <linux/device.h>
+> +#include <linux/err.h>
+> +#include <linux/sysfs.h>
+> +#include <linux/hwmon.h>
+> +#include <linux/hwmon-sysfs.h>
+> +#include <linux/mutex.h>
+> +#include <linux/spi/spi.h>
+> +
+> +#define DRVNAME		"adcxx"
+> +
+> +struct adcxx {
+> +	struct device *hwmon_dev;
+> +	struct mutex lock;
+> +	u32 channels;
+> +	u32 reference; /* in millivolts */
+> +};
+> +
+> +/* sysfs hook function */
+> +static ssize_t adcxx_read(struct device *dev,
+> +		struct device_attribute *devattr, char *buf)
+> +{
+> +	struct spi_device *spi = to_spi_device(dev);
+> +	struct sensor_device_attribute *attr =
+> to_sensor_dev_attr(devattr);
+> +	struct adcxx *adc = dev_get_drvdata(&spi->dev);
+> +
+> +	u8 tx_buf[2] = { attr->index << 3 }; /* other bits are don't
+> care */
+> +	u8 rx_buf[2];
+> +	int status;
+> +	int value;
+> +
+> +	if (mutex_lock_interruptible(&adc->lock))
+> +		return -ERESTARTSYS;
+> +
+> +	status = spi_write_then_read(spi, tx_buf, sizeof(tx_buf),
+> +					rx_buf, sizeof(rx_buf));
+> +	if (status < 0) {
+> +		dev_warn(dev, "spi_write_then_read failed with
+> status %d\n",
+> +				status);
+> +		goto out;
+> +	}
+> +
+> +	value = (rx_buf[0] << 8) + rx_buf[1];
+> +	dev_dbg(dev, "raw value = 0x%x\n", value);
+> +
+> +	value = value * adc->reference >> 12;
+> +	status = sprintf(buf, "%d\n", value);
+> +out:
+> +	mutex_unlock(&adc->lock);
+> +	return status;
+> +}
+> +
+> +static ssize_t adcxx_show_min(struct device *dev,
+> +		struct device_attribute *devattr, char *buf)
+> +{
+> +	/* The minimum reference is 0 for this chip family */
+> +	return sprintf(buf, "0\n");
+> +}
+> +
+> +static ssize_t adcxx_show_max(struct device *dev,
+> +		struct device_attribute *devattr, char *buf)
+> +{
+> +	struct spi_device *spi = to_spi_device(dev);
+> +	struct adcxx *adc = dev_get_drvdata(&spi->dev);
+> +
+> +	u32 reference;
+> +
+> +	if (mutex_lock_interruptible(&adc->lock))
+> +		return -ERESTARTSYS;
+> +
+> +	reference = adc->reference;
+> +
+> +	mutex_unlock(&adc->lock);
+> +
+> +	return sprintf(buf, "%d\n", reference);
+> +}
+> +
+> +static ssize_t adcxx_set_max(struct device *dev,
+> +	struct device_attribute *devattr, const char *buf, size_t
+> count) +{
+> +	struct spi_device *spi = to_spi_device(dev);
+> +	struct adcxx *adc = dev_get_drvdata(&spi->dev);
+> +
+> +	unsigned long value;
+> +
+> +	if (strict_strtoul(buf, 10, &value))
+> +		return -EINVAL;
+> +
+> +	if (mutex_lock_interruptible(&adc->lock))
+> +		return -ERESTARTSYS;
+> +
+> +	adc->reference = value;
+> +
+> +	mutex_unlock(&adc->lock);
+> +
+> +	return count;
+> +}
+> +
+> +static ssize_t adcxx_show_name(struct device *dev, struct
+> device_attribute
+> +			      *devattr, char *buf)
+> +{
+> +	struct spi_device *spi = to_spi_device(dev);
+> +	struct adcxx *adc = dev_get_drvdata(&spi->dev);
+> +
+> +	return sprintf(buf, "adcxx%ds\n", adc->channels);
+> +}
+> +
+> +static struct sensor_device_attribute ad_input[] = {
+> +	SENSOR_ATTR(name, S_IRUGO, adcxx_show_name, NULL, 0),
+> +
+> +	/* The reference is the same for all channels */
+> +	SENSOR_ATTR(in_min, S_IRUGO, adcxx_show_min, NULL, 0),
+> +	SENSOR_ATTR(in_max, S_IWUSR | S_IRUGO, adcxx_show_max,
+> +					adcxx_set_max, 0),
+> +
+> +	SENSOR_ATTR(in0_input, S_IRUGO, adcxx_read, NULL, 0),
+> +	SENSOR_ATTR(in1_input, S_IRUGO, adcxx_read, NULL, 1),
+> +	SENSOR_ATTR(in2_input, S_IRUGO, adcxx_read, NULL, 2),
+> +	SENSOR_ATTR(in3_input, S_IRUGO, adcxx_read, NULL, 3),
+> +};
+> +
+> +/*----------------------------------------------------------------------*/
+> +
+> +static int __devinit adcxx_probe(struct spi_device *spi, int
+> channels) +{
+> +	struct adcxx *adc;
+> +	int status;
+> +	int i;
+> +
+> +	adc = kzalloc(sizeof *adc, GFP_KERNEL);
+> +	if (!adc)
+> +		return -ENOMEM;
+> +
+> +	/* set a default value for the reference */
+> +	adc->reference = 3300;
+> +
+> +	adc->channels = channels;
+> +
+> +	mutex_init(&adc->lock);
+> +
+> +	dev_set_drvdata(&spi->dev, adc);
+> +
+> +	for (i = 0; i < 3 + adc->channels; i++) {
+> +		status = device_create_file(&spi->dev,
+> &ad_input[i].dev_attr);
+> +		if (status)
+> +			goto out_dev_create_file_failed;
+> +	}
+> +
+> +	adc->hwmon_dev = hwmon_device_register(&spi->dev);
+> +	if (IS_ERR(adc->hwmon_dev)) {
+> +		dev_dbg(&spi->dev, "hwmon_device_register
+> failed.\n");
+> +		status = PTR_ERR(adc->hwmon_dev);
+> +		goto out_dev_reg_failed;
+> +	}
+> +
+> +	return 0;
+> +
+> +out_dev_create_file_failed:
+> +	hwmon_device_unregister(adc->hwmon_dev);
+> +	for (i = 0; i < 3 + adc->channels; i++)
+> +		device_remove_file(&spi->dev, &ad_input[i].dev_attr);
+> +out_dev_reg_failed:
+> +	dev_set_drvdata(&spi->dev, NULL);
+> +	kfree(adc);
+> +	return status;
+> +}
+> +
+> +static int __devinit adcxx1s_probe(struct spi_device *spi)
+> +{
+> +	return adcxx_probe(spi, 1);
+> +}
+> +
+> +static int __devinit adcxx2s_probe(struct spi_device *spi)
+> +{
+> +	return adcxx_probe(spi, 2);
+> +}
+> +
+> +static int __devinit adcxx4s_probe(struct spi_device *spi)
+> +{
+> +	return adcxx_probe(spi, 4);
+> +}
+> +
+> +static int __devexit adcxx_remove(struct spi_device *spi)
+> +{
+> +	struct adcxx *adc = dev_get_drvdata(&spi->dev);
+> +	int i;
+> +
+> +	hwmon_device_unregister(adc->hwmon_dev);
+> +	for (i = 0; i < 3 + adc->channels; i++)
+> +		device_remove_file(&spi->dev, &ad_input[i].dev_attr);
+> +	dev_set_drvdata(&spi->dev, NULL);
+> +	kfree(adc);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct spi_driver adcxx1s_driver = {
+> +	.driver = {
+> +		.name	= "adcxx1s",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +	.probe	= adcxx1s_probe,
+> +	.remove	= __devexit_p(adcxx_remove),
+> +};
+> +
+> +static struct spi_driver adcxx2s_driver = {
+> +	.driver = {
+> +		.name	= "adcxx2s",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +	.probe	= adcxx2s_probe,
+> +	.remove	= __devexit_p(adcxx_remove),
+> +};
+> +
+> +static struct spi_driver adcxx4s_driver = {
+> +	.driver = {
+> +		.name	= "adcxx4s",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +	.probe	= adcxx4s_probe,
+> +	.remove	= __devexit_p(adcxx_remove),
+> +};
+> +
+> +static int __init init_adcxx(void)
+> +{
+> +	int status;
+> +	status = spi_register_driver(&adcxx1s_driver);
+> +	if (status)
+> +		return status;
+> +
+> +	status = spi_register_driver(&adcxx2s_driver);
+> +	if (status)
+> +		return status;
+> +
+> +	return spi_register_driver(&adcxx4s_driver);
+> +}
+> +
+> +static void __exit exit_adcxx(void)
+> +{
+> +	spi_unregister_driver(&adcxx1s_driver);
+> +	spi_unregister_driver(&adcxx2s_driver);
+> +	spi_unregister_driver(&adcxx4s_driver);
+> +}
+> +
+> +module_init(init_adcxx);
+> +module_exit(exit_adcxx);
+> +
+> +MODULE_AUTHOR("Marc Pignat");
+> +MODULE_DESCRIPTION("National Semiconductor adcxx4sxxx Linux driver");
+> +MODULE_LICENSE("GPL");
+> +
+> +MODULE_ALIAS("adcxx1s");
+> +MODULE_ALIAS("adcxx2s");
+> +MODULE_ALIAS("adcxx4s");
+> --
+> To unsubscribe from this list: send the line "unsubscribe
+> linux-kernel" in the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
