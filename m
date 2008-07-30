@@ -1,151 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762108AbYG3OOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762186AbYG3OQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762108AbYG3OOV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 10:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYG3OOG
+	id S1762186AbYG3OQF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 10:16:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbYG3OPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 10:14:06 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:53218 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752754AbYG3OOF (ORCPT
+	Wed, 30 Jul 2008 10:15:52 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54813 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752107AbYG3OPv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 10:14:05 -0400
-X-SourceIP: 80.57.229.25
-Subject: Re: [PATCH 04/30] mm: slub: trivial cleanups
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, Neil Brown <neilb@suse.de>
-In-Reply-To: <489073CD.1040108@linux-foundation.org>
-References: <20080724140042.408642539@chello.nl>
-	 <20080724141529.560025894@chello.nl>
-	 <1217238223.7813.16.camel@penberg-laptop> <1217240353.6331.34.camel@twins>
-	 <489073CD.1040108@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 30 Jul 2008 16:13:46 +0200
-Message-Id: <1217427226.8157.65.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jul 2008 10:15:51 -0400
+Date: Wed, 30 Jul 2008 10:15:51 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Matthew Frost <artusemrys@yahoo.com>, <linux-kernel@vger.kernel.org>,
+       Matt Frost <artusemrys@sbcglobal.net>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>
+Subject: Re: BUG: SCSI: usb storage SDHC card doesn't work in 2.6.27-rc1
+In-Reply-To: <1217390922.6103.79.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0807301014420.2584-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-30 at 08:59 -0500, Christoph Lameter wrote:
-> Peter Zijlstra wrote:
-> 
-> >> Christoph?
-> 
-> Sorry for the delay but this moving stuff is unending....
-> 
-> 
-> >>> Index: linux-2.6/mm/slub.c
-> >>> ===================================================================
-> >>> --- linux-2.6.orig/mm/slub.c
-> >>> +++ linux-2.6/mm/slub.c
-> >>> @@ -27,7 +27,7 @@
-> >>>  /*
-> >>>   * Lock order:
-> >>>   *   1. slab_lock(page)
-> >>> - *   2. slab->list_lock
-> >>> + *   2. node->list_lock
-> >>>   *
-> >>>   *   The slab_lock protects operations on the object of a particular
-> >>>   *   slab and its metadata in the page struct. If the slab lock
-> 
-> Hmmm..... node? Maybe use the struct name? kmem_cache_node?
-> 
-> >>> @@ -163,11 +163,11 @@ static struct notifier_block slab_notifi
-> >>>  #endif
-> >>>  
-> >>>  static enum {
-> >>> -	DOWN,		/* No slab functionality available */
-> >>> +	DOWN = 0,	/* No slab functionality available */
-> >>>  	PARTIAL,	/* kmem_cache_open() works but kmalloc does not */
-> >>>  	UP,		/* Everything works but does not show up in sysfs */
-> >>>  	SYSFS		/* Sysfs up */
-> >>> -} slab_state = DOWN;
-> >>> +} slab_state;
-> >>>  
-> >>>  /* A list of all slab caches on the system */
-> >>>  static DECLARE_RWSEM(slub_lock);
-> 
-> It defaults to the first enum value. We also do not initialize statics with zero.
+On Tue, 29 Jul 2008, James Bottomley wrote:
 
-I seem to recall differently, I thought we explicitly init global stuff
-to 0.
+> > Summary:
+> > Between 2.6.26-rc9-git10 and rc9-git11, the kernel stopped properly
+> > recognizing my USB-card-reader-mounted SDHC 4GB card.  The problem seems to
+> > come up between usb-storage recognizing the device, and the handoff to scsi
+> > to read the disk properties.  The bug remains in 2.6.26 and 2.6.27-rc1;
+> > kernels before 2.6.26-rc9-git10 are unaffected.  On the same EHCI controller,
+> > an old-spec SD 1GB card and its reader are unaffected by this bug.
 
-> >>> @@ -288,21 +288,22 @@ static inline int slab_index(void *p, st
-> >>>  static inline struct kmem_cache_order_objects oo_make(int order,
-> >>>  						unsigned long size)
-> >>>  {
-> >>> -	struct kmem_cache_order_objects x = {
-> >>> -		(order << 16) + (PAGE_SIZE << order) / size
-> >>> -	};
-> >>> +	struct kmem_cache_order_objects x;
-> >>> +
-> >>> +	x.order = order;
-> >>> +	x.objects = (PAGE_SIZE << order) / size;
-> >>>  
-> >>>  	return x;
-> >>>  }
-> >>>  
-> 
-> Another width limitation that will limit the number of objects in a slab to 64k.
-> Also gcc does not get the fields, wont be able to optimize this as well and it will emit conversion from 16 bit loads.
+> > After the bug, initialization looks the same until the device scan finishes. 
+> > Handoff to scsi produces the following (taken from rc9-git12):
 
-Well, it was already 16 by virtue of the old code.
+> > sd 5:0:0:0: [sdf] Sector size 0 reported, assuming 512.
+> > sd 5:0:0:0: [sdf] 1 512-byte hardware sectors (0 MB)
+> > sd 5:0:0:0: [sdf] Write Protect is off
+> > sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
+> > sd 5:0:0:0: [sdf] Assuming drive cache: write through
+> > sd 5:0:0:0: [sdf] Sector size 0 reported, assuming 512.
+> > sd 5:0:0:0: [sdf] 1 512-byte hardware sectors (0 MB)
+> > sd 5:0:0:0: [sdf] Write Protect is off
+> > sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
+> > sd 5:0:0:0: [sdf] Assuming drive cache: write through
+> >  sdf: sdf1
+> >  sdf: p1 exceeds device capacity
+> > sd 5:0:0:0: [sdf] Attached SCSI removable disk
+> > sd 5:0:0:0: Attached scsi generic sg7 type 0
 
-GCC emmiting rubbish code due to the union would be sad - I can respin
-without this.
+The problem will most likely be fixed by this patch:
 
-> >>> @@ -1076,8 +1077,7 @@ static struct page *allocate_slab(struct
-> >>>  
-> >>>  	flags |= s->allocflags;
-> >>>  
-> >>> -	page = alloc_slab_page(flags | __GFP_NOWARN | __GFP_NORETRY, node,
-> >>> -									oo);
-> >>> +	page = alloc_slab_page(flags | __GFP_NOWARN | __GFP_NORETRY, node, oo);
-> >>>  	if (unlikely(!page)) {
-> >>>  		oo = s->min;
-> >>>  		/*
-> 
-> ok.
-> 
-> >>> @@ -1099,8 +1099,7 @@ static struct page *allocate_slab(struct
-> >>>  	return page;
-> >>>  }
-> >>>  
-> >>> -static void setup_object(struct kmem_cache *s, struct page *page,
-> >>> -				void *object)
-> >>> +static void setup_object(struct kmem_cache *s, struct page *page, void *object)
-> >>>  {
-> >>>  	setup_object_debug(s, page, object);
-> >>>  	if (unlikely(s->ctor))
-> 
-> Hmmm. You are moving it back on one line and Andrew will cut it up again later? This seems to be oscillating...
+	http://marc.info/?l=linux-usb&m=121734710306509&w=2
 
-Gah, somehow I got convinced the result was <= 80..
-
-> >>> @@ -1799,11 +1796,11 @@ static int slub_nomerge;
-> >>>   * slub_max_order specifies the order where we begin to stop considering the
-> >>>   * number of objects in a slab as critical. If we reach slub_max_order then
-> >>>   * we try to keep the page order as low as possible. So we accept more waste
-> >>> - * of space in favor of a small page order.
-> >>> + * of space in favour of a small page order.
-> >>>   *
-> >>>   * Higher order allocations also allow the placement of more objects in a
-> >>>   * slab and thereby reduce object handling overhead. If the user has
-> >>> - * requested a higher mininum order then we start with that one instead of
-> >>> + * requested a higher minimum order then we start with that one instead of
-> >>>   * the smallest order which will fit the object.
-> >>>   */
-> >>>  static inline int slab_order(int size, int min_objects,
-> 
-> Ack.
-
-OK, will send a new one without the bad bits..
+Alan Stern
 
