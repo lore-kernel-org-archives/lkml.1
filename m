@@ -1,190 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761174AbYG3N32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761928AbYG3NbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761174AbYG3N32 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 09:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbYG3N3U
+	id S1761928AbYG3NbU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 09:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbYG3NbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 09:29:20 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:59484 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751214AbYG3N3U (ORCPT
+	Wed, 30 Jul 2008 09:31:08 -0400
+Received: from viefep31-int.chello.at ([62.179.121.49]:53610 "EHLO
+	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751120AbYG3NbG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 09:29:20 -0400
-X-BigFish: VPS-41(zz1432R9370P98dR936eQ4015M1805M1442J936fQ1315m4cd6k19c2kzz10d3izz5a6ci2f39iz32i6bh43j)
-X-WSS-ID: 0K4TMSG-01-8Q0-01
-Message-ID: <48906C6C.1000909@amd.com>
-Date: Wed, 30 Jul 2008 15:28:12 +0200
-From: Peter Oruba <peter.oruba@amd.com>
-Organization: AMD (OSRC)
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-CC: Alistair John Strachan <alistair@devzero.co.uk>,
-       Pekka Paalanen <pq@iki.fi>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       shaohua.li@intel.com, tigran@aivazian.fsnet.co.uk,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Max Krasnyansky <maxk@qualcomm.com>
-Subject: Re: Oops in microcode sysfs registration,
-References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org>	 <200807291457.58408.alistair@devzero.co.uk>	 <20080729192214.2d3a4ca5@daedalus.pq.iki.fi>	 <200807291750.41169.alistair@devzero.co.uk>	 <b647ffbd0807300207s1ba47899j7220f83ed60d98a8@mail.gmail.com> <b647ffbd0807300335w1bedfe73m4959fba1e5c93401@mail.gmail.com>
-In-Reply-To: <b647ffbd0807300335w1bedfe73m4959fba1e5c93401@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset="ISO-8859-15"; format=flowed
+	Wed, 30 Jul 2008 09:31:06 -0400
+Subject: Re: [PATCH 06/30] mm: kmem_alloc_estimate()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Neil Brown <neilb@suse.de>,
+       cl@linux-foundation.org
+In-Reply-To: <1217420503.7813.170.camel@penberg-laptop>
+References: <20080724140042.408642539@chello.nl>
+	 <20080724141529.716339226@chello.nl>
+	 <1217420503.7813.170.camel@penberg-laptop>
+Content-Type: text/plain
+Date: Wed, 30 Jul 2008 15:31:02 +0200
+Message-Id: <1217424662.8157.58.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Jul 2008 13:28:13.0392 (UTC) FILETIME=[1DF06500:01C8F248]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-07-30 at 15:21 +0300, Pekka Enberg wrote:
+> Hi Peter,
+> 
+> On Thu, 2008-07-24 at 16:00 +0200, Peter Zijlstra wrote:
 
-Dmitry Adamushko schrieb:
-> 2008/7/30 Dmitry Adamushko <dmitry.adamushko@gmail.com>:
->> 2008/7/29 Alistair John Strachan <alistair@devzero.co.uk>:
->>> On Tuesday 29 July 2008 17:22:14 Pekka Paalanen wrote:
->>>>> Also, I'm sure this is reproducible without the NVIDIA garbage, but I was
->>>>> too lazy to test it. If you want me to repeat the experiment without the
->>>>> driver I would be more than happy to do so.
->>>> I'm not sure people are willing to look into this without a clean report,
->>>> so this would be cool. There's even a test module for mmiotrace in the
->>>> kernel, but I doubt it would make difference to use it or not, when trying
->>>> to reproduce the crash without the blob.
->>> Of course, and I should have attempted to reproduce without the driver.
->>> Fortunately that was easy: it is not an NVIDIA driver bug.
->>>
->>> Steps to reproduce: have CONFIG_MICROCODE=y and a suitable Intel
->>> processor, then do:
->>>
->>> echo mmiotrace >/debug/tracing/current_tracer
->>> echo none >/debug/tracing/current_tracer
->>>
->>> And you get this (snipped) oops:
->>>
->>> in mmio_trace_init
->>> mmiotrace: Disabling non-boot CPUs...
->>> kvm: disabling virtualization on CPU1
->>> CPU 1 is now offline
->>> SMP alternatives: switching to UP code
->>> CPU0 attaching NULL sched-domain.
->>> CPU1 attaching NULL sched-domain.
->>> CPU0 attaching NULL sched-domain.
->>> mmiotrace: CPU1 is down.
->>> mmiotrace: enabled.
->>> in mmio_trace_reset
->>> mmiotrace: Re-enabling CPUs...
->>> SMP alternatives: switching to SMP code
->>> Booting processor 1/1 ip 6000
->>> Initializing CPU#1
->>> Calibrating delay using timer specific routine.. <6>7204.76 BogoMIPS (lpj=3602381)
->>> CPU: L1 I cache: 32K, L1 D cache: 32K
->>> CPU: L2 cache: 4096K
->>> CPU: Physical Processor ID: 0
->>> CPU: Processor Core ID: 1
->>> x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
->>> CPU1: Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz stepping 06
->>> checking TSC synchronization [CPU#0 -> CPU#1]: passed.
->>> kvm: enabling virtualization on CPU1
->>> CPU0 attaching NULL sched-domain.
->>> Switched to high resolution mode on CPU 1
->>> CPU0 attaching sched-domain:
->>>  domain 0: span 0-1 level MC
->>>  groups: 0 1
->>> CPU1 attaching sched-domain:
->>>  domain 0: span 0-1 level MC
->>>  groups: 1 0
->>> ------------[ cut here ]------------
->>> Kernel BUG at ffffffff8021a31d [verbose debug info unavailable]
->>> invalid opcode: 0000 [1] PREEMPT SMP
->>> CPU 0
->>> Modules linked in: rfcomm l2cap kvm_intel kvm ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack ip_tables x_tables bridge stp llc acpi_cpufreq freq_table coretemp hwmon
->>> snd_pcm_oss snd_mixer_oss firewire_sbp2 hci_usb bluetooth arc4 ecb crypto_blkcipher cryptomgr crypto_algapi usbhid zd1211rw mac80211 crypto cfg80211 snd_emu10k1 snd_rawmidi
->>> snd_ac97_codec ac97_bus sg snd_seq_device snd_hda_intel snd_pcm snd_util_mem snd_timer sr_mod snd_hwdep i2c_i801 ehci_hcd firewire_ohci uhci_hcd snd snd_page_alloc firewire_core
->>> soundcore r8169 cdrom usbcore i2c_core crc_itu_t
->>> Pid: 2757, comm: bash Tainted: G       A  2.6.27-rc1-damocles #3
->>> RIP: 0010:[<ffffffff8021a31d>]  [<ffffffff8021a31d>] __mc_sysdev_add+0xc3/0x1f1
->>> RSP: 0018:ffff8800b8905ce8  EFLAGS: 00010297
->>> RAX: 0000000000000000 RBX: 0000000000000001 RCX: ffff880080a04000
->>> RDX: ffffffff8062c680 RSI: 0000000000000003 RDI: ffffffff8059e830
->>> RBP: ffff8800b8905d48 R08: ffff8800b8904000 R09: ffffffff80229ca4
->>> R10: ffff8800010247b0 R11: ffff8800bf879de0 R12: 0000000000000018
->>> R13: 0000000000000001 R14: 0000000000000000 R15: 0000000000000000
->>> FS:  00007f8ddc78f6e0(0000) GS:ffffffff805da200(0000) knlGS:0000000000000000
->>> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
->>> CR2: 00007f57cb9b2098 CR3: 00000000b8985000 CR4: 00000000000026e0
->>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->>> Process bash (pid: 2757, threadinfo ffff8800b8904000, task ffff8800bd125640)
->>> Stack:  ffffffff80627040 0000000000000000 0000000000000008 ffffffff8048bb28
->>>  0000000000000003 ffffffff802ce910 ffff8800b8905d28 0000000000000002
->>>  00000000ffffffe8 0000000000000001 0000000000000001 ffff880001028418
->>> Call Trace:
->>>  [<ffffffff802ce910>] ? sysfs_add_file+0xc/0xe
->>>  [<ffffffff8021a456>] mc_sysdev_add+0xb/0xd
->>>  [<ffffffff8047baaf>] mc_cpu_callback+0x4b/0x208
->>>  [<ffffffff8047b772>] ? mce_cpu_callback+0x3e/0xbc
->>>  [<ffffffff8024b787>] notifier_call_chain+0x33/0x5b
->>>  [<ffffffff8024b81f>] raw_notifier_call_chain+0xf/0x11
->>>  [<ffffffff8047e1dc>] _cpu_up+0xce/0x119
->>>  [<ffffffff8047e285>] cpu_up+0x5e/0x8a
->>>  [<ffffffff80224967>] disable_mmiotrace+0xfe/0x173
->>>  [<ffffffff80265279>] mmio_trace_reset+0x2d/0x44
->>>  [<ffffffff80262c4d>] tracing_set_trace_write+0xd3/0x10f
->>>  [<ffffffff80289cab>] ? filp_close+0x67/0x72
->>>  [<ffffffff8028bee3>] vfs_write+0xa7/0xe1
->>>  [<ffffffff8028bfe1>] sys_write+0x47/0x6f
->>>  [<ffffffff8020b6db>] system_call_fastpath+0x16/0x1b
->>> [   68.405002]
->>> [   68.405002]
->>> Code: e8 59 80 e8 fd 69 26 00 48 c7 c2 80 c6 62 80 48 8b 05 c0 00 3c 00 48 8b 04 d8 48 8b 48 08 65 8b 04 25 24 00 00 00 44 39 e8 74 04 <0f> 0b eb fe 4c 8d 04 0a 41 c7 84 24 7c 36 64 80 00
->>> 00 00 00 41
->>> RIP  [<ffffffff8021a31d>] __mc_sysdev_add+0xc3/0x1f1
->>>  RSP <ffff8800b8905ce8>
->>> ---[ end trace ee9c9240024cb48c ]---
->>>
->>> I've replaced the originally tainted dmesg with this new clean one, so
->>> there's no proprietary smell about it :-)
->> Yes, it's kind of a known issue. Take a look at this explanation:
->> http://lkml.org/lkml/2008/7/24/260
->>
->> There were a few related discussions in other threads (mainly, Max
->> Krasnyansky and I were asking for additional info on possible
->> requirements from the 'microcode' driver...) heh, I think, we'd be
->> better off just fixing it one way or another.
+> Just a nitpick, but:
 > 
-> does a patch below fix it for you?
-> [ not really what we wanted ]
+> > +unsigned kmalloc_estimate_fixed(size_t, gfp_t, int);
 > 
-> (non-white-space-damaged version is enclosed)
-> --- kernel/cpu.c-old    2008-07-30 12:31:15.000000000 +0200
-> +++ kernel/cpu.c        2008-07-30 12:32:02.000000000 +0200
-> @@ -349,6 +349,8 @@ static int __cpuinit _cpu_up(unsigned in
->                 goto out_notify;
->         BUG_ON(!cpu_online(cpu));
+> kmalloc_estimate_objs()?
 > 
-> +       cpu_set(cpu, cpu_active_map);
-> +
->         /* Now call notifier in preparation. */
->         raw_notifier_call_chain(&cpu_chain, CPU_ONLINE | mod, hcpu);
+> > +unsigned kmalloc_estimate_variable(gfp_t, size_t);
 > 
-> @@ -383,9 +385,6 @@ int __cpuinit cpu_up(unsigned int cpu)
-> 
->         err = _cpu_up(cpu, 0);
-> 
-> -       if (cpu_online(cpu))
-> -               cpu_set(cpu, cpu_active_map);
-> -
->  out:
->         cpu_maps_update_done();
->         return err;
-> 
-> 
-> 
+> kmalloc_estimate_bytes()?
 
-Dmitry,
+Sounds good, I'll do some sed magic on the patch-set to make it happen.
 
-works for me...
+> >  
+> >  /*
+> >   * Allocator specific definitions. These are mainly used to establish optimized
+> > Index: linux-2.6/mm/slub.c
+> > ===================================================================
+> > --- linux-2.6.orig/mm/slub.c
+> > +++ linux-2.6/mm/slub.c
+> > @@ -2412,6 +2412,42 @@ const char *kmem_cache_name(struct kmem_
+> >  }
+> >  EXPORT_SYMBOL(kmem_cache_name);
+> >  
+> > +/*
+> > + * Calculate the upper bound of pages required to sequentially allocate
+> > + * @objects objects from @cachep.
+> > + *
+> > + * We should use s->min_objects because those are the least efficient.
+> > + */
+> > +unsigned kmem_alloc_estimate(struct kmem_cache *s, gfp_t flags, int objects)
+> > +{
+> > +	unsigned long pages;
+> > +	struct kmem_cache_order_objects x;
+> > +
+> > +	if (WARN_ON(!s) || WARN_ON(!oo_objects(s->min)))
+> > +		return 0;
+> > +
+> > +	x = s->min;
+> > +	pages = DIV_ROUND_UP(objects, oo_objects(x)) << oo_order(x);
+> > +
+> > +	/*
+> > +	 * Account the possible additional overhead if the slab holds more that
+> > +	 * one object. Use s->max_objects because that's the worst case.
+> > +	 */
+> > +	x = s->oo;
+> > +	if (oo_objects(x) > 1) {
+> 
+> Hmm, I'm not sure why slab with just one object is treated separately
+> here. Surely you have per-CPU slabs then as well?
 
-Thanks,
-Peter
+The thought was that if the slab only contains 1 obj, then the per-cpu
+slabs are always full (or empty but already there), so you don't loose
+memory to other cpu's having half-filled slabs.
+
+Say you want to reserve memory for 10 object.
+
+In the 1 object per slab case, you will always allocate a slab, no
+matter what cpu you do the allocation on.
+
+With say, 16 objects per slab and allocations spread across 2 cpus, you
+have to allow for per-cpu slabs to be half-filled.
+
+> > +		/*
+> > +		 * Account the possible additional overhead if per cpu slabs
+> > +		 * are currently empty and have to be allocated. This is very
+> > +		 * unlikely but a possible scenario immediately after
+> > +		 * kmem_cache_shrink.
+> > +		 */
+> > +		pages += num_online_cpus() << oo_order(x);
+> 
+> Isn't this problematic with CPU hotplug? Shouldn't we use
+> num_possible_cpus() here?
+
+ACK, thanks!
+
+> > +/*
+> > + * Calculate the upper bound of pages requires to sequentially allocate @bytes
+> > + * from kmalloc in an unspecified number of allocations of nonuniform size.
+> > + */
+> > +unsigned kmalloc_estimate_variable(gfp_t flags, size_t bytes)
+> > +{
+> > +	int i;
+> > +	unsigned long pages;
+> > +
+> > +	/*
+> > +	 * multiply by two, in order to account the worst case slack space
+> > +	 * due to the power-of-two allocation sizes.
+> > +	 */
+> > +	pages = DIV_ROUND_UP(2 * bytes, PAGE_SIZE);
+> 
+> For bytes > PAGE_SIZE this doesn't look right (for SLUB). We do page
+> allocator pass-through which means that we'll be grabbing high order
+> pages which can be bigger than what 'pages' is here.
+
+Hehe - you actually made me think here.
+
+Satisfying allocations from a bucket distribution with power-of-two
+(which page alloc order satisfies) has a worst case slack space of:
+
+S(x) = 2^n - (2^(n-1)) - 1, n = ceil(log2(x))
+
+This can be seen for the cases where x = 2^i + 1.
+
+If we approximate S(x) by 2^(n-1) and compute the slack ratio for any
+given x:
+
+ R(x) ~ 2^n / 2^(n-1) = 2
+
+We'll see that for any amount of x, we can only use half that due to
+slack space.
+
+Therefore, by multiplying the demand @bytes by 2 we'll always have
+enough to cover the worst case slack considering the power-of-two
+allocation buckets.
+
+In example, if @bytes asks for 4 pages + 1 byte = 16385 bytes (assuming
+4k pages), then the above will request 8 pages + 2 bytes, rounded up to
+pages, is 9 pages. Which is enough to satisfy the order 3 allocation
+needed for the 8 contiguous pages to store the requested 16385 bytes.
+
+> > Index: linux-2.6/mm/slab.c
+> > ===================================================================
+> > --- linux-2.6.orig/mm/slab.c
+> > +++ linux-2.6/mm/slab.c
+> > @@ -3854,6 +3854,81 @@ const char *kmem_cache_name(struct kmem_
+> >  EXPORT_SYMBOL_GPL(kmem_cache_name);
+> >  
+> >  /*
+> > + * Calculate the upper bound of pages required to sequentially allocate
+> > + * @objects objects from @cachep.
+> > + */
+> > +unsigned kmem_alloc_estimate(struct kmem_cache *cachep,
+> > +		gfp_t flags, int objects)
+> > +{
+> > +	/*
+> > +	 * (1) memory for objects,
+> > +	 */
+> > +	unsigned nr_slabs = DIV_ROUND_UP(objects, cachep->num);
+> > +	unsigned nr_pages = nr_slabs << cachep->gfporder;
+> > +
+> > +	/*
+> > +	 * (2) memory for each per-cpu queue (nr_cpu_ids),
+> > +	 * (3) memory for each per-node alien queues (nr_cpu_ids), and
+> > +	 * (4) some amount of memory for the slab management structures
+> > +	 *
+> > +	 * XXX: truely account these
+> 
+> Heh, yes please. Or add a comment why it doesn't matter.
+
+Since you were the one I cribbed that comment from some (long) time ago,
+can you advise on how well the below approximation is to an upper bound
+on the above factors - assuming SLAB will live long enough to make it
+worth the effort?
+
+> > +	 */
+> > +	nr_pages += 1 + ilog2(nr_pages);
+> > +
+> > +	return nr_pages;
+> > +}
 
