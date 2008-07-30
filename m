@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbYG2X7D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbYG3AA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755529AbYG2X7D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 19:59:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYG2X6y
+	id S1755818AbYG3AA2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 20:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYG3AAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 19:58:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53129 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752330AbYG2X6x (ORCPT
+	Tue, 29 Jul 2008 20:00:19 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:57948 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752746AbYG3AAS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 19:58:53 -0400
-Date: Tue, 29 Jul 2008 16:57:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nicolas Boichat <nicolas@boichat.ch>
-Cc: mhoffman@lightlink.com, roberto@unbit.it,
-       mactel-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       khali@linux-fr.org, lm-sensors@lm-sensors.org,
-       guilherme.m.schroeder@gmail.com
-Subject: Re: [PATCH 2/2] applesmc: add support for Macbook v3.
-Message-Id: <20080729165756.48dc9d39.akpm@linux-foundation.org>
-In-Reply-To: <488F323E.6040403@boichat.ch>
-References: <1216814135.5834.9.camel@sirius>
-	<488F30F7.4030804@boichat.ch>
-	<488F323E.6040403@boichat.ch>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Jul 2008 20:00:18 -0400
+Message-ID: <488FAFA6.4070300@keyaccess.nl>
+Date: Wed, 30 Jul 2008 02:02:46 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: Pete Clements <clem@clem.clem-digital.net>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: 2.6.27-rc1 oops on boot -- cs423x? (Corrected subject)
+References: <200807292052.m6TKq1J3005288@clem.clem-digital.net>
+In-Reply-To: <200807292052.m6TKq1J3005288@clem.clem-digital.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jul 2008 23:07:42 +0800
-Nicolas Boichat <nicolas@boichat.ch> wrote:
+On 29-07-08 22:52, Pete Clements wrote:
 
+> [Previously sent with wrong subject line (2.6.26-rc1...) applicable
+> to post 2.6.26 series]
 > 
-> This patches adds support for Macbook v3 (sensors and accelerometer).
+> Missed most of the 26-git series, git6 first one tried and oops 
+> showed in that one as well as those tried after. oops below.
 
-Anally changed to "Add support for ...".  There is no need to put the
-text "This patch ..." in a changelog.
+http://marc.info/?l=linux-kernel&m=121736480005656&w=2
 
-> From: guilherme m. schroeder <guilherme.m.schroeder@gmail.com>
-> Signed-off-by: Nicolas Boichat <nicolas@boichat.ch>
+For now just adding a CC as I'm off to bed. Note -- snd-cs4236 has been 
+one of the most tested drivers with the new PNP code.
 
-Nope.  The way to signify authorship is to put a From: line right at
-the very start of the email.  If that line is missing, we'll fall back
-to using the email headers to determins the authorship.
+Rene.
+
 
