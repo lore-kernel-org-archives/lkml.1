@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbYG3Uqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbYG3UrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755599AbYG3Uqt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 16:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbYG3Uqj
+	id S1752641AbYG3UrW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 16:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbYG3UrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 16:46:39 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:39793 "EHLO
-	pd2mo1so-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754240AbYG3Uqi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 16:46:38 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=q2hyU374kmvBsQSO47wA:9 a=9YSO1XnrHuFxN602oF8CFCb2YykA:4 a=63hpme_HZ7UA:10 a=3AIdeF-xgCkA:10
-Message-ID: <4890D329.80106@shaw.ca>
-Date: Wed, 30 Jul 2008 14:46:33 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>, Alan Stern <stern@rowland.harvard.edu>,
-       usb-storage@lists.one-eyed-alien.net, Tomas Styblo <tripie@cpan.org>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [usb-storage] [PATCH] JMicron JM20337 USB-SATA data corruption
- bugfix - device 152d:2338
-References: <Pine.LNX.4.44L0.0807232337110.25883-100000@netrider.rowland.org> <4890C72D.7040604@shaw.ca> <20080730200033.GD7578@one-eyed-alien.net>
-In-Reply-To: <20080730200033.GD7578@one-eyed-alien.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 30 Jul 2008 16:47:12 -0400
+Received: from mail.suse.de ([195.135.220.2]:50875 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751474AbYG3UrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 16:47:10 -0400
+Date: Wed, 30 Jul 2008 22:47:07 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org, vgoyal@redhat.com,
+       x86@kernel.org
+Subject: Re: [PATCH 2/2] firmware/memmap: Move kobject initialisation before
+ kobject_add()
+Message-ID: <20080730224707.6b0791b2@kopernikus.site>
+In-Reply-To: <20080730134011.24d10dfe.akpm@linux-foundation.org>
+References: <1217448752-13859-1-git-send-email-bwalle@suse.de>
+	<1217448752-13859-3-git-send-email-bwalle@suse.de>
+	<20080730221424.0d997fb0@kopernikus.site>
+	<20080730134011.24d10dfe.akpm@linux-foundation.org>
+Organization: SUSE LINUX Products GmbH
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Dharm wrote:
-> On Wed, Jul 30, 2008 at 01:55:25PM -0600, Robert Hancock wrote:
->> Alan Stern wrote:
->>> On Wed, 23 Jul 2008, Robert Hancock wrote:
->>>
->>>> It remains an issue, though, that if there's no underflow, if the device 
->>>> reports an error in the CSW but doesn't provide sense data, we assume 
->>>> nothing bad happened and don't retry. That definitely does not seem 
->>>> correct. The device is not supposed to do this, but with how crappily 
->>>> some of these devices are designed we should be more defensive.
->>> The problem is, what can you do?  The device has said that something 
->>> was wrong, but it hasn't told you what.  Without knowing what went 
->>> wrong, you can't know how to recover.
-> 
-> Yes and no.  If ASC/ASCQ is clear, then it's telling you that nothing is
-> wrong.  The device is contradicting itself. That doesn't really help us
-> here, but it's a point I like to be clear on.
-> 
->>> I suppose in such cases we could simply report that the command failed
->>> completely.
->> I think that is what we need to do. The SCSI/block layers should retry 
->> the command or report a failure to userspace. Above all else we can't 
->> just continue on our merry way and assume success, otherwise data will 
->> get silently corrupted.
-> 
-> The code path to supress the reporting of an error when auto-sense shows no
-> ASC/ASCQ was added for a reason.  That reason has likely been lost to time,
-> but I worry about devices that are out there that rely on the current
-> behavior to function properly....
+* Andrew Morton <akpm@linux-foundation.org> [2008-07-30 13:40]:
+>
+> If you think that "firmware/memmap: Move kobject initialisation before
+> kobject_add()" 
 
-My original comment was that that code should be removed, but this is 
-incorrect. In fact that code path is unrelated to this problem since it 
-only executes if no transport error was detected. This code path is 
-needed since retrieving sense data is done for multiple reasons other 
-than a transport failure. For one, "If we're running the CB transport, 
-which is incapable of determining status on its own, we will auto-sense 
-unless the operation involved a data-in transfer." In this case, for a 
-successful transfer the status must be reset to good after getting the 
-sense data.
+Yes, that's what I meant.
 
-In the case in question here, the BOT transport reports a failure, and 
-we retrieve sense data, but the sense data doesn't indicate an error. 
-This results in the failure essentially being ignored. In this case I 
-think we should be doing the same thing as we do on detecting an underflow:
+> should still be applied then I'd disagree. Adding a
+> GFP_KERNEL allocation into kobject_init() was a fairly significant
+> backward step.  It's _good_ that kobject_init() can be called this
+> early.  Let us strive to retain that robustness.
 
-srb->result = (DID_ERROR << 16) | (SUGGEST_RETRY << 24);
+Ok, since you have more experience with kobject, I'm fine with not
+applying that one.
+
+[I saw you merged the first (coding style) patch.]
 
 
+Bernhard
+-- 
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
