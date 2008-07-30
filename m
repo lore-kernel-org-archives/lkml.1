@@ -1,81 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbYG3QMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330AbYG3Q2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758041AbYG3QMf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 12:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbYG3QMZ
+	id S1753330AbYG3Q2x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 12:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbYG3Q2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 12:12:25 -0400
-Received: from mail.ocs.com.au ([202.134.241.204]:21084 "EHLO mail.ocs.com.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752929AbYG3QMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 12:12:24 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 (debian 1:2.7.2-12) with nmh-1.2
-From: Keith Owens <kaos@ocs.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Simon Horman <horms@verge.net.au>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>
-Subject: Re: [patch] IA64: only call up() in salinfo_work_to_do() if down_trylock() was successful 
-In-reply-to: Your message of "Wed, 30 Jul 2008 02:43:29 MST."
-             <20080730024329.404eccc3.akpm@linux-foundation.org> 
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Thu, 31 Jul 2008 02:12:21 +1000
-Message-ID: <20945.1217434341@ocs10w>
+	Wed, 30 Jul 2008 12:28:45 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:64301 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbYG3Q2o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 12:28:44 -0400
+Date: Wed, 30 Jul 2008 12:28:41 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] ftrace: add ftraced_nmi runtime tester
+Message-ID: <alpine.DEB.1.10.0807301225050.26259@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton (on Wed, 30 Jul 2008 02:43:29 -0700) wrote:
->On Tue, 29 Jul 2008 23:07:45 +1000 Simon Horman <horms@verge.net.au> wrote:
->
->> On Tue, Jul 29, 2008 at 10:47:09PM +1000, Keith Owens wrote:
->> > Simon Horman (on Tue, 29 Jul 2008 19:47:20 +1000) wrote:
->> > >Aesthetic issues aside is it safe to call up() if down_trylock() failed?
->> > >
->> > >arch/ia64/kernel/salinfo.c: In function `salinfo_work_to_do':
->> > >arch/ia64/kernel/salinfo.c:195: warning: ignoring return value of `down_trylock'
->> > >
->> > >Signed-off-by: Simon Horman <horms@verge.net.au>
->> > >
->> > >Index: linux-2.6/arch/ia64/kernel/salinfo.c
->> > >===================================================================
->> > >--- linux-2.6.orig/arch/ia64/kernel/salinfo.c	2008-07-29 19:06:33.000000000 +1000
->> > >+++ linux-2.6/arch/ia64/kernel/salinfo.c	2008-07-29 19:40:02.000000000 +1000
->> > >@@ -192,8 +192,8 @@ struct salinfo_platform_oemdata_parms {
->> > > static void
->> > > salinfo_work_to_do(struct salinfo_data *data)
->> > > {
->> > >-	down_trylock(&data->mutex);
->> > >-	up(&data->mutex);
->> > >+	if (down_trylock(&data->mutex) == 0)
->> > >+		up(&data->mutex);
->> > > }
->> > > 
->> > > static void
->> > 
->> > NAK.  The whole point of this function is to set the mutex to the up
->> > state, irrespective of whether it was already down or not.  Tracking
->> > the state of data->mutex in all the possible contexts is just too
->> > fragile, especially since it can be modified from NMI context.
->> > salinfo_work_to_do() ensures that the mtuex ends in the up state.
->
->boggle.  I daren't look.
->
->> > To remove the warning, just stick '(void)' in front of down_trylock().
->> 
->> Thanks, will do.
->> 
->
->For gawd's sake add a comment there too.
 
-You mean like the comment that is already in there?
+Stated in previous patches, we can not modify code that has a chance of
+running on another CPU at the same time. We use kstop_machine to modify
+code to prevent most of these cases. Unfortunatly, kstop_machine does not
+affect NMIs. To get around this, we simply do not trace NMI code.
 
-/* Kick the mutex that tells user space that there is work to do.  Instead of
- * trying to track the state of the mutex across multiple cpus, in user
- * context, interrupt context, non-maskable interrupt context and hotplug cpu,
- * it is far easier just to grab the mutex if it is free then release it.
- *
- * This routine must be called with data_saved_lock held, to make the down/up
- * operation atomic.
- */
+Previous patches address finding areas that are being traced and called
+by NMIs. But there is a very small chance that it may miss some calls.
+
+On boot up, in mcount (all non trace disabled functions call it) has
+a check to see if it is called from NMI context, and if it is, it prints
+a warning and disables ftrace.  Near the end of the boot process, the kernel
+thread "ftraced" will convert those recorded functions into nops.
+
+There is a chance that the NMI code will call some function that was called
+and recorded by non NMI code, and the check will not be done. Note, that
+for this to happen, the NMI code had to call it _after_ the kernel thread
+"ftraced" converted it. Even if the non NMI code was called first, the
+check is still done until the kernel thread changes it into a nop. For
+this reason, it is unlikely that the code would be missed.
+
+In order to catch these unlikely cases, this patch adds another safety net 
+that can be enabled after the system is up and running. It will convert 
+all recorded functions into a call to check if they are being called from 
+NMI context, and if they are, a warning is printed.
+
+This is not turned on by default since it brings the preformance of the
+system down by roughly 18% (tracing is enabled in this check).
+
+Note: This patch did not catch any new areas that NMI is called that was
+   not already caught by the other patch set. I only have this patch because
+   in theory, the other patch set might miss something.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+  kernel/trace/Kconfig  |   17 ++++++++
+  kernel/trace/ftrace.c |  100 ++++++++++++++++++++++++++++++++++++++++++++++++++
+  2 files changed, 117 insertions(+)
+
+Index: linux-tip.git/kernel/trace/Kconfig
+===================================================================
+--- linux-tip.git.orig/kernel/trace/Kconfig	2008-07-28 20:15:15.000000000 -0400
++++ linux-tip.git/kernel/trace/Kconfig	2008-07-30 11:41:09.000000000 -0400
+@@ -134,3 +134,20 @@ config FTRACE_STARTUP_TEST
+  	  a series of tests are made to verify that the tracer is
+  	  functioning properly. It will do tests on all the configured
+  	  tracers of ftrace.
++
++config FTRACE_NMI_TESTER
++	bool "Enable NMI checking in all ftrace calls"
++	depends on DYNAMIC_FTRACE
++	help
++	  This option is used to find areas in the kernel that might be traced
++	  in NMI context. It adds a function tracer that only checks to see
++	  if it is called in the NMI context, and if it is it will report a
++	  warning and stop checking.
++
++	  The file debugfs/tracing/ftrace_nmi_tester will be created.
++	  To start the NIM testing, simply echo '1' into this file.
++
++	  Note: The performance of the system will slow down around 18%, when
++	        the tester is active.
++
++	  If unsure say N.
+Index: linux-tip.git/kernel/trace/ftrace.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/ftrace.c	2008-07-29 20:50:20.000000000 -0400
++++ linux-tip.git/kernel/trace/ftrace.c	2008-07-30 12:24:23.000000000 -0400
+@@ -1473,6 +1473,97 @@ ftraced_write(struct file *filp, const c
+  	return cnt;
+  }
+
++#ifdef CONFIG_FTRACE_NMI_TESTER
++static int ftrace_nmi_tester __read_mostly;
++static int ftrace_nmi_call_detected __read_mostly;
++
++static void
++ftrace_nmi_tester_call(unsigned long ip, unsigned long parent_ip)
++{
++
++	if (unlikely(ftrace_nmi_call_detected))
++		return;
++
++	if (unlikely(in_nmi())) {
++		ftrace_nmi_call_detected = 1;
++
++		printk(KERN_WARNING
++		       "\n--------------- cut here ---------------\n");
++		printk(KERN_WARNING
++		       "WARNING: ftraced code called from NMI context ");
++		print_symbol("%s\n", ip);
++		printk(KERN_WARNING
++		     "         Please report this to the ftrace maintainer.\n");
++		dump_stack();
++		printk(KERN_WARNING
++		       "--------------- end cut here ---------------\n");
++	}
++}
++
++static struct ftrace_ops ftrace_nmi_trace_ops __read_mostly =
++{
++	.func = ftrace_nmi_tester_call,
++};
++
++static ssize_t
++ftrace_nmi_tester_read(struct file *filp, char __user *ubuf,
++		       size_t cnt, loff_t *ppos)
++{
++	/* don't worry about races */
++	char *buf = ftrace_nmi_tester ? "enabled\n" : "disabled\n";
++	int r = strlen(buf);
++
++	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
++}
++
++static ssize_t
++ftrace_nmi_tester_write(struct file *filp, const char __user *ubuf,
++			size_t cnt, loff_t *ppos)
++{
++	char buf[64];
++	long val;
++	int ret;
++
++	if (cnt >= sizeof(buf))
++		return -EINVAL;
++
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
++
++	if (strncmp(buf, "enable", 6) == 0)
++		val = 1;
++	else if (strncmp(buf, "disable", 7) == 0)
++		val = 0;
++	else {
++		buf[cnt] = 0;
++
++		ret = strict_strtoul(buf, 10, &val);
++		if (ret < 0)
++			return ret;
++
++		val = !!val;
++	}
++
++	if (ftrace_nmi_tester != val) {
++		ftrace_nmi_tester = val;
++		if (val)
++			register_ftrace_function(&ftrace_nmi_trace_ops);
++		else
++			unregister_ftrace_function(&ftrace_nmi_trace_ops);
++	}
++
++	filp->f_pos += cnt;
++
++	return cnt;
++}
++
++static struct file_operations ftrace_nmi_tester_fops = {
++	.open = tracing_open_generic,
++	.read = ftrace_nmi_tester_read,
++	.write = ftrace_nmi_tester_write,
++};
++#endif /* CONFIG_FTRACE_NMI_TESTER */
++
+  static struct file_operations ftrace_avail_fops = {
+  	.open = ftrace_avail_open,
+  	.read = seq_read,
+@@ -1586,6 +1677,15 @@ static __init int ftrace_init_debugfs(vo
+  	if (!entry)
+  		pr_warning("Could not create debugfs "
+  			   "'ftraced_enabled' entry\n");
++
++#ifdef CONFIG_FTRACE_NMI_TESTER
++	entry = debugfs_create_file("ftraced_nmi_tester", 0644, d_tracer,
++				    NULL, &ftrace_nmi_tester_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'ftrace_nmi_tester' entry\n");
++#endif
++
+  	return 0;
+  }
+
 
