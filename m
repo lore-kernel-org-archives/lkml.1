@@ -1,57 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbYG3VQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbYG3VRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758675AbYG3VQq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 17:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYG3VQf
+	id S1756077AbYG3VRE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 17:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757641AbYG3VQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 17:16:35 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:49280 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752445AbYG3VQf (ORCPT
+	Wed, 30 Jul 2008 17:16:42 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:35380 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757404AbYG3VQl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 17:16:35 -0400
-To: torvalds@linux-foundation.org
-CC: miklos@szeredi.hu, jens.axboe@oracle.com, akpm@linux-foundation.org,
-       nickpiggin@yahoo.com.au, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-reply-to: <alpine.LFD.1.10.0807301349020.3334@nehalem.linux-foundation.org>
-	(message from Linus Torvalds on Wed, 30 Jul 2008 13:51:36 -0700 (PDT))
-Subject: Re: [patch v3] splice: fix race with page invalidation
-References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807300958390.3334@nehalem.linux-foundation.org> <E1KOFUi-0000EU-0p@pomaz-ex.szeredi.hu> <20080730175406.GN20055@kernel.dk> <E1KOGT8-0000rd-0Z@pomaz-ex.szeredi.hu> <E1KOGeO-0000yi-EM@pomaz-ex.szeredi.hu>
- <20080730194516.GO20055@kernel.dk> <E1KOHvq-0001oX-OW@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807301310130.3334@nehalem.linux-foundation.org> <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807301349020.3334@nehalem.linux-foundation.org>
-Message-Id: <E1KOJ1s-0002a5-Im@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 30 Jul 2008 23:16:16 +0200
+	Wed, 30 Jul 2008 17:16:41 -0400
+Date: Wed, 30 Jul 2008 16:16:40 -0500
+From: Mike Miller <mike.miller@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>
+Subject: [PATCH 5/6] cciss: add support for multi lun tape devices
+Message-ID: <20080730211640.GE1758@roadking.ldev.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 30 Jul 2008, Miklos Szeredi wrote:
-> > 
-> > It _is_ a bug fix.
-> 
-> No it's not.
-> 
-> It's still papering over a totally unrelated bug. It's not a "fix", it's a 
-> "paper-over". It doesn't matter if _behaviour_ changes.
-> 
-> Can you really not see the difference?
-> 
-> Afaik, everybody pretty much agreed what the real fix should be (don't 
-> mark the page not up-to-date, just remove it from the radix tree)
+Patch 5 of 6
 
-Huh?  I did exactly that, and that patch got NAK'ed by you and Nick:
+This patch adds support for multi-lun devices in a SAS environment. It's
+required for the support of media changers.
+Please consider this patch for inclusion.
 
-http://lkml.org/lkml/2008/6/25/230
-http://lkml.org/lkml/2008/7/7/21
+Thanks,
+mikem
 
-Confused.
+Signed-off-by: Stephen M. Cameron <scameron@beardog.cca.cpqcorp.net>
+Signed-off-by: Mike Miller <mike.miller@hp.com>
 
-> I'm not seeing why you continue to push the patch that ALREADY GOT
-> NAK'ed.
-
-And later ACK'ed by Nick.
-
-There's everything here but agreement about a solution :)
-
-Miklos
+diff --git a/drivers/block/cciss_scsi.c b/drivers/block/cciss_scsi.c
+index c673ff1..e1233aa 100644
+--- a/drivers/block/cciss_scsi.c
++++ b/drivers/block/cciss_scsi.c
+@@ -371,16 +371,50 @@ cciss_scsi_add_entry(int ctlr, int hostno,
+ 	/* assumes hba[ctlr]->scsi_ctlr->lock is held */ 
+ 	int n = ccissscsi[ctlr].ndevices;
+ 	struct cciss_scsi_dev_t *sd;
++	int i, bus, target, lun;
++	unsigned char addr1[8], addr2[8];
+ 
+ 	if (n >= CCISS_MAX_SCSI_DEVS_PER_HBA) {
+ 		printk("cciss%d: Too many devices, "
+ 			"some will be inaccessible.\n", ctlr);
+ 		return -1;
+ 	}
+-	sd = &ccissscsi[ctlr].dev[n];
+-	if (find_bus_target_lun(ctlr, &sd->bus, &sd->target, &sd->lun) != 0)
+-		return -1;
+ 
++	bus = target = -1;
++	lun = 0;
++	/* Is this device a non-zero lun of a multi-lun device */
++	/* byte 4 of the 8-byte LUN addr will contain the logical unit no. */
++	if (scsi3addr[4] != 0) {
++		/* Search through our list and find the device which */
++		/* has the same 8 byte LUN address, excepting byte 4. */
++		/* Assign the same bus and target for this new LUN. */
++		/* Use the logical unit number from the firmware. */
++		memcpy(addr1, scsi3addr, 8);
++		addr1[4] = 0;
++		for (i = 0; i < n; i++) {
++			sd = &ccissscsi[ctlr].dev[i];
++			memcpy(addr2, sd->scsi3addr, 8);
++			addr2[4] = 0;
++			/* differ only in byte 4? */
++			if (memcmp(addr1, addr2, 8) == 0) {
++				bus = sd->bus;
++				target = sd->target;
++				lun = scsi3addr[4];
++				break;
++			}
++		}
++	}
++
++	sd = &ccissscsi[ctlr].dev[n];
++	if (lun == 0) {
++		if (find_bus_target_lun(ctlr,
++			&sd->bus, &sd->target, &sd->lun) != 0)
++			return -1;
++	} else {
++		sd->bus = bus;
++		sd->target = target;
++		sd->lun = lun;
++	}
+ 	added[*nadded].bus = sd->bus;
+ 	added[*nadded].target = sd->target;
+ 	added[*nadded].lun = sd->lun;
