@@ -1,100 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762611AbYG3PeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbYG3Pjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762611AbYG3PeU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 11:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbYG3PeJ
+	id S1754501AbYG3Pjw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 11:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbYG3Pjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 11:34:09 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:24361 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753092AbYG3PeI (ORCPT
+	Wed, 30 Jul 2008 11:39:43 -0400
+Received: from web83206.mail.mud.yahoo.com ([216.252.101.62]:38434 "HELO
+	web83206.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751986AbYG3Pjn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 11:34:08 -0400
-Date: Wed, 30 Jul 2008 08:23:35 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Simon Arlott <simon@fire.lp0.eu>, Daniel Walker <dwalker@mvista.com>,
-       Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [patch 1/4] fastboot: make fastboot a config option
-Message-Id: <20080730082335.4da1296f.randy.dunlap@oracle.com>
-In-Reply-To: <20080720151234.4535ee73@infradead.org>
-References: <20080720151140.4aa7c682@infradead.org>
-	<20080720151234.4535ee73@infradead.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Wed, 30 Jul 2008 11:39:43 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=bv32D3hnNs8MqlMCXo5kxolDJTt58/ifr0CZ7ZJj6m2YgfVXum7lzPW6X0kiD0QzOaE/CjFneyFQsgApy/+gfa+mV2/ieaFGwbYrbDAU1hfmST38i6mQbw+E6f3Ytfhg8vdxEXHSqc+DwSDjjGDEPeKr7FRn9ISnjn0tzja2qM4=;
+X-YMail-OSG: CXPEBr0VM1lqvqZg8G_q3jKwL.58BiKh5fNgMlIS21AkZOo5BXopJP8RAPrQ9jUZyLFhhkgtOEmsaOZr.ViU_QEzp366wQmsx87Gp2tF27NIC7cbHOkFYFk-
+Date: Wed, 30 Jul 2008 08:39:42 -0700 (PDT)
+From: Matthew Frost <artusemrys@yahoo.com>
+Subject: Re: BUG: SCSI: usb storage SDHC card doesn't work in 2.6.27-rc1
+To: Alan Stern <stern@rowland.harvard.edu>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-kernel@vger.kernel.org, Matt Frost <artusemrys@sbcglobal.net>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>
+In-Reply-To: <Pine.LNX.4.44L0.0807301014420.2584-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 7BIT
+Message-ID: <749062.6878.qm@web83206.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Jul 2008 15:12:34 -0700 Arjan van de Ven wrote:
+--- Alan Stern <stern@rowland.harvard.edu> wrote:
 
+> On Tue, 29 Jul 2008, James Bottomley wrote:
 > 
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Sun, 20 Jul 2008 10:20:49 -0700
-> Subject: [PATCH] fastboot: make fastboot a config option
+> > > Summary:
+> > > Between 2.6.26-rc9-git10 and rc9-git11, the kernel stopped properly
+> > > recognizing my USB-card-reader-mounted SDHC 4GB card.  The problem
+> seems to
+> > > come up between usb-storage recognizing the device, and the handoff to
+> scsi
+> > > to read the disk properties.  The bug remains in 2.6.26 and 2.6.27-rc1;
+> > > kernels before 2.6.26-rc9-git10 are unaffected.  On the same EHCI
+> controller,
+> > > an old-spec SD 1GB card and its reader are unaffected by this bug.
 > 
-> to mitigate the risks of async bootup, make fastboot a configuration
-> option...
+> > > After the bug, initialization looks the same until the device scan
+> finishes. 
+> > > Handoff to scsi produces the following (taken from rc9-git12):
 > 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  init/Kconfig |   11 +++++++++++
->  init/main.c  |    4 ++++
->  2 files changed, 15 insertions(+), 0 deletions(-)
+> > > sd 5:0:0:0: [sdf] Sector size 0 reported, assuming 512.
+> > > sd 5:0:0:0: [sdf] 1 512-byte hardware sectors (0 MB)
+> > > sd 5:0:0:0: [sdf] Write Protect is off
+> > > sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
+> > > sd 5:0:0:0: [sdf] Assuming drive cache: write through
+> > > sd 5:0:0:0: [sdf] Sector size 0 reported, assuming 512.
+> > > sd 5:0:0:0: [sdf] 1 512-byte hardware sectors (0 MB)
+> > > sd 5:0:0:0: [sdf] Write Protect is off
+> > > sd 5:0:0:0: [sdf] Mode Sense: 4b 00 00 08
+> > > sd 5:0:0:0: [sdf] Assuming drive cache: write through
+> > >  sdf: sdf1
+> > >  sdf: p1 exceeds device capacity
+> > > sd 5:0:0:0: [sdf] Attached SCSI removable disk
+> > > sd 5:0:0:0: Attached scsi generic sg7 type 0
 > 
-> diff --git a/init/Kconfig b/init/Kconfig
-> index 6199d11..7545c8b 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -524,6 +524,17 @@ config CC_OPTIMIZE_FOR_SIZE
->  
->  	  If unsure, say N.
->  
-> +config FASTBOOT
-> +	bool "Fast boot support"
-> +	help
-> +	  The fastboot option will cause the kernel to try to optimize
-> +	  for faster boot. 
-> +
-> +	  This includes doing some of the device initialization asynchronous
+> The problem will most likely be fixed by this patch:
+> 
+> 	http://marc.info/?l=linux-usb&m=121734710306509&w=2
+> 
+> Alan Stern
+> 
+> 
 
-	                                                        asynchronously
+Thanks.  Giving it a try now.
 
-> +	  as well as opportunistically trying to mount the root fs early.
-> +
-> +	  If unsure, say N.
-> +
->  config SYSCTL
->  	bool
->  
-> diff --git a/init/main.c b/init/main.c
-> index 6be1756..bb97add 100644
-> --- a/init/main.c
-> +++ b/init/main.c
-> @@ -776,7 +776,11 @@ static void __init do_initcalls(void)
->  	for (call = __initcall_start; call < __initcall_end; call++) {
->  		if (phase == 0 && call >= __async_initcall_start) {
->  			phase = 1;
-> +#ifdef CONFIG_FASTBOOT
->  			queue_work(async_init_wq, &async_work);
-> +#else
-> +			do_async_initcalls(NULL);
-> +#endif
->  		}
->  		if (phase == 1 && call >= __async_initcall_end)
->  			phase = 2;
-> -- 
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Matt Frost
