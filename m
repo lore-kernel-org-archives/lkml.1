@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762850AbYG3PLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762738AbYG3PLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762850AbYG3PLe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 11:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762663AbYG3PLQ
+	id S1762738AbYG3PLz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 11:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762776AbYG3PLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 11:11:16 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:36042 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762644AbYG3PLP (ORCPT
+	Wed, 30 Jul 2008 11:11:20 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55763 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762756AbYG3PLT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 11:11:15 -0400
-Subject: Re: [build error] drivers/char/pcmcia/ipwireless/hardware.c:571:
-	error: invalid use of undefined type 'struct ipw_network'
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: dsterba@suse.cz
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mike Travis <travis@sgi.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Jiri Kosina <jkosina@suse.cz>
-In-Reply-To: <20080730145953.GA15151@ds.suse.cz>
-References: <20080727190601.GA764@elte.hu>
-	 <alpine.LFD.1.10.0807271242260.3486@nehalem.linux-foundation.org>
-	 <200807281042.12860.rusty@rustcorp.com.au> <488E06F0.4070404@sgi.com>
-	 <alpine.LFD.1.10.0807281127150.3486@nehalem.linux-foundation.org>
-	 <20080728205700.GA3613@elte.hu> <20080728213532.GA24744@elte.hu>
-	 <20080728214153.GA30511@elte.hu>  <20080730145953.GA15151@ds.suse.cz>
-Content-Type: text/plain
-Date: Wed, 30 Jul 2008 10:11:09 -0500
-Message-Id: <1217430670.3335.11.camel@localhost.localdomain>
+	Wed, 30 Jul 2008 11:11:19 -0400
+Date: Wed, 30 Jul 2008 15:53:59 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: davids@webmaster.com
+Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: 463 kernel developers missing!
+Message-ID: <20080730155359.7c0206f4@lxorguk.ukuu.org.uk>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKAEDIOJAC.davids@webmaster.com>
+References: <4890284E.3050806@s5r6.in-berlin.de>
+	<MDEHLPKNGKAHNMBLJOLKAEDIOJAC.davids@webmaster.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-30 at 16:59 +0200, David Sterba wrote:
-> Hi,
-> 
-> I'm sorry for the build error and thank you all for prompt fix.
+> No, but that all the submissions were made under the GPL, whose explicit purpose is to allow information to be changed, processed, and reused for other purposes does.
 
-You're welcome, But ...
+So why hasn't Jon included a copy of the GPL and the sources with his new
+data set ?
 
-> It was not a last-moment change, the patches were waiting a
-> few weeks for the merge window. Hm, I probably did not test this
-> one, will do better next time.
+> If you don't want your submissions to be in the public record for all eternity to be used for any lawful purpose, don't make them to a GPL project.
 
-I see the patches came in via a straight email sequence.  They really
-need to be in a tree somewhere that's pulled into linux-next so this
-type of thing gets noticed.  Since they're wireless patches, why not
-send them through John Linville's wireless tree?
+The GPL doesn't trump data protection law. It can't.
 
-James
+> You have no right whatsoever to look at how one person chooses to use them and say "I didn't agree to that". Yes, you did. You gave up the right to approve or reject each use when you made the submission. If you don't like it, submit under some other license.
 
+Disagree - firstly national law trumps licences, secondly there is the
+(regrettably increasingly) small matter of manners.
 
+Alan
