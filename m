@@ -1,39 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbYG3Jkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760972AbYG3Jlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760743AbYG3Jkh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 05:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbYG3JkJ
+	id S1760972AbYG3Jlh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 05:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbYG3Jla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 05:40:09 -0400
-Received: from beru.its.uow.edu.au ([130.130.68.31]:46032 "EHLO
-	beru.its.uow.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753714AbYG3JkH (ORCPT
+	Wed, 30 Jul 2008 05:41:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41124 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751812AbYG3Jl3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 05:40:07 -0400
-Subject: [patch 23/31] pci_ids.h, kernel 2.6.27-rc1, sort DEVICE_IDs within VENDOR_IDs
-Message-Id: <E1KO7QO-0007Hn-9C@wraith.cs.uow.edu.au>
-From: mcs6502@gmail.com
-Date: Wed, 30 Jul 2008 18:52:48 +1000
-To: unlisted-recipients:; (no To-header on input)
+	Wed, 30 Jul 2008 05:41:29 -0400
+Date: Wed, 30 Jul 2008 02:40:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Q: support for AVM Fritz! WLAN USB in kernel 2.6.25+
+Message-Id: <20080730024054.aa41729a.akpm@linux-foundation.org>
+In-Reply-To: <488EDC63.8060700@imap.cc>
+References: <488EDC63.8060700@imap.cc>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- linux-p22/include/linux/pci_ids.h	2008-07-30 13:37:18.873248000 +1000
-+++ linux-p23/include/linux/pci_ids.h	2008-07-30 13:38:37.567198000 +1000
-@@ -571,12 +571,12 @@
- #define PCI_DEVICE_ID_MATROX_MIL_2	0x051b
- #define PCI_DEVICE_ID_MATROX_MYS_AGP	0x051e
- #define PCI_DEVICE_ID_MATROX_MIL_2_AGP	0x051f
--#define PCI_DEVICE_ID_MATROX_MGA_IMP	0x0d10
--#define PCI_DEVICE_ID_MATROX_G100_MM	0x1000
--#define PCI_DEVICE_ID_MATROX_G100_AGP	0x1001
- #define PCI_DEVICE_ID_MATROX_G200_PCI	0x0520
- #define PCI_DEVICE_ID_MATROX_G200_AGP	0x0521
- #define	PCI_DEVICE_ID_MATROX_G400	0x0525
-+#define PCI_DEVICE_ID_MATROX_MGA_IMP	0x0d10
-+#define PCI_DEVICE_ID_MATROX_G100_MM	0x1000
-+#define PCI_DEVICE_ID_MATROX_G100_AGP	0x1001
- #define PCI_DEVICE_ID_MATROX_G550	0x2527
- #define PCI_DEVICE_ID_MATROX_VIA	0x4536
- 
+On Tue, 29 Jul 2008 11:01:23 +0200 Tilman Schmidt <tilman@imap.cc> wrote:
+
+> Commit 782e70c6fc2290a0395850e8e02583b8b62264d8, which went into
+> 2.6.25, broke AVM's closed-source driver for this device:
+
+  commit 782e70c6fc2290a0395850e8e02583b8b62264d8
+  Author: Greg Kroah-Hartman <gregkh@suse.de>
+  Date:   Fri Jan 25 11:12:21 2008 -0600
+
+      USB: mark USB drivers as being GPL only
+
+It would.
+
+> ID 057c:62ff AVM GmbH WLAN USB v1.1 (cdrom mode)
+> ID 057c:6201 AVM GmbH WLAN USB v1.1
+> 
+> Is there an open source alternative for that driver,
+
+There doesn't seem to be one in-tree.  But linux-usb and/or linux-wireless
+might be better places to ask.
+
+> or do systems
+> with that device have to stay with kernel 2.6.24?
+
+It seems that way.
