@@ -1,74 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbYG3R4D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbYG3SDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755768AbYG3R4D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 13:56:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760373AbYG3Rzp
+	id S1757262AbYG3SDW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 14:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYG3SDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 13:55:45 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34485 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758806AbYG3Rzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 13:55:43 -0400
-Message-ID: <4890AB14.1030009@garzik.org>
-Date: Wed, 30 Jul 2008 13:55:32 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 30 Jul 2008 14:03:14 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4836 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbYG3SDN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 14:03:13 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <alan@lxorguk.ukuu.org.uk>
+Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: 463 kernel developers missing!
+Date: Wed, 30 Jul 2008 11:03:03 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKMEEPOJAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.27-rc1]: fix NE2000 linkage error
-References: <200807301144.m6UBitOG022822@harpo.it.uu.se>
-In-Reply-To: <200807301144.m6UBitOG022822@harpo.it.uu.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <20080730155359.7c0206f4@lxorguk.ukuu.org.uk>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Wed, 30 Jul 2008 11:05:15 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Wed, 30 Jul 2008 11:05:16 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson wrote:
-> Trying to build with CONFIG_NE2000=m fails with:
-> 
->   scripts/mod/modpost   -o /tmp/tmp/linux-2.6.27-rc1/Module.symvers    -S     -s
-> ERROR: "NS8390_init" [drivers/net/ne.ko] undefined!
-> 
-> This is because the split of 8390 into pausing and non-pausing
-> versions was incompletely propagated to ne.c. This fixes it.
-> 
-> Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
-> ---
-> 
-> --- linux-2.6.27-rc1/drivers/net/ne.c.~1~	2008-07-29 10:40:11.000000000 +0200
-> +++ linux-2.6.27-rc1/drivers/net/ne.c	2008-07-30 13:17:16.000000000 +0200
-> @@ -536,7 +536,7 @@ static int __init ne_probe1(struct net_d
->  #ifdef CONFIG_NET_POLL_CONTROLLER
->  	dev->poll_controller = eip_poll;
->  #endif
-> -	NS8390_init(dev, 0);
-> +	NS8390p_init(dev, 0);
->  
->  	ret = register_netdev(dev);
->  	if (ret)
-> @@ -794,7 +794,7 @@ retry:
->  		if (time_after(jiffies, dma_start + 2*HZ/100)) {		/* 20ms */
->  			printk(KERN_WARNING "%s: timeout waiting for Tx RDC.\n", dev->name);
->  			ne_reset_8390(dev);
-> -			NS8390_init(dev,1);
-> +			NS8390p_init(dev, 1);
->  			break;
->  		}
->  
-> @@ -855,7 +855,7 @@ static int ne_drv_resume(struct platform
->  
->  	if (netif_running(dev)) {
->  		ne_reset_8390(dev);
-> -		NS8390_init(dev, 1);
-> +		NS8390p_init(dev, 1);
->  		netif_device_attach(dev);
 
-Yep, already got this one, but thanks!
+> > No, but that all the submissions were made under the GPL, whose
+> > explicit purpose is to allow information to be changed,
+> > processed, and reused for other purposes does.
+
+> So why hasn't Jon included a copy of the GPL and the sources with his new
+> data set ?
+
+I would assume that was either an error or because he believes the
+information contains insufficient creative content to be covered by
+copyright. It seems to me more like a functional, factual report. But I can
+see both sides of that argument.
+
+> > If you don't want your submissions to be in the public record
+> > for all eternity to be used for any lawful purpose, don't make
+> > them to a GPL project.
+
+> The GPL doesn't trump data protection law. It can't.
+
+No. But the GPL can be used to show the intent to consent to the use of the
+information by others. I don't know the data protection law in your country,
+of course.
+
+> > You have no right whatsoever to look at how one person chooses
+> > to use them and say "I didn't agree to that". Yes, you did. You
+> > gave up the right to approve or reject each use when you made the
+> > submission. If you don't like it, submit under some other license.
+
+> Disagree - firstly national law trumps licences, secondly there is the
+> (regrettably increasingly) small matter of manners.
+
+I think it's terribly bad manners to submit something to a GPL project and
+then complain when someone else uses it the way they want to. If you want
+the benefit of using and modifying GPL software, you have to let others do
+what they want with your contributions. If you don't find that deal fair,
+don't make it. But then don't make the deal and then claim others are being
+rude when they take what the deal gave them.
+
+As for GPL only being about copyright, I don't think that's true. The GPL is
+a copyright license. It grants you rights that the author would otherwise
+hold exclusively under copyright. But it doesn't follow that the rights you
+give up are only rights under copyright. See, for example, section 7.
+
+If you want the rights GPL grants you under copyright, you have to give up
+certain things, and not just copyright. One of the things you have to give
+up is *any* legal mechanism that would permit you to restrict other people's
+GPL rights.
+
+GPL section 6 clearly prohibits you from using any data protection laws in
+your jurisdiction to prevent someone else from modifying and redistributing
+information you submitted under the GPL.
+
+The "GPL only affects copyright" argument would mean that I could
+redistribute modified GPL'd work with an EULA. Obviously, I can't do that.
+Enforcing data protection laws to restrict rights granted under the GPL is
+no different from enforcing an EULA to do ths same thing.
+
+DS
 
 
