@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYG3QtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYG3QyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbYG3QtG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 12:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYG3Qsz
+	id S1754189AbYG3QyW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 12:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYG3QyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 12:48:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60443 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751822AbYG3Qsy (ORCPT
+	Wed, 30 Jul 2008 12:54:14 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:2364 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751063AbYG3QyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 12:48:54 -0400
-Date: Wed, 30 Jul 2008 09:48:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, xsonnek@gmail.com,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 1/1] semaphore: declare down_try
-Message-Id: <20080730094817.135cdbfa.akpm@linux-foundation.org>
-In-Reply-To: <48905028.5060908@gmail.com>
-References: <1217417115-28574-1-git-send-email-jirislaby@gmail.com>
-	<48905028.5060908@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Jul 2008 12:54:13 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5349"; a="5009694"
+Message-ID: <48909CC5.5090305@qualcomm.com>
+Date: Wed, 30 Jul 2008 09:54:29 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+CC: Peter Oruba <peter.oruba@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 0/4] x86: AMD microcode patch loading v2 fixes
+References: <20080729154103.007575982@amd.com>	 <b647ffbd0807290918kaa0a05es3cebf7a6f15fb790@mail.gmail.com>	 <488F581B.7060009@qualcomm.com> <48903431.9060707@amd.com> <b647ffbd0807300257x43dd6018o59533bec11b7a504@mail.gmail.com>
+In-Reply-To: <b647ffbd0807300257x43dd6018o59533bec11b7a504@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008 13:27:36 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
 
-> Jiri Slaby napsal(a):
-> > Maybe you already fixed this, in todays mmotm there is a fix of duplicate
-> > down_try definiton, but this problem still persist.
-> 
-> BTW. there is still bunch of down_trylock(); users, are you about to 
-> eliminate them?
-> 
->     2    182  /home/latest/xxx/drivers/watchdog/ar7_wdt.c <<ar7_wdt_open>>
->               if (down_trylock(&open_semaphore))
->     3    309  /home/latest/xxx/drivers/watchdog/it8712f_wdt.c
->               <<it8712f_wdt_open>>
->               if (down_trylock(&it8712f_wdt_sem))
->     4    214  /home/latest/xxx/drivers/watchdog/s3c2410_wdt.c
->               <<s3c2410wdt_open>>
->               if(down_trylock(&open_lock))
->     5    154  /home/latest/xxx/drivers/watchdog/sc1200wdt.c <<sc1200wdt_open>>
->               if (down_trylock(&open_sem))
->     6     95  /home/latest/xxx/drivers/watchdog/scx200_wdt.c <<scx200_wdt_open>>
->               if (down_trylock(&open_semaphore))
->     7    429  /home/latest/xxx/drivers/watchdog/wdt_pci.c <<wdtpci_open>>
->               if (down_trylock(&open_sem))
 
-oh crap, yes, sorry, I had a bit of a catastrophe with two different
-versions of the sameish thing coming from two directions and my
-approach to fixing that was to drop one patch and to await the next
-linux-next pull for the other.  Forgot.
+Dmitry Adamushko wrote:
+> 2008/7/30 Peter Oruba <peter.oruba@amd.com>:
+>>> [ ... ]
+>> Since ucode updates may fix severe issues, it is supposed to happen as early
+>> as possible. If you re-plug your CPU into your socket, your BIOS also
+>> applies a ucode patch, but that won't necessarily be the latest and critical
+>> one.
+Sure. The question is would not workqueue be soon enough ?
+I'd say it is given the non-deterministic CPU hotplug callback sequence.
+
+> Hum, let's say we don't do it from cpu-hotplug handlers [1] but from
+> start_secondary() before calling cpu_idle()? [*]
+> 
+> This way, we do it before any other task may have a chance to run on a
+> cpu which is not a case with cpu-hotplug handlers
+> (and we don't mess-up with cpu-hotplug events :-)
+> 
+> [ the drawback is that 'microcode' subsystem is not local to
+> microcode.c anymore ]
+> 
+> [1] if we need a sync. operation in cpu-hotplug handlers and IPI is
+> not ok (say, we need to run in a sleepablel context) then perhaps it's
+> workqueues + wait_on_cpu_work(). But then it's not a bit later than
+> could have been with [*].
+Why would not IPI be ok ? From looking at the code all we have to do is to
+factor request_firmware() out of the update path. So we'd do
+collect_cpu_info() in the IPI, then do request_firwmare() inplace and then do
+apply_microcode() in the IPI. ie The only thing that sleeps is request_firmware().
+
+Max
