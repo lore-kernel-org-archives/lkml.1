@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761155AbYG3Xke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760505AbYG3XlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761155AbYG3Xke (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 19:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760005AbYG3XkQ
+	id S1760505AbYG3XlR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 19:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761396AbYG3Xkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 19:40:16 -0400
-Received: from mx1.suse.de ([195.135.220.2]:36087 "EHLO mx1.suse.de"
+	Wed, 30 Jul 2008 19:40:43 -0400
+Received: from ns1.suse.de ([195.135.220.2]:36187 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757905AbYG3XkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 19:40:14 -0400
-Date: Wed, 30 Jul 2008 16:27:28 -0700
+	id S1761446AbYG3Xki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 19:40:38 -0400
+Date: Wed, 30 Jul 2008 16:27:30 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [patch 21/29] markers: fix markers read barrier for multiple probes
-Message-ID: <20080730232728.GV30670@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 22/29] ixgbe: remove device ID for unsupported device
+Message-ID: <20080730232730.GW30670@suse.de>
 References: <20080730231003.655833364@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="markers-fix-markers-read-barrier-for-multiple-probes.patch"
+Content-Disposition: inline; filename="ixgbe-remove-device-id-for-unsupported-device.patch"
 In-Reply-To: <20080730232451.GA30670@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,79 +41,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-commit 5def9a3a22e09c99717f41ab7f07ec9e1a1f3ec8 upstream
+commit bb5d10ac8cc315d53306963001fe650d88a1cbb2 upstream
 
-Paul pointed out two incorrect read barriers in the marker handler code in
-the path where multiple probes are connected.  Those are ordering reads of
-"ptype" (single or multi probe marker), "multi" array pointer, and "multi"
-array data access.
+The ixgbe driver was untested with device ID 8086:10c8 but still advertises
+support.  Currently if this device is present in the system when the driver
+is loaded, the system will panic.
+Remove this device ID until full support can be tested with available
+hardware.  This patch is necessary for 2.6.24, 2.6.25 and 2.6.26
 
-It should be ordered like this :
-
-read ptype
-smp_rmb()
-read multi array pointer
-smp_read_barrier_depends()
-access data referenced by multi array pointer
-
-The code with a single probe connected (optimized case, does not have to
-allocate an array) has correct memory ordering.
-
-It applies to kernel 2.6.26.x, 2.6.25.x and linux-next.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/marker.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ drivers/net/ixgbe/ixgbe_main.c |    2 --
+ 1 file changed, 2 deletions(-)
 
---- a/kernel/marker.c
-+++ b/kernel/marker.c
-@@ -126,6 +126,11 @@ void marker_probe_cb(const struct marker
- 		struct marker_probe_closure *multi;
- 		int i;
- 		/*
-+		 * Read mdata->ptype before mdata->multi.
-+		 */
-+		smp_rmb();
-+		multi = mdata->multi;
-+		/*
- 		 * multi points to an array, therefore accessing the array
- 		 * depends on reading multi. However, even in this case,
- 		 * we must insure that the pointer is read _before_ the array
-@@ -133,7 +138,6 @@ void marker_probe_cb(const struct marker
- 		 * in the fast path, so put the explicit barrier here.
- 		 */
- 		smp_read_barrier_depends();
--		multi = mdata->multi;
- 		for (i = 0; multi[i].func; i++) {
- 			va_start(args, fmt);
- 			multi[i].func(multi[i].probe_private, call_private, fmt,
-@@ -176,6 +180,11 @@ void marker_probe_cb_noarg(const struct 
- 		struct marker_probe_closure *multi;
- 		int i;
- 		/*
-+		 * Read mdata->ptype before mdata->multi.
-+		 */
-+		smp_rmb();
-+		multi = mdata->multi;
-+		/*
- 		 * multi points to an array, therefore accessing the array
- 		 * depends on reading multi. However, even in this case,
- 		 * we must insure that the pointer is read _before_ the array
-@@ -183,7 +192,6 @@ void marker_probe_cb_noarg(const struct 
- 		 * in the fast path, so put the explicit barrier here.
- 		 */
- 		smp_read_barrier_depends();
--		multi = mdata->multi;
- 		for (i = 0; multi[i].func; i++)
- 			multi[i].func(multi[i].probe_private, call_private, fmt,
- 				&args);
+--- a/drivers/net/ixgbe/ixgbe_main.c
++++ b/drivers/net/ixgbe/ixgbe_main.c
+@@ -70,8 +70,6 @@ static struct pci_device_id ixgbe_pci_tb
+ 	 board_82598 },
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598AF_SINGLE_PORT),
+ 	 board_82598 },
+-	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598AT_DUAL_PORT),
+-	 board_82598 },
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598EB_CX4),
+ 	 board_82598 },
+ 
 
 -- 
