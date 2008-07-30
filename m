@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753585AbYG3Uq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbYG3Uqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753585AbYG3Uq3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 16:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbYG3UqT
+	id S1755599AbYG3Uqt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 16:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbYG3Uqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 16:46:19 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:59695 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbYG3UqS (ORCPT
+	Wed, 30 Jul 2008 16:46:39 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:39793 "EHLO
+	pd2mo1so-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754240AbYG3Uqi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 16:46:18 -0400
-To: torvalds@linux-foundation.org
-CC: miklos@szeredi.hu, jens.axboe@oracle.com, akpm@linux-foundation.org,
-       nickpiggin@yahoo.com.au, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-reply-to: <alpine.LFD.1.10.0807301310130.3334@nehalem.linux-foundation.org>
-	(message from Linus Torvalds on Wed, 30 Jul 2008 13:13:48 -0700 (PDT))
-Subject: Re: [patch v3] splice: fix race with page invalidation
-References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807300958390.3334@nehalem.linux-foundation.org> <E1KOFUi-0000EU-0p@pomaz-ex.szeredi.hu> <20080730175406.GN20055@kernel.dk> <E1KOGT8-0000rd-0Z@pomaz-ex.szeredi.hu> <E1KOGeO-0000yi-EM@pomaz-ex.szeredi.hu>
- <20080730194516.GO20055@kernel.dk> <E1KOHvq-0001oX-OW@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807301310130.3334@nehalem.linux-foundation.org>
-Message-Id: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 30 Jul 2008 22:45:34 +0200
+	Wed, 30 Jul 2008 16:46:38 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=q2hyU374kmvBsQSO47wA:9 a=9YSO1XnrHuFxN602oF8CFCb2YykA:4 a=63hpme_HZ7UA:10 a=3AIdeF-xgCkA:10
+Message-ID: <4890D329.80106@shaw.ca>
+Date: Wed, 30 Jul 2008 14:46:33 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>, Alan Stern <stern@rowland.harvard.edu>,
+       usb-storage@lists.one-eyed-alien.net, Tomas Styblo <tripie@cpan.org>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [usb-storage] [PATCH] JMicron JM20337 USB-SATA data corruption
+ bugfix - device 152d:2338
+References: <Pine.LNX.4.44L0.0807232337110.25883-100000@netrider.rowland.org> <4890C72D.7040604@shaw.ca> <20080730200033.GD7578@one-eyed-alien.net>
+In-Reply-To: <20080730200033.GD7578@one-eyed-alien.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008, Linus Torvalds wrote:
-> On Wed, 30 Jul 2008, Miklos Szeredi wrote:
-> > 
-> > Take this patch as a bugfix.  It's not in any way showing the way
-> > forward: as soon as you have the time, you can revert it and start
-> > from the current state.
-> > 
-> > Hmm?
+Matthew Dharm wrote:
+> On Wed, Jul 30, 2008 at 01:55:25PM -0600, Robert Hancock wrote:
+>> Alan Stern wrote:
+>>> On Wed, 23 Jul 2008, Robert Hancock wrote:
+>>>
+>>>> It remains an issue, though, that if there's no underflow, if the device 
+>>>> reports an error in the CSW but doesn't provide sense data, we assume 
+>>>> nothing bad happened and don't retry. That definitely does not seem 
+>>>> correct. The device is not supposed to do this, but with how crappily 
+>>>> some of these devices are designed we should be more defensive.
+>>> The problem is, what can you do?  The device has said that something 
+>>> was wrong, but it hasn't told you what.  Without knowing what went 
+>>> wrong, you can't know how to recover.
 > 
-> I dislike that mentality.
+> Yes and no.  If ASC/ASCQ is clear, then it's telling you that nothing is
+> wrong.  The device is contradicting itself. That doesn't really help us
+> here, but it's a point I like to be clear on.
 > 
-> The fact is, it's not a bug-fix, it's just papering over the real problem.
+>>> I suppose in such cases we could simply report that the command failed
+>>> completely.
+>> I think that is what we need to do. The SCSI/block layers should retry 
+>> the command or report a failure to userspace. Above all else we can't 
+>> just continue on our merry way and assume success, otherwise data will 
+>> get silently corrupted.
+> 
+> The code path to supress the reporting of an error when auto-sense shows no
+> ASC/ASCQ was added for a reason.  That reason has likely been lost to time,
+> but I worry about devices that are out there that rely on the current
+> behavior to function properly....
 
-It _is_ a bug fix.  See here, from man 2 splice:
+My original comment was that that code should be removed, but this is 
+incorrect. In fact that code path is unrelated to this problem since it 
+only executes if no transport error was detected. This code path is 
+needed since retrieving sense data is done for multiple reasons other 
+than a transport failure. For one, "If we're running the CB transport, 
+which is incapable of determining status on its own, we will auto-sense 
+unless the operation involved a data-in transfer." In this case, for a 
+successful transfer the status must be reset to good after getting the 
+sense data.
 
-RETURN VALUE
-       Upon successful  completion,  splice()  returns  the  number  of  bytes
-       spliced  to or from the pipe.  A return value of 0 means that there was
-       no data to transfer, and it would not  make  sense  to  block,  because
-       there are no writers connected to the write end of the pipe referred to
-       by fd_in.
+In the case in question here, the BOT transport reports a failure, and 
+we retrieve sense data, but the sense data doesn't indicate an error. 
+This results in the failure essentially being ignored. In this case I 
+think we should be doing the same thing as we do on detecting an underflow:
 
-Currently splice on NFS, FUSE and a few other filesystems don't
-conform to that clause: splice can return zero even if there's still
-data to be read, just because the data happened to be invalidated
-during the splicing.  That's a plain and clear bug, which has
-absolutely nothing to do with NFS _exporting_.
+srb->result = (DID_ERROR << 16) | (SUGGEST_RETRY << 24);
 
-> And by papering it over, it then just makes people less likely to bother 
-> with the real issue.
 
-I think you are talking about a totally separate issue: that NFSD's
-use of splice can result in strange things if the file is truncated
-while being read.  But this is an NFSD issue and I don't see that it
-has _anything_ to do with the above bug in splice.  I think you are
-just confusing the two things.
-
-Miklos
