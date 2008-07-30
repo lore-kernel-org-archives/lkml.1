@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbYG3URV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758355AbYG3URf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755671AbYG3URV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 16:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYG3URJ
+	id S1758355AbYG3URf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 16:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755703AbYG3URR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 16:17:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35690 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751808AbYG3URI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 16:17:08 -0400
-Date: Wed, 30 Jul 2008 13:13:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: jens.axboe@oracle.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch v3] splice: fix race with page invalidation
-In-Reply-To: <E1KOHvq-0001oX-OW@pomaz-ex.szeredi.hu>
-Message-ID: <alpine.LFD.1.10.0807301310130.3334@nehalem.linux-foundation.org>
-References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807300958390.3334@nehalem.linux-foundation.org> <E1KOFUi-0000EU-0p@pomaz-ex.szeredi.hu> <20080730175406.GN20055@kernel.dk> <E1KOGT8-0000rd-0Z@pomaz-ex.szeredi.hu> <E1KOGeO-0000yi-EM@pomaz-ex.szeredi.hu>
- <20080730194516.GO20055@kernel.dk> <E1KOHvq-0001oX-OW@pomaz-ex.szeredi.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Jul 2008 16:17:17 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:16274 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755292AbYG3URQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 16:17:16 -0400
+Date: Wed, 30 Jul 2008 22:17:54 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+Cc: Roland Dreier <rdreier@cisco.com>, LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: Problems building 2.6.26 and 2.6.27-rc1
+Message-ID: <20080730201754.GA10882@uranus.ravnborg.org>
+References: <20080730184833.GA936@roadking.ldev.net> <adaiqunyyxd.fsf@cisco.com> <0F5B06BAB751E047AB5C87D1F77A778826B3E811B0@GVW0547EXC.americas.hpqcorp.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A778826B3E811B0@GVW0547EXC.americas.hpqcorp.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 30 Jul 2008, Miklos Szeredi wrote:
+On Wed, Jul 30, 2008 at 08:07:28PM +0000, Miller, Mike (OS Dev) wrote:
+> Roland wrote:
 > 
-> Take this patch as a bugfix.  It's not in any way showing the way
-> forward: as soon as you have the time, you can revert it and start
-> from the current state.
+> >
+> >  > I'm getting the following error when trying to build
+> > either 2.6.26 or  > 2.6.27-rc1:
+> >  >
+> >  > arch/x86/kernel/head64.c: In function 'x86_64_start_kernel':
+> >  > arch/x86/kernel/head64.c:88: error: size of array 'type
+> > name' is negative
+> >
+> > It looks like you're hitting
+> >
+> >         BUILD_BUG_ON(!(MODULES_VADDR > __START_KERNEL));
+> >
+> > No idea why you're hitting that though.  What's your .config
+> > and compiler?
+> >
+> I think maybe I've figured out what's breaking my build. If use "make -jN" I hit the error. I usually set N to the number of processors (real and HT). So if /proc/cpuinfo display info about 4 processors I use -j4, etc. If I don't specify the number of jobs to run simultaneously the build completes with just the usual warnings.
 > 
-> Hmm?
+> Any experts on parallelism out there?
 
-I dislike that mentality.
+Can you post the output of a make -j4 V=1 run that fials and one that succeeds.
+Then we can maybe spot something.
 
-The fact is, it's not a bug-fix, it's just papering over the real problem.
-
-And by papering it over, it then just makes people less likely to bother 
-with the real issue.
-
-For example, and I talked about this earlier - what make syou think that 
-the FUSE/NFSD behaviour you don't like is at all valid in the first place?
-
-If you depend on data not being truncated because you have it "in flight", 
-tjhere's already something wrong there. It's _not_ just that people can 
-see zero bytes in the reply - apparently they can see the file shrink 
-before they see the read return. That kind of thing just worries me. And 
-it might be a general NFS issue, not necessarily a FUSE one.
-
-So I think your whole approach stinks. I don't agree with the "bug-fix". 
-It really smells like a "bug-paper-over".
-
-			Linus
+	Sam
