@@ -1,97 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbYG3UCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbYG3UDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757728AbYG3UCQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 16:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYG3UB7
+	id S1758131AbYG3UDX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 16:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYG3UDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 16:01:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39979 "EHLO
+	Wed, 30 Jul 2008 16:03:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48431 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752895AbYG3UB7 (ORCPT
+	by vger.kernel.org with ESMTP id S1751808AbYG3UDM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 16:01:59 -0400
-Date: Wed, 30 Jul 2008 13:01:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: vapier.adi@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] blackfin / h8300 build error fix
-Message-Id: <20080730130117.3495cba9.akpm@linux-foundation.org>
-In-Reply-To: <87hca7npmp.wl%ysato@users.sourceforge.jp>
-References: <87provuzwk.wl%ysato@users.sourceforge.jp>
-	<8bd0f97a0807300911n4ae81b70v97276abf612f6b3e@mail.gmail.com>
-	<87hca7npmp.wl%ysato@users.sourceforge.jp>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Jul 2008 16:03:12 -0400
+Message-ID: <4890C8BF.4050908@linux-foundation.org>
+Date: Wed, 30 Jul 2008 15:02:07 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH 06/30] mm: kmem_alloc_estimate()
+References: <20080724140042.408642539@chello.nl>	 <20080724141529.716339226@chello.nl>	 <1217420503.7813.170.camel@penberg-laptop> <1217424662.8157.58.camel@twins>
+In-Reply-To: <1217424662.8157.58.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008 15:22:38 -0400
-Yoshinori Sato <ysato@users.sourceforge.jp> wrote:
+Peter Zijlstra wrote:
 
-> At Wed, 30 Jul 2008 12:11:37 -0400,
-> Mike Frysinger wrote:
-> > 
-> > On Wed, Jul 30, 2008 at 11:58 AM, Yoshinori Sato wrote:
-> > > init/main.c:781: undefined reference to `___early_initcall_end'
-> > >
-> > > Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
-> > >
-> > > ---
-> > >  include/asm-generic/vmlinux.lds.h |    2 +-
-> > >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > >
-> > > diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-> > > index 6d88a92..07b2784 100644
-> > > --- a/include/asm-generic/vmlinux.lds.h
-> > > +++ b/include/asm-generic/vmlinux.lds.h
-> > > @@ -362,7 +362,7 @@
-> > >
-> > >  #define INITCALLS                                                      \
-> > >        *(.initcallearly.init)                                          \
-> > > -       __early_initcall_end = .;                                       \
-> > > +       VMLINUX_SYMBOL(__early_initcall_end) = .;                       \
-> > >        *(.initcall0.init)                                              \
-> > >        *(.initcall0s.init)                                             \
-> > >        *(.initcall1.init)                                              \
-> > > --
-> > > 1.5.6.3
-> > 
-> > nice catch, thanks ... looks like BUG_TABLE, TRACEDATA, and PERCPU are
-> > also broken, but blackfin/etc... arent using those which is why we
-> > havent noticed yet ...
-> > -mike
+>>> +/*
+>>> + * Calculate the upper bound of pages requires to sequentially allocate @bytes
+>>> + * from kmalloc in an unspecified number of allocations of nonuniform size.
+>>> + */
+>>> +unsigned kmalloc_estimate_variable(gfp_t flags, size_t bytes)
+>>> +{
+>>> +	int i;
+>>> +	unsigned long pages;
+>>> +
+>>> +	/*
+>>> +	 * multiply by two, in order to account the worst case slack space
+>>> +	 * due to the power-of-two allocation sizes.
+>>> +	 */
+>>> +	pages = DIV_ROUND_UP(2 * bytes, PAGE_SIZE);
+>> For bytes > PAGE_SIZE this doesn't look right (for SLUB). We do page
+>> allocator pass-through which means that we'll be grabbing high order
+>> pages which can be bigger than what 'pages' is here.
 > 
-> Thanks.
-> I fixed same.
+> Satisfying allocations from a bucket distribution with power-of-two
+> (which page alloc order satisfies) has a worst case slack space of:
 > 
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+> S(x) = 2^n - (2^(n-1)) - 1, n = ceil(log2(x))
 > 
->  include/asm-generic/vmlinux.lds.h |   14 +++++++-------
->  1 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-> index 6d88a92..04cae96 100644
-> --- a/include/asm-generic/vmlinux.lds.h
-> +++ b/include/asm-generic/vmlinux.lds.h
-> @@ -333,9 +333,9 @@
->  #define BUG_TABLE							\
->  	. = ALIGN(8);							\
->  	__bug_table : AT(ADDR(__bug_table) - LOAD_OFFSET) {		\
-> -		__start___bug_table = .;				\
-> +		VMLINUX_SYMBOL(__start___bug_table) = .;		\
->  		*(__bug_table)						\
-> -		__stop___bug_table = .;					\
-> +		VMLINUX_SYMBOL(__stop___bug_table) = .;			\
->  	}
+> This can be seen for the cases where x = 2^i + 1.
 
-Sorry, but I haven't been following this topic very well and I rather
-dislike plucking unchangelogged patches out of the middle of email
-discussions.
+The needed bytes for a kmalloc allocation with size > PAGE_SIZE is
 
-If there's some patch which I should be applying then please resend it,
-with a meaningful title, a description of what it does, etc.
+get_order(size) << PAGE_SHIFT bytes.
 
-Thanks.
+See kmalloc_large().
+
+
+
