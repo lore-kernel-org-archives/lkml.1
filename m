@@ -1,106 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbYG3UBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbYG3UCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757466AbYG3UBB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 16:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbYG3UAv
+	id S1757728AbYG3UCQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 16:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYG3UB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 16:00:51 -0400
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:54797
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753117AbYG3UAu (ORCPT
+	Wed, 30 Jul 2008 16:01:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39979 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752895AbYG3UB7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 16:00:50 -0400
-Date: Wed, 30 Jul 2008 13:00:33 -0700
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       usb-storage@lists.one-eyed-alien.net, Tomas Styblo <tripie@cpan.org>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [usb-storage] [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device 152d:2338
-Message-ID: <20080730200033.GD7578@one-eyed-alien.net>
-Mail-Followup-To: Robert Hancock <hancockr@shaw.ca>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	usb-storage@lists.one-eyed-alien.net,
-	Tomas Styblo <tripie@cpan.org>, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.0807232337110.25883-100000@netrider.rowland.org> <4890C72D.7040604@shaw.ca>
+	Wed, 30 Jul 2008 16:01:59 -0400
+Date: Wed, 30 Jul 2008 13:01:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: vapier.adi@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] blackfin / h8300 build error fix
+Message-Id: <20080730130117.3495cba9.akpm@linux-foundation.org>
+In-Reply-To: <87hca7npmp.wl%ysato@users.sourceforge.jp>
+References: <87provuzwk.wl%ysato@users.sourceforge.jp>
+	<8bd0f97a0807300911n4ae81b70v97276abf612f6b3e@mail.gmail.com>
+	<87hca7npmp.wl%ysato@users.sourceforge.jp>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="5vNYLRcllDrimb99"
-Content-Disposition: inline
-In-Reply-To: <4890C72D.7040604@shaw.ca>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Wed, 30 Jul 2008 13:00:34 -0700 (PDT)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 30 Jul 2008 15:22:38 -0400
+Yoshinori Sato <ysato@users.sourceforge.jp> wrote:
 
---5vNYLRcllDrimb99
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> At Wed, 30 Jul 2008 12:11:37 -0400,
+> Mike Frysinger wrote:
+> > 
+> > On Wed, Jul 30, 2008 at 11:58 AM, Yoshinori Sato wrote:
+> > > init/main.c:781: undefined reference to `___early_initcall_end'
+> > >
+> > > Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+> > >
+> > > ---
+> > >  include/asm-generic/vmlinux.lds.h |    2 +-
+> > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > >
+> > > diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> > > index 6d88a92..07b2784 100644
+> > > --- a/include/asm-generic/vmlinux.lds.h
+> > > +++ b/include/asm-generic/vmlinux.lds.h
+> > > @@ -362,7 +362,7 @@
+> > >
+> > >  #define INITCALLS                                                      \
+> > >        *(.initcallearly.init)                                          \
+> > > -       __early_initcall_end = .;                                       \
+> > > +       VMLINUX_SYMBOL(__early_initcall_end) = .;                       \
+> > >        *(.initcall0.init)                                              \
+> > >        *(.initcall0s.init)                                             \
+> > >        *(.initcall1.init)                                              \
+> > > --
+> > > 1.5.6.3
+> > 
+> > nice catch, thanks ... looks like BUG_TABLE, TRACEDATA, and PERCPU are
+> > also broken, but blackfin/etc... arent using those which is why we
+> > havent noticed yet ...
+> > -mike
+> 
+> Thanks.
+> I fixed same.
+> 
+> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+> 
+>  include/asm-generic/vmlinux.lds.h |   14 +++++++-------
+>  1 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> index 6d88a92..04cae96 100644
+> --- a/include/asm-generic/vmlinux.lds.h
+> +++ b/include/asm-generic/vmlinux.lds.h
+> @@ -333,9 +333,9 @@
+>  #define BUG_TABLE							\
+>  	. = ALIGN(8);							\
+>  	__bug_table : AT(ADDR(__bug_table) - LOAD_OFFSET) {		\
+> -		__start___bug_table = .;				\
+> +		VMLINUX_SYMBOL(__start___bug_table) = .;		\
+>  		*(__bug_table)						\
+> -		__stop___bug_table = .;					\
+> +		VMLINUX_SYMBOL(__stop___bug_table) = .;			\
+>  	}
 
-On Wed, Jul 30, 2008 at 01:55:25PM -0600, Robert Hancock wrote:
-> Alan Stern wrote:
-> > On Wed, 23 Jul 2008, Robert Hancock wrote:
-> >=20
-> >> It remains an issue, though, that if there's no underflow, if the devi=
-ce=20
-> >> reports an error in the CSW but doesn't provide sense data, we assume=
-=20
-> >> nothing bad happened and don't retry. That definitely does not seem=20
-> >> correct. The device is not supposed to do this, but with how crappily=
-=20
-> >> some of these devices are designed we should be more defensive.
-> >=20
-> > The problem is, what can you do?  The device has said that something=20
-> > was wrong, but it hasn't told you what.  Without knowing what went=20
-> > wrong, you can't know how to recover.
+Sorry, but I haven't been following this topic very well and I rather
+dislike plucking unchangelogged patches out of the middle of email
+discussions.
 
-Yes and no.  If ASC/ASCQ is clear, then it's telling you that nothing is
-wrong.  The device is contradicting itself. That doesn't really help us
-here, but it's a point I like to be clear on.
+If there's some patch which I should be applying then please resend it,
+with a meaningful title, a description of what it does, etc.
 
-> > I suppose in such cases we could simply report that the command failed
-> > completely.
->=20
-> I think that is what we need to do. The SCSI/block layers should retry=20
-> the command or report a failure to userspace. Above all else we can't=20
-> just continue on our merry way and assume success, otherwise data will=20
-> get silently corrupted.
-
-The code path to supress the reporting of an error when auto-sense shows no
-ASC/ASCQ was added for a reason.  That reason has likely been lost to time,
-but I worry about devices that are out there that rely on the current
-behavior to function properly....
-
-Matt
-
---=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
-
-A:  The most ironic oxymoron wins ...
-DP: "Microsoft Works"
-A:  Uh, okay, you win.
-					-- A.J. & Dust Puppy
-User Friendly, 1/18/1998
-
---5vNYLRcllDrimb99
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFIkMhhHL9iwnUZqnkRAhupAKCaoSoLn6vlwakvkODfvnHP3iynbACgkSyO
-xXOV9y4/nOQoW1BW6MrhG6c=
-=8g2Z
------END PGP SIGNATURE-----
-
---5vNYLRcllDrimb99--
+Thanks.
