@@ -1,88 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbYG3TgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbYG3Th3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753073AbYG3TgF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 15:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbYG3Tfq
+	id S1755594AbYG3Th3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 15:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbYG3ThV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 15:35:46 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:37998 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754256AbYG3Tfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 15:35:45 -0400
-Message-ID: <4890C287.60508@pobox.com>
-Date: Wed, 30 Jul 2008 15:35:35 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
+	Wed, 30 Jul 2008 15:37:21 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:5626 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753366AbYG3ThU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 15:37:20 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5349"; a="5015678"
+Message-ID: <4890C2FF.2030709@qualcomm.com>
+Date: Wed, 30 Jul 2008 12:37:35 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Karen Xie <kxie@chelsio.com>
-CC: netdev@vger.kernel.org, open-iscsi@googlegroups.com, davem@davemloft.net,
-       michaelc@cs.wisc.edu, swise@opengridcomputing.com, rdreier@cisco.com,
-       daisyc@us.ibm.com, wenxiong@us.ibm.com, bhua@us.ibm.com,
-       divy@chelsio.com, dm@chelsio.com, leedom@chelsio.com,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-References: <200807300019.m6U0JkdY012558@localhost.localdomain>
-In-Reply-To: <200807300019.m6U0JkdY012558@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Robert Hancock <hancockr@shaw.ca>
+CC: Dimitri Sivanich <sivanich@sgi.com>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: CONFIG_HOTPLUG_CPU on x86
+References: <fa.NXaOVSU/kxtRXoZokQC2Y0/po4M@ifi.uio.no> <4890C0FC.7010604@shaw.ca>
+In-Reply-To: <4890C0FC.7010604@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karen Xie wrote:
-> Cxgb3i iSCSI driver
+
+
+Robert Hancock wrote:
+> Dimitri Sivanich wrote:
+>> I've heard folks say that hotplug cpu is very reliable.  I'm assuming
+>> that's in the context of the x86 architecture.  If so, how come
+>> CONFIG_HOTPLUG_CPU is still listed as EXPERIMENTAL in arch/x86/Kconfig?
+>> Should this be changed for the x86 architecture?
+>>
+>> config HOTPLUG_CPU
+>>     bool "Support for suspend on SMP and hot-pluggable CPUs
+>> (EXPERIMENTAL)"
+>>     depends on SMP && HOTPLUG && EXPERIMENTAL && !X86_VOYAGER
 > 
-> Signed-off-by: Karen Xie <kxie@chelsio.com>
-> ---
-> 
->  drivers/scsi/cxgb3i/Kconfig          |    6 
->  drivers/scsi/cxgb3i/Makefile         |    5 
->  drivers/scsi/cxgb3i/cxgb3i.h         |  155 +++
->  drivers/scsi/cxgb3i/cxgb3i_init.c    |  109 ++
->  drivers/scsi/cxgb3i/cxgb3i_iscsi.c   |  800 ++++++++++++++
->  drivers/scsi/cxgb3i/cxgb3i_offload.c | 2001 ++++++++++++++++++++++++++++++++++
->  drivers/scsi/cxgb3i/cxgb3i_offload.h |  242 ++++
->  drivers/scsi/cxgb3i/cxgb3i_ulp2.c    |  692 ++++++++++++
->  drivers/scsi/cxgb3i/cxgb3i_ulp2.h    |  106 ++
->  9 files changed, 4116 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/scsi/cxgb3i/Kconfig
->  create mode 100644 drivers/scsi/cxgb3i/Makefile
->  create mode 100644 drivers/scsi/cxgb3i/cxgb3i.h
->  create mode 100644 drivers/scsi/cxgb3i/cxgb3i_init.c
->  create mode 100644 drivers/scsi/cxgb3i/cxgb3i_iscsi.c
->  create mode 100644 drivers/scsi/cxgb3i/cxgb3i_offload.c
->  create mode 100644 drivers/scsi/cxgb3i/cxgb3i_offload.h
->  create mode 100644 drivers/scsi/cxgb3i/cxgb3i_ulp2.c
->  create mode 100644 drivers/scsi/cxgb3i/cxgb3i_ulp2.h
+> Yes, it's a bit bizarre that something needed for suspending almost any
+> current laptop is still marked as "experimental"..
 
-Comments:
+Why don't use guys just submit a patch that removes EXPERIMENTAL thing.
 
-* SCSI drivers should be submitted via the linux-scsi@vger.kernel.org 
-mailing list.
-
-* The driver is clean and readable, well done
-
-* From a networking standpoint, our main concern becomes how this 
-interacts with the networking stack.  In particular, I'm concerned based 
-on reading the source that this driver uses "TCP port stealing" rather 
-than using a totally separate MAC address (and IP).
-
-Stealing a TCP port on an IP/interface already assigned is a common 
-solution in this space, but also a flawed one.  Precisely because the 
-kernel and applications are unaware of this "special, magic TCP port" 
-you open the potential for application problems that are very difficult 
-for an admin to diagnose based on observed behavior.
-
-So, additional information on your TCP port usage would be greatly 
-appreciated.  Also, how does this interact with IPv6?  Clearly it 
-interacts with IPv4...
-
-	Jeff
-
-
-
-
+Max
