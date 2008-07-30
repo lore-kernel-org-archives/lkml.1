@@ -1,49 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbYG3CQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbYG3C2C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755567AbYG3CQh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 22:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYG3CQ3
+	id S1755701AbYG3C2C (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 22:28:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYG3C1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 22:16:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48670 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752077AbYG3CQ2 (ORCPT
+	Tue, 29 Jul 2008 22:27:54 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:56457 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751860AbYG3C1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 22:16:28 -0400
-Date: Tue, 29 Jul 2008 19:16:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Ben Collins <ben.collins@canonical.com>,
-       Marcel Holtmann <marcel@holtmann.org>, linux-kernel@vger.kernel.org,
-       Samuel Ortiz <samuel@sortiz.org>
-Subject: Re: [PATCH 4/7] nsc-ircc: Default to dongle type 9 on IBM hardware
-Message-Id: <20080729191614.b8ee5fe8.akpm@linux-foundation.org>
-In-Reply-To: <20080730014439.GA24409@srcf.ucam.org>
-References: <E1KKl4I-00068K-V7@swissweb.swissdisk.com>
-	<1216618176.8411.124.camel@violet.holtmann.net>
-	<1216662057.7585.153.camel@cunning>
-	<20080728194612.01068283.akpm@linux-foundation.org>
-	<20080730014439.GA24409@srcf.ucam.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 29 Jul 2008 22:27:53 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiUFABduj0hMRKxB/2dsb2JhbACBW4lEpUY
+Date: Tue, 29 Jul 2008 22:27:51 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH] Module : call synchronize_sched() between module exit()
+	and free.
+Message-ID: <20080730022751.GA15866@Krystal>
+References: <20080717155724.897537670@polymtl.ca> <20080729211543.GB17097@redhat.com> <20080729224115.GA5209@Krystal> <200807301140.59745.rusty@rustcorp.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <200807301140.59745.rusty@rustcorp.com.au>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 21:56:41 up 55 days,  6:37,  4 users,  load average: 1.29, 1.03,
+	1.02
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008 02:44:39 +0100 Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-
-> On Mon, Jul 28, 2008 at 07:46:12PM -0700, Andrew Morton wrote:
-> > The changelog doesn't exist^Wexplain the reasons for this patch.
-> > 
-> > I assume it fixes some bug?  What is it?
+> Hi Mathieu,
 > 
-> It's necessary to set the dongle type on the nsc driver in order to get 
-> it to work correctly. Thinkpads all appear to use dongle type 9. This 
-> patch defaults nsc devices with an IBM PnP descriptor to use type 9.
+>    Yes: stop_machine is merely used to atomically check the module refcount 
+> for zero and set the state so it can't be incremented again (ie. 
+> try_module_get will fail).
 > 
+>    So placing a tracepoint or marker in a module does not bump the module 
+> refcount?  If that's true, then there needs to be some kind of 
+> remove_markers_from_module() call after module->exit(), which should do the 
+> synchronize_sched() or whatever, right?
+> 
+> Rusty.
 
-So it makes thinkpads work?  That's useful info.
+Actually, it's not placing a marker/tracepoint in a module which causes
+a problem, this is a simple function call after all, and correctly dealt
+with by current module.c code.
 
-We're getting there.  Who actually authored the patch?
+The problem comes from a probe function (the callback) that would be
+registered to be called from a marker and would sit in an unloadable 
+kernel module. I would not want to tie the refcount of the probe modules
+to the fact that they are connected to a marker because it would then
+become impossible to unload them due to the fact that unregistration is
+done in module exit().
+
+This is one of the reasons why I disable preemption around the marker
+site (the function call) : to make sure I can can unregister the
+callback, wait for a quiescent state (with synchronize_sched()) and then
+free the module memory.
+
+This would give the following supplementary guarantee about module
+teardown : every function called with preemption off and unregistered in
+the module exit() would reach a quiescent state before the module is
+freed. Given this does apply to rarely used code (module unload), I
+think it might be ok to simply add a call to synchronize_sched() before
+the module memory is freed. Not tying this to markers/tracepoints would
+keep the behavior consistant across various build options, which is IMHO
+a good thing.
+
+I could also just document that a mandatory "synchronize_sched()" should
+be called at the end of the probe module exit() function which makes
+sure the probes has reached a quiescent state.
+
+I don't want to add a synchronize_sched() into the marker/tracepoint
+probe unregistration code because I want to keep batch probe
+unregistration fast enough so it does no take ~5 seconds to unload ~100
+probes. (may take longer on a loaded SMP system)
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
