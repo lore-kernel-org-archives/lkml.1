@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbYG3SqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbYG3SrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756009AbYG3SqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 14:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbYG3SqI
+	id S1757311AbYG3SrD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 14:47:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYG3Sqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 14:46:08 -0400
-Received: from cantor.suse.de ([195.135.220.2]:39128 "EHLO mx1.suse.de"
+	Wed, 30 Jul 2008 14:46:53 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:54788 "EHLO smtpout3.tre.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751688AbYG3SqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 14:46:07 -0400
-Date: Wed, 30 Jul 2008 20:46:03 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, isdn4linux@listserv.isdn4linux.de,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mISDN cleanup user interface
-Message-ID: <20080730184603.GA14922@pingi.kke.suse.de>
-References: <20080729195637.GB25929@pingi.kke.suse.de> <1217362946.27925.137.camel@pmac.infradead.org> <1217365330.417.8.camel@californication> <1217409211.27925.177.camel@pmac.infradead.org> <20080730163314.GB9491@pingi.kke.suse.de> <1217437021.3454.8.camel@pmac.infradead.org> <20080730175138.GA12800@pingi.kke.suse.de> <20080730183721.GA29639@uranus.ravnborg.org>
+	id S1751559AbYG3Sqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 14:46:52 -0400
+Date: Wed, 30 Jul 2008 20:47:00 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jeff Dike <jdike@addtoit.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] x86: use arch/x86/include
+Message-ID: <20080730184700.GA29710@uranus.ravnborg.org>
+References: <20080730124952.GA23413@uranus.ravnborg.org> <20080730180411.GA7896@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080730183721.GA29639@uranus.ravnborg.org>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.54-0.2.5-smp x86_64
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080730180411.GA7896@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 08:37:21PM +0200, Sam Ravnborg wrote:
-> On Wed, Jul 30, 2008 at 07:51:38PM +0200, Karsten Keil wrote:
-> > On Wed, Jul 30, 2008 at 05:57:01PM +0100, David Woodhouse wrote:
-> > > On Wed, 2008-07-30 at 18:33 +0200, Karsten Keil wrote:
-> > > > What about this implementation ?
-> > > 
-> > > Looks a lot saner... although it does seem to confirm my earlier
-> > > suspicion that you're not even _using_ the fact that it's a bitmap at
-> > > all. You set the bits for the present channels at init time, which are
-> > > always contiguous, and you never seem to change them them later -- why
-> > > couldn't you do this with a simple 'number of channels' integer?
-> > 
-> > No it is not contineous on different PRI line setups (E1,T1 ...)
-> > e.g a E1 has the D-channel on channel 15 position, so this bit is not set
-> > then.
-> timeslot 16 in my book actually - but maybe that your timeslot to
-> channel mapping.
+On Wed, Jul 30, 2008 at 08:04:11PM +0200, Ingo Molnar wrote:
 > 
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > Hi x86 guys.
+> > 
+> > It turned out to be easy to enable um to use arch/x86/include so here 
+> > is a git pull.
+> 
+> hm, we have a _ton_ of changes to include files queued up already, so 
+> this is rather inconvenient.
+git should cope with this if changes come in via git. I do not
+know about "git am" applied patches.
 
-You are correct of course.
+> 
+> I missed the discussion on this, what's the point of renaming all these 
+> files?
 
--- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+It has been discussed many times to keep arch and arch include files
+under arch/.
+Lately Linus outlined this:
+
+    http://kerneltrap.org/mailarchive/linux-kernel/2008/5/21/1903924
+
+I took the ball and did the kbuild side of this so we could do this
+gradually.
+sparc are already converted. sh has it ready to be pulled and others
+are playing with it.
+
+How we do it in the best way for such a fragile codebase as x86 is
+I am not sure. I would assume to do it late in the merge window where
+the minimum set of patches are queued up would be best (and this is now).
+
+And Linus already said he would like to take it sooner.
+Quote:
+
+====================================================================
+On Tue, 29 Jul 2008, Sam Ravnborg wrote:
+>
+> But will you accept this stuff now or will we have to wait until
+> next merge window?
+
+if the patches are really small adn the resulting build is well tested
+(ignoring the actual _move_ operation), I'm ok with taking them.
+
+In fact, in many ways I'd _prefer_ to do it now, rather than have it
+pending and then do it durign the next merge window when there are a lot
+of non-movement changes too.
+====================================================================
+
+	Sam
