@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbYG3Uxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbYG3Uzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754738AbYG3Uxz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 16:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbYG3Uxr
+	id S1755508AbYG3Uzf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 16:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYG3UzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 16:53:47 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:25687 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751816AbYG3Uxq (ORCPT
+	Wed, 30 Jul 2008 16:55:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60281 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750967AbYG3UzY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 16:53:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=R7/9q16Q8mC2tMVweczmJKMILHahuWhteigrKY6ZsYF03cei59lX3lSAQPQcRwT3vw
-         x8wtBAD/CnEdBddwAjyVp1nnANhfWUaT3qBR+/BfmBUagfbqmGtMsArA2iFrvaETC5Gf
-         SB3xq4u7BI+Ea2FH0QEbfCrnIAFKeV6thZgAQ=
-Message-ID: <2f11576a0807301353h2d31f021m22b34d3a67e830c@mail.gmail.com>
-Date: Thu, 31 Jul 2008 05:53:44 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Anders Johansson" <ajohansson@suse.de>
-Subject: Re: [PATCH] making /proc/<pid>/limits writable
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200807302157.46261.ajohansson@suse.de>
+	Wed, 30 Jul 2008 16:55:24 -0400
+Date: Wed, 30 Jul 2008 13:51:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: jens.axboe@oracle.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch v3] splice: fix race with page invalidation
+In-Reply-To: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu>
+Message-ID: <alpine.LFD.1.10.0807301349020.3334@nehalem.linux-foundation.org>
+References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807300958390.3334@nehalem.linux-foundation.org> <E1KOFUi-0000EU-0p@pomaz-ex.szeredi.hu> <20080730175406.GN20055@kernel.dk> <E1KOGT8-0000rd-0Z@pomaz-ex.szeredi.hu> <E1KOGeO-0000yi-EM@pomaz-ex.szeredi.hu>
+ <20080730194516.GO20055@kernel.dk> <E1KOHvq-0001oX-OW@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807301310130.3334@nehalem.linux-foundation.org> <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200807302157.46261.ajohansson@suse.de>
-X-Google-Sender-Auth: 66c1c6d284d26bdd
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andres,
 
-> Attached is a patch making the limits for a process writable, so it is
-> possible to change the limits of a task other than current.
->
-> There are many reasons why this is desirable. The core limit is to me the most
-> important. If a process hangs, because of some sort of race condition that
-> happens once in a blue moon, and ulimit -c is set to 0, it might take forever
-> to reproduce. It would be nice to be able to change that limit dynamically, to
-> be able to get a core dump.
->
-> Other limits should also be settable, but for now I've only done core size.
 
-Hmm..
-I agree to your motivation.
+On Wed, 30 Jul 2008, Miklos Szeredi wrote:
+> 
+> It _is_ a bug fix.
 
-but I have two objection.
- - this interface is slightly ugly. end user can't lean easily.
- - you don't write any documentation nor patch description about how to use.
-   So, I needed to read source code for know about how to use.
+No it's not.
+
+It's still papering over a totally unrelated bug. It's not a "fix", it's a 
+"paper-over". It doesn't matter if _behaviour_ changes.
+
+Can you really not see the difference?
+
+Afaik, everybody pretty much agreed what the real fix should be (don't 
+mark the page not up-to-date, just remove it from the radix tree), I'm not 
+seeing why you continue to push the patch that ALREADY GOT NAK'ed.
+
+			Linus
