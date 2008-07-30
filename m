@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbYG3Bhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbYG3BlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758149AbYG3Bhg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jul 2008 21:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbYG3BhB
+	id S1757386AbYG3BlR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jul 2008 21:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbYG3BlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jul 2008 21:37:01 -0400
-Received: from ozlabs.org ([203.10.76.45]:49273 "EHLO ozlabs.org"
+	Tue, 29 Jul 2008 21:41:06 -0400
+Received: from ozlabs.org ([203.10.76.45]:49335 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753965AbYG3BhA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jul 2008 21:37:00 -0400
+	id S1751860AbYG3BlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jul 2008 21:41:04 -0400
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [rfc git pull] cpus4096 fixes, take 2
-Date: Wed, 30 Jul 2008 10:15:38 +1000
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: module-placed markers/tracepoints
+Date: Wed, 30 Jul 2008 11:40:59 +1000
 User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mike Travis <travis@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-References: <20080727190601.GA764@elte.hu> <200807291145.20231.rusty@rustcorp.com.au> <20080729121156.GA367@elte.hu>
-In-Reply-To: <20080729121156.GA367@elte.hu>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <20080717155724.897537670@polymtl.ca> <20080729211543.GB17097@redhat.com> <20080729224115.GA5209@Krystal>
+In-Reply-To: <20080729224115.GA5209@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807301015.39525.rusty@rustcorp.com.au>
+Message-Id: <200807301140.59745.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 July 2008 22:11:56 Ingo Molnar wrote:
-> But gcc 3.4.5 apparently craps out on this valid use of a gcc extension,
-> see the report and the fix at:
+On Wednesday 30 July 2008 08:41:16 Mathieu Desnoyers wrote:
+> Therefore, what would be needed here is to add a synchronize_sched()
+> after mod->exit() in module.c or after each tracepoint/marker unregister
+> in marker.c/tracepoint.c. However, I'd really prefer to add this to
+> module.c since adding this for _every_ unregister will slow down
+> processing or multiple probe unregistration too much.
+>
+> Rusty, am I understanding that correctly ?
+>
+> Mathieu
 
-Hmm.  I can't find anything in the docs, but I'd assumed that a statement 
-expression isn't an lvalue.  Trying "int x; &({ x; });" fails as expected 
-with gcc 3.4, 4.1, 4.2 and 4.3:
+Hi Mathieu,
 
-	foo.c:3: error: lvalue required as unary ‘&’ operand
+   Yes: stop_machine is merely used to atomically check the module refcount 
+for zero and set the state so it can't be incremented again (ie. 
+try_module_get will fail).
 
-I'd say your code should, too...
+   So placing a tracepoint or marker in a module does not bump the module 
+refcount?  If that's true, then there needs to be some kind of 
+remove_markers_from_module() call after module->exit(), which should do the 
+synchronize_sched() or whatever, right?
 
-Cheers,
 Rusty.
