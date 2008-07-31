@@ -1,54 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbYGaQgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbYGaQil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbYGaQgI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 12:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYGaQfv
+	id S1754492AbYGaQil (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 12:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYGaQib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 12:35:51 -0400
-Received: from mail.free-electrons.com ([88.191.46.45]:50706 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751834AbYGaQfu (ORCPT
+	Thu, 31 Jul 2008 12:38:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40582 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751976AbYGaQia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 12:35:50 -0400
-Date: Thu, 31 Jul 2008 18:35:46 +0200
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       michael@free-electrons.com, mpm@selenic.com, jgarzik@pobox.com,
-       netdev@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [patch 3/4] Configure out ethtool support
-Message-ID: <20080731183546.2b047cee@surf>
-In-Reply-To: <20080731155820.GC20212@cs181140183.pp.htv.fi>
-References: <1217500967.3454.140.camel@pmac.infradead.org>
-	<20080731.035121.177567346.davem@davemloft.net>
-	<1217503770.3454.162.camel@pmac.infradead.org>
-	<20080731.043355.143045459.davem@davemloft.net>
-	<1217504801.3454.170.camel@pmac.infradead.org>
-	<20080731155820.GC20212@cs181140183.pp.htv.fi>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 31 Jul 2008 12:38:30 -0400
+Date: Thu, 31 Jul 2008 09:34:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jamie Lokier <jamie@shareable.org>
+cc: Miklos Szeredi <miklos@szeredi.hu>, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch v3] splice: fix race with page invalidation
+In-Reply-To: <20080731061201.GA7156@shareable.org>
+Message-ID: <alpine.LFD.1.10.0807310925360.3277@nehalem.linux-foundation.org>
+References: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu> <20080731001131.GA30900@shareable.org> <20080731004214.GA32207@shareable.org> <alpine.LFD.1.10.0807301746500.3277@nehalem.linux-foundation.org> <20080731061201.GA7156@shareable.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Thu, 31 Jul 2008 18:58:20 +0300,
-Adrian Bunk <bunk@kernel.org> a écrit :
 
-> It might have also made more sense to spend some of the energy used
-> in this discussion instead on checking where the global 24 kB size
-> increase Thomas reported for 2.6.27-rc1 compared to 2.6.26 comes from.
 
-I agree. This is something I'm working on. I hope to have results soon.
-But I *fear* that the results will be: the size growth is 10 bytes
-here, 22 bytes there, 35 bytes here, spread over hundreds of patches.
-Something we can do anything against.
+On Thu, 31 Jul 2008, Jamie Lokier wrote:
+> 
+> Having implemented an equivalent zero-copy thing in userspace, I can
+> confidently say it's not fundamental at all.
 
-Thomas
--- 
-Thomas Petazzoni, Free Electrons
-Kernel, drivers and embedded Linux development,
-consulting, training and support.
-http://free-electrons.com
+Oh yes it is.
+
+Doing it in user space is _trivial_, because you control everything, and 
+there are no barriers.
+
+> What is fundamental is that you either (a) treat sendfile as an async
+> operation, and get a notification when it's finished with the data,
+> just like any other async operation
+
+Umm. And that's exactly what I *described*.
+
+But it's trivial to do inside one program (either all in user space, or 
+all in kernel space).
+
+It's very difficult indeed to do across two totally different domains.
+
+Have you _looked_ at the complexities of async IO in UNIX? They are 
+horrible. The overhead to even just _track_ the notifiers basically undoes 
+all relevant optimizations for doing zero-copy.
+
+IOW, AIO is useful not because of zero-copy, but because it allows 
+_overlapping_ IO. Anybody who confuses the two is seriously misguided.
+
+>			, or (b) while sendfile claims those
+> pages, they are marked COW.
+
+.. and this one shows that you have no clue about performance of a memcpy.
+
+Once you do that COW, you're actually MUCH BETTER OFF just copying.
+
+Really.
+
+Copying a page is much cheaper than doing COW on it. Doing a "write()" 
+really isn't that expensive. People think that memory is slow, but memory 
+isn't all that slow, and caches work really well. Yes, memory is slow 
+compared to a few reference count increments, but memory is absolutely 
+*not* slow when compared to the overhead of TLB invalidates across CPUs 
+etc.
+
+So don't do it. If you think you need it, you should not be using 
+zero-copy in the first place.
+
+In other words, let me repeat:
+
+ - use splice() when you *understand* that it's just taking a refcount and 
+   you don't care.
+
+ - use read()/write() when you can't be bothered.
+
+There's nothing wrong with read/write. The _normal_ situation should be 
+that 99.9% of all IO is done using the regular interfaces. Splice() (and 
+sendpage() before it) is a special case. You should be using splice if you 
+have a DVR and you can do all the DMA from the tuner card into buffers 
+that you can then split up and send off to show real-time at the same time 
+as you copy them to disk.
+
+THAT is when zero-copy is useful. If you think you need to play games with 
+async notifiers, you're already off the deep end.
+
+			Linus
