@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbYGaSjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbYGaSmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756413AbYGaSjB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 14:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYGaSiw
+	id S1755590AbYGaSmc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 14:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbYGaSmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 14:38:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56516 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753211AbYGaSiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 14:38:51 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [bug] 2.6.27-rc1: I/O errors after resume
-Date: Thu, 31 Jul 2008 20:41:35 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200807281203.38822.j.schneider@uib.de> <200807311531.18377.rjw@sisk.pl> <E1KOYng-0000FR-Cr@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1KOYng-0000FR-Cr@pomaz-ex.szeredi.hu>
+	Thu, 31 Jul 2008 14:42:24 -0400
+Received: from sous-sol.org ([216.99.217.87]:54149 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752308AbYGaSmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 14:42:23 -0400
+X-Greylist: delayed 3580 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jul 2008 14:42:22 EDT
+Date: Thu, 31 Jul 2008 09:53:44 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org, greg@kroah.com,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH stable] ftrace document crucial update
+Message-ID: <20080731165335.GA14310@sequoia.sous-sol.org>
+References: <alpine.DEB.1.10.0807302256180.21982@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807312041.35544.rjw@sisk.pl>
+In-Reply-To: <alpine.DEB.1.10.0807302256180.21982@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 31 of July 2008, Miklos Szeredi wrote:
-> On Thu, 31 Jul 2008, Rafael J. Wysocki wrote:
-> > On Thursday, 31 of July 2008, Miklos Szeredi wrote:
-> > > With 2.6.27-rc1 things break badly after resume on my T60.  Dmesg and
-> > > config attached.  2.6.26 worked fine.
-> > 
-> > Ugh, lots of stuff in a single message.
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> Yeah, sorry.  Search for "I/O error" for the interesting parts.
+> It has come to my attention that ftrace.txt was pulled into 2.6.26 
+> prematurely. That is Linus pulled it in before it was well tested. A 
+> series of updates were made to it shortly afterward, but by then it was 
+> too late. The release was out, and ftrace.txt was greatly inadequate.
 > 
-> > Anyway, can you try the current -git and report back, please?  It's possible
-> > that this has been fixed already.
+> This patch is a sum of all the critical updates to keep ftrace.txt in a 
+> stable state. I strongly urge the stable team to get this into 2.6.26.1.
+> Otherwise people may be greatly disappointed while reading ftrace.txt just 
+> to realize that it is horribly out of date.
 > 
-> Not fixed:
-> 
-> mszeredi@tucsk:~> uname -a
-> Linux tucsk 2.6.27-rc1-00156-g94ad374 #17 SMP Thu Jul 31 15:45:10 CEST 2008 x86_64 x86_64 x86_64 GNU/Linux
-> mszeredi@tucsk:~> dmesg
-> bash: /bin/dmesg: Input/output error
-> 
-> Seems easily reproducible, so if no better ideas I can try to bisect it.
+> Never mind that ftrace itself doesn't exist is 2.6.26.
 
-That would be really helpful.
+.txt only patch is quite low-risk, but given the above, is it really that
+critical?
 
-Thanks,
-Rafael
+thanks,
+-chris
