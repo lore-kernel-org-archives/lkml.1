@@ -1,81 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbYGaFWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbYGaFax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753825AbYGaFWS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 01:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbYGaFWE
+	id S1754143AbYGaFax (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 01:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYGaFan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 01:22:04 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49142 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751971AbYGaFWC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 01:22:02 -0400
-Date: Thu, 31 Jul 2008 14:16:10 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: memory hotplug: hot-remove fails on lowest chunk in ZONE_MOVABLE
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1217420161.4545.10.camel@localhost.localdomain>
-References: <20080730110444.27DE.E1E9C6FF@jp.fujitsu.com> <1217420161.4545.10.camel@localhost.localdomain>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080731134956.2A3B.E1E9C6FF@jp.fujitsu.com>
+	Thu, 31 Jul 2008 01:30:43 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:45796 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752040AbYGaFam (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 01:30:42 -0400
+Message-ID: <48914F5D.7060004@sgi.com>
+Date: Thu, 31 Jul 2008 15:36:29 +1000
+From: Lachlan McIlroy <lachlan@sgi.com>
+Reply-To: lachlan@sgi.com
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: torvalds@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: Re: [GIT PULL] XFS update for 2.6.27
+References: <20080731025328.6328358C4C3F@chook.melbourne.sgi.com>
+In-Reply-To: <20080731025328.6328358C4C3F@chook.melbourne.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 2008-07-30 at 12:16 +0900, Yasunori Goto wrote:
-> > Well, I didn't mean changing pages_min value. There may be side effect as
-> > you are saying.
-> > I meant if some pages were MIGRATE_RESERVE attribute when hot-remove are
-> > -executing-, their attribute should be changed.
-> > 
-> > For example, how is like following dummy code?  Is it impossible?
-> > (Not only here, some places will have to be modified..)
+We're having dns issues on our mail servers and none of our mails are going
+to lkml (or linus).  I'll try to resend the pull request.
+
+Lachlan McIlroy wrote:
+> The following changes since commit c9272c4f9fbe2087beb3392f526dc5b19efaa56b:
+>   Linus Torvalds (1):
+>         Merge branch 'hotfixes' of git://git.linux-nfs.org/projects/trondmy/nfs-2.6
 > 
-> Right, this should be possible. I was somewhat wandering from the subject,
-> because I noticed that there may be a bigger problem with MIGRATE_RESERVE
-> pages in ZONE_MOVABLE, and that we may not want to have them in the first
-> place.
+> are available in the git repository at:
 > 
-> The more memory we add to ZONE_MOVABLE, the less reserved pages will
-> remain to the other zones. In setup_per_zone_pages_min(), min_free_kbytes
-> will be redistributed to a zone where the kernel cannot make any use of
-> it, effectively reducing the available min_free_kbytes. This just doesn't
-> sound right. I believe that a similar situation is the reason why highmem
-> pages are skipped in the calculation and I think that we need that for
-> ZONE_MOVABLE too. Any thoughts on that problem?
+>   git://oss.sgi.com:8090/xfs/xfs-pull for-linus
 > 
-> Setting pages_min to 0 for ZONE_MOVABLE, while not capping pages_low
-> and pages_high, could be an option. I don't have a sufficient memory
-> managment overview to tell if that has negative side effects, maybe
-> someone with a deeper insight could comment on that.
-
-At least, pages_min should not be 0. It is used as watermark when
-memory shortage situation. If it is 0, kernel will misunderstand
-shortage situation. Certainly, pages_min value may be not appropriate value
-for ZONE_MOVABLE. But it is not memory-hotplug issue.
-
-True your question is why ZONE_MOVABLE has MIGRATE_RESREVE pages, right?
-However, I think it is intended for emergency pool of memory shortage situation
-for ZONE_MOVABLE via fallback[]. If not, these MIGRATE_RESERVE pages are not made
-originally.
-It is why I wrote previous mail.
-
-Mel Gormal-san knows around here very well. He may explain its detail more.
-
-Bye.
-
--- 
-Yasunori Goto 
-
-
+> Barry Naujok (12):
+>       [XFS] Split xfs_dir2_leafn_lookup_int into its two pieces of functionality
+>       [XFS] Name operation vector for hash and compare
+>       [XFS] Add op_flags field and helpers to xfs_da_args
+>       dcache: Add case-insensitive support d_ci_add() routine
+>       [XFS] Return case-insensitive match for dentry cache
+>       [XFS] XFS: ASCII case-insensitive support
+>       [XFS] kmem_free and kmem_realloc to use const void *
+>       [XFS] Remove d_add call for an ENOENT lookup return code
+>       [XFS] Zero uninitialised xfs_da_args structure in xfs_dir2.c
+>       [XFS] Invalidate dentry in unlink/rmdir if in case-insensitive mode
+>       [XFS] Fix returning case-preserved name with CI node form directories
+>       [XFS] Fix CI lookup in leaf-form directories
+> 
+> Christoph Hellwig (28):
+>       [XFS] Kill attr_capable checks as already done in xattr_permission.
+>       [XFS] kill xfs_uuid_unmount
+>       [XFS] merge xfs_mntupdate into xfs_fs_remount
+>       [XFS] kill xfs_igrow_start and xfs_igrow_finish
+>       [XFS] merge xfs_unmount into xfs_fs_put_super / xfs_fs_fill_super
+>       [XFS] merge xfs_mount into xfs_fs_fill_super
+>       [XFS] don't call xfs_freesb from xfs_mountfs failure case
+>       [XFS] sort out opening and closing of the block devices
+>       [XFS] add xfs_setup_devices helper
+>       [XFS] allow xfs_args_allocate to fail
+>       [XFS] kill xfs_mount_init
+>       [XFS] kill calls to xfs_binval in the mount error path
+>       [XFS] rename error2 goto label in xfs_fs_fill_super
+>       [XFS] add missing call to xfs_filestream_unmount on xfs_mountfs failure
+>       [XFS] Factor out code for whether inode has attributes or not.
+>       [XFS] Switches xfs_vn_listxattr to set it's put_listent callback directly
+>       [XFS] Merge xfs_rmdir into xfs_remove
+>       [XFS] Don't update i_size for directories and special files
+>       [XFS] Check for invalid flags in xfs_attrlist_by_handle.
+>       [XFS] attrmulti cleanup
+>       [XFS] Don't update mtime on rename source
+>       [XFS] streamline init/exit path
+>       [XFS] fix mount option parsing in remount
+>       [XFS] s/XFS_PURGE_INODE/IRELE/g s/VN_HOLD(XFS_ITOV())/IHOLD()/
+>       [XFS] fix compilation without CONFIG_PROC_FS
+>       [XFS] xfs_setattr currently doesn't just handle the attributes set through
+>       [XFS] Now that xfs_setattr is only used for attributes set from ->setattr
+>       [XFS] Remove vn_revalidate calls in xfs.
+> 
+> David Chinner (1):
+>       [XFS] Update valid fields in xfs_mount_log_sb()
+> 
+> Denys Vlasenko (3):
+>       [XFS] Remove unused arg from kmem_free()
+>       [XFS] Remove unused Falgs parameter from xfs_qm_dqpurge()
+>       [XFS] Remove unused wbc parameter from xfs_start_page_writeback()
+> 
+> Eric Sandeen (3):
+>       [XFS]
+>       [XFS] Pack some shortform dir2 structures for the ARM old ABI
+>       [XFS] Disable queue flag test in barrier check.
+> 
+> Lachlan McIlroy (11):
+>       [XFS] Use the generic xattr methods.
+>       [XFS] make inode reclaim wait for log I/O to complete
+>       [XFS] fix extent corruption in xfs_iext_irec_compact_full()
+>       [XFS] Convert ASSERTs to XFS_WANT_CORRUPTED_GOTOs
+>       [XFS] Always reset btree cursor after an insert
+>       [XFS] Use the generic xattr methods.
+>       [XFS] use minleft when allocating in xfs_bmbt_split()
+>       [XFS] Restore the lowspace extent allocator algorithm
+>       [XFS] Allow xfs_bmbt_split() to fallback to the lowspace allocator
+>       [XFS] Don't assert if trying to mount with blocksize > pagesize
+>       [XFS] fix use after free with external logs or real-time devices
+> 
+> Matthew Wilcox (1):
+>       [XFS] Convert l_flushsema to a sv_t
+> 
+> Michael Nishimoto (1):
+>       [XFS] Ensure that 2 GiB xfs logs work properly.
+> 
+> Tim Shimmin (4):
+>       [XFS] Fix up noattr2 so that it will properly update the versionnum and
+>       [XFS] Fix up warning for xfs_vn_listxatt's call of list_one_attr() with
+>       [XFS] Fix up problem when CONFIG_XFS_POSIX_ACL is not set and yet we still
+>       [XFS] A bug was found in xfs_bmap_add_extent_unwritten_real(). In a
+> 
+>  fs/dcache.c                    |  102 +++++
+>  fs/xfs/Makefile                |    3 +-
+>  fs/xfs/linux-2.6/kmem.c        |    6 +-
+>  fs/xfs/linux-2.6/kmem.h        |    4 +-
+>  fs/xfs/linux-2.6/xfs_aops.c    |    5 +-
+>  fs/xfs/linux-2.6/xfs_buf.c     |   14 +-
+>  fs/xfs/linux-2.6/xfs_buf.h     |    2 +-
+>  fs/xfs/linux-2.6/xfs_export.c  |    2 +-
+>  fs/xfs/linux-2.6/xfs_ioctl.c   |  376 ++++++++++++++--
+>  fs/xfs/linux-2.6/xfs_iops.c    |  345 +++++----------
+>  fs/xfs/linux-2.6/xfs_iops.h    |    2 +
+>  fs/xfs/linux-2.6/xfs_linux.h   |    8 +
+>  fs/xfs/linux-2.6/xfs_stats.c   |   15 +-
+>  fs/xfs/linux-2.6/xfs_stats.h   |   12 +-
+>  fs/xfs/linux-2.6/xfs_super.c   |  938 ++++++++++++++++++++++++++++++++++++----
+>  fs/xfs/linux-2.6/xfs_super.h   |    4 +-
+>  fs/xfs/linux-2.6/xfs_sysctl.c  |    8 +-
+>  fs/xfs/linux-2.6/xfs_sysctl.h  |    4 +-
+>  fs/xfs/linux-2.6/xfs_vnode.c   |   50 ---
+>  fs/xfs/linux-2.6/xfs_vnode.h   |   89 ----
+>  fs/xfs/linux-2.6/xfs_xattr.c   |  330 ++++++++++++++
+>  fs/xfs/quota/xfs_dquot.c       |    3 +-
+>  fs/xfs/quota/xfs_dquot.h       |    2 +-
+>  fs/xfs/quota/xfs_dquot_item.c  |    4 +-
+>  fs/xfs/quota/xfs_qm.c          |   24 +-
+>  fs/xfs/quota/xfs_qm_syscalls.c |   12 +-
+>  fs/xfs/quota/xfs_quota_priv.h  |    3 -
+>  fs/xfs/support/ktrace.c        |    4 +-
+>  fs/xfs/support/uuid.c          |    8 +-
+>  fs/xfs/support/uuid.h          |    1 -
+>  fs/xfs/xfs_acl.c               |   21 +-
+>  fs/xfs/xfs_acl.h               |    4 +-
+>  fs/xfs/xfs_attr.c              |  608 ++++----------------------
+>  fs/xfs/xfs_attr.h              |   90 ++---
+>  fs/xfs/xfs_attr_leaf.c         |   99 ++---
+>  fs/xfs/xfs_attr_leaf.h         |   29 +--
+>  fs/xfs/xfs_attr_sf.h           |   10 +-
+>  fs/xfs/xfs_bmap.c              |  118 +++---
+>  fs/xfs/xfs_bmap.h              |   13 +-
+>  fs/xfs/xfs_bmap_btree.c        |   76 ++--
+>  fs/xfs/xfs_buf_item.c          |    8 +-
+>  fs/xfs/xfs_clnt.h              |    1 +
+>  fs/xfs/xfs_da_btree.c          |   48 ++-
+>  fs/xfs/xfs_da_btree.h          |   36 ++-
+>  fs/xfs/xfs_dfrag.c             |    4 +-
+>  fs/xfs/xfs_dir2.c              |  125 +++++-
+>  fs/xfs/xfs_dir2.h              |    6 +-
+>  fs/xfs/xfs_dir2_block.c        |   56 ++-
+>  fs/xfs/xfs_dir2_data.c         |    5 +-
+>  fs/xfs/xfs_dir2_leaf.c         |   93 +++--
+>  fs/xfs/xfs_dir2_node.c         |  402 ++++++++++-------
+>  fs/xfs/xfs_dir2_sf.c           |   83 ++--
+>  fs/xfs/xfs_dir2_sf.h           |    6 +-
+>  fs/xfs/xfs_dir2_trace.c        |   20 +-
+>  fs/xfs/xfs_dmapi.h             |    2 +-
+>  fs/xfs/xfs_error.c             |   13 +-
+>  fs/xfs/xfs_error.h             |    1 -
+>  fs/xfs/xfs_extfree_item.c      |    6 +-
+>  fs/xfs/xfs_filestream.c        |    4 +-
+>  fs/xfs/xfs_fs.h                |    4 +
+>  fs/xfs/xfs_fsops.c             |    4 +-
+>  fs/xfs/xfs_inode.c             |  165 +++-----
+>  fs/xfs/xfs_inode.h             |    3 -
+>  fs/xfs/xfs_inode_item.c        |    7 +-
+>  fs/xfs/xfs_iomap.c             |   10 +
+>  fs/xfs/xfs_itable.c            |    6 +-
+>  fs/xfs/xfs_log.c               |   49 +-
+>  fs/xfs/xfs_log_priv.h          |    6 +-
+>  fs/xfs/xfs_log_recover.c       |   21 +-
+>  fs/xfs/xfs_mount.c             |  118 ++----
+>  fs/xfs/xfs_mount.h             |   17 +-
+>  fs/xfs/xfs_mru_cache.c         |   21 +-
+>  fs/xfs/xfs_rename.c            |   22 +-
+>  fs/xfs/xfs_rtalloc.c           |    2 +-
+>  fs/xfs/xfs_sb.h                |   17 +-
+>  fs/xfs/xfs_trans.c             |    4 +-
+>  fs/xfs/xfs_trans_inode.c       |    2 +-
+>  fs/xfs/xfs_trans_item.c        |    8 +-
+>  fs/xfs/xfs_vfsops.c            |  610 +--------------------------
+>  fs/xfs/xfs_vfsops.h            |    5 -
+>  fs/xfs/xfs_vnodeops.c          |  722 +++++++++----------------------
+>  fs/xfs/xfs_vnodeops.h          |   12 +-
+>  include/linux/dcache.h         |    1 +
+>  83 files changed, 3105 insertions(+), 3098 deletions(-)
+>  create mode 100644 fs/xfs/linux-2.6/xfs_xattr.c
+> 
+> 
+> 
