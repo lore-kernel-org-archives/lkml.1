@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbYGaPoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbYGaPqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756099AbYGaPoT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 11:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbYGaPoJ
+	id S1757065AbYGaPqR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 11:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbYGaPqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 11:44:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57381 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751710AbYGaPoI (ORCPT
+	Thu, 31 Jul 2008 11:46:04 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:37779 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752094AbYGaPqD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 11:44:08 -0400
-Message-ID: <4891DD70.8070901@linux-foundation.org>
-Date: Thu, 31 Jul 2008 10:42:40 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       vegard.nossum@gmail.com, hannes@saeurebad.de
-Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
-References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>	 <20080103085239.GA10813@elte.hu>	 <1199378818.8274.25.camel@cinder.waste.org>	 <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>	 <1199419890.4608.77.camel@cinder.waste.org>	 <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>	 <1199641910.8215.28.camel@cinder.waste.org>	 <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>	 <1199906151.6245.57.camel@cinder.waste.org>	 <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>	 <1199919548.6245.74.camel@cinder.waste.org>	 <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI>	 <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI>	 <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org>	 <Pine.LNX.4.64.0807310045020.22702@sbz-30.cs.Helsinki.FI>	 <alpine.LFD.1.10.0807301457020.3277@nehalem.linux-foundation.org>	 <1217466583.18911.226.camel@calx>  <4891CBA9.8030203@linux-foundation.org> <1217518738.3657.28.camel@calx>
-In-Reply-To: <1217518738.3657.28.camel@calx>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jul 2008 11:46:03 -0400
+Message-Id: <4891FA82.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Thu, 31 Jul 2008 16:46:42 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>, <dbaryshkov@gmail.com>,
+       <James.Bottomley@HansenPartnership.com>
+Subject: [PATCH] fix order calculation in
+	dma_mark_declared_memory_occupied()
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Thu, 2008-07-31 at 09:26 -0500, Christoph Lameter wrote:
->> Matt Mackall wrote:
->>
->>> Finally getting rid of SLAB is a much trickier proposition because SLUB
->>> still loses in a few important corner cases.
->> Which corner cases? I know about the reports on the TPC issue which I
->> guess is a result of the avoidance of queueing in the cold free case.
->> It would be good to have a small C program (under an open source
->> license) that shows the issue.
-> 
-> That's the one I had in mind, which I have no personal insight into.
+get_order() takes byte-sized input, not a page-granular one.
 
-I also only so far had to rely on reports by others and guesswork as to what is going on.
+Irrespective of this fix I'm inclined to believe that this doesn't work
+right anyway - bitmap_allocate_region() has an implicit assumption of
+'pos' being suitable for 'order', which this function doesn't seem to
+enforce (and since it's being called with a byte-granular value there's
+no reason to believe that the callers would make sure device_addr is
+passed accordingly - it's also not documented that way).
+
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
+
+---
+ kernel/dma-coherent.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+--- linux-2.6.27-rc1/kernel/dma-coherent.c	2008-07-31 17:08:36.000000000 +0200
++++ 2.6.27-rc1-dma-mark-declared/kernel/dma-coherent.c	2008-07-31 14:35:59.000000000 +0200
+@@ -77,15 +77,14 @@ void *dma_mark_declared_memory_occupied(
+ {
+ 	struct dma_coherent_mem *mem = dev->dma_mem;
+ 	int pos, err;
+-	int pages = (size + (device_addr & ~PAGE_MASK) + PAGE_SIZE - 1);
+ 
+-	pages >>= PAGE_SHIFT;
++	size += device_addr & ~PAGE_MASK;
+ 
+ 	if (!mem)
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	pos = (device_addr - mem->device_base) >> PAGE_SHIFT;
+-	err = bitmap_allocate_region(mem->bitmap, pos, get_order(pages));
++	err = bitmap_allocate_region(mem->bitmap, pos, get_order(size));
+ 	if (err != 0)
+ 		return ERR_PTR(err);
+ 	return mem->virt_base + (pos << PAGE_SHIFT);
+
 
 
