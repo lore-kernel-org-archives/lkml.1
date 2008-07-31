@@ -1,100 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760305AbYGaDcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760815AbYGaDgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760305AbYGaDcU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 23:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755503AbYGaDcE
+	id S1760815AbYGaDgq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 23:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbYGaDgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 23:32:04 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:40304 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755289AbYGaDcB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 23:32:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent:from;
-        b=gCAQNfORM4DaxC5KLS9wWXH9PEL+LP8jTcecGTGtMCEfI/ZofjNKJiWJht4BHYFFKV
-         nQid1xXFGH83UWvX/cnryk5EItrGlw8MKLGDy6rvL8S2oHbMmp8y0s7JaMGe/bd5Lyo0
-         xLa5i7tOcjRTAEKlsKWFVf4AzeNGmlJ0nI384=
-Date: Thu, 31 Jul 2008 05:32:07 +0200
-To: Greg KH <greg@kroah.com>
-Cc: Greg KH <gregkh@suse.de>, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Petr Tesarik <ptesarik@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Jan Kara <jack@suse.cz>, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH] ide-cd: fix endianity for the error message in
-	cdrom_read_capacity
-Message-ID: <20080731033207.GA11238@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com, Greg KH <greg@kroah.com>,
-	Greg KH <gregkh@suse.de>, stable@kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Petr Tesarik <ptesarik@suse.cz>, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-	Jan Kara <jack@suse.cz>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-References: <1217405406.11834.11.camel@elijah.suse.cz> <20080730011832.0ee55d47.akpm@linux-foundation.org> <9ea470500807300152p5d5414aaq2d0d0053c12ef3f5@mail.gmail.com> <20080730163327.GA23086@suse.de> <20080730191257.GA1205@gollum.tnic> <20080730205836.GA31232@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080730205836.GA31232@kroah.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+	Wed, 30 Jul 2008 23:36:38 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:43819 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754995AbYGaDgi (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 23:36:38 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc1 + selinux new options = no httpd
+In-Reply-To: Your message of "Wed, 30 Jul 2008 22:54:25 EDT."
+             <200807302254.26036.gene.heskett@gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <200807302254.26036.gene.heskett@gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1217475396_3077P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 30 Jul 2008 23:36:36 -0400
+Message-ID: <195215.1217475396@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 01:58:36PM -0700, Greg KH wrote:
-> On Wed, Jul 30, 2008 at 09:12:57PM +0200, Borislav Petkov wrote:
-> > On Wed, Jul 30, 2008 at 09:33:28AM -0700, Greg KH wrote:
-> > > On Wed, Jul 30, 2008 at 10:52:50AM +0200, Boris Petkov wrote:
-> > > > On Wed, Jul 30, 2008 at 10:18 AM, Andrew Morton
-> > > > <akpm@linux-foundation.org> wrote:
-> > > > > On Wed, 30 Jul 2008 10:10:06 +0200 Petr Tesarik <ptesarik@suse.cz> wrote:
-> > > > >
-> > > > >> Resent because of a typo in the LKML address. :(
-> > > > >
-> > > > > Thanks.
-> > > > >
-> > > > >>
-> > > > >> Aesthetic regards aside, commit e8e7b9eb11c34ee18bde8b7011af41938d1ad667
-> > > > >> still leaves a bug in the error message, because it uses the unconverted
-> > > > >> big-endian value for printk.
-> > > > >>
-> > > > >> Fix this by using a local variable in machine byte order. The result is
-> > > > >> correct, more readable, and also produces slightly shorter code on i386.
-> > > > >>
-> > > > >> Cc: Jens Axboe <jens.axboe@oracle.com>
-> > > > >> Cc: Jan Kara <jack@suse.cz>
-> > > > >> Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
-> > > > 
-> > > > I definitely like this one better, thanks.
-> > > > 
-> > > > Acked-by: Borislav Petkov <petkovbb@gmail.com>
-> > > > 
-> > > > 
-> > > > >
-> > > > > Bart owns this patch now.  It got lost for a month and it has already
-> > > > > been fixed twice and it is also on the route to 2.6.25.x and 2.6.26.x,
-> > > > > so it'll get complicated.  Not a happy little patch.
-> > > > 
-> > > > Greg, can you please apply this one on top of -stable.
-> > > 
-> > > What one?  Do you have a git commit id?
-> > 
-> > Oh, sorry about that. Ok, you should have in both 2.6.25 and .26 the patch with
-> > upstream commit id e8e7b9eb11c34ee18bde8b7011af41938d1ad667. I rediffed the new
-> > one on top, here's the 2.6.26 version, the 2.6.25 one follows.
+--==_Exmh_1217475396_3077P
+Content-Type: text/plain; charset=us-ascii
+
+On Wed, 30 Jul 2008 22:54:25 EDT, Gene Heskett said:
+> Greetings;
 > 
-> I need the patch id when this goes to Linus, in his tree.  If you add
-> "cc: stable <stable@kernel.org>" to the signed-off-by area, when it gets
-> into Linus's tree, we will be automatically notified of it.
+> I just had to reboot backwards to 2.6.26 as I don't seem to be able to turn 
+> off enough selinux stuff to allow apache (httpd) to run, on 2.6.27-rc1 it 
+> cannot get perms to access its log files so it exits.
 
-Bart already did that. It's now in his pata-2.6 tree.
+Oddness indeed - booting with 'permissive' should at least let things work
+so you can diagnose the problem.
 
--- 
-Regards/Gruss,
-    Boris.
+Do you have any of the AVC messages that got generated when apache failed?
+
+--==_Exmh_1217475396_3077P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIkTNEcC3lWbTT17ARAqN8AJ9AYqzIc1EHtQdOyOLbwYyHzcsGxwCgu4MY
+Obtvnza1yEK14H4SxJMiTYI=
+=2fcb
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1217475396_3077P--
