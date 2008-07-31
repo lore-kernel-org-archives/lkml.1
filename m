@@ -1,48 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbYGaIdC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYGaIfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753850AbYGaIdC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 04:33:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbYGaIcp
+	id S1753972AbYGaIfH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 04:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYGaIev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 04:32:45 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42649 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750972AbYGaIco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 04:32:44 -0400
-Subject: Re: [PATCH 1/2] Export get_user_pages_fast
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Avi Kivity <avi@qumranet.com>,
-       Adrian Bunk <bunk@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       lguest <lguest@ozlabs.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080731012151.41733ef6.akpm@linux-foundation.org>
-References: <200807301438.55941.rusty@rustcorp.com.au>
-	 <48915F2F.4020407@qumranet.com>
-	 <20080731000257.59830c25.akpm@linux-foundation.org>
-	 <200807311810.57821.nickpiggin@yahoo.com.au>
-	 <20080731012151.41733ef6.akpm@linux-foundation.org>
+	Thu, 31 Jul 2008 04:34:51 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:41121 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751122AbYGaIet (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 04:34:49 -0400
+Subject: Re: [patch 3/3] kmsg: convert xpram messages to kmsg api.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Joe Perches <joe@perches.com>,
+       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <20080730194308.GB22441@suse.de>
+References: <20080730165656.118280544@de.ibm.com>
+	 <20080730171157.550296160@de.ibm.com>  <20080730194308.GB22441@suse.de>
 Content-Type: text/plain
-Date: Thu, 31 Jul 2008 18:32:16 +1000
-Message-Id: <1217493136.11188.433.camel@pasglop>
+Organization: IBM Corporation
+Date: Thu, 31 Jul 2008 10:33:42 +0200
+Message-Id: <1217493222.8555.8.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-07-30 at 12:43 -0700, Greg KH wrote:
+> On Wed, Jul 30, 2008 at 06:56:59PM +0200, Martin Schwidefsky wrote:
+> > Index: linux-2.6/Documentation/kmsg/s390/xpram
+> > ===================================================================
+> > --- /dev/null
+> > +++ linux-2.6/Documentation/kmsg/s390/xpram
+> > @@ -0,0 +1,54 @@
+> > +/*?
+> > + * Tag: xpram.1
+> 
+> Ick, so you are going to have to define a message number per file?
+> How is that going to work, it looks like you use ids 0-2 below in the .c
+> file, yet in this documentation file they are 1-3.  Off by one
+> somewhere?  :)
 
-> If we do this then corresponding changes should be made to the powerpc
-> patch upon which Ben presently sits.
+The kmsg number 0 is special, the message tag will not include the
+message number for id 0. And the script won't complain that the message
+description is missing.
+And yes, we WANT to define the message numbers per kmsg component. 
 
-It's upstream :-) I had a couple of fixes to do to it, but it's
-working well now and merged in the last batch.
+> > + * Text: "%d is not a valid number of XPRAM devices"
+> > + * Severity: Error
+> > + * Parameter:
+> > + *   @1: number of partitions
+> > + * Description:
+> > + * The number of XPRAM partitions specified for the 'devs' module parameter
+> > + * or with the 'xpram.parts' kernel parameter must be an integer in the
+> > + * range 1 to 32. The XPRAM device driver created a maximum of 32 partitions
+> > + * that are probably not configured as intended.
+> > + * User action:
+> > + * If the XPRAM device driver has been compiled as a separate module,
+> > + * unload the module and load it again with a correct value for the
+> > + * 'devs' module parameter. If the XPRAM device driver has been compiled
+> > + * into the kernel, correct the 'xpram.parts' parameter in the kernel
+> > + * parameter line and restart Linux.
+> > + */
+> 
+> Any way to put this stuff in the .c file itself?  It's hard enough
+> getting people to update Documentation/ABI/, knowing to go modify
+> something else in the Documentation directory is going to be _very_
+> difficult.
 
-Nick, we should look into cleaning up the fallback path too,
-it's a bit ugly as it is.
+Yes, already implemented. Just put the comment anywhere in the .c file
+where the message is printed. The Documentation/kmsg directory is just
+an additional option.
 
-Cheers,
-Ben.
+> 
+> >  
+> > +#define KMSG_COMPONENT "xpram"
+> 
+> Can't you just use KBUILD_MODULE_NAME instead?  That makes it one less
+> thing you have to define in the code (and forget about when moving files
+> around or cut-and-pasting).
+
+Two reason why we don't want to use KBUILD_MODULE_NAME:
+1) the message tag (message component + message id) should never change,
+if you change the code structure the module name might change as well.
+2) we want to be able to use the same kmsg component in multiple .c
+files. 
+
+> >  	/* Check number of devices. */
+> >  	if (devs <= 0 || devs > XPRAM_MAX_DEVS) {
+> > -		PRINT_ERR("invalid number %d of devices\n",devs);
+> > +		kmsg_err(1, "%d is not a valid number of XPRAM devices\n",devs);
+> >  		return -EINVAL;
+> 
+> Magic number "1" here?  See comment above about this.
+
+This is just the kmsg printk for xpram.1, see comment above about id 0.
+
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
 
