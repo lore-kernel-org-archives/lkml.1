@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758385AbYGaVdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbYGaVgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758385AbYGaVdb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 17:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYGaVdX
+	id S1758078AbYGaVgc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 17:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbYGaVgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 17:33:23 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:37433 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754736AbYGaVdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 17:33:22 -0400
-Date: Thu, 31 Jul 2008 23:34:10 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: John Kacur <jkacur@gmail.com>
-Cc: linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Change Kbuild message to match default
-Message-ID: <20080731213410.GC25921@uranus.ravnborg.org>
-References: <200807160031.16323.jkacur@gmail.com> <520f0cf10807260234v64297490l6db807fee0864cc5@mail.gmail.com> <20080730202655.GA12148@uranus.ravnborg.org> <520f0cf10807301623l759baa8ub9c669176107fa85@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 31 Jul 2008 17:36:24 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:65382 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754238AbYGaVgX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 17:36:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=LESwd0A4rTkjW60Wc7QpcwEZTeGC8uuRL4a31cMTNfDzKcRRbbp0MrekMePglU+Jvv
+         beRZXynR033OvAHYpKewXoGEKSg5FN2yI7bSdLUnzIFSHMxsy4gVQ70/wHpwpx0D1gTO
+         TZpBVSAUJglapxjdxanl6sYk2D/iN0wgH+jmU=
+Message-ID: <2c0942db0807311436p6c61d2f0o9bfe67ffeaaf0e91@mail.gmail.com>
+Date: Thu, 31 Jul 2008 14:36:21 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Willy Tarreau" <w@1wt.eu>
+Subject: Re: iptables, NAT, DNS & Dan Kaminsky
+Cc: "Richard Hartmann" <richih.mailinglist@gmail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080731211406.GA19104@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <520f0cf10807301623l759baa8ub9c669176107fa85@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+References: <2d460de70807300753w33c43340xaa52c54add501306@mail.gmail.com>
+	 <20080730195548.GA615@1wt.eu>
+	 <2d460de70807310759s2a7d6c4k5ba7e0e6a5bd9cf6@mail.gmail.com>
+	 <20080731211406.GA19104@1wt.eu>
+X-Google-Sender-Auth: 69cbde2038ac8c8c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 01:23:56AM +0200, John Kacur wrote:
-> On Wed, Jul 30, 2008 at 10:26 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > On Sat, Jul 26, 2008 at 11:34:14AM +0200, John Kacur wrote:
-> >> On Wed, Jul 16, 2008 at 12:31 AM, jkacur <jkacur@gmail.com> wrote:
-> >> > Change the Kbuild "If unsure" message to match the default.
-> >> >
-> >> > Signed-off-by: John Kacur <jkacur at gmail dot com>
-> >> >
-> >> > Index: linux-2.6.26/init/Kconfig
-> >> > ===================================================================
-> >> > --- linux-2.6.26.orig/init/Kconfig
-> >> > +++ linux-2.6.26/init/Kconfig
-> >> > @@ -522,7 +522,7 @@ config CC_OPTIMIZE_FOR_SIZE
-> >> >          Enabling this option will pass "-Os" instead of "-O2" to gcc
-> >> >          resulting in a smaller kernel.
-> >> >
-> >> > -         If unsure, say N.
-> >> > +         If unsure, say Y.
-> >> >
-> >> >  config SYSCTL
-> >> >        bool
-> >> >
-> >>
-> >> This seems like a no-brainer to me that the default and the "If
-> >> unsure" message should match, any reason you haven't picked-it up?
-> >
-> > Two reasons:
-> >
-> > 1) I have not started to look at new patches until now
-> >
-> >   And this is due to several reasons.
-> >   First off I have been without internet for a while.
-> >   And secondly I do try to avoid new patches during the
-> >   merge window which does not fix merge issues.
-> 
-> Ok, no problem!
-> 
-> >
-> > 2) I am not convinced that "default y" is really what we want.
-> >   What does popular distroes use (aka what gets wide testing?).
-> >
-> 
-> Hmnn, good point, in any case there is an inconsistency here. I can
-> only speak for my laptop here running openSUSE 11.0 (X86-64)
-> 
-> gunzip -c /proc/config.gz | grep CC_OPTIMIZE_FOR_SIZE
-> CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-> uname -a
-> Linux linux-ipxk 2.6.25.11-0.1-default #1 SMP 2008-07-13 20:48:28
-> +0200 x86_64 x86_64 x86_64 GNU/Linux
+On Thu, Jul 31, 2008 at 2:14 PM, Willy Tarreau <w@1wt.eu> wrote:
+>> > And BTW I don't think that many of the people
+>> > reading LKML care a dime about the "exploit" for poorly configured
+>> > DNS servers.
+>>
+>> It is an exploit that is being abused as we speak and,
+>
+> That does not mean that abused servers were properly set up.
 
-Thanks - I applied your patch.
+Properly configured servers are vulnerable, that's why this is such a
+big deal. This a problem with the design of the DNS protocol (&
+associated behaviors) itself -- the only mitigation strategy sysadmins
+have right now is forcing a randomization of the source port (outside
+of the DNS resolver itself), or placing the DNS resolver behind a NAT
+masquerading firewall that does strict response dropping if a response
+comes from the wrong host. (There used to be an option in the kernel
+to deal with that -- loose source routing or somesuch, but I think
+that's a by-gone from the 2.4 era.)
 
-	Sam
+So, to answer Richard, yes something like that should work. I'm not an
+iptables guru by any means, but what you should do is set up a machine
+with that, and sniff the output of the DNS server before and after
+enabling that line to verify that it works.
 
+The better solution, of course, is to update your DNS server to allow
+it to do the source port randomization itself.
