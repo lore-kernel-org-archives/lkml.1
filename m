@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbYGaMoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYGaMqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754545AbYGaMoV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 08:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYGaMoD
+	id S1754889AbYGaMqv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 08:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYGaMqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 08:44:03 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51934
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750902AbYGaMoB (ORCPT
+	Thu, 31 Jul 2008 08:46:38 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:20268 "EHLO
+	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750992AbYGaMqh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 08:44:01 -0400
-Date: Thu, 31 Jul 2008 05:44:01 -0700 (PDT)
-Message-Id: <20080731.054401.06991829.davem@davemloft.net>
-To: nickpiggin@yahoo.com.au
-Cc: jarkao2@gmail.com, johannes@sipsolutions.net, netdev@axxeo.de,
-       peterz@infradead.org, Larry.Finger@lwfinger.net, kaber@trash.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, mingo@redhat.com
-Subject: Re: Kernel WARNING: at net/core/dev.c:1330
- __netif_schedule+0x2c/0x98()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200807312238.20264.nickpiggin@yahoo.com.au>
-References: <20080727203757.GA2527@ami.dom.local>
-	<20080731.052932.110299354.davem@davemloft.net>
-	<200807312238.20264.nickpiggin@yahoo.com.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 31 Jul 2008 08:46:37 -0400
+Message-ID: <4891B3E7.1090109@panasas.com>
+Date: Thu, 31 Jul 2008 15:45:27 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: open-iscsi@googlegroups.com
+CC: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       davem@davemloft.net, michaelc@cs.wisc.edu,
+       Steve Wise <swise@opengridcomputing.com>, rdreier@cisco.com,
+       daisyc@us.ibm.com, wenxiong@us.ibm.com, bhua@us.ibm.com,
+       Divy Le Ray <divy@chelsio.com>, Dimitrios Michailidis <dm@chelsio.com>,
+       Casey Leedom <leedom@chelsio.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+References: <200807300019.m6U0JkdY012558@localhost.localdomain> <4890C287.60508@pobox.com> <8A71B368A89016469F72CD08050AD334032EC7F5@maui.asicdesigners.com>
+In-Reply-To: <8A71B368A89016469F72CD08050AD334032EC7F5@maui.asicdesigners.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 Jul 2008 12:44:53.0060 (UTC) FILETIME=[3A6EF840:01C8F30B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Thu, 31 Jul 2008 22:38:19 +1000
-
-> Except for the braindead volatile that gets stuck on the bitops pointer.
+Karen Xie wrote:
+>> Comments:
+>>
+>> * SCSI drivers should be submitted via the linux-scsi@vger.kernel.org 
+>> mailing list.
 > 
-> Last time I complained about this, a lot of noise was made and I think
-> Linus wanted it to stay around so we could pass volatile pointers to
-> bitops & co without warnings. I say we should just remove the volatile
-> and kill any callers that might warn...
+> Will do that. Thanks.
+> 
+>> * The driver is clean and readable, well done
+>>
+>> * From a networking standpoint, our main concern becomes how this 
+>> interacts with the networking stack.  In particular, I'm concerned
+> based 
+>> on reading the source that this driver uses "TCP port stealing" rather 
+>> than using a totally separate MAC address (and IP).
+>>
+>> Stealing a TCP port on an IP/interface already assigned is a common 
+>> solution in this space, but also a flawed one.  Precisely because the 
+>> kernel and applications are unaware of this "special, magic TCP port" 
+>> you open the potential for application problems that are very difficult
+> 
+>> for an admin to diagnose based on observed behavior.
+> 
+> The collisions between the host stack and iSCSI offload are unlikely
+> because the iSCSI target server's port is unique (nailed down as 3260).
+> If an offload card is plugged in, all iSCSI connections to a given
+> target (i.e., destination/port) are offloaded. There is precedence for
+> this approach such as RDMA/iWarp.
+> 
 
-Ho hum... :)
+Please note that all SW iscsi targets I know, let you change the default
+3260 port to whatever you want. Is that supported?
 
-Another way to approach that, and keep the volatile, is to have
-a "test_flags()" interface that takes the bit mask of values
-you want to test for cases where you know it is a single word
-flags value.
+Jeff is there a way for the user-mode demon to reserve the port beforehand
+so it will appear to be taken.
 
-The downside is that this kind of interface is easy to use
-incorrectly especially when accesses to the same flags use
-bot test_bit() and test_flags().
+>> So, additional information on your TCP port usage would be greatly 
+>> appreciated.  Also, how does this interact with IPv6?  Clearly it 
+>> interacts with IPv4...
+> 
+> Currently, IPv6 connection request will not be honored, I will make sure
+> the checking is added in the resubmission.
+> 
+> 
+Boaz
+
