@@ -1,115 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYGaHDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbYGaHDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbYGaHDZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 03:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbYGaHDQ
+	id S1753308AbYGaHDp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 03:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYGaHDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 03:03:16 -0400
-Received: from mx2.suse.de ([195.135.220.15]:59816 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752632AbYGaHDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 03:03:15 -0400
-From: Neil Brown <neilb@suse.de>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Date: Thu, 31 Jul 2008 17:03:05 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 31 Jul 2008 03:03:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58988 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752885AbYGaHDR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 03:03:17 -0400
+Date: Thu, 31 Jul 2008 00:02:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       lguest <lguest@ozlabs.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 1/2] Export get_user_pages_fast
+Message-Id: <20080731000257.59830c25.akpm@linux-foundation.org>
+In-Reply-To: <48915F2F.4020407@qumranet.com>
+References: <200807301438.55941.rusty@rustcorp.com.au>
+	<20080730033523.0f38f7e4.akpm@linux-foundation.org>
+	<20080730154736.GC21597@cs181140183.pp.htv.fi>
+	<20080730100355.f1402dcf.akpm@linux-foundation.org>
+	<20080730170939.GA28604@cs181140183.pp.htv.fi>
+	<20080730101438.e1484440.akpm@linux-foundation.org>
+	<4890A375.4060103@qumranet.com>
+	<20080730102928.6216d234.akpm@linux-foundation.org>
+	<48915F2F.4020407@qumranet.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18577.25513.494821.481623@notabene.brown>
-Cc: Michael Shuey <shuey@purdue.edu>, Shehjar Tikoo <shehjart@cse.unsw.edu.au>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       rees@citi.umich.edu, aglo@citi.umich.edu
-Subject: Re: high latency NFS
-In-Reply-To: message from J. Bruce Fields on Wednesday July 30
-References: <200807241311.31457.shuey@purdue.edu>
-	<20080730192110.GA17061@fieldses.org>
-	<4890DFC7.3020309@cse.unsw.edu.au>
-	<200807302235.50068.shuey@purdue.edu>
-	<20080731031512.GA26203@fieldses.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday July 30, bfields@fieldses.org wrote:
-> > 
-> > I was only using the default 8 nfsd threads on the server.  When I raised 
-> > this to 256, the read bandwidth went from about 6 MB/sec to about 95 
-> > MB/sec, at 100ms of netem-induced latency.
+On Thu, 31 Jul 2008 09:43:59 +0300 Avi Kivity <avi@qumranet.com> wrote:
+
+> > #ifdef CONFIG_HAVE_GET_USER_PAGES_FAST
+> > /*
+> >  * get_user_pages_fast provides equivalent functionality to get_user_pages,
+> >  * operating on current and current->mm (force=0 and doesn't return any vmas).
+> >  *
+> >  * get_user_pages_fast may take mmap_sem and page tables, so no assumptions
+> >  * can be made about locking. get_user_pages_fast is to be implemented in a
+> >  * way that is advantageous (vs get_user_pages()) when the user memory area is
+> >  * already faulted in and present in ptes. However if the pages have to be
+> >  * faulted in, it may turn out to be slightly slower).
+> >  */
+> > int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+> > 			struct page **pages);
+> >
+> > #else
+> > /*
+> >  * Should probably be moved to asm-generic, and architectures can include it if
+> >  * they don't implement their own get_user_pages_fast.
+> >  */
+> > #define get_user_pages_fast(start, nr_pages, write, pages)	\
+> > ({								\
+> > 	struct mm_struct *mm = current->mm;			\
+> > 	int ret;						\
+> > 								\
+> > 	down_read(&mm->mmap_sem);				\
+> > 	ret = get_user_pages(current, mm, start, nr_pages,	\
+> > 					write, 0, pages, NULL);	\
+> > 	up_read(&mm->mmap_sem);					\
+> > 								\
+> > 	ret;							\
+> > })
+> > #endif
+> >
+> >   
 > 
-> So this is yet another reminder that someone needs to implement some
-> kind of automatic tuning of the number of threads.
-> 
-> I guess the first question is what exactly the policy for that should
-> be?  How do we decide when to add another thread?  How do we decide when
-> there are too many?
+> Surprised.  Why not an out-of-line function?  Would eliminate the 
+> present discussion as well.
 
-Or should the first question be "what are we trying to achieve?"?
-
-Do we want to:
-    Automatically choose a number of threads that would match what a
-      well informed sysadmin might choose
-or
-    regularly adjust the number of threads to find an optimal balance
-      between prompt request processing (minimal queue length),
-      minimal resource usage (idle threads waste memory)
-    and not overloading the filesystem (how much concurrency does the
-        filesystem/storage subsystem realistically support.
-
-And then we need to think about how this relates to NUMA situations
-where we have different numbers of threads on each node.
-
-
-I think we really want to aim for the first of the above options, but
-that the result will end up looking a bit like a very simplistic
-attempt at the second.  "simplicitic" is key - we don't want
-"complex".
-
-I think that in the NUMA case we probably want to balance each node
-independently.
-
-The difficulties - I think - are:
-  - make sure we can handle a sudden surge of requests, certainly a
-    surge up to levels that we have previously seen.
-    I think the means we either don't kill excess threads, or
-    only kill them up to a limit: e.g. never fewer than 50% of
-    the maximum number of threads
-  - make sure we don't create too many threads if something clags up
-    and nothing is getting through.  This means we need to monitor the
-    number of requests dequeued and not make new threads when that is
-    zero.
- 
-
-So how about:
-  For each node we watch the length of the queue of
-  requests-awaiting-threads and the queue of threads
-  awaiting requests and maintain these values:
-    - max number of threads ever concurrently running
-    - number of requests dequeued
-    - min length request queue
-    - min length of thread queue
-
-  Then every few (5?) seconds we sample these numbers and reset them
-     (except the first).
-     If 
-        the min request queue length is non-zero and 
-        the number of requests dequeued is non-zero
-     Then
-        start a new thread
-     If
-        the number of threads exceeds half the maximum and
-        the min length of the thread queue exceeds 0
-     Then
-        stop one (idle) thread
-
-You might want to track the max length of the request queue too and
-start more threads if the queue is long, to allow a quick ramp-up.
-
-We could try this allow by allowing you to write "auto" to the
-'threads' file, so people can experiment.
-
-
-NeilBrown
+Excellent question!
