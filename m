@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbYGaJ6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbYGaJ7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755596AbYGaJ6d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 05:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbYGaJ6Z
+	id S1755926AbYGaJ7e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 05:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbYGaJ7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 05:58:25 -0400
-Received: from web31702.mail.mud.yahoo.com ([68.142.201.182]:48356 "HELO
-	web31702.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752999AbYGaJ6Y convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 05:58:24 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=gRSHyvNX4uUgsS4OrMQpMJEI7v4KUXLxPQXRHbH4nG2f/bM29x5DRNj+VquxMwJiyzNYbLliaOFrvyU9OuHyAow5vObL/pXX0+qEVyd7mcTzZPKO0+sbwS4Cu+T7PTirOkcYf6ugLovmRbl7cglE3//0HjStEjoBfzQlA929j38=;
-X-Mailer: YahooMailRC/1042.48 YahooMailWebService/0.7.218
-Date: Thu, 31 Jul 2008 02:58:23 -0700 (PDT)
-From: Sanka Piyaratna <cesanka@yahoo.com>
-Subject: Re: PCIe device driver question
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Message-ID: <811595.67429.qm@web31702.mail.mud.yahoo.com>
+	Thu, 31 Jul 2008 05:59:23 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51828 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752459AbYGaJ7W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 05:59:22 -0400
+Subject: Re: [patch 0/4] [resend] Add configuration options to disable
+	features not needed on embedded devices
+From: David Woodhouse <dwmw2@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, thomas.petazzoni@free-electrons.com,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com
+In-Reply-To: <20080731.025547.35826309.davem@davemloft.net>
+References: <20080731092703.661994657@free-electrons.com>
+	 <20080731.024027.162488608.davem@davemloft.net>
+	 <1217497912.3454.95.camel@pmac.infradead.org>
+	 <20080731.025547.35826309.davem@davemloft.net>
+Content-Type: text/plain
+Date: Thu, 31 Jul 2008 10:59:15 +0100
+Message-Id: <1217498355.3454.103.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Robert,
+On Thu, 2008-07-31 at 02:55 -0700, David Miller wrote:
+> From: David Woodhouse <dwmw2@infradead.org>
+> Date: Thu, 31 Jul 2008 10:51:52 +0100
+> 
+> > But there are a lot of people who really don't need these features
+> > and really want the option of leaving them out.
+> 
+> I'll say it one last time.
+> 
+> If you have ipv4 enabled, you need ETHTOOL.
 
-Thanks for that, I did not notice that in the spec. I am currently using 64 bit format unconditionally and this must be what is going wrong. 
+I have drivers which don't even _have_ ethtool support, and they seem to
+work fine. But leaving aside the debate on that point, your statement
+also seemed to be covering the other patches, such as the IGMP one and
+others which haven't been seen (or perhaps even imagined) yet.
 
-Thank you so much for that.
+-- 
+dwmw2
 
-
-Sanka
-
-
------ Original Message ----
-From: Robert Hancock <hancockr@shaw.ca>
-To: Sanka Piyaratna <cesanka@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Sent: Thursday, 31 July, 2008 6:14:54 PM
-Subject: Re: PCIe device driver question
-
-Sanka Piyaratna wrote:
-> I allocate memory in the user land using memalign function (typically I allocate about 500 MB) and pass this to the kernel space. In my device driver, I call get_user_pages() to lock down the memory and extract the relevant pages. A scatter-gather list is generated using these page addresses and hence derive the dma_addresses using page_to_phys() function. These addresses are programmed into a FIFO in the hardware device using a memory mapped register interface (PCI BAR based). Subsequently the hardware start filling up the pages and interrupt when a block of pages are complete. I notice the hardware hang (PCIe packets don't seem to get the acknowledgements from the root complex) when the DMA address is < 0x0000_0001_0000_0000. I have verified in the hardware that the PCIe packet is created with the correct address as programed by the device driver dma_address. If i can guard some how that the memory allocation is with in a certain area, I can stop the
->  problem from occuring. Are there any bridge functionality in the Intel architecture that may mask a certain region of memory?
-
-How are you formatting the addresses in the TLP? The PCI Express spec 
-says that for addresses below 4GB the 32-bit addressing format must be 
-used (you can't use the 64-bit format unconditionally). It could be that 
-is what is making the chipset unhappy.
-
-
-
-      Find a better answer, faster with the new Yahoo!7 Search. www.yahoo7.com.au/search
