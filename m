@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbYGaHjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbYGaHnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756203AbYGaHjb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 03:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYGaHjQ
+	id S1755631AbYGaHnR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 03:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbYGaHm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 03:39:16 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:52589 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753780AbYGaHjO (ORCPT
+	Thu, 31 Jul 2008 03:42:58 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48411 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752551AbYGaHm5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 03:39:14 -0400
-X-SourceIP: 80.57.229.25
-Subject: Re: VolanoMark regression with 2.6.27-rc1
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1217489463.25608.157.camel@ymzhang>
-References: <1217474425.25608.150.camel@ymzhang>
-	 <1217489463.25608.157.camel@ymzhang>
+	Thu, 31 Jul 2008 03:42:57 -0400
+Subject: Re: [PATCH] typhoon: use request_firmware
+From: David Woodhouse <dwmw2@infradead.org>
+To: David Dillow <dave@thedillows.org>
+Cc: Jaswinder Singh <jaswinder@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, becker@scyld.com,
+       davidpmclean@yahoo.com, Jeff Garzik <jeff@garzik.org>,
+       netdev <netdev@vger.kernel.org>
+In-Reply-To: <1217475466.16202.15.camel@obelisk.thedillows.org>
+References: <1217170232.3537.6.camel@jaswinder.satnam>
+	 <1217209400.22789.47.camel@obelisk.thedillows.org>
+	 <1217215009.2970.7.camel@jaswinder.satnam>
+	 <1217248585.22789.58.camel@obelisk.thedillows.org>
+	 <1217253260.17632.6.camel@jaswinder.satnam>
+	 <1217295498.28682.16.camel@obelisk.thedillows.org>
+	 <1217347786.2885.11.camel@jaswinder.satnam>
+	 <1217395511.31350.6.camel@obelisk.thedillows.org>
+	 <1217400251.2595.3.camel@jaswinder.satnam>
+	 <1217475466.16202.15.camel@obelisk.thedillows.org>
 Content-Type: text/plain
-Date: Thu, 31 Jul 2008 09:39:09 +0200
-Message-Id: <1217489949.8157.78.camel@twins>
+Date: Thu, 31 Jul 2008 08:42:53 +0100
+Message-Id: <1217490173.3454.47.camel@pmac.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-31 at 15:31 +0800, Zhang, Yanmin wrote:
-> On Thu, 2008-07-31 at 11:20 +0800, Zhang, Yanmin wrote:
-> > Ingo,
-> > 
-> > volanoMark has regression with 2.6.27-rc1.
-> > 1) 70% on 16-core tigerton;
-> > 2) 18% on a new multi-core+HT mahcine;
-> > 
-> > I tried to use git bisect to locate the root cause, but git bisect always went
-> > back to 2.6.26. Then, I used my mechanical bisect script linearly to locate below commit:
-> > 
-> > commit 82638844d9a8581bbf33201cc209a14876eca167
-> > Merge: 9982fbf... 63cf13b...
-> > Author: Ingo Molnar <mingo@elte.hu>
-> > Date:   Wed Jul 16 00:29:07 2008 +0200
-> > 
-> >     Merge branch 'linus' into cpus4096
-> > 
-> >     Conflicts:
-> > 
-> >         arch/x86/xen/smp.c
-> >         kernel/sched_rt.c
-> >         net/iucv/iucv.c
-> > 
-> >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > 
-> > 
-> > 
-> > But if I use 'git show 82638844d9a8581bbf33201cc209a14876eca167', it looks like I could only
-> > get a part of the patch. If I use web to acces the commit, I could get a big patch. As it's
-> > a merge, what're commit numbers of the subpatches?
-> > 
-> > 
-> > BTW, sysbench+mysql(oltp readonly) has about 15% regression, but git bisect looks crazy again.
+On Wed, 2008-07-30 at 23:37 -0400, David Dillow wrote:
+> request_firmware()'s mutex is protecting against things inside of that
+> subsystem, but offers no protection between the test on typhoon_fw !=
+> NULL and the setting of it inside of the firmware loader. That
+> requires locking at a higher level.
+> 
+> Anyways, probing is single threaded and I seem to recall it being
+> unlikely to be made parallel due to the number issues exposed last
+> time, so a minimal comment is fine.
 
-> Oh, it looks like they are the old issues in 2.6.26-rc1 and the 2 patches were reverted before 2.6.26.
-> New patches are merged into 2.6.27-rc1, but the issues are still not resolved clearly.
-> http://www.uwsg.iu.edu/hypermail/linux/kernel/0805.2/1148.html.
+An alternative approach is to make request_firmware() do the duplicate
+avoidance for itself. Since we made fw->data const (as 'fw' itself
+always was), no users should be changing anything in the requested
+firmware. It can be safely reused by generic code.
 
-The new smp-group stuff doesn't remotely look like what was in .26
+That simplifies the logic in drivers -- they just request what they
+want, as many times as they want it, and don't have to care about the
+potential duplication.
 
-Also, on my quad (admittedly smaller than your machines) both volano and
-sysbench didn't regress anymore - where they clearly did with the code
-reverted from .26.
-
+-- 
+dwmw2
 
