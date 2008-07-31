@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYGaUCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbYGaUD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757461AbYGaUCv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 16:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYGaUCn
+	id S1758762AbYGaUD0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 16:03:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYGaUDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 16:02:43 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:57328 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753182AbYGaUCn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 16:02:43 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=epW8DEmoVhE7k/8rZuL1r8i8Mpupr84mcyVjvasrlLonor2shZzcfjEiWV18ODegh
-	5hAteTauH3BH4XNViBlZQ==
-Message-ID: <6599ad830807311302p2b5dbd46h849d8ffcec65fc48@mail.gmail.com>
-Date: Thu, 31 Jul 2008 13:02:39 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: [PATCH] cpuset: make ntasks to be a monotonic increasing value
-Cc: laijs@cn.fujitsu.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080731143827.b8bf7bce.pj@sgi.com>
+	Thu, 31 Jul 2008 16:03:17 -0400
+Received: from namei.org ([69.55.235.186]:33611 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751597AbYGaUDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 16:03:17 -0400
+Date: Fri, 1 Aug 2008 06:02:30 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Gene Heskett <gene.heskett@gmail.com>
+cc: linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: 2.6.27-rc1 + selinux new options = no httpd
+In-Reply-To: <200807310909.27619.gene.heskett@gmail.com>
+Message-ID: <Xine.LNX.4.64.0808010559290.30244@us.intercode.com.au>
+References: <200807302254.26036.gene.heskett@gmail.com>
+ <Xine.LNX.4.64.0807311440100.17254@us.intercode.com.au>
+ <200807310909.27619.gene.heskett@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48912FDD.8060006@cn.fujitsu.com>
-	 <20080731072355.b582b2d6.pj@sgi.com> <4891B9E0.2090900@cn.fujitsu.com>
-	 <20080731083706.e6bd4acc.pj@sgi.com>
-	 <6599ad830807311006r24e4d325ie505949ad760afd@mail.gmail.com>
-	 <20080731143827.b8bf7bce.pj@sgi.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 12:38 PM, Paul Jackson <pj@sgi.com> wrote:
-> Paul M wrote:
->> That loop really could do with some updates though - currently it
->> looks at the mm for every task in the cpuset, rather than filtering
->> duplicate mms from threaded applications.
->
-> Interesting.
->
-> After a quick glance, I suppose that we'd still have:
->  1) allocate an mmarray[] in that particular loop as we do now,
->    sized large enough for all tasks,
->  2) convert each task to it's mm, in the next code chunk, with:
->        mm = get_task_mm(p);
->
-> but that then, before we call "mpol_rebind_mm()" for each such
-> mm, we could essentially do a "sort -u" (sort unique) on that
-> mmarray[], to remove duplicate mm's.  This would not change any
-> of the existing loops; rather just add one more code paragraph,
-> to remove the duplicate mm's.
+On Thu, 31 Jul 2008, Gene Heskett wrote:
 
-Yes, something like that.
+> >Which new options?
+> 
+> Make xconfig-->security options:
+> 
+> XFRM Networking security hooks
+> 
+>  and several others just below it.  Unforch, I can't copy/paste the screen.  
 
-Paul
+I can't really imagine what that is (although if you enable the secmark 
+controls under the main SELinux menu, which are disabled by default, 
+there could be problems).
+
+Please post your .config.
+
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
