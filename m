@@ -1,67 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbYGaQsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbYGaQub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754975AbYGaQsz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 12:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbYGaQsp
+	id S1755307AbYGaQub (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 12:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYGaQuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 12:48:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49753 "EHLO mx2.mail.elte.hu"
+	Thu, 31 Jul 2008 12:50:17 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:51147 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751536AbYGaQso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 12:48:44 -0400
-Date: Thu, 31 Jul 2008 18:48:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: x86: Is there still value in having a special tlb flush IPI
-	vector?
-Message-ID: <20080731164826.GH26393@elte.hu>
-References: <488E534F.2030204@goop.org> <200807291430.08220.nickpiggin@yahoo.com.au> <1217325288.7563.2.camel@twins> <200807292000.30690.nickpiggin@yahoo.com.au> <1217328351.7563.12.camel@twins>
+	id S1752020AbYGaQuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 12:50:15 -0400
+Date: Thu, 31 Jul 2008 19:49:18 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
+       matthew@wil.cx, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [patch 2/4] Configure out file locking features
+Message-ID: <20080731164918.GE20212@cs181140183.pp.htv.fi>
+References: <20080731092703.661994657@free-electrons.com> <20080731093220.969460336@free-electrons.com> <20080731135319.GA20212@cs181140183.pp.htv.fi> <20080731162007.285938e0@surf> <20080731153757.GB20212@cs181140183.pp.htv.fi> <20080731182616.4c20f0db@surf>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1217328351.7563.12.camel@twins>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080731182616.4c20f0db@surf>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Tue, 2008-07-29 at 20:00 +1000, Nick Piggin wrote:
-> > On Tuesday 29 July 2008 19:54, Peter Zijlstra wrote:
-> > > On Tue, 2008-07-29 at 14:30 +1000, Nick Piggin wrote:
-> > > > Not to mention the minor problem that it still deadlocks when called with
-> > > > interrupts disabled ;)
-> > >
-> > > __smp_call_function_single has potential though..
-> > 
-> > For reschedule interrupt? I don't really agree.
+On Thu, Jul 31, 2008 at 06:26:16PM +0200, Thomas Petazzoni wrote:
+> Le Thu, 31 Jul 2008 18:37:57 +0300,
+> Adrian Bunk <bunk@kernel.org> a écrit :
 > 
-> How about using just arch_send_call_function_single_ipi() to implement 
-> smp_send_reschedule() ?
+> > I'm just not a fan of adding config options for each few kB of code - 
+> > we have to maintain them and the more complex the configuration
+> > becomes the more often it breaks.
+> 
+> I'm not a fan of these too, but are there other solutions ?
 
-agreed, that's just a single IPI which kicks the need_resched logic on 
-return-from-interrupt.
+There are many things that can be done to reduce the kernel size or try 
+to minimize the growth of the kernel.
 
-> The overhead of that is a smp_mb() and a list_empty() check in 
-> generic_smp_call_function_single_interrupt() if there is indeed no 
-> work to do.
+E.g. working on --combine -fwhole-program (where David once had 
+preliminary patches for the per-module approach) might be better.
 
-that would be a miniscule cost - cacheline is read-shared amongst cpus 
-so there's no real bouncing there. So i'm all for it ...
+> > What became bigger was most likely not related to the patches you
+> > sent.
+> 
+> No, it is not.
+> 
+> > Where and why did the kernel become bigger?
+> 
+> It's not up-to-date with 2.6.26 and 2.6.27-rc1, but Bloatwatch
+> <http://www.selenic.com/bloatwatch/>, by Matt Mackall, is here to
+> answer these questions. I haven't made the analysis for
+> 2.6.26->2.6.27-rc1.
 
-	Ingo
+It can only give some hints where to start searching.
+
+But it tracks a defconfig, and e.g. the nearly doubled size between
+2.6.18 and 2.6.19 is both expected and not a problem for embedded
+systems.
+
+The real work is to figure out in which areas that are relevant for 
+embedded systems the kernel became bigger.
+
+> > Why did CONFIG_FW_LOADER get enabled?
+> > Due to alnoconfig disabling CONFIG_EMBEDDED?
+> 
+> I don't know. Haven't made the analysis for now.
+> 
+> > A user will ask:
+> > I'm using $applications with $libraries, can I safely disable this
+> > option?
+> 
+> Hard to tell in the general case.
+> 
+> > And e.g. according to a quick grep through the sources uClibc's 
+> > updwtmp() seems to cease working without flock().
+> 
+> Correct. But on many embedded systems, we don't care about logging past
+> user logins. We might even not care about logins at all.
+
+And for embedded systems with which applications is it 100% safe to 
+disable this option?
+
+And don't answer "doesn't use flock()", I want a real-life example of a 
+device where you could guarantee a developer that disabling this option 
+in his product would be safe.
+
+> > It costs us maintainance of the option and the #ifdef's and gives
+> > users one way more to shoot themselves into the foot in nontrivial to
+> > detect ways.
+> 
+> That's correct, and as I said previously, I fully understand the
+> maintainance problem of all these new configuration options. I must
+> admit that I do not really have more objective technical arguments that
+> would help us deciding whether the code size reduction vs. code
+> maintainance choice should be made in one direction or the other.
+
+My personal criteron for this patch is still how many real-life systems 
+can safely disable it.
+
+> Sincerly,
+> 
+> Thomas
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
