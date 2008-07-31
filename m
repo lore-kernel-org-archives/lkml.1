@@ -1,76 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757021AbYGaSZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbYGaS1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757021AbYGaSZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 14:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbYGaSZK
+	id S1756726AbYGaS1T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 14:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYGaS1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 14:25:10 -0400
-Received: from main.gmane.org ([80.91.229.2]:56597 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753373AbYGaSZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 14:25:09 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: 2.6.27-rc1-mm1
-Date: Thu, 31 Jul 2008 18:20:51 +0000 (UTC)
-Message-ID: <loom.20080731T181637-604@post.gmane.org>
-References: <20080731000354.24b55d5b.akpm@linux-foundation.org>
+	Thu, 31 Jul 2008 14:27:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37584 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752404AbYGaS1D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 14:27:03 -0400
+Date: Thu, 31 Jul 2008 11:26:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+Subject: Re: linux-next: Tree for July 30
+Message-Id: <20080731112654.d9620b36.akpm@linux-foundation.org>
+In-Reply-To: <20080731141302.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080730170635.f737ffe9.sfr@canb.auug.org.au>
+	<20080730231029.9818953c.akpm@linux-foundation.org>
+	<20080731140708.GA11229@core.corenet.prv>
+	<58cb370e0807310836x4a6e3c40rf5c3c8ec8b5caae0@mail.gmail.com>
+	<20080731115301.ZZRA012@mailhub.coreip.homeip.net>
+	<20080731104437.5e5669bc.akpm@linux-foundation.org>
+	<20080731141302.ZZRA012@mailhub.coreip.homeip.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 69.30.121.162 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070730 SUSE/2.0.0.6-25 Firefox/2.0.0.6)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm <at> linux-foundation.org> writes:
+On Thu, 31 Jul 2008 14:17:31 -0400 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 
-
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/
-+ 2.6/2.6.27-rc1/2.6.27-rc1-mm1/
+> On Thu, Jul 31, 2008 at 10:44:37AM -0700, Andrew Morton wrote:
+> > On Thu, 31 Jul 2008 11:56:48 -0400 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > 
+> > > On Thu, Jul 31, 2008 at 05:36:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > > > On Thu, Jul 31, 2008 at 4:07 PM, Dmitry Torokhov
+> > > > <dmitry.torokhov@gmail.com> wrote:
+> > > > > On Wed, Jul 30, 2008 at 11:10:29PM -0700, Andrew Morton wrote:
+> > > > >> On Wed, 30 Jul 2008 17:06:35 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > > > >>
+> > > > >> > I have created today's linux-next tree at
+> > > > >> > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+> > > > >>
+> > > > >> The X server broke on my FC8 t61p thinkpad.  Mainline is OK.
+> > > > >>
+> > > > >> Various information is at http://userweb.kernel.org/~akpm/mo/
+> > > > >>
+> > > > >> I'm suspecting the input layer - my synaptics device seems to have
+> > > > >> disappeared?  See http://userweb.kernel.org/~akpm/mo/Xorg-log-diff.txt
+> > > > >>
+> > > > >
+> > > > > I think this patch should help with Synaptics:
+> > > > 
+> > > > Which unfortunately doesn't help all people running with older synaptics
+> > > > user-space after commit 0571c5d20aca71c735222132b02aebddf593045c
+> > > > ("Input: expand keycode space").
+> > > > 
+> > > > Can't this be solved without breaking Xorg on newer kernels running
+> > > > older synaptics?
+> > > > 
+> > > 
+> > > No. The X driver is broken. It tells kernel to use buffer bugger than
+> > > allocated and gets its stack smashed. Tslib has also soma funkiness
+> > > in the ioctl handling as well... *shrug*
+> > > 
+> > > We have a couple months to get distros updated...
+> > > 
+> > 
+> > aaarrrrgggggghhh.  I don't think this is practical.  This means that
+> > (for example) FC5 machines (of which I happen to have one) are dead. 
+> > And lots of other older-distro-based systems.
+> > 
+> > Is there some userspace workaround which doesn't require an X server
+> > update?
+> > 
+> > Surely it must be possible to make the kernel contiue to support these
+> > servers?
+> > 
 > 
-> - Something in linux-next has broken my X server
+> Andrew,
 > 
-> - My Vaio is vacationing on the other side of the continent.  Ignorance
->   is bliss.
-> 
-> - Lots of people are vacationing at present (certain x86 people, for
->   example).  I'll still be around so please be sure to Cc me on things.
-> 
->   But I am unlikely to want to be buried in x86 patches, so please just
->   give those an extra week or two's testing.
+> It is not like we broke ABI here. The progam (synaptics driver) had a
+> grave bug. Older kernels happened to paper over the bug because they
+> did not fill the whole buffer that was advertised as available. Now
+> that we have more data to report the bug bit us. What do you want me
+> to do?
 
-What happened with drivers/watchdog/Kconfig* ?
+Paper over the bug again.  When it happens, spit out a loud printk.
 
+> Synaptics driver is a small package and takes 2 minutes to recompile.
+> You don't have to update entire X server with it (in fact I don't think
+> it is even part of X distribution because it is GPL).
 
---- linux-2.6.27-rc1/drivers/watchdog/Kconfig	2008-07-29
-+++ 25/drivers/watchdog/Kconfig	2008-07-30
-@@ -285,10 +285,11 @@ config ALIM1535_WDT
- 
- config ALIM7101_WDT
- 	tristate "ALi M7101 PMU Computer Watchdog"
--	depends on X86 && PCI
-+	depends on PCI
- 	help
- 	  This is the driver for the hardware watchdog on the ALi M7101 PMU
--	  as used in the x86 Cobalt servers.
-+	  as used in the x86 Cobalt servers and also found in some
-+	  SPARC Netra servers too.
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called alim7101_wdt.
---- /dev/null	2008-06-22
-+++ 25/drivers/watchdog/Kconfig.orig	2008-07-23
-@@ -0,0 +1,934 @@
+What proportion of the X servers out there did we just break?
 
-etc......
+Was the crash I saw due to this?
 
-Broken, isn't it?
-
-
-~Randy
-
+Where would I (Aunt Tillie running FC5) go to find out how to fix my
+machine up again? 
