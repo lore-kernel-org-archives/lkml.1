@@ -1,149 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757317AbYGaPrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbYGaPsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757317AbYGaPrf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 11:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYGaPr0
+	id S1754232AbYGaPsN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 11:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbYGaPr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 11:47:26 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:5669 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752769AbYGaPrZ (ORCPT
+	Thu, 31 Jul 2008 11:47:57 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:37850 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752919AbYGaPr4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 11:47:25 -0400
-Date: Thu, 31 Jul 2008 09:47:23 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
-Message-ID: <20080731154723.GA26577@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	Matthew Wilcox <matthew@wil.cx>,
-	Pierre Ossman <drzeus-list@drzeus.cx>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-References: <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org> <48895D3C.7040100@jp.fujitsu.com> <20080730023842.GA4269@ldl.fc.hp.com> <48919471.6010304@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 31 Jul 2008 11:47:56 -0400
+Message-Id: <4891FAEF.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Thu, 31 Jul 2008 16:48:31 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86-64: fix overlap of modules and fixmap areas
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <48919471.6010304@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> Thank you for patches, Alex-san!
->
-> I've reviewed those patches and tested them on my ia64 machine
-> that have both shpc and pcie hotplug slots. Your patch looks
-> good.
+Plus add a build time check so this doesn't go unnoticed again.
 
-Thank you for reviewing and testing.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-> As you mentioned, we are considering the problem also from the
-> view point of slot detection. But I think your patch is needed
-> regardless of that because there might be platforms whose slots
-> are detected properly but firmware assigns the physical slot
-> number wrongly. I think Alex's patch should go to mainline.
-
-That is a good point.
-
-> P.S.: I found a possible improvement, though it is not a big
-> problem and we don't not need to fix it soon. I'd like to tell
-> you about it just in case. Current pci_hp_register() checks if
-> name is duplicated first, before checking if another hotplug
-> driver is already registered to the slot. So, if shpchp/pciehp
-> driver tries to register hotplug slot that is already registered
-> by the other hotplug driver (e.g. acpiphp) with the same name,
-> shpchp/pciehp driver will do as follows:
->
-> (1) shpchp/pciehp call pci_hp_register()
-> (2) pci_hp_register() returns -EEXIST
-> (3) shpchp/pciehp call pci_hp_register() with other name ("M-1")
-> (4) pci_hp_register() returns -EBUSY
->
-> if pci_hp_register() checked if another hotplug driver is already
-> registered first, step (2) and (3) could be removed.
-
-Thanks, that seems pretty easy to do.
-
-Would you mind testing this patch as well? You should probably
-apply it on top of the other two patches to see how all three
-patches interact.
-
-Thanks!
-
-/ac
-
-
-From: Alex Chiang <achiang@dl580g5.kio>
-Subject: [PATCH] PCI hotplug: check for claimed slot before duplicate named slot
-
-Kenji Kaneshige observes that:
-
-If shpchp/pciehp driver tries to register hotplug slot that is
-already registered by the other hotplug driver (e.g. acpiphp) with
-the same name, shpchp/pciehp driver will do as follows:
-
-(1) shpchp/pciehp call pci_hp_register()
-(2) pci_hp_register() returns -EEXIST
-(3) shpchp/pciehp call pci_hp_register() with other name ("M-1")
-(4) pci_hp_register() returns -EBUSY
-
-If pci_hp_register() checked if another hotplug driver is already
-registered first, step (2) and (3) could be removed.
-
-This patch does not prevent the *same* driver from attempting
-to register multiple slots with the same name (on systems with
-broken firmware). For that situation, we still need to detect
-a name collision and return -EEXIST if so.
-
-Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
- drivers/pci/hotplug/pci_hotplug_core.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+ arch/x86/kernel/head64.c     |    1 +
+ include/asm-x86/pgtable_64.h |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
-index 5f85b1b..9c379b6 100644
---- a/drivers/pci/hotplug/pci_hotplug_core.c
-+++ b/drivers/pci/hotplug/pci_hotplug_core.c
-@@ -568,10 +568,6 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
- 		return -EINVAL;
- 	}
+--- linux-2.6.27-rc1/arch/x86/kernel/head64.c	2008-07-31 17:31:51.000000000 +0200
++++ 2.6.27-rc1-x86_64-modules-fixmap/arch/x86/kernel/head64.c	2008-07-31 15:55:01.000000000 +0200
+@@ -88,6 +88,7 @@ void __init x86_64_start_kernel(char * r
+ 	BUILD_BUG_ON(!(MODULES_VADDR > __START_KERNEL));
+ 	BUILD_BUG_ON(!(((MODULES_END - 1) & PGDIR_MASK) ==
+ 				(__START_KERNEL & PGDIR_MASK)));
++	BUILD_BUG_ON(__fix_to_virt(__end_of_fixed_addresses) <= MODULES_END);
  
--	/* Check if we have already registered a slot with the same name. */
--	if (get_slot_from_name(slot->name))
--		return -EEXIST;
--
- 	/*
- 	 * No problems if we call this interface from both ACPI_PCI_SLOT
- 	 * driver and call it here again. If we've already created the
-@@ -587,6 +583,12 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
- 		return -EBUSY;
- 	}
+ 	/* clear bss before set_intr_gate with early_idt_handler */
+ 	clear_bss();
+--- linux-2.6.27-rc1/include/asm-x86/pgtable_64.h	2008-07-31 17:32:19.000000000 +0200
++++ 2.6.27-rc1-x86_64-modules-fixmap/include/asm-x86/pgtable_64.h	2008-07-31 15:50:44.000000000 +0200
+@@ -151,7 +151,7 @@ static inline void native_pgd_clear(pgd_
+ #define VMALLOC_END      _AC(0xffffe1ffffffffff, UL)
+ #define VMEMMAP_START	 _AC(0xffffe20000000000, UL)
+ #define MODULES_VADDR    _AC(0xffffffffa0000000, UL)
+-#define MODULES_END      _AC(0xfffffffffff00000, UL)
++#define MODULES_END      _AC(0xffffffffff000000, UL)
+ #define MODULES_LEN   (MODULES_END - MODULES_VADDR)
  
-+	/* Check if we have already registered a slot with the same name. */
-+	if (get_slot_from_name(slot->name)) {
-+		pci_destroy_slot(pci_slot);
-+		return -EEXIST;
-+	}
-+
- 	slot->pci_slot = pci_slot;
- 	pci_slot->hotplug = slot;
- 
-@@ -609,7 +611,6 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
- 	kobject_uevent(&pci_slot->kobj, KOBJ_ADD);
- 	dbg("Added slot %s to the list\n", slot->name);
- 
--
- 	return result;
- }
- 
--- 
-1.6.0.rc0.g95f8
+ #ifndef __ASSEMBLY__
+
+
 
