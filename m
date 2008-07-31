@@ -1,129 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbYGaOSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYGaOUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756578AbYGaOSw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 10:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbYGaOSl
+	id S1754326AbYGaOUb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 10:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYGaOUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 10:18:41 -0400
-Received: from casper.infradead.org ([85.118.1.10]:41021 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753002AbYGaOSk (ORCPT
+	Thu, 31 Jul 2008 10:20:18 -0400
+Received: from mail.free-electrons.com ([88.191.46.45]:50827 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752777AbYGaOUQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 10:18:40 -0400
-Subject: Re: [PATCH] Fix Bug messages
-From: Peter Zijlstra <peterz@infradead.org>
-To: John Kacur <jkacur@gmail.com>
-Cc: Sebastien Dugue <sebastien.dugue@bull.net>,
-       Chirag Jog <chirag@linux.vnet.ibm.com>,
-       J?rgen Mell <j.mell@t-online.de>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Clark Williams <williams@redhat.com>,
-       Josh Triplett <josht@linux.vnet.ibm.com>,
-       "Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>
-In-Reply-To: <520f0cf10807310710i85e5a2u8e5f227bc2b82051@mail.gmail.com>
-References: <alpine.LFD.1.10.0807252141420.574@apollo.tec.linutronix.de>
-	 <alpine.LFD.1.10.0807291440240.14925@apollo.tec.linutronix.de>
-	 <alpine.LFD.1.10.0807300006180.14925@apollo.tec.linutronix.de>
-	 <200807301101.32417.j.mell@t-online.de>
-	 <20080730171842.GB3420@linux.vnet.ibm.com>
-	 <20080731100023.0221ec2b@bull.net>
-	 <520f0cf10807310313q45599221q3db1b6fd7e7c722f@mail.gmail.com>
-	 <20080731132336.362bd487@bull.net>
-	 <520f0cf10807310649l1083e29bmf0f704e13dee96c@mail.gmail.com>
-	 <1217512907.8157.91.camel@twins>
-	 <520f0cf10807310710i85e5a2u8e5f227bc2b82051@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 31 Jul 2008 16:18:00 +0200
-Message-Id: <1217513880.8157.96.camel@twins>
+	Thu, 31 Jul 2008 10:20:16 -0400
+Date: Thu, 31 Jul 2008 16:20:07 +0200
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
+       matthew@wil.cx, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [patch 2/4] Configure out file locking features
+Message-ID: <20080731162007.285938e0@surf>
+In-Reply-To: <20080731135319.GA20212@cs181140183.pp.htv.fi>
+References: <20080731092703.661994657@free-electrons.com>
+	<20080731093220.969460336@free-electrons.com>
+	<20080731135319.GA20212@cs181140183.pp.htv.fi>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-31 at 16:10 +0200, John Kacur wrote:
-> On Thu, Jul 31, 2008 at 4:01 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Thu, 2008-07-31 at 15:49 +0200, John Kacur wrote:
-> >> Signed-off-by: John Kacur <jkacur@gmail.com>
-> >> Index: linux-2.6.26-rt1/net/core/sock.c
-> >> ===================================================================
-> >> --- linux-2.6.26-rt1.orig/net/core/sock.c
-> >> +++ linux-2.6.26-rt1/net/core/sock.c
-> >> @@ -1986,11 +1986,12 @@ static __init int net_inuse_init(void)
-> >>
-> >>  core_initcall(net_inuse_init);
-> >>  #else
-> >> -static DEFINE_PER_CPU(struct prot_inuse, prot_inuse);
-> >> +static DEFINE_PER_CPU_LOCKED(struct prot_inuse, prot_inuse);
-> >>
-> >>  void sock_prot_inuse_add(struct net *net, struct proto *prot, int val)
-> >>  {
-> >> -       __get_cpu_var(prot_inuse).val[prot->inuse_idx] += val;
-> >> +       int cpu = 0;
-> >> +       __get_cpu_var_locked(prot_inuse, cpu).val[prot->inuse_idx] += val;
-> >>  }
-> >>  EXPORT_SYMBOL_GPL(sock_prot_inuse_add);
-> >>
-> >> @@ -2000,7 +2001,7 @@ int sock_prot_inuse_get(struct net *net,
-> >>         int res = 0;
-> >>
-> >>         for_each_possible_cpu(cpu)
-> >> -               res += per_cpu(prot_inuse, cpu).val[idx];
-> >> +               res += per_cpu_var_locked(prot_inuse, cpu).val[idx];
-> >>
-> >>         return res >= 0 ? res : 0;
-> >>  }
-> >
-> > This doesn't look good. You declare it as a PER_CPU_LOCKED, but then
-> > never use the extra lock to synchronize data.
-> >
-> > Given that sock_proc_inuse_get() is a racy read anyway, the 'right' fix
-> > would be to do something like:
-> >
-> > diff --git a/net/core/sock.c b/net/core/sock.c
-> > index 91f8bbc..5a8ace4 100644
-> > --- a/net/core/sock.c
-> > +++ b/net/core/sock.c
-> > @@ -1941,8 +1941,9 @@ static DECLARE_BITMAP(proto_inuse_idx, PROTO_INUSE_NR);
-> >  #ifdef CONFIG_NET_NS
-> >  void sock_prot_inuse_add(struct net *net, struct proto *prot, int val)
-> >  {
-> > -       int cpu = smp_processor_id();
-> > +       int cpu = get_cpu();
-> >        per_cpu_ptr(net->core.inuse, cpu)->val[prot->inuse_idx] += val;
-> > +       put_cpu();
-> >  }
-> >  EXPORT_SYMBOL_GPL(sock_prot_inuse_add);
-> >
-> > @@ -1988,7 +1989,9 @@ static DEFINE_PER_CPU(struct prot_inuse, prot_inuse);
-> >
-> >  void sock_prot_inuse_add(struct net *net, struct proto *prot, int val)
-> >  {
-> > -       __get_cpu_var(prot_inuse).val[prot->inuse_idx] += val;
-> > +       int cpu = get_cpu();
-> > +       per_cpu(prot_inuse, cpu).val[prot->inuse_idx] += val;
-> > +       put_cpu();
-> >  }
-> >  EXPORT_SYMBOL_GPL(sock_prot_inuse_add);
-> >
-> > This disables preemption, but only for a very short time - so it doesn't
-> > hurt the preempt-latency.
-> >
-> > The alternative is to take a lock, do the inc, and drop the lock again,
-> > which is much more expensive.
-> >
-> >
-> 
-> Cool, thanks for the quick feedback. What kind of criteria are used to
-> decide between disabling preemption for a short time, or using the
-> more expensive lock?
+Le Thu, 31 Jul 2008 16:53:19 +0300,
+Adrian Bunk <bunk@kernel.org> a écrit :
 
-Basically total cost of the operation.. in this case the cost of taking
-the lock utterly dwarfs the cost of the operation.
+> As I've already said in the past I'm personally not a huge fan of
+> these patches, but if it brings advantages in real-life situations
+> it's hard to argue against it.
 
-And since its Real-Time we're talking about, its the WCET of the
-operation that counts.
+Yes, I've seen your points about that kind of patches on
+linux-embedded, and I understand them. I agree that adding dozens and
+dozens of configuration items for small features doesn't look like
+something sustainable on the long run. However, the kernel keeps
+growing and this isn't sustainable either on the long run for *some*
+embedded users. So, what should we do ? (That's a real question)
 
+Some numbers about a bootable x86 allnoconfig kernel with ELF, ext2 and
+IDE support :
+
+   text	   data	    bss	    dec	    hex	filename
+1110389	 119468	 217088	1446945	 161421	vmlinux.2.6.26
+1134606	 118840	 212992	1466438	 166046	vmlinux.2.6.27-rc1
+  24217    -628   -4096   19493    4C25 +/-
+
+(The only configuration change between the two kernels is
+CONFIG_FW_LOADER n->y, which pulls drivers/base/firmware_class.o, 3k).
+
+> In which use cases can users safely disable this option, and on what 
+> devices have you verified that CONFIG_FILE_LOCKING=n kernels actually 
+> work in practice?
+
+As long as they don't use NFS (realistic in many production
+environments) and that the applications do not rely on advisory locking
+(flock() and fnctl() F_GETLK and F_SETLK), file locking can be
+disabled. In practice, I only tested a CONFIG_FILE_LOCKING=n kernel
+with a basic Busybox under Qemu.
+
+Sincerly,
+
+Thomas
+-- 
+Thomas Petazzoni, Free Electrons
+Kernel, drivers and embedded Linux development,
+consulting, training and support.
+http://free-electrons.com
