@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYGaOUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbYGaO1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754326AbYGaOUb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 10:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYGaOUS
+	id S1755346AbYGaO1n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 10:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYGaO1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 10:20:18 -0400
-Received: from mail.free-electrons.com ([88.191.46.45]:50827 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752777AbYGaOUQ (ORCPT
+	Thu, 31 Jul 2008 10:27:33 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:30192 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751287AbYGaO1d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 10:20:16 -0400
-Date: Thu, 31 Jul 2008 16:20:07 +0200
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
-       matthew@wil.cx, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch 2/4] Configure out file locking features
-Message-ID: <20080731162007.285938e0@surf>
-In-Reply-To: <20080731135319.GA20212@cs181140183.pp.htv.fi>
-References: <20080731092703.661994657@free-electrons.com>
-	<20080731093220.969460336@free-electrons.com>
-	<20080731135319.GA20212@cs181140183.pp.htv.fi>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 31 Jul 2008 10:27:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PijMHaSIoDlsij+98MzYXBx3h/xKQzBVOv08mx74HfPLdSVL10dZXVJjdW+zOlAE8k
+         ptqfwd6Sfb3M39mo0OVgD86HHILGQ1TmT7H9Y1b9n9UrF3QmHriJJuWzHsXl5VGMsW04
+         sRovg4jei8X/1VfHYIrWJrp7iWILTCKoUaQ0A=
+Message-ID: <c4e36d110807310727t6cf2c60pc83eabec0a207f2e@mail.gmail.com>
+Date: Thu, 31 Jul 2008 16:27:32 +0200
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: Sysrq+B doesn't work on my box
+In-Reply-To: <20080731135058.GA31888@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <c4e36d110807310645n3ff6e61j17414433c5aee030@mail.gmail.com>
+	 <20080731135058.GA31888@martell.zuzino.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Thu, 31 Jul 2008 16:53:19 +0300,
-Adrian Bunk <bunk@kernel.org> a écrit :
+2008/7/31 Alexey Dobriyan <adobriyan@gmail.com>:
+> On Thu, Jul 31, 2008 at 03:45:24PM +0200, Zdenek Kabelac wrote:
+>> Hi
+>>
+>> I'd like to get resolved this problem - my T61 machine doesn't reboot
+>> with SysRQ+B key.
+>> And I never remember if it was ever rebooting.
+>>
+>> This is all I know so far and I've no idea where could be the problem.
+>>
+>> System is running Fedora rawhide 64bit.
+>>
+>> If I press any other  SysRQ combination - it works - so things like
+>> Sync, Umount, powerOff do work normally.
+>> It's just Boot  which does not even get to the  __handle  routine
+>> (I've added one extra simple debug prinkt
+>> for this case)
+>>
+>> So - who/how/where could mask this key sequence from being delivered
+>> to the sysrq driver?
+>> (obviously I do not have any problems typing letter 'b' itself)
+>>
+>>
+>>
+>> Another issue is - that even with  'echo b >/proc/sysrq-triggers' my
+>> machine doesn't reboot.
+>
+> Typo here? Do
+>
+>        /bin/echo b >/proc/sysrq-trigger
+>
+>
 
-> As I've already said in the past I'm personally not a huge fan of
-> these patches, but if it brings advantages in real-life situations
-> it's hard to argue against it.
+Really only a typo during mail writting - normally I use bash 'tab'
+completion for this anyway.
+(also - as I said - debug messages I've placed into
+arch/x86/kernel/reboot.c are really printed - machine just doesn't
+reboot for some reason)
 
-Yes, I've seen your points about that kind of patches on
-linux-embedded, and I understand them. I agree that adding dozens and
-dozens of configuration items for small features doesn't look like
-something sustainable on the long run. However, the kernel keeps
-growing and this isn't sustainable either on the long run for *some*
-embedded users. So, what should we do ? (That's a real question)
-
-Some numbers about a bootable x86 allnoconfig kernel with ELF, ext2 and
-IDE support :
-
-   text	   data	    bss	    dec	    hex	filename
-1110389	 119468	 217088	1446945	 161421	vmlinux.2.6.26
-1134606	 118840	 212992	1466438	 166046	vmlinux.2.6.27-rc1
-  24217    -628   -4096   19493    4C25 +/-
-
-(The only configuration change between the two kernels is
-CONFIG_FW_LOADER n->y, which pulls drivers/base/firmware_class.o, 3k).
-
-> In which use cases can users safely disable this option, and on what 
-> devices have you verified that CONFIG_FILE_LOCKING=n kernels actually 
-> work in practice?
-
-As long as they don't use NFS (realistic in many production
-environments) and that the applications do not rely on advisory locking
-(flock() and fnctl() F_GETLK and F_SETLK), file locking can be
-disabled. In practice, I only tested a CONFIG_FILE_LOCKING=n kernel
-with a basic Busybox under Qemu.
-
-Sincerly,
-
-Thomas
--- 
-Thomas Petazzoni, Free Electrons
-Kernel, drivers and embedded Linux development,
-consulting, training and support.
-http://free-electrons.com
+Zdenek
