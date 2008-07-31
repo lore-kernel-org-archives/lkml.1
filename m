@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbYGaVgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbYGaVik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758078AbYGaVgc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 17:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbYGaVgY
+	id S1758497AbYGaVik (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 17:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbYGaVic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 17:36:24 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:65382 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754238AbYGaVgX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 17:36:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=LESwd0A4rTkjW60Wc7QpcwEZTeGC8uuRL4a31cMTNfDzKcRRbbp0MrekMePglU+Jvv
-         beRZXynR033OvAHYpKewXoGEKSg5FN2yI7bSdLUnzIFSHMxsy4gVQ70/wHpwpx0D1gTO
-         TZpBVSAUJglapxjdxanl6sYk2D/iN0wgH+jmU=
-Message-ID: <2c0942db0807311436p6c61d2f0o9bfe67ffeaaf0e91@mail.gmail.com>
-Date: Thu, 31 Jul 2008 14:36:21 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Willy Tarreau" <w@1wt.eu>
-Subject: Re: iptables, NAT, DNS & Dan Kaminsky
-Cc: "Richard Hartmann" <richih.mailinglist@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080731211406.GA19104@1wt.eu>
+	Thu, 31 Jul 2008 17:38:32 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48883 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754044AbYGaVib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 17:38:31 -0400
+Date: Thu, 31 Jul 2008 23:37:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, a.p.zijlstra@chello.nl,
+       vatsa@linux.vnet.ibm.com, efault@gmx.de, linux-kernel@vger.kernel.org
+Subject: Re: Fwd: Commit 76a2a6ee8a0660a29127f05989ac59ae1ce865fa breaks
+	PXA270 (at least)?
+Message-ID: <20080731213741.GJ2729@elte.hu>
+References: <20080729223105.GK10982@flint.arm.linux.org.uk> <20080729154605.d540cf6d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <2d460de70807300753w33c43340xaa52c54add501306@mail.gmail.com>
-	 <20080730195548.GA615@1wt.eu>
-	 <2d460de70807310759s2a7d6c4k5ba7e0e6a5bd9cf6@mail.gmail.com>
-	 <20080731211406.GA19104@1wt.eu>
-X-Google-Sender-Auth: 69cbde2038ac8c8c
+In-Reply-To: <20080729154605.d540cf6d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 2:14 PM, Willy Tarreau <w@1wt.eu> wrote:
->> > And BTW I don't think that many of the people
->> > reading LKML care a dime about the "exploit" for poorly configured
->> > DNS servers.
->>
->> It is an exploit that is being abused as we speak and,
->
-> That does not mean that abused servers were properly set up.
 
-Properly configured servers are vulnerable, that's why this is such a
-big deal. This a problem with the design of the DNS protocol (&
-associated behaviors) itself -- the only mitigation strategy sysadmins
-have right now is forcing a randomization of the source port (outside
-of the DNS resolver itself), or placing the DNS resolver behind a NAT
-masquerading firewall that does strict response dropping if a response
-comes from the wrong host. (There used to be an option in the kernel
-to deal with that -- loose source routing or somesuch, but I think
-that's a by-gone from the 2.4 era.)
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-So, to answer Richard, yes something like that should work. I'm not an
-iptables guru by any means, but what you should do is set up a machine
-with that, and sniff the output of the DNS server before and after
-enabling that line to verify that it works.
+> On Tue, 29 Jul 2008 23:31:05 +0100
+> Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> 
+> > But then some bright spark thought it would be a good idea to get
+> > rid of printk_clock().
+> 
+> <does git-log, searches for printk_clock>
 
-The better solution, of course, is to update your DNS server to allow
-it to do the source port randomization itself.
+i think this is a fresh regression via the introduction of 
+kernel/sched_clock.c. We lost the (known) early-init behavior of 
+cpu_clock() in the !UNSTABLE_SCHED_CLOCK case. The fix would be to 
+restore that, not to reintroduce printk_clock().
+
+Peter, any ideas?
+
+	Ingo
