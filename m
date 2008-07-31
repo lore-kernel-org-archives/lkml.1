@@ -1,84 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760887AbYGaAHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761127AbYGaAHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760887AbYGaAHL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbYGaAGy
+	id S1761127AbYGaAHr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760893AbYGaAHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:06:54 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36064 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752912AbYGaAGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:06:53 -0400
-Date: Wed, 30 Jul 2008 16:58:07 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Marcelo Tosatti <mtosatti@redhat.com>,
-       Avi Kivity <avi@qumranet.com>
-Subject: [patch 10/62] KVM: mmu_shrink: kvm_mmu_zap_page requires
-	slots_lock to be held
-Message-ID: <20080730235807.GJ12896@suse.de>
-References: <20080730233050.332789722@mini.kroah.org>
+	Wed, 30 Jul 2008 20:07:13 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:31288 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758460AbYGaAHL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:07:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=OppC1FGDW9KXIxwakp3dk2H1bGvjv38FUnM3PgXVKnz7jSAMwOai6SiA9bZfGiq/8v
+         nsbq1BbgFSkhElhuAW0C88MM83tPmSeeubO4hfXFjjXQ9aL7mOApncukAunBYyqByl3H
+         pd3o0RqxtXi4Dmpo/wb80AV57yACpiWrO7icM=
+Message-ID: <75b66ecd0807301707x9fbcfe6na91abd70c2d7d652@mail.gmail.com>
+Date: Wed, 30 Jul 2008 20:07:10 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: shuey@purdue.edu
+Subject: Re: high latency NFS
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200807241311.31457.shuey@purdue.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="kvm-mmu_shrink-kvm_mmu_zap_page-requires-slots_lock-to-be-held.patch"
-In-Reply-To: <20080730234915.GA12426@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200807241311.31457.shuey@purdue.edu>
+X-Google-Sender-Auth: 6d3e417fc21ac778
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jul 24, 2008 at 1:11 PM, Michael Shuey <shuey@purdue.edu> wrote:
+> NFS mount is tcp, version 3.  rsize/wsize are 32k.  Both client and server
+> have had tcp_rmem, tcp_wmem, wmem_max, rmem_max, wmem_default, and
+> rmem_default tuned - tuning values are 12500000 for defaults (and minimum
+> window sizes), 25000000 for the maximums.  Inefficient, yes, but I'm not
+> concerned with memory efficiency at the moment.
 
-2.6.26 -stable review patch.  If anyone has any objections, please let
-us know.
+Try using UDP.  I had to move a 10TB+ data warehouse over a 100Mbit
+WAN link not long ago and this was the only method that gave me close
+to wire speed.
 
-------------------
-From: Marcelo Tosatti <mtosatti@redhat.com>
-
-Original-Commit-Hash: 64f6a0c041bd8fc100a0d655058bdbc31feda03c
-
-kvm_mmu_zap_page() needs slots lock held (rmap_remove->gfn_to_memslot,
-for example).
-
-Since kvm_lock spinlock is held in mmu_shrink(), do a non-blocking
-down_read_trylock().
-
-Untested.
-
-Signed-off-by: Avi Kivity <avi@qumranet.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- arch/x86/kvm/mmu.c |    3 +++
- 1 file changed, 3 insertions(+)
-
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -1968,6 +1968,8 @@ static int mmu_shrink(int nr_to_scan, gf
- 	list_for_each_entry(kvm, &vm_list, vm_list) {
- 		int npages;
- 
-+		if (!down_read_trylock(&kvm->slots_lock))
-+			continue;
- 		spin_lock(&kvm->mmu_lock);
- 		npages = kvm->arch.n_alloc_mmu_pages -
- 			 kvm->arch.n_free_mmu_pages;
-@@ -1980,6 +1982,7 @@ static int mmu_shrink(int nr_to_scan, gf
- 		nr_to_scan--;
- 
- 		spin_unlock(&kvm->mmu_lock);
-+		up_read(&kvm->slots_lock);
- 	}
- 	if (kvm_freed)
- 		list_move_tail(&kvm_freed->vm_list, &vm_list);
-
--- 
+Lee
