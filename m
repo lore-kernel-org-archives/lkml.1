@@ -1,115 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbYGaTsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbYGaTtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758264AbYGaTsT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 15:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756546AbYGaTsB
+	id S1758524AbYGaTtu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 15:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbYGaTtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 15:48:01 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:52461 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756374AbYGaTr7 (ORCPT
+	Thu, 31 Jul 2008 15:49:41 -0400
+Received: from outbound-mail-132.bluehost.com ([67.222.39.22]:38070 "HELO
+	outbound-mail-132.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754763AbYGaTtk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 15:47:59 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
-Date: Thu, 31 Jul 2008 21:47:25 +0200
+	Thu, 31 Jul 2008 15:49:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=AOWLyIUO77cRjMgMriraittqPoTjnjQ9rz4OoBr/vogESZJaPD8EyYHCqZ7mwwe1dKykzKtsCxbz6kC1ku7ndD5i0e2l5QsajYWPpwFEPJ/6/bS3axvRAaRu4HurOBlb;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: dma-coherent: add documentation to new interfaces
+Date: Thu, 31 Jul 2008 12:49:35 -0700
 User-Agent: KMail/1.9.9
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       David Howells <dhowells@redhat.com>, Greg Ungerer <gerg@snapgear.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       uClinux list <uclinux-dev@uclinux.org>
-References: <200807300907.25186.arnd@arndb.de> <Pine.LNX.4.64.0807301422380.3316@anakin> <20080731032338.GA14296@linux-sh.org>
-In-Reply-To: <20080731032338.GA14296@linux-sh.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
+References: <200807290301.m6T317GG021226@hera.kernel.org> <20080730104650.GA16416@doriath.ww600.siemens.net> <20080730072811.902b55e0.randy.dunlap@oracle.com>
+In-Reply-To: <20080730072811.902b55e0.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807312147.25837.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19Uy2T7Z2PwICxMk1sM2lpG11JklZ7WrfD2yeT
- oAh+0Cuj9Tx98DwpFTbykoTE99twmfLw+VRucUK7o/4vde+nWO
- lYXHr7QTuswZCzBpcOKBw==
+Message-Id: <200807311249.36071.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 31 July 2008, Paul Mundt wrote:
-> This sort of merging is fairly easy to do incrementally, at least by
-> someone that has both platforms available. An easy first step would be to
-> move the m68knommu stuff that are implemented differently over as _nommu
-> files, similar to how the _32/_64 renames happened, and then set about
-> converging the two little by little. This is what I've been doing with
-> sh64->sh integration for example, despite fundamental differences like
-> having a totally different register layout and instruction set.
- 
-I've played around with the purely mechanical side of merging the
-m68k{,nommu} header files and came up with a script to do it.
-All headers that are identical are used from their m68k variant, the
-others get an #include magic like x86 has it for 32/64.
+On Wednesday, July 30, 2008 7:28 am Randy Dunlap wrote:
+> On Wed, 30 Jul 2008 14:46:50 +0400 Dmitry Baryshkov wrote:
+> > On Tue, Jul 29, 2008 at 01:17:57PM -0700, Randy Dunlap wrote:
+> > > On Tue, 29 Jul 2008 03:01:07 GMT Linux Kernel Mailing List wrote:
+> > > > Gitweb:    
+> > > > http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;
+> > > >a=commit;h=b6d4f7e3ef25beb8c658c97867d98883e69dc544 Commit:    
+> > > > b6d4f7e3ef25beb8c658c97867d98883e69dc544
+> > > > Parent:     8fa8b9fbab90c74139e8e868fe5b30b6a9f6be65
+> > > > Author:     Dmitry Baryshkov <dbaryshkov@gmail.com>
+> > > > AuthorDate: Sun Jul 20 15:01:10 2008 +0400
+> > > > Committer:  Ingo Molnar <mingo@elte.hu>
+> > > > CommitDate: Sun Jul 20 21:22:00 2008 +0200
+> > > >
+> > > >     dma-coherent: add documentation to new interfaces
+> > >
+> > > Hi,
+> > > Please fix these to be proper kernel-doc notation, as described in
+> > > Documentation/kernel-doc-nano-HOWTO.txt ...
+> >
+> > Please consider this patch:
+>
+> Looks good.  Thanks.
+>
+> Jesse or Ingo:  will one of you merge this, please?
 
-This assumes that the kernel ABI is compatible and that user space
-can actually use the m68k headers for m68knommu as well.
+Just pushed it into my for-linus branch.  I added your "Acked-by" too, thanks 
+for checking it out.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
-TARGET=arch/m68k/include/asm
-SOURCE1=include/asm-m68k
-SOURCE2=include/asm-m68knommu
-FILES="atomic.h bitops.h bootinfo.h bug.h bugs.h byteorder.h cache.h \
-cacheflush.h checksum.h cputime.h current.h delay.h div64.h \
-dma-mapping.h dma.h elf.h entry.h fb.h fpu.h hardirq.h hw_irq.h io.h \
-irq.h kmap_types.h local.h machdep.h mc146818rtc.h mmu.h mmu_context.h \
-module.h page.h page_offset.h param.h pci.h percpu.h pgalloc.h \
-pgtable.h processor.h ptrace.h scatterlist.h sections.h segment.h \
-setup.h sigcontext.h siginfo.h signal.h string.h system.h \
-thread_info.h timex.h tlbflush.h traps.h uaccess.h ucontext.h \
-unaligned.h unistd.h"
-EXPORTS="byteorder param ptrace sigcontext siginfo signal unistd"
-
-mergefile() {
-	BASE=${1%.h}
-	mv $SOURCE1/$1 $TARGET/${BASE}_mmu.h
-	mv $SOURCE2/$1 $TARGET/${BASE}_nommu.h
-cat << EOF > $TARGET/$1
-#ifdef __KERNEL__
-#ifdef CONFIG_MMU
-#include "${BASE}_mmu.h"
-#else
-#include "${BASE}_nommu.h"
-#endif
-#else
-#include "${BASE}_mmu.h"
-#endif
-EOF
-}
-
-mergefile2() {
-	if [ -e ${TARGET}/$1 ] ; then
-		rm $SOURCE2/$1
-	else
-		mv $SOURCE2/$1 ${TARGET}
-	fi
-}
-
-addexport() {
-	echo "unifdef-y += ${1}_mmu.h" >> $TARGET/Kbuild
-}
-
-mkdir -p ${TARGET}
-# first the incompatible files
-for i in $FILES ; do mergefile $i ; done
-# move all the remaining m68k files
-mv include/asm-m68k/* arch/m68k/include/asm/
-# add a few files that are present only on nommu,
-# remove the duplicate nommu files.
-for i in `ls include/asm-m68knommu/` ; do mergefile2 $i ; done
-# make sure the new files get exported where needed.
-for i in $EXPORTS ; do addexport $i ; done
+Jesse
