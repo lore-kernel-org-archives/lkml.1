@@ -1,89 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYGaR3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbYGaRha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148AbYGaR3z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 13:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbYGaR3n
+	id S1754539AbYGaRha (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 13:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYGaRhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 13:29:43 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:24772 "EHLO
-	WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751638AbYGaR3l (ORCPT
+	Thu, 31 Jul 2008 13:37:22 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:14079 "EHLO
+	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752269AbYGaRhV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 13:29:41 -0400
-X-BigFish: VPS2(zz1418M98dR446ihzz10d3izzz2fh6bh)
-Message-ID: <4891F724.3030406@am.sony.com>
-Date: Thu, 31 Jul 2008 10:32:20 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 31 Jul 2008 13:37:21 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=KocI8HqiAAAA:8 a=VwQbUJbxAAAA:8 a=W0vUJOdyAAAA:8 a=XDwZR0xH3Bt9knHdylcA:9 a=TjQ5r9y-PDWoVFahA1AA:7 a=Z4vWBL_r572G5pZYCij_ORP4OZMA:4
+Message-ID: <4891F847.7030100@shaw.ca>
+Date: Thu, 31 Jul 2008 11:37:11 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
-       matthew@wil.cx, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch 2/4] Configure out file locking features
-References: <20080731092703.661994657@free-electrons.com> <20080731093220.969460336@free-electrons.com> <20080731135319.GA20212@cs181140183.pp.htv.fi> <20080731162007.285938e0@surf> <20080731153757.GB20212@cs181140183.pp.htv.fi> <20080731182616.4c20f0db@surf> <20080731164918.GE20212@cs181140183.pp.htv.fi>
-In-Reply-To: <20080731164918.GE20212@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset="UTF-8"
+To: "V.Radhakrishnan" <rk@atr-labs.com>
+CC: Sanka Piyaratna <cesanka@yahoo.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PCIe device driver question
+References: <fa.PmBLCqOb4Xo53y3W9hAdnsU50Og@ifi.uio.no> <fa.42mxuHHJP7XQmYeyxNoEC/NFUHA@ifi.uio.no> <4890BF39.6060608@shaw.ca> <1217509868.2156.18.camel@atlas>
+In-Reply-To: <1217509868.2156.18.camel@atlas>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Jul 2008 17:29:27.0418 (UTC) FILETIME=[FB8B3DA0:01C8F332]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> And for embedded systems with which applications is it 100% safe to 
-> disable this option?
+V.Radhakrishnan wrote:
+> Hi Robert,
+> 
+> Thanks for the reply. I was thinking that the MMIO and reserve memory
+> will be below 4 GB was only applicable for 32-bit environments, since I
+> don't have much experience in 64-bit.
+> 
+> However, I had an IDENTICAL problem over 2 years ago. I had used
+> posix_memalign() in user space to allocate pages aligned to 4096 byte
+> pages, allocated several additional memaligned pages in user space, used
+> mlock() to lock all these pages, gathered the user space addresses into
+> the original pages as arrays of structures, passed this array into the
+> kernel using an ioctl() call, used get_user_pages() to extract the
+> struct page pointers, performed a kmap() to get the kernel virtual
+> addresses and then extracted the physical addresses and 'sent' this to
+> the chip to perform DMA.
+> 
+> This situation is almost identical to what has been reported and hence
+> my interest.
+> 
+> However, I had a PCI access problem. The DMA was just NOT happening on
+> any machine which had highmem, i.e over 896 MB.
 
-Sony's digital cameras.
+My guess there was a bug in your DMA mapping code. I don't think kmap is 
+what is normally used for this. I think with get_user_pages one usually 
+takes the returned page pointers to create an SG list and uses 
+dma_map_sg to create a DMA mapping for them.
 
-This option *is* disabled in the kernel for (most) Sony digital cameras.
-Those digital cameras have the kernel, busybox, a custom C library,
-and one proprietary application.   The application does not use
-flock() (or AIO, or ethtool or multi-cast)
-
-These cameras were heavily tested, and are shipping now.  I can't
-make any guarantees for other developers, but those of us who
-are careful about our application development would like the option
-to eliminate completely unused features from the kernel.  (And
-the C library, but that's a different issue.)
-
-> And don't answer "doesn't use flock()", I want a real-life example of a 
-> device where you could guarantee a developer that disabling this option 
-> in his product would be safe.
-
-I'm not sure why a guarantee is required that other developers
-use this option safely.  Maybe this is a point of disconnect between
-embedded folks and non-embedded folks.  We're accustomed to making
-tradeoff decisions that only affect our product, and which
-we take full responsibility for testing.
-
-If warnings or support avoidance for the general population using
-such config options is the issue, I think that David Woodhouse's
-suggestion that such things could taint the kernel is an interesting
-idea. Maybe have we could have an "unsafe-config" taint flag?
-
-I should add that I am sympathetic with the larger issue you raise
-about nibbling at the bottom with patches that only address a
-few KB of the problem, while the size continues to build (to an
-even greater degree) with each release.  My response is that I agree
-with you on the nibbling bit, but probably just at a different
-level of KB savings.
-
-That is, I presume you'd be OK with something that saved 100K or
-even 20K, but balk at bit at these patches, which save 10k or less.
-My threshold is lower (probably down to about 5K, so these are
-pretty close to the bubble), but even I wouldn't recommend
-applying anything much below that.  We've already started
-considering to drop some linux-tiny patches that just don't save
-enough to warrant continued maintenance.
- -- Tim
-
-
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
-
+> 
+> I "solved" the problem since I didn't have much time to do R&D, by
+> booting with kernel command line option of mem=512M and the DMA went
+> thru successfully.
+> 
+> This was the linux-2.6.15 kernel then. Since the project was basically
+> to test the DMA capability of the device, the actual address to where it
+> was DMA-ed didn't matter, and I got paid for my work. However, this
+> matter was always at the back of my head.
+> 
+> What could have been the problem with the x86 32-bit PCI ? 
+> 
+> Thanks and regards
+> 
+> V. Radhakrishnan
+> www.atr-labs.com
+> 
+> On Wed, 2008-07-30 at 13:21 -0600, Robert Hancock wrote:
+>> V.Radhakrishnan wrote:
+>>>>> am testing this in an X86_64 architecture machine with 4 GB of RAM. I
+>>>>> am able to successfully dma data into any memory (dma) address >
+>>>>> 0x0000_0001_0000_0000.
+>>> How can you DMA "successfully" into this address which is > 4 GB when
+>>> you have only 4 GB RAM ? Or am I missing something ?
+>> The MMIO and other reserved memory space at the top of the 32-bit memory 
+>> space will cause the top part of memory to be relocated above 4GB.
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
