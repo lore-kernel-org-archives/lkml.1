@@ -1,70 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbYGaV36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758567AbYGaVat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757447AbYGaV36 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 17:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbYGaV3u
+	id S1758567AbYGaVat (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 17:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbYGaVak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 17:29:50 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43591 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751708AbYGaV3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 17:29:49 -0400
-Date: Thu, 31 Jul 2008 23:29:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "drepper@redhat.com" <drepper@redhat.com>,
-       "mikpe@it.uu.se" <mikpe@it.uu.se>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 0/9] x86, xsave: xsave/xrstor support
-Message-ID: <20080731212915.GH2729@elte.hu>
-References: <20080729172917.185593000@linux-os.sc.intel.com> <488FA318.3040905@zytor.com> <20080729232951.GB11223@linux-os.sc.intel.com> <488FAB2B.7050405@zytor.com> <20080730100326.GA9683@elte.hu> <20080730182539.GA17140@elte.hu> <20080730234102.GF11223@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080730234102.GF11223@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 31 Jul 2008 17:30:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36531 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754037AbYGaVaj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 17:30:39 -0400
+Date: Thu, 31 Jul 2008 14:30:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: halesh.s@india.com, kosaki.motohiro@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: mlock() return value issue in kernel 2.6.23.17
+Message-Id: <20080731143032.2a211c18.akpm@linux-foundation.org>
+In-Reply-To: <20080731211811.3CA9.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <loom.20080731T100441-892@post.gmane.org>
+	<20080731211811.3CA9.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 31 Jul 2008 21:50:06 +0900
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
-
-> On Wed, Jul 30, 2008 at 11:25:39AM -0700, Ingo Molnar wrote:
-> > I briefly merged it into tip/master to test it, but after about 10
-> > randconfig iterations it ran into a spontaneous reboot crash. There's
-> > nothing in the log, the box (an Athlon64 X2) just reboots spontaneously.
-> > Removing the x86/xsave changes makes the system boot up fine.
 > > 
-> > I've pushed out the tree i tested into the tip/tmp.x86/xsave.broken
-> > branch. The bad config is:
+> > This testcase results with mlock failure with errno 14 that is EFAULT, but this 
+> > has been no where reported that mlock will give EFAULT, When i tested the same 
+> > on older kernel like 2.6.18, I got the correct result i.e errno 12 (ENOMEM).
 > > 
-> >   http://redhat.com/~mingo/misc/config-Wed_Jul_30_20_09_12_CEST_2008.bad
+> > 
+> > I think in source code mlock(2),  setting errno ENOMEM has been missed in 
+> > do_mlock() , on mlock_fixup() failure.
+> > 
+> > Let me know if my understanding is wrong!
 > 
-> Ingo, 2.6.25, 2.6.26 also reboots randomly with this config on my 
-> dual-socket system.
+> Hi Halesh,
+> 
+> Could you try to following patch?
+> 
+> -----------------------------------------------------
+> SUSv3 require following behavior to mlock(2).
+> 
+> [ENOMEM]
+>     Some or all of the address range specified by the addr and
+>     len arguments does not correspond to valid mapped pages 
+>     in the address space of the process.
+> 
+> [EAGAIN]
+>     Some or all of the memory identified by the operation could not 
+>     be locked when the call was made. 
+> 
+> 
+> This rule isn't so nice and slighly strange.
+> but many people think POSIX/SUS compliance is important.
+> 
+> 
+> ---
+>  mm/memory.c |   16 +++++++++++++---
+>  mm/mlock.c  |    2 --
+>  2 files changed, 13 insertions(+), 5 deletions(-)
+> 
+> Index: b/mm/memory.c
+> ===================================================================
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -2736,16 +2736,26 @@ int make_pages_present(unsigned long add
+>  
+>  	vma = find_vma(current->mm, addr);
+>  	if (!vma)
+> -		return -1;
+> +		return -ENOMEM;
+>  	write = (vma->vm_flags & VM_WRITE) != 0;
+>  	BUG_ON(addr >= end);
+>  	BUG_ON(end > vma->vm_end);
+>  	len = DIV_ROUND_UP(end, PAGE_SIZE) - addr/PAGE_SIZE;
+>  	ret = get_user_pages(current, current->mm, addr,
+>  			len, write, 0, NULL, NULL);
+> -	if (ret < 0)
+> +	if (ret < 0) {
+> +		/*
+> +		   SUS require strange return value to mlock
+> +		    - invalid addr generate to ENOMEM.
+> +		    - out of memory should generate EAGAIN.
+> +		*/
+> +		if (ret == -EFAULT)
+> +			ret = -ENOMEM;
+> +		else if (ret == -ENOMEM)
+> +			ret = -EAGAIN;
+>  		return ret;
+> -	return ret == len ? 0 : -1;
+> +	}
+> +	return ret == len ? 0 : -ENOMEM;
+>  }
+>  
+>  #if !defined(__HAVE_ARCH_GATE_AREA)
+> Index: b/mm/mlock.c
+> ===================================================================
+> --- a/mm/mlock.c
+> +++ b/mm/mlock.c
+> @@ -78,8 +78,6 @@ success:
+>  
+>  	mm->locked_vm -= pages;
+>  out:
+> -	if (ret == -ENOMEM)
+> -		ret = -EAGAIN;
+>  	return ret;
+>  }
+>  
+> 
 
-hmmm ....
+I assume that you tested it too?
 
-a few guesses: perhaps I2C related (the randconfig turned on I2C bits)? 
-Do you have any way (hw test-kit) to figure out where the reboot comes 
-from - is it a triple fault caused by the kernel? Or some hardware 
-event?
+If it comes down to a choice between complying with SuS versus
+complying with earlier Linux versions then we'd usually prefer to
+comply with earlier Linux versions.
 
-	Ingo
+I queued this, but would prefer to await confirmation that it has been
+tested to take us back to the 2.6.18 interface, please.
+
+Also, please send a Signed-off-by: for this change.
