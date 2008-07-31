@@ -1,112 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbYGaNZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752278AbYGaN0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753511AbYGaNZq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 09:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbYGaNZh
+	id S1752278AbYGaN0G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 09:26:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbYGaNZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 09:25:37 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:51244 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751101AbYGaNZg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 09:25:36 -0400
-Date: Thu, 31 Jul 2008 15:26:06 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: michael@ellerman.id.au
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, benh@kernel.crashing.org,
-       paulus@samba.org, jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
-       tinytim@us.ibm.com, tglx@linutronix.de, rostedt@goodmis.org
-Subject: Re: [PATCH] powerpc - Initialize the irq radix tree earlier
-Message-ID: <20080731152606.5ae7c379@bull.net>
-In-Reply-To: <1217509299.19050.15.camel@localhost>
-References: <1217497241-10685-1-git-send-email-sebastien.dugue@bull.net>
-	<1217497241-10685-2-git-send-email-sebastien.dugue@bull.net>
-	<1217504456.9817.22.camel@localhost>
-	<20080731140002.31bbe4a0@bull.net>
-	<1217509104.19050.11.camel@localhost>
-	<1217509299.19050.15.camel@localhost>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+	Thu, 31 Jul 2008 09:25:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43899 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751160AbYGaNZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 09:25:50 -0400
+Subject: Re: linux-next: sparc32/gcc-3.4.5/ld-2.15 build failure
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       "David S. Miller" <davem@davemloft.net>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080731003558.965581a6.akpm@linux-foundation.org>
+References: <20080731171603.799c2c85.sfr@canb.auug.org.au>
+	 <20080731003558.965581a6.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Thu, 31 Jul 2008 14:20:33 +0100
+Message-Id: <1217510433.6317.11.camel@quoit>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jul 2008 23:01:39 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
+Linus,
 
-> On Thu, 2008-07-31 at 22:58 +1000, Michael Ellerman wrote:
-> > On Thu, 2008-07-31 at 14:00 +0200, Sebastien Dugue wrote:
-> > > On Thu, 31 Jul 2008 21:40:56 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
-> > > > 
-> > > > This boot ordering stuff is pretty hairy, so I might have missed
-> > > > something, but this is how the code is ordered AFAICT:
-> > > > ﻿
-> > > > start_kernel()
-> > > > 	init_IRQ()
-> > > > 	...
-> > > > 	local_irq_enable()
-> > > > 	...
-> > > > 	rest_init()
-> > > > 		kernel_thread()
-> > > > 			kernel_init()
-> > > > 				smp_prepare_cpus()
-> > > > 					smp_xics_probe()	(via smp_ops->probe())
-> > > > 
-> > > > 
-> > > > What's stopping us from taking an irq between local_irq_enable() and
-> > > > smp_xics_probe() ?  Is it just that no one's request_irq()'ed them yet?
-> > > 
-> > >   It's hairy, I agree, but as you've mentioned no one has done a request_irq()
-> > > at that point. The first one to do it is smp_xics_probe() for the IPI.
-> > 
-> > Hmm, I don't think that's strong enough. I can trivially cause irqs to
-> > fire during a kexec reboot just by mashing the keyboard.
-> > 
-> > And during a kdump boot all sorts of stuff could be firing. Even during
-> > a clean boot, from firmware, I don't think we can guarantee that
-> > nothing's going to fire.
-> > 
-> > .. after a bit of testing ..
-> > 
-> > It seems it actually works (sort of). 
-> > 
-> > xics_remap_irq() calls irq_radix_revmap_lookup(), which calls:
-> > 
-> > ptr = radix_tree_lookup(&host->revmap_data.tree, hwirq);
-> > 
-> > And because ﻿host->revmap_data.tree was zalloc'ed we trip on the first
-> > check here:
-> 
-> @#$% ctrl-enter == send!
-> 
-> Continuing ...
-> 
-> void *radix_tree_lookup(struct radix_tree_root *root, unsigned long index)
-> {
->         unsigned int height, shift;
->         struct radix_tree_node *node, **slot;
-> 
->         node = rcu_dereference(root->rnode);
->         if (node == NULL)
->                 return NULL;
-> 
-> Which means ﻿irq_radix_revmap_lookup() will return NO_IRQ, which is cool.
+Please consider reverting the two commits:
 
-  Which is what I intended so that as long as no IRQ is registered we
-return NO_IRQ.
+> > commit f9247273cb69ba101877e946d2d83044409cc8c5
+> > Author: Steven Whitehouse <swhiteho@redhat.com>
+> > Date:   Thu Jul 24 17:22:13 2008 +0100
+> > 
+> >     UFS: add const to parser token table
+> >     
 
+> > 
+> > commit fb2e405fc1fc8b20d9c78eaa1c7fd5a297efde43
+> > Author: Adrian Bunk <bunk@kernel.org>
+> > Date:   Fri Jul 25 02:55:49 2008 +0300
+> > 
+> >     fix fs/nfs/nfsroot.c compilation
+
+It appears that they cause a compile problem (as per below explanation)
+on sparc, even though they appear to be ok on other architectures. I'll
+redo the patch to avoid the problem and resubmit but it seems best just
+to revert in the mean time. Sorry to be a pain,
+
+Steve.
+
+On Thu, 2008-07-31 at 00:35 -0700, Andrew Morton wrote:
+> On Thu, 31 Jul 2008 17:16:03 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 > 
+> > Hi Dave,
+> > 
+> > linux-next builds (sparc32 defconfig) have been failing for some time
+> > like this:
+> > 
+> > .tmp_kallsyms2.o(.rodata+0x0): In function `kallsyms_addresses':
+> > : relocation truncated to fit: R_SPARC_32 _text
+> > .tmp_kallsyms2.o(.rodata+0x4): In function `kallsyms_addresses':
+> > : relocation truncated to fit: R_SPARC_32 _text
+> > .tmp_kallsyms2.o(.rodata+0x8): In function `kallsyms_addresses':
+> > : relocation truncated to fit: R_SPARC_32 _text
+> > 
+> > (several more)
+> > 
+> > I finally bisected it down to this commit:
+> > 
+> > commit f9247273cb69ba101877e946d2d83044409cc8c5
+> > Author: Steven Whitehouse <swhiteho@redhat.com>
+> > Date:   Thu Jul 24 17:22:13 2008 +0100
+> > 
+> >     UFS: add const to parser token table
+> >     
+> > Reverting this commit and the followup commit:
+> > 
+> > commit fb2e405fc1fc8b20d9c78eaa1c7fd5a297efde43
+> > Author: Adrian Bunk <bunk@kernel.org>
+> > Date:   Fri Jul 25 02:55:49 2008 +0300
+> > 
+> >     fix fs/nfs/nfsroot.c compilation
+> > 
+> > allows the sparc32 build to succeed.  This is toolchain specific as a
+> > different cross toolchain I have does not get this error.
+> > 
+> > Failing toolchain:
+> > 
+> > $ gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/bin/sparc64-unknown-linux-gnu-gcc --version
+> > sparc64-unknown-linux-gnu-gcc (GCC) 3.4.5
+> > $ gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/bin/sparc64-unknown-linux-gnu-ld --version
+> > GNU ld version 2.15
+> > 
+> > An OK toolchain:
+> > $ cross/bin/sparc64-linux-gcc --version
+> > sparc64-linux-gcc (GCC) 4.2.4
+> > $ cross/bin/sparc64-linux-ld --version
+> > GNU ld (GNU Binutils) 2.18
+> > 
+> > Both these commits are actually in Linus' tree, now.
 > 
-> So I think it can fly, as long as we're happy that we can't reverse map
-> anything until smp_xics_probe() - and I think that's true, as any irq we
-> take will be invalid.
+> gee.  nfsroot.c is now effectively doing `const __initconst' which
+> might be upsetting the compiler.  And perhaps one of the forty-odd
+> other users of match_table_t needs __initconst or somesuch.
+> 
+> Yes, I'd second a revert-and-try-again-later on that one.
 
-  That's true as no IRQs are registered before smp_xics_probe() and for any
-interrupt we might get before that, irq_radix_revmap_lookup() will return
-NO_IRQ.
-
-  Thanks,
-
-  Sebastien.
