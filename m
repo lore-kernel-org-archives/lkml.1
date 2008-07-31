@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751388AbYGaMi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751201AbYGaMjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751388AbYGaMi5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 08:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbYGaMij
+	id S1751201AbYGaMjq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 08:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbYGaMjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 08:38:39 -0400
-Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:30437 "HELO
-	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751471AbYGaMif (ORCPT
+	Thu, 31 Jul 2008 08:39:36 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:48855 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751504AbYGaMjf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 08:38:35 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=FXXfDvOe2bTXODoHVdPMac/VJeEmJTxcxAiv7ewDbsqHdZ66LcTXx4peQs4I++FO6Wqr4RLnpKcqhqq5LhCyqTJQDKKo9EW4jzIuLX7j9vEYg1qQ8OPXKUVNZ6CbRbAdJhXxbXJpv8c3AWuxTGu5yQKrJd7iCosspU1HBOukwPU=  ;
-X-YMail-OSG: S2IBfkwVM1krjuKEBEyeHB8DPp5UpU_P_QYW7OSNkK1yLc2MbxxSujTctIKccF34hInaB_VBdYWC0q0toJfQT8QCTA0w3AqME8ZFWY21hauUsH4pykPJzaKOPtGiCZbfdwc-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: Kernel WARNING: at net/core/dev.c:1330 __netif_schedule+0x2c/0x98()
-Date: Thu, 31 Jul 2008 22:38:19 +1000
-User-Agent: KMail/1.9.5
-Cc: jarkao2@gmail.com, johannes@sipsolutions.net, netdev@axxeo.de,
-       peterz@infradead.org, Larry.Finger@lwfinger.net, kaber@trash.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, mingo@redhat.com
-References: <20080726131838.GA2873@ami.dom.local> <20080727203757.GA2527@ami.dom.local> <20080731.052932.110299354.davem@davemloft.net>
-In-Reply-To: <20080731.052932.110299354.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807312238.20264.nickpiggin@yahoo.com.au>
+	Thu, 31 Jul 2008 08:39:35 -0400
+Message-Id: <20080731123932.093946726@de.ibm.com>
+References: <20080731123004.868574766@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 31 Jul 2008 14:30:05 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 1/6] Remove diag 0x260 call from memory detection.
+Content-Disposition: inline; filename=100-rm-diag260.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 31 July 2008 22:29, David Miller wrote:
-> From: Jarek Poplawski <jarkao2@gmail.com>
-> Date: Sun, 27 Jul 2008 22:37:57 +0200
->
-> > Looks like enough to me. (Probably it could even share space with
-> > the state.)
->
-> So I made some progress on this, three things:
->
-> 1) I remember why I choose a to use a bit in my design, it's so that
->    it does not increase the costs of the checks in the fast paths.
->    test_bit(X) && test_bit(Y) can be combined into a single test by
->    the compiler.
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-Except for the braindead volatile that gets stuck on the bitops pointer.
+The result of the diag 0x260 call is not always what one would expect.
+So just remove it.
 
-Last time I complained about this, a lot of noise was made and I think
-Linus wanted it to stay around so we could pass volatile pointers to
-bitops & co without warnings. I say we should just remove the volatile
-and kill any callers that might warn...
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ arch/s390/kernel/mem_detect.c |   23 -----------------------
+ 1 file changed, 23 deletions(-)
+
+Index: quilt-2.6/arch/s390/kernel/mem_detect.c
+===================================================================
+--- quilt-2.6.orig/arch/s390/kernel/mem_detect.c
++++ quilt-2.6/arch/s390/kernel/mem_detect.c
+@@ -9,27 +9,6 @@
+ #include <asm/sclp.h>
+ #include <asm/setup.h>
+ 
+-static int memory_fast_detect(struct mem_chunk *chunk)
+-{
+-	unsigned long val0 = 0;
+-	unsigned long val1 = 0xc;
+-	int rc = -EOPNOTSUPP;
+-
+-	if (ipl_flags & IPL_NSS_VALID)
+-		return -EOPNOTSUPP;
+-	asm volatile(
+-		"	diag	%1,%2,0x260\n"
+-		"0:	lhi	%0,0\n"
+-		"1:\n"
+-		EX_TABLE(0b,1b)
+-		: "+d" (rc), "+d" (val0), "+d" (val1) : : "cc");
+-
+-	if (rc || val0 != val1)
+-		return -EOPNOTSUPP;
+-	chunk->size = val0 + 1;
+-	return 0;
+-}
+-
+ static inline int tprot(unsigned long addr)
+ {
+ 	int rc = -EFAULT;
+@@ -84,8 +63,6 @@ void detect_memory_layout(struct mem_chu
+ 	unsigned long flags, cr0;
+ 
+ 	memset(chunk, 0, MEMORY_CHUNKS * sizeof(struct mem_chunk));
+-	if (memory_fast_detect(&chunk[0]) == 0)
+-		return;
+ 	/* Disable IRQs, DAT and low address protection so tprot does the
+ 	 * right thing and we don't get scheduled away with low address
+ 	 * protection disabled.
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
