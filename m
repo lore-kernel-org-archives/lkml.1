@@ -1,100 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbYGaHQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbYGaHST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754681AbYGaHQX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 03:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYGaHQO
+	id S1754854AbYGaHST (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 03:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbYGaHSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 03:16:14 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:35801 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752888AbYGaHQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 03:16:13 -0400
-Date: Thu, 31 Jul 2008 17:16:03 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+	Thu, 31 Jul 2008 03:18:05 -0400
+Received: from harold.telenet-ops.be ([195.130.133.65]:53152 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752637AbYGaHSD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 03:18:03 -0400
+Date: Thu, 31 Jul 2008 09:17:58 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Paul Mundt <lethal@linux-sh.org>
+cc: David Howells <dhowells@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+       Greg Ungerer <gerg@snapgear.com>, Sam Ravnborg <sam@ravnborg.org>,
+       linux arch <linux-arch@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: linux-next: sparc32/gcc-3.4.5/ld-2.15 build failure
-Message-Id: <20080731171603.799c2c85.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__31_Jul_2008_17_16_03_+1000_Sn2ALYol0puWoI6h"
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       uClinux list <uclinux-dev@uclinux.org>
+Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
+In-Reply-To: <20080731032338.GA14296@linux-sh.org>
+Message-ID: <Pine.LNX.4.64.0807310916430.10810@anakin>
+References: <200807300907.25186.arnd@arndb.de> <20080728200500.GA14284@uranus.ravnborg.org>
+ <48900EE4.8030606@snapgear.com> <3995.1217410495@redhat.com>
+ <Pine.LNX.4.64.0807301422380.3316@anakin> <20080731032338.GA14296@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__31_Jul_2008_17_16_03_+1000_Sn2ALYol0puWoI6h
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 31 Jul 2008, Paul Mundt wrote:
+> On Wed, Jul 30, 2008 at 02:26:04PM +0200, Geert Uytterhoeven wrote:
+> > On Wed, 30 Jul 2008, David Howells wrote:
+> > > Arnd Bergmann <arnd@arndb.de> wrote:
+> > > 
+> > > > I think the more interesting aspect in m68knommu is what happens
+> > > > when asm-m68k gets moved. Does that work as well?
+> > > 
+> > > Can m68knommu be merged into m68k and be made contingent on CONFIG_MMU?  This
+> > > is what FRV does.
+> > 
+> > Sure it can ;-)
+> > 
+> > Actually I did a bit of work to add nommu support to m68k to make it
+> > boot on old MMU-less Amigas, but it dates back to the 2.6.8.1 era...
+> > 
+> > The bigger issue is in those parts that are done differently by m68k and
+> > m68knommu (esp. head.S).
+> > 
+> > Who's gonna take the work? :-)
+> > 
+> This sort of merging is fairly easy to do incrementally, at least by
+> someone that has both platforms available. An easy first step would be to
 
-Hi Dave,
+Indeed. I have none of the currently supported m68knommu platforms,
+though.
+Don't know about Greg and m68k platforms (of course he can use ARAnyM
+;-).
 
-linux-next builds (sparc32 defconfig) have been failing for some time
-like this:
+> move the m68knommu stuff that are implemented differently over as _nommu
+> files, similar to how the _32/_64 renames happened, and then set about
+> converging the two little by little. This is what I've been doing with
+> sh64->sh integration for example, despite fundamental differences like
+> having a totally different register layout and instruction set.
 
-.tmp_kallsyms2.o(.rodata+0x0): In function `kallsyms_addresses':
-: relocation truncated to fit: R_SPARC_32 _text
-.tmp_kallsyms2.o(.rodata+0x4): In function `kallsyms_addresses':
-: relocation truncated to fit: R_SPARC_32 _text
-.tmp_kallsyms2.o(.rodata+0x8): In function `kallsyms_addresses':
-: relocation truncated to fit: R_SPARC_32 _text
+IC.
 
-(several more)
+Gr{oetje,eeting}s,
 
-I finally bisected it down to this commit:
+						Geert
 
-commit f9247273cb69ba101877e946d2d83044409cc8c5
-Author: Steven Whitehouse <swhiteho@redhat.com>
-Date:   Thu Jul 24 17:22:13 2008 +0100
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-    UFS: add const to parser token table
-   =20
-Reverting this commit and the followup commit:
-
-commit fb2e405fc1fc8b20d9c78eaa1c7fd5a297efde43
-Author: Adrian Bunk <bunk@kernel.org>
-Date:   Fri Jul 25 02:55:49 2008 +0300
-
-    fix fs/nfs/nfsroot.c compilation
-
-allows the sparc32 build to succeed.  This is toolchain specific as a
-different cross toolchain I have does not get this error.
-
-Failing toolchain:
-
-$ gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/bin/sparc64-unknown-linux=
--gnu-gcc --version
-sparc64-unknown-linux-gnu-gcc (GCC) 3.4.5
-$ gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/bin/sparc64-unknown-linux=
--gnu-ld --version
-GNU ld version 2.15
-
-An OK toolchain:
-$ cross/bin/sparc64-linux-gcc --version
-sparc64-linux-gcc (GCC) 4.2.4
-$ cross/bin/sparc64-linux-ld --version
-GNU ld (GNU Binutils) 2.18
-
-Both these commits are actually in Linus' tree, now.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__31_Jul_2008_17_16_03_+1000_Sn2ALYol0puWoI6h
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiRZrMACgkQjjKRsyhoI8wWXQCdFNkdC1zFlKUfmQGRM4NCXbPM
-wpEAn3lxnapdvMa70N4zJCtQ+9pib8KK
-=twny
------END PGP SIGNATURE-----
-
---Signature=_Thu__31_Jul_2008_17_16_03_+1000_Sn2ALYol0puWoI6h--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
