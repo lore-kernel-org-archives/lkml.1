@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbYGaVNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbYGaVOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbYGaVNV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 17:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYGaVNL
+	id S1756430AbYGaVOV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 17:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbYGaVOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 17:13:11 -0400
-Received: from mx2.schottelius.org ([62.65.138.77]:34719 "EHLO
-	mx2.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751712AbYGaVNK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 17:13:10 -0400
-X-Greylist: delayed 465 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jul 2008 17:13:09 EDT
-Date: Thu, 31 Jul 2008 23:05:07 +0200
-From: Nico Schottelius 
-	<nico-linux-kernel-bugreport20080731@schottelius.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Heavy suspend and io problems in 2.6.27-rc1-00156-g94ad374
-Message-ID: <20080731210507.GA6094@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-kernel-bugreport20080731@schottelius.org>,
-	LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="lrZ03NoBR/3+SXJZ"
+	Thu, 31 Jul 2008 17:14:12 -0400
+Received: from 1wt.eu ([62.212.114.60]:2308 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751223AbYGaVOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 17:14:10 -0400
+Date: Thu, 31 Jul 2008 23:14:06 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Richard Hartmann <richih.mailinglist@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: iptables, NAT, DNS & Dan Kaminsky
+Message-ID: <20080731211406.GA19104@1wt.eu>
+References: <2d460de70807300753w33c43340xaa52c54add501306@mail.gmail.com> <20080730195548.GA615@1wt.eu> <2d460de70807310759s2a7d6c4k5ba7e0e6a5bd9cf6@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: denkbrett (Linux 2.6.26-next-20080725-denkbrett x86_64)
+In-Reply-To: <2d460de70807310759s2a7d6c4k5ba7e0e6a5bd9cf6@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Richard,
 
---lrZ03NoBR/3+SXJZ
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Jul 31, 2008 at 04:59:24PM +0200, Richard Hartmann wrote:
+> On Wed, Jul 30, 2008 at 21:55, Willy Tarreau <w@1wt.eu> wrote:
+> 
+> > you should re-post your question to relevant lists. I think that
+> > the netfilter ML would be more appropriate. The list you posted to
+> > is about Linux kernel development, which has nothing to do with
+> > how to setup iptables rules, so I don't think you'll find useful
+> > answers here, if any.
+> 
+> I also asked said list, but as I am especially concerned about
+> what kernels versions act in which way, I thought I would try
+> my luck here, as well.
 
-Hello=A1
+Then you should wait a bit, there may be a lot of people in holidays.
 
-I've some serious problems with this kernel on the ibm t60:
+> > And BTW I don't think that many of the people
+> > reading LKML care a dime about the "exploit" for poorly configured
+> > DNS servers.
+> 
+> It is an exploit that is being abused as we speak and,
 
-- wake up from suspend takes about 30 seconds
-- i need to switch to console and back to see xorg screen again (before:
-  only black)
-- after wake up, I get disk input/output errors, no access to sda is
-  possible
+That does not mean that abused servers were properly set up.
 
-As I could not do any dumps I took photos of the dmesg output with my
-camera and put them in high resolution to
+> unless you
+> mean source address filtering or the like, has nothing to do with
+> how the servers are configured
 
-   http://home.schottelius.org/~nico/unix/linux/kernel/2.6.27-rc1-00156-g94=
-ad374/
+Yes it has. I don't want to enter a DNS debate and I'm not even qualified
+for that. But I can't find any reason why you would let your servers offer
+public resolving service for outsiders. They must resolve hosted zones for
+outsiders, hosted+outside zones for insiders and that's all. So that *should*
+be either a non-issue, or a valid reason to fix the issue.
 
-Sincerly,
+Regards,
+Willy
 
-Nico
-
-ps: please cc me on reply
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---lrZ03NoBR/3+SXJZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiSKQMACgkQuL75KpiFGIxejACePzJ4K0s69eqz7/HD985yoqwN
-/gQAoOq0k9q80/vYCWs+OAO4THbHRC2Y
-=CzRa
------END PGP SIGNATURE-----
-
---lrZ03NoBR/3+SXJZ--
