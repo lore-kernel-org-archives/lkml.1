@@ -1,89 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbYGaKPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbYGaKUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756699AbYGaKPt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 06:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756427AbYGaKPh
+	id S1756490AbYGaKUT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 06:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbYGaKUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 06:15:37 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:11265 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756356AbYGaKPe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 06:15:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=Z/MPnOyJZZ/OIM62BL7u7/37kBV3yjsPTZpd64mw3eN0exegGcUsOfSDlhAO1es8PI
-         L1gUYr0S+Qrt5fhhZptkMI4IQVpHEshcyfV3PrcAh+RTjez/1d/6IwVj2AsMahMQBYlE
-         YEkUbBVlJxS1+flD9n8WlMvOd3Tx1Utc78gfU=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] x86 remove irq_vectors_limit.h
-Date: Thu, 31 Jul 2008 03:14:45 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200807291414.55479.yhlu.kernel@gmail.com> <200807301210.31511.yhlu.kernel@gmail.com> <200807302109.21519.yhlu.kernel@gmail.com>
-In-Reply-To: <200807302109.21519.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200807310314.46116.yhlu.kernel@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 31 Jul 2008 06:20:07 -0400
+Received: from main.gmane.org ([80.91.229.2]:50877 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752002AbYGaKUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 06:20:05 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Halesh <halesh.s@india.com>
+Subject: mlock() return value issue in kernel 2.6.23.17
+Date: Thu, 31 Jul 2008 10:15:10 +0000 (UTC)
+Message-ID: <loom.20080731T100441-892@post.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 125.17.166.34 (Opera/9.50 (Windows NT 5.1; U; en))
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-    no user
+Hi all,
 
-later
-1. need to make 32bit to support dyn_array for irq_vector[]
-2. also need to probe nr_irqs via madt and mptable
+Please find the below testcase provide to test mlock.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Test Case :
+===========================
 
-Index: linux-2.6/include/asm-x86/mach-generic/irq_vectors_limits.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/mach-generic/irq_vectors_limits.h
-+++ /dev/null
-@@ -1,14 +0,0 @@
--#ifndef ASM_X86__MACH_GENERIC__IRQ_VECTORS_LIMITS_H
--#define ASM_X86__MACH_GENERIC__IRQ_VECTORS_LIMITS_H
--
--/*
-- * For Summit or generic (i.e. installer) kernels, we have lots of I/O APICs,
-- * even with uni-proc kernels, so use a big array.
-- *
-- * This value should be the same in both the generic and summit subarches.
-- * Change one, change 'em both.
-- */
--#define NR_IRQS	224
--#define NR_IRQ_VECTORS	1024
--
--#endif /* ASM_X86__MACH_GENERIC__IRQ_VECTORS_LIMITS_H */
-Index: linux-2.6/include/asm-x86/summit/irq_vectors_limits.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/summit/irq_vectors_limits.h
-+++ /dev/null
-@@ -1,14 +0,0 @@
--#ifndef _ASM_IRQ_VECTORS_LIMITS_H
--#define _ASM_IRQ_VECTORS_LIMITS_H
--
--/*
-- * For Summit or generic (i.e. installer) kernels, we have lots of I/O APICs,
-- * even with uni-proc kernels, so use a big array.
-- *
-- * This value should be the same in both the generic and summit subarches.
-- * Change one, change 'em both.
-- */
--#define NR_IRQS	224
--#define NR_IRQ_VECTORS	1024
--
--#endif /* _ASM_IRQ_VECTORS_LIMITS_H */
+#include <sys/resource.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <stdlib.h>
+
+int main(void)
+{
+  int fd,ret, i = 0;
+  char *addr, *addr1 = NULL;
+  unsigned int page_size;
+  struct rlimit rlim;
+
+  if (0 != geteuid()) 
+  {
+   printf("Execute this pgm as root\n");
+   exit(1);
+  }
+
+  /* create a file */
+  if ((fd = open("mmap_test.c",O_RDWR|O_CREAT,0755)) == -1)
+  {
+   printf("cant create test file\n");
+   exit(1);
+  }
+
+  page_size = sysconf(_SC_PAGE_SIZE);
+
+  /* set the MEMLOCK limit */
+  rlim.rlim_cur = 2000;
+  rlim.rlim_max = 2000;
+
+  if ((ret = setrlimit(RLIMIT_MEMLOCK,&rlim)) != 0)
+  {
+   printf("Cant change limit values\n");
+   exit(1);
+  }
+
+  addr = 0;
+  while (1)
+  {
+  /* map a page into memory each time*/ 
+  if ((addr = (char *) mmap(addr,page_size, PROT_READ |     
+PROT_WRITE,MAP_SHARED,fd,0)) == MAP_FAILED) 
+  {
+   printf("cant do mmap on file\n");
+   exit(1);
+  }
+
+  if (0 == i)
+    addr1 = addr;
+  i++;
+  errno = 0;	
+  /* lock the mapped memory pagewise*/
+  if ((ret = mlock((char *)addr, 1500)) == -1) 
+  {
+   printf("errno value is %d\n", errno);
+   printf("cant lock maped region\n");
+   exit(1);
+  }
+  addr = addr + page_size;
+ }
+}
+======================================================
+
+
+This testcase results with mlock failure with errno 14 that is EFAULT, but this 
+has been no where reported that mlock will give EFAULT, When i tested the same 
+on older kernel like 2.6.18, I got the correct result i.e errno 12 (ENOMEM).
+
+
+I think in source code mlock(2),  setting errno ENOMEM has been missed in 
+do_mlock() , on mlock_fixup() failure.
+
+Let me know if my understanding is wrong!
+
+Thanks,
+Halesh
+
+
