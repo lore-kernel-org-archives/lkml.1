@@ -1,457 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbYGaCtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbYGaCtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755556AbYGaCtX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 22:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbYGaCss
+	id S1760061AbYGaCtn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 22:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbYGaCst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 22:48:48 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:60528 "EHLO
+	Wed, 30 Jul 2008 22:48:49 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:60529 "EHLO
 	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754906AbYGaCsq (ORCPT
+	with ESMTP id S1755348AbYGaCss (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 22:48:46 -0400
-Date: Wed, 30 Jul 2008 21:47:54 -0500
+	Wed, 30 Jul 2008 22:48:48 -0400
+Date: Wed, 30 Jul 2008 21:48:13 -0500
 From: David Fries <david@fries.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/30] W1: fix deadlocks and remove w1_control_thread
-Message-ID: <20080731024754.GB12181@spacedout.fries.net>
+Subject: [PATCH 3/30] W1: don't delay search start
+Message-ID: <20080731024813.GD12181@spacedout.fries.net>
 References: <20080729020433.GA24424@spacedout.fries.net> <20080729161356.2de456fb.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20080729161356.2de456fb.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Wed, 30 Jul 2008 21:47:55 -0500 (CDT)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Wed, 30 Jul 2008 21:48:14 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-w1_control_thread was removed which would wake up every second
-and process newly registered family codes and complete some final
-cleanup for a removed master.  Those routines were moved to the
-threads that were previously requesting those operations.  A new
-function w1_reconnect_slaves takes care of reconnecting existing slave
-devices when a new family code is registered or removed.  The removal
-case was missing and would cause a deadlock waiting for the family
-code reference count to decrease, which will now happen.  A problem
-with registering a family code was fixed.  A slave device would be
-unattached if it wasn't yet claimed, then attached at the end of the
-list, two unclaimed slaves would cause an infinite loop.
+Move the creation of the w1_process thread to after the device has
+been initialized.  This way w1_process doesn't have to check to see if
+it has been initialized and the bus search can proceed without
+sleeping.  That also eliminates two checks in the w1_process loop.
+The sleep now happens at the end of the loop not the beginning.
 
-The struct w1_bus_master.search now takes a pointer to the struct
-w1_master device to avoid searching for it, which would have caused a
-lock ordering deadlock with the removal of w1_control_thread.
+Also added a comment for why the atomic_set was 2.
 
 Signed-off-by: David Fries <david@fries.net>
 Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 ---
- drivers/w1/masters/ds1wm.c |    6 +-
- drivers/w1/w1.c            |  146 ++++++++++---------------------------------
- drivers/w1/w1.h            |   19 +++++-
- drivers/w1/w1_family.c     |    6 ++-
- drivers/w1/w1_family.h     |    1 -
- drivers/w1/w1_int.c        |   12 ++++
- drivers/w1/w1_io.c         |    3 +-
- 7 files changed, 71 insertions(+), 122 deletions(-)
+ drivers/w1/w1.c     |   19 ++++++-------------
+ drivers/w1/w1_int.c |   26 +++++++++++++++++---------
+ 2 files changed, 23 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/w1/masters/ds1wm.c b/drivers/w1/masters/ds1wm.c
-index 10211e4..ea894bf 100644
---- a/drivers/w1/masters/ds1wm.c
-+++ b/drivers/w1/masters/ds1wm.c
-@@ -274,8 +274,8 @@ static u8 ds1wm_reset_bus(void *data)
- 	return 0;
- }
- 
--static void ds1wm_search(void *data, u8 search_type,
--			 w1_slave_found_callback slave_found)
-+static void ds1wm_search(void *data, struct w1_master *master_dev,
-+			u8 search_type, w1_slave_found_callback slave_found)
- {
- 	struct ds1wm_data *ds1wm_data = data;
- 	int i;
-@@ -313,7 +313,7 @@ static void ds1wm_search(void *data, u8 search_type,
- 	ds1wm_write_register(ds1wm_data, DS1WM_CMD, ~DS1WM_CMD_SRA);
- 	ds1wm_reset(ds1wm_data);
- 
--	slave_found(ds1wm_data, rom_id);
-+	slave_found(master_dev, rom_id);
- }
- 
- /* --------------------------------------------------------------------- */
 diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
-index 7293c9b..25640f6 100644
+index aac03f1..730faa4 100644
 --- a/drivers/w1/w1.c
 +++ b/drivers/w1/w1.c
-@@ -46,20 +46,16 @@ MODULE_AUTHOR("Evgeniy Polyakov <johnpol@2ka.mipt.ru>");
- MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol.");
+@@ -813,21 +813,14 @@ int w1_process(void *data)
+ 	struct w1_master *dev = (struct w1_master *) data;
  
- static int w1_timeout = 10;
--static int w1_control_timeout = 1;
- int w1_max_slave_count = 10;
- int w1_max_slave_ttl = 10;
- 
- module_param_named(timeout, w1_timeout, int, 0);
--module_param_named(control_timeout, w1_control_timeout, int, 0);
- module_param_named(max_slave_count, w1_max_slave_count, int, 0);
- module_param_named(slave_ttl, w1_max_slave_ttl, int, 0);
- 
- DEFINE_MUTEX(w1_mlock);
- LIST_HEAD(w1_masters);
- 
--static struct task_struct *w1_control_thread;
--
- static int w1_master_match(struct device *dev, struct device_driver *drv)
- {
- 	return 1;
-@@ -390,7 +386,7 @@ int w1_create_master_attributes(struct w1_master *master)
- 	return sysfs_create_group(&master->dev.kobj, &w1_master_defattr_group);
- }
- 
--static void w1_destroy_master_attributes(struct w1_master *master)
-+void w1_destroy_master_attributes(struct w1_master *master)
- {
- 	sysfs_remove_group(&master->dev.kobj, &w1_master_defattr_group);
- }
-@@ -567,7 +563,7 @@ static int w1_attach_slave_device(struct w1_master *dev, struct w1_reg_num *rn)
- 	return 0;
- }
- 
--static void w1_slave_detach(struct w1_slave *sl)
-+void w1_slave_detach(struct w1_slave *sl)
- {
- 	struct w1_netlink_msg msg;
- 
-@@ -591,24 +587,6 @@ static void w1_slave_detach(struct w1_slave *sl)
- 	kfree(sl);
- }
- 
--static struct w1_master *w1_search_master(void *data)
--{
--	struct w1_master *dev;
--	int found = 0;
--
--	mutex_lock(&w1_mlock);
--	list_for_each_entry(dev, &w1_masters, w1_master_entry) {
--		if (dev->bus_master->data == data) {
--			found = 1;
--			atomic_inc(&dev->refcnt);
--			break;
--		}
--	}
--	mutex_unlock(&w1_mlock);
--
--	return (found)?dev:NULL;
--}
--
- struct w1_master *w1_search_master_id(u32 id)
- {
- 	struct w1_master *dev;
-@@ -656,34 +634,49 @@ struct w1_slave *w1_search_slave(struct w1_reg_num *id)
- 	return (found)?sl:NULL;
- }
- 
--void w1_reconnect_slaves(struct w1_family *f)
-+void w1_reconnect_slaves(struct w1_family *f, int attach)
- {
-+	struct w1_slave *sl, *sln;
- 	struct w1_master *dev;
- 
- 	mutex_lock(&w1_mlock);
- 	list_for_each_entry(dev, &w1_masters, w1_master_entry) {
--		dev_dbg(&dev->dev, "Reconnecting slaves in %s into new family %02x.\n",
--				dev->name, f->fid);
--		set_bit(W1_MASTER_NEED_RECONNECT, &dev->flags);
-+		dev_dbg(&dev->dev, "Reconnecting slaves in device %s "
-+			"for family %02x.\n", dev->name, f->fid);
-+		mutex_lock(&dev->mutex);
-+		list_for_each_entry_safe(sl, sln, &dev->slist, w1_slave_entry) {
-+			/* If it is a new family, slaves with the default
-+			 * family driver and are that family will be
-+			 * connected.  If the family is going away, devices
-+			 * matching that family are reconneced.
-+			 */
-+			if ((attach && sl->family->fid == W1_FAMILY_DEFAULT
-+				&& sl->reg_num.family == f->fid) ||
-+				(!attach && sl->family->fid == f->fid)) {
-+				struct w1_reg_num rn;
-+
-+				memcpy(&rn, &sl->reg_num, sizeof(rn));
-+				w1_slave_detach(sl);
-+
-+				w1_attach_slave_device(dev, &rn);
-+			}
+ 	while (!kthread_should_stop() && !test_bit(W1_MASTER_NEED_EXIT, &dev->flags)) {
++		if (dev->search_count) {
++			mutex_lock(&dev->mutex);
++			w1_search_process(dev, W1_SEARCH);
++			mutex_unlock(&dev->mutex);
 +		}
-+		dev_dbg(&dev->dev, "Reconnecting slaves in device %s "
-+			"has been finished.\n", dev->name);
-+		mutex_unlock(&dev->mutex);
- 	}
- 	mutex_unlock(&w1_mlock);
- }
- 
--static void w1_slave_found(void *data, u64 rn)
-+static void w1_slave_found(struct w1_master *dev, u64 rn)
- {
- 	int slave_count;
- 	struct w1_slave *sl;
- 	struct list_head *ent;
- 	struct w1_reg_num *tmp;
--	struct w1_master *dev;
- 	u64 rn_le = cpu_to_le64(rn);
- 
--	dev = w1_search_master(data);
--	if (!dev) {
--		printk(KERN_ERR "Failed to find w1 master device for data %p, "
--		       "it is impossible.\n", data);
--		return;
--	}
-+	atomic_inc(&dev->refcnt);
- 
- 	tmp = (struct w1_reg_num *) &rn;
- 
-@@ -785,76 +778,11 @@ void w1_search(struct w1_master *dev, u8 search_type, w1_slave_found_callback cb
- 			if ( (desc_bit == last_zero) || (last_zero < 0))
- 				last_device = 1;
- 			desc_bit = last_zero;
--			cb(dev->bus_master->data, rn);
-+			cb(dev, rn);
- 		}
- 	}
- }
- 
--static int w1_control(void *data)
--{
--	struct w1_slave *sl, *sln;
--	struct w1_master *dev, *n;
--	int have_to_wait = 0;
--
--	set_freezable();
--	while (!kthread_should_stop() || have_to_wait) {
--		have_to_wait = 0;
--
--		try_to_freeze();
--		msleep_interruptible(w1_control_timeout * 1000);
--
--		list_for_each_entry_safe(dev, n, &w1_masters, w1_master_entry) {
--			if (!kthread_should_stop() && !dev->flags)
--				continue;
--			/*
--			 * Little race: we can create thread but not set the flag.
--			 * Get a chance for external process to set flag up.
--			 */
--			if (!dev->initialized) {
--				have_to_wait = 1;
--				continue;
--			}
--
--			if (kthread_should_stop() || test_bit(W1_MASTER_NEED_EXIT, &dev->flags)) {
--				set_bit(W1_MASTER_NEED_EXIT, &dev->flags);
--
--				mutex_lock(&w1_mlock);
--				list_del(&dev->w1_master_entry);
--				mutex_unlock(&w1_mlock);
--
--				mutex_lock(&dev->mutex);
--				list_for_each_entry_safe(sl, sln, &dev->slist, w1_slave_entry) {
--					w1_slave_detach(sl);
--				}
--				w1_destroy_master_attributes(dev);
--				mutex_unlock(&dev->mutex);
--				atomic_dec(&dev->refcnt);
--				continue;
--			}
--
--			if (test_bit(W1_MASTER_NEED_RECONNECT, &dev->flags)) {
--				dev_dbg(&dev->dev, "Reconnecting slaves in device %s.\n", dev->name);
--				mutex_lock(&dev->mutex);
--				list_for_each_entry_safe(sl, sln, &dev->slist, w1_slave_entry) {
--					if (sl->family->fid == W1_FAMILY_DEFAULT) {
--						struct w1_reg_num rn;
--
--						memcpy(&rn, &sl->reg_num, sizeof(rn));
--						w1_slave_detach(sl);
--
--						w1_attach_slave_device(dev, &rn);
--					}
--				}
--				dev_dbg(&dev->dev, "Reconnecting slaves in device %s has been finished.\n", dev->name);
--				clear_bit(W1_MASTER_NEED_RECONNECT, &dev->flags);
--				mutex_unlock(&dev->mutex);
--			}
--		}
--	}
--
--	return 0;
--}
--
- void w1_search_process(struct w1_master *dev, u8 search_type)
- {
- 	struct w1_slave *sl, *sln;
-@@ -932,18 +860,13 @@ static int w1_init(void)
- 		goto err_out_master_unregister;
- 	}
- 
--	w1_control_thread = kthread_run(w1_control, NULL, "w1_control");
--	if (IS_ERR(w1_control_thread)) {
--		retval = PTR_ERR(w1_control_thread);
--		printk(KERN_ERR "Failed to create control thread. err=%d\n",
--			retval);
--		goto err_out_slave_unregister;
--	}
--
- 	return 0;
- 
-+#if 0
-+/* For undoing the slave register if there was a step after it. */
- err_out_slave_unregister:
- 	driver_unregister(&w1_slave_driver);
-+#endif
- 
- err_out_master_unregister:
- 	driver_unregister(&w1_master_driver);
-@@ -959,13 +882,12 @@ static void w1_fini(void)
- {
- 	struct w1_master *dev;
- 
-+	/* Set netlink removal messages and some cleanup */
- 	list_for_each_entry(dev, &w1_masters, w1_master_entry)
- 		__w1_remove_master_device(dev);
- 
- 	w1_fini_netlink();
- 
--	kthread_stop(w1_control_thread);
--
- 	driver_unregister(&w1_slave_driver);
- 	driver_unregister(&w1_master_driver);
- 	bus_unregister(&w1_bus_type);
-diff --git a/drivers/w1/w1.h b/drivers/w1/w1.h
-index f1df534..13e0ea8 100644
---- a/drivers/w1/w1.h
-+++ b/drivers/w1/w1.h
-@@ -77,7 +77,7 @@ struct w1_slave
- 	struct completion	released;
- };
- 
--typedef void (* w1_slave_found_callback)(void *, u64);
-+typedef void (*w1_slave_found_callback)(struct w1_master *, u64);
- 
- 
- /**
-@@ -142,12 +142,14 @@ struct w1_bus_master
- 	 */
- 	u8		(*reset_bus)(void *);
- 
--	/** Really nice hardware can handles the different types of ROM search */
--	void		(*search)(void *, u8, w1_slave_found_callback);
-+	/** Really nice hardware can handles the different types of ROM search
-+	 *  w1_master* is passed to the slave found callback.
-+	 */
-+	void		(*search)(void *, struct w1_master *,
-+		u8, w1_slave_found_callback);
- };
- 
- #define W1_MASTER_NEED_EXIT		0
--#define W1_MASTER_NEED_RECONNECT	1
- 
- struct w1_master
- {
-@@ -181,12 +183,21 @@ struct w1_master
- };
- 
- int w1_create_master_attributes(struct w1_master *);
-+void w1_destroy_master_attributes(struct w1_master *master);
- void w1_search(struct w1_master *dev, u8 search_type, w1_slave_found_callback cb);
- void w1_search_devices(struct w1_master *dev, u8 search_type, w1_slave_found_callback cb);
- struct w1_slave *w1_search_slave(struct w1_reg_num *id);
- void w1_search_process(struct w1_master *dev, u8 search_type);
- struct w1_master *w1_search_master_id(u32 id);
- 
-+/* Disconnect and reconnect devices in the given family.  Used for finding
-+ * unclaimed devices after a family has been registered or releasing devices
-+ * after a family has been unregistered.  Set attach to 1 when a new family
-+ * has just been registered, to 0 when it has been unregistered.
-+ */
-+void w1_reconnect_slaves(struct w1_family *f, int attach);
-+void w1_slave_detach(struct w1_slave *sl);
 +
- u8 w1_triplet(struct w1_master *dev, int bdir);
- void w1_write_8(struct w1_master *, u8);
- int w1_reset_bus(struct w1_master *);
-diff --git a/drivers/w1/w1_family.c b/drivers/w1/w1_family.c
-index a3c95bd..8c35f9c 100644
---- a/drivers/w1/w1_family.c
-+++ b/drivers/w1/w1_family.c
-@@ -53,7 +53,8 @@ int w1_register_family(struct w1_family *newf)
+ 		try_to_freeze();
+ 		msleep_interruptible(w1_timeout * 1000);
+-
+-		if (kthread_should_stop() || test_bit(W1_MASTER_NEED_EXIT, &dev->flags))
+-			break;
+-
+-		if (!dev->initialized)
+-			continue;
+-
+-		if (dev->search_count == 0)
+-			continue;
+-
+-		mutex_lock(&dev->mutex);
+-		w1_search_process(dev, W1_SEARCH);
+-		mutex_unlock(&dev->mutex);
  	}
- 	spin_unlock(&w1_flock);
  
--	w1_reconnect_slaves(newf);
-+	/* check default devices against the new set of drivers */
-+	w1_reconnect_slaves(newf, 1);
- 
- 	return ret;
- }
-@@ -77,6 +78,9 @@ void w1_unregister_family(struct w1_family *fent)
- 
- 	spin_unlock(&w1_flock);
- 
-+	/* deatch devices using this family code */
-+	w1_reconnect_slaves(fent, 0);
-+
- 	while (atomic_read(&fent->refcnt)) {
- 		printk(KERN_INFO "Waiting for family %u to become free: refcnt=%d.\n",
- 				fent->fid, atomic_read(&fent->refcnt));
-diff --git a/drivers/w1/w1_family.h b/drivers/w1/w1_family.h
-index ef1e1da..296a87e 100644
---- a/drivers/w1/w1_family.h
-+++ b/drivers/w1/w1_family.h
-@@ -63,6 +63,5 @@ void __w1_family_get(struct w1_family *);
- struct w1_family * w1_family_registered(u8);
- void w1_unregister_family(struct w1_family *);
- int w1_register_family(struct w1_family *);
--void w1_reconnect_slaves(struct w1_family *f);
- 
- #endif /* __W1_FAMILY_H */
+ 	atomic_dec(&dev->refcnt);
 diff --git a/drivers/w1/w1_int.c b/drivers/w1/w1_int.c
-index 6840dfe..ed32280 100644
+index ed32280..36ff402 100644
 --- a/drivers/w1/w1_int.c
 +++ b/drivers/w1/w1_int.c
-@@ -148,10 +148,22 @@ err_out_free_dev:
- void __w1_remove_master_device(struct w1_master *dev)
- {
- 	struct w1_netlink_msg msg;
-+	struct w1_slave *sl, *sln;
+@@ -61,6 +61,9 @@ static struct w1_master * w1_alloc_dev(u32 id, int slave_count, int slave_ttl,
+ 	dev->slave_ttl		= slave_ttl;
+         dev->search_count	= -1; /* continual scan */
  
- 	set_bit(W1_MASTER_NEED_EXIT, &dev->flags);
++	/* 1 for w1_process to decrement
++	 * 1 for __w1_remove_master_device to decrement
++	 */
+ 	atomic_set(&dev->refcnt, 2);
+ 
+ 	INIT_LIST_HEAD(&dev->slist);
+@@ -109,23 +112,23 @@ int w1_add_master_device(struct w1_bus_master *master)
+ 	if (!dev)
+ 		return -ENOMEM;
+ 
++	retval =  w1_create_master_attributes(dev);
++	if (retval)
++		goto err_out_free_dev;
++
++	memcpy(dev->bus_master, master, sizeof(struct w1_bus_master));
++
++	dev->initialized = 1;
++
+ 	dev->thread = kthread_run(&w1_process, dev, "%s", dev->name);
+ 	if (IS_ERR(dev->thread)) {
+ 		retval = PTR_ERR(dev->thread);
+ 		dev_err(&dev->dev,
+ 			 "Failed to create new kernel thread. err=%d\n",
+ 			 retval);
+-		goto err_out_free_dev;
++		goto err_out_rm_attr;
+ 	}
+ 
+-	retval =  w1_create_master_attributes(dev);
+-	if (retval)
+-		goto err_out_kill_thread;
+-
+-	memcpy(dev->bus_master, master, sizeof(struct w1_bus_master));
+-
+-	dev->initialized = 1;
+-
+ 	mutex_lock(&w1_mlock);
+ 	list_add(&dev->w1_master_entry, &w1_masters);
+ 	mutex_unlock(&w1_mlock);
+@@ -137,8 +140,13 @@ int w1_add_master_device(struct w1_bus_master *master)
+ 
+ 	return 0;
+ 
++#if 0 /* Thread cleanup code, not required currently. */
+ err_out_kill_thread:
++	set_bit(W1_MASTER_NEED_EXIT, &dev->flags);
  	kthread_stop(dev->thread);
- 
-+	mutex_lock(&w1_mlock);
-+	list_del(&dev->w1_master_entry);
-+	mutex_unlock(&w1_mlock);
-+
-+	mutex_lock(&dev->mutex);
-+	list_for_each_entry_safe(sl, sln, &dev->slist, w1_slave_entry)
-+		w1_slave_detach(sl);
++#endif
++err_out_rm_attr:
 +	w1_destroy_master_attributes(dev);
-+	mutex_unlock(&dev->mutex);
-+	atomic_dec(&dev->refcnt);
-+
- 	while (atomic_read(&dev->refcnt)) {
- 		dev_info(&dev->dev, "Waiting for %s to become free: refcnt=%d.\n",
- 				dev->name, atomic_read(&dev->refcnt));
-diff --git a/drivers/w1/w1_io.c b/drivers/w1/w1_io.c
-index 30b6fbf..0056ef6 100644
---- a/drivers/w1/w1_io.c
-+++ b/drivers/w1/w1_io.c
-@@ -277,7 +277,8 @@ void w1_search_devices(struct w1_master *dev, u8 search_type, w1_slave_found_cal
- {
- 	dev->attempts++;
- 	if (dev->bus_master->search)
--		dev->bus_master->search(dev->bus_master->data, search_type, cb);
-+		dev->bus_master->search(dev->bus_master->data, dev,
-+			search_type, cb);
- 	else
- 		w1_search(dev, search_type, cb);
- }
+ err_out_free_dev:
+ 	w1_free_dev(dev);
+ 
 -- 
 1.4.4.4
