@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbYGaAyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbYGaAzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756796AbYGaAyt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbYGaAyj
+	id S1759383AbYGaAzb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbYGaAzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:54:39 -0400
-Received: from ozlabs.org ([203.10.76.45]:35579 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752255AbYGaAyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:54:38 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH] Module : call synchronize_sched() between module exit() and free.
-Date: Thu, 31 Jul 2008 10:54:33 +1000
-User-Agent: KMail/1.9.9
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <20080717155724.897537670@polymtl.ca> <20080730114035.GD27711@redhat.com> <20080730140938.GC18210@Krystal>
-In-Reply-To: <20080730140938.GC18210@Krystal>
+	Wed, 30 Jul 2008 20:55:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55513 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753439AbYGaAzN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:55:13 -0400
+Date: Wed, 30 Jul 2008 17:51:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jamie Lokier <jamie@shareable.org>
+cc: Miklos Szeredi <miklos@szeredi.hu>, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch v3] splice: fix race with page invalidation
+In-Reply-To: <20080731004214.GA32207@shareable.org>
+Message-ID: <alpine.LFD.1.10.0807301746500.3277@nehalem.linux-foundation.org>
+References: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu> <20080731001131.GA30900@shareable.org> <20080731004214.GA32207@shareable.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807311054.34557.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 31 July 2008 00:09:38 Mathieu Desnoyers wrote:
-> * Frank Ch. Eigler (fche@redhat.com) wrote:
-> >(Would it not be desirable for an active marker to cause
-> > module-foo's refcount to increase, so as to prevent unloading at this
-> > time?)
+
+
+On Thu, 31 Jul 2008, Jamie Lokier wrote:
 >
-> No, because I want to be able to unload the marked module and I don't
-> want the fact that a probe is connected to it to change that.
+> Jamie Lokier wrote:
+> > not being able to tell when a sendfile() has finished with the pages
+> > its sending.
+> 
+> (Except by the socket fully closing or a handshake from the other end,
+> obviously.)
 
-Also you might want to put a marker in the module's exit code.
+Well, people should realize that this is pretty fundamental to zero-copy 
+scemes. It's why zero-copy is often much less useful than doing a copy in 
+the first place. How do you know how far in a splice buffer some random 
+'struct page' has gotten? Especially with splicing to spicing to tee to 
+splice...
 
-> Actually there is a detail missing here. Your teardown should be :
->  teardown() { ... marker_probe_unregister ("foo" , ..., &foo_handler );
->                   synchronize_sched(); /* Before returning from exit */ }
->
-> This makes sure that every live marker call are finished and that it is
-> safe to unload module-bar (the probe).
+You'd have to have some kind of barrier model (which would be really 
+complex), or perhaps a "wait for this page to no longer be shared" (which 
+has issues all its own).
 
-Perhaps create a synchronize_marker_unregister() wrapper for such uses; it's 
-better documentation and the caller doesn't have to know exactly how it 
-works...
+IOW, splice() is very closely related to a magic kind of "mmap()+write()" 
+in another thread. That's literally what it does internally (except the 
+"mmap" is just a small magic kernel buffer rather than virtual address 
+space), and exactly as with mmap, if you modify the file, the other thread 
+will see if, even though it did it long ago.
 
-Cheers,
-Rusty.
+Personally, I think the right approach is to just realize that splice() is 
+_not_ a write() system call, and never will be. If you need synchronous 
+writing, you simply shouldn't use splice().
+
+			Linus
