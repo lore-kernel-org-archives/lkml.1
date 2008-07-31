@@ -1,71 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbYGaQ60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbYGaRAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756876AbYGaQ60 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 12:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbYGaQ54
+	id S1756118AbYGaRAR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 13:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYGaRAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 12:57:56 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39965 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753135AbYGaQ5y (ORCPT
+	Thu, 31 Jul 2008 13:00:00 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:42576 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751732AbYGaQ77 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 12:57:54 -0400
-Subject: Re: [patch 2/4] Configure out file locking features
-From: David Woodhouse <dwmw2@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
-       matthew@wil.cx, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20080731164918.GE20212@cs181140183.pp.htv.fi>
-References: <20080731092703.661994657@free-electrons.com>
-	 <20080731093220.969460336@free-electrons.com>
-	 <20080731135319.GA20212@cs181140183.pp.htv.fi>
-	 <20080731162007.285938e0@surf>
-	 <20080731153757.GB20212@cs181140183.pp.htv.fi>
-	 <20080731182616.4c20f0db@surf>
-	 <20080731164918.GE20212@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 31 Jul 2008 17:57:11 +0100
-Message-Id: <1217523431.3454.283.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 31 Jul 2008 12:59:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=EGkeMh7Ba3Z4l3fMWtFSBvEjOWzL+ve21VQDQlE8AQyLXoN1S33NWf6+/EoZ84SO/V
+         eb6suMAobOxxXR2Sz1NtcyrRT885F+t9FMlZ+FOMvdg+ODyvdlpilpmfCQTBbtndVm8U
+         5RBqyitqHThgccZYH/A+51IgZO5aJlGG+qXrU=
+Message-ID: <4891EF8D.6010502@gmail.com>
+Date: Thu, 31 Jul 2008 18:59:57 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kosaki.motohiro@jp.fujitsu.com, torvalds@linux-foundation.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/1] mm: unify pmd_free() and __pmd_free_tlb() implementation
+References: <alpine.LFD.1.10.0807280851130.3486@nehalem.linux-foundation.org> <488DF119.2000004@gmail.com> <20080729012656.566F.KOSAKI.MOTOHIRO@jp.fujitsu.com> <488DFFB0.1090107@gmail.com> <20080728133030.8b29fa5a.akpm@linux-foundation.org> <488E3020.1040701@goop.org> <488E4DEB.5010705@gmail.com> <20080731161750.GA26393@elte.hu>
+In-Reply-To: <20080731161750.GA26393@elte.hu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-31 at 19:49 +0300, Adrian Bunk wrote:
-> On Thu, Jul 31, 2008 at 06:26:16PM +0200, Thomas Petazzoni wrote:
-> > Le Thu, 31 Jul 2008 18:37:57 +0300,
-> > Adrian Bunk <bunk@kernel.org> a écrit :
-> > 
-> > > I'm just not a fan of adding config options for each few kB of code - 
-> > > we have to maintain them and the more complex the configuration
-> > > becomes the more often it breaks.
-> > 
-> > I'm not a fan of these too, but are there other solutions ?
+Ingo Molnar wrote:
+> * Andrea Righi <righi.andrea@gmail.com> wrote:
 > 
-> There are many things that can be done to reduce the kernel size or try 
-> to minimize the growth of the kernel.
+>> Jeremy Fitzhardinge wrote:
+>>> Andrew Morton wrote:
+>>>> I can second that.  See
+>>>> http://userweb.kernel.org/~akpm/mmotm/broken-out/include-asm-generic-pgtable-nopmdh-macros-are-noxious-reason-435.patch
+>>>>
+>>>> Ingo cruelly ignored it.  Probably he's used to ignoring the comit
+>>>> storm which I send in his direction - I'll need to resend it sometime.
+>>>>
+>>>> I'd consider that patch to be partial - we should demacroize the
+>>>> surrounding similar functions too.  But that will require a bit more
+>>>> testing.
+>>> Its immediate neighbours should be easy enough (pmd_alloc_one, 
+>>> __pmd_free_tlb), but any of the ones involving pmd_t risk #include hell 
+>>> (though the earlier references to pud_t in inline functions suggest it 
+>>> will work).  And pmd_addr_end is just ugly.
+>>>
+>>>     J
+>>>
+>> ok, let's start with the easiest: pmd_free() and __pmd_free_tlb().
+>>
+>> Following another attempt to unify the implementations using inline 
+>> functions. It seems to build fine on x86 (pae / non-pae) and on 
+>> x86_64. This is an RFC patch right now, not for inclusion (just asking 
+>> if it could be a reasonable approach or not). And in any case this 
+>> would need more testing.
+>>
+>> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+>> ---
+>>  arch/sparc/include/asm/pgalloc_64.h |    1 +
+>>  include/asm-alpha/pgalloc.h         |    1 +
+>>  include/asm-arm/pgalloc.h           |    1 -
+>>  include/asm-frv/pgalloc.h           |    2 --
+>>  include/asm-generic/pgtable-nopmd.h |   19 +++++++++++++++++--
+>>  include/asm-ia64/pgalloc.h          |    1 +
+>>  include/asm-m32r/pgalloc.h          |    2 --
+>>  include/asm-m68k/motorola_pgalloc.h |    3 ++-
+>>  include/asm-m68k/sun3_pgalloc.h     |    7 -------
+>>  include/asm-mips/pgalloc.h          |   12 +-----------
+>>  include/asm-parisc/pgalloc.h        |    2 +-
+>>  include/asm-powerpc/pgalloc-32.h    |    2 --
+>>  include/asm-powerpc/pgalloc-64.h    |    1 +
+>>  include/asm-s390/pgalloc.h          |    1 -
+>>  include/asm-sh/pgalloc.h            |    8 --------
+>>  include/asm-um/pgalloc.h            |    1 +
+>>  include/asm-x86/pgalloc.h           |    2 ++
+>>  17 files changed, 28 insertions(+), 38 deletions(-)
 > 
-> E.g. working on --combine -fwhole-program (where David once had 
-> preliminary patches for the per-module approach) might be better.
+> the x86 bits look good to me in principle but touches a ton of 
+> architectures and deals with VM issues - the perfect candidate for -mm?
+> 
+> 	Ingo
 
-Yeah, I'm planning to dig that out again and play with it some time
-soon. The Kbuild issues were too scary at the time, but I'm less
-frightened of it these days...
+Yes, sounds reasonable. I'll rebase to -mm and post a new patch.
 
-Segher has also been looking at it, and reported quite a useful win when
-he used it to combine arch/$ARCH/mm and mm/, and arch/$ARCH/kernel and
-kernel/.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
-
-
+Thanks,
+-Andrea
