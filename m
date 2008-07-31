@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbYGaFpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbYGaFxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbYGaFpm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 01:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYGaFpc
+	id S1754720AbYGaFxu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 01:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbYGaFxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 01:45:32 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52592 "EHLO mail.dvmed.net"
+	Thu, 31 Jul 2008 01:53:38 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:21904 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751355AbYGaFpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 01:45:31 -0400
-Message-ID: <48915177.3060703@garzik.org>
-Date: Thu, 31 Jul 2008 01:45:27 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Chuck Short <zulcss@ubuntu.com>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 2/7] ata: blacklist FUJITSU MHW2160BH PL
-References: <E1KKl4I-00068E-Ob@swissweb.swissdisk.com>
-In-Reply-To: <E1KKl4I-00068E-Ob@swissweb.swissdisk.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	id S1752367AbYGaFxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 01:53:37 -0400
+From: "Denis V. Lunev" <den@openvz.org>
+To: Trond.Myklebust@netapp.com
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Denis V. Lunev" <den@openvz.org>
+Subject: [PATCH 1/1] sunrpc: do not pin sunrpc module in the memory
+Date: Thu, 31 Jul 2008 09:53:56 +0400
+Message-Id: <1217483636-2574-1-git-send-email-den@openvz.org>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Short wrote:
-> Reference: https://launchpad.net/bugs/175834
-> 
-> CC: linux-ide@vger.kernel.org
-> Signed-off-by: Chuck Short <zulcss@ubuntu.com>
-> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-> Signed-off-by: Ben Collins <ben.collins@canonical.com>
-> ---
->  drivers/ata/libata-core.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-> index 9bef1a8..2664082 100644
-> --- a/drivers/ata/libata-core.c
-> +++ b/drivers/ata/libata-core.c
-> @@ -3935,6 +3935,7 @@ static const struct ata_blacklist_entry ata_device_blacklist [] = {
->  	{ "HTS541060G9SA00",    "MB3OC60D",     ATA_HORKAGE_NONCQ, },
->  	{ "HTS541080G9SA00",    "MB4OC60D",     ATA_HORKAGE_NONCQ, },
->  	{ "HTS541010G9SA00",    "MBZOC60D",     ATA_HORKAGE_NONCQ, },
-> +	{ "FUJITSU MHW2160BH PL", "0084001E",   ATA_HORKAGE_NONCQ, },
+Basically, try_module_get here are pretty useless. Any other module using
+this API will pin sunrpc in memory due using exported symbols.
 
-This is outdated -- spurious completion code is long gone
+Signed-off-by: Denis V. Lunev <den@openvz.org>
+---
+ net/sunrpc/xprt.c |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
 
+diff --git a/net/sunrpc/xprt.c b/net/sunrpc/xprt.c
+index 99a52aa..29e401b 100644
+--- a/net/sunrpc/xprt.c
++++ b/net/sunrpc/xprt.c
+@@ -108,13 +108,10 @@ int xprt_register_transport(struct xprt_class *transport)
+ 			goto out;
+ 	}
+ 
+-	result = -EINVAL;
+-	if (try_module_get(THIS_MODULE)) {
+-		list_add_tail(&transport->list, &xprt_list);
+-		printk(KERN_INFO "RPC: Registered %s transport module.\n",
+-			transport->name);
+-		result = 0;
+-	}
++	list_add_tail(&transport->list, &xprt_list);
++	printk(KERN_INFO "RPC: Registered %s transport module.\n",
++	       transport->name);
++	result = 0;
+ 
+ out:
+ 	spin_unlock(&xprt_list_lock);
+@@ -143,7 +140,6 @@ int xprt_unregister_transport(struct xprt_class *transport)
+ 				"RPC: Unregistered %s transport module.\n",
+ 				transport->name);
+ 			list_del_init(&transport->list);
+-			module_put(THIS_MODULE);
+ 			goto out;
+ 		}
+ 	}
+-- 
+1.5.4.5
 
