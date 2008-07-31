@@ -1,58 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbYGaKPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbYGaKPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756217AbYGaKPd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 06:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYGaKPX
+	id S1756699AbYGaKPt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 06:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756427AbYGaKPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 06:15:23 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57704 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbYGaKPV (ORCPT
+	Thu, 31 Jul 2008 06:15:37 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:11265 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756356AbYGaKPe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 06:15:21 -0400
-Subject: Re: [patch 0/4] [resend] Add configuration options to disable
-	features not needed on embedded devices
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, thomas.petazzoni@free-electrons.com,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       michael@free-electrons.com
-In-Reply-To: <20080731.030205.153067850.davem@davemloft.net>
-References: <1217497912.3454.95.camel@pmac.infradead.org>
-	 <20080731.025547.35826309.davem@davemloft.net>
-	 <1217498355.3454.103.camel@pmac.infradead.org>
-	 <20080731.030205.153067850.davem@davemloft.net>
-Content-Type: text/plain
-Date: Thu, 31 Jul 2008 11:15:16 +0100
-Message-Id: <1217499316.3454.118.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 31 Jul 2008 06:15:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=Z/MPnOyJZZ/OIM62BL7u7/37kBV3yjsPTZpd64mw3eN0exegGcUsOfSDlhAO1es8PI
+         L1gUYr0S+Qrt5fhhZptkMI4IQVpHEshcyfV3PrcAh+RTjez/1d/6IwVj2AsMahMQBYlE
+         YEkUbBVlJxS1+flD9n8WlMvOd3Tx1Utc78gfU=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] x86 remove irq_vectors_limit.h
+Date: Thu, 31 Jul 2008 03:14:45 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200807291414.55479.yhlu.kernel@gmail.com> <200807301210.31511.yhlu.kernel@gmail.com> <200807302109.21519.yhlu.kernel@gmail.com>
+In-Reply-To: <200807302109.21519.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200807310314.46116.yhlu.kernel@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-31 at 03:02 -0700, David Miller wrote:
-> I explained why I didn't want to apply the IGMP one too.
->
-> Andrew didn't like my objections, but that doesn't mean I
-> need to defend my position further.
 
-You said that it was part of the core BSD socket API and "Like TCP and
-UDP, multicast capabilities are something applications can always depend
-upon being available".
+    no user
 
-Andrew's response was that embedded devices have full control over their
-userspace and that they are in a position to _know_ that they never use
-multicast, so your argument is bogus. If they _know_ they don't want
-multicast, it makes a lot of sense for them to turn it off.
+later
+1. need to make 32bit to support dyn_array for irq_vector[]
+2. also need to probe nr_irqs via madt and mptable
 
-While I agree with Andrew's observation, I'd also respectfully submit
-that your argument is more fundamentally bogus than that. TCP and UDP
-are _not_ universally available. They go away if you set CONFIG_INET=n.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
--- 
-dwmw2
-
+Index: linux-2.6/include/asm-x86/mach-generic/irq_vectors_limits.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/mach-generic/irq_vectors_limits.h
++++ /dev/null
+@@ -1,14 +0,0 @@
+-#ifndef ASM_X86__MACH_GENERIC__IRQ_VECTORS_LIMITS_H
+-#define ASM_X86__MACH_GENERIC__IRQ_VECTORS_LIMITS_H
+-
+-/*
+- * For Summit or generic (i.e. installer) kernels, we have lots of I/O APICs,
+- * even with uni-proc kernels, so use a big array.
+- *
+- * This value should be the same in both the generic and summit subarches.
+- * Change one, change 'em both.
+- */
+-#define NR_IRQS	224
+-#define NR_IRQ_VECTORS	1024
+-
+-#endif /* ASM_X86__MACH_GENERIC__IRQ_VECTORS_LIMITS_H */
+Index: linux-2.6/include/asm-x86/summit/irq_vectors_limits.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/summit/irq_vectors_limits.h
++++ /dev/null
+@@ -1,14 +0,0 @@
+-#ifndef _ASM_IRQ_VECTORS_LIMITS_H
+-#define _ASM_IRQ_VECTORS_LIMITS_H
+-
+-/*
+- * For Summit or generic (i.e. installer) kernels, we have lots of I/O APICs,
+- * even with uni-proc kernels, so use a big array.
+- *
+- * This value should be the same in both the generic and summit subarches.
+- * Change one, change 'em both.
+- */
+-#define NR_IRQS	224
+-#define NR_IRQ_VECTORS	1024
+-
+-#endif /* _ASM_IRQ_VECTORS_LIMITS_H */
