@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbYGaJwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbYGaJxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754961AbYGaJwP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 05:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbYGaJv6
+	id S1755331AbYGaJxU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 05:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYGaJxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 05:51:58 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38706 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750991AbYGaJv6 (ORCPT
+	Thu, 31 Jul 2008 05:53:10 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48162 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751293AbYGaJxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 05:51:58 -0400
-Subject: Re: [patch 0/4] [resend] Add configuration options to disable
-	features not needed on embedded devices
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org
-Cc: thomas.petazzoni@free-electrons.com, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, michael@free-electrons.com
-In-Reply-To: <20080731.024027.162488608.davem@davemloft.net>
-References: <20080731092703.661994657@free-electrons.com>
-	 <20080731.024027.162488608.davem@davemloft.net>
-Content-Type: text/plain
-Date: Thu, 31 Jul 2008 10:51:52 +0100
-Message-Id: <1217497912.3454.95.camel@pmac.infradead.org>
+	Thu, 31 Jul 2008 05:53:09 -0400
+Subject: Re: [BUG] wireless : cpu stuck for 61s
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Tomas Winkler <tomasw@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <1ba2fa240807310250kd2df7bfxa3591cf78e68f8dc@mail.gmail.com>
+References: <20080729055731.GA3265@darkstar>
+	 <1217334724.10489.47.camel@johannes.berg>
+	 <20080730020820.8bcc00e2.akpm@linux-foundation.org>
+	 <a8e1da0807300302m35a0a7c0q2ff2e0ab92a69239@mail.gmail.com>
+	 <20080730031047.54e13e2d.akpm@linux-foundation.org>
+	 <a8e1da0807301906j6438e5d8y64105fe8a2e3dffe@mail.gmail.com>
+	 <20080730195637.2197a82d.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0807311156050.27055@sbz-30.cs.Helsinki.FI>
+	 <1ba2fa240807310250kd2df7bfxa3591cf78e68f8dc@mail.gmail.com>
+Date: Thu, 31 Jul 2008 12:53:14 +0300
+Message-Id: <1217497994.7813.184.camel@penberg-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-31 at 02:40 -0700, David Miller wrote:
-> From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-> Date: Thu, 31 Jul 2008 11:27:03 +0200
+On Thu, 2008-07-31 at 12:50 +0300, Tomas Winkler wrote:
+> > There's ath5k in the stack trace but that, of course, doesn't
+> > automatically mean it's at fault here. It could have been just the poor
+> > bastard who was the next to allocate 4 KB with kmalloc() noticing the
+> > corruption.
+> >
+> > Hope this helps!
 > 
-> > Changes since previous post:
-> > 
-> >  * Add Matt Mackall's Signed-off-by on all patches
-> >  * Make bonding and bridging select ethtool in the ethtool-related
-> >    patch.
-> 
-> The ethtool config option needs to be selected by CONFIG_INET as well,
-> as per the things I described today.  Which erodes it's usefulness
-> tremendously.
-> 
-> I also am keeping my stance that I have no current intention of
-> applying these patches.
+> I've seen something similar with fragmentation code in iwl4965 but I
+> can reproduce it only when using SLAB. With SLUB it didn't shown up.
+> Does anyone know what is difference between SLAB and SLUB in this context.?
 
-I would very much like you to reconsider, Dave.
-
-We can make them default to 'y' and hide them behind CONFIG_EMBEDDED,
-and put in a scary help text that tells people _never_ to turn it off --
-and hell, you can even make a taint flag for it if you like. But there
-are a lot of people who really don't need these features and really want
-the option of leaving them out.
-
-Perhaps we should add a warning printk when one of these features is
-'required' but absent. That would help to make it clear when someone has
-disabled a feature which they shouldn't have disabled.
-
-Refusing to apply the patches just means that either those people will
-get them from elsewhere, or that their kernel will be more bloated than
-it needs to be.
-
--- 
-dwmw2
+Do you have CONFIG_SLUB_DEBUG_ON enabled? (Note: if you only have
+CONFIG_SLUB_DEBUG enabled, then you need to enable debugging at run-time
+by passing slub_debug to kernel command line.)
 
