@@ -1,96 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbYGaSXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757021AbYGaSZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756413AbYGaSXl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 14:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbYGaSXb
+	id S1757021AbYGaSZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 14:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbYGaSZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 14:23:31 -0400
-Received: from ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk ([217.169.26.28]:37428
-	"EHLO ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk"
+	Thu, 31 Jul 2008 14:25:10 -0400
+Received: from main.gmane.org ([80.91.229.2]:56597 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753060AbYGaSXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 14:23:30 -0400
-Date: Thu, 31 Jul 2008 19:23:15 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to
-	convert
-Message-ID: <20080731182315.GA18060@linux-mips.org>
-References: <20080728200500.GA14284@uranus.ravnborg.org>
-MIME-Version: 1.0
+	id S1753373AbYGaSZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 14:25:09 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: 2.6.27-rc1-mm1
+Date: Thu, 31 Jul 2008 18:20:51 +0000 (UTC)
+Message-ID: <loom.20080731T181637-604@post.gmane.org>
+References: <20080731000354.24b55d5b.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080728200500.GA14284@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 69.30.121.162 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070730 SUSE/2.0.0.6-25 Firefox/2.0.0.6)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 10:05:00PM +0200, Sam Ravnborg wrote:
+Andrew Morton <akpm <at> linux-foundation.org> writes:
 
-> The traditional location of the arch specific Makefiles
-> has been at:
-> 
-> 	include/asm-$ARCH
-> 
-> But as suggested by several people over time and lately
-> by Linus in the following post:
-> http://kerneltrap.org/mailarchive/linux-kernel/2008/5/21/1903924
-> 
-> is is suggested to move the arch specific files under arch/
-> and for the header files this is arch/$ARCH/include.
-> 
-> So I have hacked up support for this in kbuild so
-> for the simpler cases a simple move of header files as
-> in:
-> 	git mv include/asm-$ARCH arch/$ARCH/include/asm
-> 
-> is enough.
-> 
-> If Linus will accept it then I think -rc1 is a perfect
-> time to do it as people has less stuff pending touching
-> the header files that are moved.
-> Validation is easy - does the usual configs build?
-> 
-> For the archs that plays games with symlinks this is a
-> splendid opportunity to get rid af these.
-> The receipe is simple:
-> Use 
-> 	KBUILD_CFLAGS += -Iarch/$ARCH/include/$CPU
-> 
-> to select the CPU and then do a copy of the header files
-> like this:
-> 
-> 	git mv include/asm-$ARCH/$CPU arch/$ARCH/include/$CPU/cpu
-> 
-> Then the code can continue to use:
-> 
-> 	#include <cpu/foo.h>
-> 
-> I already converted sparc to use arch/sparc/include -
-> while I merged the header files for sparc and sparc64.
-> This change is already upstream.
-> 
-> And for SH I posted a receipe which you can read here:
-> http://lkml.org/lkml/2008/7/28/83
-> 
-> It is SH specific but anyway pretty generic.
-> 
-> I am limited in time and resources at the moment but I
-> would be glad to help out as time permits should there
-> be any questions.
 
-I just did the necessary changes for MIPS and the first testbuild is running
-successfully so far.
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/
++ 2.6/2.6.27-rc1/2.6.27-rc1-mm1/
+> 
+> - Something in linux-next has broken my X server
+> 
+> - My Vaio is vacationing on the other side of the continent.  Ignorance
+>   is bliss.
+> 
+> - Lots of people are vacationing at present (certain x86 people, for
+>   example).  I'll still be around so please be sure to Cc me on things.
+> 
+>   But I am unlikely to want to be buried in x86 patches, so please just
+>   give those an extra week or two's testing.
 
-One of the ugly things in the MIPS makefiles is the use of platform-
-specific headers in include/asm-mips/mach-* which contain platform specific
-headers.  Ideally those should be included through something like
-<mach/somefile.h> or <plat/something.h> and I think a directory like
-arch/$ARCH/$PLATFORM/include/plat/foobar.h could be a good place in the
-new scheme?  I assume other platforms have similar issues with subplatforms,
-processor sub-architectures etc.?
+What happened with drivers/watchdog/Kconfig* ?
 
-  Ralf
+
+--- linux-2.6.27-rc1/drivers/watchdog/Kconfig	2008-07-29
++++ 25/drivers/watchdog/Kconfig	2008-07-30
+@@ -285,10 +285,11 @@ config ALIM1535_WDT
+ 
+ config ALIM7101_WDT
+ 	tristate "ALi M7101 PMU Computer Watchdog"
+-	depends on X86 && PCI
++	depends on PCI
+ 	help
+ 	  This is the driver for the hardware watchdog on the ALi M7101 PMU
+-	  as used in the x86 Cobalt servers.
++	  as used in the x86 Cobalt servers and also found in some
++	  SPARC Netra servers too.
+ 
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called alim7101_wdt.
+--- /dev/null	2008-06-22
++++ 25/drivers/watchdog/Kconfig.orig	2008-07-23
+@@ -0,0 +1,934 @@
+
+etc......
+
+Broken, isn't it?
+
+
+~Randy
+
