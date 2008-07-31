@@ -1,101 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbYGaRAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYGaRAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbYGaRAR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 13:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYGaRAA
+	id S1757174AbYGaRAn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 13:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYGaRAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 13:00:00 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:42576 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbYGaQ77 (ORCPT
+	Thu, 31 Jul 2008 13:00:25 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43606 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756632AbYGaRAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 12:59:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=EGkeMh7Ba3Z4l3fMWtFSBvEjOWzL+ve21VQDQlE8AQyLXoN1S33NWf6+/EoZ84SO/V
-         eb6suMAobOxxXR2Sz1NtcyrRT885F+t9FMlZ+FOMvdg+ODyvdlpilpmfCQTBbtndVm8U
-         5RBqyitqHThgccZYH/A+51IgZO5aJlGG+qXrU=
-Message-ID: <4891EF8D.6010502@gmail.com>
-Date: Thu, 31 Jul 2008 18:59:57 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 31 Jul 2008 13:00:24 -0400
+Date: Thu, 31 Jul 2008 12:00:22 -0500
+From: Robin Holt <holt@sgi.com>
+To: linux-kernel@vger.kernel.org
+Cc: Pavel Emelyanov <xemul@openvz.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Paul Menage <menage@google.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [Patch] Scale pidhash_shift/pidhash_size up based on
+	num_possible_cpus().
+Message-ID: <20080731170022.GE9663@sgi.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kosaki.motohiro@jp.fujitsu.com, torvalds@linux-foundation.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/1] mm: unify pmd_free() and __pmd_free_tlb() implementation
-References: <alpine.LFD.1.10.0807280851130.3486@nehalem.linux-foundation.org> <488DF119.2000004@gmail.com> <20080729012656.566F.KOSAKI.MOTOHIRO@jp.fujitsu.com> <488DFFB0.1090107@gmail.com> <20080728133030.8b29fa5a.akpm@linux-foundation.org> <488E3020.1040701@goop.org> <488E4DEB.5010705@gmail.com> <20080731161750.GA26393@elte.hu>
-In-Reply-To: <20080731161750.GA26393@elte.hu>
-X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Andrea Righi <righi.andrea@gmail.com> wrote:
-> 
->> Jeremy Fitzhardinge wrote:
->>> Andrew Morton wrote:
->>>> I can second that.  See
->>>> http://userweb.kernel.org/~akpm/mmotm/broken-out/include-asm-generic-pgtable-nopmdh-macros-are-noxious-reason-435.patch
->>>>
->>>> Ingo cruelly ignored it.  Probably he's used to ignoring the comit
->>>> storm which I send in his direction - I'll need to resend it sometime.
->>>>
->>>> I'd consider that patch to be partial - we should demacroize the
->>>> surrounding similar functions too.  But that will require a bit more
->>>> testing.
->>> Its immediate neighbours should be easy enough (pmd_alloc_one, 
->>> __pmd_free_tlb), but any of the ones involving pmd_t risk #include hell 
->>> (though the earlier references to pud_t in inline functions suggest it 
->>> will work).  And pmd_addr_end is just ugly.
->>>
->>>     J
->>>
->> ok, let's start with the easiest: pmd_free() and __pmd_free_tlb().
->>
->> Following another attempt to unify the implementations using inline 
->> functions. It seems to build fine on x86 (pae / non-pae) and on 
->> x86_64. This is an RFC patch right now, not for inclusion (just asking 
->> if it could be a reasonable approach or not). And in any case this 
->> would need more testing.
->>
->> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
->> ---
->>  arch/sparc/include/asm/pgalloc_64.h |    1 +
->>  include/asm-alpha/pgalloc.h         |    1 +
->>  include/asm-arm/pgalloc.h           |    1 -
->>  include/asm-frv/pgalloc.h           |    2 --
->>  include/asm-generic/pgtable-nopmd.h |   19 +++++++++++++++++--
->>  include/asm-ia64/pgalloc.h          |    1 +
->>  include/asm-m32r/pgalloc.h          |    2 --
->>  include/asm-m68k/motorola_pgalloc.h |    3 ++-
->>  include/asm-m68k/sun3_pgalloc.h     |    7 -------
->>  include/asm-mips/pgalloc.h          |   12 +-----------
->>  include/asm-parisc/pgalloc.h        |    2 +-
->>  include/asm-powerpc/pgalloc-32.h    |    2 --
->>  include/asm-powerpc/pgalloc-64.h    |    1 +
->>  include/asm-s390/pgalloc.h          |    1 -
->>  include/asm-sh/pgalloc.h            |    8 --------
->>  include/asm-um/pgalloc.h            |    1 +
->>  include/asm-x86/pgalloc.h           |    2 ++
->>  17 files changed, 28 insertions(+), 38 deletions(-)
-> 
-> the x86 bits look good to me in principle but touches a ton of 
-> architectures and deals with VM issues - the perfect candidate for -mm?
-> 
-> 	Ingo
 
-Yes, sounds reasonable. I'll rebase to -mm and post a new patch.
+For large cpu configurations, we find the number of pids in a pidhash
+bucket cause things like 'ps' to perform slowly.  Raising pidhash_shift
+from 12 to 16 cut the time for 'ps' in half on a 2048 cpu machine.
 
-Thanks,
--Andrea
+This patch makes the upper limit scale based upon num_possible_cpus().
+For machines 128 cpus or less, the current upper limit of 12 is
+maintained.
+
+Signed-off-by: Robin Holt <holt@sgi.com>
+
+
+Index: contention_unroll/kernel/pid.c
+===================================================================
+--- contention_unroll.orig/kernel/pid.c	2008-07-31 11:59:21.154284073 -0500
++++ contention_unroll/kernel/pid.c	2008-07-31 11:59:22.862497720 -0500
+@@ -502,9 +502,10 @@ void __init pidhash_init(void)
+ {
+ 	int i, pidhash_size;
+ 	unsigned long megabytes = nr_kernel_pages >> (20 - PAGE_SHIFT);
++	int pidhash_shift_ul = max(12, fls(num_possible_cpus() - 1) + 5);
+ 
+ 	pidhash_shift = max(4, fls(megabytes * 4));
+-	pidhash_shift = min(12, pidhash_shift);
++	pidhash_shift = min(pidhash_shift_ul, pidhash_shift);
+ 	pidhash_size = 1 << pidhash_shift;
+ 
+ 	printk("PID hash table entries: %d (order: %d, %Zd bytes)\n",
