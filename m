@@ -1,120 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbYGaSez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbYGaSjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbYGaSez (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 14:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbYGaSeq
+	id S1756413AbYGaSjB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 14:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYGaSiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 14:34:46 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:30843 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753431AbYGaSep (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 14:34:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=DH10ZNlzd8epoZ6Cyn3E8svi/aLHbXkCmMn1XOdmGmLJ6KFKPkjqf1h4kBtWmJNqyY
-         CyXWRt6Ft1jlKsEOBGpYf0U+SdDRf0xkxpnArkNtv05V5WxiGRnOxz4uvdsX2HmMXtrP
-         nfV1sbcGNkUT+2zyeJ7XhAP3lphDHb7y+davI=
-Date: Thu, 31 Jul 2008 14:34:41 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-Subject: Re: linux-next: Tree for July 30
-Message-ID: <20080731143013.ZZRA012@mailhub.coreip.homeip.net>
-References: <20080730170635.f737ffe9.sfr@canb.auug.org.au> <20080730231029.9818953c.akpm@linux-foundation.org> <20080731140708.GA11229@core.corenet.prv> <58cb370e0807310836x4a6e3c40rf5c3c8ec8b5caae0@mail.gmail.com> <20080731115301.ZZRA012@mailhub.coreip.homeip.net> <20080731104437.5e5669bc.akpm@linux-foundation.org> <20080731141302.ZZRA012@mailhub.coreip.homeip.net> <20080731112654.d9620b36.akpm@linux-foundation.org>
+	Thu, 31 Jul 2008 14:38:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56516 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753211AbYGaSiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 14:38:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [bug] 2.6.27-rc1: I/O errors after resume
+Date: Thu, 31 Jul 2008 20:41:35 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200807281203.38822.j.schneider@uib.de> <200807311531.18377.rjw@sisk.pl> <E1KOYng-0000FR-Cr@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1KOYng-0000FR-Cr@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080731112654.d9620b36.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200807312041.35544.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 11:26:54AM -0700, Andrew Morton wrote:
-> On Thu, 31 Jul 2008 14:17:31 -0400 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> 
-> > On Thu, Jul 31, 2008 at 10:44:37AM -0700, Andrew Morton wrote:
-> > > On Thu, 31 Jul 2008 11:56:48 -0400 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> > > 
-> > > > On Thu, Jul 31, 2008 at 05:36:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > > > On Thu, Jul 31, 2008 at 4:07 PM, Dmitry Torokhov
-> > > > > <dmitry.torokhov@gmail.com> wrote:
-> > > > > > On Wed, Jul 30, 2008 at 11:10:29PM -0700, Andrew Morton wrote:
-> > > > > >> On Wed, 30 Jul 2008 17:06:35 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > > > > >>
-> > > > > >> > I have created today's linux-next tree at
-> > > > > >> > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> > > > > >>
-> > > > > >> The X server broke on my FC8 t61p thinkpad.  Mainline is OK.
-> > > > > >>
-> > > > > >> Various information is at http://userweb.kernel.org/~akpm/mo/
-> > > > > >>
-> > > > > >> I'm suspecting the input layer - my synaptics device seems to have
-> > > > > >> disappeared?  See http://userweb.kernel.org/~akpm/mo/Xorg-log-diff.txt
-> > > > > >>
-> > > > > >
-> > > > > > I think this patch should help with Synaptics:
-> > > > > 
-> > > > > Which unfortunately doesn't help all people running with older synaptics
-> > > > > user-space after commit 0571c5d20aca71c735222132b02aebddf593045c
-> > > > > ("Input: expand keycode space").
-> > > > > 
-> > > > > Can't this be solved without breaking Xorg on newer kernels running
-> > > > > older synaptics?
-> > > > > 
-> > > > 
-> > > > No. The X driver is broken. It tells kernel to use buffer bugger than
-> > > > allocated and gets its stack smashed. Tslib has also soma funkiness
-> > > > in the ioctl handling as well... *shrug*
-> > > > 
-> > > > We have a couple months to get distros updated...
-> > > > 
-> > > 
-> > > aaarrrrgggggghhh.  I don't think this is practical.  This means that
-> > > (for example) FC5 machines (of which I happen to have one) are dead. 
-> > > And lots of other older-distro-based systems.
-> > > 
-> > > Is there some userspace workaround which doesn't require an X server
-> > > update?
-> > > 
-> > > Surely it must be possible to make the kernel contiue to support these
-> > > servers?
-> > > 
+On Thursday, 31 of July 2008, Miklos Szeredi wrote:
+> On Thu, 31 Jul 2008, Rafael J. Wysocki wrote:
+> > On Thursday, 31 of July 2008, Miklos Szeredi wrote:
+> > > With 2.6.27-rc1 things break badly after resume on my T60.  Dmesg and
+> > > config attached.  2.6.26 worked fine.
 > > 
-> > Andrew,
-> > 
-> > It is not like we broke ABI here. The progam (synaptics driver) had a
-> > grave bug. Older kernels happened to paper over the bug because they
-> > did not fill the whole buffer that was advertised as available. Now
-> > that we have more data to report the bug bit us. What do you want me
-> > to do?
+> > Ugh, lots of stuff in a single message.
 > 
-> Paper over the bug again.  When it happens, spit out a loud printk.
+> Yeah, sorry.  Search for "I/O error" for the interesting parts.
+> 
+> > Anyway, can you try the current -git and report back, please?  It's possible
+> > that this has been fixed already.
+> 
+> Not fixed:
+> 
+> mszeredi@tucsk:~> uname -a
+> Linux tucsk 2.6.27-rc1-00156-g94ad374 #17 SMP Thu Jul 31 15:45:10 CEST 2008 x86_64 x86_64 x86_64 GNU/Linux
+> mszeredi@tucsk:~> dmesg
+> bash: /bin/dmesg: Input/output error
+> 
+> Seems easily reproducible, so if no better ideas I can try to bisect it.
 
-For that we we need to be sure that the size of the buffer passed to
-us is incorrect. I.e. if we decide that 512 is a magic bad number and
-decide to limit the output then legit programs supplying 512 byte
-buffers they will not get the whole thing.
+That would be really helpful.
 
-> 
-> > Synaptics driver is a small package and takes 2 minutes to recompile.
-> > You don't have to update entire X server with it (in fact I don't think
-> > it is even part of X distribution because it is GPL).
-> 
-> What proportion of the X servers out there did we just break?
-> 
-> Was the crash I saw due to this?
-> 
-> Where would I (Aunt Tillie running FC5) go to find out how to fix my
-> machine up again? 
-
-What is Aunt Tillie doing compiling her own kernels on FC5? You
-OTOH managed to get an answer fairly quickly ;)
-
--- 
-Dmitry
+Thanks,
+Rafael
