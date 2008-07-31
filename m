@@ -1,49 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbYGaRSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYGaRVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756971AbYGaRSB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 13:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbYGaRRu
+	id S1755548AbYGaRVf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 13:21:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYGaRVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 13:17:50 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:25161 "EHLO
-	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752969AbYGaRRt (ORCPT
+	Thu, 31 Jul 2008 13:21:24 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:46561 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751772AbYGaRVX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 13:17:49 -0400
-X-BigFish: VPS-5(z34a4lz98dRzz10d3izzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-Message-ID: <4891F45C.9010704@am.sony.com>
-Date: Thu, 31 Jul 2008 10:20:28 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 31 Jul 2008 13:21:23 -0400
+Date: Thu, 31 Jul 2008 18:21:11 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch v3] splice: fix race with page invalidation
+Message-ID: <20080731172111.GA23644@shareable.org>
+References: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu> <20080731001131.GA30900@shareable.org> <20080731004214.GA32207@shareable.org> <alpine.LFD.1.10.0807301746500.3277@nehalem.linux-foundation.org> <20080731061201.GA7156@shareable.org> <alpine.LFD.1.10.0807310925360.3277@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: dwmw2@infradead.org, torvalds@linux-foundation.org,
-       thomas.petazzoni@free-electrons.com, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, michael@free-electrons.com
-Subject: Re: [patch 0/4] [resend] Add configuration options to disable features
- not needed on embedded devices
-References: <20080731092703.661994657@free-electrons.com>	<20080731.024027.162488608.davem@davemloft.net>	<1217497912.3454.95.camel@pmac.infradead.org> <20080731.025547.35826309.davem@davemloft.net> <4891EB82.9060703@am.sony.com>
-In-Reply-To: <4891EB82.9060703@am.sony.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Jul 2008 17:17:35.0074 (UTC) FILETIME=[52F42C20:01C8F331]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807310925360.3277@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Bird wrote:
-> It sounds like you don't want to talk about it any more,
-> but could you please give me the 30-second overview
-> of why ETHTOOL is required for proper ipv4 operation?
-...
-> Sorry if I missed an earlier explanation.
+Linus Torvalds wrote:
+> >			, or (b) while sendfile claims those
+> > pages, they are marked COW.
+> 
+> .. and this one shows that you have no clue about performance of a memcpy.
+> 
+> Once you do that COW, you're actually MUCH BETTER OFF just copying.
+> Copying a page is much cheaper than doing COW on it.
 
-Never mind.  I hadn't read the whole thread yet.
+That sounds familiar :-)
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+But did you miss the bit where you DON'T COPY ANYTHING EVER*?  COW is
+able provide _correctness_ for the rare corner cases which you're not
+optimising for.  You don't actually copy more than 0.0% (*approx).
 
+Copying is supposed to be _so_ rare, in this, that it doesn't count.
+
+Correctness is so you can say "I've written that, when the syscall
+returns I know what data the other end will receive, if it succeeds".
+Knowing what can happen in what order is bread and butter around here,
+you know how useful that can.
+
+The cost of COW is TLB flushes*.  But for splice, there ARE NO TLB
+FLUSHES because such files are not mapped writable!  And you don't
+intend to write the file soon either.  A program would be daft to use
+splice _intending_ to do those things, it obviously would be poor use
+of the interface.  The kernel may as well copy the data if they did
+(and it's in a good position to decide).
+
+> Doing a "write()" really isn't that expensive. People think that
+> memory is slow, but memory isn't all that slow, and caches work
+> really well. Yes, memory is slow compared to a few reference count
+> increments, but memory is absolutely *not* slow when compared to the
+> overhead of TLB invalidates across CPUs etc.
+
+You're missing the real point of network splice().
+
+It's not just for speed.
+
+It's for sharing data.  Your TCP buffers can share data, when the same
+big lump is in flight to lots of clients.  Think static file / web /
+FTP server, the kind with 80% of hits to 0.01% of the files roughly
+the same of your RAM.
+
+You want network splice() for the same reason you want shared
+libraries.  So that memory use scales better with some loads**.
+
+You don't know how much good that will do, only, like shared
+libraries, that it's intrinsically good if it doesn't cost anything.
+And I'm suggesting that since no TLB flushes or COW copies are
+expected, and you can just copy at sendfile time if the page is
+already write-mapped anywhere, so the page references aren't
+complicated, it shouldn't cost anything.
+
+** - Admittedly this is rather load dependent.  But it's potentially
+O(c*d) for write vs. O(d) for sendfile, hand-wavingly, where c is the
+number of connections using d data.  (Then again, as I work out the
+figures, RAM is getting cheaper faster than bandwidth-latency products
+are getting bigger...  It's not a motivator except for cheapskates.
+But doesn't detract from intrinsic goodness.)
+
+-- Jamie
