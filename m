@@ -1,84 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbYGaG0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbYGaG1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbYGaG0d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 02:26:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYGaG0Y
+	id S1756525AbYGaG1i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 02:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYGaG1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 02:26:24 -0400
-Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:37414 "HELO
-	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752437AbYGaG0X (ORCPT
+	Thu, 31 Jul 2008 02:27:25 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:19585 "EHLO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752502AbYGaG1Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 02:26:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4szgqNJ/EJzIgsm4svhjIsjOgocWXGgq8zgDuOdrORKXQOe/KlCb5zLLnGR6S9zH1fgoG0xF7xLFOClddZZr0lgdOcSdVnBeC+gWM/QV2KTPMCNpfM1QWQ7uXHoHamfm7Qccp0U9JILVG9Hd+V1s78RbwiVG+Bb+PD9JmAQ272k=  ;
-X-YMail-OSG: 3bVFOecVM1kvjr.rNRAB1xj4JsDL7HcBZGAm748MpBXFvaDIepeIPVU7W_Fw8_V.m95xirVcI1LhVe.hW0agPmOXH73FnamXOoiGICDRgnVouIiOcvvcimYBF5aTqql5Jao-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Date: Thu, 31 Jul 2008 16:26:15 +1000
-User-Agent: KMail/1.9.5
-Cc: Mel Gorman <mel@csn.ul.ie>, Eric Munson <ebmunson@us.ibm.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, libhugetlbfs-devel@lists.sourceforge.net
-References: <cover.1216928613.git.ebmunson@us.ibm.com> <200807311604.14349.nickpiggin@yahoo.com.au> <20080730231428.a7bdcfa7.akpm@linux-foundation.org>
-In-Reply-To: <20080730231428.a7bdcfa7.akpm@linux-foundation.org>
+	Thu, 31 Jul 2008 02:27:24 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-2.tower-164.messagelabs.com!1217485642!8216654!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Thu, 31 Jul 2008 08:27:18 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+CC: Adrian Bunk <bunk@kernel.org>, Matthew Wilcox <matthew@wil.cx>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "mpm@selenic.com" <mpm@selenic.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [patch 2/4] Configure out file locking features
+Message-ID: <20080731062718.GA25325@digi.com>
+References: <20080729154520.728594017@free-electrons.com> <20080729154747.872888047@free-electrons.com> <20080729181751.GA24924@parisc-linux.org> <20080730142754.GD19966@cs181140183.pp.htv.fi> <20080730174028.67184ea2@surf>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-Message-Id: <200807311626.15709.nickpiggin@yahoo.com.au>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080730174028.67184ea2@surf>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 31 Jul 2008 06:27:19.0512 (UTC) FILETIME=[7BDDDD80:01C8F2D6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 31 July 2008 16:14, Andrew Morton wrote:
-> On Thu, 31 Jul 2008 16:04:14 +1000 Nick Piggin <nickpiggin@yahoo.com.au> 
-wrote:
-> > > Do we expect that this change will be replicated in other
-> > > memory-intensive apps?  (I do).
-> >
-> > Such as what? It would be nice to see some numbers with some HPC or java
-> > or DBMS workload using this. Not that I dispute it will help some cases,
-> > but 10% (or 20% for ppc) I guess is getting toward the best case, short
-> > of a specifically written TLB thrasher.
->
-> I didn't realise the STREAM is using vast amounts of automatic memory.
-> I'd assumed that it was using sane amounts of stack, but the stack TLB
-> slots were getting zapped by all the heap-memory activity.  Oh well.
+Hello Thomas,
 
-An easy mistake to make because that's probabably how STREAM would normally
-work. I think what Mel had done is to modify the stream kernel so as to
-have it operate on arrays of stack memory.
+Thomas Petazzoni wrote:
+> Le Wed, 30 Jul 2008 17:27:54 +0300,
+> Adrian Bunk <bunk@kernel.org> a écrit :
+> 
+> > It seems the emails containing the patches never made it to the vger 
+> > lists, which makes it a bit hard to comment on them.
+> 
+> Yes, they didn't make it to the lists, for some reason. Maybe it's
+> because I sent them using "quilt mail --send", which uses my local
+> exim4 mail server, and for some reason, vger doesn't like that kind of
+> e-mails. However, my exim4 is configured to sent the e-mails through by
+> ISP SMTP. From my exim4 mainlog:
+> 
+> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg => linux-kernel@vger.kernel.org R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
+> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> linux-embedded@vger.kernel.org R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
+> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> netdev@vger.kernel.org R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
+> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> davem@davemloft.net R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
+> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> mpm@selenic.com R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
+> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> akpm@linux-foundation.org R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
+> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> thomas.petazzoni@free-electrons.com R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
+> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> michael@free-electrons.com R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
+> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg Completed
+> 
+> So from my side, everything seemed to work well. Does anybody has a
+> clue ?
+Don't know if this is the problem, but I had problems getting mails
+through some time ago, too.  For me the problem was that the source
+address was myusername@mymachine.intranet.$mycompany.$tld and
+vger.kernel.org didn't want to take these because the host name had no
+DNS entry.
 
+I fixed that by rewriting the From line in outgoing mails on my host.
+I'm using postfix (from Debian) so I had to add an entry to
+/etc/postfix/sender_canonical.
 
-> I guess that effect is still there, but smaller.
+Best regards
+Uwe
 
-I imagine it should be, unless you're using a CPU with seperate TLBs for
-small and huge pages, and your large data set is mapped with huge pages,
-in which case you might now introduce *new* TLB contention between the
-stack and the dataset :)
-
-Also, interestingly I have actually seen some CPUs whos memory operations
-get significantly slower when operating on large pages than small (in the
-case when there is full TLB coverage for both sizes). This would make
-sense if the CPU only implements a fast L1 TLB for small pages.
-
-So for the vast majority of workloads, where stacks are relatively small
-(or slowly changing), and relatively hot, I suspect this could easily have
-no benefit at best and slowdowns at worst.
-
-But I'm not saying that as a reason not to merge it -- this is no
-different from any other hugepage allocations and as usual they have to be
-used selectively where they help.... I just wonder exactly where huge
-stacks will help.
-
-
-> I agree that few real-world apps are likely to see gains of this
-> order.  More benchmarks, please :)
-
-Would be nice, if just out of morbid curiosity :)
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
