@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbYGaVOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757072AbYGaVPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756430AbYGaVOV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 17:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbYGaVOM
+	id S1757072AbYGaVPs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 17:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbYGaVPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 17:14:12 -0400
-Received: from 1wt.eu ([62.212.114.60]:2308 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751223AbYGaVOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 17:14:10 -0400
-Date: Thu, 31 Jul 2008 23:14:06 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Richard Hartmann <richih.mailinglist@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: iptables, NAT, DNS & Dan Kaminsky
-Message-ID: <20080731211406.GA19104@1wt.eu>
-References: <2d460de70807300753w33c43340xaa52c54add501306@mail.gmail.com> <20080730195548.GA615@1wt.eu> <2d460de70807310759s2a7d6c4k5ba7e0e6a5bd9cf6@mail.gmail.com>
+	Thu, 31 Jul 2008 17:15:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41537 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753736AbYGaVPk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 17:15:40 -0400
+Subject: Re: x86: Is there still value in having a special tlb flush IPI
+	vector?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20080731205726.GE25138@elte.hu>
+References: <488E534F.2030204@goop.org>
+	 <200807291430.08220.nickpiggin@yahoo.com.au>
+	 <1217325288.7563.2.camel@twins>
+	 <200807292000.30690.nickpiggin@yahoo.com.au>
+	 <1217328351.7563.12.camel@twins> <4891FB0A.907@goop.org>
+	 <20080731205726.GE25138@elte.hu>
+Content-Type: text/plain
+Date: Thu, 31 Jul 2008 23:15:09 +0200
+Message-Id: <1217538909.8157.99.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2d460de70807310759s2a7d6c4k5ba7e0e6a5bd9cf6@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Richard,
-
-On Thu, Jul 31, 2008 at 04:59:24PM +0200, Richard Hartmann wrote:
-> On Wed, Jul 30, 2008 at 21:55, Willy Tarreau <w@1wt.eu> wrote:
+On Thu, 2008-07-31 at 22:57 +0200, Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 > 
-> > you should re-post your question to relevant lists. I think that
-> > the netfilter ML would be more appropriate. The list you posted to
-> > is about Linux kernel development, which has nothing to do with
-> > how to setup iptables rules, so I don't think you'll find useful
-> > answers here, if any.
+> > Peter Zijlstra wrote:
+> > > How about using just arch_send_call_function_single_ipi() to implement
+> > > smp_send_reschedule() ?
+> > >
+> > > The overhead of that is a smp_mb() and a list_empty() check in
+> > > generic_smp_call_function_single_interrupt() if there is indeed no work
+> > > to do.
+> > 
+> > Is doing a no-op interrupt sufficient on all architectures?  Is there 
+> > some change a function call IPI might not go through the normal 
+> > reschedule interrupt exit path?
 > 
-> I also asked said list, but as I am especially concerned about
-> what kernels versions act in which way, I thought I would try
-> my luck here, as well.
+> We'd still use the smp_send_reschdule(cpu) API, so it's an architecture 
+> detail. On x86 we'd use arch_send_call_function_single_ipi().
 
-Then you should wait a bit, there may be a lot of people in holidays.
+Also, all interrupts _should_ do the regular interrupt enter/exit paths,
+we fixup stuff there, like jiffies and such.
 
-> > And BTW I don't think that many of the people
-> > reading LKML care a dime about the "exploit" for poorly configured
-> > DNS servers.
-> 
-> It is an exploit that is being abused as we speak and,
-
-That does not mean that abused servers were properly set up.
-
-> unless you
-> mean source address filtering or the like, has nothing to do with
-> how the servers are configured
-
-Yes it has. I don't want to enter a DNS debate and I'm not even qualified
-for that. But I can't find any reason why you would let your servers offer
-public resolving service for outsiders. They must resolve hosted zones for
-outsiders, hosted+outside zones for insiders and that's all. So that *should*
-be either a non-issue, or a valid reason to fix the issue.
-
-Regards,
-Willy
+We had a fun NO_HZ bug the other day because some sparc64 IPIs didn't.
 
