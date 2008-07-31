@@ -1,117 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbYGaLxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbYGaLyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756227AbYGaLxf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 07:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796AbYGaLxS
+	id S1755488AbYGaLyi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 07:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbYGaLya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 07:53:18 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:38904 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752751AbYGaLxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 07:53:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Received:Message-ID:In-Reply-To:References:Date:Subject:From:To:Cc:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:Importance;
-	b=BWXMzcrT+93ueW6LVGrzFsMd1cEaeg+jMPDRDEXrYyH711HPlyEdjlgPtOmjAVFc3f/ltJ4jz9qIZfuR2cFWkfQktE/Qum8fqIbUArxR49qis+pHy2xsiXzP1MSnizu7;
-Message-ID: <5b329c74610e4f3332133acddab64262b7c0fc7a@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
-In-Reply-To: <Pine.LNX.4.44L0.0807301522230.2322-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0807301522230.2322-100000@iolanthe.rowland.org>
-Date: Thu, 31 Jul 2008 12:49:15 +0100
-Subject: Re: [patch 5/3] fastboot: sync the async execution before 
-     late_initcall and move level 6s (sync) first
-From: "Simon Arlott" <simon@fire.lp0.eu>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Cc: "Rene Herman" <rene.herman@keyaccess.nl>,
-       "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, "Daniel Walker" <dwalker@mvista.com>,
-       "USB list" <linux-usb@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.10a
+	Thu, 31 Jul 2008 07:54:30 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37013 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752270AbYGaLy3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 07:54:29 -0400
+Date: Thu, 31 Jul 2008 20:50:55 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: [RFC:Patch: 000/008](memory hotplug) rough idea of pgdat removing
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080731203549.2A3F.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, July 30, 2008 20:41, Alan Stern wrote:
-> The timings in the boot log agree with your "Without fastboot:"
-> figures, so I assume that's the log you attached.  The only timings at
-> issue here are ehci_hcd_init and ohci_hcd_mod_init.  It's not clear
-> that the with-fastboot and without-fastboot values are directly
-> comparable; during startup there's a lot of activity, and interrupt
-> handlers can throw the timings off.
+Hello.
 
-I wasn't suggesting comparing ehci_hcd_init/ohci_hcd_mod_init times,
-with fastboot I'm assuming it may manage to take a lock those need in
-the main initcall process and delay hcd inits.
+This patch set is first trial and to describe my rough idea of
+"how to remove pgdat".
 
->> It looks like usb device driver init requires it to immediately block and
->> wait for all devices to have completed init
->
-> Which USB device driver init are you talking about?  Your log includes
-> usblp_init, usb_stor_init, usb_usual_init, hid_init (for a USB mouse),
-> and snd_usb_audio_init.  Each one completed before the next one
-> started; none of them blocked waiting for any devices (other than their
-> own, of course) to finish initializing.
+I would like to confirm "current my idea is good way or not" by this post.
+This patch is incomplete and not tested yet, If my idea is good way,
+I'll continue to make them and test.
 
-Yes - and that's the point. The initcall process when it reaches usb/ is
-this:
-1. ehci_hcd_init
-2. ohci_hcd_mod_init
-3. usblp_init
+I think pgdat removing is diffcult issue,
+because any code doesn't know pgdat will be removed, and access
+them without any locking now. But the pgdat remover must wait their access,
+because the node may be removed electrically after it soon.
 
-There is nothing else to run between 1-2 and 3, so there is no opportunity
-to initialise devices in the background and usblp_init blocks for a while.
+Current my idea is using RCU feature for waiting them.
+Because it is the least impact against reader's performance,
+and pgdat remover can wait finish of reader's access to pgdat
+which is removing by synchronize_sched().
 
-If ehci_hcd_init and ohci_hcd_mod_init were moved up to before sata/ide/net
-but usblp_init was kept after these then the devices should be ready by the
-time it gets there.
+So, I made followings read_lock for accessing pgdat.
+  - pgdat_remove_read_lock()/unlock()
+  - pgdat_remove_read_lock_sleepable()/unlock_sleepable()
+These definishions use rcu_read_lock and srcu_read_lock().
 
->>  - so regardless of where we
->> put the usb/ directory in the initcall order, it will always wait a while
->> because the drivers will be immediately after the hcd init...
->
-> No, you're wrong.  To prove it, try patching the start of hub_events()
-> in drivers/usb/core/hub.c like this:
->
->  	 * Not the most efficient, but avoids deadlocks.
->  	 */
->  	while (1) {
-> +		ssleep(5);
->
->  		/* Grab the first entry at the beginning of the list */
->  		spin_lock_irq(&hub_event_lock);
->
-> Then see what happens.
+Writer uses node_set_offline() which uses clear_bit(),
+and build_all_zonelists() with stop_machine_run().
 
-I'll try this tonight, but all I'd expect to see is the background thread
-take longer to do anything?
 
->> perhaps
->> if we moved the hcd init to before net/, sata/, ide/ etc. (all the things
->> that take time themselves) but left usb device drivers to the end it
->> would actually get the benefit of that separate thread.
->
-> They are already running in a separate thread.  Of course, the
-> different threads will contend for CPU resources -- just putting things
-> into multiple threads doesn't mean they will necessarily run
-> concurrently.
+There are a few types of pgdat access.
 
-There's a lot of delays going on during sata/ide/net init, waiting for
-the device to do something - usb init continues concurrently.
+  1) via node_online_bitmap.
+     Many code use for_each_xxx_node(), for_each_zone(), and so on.
+     These code must be used with pgdat_remove_read_lock/unlock().
 
->> I don't have the time to rework how usb/ is linked in order to try that,
->> but moving usb/ to before net/ and sata/ while making all the usb device
->> drivers that get used be late initcalls could be used to test it.
->
-> You seem to have a completely mixed-up idea of how the USB stack works.
-> All the device drivers you're worried about are initialized within the
-> khubd kernel thread.
+  2) mempolicy
+     There are callback interface when memory offline works. mempolicy
+     must use callbacks for disable removing node.
+     This patch set includes quite simple (sample) patch to point
+     what will be required. However more detail specification will be necessary.
+     (ex, When preffered node of mempolicy is removing, how does kernel should do?)
+  
+  3) zonelist
+     alloc_pages access zones via zonelist. However, zone may be removed
+     by pgdat remover too. It must be check zones might be removed
+     before accessing zonliest which is guarded between pgdat_remove_read_lock()
+     and unlock().
 
-The usb device driver initcalls aren't initialised by khubd and they're
-definitely blocking on the khubd device initialisation [for that device,
-as you said earlier] being completed.
+  4) via NODE_DATA() with node_id.
+     This type access is called with numa_node_id() in many case.
+     Basically, CPUs on the removing node must be removed before removing node.
+     So, I used BUG_ON() when numa_node_id() is points offlined node.
+     
+     If node id is specified by other way, offline_node must be checked and
+     escape when it is offline...
+
+
+If my idea is bad way, other way I can tell is...
+  - read_write_lock(). (It should n't be used...)
+  - collect pgdats on one node (depends on performance)
+
+If you have better idea, please let me know.
+
+
+Note: 
+  - I don't add pgdat_remove_read_lock() on boot code.
+    Because pgdat hot-removing will not work at boot time.
+    (But I may overlook some places which must use pgdat_remove_read_lock() yet.)
+
+
+Thanks.
+
 
 -- 
-Simon Arlott
+Yasunori Goto 
+
+
