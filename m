@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbYGaKCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371AbYGaKKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756217AbYGaKCV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 06:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbYGaKCI
+	id S1754371AbYGaKKY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 06:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbYGaKKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 06:02:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38719
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753258AbYGaKCF (ORCPT
+	Thu, 31 Jul 2008 06:10:09 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:21397 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751611AbYGaKKH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 06:02:05 -0400
-Date: Thu, 31 Jul 2008 03:02:05 -0700 (PDT)
-Message-Id: <20080731.030205.153067850.davem@davemloft.net>
-To: dwmw2@infradead.org
-Cc: torvalds@linux-foundation.org, thomas.petazzoni@free-electrons.com,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       michael@free-electrons.com
-Subject: Re: [patch 0/4] [resend] Add configuration options to disable
- features not needed on embedded devices
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1217498355.3454.103.camel@pmac.infradead.org>
-References: <1217497912.3454.95.camel@pmac.infradead.org>
-	<20080731.025547.35826309.davem@davemloft.net>
-	<1217498355.3454.103.camel@pmac.infradead.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jul 2008 06:10:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LIe4SV9hXxprzSRe1MR/Efd33CalyL3jcEJ55bboMPzhf1GqAWqOvoxmhjb3Fufo6A
+         06z+v0rBFnm9ezfY69MzCO9dxaGnb4LdwFUa2zsLyOUk/ANiAnu2vtatNVQESDhJ3w2S
+         AbfXLBPjymAGmP32gl3C75J7e00yn7Ctgo2bw=
+Date: Thu, 31 Jul 2008 12:09:29 +0200
+From: Bernhard Fischer <rep.dot.nop@gmail.com>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
+       bcrl@kvack.org, linux-aio@kvack.org, akpm@linux-foundation.org
+Subject: Re: [patch 1/4] Configure out AIO support
+Message-ID: <20080731100929.GA9206@mx.loc>
+References: <20080731092703.661994657@free-electrons.com> <20080731093220.690886851@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080731093220.690886851@free-electrons.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Thu, 31 Jul 2008 10:59:15 +0100
+On Thu, Jul 31, 2008 at 11:27:04AM +0200, Thomas Petazzoni wrote:
+>This patchs adds the CONFIG_AIO option which allows to remove support
+>for asynchronous I/O operations, that are not necessarly used by
+>applications, particularly on embedded devices. As this is a
+>size-reduction option, it depends on CONFIG_EMBEDDED. It allows to
+>save ~7 kilobytes of kernel code/data:
 
-> I have drivers which don't even _have_ ethtool support, and they seem to
-> work fine. But leaving aside the debate on that point, your statement
-> also seemed to be covering the other patches, such as the IGMP one and
-> others which haven't been seen (or perhaps even imagined) yet.
-
-I explained why I didn't want to apply the IGMP one too.
-
-Andrew didn't like my objections, but that doesn't mean I
-need to defend my position further.
-
-Show me a size reduction patch for networking that actually
-makes real sense and I'll apply it.
+Shouldn't this also make sure not to install aio_abi.h or at least an
+empty aio_abi.h?
