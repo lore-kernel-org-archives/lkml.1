@@ -1,55 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbYGaR5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbYGaR5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbYGaR5W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 13:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYGaR5N
+	id S1753309AbYGaR5j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 13:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbYGaR51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 13:57:13 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:53360 "EHLO
-	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbYGaR5M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 13:57:12 -0400
-X-BigFish: VPS-20(z34a4lz1432R98dR1805Mzz10d3izzz2fh6bh64h)
-X-Spam-TCS-SCL: 3:0
-Message-ID: <4891FD95.7090700@am.sony.com>
-Date: Thu, 31 Jul 2008 10:59:49 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 31 Jul 2008 13:57:27 -0400
+Received: from xenotime.net ([66.160.160.81]:36527 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752350AbYGaR51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 13:57:27 -0400
+Date: Thu, 31 Jul 2008 10:57:16 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: Daniel Barkalow <barkalow@iabervon.org>
+cc: Jonathan Corbet <corbet@lwn.net>, Alex Chiang <achiang@hp.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Amanda McPherson <amanda@amcpherson.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH, RFC] A development process document
+In-Reply-To: <alpine.LNX.1.00.0807311249320.19665@iabervon.org>
+Message-ID: <Pine.LNX.4.64.0807311055400.6503@shark.he.net>
+References: <20080729143015.0f79cf37@bike.lwn.net> <20080731062305.GA18070@ldl.fc.hp.com>
+ <20080731101738.1bf4281c@bike.lwn.net> <alpine.LNX.1.00.0807311249320.19665@iabervon.org>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: dwmw2@infradead.org, torvalds@linux-foundation.org,
-       thomas.petazzoni@free-electrons.com, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, michael@free-electrons.com
-Subject: Re: [patch 0/4] [resend] Add configuration options to disable features
- not needed on embedded devices
-References: <1217498355.3454.103.camel@pmac.infradead.org>	<20080731.030205.153067850.davem@davemloft.net>	<1217499316.3454.118.camel@pmac.infradead.org> <20080731.032553.67275433.davem@davemloft.net>
-In-Reply-To: <20080731.032553.67275433.davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Jul 2008 17:56:56.0262 (UTC) FILETIME=[D254DE60:01C8F336]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> Some folks might find it instructive to do a google code search
-> or similar on the multicast socket options this things dikes out
-> of the tree.
+On Thu, 31 Jul 2008, Daniel Barkalow wrote:
+
+> On Thu, 31 Jul 2008, Jonathan Corbet wrote:
 > 
-> Even simple things like NTP will spew failures with this CONFIG_IGMP
-> thing turned off.  And that's just the tip of the iceberg.
+> > On Thu, 31 Jul 2008 00:23:05 -0600
+> > Alex Chiang <achiang@hp.com> wrote:
+> > 
+> > > Overall, a great document, as expected from you. I've replied with
+> > > "content" comments below.
+> > 
+> > I've applied most of them, thanks.
+> >  
+> > > But it occurs to me that sending "style" comments to the editor of
+> > > LWN is something akin to, well, some combination of Prometheus,
+> > > Icarus, ravenous vultures, rabid penguins, and telling Linus that
+> > > his choice of $EDITOR sucks, which is to say, "unwise".
+> > 
+> > Naw, English always needs debugging too.
+> >  
+> > > You've got url reference for some quotes but not all. Would it be
+> > > possible to track them all down? Sorry for asking for all the extra
+> > > work, but I think the references are useful, especially if the
+> > > motivated reader actually visits said reference and gets all sides of
+> > > the story.
+> > 
+> > I'll see what I can do.  Some of the older ones are kind of hard to find. 
+> >  
+> > > > +Patches must be prepared against a specific version of the
+> > > > kernel.  As a +general rule, a patch should be based on the current
+> > > > mainline as found in +Linus's git tree.  It may become necessary to
+> > > > make versions against -mm,
+> > >    ^^^^^^^
+> > > Hm, is this the new recommended style? Grammar school taught me that
+> > > it should be "Linus'" but I've noticed a gradually changing but
+> > > inconsistently applied new school style.
+> > 
+> > I actually researched that a while back.  The rule, as far as I can tell
+> > (and to the extent that English has real rules) is that the trailing "s" is
+> > elided only when making a possessive of a plural noun.  "Linus", being very
+> > much a unique, singular entity, needs to be "Linus's" in the possessive
+> > form.
+> >  
+> > > > +If you have a significant series of patches, it is customary to
+> > > > send an +introductory description as part zero.  In general, the
+> > > > second and
+> > > 
+> > > This directly conflicts with akpm's advice:
+> > > 
+> > > 	http://www.zipworld.com.au/~akpm/linux/patches/stuff/tpp.txt
+> > > 
+> > > Section 6(b).
+> > 
+> > Interesting; Andrew didn't mention that in his review.  I think the intro
+> > postings can be very useful in understanding a patch series as a whole.
+> > Maybe I'll put in something about how anything which should be in the
+> > changelogs needs to go with the actual patches.
+> 
+> If you include a [0/N], it's a cover letter, not a changelog portion. It 
+> can be a useful way of providing context to reviewers as to the intended 
+> total effect. Each of the patches should make sense standalone, but it's 
+> not always clear from the individual patches what the total benefit is, 
+> and a 0/N that explains can be worthwhile (and you'd want to make that 
+> announcement to the mailing list, but not get it into the history).
 
-I don't know of any embedded products that ship with NTP turned
-on.  It's best to assume, with embedded, that we're not shipping
-ANY of the desktop or server applications you are familiar with.
-Absent those, does something break in the kernel with multicast
-support when IGMP is turned off?
- -- Tim
+but.. but Andrew often has to take part(s) of #0/N and add them to the
+changelog(s) to make the changelog(s) meaningful.  I.e., someone skimped
+on what should have been in the changelog(s).
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+> For example, if you have a series of patches that remove use of an old API 
+> from various places, each of those patches cleans up some piece of code, 
+> and these changelogs would say so, but it wouldn't be accurate (especially 
+> if 5/N gets dropped or reverted later) to say anywhere that you've removed 
+> all in-kernel use of the API; it's useful to include a cover letter that 
+> says so.
+> 
+> The same sort of text can be included in individual patches, after the 
+> tags and before the patch text, by putting a line '---' ahead of it; git, 
+> by default, puts a per-patch diffstat there, but you can add other stuff 
+> that will be helpful to reviewers but not future developers, like "this 
+> should fix Andrew's laptop".
 
+Yes, that's a good place for such comments.
+
+-- 
+~Randy
