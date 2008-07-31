@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbYGaQlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756374AbYGaQlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755974AbYGaQlL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 12:41:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYGaQkz
+	id S1756374AbYGaQlm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 12:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYGaQld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 12:40:55 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:37444 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752303AbYGaQky (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 12:40:54 -0400
-Date: Thu, 31 Jul 2008 12:40:52 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, greg@kroah.com,
-       Chris Wright <chrisw@sous-sol.org>, Jonathan Corbet <corbet@lwn.net>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: [PATCH] dual license ftrace.txt
-In-Reply-To: <20080731093039.4afcb734@bike.lwn.net>
-Message-ID: <alpine.DEB.1.10.0807311231290.5490@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0807302256180.21982@gandalf.stny.rr.com> <20080731093039.4afcb734@bike.lwn.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 31 Jul 2008 12:41:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60027 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752123AbYGaQlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 12:41:32 -0400
+Message-ID: <4891EB50.20309@redhat.com>
+Date: Thu, 31 Jul 2008 12:41:52 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: stable@kernel.org
+CC: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [stable] last-minute patch for 2.6.25-stable
+Content-Type: multipart/mixed;
+ boundary="------------060109080407050709060603"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------060109080407050709060603
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I asked legal about the licensing of ftrace.txt, and they told me that, 
-unless the Documentation directory is specifically set up to handle non 
-GPL licenses (which it does not appear to be), then it would be best to 
-put ftrace.txt under the GPL.
+I meant to send this yesterday but didn't get to it.
 
-This patch adds a dual license to ftrace.txt such that it is under both 
-the FDL and the GPL.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+--------------060109080407050709060603
+Content-Type: text/plain;
+ name="linux-2.6-x86-mm-ioremap-64-bit-resource-on-32-bit-kernel.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="linux-2.6-x86-mm-ioremap-64-bit-resource-on-32-bit-kernel.pa";
+ filename*1="tch"
+
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 25 Mar 2008 07:31:17 +0000 (+0100)
+Subject: x86: ioremap of 64-bit resource on 32-bit kernel fix
+X-Git-Tag: v2.6.26-rc1~1154^2~109
+X-Git-Url: http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Ftorvalds%2Flinux-2.6.git;a=commitdiff_plain;h=756a6c68556600aec9460346332884d891d5beb4
+
+x86: ioremap of 64-bit resource on 32-bit kernel fix
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- Documentation/ftrace.txt |    1 +
- 1 file changed, 1 insertion(+)
 
-Index: linux-2.6.26/Documentation/ftrace.txt
-===================================================================
---- linux-2.6.26.orig/Documentation/ftrace.txt	2008-07-31 12:29:23.000000000 -0400
-+++ linux-2.6.26/Documentation/ftrace.txt	2008-07-31 12:31:04.000000000 -0400
-@@ -4,6 +4,7 @@
- Copyright 2008 Red Hat Inc.
-    Author:   Steven Rostedt <srostedt@redhat.com>
-   License:   The GNU Free Documentation License, Version 1.2
-+               (dual licensed under the GPL v2)
- Reviewers:   Elias Oltmanns, Randy Dunlap, Andrew Morton,
- 	     John Kacur, and David Teigland.
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index 7338c5d..c590fd2 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -47,7 +47,7 @@ static inline int phys_addr_valid(unsigned long addr)
+ 
+ int page_is_ram(unsigned long pagenr)
+ {
+-	unsigned long addr, end;
++	resource_size_t addr, end;
+ 	int i;
+ 
+ 	/*
+@@ -120,7 +120,8 @@ int ioremap_change_attr(unsigned long vaddr, unsigned long size,
+ static void __iomem *__ioremap(resource_size_t phys_addr, unsigned long size,
+ 			       enum ioremap_mode mode)
+ {
+-	unsigned long pfn, offset, last_addr, vaddr;
++	unsigned long pfn, offset, vaddr;
++	resource_size_t last_addr;
+ 	struct vm_struct *area;
+ 	pgprot_t prot;
  
 
-
+--------------060109080407050709060603--
