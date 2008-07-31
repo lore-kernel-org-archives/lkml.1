@@ -1,115 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbYGaR5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756635AbYGaSBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753309AbYGaR5j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 13:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbYGaR51
+	id S1756635AbYGaSBX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 14:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYGaSBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 13:57:27 -0400
-Received: from xenotime.net ([66.160.160.81]:36527 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752350AbYGaR51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 13:57:27 -0400
-Date: Thu, 31 Jul 2008 10:57:16 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: Daniel Barkalow <barkalow@iabervon.org>
-cc: Jonathan Corbet <corbet@lwn.net>, Alex Chiang <achiang@hp.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Amanda McPherson <amanda@amcpherson.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH, RFC] A development process document
-In-Reply-To: <alpine.LNX.1.00.0807311249320.19665@iabervon.org>
-Message-ID: <Pine.LNX.4.64.0807311055400.6503@shark.he.net>
-References: <20080729143015.0f79cf37@bike.lwn.net> <20080731062305.GA18070@ldl.fc.hp.com>
- <20080731101738.1bf4281c@bike.lwn.net> <alpine.LNX.1.00.0807311249320.19665@iabervon.org>
+	Thu, 31 Jul 2008 14:01:15 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:47290 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751587AbYGaSBN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 14:01:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vDG5Bw8BQDG3ycVBBR4Xl8qn9Q0AODfEL9jTarXrDtKa/XDh0NiK86r565/iJFDRwh
+         yyKqdyukrZTDS/2bbQIfx24Wzl6mdA6/fIzaFmeBlwhymmnyjm6vBZ+S8YY8iuv+6MWs
+         7Sgr0mJLUJZY8pPsMOcqVVJTwnkXhfeUkuG+4=
+Message-ID: <c4e36d110807311101h4fea377dsb4470c0935bbd419@mail.gmail.com>
+Date: Thu, 31 Jul 2008 20:01:12 +0200
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
+Subject: Re: Sysrq+B doesn't work on my box
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080731143905.GF19665@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <c4e36d110807310645n3ff6e61j17414433c5aee030@mail.gmail.com>
+	 <20080731143905.GF19665@khazad-dum.debian.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jul 2008, Daniel Barkalow wrote:
+2008/7/31 Henrique de Moraes Holschuh <hmh@hmh.eng.br>:
+> On Thu, 31 Jul 2008, Zdenek Kabelac wrote:
+>> I'd like to get resolved this problem - my T61 machine doesn't reboot
+>> with SysRQ+B key.
+>> And I never remember if it was ever rebooting.
+>>
+>> This is all I know so far and I've no idea where could be the problem.
+>
+> Well, many of the different ThinkPad BIOSes are really sensitive to the
+> proper boot/reboot/shutdown sequence (whatever it is).  Otherwise, the thing
+> gets stuck in SMBIOS limbo and hung.  For exeample, we had major issues with
+> boxes that only shut down half-way and ended up draining the cells to
+> critical levels, a few months ago.  I don't know what finally fixed THAT
+> one, but it was ugly.
+>
+> Here is another example: you can't get the TCO watchdog to reboot all (any?)
+> thinkpads properly on hardware.  In my T43, the TCO watchdog IS hooked to
+> something, but the BIOS hates it to trip and the entire box goes to
+> neverland when it fires...
+>
+> If sysrq+b uses a different reboot path than the normal reboot path, it is
+> the first hint of what is missing...
 
-> On Thu, 31 Jul 2008, Jonathan Corbet wrote:
-> 
-> > On Thu, 31 Jul 2008 00:23:05 -0600
-> > Alex Chiang <achiang@hp.com> wrote:
-> > 
-> > > Overall, a great document, as expected from you. I've replied with
-> > > "content" comments below.
-> > 
-> > I've applied most of them, thanks.
-> >  
-> > > But it occurs to me that sending "style" comments to the editor of
-> > > LWN is something akin to, well, some combination of Prometheus,
-> > > Icarus, ravenous vultures, rabid penguins, and telling Linus that
-> > > his choice of $EDITOR sucks, which is to say, "unwise".
-> > 
-> > Naw, English always needs debugging too.
-> >  
-> > > You've got url reference for some quotes but not all. Would it be
-> > > possible to track them all down? Sorry for asking for all the extra
-> > > work, but I think the references are useful, especially if the
-> > > motivated reader actually visits said reference and gets all sides of
-> > > the story.
-> > 
-> > I'll see what I can do.  Some of the older ones are kind of hard to find. 
-> >  
-> > > > +Patches must be prepared against a specific version of the
-> > > > kernel.  As a +general rule, a patch should be based on the current
-> > > > mainline as found in +Linus's git tree.  It may become necessary to
-> > > > make versions against -mm,
-> > >    ^^^^^^^
-> > > Hm, is this the new recommended style? Grammar school taught me that
-> > > it should be "Linus'" but I've noticed a gradually changing but
-> > > inconsistently applied new school style.
-> > 
-> > I actually researched that a while back.  The rule, as far as I can tell
-> > (and to the extent that English has real rules) is that the trailing "s" is
-> > elided only when making a possessive of a plural noun.  "Linus", being very
-> > much a unique, singular entity, needs to be "Linus's" in the possessive
-> > form.
-> >  
-> > > > +If you have a significant series of patches, it is customary to
-> > > > send an +introductory description as part zero.  In general, the
-> > > > second and
-> > > 
-> > > This directly conflicts with akpm's advice:
-> > > 
-> > > 	http://www.zipworld.com.au/~akpm/linux/patches/stuff/tpp.txt
-> > > 
-> > > Section 6(b).
-> > 
-> > Interesting; Andrew didn't mention that in his review.  I think the intro
-> > postings can be very useful in understanding a patch series as a whole.
-> > Maybe I'll put in something about how anything which should be in the
-> > changelogs needs to go with the actual patches.
-> 
-> If you include a [0/N], it's a cover letter, not a changelog portion. It 
-> can be a useful way of providing context to reviewers as to the intended 
-> total effect. Each of the patches should make sense standalone, but it's 
-> not always clear from the individual patches what the total benefit is, 
-> and a 0/N that explains can be worthwhile (and you'd want to make that 
-> announcement to the mailing list, but not get it into the history).
+I've spend some time with tracking this issue more - and I've discovered this:
 
-but.. but Andrew often has to take part(s) of #0/N and add them to the
-changelog(s) to make the changelog(s) meaningful.  I.e., someone skimped
-on what should have been in the changelog(s).
+SysRQ+B  doesn't work with right AltGr on my keyboard - but it does
+work with the left Alt which I'm not normally using (It's somewhat
+easier to use the right one)
+Any idea why AltGR+SysRQ+b does not work on T61 ?
 
-> For example, if you have a series of patches that remove use of an old API 
-> from various places, each of those patches cleans up some piece of code, 
-> and these changelogs would say so, but it wouldn't be accurate (especially 
-> if 5/N gets dropped or reverted later) to say anywhere that you've removed 
-> all in-kernel use of the API; it's useful to include a cover letter that 
-> says so.
-> 
-> The same sort of text can be included in individual patches, after the 
-> tags and before the patch text, by putting a line '---' ahead of it; git, 
-> by default, puts a per-patch diffstat there, but you can add other stuff 
-> that will be helpful to reviewers but not future developers, like "this 
-> should fix Andrew's laptop".
+Blocking reboot goes through the arch/x86/kernel/reboot.c
+native_machine_emergency_restart()  case BOOT_KBD:  (10 loop outb()
+iteration)
+and ends in case BOOT_TRIPLE:  int3 - there it stays forever - during
+the press of poweroff button it even visits that sysrq __handler.
 
-Yes, that's a good place for such comments.
+if the kernel is started with   init=/bin/sh  - boot works without
+problems - so it looks like that disabling reboot capability is the
+result of Fedora's  rc.sysinit process.
+Yet I've no idea what that could be....
 
--- 
-~Randy
+Zdenek
