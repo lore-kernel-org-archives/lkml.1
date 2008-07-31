@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbYGaTjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbYGaTl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758108AbYGaTjo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 15:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbYGaTjg
+	id S1758137AbYGaTl2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 15:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbYGaTlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 15:39:36 -0400
-Received: from outbound-mail-131.bluehost.com ([67.222.39.21]:39932 "HELO
-	outbound-mail-131.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752824AbYGaTjf (ORCPT
+	Thu, 31 Jul 2008 15:41:17 -0400
+Received: from outbound-mail-03.bluehost.com ([69.89.21.13]:55442 "HELO
+	outbound-mail-03.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754552AbYGaTlQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 15:39:35 -0400
+	Thu, 31 Jul 2008 15:41:16 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=hoqzT2QshTE1AzB7DqafUQ1UcVvXhp6JZMWmwlTdEByePCNqiPlHrx0Gs2godCSlpOvh7/II8m3Om7QOxarnu7a9FPkKylDZRavd8UTHY99NK+AH/CKZGAHdMyh0g1hp;
+	b=OB/86GhTKmPmROk5sVAjSz1Y4omBqnDXIAk55f/3d65ZyO+uBKjgiO3piNGcUhzxCkhYPY3IWCz3hPiSoMNG/3z2J/1C0f1pYRrd92C6Cfx+D/0aPo31IEHyVZ6iiEf+;
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [PATCH] PCI: Limit VPD length for Broadcom 5708S
-Date: Thu, 31 Jul 2008 12:39:28 -0700
+To: "Benjamin Li" <benli@broadcom.com>
+Subject: Re: [PATCH] PCI: Add limits to VPD read/write lengths for Broadcom 5706S, 5708S
+Date: Thu, 31 Jul 2008 12:41:05 -0700
 User-Agent: KMail/1.9.9
-Cc: benli@broadcom.com, willy@linux.intel.com,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-References: <48920413.6080508@cosmosbay.com>
-In-Reply-To: <48920413.6080508@cosmosbay.com>
+Cc: "Matthew Wilcox" <willy@linux.intel.com>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Linux Netdev List" <netdev@vger.kernel.org>,
+       "Michael Chan" <mchan@broadcom.com>
+References: <48920413.6080508@cosmosbay.com> <1217532284-7032-1-git-send-email-benli@broadcom.com> <1217532284-7032-2-git-send-email-benli@broadcom.com>
+In-Reply-To: <1217532284-7032-2-git-send-email-benli@broadcom.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807311239.28769.jbarnes@virtuousgeek.org>
+Message-Id: <200807311241.06209.jbarnes@virtuousgeek.org>
 X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, July 31, 2008 11:27 am Eric Dumazet wrote:
-> While trying to upgrade kernel from 2.6.25 to 2.6.26 on a ProLiant BL460c
-> G1, I faced this problem on integrated Broadcom 5708S NIC when trying to UP
-> them.
+On Thursday, July 31, 2008 12:24 pm Benjamin Li wrote:
+> Reading beyond the valid VPD limit will hang the Broadcom
+> 5706S, 5708S.  During the check we need to add the additionial
+> 5706S and 5708S PCI ID's when limiting the read/write VPD length.
+>
+> Signed-off-by: Benjamin Li <benli@broadcom.com>
 
-Thanks Eric, I applied this to my for-linus branch.  I'll bounce the original 
-over to stable@.
+I already applied Eric's 5708S patch, can you re-diff against my for-linus 
+branch (in a few minutes after it mirrors out) and resend?  And please cc 
+stable@vger.kernel.org, since they'll want these crash fixes too.
 
+Thanks,
 Jesse
