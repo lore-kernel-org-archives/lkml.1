@@ -1,195 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbYGaKxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751839AbYGaKyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752547AbYGaKxo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 06:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYGaKxg
+	id S1751839AbYGaKyg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 06:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbYGaKyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 06:53:36 -0400
-Received: from [218.94.130.82] ([218.94.130.82]:1142 "HELO mail.archermind.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1750752AbYGaKxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 06:53:36 -0400
-X-Greylist: delayed 916 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jul 2008 06:53:35 EDT
-Message-ID: <4891960E.2000605@archermind.com>
-Date: Thu, 31 Jul 2008 18:38:06 +0800
-From: richard <yang.lu@archermind.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20071018)
+	Thu, 31 Jul 2008 06:54:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56218 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750828AbYGaKyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 06:54:24 -0400
+Date: Thu, 31 Jul 2008 12:53:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Simon Arlott <simon@fire.lp0.eu>, Daniel Walker <dwalker@mvista.com>,
+       Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [patch 1/4] fastboot: make fastboot a config option
+Message-ID: <20080731105337.GK488@elte.hu>
+References: <20080720151140.4aa7c682@infradead.org> <20080720151234.4535ee73@infradead.org> <20080730082335.4da1296f.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Subject: kernel  performance issue
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Jul 2008 10:38:27.0363 (UTC) FILETIME=[91017730:01C8F2F9]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080730082335.4da1296f.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi:
 
-I have a question about the kernel performance of kernel 2.6.24. I use
-"time"
-to account the time cost of "date" execution, and find that the "real time"
-of kernel 2.6.24 is always bigger than kernel 2.6.21 on my arm board.
-For my
-understanding, the time cost of 2.6.24 shouldn't be bigger than 2.6.21,
-because
-it is a upgrade of 2.6.21 and the its performance should be better than
-2.6.21,
-if I am wrong please let me know.
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
+> > +	  This includes doing some of the device initialization asynchronous
+> 
+> 	                                                        asynchronously
+> 
 
-[root@Linux /root]#cat ./date-loop.sh
-#! /bin/sh
-loop=1
-while [ $loop -le 50 ]
-do
-         date +%s
-         loop=$(($loop+1))
-done
+fixed in tip/fastboot via the patch below - thanks Randy.
 
+	Ingo
 
-Time cost in kernel 2.6.24:
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.06s
-sys     0m 0.43s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.07s
-sys     0m 0.42s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.09s
-sys     0m 0.40s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.07s
-sys     0m 0.41s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.07s
-sys     0m 0.42s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.09s
-sys     0m 0.40s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.06s
-sys     0m 0.43s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.08s
-sys     0m 0.41s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.09s
-sys     0m 0.40s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.10s
-sys     0m 0.39s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.05s
-sys     0m 0.44s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.05s
-sys     0m 0.44s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.09s
-sys     0m 0.40s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.07s
-sys     0m 0.42s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.07s
-sys     0m 0.42s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.48s
-user    0m 0.09s
-sys     0m 0.40s
-[root@Linux /root]#
+------------->
+>From 1a23ed42e1baf0481cc70c2f71d97b0bf0f1be70 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Thu, 31 Jul 2008 12:52:29 +0200
+Subject: [PATCH] fastboot: fix typo in init/Kconfig text
 
-Time cost in kernel 2.6.21:
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.08s
-sys     0m 0.38s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.07s
-sys     0m 0.39s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.09s
-sys     0m 0.37s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.09s
-sys     0m 0.37s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.08s
-sys     0m 0.38s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.06s
-sys     0m 0.40s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.09s
-sys     0m 0.37s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.10s
-sys     0m 0.36s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.04s
-sys     0m 0.42s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.09s
-sys     0m 0.37s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.07s
-sys     0m 0.39s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.08s
-sys     0m 0.38s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.10s
-sys     0m 0.36s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.09s
-sys     0m 0.37s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.09s
-sys     0m 0.37s
-[root@Linux /root]#time ./date-loop.sh > /dev/null
-real    0m 0.45s
-user    0m 0.07s
-sys     0m 0.39s
-[root@Linux /root]#
+noticed by Randy Dunlap.
 
--- 
+Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ init/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
-
-
-
-
-Best Regards,
-Yang Lu
-
+diff --git a/init/Kconfig b/init/Kconfig
+index 4f73780..6b4de4d 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -530,7 +530,7 @@ config FASTBOOT
+ 	  The fastboot option will cause the kernel to try to optimize
+ 	  for faster boot. 
+ 
+-	  This includes doing some of the device initialization asynchronous
++	  This includes doing some of the device initialization asynchronously
+ 	  as well as opportunistically trying to mount the root fs early.
+ 
+ 	  If unsure, say N.
