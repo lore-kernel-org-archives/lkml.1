@@ -1,229 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762394AbYGaC4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762842AbYGaC5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762394AbYGaC4j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 22:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759804AbYGaCub
+	id S1762842AbYGaC5A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 22:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758803AbYGaCut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 22:50:31 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:55951 "EHLO
+	Wed, 30 Jul 2008 22:50:49 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:55959 "EHLO
 	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759122AbYGaCu3 (ORCPT
+	with ESMTP id S1760378AbYGaCus (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 22:50:29 -0400
-Date: Wed, 30 Jul 2008 21:49:58 -0500
+	Wed, 30 Jul 2008 22:50:48 -0400
+Date: Wed, 30 Jul 2008 21:50:43 -0500
 From: David Fries <david@fries.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org
-Subject: [PATCH 20/30] W1: ds2490.c add support for strong pullup
-Message-ID: <20080731024958.GU12181@spacedout.fries.net>
+Subject: [PATCH 30/30] W1: ds2490.c optimize ds_set_pullup
+Message-ID: <20080731025043.GE12181@spacedout.fries.net>
 References: <20080729020433.GA24424@spacedout.fries.net> <20080729161356.2de456fb.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20080729161356.2de456fb.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Wed, 30 Jul 2008 21:49:59 -0500 (CDT)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Wed, 30 Jul 2008 21:50:43 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add strong pullup support for ds2490 driver, also drop mdelay(750),
-which busy waits, usage in favour of msleep for long delays.  Now with
-msleep only being called when the strong pullup is active, one wire
-bus operations are only taking minimal system overhead.
-
-The new set_pullup will only enable the strong pullup when requested,
-which is expected to be the only write operation that will benefit
-from a strong pullup.
+Optimize the ds_set_pullup function.  For a strong pullup to be sent
+the ds2490 has to have both the strong pullup mode enabled, and the
+specific write operation has to have the SPU bit enabled.  Previously
+the write always had the SPU bit enabled and both the duration and
+model was set when a strong pullup was requested.  Now the strong
+pullup mode is enabled at initialization time, the delay is updated
+only when the value changes, and the write SPU bit is set only when a
+strong pullup is required.  This removes two or three bus transactions
+per strong pullup request.
 
 Signed-off-by: David Fries <david@fries.net>
 Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 ---
- drivers/w1/masters/ds2490.c |   76 +++++++++++++++++++++---------------------
- 1 files changed, 38 insertions(+), 38 deletions(-)
+ drivers/w1/masters/ds2490.c |   64 ++++++++++++++++++++++++++++++-------------
+ 1 files changed, 45 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/w1/masters/ds2490.c b/drivers/w1/masters/ds2490.c
-index c8365fb..6b188e8 100644
+index 4faf4f9..59ad6e9 100644
 --- a/drivers/w1/masters/ds2490.c
 +++ b/drivers/w1/masters/ds2490.c
-@@ -98,11 +98,6 @@
- #define BRANCH_MAIN			0xCC
- #define BRANCH_AUX			0x33
- 
--/*
-- * Duration of the strong pull-up pulse in milliseconds.
-- */
--#define PULLUP_PULSE_DURATION		750
--
- /* Status flags */
- #define ST_SPUA				0x01  /* Strong Pull-up is active */
- #define ST_PRGA				0x02  /* 12V programming pulse is being generated */
-@@ -131,6 +126,11 @@ struct ds_device
- 
- 	int			ep[NUM_EP];
- 
-+	/* Strong PullUp
-+	 * 0: pullup not active, else duration in milliseconds
+@@ -141,6 +141,10 @@ struct ds_device
+ 	 * 0: pullup not active, else duration in milliseconds
+ 	 */
+ 	int			spu_sleep;
++	/* spu_bit contains COMM_SPU or 0 depending on if the strong pullup
++	 * should be active or not for writes.
 +	 */
-+	int			spu_sleep;
-+
++	u16			spu_bit;
+ 
  	struct w1_bus_master	master;
  };
- 
-@@ -192,7 +192,7 @@ static int ds_send_control_cmd(struct ds_device *dev, u16 value, u16 index)
- 
- 	return err;
- }
--#if 0
-+
- static int ds_send_control_mode(struct ds_device *dev, u16 value, u16 index)
- {
- 	int err;
-@@ -207,7 +207,7 @@ static int ds_send_control_mode(struct ds_device *dev, u16 value, u16 index)
- 
- 	return err;
- }
--#endif
-+
- static int ds_send_control(struct ds_device *dev, u16 value, u16 index)
- {
- 	int err;
-@@ -294,14 +294,6 @@ static int ds_recv_status(struct ds_device *dev, struct ds_status *st)
- 		if (count < 0)
- 			return err;
+@@ -311,6 +315,25 @@ static void ds_dump_status(struct ds_device *dev, unsigned char *buf, int count)
  	}
--#if 0
--	if (st->status & ST_IDLE) {
--		printk(KERN_INFO "Resetting pulse after ST_IDLE.\n");
--		err = ds_start_pulse(dev, PULLUP_PULSE_DURATION);
+ }
+ 
++static void ds_reset_device(struct ds_device *dev)
++{
++	ds_send_control_cmd(dev, CTL_RESET_DEVICE, 0);
++	/* Always allow strong pullup which allow individual writes to use
++	 * the strong pullup.
++	 */
++	if (ds_send_control_mode(dev, MOD_PULSE_EN, PULSE_SPUE))
++		printk(KERN_ERR "ds_reset_device: "
++			"Error allowing strong pullup\n");
++	/* Chip strong pullup time was cleared. */
++	if (dev->spu_sleep) {
++		/* lower 4 bits are 0, see ds_set_pullup */
++		u8 del = dev->spu_sleep>>4;
++		if (ds_send_control(dev, COMM_SET_DURATION | COMM_IM, del))
++			printk(KERN_ERR "ds_reset_device: "
++				"Error setting duration\n");
++	}
++}
++
+ static int ds_recv_data(struct ds_device *dev, unsigned char *buf, int size)
+ {
+ 	int count, err;
+@@ -444,7 +467,7 @@ static int ds_wait_status(struct ds_device *dev, struct ds_status *st)
+ 
+ 	if (err >= 16 && st->status & ST_EPOF) {
+ 		printk(KERN_INFO "Resetting device after ST_EPOF.\n");
+-		ds_send_control_cmd(dev, CTL_RESET_DEVICE, 0);
++		ds_reset_device(dev);
+ 		/* Always dump the device status. */
+ 		count = 101;
+ 	}
+@@ -509,24 +532,26 @@ static int ds_set_speed(struct ds_device *dev, int speed)
+ 
+ static int ds_set_pullup(struct ds_device *dev, int delay)
+ {
+-	int err;
++	int err = 0;
+ 	u8 del = 1 + (u8)(delay >> 4);
++	/* Just storing delay would not get the trunication and roundup. */
++	int ms = del<<4;
++
++	/* Enable spu_bit if a delay is set. */
++	dev->spu_bit = delay ? COMM_SPU : 0;
++	/* If delay is zero, it has already been disabled, if the time is
++	 * the same as the hardware was last programmed to, there is also
++	 * nothing more to do.  Compare with the recalculated value ms
++	 * rather than del or delay which can have a different value.
++	 */
++	if (delay == 0 || ms == dev->spu_sleep)
++		return err;
+ 
+-	dev->spu_sleep = 0;
+-	err = ds_send_control_mode(dev, MOD_PULSE_EN, delay ? PULSE_SPUE : 0);
++	err = ds_send_control(dev, COMM_SET_DURATION | COMM_IM, del);
+ 	if (err)
+ 		return err;
+ 
+-	if (delay) {
+-		err = ds_send_control(dev, COMM_SET_DURATION | COMM_IM, del);
 -		if (err)
 -			return err;
+-
+-		/* Just storing delay would not get the trunication and
+-		 * roundup.
+-		 */
+-		dev->spu_sleep = del<<4;
 -	}
--#endif
++	dev->spu_sleep = ms;
  
  	return err;
  }
-@@ -472,32 +464,26 @@ static int ds_set_speed(struct ds_device *dev, int speed)
- }
- #endif  /*  0  */
+@@ -577,11 +602,11 @@ static int ds_write_byte(struct ds_device *dev, u8 byte)
+ 	struct ds_status st;
+ 	u8 rbyte;
  
--static int ds_start_pulse(struct ds_device *dev, int delay)
-+static int ds_set_pullup(struct ds_device *dev, int delay)
- {
- 	int err;
- 	u8 del = 1 + (u8)(delay >> 4);
--	struct ds_status st;
--
--#if 0
--	err = ds_stop_pulse(dev, 10);
--	if (err)
--		return err;
--
--	err = ds_send_control_mode(dev, MOD_PULSE_EN, PULSE_SPUE);
--	if (err)
--		return err;
--#endif
--	err = ds_send_control(dev, COMM_SET_DURATION | COMM_IM, del);
--	if (err)
--		return err;
- 
--	err = ds_send_control(dev, COMM_PULSE | COMM_IM | COMM_F, 0);
-+	dev->spu_sleep = 0;
-+	err = ds_send_control_mode(dev, MOD_PULSE_EN, delay ? PULSE_SPUE : 0);
+-	err = ds_send_control(dev, COMM_BYTE_IO | COMM_IM | COMM_SPU, byte);
++	err = ds_send_control(dev, COMM_BYTE_IO | COMM_IM | dev->spu_bit, byte);
  	if (err)
  		return err;
  
--	mdelay(delay);
-+	if (delay) {
-+		err = ds_send_control(dev, COMM_SET_DURATION | COMM_IM, del);
-+		if (err)
-+			return err;
+-	if (dev->spu_sleep)
++	if (dev->spu_bit)
+ 		msleep(dev->spu_sleep);
  
--	ds_wait_status(dev, &st);
-+		/* Just storing delay would not get the trunication and
-+		 * roundup.
-+		 */
-+		dev->spu_sleep = del<<4;
-+	}
- 
- 	return err;
- }
-@@ -558,6 +544,9 @@ static int ds_write_byte(struct ds_device *dev, u8 byte)
- 	if (err)
- 		return err;
- 
-+	if (dev->spu_sleep)
-+		msleep(dev->spu_sleep);
-+
  	err = ds_wait_status(dev, &st);
- 	if (err)
- 		return err;
-@@ -566,8 +555,6 @@ static int ds_write_byte(struct ds_device *dev, u8 byte)
- 	if (err < 0)
- 		return err;
- 
--	ds_start_pulse(dev, PULLUP_PULSE_DURATION);
--
- 	return !(byte == rbyte);
- }
- 
-@@ -603,7 +590,7 @@ static int ds_read_block(struct ds_device *dev, u8 *buf, int len)
+@@ -648,11 +673,11 @@ static int ds_write_block(struct ds_device *dev, u8 *buf, int len)
  	if (err < 0)
  		return err;
  
 -	err = ds_send_control(dev, COMM_BLOCK_IO | COMM_IM | COMM_SPU, len);
-+	err = ds_send_control(dev, COMM_BLOCK_IO | COMM_IM, len);
++	err = ds_send_control(dev, COMM_BLOCK_IO | COMM_IM | dev->spu_bit, len);
  	if (err)
  		return err;
  
-@@ -630,14 +617,15 @@ static int ds_write_block(struct ds_device *dev, u8 *buf, int len)
- 	if (err)
- 		return err;
+-	if (dev->spu_sleep)
++	if (dev->spu_bit)
+ 		msleep(dev->spu_sleep);
  
-+	if (dev->spu_sleep)
-+		msleep(dev->spu_sleep);
-+
  	ds_wait_status(dev, &st);
+@@ -849,7 +874,7 @@ static int ds_w1_init(struct ds_device *dev)
+ 	 * the input buffer.  This will cause the next read to fail
+ 	 * see the note in ds_recv_data.
+ 	 */
+-	ds_send_control_cmd(dev, CTL_RESET_DEVICE, 0);
++	ds_reset_device(dev);
  
- 	err = ds_recv_data(dev, buf, len);
- 	if (err < 0)
- 		return err;
- 
--	ds_start_pulse(dev, PULLUP_PULSE_DURATION);
--
- 	return !(err == len);
- }
- 
-@@ -803,6 +791,16 @@ static u8 ds9490r_reset(void *data)
- 	return 0;
- }
- 
-+static u8 ds9490r_set_pullup(void *data, int delay)
-+{
-+	struct ds_device *dev = data;
-+
-+	if (ds_set_pullup(dev, delay))
-+		return 1;
-+
-+	return 0;
-+}
-+
- static int ds_w1_init(struct ds_device *dev)
- {
- 	memset(&dev->master, 0, sizeof(struct w1_bus_master));
-@@ -816,6 +814,7 @@ static int ds_w1_init(struct ds_device *dev)
- 	dev->master.read_block	= &ds9490r_read_block;
- 	dev->master.write_block	= &ds9490r_write_block;
- 	dev->master.reset_bus	= &ds9490r_reset;
-+	dev->master.set_pullup	= &ds9490r_set_pullup;
- 
- 	return w1_add_master_device(&dev->master);
- }
-@@ -839,6 +838,7 @@ static int ds_probe(struct usb_interface *intf,
- 		printk(KERN_INFO "Failed to allocate new DS9490R structure.\n");
+ 	dev->master.data	= dev;
+ 	dev->master.touch_bit	= &ds9490r_touch_bit;
+@@ -892,6 +917,7 @@ static int ds_probe(struct usb_interface *intf,
  		return -ENOMEM;
  	}
-+	dev->spu_sleep = 0;
+ 	dev->spu_sleep = 0;
++	dev->spu_bit = 0;
  	dev->udev = usb_get_dev(udev);
  	if (!dev->udev) {
  		err = -ENOMEM;
