@@ -1,148 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbYGaLXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbYGaL0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980AbYGaLXn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 07:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbYGaLXS
+	id S1753515AbYGaL0x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 07:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYGaL0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 07:23:18 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:57733 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbYGaLXP convert rfc822-to-8bit (ORCPT
+	Thu, 31 Jul 2008 07:26:45 -0400
+Received: from hosted06.westnet.com.au ([203.10.1.221]:38463 "EHLO
+	hosted06.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751264AbYGaL0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 07:23:15 -0400
-Date: Thu, 31 Jul 2008 13:23:36 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: "John Kacur" <jkacur@gmail.com>
-Cc: "Chirag Jog" <chirag@linux.vnet.ibm.com>,
-       "J?rgen Mell" <j.mell@t-online.de>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
+	Thu, 31 Jul 2008 07:26:44 -0400
+Message-ID: <4891A169.30603@snapgear.com>
+Date: Thu, 31 Jul 2008 21:26:33 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Paul Mundt <lethal@linux-sh.org>, David Howells <dhowells@redhat.com>,
+       Arnd Bergmann <arnd@arndb.de>, Sam Ravnborg <sam@ravnborg.org>,
+       linux arch <linux-arch@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       "Clark Williams" <williams@redhat.com>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       "Josh Triplett" <josht@linux.vnet.ibm.com>,
-       "Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Fix Bug messages
-Message-ID: <20080731132336.362bd487@bull.net>
-In-Reply-To: <520f0cf10807310313q45599221q3db1b6fd7e7c722f@mail.gmail.com>
-References: <alpine.LFD.1.10.0807252141420.574@apollo.tec.linutronix.de>
-	<alpine.LFD.1.10.0807291440240.14925@apollo.tec.linutronix.de>
-	<alpine.LFD.1.10.0807300006180.14925@apollo.tec.linutronix.de>
-	<200807301101.32417.j.mell@t-online.de>
-	<20080730171842.GB3420@linux.vnet.ibm.com>
-	<20080731100023.0221ec2b@bull.net>
-	<520f0cf10807310313q45599221q3db1b6fd7e7c722f@mail.gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       uClinux list <uclinux-dev@uclinux.org>
+Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
+References: <200807300907.25186.arnd@arndb.de> <20080728200500.GA14284@uranus.ravnborg.org> <48900EE4.8030606@snapgear.com> <3995.1217410495@redhat.com> <Pine.LNX.4.64.0807301422380.3316@anakin> <20080731032338.GA14296@linux-sh.org> <Pine.LNX.4.64.0807310916430.10810@anakin>
+In-Reply-To: <Pine.LNX.4.64.0807310916430.10810@anakin>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-PMX-Branch: TNG-Outgoing
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi John,
-
-On Thu, 31 Jul 2008 12:13:24 +0200 "John Kacur" <jkacur@gmail.com> wrote:
-
-> On Thu, Jul 31, 2008 at 10:00 AM, Sebastien Dugue
-> <sebastien.dugue@bull.net> wrote:
-> > On Wed, 30 Jul 2008 22:48:42 +0530 Chirag Jog <chirag@linux.vnet.ibm.com> wrote:
-> >
-> >> * J?rgen Mell <j.mell@t-online.de> [2008-07-30 11:01:32]:
-> >>
-> >> > Hello Thomas,
-> >> >
-> >> > On Wednesday, 30. July 2008, Thomas Gleixner wrote:
-> >> > > We are pleased to announce the 2.6.26-rt1 tree, which can be
-> >> > > downloaded from the location:
-> >> >
-> >> > I have tried the new kernel and have some good news and some bad news:
-> >> >
-> >> > The good news: The machine boots and seems to run without major problems.
-> >> >
-> >> > The bad news: It produces continuously lots of bug messages in the error
-> >> > logs (cf. attached dmesg.tgz). The error at rtmutex.c:743 was already
-> >> > present in 2.6.25-rt* when ACPI was enabled. The 'using smp_processor_id
-> >> > ()  in preemptible code' is new here with 2.6.26.
-> >> >
-> >> > Machine is an old Athlon XP (single core) on an EPOX mainboard with VIA
-> >> > chipset.
-> >> >
-> >> > If I can help with testing, please let me know.
-> >> >
-> >> > Bye,
-> >> >          Jürgen
-> >> >
-> >> >
-> >> This patch should solve some of the bug messages.
-> >> It does two things:
-> >> 1. Change rt_runtime_lock to be a raw spinlock as the comment above it
-> >> says: it is nested inside the rq lock.
-> >>
-> >> 2. Change mnt_writers to be a per_cpu locked variable.
-> >> This eliminates the need for the codepath to disable preemption and
-> >> then potentially sleep, leading to the BUG messages
-> >>
-> >> Signed-Off-By: Chirag <chirag@linux.vnet.ibm.com>
-> >
-> >  Neat, the only remaining BUGs I see are from sock_prot_inuse_add()
-> >
-> > BUG: using smp_processor_id() in preemptible [00000000] code: arping/1916
-> > caller is .sock_prot_inuse_add+0x30/0x80
-> > Call Trace:
-> > [c0000000eed2f910] [c000000000010304] .show_stack+0x70/0x1bc (unreliable)
-> > [c0000000eed2f9c0] [c0000000001a2340] .debug_smp_processor_id+0x138/0x168
-> > [c0000000eed2fa70] [c0000000002181f4] .sock_prot_inuse_add+0x30/0x80
-> > [c0000000eed2fb10] [c00000000026d96c] .udp_lib_get_port+0x2a8/0x320
-> > [c0000000eed2fbc0] [c000000000275b30] .inet_bind+0x168/0x248
-> > [c0000000eed2fc60] [c000000000215024] .sys_bind+0x98/0xdc
-> > [c0000000eed2fd90] [c0000000002370bc] .compat_sys_socketcall+0xcc/0x214
-> > [c0000000eed2fe30] [c0000000000086ac] syscall_exit+0x0/0x40
-> > BUG: arping:1916 task might have lost a preemption check!
-> > Call Trace:
-> > [c0000000eed2f890] [c000000000010304] .show_stack+0x70/0x1bc (unreliable)
-> > [c0000000eed2f940] [c00000000004e298] .preempt_enable_no_resched+0x60/0x78
-> > [c0000000eed2f9c0] [c0000000001a2348] .debug_smp_processor_id+0x140/0x168
-> > [c0000000eed2fa70] [c0000000002181f4] .sock_prot_inuse_add+0x30/0x80
-> > [c0000000eed2fb10] [c00000000026d96c] .udp_lib_get_port+0x2a8/0x320
-> > [c0000000eed2fbc0] [c000000000275b30] .inet_bind+0x168/0x248
-> > [c0000000eed2fc60] [c000000000215024] .sys_bind+0x98/0xdc
-> > [c0000000eed2fd90] [c0000000002370bc] .compat_sys_socketcall+0xcc/0x214
-> > [c0000000eed2fe30] [c0000000000086ac] syscall_exit+0x0/0x40
-> >
+Geert Uytterhoeven wrote:
+> On Thu, 31 Jul 2008, Paul Mundt wrote:
+>> On Wed, Jul 30, 2008 at 02:26:04PM +0200, Geert Uytterhoeven wrote:
+>>> On Wed, 30 Jul 2008, David Howells wrote:
+>>>> Arnd Bergmann <arnd@arndb.de> wrote:
+>>>>
+>>>>> I think the more interesting aspect in m68knommu is what happens
+>>>>> when asm-m68k gets moved. Does that work as well?
+>>>> Can m68knommu be merged into m68k and be made contingent on CONFIG_MMU?  This
+>>>> is what FRV does.
+>>> Sure it can ;-)
+>>>
+>>> Actually I did a bit of work to add nommu support to m68k to make it
+>>> boot on old MMU-less Amigas, but it dates back to the 2.6.8.1 era...
+>>>
+>>> The bigger issue is in those parts that are done differently by m68k and
+>>> m68knommu (esp. head.S).
+>>>
+>>> Who's gonna take the work? :-)
+>>>
+>> This sort of merging is fairly easy to do incrementally, at least by
+>> someone that has both platforms available. An easy first step would be to
 > 
-> Does this simple fix do the trick for you?
->
->Signed-off-by: John Kacur <jkacur@gmail.com>
->
->Index: linux-2.6.26-rt1/net/core/sock.c
->===================================================================
->--- linux-2.6.26-rt1.orig/net/core/sock.c
->+++ linux-2.6.26-rt1/net/core/sock.c
->@@ -1943,7 +1943,7 @@ static DECLARE_BITMAP(proto_inuse_idx, P
-> #ifdef CONFIG_NET_NS
-> void sock_prot_inuse_add(struct net *net, struct proto *prot, int val)
-> {
->-	int cpu = smp_processor_id();
->+	int cpu = raw_smp_processor_id();
-> 	per_cpu_ptr(net->core.inuse, cpu)->val[prot->inuse_idx] += val;
-> }
-> EXPORT_SYMBOL_GPL(sock_prot_inuse_add);
+> Indeed. I have none of the currently supported m68knommu platforms,
+> though.
+> Don't know about Greg and m68k platforms (of course he can use ARAnyM
+> ;-).
 
-  Nope, still the same BUGs, I do not have the net namespaces configured, so the
-version of sock_prot_inuse_add() which is used is defined a few lines below:
-
-static DEFINE_PER_CPU(struct prot_inuse, prot_inuse);
-
-void sock_prot_inuse_add(struct net *net, struct proto *prot, int val)
-{
-	__get_cpu_var(prot_inuse).val[prot->inuse_idx] += val;
-}
-EXPORT_SYMBOL_GPL(sock_prot_inuse_add);
-
-  Looks like another case of percpu variables Chirag has benn fixing.
-
-  Sebastien.
+I don't have any real m68k (with MMU) hardware ;-)
+I do have a v4e ColdFire with MMU, but that is not supported
+by mainline m68k code. Maybe a help...
 
 
+>> move the m68knommu stuff that are implemented differently over as _nommu
+>> files, similar to how the _32/_64 renames happened, and then set about
+>> converging the two little by little. This is what I've been doing with
+>> sh64->sh integration for example, despite fundamental differences like
+>> having a totally different register layout and instruction set.
+> 
+> IC.
+
+Probably not hugely difficult to merge together. Quite a few of the
+m68knommu files came from m68k with only a little change and a lot
+of removal. The board/platform stuff is obviously quite different -
+very little (if any) commonality.
+
+Just needs someone with time to sit down and do it and clean up
+the resulting mess.
+
+Regards
+Greg
+
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
