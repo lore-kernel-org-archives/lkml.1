@@ -1,102 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYGaNWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbYGaNZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754326AbYGaNWb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 09:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbYGaNWS
+	id S1753511AbYGaNZq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 09:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbYGaNZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 09:22:18 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:39851 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753194AbYGaNWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 09:22:17 -0400
-Date: Thu, 31 Jul 2008 14:22:13 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: memory hotplug: hot-remove fails on lowest chunk in ZONE_MOVABLE
-Message-ID: <20080731132213.GF1704@csn.ul.ie>
-References: <20080723105318.81BC.E1E9C6FF@jp.fujitsu.com> <1217347653.4829.17.camel@localhost.localdomain> <20080730110444.27DE.E1E9C6FF@jp.fujitsu.com> <1217420161.4545.10.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1217420161.4545.10.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 31 Jul 2008 09:25:37 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:51244 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751101AbYGaNZg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 09:25:36 -0400
+Date: Thu, 31 Jul 2008 15:26:06 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, benh@kernel.crashing.org,
+       paulus@samba.org, jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
+       tinytim@us.ibm.com, tglx@linutronix.de, rostedt@goodmis.org
+Subject: Re: [PATCH] powerpc - Initialize the irq radix tree earlier
+Message-ID: <20080731152606.5ae7c379@bull.net>
+In-Reply-To: <1217509299.19050.15.camel@localhost>
+References: <1217497241-10685-1-git-send-email-sebastien.dugue@bull.net>
+	<1217497241-10685-2-git-send-email-sebastien.dugue@bull.net>
+	<1217504456.9817.22.camel@localhost>
+	<20080731140002.31bbe4a0@bull.net>
+	<1217509104.19050.11.camel@localhost>
+	<1217509299.19050.15.camel@localhost>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (30/07/08 14:16), Gerald Schaefer didst pronounce:
-> On Wed, 2008-07-30 at 12:16 +0900, Yasunori Goto wrote:
-> > Well, I didn't mean changing pages_min value. There may be side effect as
-> > you are saying.
-> > I meant if some pages were MIGRATE_RESERVE attribute when hot-remove are
-> > -executing-, their attribute should be changed.
+On Thu, 31 Jul 2008 23:01:39 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
+
+> On Thu, 2008-07-31 at 22:58 +1000, Michael Ellerman wrote:
+> > On Thu, 2008-07-31 at 14:00 +0200, Sebastien Dugue wrote:
+> > > On Thu, 31 Jul 2008 21:40:56 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
+> > > > 
+> > > > This boot ordering stuff is pretty hairy, so I might have missed
+> > > > something, but this is how the code is ordered AFAICT:
+> > > > ﻿
+> > > > start_kernel()
+> > > > 	init_IRQ()
+> > > > 	...
+> > > > 	local_irq_enable()
+> > > > 	...
+> > > > 	rest_init()
+> > > > 		kernel_thread()
+> > > > 			kernel_init()
+> > > > 				smp_prepare_cpus()
+> > > > 					smp_xics_probe()	(via smp_ops->probe())
+> > > > 
+> > > > 
+> > > > What's stopping us from taking an irq between local_irq_enable() and
+> > > > smp_xics_probe() ?  Is it just that no one's request_irq()'ed them yet?
+> > > 
+> > >   It's hairy, I agree, but as you've mentioned no one has done a request_irq()
+> > > at that point. The first one to do it is smp_xics_probe() for the IPI.
 > > 
-> > For example, how is like following dummy code?  Is it impossible?
-> > (Not only here, some places will have to be modified..)
+> > Hmm, I don't think that's strong enough. I can trivially cause irqs to
+> > fire during a kexec reboot just by mashing the keyboard.
+> > 
+> > And during a kdump boot all sorts of stuff could be firing. Even during
+> > a clean boot, from firmware, I don't think we can guarantee that
+> > nothing's going to fire.
+> > 
+> > .. after a bit of testing ..
+> > 
+> > It seems it actually works (sort of). 
+> > 
+> > xics_remap_irq() calls irq_radix_revmap_lookup(), which calls:
+> > 
+> > ptr = radix_tree_lookup(&host->revmap_data.tree, hwirq);
+> > 
+> > And because ﻿host->revmap_data.tree was zalloc'ed we trip on the first
+> > check here:
 > 
-> Right, this should be possible. I was somewhat wandering from the subject,
-> because I noticed that there may be a bigger problem with MIGRATE_RESERVE
-> pages in ZONE_MOVABLE, and that we may not want to have them in the first
-> place.
+> @#$% ctrl-enter == send!
 > 
-
-MIGRATE_RESERVE is of large importance to ZONE_DMA32 and ZONE_NORMAL, to
-a much lesser extent to ZONE_HIGHMEM and almost irrevelant to
-ZONE_MOVABLE. However, nothing about MIGRATE_RESERVE should prevent the
-hot-remove of the section. If the section is totally free, it is
-considered removable according to is_mem_section_removable(). If other
-parts of memory hot-remove are deliberately ignoring the RESERVE
-sections, they should stop that.
-
-I haven't read the whole thread, but in your original mail, you say that
-ZONE_MOVABLE is populated by memory hot-add. Are there really PageReserved()
-pages there? If so, is there any chance or other management structures
-are being allocated within the section you are hot-adding? If so and they
-are not getting freed, that might be why hot-remove is failing. If they
-are not PageReserved() pages and this is an -mm kernel, I would enable
-CONFIG_PAGE_OWNER and see who really reallocated those problem pages that
-are not freeing.
-
-> The more memory we add to ZONE_MOVABLE, the less reserved pages will
-> remain to the other zones. In setup_per_zone_pages_min(), min_free_kbytes
-> will be redistributed to a zone where the kernel cannot make any use of
-> it, effectively reducing the available min_free_kbytes. 
-
-I'm not sure what you mean by "available min_free_kbytes". The overall value
-for min_free_kbytes should be approximately the same whether the zone exists
-or not. However, you're right in that the distribution of minimum free pages
-changes with ZONE_MOVABLE because the zones are different sizes now. This
-affects reclaim, not memory hot-remove.
-
-> This just doesn't
-> sound right. I believe that a similar situation is the reason why highmem
-> pages are skipped in the calculation and I think that we need that for
-> ZONE_MOVABLE too. Any thoughts on that problem?
+> Continuing ...
 > 
-
-is_highmem(ZONE_MOVABLE) should be returning true if the zone is really
-part of himem.
-
-> Setting pages_min to 0 for ZONE_MOVABLE, while not capping pages_low
-> and pages_high, could be an option. I don't have a sufficient memory
-> managment overview to tell if that has negative side effects, maybe
-> someone with a deeper insight could comment on that.
+> void *radix_tree_lookup(struct radix_tree_root *root, unsigned long index)
+> {
+>         unsigned int height, shift;
+>         struct radix_tree_node *node, **slot;
 > 
+>         node = rcu_dereference(root->rnode);
+>         if (node == NULL)
+>                 return NULL;
+> 
+> Which means ﻿irq_radix_revmap_lookup() will return NO_IRQ, which is cool.
 
-pages_min of 0 means the other values would be 0 as well. This means that
-kswapd may never be woken up to free pages within that zone and lead to
-poor utilisation of the zone as allocators fallback to other zones to
-avoid direct reclaim. I don't think that is your intention nor will it
-help memory hot-remove.
+  Which is what I intended so that as long as no IRQ is registered we
+return NO_IRQ.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+> 
+> 
+> So I think it can fly, as long as we're happy that we can't reverse map
+> anything until smp_xics_probe() - and I think that's true, as any irq we
+> take will be invalid.
+
+  That's true as no IRQs are registered before smp_xics_probe() and for any
+interrupt we might get before that, irq_radix_revmap_lookup() will return
+NO_IRQ.
+
+  Thanks,
+
+  Sebastien.
