@@ -1,85 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbYGaNHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbYGaNJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756613AbYGaNHc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 09:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbYGaNHY
+	id S1755500AbYGaNJS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 09:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbYGaNJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 09:07:24 -0400
-Received: from smtp.net4india.com ([202.71.129.66]:42436 "EHLO
-	smtp.net4india.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751064AbYGaNHX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 09:07:23 -0400
-Subject: Re: PCIe device driver question
-From: "V.Radhakrishnan" <rk@atr-labs.com>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Sanka Piyaratna <cesanka@yahoo.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4890BF39.6060608@shaw.ca>
-References: <fa.PmBLCqOb4Xo53y3W9hAdnsU50Og@ifi.uio.no>
-	 <fa.42mxuHHJP7XQmYeyxNoEC/NFUHA@ifi.uio.no>  <4890BF39.6060608@shaw.ca>
-Content-Type: text/plain
-Date: Thu, 31 Jul 2008 18:41:08 +0530
-Message-Id: <1217509868.2156.18.camel@atlas>
+	Thu, 31 Jul 2008 09:09:05 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:60595 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751085AbYGaNJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 09:09:04 -0400
+Date: Thu, 31 Jul 2008 17:12:26 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] wait_task_inactive: don't use the dummy version when !SMP && PREEMPT
+Message-ID: <20080731131226.GB76@tv-sign.ru>
+References: <20080730170949.GA18682@tv-sign.ru> <alpine.LFD.1.10.0807301038170.3334@nehalem.linux-foundation.org> <b647ffbd0807301246s1def837ar8c389a3d3f7ec2cc@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b647ffbd0807301246s1def837ar8c389a3d3f7ec2cc@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Robert,
+On 07/30, Dmitry Adamushko wrote:
+>
+> 2008/7/30 Linus Torvalds <torvalds@linux-foundation.org>:
+> >
+> > Oh, and shouldn't it do a "yield()" instead of a cpu_relax() on UP?
+>
+> This part could have been skipped for UP. task_running(rq, p) just
+> can't give 'true' for UP (otherwise it's a bug). The only relevant
+> part is "on_rq = p->se.on_rq".
 
-Thanks for the reply. I was thinking that the MMIO and reserve memory
-will be below 4 GB was only applicable for 32-bit environments, since I
-don't have much experience in 64-bit.
+That was my understanding, thanks for your confirmation.
 
-However, I had an IDENTICAL problem over 2 years ago. I had used
-posix_memalign() in user space to allocate pages aligned to 4096 byte
-pages, allocated several additional memaligned pages in user space, used
-mlock() to lock all these pages, gathered the user space addresses into
-the original pages as arrays of structures, passed this array into the
-kernel using an ioctl() call, used get_user_pages() to extract the
-struct page pointers, performed a kmap() to get the kernel virtual
-addresses and then extracted the physical addresses and 'sent' this to
-the chip to perform DMA.
+> (if [1], then I think a separate function for PREEMPT would look
+> better, i.e. without parts with task_running())
 
-This situation is almost identical to what has been reported and hence
-my interest.
+in that case we can also eliminate task_rq_lock() afaics.
 
-However, I had a PCI access problem. The DMA was just NOT happening on
-any machine which had highmem, i.e over 896 MB.
+> e.g. consider this code from kthread_bind():
+>
+>         /* Must have done schedule() in kthread() before we set_task_cpu */
+>         wait_task_inactive(k, 0);
+>
+>         set_task_cpu(k, cpu);
+>         k->cpus_allowed = cpumask_of_cpu(cpu);
+>         k->rt.nr_cpus_allowed = 1;
+>         k->flags |= PF_THREAD_BOUND;
+>
+> set_task_cpu(k, cpu) is safe _only_ if 'k' is not on the run-queue
+> (and can't be placed onto it behind our back -- heh, a bit subtle).
+>
+> Now, for !SMP + PREEMPT it's not a case. set_task_cpu() may be called
+> while 'k' is still on the run-queue (more precisely, preempted in
+> kthread() between complete(&create->started); and schedule();).
+>
+> Yes, set_task_cpu() is a "nop" for UP so that's ok in this particular
+> case. But let's suppose, another use-case would be introduced with
+> 'false' assumptions causing troubles for !SMP.
 
-I "solved" the problem since I didn't have much time to do R&D, by
-booting with kernel command line option of mem=512M and the DMA went
-thru successfully.
+Completely agreed.
 
-This was the linux-2.6.15 kernel then. Since the project was basically
-to test the DMA capability of the device, the actual address to where it
-was DMA-ed didn't matter, and I got paid for my work. However, this
-matter was always at the back of my head.
 
-What could have been the problem with the x86 32-bit PCI ? 
+Currently the only user which can suffer on UP && PREEMPT is
+task_current_syscall(). As Roland suggested we can fix it if we change
+the !SMP version to return ->nivcsw + ->nvcsw. But personally I don't
+like the fact that we will have the subltle difference in behaviour
+depending on CONFIG_SMP. We have to wait for .on_rq == 0 on SMP, imho
+it is better to do the same on UP even if none of the current callers
+needs this.
 
-Thanks and regards
+That said, I think this problem is minor and I don't (and can't) have
+the strong opinion on how to fix it. I'd better wait for the authoritative
+verdict.
 
-V. Radhakrishnan
-www.atr-labs.com
-
-On Wed, 2008-07-30 at 13:21 -0600, Robert Hancock wrote:
-> V.Radhakrishnan wrote:
-> >>> am testing this in an X86_64 architecture machine with 4 GB of RAM. I
-> >>> am able to successfully dma data into any memory (dma) address >
-> >>> 0x0000_0001_0000_0000.
-> > 
-> > How can you DMA "successfully" into this address which is > 4 GB when
-> > you have only 4 GB RAM ? Or am I missing something ?
-> 
-> The MMIO and other reserved memory space at the top of the 32-bit memory 
-> space will cause the top part of memory to be relocated above 4GB.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Oleg.
 
