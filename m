@@ -1,78 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbYGaB0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757766AbYGaBa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759383AbYGaB0Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 21:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbYGaB0H
+	id S1757766AbYGaBa7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 21:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbYGaBao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 21:26:07 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:12823 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753511AbYGaB0F convert rfc822-to-8bit (ORCPT
+	Wed, 30 Jul 2008 21:30:44 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:47581 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752944AbYGaBan (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 21:26:05 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-Date: Wed, 30 Jul 2008 18:24:05 -0700
-Message-ID: <8A71B368A89016469F72CD08050AD334032EC7F5@maui.asicdesigners.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-Thread-Index: Acjye20kvxPfeh/PSxuVQTjXQDVkYgALwLfQ
-References: <200807300019.m6U0JkdY012558@localhost.localdomain> <4890C287.60508@pobox.com>
-From: "Karen Xie" <kxie@chelsio.com>
-To: "Jeff Garzik" <jgarzik@pobox.com>
-Cc: <netdev@vger.kernel.org>, <open-iscsi@googlegroups.com>,
-       <davem@davemloft.net>, <michaelc@cs.wisc.edu>,
-       "Steve Wise" <swise@opengridcomputing.com>, <rdreier@cisco.com>,
-       <daisyc@us.ibm.com>, <wenxiong@us.ibm.com>, <bhua@us.ibm.com>,
-       "Divy Le Ray" <divy@chelsio.com>,
-       "Dimitrios Michailidis" <dm@chelsio.com>,
-       "Casey Leedom" <leedom@chelsio.com>,
-       "linux-scsi" <linux-scsi@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
+	Wed, 30 Jul 2008 21:30:43 -0400
+Message-Id: <20080731012208.115225969@vergenet.net>
+User-Agent: quilt/0.46-1
+Date: Thu, 31 Jul 2008 11:22:08 +1000
+To: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: Vivek Goyal <vgoyal@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
+From: Simon Horman <horms@verge.net.au>
+Subject: [patch 0/6] is_kdump_kernel() cleanup and related patches
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Comments:
->
->* SCSI drivers should be submitted via the linux-scsi@vger.kernel.org 
->mailing list.
+Hi,
 
-Will do that. Thanks.
+this patch series contains all the patches (that I am aware of)
+that have recently been posted regarding kdump and in particular
+is_kdump_kernel()
 
->
->* The driver is clean and readable, well done
->
->* From a networking standpoint, our main concern becomes how this 
->interacts with the networking stack.  In particular, I'm concerned
-based 
->on reading the source that this driver uses "TCP port stealing" rather 
->than using a totally separate MAC address (and IP).
->
->Stealing a TCP port on an IP/interface already assigned is a common 
->solution in this space, but also a flawed one.  Precisely because the 
->kernel and applications are unaware of this "special, magic TCP port" 
->you open the potential for application problems that are very difficult
+For Andrew Morton's benefit I have annotated each patch as to whether it
+needs to be included in 2.6.27 or not. My conclusion is that while
+I would like to see all of the patches included in 2.6.27, none
+of them are particularly dire, and thus they could all wait until
+post-2.6.27.
 
->for an admin to diagnose based on observed behavior.
-
-The collisions between the host stack and iSCSI offload are unlikely
-because the iSCSI target server's port is unique (nailed down as 3260).
-If an offload card is plugged in, all iSCSI connections to a given
-target (i.e., destination/port) are offloaded. There is precedence for
-this approach such as RDMA/iWarp.
-
->
->So, additional information on your TCP port usage would be greatly 
->appreciated.  Also, how does this interact with IPv6?  Clearly it 
->interacts with IPv4...
-
-Currently, IPv6 connection request will not be honored, I will make sure
-the checking is added in the resubmission.
+-- 
+Horms
 
