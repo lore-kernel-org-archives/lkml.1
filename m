@@ -1,299 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbYGaMMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752323AbYGaMW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757280AbYGaMMy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 08:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbYGaMMo
+	id S1752323AbYGaMW1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 08:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYGaMWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 08:12:44 -0400
-Received: from ns.suse.de ([195.135.220.2]:37440 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752033AbYGaMMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 08:12:43 -0400
-Date: Thu, 31 Jul 2008 14:12:41 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Steven Whitehouse <swhiteho@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Potential fix to filemap_fault()
-Message-ID: <20080731121241.GA17228@wotan.suse.de>
-References: <1217502265.3425.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 31 Jul 2008 08:22:18 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:31244 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750887AbYGaMWR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 08:22:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DMQ5MiCh/ljggoLCQkRQOVmojaMGldPJE5waRhfFQ5i48v89ozWwslF8AiYCH63ln2
+         ewOmTqj4Uw9PG13isPVjoPpnrl/xSs28FIyDvRZYRszfBFhEblT4/PvEbTc8kmOTZqE+
+         JVhTIYJhzgTWIObtEqJ8L08d5buao4s+ACLpM=
+Message-ID: <ef1cd66f0807310522j67d10fccm3ccc2cb7ebe51908@mail.gmail.com>
+Date: Thu, 31 Jul 2008 13:22:17 +0100
+From: "=?ISO-8859-1?Q?Jochen_Vo=DF?=" <jochen.voss@googlemail.com>
+To: "Jonathan Corbet" <corbet@lwn.net>
+Subject: Re: [PATCH, RFC] A development process document
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Amanda McPherson" <amanda@amcpherson.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080729143015.0f79cf37@bike.lwn.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1217502265.3425.15.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+References: <20080729143015.0f79cf37@bike.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 12:04:25PM +0100, Steven Whitehouse wrote:
-> Hi,
-> 
-> We've spotted (with our cluster coherency tests) a couple of issues in
-> the current page fault path. One of those is fixed by the below patch,
-> so I'd like to know if anybody can spot any unwanted side effects if we
-> make this change. The patch prevents us from seeing bus errors when
-> accessing what should be valid data within a file. This can currently
-> happen when there is a race between invalidation and the page fault
-> path.
-> 
-> After applying this patch, we still see one remaining issue, which I
-> think is related to page_mkwrite but we've not finally tracked that one
-> down yet. The symptoms of the remaining issue are that we see a blank
-> page from time to time, when we should be seeing valid data.
-> 
-> Steve.
-> 
-> diff --git a/mm/filemap.c b/mm/filemap.c
-> index 42bbc69..9441759 100644
-> --- a/mm/filemap.c
-> +++ b/mm/filemap.c
-> @@ -1563,7 +1563,7 @@ page_not_uptodate:
->  	error = mapping->a_ops->readpage(file, page);
->  	if (!error) {
->  		wait_on_page_locked(page);
-> -		if (!PageUptodate(page))
-> +		if (PageError(page))
->  			error = -EIO;
->  	}
->  	page_cache_release(page);
-> 
+Hi Jon,
 
-Hi Steve,
+Some more minor issues (disclaimer: I am not a native speaker of English).
 
-Yeah this is part of larger problems in our vm/fs with page error handling.
-This came up a month or two ago and prompted me to finally start writing
-something for it...
+2008/7/29 Jonathan Corbet <corbet@lwn.net>:
+> +One of the most compelling features of Linux is that it is accessible to
+> +these developers; anybody with the requisite skills can improve Linux and
+> +influence the direction of its development.  Proprietary products cannot
+> +offer this kind of openness, which is a characteristic of the free software
+> +process.  But, if anything, the kernel is open even than most other free
+> +software projects. ...
 
-I haven't actually spent a lot of time trying to exercise it yet, but if
-its on your radar now, let's make a push to get it fixed.
+This last sentence looks strange to me.  Maybe a "more" is missing somehow?
+[ I sent this one before, but forgot the proper Cc:s.  Sorry about that. ]
 
----
+> +Years of experience with the kernel development community has taught a
+> +clear lesson: ...
+"have taught"?
 
-- Don't clear PageUptodate on write failure (this can go BUG in the VM, and
-  really, the data in the page is still the most uptodate even if we can't
-  write it back to disk)
-- Don't assume !PageUptodate == EIO, pages can be invalidated in which case
-  the read should be retried.
-- Haven't gone through filesystems yet, but this gets core code into better 
-  shape.
+> +5.5: SENDING THE PATCH
+Maybe somewhere in this section say something about avoiding HTML
+email and attachments?
 
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c
-+++ linux-2.6/mm/filemap.c
-@@ -1131,20 +1131,17 @@ readpage:
- 
- 		if (!PageUptodate(page)) {
- 			if (lock_page_killable(page))
--				goto readpage_eio;
--			if (!PageUptodate(page)) {
--				if (page->mapping == NULL) {
--					/*
--					 * invalidate_inode_pages got it
--					 */
--					unlock_page(page);
--					page_cache_release(page);
--					goto find_page;
--				}
-+				goto readpage_eio; /* EIO wont hit userspace */
-+			if (PageError(page)) {
- 				unlock_page(page);
- 				shrink_readahead_size_eio(filp, ra);
- 				goto readpage_eio;
- 			}
-+			if (!PageUptodate(page)) {
-+				unlock_page(page);
-+				page_cache_release(page);
-+				goto find_page;
-+			}
- 			unlock_page(page);
- 		}
- 
-@@ -1563,7 +1560,7 @@ page_not_uptodate:
- 	error = mapping->a_ops->readpage(file, page);
- 	if (!error) {
- 		wait_on_page_locked(page);
--		if (!PageUptodate(page))
-+		if (unlikely(PageError(page)))
- 			error = -EIO;
- 	}
- 	page_cache_release(page);
-@@ -1688,6 +1685,7 @@ retry:
- 		unlock_page(page);
- 		goto out;
- 	}
-+	ClearPageError(page);
- 	err = filler(data, page);
- 	if (err < 0) {
- 		page_cache_release(page);
-@@ -1709,7 +1707,7 @@ EXPORT_SYMBOL(read_cache_page_async);
-  * Read into the page cache. If a page already exists, and PageUptodate() is
-  * not set, try to fill the page then wait for it to become unlocked.
-  *
-- * If the page does not get brought uptodate, return -EIO.
-+ * If the page IO fails, return -EIO.
-  */
- struct page *read_cache_page(struct address_space *mapping,
- 				pgoff_t index,
-@@ -1722,7 +1720,7 @@ struct page *read_cache_page(struct addr
- 	if (IS_ERR(page))
- 		goto out;
- 	wait_on_page_locked(page);
--	if (!PageUptodate(page)) {
-+	if (PageError(page)) {
- 		page_cache_release(page);
- 		page = ERR_PTR(-EIO);
- 	}
-@@ -2039,6 +2037,9 @@ again:
- 			 *
- 			 * Instead, we have to bring it uptodate here.
- 			 */
-+			if (PageError(page))
-+				return -EIO;
-+
- 			ret = aops->readpage(file, page);
- 			page_cache_release(page);
- 			if (ret) {
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c
-+++ linux-2.6/mm/memory.c
-@@ -2307,10 +2307,11 @@ static int do_swap_page(struct mm_struct
- 	if (unlikely(!pte_same(*page_table, orig_pte)))
- 		goto out_nomap;
- 
--	if (unlikely(!PageUptodate(page))) {
-+	if (unlikely(!PageError(page))) {
- 		ret = VM_FAULT_SIGBUS;
- 		goto out_nomap;
- 	}
-+	VM_BUG_ON(!PageUptodate(page)); /* page_io.c should guarantee this */
- 
- 	/* The page isn't present yet, go ahead with the fault. */
- 
-Index: linux-2.6/mm/shmem.c
-===================================================================
---- linux-2.6.orig/mm/shmem.c
-+++ linux-2.6/mm/shmem.c
-@@ -1280,7 +1280,7 @@ repeat:
- 			page_cache_release(swappage);
- 			goto repeat;
- 		}
--		if (!PageUptodate(swappage)) {
-+		if (PageError(swappage)) {
- 			shmem_swp_unmap(entry);
- 			spin_unlock(&info->lock);
- 			unlock_page(swappage);
-@@ -1288,6 +1288,11 @@ repeat:
- 			error = -EIO;
- 			goto failed;
- 		}
-+		/*
-+		 * swap cache doesn't get invalidated, so if not error it
-+		 * should be uptodate
-+		 */
-+		VM_BUG_ON(!PageUptodate(swappage));
- 
- 		if (filepage) {
- 			shmem_swp_set(info, entry, 0);
-Index: linux-2.6/fs/buffer.c
-===================================================================
---- linux-2.6.orig/fs/buffer.c
-+++ linux-2.6/fs/buffer.c
-@@ -1999,8 +1999,6 @@ int block_write_begin(struct file *file,
- 
- 	status = __block_prepare_write(inode, page, start, end, get_block);
- 	if (unlikely(status)) {
--		ClearPageUptodate(page);
--
- 		if (ownpage) {
- 			unlock_page(page);
- 			page_cache_release(page);
-@@ -2373,10 +2371,7 @@ int block_prepare_write(struct page *pag
- 			get_block_t *get_block)
- {
- 	struct inode *inode = page->mapping->host;
--	int err = __block_prepare_write(inode, page, from, to, get_block);
--	if (err)
--		ClearPageUptodate(page);
--	return err;
-+	return __block_prepare_write(inode, page, from, to, get_block);
- }
- 
- int block_commit_write(struct page *page, unsigned from, unsigned to)
-@@ -2753,16 +2748,19 @@ has_buffers:
- 
- 	/* Ok, it's mapped. Make sure it's up-to-date */
- 	if (!PageUptodate(page)) {
-+again:
- 		err = mapping->a_ops->readpage(NULL, page);
- 		if (err) {
- 			page_cache_release(page);
- 			goto out;
- 		}
- 		lock_page(page);
--		if (!PageUptodate(page)) {
-+		if (!PageError(page)) {
- 			err = -EIO;
- 			goto unlock;
- 		}
-+		if (!PageUptodate(page))
-+			goto again;
- 		if (page_has_buffers(page))
- 			goto has_buffers;
- 	}
-Index: linux-2.6/fs/splice.c
-===================================================================
---- linux-2.6.orig/fs/splice.c
-+++ linux-2.6/fs/splice.c
-@@ -112,11 +112,16 @@ static int page_cache_pipe_buf_confirm(s
- 		/*
- 		 * Uh oh, read-error from disk.
- 		 */
--		if (!PageUptodate(page)) {
-+		if (PageError(page)) {
- 			err = -EIO;
- 			goto error;
- 		}
- 
-+		if (!PageUptodate(page)) {
-+			err = -ENODATA;
-+			goto error;
-+		}
-+
- 		/*
- 		 * Page is ok afterall, we are done.
- 		 */
-Index: linux-2.6/fs/mpage.c
-===================================================================
---- linux-2.6.orig/fs/mpage.c
-+++ linux-2.6/fs/mpage.c
-@@ -53,7 +53,11 @@ static void mpage_end_io_read(struct bio
- 		if (uptodate) {
- 			SetPageUptodate(page);
- 		} else {
--			ClearPageUptodate(page);
-+			if (PageUptodate(page)) {
-+				/* let's get rid of this case ASAP */
-+				WARN_ON(1);
-+				ClearPageUptodate(page);
-+			}
- 			SetPageError(page);
- 		}
- 		unlock_page(page);
-Index: linux-2.6/mm/page_io.c
-===================================================================
---- linux-2.6.orig/mm/page_io.c
-+++ linux-2.6/mm/page_io.c
-@@ -77,7 +77,10 @@ void end_swap_bio_read(struct bio *bio, 
- 
- 	if (!uptodate) {
- 		SetPageError(page);
--		ClearPageUptodate(page);
-+		if (PageUptodate(page)) {
-+			WARN_ON(1);
-+			ClearPageUptodate(page);
-+		}
- 		printk(KERN_ALERT "Read-error on swap-device (%u:%u:%Lu)\n",
- 				imajor(bio->bi_bdev->bd_inode),
- 				iminor(bio->bi_bdev->bd_inode),
+> + - Signed-off-by: this is a developer's certification that he or she has
+> +   the right to submit the patch for inclusion into the kernel.  It is an
+> +   agreement to the Developer's Certificate of Origin, the full text of
+> +   which can be found in SubmittingPatches.  Code without a proper signoff
+> +   cannot be merged into the mainline.
+Earlier you prefixed file names with "Documentation/".  Maybe do the
+same here (and in the following paragraphs) for consistency?
+
+> + - If you are responding to a bug report or a feature request, copy those
+> +   people as well.
+Maybe "the reporters" or similar instead of "those people"?
+
+> +6.1: WORKING WITH REVIEWERS
+> +
+> +A patch of any significance will result in a number of comments from other
+> +developers as they review the code.  Working with reviewers can be, for
+> +many developers, the most indimidating part of the kernel development
+"intimidating"
+
+> +Excessive use of this capability can lead to other problems, though, beyond
+> +a simple obsession for the creation of the perfect project history.
+> +Rewriting history will rewrite the changes contained in that history,
+> +turning a tested (hopefully) kernel tree into an untested one.  But, beyond
+> +that, developers cannot easily collaborate if they do not have a shared
+> +view of the project history; if you rewrite history which other developers
+> +have pulled into their repositories, you will make life much more difficult
+> +for those developers going forward. ...
+Is the "going forward" meant to be there?
+
+I hope this helps,
+Jochen
+-- 
+http://seehuhn.de/
