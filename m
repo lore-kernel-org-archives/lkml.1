@@ -1,140 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758999AbYGaVsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758897AbYGaVuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758999AbYGaVsS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 17:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbYGaVsE
+	id S1758897AbYGaVuU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 17:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbYGaVuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 17:48:04 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:29463 "EHLO
-	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754818AbYGaVsB (ORCPT
+	Thu, 31 Jul 2008 17:50:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36371 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754936AbYGaVuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 17:48:01 -0400
-X-SourceIP: 80.57.229.25
-Subject: Re: Fwd: Commit 76a2a6ee8a0660a29127f05989ac59ae1ce865fa breaks
-	PXA270 (at least)?
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       vatsa@linux.vnet.ibm.com, efault@gmx.de, linux-kernel@vger.kernel.org,
-       Bill Gatliff <bgat@billgatliff.com>
-In-Reply-To: <20080731213741.GJ2729@elte.hu>
-References: <20080729223105.GK10982@flint.arm.linux.org.uk>
-	 <20080729154605.d540cf6d.akpm@linux-foundation.org>
-	 <20080731213741.GJ2729@elte.hu>
-Content-Type: text/plain
-Date: Thu, 31 Jul 2008 23:47:55 +0200
-Message-Id: <1217540875.8157.105.camel@twins>
+	Thu, 31 Jul 2008 17:50:05 -0400
+Date: Thu, 31 Jul 2008 14:49:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] x86: fdiv bug detection fix
+Message-Id: <20080731144920.0016e02d.akpm@linux-foundation.org>
+In-Reply-To: <20080731234344.eb3c4ed2.krzysztof.h1@wp.pl>
+References: <20080731234344.eb3c4ed2.krzysztof.h1@wp.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-31 at 23:37 +0200, Ingo Molnar wrote:
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
+On Thu, 31 Jul 2008 23:43:44 +0200
+Krzysztof Helt <krzysztof.h1@wp.pl> wrote:
+
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
 > 
-> > On Tue, 29 Jul 2008 23:31:05 +0100
-> > Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> > 
-> > > But then some bright spark thought it would be a good idea to get
-> > > rid of printk_clock().
-> > 
-> > <does git-log, searches for printk_clock>
+> The fdiv detection code writes s32 integer into
+> the boot_cpu_data.fdiv_bug. 
+> However, the boot_cpu_data.fdiv_bug is only char (s8)
+> field so the detection overwrites already set fields for
+> other bugs, e.g. the f00f bug field.
 > 
-> i think this is a fresh regression via the introduction of 
-> kernel/sched_clock.c. We lost the (known) early-init behavior of 
-> cpu_clock() in the !UNSTABLE_SCHED_CLOCK case. The fix would be to 
-> restore that, not to reintroduce printk_clock().
+> Use local s32 variable to receive result.
 > 
-> Peter, any ideas?
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> ---
+> 
+> This is a partial fix to Bugzilla #9928  - fixes wrong 
+> information about the f00f bug (tested) and probably
+> for coma bug (I have no cpu to test this).
+> 
+> diff -urp linux-alsa/arch/x86/kernel/cpu/bugs.c linux-new/arch/x86/kernel/cpu/bugs.c
+> --- linux-alsa/arch/x86/kernel/cpu/bugs.c	2008-07-31 12:40:31.000000000 +0200
+> +++ linux-new/arch/x86/kernel/cpu/bugs.c	2008-07-31 23:24:07.722657435 +0200
+> @@ -50,6 +50,8 @@ static double __initdata y = 3145727.0;
+>   */
+>  static void __init check_fpu(void)
+>  {
+> +	s32 fdiv_bug;
+> +
+>  	if (!boot_cpu_data.hard_math) {
+>  #ifndef CONFIG_MATH_EMULATION
+>  		printk(KERN_EMERG "No coprocessor found and no math emulation present.\n");
+> @@ -74,8 +76,10 @@ static void __init check_fpu(void)
+>  		"fistpl %0\n\t"
+>  		"fwait\n\t"
+>  		"fninit"
+> -		: "=m" (*&boot_cpu_data.fdiv_bug)
+> +		: "=m" (*&fdiv_bug)
+>  		: "m" (*&x), "m" (*&y));
+> +
+> +	boot_cpu_data.fdiv_bug = fdiv_bug;
+>  	if (boot_cpu_data.fdiv_bug)
+>  		printk("Hmm, FPU with FDIV bug.\n");
+>  }
 
-How about something like this, it builds an atificial delay, exactly
-like we already have for the HAVE_UNSTABLE_SCHED_CLOCK case.
-
-This keeps cpu_clock() 0 until after sched_clock_init().
-
-Russell, Bill, is this sufficient?
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 1b26ed2..d13264b 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1550,16 +1550,10 @@ static inline int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask)
- 
- extern unsigned long long sched_clock(void);
- 
--#ifndef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
--static inline void sched_clock_init(void)
--{
--}
--
--static inline u64 sched_clock_cpu(int cpu)
--{
--	return sched_clock();
--}
-+extern void sched_clock_init(void);
-+extern u64 sched_clock_cpu(int cpu);
- 
-+#ifndef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
- static inline void sched_clock_tick(void)
- {
- }
-@@ -1583,8 +1577,6 @@ static inline void sched_clock_tick_start(int cpu)
- #endif
- 
- #else /* CONFIG_HAVE_UNSTABLE_SCHED_CLOCK */
--extern void sched_clock_init(void);
--extern u64 sched_clock_cpu(int cpu);
- extern void sched_clock_tick(void);
- extern void sched_clock_idle_sleep_event(void);
- extern void sched_clock_idle_wakeup_event(u64 delta_ns);
-diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-index 22ed55d..a804582 100644
---- a/kernel/sched_clock.c
-+++ b/kernel/sched_clock.c
-@@ -32,6 +32,7 @@
- #include <linux/ktime.h>
- #include <linux/module.h>
- 
-+static __read_mostly int sched_clock_running;
- 
- #ifdef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
- 
-@@ -71,8 +72,6 @@ static inline struct sched_clock_data *cpu_sdc(int cpu)
- 	return &per_cpu(sched_clock_data, cpu);
- }
- 
--static __read_mostly int sched_clock_running;
--
- void sched_clock_init(void)
- {
- 	u64 ktime_now = ktime_to_ns(ktime_get());
-@@ -319,6 +318,21 @@ void sched_clock_idle_wakeup_event(u64 delta_ns)
- }
- EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
- 
-+#else /* CONFIG_HAVE_UNSTABLE_SCHED_CLOCK */
-+
-+void sched_clock_init(void)
-+{
-+	sched_clock_running = 1;
-+}
-+
-+u64 sched_clock_cpu(int cpu)
-+{
-+	if (unlikely(!sched_clock_running))
-+		return 0;
-+
-+	return sched_clock();
-+}
-+
- #endif
- 
- /*
-
-
+hm, the code seems to have been that way for quite some time.  I wonder
+why nobody noticed this before.  
