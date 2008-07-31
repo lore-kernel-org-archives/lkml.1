@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbYGaPJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbYGaPKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515AbYGaPJS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 11:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbYGaPJE
+	id S1754897AbYGaPKg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 11:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYGaPKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 11:09:04 -0400
-Received: from gw.goop.org ([64.81.55.164]:49486 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751633AbYGaPJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 11:09:04 -0400
-Message-ID: <4891D58E.1070308@goop.org>
-Date: Thu, 31 Jul 2008 08:09:02 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 31 Jul 2008 11:10:24 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:36472 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751928AbYGaPKW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 11:10:22 -0400
+Date: Thu, 31 Jul 2008 11:10:22 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Pete Zaitcev <zaitcev@redhat.com>
+cc: Douglas Gilbert <dougg@torque.net>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Matt Frost <artusemrys@sbcglobal.net>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
+       <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Frost <artusemrys@yahoo.com>
+Subject: Re: BUG: SCSI: usb storage SDHC card doesn't work in 2.6.27-rc1
+In-Reply-To: <20080730155827.524f72d2.zaitcev@redhat.com>
+Message-ID: <Pine.LNX.4.44L0.0807311102550.4409-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Maxin John <maxin.john@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: regarding mprotect() implementation in 2.6.26 kernel
-References: <9debc4410807310315n4da5beafh853a71f532420e9a@mail.gmail.com> <9debc4410807310324m4a76aaf5s253242e5cc2bb130@mail.gmail.com>
-In-Reply-To: <9debc4410807310324m4a76aaf5s253242e5cc2bb130@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maxin John wrote:
-> Dear Christoph Hellwig,
->
-> ( I guess you are the right person to ask this question ?)
->
-> The POSIX.2 specification of mprotect() says:
->
-> errorno should be set as ENOMEM if the addresses in the range [addr,
-> (addr + len)] are invalid for the address space of a process, or
-> specify one or more pages which are not mapped.
->
-> However, in the mprotect implementation  (asmlinkage long
-> sys_mprotect(unsigned long start, size_t len, unsigned long prot)) in
-> linux/mm/mprotect.c file, if we call mprotect() with start as NULL and
-> len as 0, mprotect() returns 0 and it is not setting the errono.The
-> following code confirms this behaviour.
->   
+On Wed, 30 Jul 2008, Pete Zaitcev wrote:
 
-Address 0 is a valid process address.  And you've set the length to
-zero, so you technically haven't referred to any memory at all, so it
-doesn't matter what the address is.
+> Perhaps I misunderstand how our SCSI stack works. The code in ub is
+> simpler, it deals with 3 values at the end of transfer:
+>   Lasked is how much we asked for
+>   Lgot   is how much was transferred
+>   Lresid is the reported residue
+> 
+> So, ub checks if the following is true:
+>   Lasked = Lgot + Lresid
+> 
+> If device fails this check, you can assume that it's just not set up
+> to report the residue correctly and so, the danger of valid residue
+> that you outlined becomes rather academic.
 
-    J
+This algorithm is wrong.  See the description under Case (4) or (5) in 
+6.7.2 of the Bulk-Only spec:
+
+	The device may send fill data to pad up to a total of
+	dCBWDataTransferLength.
+
+So it's legal to have Lgot == Lasked and Lresid > 0.  There are devices 
+which really do this.
+
+(It may seem pointless to add the padding.  However for reasons that 
+aren't clear, the spec requires the device to STALL the bulk-in 
+endpoint if the padding isn't present -- and many devices don't like to 
+STALL bulk endpoints.  Similar reasoning applies to the case of OUT 
+transfers.)
+
+> The reason I do it this way is, I've seen a device which reported
+> a correct residue until the first long read, and then residue was
+> miscalculated due to a 16-bit wrap (it did transfer right data though).
+> I think it's one of those which are explicitly blacklisted these
+> days, but I cannot remember.
+
+I hope it's blacklisted!
+
+Alan Stern
+
