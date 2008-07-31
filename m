@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYGaMDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756635AbYGaMEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbYGaMDn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 08:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbYGaMDd
+	id S1756635AbYGaMEt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 08:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYGaMEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 08:03:33 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45834 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752662AbYGaMDc (ORCPT
+	Thu, 31 Jul 2008 08:04:40 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37492 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751214AbYGaMEj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 08:03:32 -0400
-Date: Thu, 31 Jul 2008 21:02:21 +0900
+	Thu, 31 Jul 2008 08:04:39 -0400
+Date: Thu, 31 Jul 2008 21:03:17 +0900
 From: Yasunori Goto <y-goto@jp.fujitsu.com>
 To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: [RFC:Patch: 006/008](memory hotplug) kswapd_stop() definition
+Subject: [RFC:Patch: 007/008](memory hotplug) callback routine for mempolicy
 Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-mm <linux-mm@kvack.org>,
@@ -21,7 +21,7 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
 In-Reply-To: <20080731203549.2A3F.E1E9C6FF@jp.fujitsu.com>
 References: <20080731203549.2A3F.E1E9C6FF@jp.fujitsu.com>
 X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080731210119.2A4D.E1E9C6FF@jp.fujitsu.com>
+Message-Id: <20080731210224.2A4F.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
@@ -31,62 +31,70 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This patch is to make kswapd_stop().
-It must be stopped before node removing.
+This patch is very incomplete (includes dummy code),
+but I would like to show what mempolicy has to do when node is removed.
 
+Basically, user should change policy before removing node
+which is used mempolicy. However, user may not know
+mempolicy is used due to automatic setting by software.
+The kernel must guarantee removed node will be not used.
+
+There is callback when memory offlining, mempolicy can change
+each task's policies.
+
+There are some issues.
+  - If nodes_weight(pol->v.nodes) will be 0 due to node removing,
+    Kernel will not be able to allocate any pages.
+    What does kernel should do?  Kill its process?
+  - If preffered node is removing, then which node should be next
+    preffered node?
 
 Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 
 ---
- include/linux/swap.h |    3 +++
- mm/vmscan.c          |   13 +++++++++++++
- 2 files changed, 16 insertions(+)
+ mm/mempolicy.c |   32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
-Index: current/mm/vmscan.c
+Index: current/mm/mempolicy.c
 ===================================================================
---- current.orig/mm/vmscan.c	2008-07-29 22:17:16.000000000 +0900
-+++ current/mm/vmscan.c	2008-07-29 22:17:16.000000000 +0900
-@@ -1985,6 +1985,9 @@ static int kswapd(void *p)
- 		}
- 		finish_wait(&pgdat->kswapd_wait, &wait);
- 
-+		if (kthread_should_stop())
-+			break;
-+
- 		if (!try_to_freeze()) {
- 			/* We can speed up thawing tasks if we don't call
- 			 * balance_pgdat after returning from the refrigerator
-@@ -2216,6 +2219,16 @@ int kswapd_run(int nid)
- 	return ret;
+--- current.orig/mm/mempolicy.c	2008-07-29 22:17:25.000000000 +0900
++++ current/mm/mempolicy.c	2008-07-29 22:17:29.000000000 +0900
+@@ -2345,3 +2345,35 @@ out:
+ 		m->version = (vma != priv->tail_vma) ? vma->vm_start : 0;
+ 	return 0;
  }
- 
-+#ifdef CONFIG_MEMORY_HOTREMOVE
-+void kswapd_stop(int nid)
-+{
-+	pg_data_t *pgdat = NODE_DATA(nid);
 +
-+	if (pgdat->kswapd)
-+		kthread_stop(pgdat->kswapd);
++#ifdef CONFIG_MEMORY_HOTPLUG
++static int mempolicy_mem_offline_callback(void *arg)
++{
++	int offline_node;
++	struct memory_notify *marg = arg;
++
++	offline_node = marg->status_change_nid;
++
++	/*
++	 * If the node still has available memory, we keep policies.
++	 */
++	if (offline_node < 0)
++		return 0;
++
++	/*
++	 * Disable all offline node's bit for each node mask.
++	 */
++	for_each_policy(pol) {
++		switch (pol->mode) {
++		case MPOL_BIND:
++		case MPOL_INTERLEAVE:
++			/* Force disable node bit */
++			node_clear(offline_node, pol->v.nodes);
++			break;
++		case MPOL_PREFFERED:
++			/* TBD */
++		default:
++			break;
++	}
 +}
 +#endif
-+
- static int __init kswapd_init(void)
- {
- 	int nid;
-Index: current/include/linux/swap.h
-===================================================================
---- current.orig/include/linux/swap.h	2008-07-29 21:20:02.000000000 +0900
-+++ current/include/linux/swap.h	2008-07-29 22:17:16.000000000 +0900
-@@ -262,6 +262,9 @@ static inline void scan_unevictable_unre
- #endif
- 
- extern int kswapd_run(int nid);
-+#ifdef CONFIG_MEMORY_HOTREMOVE
-+extern void kswapd_stop(int nid);
-+#endif
- 
- #ifdef CONFIG_MMU
- /* linux/mm/shmem.c */
 
 -- 
 Yasunori Goto 
