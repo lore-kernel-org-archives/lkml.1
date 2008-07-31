@@ -1,98 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbYGaUOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758853AbYGaUOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbYGaUOf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 16:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbYGaUOH
+	id S1758853AbYGaUOv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 16:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbYGaUOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 16:14:07 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:29812 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753928AbYGaUOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 16:14:05 -0400
-Date: Thu, 31 Jul 2008 22:14:44 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
-Message-ID: <20080731201444.GC25305@uranus.ravnborg.org>
-References: <20080728200500.GA14284@uranus.ravnborg.org> <20080731182315.GA18060@linux-mips.org>
+	Thu, 31 Jul 2008 16:14:25 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:34793 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754330AbYGaUOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 16:14:23 -0400
+Date: Thu, 31 Jul 2008 15:14:21 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, maxk@qualcomm.com,
+       menage@google.com, a.p.zijlstra@chello.nl, vegard.nossum@gmail.com
+Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
+Message-Id: <20080731151421.bb4af984.pj@sgi.com>
+In-Reply-To: <1216852381-23445-1-git-send-email-maxk@qualcomm.com>
+References: <1216852381-23445-1-git-send-email-maxk@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080731182315.GA18060@linux-mips.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 07:23:15PM +0100, Ralf Baechle wrote:
-> On Mon, Jul 28, 2008 at 10:05:00PM +0200, Sam Ravnborg wrote:
-> 
-> > The traditional location of the arch specific Makefiles
-> > has been at:
-> > 
-> > 	include/asm-$ARCH
-> > 
-> > But as suggested by several people over time and lately
-> > by Linus in the following post:
-> > http://kerneltrap.org/mailarchive/linux-kernel/2008/5/21/1903924
-> > 
-> > is is suggested to move the arch specific files under arch/
-> > and for the header files this is arch/$ARCH/include.
-> > 
-> > So I have hacked up support for this in kbuild so
-> > for the simpler cases a simple move of header files as
-> > in:
-> > 	git mv include/asm-$ARCH arch/$ARCH/include/asm
-> > 
-> > is enough.
-> > 
-> > If Linus will accept it then I think -rc1 is a perfect
-> > time to do it as people has less stuff pending touching
-> > the header files that are moved.
-> > Validation is easy - does the usual configs build?
-> > 
-> > For the archs that plays games with symlinks this is a
-> > splendid opportunity to get rid af these.
-> > The receipe is simple:
-> > Use 
-> > 	KBUILD_CFLAGS += -Iarch/$ARCH/include/$CPU
-> > 
-> > to select the CPU and then do a copy of the header files
-> > like this:
-> > 
-> > 	git mv include/asm-$ARCH/$CPU arch/$ARCH/include/$CPU/cpu
-> > 
-> > Then the code can continue to use:
-> > 
-> > 	#include <cpu/foo.h>
-> > 
-> > I already converted sparc to use arch/sparc/include -
-> > while I merged the header files for sparc and sparc64.
-> > This change is already upstream.
-> > 
-> > And for SH I posted a receipe which you can read here:
-> > http://lkml.org/lkml/2008/7/28/83
-> > 
-> > It is SH specific but anyway pretty generic.
-> > 
-> > I am limited in time and resources at the moment but I
-> > would be glad to help out as time permits should there
-> > be any questions.
-> 
-> I just did the necessary changes for MIPS and the first testbuild is running
-> successfully so far.
-> 
-> One of the ugly things in the MIPS makefiles is the use of platform-
-> specific headers in include/asm-mips/mach-* which contain platform specific
-> headers.  Ideally those should be included through something like
-> <mach/somefile.h> or <plat/something.h> and I think a directory like
-> arch/$ARCH/$PLATFORM/include/plat/foobar.h could be a good place in the
-> new scheme?  I assume other platforms have similar issues with subplatforms,
-> processor sub-architectures etc.?
+Max,
 
-I like it. And rmk suggested something similar so I dragged you into
-that thread (on linux-arm-kernel). Let's continue there.
+What kernel version was this patch against?
 
-	Sam
+I've tried 2.6.27-rc1-mm1, 2.6.27-rc1, and 2.6.26,
+and it doesn't apply cleanly on any of them.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
