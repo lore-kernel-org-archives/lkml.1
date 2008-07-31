@@ -1,27 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761169AbYGaA61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbYGaBFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761169AbYGaA61 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbYGaA6Q
+	id S1755996AbYGaBFN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 21:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYGaBE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:58:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59802 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752759AbYGaA6P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:58:15 -0400
-Date: Wed, 30 Jul 2008 17:54:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jamie Lokier <jamie@shareable.org>
-cc: Miklos Szeredi <miklos@szeredi.hu>, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch v3] splice: fix race with page invalidation
-In-Reply-To: <alpine.LFD.1.10.0807301746500.3277@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0807301751320.3277@nehalem.linux-foundation.org>
-References: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu> <20080731001131.GA30900@shareable.org> <20080731004214.GA32207@shareable.org> <alpine.LFD.1.10.0807301746500.3277@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 30 Jul 2008 21:04:59 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:46390 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751689AbYGaBE6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 21:04:58 -0400
+Date: Thu, 31 Jul 2008 02:04:56 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: stable@kernel.org
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH][stable] drm/radeon: fixup issue with radeon and PAT
+ support.
+Message-ID: <alpine.DEB.0.82.0807310203560.8146@skynet.skynet.ie>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,24 +24,69 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+With new userspace libpciaccess we can get a conflicting mapping
+on the PCIE GART table in the video RAM. Always try and map it _wc.
 
-On Wed, 30 Jul 2008, Linus Torvalds wrote:
-> 
-> Personally, I think the right approach is to just realize that splice() is 
-> _not_ a write() system call, and never will be. If you need synchronous 
-> writing, you simply shouldn't use splice().
+Only do this on x86, some arches notably sparc aren't using iomap.h
+so we don't get the ioremap_wc define there, so for stable better
+safe than sorry.
 
-Side note: in-kernel users could probably do somethign about this. IOW, if 
-there's some in-kernel usage (and yes, knfsd would be a prime example), 
-that one may actually be able to do things that a _user_level user of 
-splice() could never do.
+stable: I've asked Linus to pull the same patch for the new drm layout
+already.
 
-That includes things like getting the inode semaphore over a write (so 
-that you can guarantee that pages that are in flight are not modified, 
-except again possibly by other mmap users), and/or a per-page callback for 
-when splice() is done with a page (so that you could keep the page locked 
-while it's getting spliced, for example).
+Signed-off-by: Dave Airlie <airlied@redhat.com>
+---
+ drivers/char/drm/drmP.h       |    1 +
+ drivers/char/drm/drm_memory.c |   10 ++++++++++
+ drivers/char/drm/radeon_cp.c  |    2 +-
+ 3 files changed, 12 insertions(+), 1 deletions(-)
 
-And no, we don't actually have that either, of course.
+diff --git a/drivers/char/drm/drmP.h b/drivers/char/drm/drmP.h
+index 0764b66..1c1b13e 100644
+--- a/drivers/char/drm/drmP.h
++++ b/drivers/char/drm/drmP.h
+@@ -1089,6 +1089,7 @@ extern int drm_mm_remove_space_from_tail(struct drm_mm *mm, unsigned long size);
+ extern int drm_mm_add_space_to_tail(struct drm_mm *mm, unsigned long size);
+ 
+ extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
++extern void drm_core_ioremap_wc(struct drm_map *map, struct drm_device *dev);
+ extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);
+ 
+ static __inline__ struct drm_map *drm_core_findmap(struct drm_device *dev,
+diff --git a/drivers/char/drm/drm_memory.c b/drivers/char/drm/drm_memory.c
+index 845081b..f347d26 100644
+--- a/drivers/char/drm/drm_memory.c
++++ b/drivers/char/drm/drm_memory.c
+@@ -167,6 +167,16 @@ void drm_core_ioremap(struct drm_map *map, struct drm_device *dev)
+ }
+ EXPORT_SYMBOL(drm_core_ioremap);
+ 
++void drm_core_ioremap_wc(struct drm_map *map, struct drm_device *dev)
++{
++#ifdef CONFIG_X86
++	map->handle = ioremap_wc(map->offset, map->size);
++#else
++	map->handle = ioremap(map->offset, map->size);
++#endif
++}
++EXPORT_SYMBOL(drm_core_ioremap_wc);
++
+ void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev)
+ {
+ 	if (!map->handle || !map->size)
+diff --git a/drivers/char/drm/radeon_cp.c b/drivers/char/drm/radeon_cp.c
+index e53158f..f0de81a 100644
+--- a/drivers/char/drm/radeon_cp.c
++++ b/drivers/char/drm/radeon_cp.c
+@@ -1154,7 +1154,7 @@ static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
+ 			dev_priv->gart_info.mapping.size =
+ 			    dev_priv->gart_info.table_size;
+ 
+-			drm_core_ioremap(&dev_priv->gart_info.mapping, dev);
++			drm_core_ioremap_wc(&dev_priv->gart_info.mapping, dev);
+ 			dev_priv->gart_info.addr =
+ 			    dev_priv->gart_info.mapping.handle;
+ 
+-- 
+1.5.5.1
 
-			Linus
