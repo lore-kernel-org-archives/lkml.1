@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbYGXLoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759311AbYGaWB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756779AbYGXLoj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jul 2008 07:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756236AbYGXLoK
+	id S1759311AbYGaWB1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 18:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759156AbYGaWBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jul 2008 07:44:10 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:28742 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756209AbYGXLoJ (ORCPT
+	Thu, 31 Jul 2008 18:01:04 -0400
+Received: from outbound-mail-151.bluehost.com ([67.222.39.31]:51416 "HELO
+	outbound-mail-151.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759422AbYGaWBD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jul 2008 07:44:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:references:user-agent:date:from:to:cc:subject
-         :content-disposition;
-        b=BQsEdYbfqdSFXgzdAzCFk2eJTBC72ODpyXueRLFAEvztG0AR39JcsYnGBrIFtNDTfF
-         O2VjCtltREe9ZeD8IIJz5mdRabq7hCbBIPr/q2AxFSjBKelCJDFldWDiV1zLp+rZrGkW
-         47k86IKC6mbtn3PfEVn7vHc8ahPG/1UhqQ5eU=
-Message-Id: <20080724114350.444031862@gmail.com>
-References: <20080724114302.028278487@gmail.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 01 Jan 1970 03:00:01 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: mingo@elte.hu, linux-kernel@vger.kernel.org, macro@linux-mips.org
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [patch 1/2] x86: apic unification - merge down lapic_get_maxlvt
-Content-Disposition: inline; filename=x86-apic-merge-lapic_get_maxlvt
+	Thu, 31 Jul 2008 18:01:03 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=p4zQWmAUmLIpHgz1pWIARJkYQ3dLsgL1P7yzbfSup3wlNp+Eni5FRS27OBpfrCNP0K7NUEP6NWct+cdpZZvIjnGq6Pd8NNWbx3DODQB339zYiNaDxJXjS3bvYfzB81Fz;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [stable] Fwd: [PATCH] PCI: Limit VPD length for Broadcom 5708S
+Date: Thu, 31 Jul 2008 15:00:58 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200807311319.24549.jbarnes@virtuousgeek.org> <20080731214802.GA4817@kroah.com>
+In-Reply-To: <20080731214802.GA4817@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807311500.58887.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+On Thursday, July 31, 2008 2:48 pm Greg KH wrote:
+> On Thu, Jul 31, 2008 at 01:19:24PM -0700, Jesse Barnes wrote:
+> > Just applied this to my for-linus branch.  It's a crash fixer so it
+> > should probably go into -stable too.
+>
+> As per Documentation/stable_kernel_rules.txt, an easy way to do this
+> automatically is:
+> 	- If the stable@kernel.org address is added to a patch, when it
+> 	  goes into Linus's tree it will automatically be emailed to the
+> 	  stable team.
+>
+> So just add "Cc: stable <stable@kernel.org>" to the signed-off-by area
+> and we will know to apply it when Linus picks it up.  Otherwise we have
+> to hunt through the tree, which is a pain at times :)
 
-No code change on binary level.
+Oh hey there's even a doc that mentions that, neat. :)
 
-Index: linux-2.6.git/arch/x86/kernel/apic_32.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic_32.c	2008-07-24 13:40:58.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/apic_32.c	2008-07-24 13:48:52.000000000 +0400
-@@ -226,9 +226,13 @@ int get_physical_broadcast(void)
-  */
- int lapic_get_maxlvt(void)
- {
--	unsigned int v = apic_read(APIC_LVR);
-+	unsigned int v;
- 
--	/* 82489DXs do not report # of LVT entries. */
-+	v = apic_read(APIC_LVR);
-+	/*
-+	 * - we always have APIC integrated on 64bit mode
-+	 * - 82489DXs do not report # of LVT entries
-+	 */
- 	return APIC_INTEGRATED(GET_APIC_VERSION(v)) ? GET_APIC_MAXLVT(v) : 2;
- }
- 
-Index: linux-2.6.git/arch/x86/kernel/apic_64.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic_64.c	2008-07-24 13:40:58.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/apic_64.c	2008-07-24 13:48:38.000000000 +0400
-@@ -228,11 +228,14 @@ void __cpuinit enable_NMI_through_LVT0(v
-  */
- int lapic_get_maxlvt(void)
- {
--	unsigned int v, maxlvt;
-+	unsigned int v;
- 
- 	v = apic_read(APIC_LVR);
--	maxlvt = GET_APIC_MAXLVT(v);
--	return maxlvt;
-+	/*
-+	 * - we always have APIC integrated on 64bit mode
-+	 * - 82489DXs do not report # of LVT entries
-+	 */
-+	return APIC_INTEGRATED(GET_APIC_VERSION(v)) ? GET_APIC_MAXLVT(v) : 2;
- }
- 
- /*
-
--- 
+Thanks,
+Jesse
