@@ -1,45 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbYGaJls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbYGaJmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756633AbYGaJls (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 05:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197AbYGaJk3
+	id S1756236AbYGaJmH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 05:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756420AbYGaJl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 05:40:29 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42055
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753231AbYGaJk1 (ORCPT
+	Thu, 31 Jul 2008 05:41:29 -0400
+Received: from po-out-1718.google.com ([72.14.252.153]:23847 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756379AbYGaJl1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 05:40:27 -0400
-Date: Thu, 31 Jul 2008 02:40:27 -0700 (PDT)
-Message-Id: <20080731.024027.162488608.davem@davemloft.net>
-To: thomas.petazzoni@free-electrons.com
-Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       michael@free-electrons.com
-Subject: Re: [patch 0/4] [resend] Add configuration options to disable
- features not needed on embedded devices
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080731092703.661994657@free-electrons.com>
-References: <20080731092703.661994657@free-electrons.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 31 Jul 2008 05:41:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=jxRsApqe3HVVoJdXK0403JQ6XL61CU/SRAH0jmOqwsJXQG8teJcC77b7Ki/Cw42Kso
+         XsUyQ9vxO8/t49Kw8j/QvPbIHG8DKQxh2uxoirFheQRE/bBqSCbKf/6uh+dNpL0ChYWw
+         XHIHGoTKngRmoM3/ZXKUCbo1/WMhtzwGtDuTU=
+Message-ID: <c4e36d110807310241n512b01e4v898e883d740de879@mail.gmail.com>
+Date: Thu, 31 Jul 2008 11:41:25 +0200
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: INFO: possible recursive locking detected ps2_command
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Date: Thu, 31 Jul 2008 11:27:03 +0200
+Hi
 
-> Changes since previous post:
-> 
->  * Add Matt Mackall's Signed-off-by on all patches
->  * Make bonding and bridging select ethtool in the ethtool-related
->    patch.
+During mouse unplugging from psaux connector from the laptops' docking
+station I've got attached INFO trace.
+(laptops still has synaptics device)
 
-The ethtool config option needs to be selected by CONFIG_INET as well,
-as per the things I described today.  Which erodes it's usefulness
-tremendously.
+Also for unknown reason to me  psaux mouse & synaptic device do not
+work somehow together - is it hw limitation
+of /dev/input/mice  interface?
+(USB mouse and synaptics do work quite well together)
 
-I also am keeping my stance that I have no current intention of
-applying these patches.
+[ INFO: possible recursive locking detected ]
+2.6.27-rc1 #48
+---------------------------------------------
+kseriod/166 is trying to acquire lock:
+ (&ps2dev->cmd_mutex){--..}, at: [<ffffffff8126e9ae>] ps2_command+0x5e/0x460
+
+but task is already holding lock:
+ (&ps2dev->cmd_mutex){--..}, at: [<ffffffff8126e9ae>] ps2_command+0x5e/0x460
+
+other info that might help us debug this:
+4 locks held by kseriod/166:
+ #0:  (serio_mutex){--..}, at: [<ffffffff8126cc1e>] serio_thread+0x3e/0x410
+ #1:  (&serio->drv_mutex){--..}, at: [<ffffffff8126bf8b>]
+serio_connect_driver+0x2b/0x50
+ #2:  (psmouse_mutex){--..}, at: [<ffffffffa009aa00>]
+psmouse_connect+0x30/0x2c0 [psmouse]
+ #3:  (&ps2dev->cmd_mutex){--..}, at: [<ffffffff8126e9ae>]
+ps2_command+0x5e/0x460
+
+stack backtrace:
+Pid: 166, comm: kseriod Not tainted 2.6.27-rc1 #48
+
+Call Trace:
+ [<ffffffff81068bda>] __lock_acquire+0xcea/0x13b0
+ [<ffffffff81066401>] ? trace_hardirqs_off_caller+0x21/0xc0
+ [<ffffffff810664ad>] ? trace_hardirqs_off+0xd/0x10
+ [<ffffffff8126e9ae>] ? ps2_command+0x5e/0x460
+ [<ffffffff81069336>] lock_acquire+0x96/0xe0
+ [<ffffffff8126e9ae>] ? ps2_command+0x5e/0x460
+ [<ffffffff81313861>] mutex_lock_nested+0xc1/0x340
+ [<ffffffff8126e9ae>] ? ps2_command+0x5e/0x460
+ [<ffffffff810135a0>] ? native_sched_clock+0x90/0xb0
+ [<ffffffff8126e9ae>] ps2_command+0x5e/0x460
+ [<ffffffff81066401>] ? trace_hardirqs_off_caller+0x21/0xc0
+ [<ffffffff81065834>] ? get_lock_stats+0x34/0x70
+ [<ffffffffa009977d>] psmouse_sliced_command+0x2d/0x90 [psmouse]
+ [<ffffffff8126e838>] ? ps2_sendbyte+0x48/0x130
+ [<ffffffffa009b8f7>] synaptics_pt_write+0x27/0x60 [psmouse]
+ [<ffffffff81315acd>] ? _spin_unlock_irq+0x3d/0x80
+ [<ffffffff8126e84d>] ps2_sendbyte+0x5d/0x130
+ [<ffffffff81319840>] ? sub_preempt_count+0x80/0x120
+ [<ffffffff8126ea4d>] ps2_command+0xfd/0x460
+ [<ffffffff81319840>] ? sub_preempt_count+0x80/0x120
+ [<ffffffff81315acd>] ? _spin_unlock_irq+0x3d/0x80
+ [<ffffffffa0099917>] psmouse_probe+0x27/0xa0 [psmouse]
+ [<ffffffff8126c1e1>] ? serio_open+0x11/0x50
+ [<ffffffffa009ab48>] psmouse_connect+0x178/0x2c0 [psmouse]
+ [<ffffffff8126bf96>] serio_connect_driver+0x36/0x50
+ [<ffffffff8126bfcb>] serio_driver_probe+0x1b/0x20
+ [<ffffffff81221112>] driver_probe_device+0xa2/0x1e0
+ [<ffffffff812212e0>] ? __device_attach+0x0/0x10
+ [<ffffffff812212e9>] __device_attach+0x9/0x10
+ [<ffffffff8122050b>] bus_for_each_drv+0x6b/0xa0
+ [<ffffffff812213b8>] device_attach+0x88/0x90
+ [<ffffffff812202d5>] bus_attach_device+0x55/0x80
+ [<ffffffff8121ee99>] device_add+0x4f9/0x610
+ [<ffffffff81319840>] ? sub_preempt_count+0x80/0x120
+ [<ffffffff8126ce1c>] serio_thread+0x23c/0x410
+ [<ffffffff810571a0>] ? autoremove_wake_function+0x0/0x40
+ [<ffffffff8126cbe0>] ? serio_thread+0x0/0x410
+ [<ffffffff81056de9>] kthread+0x49/0x90
+ [<ffffffff8100d669>] child_rip+0xa/0x11
+ [<ffffffff8103b757>] ? finish_task_switch+0x57/0x110
+ [<ffffffff81315acd>] ? _spin_unlock_irq+0x3d/0x80
+ [<ffffffff8100cc73>] ? restore_args+0x0/0x30
+ [<ffffffff810664ad>] ? trace_hardirqs_off+0xd/0x10
+ [<ffffffff81056da0>] ? kthread+0x0/0x90
+ [<ffffffff8100d65f>] ? child_rip+0x0/0x11
