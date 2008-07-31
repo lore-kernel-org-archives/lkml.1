@@ -1,87 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750969AbYGaUUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbYGaUV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750969AbYGaUUl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 16:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbYGaUUb
+	id S1758137AbYGaUV3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 16:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbYGaUVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 16:20:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54560 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751293AbYGaUUa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 16:20:30 -0400
-Date: Thu, 31 Jul 2008 13:16:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-Subject: Re: linux-next: Tree for July 30
-In-Reply-To: <20080731155701.ZZRA012@mailhub.coreip.homeip.net>
-Message-ID: <alpine.LFD.1.10.0807311310090.3277@nehalem.linux-foundation.org>
-References: <20080730170635.f737ffe9.sfr@canb.auug.org.au> <20080731104437.5e5669bc.akpm@linux-foundation.org> <20080731141302.ZZRA012@mailhub.coreip.homeip.net> <200807312048.57575.rjw@sisk.pl> <20080731145023.ZZRA012@mailhub.coreip.homeip.net>
- <alpine.LFD.1.10.0807311207000.3277@nehalem.linux-foundation.org> <20080731151625.ZZRA012@mailhub.coreip.homeip.net> <alpine.LFD.1.10.0807311235350.3277@nehalem.linux-foundation.org> <20080731155701.ZZRA012@mailhub.coreip.homeip.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 31 Jul 2008 16:21:20 -0400
+Received: from ns2.suse.de ([195.135.220.15]:37221 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751043AbYGaUVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 16:21:20 -0400
+Subject: patch usb-usb-storage-quirk-around-v1.11-firmware-on-nikon-d4.patch added to gregkh-2.6 tree
+To: davej@redhat.com, gregkh@suse.de, johannes@sipsolutions.net,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       stern@rowland.harvard.edu
+From: <gregkh@suse.de>
+Date: Thu, 31 Jul 2008 12:58:29 -0700
+In-Reply-To: <20080714172834.GA23016@redhat.com>
+Message-ID: <12175343092020@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+This is a note to let you know that I've just added the patch titled
 
-On Thu, 31 Jul 2008, Dmitry Torokhov wrote:
-> 
-> Sometimes we do need to upgrade userspace though. Can we make
-> Documentation/Changes more prominent? Maybe have it published on
-> kernel.org?
+     Subject: USB: usb-storage: quirk around v1.11 firmware on Nikon D4
 
-We basically _never_ have to upgrade userspace that aggressively. We can 
-have a Changes file that talks about things that will eventually break 
-when we remove support for it eventually, but it should never EVER be used 
-as an excuse for "I needed to break it now".
+to my gregkh-2.6 tree.  Its filename is
 
-So no, I refuse to make it any more prominent. Because it would just be 
-used as an excuse for behavior that I consider unacceptable. It was 
-different back when we had 3-year development windows and people upgrading 
-from 2.4.x to 2.6.x had to learn new things, but for 2.6.26 to .27 or 
-similar it's simply not acceptable.
+     usb-usb-storage-quirk-around-v1.11-firmware-on-nikon-d4.patch
 
-Look at the VFS layer. Look at how we have multiple different versions of 
-"readdir()" (well, getdents, really), and "stat()". Exactly because we 
-don't break user space.
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
-> It did specify the size. Something 448 more bytes than it allocated:
-> 
->     unsigned long evbits[NBITS(KEY_MAX)];
-> 
->     /* Check for ABS_X, ABS_Y, ABS_PRESSURE and BTN_TOOL_FINGER */
-> 
->     SYSCALL(ret = ioctl(fd, EVIOCGBIT(0, KEY_MAX), evbits));
-> 
-> So we allocate 64 bytes on stack and then as kernel to fill it with
-> 511 bytes worth of data.
 
-Ok, I can see how it's confused, asking for KEY_MAX _bits_. If this is the 
-main user, why not just change the definition to be in bits?
+>From davej@redhat.com  Thu Jul 31 10:32:27 2008
+From: Dave Jones <davej@redhat.com>
+Date: Mon, 14 Jul 2008 13:28:34 -0400
+Subject: USB: usb-storage: quirk around v1.11 firmware on Nikon D4
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org, gregkh@suse.de
+Message-ID: <20080714172834.GA23016@redhat.com>
+Content-Disposition: inline
 
-> >  - help fix up the userspace driver regardless
-> 
-> In progress.
-> > 
-> >  - a year down the line, maybe breakage will be a non-issue.
-> 
-> Around when 2.6.28 is released, right? ;)
 
-A year down the line would be 2.6.30 or so.
+usb-storage: quirk around v1.11 firmware on Nikon D40
 
-> We do need more keycodes. People are coming wioth more and more. The
-> patch following the one in question adds about 10 new kodes for remote
-> controls/phones. And we will get more.
+https://bugzilla.redhat.com/show_bug.cgi?id=454028
+Just as in earlier firmware versions, we need to perform this
+quirk for the latest version too.
 
-Maybe the problem is a bad design that encourages people to just create 
-new keycodes when they really shouldn't? 
+Speculatively do the entry for the D80 too, as they seem to
+have the same firmware problems historically.
 
-			Linus
+Signed-off-by: Dave Jones <davej@redhat.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: stable <stable@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/usb/storage/unusual_devs.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -356,14 +356,14 @@ UNUSUAL_DEV(  0x04b0, 0x040f, 0x0100, 0x
+ 		US_FL_FIX_CAPACITY),
+ 
+ /* Reported by Emil Larsson <emil@swip.net> */
+-UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0110,
++UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0111,
+ 		"NIKON",
+ 		"NIKON DSC D80",
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_CAPACITY),
+ 
+ /* Reported by Ortwin Glueck <odi@odi.ch> */
+-UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x0110,
++UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x0111,
+ 		"NIKON",
+ 		"NIKON DSC D40",
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+
+
+Patches currently in gregkh-2.6 which might be from davej@redhat.com are
+
+bad/pci-dynamic-id-cleanup.patch
+bad/pci-two-drivers-on-one-pci-device.patch
+usb.current/usb-usb-storage-quirk-around-v1.11-firmware-on-nikon-d4.patch
