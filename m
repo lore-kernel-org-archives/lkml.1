@@ -1,285 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbYGaLmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYGaLnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754681AbYGaLmV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 07:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYGaLmK
+	id S1755359AbYGaLnT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 07:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYGaLnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 07:42:10 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:57615 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751251AbYGaLmI (ORCPT
+	Thu, 31 Jul 2008 07:43:05 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:38340 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751464AbYGaLnD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 07:42:08 -0400
-To: viro@ZenIV.linux.org.uk
-CC: miklos@szeredi.hu, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <20080731003332.GJ28946@ZenIV.linux.org.uk> (message from Al Viro
-	on Thu, 31 Jul 2008 01:33:32 +0100)
-Subject: Re: [patch resend] vfs: move executable checking into
-	->permission()
-References: <E1KOBJb-0005L0-RF@pomaz-ex.szeredi.hu> <20080731003332.GJ28946@ZenIV.linux.org.uk>
-Message-Id: <E1KOWXe-0008Dl-ET@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 31 Jul 2008 13:41:58 +0200
+	Thu, 31 Jul 2008 07:43:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=VWhumLATWVizx9yIZ9QfezxzWCwpNhDfzWKY5CvZhb9dY5iTogO4Qg07wVd05vIlM1
+         Gp7H8J3lX8p2PZKounyHZGs21v/x6D7CrN3p71nHlO+x3T9SKm3Ome/+QpDEMvg7Jyog
+         Ll3N20aAyspJCPo9VERb9aizIwhSKdBMXGW5g=
+Message-ID: <a4423d670807310443j593ef7f5p9d4f1fa553de1b6d@mail.gmail.com>
+Date: Thu, 31 Jul 2008 15:43:02 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>, mingo@redhat.com,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] kernel/profile.c: fix warnings
+In-Reply-To: <20080729190026.GA32433@orion>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080729190026.GA32433@orion>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jul 2008, Al Viro wrote:
-> On Wed, Jul 30, 2008 at 03:02:03PM +0200, Miklos Szeredi wrote:
-> >  static int coda_ioctl_permission(struct inode *inode, int mask)
-> >  {
-> > -        return 0;
-> > +	return check_execute(dentry->d_inode, mask);
-> >  }
-> 
-> Er?
-> 	a) mismerge from dentry-based variant
+2008/7/29 Alexander Beregalov <a.beregalov@gmail.com>:
+> Hi
+>
+> Moved these three functions under ifdef CONFIG_PROC_FS, separated
+> profile_hits. Perhaps it would be better to join two ifdef-CONFIG_PROC_FS
+> blocks.
+> This patch is on top of 2.6.27-rc1.
+>
+> From: Alexander Beregalov <a.beregalov@gmail.com>
+>
+> kernel/profile.c: fix warnings:
+>
+> kernel/profile.c:245: warning: 'profile_flip_buffers' defined but not
+> used
+> kernel/profile.c:268: warning: 'profile_discard_flip_buffers' defined
+> but not used
+> kernel/profile.c:335: warning: 'profile_cpu_callback' defined but not
+> used
+>
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+>
+> ---
+>
+>  kernel/profile.c |  107 ++++++++++++++++++++++++++++--------------------------
+>  1 files changed, 56 insertions(+), 51 deletions(-)
+>
+> diff --git a/kernel/profile.c b/kernel/profile.c
+> index cd26bed..0f377d9 100644
+> --- a/kernel/profile.c
+> +++ b/kernel/profile.c
+> @@ -202,6 +202,7 @@ void unregister_timer_hook(int (*hook)(struct pt_regs *))
+>  EXPORT_SYMBOL_GPL(unregister_timer_hook);
+>
+>
+> +#ifdef CONFIG_PROC_FS
+>  #ifdef CONFIG_SMP
+>  /*
+>  * Each cpu has a pair of open-addressed hashtables for pending
+> @@ -279,57 +280,6 @@ static void profile_discard_flip_buffers(void)
+>        mutex_unlock(&profile_flip_mutex);
+>  }
+>
+> -void profile_hits(int type, void *__pc, unsigned int nr_hits)
+> -{
+> -       unsigned long primary, secondary, flags, pc = (unsigned long)__pc;
+> -       int i, j, cpu;
+> -       struct profile_hit *hits;
+> -
+> -       if (prof_on != type || !prof_buffer)
+> -               return;
+> -       pc = min((pc - (unsigned long)_stext) >> prof_shift, prof_len - 1);
+> -       i = primary = (pc & (NR_PROFILE_GRP - 1)) << PROFILE_GRPSHIFT;
+> -       secondary = (~(pc << 1) & (NR_PROFILE_GRP - 1)) << PROFILE_GRPSHIFT;
+> -       cpu = get_cpu();
+> -       hits = per_cpu(cpu_profile_hits, cpu)[per_cpu(cpu_profile_flip, cpu)];
+> -       if (!hits) {
+> -               put_cpu();
+> -               return;
+> -       }
+> -       /*
+> -        * We buffer the global profiler buffer into a per-CPU
+> -        * queue and thus reduce the number of global (and possibly
+> -        * NUMA-alien) accesses. The write-queue is self-coalescing:
+> -        */
+> -       local_irq_save(flags);
+> -       do {
+> -               for (j = 0; j < PROFILE_GRPSZ; ++j) {
+> -                       if (hits[i + j].pc == pc) {
+> -                               hits[i + j].hits += nr_hits;
+> -                               goto out;
+> -                       } else if (!hits[i + j].hits) {
+> -                               hits[i + j].pc = pc;
+> -                               hits[i + j].hits = nr_hits;
+> -                               goto out;
+> -                       }
+> -               }
+> -               i = (i + secondary) & (NR_PROFILE_HIT - 1);
+> -       } while (i != primary);
+> -
+> -       /*
+> -        * Add the current hit(s) and flush the write-queue out
+> -        * to the global buffer:
+> -        */
+> -       atomic_add(nr_hits, &prof_buffer[pc]);
+> -       for (i = 0; i < NR_PROFILE_HIT; ++i) {
+> -               atomic_add(hits[i].hits, &prof_buffer[hits[i].pc]);
+> -               hits[i].pc = hits[i].hits = 0;
+> -       }
+> -out:
+> -       local_irq_restore(flags);
+> -       put_cpu();
+> -}
+> -
+>  static int __devinit profile_cpu_callback(struct notifier_block *info,
+>                                        unsigned long action, void *__cpu)
+>  {
+> @@ -390,7 +340,62 @@ out_free:
+>  #define profile_flip_buffers()         do { } while (0)
+>  #define profile_discard_flip_buffers() do { } while (0)
+>  #define profile_cpu_callback           NULL
+> +#endif
+> +#endif /* CONFIG_PROC_FS */
+>
+> +#ifdef CONFIG_SMP
+> +void profile_hits(int type, void *__pc, unsigned int nr_hits)
+> +{
+> +       unsigned long primary, secondary, flags, pc = (unsigned long)__pc;
+> +       int i, j, cpu;
+> +       struct profile_hit *hits;
+> +
+> +       if (prof_on != type || !prof_buffer)
+> +               return;
+> +       pc = min((pc - (unsigned long)_stext) >> prof_shift, prof_len - 1);
+> +       i = primary = (pc & (NR_PROFILE_GRP - 1)) << PROFILE_GRPSHIFT;
+> +       secondary = (~(pc << 1) & (NR_PROFILE_GRP - 1)) << PROFILE_GRPSHIFT;
+> +       cpu = get_cpu();
+> +       hits = per_cpu(cpu_profile_hits, cpu)[per_cpu(cpu_profile_flip, cpu)];
+> +       if (!hits) {
+> +               put_cpu();
+> +               return;
+> +       }
+> +       /*
+> +        * We buffer the global profiler buffer into a per-CPU
+> +        * queue and thus reduce the number of global (and possibly
+> +        * NUMA-alien) accesses. The write-queue is self-coalescing:
+> +        */
+> +       local_irq_save(flags);
+> +       do {
+> +               for (j = 0; j < PROFILE_GRPSZ; ++j) {
+> +                       if (hits[i + j].pc == pc) {
+> +                               hits[i + j].hits += nr_hits;
+> +                               goto out;
+> +                       } else if (!hits[i + j].hits) {
+> +                               hits[i + j].pc = pc;
+> +                               hits[i + j].hits = nr_hits;
+> +                               goto out;
+> +                       }
+> +               }
+> +               i = (i + secondary) & (NR_PROFILE_HIT - 1);
+> +       } while (i != primary);
+> +
+> +       /*
+> +        * Add the current hit(s) and flush the write-queue out
+> +        * to the global buffer:
+> +        */
+> +       atomic_add(nr_hits, &prof_buffer[pc]);
+> +       for (i = 0; i < NR_PROFILE_HIT; ++i) {
+> +               atomic_add(hits[i].hits, &prof_buffer[hits[i].pc]);
+> +               hits[i].pc = hits[i].hits = 0;
+> +       }
+> +out:
+> +       local_irq_restore(flags);
+> +       put_cpu();
+> +}
+> +
+> +#else /* !CONFIG_SMP */
+>  void profile_hits(int type, void *__pc, unsigned int nr_hits)
+>  {
+>        unsigned long pc;
+>
 
-Yeah, crappy patch.  Agree on all other comments as well, thanks for
-the review.
+Hi Andrew,
+Can you also have a look at this?
+Is there a better way to fix it?
 
-Here's an updated one.
-
-Miklos
-----
-
-Subject: vfs: move executable checking into ->permission()
-
-From: Miklos Szeredi <mszeredi@suse.cz>
-
-For execute permission on a regular files we need to check if file has
-any execute bits at all, regardless of capabilites.
-
-This check is normally performed by generic_permission() but was also
-added to the case when the filesystem defines its own ->permission()
-method.  In the latter case the filesystem should be responsible for
-performing this check.
-
-Move the check from inode_permission() inside filesystems which are
-not calling generic_permission().
-
-Create a helper function execute_ok() that returns true if the inode
-is a directory or if any execute bits are present in i_mode.
-
-Also fix up the following code:
-
- - coda control file is never executable
- - sysctl files are never executable
- - hfs_permission seems broken on MAY_EXEC, remove
- - hfsplus_permission is eqivalent to generic_permission(), remove
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/cifs/cifsfs.c      |    9 ++++++---
- fs/coda/dir.c         |    3 +++
- fs/coda/pioctl.c      |    2 +-
- fs/hfs/inode.c        |    8 --------
- fs/hfsplus/inode.c    |   13 -------------
- fs/namei.c            |   21 ++++-----------------
- fs/nfs/dir.c          |    3 +++
- fs/proc/proc_sysctl.c |   10 ++++++++--
- include/linux/fs.h    |    5 +++++
- 9 files changed, 30 insertions(+), 44 deletions(-)
-
-Index: linux-2.6/fs/cifs/cifsfs.c
-===================================================================
---- linux-2.6.orig/fs/cifs/cifsfs.c	2008-07-31 13:27:44.000000000 +0200
-+++ linux-2.6/fs/cifs/cifsfs.c	2008-07-31 13:28:11.000000000 +0200
-@@ -273,9 +273,12 @@ static int cifs_permission(struct inode 
- 
- 	cifs_sb = CIFS_SB(inode->i_sb);
- 
--	if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_NO_PERM)
--		return 0;
--	else /* file mode might have been restricted at mount time
-+	if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_NO_PERM) {
-+		if ((mask & MAY_EXEC) && !execute_ok(inode))
-+			return -EACCES;
-+		else
-+			return 0;
-+	} else /* file mode might have been restricted at mount time
- 		on the client (above and beyond ACL on servers) for
- 		servers which do not support setting and viewing mode bits,
- 		so allowing client to check permissions is useful */
-Index: linux-2.6/fs/coda/dir.c
-===================================================================
---- linux-2.6.orig/fs/coda/dir.c	2008-07-31 13:27:44.000000000 +0200
-+++ linux-2.6/fs/coda/dir.c	2008-07-31 13:28:11.000000000 +0200
-@@ -146,6 +146,9 @@ int coda_permission(struct inode *inode,
- 	if (!mask)
- 		return 0; 
- 
-+	if ((mask & MAY_EXEC) && !execute_ok(inode))
-+		return -EACCES;
-+
- 	lock_kernel();
- 
- 	if (coda_cache_check(inode, mask))
-Index: linux-2.6/fs/coda/pioctl.c
-===================================================================
---- linux-2.6.orig/fs/coda/pioctl.c	2008-07-31 13:27:44.000000000 +0200
-+++ linux-2.6/fs/coda/pioctl.c	2008-07-31 13:28:11.000000000 +0200
-@@ -43,7 +43,7 @@ const struct file_operations coda_ioctl_
- /* the coda pioctl inode ops */
- static int coda_ioctl_permission(struct inode *inode, int mask)
- {
--        return 0;
-+	return (mask & MAY_EXEC) ? -EACCES : 0;
- }
- 
- static int coda_pioctl(struct inode * inode, struct file * filp, 
-Index: linux-2.6/fs/namei.c
-===================================================================
---- linux-2.6.orig/fs/namei.c	2008-07-31 13:27:44.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-07-31 13:28:11.000000000 +0200
-@@ -212,8 +212,7 @@ int generic_permission(struct inode *ino
- 	 * Read/write DACs are always overridable.
- 	 * Executable DACs are overridable if at least one exec bit is set.
- 	 */
--	if (!(mask & MAY_EXEC) ||
--	    (inode->i_mode & S_IXUGO) || S_ISDIR(inode->i_mode))
-+	if (!(mask & MAY_EXEC) || execute_ok(inode))
- 		if (capable(CAP_DAC_OVERRIDE))
- 			return 0;
- 
-@@ -249,23 +248,11 @@ int inode_permission(struct inode *inode
- 	}
- 
- 	/* Ordinary permission routines do not understand MAY_APPEND. */
--	if (inode->i_op && inode->i_op->permission) {
-+	if (inode->i_op && inode->i_op->permission)
- 		retval = inode->i_op->permission(inode, mask);
--		if (!retval) {
--			/*
--			 * Exec permission on a regular file is denied if none
--			 * of the execute bits are set.
--			 *
--			 * This check should be done by the ->permission()
--			 * method.
--			 */
--			if ((mask & MAY_EXEC) && S_ISREG(inode->i_mode) &&
--			    !(inode->i_mode & S_IXUGO))
--				return -EACCES;
--		}
--	} else {
-+	else
- 		retval = generic_permission(inode, mask, NULL);
--	}
-+
- 	if (retval)
- 		return retval;
- 
-Index: linux-2.6/fs/nfs/dir.c
-===================================================================
---- linux-2.6.orig/fs/nfs/dir.c	2008-07-31 13:27:44.000000000 +0200
-+++ linux-2.6/fs/nfs/dir.c	2008-07-31 13:28:11.000000000 +0200
-@@ -1949,6 +1949,9 @@ force_lookup:
- 	} else
- 		res = PTR_ERR(cred);
- out:
-+	if (!res && (mask & MAY_EXEC) && !execute_ok(inode))
-+		res = -EACCES;
-+
- 	dfprintk(VFS, "NFS: permission(%s/%ld), mask=0x%x, res=%d\n",
- 		inode->i_sb->s_id, inode->i_ino, mask, res);
- 	return res;
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-07-31 13:27:44.000000000 +0200
-+++ linux-2.6/include/linux/fs.h	2008-07-31 13:28:11.000000000 +0200
-@@ -1776,6 +1776,11 @@ extern int inode_permission(struct inode
- extern int generic_permission(struct inode *, int,
- 		int (*check_acl)(struct inode *, int));
- 
-+static inline bool execute_ok(struct inode *inode)
-+{
-+	return (inode->i_mode & S_IXUGO) || S_ISDIR(inode->i_mode);
-+}
-+
- extern int get_write_access(struct inode *);
- extern int deny_write_access(struct file *);
- static inline void put_write_access(struct inode * inode)
-Index: linux-2.6/fs/hfs/inode.c
-===================================================================
---- linux-2.6.orig/fs/hfs/inode.c	2008-07-31 13:27:44.000000000 +0200
-+++ linux-2.6/fs/hfs/inode.c	2008-07-31 13:28:21.000000000 +0200
-@@ -511,13 +511,6 @@ void hfs_clear_inode(struct inode *inode
- 	}
- }
- 
--static int hfs_permission(struct inode *inode, int mask)
--{
--	if (S_ISREG(inode->i_mode) && mask & MAY_EXEC)
--		return 0;
--	return generic_permission(inode, mask, NULL);
--}
--
- static int hfs_file_open(struct inode *inode, struct file *file)
- {
- 	if (HFS_IS_RSRC(inode))
-@@ -616,7 +609,6 @@ static const struct inode_operations hfs
- 	.lookup		= hfs_file_lookup,
- 	.truncate	= hfs_file_truncate,
- 	.setattr	= hfs_inode_setattr,
--	.permission	= hfs_permission,
- 	.setxattr	= hfs_setxattr,
- 	.getxattr	= hfs_getxattr,
- 	.listxattr	= hfs_listxattr,
-Index: linux-2.6/fs/hfsplus/inode.c
-===================================================================
---- linux-2.6.orig/fs/hfsplus/inode.c	2008-07-31 13:27:44.000000000 +0200
-+++ linux-2.6/fs/hfsplus/inode.c	2008-07-31 13:28:25.000000000 +0200
-@@ -238,18 +238,6 @@ static void hfsplus_set_perms(struct ino
- 	perms->dev = cpu_to_be32(HFSPLUS_I(inode).dev);
- }
- 
--static int hfsplus_permission(struct inode *inode, int mask)
--{
--	/* MAY_EXEC is also used for lookup, if no x bit is set allow lookup,
--	 * open_exec has the same test, so it's still not executable, if a x bit
--	 * is set fall back to standard permission check.
--	 */
--	if (S_ISREG(inode->i_mode) && mask & MAY_EXEC && !(inode->i_mode & 0111))
--		return 0;
--	return generic_permission(inode, mask, NULL);
--}
--
--
- static int hfsplus_file_open(struct inode *inode, struct file *file)
- {
- 	if (HFSPLUS_IS_RSRC(inode))
-@@ -279,7 +267,6 @@ static int hfsplus_file_release(struct i
- static const struct inode_operations hfsplus_file_inode_operations = {
- 	.lookup		= hfsplus_file_lookup,
- 	.truncate	= hfsplus_file_truncate,
--	.permission	= hfsplus_permission,
- 	.setxattr	= hfsplus_setxattr,
- 	.getxattr	= hfsplus_getxattr,
- 	.listxattr	= hfsplus_listxattr,
-Index: linux-2.6/fs/proc/proc_sysctl.c
-===================================================================
---- linux-2.6.orig/fs/proc/proc_sysctl.c	2008-07-31 13:27:44.000000000 +0200
-+++ linux-2.6/fs/proc/proc_sysctl.c	2008-07-31 13:28:32.000000000 +0200
-@@ -298,13 +298,19 @@ static int proc_sys_permission(struct in
- 	 * sysctl entries that are not writeable,
- 	 * are _NOT_ writeable, capabilities or not.
- 	 */
--	struct ctl_table_header *head = grab_header(inode);
--	struct ctl_table *table = PROC_I(inode)->sysctl_entry;
-+	struct ctl_table_header *head;
-+	struct ctl_table *table;
- 	int error;
- 
-+	/* Executable files are not allowed under /proc/sys/ */
-+	if ((mask & MAY_EXEC) && S_ISREG(inode->i_mode))
-+		return -EACCES;
-+
-+	head = grab_header(inode);
- 	if (IS_ERR(head))
- 		return PTR_ERR(head);
- 
-+	table = PROC_I(inode)->sysctl_entry;
- 	if (!table) /* global root - r-xr-xr-x */
- 		error = mask & MAY_WRITE ? -EACCES : 0;
- 	else /* Use the permissions on the sysctl table entry */
+Thanks
