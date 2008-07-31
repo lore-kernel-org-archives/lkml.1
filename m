@@ -1,306 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYGaJdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbYGaJdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbYGaJdr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 05:33:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYGaJcn
+	id S1755488AbYGaJdc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 05:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbYGaJcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 05:32:43 -0400
-Received: from mail.free-electrons.com ([88.191.46.45]:54987 "EHLO
+	Thu, 31 Jul 2008 05:32:36 -0400
+Received: from mail.free-electrons.com ([88.191.46.45]:54992 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752655AbYGaJc3 (ORCPT
+	with ESMTP id S1752928AbYGaJc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 31 Jul 2008 05:32:29 -0400
-Message-Id: <20080731093220.969460336@free-electrons.com>
+Message-Id: <20080731093221.565015353@free-electrons.com>
 References: <20080731092703.661994657@free-electrons.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 31 Jul 2008 11:27:05 +0200
+Date: Thu, 31 Jul 2008 11:27:07 +0200
 From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 To: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
 Cc: michael@free-electrons.com,
        Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
-       Matt Mackall <mpm@selenic.com>, matthew@wil.cx,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [patch 2/4] Configure out file locking features
-Content-Disposition: inline; filename=configure-out-fs-locks-support.patch
+       Matt Mackall <mpm@selenic.com>, netdev@vger.kernel.org,
+       davem@davemloft.net, akpm@linux-foundation.org
+Subject: [patch 4/4] Configure out IGMP support
+Content-Disposition: inline; filename=configure-out-igmp-support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the CONFIG_FILE_LOCKING option which allows to remove
-support for advisory locks. With this patch enabled, the flock()
-system call, the F_GETLK, F_SETLK and F_SETLKW operations of fcntl()
-and NFS support are disabled. These features are not necessarly needed
-on embedded systems. It allows to save ~11 Kb of kernel code and data:
+This patchs adds the CONFIG_IGMP option which allows to remove support
+for the Internet Group Management Protocol, used in
+multicast. Multicast is not necessarly used by applications,
+particularly on embedded devices. As this is a size-reduction option,
+it depends on CONFIG_EMBEDDED. It allows to save ~10 kilobytes of
+kernel code/data:
 
    text	   data	    bss	    dec	    hex	filename
-1125436	 118764	 212992	1457192	 163c28	vmlinux.old
-1114299	 118564	 212992	1445855	 160fdf	vmlinux
- -11137    -200       0  -11337   -2C49 +/-
+1718857	 143672	 221184	2083713	 1fcb81	vmlinux
+1708838	 143640	 221184	2073662	 1fa43e	vmlinux.new
+ -10019     -32       0  -10051   -2743 +/-
 
-This patch has originally been written by Matt Mackall
+This patch has been originally written by Matt Mackall
 <mpm@selenic.com>, and is part of the Linux Tiny project.
 
 Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 Signed-off-by: Matt Mackall <mpm@selenic.com>
-Cc: matthew@wil.cx
-Cc: linux-fsdevel@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Cc: davem@davemloft.net
 Cc: mpm@selenic.com
 Cc: akpm@linux-foundation.org
 
 ---
- fs/Kconfig          |    2 +-
- fs/Makefile         |    3 ++-
- fs/proc/proc_misc.c |    4 ++++
- include/linux/fs.h  |   52 +++++++++++++++++++++++++++++++++++++++++++++-------
- init/Kconfig        |    8 ++++++++
- kernel/sys_ni.c     |    1 +
- kernel/sysctl.c     |    6 +++++-
- 7 files changed, 66 insertions(+), 10 deletions(-)
+ include/linux/igmp.h       |   20 ++++++++++++++++++++
+ init/Kconfig               |    8 ++++++++
+ net/ipv4/Makefile          |    3 ++-
+ net/ipv4/af_inet.c         |    2 --
+ net/ipv4/ip_sockglue.c     |    4 ++++
+ net/ipv4/sysctl_net_ipv4.c |    2 ++
+ 6 files changed, 36 insertions(+), 3 deletions(-)
 
-Index: linuxdev/fs/Kconfig
+Index: linuxdev/include/linux/igmp.h
 ===================================================================
---- linuxdev.orig/fs/Kconfig
-+++ linuxdev/fs/Kconfig
-@@ -1559,7 +1559,7 @@
+--- linuxdev.orig/include/linux/igmp.h
++++ linuxdev/include/linux/igmp.h
+@@ -215,6 +215,7 @@
+ #define IGMPV3_QQIC(value) IGMPV3_EXP(0x80, 4, 3, value)
+ #define IGMPV3_MRC(value) IGMPV3_EXP(0x80, 4, 3, value)
  
- config NFS_FS
- 	tristate "NFS client support"
--	depends on INET
-+	depends on INET && FILE_LOCKING
- 	select LOCKD
- 	select SUNRPC
- 	select NFS_ACL_SUPPORT if NFS_V3_ACL
-Index: linuxdev/fs/Makefile
-===================================================================
---- linuxdev.orig/fs/Makefile
-+++ linuxdev/fs/Makefile
-@@ -7,7 +7,7 @@
++#ifdef CONFIG_IGMP
+ extern int ip_check_mc(struct in_device *dev, __be32 mc_addr, __be32 src_addr, u16 proto);
+ extern int igmp_rcv(struct sk_buff *);
+ extern int ip_mc_join_group(struct sock *sk, struct ip_mreqn *imr);
+@@ -235,6 +236,25 @@
+ extern void ip_mc_dec_group(struct in_device *in_dev, __be32 addr);
+ extern void ip_mc_inc_group(struct in_device *in_dev, __be32 addr);
+ extern void ip_mc_rejoin_group(struct ip_mc_list *im);
++#else /* !CONFIG_IGMP */
++#define ip_check_mc(a, b, c, d) (0)
++#define igmp_rcv(a) (0)
++#define ip_mc_join_group(a, b) (0)
++#define ip_mc_leave_group(a, b) (0)
++#define ip_mc_drop_socket(a)
++#define ip_mc_source(a, b, c, d, e) (0)
++#define ip_mc_msfilter(a, b, c) (0)
++#define ip_mc_msfget(a, b, c, d) (0)
++#define ip_mc_gsfget(a, b, c, d) (0)
++#define ip_mc_sf_allow(a, b, c, d) (0)
++#define ip_mc_init_dev(a)
++#define ip_mc_destroy_dev(a)
++#define ip_mc_up(a)
++#define ip_mc_down(a)
++#define ip_mc_dec_group(a)
++#define ip_mc_inc_group(a)
++#define ip_mc_rejoin_group(a)
++#endif /* CONFIG_IGMP */
  
- obj-y :=	open.o read_write.o file_table.o super.o \
- 		char_dev.o stat.o exec.o pipe.o namei.o fcntl.o \
--		ioctl.o readdir.o select.o fifo.o locks.o dcache.o inode.o \
-+		ioctl.o readdir.o select.o fifo.o dcache.o inode.o \
- 		attr.o bad_inode.o file.o filesystems.o namespace.o \
- 		seq_file.o xattr.o libfs.o fs-writeback.o \
- 		pnode.o drop_caches.o splice.o sync.o utimes.o \
-@@ -28,6 +28,7 @@
- obj-$(CONFIG_TIMERFD)		+= timerfd.o
- obj-$(CONFIG_EVENTFD)		+= eventfd.o
- obj-$(CONFIG_AIO)               += aio.o
-+obj-$(CONFIG_FILE_LOCKING)      += locks.o
- obj-$(CONFIG_COMPAT)		+= compat.o compat_ioctl.o
- 
- nfsd-$(CONFIG_NFSD)		:= nfsctl.o
-Index: linuxdev/fs/proc/proc_misc.c
-===================================================================
---- linuxdev.orig/fs/proc/proc_misc.c
-+++ linuxdev/fs/proc/proc_misc.c
-@@ -677,6 +677,7 @@
- 	return proc_calc_metrics(page, start, off, count, eof, len);
- }
- 
-+#ifdef CONFIG_FILE_LOCKING
- static int locks_open(struct inode *inode, struct file *filp)
- {
- 	return seq_open(filp, &locks_seq_operations);
-@@ -688,6 +689,7 @@
- 	.llseek		= seq_lseek,
- 	.release	= seq_release,
- };
-+#endif /* CONFIG_FILE_LOCKING */
- 
- static int execdomains_read_proc(char *page, char **start, off_t off,
- 				 int count, int *eof, void *data)
-@@ -881,7 +883,9 @@
- #ifdef CONFIG_PRINTK
- 	proc_create("kmsg", S_IRUSR, NULL, &proc_kmsg_operations);
  #endif
-+#ifdef CONFIG_FILE_LOCKING
- 	proc_create("locks", 0, NULL, &proc_locks_operations);
-+#endif
- 	proc_create("devices", 0, NULL, &proc_devinfo_operations);
- 	proc_create("cpuinfo", 0, NULL, &proc_cpuinfo_operations);
- #ifdef CONFIG_BLOCK
-Index: linuxdev/include/linux/fs.h
-===================================================================
---- linuxdev.orig/include/linux/fs.h
-+++ linuxdev/include/linux/fs.h
-@@ -983,6 +983,13 @@
- 
- #include <linux/fcntl.h>
- 
-+extern void send_sigio(struct fown_struct *fown, int fd, int band);
-+
-+/* fs/sync.c */
-+extern int do_sync_mapping_range(struct address_space *mapping, loff_t offset,
-+			loff_t endbyte, unsigned int flags);
-+
-+#ifdef CONFIG_FILE_LOCKING
- extern int fcntl_getlk(struct file *, struct flock __user *);
- extern int fcntl_setlk(unsigned int, struct file *, unsigned int,
- 			struct flock __user *);
-@@ -993,14 +1000,9 @@
- 			struct flock64 __user *);
  #endif
- 
--extern void send_sigio(struct fown_struct *fown, int fd, int band);
- extern int fcntl_setlease(unsigned int fd, struct file *filp, long arg);
- extern int fcntl_getlease(struct file *filp);
- 
--/* fs/sync.c */
--extern int do_sync_mapping_range(struct address_space *mapping, loff_t offset,
--			loff_t endbyte, unsigned int flags);
--
- /* fs/locks.c */
- extern void locks_init_lock(struct file_lock *);
- extern void locks_copy_lock(struct file_lock *, struct file_lock *);
-@@ -1023,6 +1025,33 @@
- extern int lock_may_read(struct inode *, loff_t start, unsigned long count);
- extern int lock_may_write(struct inode *, loff_t start, unsigned long count);
- extern struct seq_operations locks_seq_operations;
-+#else /* !CONFIG_FILE_LOCKING */
-+#define fcntl_getlk(a, b) (-EINVAL)
-+#define fcntl_setlk(a, b, c, d) (-EACCES)
-+#if BITS_PER_LONG == 32
-+#define fcntl_getlk64(a, b) (-EINVAL)
-+#define fcntl_setlk64(a, b, c, d) (-EACCES)
-+#endif
-+#define fcntl_setlease(a, b, c) (0)
-+#define fcntl_getlease(a) (0)
-+#define locks_init_lock(a)
-+#define locks_copy_lock(a, b)
-+#define locks_remove_posix(a, b)
-+#define locks_remove_flock(a)
-+#define posix_test_lock(a, b) (0)
-+#define posix_lock_file(a, b) (-ENOLCK)
-+#define posix_lock_file_wait(a, b) (-ENOLCK)
-+#define posix_unblock_lock(a, b) (-ENOENT)
-+#define vfs_test_lock(a, b) (0)
-+#define vfs_lock_file(a, b, c, d) (-ENOLCK)
-+#define vfs_cancel_lock(a, b) (0)
-+#define flock_lock_file_wait(a, b) (-ENOLCK)
-+#define __break_lease(a, b) (0)
-+#define lease_get_mtime(a, b)
-+#define lock_may_read(a, b, c) (1)
-+#define lock_may_write(a, b, c) (1)
-+#endif /* !CONFIG_FILE_LOCKING */
-+
- 
- struct fasync_struct {
- 	int	magic;
-@@ -1554,9 +1583,12 @@
- /* /sys/fs */
- extern struct kobject *fs_kobj;
- 
-+extern int rw_verify_area(int, struct file *, loff_t *, size_t);
-+
- #define FLOCK_VERIFY_READ  1
- #define FLOCK_VERIFY_WRITE 2
- 
-+#ifdef CONFIG_FILE_LOCKING
- extern int locks_mandatory_locked(struct inode *);
- extern int locks_mandatory_area(int, struct inode *, struct file *, loff_t, size_t);
- 
-@@ -1587,8 +1619,6 @@
- 	return 0;
- }
- 
--extern int rw_verify_area(int, struct file *, loff_t *, size_t);
--
- static inline int locks_verify_truncate(struct inode *inode,
- 				    struct file *filp,
- 				    loff_t size)
-@@ -1609,6 +1639,14 @@
- 		return __break_lease(inode, mode);
- 	return 0;
- }
-+#else /* !CONFIG_FILE_LOCKING */
-+#define locks_mandatory_locked(a) (0)
-+#define locks_mandatory_area(a, b, c, d, e) (0)
-+#define mandatory_lock(a) (0)
-+#define locks_verify_locked(a) (0)
-+#define locks_verify_truncate(a, b, c) (0)
-+#define break_lease(a, b) (0)
-+#endif /* CONFIG_FILE_LOCKING */
- 
- /* fs/open.c */
- 
 Index: linuxdev/init/Kconfig
 ===================================================================
 --- linuxdev.orig/init/Kconfig
 +++ linuxdev/init/Kconfig
-@@ -732,6 +732,14 @@
-           by some high performance threaded applications. Disabling
-           this option saves about 7k.
+@@ -748,6 +748,14 @@
+ 	  Disabling this option removes support for configuring
+ 	  ethernet device features via ethtool. Saves about 6k.
  
-+config FILE_LOCKING
-+	bool "Enable POSIX file locking API" if EMBEDDED
++config IGMP
++	depends on INET
++	bool "Enable IGMP support" if EMBEDDED && !IP_MULTICAST
 +	default y
 +	help
-+	  This option enables standard file locking support, required
-+          for filesystems like NFS and for the flock() system
-+          call. Disabling this option saves about 11k.
++	  Disabling this option removes support for the Internet group
++          management protocol, used for multicast. Saves about 10k.
 +
  config VM_EVENT_COUNTERS
  	default y
  	bool "Enable VM event counters for /proc/vmstat" if EMBEDDED
-Index: linuxdev/kernel/sys_ni.c
+Index: linuxdev/net/ipv4/Makefile
 ===================================================================
---- linuxdev.orig/kernel/sys_ni.c
-+++ linuxdev/kernel/sys_ni.c
-@@ -130,6 +130,7 @@
- cond_syscall(sys_io_submit);
- cond_syscall(sys_io_cancel);
- cond_syscall(sys_io_getevents);
-+cond_syscall(sys_flock);
+--- linuxdev.orig/net/ipv4/Makefile
++++ linuxdev/net/ipv4/Makefile
+@@ -9,13 +9,14 @@
+ 	     tcp.o tcp_input.o tcp_output.o tcp_timer.o tcp_ipv4.o \
+ 	     tcp_minisocks.o tcp_cong.o \
+ 	     datagram.o raw.o udp.o udplite.o \
+-	     arp.o icmp.o devinet.o af_inet.o  igmp.o \
++	     arp.o icmp.o devinet.o af_inet.o \
+ 	     fib_frontend.o fib_semantics.o \
+ 	     inet_fragment.o
  
- /* arch-specific weak syscall entries */
- cond_syscall(sys_pciconfig_read);
-Index: linuxdev/kernel/sysctl.c
+ obj-$(CONFIG_SYSCTL) += sysctl_net_ipv4.o
+ obj-$(CONFIG_IP_FIB_HASH) += fib_hash.o
+ obj-$(CONFIG_IP_FIB_TRIE) += fib_trie.o
++obj-$(CONFIG_IGMP) += igmp.o
+ obj-$(CONFIG_PROC_FS) += proc.o
+ obj-$(CONFIG_IP_MULTIPLE_TABLES) += fib_rules.o
+ obj-$(CONFIG_IP_MROUTE) += ipmr.o
+Index: linuxdev/net/ipv4/af_inet.c
 ===================================================================
---- linuxdev.orig/kernel/sysctl.c
-+++ linuxdev/kernel/sysctl.c
-@@ -97,7 +97,7 @@
- static int neg_one = -1;
+--- linuxdev.orig/net/ipv4/af_inet.c
++++ linuxdev/net/ipv4/af_inet.c
+@@ -115,8 +115,6 @@
+ #include <linux/mroute.h>
  #endif
  
--#ifdef CONFIG_MMU
-+#if defined(CONFIG_MMU) && defined(CONFIG_FILE_LOCKING)
- static int two = 2;
- #endif
- 
-@@ -1260,6 +1260,7 @@
- 		.extra1		= &minolduid,
- 		.extra2		= &maxolduid,
- 	},
-+#ifdef CONFIG_FILE_LOCKING
+-extern void ip_mc_drop_socket(struct sock *sk);
+-
+ /* The inetsw table contains everything that inet_create needs to
+  * build a new socket.
+  */
+Index: linuxdev/net/ipv4/ip_sockglue.c
+===================================================================
+--- linuxdev.orig/net/ipv4/ip_sockglue.c
++++ linuxdev/net/ipv4/ip_sockglue.c
+@@ -640,6 +640,7 @@
+ 			err = ip_mc_leave_group(sk, &mreq);
+ 		break;
+ 	}
++#ifdef CONFIG_IGMP
+ 	case IP_MSFILTER:
  	{
- 		.ctl_name	= FS_LEASES,
- 		.procname	= "leases-enable",
-@@ -1268,6 +1269,7 @@
+ 		extern int sysctl_igmp_max_msf;
+@@ -677,6 +678,7 @@
+ 		kfree(msf);
+ 		break;
+ 	}
++#endif
+ 	case IP_BLOCK_SOURCE:
+ 	case IP_UNBLOCK_SOURCE:
+ 	case IP_ADD_SOURCE_MEMBERSHIP:
+@@ -794,6 +796,7 @@
+ 				   greqs.gsr_interface);
+ 		break;
+ 	}
++#ifdef CONFIG_IGMP
+ 	case MCAST_MSFILTER:
+ 	{
+ 		extern int sysctl_igmp_max_msf;
+@@ -860,6 +863,7 @@
+ 		kfree(gsf);
+ 		break;
+ 	}
++#endif
+ 	case IP_ROUTER_ALERT:
+ 		err = ip_ra_control(sk, val ? 1 : 0, NULL);
+ 		break;
+Index: linuxdev/net/ipv4/sysctl_net_ipv4.c
+===================================================================
+--- linuxdev.orig/net/ipv4/sysctl_net_ipv4.c
++++ linuxdev/net/ipv4/sysctl_net_ipv4.c
+@@ -412,6 +412,7 @@
+ 	},
+ 
+ #endif
++#ifdef CONFIG_IGMP
+ 	{
+ 		.ctl_name	= NET_IPV4_IGMP_MAX_MSF,
+ 		.procname	= "igmp_max_msf",
+@@ -420,6 +421,7 @@
  		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
+ 		.proc_handler	= &proc_dointvec
  	},
 +#endif
- #ifdef CONFIG_DNOTIFY
  	{
- 		.ctl_name	= FS_DIR_NOTIFY,
-@@ -1279,6 +1281,7 @@
- 	},
- #endif
- #ifdef CONFIG_MMU
-+#ifdef CONFIG_FILE_LOCKING
- 	{
- 		.ctl_name	= FS_LEASE_TIME,
- 		.procname	= "lease-break-time",
-@@ -1290,6 +1293,7 @@
- 		.extra1		= &zero,
- 		.extra2		= &two,
- 	},
-+#endif /* CONFIG_FILE_LOCKING */
- #ifdef CONFIG_AIO
- 	{
- 		.procname	= "aio-nr",
+ 		.ctl_name	= NET_IPV4_INET_PEER_THRESHOLD,
+ 		.procname	= "inet_peer_threshold",
 
 -- 
 Thomas Petazzoni, Free Electrons
