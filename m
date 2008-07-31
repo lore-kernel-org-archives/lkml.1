@@ -1,59 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbYGaHOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbYGaHQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754424AbYGaHOW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 03:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbYGaHOO
+	id S1754681AbYGaHQX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 03:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYGaHQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 03:14:14 -0400
-Received: from smtp112.mail.mud.yahoo.com ([209.191.84.65]:36219 "HELO
-	smtp112.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752423AbYGaHON (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 03:14:13 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=FjlJS3oAwoovbd9vN65L+VmrGfpC2CpXvQ+YsNPJZ2McqJnwatYr7lnNXZ0FjACz5txzajfkegSthnXs+vNkf2gJkU35zn9ZTzrMNcSXarNpIBs02xGiHOIwNJyPz/8GDPTavmUWbBfGVYOPVMRXkLq0AjU/Qzpe7d1DZSke0Yo=  ;
-X-YMail-OSG: Ig.H_KQVM1mPLae8N151oD1fvxi7w9l3inAJz21cm3813B.yg1S2sH2F3ub9n4T4H1GMoHR1.Ime.vnYXDaD_iFMBSD2ZJ41pf359j3EEcRzwSjoJeklNXdwQrDlbFzOC6s-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Robin Holt <holt@sgi.com>
-Subject: Re: GRU driver feedback
-Date: Thu, 31 Jul 2008 17:14:04 +1000
-User-Agent: KMail/1.9.5
-Cc: "Torvalds, Linus" <torvalds@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
+	Thu, 31 Jul 2008 03:16:14 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:35801 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752888AbYGaHQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 03:16:13 -0400
+Date: Thu, 31 Jul 2008 17:16:03 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20080723141229.GB13247@wotan.suse.de> <20080729185315.GA14260@sgi.com> <200807301550.34500.nickpiggin@yahoo.com.au>
-In-Reply-To: <200807301550.34500.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807311714.05252.nickpiggin@yahoo.com.au>
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: linux-next: sparc32/gcc-3.4.5/ld-2.15 build failure
+Message-Id: <20080731171603.799c2c85.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__31_Jul_2008_17_16_03_+1000_Sn2ALYol0puWoI6h"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 July 2008 15:50, Nick Piggin wrote:
-> On Wednesday 30 July 2008 04:53, Robin Holt wrote:
+--Signature=_Thu__31_Jul_2008_17_16_03_+1000_Sn2ALYol0puWoI6h
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > In the case where unmap_region is clearing page tables, the caller to
-> > unmap_region is expected to be holding the mmap_sem writably.  Jacks
-> > fault handler will immediately return when it fails on the
-> > down_read_trylock().
->
-> No, you are right of course. I had in my mind the problems faced by
-> lockless get_user_pages, in which case I was worried about the page table
-> existence, but missed the fact that you're holding mmap_sem to provide
-> existence (which it would, as you note, although one day we may want to
-> reclaim page tables or something that doesn't take mmap_sem, so a big
-> comment would be nice here).
+Hi Dave,
 
-The other thing is... then GRU should get rid of the local_irq_disable
-in the atomic pte lookup. By definition it is worthless if we can be
-operating on an mm that is not running on current (and if I understand
-correctly, sn2 can avoid sending tlb flush IPIs completely sometimes?)
+linux-next builds (sparc32 defconfig) have been failing for some time
+like this:
+
+.tmp_kallsyms2.o(.rodata+0x0): In function `kallsyms_addresses':
+: relocation truncated to fit: R_SPARC_32 _text
+.tmp_kallsyms2.o(.rodata+0x4): In function `kallsyms_addresses':
+: relocation truncated to fit: R_SPARC_32 _text
+.tmp_kallsyms2.o(.rodata+0x8): In function `kallsyms_addresses':
+: relocation truncated to fit: R_SPARC_32 _text
+
+(several more)
+
+I finally bisected it down to this commit:
+
+commit f9247273cb69ba101877e946d2d83044409cc8c5
+Author: Steven Whitehouse <swhiteho@redhat.com>
+Date:   Thu Jul 24 17:22:13 2008 +0100
+
+    UFS: add const to parser token table
+   =20
+Reverting this commit and the followup commit:
+
+commit fb2e405fc1fc8b20d9c78eaa1c7fd5a297efde43
+Author: Adrian Bunk <bunk@kernel.org>
+Date:   Fri Jul 25 02:55:49 2008 +0300
+
+    fix fs/nfs/nfsroot.c compilation
+
+allows the sparc32 build to succeed.  This is toolchain specific as a
+different cross toolchain I have does not get this error.
+
+Failing toolchain:
+
+$ gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/bin/sparc64-unknown-linux=
+-gnu-gcc --version
+sparc64-unknown-linux-gnu-gcc (GCC) 3.4.5
+$ gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/bin/sparc64-unknown-linux=
+-gnu-ld --version
+GNU ld version 2.15
+
+An OK toolchain:
+$ cross/bin/sparc64-linux-gcc --version
+sparc64-linux-gcc (GCC) 4.2.4
+$ cross/bin/sparc64-linux-ld --version
+GNU ld (GNU Binutils) 2.18
+
+Both these commits are actually in Linus' tree, now.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__31_Jul_2008_17_16_03_+1000_Sn2ALYol0puWoI6h
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiRZrMACgkQjjKRsyhoI8wWXQCdFNkdC1zFlKUfmQGRM4NCXbPM
+wpEAn3lxnapdvMa70N4zJCtQ+9pib8KK
+=twny
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__31_Jul_2008_17_16_03_+1000_Sn2ALYol0puWoI6h--
