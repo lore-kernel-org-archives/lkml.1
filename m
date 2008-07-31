@@ -1,121 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYGaAMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762679AbYGaAMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbYGaAMJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762337AbYGaALZ
+	id S1762679AbYGaAMe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762555AbYGaALn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:11:25 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36517 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760257AbYGaALY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:11:24 -0400
-Date: Wed, 30 Jul 2008 16:58:34 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Roland McGrath <roland@redhat.com>,
-       Wenji Huang <wenji.huang@oracle.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-Subject: [patch 21/62] markers: fix duplicate modpost entry
-Message-ID: <20080730235834.GU12896@suse.de>
-References: <20080730233050.332789722@mini.kroah.org>
+	Wed, 30 Jul 2008 20:11:43 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:56613 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761682AbYGaALm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:11:42 -0400
+Date: Thu, 31 Jul 2008 01:11:31 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: torvalds@linux-foundation.org, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch v3] splice: fix race with page invalidation
+Message-ID: <20080731001131.GA30900@shareable.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="markers-fix-duplicate-modpost-entry.patch"
-In-Reply-To: <20080730234915.GA12426@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Disposition: inline
+In-Reply-To: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.26 -stable review patch.  If anyone has any objections, please let
-us know.
+> > And by papering it over, it then just makes people less likely to bother 
+> > with the real issue.
+> 
+> I think you are talking about a totally separate issue: that NFSD's
+> use of splice can result in strange things if the file is truncated
+> while being read.  But this is an NFSD issue and I don't see that it
+> has _anything_ to do with the above bug in splice.  I think you are
+> just confusing the two things.
 
-------------------
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+I'm more concerned by sendfile() users like Apache, Samba, FTPd.  In
+an earlier thread on this topic, I asked if the splice bug can also
+result in sendfile() sending blocks of zeros, when a file is truncated
+after it has been sent, and the answer was yes probably.
 
-commit: d35cb360c29956510b2fe1a953bd4968536f7216
+Not that I checked or anything.  But if it affects sendfile() it's a
+bigger deal - that has many users.
 
-When a kernel was rebuilt, the previous Module.markers was not cleared.
-It caused markers with different format strings to appear as duplicates
-when a markers was changed.  This problem is present since
-scripts/mod/modpost.c started to generate Module.markers, commit
-b2e3e658b344c6bcfb8fb694100ab2f2b5b2edb0
+Assuming it does affect sendfile(), it's exasperated by not being able
+to tell when a sendfile() has finished with the pages its sending.
+E.g. you can't lock the file or otherwise synchronise with another
+program which wants to modify the file.
 
-It therefore applies to 2.6.25, 2.6.26 and linux-next.
-
-I merely merged the patches from Roland, Wenji and Takashi here.
-
-Credits to
-Roland McGrath <roland@redhat.com>
-Wenji Huang <wenji.huang@oracle.com>
-and
-Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-
-for providing the individual fixes.
-
-- Changelog :
-  - Integrated Takashi's Makefile modification to clear Module.markers upon
-    make clean.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Roland McGrath <roland@redhat.com>
-Cc: Wenji Huang <wenji.huang@oracle.com>
-Cc: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- Makefile                 |    3 ++-
- scripts/Makefile.modpost |    1 +
- scripts/mod/modpost.c    |    3 ++-
- 3 files changed, 5 insertions(+), 2 deletions(-)
-
---- a/Makefile
-+++ b/Makefile
-@@ -1133,7 +1133,8 @@ clean: archclean $(clean-dirs)
- 	@find . $(RCS_FIND_IGNORE) \
- 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
- 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
--		-o -name '*.symtypes' -o -name 'modules.order' \) \
-+		-o -name '*.symtypes' -o -name 'modules.order' \
-+		-o -name 'Module.markers' \) \
- 		-type f -print | xargs rm -f
- 
- # mrproper - Delete all generated files, including .config
---- a/scripts/Makefile.modpost
-+++ b/scripts/Makefile.modpost
-@@ -101,6 +101,7 @@ quiet_cmd_kernel-mod = MODPOST $@
-       cmd_kernel-mod = $(modpost) $@
- 
- vmlinux.o: FORCE
-+	@rm -fr $(kernelmarkersfile)
- 	$(call cmd,kernel-mod)
- 
- # Declare generated files as targets for modpost
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -1992,7 +1992,8 @@ static void read_markers(const char *fna
- 			mod->skip = 1;
- 		}
- 
--		add_marker(mod, marker, fmt);
-+		if (!mod->skip)
-+			add_marker(mod, marker, fmt);
- 	}
- 	return;
- fail:
-
--- 
+-- Jamie
