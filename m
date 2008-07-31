@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760162AbYGaWvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbYGaWvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760162AbYGaWvd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 18:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758598AbYGaWuO
+	id S1759907AbYGaWvu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 18:51:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759075AbYGaWuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 18:50:14 -0400
+	Thu, 31 Jul 2008 18:50:20 -0400
 Received: from fg-out-1718.google.com ([72.14.220.156]:57122 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758353AbYGaWuM (ORCPT
+	with ESMTP id S1758572AbYGaWuQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 18:50:12 -0400
+	Thu, 31 Jul 2008 18:50:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Fw5YzePVTpncGu4HVzOiAKcYu3n+MR5FzD5DKqU3OWyDB/DfVOiqm9VySV0RGb24py
-         YYqBcWdQgSMg+NKk0VsgkDT69miGTby7NTWhbk77H0ky5hGuyD8fRKEekH52SVzmQckM
-         TmbIyBu5FgXOYI0JqPG/jrGqSqNHpqZpjQOhg=
+        b=lPPBZ4piYul/qLRAnAJLXPmhWAVMRkVGt668G0ccxapMxXMiENIA0cdjELmiEvqXTf
+         6Z+cG64699KNR5MG5A947NsLHh6ZV+0Wo36nhnAETMBlbk95mzitlww1cWVT+lOYyelw
+         DvPKSz/BMHIcWJkU5jZPE5uMVnqIRF+rh1xN4=
 From: Andrea Righi <righi.andrea@gmail.com>
 To: akpm@linux-foundation.org, balbir@linux.vnet.ibm.com
 Cc: Matt Heaton <matt@bluehost.com>, Mark Seger <Mark.Seger@hp.com>,
        Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
        Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH -mm 3/4] kernel->userspace interface
-Date: Fri,  1 Aug 2008 00:49:58 +0200
-Message-Id: <1217544599-8935-4-git-send-email-righi.andrea@gmail.com>
+Subject: [PATCH -mm 4/4] per block device IO accounting instrumentation
+Date: Fri,  1 Aug 2008 00:49:59 +0200
+Message-Id: <1217544599-8935-5-git-send-email-righi.andrea@gmail.com>
 X-Mailer: git-send-email 1.5.4.3
 In-Reply-To: <>
 References: <>
@@ -31,252 +31,232 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Interface to export per task/thread/block device i/o statistics to userspace
-applications.
-
-Also simplify do_io_accounting() using seq_printf() to export aggregate i/o
-statistics.
+Use the new block device i/o accounting functions.
 
 Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
 ---
- fs/proc/base.c |  178 ++++++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 167 insertions(+), 11 deletions(-)
+ block/blk-core.c    |    2 +-
+ fs/buffer.c         |   10 +++++++++-
+ fs/cifs/file.c      |    2 +-
+ fs/direct-io.c      |    3 ++-
+ kernel/exit.c       |   16 +++++++++++++---
+ kernel/fork.c       |    7 ++++---
+ mm/page-writeback.c |    9 ++++++++-
+ mm/readahead.c      |    5 ++++-
+ mm/truncate.c       |    9 +++++++--
+ 9 files changed, 49 insertions(+), 14 deletions(-)
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 01ed610..c77d501 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -66,6 +66,7 @@
- #include <linux/rcupdate.h>
- #include <linux/kallsyms.h>
- #include <linux/resource.h>
-+#include <linux/task_io_accounting_ops.h>
- #include <linux/module.h>
- #include <linux/mount.h>
- #include <linux/security.h>
-@@ -2401,7 +2402,8 @@ static int proc_base_fill_cache(struct file *filp, void *dirent,
- }
+diff --git a/block/blk-core.c b/block/blk-core.c
+index fef79cc..3f7daf0 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1478,7 +1478,7 @@ void submit_bio(int rw, struct bio *bio)
+ 		if (rw & WRITE) {
+ 			count_vm_events(PGPGOUT, count);
+ 		} else {
+-			task_io_account_read(bio->bi_size);
++			task_io_account_read(bio->bi_bdev, bio->bi_size);
+ 			count_vm_events(PGPGIN, count);
+ 		}
  
- #ifdef CONFIG_TASK_IO_ACCOUNTING
--static int do_io_accounting(struct task_struct *task, char *buffer, int whole)
-+static void do_io_accounting(struct task_struct *task,
-+				struct seq_file *m, int whole)
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 9749a90..b7647ab 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -708,6 +708,8 @@ EXPORT_SYMBOL(mark_buffer_dirty_inode);
+ static int __set_page_dirty(struct page *page,
+ 		struct address_space *mapping, int warn)
  {
- 	struct task_io_accounting acct = task->ioac;
- 	unsigned long flags;
-@@ -2409,14 +2411,13 @@ static int do_io_accounting(struct task_struct *task, char *buffer, int whole)
- 	if (whole && lock_task_sighand(task, &flags)) {
- 		struct task_struct *t = task;
++	size_t io_acct = 0;
++
+ 	if (unlikely(!mapping))
+ 		return !TestSetPageDirty(page);
  
--		task_io_accounting_add(&acct, &task->signal->ioac);
-+		task_io_account_add(&acct, &task->signal->ioac);
- 		while_each_thread(task, t)
--			task_io_accounting_add(&acct, &t->ioac);
-+			task_io_account_add(&acct, &t->ioac);
- 
- 		unlock_task_sighand(task, &flags);
+@@ -722,13 +724,19 @@ static int __set_page_dirty(struct page *page,
+ 			__inc_zone_page_state(page, NR_FILE_DIRTY);
+ 			__inc_bdi_stat(mapping->backing_dev_info,
+ 					BDI_RECLAIMABLE);
+-			task_io_account_write(PAGE_CACHE_SIZE);
++			io_acct = PAGE_CACHE_SIZE;
+ 		}
+ 		radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
  	}
--	return sprintf(buffer,
--			"rchar: %llu\n"
-+	seq_printf(m, "rchar: %llu\n"
- 			"wchar: %llu\n"
- 			"syscr: %llu\n"
- 			"syscw: %llu\n"
-@@ -2429,17 +2430,166 @@ static int do_io_accounting(struct task_struct *task, char *buffer, int whole)
- 			acct.cancelled_write_bytes);
- }
- 
--static int proc_tid_io_accounting(struct task_struct *task, char *buffer)
-+static int tid_io_accounting_show(struct seq_file *m, void *v)
- {
--	return do_io_accounting(task, buffer, 0);
-+	struct inode *inode = m->private;
-+	struct task_struct *task = get_proc_task(inode);
-+
-+	if (!task)
-+		return -ESRCH;
-+	do_io_accounting(task, m, 0);
-+	put_task_struct(task);
-+	return 0;
- }
- 
--static int proc_tgid_io_accounting(struct task_struct *task, char *buffer)
-+static int tgid_io_accounting_show(struct seq_file *m, void *v)
- {
--	return do_io_accounting(task, buffer, 1);
-+	struct inode *inode = m->private;
-+	struct task_struct *task = get_proc_task(inode);
-+
-+	if (!task)
-+		return -ESRCH;
-+	do_io_accounting(task, m, 1);
-+	put_task_struct(task);
-+	return 0;
- }
-+
-+static int tid_io_accounting_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, tid_io_accounting_show, inode);
-+}
-+
-+static int tgid_io_accounting_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, tgid_io_accounting_show, inode);
-+}
-+
-+static const struct file_operations proc_tid_io_accounting_operations = {
-+	.open		= tid_io_accounting_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static const struct file_operations proc_tgid_io_accounting_operations = {
-+	.open		= tgid_io_accounting_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
- #endif /* CONFIG_TASK_IO_ACCOUNTING */
- 
-+#ifdef CONFIG_TASK_IO_ACCOUNTING_BDEV
-+
-+#define TASK_IO_ACCT_TID_STAT	0
-+#define TASK_IO_ACCT_SIG_STAT	1
-+
-+static void seq_printf_io_acct_dev(struct seq_file *m, struct pid_namespace *ns,
-+			struct task_struct *task, int type,
-+			struct task_io_acct_node *io)
-+{
-+	pid_t tid = task_pid_nr_ns(task, ns);
-+
-+	seq_printf(m, "%d %c %d,%d %llu %llu %llu\n",
-+		tid, type ? 'c' : 't', MAJOR(io->dev), MINOR(io->dev),
-+		io->read_bytes, io->write_bytes, io->cancelled_write_bytes);
-+}
-+
-+/* Note: called with task->ioac.lock held */
-+static void show_dev_io_accounting_single(struct pid_namespace *ns,
-+				struct task_struct *task, struct seq_file *m)
-+{
-+	struct rb_node *n;
-+
-+	for (n = rb_first(&task->ioac.tree); n; n = rb_next(n)) {
-+		struct task_io_acct_node *io = rb_entry(n,
-+				struct task_io_acct_node, node);
-+		seq_printf_io_acct_dev(m, ns, task,
-+					TASK_IO_ACCT_TID_STAT, io);
+ 	spin_unlock_irq(&mapping->tree_lock);
+ 	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
++	if (io_acct) {
++		struct block_device *bdev = (mapping->host &&
++				mapping->host->i_sb->s_bdev) ?
++				mapping->host->i_sb->s_bdev : NULL;
++		task_io_account_write(bdev, io_acct);
 +	}
-+}
-+
-+static void show_dev_io_accounting_whole(struct pid_namespace *ns,
-+				struct task_struct *task, struct seq_file *m)
-+{
-+	struct rb_node *n;
-+	struct task_struct *t = task;
-+	struct signal_struct *sig = task->signal;
-+	unsigned long flags;
-+
-+	if (!lock_task_sighand(task, &flags))
-+		return;
-+	do {
-+		spin_lock(&t->ioac.lock);
-+		show_dev_io_accounting_single(ns, t, m);
-+		spin_unlock(&t->ioac.lock);
-+	} while_each_thread(task, t);
-+
-+	/* no need to lock sig->ioac.lock here, just use lock_task_sighand() */
-+	for (n = rb_first(&sig->ioac.tree); n; n = rb_next(n)) {
-+		struct task_io_acct_node *io = rb_entry(n,
-+					struct task_io_acct_node, node);
-+		seq_printf_io_acct_dev(m, ns, task,
-+					TASK_IO_ACCT_SIG_STAT, io);
-+	}
-+	unlock_task_sighand(task, &flags);
-+}
-+
-+static int bdev_tid_io_accounting_show(struct seq_file *m, void *v)
-+{
-+	struct inode *inode = m->private;
-+	struct pid_namespace *ns = inode->i_sb->s_fs_info;
-+	struct task_struct *task = get_proc_task(inode);
-+
-+	if (!task)
-+		return -ESRCH;
-+	spin_lock_irq(&task->ioac.lock);
-+	show_dev_io_accounting_single(ns, task, m);
-+	spin_unlock_irq(&task->ioac.lock);
-+
-+	put_task_struct(task);
-+	return 0;
-+}
-+
-+static int bdev_tgid_io_accounting_show(struct seq_file *m, void *v)
-+{
-+	struct inode *inode = m->private;
-+	struct pid_namespace *ns = inode->i_sb->s_fs_info;
-+	struct task_struct *task = get_proc_task(inode);
-+
-+	if (!task)
-+		return -ESRCH;
-+	show_dev_io_accounting_whole(ns, task, m);
-+
-+	put_task_struct(task);
-+	return 0;
-+}
-+
-+static int bdev_tid_io_accounting_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, bdev_tid_io_accounting_show, inode);
-+}
-+
-+static int bdev_tgid_io_accounting_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, bdev_tgid_io_accounting_show, inode);
-+}
-+
-+static const struct file_operations proc_bdev_tid_io_accounting_operations = {
-+	.open		= bdev_tid_io_accounting_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static const struct file_operations proc_bdev_tgid_io_accounting_operations = {
-+	.open		= bdev_tgid_io_accounting_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+#endif /* CONFIG_TASK_IO_ACCOUNTING_BDEV */
-+
- /*
-  * Thread groups
-  */
-@@ -2513,7 +2663,10 @@ static const struct pid_entry tgid_base_stuff[] = {
- 	REG("coredump_filter", S_IRUGO|S_IWUSR, coredump_filter),
- #endif
- #ifdef CONFIG_TASK_IO_ACCOUNTING
--	INF("io",	S_IRUGO, tgid_io_accounting),
-+	REG("io",	S_IRUGO, tgid_io_accounting),
-+#endif
-+#ifdef CONFIG_TASK_IO_ACCOUNTING_BDEV
-+	REG("blockio",	S_IRUGO, bdev_tgid_io_accounting),
- #endif
- };
  
-@@ -2844,7 +2997,10 @@ static const struct pid_entry tid_base_stuff[] = {
- 	REG("make-it-fail", S_IRUGO|S_IWUSR, fault_inject),
- #endif
- #ifdef CONFIG_TASK_IO_ACCOUNTING
--	INF("io",	S_IRUGO, tid_io_accounting),
-+	REG("io",	S_IRUGO, tid_io_accounting),
-+#endif
-+#ifdef CONFIG_TASK_IO_ACCOUNTING_BDEV
-+	REG("blockio",	S_IRUGO, bdev_tid_io_accounting),
- #endif
- };
+ 	return 1;
+ }
+diff --git a/fs/cifs/file.c b/fs/cifs/file.c
+index 9b8a893..6e80927 100644
+--- a/fs/cifs/file.c
++++ b/fs/cifs/file.c
+@@ -1872,7 +1872,7 @@ static int cifs_readpages(struct file *file, struct address_space *mapping,
+ 			cFYI(1, ("Read error in readpages: %d", rc));
+ 			break;
+ 		} else if (bytes_read > 0) {
+-			task_io_account_read(bytes_read);
++			task_io_account_read(NULL, bytes_read);
+ 			pSMBr = (struct smb_com_read_rsp *)smb_read_data;
+ 			cifs_copy_cache_pages(mapping, page_list, bytes_read,
+ 				smb_read_data + 4 /* RFC1001 hdr */ +
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index 9606ee8..1e82a05 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -660,7 +660,8 @@ submit_page_section(struct dio *dio, struct page *page,
+ 		/*
+ 		 * Read accounting is performed in submit_bio()
+ 		 */
+-		task_io_account_write(len);
++		struct block_device *bdev = dio->bio ? dio->bio->bi_bdev : NULL;
++		task_io_account_write(bdev, len);
+ 	}
  
+ 	/*
+diff --git a/kernel/exit.c b/kernel/exit.c
+index c446b84..428d7b1 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -121,7 +121,10 @@ static void __exit_signal(struct task_struct *tsk)
+ 		sig->nivcsw += tsk->nivcsw;
+ 		sig->inblock += task_io_get_inblock(tsk);
+ 		sig->oublock += task_io_get_oublock(tsk);
+-		task_io_accounting_add(&sig->ioac, &tsk->ioac);
++
++		task_io_account_add(&sig->ioac, &tsk->ioac);
++		task_io_account_merge_stat(&sig->ioac, &tsk->ioac);
++
+ 		sig->sum_sched_runtime += tsk->se.sum_exec_runtime;
+ 		sig = NULL; /* Marker for below. */
+ 	}
+@@ -1346,9 +1349,16 @@ static int wait_task_zombie(struct task_struct *p, int options,
+ 		psig->coublock +=
+ 			task_io_get_oublock(p) +
+ 			sig->oublock + sig->coublock;
+-		task_io_accounting_add(&psig->ioac, &p->ioac);
+-		task_io_accounting_add(&psig->ioac, &sig->ioac);
++
++		task_io_account_add(&psig->ioac, &p->ioac);
++		task_io_account_add(&psig->ioac, &sig->ioac);
++		task_io_account_merge_stat(&psig->ioac, &p->ioac);
++		task_io_account_merge_stat(&psig->ioac, &sig->ioac);
++
+ 		spin_unlock_irq(&p->parent->sighand->siglock);
++	} else {
++		task_io_account_cleanup(&p->signal->ioac);
++		task_io_account_cleanup(&p->ioac);
+ 	}
+ 
+ 	/*
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 63a87ff..c72c376 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -826,7 +826,9 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
+ 	sig->nvcsw = sig->nivcsw = sig->cnvcsw = sig->cnivcsw = 0;
+ 	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
+ 	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
+-	task_io_accounting_init(&sig->ioac);
++
++	task_io_account_init(&sig->ioac);
++
+ 	sig->sum_sched_runtime = 0;
+ 	INIT_LIST_HEAD(&sig->cpu_timers[0]);
+ 	INIT_LIST_HEAD(&sig->cpu_timers[1]);
+@@ -1008,8 +1010,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 	p->last_switch_count = 0;
+ 	p->last_switch_timestamp = 0;
+ #endif
+-
+-	task_io_accounting_init(&p->ioac);
++	task_io_account_init(&p->ioac);
+ 	acct_clear_integrals(p);
+ 
+ 	p->it_virt_expires = cputime_zero;
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index c6d6088..06ec4b2 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -1080,6 +1080,7 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 	if (!TestSetPageDirty(page)) {
+ 		struct address_space *mapping = page_mapping(page);
+ 		struct address_space *mapping2;
++		ssize_t io_acct = 0;
+ 
+ 		if (!mapping)
+ 			return 1;
+@@ -1093,7 +1094,7 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 				__inc_zone_page_state(page, NR_FILE_DIRTY);
+ 				__inc_bdi_stat(mapping->backing_dev_info,
+ 						BDI_RECLAIMABLE);
+-				task_io_account_write(PAGE_CACHE_SIZE);
++				io_acct = PAGE_CACHE_SIZE;
+ 			}
+ 			radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
+@@ -1103,6 +1104,12 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 			/* !PageAnon && !swapper_space */
+ 			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+ 		}
++		if (io_acct) {
++			struct block_device *bdev = (mapping->host &&
++					mapping->host->i_sb->s_bdev) ?
++					mapping->host->i_sb->s_bdev : NULL;
++			task_io_account_write(bdev, io_acct);
++		}
+ 		return 1;
+ 	}
+ 	return 0;
+diff --git a/mm/readahead.c b/mm/readahead.c
+index 137bc56..614f55a 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -58,6 +58,9 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
+ 			int (*filler)(void *, struct page *), void *data)
+ {
+ 	struct page *page;
++	struct block_device *bdev =
++		(mapping->host && mapping->host->i_sb->s_bdev) ?
++		mapping->host->i_sb->s_bdev : NULL;
+ 	int ret = 0;
+ 
+ 	while (!list_empty(pages)) {
+@@ -75,7 +78,7 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
+ 			put_pages_list(pages);
+ 			break;
+ 		}
+-		task_io_account_read(PAGE_CACHE_SIZE);
++		task_io_account_read(bdev, PAGE_CACHE_SIZE);
+ 	}
+ 	return ret;
+ }
+diff --git a/mm/truncate.c b/mm/truncate.c
+index 4d129a5..17c42b7 100644
+--- a/mm/truncate.c
++++ b/mm/truncate.c
+@@ -76,8 +76,13 @@ void cancel_dirty_page(struct page *page, unsigned int account_size)
+ 			dec_zone_page_state(page, NR_FILE_DIRTY);
+ 			dec_bdi_stat(mapping->backing_dev_info,
+ 					BDI_RECLAIMABLE);
+-			if (account_size)
+-				task_io_account_cancelled_write(account_size);
++			if (account_size) {
++				struct block_device *bdev =
++					mapping->host->i_sb->s_bdev ?
++					mapping->host->i_sb->s_bdev : NULL;
++				task_io_account_cancelled_write(bdev,
++							account_size);
++			}
+ 		}
+ 	}
+ }
 -- 
 1.5.4.3
 
