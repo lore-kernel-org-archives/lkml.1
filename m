@@ -1,116 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752278AbYGaN0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbYGaN2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752278AbYGaN0G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 09:26:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbYGaNZx
+	id S1754160AbYGaN2w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 09:28:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbYGaN2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 09:25:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43899 "EHLO mx1.redhat.com"
+	Thu, 31 Jul 2008 09:28:42 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55373 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751160AbYGaNZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 09:25:50 -0400
-Subject: Re: linux-next: sparc32/gcc-3.4.5/ld-2.15 build failure
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       "David S. Miller" <davem@davemloft.net>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080731003558.965581a6.akpm@linux-foundation.org>
-References: <20080731171603.799c2c85.sfr@canb.auug.org.au>
-	 <20080731003558.965581a6.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
-	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 ITE
-Date: Thu, 31 Jul 2008 14:20:33 +0100
-Message-Id: <1217510433.6317.11.camel@quoit>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	id S1751980AbYGaN2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 09:28:41 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [bug] 2.6.27-rc1: I/O errors after resume
+Date: Thu, 31 Jul 2008 15:31:17 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200807281203.38822.j.schneider@uib.de> <20080730011223.8f04ba20.akpm@linux-foundation.org> <E1KOXpA-00005w-Vl@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1KOXpA-00005w-Vl@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807311531.18377.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Thursday, 31 of July 2008, Miklos Szeredi wrote:
+> With 2.6.27-rc1 things break badly after resume on my T60.  Dmesg and
+> config attached.  2.6.26 worked fine.
 
-Please consider reverting the two commits:
+Ugh, lots of stuff in a single message.
 
-> > commit f9247273cb69ba101877e946d2d83044409cc8c5
-> > Author: Steven Whitehouse <swhiteho@redhat.com>
-> > Date:   Thu Jul 24 17:22:13 2008 +0100
-> > 
-> >     UFS: add const to parser token table
-> >     
+Anyway, can you try the current -git and report back, please?  It's possible
+that this has been fixed already.
 
-> > 
-> > commit fb2e405fc1fc8b20d9c78eaa1c7fd5a297efde43
-> > Author: Adrian Bunk <bunk@kernel.org>
-> > Date:   Fri Jul 25 02:55:49 2008 +0300
-> > 
-> >     fix fs/nfs/nfsroot.c compilation
-
-It appears that they cause a compile problem (as per below explanation)
-on sparc, even though they appear to be ok on other architectures. I'll
-redo the patch to avoid the problem and resubmit but it seems best just
-to revert in the mean time. Sorry to be a pain,
-
-Steve.
-
-On Thu, 2008-07-31 at 00:35 -0700, Andrew Morton wrote:
-> On Thu, 31 Jul 2008 17:16:03 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> 
-> > Hi Dave,
-> > 
-> > linux-next builds (sparc32 defconfig) have been failing for some time
-> > like this:
-> > 
-> > .tmp_kallsyms2.o(.rodata+0x0): In function `kallsyms_addresses':
-> > : relocation truncated to fit: R_SPARC_32 _text
-> > .tmp_kallsyms2.o(.rodata+0x4): In function `kallsyms_addresses':
-> > : relocation truncated to fit: R_SPARC_32 _text
-> > .tmp_kallsyms2.o(.rodata+0x8): In function `kallsyms_addresses':
-> > : relocation truncated to fit: R_SPARC_32 _text
-> > 
-> > (several more)
-> > 
-> > I finally bisected it down to this commit:
-> > 
-> > commit f9247273cb69ba101877e946d2d83044409cc8c5
-> > Author: Steven Whitehouse <swhiteho@redhat.com>
-> > Date:   Thu Jul 24 17:22:13 2008 +0100
-> > 
-> >     UFS: add const to parser token table
-> >     
-> > Reverting this commit and the followup commit:
-> > 
-> > commit fb2e405fc1fc8b20d9c78eaa1c7fd5a297efde43
-> > Author: Adrian Bunk <bunk@kernel.org>
-> > Date:   Fri Jul 25 02:55:49 2008 +0300
-> > 
-> >     fix fs/nfs/nfsroot.c compilation
-> > 
-> > allows the sparc32 build to succeed.  This is toolchain specific as a
-> > different cross toolchain I have does not get this error.
-> > 
-> > Failing toolchain:
-> > 
-> > $ gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/bin/sparc64-unknown-linux-gnu-gcc --version
-> > sparc64-unknown-linux-gnu-gcc (GCC) 3.4.5
-> > $ gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/bin/sparc64-unknown-linux-gnu-ld --version
-> > GNU ld version 2.15
-> > 
-> > An OK toolchain:
-> > $ cross/bin/sparc64-linux-gcc --version
-> > sparc64-linux-gcc (GCC) 4.2.4
-> > $ cross/bin/sparc64-linux-ld --version
-> > GNU ld (GNU Binutils) 2.18
-> > 
-> > Both these commits are actually in Linus' tree, now.
-> 
-> gee.  nfsroot.c is now effectively doing `const __initconst' which
-> might be upsetting the compiler.  And perhaps one of the forty-odd
-> other users of match_table_t needs __initconst or somesuch.
-> 
-> Yes, I'd second a revert-and-try-again-later on that one.
-
+Thanks,
+Rafael
