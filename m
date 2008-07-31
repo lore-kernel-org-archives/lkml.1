@@ -1,94 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbYGaKYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbYGaK0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731AbYGaKYt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 06:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756553AbYGaKYd
+	id S1756653AbYGaK0J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 06:26:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYGaKZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 06:24:33 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:29383 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756420AbYGaKYc (ORCPT
+	Thu, 31 Jul 2008 06:25:54 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56596
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750887AbYGaKZy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 06:24:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SA6iq9wTVS8I7q3kTevyC5H6rVgardH2ZhHN2YcL49waSQjRkN3DhamBf86RyiZDPR
-         UdcXubYD0g2Z448F+C+vJeGerNQiRk8FE/0f+wHcDQpyEDrdTluBkbTupRG+np/tmWXB
-         F+UjaCc/yOZXossX6paFfgq+dHYtUsIa3ZCHU=
-Message-ID: <9debc4410807310324m4a76aaf5s253242e5cc2bb130@mail.gmail.com>
-Date: Thu, 31 Jul 2008 15:54:30 +0530
-From: "Maxin John" <maxin.john@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: regarding mprotect() implementation in 2.6.26 kernel
-In-Reply-To: <9debc4410807310315n4da5beafh853a71f532420e9a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 31 Jul 2008 06:25:54 -0400
+Date: Thu, 31 Jul 2008 03:25:53 -0700 (PDT)
+Message-Id: <20080731.032553.67275433.davem@davemloft.net>
+To: dwmw2@infradead.org
+Cc: torvalds@linux-foundation.org, thomas.petazzoni@free-electrons.com,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com
+Subject: Re: [patch 0/4] [resend] Add configuration options to disable
+ features not needed on embedded devices
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1217499316.3454.118.camel@pmac.infradead.org>
+References: <1217498355.3454.103.camel@pmac.infradead.org>
+	<20080731.030205.153067850.davem@davemloft.net>
+	<1217499316.3454.118.camel@pmac.infradead.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9debc4410807310315n4da5beafh853a71f532420e9a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Christoph Hellwig,
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Thu, 31 Jul 2008 11:15:16 +0100
 
-( I guess you are the right person to ask this question ?)
+> While I agree with Andrew's observation, I'd also respectfully submit
+> that your argument is more fundamentally bogus than that. TCP and UDP
+> are _not_ universally available. They go away if you set CONFIG_INET=n.
 
-The POSIX.2 specification of mprotect() says:
+Like I said, people can locally patch their systems if they really
+want to rip out fundamental things like multicast support.
 
-errorno should be set as ENOMEM if the addresses in the range [addr,
-(addr + len)] are invalid for the address space of a process, or
-specify one or more pages which are not mapped.
+Some folks might find it instructive to do a google code search
+or similar on the multicast socket options this things dikes out
+of the tree.
 
-However, in the mprotect implementation  (asmlinkage long
-sys_mprotect(unsigned long start, size_t len, unsigned long prot)) in
-linux/mm/mprotect.c file, if we call mprotect() with start as NULL and
-len as 0, mprotect() returns 0 and it is not setting the errono.The
-following code confirms this behaviour.
-
-
-*********** mprotect check code ********************
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <errno.h>
-#include <sys/mman.h>
-
-int main()
-{
-
-       int fd, ret;
-       char *address;
-       errno = 0;
-
-       fd = open("./mmap_file", O_CREAT | O_RDWR, 766);
-       address = (char *) mmap(0, 100, PROT_READ, MAP_SHARED, fd, 0);
-
-       /* address argument is NULL and length argument is 0 */
-
-       if ((ret = mprotect(NULL, 0, PROT_READ)) == -1) {
-               printf("%s Error \n", strerror(errno));
-               printf("mprotect functionality is correct.\n");
-       } else {
-               printf("mprotect functionality needs to be verified \n");
-               exit(EXIT_FAILURE);
-       }
-       close(fd);
-       return 0;
-}
-
-*********** mprotect check code ********************
-
-Is there a reason to return 0 when the len is 0 and start is NULL ? Is
-it intentional ? If not, it should be fixed.
-
-Cheers,
-
-Maxin B. John
-Bangalore, India
+Even simple things like NTP will spew failures with this CONFIG_IGMP
+thing turned off.  And that's just the tip of the iceberg.
