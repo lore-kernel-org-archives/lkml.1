@@ -1,60 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752372AbYGaKvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbYGaKxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752372AbYGaKvf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 06:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbYGaKvW
+	id S1752547AbYGaKxo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 06:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYGaKxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 06:51:22 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49265
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751035AbYGaKvV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 06:51:21 -0400
-Date: Thu, 31 Jul 2008 03:51:21 -0700 (PDT)
-Message-Id: <20080731.035121.177567346.davem@davemloft.net>
-To: dwmw2@infradead.org
-Cc: thomas.petazzoni@free-electrons.com, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, michael@free-electrons.com,
-       mpm@selenic.com, jgarzik@pobox.com, netdev@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch 3/4] Configure out ethtool support
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1217500967.3454.140.camel@pmac.infradead.org>
-References: <20080731092703.661994657@free-electrons.com>
-	<20080731093221.236840420@free-electrons.com>
-	<1217500967.3454.140.camel@pmac.infradead.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 31 Jul 2008 06:53:36 -0400
+Received: from [218.94.130.82] ([218.94.130.82]:1142 "HELO mail.archermind.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1750752AbYGaKxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 06:53:36 -0400
+X-Greylist: delayed 916 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jul 2008 06:53:35 EDT
+Message-ID: <4891960E.2000605@archermind.com>
+Date: Thu, 31 Jul 2008 18:38:06 +0800
+From: richard <yang.lu@archermind.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20071018)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Subject: kernel  performance issue
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 Jul 2008 10:38:27.0363 (UTC) FILETIME=[91017730:01C8F2F9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Thu, 31 Jul 2008 11:42:47 +0100
+Hi:
 
-> It's alleged that these functions are called from 'core' network code in
-> some places, although I can't actually see any evidence of that anywhere
-> in Linus' tree except for vlans and bridging.
-> 
-> If that's actually the case, perhaps it makes sense to add a
-> WARN_ON_ONCE() to these empty functions, so that a developer who
-> disables CONFIG_ETHTOOL when they shouldn't will see a nasty warning
-> about it rather than a silent failure?
-> 
-> Btw, I see you've made bridging 'select ETHTOOL'; did you do the same
-> for vlan support?
+I have a question about the kernel performance of kernel 2.6.24. I use
+"time"
+to account the time cost of "date" execution, and find that the "real time"
+of kernel 2.6.24 is always bigger than kernel 2.6.21 on my arm board.
+For my
+understanding, the time cost of 2.6.24 shouldn't be bigger than 2.6.21,
+because
+it is a upgrade of 2.6.21 and the its performance should be better than
+2.6.21,
+if I am wrong please let me know.
 
-CONFIG_INET needs it too.
 
-dev_disable_lro() calls the ethtool ops directly.
+[root@Linux /root]#cat ./date-loop.sh
+#! /bin/sh
+loop=1
+while [ $loop -le 50 ]
+do
+         date +%s
+         loop=$(($loop+1))
+done
 
-But it still needs to be conditional, because as I said what I see
-happening next is this CONFIG_ETHTOOL thing getting jammed into each
-and every network driver.  (in fact, ethtool support code in a single
-driver probably drarfs the 6K savings this initial patch is giving
-us).
 
-And at which point you'll have a broken system for drivers that
-enable LRO and the user enables forwarding.
+Time cost in kernel 2.6.24:
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.06s
+sys     0m 0.43s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.07s
+sys     0m 0.42s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.09s
+sys     0m 0.40s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.07s
+sys     0m 0.41s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.07s
+sys     0m 0.42s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.09s
+sys     0m 0.40s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.06s
+sys     0m 0.43s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.08s
+sys     0m 0.41s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.09s
+sys     0m 0.40s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.10s
+sys     0m 0.39s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.05s
+sys     0m 0.44s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.05s
+sys     0m 0.44s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.09s
+sys     0m 0.40s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.07s
+sys     0m 0.42s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.07s
+sys     0m 0.42s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.48s
+user    0m 0.09s
+sys     0m 0.40s
+[root@Linux /root]#
+
+Time cost in kernel 2.6.21:
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.08s
+sys     0m 0.38s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.07s
+sys     0m 0.39s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.09s
+sys     0m 0.37s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.09s
+sys     0m 0.37s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.08s
+sys     0m 0.38s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.06s
+sys     0m 0.40s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.09s
+sys     0m 0.37s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.10s
+sys     0m 0.36s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.04s
+sys     0m 0.42s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.09s
+sys     0m 0.37s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.07s
+sys     0m 0.39s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.08s
+sys     0m 0.38s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.10s
+sys     0m 0.36s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.09s
+sys     0m 0.37s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.09s
+sys     0m 0.37s
+[root@Linux /root]#time ./date-loop.sh > /dev/null
+real    0m 0.45s
+user    0m 0.07s
+sys     0m 0.39s
+[root@Linux /root]#
+
+-- 
+
+
+
+
+
+
+Best Regards,
+Yang Lu
+
