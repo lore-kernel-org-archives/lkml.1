@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758754AbYGaVnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbYGaVoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758754AbYGaVnF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 17:43:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbYGaVmw
+	id S1758654AbYGaVoT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 17:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbYGaVoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 17:42:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56080 "EHLO mx3.mail.elte.hu"
+	Thu, 31 Jul 2008 17:44:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45674 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754005AbYGaVmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 17:42:50 -0400
-Date: Thu, 31 Jul 2008 23:42:32 +0200
+	id S1754736AbYGaVoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 17:44:05 -0400
+Date: Thu, 31 Jul 2008 23:43:52 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [git pull] x86 fixes
-Message-ID: <20080731214232.GA22330@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [git pull] scheduler fixes
+Message-ID: <20080731214352.GA22791@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,143 +32,149 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 Linus,
 
-Please pull the latest x86-fixes-for-linus git tree from:
+Please pull the latest sched-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
-
-(the out-of-topic bits come from a half-revert of a bad commit that went 
-upstream prematurely via the PCI tree - has the ack of Jesse as well.)
-
- out-of-topic modifications in x86-fixes-for-linus:
- --------------------------------------------------
- include/linux/iommu-helper.h     # 8978b74: generic, x86: fix add iommu_num_p
- init/calibrate.c                 # d7ba11d: x86: remove stray <6> in BogoMIPS
- lib/iommu-helper.c               # 8978b74: generic, x86: fix add iommu_num_p
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
 
 Thanks,
 
 	Ingo
 
 ------------------>
-Bernhard Walle (1):
-      x86: move dma32_reserve_bootmem() after reserve_crashkernel()
+Hugh Dickins (1):
+      sched: move sched_clock before first use
 
-FUJITA Tomonori (1):
-      generic, x86: fix add iommu_num_pages helper function
+OGAWA Hirofumi (1):
+      sched: fix SCHED_HRTICK dependency
 
-Joe Perches (1):
-      x86: remove stray <6> in BogoMIPS printk
+Peter Zijlstra (2):
+      sched: fix warning in hrtick_start_fair()
+      lockdep: change scheduler annotation
+
+roel kluin (1):
+      sched: test runtime rather than period in global_rt_runtime()
 
 
- arch/x86/kernel/pci-dma.c    |    8 ++++++++
- arch/x86/kernel/setup.c      |   13 +++++++++----
- include/asm-x86/iommu.h      |    2 ++
- include/linux/iommu-helper.h |    1 -
- init/calibrate.c             |    2 +-
- lib/iommu-helper.c           |    8 --------
- 6 files changed, 20 insertions(+), 14 deletions(-)
+ kernel/Kconfig.hz    |    2 +-
+ kernel/sched.c       |   12 +++++-------
+ kernel/sched_clock.c |   19 +++++++++----------
+ kernel/sched_fair.c  |    2 +-
+ 4 files changed, 16 insertions(+), 19 deletions(-)
 
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index 8dbffb8..87d4d69 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -123,6 +123,14 @@ void __init pci_iommu_alloc(void)
+diff --git a/kernel/Kconfig.hz b/kernel/Kconfig.hz
+index 382dd5a..94fabd5 100644
+--- a/kernel/Kconfig.hz
++++ b/kernel/Kconfig.hz
+@@ -55,4 +55,4 @@ config HZ
+ 	default 1000 if HZ_1000
  
- 	pci_swiotlb_init();
- }
-+
-+unsigned long iommu_num_pages(unsigned long addr, unsigned long len)
-+{
-+	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
-+
-+	return size >> PAGE_SHIFT;
-+}
-+EXPORT_SYMBOL(iommu_num_pages);
+ config SCHED_HRTICK
+-	def_bool HIGH_RES_TIMERS && USE_GENERIC_SMP_HELPERS
++	def_bool HIGH_RES_TIMERS && (!SMP || USE_GENERIC_SMP_HELPERS)
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 0236958..f63af45 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -600,7 +600,6 @@ struct rq {
+ 	/* BKL stats */
+ 	unsigned int bkl_count;
  #endif
+-	struct lock_class_key rq_lock_key;
+ };
  
- /*
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index b520dae..2d88858 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -788,10 +788,6 @@ void __init setup_arch(char **cmdline_p)
+ static DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
+@@ -834,7 +833,7 @@ static inline u64 global_rt_period(void)
  
- 	initmem_init(0, max_pfn);
+ static inline u64 global_rt_runtime(void)
+ {
+-	if (sysctl_sched_rt_period < 0)
++	if (sysctl_sched_rt_runtime < 0)
+ 		return RUNTIME_INF;
  
--#ifdef CONFIG_X86_64
--	dma32_reserve_bootmem();
--#endif
--
- #ifdef CONFIG_ACPI_SLEEP
- 	/*
- 	 * Reserve low memory region for sleep support.
-@@ -806,6 +802,15 @@ void __init setup_arch(char **cmdline_p)
- #endif
- 	reserve_crashkernel();
- 
-+#ifdef CONFIG_X86_64
-+	/*
-+	 * dma32_reserve_bootmem() allocates bootmem which may conflict
-+	 * with the crashkernel command line, so do that after
-+	 * reserve_crashkernel()
-+	 */
-+	dma32_reserve_bootmem();
-+#endif
-+
- 	reserve_ibft_region();
- 
- #ifdef CONFIG_KVM_CLOCK
-diff --git a/include/asm-x86/iommu.h b/include/asm-x86/iommu.h
-index ecc8061..5f888cc 100644
---- a/include/asm-x86/iommu.h
-+++ b/include/asm-x86/iommu.h
-@@ -7,6 +7,8 @@ extern struct dma_mapping_ops nommu_dma_ops;
- extern int force_iommu, no_iommu;
- extern int iommu_detected;
- 
-+extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
-+
- #ifdef CONFIG_GART_IOMMU
- extern int gart_iommu_aperture;
- extern int gart_iommu_aperture_allowed;
-diff --git a/include/linux/iommu-helper.h b/include/linux/iommu-helper.h
-index f8598f5..c975caf 100644
---- a/include/linux/iommu-helper.h
-+++ b/include/linux/iommu-helper.h
-@@ -8,4 +8,3 @@ extern unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
- 				      unsigned long align_mask);
- extern void iommu_area_free(unsigned long *map, unsigned long start,
- 			    unsigned int nr);
--extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
-diff --git a/init/calibrate.c b/init/calibrate.c
-index 7963e3f..a379c90 100644
---- a/init/calibrate.c
-+++ b/init/calibrate.c
-@@ -170,7 +170,7 @@ void __cpuinit calibrate_delay(void)
- 				loops_per_jiffy &= ~loopbit;
+ 	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
+@@ -2759,10 +2758,10 @@ static void double_rq_lock(struct rq *rq1, struct rq *rq2)
+ 	} else {
+ 		if (rq1 < rq2) {
+ 			spin_lock(&rq1->lock);
+-			spin_lock(&rq2->lock);
++			spin_lock_nested(&rq2->lock, SINGLE_DEPTH_NESTING);
+ 		} else {
+ 			spin_lock(&rq2->lock);
+-			spin_lock(&rq1->lock);
++			spin_lock_nested(&rq1->lock, SINGLE_DEPTH_NESTING);
  		}
  	}
--	printk(KERN_INFO "%lu.%02lu BogoMIPS (lpj=%lu)\n",
-+	printk(KERN_CONT "%lu.%02lu BogoMIPS (lpj=%lu)\n",
- 			loops_per_jiffy/(500000/HZ),
- 			(loops_per_jiffy/(5000/HZ)) % 100, loops_per_jiffy);
- }
-diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-index 889ddce..a3b8d4c 100644
---- a/lib/iommu-helper.c
-+++ b/lib/iommu-helper.c
-@@ -80,11 +80,3 @@ void iommu_area_free(unsigned long *map, unsigned long start, unsigned int nr)
+ 	update_rq_clock(rq1);
+@@ -2805,10 +2804,10 @@ static int double_lock_balance(struct rq *this_rq, struct rq *busiest)
+ 		if (busiest < this_rq) {
+ 			spin_unlock(&this_rq->lock);
+ 			spin_lock(&busiest->lock);
+-			spin_lock(&this_rq->lock);
++			spin_lock_nested(&this_rq->lock, SINGLE_DEPTH_NESTING);
+ 			ret = 1;
+ 		} else
+-			spin_lock(&busiest->lock);
++			spin_lock_nested(&busiest->lock, SINGLE_DEPTH_NESTING);
  	}
+ 	return ret;
  }
- EXPORT_SYMBOL(iommu_area_free);
--
--unsigned long iommu_num_pages(unsigned long addr, unsigned long len)
+@@ -7998,7 +7997,6 @@ void __init sched_init(void)
+ 
+ 		rq = cpu_rq(i);
+ 		spin_lock_init(&rq->lock);
+-		lockdep_set_class(&rq->lock, &rq->rq_lock_key);
+ 		rq->nr_running = 0;
+ 		init_cfs_rq(&rq->cfs, rq);
+ 		init_rt_rq(&rq->rt, rq);
+diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
+index 22ed55d..5a2dc7d 100644
+--- a/kernel/sched_clock.c
++++ b/kernel/sched_clock.c
+@@ -32,6 +32,15 @@
+ #include <linux/ktime.h>
+ #include <linux/module.h>
+ 
++/*
++ * Scheduler clock - returns current time in nanosec units.
++ * This is default implementation.
++ * Architectures and sub-architectures can override this.
++ */
++unsigned long long __attribute__((weak)) sched_clock(void)
++{
++	return (unsigned long long)jiffies * (NSEC_PER_SEC / HZ);
++}
+ 
+ #ifdef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
+ 
+@@ -321,16 +330,6 @@ EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
+ 
+ #endif
+ 
+-/*
+- * Scheduler clock - returns current time in nanosec units.
+- * This is default implementation.
+- * Architectures and sub-architectures can override this.
+- */
+-unsigned long long __attribute__((weak)) sched_clock(void)
 -{
--	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
--
--	return size >> PAGE_SHIFT;
+-	return (unsigned long long)jiffies * (NSEC_PER_SEC / HZ);
 -}
--EXPORT_SYMBOL(iommu_num_pages);
+-
+ unsigned long long cpu_clock(int cpu)
+ {
+ 	unsigned long long clock;
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index cf2cd6c..0fe94ea 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -899,7 +899,7 @@ static void hrtick_start_fair(struct rq *rq, struct task_struct *p)
+ 		 * doesn't make sense. Rely on vruntime for fairness.
+ 		 */
+ 		if (rq->curr != p)
+-			delta = max(10000LL, delta);
++			delta = max_t(s64, 10000LL, delta);
+ 
+ 		hrtick_start(rq, delta);
+ 	}
