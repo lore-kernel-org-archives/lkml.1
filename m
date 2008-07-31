@@ -1,102 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763191AbYGaDBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763462AbYGaDBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763191AbYGaDBP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 23:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761886AbYGaCzG
+	id S1763462AbYGaDBg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 23:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762880AbYGaC5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 22:55:06 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:55978 "EHLO
-	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755042AbYGaCwD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 22:52:03 -0400
-Date: Wed, 30 Jul 2008 21:50:34 -0500
-From: David Fries <david@fries.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org
-Subject: [PATCH 29/30] W1: Documentation/w1/masters/ds2490 update
-Message-ID: <20080731025034.GD12181@spacedout.fries.net>
-References: <20080729020433.GA24424@spacedout.fries.net> <20080729161356.2de456fb.akpm@linux-foundation.org>
+	Wed, 30 Jul 2008 22:57:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54649 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755216AbYGaC5V convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 22:57:21 -0400
+Date: Wed, 30 Jul 2008 19:56:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Dave Young" <hidave.darkstar@gmail.com>
+Cc: "Johannes Berg" <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [BUG] wireless : cpu stuck for 61s
+Message-Id: <20080730195637.2197a82d.akpm@linux-foundation.org>
+In-Reply-To: <a8e1da0807301906j6438e5d8y64105fe8a2e3dffe@mail.gmail.com>
+References: <20080729055731.GA3265@darkstar>
+	<1217334724.10489.47.camel@johannes.berg>
+	<20080730020820.8bcc00e2.akpm@linux-foundation.org>
+	<a8e1da0807300302m35a0a7c0q2ff2e0ab92a69239@mail.gmail.com>
+	<20080730031047.54e13e2d.akpm@linux-foundation.org>
+	<a8e1da0807301906j6438e5d8y64105fe8a2e3dffe@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080729161356.2de456fb.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Wed, 30 Jul 2008 21:50:34 -0500 (CDT)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide some additional details about the status of the driver and the
-ds2490 hardware.
+On Thu, 31 Jul 2008 10:06:31 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
 
-Signed-off-by: David Fries <david@fries.net>
-Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
- Documentation/w1/masters/ds2490 |   52 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 52 insertions(+), 0 deletions(-)
+> 
+> Ok here it is.
+> BTW, I run "klogd -c 7" after boot
 
-diff --git a/Documentation/w1/masters/ds2490 b/Documentation/w1/masters/ds2490
-index 239f9ae..28176de 100644
---- a/Documentation/w1/masters/ds2490
-+++ b/Documentation/w1/masters/ds2490
-@@ -16,3 +16,55 @@ which allows to build USB <-> W1 bridges.
- DS9490(R) is a USB <-> W1 bus master device
- which has 0x81 family ID integrated chip and DS2490
- low-level operational chip.
-+
-+Notes and limitations.
-+- The weak pullup current is a minimum of 0.9mA and maximum of 6.0mA.
-+- The 5V strong pullup is supported with a minimum of 5.9mA and a
-+  maximum of 30.4 mA.  (From DS2490.pdf)
-+- While the ds2490 supports a hardware search the code doesn't take
-+  advantage of it (in tested case it only returned first device).
-+- The hardware will detect when devices are attached to the bus on the
-+  next bus (reset?) operation, however only a message is printed as
-+  the core w1 code doesn't make use of the information.  Connecting
-+  one device tends to give multiple new device notifications.
-+- The number of USB bus transactions could be reduced if w1_reset_send
-+  was added to the API.  The name is just a suggestion.  It would take
-+  a write buffer and a read buffer (along with sizes) as arguments.
-+  The ds2490 block I/O command supports reset, write buffer, read
-+  buffer, and strong pullup all in one command, instead of the current
-+  1 reset bus, 2 write the match rom command and slave rom id, 3 block
-+  write and read data.  The write buffer needs to have the match rom
-+  command and slave rom id prepended to the front of the requested
-+  write buffer, both of which are known to the driver.
-+- The hardware supports normal, flexible, and overdrive bus
-+  communication speeds, but only the normal is supported.
-+- The registered w1_bus_master functions don't define error
-+  conditions.  If a bus search is in progress and the ds2490 is
-+  removed it can produce a good amount of error output before the bus
-+  search finishes.
-+- The hardware supports detecting some error conditions, such as
-+  short, alarming presence on reset, and no presence on reset, but the
-+  driver doesn't query those values.
-+- The ds2490 specification doesn't cover short bulk in reads in
-+  detail, but my observation is if fewer bytes are requested than are
-+  available, the bulk read will return an error and the hardware will
-+  clear the entire bulk in buffer.  It would be possible to read the
-+  maximum buffer size to not run into this error condition, only extra
-+  bytes in the buffer is a logic error in the driver.  The code should
-+  should match reads and writes as well as data sizes.  Reads and
-+  writes are serialized and the status verifies that the chip is idle
-+  (and data is available) before the read is executed, so it should
-+  not happen.
-+- Running x86_64 2.6.24 UHCI under qemu 0.9.0 under x86_64 2.6.22-rc6
-+  with a OHCI controller, ds2490 running in the guest would operate
-+  normally the first time the module was loaded after qemu attached
-+  the ds2490 hardware, but if the module was unloaded, then reloaded
-+  most of the time one of the bulk out or in, and usually the bulk in
-+  would fail.  qemu sets a 50ms timeout and the bulk in would timeout
-+  even when the status shows data available.  A bulk out write would
-+  show a successful completion, but the ds2490 status register would
-+  show 0 bytes written.  Detaching qemu from the ds2490 hardware and
-+  reattaching would clear the problem.  usbmon output in the guest and
-+  host did not explain the problem.  My guess is a bug in either qemu
-+  or the host OS and more likely the host OS.
-+-- 03-06-2008 David Fries <David@Fries.net>
--- 
-1.4.4.4
+The sysrq output is still missing lots of stuff.  I guess we broke it.
+
+> 
+> This time I get a kmalloc poison overwritten:
+>
+
+<fixes wordwrapping, cleans stuff up>
+
+=============================================================================
+BUG kmalloc-4096: Poison overwritten
+-----------------------------------------------------------------------------
+
+INFO: 0xf6f3a080-0xf6f3a0ef. First byte 0x80 instead of 0x6b
+INFO: Allocated in dev_alloc_skb+0x1c/0x30 age=3642 cpu=0 pid=0
+INFO: Freed in skb_release_data+0x57/0x80 age=3146 cpu=0 pid=2398
+INFO: Slab 0xc1c05440 objects=7 used=3 fp=0xf6f3a060 flags=0x400020c3
+INFO: Object 0xf6f3a060 @offset=8288 fp=0xf6f39030
+
+Bytes b4 0xf6f3a050:  5e 09 00 00 57 c9 05 00 5a 5a 5a 5a 5a 5a 5a 5a ^...WÉ..ZZZZZZZZ
+Object 0xf6f3a060:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+Object 0xf6f3a070:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+Object 0xf6f3a080:  80 00 00 00 ff ff ff ff ff ff 00 17 7b 00 46 40 ....ÿÿÿÿÿÿ..{.F@
+Object 0xf6f3a090:  00 17 7b 00 46 40 30 09 81 21 08 7a 21 00 00 00 ..{.F@0..!.z!...
+Object 0xf6f3a0a0:  64 00 21 04 00 07 00 00 00 00 00 00 00 01 08 82 d.!.............
+Object 0xf6f3a0b0:  84 8b 0c 12 96 18 24 03 01 01 05 04 00 02 00 00 ......$.........
+Object 0xf6f3a0c0:  07 06 43 4e 20 01 0d 14 2a 01 00 32 04 30 48 60 ..CN....*..2.0H`
+Object 0xf6f3a0d0:  6c dd 18 00 17 7b 01 04 00 00 00 01 00 00 00 10 lÝ...{..........
+Redzone 0xf6f3b060:  bb bb bb bb                                     »»»»            
+Padding 0xf6f3b088:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
+Pid: 0, comm: swapper Tainted: G        W 2.6.26-smp #2
+[<c0180f5d>] print_trailer+0xad/0xf0
+[<c018103b>] check_bytes_and_report+0x9b/0xc0
+[<c018145e>] check_object+0x19e/0x1e0
+[<c01821a4>] __slab_alloc+0x454/0x4f0
+[<c01834d6>] __kmalloc_track_caller+0xe6/0xf0
+[<c03dd1ec>] ? dev_alloc_skb+0x1c/0x30
+[<c03dd1ec>] ? dev_alloc_skb+0x1c/0x30
+[<c03dce79>] __alloc_skb+0x49/0x100
+[<c03dd1ec>] dev_alloc_skb+0x1c/0x30
+[<f8a58599>] ath5k_rxbuf_setup+0x39/0x200 [ath5k]
+[<f8a5a697>] ath5k_tasklet_rx+0x127/0x5c0 [ath5k]
+[<c014969a>] ? print_lock_contention_bug+0x1a/0xe0
+[<c012eafc>] tasklet_action+0x4c/0xc0
+[<c012e463>] __do_softirq+0x93/0x120
+[<c012e547>] do_softirq+0x57/0x60
+[<c012ea29>] irq_exit+0x69/0x80
+[<c0106b55>] do_IRQ+0x45/0x80
+[<c010a5d0>] ? mwait_idle+0x0/0x50
+[<c0104752>] common_interrupt+0x2e/0x34
+[<c010a5d0>] ? mwait_idle+0x0/0x50
+[<c010a609>] ? mwait_idle+0x39/0x50
+[<c01026e0>] cpu_idle+0x60/0xd0
+[<c043c8ce>] rest_init+0x4e/0x60
+=======================
+FIX kmalloc-4096: Restoring 0xf6f3a080-0xf6f3a0ef=0x6b
+
+FIX kmalloc-4096: Marking all objects used
+[<c0243b4f>] ? security_file_permission+0xf/0x20
+[<c019436f>] sys_select+0x3f/0x190
+[<c01878e9>] ? fput+0x19/0x20
+[<c0103dbf>] ? restore_nocheck+0x12/0x15
+[<c014b06d>] ? trace_hardirqs_on+0xbd/0x140
+[<c0103d5e>] syscall_call+0x7/0xb
+=======================
+
+argh, that stuff hurts my brain.  None of the numbers seem to make any
+sense for a 4k allocation :( Pekka, do you have time to decrypt this?
+
+Dave, could you please remind us which net driver was in use here?
+
