@@ -1,105 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbYGaRtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYGaRzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753309AbYGaRtd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 13:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbYGaRtP
+	id S1755401AbYGaRzV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 13:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYGaRzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 13:49:15 -0400
-Received: from iabervon.org ([66.92.72.58]:49277 "EHLO iabervon.org"
+	Thu, 31 Jul 2008 13:55:08 -0400
+Received: from main.gmane.org ([80.91.229.2]:41629 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754039AbYGaRtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 13:49:14 -0400
-Date: Thu, 31 Jul 2008 13:49:12 -0400 (EDT)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Jonathan Corbet <corbet@lwn.net>
-cc: Alex Chiang <achiang@hp.com>, LKML <linux-kernel@vger.kernel.org>,
-       Amanda McPherson <amanda@amcpherson.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH, RFC] A development process document
-In-Reply-To: <20080731101738.1bf4281c@bike.lwn.net>
-Message-ID: <alpine.LNX.1.00.0807311249320.19665@iabervon.org>
-References: <20080729143015.0f79cf37@bike.lwn.net> <20080731062305.GA18070@ldl.fc.hp.com> <20080731101738.1bf4281c@bike.lwn.net>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752237AbYGaRzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 13:55:07 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: malc@pulsesoft.com
+Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
+Date: Thu, 31 Jul 2008 04:42:16 +0400
+Message-ID: <87bq0evq8n.fsf@linmac.oyster.ru>
+References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com> <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI> <1199906151.6245.57.camel@cinder.waste.org> <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI> <1199919548.6245.74.camel@cinder.waste.org> <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI> <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org> <Pine.LNX.4.64.0807310045020.22702@sbz-30.cs.Helsinki.FI> <alpine.LFD.1.10.0807301457020.3277@nehalem.linux-foundation.org> <84144f020807301522r7fb97bfehe0fcdceef10477b9@mail.gmail.com> <alpine.LFD.1.10.0807301529190.3277@nehalem.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 83.167.112.74
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+Cancel-Lock: sha1:oAQsqVl0b4FyVuipp5rFoO/LjsA=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jul 2008, Jonathan Corbet wrote:
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-> On Thu, 31 Jul 2008 00:23:05 -0600
-> Alex Chiang <achiang@hp.com> wrote:
-> 
-> > Overall, a great document, as expected from you. I've replied with
-> > "content" comments below.
-> 
-> I've applied most of them, thanks.
->  
-> > But it occurs to me that sending "style" comments to the editor of
-> > LWN is something akin to, well, some combination of Prometheus,
-> > Icarus, ravenous vultures, rabid penguins, and telling Linus that
-> > his choice of $EDITOR sucks, which is to say, "unwise".
-> 
-> Naw, English always needs debugging too.
->  
-> > You've got url reference for some quotes but not all. Would it be
-> > possible to track them all down? Sorry for asking for all the extra
-> > work, but I think the references are useful, especially if the
-> > motivated reader actually visits said reference and gets all sides of
-> > the story.
-> 
-> I'll see what I can do.  Some of the older ones are kind of hard to find. 
->  
-> > > +Patches must be prepared against a specific version of the
-> > > kernel.  As a +general rule, a patch should be based on the current
-> > > mainline as found in +Linus's git tree.  It may become necessary to
-> > > make versions against -mm,
-> >    ^^^^^^^
-> > Hm, is this the new recommended style? Grammar school taught me that
-> > it should be "Linus'" but I've noticed a gradually changing but
-> > inconsistently applied new school style.
-> 
-> I actually researched that a while back.  The rule, as far as I can tell
-> (and to the extent that English has real rules) is that the trailing "s" is
-> elided only when making a possessive of a plural noun.  "Linus", being very
-> much a unique, singular entity, needs to be "Linus's" in the possessive
-> form.
->  
-> > > +If you have a significant series of patches, it is customary to
-> > > send an +introductory description as part zero.  In general, the
-> > > second and
-> > 
-> > This directly conflicts with akpm's advice:
-> > 
-> > 	http://www.zipworld.com.au/~akpm/linux/patches/stuff/tpp.txt
-> > 
-> > Section 6(b).
-> 
-> Interesting; Andrew didn't mention that in his review.  I think the intro
-> postings can be very useful in understanding a patch series as a whole.
-> Maybe I'll put in something about how anything which should be in the
-> changelogs needs to go with the actual patches.
+> On Thu, 31 Jul 2008, Pekka Enberg wrote:
+>> 
+>> Oh, I didn't suggest this for merging. Just thought you'd be
+>> interested to know that best-fit doesn't really do that much better
+>> than what we have in the tree now. (Well, I was kinda hoping you'd
+>> tell me why my implementation is wrong and you were right all along.)
+>
+> Heh. Most allocators tend to work pretty well under normal load, and the 
+> real fragmentation problems all tend to happen under special patterns. The 
+> one in glibc, for example, sucks donkey dick when using threading, but is 
+> apparently ok otherwise. 
+>
+> I wouldn't actually expect most "normal" kernel use to show any really bad 
+> patterns on any normal loads. Google for
+>
+> 	worst-case first-fit fragmentation
+>
+> (or 'next-fit' for that matter) to see some stuff. Of course, it is scary 
+> only if you can trigger it in practice (perhaps with certains games on 
+> packet size, or creating/removing files with pathname size patterns ec).
+>
+> [ Of course, google probably mostly returns hits from all those ACM 
+>   portals etc. I wonder why google does that - they're almost totally 
+>   useless search results. Sad. If somebody knows how to turn those ACM 
+>   pay-portals off in google, pls let me know ]
+>
+> 			Linus
 
-If you include a [0/N], it's a cover letter, not a changelog portion. It 
-can be a useful way of providing context to reviewers as to the intended 
-total effect. Each of the patches should make sense standalone, but it's 
-not always clear from the individual patches what the total benefit is, 
-and a 0/N that explains can be worthwhile (and you'd want to make that 
-announcement to the mailing list, but not get it into the history).
+blahblah -site:portal.acm.org ?
 
-For example, if you have a series of patches that remove use of an old API 
-from various places, each of those patches cleans up some piece of code, 
-and these changelogs would say so, but it wouldn't be accurate (especially 
-if 5/N gets dropped or reverted later) to say anywhere that you've removed 
-all in-kernel use of the API; it's useful to include a cover letter that 
-says so.
+-- 
+mailto:av1474@comtv.ru
 
-The same sort of text can be included in individual patches, after the 
-tags and before the patch text, by putting a line '---' ahead of it; git, 
-by default, puts a per-patch diffstat there, but you can add other stuff 
-that will be helpful to reviewers but not future developers, like "this 
-should fix Andrew's laptop".
-
-	-Daniel
-*This .sig left intentionally blank*
