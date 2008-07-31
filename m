@@ -1,113 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbYGaOdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbYGaOd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755916AbYGaOdN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 10:33:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbYGaOc6
+	id S1757186AbYGaOd1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 10:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbYGaOdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 10:32:58 -0400
-Received: from ozlabs.org ([203.10.76.45]:45829 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbYGaOc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 10:32:57 -0400
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       libhugetlbfs-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Eric Munson <ebmunson@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080731135016.GG1704@csn.ul.ie>
-References: <cover.1216928613.git.ebmunson@us.ibm.com>
-	 <200807311626.15709.nickpiggin@yahoo.com.au>
-	 <20080731112734.GE1704@csn.ul.ie>
-	 <200807312151.56847.nickpiggin@yahoo.com.au>
-	 <20080731135016.GG1704@csn.ul.ie>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ZnN6y2vs7iwYgoQWASLw"
-Date: Fri, 01 Aug 2008 00:32:55 +1000
-Message-Id: <1217514775.19050.41.camel@localhost>
+	Thu, 31 Jul 2008 10:33:15 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44756 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755904AbYGaOdN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 10:33:13 -0400
+Date: Thu, 31 Jul 2008 14:57:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] serial: change remove NR_IRQS in 8250.c
+Message-ID: <20080731145752.2aec5727@lxorguk.ukuu.org.uk>
+In-Reply-To: <m1iqum2rya.fsf@frodo.ebiederm.org>
+References: <200807291414.55479.yhlu.kernel@gmail.com>
+	<200807302109.21519.yhlu.kernel@gmail.com>
+	<200807302110.10585.yhlu.kernel@gmail.com>
+	<200807310126.12572.yhlu.kernel@gmail.com>
+	<m1iqum2rya.fsf@frodo.ebiederm.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 31 Jul 2008 04:50:21 -0700
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
---=-ZnN6y2vs7iwYgoQWASLw
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > replace
+> > 	[PATCH] serial: change irq_lists to use dyn_array
+> > use small array with index to handle irq locking for serial port
+> > hope 32 slot is enough
+> 
+> Could you size this array by NR_UARTS (our worst case usage)
+> and place irq_no in struct irq_info?
 
-On Thu, 2008-07-31 at 14:50 +0100, Mel Gorman wrote:
-> On (31/07/08 21:51), Nick Piggin didst pronounce:
-> > On Thursday 31 July 2008 21:27, Mel Gorman wrote:
-> > > On (31/07/08 16:26), Nick Piggin didst pronounce:
-> >=20
-> > > > I imagine it should be, unless you're using a CPU with seperate TLB=
-s for
-> > > > small and huge pages, and your large data set is mapped with huge p=
-ages,
-> > > > in which case you might now introduce *new* TLB contention between =
-the
-> > > > stack and the dataset :)
-> > >
-> > > Yes, this can happen particularly on older CPUs. For example, on my
-> > > crash-test laptop the Pentium III there reports
-> > >
-> > > TLB and cache info:
-> > > 01: Instruction TLB: 4KB pages, 4-way set assoc, 32 entries
-> > > 02: Instruction TLB: 4MB pages, 4-way set assoc, 2 entries
-> >=20
-> > Oh? Newer CPUs tend to have unified TLBs?
-> >=20
->=20
-> I've seen more unified DTLBs (ITLB tends to be split) than not but it cou=
-ld
-> just be where I'm looking. For example, on the machine I'm writing this
-> (Core Duo), it's
->=20
-> TLB and cache info:
-> 51: Instruction TLB: 4KB and 2MB or 4MB pages, 128 entries
-> 5b: Data TLB: 4KB and 4MB pages, 64 entries
->=20
-> DTLB is unified there but on my T60p laptop where I guess they want the C=
-PU
-> to be using less power and be cheaper, it's
->=20
-> TLB info
->  Instruction TLB: 4K pages, 4-way associative, 128 entries.
->  Instruction TLB: 4MB pages, fully associative, 2 entries
->  Data TLB: 4K pages, 4-way associative, 128 entries.
->  Data TLB: 4MB pages, 4-way associative, 8 entries
-
-Clearly I've been living under a rock, but I didn't know one could get
-such nicely formatted info.
-
-In case I'm not the only one, a bit of googling turned up "x86info",
-courtesy of davej - apt-get'able and presumably yum'able too.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-ZnN6y2vs7iwYgoQWASLw
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIkc0XdSjSd0sB4dIRAjiFAKC/PVum23IXYylNmt+uZqHg6DDT4wCdGQqp
-QYIRIcLptVPjBPD/Yma2Tqs=
-=HNGl
------END PGP SIGNATURE-----
-
---=-ZnN6y2vs7iwYgoQWASLw--
-
+NR_UARTS is likely to go away in time so don't get attached to it
