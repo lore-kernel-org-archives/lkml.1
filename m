@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754347AbYGaHA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbYGaHCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754347AbYGaHA0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 03:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbYGaHAK
+	id S1755467AbYGaHCO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 03:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYGaHB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 03:00:10 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:34666 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752936AbYGaHAI (ORCPT
+	Thu, 31 Jul 2008 03:01:59 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41743 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751969AbYGaHB7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 03:00:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id:from;
-        b=K+TGWEnkl5t0axdK4fKqCavF6Sg6NHpPWuEG9mqj4Mnw1EQYGeUVni7D6t/AcfeWYf
-         2ueQR+OA0nKC+twUZzG/WP6vlxd8k4GRERynJk8FkSqu00O0uo82sdujzIQx/iLvQeja
-         itArWwFyh0yS/nHpRQO5yuOniEA6NTJWGK+Cc=
-To: Peter Chubb <peterc@gelato.unsw.edu.au>,
-       John Linville <linville@tuxdriver.com>
-Subject: Re: Fixing rt2500pci [PATCH]
-Date: Thu, 31 Jul 2008 09:21:41 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-References: <87tze8vu18.wl%peterc@chubb.wattle.id.au> <200807302115.03865.IvDoorn@gmail.com> <87vdym6fct.wl%peterc@chubb.wattle.id.au>
-In-Reply-To: <87vdym6fct.wl%peterc@chubb.wattle.id.au>
+	Thu, 31 Jul 2008 03:01:59 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4891635D.7070603@s5r6.in-berlin.de>
+Date: Thu, 31 Jul 2008 09:01:49 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: davids@webmaster.com
+CC: alan@lxorguk.ukuu.org.uk,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: 463 kernel developers missing!
+References: <MDEHLPKNGKAHNMBLJOLKMEHLOJAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKMEHLOJAC.davids@webmaster.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807310921.42176.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 31 July 2008, Peter Chubb wrote:
-> 
-> In kernel version 2.6.26-rc9 my wireless LAN card worked; but in the
-> released 2.6.26, my RaLink rt2500 card wouldn't associate.
-> 
-> Git-bisect led me to this patch:
-> 
-> 	61486e0f68d1f8966c09b734566a187d42d65c54
-> 	rt2x00: Remove ieee80211_tx_control argument from write_tx_desc()
-> 
-> I believe that there is a problem with that patch --- it
-> (inadvertantly) removes an extra line of code, that used to set the
-> DATABYTE_COUNT field.
->  
-> This patch reinstates that line, and with it my card works again.
->  
-> Signed-off-by: Peter Chubb <peterc@gelato.unsw.edu.au>
-> Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+David Schwartz wrote:
+> because he has consent
 
-Thanks,
+Not.  See below.  Also remember that there are sometimes tags added to 
+the changelogs without having ensured that the respective person agrees 
+to this addition.
 
-John, please push this patch upstream. This one is really important. :)
+> if you want to
+> argue that people must parse GPL submissions to figure out what's really
+> covered by the GPL and what's not, you can certainly argue that.
 
-> diff --git a/drivers/net/wireless/rt2x00/rt2500pci.c b/drivers/net/wireless/rt2x00/rt2500pci.c
-> index 1724ce9..4ba2165 100644
-> --- a/drivers/net/wireless/rt2x00/rt2500pci.c
-> +++ b/drivers/net/wireless/rt2x00/rt2500pci.c
-> @@ -1198,6 +1198,7 @@ static void rt2500pci_write_tx_desc(struct rt2x00_dev *rt2x00dev,
->  	rt2x00_set_field32(&word, TXD_W0_IFS, txdesc->ifs);
->  	rt2x00_set_field32(&word, TXD_W0_RETRY_MODE,
->  			   test_bit(ENTRY_TXD_RETRY_MODE, &txdesc->flags));
-> +	rt2x00_set_field32(&word, TXD_W0_DATABYTE_COUNT, skbdesc->data_len);
->  	rt2x00_set_field32(&word, TXD_W0_CIPHER_ALG, CIPHER_NONE);
->  	rt2x00_desc_write(txd, 0, word);
->  }
-> 
-> --
-> Dr Peter Chubb  http://www.gelato.unsw.edu.au  peterc AT gelato.unsw.edu.au
-> http://www.ertos.nicta.com.au           ERTOS within National ICT Australia
-> --
-> Dr Peter Chubb  http://www.gelato.unsw.edu.au  peterc AT gelato.unsw.edu.au
-> http://www.ertos.nicta.com.au           ERTOS within National ICT Australia
-> 
+The metadata (authorship, committership, changelog including sign-off 
+tags...) are not part of the submitted program source code.
 
-
+The fact that I agreed to have aspects of my participation in the open 
+source project documented in the SCM does not imply an agreement that 
+these data may be copied into databases which serve other purposes.
+-- 
+Stefan Richter
+-=====-==--- -=== =====
+http://arcgraph.de/sr/
