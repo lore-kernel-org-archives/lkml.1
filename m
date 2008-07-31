@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYGaQGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbYGaQKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbYGaQGX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 12:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbYGaQGO
+	id S1753754AbYGaQKh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 12:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYGaQK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 12:06:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50236 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750887AbYGaQGO (ORCPT
+	Thu, 31 Jul 2008 12:10:27 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:38166 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750828AbYGaQK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 12:06:14 -0400
-Message-ID: <4891E2BF.4090304@linux-foundation.org>
-Date: Thu, 31 Jul 2008 11:05:19 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Thu, 31 Jul 2008 12:10:27 -0400
+Date: Thu, 31 Jul 2008 17:10:24 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch resend] vfs: move executable checking into
+	->permission()
+Message-ID: <20080731161024.GL28946@ZenIV.linux.org.uk>
+References: <E1KOBJb-0005L0-RF@pomaz-ex.szeredi.hu> <20080731003332.GJ28946@ZenIV.linux.org.uk> <E1KOWXe-0008Dl-ET@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Matt Mackall <mpm@selenic.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       vegard.nossum@gmail.com, hannes@saeurebad.de, matthew@wil.cx
-Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
-References: <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI> <1199919548.6245.74.camel@cinder.waste.org> <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI> <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org> <Pine.LNX.4.64.0807310045020.22702@sbz-30.cs.Helsinki.FI> <alpine.LFD.1.10.0807301457020.3277@nehalem.linux-foundation.org> <1217466583.18911.226.camel@calx> <20080731141134.GP23938@one.firstfloor.org> <4891D979.6090802@linux-foundation.org> <20080731160320.GQ23938@one.firstfloor.org>
-In-Reply-To: <20080731160320.GQ23938@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1KOWXe-0008Dl-ET@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Thu, Jul 31, 2008 at 10:25:45AM -0500, Christoph Lameter wrote:
->> Andi Kleen wrote:
->>>> Finally getting rid of SLAB is a much trickier proposition because SLUB
->>>> still loses in a few important corner cases.
->>> The big issue is that we haven't really made much progress on at least
->>> some of these test cases (like the database benchmarks) for quite some
->>> time (and that wasn't for a lack of trying) :-/ Might be a fundamental
->>> problem.
->> It would be good to have more of these benchmark regressions than just TPC which requires a database setup etc etc. Preferably something that is easily runnable by everyone.
+On Thu, Jul 31, 2008 at 01:41:58PM +0200, Miklos Szeredi wrote:
+> On Thu, 31 Jul 2008, Al Viro wrote:
+> > On Wed, Jul 30, 2008 at 03:02:03PM +0200, Miklos Szeredi wrote:
+> > >  static int coda_ioctl_permission(struct inode *inode, int mask)
+> > >  {
+> > > -        return 0;
+> > > +	return check_execute(dentry->d_inode, mask);
+> > >  }
+> > 
+> > Er?
+> > 	a) mismerge from dentry-based variant
 > 
-> AFAIK willy had a small test case for at least one of them.
+> Yeah, crappy patch.  Agree on all other comments as well, thanks for
+> the review.
+ 
+Hrm...  OK, behaviour change for permission() on bdev/cdev/pipe is
+not a problems...
 
-He is developing a scsi performance test program that showed a regression but it was proprietary last time I heard of it. Maybe its now available?
-
+I'll apply it, but if anybody has better suggestions for helper name,
+please yell.  "execute_ok()" sounds very odd...
