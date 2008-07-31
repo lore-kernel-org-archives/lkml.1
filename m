@@ -1,74 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbYGaRmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYGaRp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbYGaRmd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 13:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYGaRmY
+	id S1755401AbYGaRp1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 13:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbYGaRpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 13:42:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44378 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751724AbYGaRmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 13:42:23 -0400
-Subject: Re: [PATCH] the loginuid field should be output in all
-	AUDIT_CONFIG_CHANGE audit messages
-From: Eric Paris <eparis@redhat.com>
-To: zhangxiliang <zhangxiliang@cn.fujitsu.com>
-Cc: sgrubb@redhat.com, viro@zeniv.linux.org.uk,
-       Linux Audit <linux-audit@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <488FE2B9.2040101@cn.fujitsu.com>
-References: <488FE2B9.2040101@cn.fujitsu.com>
-Content-Type: text/plain
-Date: Thu, 31 Jul 2008 13:42:02 -0400
-Message-Id: <1217526122.2902.103.camel@localhost.localdomain>
+	Thu, 31 Jul 2008 13:45:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52646 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752237AbYGaRpN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 13:45:13 -0400
+Date: Thu, 31 Jul 2008 10:44:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+Subject: Re: linux-next: Tree for July 30
+Message-Id: <20080731104437.5e5669bc.akpm@linux-foundation.org>
+In-Reply-To: <20080731115301.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080730170635.f737ffe9.sfr@canb.auug.org.au>
+	<20080730231029.9818953c.akpm@linux-foundation.org>
+	<20080731140708.GA11229@core.corenet.prv>
+	<58cb370e0807310836x4a6e3c40rf5c3c8ec8b5caae0@mail.gmail.com>
+	<20080731115301.ZZRA012@mailhub.coreip.homeip.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-30 at 11:40 +0800, zhangxiliang wrote:
-> In the audit message which type is "AUDIT_CONFIG_CHANGE", the output format should contain "auid" field.
+On Thu, 31 Jul 2008 11:56:48 -0400 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 
-shouldn't these be using the "audit_get_loginuid(current)"  and if we
-are going to output loginuid we also should be outputting sessionid
+> On Thu, Jul 31, 2008 at 05:36:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > On Thu, Jul 31, 2008 at 4:07 PM, Dmitry Torokhov
+> > <dmitry.torokhov@gmail.com> wrote:
+> > > On Wed, Jul 30, 2008 at 11:10:29PM -0700, Andrew Morton wrote:
+> > >> On Wed, 30 Jul 2008 17:06:35 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > >>
+> > >> > I have created today's linux-next tree at
+> > >> > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+> > >>
+> > >> The X server broke on my FC8 t61p thinkpad.  Mainline is OK.
+> > >>
+> > >> Various information is at http://userweb.kernel.org/~akpm/mo/
+> > >>
+> > >> I'm suspecting the input layer - my synaptics device seems to have
+> > >> disappeared?  See http://userweb.kernel.org/~akpm/mo/Xorg-log-diff.txt
+> > >>
+> > >
+> > > I think this patch should help with Synaptics:
+> > 
+> > Which unfortunately doesn't help all people running with older synaptics
+> > user-space after commit 0571c5d20aca71c735222132b02aebddf593045c
+> > ("Input: expand keycode space").
+> > 
+> > Can't this be solved without breaking Xorg on newer kernels running
+> > older synaptics?
+> > 
+> 
+> No. The X driver is broken. It tells kernel to use buffer bugger than
+> allocated and gets its stack smashed. Tslib has also soma funkiness
+> in the ioctl handling as well... *shrug*
+> 
+> We have a couple months to get distros updated...
+> 
 
--Eric
+aaarrrrgggggghhh.  I don't think this is practical.  This means that
+(for example) FC5 machines (of which I happen to have one) are dead. 
+And lots of other older-distro-based systems.
 
-> 
-> Signed-off-by: Zhang Xiliang <zhangxiliang@cn.fujitsu.com>
-> ---
->  kernel/auditfilter.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
-> index 98c50cc..8a184f5 100644
-> --- a/kernel/auditfilter.c
-> +++ b/kernel/auditfilter.c
-> @@ -1022,8 +1022,9 @@ static void audit_update_watch(struct audit_parent *parent,
->  			struct audit_buffer *ab;
->  			ab = audit_log_start(NULL, GFP_KERNEL,
->  				AUDIT_CONFIG_CHANGE);
-> +			audit_log_format(ab, "auid=%u", current->loginuid);
->  			audit_log_format(ab,
-> -				"op=updated rules specifying path=");
-> +				" op=updated rules specifying path=");
->  			audit_log_untrustedstring(ab, owatch->path);
->  			audit_log_format(ab, " with dev=%u ino=%lu\n",
->  				 dev, ino);
-> @@ -1058,7 +1059,8 @@ static void audit_remove_parent_watches(struct audit_parent *parent)
->  				struct audit_buffer *ab;
->  				ab = audit_log_start(NULL, GFP_KERNEL,
->  					AUDIT_CONFIG_CHANGE);
-> -				audit_log_format(ab, "op=remove rule path=");
-> +				audit_log_format(ab, "auid=%u", current->loginuid);
-> +				audit_log_format(ab, " op=remove rule path=");
->  				audit_log_untrustedstring(ab, w->path);
->  				if (r->filterkey) {
->  					audit_log_format(ab, " key=");
-> -- 
-> 1.5.4.2
-> 
-> 
+Is there some userspace workaround which doesn't require an X server
+update?
+
+Surely it must be possible to make the kernel contiue to support these
+servers?
 
