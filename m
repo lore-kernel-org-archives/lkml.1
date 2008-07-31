@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYGaP1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYGaPau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbYGaP1k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 11:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbYGaP1c
+	id S1755341AbYGaPau (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 11:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbYGaPan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 11:27:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53715 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752630AbYGaP1b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 11:27:31 -0400
-Message-ID: <4891D979.6090802@linux-foundation.org>
-Date: Thu, 31 Jul 2008 10:25:45 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Matt Mackall <mpm@selenic.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       vegard.nossum@gmail.com, hannes@saeurebad.de
-Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
-References: <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI> <1199906151.6245.57.camel@cinder.waste.org> <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI> <1199919548.6245.74.camel@cinder.waste.org> <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI> <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org> <Pine.LNX.4.64.0807310045020.22702@sbz-30.cs.Helsinki.FI> <alpine.LFD.1.10.0807301457020.3277@nehalem.linux-foundation.org> <1217466583.18911.226.camel@calx> <20080731141134.GP23938@one.firstfloor.org>
-In-Reply-To: <20080731141134.GP23938@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jul 2008 11:30:43 -0400
+Received: from vena.lwn.net ([206.168.112.25]:42979 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752857AbYGaPam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 11:30:42 -0400
+Date: Thu, 31 Jul 2008 09:30:39 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org, greg@kroah.com,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH stable] ftrace document crucial update
+Message-ID: <20080731093039.4afcb734@bike.lwn.net>
+In-Reply-To: <alpine.DEB.1.10.0807302256180.21982@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0807302256180.21982@gandalf.stny.rr.com>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.5; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> Finally getting rid of SLAB is a much trickier proposition because SLUB
->> still loses in a few important corner cases.
-> 
-> The big issue is that we haven't really made much progress on at least
-> some of these test cases (like the database benchmarks) for quite some
-> time (and that wasn't for a lack of trying) :-/ Might be a fundamental
-> problem.
+On Wed, 30 Jul 2008 23:05:02 -0400 (EDT)
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-It would be good to have more of these benchmark regressions than just TPC which requires a database setup etc etc. Preferably something that is easily runnable by everyone.
+> Never mind that ftrace itself doesn't exist is 2.6.26.
 
-There is a fundamental difference in how frees are handled. Slub is queueless so it must use an atomic operation on the page struct of the slab that we free to (in the case that the freeing does not occur to the current cpu slab) to serialize access.
+I just figured you were trying to raise the bar by showing that it's
+possible to get the documentation in before the code...
 
-SLAB can avoid that by just stuffing the pointer to the object to be freed into a per cpu queue. Then later the queue is processed and the objects are merged into the slabs. But the later workqueue processing then causes run time variabilities which impact network performance and cause latencies. And the queuing only works in the SMP case. In the NUMA case we need to first check the locality of the object and then stuff it into alien queues (if its not local node). Then we need to expire the alien queues at some point. We have these alien queues per node which means they require locks and we have NODES * CPUS of them.
+>  Copyright 2008 Red Hat Inc.
+> -Author: Steven Rostedt <srostedt@redhat.com>
+> +   Author:   Steven Rostedt <srostedt@redhat.com>
+> +  License:   The GNU Free Documentation License, Version 1.2
 
+Is FDL appropriate for stuff shipped with the kernel?  I would suspect
+it would at least need a GPL-compatible dual-license option.
 
-
+jon
