@@ -1,170 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761679AbYGaDiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762559AbYGaDic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761679AbYGaDiB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 23:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755793AbYGaDhu
+	id S1762559AbYGaDic (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 23:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758123AbYGaDhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 23:37:50 -0400
-Received: from smtp.knology.net ([24.214.63.101]:53503 "EHLO smtp.knology.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752416AbYGaDht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 23:37:49 -0400
-Subject: Re: [PATCH] typhoon: use request_firmware
-From: David Dillow <dave@thedillows.org>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, becker@scyld.com,
-       davidpmclean@yahoo.com, Jeff Garzik <jeff@garzik.org>,
-       netdev <netdev@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1217400251.2595.3.camel@jaswinder.satnam>
-References: <1217170232.3537.6.camel@jaswinder.satnam>
-	 <1217209400.22789.47.camel@obelisk.thedillows.org>
-	 <1217215009.2970.7.camel@jaswinder.satnam>
-	 <1217248585.22789.58.camel@obelisk.thedillows.org>
-	 <1217253260.17632.6.camel@jaswinder.satnam>
-	 <1217295498.28682.16.camel@obelisk.thedillows.org>
-	 <1217347786.2885.11.camel@jaswinder.satnam>
-	 <1217395511.31350.6.camel@obelisk.thedillows.org>
-	 <1217400251.2595.3.camel@jaswinder.satnam>
-Content-Type: text/plain
-Date: Wed, 30 Jul 2008 23:37:46 -0400
-Message-Id: <1217475466.16202.15.camel@obelisk.thedillows.org>
+	Wed, 30 Jul 2008 23:37:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60994 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757778AbYGaDhy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 23:37:54 -0400
+Date: Wed, 30 Jul 2008 20:37:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: "Yoshinori Sato" <ysato@users.sourceforge.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] blackfin / h8300 build error fix
+Message-Id: <20080730203741.4d7df2ad.akpm@linux-foundation.org>
+In-Reply-To: <8bd0f97a0807302026x41d143b6p5c9eb63ef3185f06@mail.gmail.com>
+References: <87provuzwk.wl%ysato@users.sourceforge.jp>
+	<8bd0f97a0807300911n4ae81b70v97276abf612f6b3e@mail.gmail.com>
+	<87hca7npmp.wl%ysato@users.sourceforge.jp>
+	<20080730130117.3495cba9.akpm@linux-foundation.org>
+	<8bd0f97a0807302026x41d143b6p5c9eb63ef3185f06@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-30 at 12:14 +0530, Jaswinder Singh wrote:
-> On Wed, 2008-07-30 at 01:25 -0400, David Dillow wrote:
-> > Also, if not adding a mutex, then this can be folded into
-> > typhoon_init_one(), rather than living in a separate function.  
-> 
-> request_firmware is using mutex.
+On Wed, 30 Jul 2008 23:26:47 -0400 "Mike Frysinger" <vapier.adi@gmail.com> wrote:
 
-request_firmware()'s mutex is protecting against things inside of that
-subsystem, but offers no protection between the test on typhoon_fw !=
-NULL and the setting of it inside of the firmware loader. That requires
-locking at a higher level.
+> you cant just use straight symbol names in common header files as they
+> dont take into consideration weird arch-specific ABI conventions.  in
+> the case of Blackfin/h8300, the ABI dictates that any C-visible
+> symbols have an underscore prefixed to them.  thus all symbols in
+> vmlinux.lds.h need to be wrapped in VMLINUX_SYMBOL() so that each arch
+> can put hide this magic in their own files.
 
-Anyways, probing is single threaded and I seem to recall it being
-unlikely to be made parallel due to the number issues exposed last time,
-so a minimal comment is fine.
+ooh, a changelog.
 
-I finally got a few minutes to look at the patch as a whole and apply a
-little polish. Here's my version, compile tested but it hasn't seen
-actual hardware yet. Hopefully this weekend.
+This seems to be a pretty common failing.  I just had to fix the same
+problem in a linux-next patch:
 
-diff --git a/drivers/net/typhoon.c b/drivers/net/typhoon.c
-index 8549f11..e9f7c5d 100644
---- a/drivers/net/typhoon.c
-+++ b/drivers/net/typhoon.c
-@@ -63,6 +63,10 @@ static unsigned int use_mmio = 2;
-  */
- static const int multicast_filter_limit = 32;
- 
-+/* Pointer to the firmware loaded from userspace.
-+ */
-+static const struct firmware *typhoon_fw;
-+
- /* Operational parameters that are set at compile time. */
- 
- /* Keep the ring sizes a power of two for compile efficiency.
-@@ -100,11 +104,13 @@ static const int multicast_filter_limit = 32;
- #define PKT_BUF_SZ		1536
- 
- #define DRV_MODULE_NAME		"typhoon"
--#define DRV_MODULE_VERSION 	"1.5.8"
--#define DRV_MODULE_RELDATE	"06/11/09"
-+#define DRV_MODULE_VERSION 	"1.6.0"
-+#define DRV_MODULE_RELDATE	"31 Jul 2008"
- #define PFX			DRV_MODULE_NAME ": "
- #define ERR_PFX			KERN_ERR PFX
- 
-+#define FIRMWARE_NAME		"3com/typhoon.bin"
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/string.h>
-@@ -130,9 +136,9 @@ static const int multicast_filter_limit = 32;
- #include <linux/in6.h>
- #include <linux/version.h>
- #include <linux/dma-mapping.h>
-+#include <linux/firmware.h>
- 
- #include "typhoon.h"
--#include "typhoon-firmware.h"
- 
- static char version[] __devinitdata =
-     "typhoon.c: version " DRV_MODULE_VERSION " (" DRV_MODULE_RELDATE ")\n";
-@@ -140,6 +146,7 @@ static char version[] __devinitdata =
- MODULE_AUTHOR("David Dillow <dave@thedillows.org>");
- MODULE_VERSION(DRV_MODULE_VERSION);
- MODULE_LICENSE("GPL");
-+MODULE_FIRMWARE(FIRMWARE_NAME);
- MODULE_DESCRIPTION("3Com Typhoon Family (3C990, 3CR990, and variants)");
- MODULE_PARM_DESC(rx_copybreak, "Packets smaller than this are copied and "
- 			       "the buffer given back to the NIC. Default "
-@@ -1350,9 +1357,9 @@ typhoon_download_firmware(struct typhoon *tp)
- {
- 	void __iomem *ioaddr = tp->ioaddr;
- 	struct pci_dev *pdev = tp->pdev;
--	struct typhoon_file_header *fHdr;
--	struct typhoon_section_header *sHdr;
--	u8 *image_data;
-+	const struct typhoon_file_header *fHdr;
-+	const struct typhoon_section_header *sHdr;
-+	const u8 *image_data;
- 	void *dpage;
- 	dma_addr_t dpage_dma;
- 	__sum16 csum;
-@@ -1367,7 +1374,7 @@ typhoon_download_firmware(struct typhoon *tp)
- 	int err;
- 
- 	err = -EINVAL;
--	fHdr = (struct typhoon_file_header *) typhoon_firmware_image;
-+	fHdr = (struct typhoon_file_header *) typhoon_fw->data;
- 	image_data = (u8 *) fHdr;
- 
- 	if(memcmp(fHdr->tag, "TYPHOON", 8)) {
-@@ -2317,6 +2324,19 @@ typhoon_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if(!did_version++)
- 		printk(KERN_INFO "%s", version);
- 
-+	/* Only load the firmware once; if bus probing ever becomes
-+	 * multi-threaded, we'll need a mutex here to prevent a race
-+	 * condition that will leak memory.
-+	 */
-+	if(!typhoon_fw) {
-+		err = request_firmware(&typhoon_fw, FIRMWARE_NAME, &pdev->dev);
-+		if(err) {
-+			printk(ERR_PFX "%s: Failed to load firmware \"%s\"\n",
-+			       pci_name(pdev), FIRMWARE_NAME);
-+			goto error_out;
-+		}
-+	}
-+
- 	dev = alloc_etherdev(sizeof(*tp));
- 	if(dev == NULL) {
- 		printk(ERR_PFX "%s: unable to alloc new net device\n",
-@@ -2579,6 +2599,7 @@ error_out_disable:
- error_out_dev:
- 	free_netdev(dev);
- error_out:
-+	/* Module unload will free firmware if needed */
- 	return err;
- }
- 
-@@ -2623,6 +2644,9 @@ static void __exit
- typhoon_cleanup(void)
- {
- 	pci_unregister_driver(&typhoon_driver);
-+
-+	if(typhoon_fw)
-+		release_firmware(typhoon_fw);
- }
- 
- module_init(typhoon_init);
+diff -puN include/asm-generic/vmlinux.lds.h~zero-based-percpu-use-vmlinux_symbol-in-include-asm-generic-vmlinuxldsh include/asm-generic/vmlinux.lds.h
+--- a/include/asm-generic/vmlinux.lds.h~zero-based-percpu-use-vmlinux_symbol-in-include-asm-generic-vmlinuxldsh
++++ a/include/asm-generic/vmlinux.lds.h
+@@ -385,15 +385,15 @@
+ #define PERCPU(align)							\
+ 	. = ALIGN(align);						\
+ 	percpu : { } :percpu						\
+-	__per_cpu_load = .;						\
+-	.data.percpu 0 : AT(__per_cpu_load - LOAD_OFFSET) {		\
++	VMLINUX_SYMBOL(__per_cpu_load) = .;				\
++	.data.percpu 0 : AT(VMLINUX_SYMBOL(__per_cpu_load) - LOAD_OFFSET) { \
+ 		*(.data.percpu.first)					\
+ 		*(.data.percpu.shared_aligned)				\
+ 		*(.data.percpu)						\
+ 		*(.data.percpu.page_aligned)				\
+-		____per_cpu_size = .;					\
++		VMLINUX_SYMBOL(____per_cpu_size) = .;			\
+ 	}								\
+-	. = __per_cpu_load + ____per_cpu_size;				\
++	. = VMLINUX_SYMBOL(__per_cpu_load) + VMLINUX_SYMBOL(____per_cpu_size); \
+ 	data : { } :data
+ #else
+ #define PERCPU(align)							\
+_
 
+(haven't tested it yet).
 
-
+It's going to keep happening too, unless we find some way of making x86
+break when people forget to use VMLINUX_SYMBOL().
