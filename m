@@ -1,93 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYGaRVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYGaR3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755548AbYGaRVf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 13:21:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYGaRVY
+	id S1754148AbYGaR3z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 13:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbYGaR3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 13:21:24 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:46561 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751772AbYGaRVX (ORCPT
+	Thu, 31 Jul 2008 13:29:43 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:24772 "EHLO
+	WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751638AbYGaR3l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 13:21:23 -0400
-Date: Thu, 31 Jul 2008 18:21:11 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch v3] splice: fix race with page invalidation
-Message-ID: <20080731172111.GA23644@shareable.org>
-References: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu> <20080731001131.GA30900@shareable.org> <20080731004214.GA32207@shareable.org> <alpine.LFD.1.10.0807301746500.3277@nehalem.linux-foundation.org> <20080731061201.GA7156@shareable.org> <alpine.LFD.1.10.0807310925360.3277@nehalem.linux-foundation.org>
+	Thu, 31 Jul 2008 13:29:41 -0400
+X-BigFish: VPS2(zz1418M98dR446ihzz10d3izzz2fh6bh)
+Message-ID: <4891F724.3030406@am.sony.com>
+Date: Thu, 31 Jul 2008 10:32:20 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807310925360.3277@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
+       matthew@wil.cx, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [patch 2/4] Configure out file locking features
+References: <20080731092703.661994657@free-electrons.com> <20080731093220.969460336@free-electrons.com> <20080731135319.GA20212@cs181140183.pp.htv.fi> <20080731162007.285938e0@surf> <20080731153757.GB20212@cs181140183.pp.htv.fi> <20080731182616.4c20f0db@surf> <20080731164918.GE20212@cs181140183.pp.htv.fi>
+In-Reply-To: <20080731164918.GE20212@cs181140183.pp.htv.fi>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 Jul 2008 17:29:27.0418 (UTC) FILETIME=[FB8B3DA0:01C8F332]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> >			, or (b) while sendfile claims those
-> > pages, they are marked COW.
-> 
-> .. and this one shows that you have no clue about performance of a memcpy.
-> 
-> Once you do that COW, you're actually MUCH BETTER OFF just copying.
-> Copying a page is much cheaper than doing COW on it.
+Adrian Bunk wrote:
+> And for embedded systems with which applications is it 100% safe to 
+> disable this option?
 
-That sounds familiar :-)
+Sony's digital cameras.
 
-But did you miss the bit where you DON'T COPY ANYTHING EVER*?  COW is
-able provide _correctness_ for the rare corner cases which you're not
-optimising for.  You don't actually copy more than 0.0% (*approx).
+This option *is* disabled in the kernel for (most) Sony digital cameras.
+Those digital cameras have the kernel, busybox, a custom C library,
+and one proprietary application.   The application does not use
+flock() (or AIO, or ethtool or multi-cast)
 
-Copying is supposed to be _so_ rare, in this, that it doesn't count.
+These cameras were heavily tested, and are shipping now.  I can't
+make any guarantees for other developers, but those of us who
+are careful about our application development would like the option
+to eliminate completely unused features from the kernel.  (And
+the C library, but that's a different issue.)
 
-Correctness is so you can say "I've written that, when the syscall
-returns I know what data the other end will receive, if it succeeds".
-Knowing what can happen in what order is bread and butter around here,
-you know how useful that can.
+> And don't answer "doesn't use flock()", I want a real-life example of a 
+> device where you could guarantee a developer that disabling this option 
+> in his product would be safe.
 
-The cost of COW is TLB flushes*.  But for splice, there ARE NO TLB
-FLUSHES because such files are not mapped writable!  And you don't
-intend to write the file soon either.  A program would be daft to use
-splice _intending_ to do those things, it obviously would be poor use
-of the interface.  The kernel may as well copy the data if they did
-(and it's in a good position to decide).
+I'm not sure why a guarantee is required that other developers
+use this option safely.  Maybe this is a point of disconnect between
+embedded folks and non-embedded folks.  We're accustomed to making
+tradeoff decisions that only affect our product, and which
+we take full responsibility for testing.
 
-> Doing a "write()" really isn't that expensive. People think that
-> memory is slow, but memory isn't all that slow, and caches work
-> really well. Yes, memory is slow compared to a few reference count
-> increments, but memory is absolutely *not* slow when compared to the
-> overhead of TLB invalidates across CPUs etc.
+If warnings or support avoidance for the general population using
+such config options is the issue, I think that David Woodhouse's
+suggestion that such things could taint the kernel is an interesting
+idea. Maybe have we could have an "unsafe-config" taint flag?
 
-You're missing the real point of network splice().
+I should add that I am sympathetic with the larger issue you raise
+about nibbling at the bottom with patches that only address a
+few KB of the problem, while the size continues to build (to an
+even greater degree) with each release.  My response is that I agree
+with you on the nibbling bit, but probably just at a different
+level of KB savings.
 
-It's not just for speed.
+That is, I presume you'd be OK with something that saved 100K or
+even 20K, but balk at bit at these patches, which save 10k or less.
+My threshold is lower (probably down to about 5K, so these are
+pretty close to the bubble), but even I wouldn't recommend
+applying anything much below that.  We've already started
+considering to drop some linux-tiny patches that just don't save
+enough to warrant continued maintenance.
+ -- Tim
 
-It's for sharing data.  Your TCP buffers can share data, when the same
-big lump is in flight to lots of clients.  Think static file / web /
-FTP server, the kind with 80% of hits to 0.01% of the files roughly
-the same of your RAM.
 
-You want network splice() for the same reason you want shared
-libraries.  So that memory use scales better with some loads**.
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
-You don't know how much good that will do, only, like shared
-libraries, that it's intrinsically good if it doesn't cost anything.
-And I'm suggesting that since no TLB flushes or COW copies are
-expected, and you can just copy at sendfile time if the page is
-already write-mapped anywhere, so the page references aren't
-complicated, it shouldn't cost anything.
-
-** - Admittedly this is rather load dependent.  But it's potentially
-O(c*d) for write vs. O(d) for sendfile, hand-wavingly, where c is the
-number of connections using d data.  (Then again, as I work out the
-figures, RAM is getting cheaper faster than bandwidth-latency products
-are getting bigger...  It's not a motivator except for cheapskates.
-But doesn't detract from intrinsic goodness.)
-
--- Jamie
