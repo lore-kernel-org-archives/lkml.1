@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761473AbYGaA5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761169AbYGaA61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761473AbYGaA5s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbYGaA5g
+	id S1761169AbYGaA61 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbYGaA6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:57:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42010 "EHLO
+	Wed, 30 Jul 2008 20:58:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59802 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754137AbYGaA5f (ORCPT
+	by vger.kernel.org with ESMTP id S1752759AbYGaA6P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:57:35 -0400
-Date: Wed, 30 Jul 2008 17:56:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] ftrace: dump out ftrace buffers to console on panic
-Message-Id: <20080730175640.f04f81b5.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0807302020590.19138@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0807301700080.16138@gandalf.stny.rr.com>
-	<20080730143028.a8e94161.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0807302020590.19138@gandalf.stny.rr.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jul 2008 20:58:15 -0400
+Date: Wed, 30 Jul 2008 17:54:20 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jamie Lokier <jamie@shareable.org>
+cc: Miklos Szeredi <miklos@szeredi.hu>, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch v3] splice: fix race with page invalidation
+In-Reply-To: <alpine.LFD.1.10.0807301746500.3277@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807301751320.3277@nehalem.linux-foundation.org>
+References: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu> <20080731001131.GA30900@shareable.org> <20080731004214.GA32207@shareable.org> <alpine.LFD.1.10.0807301746500.3277@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008 20:39:47 -0400 (EDT) Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> >
-> >> +	__raw_spin_lock(&ftrace_dump_lock);
-> >> +	dump_running = 0;
-> >> +	__raw_spin_unlock(&ftrace_dump_lock);
-> >> +
-> >> + out:
-> >> +	local_irq_restore(flags);
-> >> +}
-> >> +#endif /* CONFIG_FTRACE_DUMP_ON_OOPS */
-> >
-> > Do we really need a new config option for this?  Would it hurt too much
-> > to make it unconditionally available?
+
+On Wed, 30 Jul 2008, Linus Torvalds wrote:
 > 
-> I don't mind making it unconditionally available. I only added the config 
-> option because I thought people would like to turn it off.
-> 
-> I'll resubmit with the above concerns fixed and without the config option.
+> Personally, I think the right approach is to just realize that splice() is 
+> _not_ a write() system call, and never will be. If you need synchronous 
+> writing, you simply shouldn't use splice().
 
-Well..  my question about the config option was no more than a question
-- I don't know the answer.
+Side note: in-kernel users could probably do somethign about this. IOW, if 
+there's some in-kernel usage (and yes, knfsd would be a prime example), 
+that one may actually be able to do things that a _user_level user of 
+splice() could never do.
 
-Although thinking about it, I guess that anyone who is really squeezy
-on space just won't be enabling ftrace at all.  Is there any reason
-other than size for disabling this new feature?
+That includes things like getting the inode semaphore over a write (so 
+that you can guarantee that pages that are in flight are not modified, 
+except again possibly by other mmap users), and/or a per-page callback for 
+when splice() is done with a page (so that you could keep the page locked 
+while it's getting spliced, for example).
 
+And no, we don't actually have that either, of course.
 
+			Linus
