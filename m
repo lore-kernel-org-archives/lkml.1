@@ -1,156 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758275AbYGaCgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759397AbYGaChB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758275AbYGaCgQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 22:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbYGaCgA
+	id S1759397AbYGaChB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 22:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbYGaCgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 22:36:00 -0400
-Received: from mailhub249.itcs.purdue.edu ([128.210.5.249]:37353 "EHLO
-	mailhub249.itcs.purdue.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752300AbYGaCf7 (ORCPT
+	Wed, 30 Jul 2008 22:36:50 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51026 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753377AbYGaCgt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 22:35:59 -0400
-From: Michael Shuey <shuey@purdue.edu>
-Reply-To: shuey@purdue.edu
-Organization: Purdue University ITaP/RCS
-To: Shehjar Tikoo <shehjart@cse.unsw.edu.au>
-Subject: Re: high latency NFS
-Date: Wed, 30 Jul 2008 22:35:49 -0400
-User-Agent: KMail/1.9.9
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, rees@citi.umich.edu, aglo@citi.umich.edu
-References: <200807241311.31457.shuey@purdue.edu> <20080730192110.GA17061@fieldses.org> <4890DFC7.3020309@cse.unsw.edu.au>
-In-Reply-To: <4890DFC7.3020309@cse.unsw.edu.au>
+	Wed, 30 Jul 2008 22:36:49 -0400
+Date: Wed, 30 Jul 2008 22:36:46 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH v2] ftrace: dump out ftrace buffers to console on panic
+Message-ID: <alpine.DEB.1.10.0807302227320.20785@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807302235.50068.shuey@purdue.edu>
-X-PMX-Version: 5.4.0.320885
-X-PerlMx-Virus-Scanned: Yes
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for all the tips I've received this evening.  However, I figured out 
-the problem late last night. :-)
+[
+ Changes since -v1:
+  Got alpine to send correctly (as well as spell check working).
+  Removed config option.
+  Moved the static variables into ftrace_dump itself.
+  Gave printk a log level.
+]
 
-I was only using the default 8 nfsd threads on the server.  When I raised 
-this to 256, the read bandwidth went from about 6 MB/sec to about 95 
-MB/sec, at 100ms of netem-induced latency.  Not too shabby.  I can get 
-about 993 Mbps on the gigE link between client and server, or 124 MB/sec 
-max, so this is about 76% of wire speed.  Network connections pass through 
-three switches, at least one of which acts as a router, so I'm feeling 
-pretty good about things so far.
+At OLS I had a lot of interest to be able to have the ftrace buffers
+dumped on panic.  Usually one would expect to uses kexec and examine
+the buffers after a new kernel is loaded. But sometimes the resources
+do not permit kdump and kexec, so having an option to still see the 
+sequence of events up to the crash is very advantageous.
 
-FYI, the server is using an ext3 file system, on top of a 10 GB /dev/ram0 
-ramdisk (exported async, mounted async).  Oddly enough, /dev/ram0 seems a 
-bit slower than tmpfs and a loopback-mounted file - go figure.
+This patch adds the option to have the ftrace buffers dumped to the 
+console in the latency_trace format on a panic. When the option is set, 
+the default entries per CPU buffer are lowered to 16384, since the writing 
+to the serial (if that is the console) may take an awful long time 
+otherwise.
 
-To avoid confusing this with cache effects, I'm using iozone on an 8GB file 
-from a client with only 4GB of memory.  Like I said, I'm mainly interested 
-in large file performance. :-)
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ include/linux/ftrace.h |    2 
+ kernel/trace/trace.c   |  175 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 176 insertions(+), 1 deletion(-)
 
--- 
-Mike Shuey
-Purdue University/ITaP
-
-
-On Wednesday 30 July 2008, Shehjar Tikoo wrote:
-> J. Bruce Fields wrote:
-> > You might get more responses from the linux-nfs list (cc'd).
-> >
-> > --b.
-> >
-> > On Thu, Jul 24, 2008 at 01:11:31PM -0400, Michael Shuey wrote:
-> >> I'm currently toying with Linux's NFS, to see just how fast it
-> >> can go in a high-latency environment.  Right now, I'm simulating
-> >>  a 100ms delay between client and server with netem (just 100ms
-> >> on the outbound packets from the client, rather than 50ms each
-> >> way). Oddly enough, I'm running into performance problems. :-)
-> >>
-> >> According to iozone, my server can sustain about 90/85 MB/s
-> >> (reads/writes) without any latency added.  After a pile of
-> >> tweaks, and injecting 100ms of netem latency, I'm getting 6/40
-> >> MB/s (reads/writes).  I'd really like to know why writes are now
-> >>  so much faster than reads, and what sort of things might boost
-> >> the read throughput.  Any suggestions?
->
-> Is the server sync or async mounted? I've seen such performance
-> inversion between read and write when the mount mode is async.
->
-> What is the number of nfsd threads at the server?
->
-> Which file system are you using at the server?
->
-> >> 1 The read throughput seems to be proportional to the latency -
-> >> adding only 10ms of delay gives 61 MB/s reads, in limited testing
-> >>  (need to look at it further).  While that's to be expected, to
-> >> some extent, I'm hoping there's some form of readahead that can
-> >> help me out here (assume big sequential reads).
-> >>
-> >> iozone is reading/writing a file twice the size of memory on the
-> >>  client with a 32k block size.  I've tried raising this as high
-> >> as 16 MB, but I still see around 6 MB/sec reads.
->
-> In iozone, are you running the read and write test during the same run
-> of iozone? Iozone runs read tests, after writes so that the file for
-> the read test exists on the server. You should try running write and
-> read tests in separate runs to prevent client side caching issues from
-> influencing raw server read(and read-ahead) performance. You can use
-> the -w option in iozone to prevent iozone from calling unlink on the
-> file after the write test has finished, so you can use the same file
-> in a separate read test run.
->
-> >> I'm using a 2.6.9 derivative (yes, I'm a RHEL4 fan).  Testing
-> >> with a stock 2.6, client and server, is the next order of
-> >> business.
->
-> You can try building the kernel with oprofile support and use it to
-> measure where the client CPU is spending its time. It is possible that
-> client-side locking or other algorithm issues are resulting in such
-> low read throughput. Note, when you start oprofile profiling, use a
-> CPU_CYCLES count of 5000. I've observed more accurate results with
-> this sample size for NFS performance.
->
-> >> NFS mount is tcp, version 3.  rsize/wsize are 32k.  Both client
-> >> and server have had tcp_rmem, tcp_wmem, wmem_max, rmem_max,
-> >> wmem_default, and rmem_default tuned - tuning values are 12500000
-> >>  for defaults (and minimum window sizes), 25000000 for the
-> >> maximums.  Inefficient, yes, but I'm not concerned with memory
-> >> efficiency at the moment.
-> >>
-> >> Both client and server kernels have been modified to provide
-> >> larger-than-normal RPC slot tables.  I allow a max of 1024, but
-> >> I've found that actually enabling more than 490 entries in /proc
-> >>  causes mount to complain it can't allocate memory and die.  That
-> >>  was somewhat suprising, given I had 122 GB of free memory at the
-> >>  time...
-> >>
-> >> I've also applied a couple patches to allow the NFS readahead to
-> >>  be a tunable number of RPC slots.  Currently, I set this to 489
-> >>  on client and server (so it's one less than the max number of
-> >> RPC slots).  Bandwidth delay product math says 380ish slots
-> >> should be enough to keep a gigabit line full, so I suspect
-> >> something else is preventing me from seeing the readahead I
-> >> expect.
-> >>
-> >> FYI, client and server are connected via gigabit ethernet.
-> >> There's a couple routers in the way, but they talk at 10gigE and
-> >>  can route wire speed. Traffic is IPv4, path MTU size is 9000
-> >> bytes.
->
-> The following are not completely relevant here but just to get some
-> more info:
-> What is the raw TCP throughput that you get between the server and
-> client machine on this network?
->
-> You could run the tests with bare minimum number of network
-> elements between the server and the client to see whats the best
-> network performance for NFS you can extract from this server and
-> client machine.
->
-> >> Is there anything I'm missing?
-> >>
-> >> -- Mike Shuey Purdue University/ITaP
+Index: linux-tip.git/kernel/trace/trace.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/trace.c	2008-07-29 10:47:53.000000000 -0400
++++ linux-tip.git/kernel/trace/trace.c	2008-07-30 22:25:25.000000000 -0400
+@@ -14,6 +14,7 @@
+ #include <linux/utsrelease.h>
+ #include <linux/kallsyms.h>
+ #include <linux/seq_file.h>
++#include <linux/notifier.h>
+ #include <linux/debugfs.h>
+ #include <linux/pagemap.h>
+ #include <linux/hardirq.h>
+@@ -22,6 +23,7 @@
+ #include <linux/ftrace.h>
+ #include <linux/module.h>
+ #include <linux/percpu.h>
++#include <linux/kdebug.h>
+ #include <linux/ctype.h>
+ #include <linux/init.h>
+ #include <linux/poll.h>
+@@ -103,8 +105,15 @@ int				ftrace_function_enabled;
+  * trace_nr_entries is the number of entries that is allocated
+  * for a buffer. Note, the number of entries is always rounded
+  * to ENTRIES_PER_PAGE.
++ *
++ * This number is purposely set to a low number of 16384.
++ * If the dump on oops happens, it will be much appreciated
++ * to not have to wait for all that output. Anyway this can be
++ * boot time and run time configurable.
+  */
+-static unsigned long		trace_nr_entries = 65536UL;
++#define TRACE_ENTRIES_DEFAULT	16384UL
++
++static unsigned long		trace_nr_entries = TRACE_ENTRIES_DEFAULT;
+ 
+ /* trace_types holds a link list of available tracers. */
+ static struct tracer		*trace_types __read_mostly;
+@@ -2930,6 +2939,165 @@ static __init void tracer_init_debugfs(v
+ #endif
+ }
+ 
++static int trace_panic_handler(struct notifier_block *this,
++			       unsigned long event, void *unused)
++{
++	ftrace_dump();
++	return NOTIFY_OK;
++}
++
++static struct notifier_block trace_panic_notifier = {
++	.notifier_call  = trace_panic_handler,
++	.next           = NULL,
++	.priority       = 150   /* priority: INT_MAX >= x >= 0 */
++};
++
++static int trace_die_handler(struct notifier_block *self,
++			     unsigned long val,
++			     void *data)
++{
++	switch (val) {
++	case DIE_OOPS:
++		ftrace_dump();
++		break;
++	default:
++		break;
++	}
++	return NOTIFY_OK;
++}
++
++static struct notifier_block trace_die_notifier = {
++	.notifier_call = trace_die_handler,
++	.priority = 200
++};
++
++/*
++ * printk is set to max of 1024, we really don't need it that big.
++ * Nothing should be printing 1000 characters anyway.
++ */
++#define TRACE_MAX_PRINT		1000
++
++/*
++ * Define here KERN_TRACE so that we have one place to modify
++ * it if we decide to change what log level the ftrace dump
++ * should be at.
++ */
++#define KERN_TRACE		KERN_INFO
++
++static void
++trace_printk_seq(struct trace_seq *s)
++{
++	/* Probably should print a warning here. */
++	if (s->len >= 1000)
++		s->len = 1000;
++
++	/* should be zero ended, but we are paranoid. */
++	s->buffer[s->len] = 0;
++
++	printk(KERN_TRACE "%s", s->buffer);
++
++	trace_seq_reset(s);
++}
++
++
++void ftrace_dump(void)
++{
++	static DEFINE_SPINLOCK(ftrace_dump_lock);
++	/* use static because iter can be a bit big for the stack */
++	static struct trace_iterator iter;
++	struct trace_array_cpu *data;
++	static cpumask_t mask;
++	static int dump_ran;
++	unsigned long flags;
++	int cnt = 0;
++	int cpu;
++
++	/* only one dump */
++	spin_lock_irqsave(&ftrace_dump_lock, flags);
++	if (dump_ran)
++		goto out;
++
++	dump_ran = 1;
++
++	/* No turning back! */
++	ftrace_kill_atomic();
++
++	printk(KERN_TRACE "Dumping ftrace buffer:\n");
++
++	iter.tr = &global_trace;
++	iter.trace = current_trace;
++
++	/*
++	 * We need to stop all tracing on all CPUS to read the
++	 * the next buffer. This is a bit expensive, but is
++	 * not done often. We fill all what we can read,
++	 * and then release the locks again.
++	 */
++
++	cpus_clear(mask);
++
++	for_each_tracing_cpu(cpu) {
++		data = iter.tr->data[cpu];
++
++		if (!head_page(data) || !data->trace_idx)
++			continue;
++
++		atomic_inc(&data->disabled);
++		cpu_set(cpu, mask);
++	}
++
++	for_each_cpu_mask(cpu, mask) {
++		data = iter.tr->data[cpu];
++		__raw_spin_lock(&data->lock);
++
++		if (data->overrun > iter.last_overrun[cpu])
++			iter.overrun[cpu] +=
++				data->overrun - iter.last_overrun[cpu];
++		iter.last_overrun[cpu] = data->overrun;
++	}
++
++	while (!trace_empty(&iter)) {
++
++		if (!cnt)
++			printk(KERN_TRACE "---------------------------------\n");
++
++		cnt++;
++
++		/* reset all but tr, trace, and overruns */
++		memset(&iter.seq, 0,
++		       sizeof(struct trace_iterator) -
++		       offsetof(struct trace_iterator, seq));
++		iter.iter_flags |= TRACE_FILE_LAT_FMT;
++		iter.pos = -1;
++
++		if (find_next_entry_inc(&iter) != NULL) {
++			print_trace_line(&iter);
++			trace_consume(&iter);
++		}
++
++		trace_printk_seq(&iter.seq);
++	}
++
++	if (!cnt)
++		printk(KERN_TRACE "   (ftrace buffer empty)\n");
++	else
++		printk(KERN_TRACE "---------------------------------\n");
++
++	for_each_cpu_mask(cpu, mask) {
++		data = iter.tr->data[cpu];
++		__raw_spin_unlock(&data->lock);
++	}
++
++	for_each_cpu_mask(cpu, mask) {
++		data = iter.tr->data[cpu];
++		atomic_dec(&data->disabled);
++	}
++
++
++ out:
++	spin_unlock_irqrestore(&ftrace_dump_lock, flags);
++}
++
+ static int trace_alloc_page(void)
+ {
+ 	struct trace_array_cpu *data;
+@@ -3126,6 +3294,11 @@ __init static int tracer_alloc_buffers(v
+ 	global_trace.ctrl = tracer_enabled;
+ 	tracing_disabled = 0;
+ 
++	atomic_notifier_chain_register(&panic_notifier_list,
++				       &trace_panic_notifier);
++
++	register_die_notifier(&trace_die_notifier);
++
+ 	return 0;
+ 
+  free_buffers:
+Index: linux-tip.git/include/linux/ftrace.h
+===================================================================
+--- linux-tip.git.orig/include/linux/ftrace.h	2008-07-14 10:42:44.000000000 -0400
++++ linux-tip.git/include/linux/ftrace.h	2008-07-30 20:41:13.000000000 -0400
+@@ -136,9 +136,11 @@ static inline void tracer_disable(void)
+ #ifdef CONFIG_TRACING
+ extern void
+ ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3);
++extern void ftrace_dump(void);
+ #else
+ static inline void
+ ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3) { }
++static inline void ftrace_dump(void) { }
+ #endif
+ 
+ #endif /* _LINUX_FTRACE_H */
