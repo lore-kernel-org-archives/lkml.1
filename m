@@ -1,38 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753595AbYGaIpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbYGaIsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753595AbYGaIpQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 04:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbYGaIpD
+	id S1753769AbYGaIsc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 04:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbYGaIsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 04:45:03 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:44636 "EHLO
-	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750841AbYGaIpA (ORCPT
+	Thu, 31 Jul 2008 04:48:24 -0400
+Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:27606 "HELO
+	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751157AbYGaIsX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 04:45:00 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=obykrJOqHXjTeSBiZj8A:9 a=7DM4QyotIB5jUXLofIAA:7 a=ZId6AISCVTsk_GDNWturlOOeMSkA:4
-Message-ID: <48917B86.8030600@shaw.ca>
-Date: Thu, 31 Jul 2008 02:44:54 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Thu, 31 Jul 2008 04:48:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=o+pZ8H9sKS63hTJNbOwAN3IfaeseO7CuOSrnm9mo9aVusPBc+qZe0HDf40LIcFz6YVXPwg3TSIqzUnEKH9DNwh1/MDdoChH70pczZfZydzBnu/+/6fiu88B7WvBsWgZCZU8s1vjnCgj15SyvwxiICwg+MMVZ0m35MJRZslCQI4o=  ;
+X-YMail-OSG: phT4Qe4VM1m.4D9yw60dLrEkKOXyXdlV0Tt9KimIGH5icRuQYvokr1v29sOdb5hWOGoHbI9XPnw64pU5pvM9wFzuHeYWULWOxoUe5BiUwLvghVbSOaIHqi4WpDF7LcLbico-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] Export get_user_pages_fast
+Date: Thu, 31 Jul 2008 18:48:12 +1000
+User-Agent: KMail/1.9.5
+Cc: Avi Kivity <avi@qumranet.com>, Adrian Bunk <bunk@kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
+       linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <200807301438.55941.rusty@rustcorp.com.au> <200807311810.57821.nickpiggin@yahoo.com.au> <20080731012151.41733ef6.akpm@linux-foundation.org>
+In-Reply-To: <20080731012151.41733ef6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Sanka Piyaratna <cesanka@yahoo.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: PCIe device driver question
-References: <490172.6073.qm@web31708.mail.mud.yahoo.com>
-In-Reply-To: <490172.6073.qm@web31708.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807311848.13142.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sanka Piyaratna wrote:
-> I allocate memory in the user land using memalign function (typically I allocate about 500 MB) and pass this to the kernel space. In my device driver, I call get_user_pages() to lock down the memory and extract the relevant pages. A scatter-gather list is generated using these page addresses and hence derive the dma_addresses using page_to_phys() function. These addresses are programmed into a FIFO in the hardware device using a memory mapped register interface (PCI BAR based). Subsequently the hardware start filling up the pages and interrupt when a block of pages are complete. I notice the hardware hang (PCIe packets don't seem to get the acknowledgements from the root complex) when the DMA address is < 0x0000_0001_0000_0000. I have verified in the hardware that the PCIe packet is created with the correct address as programed by the device driver dma_address. If i can guard some how that the memory allocation is with in a certain area, I can stop the
->  problem from occuring. Are there any bridge functionality in the Intel architecture that may mask a certain region of memory?
+On Thursday 31 July 2008 18:21, Andrew Morton wrote:
+> On Thu, 31 Jul 2008 18:10:57 +1000 Nick Piggin <nickpiggin@yahoo.com.au> 
+wrote:
+> > On Thursday 31 July 2008 17:02, Andrew Morton wrote:
+> > > On Thu, 31 Jul 2008 09:43:59 +0300 Avi Kivity <avi@qumranet.com> wrote:
+> > > > Surprised.  Why not an out-of-line function?  Would eliminate the
+> > > > present discussion as well.
+> > >
+> > > Excellent question!
+> >
+> > Like this?
+>
+> Boy, that cleaned out a lot of crud, didn't it?
 
-How are you formatting the addresses in the TLP? The PCI Express spec 
-says that for addresses below 4GB the 32-bit addressing format must be 
-used (you can't use the 64-bit format unconditionally). It could be that 
-is what is making the chipset unhappy.
+Yes.
+
+
+> > +int __attribute__((weak)) get_user_pages_fast(unsigned long start,
+> > +				int nr_pages, int write, struct page **pages)
+> > +{
+> > +	struct mm_struct *mm = current->mm;
+> > +	int ret;
+> > +
+> > +	down_read(&mm->mmap_sem);
+> > +	ret = get_user_pages(current, mm, start, nr_pages,
+> > +					write, 0, pages, NULL);
+> > +	up_read(&mm->mmap_sem);
+> > +
+> > +	return ret;
+> > +}
+> > +EXPORT_SYMBOL_GPL(get_user_pages_fast);
+>
+> hm, OK, I guess there's no reason why gcc should muck up the export of
+> a weak symbol.
+
+Well it seemed to compile both with and without the arch override, and
+I added a get_user_pages_fast call to a module and no warnings of any
+kind.
+
+
+> >  pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
+> >  			spinlock_t **ptl)
+> >  {
+> > Index: linux-2.6/arch/x86/Kconfig
+> > ===================================================================
+> > --- linux-2.6.orig/arch/x86/Kconfig	2008-07-31 18:08:35.000000000 +1000
+> > +++ linux-2.6/arch/x86/Kconfig	2008-07-31 18:08:53.000000000 +1000
+> > @@ -22,7 +22,6 @@ config X86
+> >  	select HAVE_IDE
+> >  	select HAVE_OPROFILE
+> >  	select HAVE_IOREMAP_PROT
+> > -	select HAVE_GET_USER_PAGES_FAST
+> >  	select HAVE_KPROBES
+> >  	select ARCH_WANT_OPTIONAL_GPIOLIB
+> >  	select HAVE_KRETPROBES
+> > Index: linux-2.6/arch/x86/mm/Makefile
+> > ===================================================================
+> > --- linux-2.6.orig/arch/x86/mm/Makefile	2008-07-31 18:08:58.000000000
+> > +1000 +++ linux-2.6/arch/x86/mm/Makefile	2008-07-31 18:09:07.000000000
+> > +1000 @@ -1,7 +1,6 @@
+> >  obj-y	:=  init_$(BITS).o fault.o ioremap.o extable.o pageattr.o mmap.o \
+> > -	    pat.o pgtable.o
+> > +	    pat.o pgtable.o gup.o
+> >
+> > -obj-$(CONFIG_HAVE_GET_USER_PAGES_FAST) += gup.o
+> >  obj-$(CONFIG_X86_32)		+= pgtable_32.o
+> >
+> >  obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
+>
+> If we do this then corresponding changes should be made to the powerpc
+> patch upon which Ben presently sits.
+
+Powerpc will still use the CONFIG symbol for the moment because 32-bit TLB
+flushing has not been verified to work, so we don't want to pull in the
+64-bit gup. There is some discussion going on, but they probably need at
+least to implement pte_special, and then also do RCU freeing of page tables.
