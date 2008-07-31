@@ -1,130 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYGaOgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbYGaOg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbYGaOgb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 10:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYGaOgX
+	id S1757362AbYGaOg6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 10:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYGaOgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 10:36:23 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:58300 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752445AbYGaOgW (ORCPT
+	Thu, 31 Jul 2008 10:36:49 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:32279 "EHLO
+	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752483AbYGaOgr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 10:36:22 -0400
-Date: Thu, 31 Jul 2008 09:36:02 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Roland McGrath <roland@redhat.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Bug in 2b2a1ff64afbadac842bbc58c5166962cf4f7664 ?
-Message-ID: <20080731143602.GA28700@us.ibm.com>
+	Thu, 31 Jul 2008 10:36:47 -0400
+X-BigFish: VPS-23(zz1dbaM146fK1432R98dR936eQ4015M1805Mzz10d3izzz32i6bh87il43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0K4VKKT-02-Q2P-01
+Date: Thu, 31 Jul 2008 08:36:35 -0600
+From: Jordan Crouse <jordan.crouse@amd.com>
+To: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
+CC: Andres Salomon <dilinger@debian.org>, linux-geode@bombadil.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: MFGPT driver inhibits boot on some boards
+Message-ID: <20080731143635.GA12585@cosmic.amd.com>
+References: <48916864.901@LiPPERTEmbedded.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <48916864.901@LiPPERTEmbedded.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 31 Jul 2008 14:36:28.0670 (UTC) FILETIME=[D153F9E0:01C8F31A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From ea5b3ea0dbdb8b9f9ef73e639517cf4805cf2e6f Mon Sep 17 00:00:00 2001
-From: Serge E. Hallyn <serue@us.ibm.com>
-Date: Thu, 31 Jul 2008 07:29:14 -0700
-Subject: [PATCH 1/1] notify parent of death
+On 31/07/08 09:23 +0200, Jens Rottmann wrote:
+> The driver defaults to IRQ7. Our boards use this for the parallel port.
+> This alone would be ok, but the parallel port is on a LPC SIO, so IRQ7
+> is routed to the LPC bus in MSR 51400025, so MFGPT IRQs are not received.
+> 
+> Possible solution 1: make geode_mfgpt_set_irq() clear the needed bit in
+> MSR 51400025. This would break lp0, but at least Linux would boot and
+> users could cat /proc/interrupts and see what's going on.
+> 
+> Possible solution 2: make geode_mfgpt_set_irq() check the bit and fail
+> if the IRQ is routed to LPC. (I think I'd prefer this over 1.)
 
-Commit 2b2a1ff64afbadac842bbc58c5166962cf4f7664
-("tracehook: death" by ROland McGrath on Jul 25) included a change
-that apparently causes parents not to be notified of child death
-in normal circumstances.  In particular the following testcase
-fails without this patch.  (I'm sure this patch is wrong, but
-hopefully it illustrates where a real problem might hide).
+Either of these solutions is the "right" solution. I prefer automatically
+detecting the SIO interrupts and finding a free interrupt. 
 
-Before commit 2b2a1ff64afbadac842bbc58c5166962cf4f7664, calling
-this program testwait.c and running
-	# ./testwait /bin/sh
-	  # exit
-would succeed.  Ever since that commit, exiting the shell makes
-it defunct.  With the following patch, it again appears to
-properly exit, and my test machine seems to suffer no ill effects
-from the patch - though I haven't run ltp since as I say I doubt
-the patch is the right solution.
+> But that's not clean, even an IRQ not routed to LPC might be the wrong
+> one. The BIOS we're using (Insyde BIOS, uses VSA and 5 MFGPTs, but
+> leaves 3 timers available) exports a PCI header for MFGPT, which of
+> course gets an IRQ assigned (LNKB-->IRQ11), and this is the right IRQ to
+> use. Some autodetection instead of hardcoding IRQ7 would be perfect. But
+> looking for the PCI header won't work, because AMD removed them from the
+> spec, most BIOSes don't support them (any more) and some day our BIOS
+> will hide them, too.
 
-More likely the last line in tracehook_notify_death() isn't
-quite right.
+I know the platform you are talking about - that was a special test case
+the MFGPT header.  It would have become standard, but then circumstances
+intervened, and we lost the resources to push that into the VSA and
+to all of our BIOS vendors.  It is easiest for us to assume that we won't
+have the PCI header for the MFGPT.
 
-thanks,
--serge
+> I guess MSR 51400022 aka MSR_PIC_ZSEL_LOW is the key here.
+> geode_mfgpt_set_irq() overwrites this unconditionally, which I think is
+> bad. If the BIOS has already set an IRQ here, the driver should keep it
+> and assume it to be ok.
 
- #include <stdio.h>
- #include <stdlib.h>
- #include <sched.h>
- #include <sys/syscall.h>
- #include <unistd.h>
- #include <signal.h>
- #include <string.h>
- #include <errno.h>
- #include <libgen.h>
- #include <fcntl.h>
- #include <sys/types.h>
- #include <sys/wait.h>
+Agreed.
 
-extern pid_t getpgid(pid_t pid);
-extern pid_t getsid(pid_t pid);
+> Possible solution 3: keep the IRQ already chosen in MSR_PIC_ZSEL_LOW
+> unless it's 0, only in that case use IRQ7
 
-static const char* procname;
+This goes against our basic policy of not trusting the BIOS.
 
-int do_child(void *vargv)
-{
-        char **argv = (char **)vargv;
-        execve(argv[0], argv, __environ);
-        perror("execve");
-        return 1;
-}
+> But how about CMP1 and CMP2? geode_mfgpt_set_irq() currently sets IRQs
+> for both, but I think it's better to only read/set the IRQ for the
+> requested CMP, because they might differ.
+> 
+> In fact, they do differ, because pairs of MFGPTs always share an IRQ
+> (stupid idea, that): E.g. VSA sets CMP1 of MFGPT7 to IRQ2, so its twin
+> MFGPT3, which itself is available, has its CMP1 also set to IRQ2. But
+> the clocksource driver only requests CMP2, so MFGPT3 could still be used.
 
-int main(int argc, char *argv[])
-{
-        int c;
-        int ret, use_clone = 0;
-        int pid;
-        int status;
+> Possible solution 4: only touch the CMP actually requested. But also
+> fail if this CMP is set to IRQ2, because this means VSA is using its twin.
 
-        argv = &argv[optind];
-        argc = argc - optind;
+The main problem with this is configuring your second timer wrong, and
+it fires on the wrong interrupt.  I believe thats why we added this
+code in the first place.  I wouldn't be opposed to removing it, though,
+assuming that we can avoid confusion when trying to use paired GPIOs.
 
-        int stacksize = 4*getpagesize();
-        void *childstack, *stack = malloc(stacksize);
+> IMHO hardcoding IRQ7 is bad. Yes, you can override it, but this isn't
+> some non-critical device driver like audio where only this one device
+> won't work. And MFGPT can't be compiled as module, so initramfs can't do
+> anything about it.
+> I think, if there is any chance to do it, Linux should be able to boot
+> without any parameters given - even if with reduced functionality.
 
-        if (!stack) {
-                perror("malloc");
-                return -1;
-        }
-        childstack = stack + stacksize;
+I agree 100%.
 
-        pid = clone(do_child, childstack, 0, (void *)argv);
-        if (pid == -1) {
-                perror("clone");
-                return -1;
-        }
-        if ((ret = waitpid(pid, &status, __WALL)) < 0)
-                printf("waitpid() returns %d, errno %d\n", ret, errno);
+> Now about the baseaddress issue:
+> 
+> 
+> The problem is that Linux upon PCI scan detects a resource conflict
+> (which in fact is none, but Linux cannot know that) and moves the
+> resources (MFGPT IO space among them) to some other place.
+> 
+> But init_lbars() in geode_32.c has saved all base addresses in an array
+> _before_ the move, and geode_get_dev_base() and geode_mfgpt_write() keep
+> using these addresses _after_ the move.
 
-        exit(0);
-}
+> Possible solutions 5-7:
+> * drop the array and always read the baseaddr from the MSR - but this
+>   would impact performance quite a lot, I guess
+> * run init_lbars() only after the PCI scan - but they might be needed
+>   before that, and what if someone changes the base again, say with
+>   setpci?
+> * update the array every time the base is changed - but I have no idea
+>   how to do that ...
+> 
+> Anyway, the baseaddr issue is not that serious for me, I will probably
+> be able to fix the bogus resource conflict that triggers the baseaddr
+> move, and this issue will disappear. But still - mfgpt will still crash
+> again if someone moves the resource for any reason ...
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- kernel/exit.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+This does sound like a problem with your particular system - Linux can 
+move the resource space, but if it has to, then I generally consider
+that to be a BIOS issue.  But that said, the point of Linux is to work
+around buggy BIOSen.  So, lets consider:
 
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 6cdf607..847fa12 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -924,7 +924,7 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
- 		tsk->exit_signal = SIGCHLD;
- 
- 	signal = tracehook_notify_death(tsk, &cookie, group_dead);
--	if (signal > 0)
-+	if (signal >= 0)
- 		signal = do_notify_parent(tsk, signal);
- 
- 	tsk->exit_state = signal < 0 ? EXIT_DEAD : EXIT_ZOMBIE;
+The GPIO code has to run before the PCI code for various reasons, so moving
+it really isn't an option.  Reading the base MSR every time wouldn't affect
+performance too badly (its an MSR, not I/O), but that would be ugly.
+
+I guess i don't know much about how PCI manages changes to the resources
+through setpci and other mechanisms.  This seems like it would break a
+lot of drivers.  If there is a notifier or something that we can tie into
+great, but perhaps this is a case of "user beware".  Anybody else concur?
+
+> 
+> Well, that's what I've figured out so far. (Thanks if you're still
+> reading on!)  :-)   I might be able to implement some fixes for the IRQ
+> issue, but I'd like your opinion first. What do you think?
+
+Yes, please do - the interrupt problem only bites us occasionally, but
+when it does, it hurts.
+
+Thanks,
+Jordan
+
 -- 
-1.5.3.6
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
 
