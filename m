@@ -1,107 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbYGaTR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbYGaTVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757931AbYGaTR7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 15:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbYGaTRs
+	id S1757524AbYGaTVQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 15:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbYGaTU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 15:17:48 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:51513 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752173AbYGaTRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 15:17:47 -0400
-Date: Thu, 31 Jul 2008 22:16:50 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
-       matthew@wil.cx, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch 2/4] Configure out file locking features
-Message-ID: <20080731191650.GA23516@cs181140183.pp.htv.fi>
-References: <20080731092703.661994657@free-electrons.com> <20080731093220.969460336@free-electrons.com> <20080731135319.GA20212@cs181140183.pp.htv.fi> <20080731162007.285938e0@surf> <20080731153757.GB20212@cs181140183.pp.htv.fi> <20080731182616.4c20f0db@surf> <20080731164918.GE20212@cs181140183.pp.htv.fi> <4891F724.3030406@am.sony.com>
+	Thu, 31 Jul 2008 15:20:56 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:55120 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753516AbYGaTUz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 15:20:55 -0400
+Date: Thu, 31 Jul 2008 20:20:33 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, bzolnier@gmail.com,
+       sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+Subject: Re: linux-next: Tree for July 30
+In-Reply-To: <20080731115538.238b5e75.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0807312013460.7388@blonde.site>
+References: <20080730170635.f737ffe9.sfr@canb.auug.org.au>
+ <20080730231029.9818953c.akpm@linux-foundation.org> <20080731140708.GA11229@core.corenet.prv>
+ <58cb370e0807310836x4a6e3c40rf5c3c8ec8b5caae0@mail.gmail.com>
+ <20080731115301.ZZRA012@mailhub.coreip.homeip.net>
+ <20080731104437.5e5669bc.akpm@linux-foundation.org>
+ <20080731141302.ZZRA012@mailhub.coreip.homeip.net>
+ <20080731112654.d9620b36.akpm@linux-foundation.org>
+ <20080731143013.ZZRA012@mailhub.coreip.homeip.net>
+ <20080731115538.238b5e75.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4891F724.3030406@am.sony.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 10:32:20AM -0700, Tim Bird wrote:
-> Adrian Bunk wrote:
-> > And for embedded systems with which applications is it 100% safe to 
-> > disable this option?
+On Thu, 31 Jul 2008, Andrew Morton wrote:
+> On Thu, 31 Jul 2008 14:34:41 -0400
+> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > > 
+> > > Where would I (Aunt Tillie running FC5) go to find out how to fix my
+> > > machine up again? 
+> > 
+> > What is Aunt Tillie doing compiling her own kernels on FC5? You
+> > OTOH managed to get an answer fairly quickly ;)
 > 
-> Sony's digital cameras.
-> 
-> This option *is* disabled in the kernel for (most) Sony digital cameras.
-> Those digital cameras have the kernel, busybox, a custom C library,
-> and one proprietary application.   The application does not use
-> flock() (or AIO, or ethtool or multi-cast)
-> 
-> These cameras were heavily tested, and are shipping now.  I can't
-> make any guarantees for other developers, but those of us who
-> are careful about our application development would like the option
-> to eliminate completely unused features from the kernel.  (And
-> the C library, but that's a different issue.)
-> 
-> > And don't answer "doesn't use flock()", I want a real-life example of a 
-> > device where you could guarantee a developer that disabling this option 
-> > in his product would be safe.
-> 
-> I'm not sure why a guarantee is required that other developers
-> use this option safely.  Maybe this is a point of disconnect between
-> embedded folks and non-embedded folks.  We're accustomed to making
-> tradeoff decisions that only affect our product, and which
-> we take full responsibility for testing.
+> I'll ask again: where do our users go to find out how to make their X
+> server work again?  If the answer is "nowhere" then can we please at 
+> least write up a simple step-by-step repair procedure, as we'll surely
+> be needing it a lot.
 
-Thanks. That's quite different from Thomas' "In practice, I only tested
-a CONFIG_FILE_LOCKING=n kernel with a basic Busybox under Qemu." and
-addresses my concerns.
+Thanks for pursuing this, Andrew: here's a kernel patch deduced
+from this thread, which has indeed got me moving again.  Perhaps
+an optional patch for hotfixes while the right answer is decided.
 
-In case I didn't express myself clearly:
-I was not interested in guarantees for random developers but in seeing 
-some reasonable use case for a real device.
 
-> If warnings or support avoidance for the general population using
-> such config options is the issue, I think that David Woodhouse's
-> suggestion that such things could taint the kernel is an interesting
-> idea. Maybe have we could have an "unsafe-config" taint flag?
+If you want to test 2.6.27-rc1-mm1, but your Synaptics pad is making X
+crash immediately, and like Aunt Tillie and me you're more comfortable
+patching your kernel than messing around in your userspace,
+then reverting back from 768 to 512 keys should help.
 
-A CONFIG_EMBEDDED=y flag?
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
-> I should add that I am sympathetic with the larger issue you raise
-> about nibbling at the bottom with patches that only address a
-> few KB of the problem, while the size continues to build (to an
-> even greater degree) with each release.  My response is that I agree
-> with you on the nibbling bit, but probably just at a different
-> level of KB savings.
-> 
-> That is, I presume you'd be OK with something that saved 100K or
-> even 20K, but balk at bit at these patches, which save 10k or less.
-> My threshold is lower (probably down to about 5K, so these are
-> pretty close to the bubble), but even I wouldn't recommend
-> applying anything much below that.  We've already started
-> considering to drop some linux-tiny patches that just don't save
-> enough to warrant continued maintenance.
+ include/linux/input.h           |    2 +-
+ include/linux/mod_devicetable.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-It's not only about limits, I also have a general dislike for the
-"add more config options" approach.
-
-I get your point why it brings advantages in some cases, but if you are 
-looking for a cheerleader it won't be me.  ;-)
-
->  -- Tim
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+--- 2.6.27-rc1-mm1/include/linux/input.h	2008-07-31 09:30:09.000000000 +0100
++++ linux/include/linux/input.h	2008-07-31 19:39:20.000000000 +0100
+@@ -592,7 +592,7 @@ struct input_absinfo {
+ 
+ /* We avoid low common keys in module aliases so they don't get huge. */
+ #define KEY_MIN_INTERESTING	KEY_MUTE
+-#define KEY_MAX			0x2ff
++#define KEY_MAX			0x1ff
+ #define KEY_CNT			(KEY_MAX+1)
+ 
+ /*
+--- 2.6.27-rc1-mm1/include/linux/mod_devicetable.h	2008-07-31 09:30:09.000000000 +0100
++++ linux/include/linux/mod_devicetable.h	2008-07-31 19:43:19.000000000 +0100
+@@ -274,7 +274,7 @@ struct pcmcia_device_id {
+ /* Input */
+ #define INPUT_DEVICE_ID_EV_MAX		0x1f
+ #define INPUT_DEVICE_ID_KEY_MIN_INTERESTING	0x71
+-#define INPUT_DEVICE_ID_KEY_MAX		0x2ff
++#define INPUT_DEVICE_ID_KEY_MAX		0x1ff
+ #define INPUT_DEVICE_ID_REL_MAX		0x0f
+ #define INPUT_DEVICE_ID_ABS_MAX		0x3f
+ #define INPUT_DEVICE_ID_MSC_MAX		0x07
