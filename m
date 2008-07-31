@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbYGaQKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbYGaQPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753754AbYGaQKh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 12:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYGaQK1
+	id S1752679AbYGaQPd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 12:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbYGaQPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 12:10:27 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:38166 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbYGaQK1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 12:10:27 -0400
-Date: Thu, 31 Jul 2008 17:10:24 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch resend] vfs: move executable checking into
-	->permission()
-Message-ID: <20080731161024.GL28946@ZenIV.linux.org.uk>
-References: <E1KOBJb-0005L0-RF@pomaz-ex.szeredi.hu> <20080731003332.GJ28946@ZenIV.linux.org.uk> <E1KOWXe-0008Dl-ET@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1KOWXe-0008Dl-ET@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 31 Jul 2008 12:15:25 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:34446 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750907AbYGaQPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 12:15:25 -0400
+Date: Thu, 31 Jul 2008 11:15:22 -0500
+From: Paul Jackson <pj@sgi.com>
+To: "Rakib Mullick" <rakib.mullick@gmail.com>
+Cc: menage@google.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Removes extra checking in kernel/cpuset.c
+Message-Id: <20080731111522.6417f750.pj@sgi.com>
+In-Reply-To: <b9df5fa10807310846g27913d82icf2a82e77992ba9f@mail.gmail.com>
+References: <b9df5fa10807310846g27913d82icf2a82e77992ba9f@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 01:41:58PM +0200, Miklos Szeredi wrote:
-> On Thu, 31 Jul 2008, Al Viro wrote:
-> > On Wed, Jul 30, 2008 at 03:02:03PM +0200, Miklos Szeredi wrote:
-> > >  static int coda_ioctl_permission(struct inode *inode, int mask)
-> > >  {
-> > > -        return 0;
-> > > +	return check_execute(dentry->d_inode, mask);
-> > >  }
-> > 
-> > Er?
-> > 	a) mismerge from dentry-based variant
-> 
-> Yeah, crappy patch.  Agree on all other comments as well, thanks for
-> the review.
- 
-Hrm...  OK, behaviour change for permission() on bdev/cdev/pipe is
-not a problems...
+Rakib wrote:
+> Hello guys, this patch removes an extra checking over 'cs' in
+> functions 'guarantee_online_cpus' and 'guarantee_online_mems'.
+> ...
+> -	while (cs && !cpus_intersects(cs->cpus_allowed, cpu_online_map))
+> -		cs = cs->parent;
+> -	if (cs)
+> +	if (cs) {
+> +		while (!cpus_intersects(cs->cpus_allowed, cpu_online_map))
+> +			cs = cs->parent;
 
-I'll apply it, but if anybody has better suggestions for helper name,
-please yell.  "execute_ok()" sounds very odd...
+I don't think that works - "cs->parent" can be NULL, and will be NULL
+if cs is the root cpuset.
+
+So we must check for non-NULL cs each step of the way back up the
+cpuset tree.
+
+I must NAQ this patch.
+
+Holler if you think I'm missing something.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
