@@ -1,91 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762849AbYGaC6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763027AbYGaC6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762849AbYGaC6b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 22:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756290AbYGaCvM
+	id S1763027AbYGaC6y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 22:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760862AbYGaCv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 22:51:12 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:55965 "EHLO
+	Wed, 30 Jul 2008 22:51:29 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:55968 "EHLO
 	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759808AbYGaCvK (ORCPT
+	with ESMTP id S1760567AbYGaCv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 22:51:10 -0400
-Date: Wed, 30 Jul 2008 21:50:11 -0500
+	Wed, 30 Jul 2008 22:51:27 -0400
+Date: Wed, 30 Jul 2008 21:50:14 -0500
 From: David Fries <david@fries.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org
-Subject: [PATCH 23/30] W1: ds2490.c simplify and fix ds_touch_bit
-Message-ID: <20080731025011.GX12181@spacedout.fries.net>
+Subject: [PATCH 24/30] W1: ds2490.c ds_dump_status rework
+Message-ID: <20080731025014.GY12181@spacedout.fries.net>
 References: <20080729020433.GA24424@spacedout.fries.net> <20080729161356.2de456fb.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20080729161356.2de456fb.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Wed, 30 Jul 2008 21:50:11 -0500 (CDT)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Wed, 30 Jul 2008 21:50:15 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simplify and fix ds_touch_bit.  If a device is attached in the middle
-of a bus search the status register will return more than the default
-16 bytes.  The additional bytes indicate that it has detected a new
-device.  The way ds_wait_status is coded, if it doesn't read 16 status
-bytes it returns an error value.  ds_touch_bit then will detect that
-error and return an error.  In that case it doesn't read the input
-buffer and returns uninitialized data.  It doesn't stop there.  The
-next transaction will not expect the extra byte in the input buffer
-and the short read will cause an error and clear out both the old byte
-and new data in the input buffer.
-
-Just ignore the value of ds_wait_status.  It is still required to wait
-until ds2490 is again idle and there is data to read when ds_recv_data
-is called.  This also removes the while loop.  None of the other
-commands wait and verify that the issued command is in the status
-register.
+- add result register #defines
+- rename ds_dump_status to ds_print_msg
+- rename ds_recv_status to ds_dump_status
+- ds_dump_status prints the requested status and no longer reads the
+  status, this is because the second status read can return different
+  data for example the result register
+- the result register will be printed, though limited to detecting a
+  new device, detecting other values such as a short would require
+  additional reporting methods
+- ST_EPOF was moved to ds_wait_status to clear the error condition
+  sooner
 
 Signed-off-by: David Fries <david@fries.net>
 Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 ---
- drivers/w1/masters/ds2490.c |   21 ++++-----------------
- 1 files changed, 4 insertions(+), 17 deletions(-)
+ drivers/w1/masters/ds2490.c |  134 +++++++++++++++++++++++++++----------------
+ 1 files changed, 84 insertions(+), 50 deletions(-)
 
 diff --git a/drivers/w1/masters/ds2490.c b/drivers/w1/masters/ds2490.c
-index 1b632d5..c4ff70b 100644
+index c4ff70b..065042d 100644
 --- a/drivers/w1/masters/ds2490.c
 +++ b/drivers/w1/masters/ds2490.c
-@@ -490,28 +490,15 @@ static int ds_set_pullup(struct ds_device *dev, int delay)
+@@ -107,6 +107,17 @@
+ #define ST_IDLE				0x20  /* DS2490 is currently idle */
+ #define ST_EPOF				0x80
  
- static int ds_touch_bit(struct ds_device *dev, u8 bit, u8 *tbit)
++/* Result Register flags */
++#define RR_DETECT			0xA5 /* New device detected */
++#define RR_NRS				0x01 /* Reset no presence or ... */
++#define RR_SH				0x02 /* short on reset or set path */
++#define RR_APP				0x04 /* alarming presence on reset */
++#define RR_VPP				0x08 /* 12V expected not seen */
++#define RR_CMP				0x10 /* compare error */
++#define RR_CRC				0x20 /* CRC error detected */
++#define RR_RDP				0x40 /* redirected page */
++#define RR_EOS				0x80 /* end of search error */
++
+ #define SPEED_NORMAL			0x00
+ #define SPEED_FLEXIBLE			0x01
+ #define SPEED_OVERDRIVE			0x02
+@@ -164,7 +175,6 @@ MODULE_DEVICE_TABLE(usb, ds_id_table);
+ static int ds_probe(struct usb_interface *, const struct usb_device_id *);
+ static void ds_disconnect(struct usb_interface *);
+ 
+-static inline void ds_dump_status(unsigned char *, unsigned char *, int);
+ static int ds_send_control(struct ds_device *, u16, u16);
+ static int ds_send_control_cmd(struct ds_device *, u16, u16);
+ 
+@@ -223,11 +233,6 @@ static int ds_send_control(struct ds_device *dev, u16 value, u16 index)
+ 	return err;
+ }
+ 
+-static inline void ds_dump_status(unsigned char *buf, unsigned char *str, int off)
+-{
+-	printk("%45s: %8x\n", str, buf[off]);
+-}
+-
+ static int ds_recv_status_nodump(struct ds_device *dev, struct ds_status *st,
+ 				 unsigned char *buf, int size)
  {
--	int err, count;
-+	int err;
- 	struct ds_status st;
--	u16 value = (COMM_BIT_IO | COMM_IM) | ((bit) ? COMM_D : 0);
--	u16 cmd;
+@@ -248,54 +253,62 @@ static int ds_recv_status_nodump(struct ds_device *dev, struct ds_status *st,
+ 	return count;
+ }
  
--	err = ds_send_control(dev, value, 0);
-+	err = ds_send_control(dev, COMM_BIT_IO | COMM_IM | (bit ? COMM_D : 0),
-+		0);
+-static int ds_recv_status(struct ds_device *dev, struct ds_status *st)
++static inline void ds_print_msg(unsigned char *buf, unsigned char *str, int off)
+ {
+-	unsigned char buf[64];
+-	int count, err = 0, i;
+-
+-	memcpy(st, buf, sizeof(*st));
++	printk(KERN_INFO "%45s: %8x\n", str, buf[off]);
++}
+ 
+-	count = ds_recv_status_nodump(dev, st, buf, sizeof(buf));
+-	if (count < 0)
+-		return err;
++static void ds_dump_status(struct ds_device *dev, unsigned char *buf, int count)
++{
++	int i;
+ 
+-	printk("0x%x: count=%d, status: ", dev->ep[EP_STATUS], count);
++	printk(KERN_INFO "0x%x: count=%d, status: ", dev->ep[EP_STATUS], count);
+ 	for (i=0; i<count; ++i)
+ 		printk("%02x ", buf[i]);
+-	printk("\n");
++	printk(KERN_INFO "\n");
+ 
+ 	if (count >= 16) {
+-		ds_dump_status(buf, "enable flag", 0);
+-		ds_dump_status(buf, "1-wire speed", 1);
+-		ds_dump_status(buf, "strong pullup duration", 2);
+-		ds_dump_status(buf, "programming pulse duration", 3);
+-		ds_dump_status(buf, "pulldown slew rate control", 4);
+-		ds_dump_status(buf, "write-1 low time", 5);
+-		ds_dump_status(buf, "data sample offset/write-0 recovery time", 6);
+-		ds_dump_status(buf, "reserved (test register)", 7);
+-		ds_dump_status(buf, "device status flags", 8);
+-		ds_dump_status(buf, "communication command byte 1", 9);
+-		ds_dump_status(buf, "communication command byte 2", 10);
+-		ds_dump_status(buf, "communication command buffer status", 11);
+-		ds_dump_status(buf, "1-wire data output buffer status", 12);
+-		ds_dump_status(buf, "1-wire data input buffer status", 13);
+-		ds_dump_status(buf, "reserved", 14);
+-		ds_dump_status(buf, "reserved", 15);
++		ds_print_msg(buf, "enable flag", 0);
++		ds_print_msg(buf, "1-wire speed", 1);
++		ds_print_msg(buf, "strong pullup duration", 2);
++		ds_print_msg(buf, "programming pulse duration", 3);
++		ds_print_msg(buf, "pulldown slew rate control", 4);
++		ds_print_msg(buf, "write-1 low time", 5);
++		ds_print_msg(buf, "data sample offset/write-0 recovery time",
++			6);
++		ds_print_msg(buf, "reserved (test register)", 7);
++		ds_print_msg(buf, "device status flags", 8);
++		ds_print_msg(buf, "communication command byte 1", 9);
++		ds_print_msg(buf, "communication command byte 2", 10);
++		ds_print_msg(buf, "communication command buffer status", 11);
++		ds_print_msg(buf, "1-wire data output buffer status", 12);
++		ds_print_msg(buf, "1-wire data input buffer status", 13);
++		ds_print_msg(buf, "reserved", 14);
++		ds_print_msg(buf, "reserved", 15);
+ 	}
+-
+-	memcpy(st, buf, sizeof(*st));
+-
+-	if (st->status & ST_EPOF) {
+-		printk(KERN_INFO "Resetting device after ST_EPOF.\n");
+-		err = ds_send_control_cmd(dev, CTL_RESET_DEVICE, 0);
+-		if (err)
+-			return err;
+-		count = ds_recv_status_nodump(dev, st, buf, sizeof(buf));
+-		if (count < 0)
+-			return err;
++	for (i = 16; i < count; ++i) {
++		if (buf[i] == RR_DETECT) {
++			ds_print_msg(buf, "new device detect", i);
++			continue;
++		}
++		ds_print_msg(buf, "Result Register Value: ", i);
++		if (buf[i] & RR_NRS)
++			printk(KERN_INFO "NRS: Reset no presence or ...\n");
++		if (buf[i] & RR_SH)
++			printk(KERN_INFO "SH: short on reset or set path\n");
++		if (buf[i] & RR_APP)
++			printk(KERN_INFO "APP: alarming presence on reset\n");
++		if (buf[i] & RR_VPP)
++			printk(KERN_INFO "VPP: 12V expected not seen\n");
++		if (buf[i] & RR_CMP)
++			printk(KERN_INFO "CMP: compare error\n");
++		if (buf[i] & RR_CRC)
++			printk(KERN_INFO "CRC: CRC error detected\n");
++		if (buf[i] & RR_RDP)
++			printk(KERN_INFO "RDP: redirected page\n");
++		if (buf[i] & RR_EOS)
++			printk(KERN_INFO "EOS: end of search error\n");
+ 	}
+-
+-	return err;
+ }
+ 
+ static int ds_recv_data(struct ds_device *dev, unsigned char *buf, int size)
+@@ -307,9 +320,14 @@ static int ds_recv_data(struct ds_device *dev, unsigned char *buf, int size)
+ 	err = usb_bulk_msg(dev->udev, usb_rcvbulkpipe(dev->udev, dev->ep[EP_DATA_IN]),
+ 				buf, size, &count, 1000);
+ 	if (err < 0) {
++		u8 buf[0x20];
++		int count;
++
+ 		printk(KERN_INFO "Clearing ep0x%x.\n", dev->ep[EP_DATA_IN]);
+ 		usb_clear_halt(dev->udev, usb_rcvbulkpipe(dev->udev, dev->ep[EP_DATA_IN]));
+-		ds_recv_status(dev, &st);
++
++		count = ds_recv_status_nodump(dev, &st, buf, sizeof(buf));
++		ds_dump_status(dev, buf, count);
+ 		return err;
+ 	}
+ 
+@@ -390,7 +408,7 @@ int ds_detect(struct ds_device *dev, struct ds_status *st)
  	if (err)
  		return err;
  
--	count = 0;
--	do {
--		err = ds_wait_status(dev, &st);
--		if (err)
--			return err;
--
--		cmd = st.command0 | (st.command1 << 8);
--	} while (cmd != value && ++count < 10);
--
--	if (err < 0 || count >= 10) {
--		printk(KERN_ERR "Failed to obtain status.\n");
--		return -EINVAL;
--	}
-+	ds_wait_status(dev, &st);
+-	err = ds_recv_status(dev, st);
++	err = ds_dump_status(dev, st);
  
- 	err = ds_recv_data(dev, tbit, sizeof(*tbit));
- 	if (err < 0)
+ 	return err;
+ }
+@@ -415,11 +433,27 @@ static int ds_wait_status(struct ds_device *dev, struct ds_status *st)
+ #endif
+ 	} while(!(buf[0x08] & 0x20) && !(err < 0) && ++count < 100);
+ 
++	if (err >= 16 && st->status & ST_EPOF) {
++		printk(KERN_INFO "Resetting device after ST_EPOF.\n");
++		ds_send_control_cmd(dev, CTL_RESET_DEVICE, 0);
++		/* Always dump the device status. */
++		count = 101;
++	}
++
++	/* Dump the status for errors or if there is extended return data.
++	 * The extended status includes new device detection (maybe someone
++	 * can do something with it).
++	 */
++	if (err > 16 || count >= 100 || err < 0)
++		ds_dump_status(dev, buf, err);
+ 
+-	if (((err > 16) && (buf[0x10] & 0x01)) || count >= 100 || err < 0) {
+-		ds_recv_status(dev, st);
++	/* Extended data isn't an error.  Well, a short is, but the dump
++	 * would have already told the user that and we can't do anything
++	 * about it in software anyway.
++	 */
++	if (count >= 100 || err < 0)
+ 		return -1;
+-	} else
++	else
+ 		return 0;
+ }
+ 
 -- 
 1.4.4.4
