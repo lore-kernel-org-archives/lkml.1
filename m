@@ -1,111 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbYGaRp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbYGaRtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756573AbYGaRp7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 13:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYGaRpr
+	id S1755950AbYGaRtR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 13:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbYGaRtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 13:45:47 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:58030 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752919AbYGaRpq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 13:45:46 -0400
-Subject: memory hotplug: hot-add to ZONE_MOVABLE vs. min_free_kbytes
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080731132213.GF1704@csn.ul.ie>
-References: <20080723105318.81BC.E1E9C6FF@jp.fujitsu.com>
-	 <1217347653.4829.17.camel@localhost.localdomain>
-	 <20080730110444.27DE.E1E9C6FF@jp.fujitsu.com>
-	 <1217420161.4545.10.camel@localhost.localdomain>
-	 <20080731132213.GF1704@csn.ul.ie>
-Content-Type: text/plain
-Date: Thu, 31 Jul 2008 19:45:27 +0200
-Message-Id: <1217526327.4643.35.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+	Thu, 31 Jul 2008 13:49:01 -0400
+Received: from gw.goop.org ([64.81.55.164]:51596 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752744AbYGaRtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 13:49:00 -0400
+Message-ID: <4891FB0A.907@goop.org>
+Date: Thu, 31 Jul 2008 10:48:58 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: x86: Is there still value in having a special tlb flush IPI	vector?
+References: <488E534F.2030204@goop.org>	 <200807291430.08220.nickpiggin@yahoo.com.au>	 <1217325288.7563.2.camel@twins>	 <200807292000.30690.nickpiggin@yahoo.com.au> <1217328351.7563.12.camel@twins>
+In-Reply-To: <1217328351.7563.12.camel@twins>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-31 at 14:22 +0100, Mel Gorman wrote:
-> > The more memory we add to ZONE_MOVABLE, the less reserved pages will
-> > remain to the other zones. In setup_per_zone_pages_min(), min_free_kbytes
-> > will be redistributed to a zone where the kernel cannot make any use of
-> > it, effectively reducing the available min_free_kbytes. 
-> 
-> I'm not sure what you mean by "available min_free_kbytes". The overall value
-> for min_free_kbytes should be approximately the same whether the zone exists
-> or not. However, you're right in that the distribution of minimum free pages
-> changes with ZONE_MOVABLE because the zones are different sizes now. This
-> affects reclaim, not memory hot-remove.
+Peter Zijlstra wrote:
+> How about using just arch_send_call_function_single_ipi() to implement
+> smp_send_reschedule() ?
+>
+> The overhead of that is a smp_mb() and a list_empty() check in
+> generic_smp_call_function_single_interrupt() if there is indeed no work
+> to do.
+>   
 
-Sorry for mixing things up in this thread, the min_free_kbytes issue is
-not related to memory hot-remove, but rather to hot-add and the things that
-happen in setup_per_zone_pages_min(), which is called from online_pages().
-It may well be that my assumptions are wrong, but I'd like to explain my
-concerns again:
+Is doing a no-op interrupt sufficient on all architectures?  Is there
+some change a function call IPI might not go through the normal
+reschedule interrupt exit path?
 
-If we have a system with 1 GB of memory, min_free_kbytes will be calculated
-to 4 MB for ZONE_NORMAL, for example. Now, if we add 3 GB of hotplug memory
-to ZONE_MOVABLE, the total min_free_kbytes will still remain 4 MB but it
-will be distributed differently: ZONE_NORMAL will now have only 1 MB of
-MIGRATE_RESERVE memory left, while ZONE_MOVABLE will have 3 MB, e.g.
-
-My assumption is now, that the reserved 3 MB in ZONE_MOVABLE won't be
-usable by the kernel anymore, e.g. for PF_MEMALLOC, because it is in
-ZONE_MOVABLE now. This is what I mean with "effectively reducing the
-available min_free_kbytes". The system would now behave in the same way
-as a system which only had 1 MB of min_free_kbytes, although
-/proc/sys/vm/min_free_kbytes would still say 4 MB. After all, this tunable
-can have a rather negative impact on a system, especially if it is too
-low, hence my concerns.
-
-
-> > This just doesn't
-> > sound right. I believe that a similar situation is the reason why highmem
-> > pages are skipped in the calculation and I think that we need that for
-> > ZONE_MOVABLE too. Any thoughts on that problem?
-> > 
-> 
-> is_highmem(ZONE_MOVABLE) should be returning true if the zone is really
-> part of himem.
-
-We don't have highmem on s390, I was just trying to give an example: I
-noticed that there is special treatment for highmem pages in
-setup_per_zone_pages_min(), and thought that we may also need to handle
-ZONE_MOVABLE in a special way.
-
-
-> > Setting pages_min to 0 for ZONE_MOVABLE, while not capping pages_low
-> > and pages_high, could be an option. I don't have a sufficient memory
-> > managment overview to tell if that has negative side effects, maybe
-> > someone with a deeper insight could comment on that.
-> > 
-> 
-> pages_min of 0 means the other values would be 0 as well. This means that
-> kswapd may never be woken up to free pages within that zone and lead to
-> poor utilisation of the zone as allocators fallback to other zones to
-> avoid direct reclaim. I don't think that is your intention nor will it
-> help memory hot-remove.
-
-Do you mean pages_low and pages_high? In setup_per_zone_pages_min(),
-those would not be set to 0, even if we set pages_min to 0. Again, a
-similar strategy is being used for highmem in that function, only that
-pages_min is set to a small value instead of 0 in that case. So it should
-not affect kswapd but only __GFP_HIGH and PF_MEMALLOC allocations, which
-won't be allocated from ZONE_MOVABLE anyway if I understood that right.
-
-
-Thanks,
-Gerald
-
+    J
 
