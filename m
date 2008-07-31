@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760082AbYGaWvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760162AbYGaWvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760082AbYGaWvB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 18:51:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758248AbYGaWuL
+	id S1760162AbYGaWvd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 18:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758598AbYGaWuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 18:50:11 -0400
+	Thu, 31 Jul 2008 18:50:14 -0400
 Received: from fg-out-1718.google.com ([72.14.220.156]:57122 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757912AbYGaWuI (ORCPT
+	with ESMTP id S1758353AbYGaWuM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 18:50:08 -0400
+	Thu, 31 Jul 2008 18:50:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=q280tTiAytx7CW4IboVxLbV1ucgCT1WcI6ujH2Mi9ilBXSS15DpnbR+ViYBp1ZOm7F
-         CNrZw4qmFx0pyjJczkssfRZeeUGqp/oeaZNbxjmbAnJEhv+ZYH5lcB17ODIFt+votWQz
-         aalgBJx52y5/09d5lkjDkGfojGnm00OlvyJ+s=
+        b=Fw5YzePVTpncGu4HVzOiAKcYu3n+MR5FzD5DKqU3OWyDB/DfVOiqm9VySV0RGb24py
+         YYqBcWdQgSMg+NKk0VsgkDT69miGTby7NTWhbk77H0ky5hGuyD8fRKEekH52SVzmQckM
+         TmbIyBu5FgXOYI0JqPG/jrGqSqNHpqZpjQOhg=
 From: Andrea Righi <righi.andrea@gmail.com>
 To: akpm@linux-foundation.org, balbir@linux.vnet.ibm.com
 Cc: Matt Heaton <matt@bluehost.com>, Mark Seger <Mark.Seger@hp.com>,
        Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
        Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH -mm 2/4] implement distinct block device IO accounting
-Date: Fri,  1 Aug 2008 00:49:57 +0200
-Message-Id: <1217544599-8935-3-git-send-email-righi.andrea@gmail.com>
+Subject: [PATCH -mm 3/4] kernel->userspace interface
+Date: Fri,  1 Aug 2008 00:49:58 +0200
+Message-Id: <1217544599-8935-4-git-send-email-righi.andrea@gmail.com>
 X-Mailer: git-send-email 1.5.4.3
 In-Reply-To: <>
 References: <>
@@ -31,513 +31,252 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I/O statistics are stored in a rbtree (one for each thread or process), using
-the device number (dev_t) as key.
+Interface to export per task/thread/block device i/o statistics to userspace
+applications.
 
-Note: dev_t block devices are used without registering any usage reference; if
-a block device is removed the i/o statistics of the running processes remain
-valid, *but* if a new block device is plugged in and it gets the same dev_t
-number, then all the previous i/o statistics for the old device will be merged
-together with i/o statistics of the new device.
+Also simplify do_io_accounting() using seq_printf() to export aggregate i/o
+statistics.
 
 Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
 ---
- include/linux/task_io_accounting.h     |   59 ++++++++---
- include/linux/task_io_accounting_ops.h |  108 ++++++++++++-------
- init/Kconfig                           |    9 ++
- kernel/Makefile                        |    1 +
- kernel/task-io-accounting.c            |  180 ++++++++++++++++++++++++++++++++
- 5 files changed, 303 insertions(+), 54 deletions(-)
- create mode 100644 kernel/task-io-accounting.c
+ fs/proc/base.c |  178 ++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 167 insertions(+), 11 deletions(-)
 
-diff --git a/include/linux/task_io_accounting.h b/include/linux/task_io_accounting.h
-index 5e88afc..d7eb577 100644
---- a/include/linux/task_io_accounting.h
-+++ b/include/linux/task_io_accounting.h
-@@ -8,31 +8,32 @@
-  * Blame akpm@osdl.org for all this.
-  */
- 
--struct task_io_accounting {
--#ifdef CONFIG_TASK_XACCT
--	/* bytes read */
--	u64 rchar;
--	/*  bytes written */
--	u64 wchar;
--	/* # of read syscalls */
--	u64 syscr;
--	/* # of write syscalls */
--	u64 syscw;
--#endif /* CONFIG_TASK_XACCT */
-+#include <linux/rbtree.h>
-+#include <linux/fs.h>
- 
--#ifdef CONFIG_TASK_IO_ACCOUNTING
-+#ifndef _LINUX_TASK_IO_ACCOUNTING_H
-+#define _LINUX_TASK_IO_ACCOUNTING_H
-+
-+enum io_acct_ops {
-+	TASK_IO_ACCT_READ,
-+	TASK_IO_ACCT_WRITE,
-+	TASK_IO_ACCT_CANCELLED_WRITE,
-+};
-+
-+struct task_io_acct_node {
-+#ifdef CONFIG_TASK_IO_ACCOUNTING_BDEV
-+	struct rb_node node;
-+	dev_t dev;
- 	/*
- 	 * The number of bytes which this task has caused to be read from
- 	 * storage.
- 	 */
- 	u64 read_bytes;
--
- 	/*
- 	 * The number of bytes which this task has caused, or shall cause to be
- 	 * written to disk.
- 	 */
- 	u64 write_bytes;
--
- 	/*
- 	 * A task can cause "negative" IO too.  If this task truncates some
- 	 * dirty pagecache, some IO which another task has been accounted for
-@@ -41,5 +42,35 @@ struct task_io_accounting {
- 	 * information loss in doing that.
- 	 */
- 	u64 cancelled_write_bytes;
-+#endif /* CONFIG_TASK_IO_ACCOUNTING_BDEV */
-+};
-+
-+struct task_io_accounting {
-+#ifdef CONFIG_TASK_XACCT
-+	/* bytes read */
-+	u64 rchar;
-+	/*  bytes written */
-+	u64 wchar;
-+	/* # of read syscalls */
-+	u64 syscr;
-+	/* # of write syscalls */
-+	u64 syscw;
-+#endif /* CONFIG_TASK_XACCT */
-+#ifdef CONFIG_TASK_IO_ACCOUNTING
-+	u64 read_bytes;
-+	u64 write_bytes;
-+	u64 cancelled_write_bytes;
- #endif /* CONFIG_TASK_IO_ACCOUNTING */
-+#ifdef CONFIG_TASK_IO_ACCOUNTING_BDEV
-+	/*
-+	 * Red-Black tree to store each block device accounting informations.
-+	 */
-+	struct rb_root tree;
-+	/*
-+	 * Spinlock to manage red-black tree concurrent accesses.
-+	 */
-+	spinlock_t lock;
-+#endif
- };
-+
-+#endif /* _LINUX_TASK_IO_ACCOUNTING_H */
-diff --git a/include/linux/task_io_accounting_ops.h b/include/linux/task_io_accounting_ops.h
-index 4d090f9..5e27d06 100644
---- a/include/linux/task_io_accounting_ops.h
-+++ b/include/linux/task_io_accounting_ops.h
-@@ -4,92 +4,120 @@
- #ifndef __TASK_IO_ACCOUNTING_OPS_INCLUDED
- #define __TASK_IO_ACCOUNTING_OPS_INCLUDED
- 
-+#include <linux/kernel.h>
- #include <linux/sched.h>
-+#include <linux/fs.h>
-+#include <linux/rbtree.h>
-+#include <linux/spinlock.h>
-+
-+#ifdef CONFIG_TASK_IO_ACCOUNTING_BDEV
-+extern void block_device_acct(struct block_device *bdev, size_t bytes,
-+				enum io_acct_ops iop);
-+extern void task_io_account_cleanup(struct task_io_accounting *ioac);
-+extern void task_io_account_merge_stat(struct task_io_accounting *dst,
-+					struct task_io_accounting *src);
-+static inline void task_io_account_init(struct task_io_accounting *ioac)
-+{
-+	memset(ioac, 0, sizeof(*ioac));
-+	spin_lock_init(&ioac->lock);
-+	ioac->tree = RB_ROOT;
-+}
-+#else /* CONFIG_TASK_IO_ACCOUNTING_BDEV */
-+static inline void block_device_acct(struct block_device *bdev, size_t bytes,
-+					enum io_acct_ops iop)
-+{
-+}
-+static inline void task_io_account_merge_stat(struct task_io_accounting *dst,
-+					struct task_io_accounting *src)
-+{
-+}
-+static inline void task_io_account_init(struct task_io_accounting *ioac)
-+{
-+	memset(ioac, 0, sizeof(*ioac));
-+}
-+#define task_io_account_cleanup(__x)	task_io_account_init(__x)
-+#endif /* CONFIG_TASK_IO_ACCOUNTING_BDEV */
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 01ed610..c77d501 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -66,6 +66,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/kallsyms.h>
+ #include <linux/resource.h>
++#include <linux/task_io_accounting_ops.h>
+ #include <linux/module.h>
+ #include <linux/mount.h>
+ #include <linux/security.h>
+@@ -2401,7 +2402,8 @@ static int proc_base_fill_cache(struct file *filp, void *dirent,
+ }
  
  #ifdef CONFIG_TASK_IO_ACCOUNTING
--static inline void task_io_account_read(size_t bytes)
-+static inline void
-+task_io_account_read(struct block_device *bdev, size_t bytes)
+-static int do_io_accounting(struct task_struct *task, char *buffer, int whole)
++static void do_io_accounting(struct task_struct *task,
++				struct seq_file *m, int whole)
  {
- 	current->ioac.read_bytes += bytes;
-+	block_device_acct(bdev, bytes, TASK_IO_ACCT_READ);
+ 	struct task_io_accounting acct = task->ioac;
+ 	unsigned long flags;
+@@ -2409,14 +2411,13 @@ static int do_io_accounting(struct task_struct *task, char *buffer, int whole)
+ 	if (whole && lock_task_sighand(task, &flags)) {
+ 		struct task_struct *t = task;
+ 
+-		task_io_accounting_add(&acct, &task->signal->ioac);
++		task_io_account_add(&acct, &task->signal->ioac);
+ 		while_each_thread(task, t)
+-			task_io_accounting_add(&acct, &t->ioac);
++			task_io_account_add(&acct, &t->ioac);
+ 
+ 		unlock_task_sighand(task, &flags);
+ 	}
+-	return sprintf(buffer,
+-			"rchar: %llu\n"
++	seq_printf(m, "rchar: %llu\n"
+ 			"wchar: %llu\n"
+ 			"syscr: %llu\n"
+ 			"syscw: %llu\n"
+@@ -2429,17 +2430,166 @@ static int do_io_accounting(struct task_struct *task, char *buffer, int whole)
+ 			acct.cancelled_write_bytes);
  }
  
--/*
-- * We approximate number of blocks, because we account bytes only.
-- * A 'block' is 512 bytes
-- */
--static inline unsigned long task_io_get_inblock(const struct task_struct *p)
-+static inline void
-+task_io_account_write(struct block_device *bdev, size_t bytes)
+-static int proc_tid_io_accounting(struct task_struct *task, char *buffer)
++static int tid_io_accounting_show(struct seq_file *m, void *v)
  {
--	return p->ioac.read_bytes >> 9;
-+	current->ioac.write_bytes += bytes;
-+	block_device_acct(bdev, bytes, TASK_IO_ACCT_WRITE);
- }
- 
--static inline void task_io_account_write(size_t bytes)
-+static inline void
-+task_io_account_cancelled_write(struct block_device *bdev, size_t bytes)
- {
--	current->ioac.write_bytes += bytes;
-+	current->ioac.cancelled_write_bytes += bytes;
-+	block_device_acct(bdev, bytes, TASK_IO_ACCT_CANCELLED_WRITE);
- }
- 
- /*
-  * We approximate number of blocks, because we account bytes only.
-  * A 'block' is 512 bytes
-  */
--static inline unsigned long task_io_get_oublock(const struct task_struct *p)
--{
--	return p->ioac.write_bytes >> 9;
--}
--
--static inline void task_io_account_cancelled_write(size_t bytes)
-+static inline unsigned long task_io_get_inblock(const struct task_struct *p)
- {
--	current->ioac.cancelled_write_bytes += bytes;
-+	return p->ioac.read_bytes >> 9;
- }
- 
--static inline void task_io_accounting_init(struct task_io_accounting *ioac)
-+/*
-+ *  * We approximate number of blocks, because we account bytes only.
-+ *   * A 'block' is 512 bytes
-+ *    */
-+static inline unsigned long task_io_get_oublock(const struct task_struct *p)
- {
--	memset(ioac, 0, sizeof(*ioac));
-+	return p->ioac.write_bytes >> 9;
- }
- 
--static inline void task_blk_io_accounting_add(struct task_io_accounting *dst,
-+static inline void task_blk_io_account_add(struct task_io_accounting *dst,
- 						struct task_io_accounting *src)
- {
- 	dst->read_bytes += src->read_bytes;
- 	dst->write_bytes += src->write_bytes;
- 	dst->cancelled_write_bytes += src->cancelled_write_bytes;
- }
--
--#else
--
--static inline void task_io_account_read(size_t bytes)
-+#else  /* CONFIG_TASK_IO_ACCOUNTING */
-+static inline void task_io_account_read(struct block_device *bdev, size_t bytes)
- {
- }
- 
--static inline unsigned long task_io_get_inblock(const struct task_struct *p)
-+static inline void
-+task_io_account_write(struct block_device *bdev, size_t bytes)
- {
--	return 0;
- }
- 
--static inline void task_io_account_write(size_t bytes)
-+static inline void
-+task_io_account_cancelled_write(struct block_device *bdev, size_t bytes)
- {
- }
- 
--static inline unsigned long task_io_get_oublock(const struct task_struct *p)
-+static inline unsigned long task_io_get_inblock(const struct task_struct *p)
- {
- 	return 0;
- }
- 
--static inline void task_io_account_cancelled_write(size_t bytes)
--{
--}
--
--static inline void task_io_accounting_init(struct task_io_accounting *ioac)
-+static inline unsigned long task_io_get_oublock(const struct task_struct *p)
- {
+-	return do_io_accounting(task, buffer, 0);
++	struct inode *inode = m->private;
++	struct task_struct *task = get_proc_task(inode);
++
++	if (!task)
++		return -ESRCH;
++	do_io_accounting(task, m, 0);
++	put_task_struct(task);
 +	return 0;
  }
  
--static inline void task_blk_io_accounting_add(struct task_io_accounting *dst,
-+static inline void task_blk_io_account_add(struct task_io_accounting *dst,
- 						struct task_io_accounting *src)
+-static int proc_tgid_io_accounting(struct task_struct *task, char *buffer)
++static int tgid_io_accounting_show(struct seq_file *m, void *v)
  {
+-	return do_io_accounting(task, buffer, 1);
++	struct inode *inode = m->private;
++	struct task_struct *task = get_proc_task(inode);
++
++	if (!task)
++		return -ESRCH;
++	do_io_accounting(task, m, 1);
++	put_task_struct(task);
++	return 0;
  }
--
++
++static int tid_io_accounting_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, tid_io_accounting_show, inode);
++}
++
++static int tgid_io_accounting_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, tgid_io_accounting_show, inode);
++}
++
++static const struct file_operations proc_tid_io_accounting_operations = {
++	.open		= tid_io_accounting_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static const struct file_operations proc_tgid_io_accounting_operations = {
++	.open		= tgid_io_accounting_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
  #endif /* CONFIG_TASK_IO_ACCOUNTING */
  
- #ifdef CONFIG_TASK_XACCT
--static inline void task_chr_io_accounting_add(struct task_io_accounting *dst,
-+static inline void task_chr_io_account_add(struct task_io_accounting *dst,
- 						struct task_io_accounting *src)
- {
- 	dst->rchar += src->rchar;
-@@ -97,17 +125,17 @@ static inline void task_chr_io_accounting_add(struct task_io_accounting *dst,
- 	dst->syscr += src->syscr;
- 	dst->syscw += src->syscw;
- }
--#else
--static inline void task_chr_io_accounting_add(struct task_io_accounting *dst,
-+#else /* CONFIG_TASK_XACCT */
-+static inline void task_chr_io_account_add(struct task_io_accounting *dst,
- 						struct task_io_accounting *src)
- {
- }
- #endif /* CONFIG_TASK_XACCT */
- 
--static inline void task_io_accounting_add(struct task_io_accounting *dst,
-+static inline void task_io_account_add(struct task_io_accounting *dst,
- 						struct task_io_accounting *src)
- {
--	task_chr_io_accounting_add(dst, src);
--	task_blk_io_accounting_add(dst, src);
-+	task_chr_io_account_add(dst, src);
-+	task_blk_io_account_add(dst, src);
- }
- #endif /* __TASK_IO_ACCOUNTING_OPS_INCLUDED */
-diff --git a/init/Kconfig b/init/Kconfig
-index a451916..4e66bdf 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -215,6 +215,15 @@ config TASK_IO_ACCOUNTING
- 
- 	  Say N if unsure.
- 
-+config TASK_IO_ACCOUNTING_BDEV
-+	bool "Enable distinct block device I/O accounting (EXPERIMENTAL)"
-+	depends on TASK_IO_ACCOUNTING
-+	help
-+	  Collect informations on the number of bytes of real storage I/O which
-+	  each task has caused for each block device.
++#ifdef CONFIG_TASK_IO_ACCOUNTING_BDEV
 +
-+	  Say N if unsure.
++#define TASK_IO_ACCT_TID_STAT	0
++#define TASK_IO_ACCT_SIG_STAT	1
 +
- config AUDIT
- 	bool "Auditing support"
- 	depends on NET
-diff --git a/kernel/Makefile b/kernel/Makefile
-index dd58bdc..ef7cd1b 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -80,6 +80,7 @@ obj-$(CONFIG_RELAY) += relay.o
- obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
- obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
- obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
-+obj-$(CONFIG_TASK_IO_ACCOUNTING_BDEV) += task-io-accounting.o
- obj-$(CONFIG_MARKERS) += marker.o
- obj-$(CONFIG_LATENCYTOP) += latencytop.o
- obj-$(CONFIG_HAVE_GENERIC_DMA_COHERENT) += dma-coherent.o
-diff --git a/kernel/task-io-accounting.c b/kernel/task-io-accounting.c
-new file mode 100644
-index 0000000..ad4f427
---- /dev/null
-+++ b/kernel/task-io-accounting.c
-@@ -0,0 +1,180 @@
-+/*
-+ * Task I/O accounting operations
-+ *
-+ * 2008 July, rework by Andrea Righi <righi.andrea@gmail.com>
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/fs.h>
-+#include <linux/rbtree.h>
-+#include <linux/sched.h>
-+#include <linux/spinlock.h>
-+#include <linux/task_io_accounting.h>
-+#include <linux/task_io_accounting_ops.h>
-+
-+static struct task_io_acct_node *
-+ioac_search(const struct task_io_accounting *ioac, const dev_t dev)
++static void seq_printf_io_acct_dev(struct seq_file *m, struct pid_namespace *ns,
++			struct task_struct *task, int type,
++			struct task_io_acct_node *io)
 +{
-+	struct rb_node *node = (&ioac->tree)->rb_node;
++	pid_t tid = task_pid_nr_ns(task, ns);
 +
-+	while (node) {
-+		struct task_io_acct_node *data = container_of(node,
-+					struct task_io_acct_node, node);
-+		if (dev < data->dev)
-+			node = node->rb_left;
-+		else if (dev > data->dev)
-+			node = node->rb_right;
-+		else
-+			return data;
-+	}
-+	return NULL;
++	seq_printf(m, "%d %c %d,%d %llu %llu %llu\n",
++		tid, type ? 'c' : 't', MAJOR(io->dev), MINOR(io->dev),
++		io->read_bytes, io->write_bytes, io->cancelled_write_bytes);
 +}
 +
-+static int
-+ioac_insert(struct task_io_accounting *ioac, struct task_io_acct_node *data)
++/* Note: called with task->ioac.lock held */
++static void show_dev_io_accounting_single(struct pid_namespace *ns,
++				struct task_struct *task, struct seq_file *m)
 +{
-+	struct rb_root *root = &ioac->tree;
-+	struct rb_node **new = &(root->rb_node), *parent = NULL;
++	struct rb_node *n;
 +
-+	while (*new) {
-+		struct task_io_acct_node *this = container_of(*new,
-+					struct task_io_acct_node, node);
-+		parent = *new;
-+		if (data->dev < this->dev)
-+			new = &((*new)->rb_left);
-+		else if (data->dev > this->dev)
-+			new = &((*new)->rb_right);
-+		else
-+			return -EINVAL;
++	for (n = rb_first(&task->ioac.tree); n; n = rb_next(n)) {
++		struct task_io_acct_node *io = rb_entry(n,
++				struct task_io_acct_node, node);
++		seq_printf_io_acct_dev(m, ns, task,
++					TASK_IO_ACCT_TID_STAT, io);
 +	}
-+	rb_link_node(&data->node, parent, new);
-+	rb_insert_color(&data->node, root);
++}
++
++static void show_dev_io_accounting_whole(struct pid_namespace *ns,
++				struct task_struct *task, struct seq_file *m)
++{
++	struct rb_node *n;
++	struct task_struct *t = task;
++	struct signal_struct *sig = task->signal;
++	unsigned long flags;
++
++	if (!lock_task_sighand(task, &flags))
++		return;
++	do {
++		spin_lock(&t->ioac.lock);
++		show_dev_io_accounting_single(ns, t, m);
++		spin_unlock(&t->ioac.lock);
++	} while_each_thread(task, t);
++
++	/* no need to lock sig->ioac.lock here, just use lock_task_sighand() */
++	for (n = rb_first(&sig->ioac.tree); n; n = rb_next(n)) {
++		struct task_io_acct_node *io = rb_entry(n,
++					struct task_io_acct_node, node);
++		seq_printf_io_acct_dev(m, ns, task,
++					TASK_IO_ACCT_SIG_STAT, io);
++	}
++	unlock_task_sighand(task, &flags);
++}
++
++static int bdev_tid_io_accounting_show(struct seq_file *m, void *v)
++{
++	struct inode *inode = m->private;
++	struct pid_namespace *ns = inode->i_sb->s_fs_info;
++	struct task_struct *task = get_proc_task(inode);
++
++	if (!task)
++		return -ESRCH;
++	spin_lock_irq(&task->ioac.lock);
++	show_dev_io_accounting_single(ns, task, m);
++	spin_unlock_irq(&task->ioac.lock);
++
++	put_task_struct(task);
 +	return 0;
 +}
 +
-+void task_io_account_merge_stat(struct task_io_accounting *dst,
-+				struct task_io_accounting *src)
++static int bdev_tgid_io_accounting_show(struct seq_file *m, void *v)
 +{
-+	struct task_io_acct_node *io_src, *io_dst;
-+	struct rb_node *next;
++	struct inode *inode = m->private;
++	struct pid_namespace *ns = inode->i_sb->s_fs_info;
++	struct task_struct *task = get_proc_task(inode);
 +
-+	if (unlikely(src == dst)) {
-+		WARN_ON(1);
-+		return;
-+	}
-+	next = rb_first(&src->tree);
-+	while (next) {
-+		io_src = rb_entry(next, struct task_io_acct_node, node);
-+		next = rb_next(&io_src->node);
-+		rb_erase(&io_src->node, &src->tree);
++	if (!task)
++		return -ESRCH;
++	show_dev_io_accounting_whole(ns, task, m);
 +
-+		spin_lock(&dst->lock);
-+		io_dst = ioac_search(dst, io_src->dev);
-+		if (io_dst) {
-+			io_dst->read_bytes += io_src->read_bytes;
-+			io_dst->write_bytes += io_src->write_bytes;
-+			io_dst->cancelled_write_bytes +=
-+					io_src->cancelled_write_bytes;
-+			kfree(io_src);
-+		} else {
-+			if (unlikely(ioac_insert(dst, io_src) < 0))
-+				WARN_ON(1);
-+		}
-+		spin_unlock(&dst->lock);
-+	}
++	put_task_struct(task);
++	return 0;
 +}
 +
-+void task_io_account_cleanup(struct task_io_accounting *ioac)
++static int bdev_tid_io_accounting_open(struct inode *inode, struct file *file)
 +{
-+	struct task_io_acct_node *data;
-+	struct rb_node *next;
-+
-+	ioac->read_bytes = 0;
-+	ioac->write_bytes = 0;
-+	ioac->cancelled_write_bytes = 0;
-+
-+	next = rb_first(&ioac->tree);
-+	while (next) {
-+		data = rb_entry(next, struct task_io_acct_node, node);
-+		next = rb_next(&data->node);
-+		rb_erase(&data->node, &ioac->tree);
-+		kfree(data);
-+	}
++	return single_open(file, bdev_tid_io_accounting_show, inode);
 +}
 +
-+static inline u64 *
-+task_io_acct_node_member(struct task_io_acct_node *io, enum io_acct_ops iop)
++static int bdev_tgid_io_accounting_open(struct inode *inode, struct file *file)
 +{
-+	switch (iop) {
-+	case TASK_IO_ACCT_READ:
-+		return &io->read_bytes;
-+	case TASK_IO_ACCT_WRITE:
-+		return &io->write_bytes;
-+	case TASK_IO_ACCT_CANCELLED_WRITE:
-+		return &io->cancelled_write_bytes;
-+	}
-+	BUG();
-+	return NULL;
++	return single_open(file, bdev_tgid_io_accounting_show, inode);
 +}
 +
-+static int block_device_acct_dev(dev_t dev, size_t bytes, enum io_acct_ops iop)
-+{
-+	struct task_io_acct_node *io;
++static const struct file_operations proc_bdev_tid_io_accounting_operations = {
++	.open		= bdev_tid_io_accounting_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
 +
-+	io = ioac_search(&current->ioac, dev);
-+	if (likely(io))	{
-+		u64 *val = task_io_acct_node_member(io, iop);
-+		*val += bytes;
-+		return 0;
-+	}
-+	return -ENOENT;
-+}
++static const struct file_operations proc_bdev_tgid_io_accounting_operations = {
++	.open		= bdev_tgid_io_accounting_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++#endif /* CONFIG_TASK_IO_ACCOUNTING_BDEV */
 +
-+void block_device_acct(struct block_device *bdev, size_t bytes,
-+				enum io_acct_ops iop)
-+{
-+	struct task_io_acct_node *io;
-+	dev_t dev;
-+
-+	if (!bdev)
-+		return;
-+
-+	BUG_ON(!bdev->bd_inode || !bdev->bd_disk);
-+	dev = bdev->bd_inode->i_rdev;
-+
-+	spin_lock_irq(&current->ioac.lock);
-+	if (likely(!block_device_acct_dev(dev, bytes, iop))) {
-+		spin_unlock_irq(&current->ioac.lock);
-+		return;
-+	}
-+	spin_unlock_irq(&current->ioac.lock);
-+	/*
-+	 * Accessing a new block device for the first time: initialize a new
-+	 * element to store i/o statistics.
-+	 */
-+	io = kzalloc(sizeof(*io), GFP_KERNEL);
-+	if (unlikely(!io) && printk_ratelimit()) {
-+		printk(KERN_WARNING
-+			"not enough memory to account i/o stats on %d,%d\n",
-+			MAJOR(dev), MINOR(dev));
-+		return;
-+	}
-+	RB_CLEAR_NODE(&io->node);
-+	io->dev = dev;
-+	spin_lock_irq(&current->ioac.lock);
-+	if (likely(!ioac_insert(&current->ioac, io))) {
-+		u64 *val = task_io_acct_node_member(io, iop);
-+		*val = bytes;
-+		spin_unlock_irq(&current->ioac.lock);
-+		return;
-+	}
-+	/*
-+	 * It seems the new element has been alredy added by another cpu in the
-+	 * while: just update pending statistics.
-+	 */
-+	if (unlikely(block_device_acct_dev(dev, bytes, iop) < 0))
-+		WARN_ON(1);
-+	spin_unlock_irq(&current->ioac.lock);
-+	kfree(io);
-+}
+ /*
+  * Thread groups
+  */
+@@ -2513,7 +2663,10 @@ static const struct pid_entry tgid_base_stuff[] = {
+ 	REG("coredump_filter", S_IRUGO|S_IWUSR, coredump_filter),
+ #endif
+ #ifdef CONFIG_TASK_IO_ACCOUNTING
+-	INF("io",	S_IRUGO, tgid_io_accounting),
++	REG("io",	S_IRUGO, tgid_io_accounting),
++#endif
++#ifdef CONFIG_TASK_IO_ACCOUNTING_BDEV
++	REG("blockio",	S_IRUGO, bdev_tgid_io_accounting),
+ #endif
+ };
+ 
+@@ -2844,7 +2997,10 @@ static const struct pid_entry tid_base_stuff[] = {
+ 	REG("make-it-fail", S_IRUGO|S_IWUSR, fault_inject),
+ #endif
+ #ifdef CONFIG_TASK_IO_ACCOUNTING
+-	INF("io",	S_IRUGO, tid_io_accounting),
++	REG("io",	S_IRUGO, tid_io_accounting),
++#endif
++#ifdef CONFIG_TASK_IO_ACCOUNTING_BDEV
++	REG("blockio",	S_IRUGO, bdev_tid_io_accounting),
+ #endif
+ };
+ 
 -- 
 1.5.4.3
 
