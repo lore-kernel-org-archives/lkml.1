@@ -1,88 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYGaHw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbYGaH7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbYGaHw0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 03:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYGaHwR
+	id S1754215AbYGaH7T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 03:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYGaH7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 03:52:17 -0400
-Received: from mga09.intel.com ([134.134.136.24]:24070 "EHLO mga09.intel.com"
+	Thu, 31 Jul 2008 03:59:06 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:35762 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753333AbYGaHwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 03:52:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,285,1215414000"; 
-   d="scan'208";a="321663258"
-Subject: Re: VolanoMark regression with 2.6.27-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1217489949.8157.78.camel@twins>
-References: <1217474425.25608.150.camel@ymzhang>
-	 <1217489463.25608.157.camel@ymzhang>  <1217489949.8157.78.camel@twins>
-Content-Type: text/plain
-Date: Thu, 31 Jul 2008 15:49:20 +0800
-Message-Id: <1217490560.25608.168.camel@ymzhang>
+	id S1751455AbYGaH7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 03:59:03 -0400
+Date: Thu, 31 Jul 2008 17:58:54 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for July 31
+Message-Id: <20080731175854.09ea35c8.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__31_Jul_2008_17_58_54_+1000_Pm2G/ysQJ1IoymS5"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Thu__31_Jul_2008_17_58_54_+1000_Pm2G/ysQJ1IoymS5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2008-07-31 at 09:39 +0200, Peter Zijlstra wrote:
-> On Thu, 2008-07-31 at 15:31 +0800, Zhang, Yanmin wrote:
-> > On Thu, 2008-07-31 at 11:20 +0800, Zhang, Yanmin wrote:
-> > > Ingo,
-> > > 
-> > > volanoMark has regression with 2.6.27-rc1.
-> > > 1) 70% on 16-core tigerton;
-> > > 2) 18% on a new multi-core+HT mahcine;
-> > > 
-> > > I tried to use git bisect to locate the root cause, but git bisect always went
-> > > back to 2.6.26. Then, I used my mechanical bisect script linearly to locate below commit:
-> > > 
-> > > commit 82638844d9a8581bbf33201cc209a14876eca167
-> > > Merge: 9982fbf... 63cf13b...
-> > > Author: Ingo Molnar <mingo@elte.hu>
-> > > Date:   Wed Jul 16 00:29:07 2008 +0200
-> > > 
-> > >     Merge branch 'linus' into cpus4096
-> > > 
-> > >     Conflicts:
-> > > 
-> > >         arch/x86/xen/smp.c
-> > >         kernel/sched_rt.c
-> > >         net/iucv/iucv.c
-> > > 
-> > >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > 
-> > > 
-> > > 
-> > > But if I use 'git show 82638844d9a8581bbf33201cc209a14876eca167', it looks like I could only
-> > > get a part of the patch. If I use web to acces the commit, I could get a big patch. As it's
-> > > a merge, what're commit numbers of the subpatches?
-> > > 
-> > > 
-> > > BTW, sysbench+mysql(oltp readonly) has about 15% regression, but git bisect looks crazy again.
-> 
-> > Oh, it looks like they are the old issues in 2.6.26-rc1 and the 2 patches were reverted before 2.6.26.
-> > New patches are merged into 2.6.27-rc1, but the issues are still not resolved clearly.
-> > http://www.uwsg.iu.edu/hypermail/linux/kernel/0805.2/1148.html.
-> 
-> The new smp-group stuff doesn't remotely look like what was in .26
-> 
-> Also, on my quad (admittedly smaller than your machines) both volano and
-> sysbench didn't regress anymore - where they clearly did with the code
-> reverted from .26.
-The regression I reported exists on:
-1) 8-core+HT(totally 16 logical processor) tulsa: 40% regression with volano, 8% with oltp;
-2) 8-core+HT Montvale Itanium: 9% regression with volano; 8% with oltp;
-3) 16-core tigerton: %70 with volano, %18 with oltp;
-4) 8-core stoakley: %15 with oltp, testing failed with volanoMark.
+Hi all,
 
-So the issues are popular on different architectures.
+Changes since next-20080730:
 
-yanmin
+New tree: agp
 
+Temporarily dropped trees: acpi (it is being moved to a new tree and is
+just accumulating conflicts against Linus' tree).
+	v4l-dvb (got lots of conflicts against the version that was
+merged to Linus).
 
+The driver-core.current tree lost its conflict against Linus' tree.
+
+The driver-core tree gained a patch for a boot problem.
+
+The x86 tree gained a conflict against Linus' tree.
+
+The m68k tree gained a trivial conflict against Linus' tree.
+
+I have also applied the following patch for a known problem:
+
+	hfcmulti is not supported on big endian
+
+The sparc(32) defconfig build still fails - this is probably a toolchain
+problem.  I have fixed this by reverting the these commits from Linus'
+tree:
+
+	UFS: add const to parser token table (f9247273cb69ba101877e946d2d83044409c=
+c8c5)
+	fix fs/nfs/nfsroot.c compilation (fb2e405fc1fc8b20d9c78eaa1c7fd5a297efde43)
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 105 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Applying move iommu_num_pages helper to x86
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging quilt/driver-core
+Applying driver-core: kobject verification fixup
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+CONFLICT (content): Merge conflict in net/sunrpc/svc.c
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/genapic_64.c
+CONFLICT (content): Merge conflict in drivers/pci/dmar.c
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/kernel-doc
+Merging avr32/avr32-arch
+Merging s390/features
+Merging sh/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging hwmon/testing
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ia64/test
+Merging tests/master
+Merging ocfs2/linux-next
+Merging quilt/m68k
+CONFLICT (content): Merge conflict in init/main.c
+Merging powerpc/next
+Merging ext4/next
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging sparc/master
+Merging galak/powerpc-next
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging arm/devel
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+Merging bkl-removal/bkl-removal
+Merging trivial/next
+CONFLICT (content): Merge conflict in Documentation/edac.txt
+CONFLICT (content): Merge conflict in include/linux/securebits.h
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Kconfig
+CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging m68knommu/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging cris/for-next
+Merging kmemcheck/auto-kmemcheck-next
+Merging generic-ipi/auto-generic-ipi-next
+Merging mips/mips-for-linux-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (add/add): Merge conflict in drivers/gpu/Makefile
+CONFLICT (add/add): Merge conflict in drivers/gpu/drm/i830/Makefile
+CONFLICT (content): Merge conflict in include/Kbuild
+CONFLICT (add/add): Merge conflict in include/drm/Kbuild
+Merging voltage/reg-for-linus
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Applying hfcmulti is not supported on big endian
+Created commit 2982340: Revert "fix fs/nfs/nfsroot.c compilation"
+Created commit 283af7d: Revert "UFS: add const to parser token table"
+
+--Signature=_Thu__31_Jul_2008_17_58_54_+1000_Pm2G/ysQJ1IoymS5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiRcL4ACgkQjjKRsyhoI8wn5QCfZAL1/ysX8nGUGWC7p+ZuqZBW
+Kh0An3nhi+/xpm7FzM3y6xUeXZsrFG9m
+=K5eo
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__31_Jul_2008_17_58_54_+1000_Pm2G/ysQJ1IoymS5--
