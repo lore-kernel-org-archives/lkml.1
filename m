@@ -1,80 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758990AbYGaBNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758420AbYGaBPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758990AbYGaBNN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 21:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbYGaBMq
+	id S1758420AbYGaBPK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 21:15:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYGaBO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 21:12:46 -0400
-Received: from waste.org ([66.93.16.53]:54520 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755172AbYGaBMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 21:12:45 -0400
-Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
-From: Matt Mackall <mpm@selenic.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       vegard.nossum@gmail.com, hannes@saeurebad.de
-In-Reply-To: <alpine.LFD.1.10.0807301457020.3277@nehalem.linux-foundation.org>
-References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>
-	 <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com>
-	 <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org>
-	 <1199314218.4497.109.camel@cinder.waste.org>
-	 <20080103085239.GA10813@elte.hu>
-	 <1199378818.8274.25.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>
-	 <1199419890.4608.77.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>
-	 <1199641910.8215.28.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>
-	 <1199906151.6245.57.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>
-	 <1199919548.6245.74.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI>
-	 <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI>
-	 <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0807310045020.22702@sbz-30.cs.Helsinki.FI>
-	 <alpine.LFD.1.10.0807301457020.3277@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 30 Jul 2008 20:09:43 -0500
-Message-Id: <1217466583.18911.226.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Wed, 30 Jul 2008 21:14:56 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:1107 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750935AbYGaBOz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 21:14:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=qoMfX5lavkchEoH37tdjVyHPjwnKoZWTUtPuq31GFcCmZqpBByMBd6N1hRMvX2rogz
+         Oju6YX7Jvz01YSYo6G6WHn6r82MCwhPgUB9GiGF7dQ3Jmoqu+70itzIP2ojAgl6EKYXd
+         NQhiI7zTVhb7A5Aj9NdywaFlyNKLw67N4mogw=
+Message-ID: <919fe2b30807301814t5973fa29gb092890bbd135f6e@mail.gmail.com>
+Date: Wed, 30 Jul 2008 21:14:53 -0400
+From: "M. Asselstine" <asselsm@mcmaster.ca>
+To: "Alexander Beregalov" <a.beregalov@gmail.com>
+Subject: Re: [PATCH] atyfb_base.c: fix warning
+Cc: syrjala@sci.fi, adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080730210352.GA29355@orion>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080730210352.GA29355@orion>
+X-Google-Sender-Auth: 048918936e1afd11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 30, 2008 at 5:03 PM, Alexander Beregalov
+<a.beregalov@gmail.com> wrote:
+> From: Alexander Beregalov <a.beregalov@gmail.com>
+>
+> atyfb_base.c: fix warning
+>
+> drivers/video/aty/atyfb_base.c:2663: warning: 'aty_resume_chip' defined
+> but not used
+>
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> Cc: Ville Syrjala <syrjala@sci.fi>
+> Cc: Antonino A. Daplas <adaplas@pol.net>
 
-On Wed, 2008-07-30 at 15:00 -0700, Linus Torvalds wrote:
-> 
-> On Thu, 31 Jul 2008, Pekka J Enberg wrote:
-> > 
-> > Subject: [PATCH] binalloc: best-fit allocation with binning
-> > From: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> Shoot me now. 
-> 
-> > As suggested by Linus,
-> 
-> I'm happy to hear that the thing worked, but I'm not sure how happy I 
-> should be about yet _another_ allocator. Will it ever end?
+Looks good, should you maybe move the aty_resume_chip() up into the
+existing #if defined(CONFIG_PM) &&... that atyfb_pci_resume() is in?
+Not sure, just a thought.
 
-I think you can relax: the logical limit is probably two. We want an
-allocator that is both optimally fast and scalable on one end and
-optimally space-efficient on the other end and we're unlikely to find
-one allocator that is simultaneously both. But I don't think there's
-much call for things in the middle of the spectrum.
+Reviewed-by: Mark Asselstine <asselsm@gmail.com>
 
-So if this new one (which I haven't looked at yet) beats SLOB in space
-usage and simplicity, I'll be happy to see it replace SLOB.
-
-Finally getting rid of SLAB is a much trickier proposition because SLUB
-still loses in a few important corner cases.
-
--- 
-Mathematics is the supreme nostalgia of our time.
-
+> ---
+>
+>  drivers/video/aty/atyfb_base.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+> index 620ba81..9e5dfb1 100644
+> --- a/drivers/video/aty/atyfb_base.c
+> +++ b/drivers/video/aty/atyfb_base.c
+> @@ -244,7 +244,9 @@ static int atyfb_sync(struct fb_info *info);
+>      */
+>
+>  static int aty_init(struct fb_info *info);
+> +#if defined(CONFIG_PM) && defined(CONFIG_PCI)
+>  static void aty_resume_chip(struct fb_info *info);
+> +#endif
+>  #ifdef CONFIG_ATARI
+>  static int store_video_par(char *videopar, unsigned char m64_num);
+>  #endif
+> @@ -2659,6 +2661,7 @@ aty_init_exit:
+>        return ret;
+>  }
+>
+> +#if defined(CONFIG_PM) && defined(CONFIG_PCI)
+>  static void aty_resume_chip(struct fb_info *info)
+>  {
+>        struct atyfb_par *par = info->par;
+> @@ -2671,6 +2674,7 @@ static void aty_resume_chip(struct fb_info *info)
+>        if (par->aux_start)
+>                aty_st_le32(BUS_CNTL, aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
+>  }
+> +#endif /* defined(CONFIG_PM) && defined(CONFIG_PCI) */
+>
+>  #ifdef CONFIG_ATARI
+>  static int __devinit store_video_par(char *video_str, unsigned char m64_num)
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
