@@ -1,104 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbYGaLwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbYGaLxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755470AbYGaLwU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 07:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbYGaLwL
+	id S1752751AbYGaLxS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 07:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750835AbYGaLxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 07:52:11 -0400
-Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:26108 "HELO
-	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750835AbYGaLwK (ORCPT
+	Thu, 31 Jul 2008 07:53:00 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:57027 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751613AbYGaLw7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 07:52:10 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=yKqCOAvX+6uSgkCFZArT4tXCsH5JTm+WAfrwPJ8A4DbZXOOlCNlIlYNAwUoiU+ie/kFraIHgFVkFAK3OFJ/WvOhO/PdLlRnROHHJ2MKDOWhlIxI01XmfyO4Qk7amVQetIljgutuVRvXRZvpMuGAe7jyzzmd4EW79UPEhOgfdk7A=  ;
-X-YMail-OSG: hs2oop0VM1kNqSQsJSTKJMDzKk.e27d0ZIGO6doEu7i_JBpN0BrE7ZkhsIkhPSeF2L_3DP9DWuF1SirN84XaVteE3ICUPCTsHDnJV4DEgE7Ud7Z_lhHgV0CleiZ.zddZ9DE-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Date: Thu, 31 Jul 2008 21:51:56 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eric Munson <ebmunson@us.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       libhugetlbfs-devel@lists.sourceforge.net
-References: <cover.1216928613.git.ebmunson@us.ibm.com> <200807311626.15709.nickpiggin@yahoo.com.au> <20080731112734.GE1704@csn.ul.ie>
-In-Reply-To: <20080731112734.GE1704@csn.ul.ie>
+	Thu, 31 Jul 2008 07:52:59 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <200807291414.55479.yhlu.kernel@gmail.com>
+	<200807302109.21519.yhlu.kernel@gmail.com>
+	<200807302110.10585.yhlu.kernel@gmail.com>
+	<200807310126.12572.yhlu.kernel@gmail.com>
+Date: Thu, 31 Jul 2008 04:50:21 -0700
+In-Reply-To: <200807310126.12572.yhlu.kernel@gmail.com> (Yinghai Lu's message
+	of "Thu, 31 Jul 2008 01:26:12 -0700")
+Message-ID: <m1iqum2rya.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807312151.56847.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Yinghai Lu <yhlu.kernel@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.1522]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] serial: change remove NR_IRQS in 8250.c
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 31 July 2008 21:27, Mel Gorman wrote:
-> On (31/07/08 16:26), Nick Piggin didst pronounce:
+> replace
+> 	[PATCH] serial: change irq_lists to use dyn_array
+> use small array with index to handle irq locking for serial port
+> hope 32 slot is enough
 
-> > I imagine it should be, unless you're using a CPU with seperate TLBs for
-> > small and huge pages, and your large data set is mapped with huge pages,
-> > in which case you might now introduce *new* TLB contention between the
-> > stack and the dataset :)
->
-> Yes, this can happen particularly on older CPUs. For example, on my
-> crash-test laptop the Pentium III there reports
->
-> TLB and cache info:
-> 01: Instruction TLB: 4KB pages, 4-way set assoc, 32 entries
-> 02: Instruction TLB: 4MB pages, 4-way set assoc, 2 entries
+Could you size this array by NR_UARTS (our worst case usage)
+and place irq_no in struct irq_info?
 
-Oh? Newer CPUs tend to have unified TLBs?
+Also you want to hold irq_info->lock when you set or clear irq_no.
+Just to be on the safe side.  I expect we can avoid clearing the irq_no
+in the irq_lists and prevent a few more races from being a possibility.
 
-
-> > Also, interestingly I have actually seen some CPUs whos memory operations
-> > get significantly slower when operating on large pages than small (in the
-> > case when there is full TLB coverage for both sizes). This would make
-> > sense if the CPU only implements a fast L1 TLB for small pages.
->
-> It's also possible there is a micro-TLB involved that only support small
-> pages.
-
-That is the case on a couple of contemporary CPUs I've tested with
-(although granted they are engineering samples, but I don't expect
-that to be the cause)
-
-
-> > So for the vast majority of workloads, where stacks are relatively small
-> > (or slowly changing), and relatively hot, I suspect this could easily
-> > have no benefit at best and slowdowns at worst.
->
-> I wouldn't expect an application with small stacks to request its stack
-> to be backed by hugepages either. Ideally, it would be enabled because a
-> large enough number of DTLB misses were found to be in the stack
-> although catching this sort of data is tricky.
-
-Sure, as I said, I have nothing against this functionality just because
-it has the possibility to cause a regression. I was just pointing out
-there are a few possibilities there, so it will take a particular type
-of app to take advantage of it. Ie. it is not something you would ever
-just enable "just in case the stack starts thrashing the TLB".
-
-
-> > But I'm not saying that as a reason not to merge it -- this is no
-> > different from any other hugepage allocations and as usual they have to
-> > be used selectively where they help.... I just wonder exactly where huge
-> > stacks will help.
->
-> Benchmark wise, SPECcpu and SPEComp have stack-dependent benchmarks.
-> Computations that partition problems with recursion I would expect to
-> benefit as well as some JVMs that heavily use the stack (see how many docs
-> suggest setting ulimit -s unlimited). Bit out there, but stack-based
-> languages would stand to gain by this. The potential gap is for threaded
-> apps as there will be stacks that are not the "main" stack.  Backing those
-> with hugepages depends on how they are allocated (malloc, it's easy,
-> MAP_ANONYMOUS not so much).
-
-Oh good, then there should be lots of possibilities to demonstrate it.
-
-Thanks,
-Nick
+Eric
