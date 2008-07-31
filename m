@@ -1,412 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752019AbYGaM3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752527AbYGaMe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752019AbYGaM3r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 08:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYGaM3e
+	id S1752527AbYGaMe1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 08:34:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbYGaMeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 08:29:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56079
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751101AbYGaM3c (ORCPT
+	Thu, 31 Jul 2008 08:34:15 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:39851 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751017AbYGaMeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 08:29:32 -0400
-Date: Thu, 31 Jul 2008 05:29:32 -0700 (PDT)
-Message-Id: <20080731.052932.110299354.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: johannes@sipsolutions.net, netdev@axxeo.de, peterz@infradead.org,
-       Larry.Finger@lwfinger.net, kaber@trash.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, mingo@redhat.com
-Subject: Re: Kernel WARNING: at net/core/dev.c:1330
- __netif_schedule+0x2c/0x98()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080727203757.GA2527@ami.dom.local>
-References: <20080726131838.GA2873@ami.dom.local>
-	<20080726.173434.48036095.davem@davemloft.net>
-	<20080727203757.GA2527@ami.dom.local>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jul 2008 08:34:12 -0400
+Date: Thu, 31 Jul 2008 13:33:50 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch v3] splice: fix race with page invalidation
+Message-ID: <20080731123350.GB16481@shareable.org>
+References: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu> <20080731001131.GA30900@shareable.org> <20080731004214.GA32207@shareable.org> <alpine.LFD.1.10.0807301746500.3277@nehalem.linux-foundation.org> <20080731061201.GA7156@shareable.org> <20080731102612.GA29766@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080731102612.GA29766@2ka.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Sun, 27 Jul 2008 22:37:57 +0200
+Evgeniy Polyakov wrote:
+> On Thu, Jul 31, 2008 at 07:12:01AM +0100, Jamie Lokier (jamie@shareable.org) wrote:
+> > The obvious mechanism for completion notifications is the AIO event
+> > interface.  I.e. aio_sendfile that reports completion when it's safe
+> > to modify data it was using.  aio_splice would be logical for similar
+> > reasons.  Note it doesn't mean when the data has reached a particular
+> > place, it means when the pages it's holding are released.  Pity AIO
+> > still sucks ;-)
+> 
+> It is not that simple: page can be held in hardware or tcp queues for
+> a long time, and the only possible way to know, that system finished
+> with it, is receiving ack from the remote side. There is a project to
+> implement such a callback at skb destruction time (it is freed after ack
+> from the other peer), but do we really need it? System which does care
+> about transmit will implement own ack mechanism, so page can be unlocked
+> at higher layer. Actually page can be locked during transfer and
+> unlocked after rpc reply received, so underlying page invalidation will
+> be postponed and will not affect sendfile/splice.
 
-> Looks like enough to me. (Probably it could even share space with
-> the state.)
+This is why marking the pages COW would be better.  Automatic!
+There's no need for a notification, merely letting go of the page
+references - yes, the hardware / TCP acks already do that, no locking
+or anything!  :-)  The last reference is nothing special, it just means
+the next file write/truncate sees the count is 1 and doesn't need to
+COW the page.
 
-So I made some progress on this, three things:
 
-1) I remember why I choose a to use a bit in my design, it's so that
-   it does not increase the costs of the checks in the fast paths.
-   test_bit(X) && test_bit(Y) can be combined into a single test by
-   the compiler.
+Two reason for being mildly curious about sendfile page releases in an
+application though:
 
-2) We can't use the reference counting scheme, because we don't want
-   to let a second cpu into these protected code paths just because
-   another is in the middle of using a freeze too.
+   - Sendfile on tmpfs files: zero copy sending of calculated data.
+     Only trouble is when can you reuse the pages?  Current solution
+     is use a set of files, consume the pages in sequential order, delete
+     files at some point, let the kernel hold the pages.  Works for
+     sequentially generated and transmitted data, but not good for
+     userspace caches where different parts expire separately.  Also,
+     may pin a lot of page cache; not sure if that's accounted.
 
-3) So we can simply put a top-level TX spinlock around these things.
+   - Sendfile on real large data contained in a userspace
+     database-come-filesystem (the future!).  App wants to send big
+     blobs, and with COW it can forget about them, but for performance
+     it would rathe allocate new writes in the file to areas that are
+     not sendfile-hot.  It can approximate with heuristics though.
 
-Therefore all the hot paths:
+> > Btw, Windows had this since forever, it's called overlapped
+> > TransmitFile with an I/O completion event.  Don't know if it's any
+> > good though ;-)
+> 
+> There was a linux aio_sendfile() too. Google still knows about its
+> numbers, graphs and so on... :)
 
-a) grab _xmit_lock
-b) check XOFF and FROZEN
-c) only call ->hard_start_xmit() if both bits are clear
+I vaguely remember it's performance didn't seem that good.
 
-netif_tx_lock() does:
+One of the problems is you don't really want AIO all the time, just
+when a process would block because the data isn't in cache.  You
+really don't want to be sending *all* ops to worker threads, even
+kernel threads.  And you preferably don't want the AIO interface
+overhead for ops satisfied from cache.
 
-1) grab netdev->tx_global_lock
-2) for_each_tx_queue() {
-	lock(txq);
-	set_bit(FROZEN);
-	unlock(txq);
-   }
+Syslets got some of the way there, and maybe that's why they were
+faster than AIO for some things.  There are user-space hacks which are
+a bit like syslets.  (Bind two processes to the same CPU, process 1
+wakes process 2 just before 1 does a syscall, and puts 2 back to sleep
+if 2 didn't wake and do an atomic op to prove it's awake).  I haven't
+tested their performance, it could suck.
 
-and unlock does:
+Look up LAIO, Lazy Asynchronous I/O.  Apparently FreeBSD, NetBSD,
+Solaris, Tru64, and Windows, have the capability to call a synchronous
+I/O op and if it's satisfied from cache, simply return a result, if
+not, either queue it and return an AIO event later (Windows style (it
+does some cleverer thread balancing too)), or wake another thread to
+handle it (FreeBSD style).  I believe Linus suggested something like
+the latter line approach some time ago.
 
-1) for_each_tx_queue() {
-	clear_bit(FROZEN);
-	if (!test_bit(XOFF))
-		__netif_schedule();
-   }
-2) release netdev->tx_global_lock
-
-And this seems to satisfy all the constraints which are:
-
-1) Must act like a lock and protect execution of the code path
-   which occurs inside of "netif_tx_{lock,unlock}()"
-
-2) Must ensure no cpus are executing inside of ->hard_start_xmit()
-   after netif_tx_lock() returns.
-
-3) Must not try to grab all the TX queue locks at once.
-
-This top-level tx_global_lock also simplifies the freezing, as
-it makes sure only one cpu is initiating or finishing a freeze
-at any given time.
-
-I've also adjusted code that really and truly only wanted to
-lock one queue at a time, which in particular was IFB and the
-teql scheduler.
-
-It's late here, but I'll start testing the following patch on my
-multiqueue capable cards after some sleep.
-
-diff --git a/drivers/net/ifb.c b/drivers/net/ifb.c
-index 0960e69..e4fbefc 100644
---- a/drivers/net/ifb.c
-+++ b/drivers/net/ifb.c
-@@ -69,18 +69,20 @@ static void ri_tasklet(unsigned long dev)
- 	struct net_device *_dev = (struct net_device *)dev;
- 	struct ifb_private *dp = netdev_priv(_dev);
- 	struct net_device_stats *stats = &_dev->stats;
-+	struct netdev_queue *txq;
- 	struct sk_buff *skb;
- 
-+	txq = netdev_get_tx_queue(_dev, 0);
- 	dp->st_task_enter++;
- 	if ((skb = skb_peek(&dp->tq)) == NULL) {
- 		dp->st_txq_refl_try++;
--		if (netif_tx_trylock(_dev)) {
-+		if (__netif_tx_trylock(txq)) {
- 			dp->st_rxq_enter++;
- 			while ((skb = skb_dequeue(&dp->rq)) != NULL) {
- 				skb_queue_tail(&dp->tq, skb);
- 				dp->st_rx2tx_tran++;
- 			}
--			netif_tx_unlock(_dev);
-+			__netif_tx_unlock(txq);
- 		} else {
- 			/* reschedule */
- 			dp->st_rxq_notenter++;
-@@ -115,7 +117,7 @@ static void ri_tasklet(unsigned long dev)
- 			BUG();
- 	}
- 
--	if (netif_tx_trylock(_dev)) {
-+	if (__netif_tx_trylock(txq)) {
- 		dp->st_rxq_check++;
- 		if ((skb = skb_peek(&dp->rq)) == NULL) {
- 			dp->tasklet_pending = 0;
-@@ -123,10 +125,10 @@ static void ri_tasklet(unsigned long dev)
- 				netif_wake_queue(_dev);
- 		} else {
- 			dp->st_rxq_rsch++;
--			netif_tx_unlock(_dev);
-+			__netif_tx_unlock(txq);
- 			goto resched;
- 		}
--		netif_tx_unlock(_dev);
-+		__netif_tx_unlock(txq);
- 	} else {
- resched:
- 		dp->tasklet_pending = 1;
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index b4d056c..ee583f6 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -440,6 +440,7 @@ static inline void napi_synchronize(const struct napi_struct *n)
- enum netdev_queue_state_t
- {
- 	__QUEUE_STATE_XOFF,
-+	__QUEUE_STATE_FROZEN,
- };
- 
- struct netdev_queue {
-@@ -636,7 +637,7 @@ struct net_device
- 	unsigned int		real_num_tx_queues;
- 
- 	unsigned long		tx_queue_len;	/* Max frames per queue allowed */
--
-+	spinlock_t		tx_global_lock;
- /*
-  * One part is mostly used on xmit path (device)
-  */
-@@ -1099,6 +1100,11 @@ static inline int netif_queue_stopped(const struct net_device *dev)
- 	return netif_tx_queue_stopped(netdev_get_tx_queue(dev, 0));
- }
- 
-+static inline int netif_tx_queue_frozen(const struct netdev_queue *dev_queue)
-+{
-+	return test_bit(__QUEUE_STATE_FROZEN, &dev_queue->state);
-+}
-+
- /**
-  *	netif_running - test if up
-  *	@dev: network device
-@@ -1475,6 +1481,26 @@ static inline void __netif_tx_lock_bh(struct netdev_queue *txq)
- 	txq->xmit_lock_owner = smp_processor_id();
- }
- 
-+static inline int __netif_tx_trylock(struct netdev_queue *txq)
-+{
-+	int ok = spin_trylock(&txq->_xmit_lock);
-+	if (likely(ok))
-+		txq->xmit_lock_owner = smp_processor_id();
-+	return ok;
-+}
-+
-+static inline void __netif_tx_unlock(struct netdev_queue *txq)
-+{
-+	txq->xmit_lock_owner = -1;
-+	spin_unlock(&txq->_xmit_lock);
-+}
-+
-+static inline void __netif_tx_unlock_bh(struct netdev_queue *txq)
-+{
-+	txq->xmit_lock_owner = -1;
-+	spin_unlock_bh(&txq->_xmit_lock);
-+}
-+
- /**
-  *	netif_tx_lock - grab network device transmit lock
-  *	@dev: network device
-@@ -1484,12 +1510,23 @@ static inline void __netif_tx_lock_bh(struct netdev_queue *txq)
-  */
- static inline void netif_tx_lock(struct net_device *dev)
- {
--	int cpu = smp_processor_id();
- 	unsigned int i;
-+	int cpu;
- 
-+	spin_lock(&dev->tx_global_lock);
-+	cpu = smp_processor_id();
- 	for (i = 0; i < dev->num_tx_queues; i++) {
- 		struct netdev_queue *txq = netdev_get_tx_queue(dev, i);
-+
-+		/* We are the only thread of execution doing a
-+		 * freeze, but we have to grab the _xmit_lock in
-+		 * order to synchronize with threads which are in
-+		 * the ->hard_start_xmit() handler and already
-+		 * checked the frozen bit.
-+		 */
- 		__netif_tx_lock(txq, cpu);
-+		set_bit(__QUEUE_STATE_FROZEN, &txq->state);
-+		__netif_tx_unlock(txq);
- 	}
- }
- 
-@@ -1499,40 +1536,22 @@ static inline void netif_tx_lock_bh(struct net_device *dev)
- 	netif_tx_lock(dev);
- }
- 
--static inline int __netif_tx_trylock(struct netdev_queue *txq)
--{
--	int ok = spin_trylock(&txq->_xmit_lock);
--	if (likely(ok))
--		txq->xmit_lock_owner = smp_processor_id();
--	return ok;
--}
--
--static inline int netif_tx_trylock(struct net_device *dev)
--{
--	return __netif_tx_trylock(netdev_get_tx_queue(dev, 0));
--}
--
--static inline void __netif_tx_unlock(struct netdev_queue *txq)
--{
--	txq->xmit_lock_owner = -1;
--	spin_unlock(&txq->_xmit_lock);
--}
--
--static inline void __netif_tx_unlock_bh(struct netdev_queue *txq)
--{
--	txq->xmit_lock_owner = -1;
--	spin_unlock_bh(&txq->_xmit_lock);
--}
--
- static inline void netif_tx_unlock(struct net_device *dev)
- {
- 	unsigned int i;
- 
- 	for (i = 0; i < dev->num_tx_queues; i++) {
- 		struct netdev_queue *txq = netdev_get_tx_queue(dev, i);
--		__netif_tx_unlock(txq);
--	}
- 
-+		/* No need to grab the _xmit_lock here.  If the
-+		 * queue is not stopped for another reason, we
-+		 * force a schedule.
-+		 */
-+		clear_bit(__QUEUE_STATE_FROZEN, &txq->state);
-+		if (!test_bit(__QUEUE_STATE_XOFF, &txq->state))
-+			__netif_schedule(txq->qdisc);
-+	}
-+	spin_unlock(&dev->tx_global_lock);
- }
- 
- static inline void netif_tx_unlock_bh(struct net_device *dev)
-@@ -1556,13 +1575,18 @@ static inline void netif_tx_unlock_bh(struct net_device *dev)
- static inline void netif_tx_disable(struct net_device *dev)
- {
- 	unsigned int i;
-+	int cpu;
- 
--	netif_tx_lock_bh(dev);
-+	local_bh_disable();
-+	cpu = smp_processor_id();
- 	for (i = 0; i < dev->num_tx_queues; i++) {
- 		struct netdev_queue *txq = netdev_get_tx_queue(dev, i);
-+
-+		__netif_tx_lock(txq, cpu);
- 		netif_tx_stop_queue(txq);
-+		__netif_tx_unlock(txq);
- 	}
--	netif_tx_unlock_bh(dev);
-+	local_bh_enable();
- }
- 
- static inline void netif_addr_lock(struct net_device *dev)
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 63d6bcd..69320a5 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -4200,6 +4200,7 @@ static void netdev_init_queues(struct net_device *dev)
- {
- 	netdev_init_one_queue(dev, &dev->rx_queue, NULL);
- 	netdev_for_each_tx_queue(dev, netdev_init_one_queue, NULL);
-+	spin_lock_init(&dev->tx_global_lock);
- }
- 
- /**
-diff --git a/net/core/netpoll.c b/net/core/netpoll.c
-index c127208..6c7af39 100644
---- a/net/core/netpoll.c
-+++ b/net/core/netpoll.c
-@@ -70,6 +70,7 @@ static void queue_process(struct work_struct *work)
- 		local_irq_save(flags);
- 		__netif_tx_lock(txq, smp_processor_id());
- 		if (netif_tx_queue_stopped(txq) ||
-+		    netif_tx_queue_frozen(txq) ||
- 		    dev->hard_start_xmit(skb, dev) != NETDEV_TX_OK) {
- 			skb_queue_head(&npinfo->txq, skb);
- 			__netif_tx_unlock(txq);
-diff --git a/net/core/pktgen.c b/net/core/pktgen.c
-index c7d484f..3284605 100644
---- a/net/core/pktgen.c
-+++ b/net/core/pktgen.c
-@@ -3305,6 +3305,7 @@ static __inline__ void pktgen_xmit(struct pktgen_dev *pkt_dev)
- 
- 	txq = netdev_get_tx_queue(odev, queue_map);
- 	if (netif_tx_queue_stopped(txq) ||
-+	    netif_tx_queue_frozen(txq) ||
- 	    need_resched()) {
- 		idle_start = getCurUs();
- 
-@@ -3320,7 +3321,8 @@ static __inline__ void pktgen_xmit(struct pktgen_dev *pkt_dev)
- 
- 		pkt_dev->idle_acc += getCurUs() - idle_start;
- 
--		if (netif_tx_queue_stopped(txq)) {
-+		if (netif_tx_queue_stopped(txq) ||
-+		    netif_tx_queue_frozen(txq)) {
- 			pkt_dev->next_tx_us = getCurUs();	/* TODO */
- 			pkt_dev->next_tx_ns = 0;
- 			goto out;	/* Try the next interface */
-@@ -3352,7 +3354,8 @@ static __inline__ void pktgen_xmit(struct pktgen_dev *pkt_dev)
- 	txq = netdev_get_tx_queue(odev, queue_map);
- 
- 	__netif_tx_lock_bh(txq);
--	if (!netif_tx_queue_stopped(txq)) {
-+	if (!netif_tx_queue_stopped(txq) &&
-+	    !netif_tx_queue_frozen(txq)) {
- 
- 		atomic_inc(&(pkt_dev->skb->users));
- 	      retry_now:
-diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
-index 345838a..9c9cd4d 100644
---- a/net/sched/sch_generic.c
-+++ b/net/sched/sch_generic.c
-@@ -135,7 +135,8 @@ static inline int qdisc_restart(struct Qdisc *q)
- 	txq = netdev_get_tx_queue(dev, skb_get_queue_mapping(skb));
- 
- 	HARD_TX_LOCK(dev, txq, smp_processor_id());
--	if (!netif_subqueue_stopped(dev, skb))
-+	if (!netif_tx_queue_stopped(txq) &&
-+	    !netif_tx_queue_frozen(txq))
- 		ret = dev_hard_start_xmit(skb, dev, txq);
- 	HARD_TX_UNLOCK(dev, txq);
- 
-@@ -162,7 +163,8 @@ static inline int qdisc_restart(struct Qdisc *q)
- 		break;
- 	}
- 
--	if (ret && netif_tx_queue_stopped(txq))
-+	if (ret && (netif_tx_queue_stopped(txq) ||
-+		    netif_tx_queue_frozen(txq)))
- 		ret = 0;
- 
- 	return ret;
-diff --git a/net/sched/sch_teql.c b/net/sched/sch_teql.c
-index 5372236..2c35c67 100644
---- a/net/sched/sch_teql.c
-+++ b/net/sched/sch_teql.c
-@@ -305,10 +305,11 @@ restart:
- 
- 		switch (teql_resolve(skb, skb_res, slave)) {
- 		case 0:
--			if (netif_tx_trylock(slave)) {
--				if (!__netif_subqueue_stopped(slave, subq) &&
-+			if (__netif_tx_trylock(slave_txq)) {
-+				if (!netif_tx_queue_stopped(slave_txq) &&
-+				    !netif_tx_queue_frozen(slave_txq) &&
- 				    slave->hard_start_xmit(skb, slave) == 0) {
--					netif_tx_unlock(slave);
-+					__netif_tx_unlock(slave_txq);
- 					master->slaves = NEXT_SLAVE(q);
- 					netif_wake_queue(dev);
- 					master->stats.tx_packets++;
-@@ -316,7 +317,7 @@ restart:
- 						qdisc_pkt_len(skb);
- 					return 0;
- 				}
--				netif_tx_unlock(slave);
-+				__netif_tx_unlock(slave_txq);
- 			}
- 			if (netif_queue_stopped(dev))
- 				busy = 1;
+-- Jamie
