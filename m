@@ -1,76 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbYGaKbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbYGaKcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756837AbYGaKbt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 06:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754536AbYGaKbl
+	id S1756920AbYGaKcf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 06:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbYGaKc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 06:31:41 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:37360 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754399AbYGaKbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 06:31:40 -0400
-Date: Thu, 31 Jul 2008 11:31:38 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: ebmunson@us.ibm.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, libhugetlbfs-devel@lists.sourceforge.net,
-       abh@cray.com
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Message-ID: <20080731103137.GD1704@csn.ul.ie>
-References: <cover.1216928613.git.ebmunson@us.ibm.com> <20080730014308.2a447e71.akpm@linux-foundation.org> <20080730172317.GA14138@csn.ul.ie> <20080730103407.b110afc2.akpm@linux-foundation.org> <20080730193010.GB14138@csn.ul.ie> <20080730130709.eb541475.akpm@linux-foundation.org>
+	Thu, 31 Jul 2008 06:32:26 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43385 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752415AbYGaKcY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 06:32:24 -0400
+Message-ID: <48919471.6010304@jp.fujitsu.com>
+Date: Thu, 31 Jul 2008 19:31:13 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080730130709.eb541475.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
+References: <20080724134737.4b91f30d@mjolnir.drzeus.cx> <200807241407.18543.jbarnes@virtuousgeek.org> <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org> <48895D3C.7040100@jp.fujitsu.com> <20080730023842.GA4269@ldl.fc.hp.com>
+In-Reply-To: <20080730023842.GA4269@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (30/07/08 13:07), Andrew Morton didst pronounce:
-> On Wed, 30 Jul 2008 20:30:10 +0100
-> Mel Gorman <mel@csn.ul.ie> wrote:
+Alex Chiang wrote:
+> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>> Matthew Wilcox wrote:
+>>> So we need a way to find if there's already a slot of this
+>>> name.  I don't see a kobject routine to do that.  Maybe we can
+>>> do it internally to the pci slot code.
 > 
-> > With Erics patch and libhugetlbfs, we can automatically back text/data[1],
-> > malloc[2] and stacks without source modification. Fairly soon, libhugetlbfs
-> > will also be able to override shmget() to add SHM_HUGETLB. That should cover
-> > a lot of the memory-intensive apps without source modification.
+> pci_hp_register already does this with get_slot_from_name().
 > 
-> The weak link in all of this still might be the need to reserve
-> hugepages and the unreliability of dynamically allocating them.
+>>> Then we need to pick a new name for the kobject if it does
+>>> collide.  My suggestion is that the second time we find an
+>>> object named "2", we call it "2dup1" (the third time "2dup2",
+>>> etc.)  Other opinions I've seen include "2a", "2b", ... or
+>>> "2-1", "2-2", ... or "2-brokenfw1", "2-brokenfw2".
+>> That looks quite better than using bus number.
 > 
-> The dynamic allocation should be better nowadays, but I've lost track
-> of how reliable it really is.  What's our status there?
+> I went with:
 > 
+> 	- first slot to register gets "2"
+> 	- second slot to register gets "2-1"
+> 	- Mth slot to register gets "2-M"
+> 
+> At first, I thought it would have been better to put this logic
+> inside of pci_hp_register, since it knows about the collision,
+> and could just fix stuff up for the caller.
+> 
+> However, the problem is that each hotplug driver can have a
+> different length for "name", and it got messy quickly.
+> 
+> So, I just patched the two drivers that are known to be
+> problematic.
+> 
+> Two patches follow, against 2.6.27-rc1.
+> 
+> Compile tested only -- I don't have hardware to replicate this.
+> 
+> I'd say they're somewhere between RFC and requested for
+> inclusion. I'm certainly not tied to them, just trying to show
+> some code to implement the approach described above. If we decide
+> that looking at _RMV + other bits is the way to go, then I'm fine
+> with that.
+> 
+> It would be great if Pierre and Kenji-san could try them out.
 
-We are a lot more reliable than we were although exact quantification is
-difficult because it's workload dependent. For a long time, I've been able
-to test bits and pieces with hugepages by allocating the pool at the time
-I needed it even after days of uptime. Previously this required a reboot.
+Thank you for patches, Alex-san!
 
-I've also been able to use the dynamic hugepage pool resizing effectively
-and we track how much it is succeeding and failing in /proc/vmstat (see the
-htlb fields) to watch for problems. Between that and /proc/pagetypeinfo, I am
-expecting to be able to identify availablilty problems. As an administrator
-can now set a minimum pool size and the maximum size of the pool (nr_hugepages
-and nr_overcommit_hugepages), the configuration difficulties should be relaxed.
+I've reviewed those patches and tested them on my ia64 machine
+that have both shpc and pcie hotplug slots. Your patch looks
+good.
 
-If it is found that anti-fragmentation can be broken down and pool
-resizing starts failing after X amount of time on Y workloads, there is
-still the option of using movablecore=BiggestPoolSizeIWillEverNeed
-and writing 1 to /proc/sys/vm/hugepages_treat_as_movable so the hugepage
-pool can grow/shrink reliably there.
+As you mentioned, we are considering the problem also from the
+view point of slot detection. But I think your patch is needed
+regardless of that because there might be platforms whose slots
+are detected properly but firmware assigns the physical slot
+number wrongly. I think Alex's patch should go to mainline.
 
-Overall, it's in pretty good shape.
+P.S.: I found a possible improvement, though it is not a big
+problem and we don't not need to fix it soon. I'd like to tell
+you about it just in case. Current pci_hp_register() checks if
+name is duplicated first, before checking if another hotplug
+driver is already registered to the slot. So, if shpchp/pciehp
+driver tries to register hotplug slot that is already registered
+by the other hotplug driver (e.g. acpiphp) with the same name,
+shpchp/pciehp driver will do as follows:
 
-To be fair, one snag is that that swap is almost required for pool
-resizing to work as I never pushed to complete memory compaction
-(http://lwn.net/Articles/238837/).  Hence, we depend on the workload to
-have lots of filesystem-backed data for lumpy-reclaim to do its job, for
-pool resizing to take place between batch jobs or for swap to be configured
-even if it's just for the duration of a pool resize.
+(1) shpchp/pciehp call pci_hp_register()
+(2) pci_hp_register() returns -EEXIST
+(3) shpchp/pciehp call pci_hp_register() with other name ("M-1")
+(4) pci_hp_register() returns -EBUSY
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+if pci_hp_register() checked if another hotplug driver is already
+registered first, step (2) and (3) could be removed.
+
+Thanks,
+Kenji Kaneshige
+
