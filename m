@@ -1,96 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbYGaQS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752798AbYGaQXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753709AbYGaQS1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 12:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYGaQSS
+	id S1752798AbYGaQXP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 12:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbYGaQXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 12:18:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46619 "EHLO mx3.mail.elte.hu"
+	Thu, 31 Jul 2008 12:23:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48767 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751376AbYGaQSR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 12:18:17 -0400
-Date: Thu, 31 Jul 2008 18:17:50 +0200
+	id S1750751AbYGaQXC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 12:23:02 -0400
+Date: Thu, 31 Jul 2008 18:21:55 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kosaki.motohiro@jp.fujitsu.com, torvalds@linux-foundation.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/1] mm: unify pmd_free() and __pmd_free_tlb()
-	implementation
-Message-ID: <20080731161750.GA26393@elte.hu>
-References: <alpine.LFD.1.10.0807280851130.3486@nehalem.linux-foundation.org> <488DF119.2000004@gmail.com> <20080729012656.566F.KOSAKI.MOTOHIRO@jp.fujitsu.com> <488DFFB0.1090107@gmail.com> <20080728133030.8b29fa5a.akpm@linux-foundation.org> <488E3020.1040701@goop.org> <488E4DEB.5010705@gmail.com>
+To: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
+Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 0/6] x86: coding style fixes to arch/x86/kernel/
+Message-ID: <20080731162155.GC26393@elte.hu>
+References: <gustavo@las.ic.unicamp.br> <1217310536-7181-1-git-send-email-gustavo@las.ic.unicamp.br>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <488E4DEB.5010705@gmail.com>
+In-Reply-To: <1217310536-7181-1-git-send-email-gustavo@las.ic.unicamp.br>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
+X-ELTE-SpamScore: 0.8
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=0.8 required=5.9 tests=BAYES_05,URIBL_BLACK autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0421]
+	2.0 URIBL_BLACK            Contains an URL listed in the URIBL blacklist
+	[URIs: checkpatch.pl]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrea Righi <righi.andrea@gmail.com> wrote:
+* Gustavo F. Padovan <gustavo@las.ic.unicamp.br> wrote:
 
-> Jeremy Fitzhardinge wrote:
-> > Andrew Morton wrote:
-> >> I can second that.  See
-> >> http://userweb.kernel.org/~akpm/mmotm/broken-out/include-asm-generic-pgtable-nopmdh-macros-are-noxious-reason-435.patch
-> >>
-> >> Ingo cruelly ignored it.  Probably he's used to ignoring the comit
-> >> storm which I send in his direction - I'll need to resend it sometime.
-> >>
-> >> I'd consider that patch to be partial - we should demacroize the
-> >> surrounding similar functions too.  But that will require a bit more
-> >> testing.
-> > 
-> > Its immediate neighbours should be easy enough (pmd_alloc_one, 
-> > __pmd_free_tlb), but any of the ones involving pmd_t risk #include hell 
-> > (though the earlier references to pud_t in inline functions suggest it 
-> > will work).  And pmd_addr_end is just ugly.
-> > 
-> >     J
-> > 
+> Ingo,
 > 
-> ok, let's start with the easiest: pmd_free() and __pmd_free_tlb().
-> 
-> Following another attempt to unify the implementations using inline 
-> functions. It seems to build fine on x86 (pae / non-pae) and on 
-> x86_64. This is an RFC patch right now, not for inclusion (just asking 
-> if it could be a reasonable approach or not). And in any case this 
-> would need more testing.
-> 
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-> ---
->  arch/sparc/include/asm/pgalloc_64.h |    1 +
->  include/asm-alpha/pgalloc.h         |    1 +
->  include/asm-arm/pgalloc.h           |    1 -
->  include/asm-frv/pgalloc.h           |    2 --
->  include/asm-generic/pgtable-nopmd.h |   19 +++++++++++++++++--
->  include/asm-ia64/pgalloc.h          |    1 +
->  include/asm-m32r/pgalloc.h          |    2 --
->  include/asm-m68k/motorola_pgalloc.h |    3 ++-
->  include/asm-m68k/sun3_pgalloc.h     |    7 -------
->  include/asm-mips/pgalloc.h          |   12 +-----------
->  include/asm-parisc/pgalloc.h        |    2 +-
->  include/asm-powerpc/pgalloc-32.h    |    2 --
->  include/asm-powerpc/pgalloc-64.h    |    1 +
->  include/asm-s390/pgalloc.h          |    1 -
->  include/asm-sh/pgalloc.h            |    8 --------
->  include/asm-um/pgalloc.h            |    1 +
->  include/asm-x86/pgalloc.h           |    2 ++
->  17 files changed, 28 insertions(+), 38 deletions(-)
+> I removed all errors and many warnings reported by checkpatch.pl for 
+> five files into arch/x86/kernel. I used a Linus tree with this HEAD: 
+> 63add2f2072e69c1eb7a5f6ca8f415122da889b9 which was commited seven 
+> hours ago.
 
-the x86 bits look good to me in principle but touches a ton of 
-architectures and deals with VM issues - the perfect candidate for -mm?
+applied to tip/x86/cleanups - thanks Gustavo.
 
 	Ingo
