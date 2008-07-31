@@ -1,66 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762310AbYGaCyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762541AbYGaCy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762310AbYGaCyi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 22:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbYGaCt6
+	id S1762541AbYGaCy5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 22:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759039AbYGaCuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 22:49:58 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:60566 "EHLO
+	Wed, 30 Jul 2008 22:50:03 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:60571 "EHLO
 	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760496AbYGaCt4 (ORCPT
+	with ESMTP id S1760582AbYGaCuA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 22:49:56 -0400
-Date: Wed, 30 Jul 2008 21:49:51 -0500
+	Wed, 30 Jul 2008 22:50:00 -0400
+Date: Wed, 30 Jul 2008 21:49:25 -0500
 From: David Fries <david@fries.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org
-Subject: [PATCH 18/30] W1: ds1wm.c msleep for reset
-Message-ID: <20080731024951.GS12181@spacedout.fries.net>
+Subject: [PATCH 12/30] W1: w1_therm fix user buffer overflow and cat
+Message-ID: <20080731024925.GM12181@spacedout.fries.net>
 References: <20080729020433.GA24424@spacedout.fries.net> <20080729161356.2de456fb.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20080729161356.2de456fb.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Wed, 30 Jul 2008 21:49:51 -0500 (CDT)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Wed, 30 Jul 2008 21:49:26 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Like the previous w1_io.c reset coments and msleep patch, I don't have
-the hardware to verify the change, but I think it is safe.  It also
-helps to see a comment like this in the code.
-"We'll wait a bit longer just to be sure."
-If they are going to calculate delaying 324.9us, but actually delay
-500us, why not just give up the CPU and sleep?  This is designed for a
-battery powered ARM system, avoiding busywaiting has to be good for
-battery life.
+Fixed data reading bug by replacing binary attribute with device one.
 
-I sent a request for testers March 7, 2008 to the Linux kernel mailing
-list and two developers who have patches for ds1wm.c, but I didn't get
-any respons.
+Switching the sysfs read from bin_attribute to device_attribute.  The
+data is far under PAGE_SIZE so the binary interface isn't required.
+As the device_attribute interface will make one call to w1_therm_read per
+file open and buffer, the result is, the following problems go away.
+
+buffer overflow:
+	Execute a short read on w1_slave and w1_therm_read_bin would still
+	return the full string size worth of data clobbering the user space
+	buffer when it returned.  Switching to device_attribute avoids the
+	buffer overflow problems.  With the snprintf formatted output dealing
+	with short reads without doing a conversion per read would have
+	been difficult.
+bad behavior:
+	`cat w1_slave` would cause two temperature conversions to take place.
+	Previously the code assumed W1_SLAVE_DATA_SIZE would be returned with
+	each read.  It would not return 0 unless the offset was less
+	than W1_SLAVE_DATA_SIZE.  The result was the first read did a
+	temperature conversion, filled the buffer and returned, the
+	offset in the second read would be less than
+	W1_SLAVE_DATA_SIZE and also fill the buffer and return, the
+	third read would finnally have a big enough offset to return 0
+	and cause cat to stop.  Now w1_therm_read will be called at
+	most once per open.
 
 Signed-off-by: David Fries <david@fries.net>
 Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 ---
- drivers/w1/masters/ds1wm.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ drivers/w1/slaves/w1_therm.c |   55 +++++++++++++++--------------------------
+ drivers/w1/w1.h              |    1 -
+ 2 files changed, 20 insertions(+), 36 deletions(-)
 
-diff --git a/drivers/w1/masters/ds1wm.c b/drivers/w1/masters/ds1wm.c
-index ea894bf..29e144f 100644
---- a/drivers/w1/masters/ds1wm.c
-+++ b/drivers/w1/masters/ds1wm.c
-@@ -160,8 +160,10 @@ static int ds1wm_reset(struct ds1wm_data *ds1wm_data)
- 	 *     625 us - 60 us - 240 us - 100 ns = 324.9 us
- 	 *
- 	 * We'll wait a bit longer just to be sure.
-+	 * Was udelay(500), but if it is going to busywait the cpu that long,
-+	 * might as well come back later.
- 	 */
--	udelay(500);
-+	msleep(1);
+diff --git a/drivers/w1/slaves/w1_therm.c b/drivers/w1/slaves/w1_therm.c
+index e87f464..7de99df 100644
+--- a/drivers/w1/slaves/w1_therm.c
++++ b/drivers/w1/slaves/w1_therm.c
+@@ -50,26 +50,20 @@ static u8 bad_roms[][9] = {
+ 				{}
+ 			};
  
- 	ds1wm_write_register(ds1wm_data, DS1WM_INT_EN,
- 		DS1WM_INTEN_ERBF | DS1WM_INTEN_ETMT | DS1WM_INTEN_EPD |
+-static ssize_t w1_therm_read_bin(struct kobject *, struct bin_attribute *,
+-				 char *, loff_t, size_t);
++static ssize_t w1_therm_read(struct device *device,
++	struct device_attribute *attr, char *buf);
+ 
+-static struct bin_attribute w1_therm_bin_attr = {
+-	.attr = {
+-		.name = "w1_slave",
+-		.mode = S_IRUGO,
+-	},
+-	.size = W1_SLAVE_DATA_SIZE,
+-	.read = w1_therm_read_bin,
+-};
++static struct device_attribute w1_therm_attr =
++	__ATTR(w1_slave, S_IRUGO, w1_therm_read, NULL);
+ 
+ static int w1_therm_add_slave(struct w1_slave *sl)
+ {
+-	return sysfs_create_bin_file(&sl->dev.kobj, &w1_therm_bin_attr);
++	return device_create_file(&sl->dev, &w1_therm_attr);
+ }
+ 
+ static void w1_therm_remove_slave(struct w1_slave *sl)
+ {
+-	sysfs_remove_bin_file(&sl->dev.kobj, &w1_therm_bin_attr);
++	device_remove_file(&sl->dev, &w1_therm_attr);
+ }
+ 
+ static struct w1_family_ops w1_therm_fops = {
+@@ -168,30 +162,19 @@ static int w1_therm_check_rom(u8 rom[9])
+ 	return 0;
+ }
+ 
+-static ssize_t w1_therm_read_bin(struct kobject *kobj,
+-				 struct bin_attribute *bin_attr,
+-				 char *buf, loff_t off, size_t count)
++static ssize_t w1_therm_read(struct device *device,
++	struct device_attribute *attr, char *buf)
+ {
+-	struct w1_slave *sl = kobj_to_w1_slave(kobj);
++	struct w1_slave *sl = dev_to_w1_slave(device);
+ 	struct w1_master *dev = sl->master;
+ 	u8 rom[9], crc, verdict;
+ 	int i, max_trying = 10;
++	ssize_t c = PAGE_SIZE;
+ 
+ 	mutex_lock(&sl->master->mutex);
+ 
+-	if (off > W1_SLAVE_DATA_SIZE) {
+-		count = 0;
+-		goto out;
+-	}
+-	if (off + count > W1_SLAVE_DATA_SIZE) {
+-		count = 0;
+-		goto out;
+-	}
+-
+-	memset(buf, 0, count);
+ 	memset(rom, 0, sizeof(rom));
+ 
+-	count = 0;
+ 	verdict = 0;
+ 	crc = 0;
+ 
+@@ -211,7 +194,9 @@ static ssize_t w1_therm_read_bin(struct kobject *kobj,
+ 
+ 				w1_write_8(dev, W1_READ_SCRATCHPAD);
+ 				if ((count = w1_read_block(dev, rom, 9)) != 9) {
+-					dev_warn(&dev->dev, "w1_read_block() returned %d instead of 9.\n", count);
++					dev_warn(device, "w1_read_block() "
++						"returned %u instead of 9.\n",
++						count);
+ 				}
+ 
+ 				crc = w1_calc_crc8(rom, 8);
+@@ -226,22 +211,22 @@ static ssize_t w1_therm_read_bin(struct kobject *kobj,
+ 	}
+ 
+ 	for (i = 0; i < 9; ++i)
+-		count += sprintf(buf + count, "%02x ", rom[i]);
+-	count += sprintf(buf + count, ": crc=%02x %s\n",
++		c -= snprintf(buf + PAGE_SIZE - c, c, "%02x ", rom[i]);
++	c -= snprintf(buf + PAGE_SIZE - c, c, ": crc=%02x %s\n",
+ 			   crc, (verdict) ? "YES" : "NO");
+ 	if (verdict)
+ 		memcpy(sl->rom, rom, sizeof(sl->rom));
+ 	else
+-		dev_warn(&dev->dev, "18S20 doesn't respond to CONVERT_TEMP.\n");
++		dev_warn(device, "18S20 doesn't respond to CONVERT_TEMP.\n");
+ 
+ 	for (i = 0; i < 9; ++i)
+-		count += sprintf(buf + count, "%02x ", sl->rom[i]);
++		c -= snprintf(buf + PAGE_SIZE - c, c, "%02x ", sl->rom[i]);
+ 
+-	count += sprintf(buf + count, "t=%d\n", w1_convert_temp(rom, sl->family->fid));
+-out:
++	c -= snprintf(buf + PAGE_SIZE - c, c, "t=%d\n",
++		w1_convert_temp(rom, sl->family->fid));
+ 	mutex_unlock(&dev->mutex);
+ 
+-	return count;
++	return PAGE_SIZE - c;
+ }
+ 
+ static int __init w1_therm_init(void)
+diff --git a/drivers/w1/w1.h b/drivers/w1/w1.h
+index 00b84ab..cdaa6ff 100644
+--- a/drivers/w1/w1.h
++++ b/drivers/w1/w1.h
+@@ -46,7 +46,6 @@ struct w1_reg_num
+ #include "w1_family.h"
+ 
+ #define W1_MAXNAMELEN		32
+-#define W1_SLAVE_DATA_SIZE	128
+ 
+ #define W1_SEARCH		0xF0
+ #define W1_ALARM_SEARCH		0xEC
 -- 
 1.4.4.4
