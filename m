@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYGaGDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbYGaGDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbYGaGDP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 02:03:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbYGaGC7
+	id S1755492AbYGaGDg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 02:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbYGaGDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 02:02:59 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:57693 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752306AbYGaGC6 (ORCPT
+	Thu, 31 Jul 2008 02:03:23 -0400
+Received: from mail4.hitachi.co.jp ([133.145.228.5]:50923 "EHLO
+	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752662AbYGaGDW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 02:02:58 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <200807291414.55479.yhlu.kernel@gmail.com>
-	<200807301210.31511.yhlu.kernel@gmail.com>
-	<200807302109.21519.yhlu.kernel@gmail.com>
-	<200807302110.10585.yhlu.kernel@gmail.com>
-Date: Wed, 30 Jul 2008 22:58:44 -0700
-In-Reply-To: <200807302110.10585.yhlu.kernel@gmail.com> (Yinghai Lu's message
-	of "Wed, 30 Jul 2008 21:10:10 -0700")
-Message-ID: <m1wsj2388b.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 31 Jul 2008 02:03:22 -0400
+X-AuditID: 0ac90647-aaaa0ba0000028e2-a2-489155a62b0f
+Message-ID: <489155A0.2070208@hitachi.com>
+Date: Thu, 31 Jul 2008 15:03:12 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Yinghai Lu <yhlu.kernel@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0001]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 1/3] serial: change irq_lists to use dyn_array
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: Andreas Dilger <adilger@sun.com>
+Cc: Mike Snitzer <snitzer@gmail.com>, akpm@linux-foundation.org,
+       sct@redhat.com, adilger@clusterfs.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jack@suse.cz, jbacik@redhat.com,
+       cmm@us.ibm.com, tytso@mit.edu, tglx@linutronix.de,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Subject: Re: [PATCH 1/2] ext3: add an option to control error handling on file
+    data
+References: <488FD756.9060106@hitachi.com> 
+    <170fa0d20807300814o7741859eu8ad5d5b3b95e401c@mail.gmail.com> 
+    <20080730211703.GZ3342@webber.adilger.int>
+In-Reply-To: <20080730211703.GZ3342@webber.adilger.int>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu <yhlu.kernel@gmail.com> writes:
+Andreas Dilger wrote:
+> On Jul 30, 2008  11:14 -0400, Mike Snitzer wrote:
+> 
+>>On Tue, Jul 29, 2008 at 10:52 PM, Hidehiro Kawai
+>><hidehiro.kawai.ez@hitachi.com> wrote:
 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>>>If you mount a ext3 fs with data_err=abort option, it aborts on file
+>>>data write error.  If you mount it with data_err=ignore, it doesn't
+>>>abort, just call printk().  data_err=abort is default, because
+>>>people have used this error handling policy for three years.
+>>
+>>Thanks for making this configurable!
+>>
+>>But given how surprised many of us were when we found out that
+>>jbd/ext3 has been aborting on file data blocks isn't this our chance
+>>to correct that long-standing oversight?  Shouldn't the default be
+>>data_err=ignore?  Or would changing this behavior cause more harm than
+>>good?
 
-Instead of fixing this to work like every other driver you are introducing a dynarray?
+I asked Japanese server vendor's people which default is preferred,
+and they agreed on data_err=abort.  But it would not be true for
+all users all over the world.
 
-This seriously looks like an example of papering over a problem instead of fixing
-it correctly.
+>>I don't feel strongly either way, having the "data_err" option makes
+>>this issue moot for me, but I figured I'd raise the question (in the
+>>interest of review).
+> 
+> Yes, good point.  I don't think any of the ext3 maintainers were aware
+> that the 3-years-old patch had introduced "abort on data error" behaviour.
+> The default for ext4 is only now going to errors=remount-ro from
+> errors=continue (as it is on ext2/3) so I think it is inconsistent to
+> have the journal abort on data errors when the filesystem itself does not.
 
-Eric
+It's good point.  Well, how about setting the default depending on
+"errors" option?  It means the default is data_err=ignore on
+errors=continue and data_err=abort on errors=remount-ro/panic.
+If it is confusing, I don't mind if the default is simply
+data_err=ignore.
+
+Thanks,
+-- 
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
+
