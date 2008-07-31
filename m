@@ -1,108 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbYGaPjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbYGaPly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756094AbYGaPjN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 11:39:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbYGaPiz
+	id S1756587AbYGaPly (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 11:41:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYGaPlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 11:38:55 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:47786 "EHLO smtp4.pp.htv.fi"
+	Thu, 31 Jul 2008 11:41:46 -0400
+Received: from waste.org ([66.93.16.53]:60744 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750860AbYGaPiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 11:38:54 -0400
-Date: Thu, 31 Jul 2008 18:37:57 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
-       matthew@wil.cx, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch 2/4] Configure out file locking features
-Message-ID: <20080731153757.GB20212@cs181140183.pp.htv.fi>
-References: <20080731092703.661994657@free-electrons.com> <20080731093220.969460336@free-electrons.com> <20080731135319.GA20212@cs181140183.pp.htv.fi> <20080731162007.285938e0@surf>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080731162007.285938e0@surf>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751059AbYGaPlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 11:41:45 -0400
+Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       vegard.nossum@gmail.com, hannes@saeurebad.de
+In-Reply-To: <4891CBA9.8030203@linux-foundation.org>
+References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>
+	 <1199314218.4497.109.camel@cinder.waste.org>
+	 <20080103085239.GA10813@elte.hu>
+	 <1199378818.8274.25.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>
+	 <1199419890.4608.77.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>
+	 <1199641910.8215.28.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>
+	 <1199906151.6245.57.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>
+	 <1199919548.6245.74.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI>
+	 <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0807310045020.22702@sbz-30.cs.Helsinki.FI>
+	 <alpine.LFD.1.10.0807301457020.3277@nehalem.linux-foundation.org>
+	 <1217466583.18911.226.camel@calx>  <4891CBA9.8030203@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 31 Jul 2008 10:38:58 -0500
+Message-Id: <1217518738.3657.28.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 04:20:07PM +0200, Thomas Petazzoni wrote:
-> Le Thu, 31 Jul 2008 16:53:19 +0300,
-> Adrian Bunk <bunk@kernel.org> a écrit :
+
+On Thu, 2008-07-31 at 09:26 -0500, Christoph Lameter wrote:
+> Matt Mackall wrote:
 > 
-> > As I've already said in the past I'm personally not a huge fan of
-> > these patches, but if it brings advantages in real-life situations
-> > it's hard to argue against it.
+> > Finally getting rid of SLAB is a much trickier proposition because SLUB
+> > still loses in a few important corner cases.
 > 
-> Yes, I've seen your points about that kind of patches on
-> linux-embedded, and I understand them. I agree that adding dozens and
-> dozens of configuration items for small features doesn't look like
-> something sustainable on the long run. However, the kernel keeps
-> growing and this isn't sustainable either on the long run for *some*
-> embedded users. So, what should we do ? (That's a real question)
+> Which corner cases? I know about the reports on the TPC issue which I
+> guess is a result of the avoidance of queueing in the cold free case.
+> It would be good to have a small C program (under an open source
+> license) that shows the issue.
 
-I'm not against making the kernel smaller.
-
-I'm just not a fan of adding config options for each few kB of code - 
-we have to maintain them and the more complex the configuration becomes 
-the more often it breaks.
-
-> Some numbers about a bootable x86 allnoconfig kernel with ELF, ext2 and
-> IDE support :
-> 
->    text	   data	    bss	    dec	    hex	filename
-> 1110389	 119468	 217088	1446945	 161421	vmlinux.2.6.26
-> 1134606	 118840	 212992	1466438	 166046	vmlinux.2.6.27-rc1
->   24217    -628   -4096   19493    4C25 +/-
-
-What became bigger was most likely not related to the patches you sent.
-
-Where and why did the kernel become bigger?
-
-> (The only configuration change between the two kernels is
-> CONFIG_FW_LOADER n->y, which pulls drivers/base/firmware_class.o, 3k).
-
-Why did CONFIG_FW_LOADER get enabled?
-Due to alnoconfig disabling CONFIG_EMBEDDED?
-
-> > In which use cases can users safely disable this option, and on what 
-> > devices have you verified that CONFIG_FILE_LOCKING=n kernels actually 
-> > work in practice?
-> 
-> As long as they don't use NFS (realistic in many production
-> environments) and that the applications do not rely on advisory locking
-> (flock() and fnctl() F_GETLK and F_SETLK), file locking can be
-> disabled.
-
-But what does that mean in practice?
-
-A user will ask:
-I'm using $applications with $libraries, can I safely disable this option?
-
-And e.g. according to a quick grep through the sources uClibc's 
-updwtmp() seems to cease working without flock().
-
-It costs us maintainance of the option and the #ifdef's and gives users 
-one way more to shoot themselves into the foot in nontrivial to detect 
-ways.
-
-> In practice, I only tested a CONFIG_FILE_LOCKING=n kernel
-> with a basic Busybox under Qemu.
-> 
-> Sincerly,
-> 
-> Thomas
-
-cu
-Adrian
-
+That's the one I had in mind, which I have no personal insight into.
+ 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Mathematics is the supreme nostalgia of our time.
 
