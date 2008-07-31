@@ -1,92 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbYGaRha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbYGaRmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbYGaRha (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 13:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYGaRhW
+	id S1754610AbYGaRmd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 13:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYGaRmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 13:37:22 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:14079 "EHLO
-	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752269AbYGaRhV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 13:37:21 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=KocI8HqiAAAA:8 a=VwQbUJbxAAAA:8 a=W0vUJOdyAAAA:8 a=XDwZR0xH3Bt9knHdylcA:9 a=TjQ5r9y-PDWoVFahA1AA:7 a=Z4vWBL_r572G5pZYCij_ORP4OZMA:4
-Message-ID: <4891F847.7030100@shaw.ca>
-Date: Thu, 31 Jul 2008 11:37:11 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: "V.Radhakrishnan" <rk@atr-labs.com>
-CC: Sanka Piyaratna <cesanka@yahoo.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PCIe device driver question
-References: <fa.PmBLCqOb4Xo53y3W9hAdnsU50Og@ifi.uio.no> <fa.42mxuHHJP7XQmYeyxNoEC/NFUHA@ifi.uio.no> <4890BF39.6060608@shaw.ca> <1217509868.2156.18.camel@atlas>
-In-Reply-To: <1217509868.2156.18.camel@atlas>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 31 Jul 2008 13:42:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44378 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751724AbYGaRmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 13:42:23 -0400
+Subject: Re: [PATCH] the loginuid field should be output in all
+	AUDIT_CONFIG_CHANGE audit messages
+From: Eric Paris <eparis@redhat.com>
+To: zhangxiliang <zhangxiliang@cn.fujitsu.com>
+Cc: sgrubb@redhat.com, viro@zeniv.linux.org.uk,
+       Linux Audit <linux-audit@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <488FE2B9.2040101@cn.fujitsu.com>
+References: <488FE2B9.2040101@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Thu, 31 Jul 2008 13:42:02 -0400
+Message-Id: <1217526122.2902.103.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-V.Radhakrishnan wrote:
-> Hi Robert,
-> 
-> Thanks for the reply. I was thinking that the MMIO and reserve memory
-> will be below 4 GB was only applicable for 32-bit environments, since I
-> don't have much experience in 64-bit.
-> 
-> However, I had an IDENTICAL problem over 2 years ago. I had used
-> posix_memalign() in user space to allocate pages aligned to 4096 byte
-> pages, allocated several additional memaligned pages in user space, used
-> mlock() to lock all these pages, gathered the user space addresses into
-> the original pages as arrays of structures, passed this array into the
-> kernel using an ioctl() call, used get_user_pages() to extract the
-> struct page pointers, performed a kmap() to get the kernel virtual
-> addresses and then extracted the physical addresses and 'sent' this to
-> the chip to perform DMA.
-> 
-> This situation is almost identical to what has been reported and hence
-> my interest.
-> 
-> However, I had a PCI access problem. The DMA was just NOT happening on
-> any machine which had highmem, i.e over 896 MB.
+On Wed, 2008-07-30 at 11:40 +0800, zhangxiliang wrote:
+> In the audit message which type is "AUDIT_CONFIG_CHANGE", the output format should contain "auid" field.
 
-My guess there was a bug in your DMA mapping code. I don't think kmap is 
-what is normally used for this. I think with get_user_pages one usually 
-takes the returned page pointers to create an SG list and uses 
-dma_map_sg to create a DMA mapping for them.
+shouldn't these be using the "audit_get_loginuid(current)"  and if we
+are going to output loginuid we also should be outputting sessionid
+
+-Eric
 
 > 
-> I "solved" the problem since I didn't have much time to do R&D, by
-> booting with kernel command line option of mem=512M and the DMA went
-> thru successfully.
+> Signed-off-by: Zhang Xiliang <zhangxiliang@cn.fujitsu.com>
+> ---
+>  kernel/auditfilter.c |    6 ++++--
+>  1 files changed, 4 insertions(+), 2 deletions(-)
 > 
-> This was the linux-2.6.15 kernel then. Since the project was basically
-> to test the DMA capability of the device, the actual address to where it
-> was DMA-ed didn't matter, and I got paid for my work. However, this
-> matter was always at the back of my head.
+> diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
+> index 98c50cc..8a184f5 100644
+> --- a/kernel/auditfilter.c
+> +++ b/kernel/auditfilter.c
+> @@ -1022,8 +1022,9 @@ static void audit_update_watch(struct audit_parent *parent,
+>  			struct audit_buffer *ab;
+>  			ab = audit_log_start(NULL, GFP_KERNEL,
+>  				AUDIT_CONFIG_CHANGE);
+> +			audit_log_format(ab, "auid=%u", current->loginuid);
+>  			audit_log_format(ab,
+> -				"op=updated rules specifying path=");
+> +				" op=updated rules specifying path=");
+>  			audit_log_untrustedstring(ab, owatch->path);
+>  			audit_log_format(ab, " with dev=%u ino=%lu\n",
+>  				 dev, ino);
+> @@ -1058,7 +1059,8 @@ static void audit_remove_parent_watches(struct audit_parent *parent)
+>  				struct audit_buffer *ab;
+>  				ab = audit_log_start(NULL, GFP_KERNEL,
+>  					AUDIT_CONFIG_CHANGE);
+> -				audit_log_format(ab, "op=remove rule path=");
+> +				audit_log_format(ab, "auid=%u", current->loginuid);
+> +				audit_log_format(ab, " op=remove rule path=");
+>  				audit_log_untrustedstring(ab, w->path);
+>  				if (r->filterkey) {
+>  					audit_log_format(ab, " key=");
+> -- 
+> 1.5.4.2
 > 
-> What could have been the problem with the x86 32-bit PCI ? 
 > 
-> Thanks and regards
-> 
-> V. Radhakrishnan
-> www.atr-labs.com
-> 
-> On Wed, 2008-07-30 at 13:21 -0600, Robert Hancock wrote:
->> V.Radhakrishnan wrote:
->>>>> am testing this in an X86_64 architecture machine with 4 GB of RAM. I
->>>>> am able to successfully dma data into any memory (dma) address >
->>>>> 0x0000_0001_0000_0000.
->>> How can you DMA "successfully" into this address which is > 4 GB when
->>> you have only 4 GB RAM ? Or am I missing something ?
->> The MMIO and other reserved memory space at the top of the 32-bit memory 
->> space will cause the top part of memory to be relocated above 4GB.
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+
