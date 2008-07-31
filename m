@@ -1,105 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbYGaPc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbYGaPeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756306AbYGaPc6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 11:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbYGaPct
+	id S1757188AbYGaPeU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 11:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbYGaPeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 11:32:49 -0400
-Received: from [128.224.252.2] ([128.224.252.2]:15688 "EHLO
-	yow-pgortmak-d1.corp.ad.wrs.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752737AbYGaPcs (ORCPT
+	Thu, 31 Jul 2008 11:34:07 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:58491 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752612AbYGaPeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 11:32:48 -0400
-X-Greylist: delayed 474 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jul 2008 11:32:47 EDT
-Date: Thu, 31 Jul 2008 11:26:30 -0400
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: linux-serial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC] suggested fix for 83xx/85xx PowerPC UART break bug
-Message-ID: <20080731152616.GA14248@windriver.com>
+	Thu, 31 Jul 2008 11:34:05 -0400
+Date: Thu, 31 Jul 2008 11:34:01 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Simon Arlott <simon@fire.lp0.eu>
+cc: Rene Herman <rene.herman@keyaccess.nl>,
+       Arjan van de Ven <arjan@infradead.org>, <linux-kernel@vger.kernel.org>,
+       <mingo@elte.hu>, Daniel Walker <dwalker@mvista.com>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [patch 5/3] fastboot: sync the async execution before     
+ late_initcall and move level 6s (sync) first
+In-Reply-To: <5b329c74610e4f3332133acddab64262b7c0fc7a@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
+Message-ID: <Pine.LNX.4.44L0.0807311110300.4409-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 31 Jul 2008, Simon Arlott wrote:
 
-This is something I'd tripped over earlier, and wanted to follow up on
-to get an acceptable fix in for everyone's benefit before it falls through
-the cracks again.
+> I wasn't suggesting comparing ehci_hcd_init/ohci_hcd_mod_init times,
+> with fastboot I'm assuming it may manage to take a lock those need in
+> the main initcall process and delay hcd inits.
 
-There seems to be an issue with recent 83xx/85xx SOC UARTs, in which a break
-triggers a short lived IRQ storm (hence killing any hope of using SysRQ).
-The only fix I found to work was to just ignore the bogus events that
-had the associated signature bit set.
+What does your "it" above refer to?  One of the USB driver initcalls?
 
-This fix is what I was using against earlier kernels, but I hate to add more
-board/arch specific ifdefs to files like 8250.c, so I'm wondering if
-anyone has any other suggestions before I simply end up cleaning up the
-boardlist (now ppc is dead) and respinning the patch much as it is now
-and resending.
+> >> It looks like usb device driver init requires it to immediately block and
+> >> wait for all devices to have completed init
+> >
+> > Which USB device driver init are you talking about?  Your log includes
+> > usblp_init, usb_stor_init, usb_usual_init, hid_init (for a USB mouse),
+> > and snd_usb_audio_init.  Each one completed before the next one
+> > started; none of them blocked waiting for any devices (other than their
+> > own, of course) to finish initializing.
+> 
+> Yes - and that's the point. The initcall process when it reaches usb/ is
+> this:
+> 1. ehci_hcd_init
+> 2. ohci_hcd_mod_init
+> 3. usblp_init
 
-Thanks,
-Paul.
+It sounds like you have usblp compiled into the kernel instead of
+building it as a module.  Do things change for the better if you make
+usblp a module?
 
------------------
+> There is nothing else to run between 1-2 and 3, so there is no opportunity
+> to initialise devices in the background and usblp_init blocks for a while.
 
-Variation/update of version1 of the patch -- orig. discussion at:
+If it were a module then it would block in a separate thread and 
+wouldn't hold up the main init process.
 
-http://patchwork.ozlabs.org/linuxppc/patch?id=15986
+> If ehci_hcd_init and ohci_hcd_mod_init were moved up to before sata/ide/net
+> but usblp_init was kept after these then the devices should be ready by the
+> time it gets there.
 
-Update is: Don't use MPC8540 as a selector for the 8548 boards,
-since testing on a genuine (older) MPC8540ADS board shows that
-it doesn't have the issue.  This will get coverage on the 
-sbc8349, fsl_mpc8349_mitx, fsl_mpc832xe (and the similar 8323RDB)
-and the sbc8548 and the fsl_8548cds. (i.e all the boards where
-the problem has been demonstrated to exist so far.)
+It's not entirely clear why usblp is blocking at all.  Probably because
+it is waiting on the device semaphores for devices that are currently
+being probed -- the driver core won't allow two threads to probe the
+same device concurrently.
 
-    Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> >>  - so regardless of where we
+> >> put the usb/ directory in the initcall order, it will always wait a while
+> >> because the drivers will be immediately after the hcd init...
+> >
+> > No, you're wrong.  To prove it, try patching the start of hub_events()
+> > in drivers/usb/core/hub.c like this:
+> >
+> >  	 * Not the most efficient, but avoids deadlocks.
+> >  	 */
+> >  	while (1) {
+> > +		ssleep(5);
+> >
+> >  		/* Grab the first entry at the beginning of the list */
+> >  		spin_lock_irq(&hub_event_lock);
+> >
+> > Then see what happens.
+> 
+> I'll try this tonight, but all I'd expect to see is the background thread
+> take longer to do anything?
 
----
- drivers/serial/8250.c      |   17 +++++++++++++++++
- include/linux/serial_reg.h |    1 +
- 2 files changed, 18 insertions(+)
+Well, yes, of course.  My point is that the drivers (those in modules, 
+anyway) won't initialize _immediately_ after the HCD init, as you 
+wrote above.  There will be this 5-second delay.
 
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1347,6 +1347,25 @@ serial8250_handle_port(struct uart_8250_
- 
- 	status = serial_inp(up, UART_LSR);
- 
-+#if defined(CONFIG_MPC834x) || defined(CONFIG_MPC85xx_CDS) || \
-+	defined(CONFIG_SBC8548) || defined (CONFIG_PPC_MPC832x)
-+	/*
-+	 * There appears to be a quirk in the implementation on some 8xxx
-+	 * where after a break is rec'd (UART_LSR_BI), the UART generates
-+	 * a short duration burst of bogus IRQ events with the signature
-+	 * of RFE set (along with "normal" bits set) in the LSR.
-+	 */
-+
-+#define RFE_8xxx_ERR_BITS (	UART_LSR_RFE	| UART_LSR_TEMT	| \
-+				UART_LSR_THRE	| UART_LSR_BI	| \
-+				UART_LSR_DR	)
-+
-+	if (status == RFE_8xxx_ERR_BITS) {
-+		spin_unlock(&up->port.lock);
-+		return;
-+	}
-+#endif
-+
- 	DEBUG_INTR("status = %x...", status);
- 
- 	if (status & UART_LSR_DR) {
---- a/include/linux/serial_reg.h
-+++ b/include/linux/serial_reg.h
-@@ -109,6 +109,7 @@
- #define UART_MCR_DTR		0x01 /* DTR complement */
- 
- #define UART_LSR	5	/* In:  Line Status Register */
-+#define UART_LSR_RFE		0x80 /* Rx FIFO Error (BE, FE, or PE) */
- #define UART_LSR_TEMT		0x40 /* Transmitter empty */
- #define UART_LSR_THRE		0x20 /* Transmit-hold-register empty */
- #define UART_LSR_BI		0x10 /* Break interrupt indicator */
+> The usb device driver initcalls aren't initialised by khubd
+
+Um.  The initcalls for USB device drivers built as modules are made by 
+the modprobe thread, which is started in response to a uevent created 
+by khub.  So while they aren't initialized directly by khubd, they are 
+initialized indirectly by it.
+
+On the other hand, the initcalls for drivers compiled into the kernel 
+are a different story.
+
+> and they're
+> definitely blocking on the khubd device initialisation [for that device,
+> as you said earlier] being completed.
+
+Driver probing is always going to be a bottleneck, even for
+non-matching device/driver pairs.  That's because the driver core
+acquires the device semaphore even before calling the bus's match
+routine.  When a new driver is registered, the driver core just goes
+down the list of all devices registered on the bus, locking each one in
+turn and trying to match & probe it.
+
+Alan Stern
 
