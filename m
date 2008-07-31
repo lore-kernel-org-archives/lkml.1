@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYGaMqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755796AbYGaMrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754889AbYGaMqv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 08:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYGaMqi
+	id S1755796AbYGaMrX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 08:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYGaMrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 08:46:38 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:20268 "EHLO
-	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750992AbYGaMqh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 08:46:37 -0400
-Message-ID: <4891B3E7.1090109@panasas.com>
-Date: Thu, 31 Jul 2008 15:45:27 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 31 Jul 2008 08:47:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38699 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752332AbYGaMrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 08:47:10 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FRV: Wire up new system calls
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Date: Thu, 31 Jul 2008 13:46:33 +0100
+Message-ID: <20080731124633.28575.85362.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-To: open-iscsi@googlegroups.com
-CC: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       davem@davemloft.net, michaelc@cs.wisc.edu,
-       Steve Wise <swise@opengridcomputing.com>, rdreier@cisco.com,
-       daisyc@us.ibm.com, wenxiong@us.ibm.com, bhua@us.ibm.com,
-       Divy Le Ray <divy@chelsio.com>, Dimitrios Michailidis <dm@chelsio.com>,
-       Casey Leedom <leedom@chelsio.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-References: <200807300019.m6U0JkdY012558@localhost.localdomain> <4890C287.60508@pobox.com> <8A71B368A89016469F72CD08050AD334032EC7F5@maui.asicdesigners.com>
-In-Reply-To: <8A71B368A89016469F72CD08050AD334032EC7F5@maui.asicdesigners.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Jul 2008 12:44:53.0060 (UTC) FILETIME=[3A6EF840:01C8F30B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karen Xie wrote:
->> Comments:
->>
->> * SCSI drivers should be submitted via the linux-scsi@vger.kernel.org 
->> mailing list.
-> 
-> Will do that. Thanks.
-> 
->> * The driver is clean and readable, well done
->>
->> * From a networking standpoint, our main concern becomes how this 
->> interacts with the networking stack.  In particular, I'm concerned
-> based 
->> on reading the source that this driver uses "TCP port stealing" rather 
->> than using a totally separate MAC address (and IP).
->>
->> Stealing a TCP port on an IP/interface already assigned is a common 
->> solution in this space, but also a flawed one.  Precisely because the 
->> kernel and applications are unaware of this "special, magic TCP port" 
->> you open the potential for application problems that are very difficult
-> 
->> for an admin to diagnose based on observed behavior.
-> 
-> The collisions between the host stack and iSCSI offload are unlikely
-> because the iSCSI target server's port is unique (nailed down as 3260).
-> If an offload card is plugged in, all iSCSI connections to a given
-> target (i.e., destination/port) are offloaded. There is precedence for
-> this approach such as RDMA/iWarp.
-> 
+Wire up for FRV the system calls that were added in the last merge window.
 
-Please note that all SW iscsi targets I know, let you change the default
-3260 port to whatever you want. Is that supported?
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Jeff is there a way for the user-mode demon to reserve the port beforehand
-so it will appear to be taken.
+ arch/frv/kernel/entry.S  |    7 ++++++-
+ include/asm-frv/unistd.h |    8 +++++++-
+ 2 files changed, 13 insertions(+), 2 deletions(-)
 
->> So, additional information on your TCP port usage would be greatly 
->> appreciated.  Also, how does this interact with IPv6?  Clearly it 
->> interacts with IPv4...
-> 
-> Currently, IPv6 connection request will not be honored, I will make sure
-> the checking is added in the resubmission.
-> 
-> 
-Boaz
+
+diff --git a/arch/frv/kernel/entry.S b/arch/frv/kernel/entry.S
+index b8a4b94..99060ab 100644
+--- a/arch/frv/kernel/entry.S
++++ b/arch/frv/kernel/entry.S
+@@ -1519,6 +1519,11 @@ sys_call_table:
+ 	.long sys_fallocate
+ 	.long sys_timerfd_settime	/* 325 */
+ 	.long sys_timerfd_gettime
+-
++	.long sys_signalfd4
++	.long sys_eventfd2
++	.long sys_epoll_create1
++	.long sys_dup3			/* 330 */
++	.long sys_pipe2
++	.long sys_inotify_init1
+ 
+ syscall_table_size = (. - sys_call_table)
+diff --git a/include/asm-frv/unistd.h b/include/asm-frv/unistd.h
+index f184eb8..edcfaf5 100644
+--- a/include/asm-frv/unistd.h
++++ b/include/asm-frv/unistd.h
+@@ -333,10 +333,16 @@
+ #define __NR_fallocate		324
+ #define __NR_timerfd_settime	325
+ #define __NR_timerfd_gettime	326
++#define __NR_signalfd4		327
++#define __NR_eventfd2		328
++#define __NR_epoll_create1	329
++#define __NR_dup3		330
++#define __NR_pipe2		331
++#define __NR_inotify_init1	332
+ 
+ #ifdef __KERNEL__
+ 
+-#define NR_syscalls 325
++#define NR_syscalls 333
+ 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ /* #define __ARCH_WANT_OLD_READDIR */
 
