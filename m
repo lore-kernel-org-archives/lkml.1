@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759774AbYGaWGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759933AbYGaWHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759774AbYGaWGP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 18:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbYGaWF6
+	id S1759933AbYGaWHS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 18:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbYGaWHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 18:05:58 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:32900 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755616AbYGaWF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 18:05:58 -0400
-Date: Fri, 1 Aug 2008 00:05:19 +0200
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc1 process time accounting
-Message-ID: <20080731220519.GB5543@ics.muni.cz>
-References: <20080731104319.GB5806@ics.muni.cz> <20080731144147.82fcd85e.akpm@linux-foundation.org>
+	Thu, 31 Jul 2008 18:07:04 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:1431 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755390AbYGaWHB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 18:07:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Gj+l/xlzYV0QC0uLgQzfgW1lSips9ZzttXnpS/Whg56Q752lEPZWHecSqjPeAHFteN
+         ER7CAeasPjM9fHETou+i9lFn6+OC0yK9q/7u6rFa3CEbWNegwm1K0sLBDSiqdj2FSXPo
+         1iTe/ueksoqYPasxPOjazzycw5UjdkKj/4AE8=
+Message-ID: <86802c440807311507n50e2d029j8942c24dbca23ebe@mail.gmail.com>
+Date: Thu, 31 Jul 2008 15:07:00 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [PATCH 0/3] dyn_array support #2
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Mike Travis" <travis@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, benh <benh@kernel.crashing.org>
+In-Reply-To: <1217541108.8157.108.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080731144147.82fcd85e.akpm@linux-foundation.org>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Fri, 01 Aug 2008 00:05:20 +0200 (CEST)
+References: <200807291414.55479.yhlu.kernel@gmail.com>
+	 <200807300311.48510.yhlu.kernel@gmail.com>
+	 <200807301210.31511.yhlu.kernel@gmail.com>
+	 <200807302109.21519.yhlu.kernel@gmail.com>
+	 <1217541108.8157.108.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 02:41:47PM -0700, Andrew Morton wrote:
-> > kthreadd and console-kit-daemons claim they spent 5124095 hours using CPU.
-> 
-> My 2.6.27-rc1-mm1 kthreadd looks OK in `top'.  How are you displaying
-> this information?  More details if possible, please..
+On Thu, Jul 31, 2008 at 2:51 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, 2008-07-30 at 21:09 -0700, Yinghai Lu wrote:
+>> please check the patches adding dyn_array and nr_irqs #2
+>
+> Why can't we use a radix tree like powerpc does?
+>
+which file in arch/power i could look?
 
-ps aux  | grep kthread
-root         2 151451100  0.0 0     0 ?        S<   09:49 21114580:11 [kthreadd]
-
-top:
-2489 root      20   0  102m 3300 1608 S  0.0  0.2  5124095h console-kit-dae
-2 root      15  -5     0    0    0 S  0.0  0.0  5124095h kthreadd
-
--- 
-Luká¹ Hejtmánek
+YH
