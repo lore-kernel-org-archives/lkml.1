@@ -1,68 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757033AbYGaKdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757139AbYGaKeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757033AbYGaKdT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 06:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbYGaKdH
+	id S1757139AbYGaKeR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 06:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbYGaKd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 06:33:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44611 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753641AbYGaKdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 06:33:06 -0400
-Date: Thu, 31 Jul 2008 12:32:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Barry Kasindorf <barry.kasindorf@amd.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>, Jason Yeh <jason.yeh@amd.com>
-Subject: Re: [PATCH 0/24] oprofile: Add IBS support for AMD CPUs
-Message-ID: <20080731103249.GF488@elte.hu>
-References: <1216753748-11261-1-git-send-email-robert.richter@amd.com> <20080726095221.GB25890@elte.hu> <20080728140257.GO15356@erda.amd.com>
+	Thu, 31 Jul 2008 06:33:58 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34442 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753270AbYGaKd5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 06:33:57 -0400
+Message-ID: <489194CB.2000008@jp.fujitsu.com>
+Date: Thu, 31 Jul 2008 19:32:43 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080728140257.GO15356@erda.amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: [PATCH 2/2] shpchp: Rename duplicate slot name N as N-1, N-2,
+ N-M...
+References: <200807241407.18543.jbarnes@virtuousgeek.org> <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org> <48895D3C.7040100@jp.fujitsu.com> <20080730023842.GA4269@ldl.fc.hp.com> <20080730024450.GC4269@ldl.fc.hp.com>
+In-Reply-To: <20080730024450.GC4269@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tested-by & Acked-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 
-* Robert Richter <robert.richter@amd.com> wrote:
+Thnaks,
+Kenji Kaneshige
 
-> On 26.07.08 11:52:21, Ingo Molnar wrote:
-> > 
-> > * Robert Richter <robert.richter@amd.com> wrote:
-> > 
-> > > Patches #1-3 are not directly related to IBS.
-> > > Patch #4 adds generic support of model specific initialization.
-> > > Patches #10, #11 add the core implementation of IBS.
-> > > Patches #12-24 contain code improvements and small fixes.
-> > 
-> > cool stuff! I've created the tip/oprofile topic branch for the patches 
-> > from you, Barry and Jason and have applied all the current patches (and 
-> > followup fixes) to it. Below are the access coordinates and the log 
-> > summary.
-> > 
-> > It's not yet integrated into tip/master - will do some testing first. 
-> > I'll send review feedback separately as well, on a per patch basis.
+
+Alex Chiang wrote:
+> Commit ef0ff95f136f0f2d035667af5d18b824609de320 introduces the
+> shpchp_slot_with_bus module parameter, which was intended to help
+> work around broken firmware that assigns the same name to multiple
+> slots.
 > 
-> Ingo,
+> Commit b3bd307c628af2f0a581c42d5d7e4bcdbbf64b6a tells the user to
+> use the above parameter in the event of a name collision.
 > 
-> thanks for adding the patches to tip/oprofile. I will send you more 
-> patches that reflect the comments you made.
+> This approach is sub-optimal because it requires too much work from
+> the user.
+> 
+> Instead, let's rename the slot on behalf of the user. If firmware
+> assigns the name N to multiple slots, then:
+> 
+>         The first registered slot is assigned N
+>         The second registered slot is assigned N-1
+>         The third registered slot is assigned N-2
+>         The Mth registered slot becomes N-M
+> 
+> In the event we overflow the slot->name parameter, we report an
+> error to the user.
+> 
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+>  drivers/pci/hotplug/shpchp_core.c |   34 +++++++++++++++-------------------
+>  1 files changed, 15 insertions(+), 19 deletions(-)
+> 
+> diff --git a/drivers/pci/hotplug/shpchp_core.c b/drivers/pci/hotplug/shpchp_core.c
+> index a8cbd03..cc38615 100644
+> --- a/drivers/pci/hotplug/shpchp_core.c
+> +++ b/drivers/pci/hotplug/shpchp_core.c
+> @@ -39,7 +39,6 @@
+>  int shpchp_debug;
+>  int shpchp_poll_mode;
+>  int shpchp_poll_time;
+> -static int shpchp_slot_with_bus;
+>  struct workqueue_struct *shpchp_wq;
+>  
+>  #define DRIVER_VERSION	"0.4"
+> @@ -53,11 +52,9 @@ MODULE_LICENSE("GPL");
+>  module_param(shpchp_debug, bool, 0644);
+>  module_param(shpchp_poll_mode, bool, 0644);
+>  module_param(shpchp_poll_time, int, 0644);
+> -module_param(shpchp_slot_with_bus, bool, 0644);
+>  MODULE_PARM_DESC(shpchp_debug, "Debugging mode enabled or not");
+>  MODULE_PARM_DESC(shpchp_poll_mode, "Using polling mechanism for hot-plug events or not");
+>  MODULE_PARM_DESC(shpchp_poll_time, "Polling mechanism frequency, in seconds");
+> -MODULE_PARM_DESC(shpchp_slot_with_bus, "Use bus number in the slot name");
+>  
+>  #define SHPC_MODULE_NAME "shpchp"
+>  
+> @@ -99,23 +96,13 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
+>  	kfree(slot);
+>  }
+>  
+> -static void make_slot_name(struct slot *slot)
+> -{
+> -	if (shpchp_slot_with_bus)
+> -		snprintf(slot->hotplug_slot->name, SLOT_NAME_SIZE, "%04d_%04d",
+> -			 slot->bus, slot->number);
+> -	else
+> -		snprintf(slot->hotplug_slot->name, SLOT_NAME_SIZE, "%d",
+> -			 slot->number);
+> -}
+> -
+>  static int init_slots(struct controller *ctrl)
+>  {
+>  	struct slot *slot;
+>  	struct hotplug_slot *hotplug_slot;
+>  	struct hotplug_slot_info *info;
+>  	int retval = -ENOMEM;
+> -	int i;
+> +	int i, len, dup = 1;
+>  
+>  	for (i = 0; i < ctrl->num_slots; i++) {
+>  		slot = kzalloc(sizeof(*slot), GFP_KERNEL);
+> @@ -146,7 +133,7 @@ static int init_slots(struct controller *ctrl)
+>  		/* register this slot with the hotplug pci core */
+>  		hotplug_slot->private = slot;
+>  		hotplug_slot->release = &release_slot;
+> -		make_slot_name(slot);
+> +		snprintf(slot->name, SLOT_NAME_SIZE, "%d", slot->number);
+>  		hotplug_slot->ops = &shpchp_hotplug_slot_ops;
+>  
+>  		get_power_status(hotplug_slot, &info->power_status);
+> @@ -157,14 +144,23 @@ static int init_slots(struct controller *ctrl)
+>  		dbg("Registering bus=%x dev=%x hp_slot=%x sun=%x "
+>  		    "slot_device_offset=%x\n", slot->bus, slot->device,
+>  		    slot->hp_slot, slot->number, ctrl->slot_device_offset);
+> +duplicate_name:
+>  		retval = pci_hp_register(slot->hotplug_slot,
+>  				ctrl->pci_dev->subordinate, slot->device);
+>  		if (retval) {
+> +			/*
+> +			 * If slot N already exists, we'll try to create
+> +			 * slot N-1, N-2 ... N-M, until we overflow.
+> +			 */
+> +			if (retval == -EEXIST) {
+> +				len = snprintf(slot->name, SLOT_NAME_SIZE,
+> +					       "%d-%d", slot->number, dup++);
+> +				if (len < SLOT_NAME_SIZE)
+> +					goto duplicate_name;
+> +				else
+> +					err("duplicate slot name overflow\n");
+> +			}
+>  			err("pci_hp_register failed with error %d\n", retval);
+> -			if (retval == -EEXIST)
+> -				err("Failed to register slot because of name "
+> -                                    "collision. Try \'shpchp_slot_with_bus\' "
+> -				    "module option.\n");
+>  			goto error_info;
+>  		}
+>  
 
-thanks. FYI, i've merged tip/oprofile into tip/master 5 days ago, and 
-it's been problem-free so far in testing. I'll set up a branch for 
-linux-next testing as well.
 
-	Ingo
