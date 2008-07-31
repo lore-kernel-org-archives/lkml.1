@@ -1,73 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbYGaHdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970AbYGaHgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755262AbYGaHdt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 03:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYGaHdl
+	id S1754970AbYGaHgp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 03:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYGaHgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 03:33:41 -0400
-Received: from mga10.intel.com ([192.55.52.92]:45955 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753224AbYGaHdk (ORCPT
+	Thu, 31 Jul 2008 03:36:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52020 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752891AbYGaHgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 03:33:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,284,1215414000"; 
-   d="scan'208";a="366677596"
-Subject: Re: VolanoMark regression with 2.6.27-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1217474425.25608.150.camel@ymzhang>
-References: <1217474425.25608.150.camel@ymzhang>
-Content-Type: text/plain
-Date: Thu, 31 Jul 2008 15:31:03 +0800
-Message-Id: <1217489463.25608.157.camel@ymzhang>
+	Thu, 31 Jul 2008 03:36:35 -0400
+Date: Thu, 31 Jul 2008 00:35:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "David S. Miller" <davem@davemloft.net>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: Re: linux-next: sparc32/gcc-3.4.5/ld-2.15 build failure
+Message-Id: <20080731003558.965581a6.akpm@linux-foundation.org>
+In-Reply-To: <20080731171603.799c2c85.sfr@canb.auug.org.au>
+References: <20080731171603.799c2c85.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 31 Jul 2008 17:16:03 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-On Thu, 2008-07-31 at 11:20 +0800, Zhang, Yanmin wrote:
-> Ingo,
+> Hi Dave,
 > 
-> volanoMark has regression with 2.6.27-rc1.
-> 1) 70% on 16-core tigerton;
-> 2) 18% on a new multi-core+HT mahcine;
+> linux-next builds (sparc32 defconfig) have been failing for some time
+> like this:
 > 
-> I tried to use git bisect to locate the root cause, but git bisect always went
-> back to 2.6.26. Then, I used my mechanical bisect script linearly to locate below commit:
+> .tmp_kallsyms2.o(.rodata+0x0): In function `kallsyms_addresses':
+> : relocation truncated to fit: R_SPARC_32 _text
+> .tmp_kallsyms2.o(.rodata+0x4): In function `kallsyms_addresses':
+> : relocation truncated to fit: R_SPARC_32 _text
+> .tmp_kallsyms2.o(.rodata+0x8): In function `kallsyms_addresses':
+> : relocation truncated to fit: R_SPARC_32 _text
 > 
-> commit 82638844d9a8581bbf33201cc209a14876eca167
-> Merge: 9982fbf... 63cf13b...
-> Author: Ingo Molnar <mingo@elte.hu>
-> Date:   Wed Jul 16 00:29:07 2008 +0200
+> (several more)
 > 
->     Merge branch 'linus' into cpus4096
+> I finally bisected it down to this commit:
 > 
->     Conflicts:
+> commit f9247273cb69ba101877e946d2d83044409cc8c5
+> Author: Steven Whitehouse <swhiteho@redhat.com>
+> Date:   Thu Jul 24 17:22:13 2008 +0100
 > 
->         arch/x86/xen/smp.c
->         kernel/sched_rt.c
->         net/iucv/iucv.c
+>     UFS: add const to parser token table
+>     
+> Reverting this commit and the followup commit:
 > 
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> commit fb2e405fc1fc8b20d9c78eaa1c7fd5a297efde43
+> Author: Adrian Bunk <bunk@kernel.org>
+> Date:   Fri Jul 25 02:55:49 2008 +0300
 > 
+>     fix fs/nfs/nfsroot.c compilation
 > 
+> allows the sparc32 build to succeed.  This is toolchain specific as a
+> different cross toolchain I have does not get this error.
 > 
-> But if I use 'git show 82638844d9a8581bbf33201cc209a14876eca167', it looks like I could only
-> get a part of the patch. If I use web to acces the commit, I could get a big patch. As it's
-> a merge, what're commit numbers of the subpatches?
+> Failing toolchain:
 > 
+> $ gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/bin/sparc64-unknown-linux-gnu-gcc --version
+> sparc64-unknown-linux-gnu-gcc (GCC) 3.4.5
+> $ gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/bin/sparc64-unknown-linux-gnu-ld --version
+> GNU ld version 2.15
 > 
-> BTW, sysbench+mysql(oltp readonly) has about 15% regression, but git bisect looks crazy again.
-Oh, it looks like they are the old issues in 2.6.26-rc1 and the 2 patches were reverted before 2.6.26.
-New patches are merged into 2.6.27-rc1, but the issues are still not resolved clearly.
-http://www.uwsg.iu.edu/hypermail/linux/kernel/0805.2/1148.html.
+> An OK toolchain:
+> $ cross/bin/sparc64-linux-gcc --version
+> sparc64-linux-gcc (GCC) 4.2.4
+> $ cross/bin/sparc64-linux-ld --version
+> GNU ld (GNU Binutils) 2.18
+> 
+> Both these commits are actually in Linus' tree, now.
 
-yanmin
+gee.  nfsroot.c is now effectively doing `const __initconst' which
+might be upsetting the compiler.  And perhaps one of the forty-odd
+other users of match_table_t needs __initconst or somesuch.
 
-
+Yes, I'd second a revert-and-try-again-later on that one.
