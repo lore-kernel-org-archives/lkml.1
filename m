@@ -1,194 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbYGaI47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbYGaJEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754154AbYGaI47 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 04:56:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbYGaI4v
+	id S1754082AbYGaJEs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 05:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbYGaJEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 04:56:51 -0400
-Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:40214 "HELO
-	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751135AbYGaI4u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 04:56:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
-  b=NgUmSZeNchIH8cEs8Q/8/tkKggKMRFROwQZu7DB1ZyA+JlwXJWuVvR8i8062zBZVEBo3EmX3XA/XJ4xX3QrqsgMXJBpZCICo1wbyQpwgDnaXuIv8l0lMk22VZ37Je2XFH4IBt4fiU2S7KBAB5Z5rk/np714B5oot2/zDl8oytcc=  ;
-X-YMail-OSG: 4oSPSP4VM1lorGW_dvXph.VE1JdLsajdPTMOz5MHO6jnMn_2TeBJnVCvDcMS.JGSDTefxpRWxbKVqiFWGURKUbfooz_oq6mXSvDRlGMWl_afzqfU_HgOR0y5R7hmUk7lBeQ-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/2] Export get_user_pages_fast
-Date: Thu, 31 Jul 2008 18:56:39 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, Avi Kivity <avi@qumranet.com>,
-       Adrian Bunk <bunk@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       lguest <lguest@ozlabs.org>, linux-kernel@vger.kernel.org
-References: <200807301438.55941.rusty@rustcorp.com.au> <200807311848.13142.nickpiggin@yahoo.com.au> <1217494343.11188.437.camel@pasglop>
-In-Reply-To: <1217494343.11188.437.camel@pasglop>
+	Thu, 31 Jul 2008 05:04:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45781 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752496AbYGaJEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 05:04:38 -0400
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_H5XkI000i8RFXLm"
-Message-Id: <200807311856.39837.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] tracehook: fix exit_signal=0 case
+X-fcc: ~/Mail/linus
+X-windows: it could happen to you.
+Message-Id: <20080731090409.8D32A154263@magilla.localdomain>
+Date: Thu, 31 Jul 2008 02:04:09 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_H5XkI000i8RFXLm
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+My commit 2b2a1ff64afbadac842bbc58c5166962cf4f7664 introduced a regression
+(sorry about that) for the odd case of exit_signal=0 (e.g. clone_flags=0).
+This is not a normal use, but it's used by a case in the glibc test suite.
 
-On Thursday 31 July 2008 18:52, Benjamin Herrenschmidt wrote:
-> On Thu, 2008-07-31 at 18:48 +1000, Nick Piggin wrote:
-> > > If we do this then corresponding changes should be made to the powerpc
-> > > patch upon which Ben presently sits.
-> >
-> > Powerpc will still use the CONFIG symbol for the moment because 32-bit
-> > TLB flushing has not been verified to work, so we don't want to pull in
-> > the 64-bit gup. There is some discussion going on, but they probably need
-> > at least to implement pte_special, and then also do RCU freeing of page
-> > tables.
->
-> It's just a matter of building gup.c or not .. as long as it's
-> in the makefile as obj-$(CONFIG_PPC64) (as I put it in the merged
-> version of the patch), the weak symbol should work.
+Dying with exit_signal=0 sends no signal, but it's supposed to wake up a
+parent's blocked wait*() calls (unlike the delayed_group_leader case).
+This fixes tracehook_notify_death() and its caller to distinguish a
+"signal 0" wakeup from the delayed_group_leader case (with no wakeup).
 
-I see. Here we are, then.
-
---Boundary-00=_H5XkI000i8RFXLm
-Content-Type: text/x-diff;
-  charset="utf-8";
-  name="out-of-line-gup.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="out-of-line-gup.patch"
-
-Out of line get_user_pages_fast fallback implementation, make it a weak
-symbol, get rid of CONFIG_HAVE_GET_USER_PAGES_FAST.
-
-Export the symbol to modules so lguest can use it.
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
+ include/linux/tracehook.h |   21 +++++++++++++--------
+ kernel/exit.c             |    6 +++---
+ 2 files changed, 16 insertions(+), 11 deletions(-)
 
-Index: linux-2.6/include/linux/mm.h
-===================================================================
---- linux-2.6.orig/include/linux/mm.h	2008-07-31 18:45:19.000000000 +1000
-+++ linux-2.6/include/linux/mm.h	2008-07-31 18:53:43.000000000 +1000
-@@ -834,7 +834,6 @@ extern int mprotect_fixup(struct vm_area
- 			  struct vm_area_struct **pprev, unsigned long start,
- 			  unsigned long end, unsigned long newflags);
- 
--#ifdef CONFIG_HAVE_GET_USER_PAGES_FAST
- /*
-  * get_user_pages_fast provides equivalent functionality to get_user_pages,
-  * operating on current and current->mm (force=0 and doesn't return any vmas).
-@@ -848,25 +847,6 @@ extern int mprotect_fixup(struct vm_area
- int get_user_pages_fast(unsigned long start, int nr_pages, int write,
- 			struct page **pages);
- 
--#else
--/*
-- * Should probably be moved to asm-generic, and architectures can include it if
-- * they don't implement their own get_user_pages_fast.
-- */
--#define get_user_pages_fast(start, nr_pages, write, pages)	\
--({								\
--	struct mm_struct *mm = current->mm;			\
--	int ret;						\
--								\
--	down_read(&mm->mmap_sem);				\
--	ret = get_user_pages(current, mm, start, nr_pages,	\
--					write, 0, pages, NULL);	\
--	up_read(&mm->mmap_sem);					\
--								\
--	ret;							\
--})
--#endif
--
- /*
-  * A callback you can register to apply pressure to ageable caches.
+diff --git a/include/linux/tracehook.h b/include/linux/tracehook.h
+index b187558..1253283 100644
+--- a/include/linux/tracehook.h
++++ b/include/linux/tracehook.h
+@@ -493,16 +493,21 @@ static inline int tracehook_notify_jctl(int notify, int why)
+  * @death_cookie:	value to pass to tracehook_report_death()
+  * @group_dead:		nonzero if this was the last thread in the group to die
   *
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2008-07-31 18:45:19.000000000 +1000
-+++ linux-2.6/mm/memory.c	2008-07-31 18:53:43.000000000 +1000
-@@ -1270,6 +1270,21 @@ int get_user_pages(struct task_struct *t
- }
- EXPORT_SYMBOL(get_user_pages);
- 
-+int __attribute__((weak)) get_user_pages_fast(unsigned long start,
-+				int nr_pages, int write, struct page **pages)
-+{
-+	struct mm_struct *mm = current->mm;
-+	int ret;
-+
-+	down_read(&mm->mmap_sem);
-+	ret = get_user_pages(current, mm, start, nr_pages,
-+					write, 0, pages, NULL);
-+	up_read(&mm->mmap_sem);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(get_user_pages_fast);
-+
- pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
- 			spinlock_t **ptl)
+- * Return the signal number to send our parent with do_notify_parent(), or
+- * zero to send no signal and leave a zombie, or -1 to self-reap right now.
++ * A return value >= 0 means call do_notify_parent() with that signal
++ * number.  Negative return value can be %DEATH_REAP to self-reap right
++ * now, or %DEATH_DELAYED_GROUP_LEADER to a zombie without notifying our
++ * parent.  Note that a return value of 0 means a do_notify_parent() call
++ * that sends no signal, but still wakes up a parent blocked in wait*().
+  *
+  * Called with write_lock_irq(&tasklist_lock) held.
+  */
++#define DEATH_REAP			-1
++#define DEATH_DELAYED_GROUP_LEADER	-2
+ static inline int tracehook_notify_death(struct task_struct *task,
+ 					 void **death_cookie, int group_dead)
  {
-Index: linux-2.6/arch/x86/Kconfig
-===================================================================
---- linux-2.6.orig/arch/x86/Kconfig	2008-07-31 18:45:20.000000000 +1000
-+++ linux-2.6/arch/x86/Kconfig	2008-07-31 18:53:43.000000000 +1000
-@@ -22,7 +22,6 @@ config X86
- 	select HAVE_IDE
- 	select HAVE_OPROFILE
- 	select HAVE_IOREMAP_PROT
--	select HAVE_GET_USER_PAGES_FAST
- 	select HAVE_KPROBES
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	select HAVE_KRETPROBES
-Index: linux-2.6/arch/x86/mm/Makefile
-===================================================================
---- linux-2.6.orig/arch/x86/mm/Makefile	2008-07-31 18:45:20.000000000 +1000
-+++ linux-2.6/arch/x86/mm/Makefile	2008-07-31 18:53:43.000000000 +1000
-@@ -1,7 +1,6 @@
- obj-y	:=  init_$(BITS).o fault.o ioremap.o extable.o pageattr.o mmap.o \
--	    pat.o pgtable.o
-+	    pat.o pgtable.o gup.o
+ 	if (task->exit_signal == -1)
+-		return task->ptrace ? SIGCHLD : -1;
++		return task->ptrace ? SIGCHLD : DEATH_REAP;
  
--obj-$(CONFIG_HAVE_GET_USER_PAGES_FAST) += gup.o
- obj-$(CONFIG_X86_32)		+= pgtable_32.o
+ 	/*
+ 	 * If something other than our normal parent is ptracing us, then
+@@ -512,21 +517,21 @@ static inline int tracehook_notify_death(struct task_struct *task,
+ 	if (thread_group_empty(task) && !ptrace_reparented(task))
+ 		return task->exit_signal;
  
- obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
-Index: linux-2.6/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/Kconfig	2008-07-31 18:53:45.000000000 +1000
-+++ linux-2.6/arch/powerpc/Kconfig	2008-07-31 18:53:51.000000000 +1000
-@@ -42,9 +42,6 @@ config GENERIC_HARDIRQS
- 	bool
- 	default y
+-	return task->ptrace ? SIGCHLD : 0;
++	return task->ptrace ? SIGCHLD : DEATH_DELAYED_GROUP_LEADER;
+ }
  
--config HAVE_GET_USER_PAGES_FAST
--	def_bool PPC64
--
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool PPC64
+ /**
+  * tracehook_report_death - task is dead and ready to be reaped
+  * @task:		@current task now exiting
+- * @signal:		signal number sent to parent, or 0 or -1
++ * @signal:		return value from tracheook_notify_death()
+  * @death_cookie:	value passed back from tracehook_notify_death()
+  * @group_dead:		nonzero if this was the last thread in the group to die
+  *
+  * Thread has just become a zombie or is about to self-reap.  If positive,
+  * @signal is the signal number just sent to the parent (usually %SIGCHLD).
+- * If @signal is -1, this thread will self-reap.  If @signal is 0, this is
+- * a delayed_group_leader() zombie.  The @death_cookie was passed back by
+- * tracehook_notify_death().
++ * If @signal is %DEATH_REAP, this thread will self-reap.  If @signal is
++ * %DEATH_DELAYED_GROUP_LEADER, this is a delayed_group_leader() zombie.
++ * The @death_cookie was passed back by tracehook_notify_death().
+  *
+  * If normal reaping is not inhibited, @task->exit_state might be changing
+  * in parallel.
+diff --git a/kernel/exit.c b/kernel/exit.c
+index eb4d647..38ec406 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -911,10 +911,10 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
+ 		tsk->exit_signal = SIGCHLD;
  
-Index: linux-2.6/mm/Kconfig
-===================================================================
---- linux-2.6.orig/mm/Kconfig	2008-07-31 18:55:16.000000000 +1000
-+++ linux-2.6/mm/Kconfig	2008-07-31 18:55:20.000000000 +1000
-@@ -77,9 +77,6 @@ config FLAT_NODE_MEM_MAP
- 	def_bool y
- 	depends on !SPARSEMEM
+ 	signal = tracehook_notify_death(tsk, &cookie, group_dead);
+-	if (signal > 0)
++	if (signal >= 0)
+ 		signal = do_notify_parent(tsk, signal);
  
--config HAVE_GET_USER_PAGES_FAST
--	bool
--
- #
- # Both the NUMA code and DISCONTIGMEM use arrays of pg_data_t's
- # to represent different areas of memory.  This variable allows
-
---Boundary-00=_H5XkI000i8RFXLm--
+-	tsk->exit_state = signal < 0 ? EXIT_DEAD : EXIT_ZOMBIE;
++	tsk->exit_state = signal == DEATH_REAP ? EXIT_DEAD : EXIT_ZOMBIE;
+ 
+ 	/* mt-exec, de_thread() is waiting for us */
+ 	if (thread_group_leader(tsk) &&
+@@ -927,7 +927,7 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
+ 	tracehook_report_death(tsk, signal, cookie, group_dead);
+ 
+ 	/* If the process is dead, release it - nobody will wait for it */
+-	if (signal < 0)
++	if (signal == DEATH_REAP)
+ 		release_task(tsk);
+ }
+ 
