@@ -1,109 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbYGaPg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbYGaPjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754878AbYGaPg3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 11:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbYGaPgU
+	id S1756094AbYGaPjN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 11:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbYGaPiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 11:36:20 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:56403 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750860AbYGaPgS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 11:36:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=rHrNr6piJO1DccNnM0JGTl/4B9S0aARDy+kTjdB8XZ4R7L8VnuvyFElmfMvAhaeREd
-         DtcO/xKOaQaU8mrgJhyTtuyB9CP+R+8Xgm6dAw9AsMOVsBHaJCqc9BvR4D3COGZngkus
-         wSBaK7+o37wcZWv8e+8oEtc+k1No+F5FhPu5g=
-Message-ID: <58cb370e0807310836x4a6e3c40rf5c3c8ec8b5caae0@mail.gmail.com>
-Date: Thu, 31 Jul 2008 17:36:16 +0200
-From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Subject: Re: linux-next: Tree for July 30
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-In-Reply-To: <20080731140708.GA11229@core.corenet.prv>
+	Thu, 31 Jul 2008 11:38:55 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:47786 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750860AbYGaPiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 11:38:54 -0400
+Date: Thu, 31 Jul 2008 18:37:57 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
+       matthew@wil.cx, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [patch 2/4] Configure out file locking features
+Message-ID: <20080731153757.GB20212@cs181140183.pp.htv.fi>
+References: <20080731092703.661994657@free-electrons.com> <20080731093220.969460336@free-electrons.com> <20080731135319.GA20212@cs181140183.pp.htv.fi> <20080731162007.285938e0@surf>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20080730170635.f737ffe9.sfr@canb.auug.org.au>
-	 <20080730231029.9818953c.akpm@linux-foundation.org>
-	 <20080731140708.GA11229@core.corenet.prv>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080731162007.285938e0@surf>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 4:07 PM, Dmitry Torokhov
-<dmitry.torokhov@gmail.com> wrote:
-> On Wed, Jul 30, 2008 at 11:10:29PM -0700, Andrew Morton wrote:
->> On Wed, 30 Jul 2008 17:06:35 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->>
->> > I have created today's linux-next tree at
->> > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
->>
->> The X server broke on my FC8 t61p thinkpad.  Mainline is OK.
->>
->> Various information is at http://userweb.kernel.org/~akpm/mo/
->>
->> I'm suspecting the input layer - my synaptics device seems to have
->> disappeared?  See http://userweb.kernel.org/~akpm/mo/Xorg-log-diff.txt
->>
->
-> I think this patch should help with Synaptics:
+On Thu, Jul 31, 2008 at 04:20:07PM +0200, Thomas Petazzoni wrote:
+> Le Thu, 31 Jul 2008 16:53:19 +0300,
+> Adrian Bunk <bunk@kernel.org> a écrit :
+> 
+> > As I've already said in the past I'm personally not a huge fan of
+> > these patches, but if it brings advantages in real-life situations
+> > it's hard to argue against it.
+> 
+> Yes, I've seen your points about that kind of patches on
+> linux-embedded, and I understand them. I agree that adding dozens and
+> dozens of configuration items for small features doesn't look like
+> something sustainable on the long run. However, the kernel keeps
+> growing and this isn't sustainable either on the long run for *some*
+> embedded users. So, what should we do ? (That's a real question)
 
-Which unfortunately doesn't help all people running with older synaptics
-user-space after commit 0571c5d20aca71c735222132b02aebddf593045c
-("Input: expand keycode space").
+I'm not against making the kernel smaller.
 
-Can't this be solved without breaking Xorg on newer kernels running
-older synaptics?
+I'm just not a fan of adding config options for each few kB of code - 
+we have to maintain them and the more complex the configuration becomes 
+the more often it breaks.
 
-> From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> Subject: [PATCH] Fix crash on kernels with extended keymap space
->
-> The len argument of EVIOCGBIT(ev,len) is the size of the receiving
-> buffer in bytes, not maximim number of bits to retrieve.
->
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-> ---
->  eventcomm.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/eventcomm.c b/eventcomm.c
-> index e3257cd..2d0a347 100644
-> --- a/eventcomm.c
-> +++ b/eventcomm.c
-> @@ -89,7 +89,7 @@ event_query_is_touchpad(int fd)
->
->     /* Check for ABS_X, ABS_Y, ABS_PRESSURE and BTN_TOOL_FINGER */
->
-> -    SYSCALL(ret = ioctl(fd, EVIOCGBIT(0, EV_MAX), evbits));
-> +    SYSCALL(ret = ioctl(fd, EVIOCGBIT(0, sizeof(evbits)), evbits));
->     if (ret < 0)
->        return FALSE;
->     if (!TEST_BIT(EV_SYN, evbits) ||
-> @@ -97,7 +97,7 @@ event_query_is_touchpad(int fd)
->        !TEST_BIT(EV_KEY, evbits))
->        return FALSE;
->
-> -    SYSCALL(ret = ioctl(fd, EVIOCGBIT(EV_ABS, KEY_MAX), evbits));
-> +    SYSCALL(ret = ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(evbits)), evbits));
->     if (ret < 0)
->        return FALSE;
->     if (!TEST_BIT(ABS_X, evbits) ||
-> @@ -105,7 +105,7 @@ event_query_is_touchpad(int fd)
->        !TEST_BIT(ABS_PRESSURE, evbits))
->        return FALSE;
->
-> -    SYSCALL(ret = ioctl(fd, EVIOCGBIT(EV_KEY, KEY_MAX), evbits));
-> +    SYSCALL(ret = ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(evbits)), evbits));
->     if (ret < 0)
->        return FALSE;
->     if (!TEST_BIT(BTN_TOOL_FINGER, evbits))
-> --
-> 1.5.5.1
+> Some numbers about a bootable x86 allnoconfig kernel with ELF, ext2 and
+> IDE support :
+> 
+>    text	   data	    bss	    dec	    hex	filename
+> 1110389	 119468	 217088	1446945	 161421	vmlinux.2.6.26
+> 1134606	 118840	 212992	1466438	 166046	vmlinux.2.6.27-rc1
+>   24217    -628   -4096   19493    4C25 +/-
+
+What became bigger was most likely not related to the patches you sent.
+
+Where and why did the kernel become bigger?
+
+> (The only configuration change between the two kernels is
+> CONFIG_FW_LOADER n->y, which pulls drivers/base/firmware_class.o, 3k).
+
+Why did CONFIG_FW_LOADER get enabled?
+Due to alnoconfig disabling CONFIG_EMBEDDED?
+
+> > In which use cases can users safely disable this option, and on what 
+> > devices have you verified that CONFIG_FILE_LOCKING=n kernels actually 
+> > work in practice?
+> 
+> As long as they don't use NFS (realistic in many production
+> environments) and that the applications do not rely on advisory locking
+> (flock() and fnctl() F_GETLK and F_SETLK), file locking can be
+> disabled.
+
+But what does that mean in practice?
+
+A user will ask:
+I'm using $applications with $libraries, can I safely disable this option?
+
+And e.g. according to a quick grep through the sources uClibc's 
+updwtmp() seems to cease working without flock().
+
+It costs us maintainance of the option and the #ifdef's and gives users 
+one way more to shoot themselves into the foot in nontrivial to detect 
+ways.
+
+> In practice, I only tested a CONFIG_FILE_LOCKING=n kernel
+> with a basic Busybox under Qemu.
+> 
+> Sincerly,
+> 
+> Thomas
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
