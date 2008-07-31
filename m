@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbYGaK3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbYGaKad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756674AbYGaK3Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 06:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbYGaK3O
+	id S1756769AbYGaKad (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 06:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbYGaKaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 06:29:14 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:11934 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753218AbYGaK3N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 06:29:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SxaZo114NU8GiAHstZRk/g8LASU5fJUsJgMOviOsyRTC48SI+5luN+10Ujgq/oHsD2
-         Ywmk6LLAUSwqhcbVTnSDjdrGQpWIArdFZGroxEKkwMuyK2rWtgT6xwup0upy3RlkZvLQ
-         /40jW5+pgUquUByuE4AKCaGSoXLZZbX/yuZhI=
-Message-ID: <1ba2fa240807310329v7256b7dcteffec3d419eb204d@mail.gmail.com>
-Date: Thu, 31 Jul 2008 13:29:12 +0300
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [BUG] wireless : cpu stuck for 61s
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Dave Young" <hidave.darkstar@gmail.com>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <1217497994.7813.184.camel@penberg-laptop>
+	Thu, 31 Jul 2008 06:30:25 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40044 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753529AbYGaKaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 06:30:24 -0400
+Date: Thu, 31 Jul 2008 12:30:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [git pull] cpus4096 fixes
+Message-ID: <20080731103002.GE488@elte.hu>
+References: <20080727190601.GA764@elte.hu> <200807281053.58267.rusty@rustcorp.com.au> <20080728081639.GA27708@elte.hu> <200807282321.53892.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080729055731.GA3265@darkstar>
-	 <1217334724.10489.47.camel@johannes.berg>
-	 <20080730020820.8bcc00e2.akpm@linux-foundation.org>
-	 <a8e1da0807300302m35a0a7c0q2ff2e0ab92a69239@mail.gmail.com>
-	 <20080730031047.54e13e2d.akpm@linux-foundation.org>
-	 <a8e1da0807301906j6438e5d8y64105fe8a2e3dffe@mail.gmail.com>
-	 <20080730195637.2197a82d.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0807311156050.27055@sbz-30.cs.Helsinki.FI>
-	 <1ba2fa240807310250kd2df7bfxa3591cf78e68f8dc@mail.gmail.com>
-	 <1217497994.7813.184.camel@penberg-laptop>
+In-Reply-To: <200807282321.53892.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 12:53 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> On Thu, 2008-07-31 at 12:50 +0300, Tomas Winkler wrote:
->> > There's ath5k in the stack trace but that, of course, doesn't
->> > automatically mean it's at fault here. It could have been just the poor
->> > bastard who was the next to allocate 4 KB with kmalloc() noticing the
->> > corruption.
->> >
->> > Hope this helps!
->>
->> I've seen something similar with fragmentation code in iwl4965 but I
->> can reproduce it only when using SLAB. With SLUB it didn't shown up.
->> Does anyone know what is difference between SLAB and SLUB in this context.?
->
-> Do you have CONFIG_SLUB_DEBUG_ON enabled? (Note: if you only have
-> CONFIG_SLUB_DEBUG enabled, then you need to enable debugging at run-time
-> by passing slub_debug to kernel command line.)
 
-Yes sure I've done that with slub_debug=FZPU
-Tomas
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
+
+> On Monday 28 July 2008 18:16:39 Ingo Molnar wrote:
+> > * Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > > Mike: I now think the right long-term answer is Linus' dense cpumap
+> > > idea + a convenience allocator for cpumasks.  We sweep the kernel for
+> > > all on-stack vars and replace them with one or the other.  Thoughts?
+> >
+> > The dense cpumap for constant cpumasks is OK as it's clever, compact and
+> > static.
+> >
+> > All-dynamic allocator for on-stack cpumasks ... is a less obvious
+> > choice.
+> 
+> Sorry, I was unclear.  "long-term" == "more than 4096 CPUs", since I 
+> thought that was Mike's aim.  If we only want to hack up 4k CPUS and 
+> stop, then I understand the current approach.
+> 
+> If we want huge cpu numbers, I think cpumask_alloc/free gives the 
+> clearest code.  So our approach is backwards: let's do that *then* put 
+> ugly hacks in if it's really too slow.
+
+My only worry with that principle is that the "does it really hurt" fact 
+is seldom really provable on a standalone basis.
+
+Creeping bloat and creeping slowdowns are the hardest to catch. A cycle 
+here, a byte there, and it mounts up quickly. Coupled with faster but 
+less deterministic CPUs it's pretty hard to prove a slowdown even with 
+very careful profiling. We only catch the truly egregious cases that 
+manage to shine through the general haze of other changes - and the haze 
+is thickening every year.
+
+I dont fundamentally disagree with turning cpumask into standalone 
+objects on large machines though. I just think that our profiling 
+methods are simply not good enough at the moment to truly trace small 
+slowdowns back to their source commits fast enough. So the "we wont do 
+it if it hurts" notion, while i agree with it, does not fulfill its 
+promise in practice.
+
+[ We might need something like a simulated reference CPU where various 
+  "reference" performance tests are 100% repeatable and slowdowns are 
+  thus 100% provable and bisectable. That CPU would simulate a cache and 
+  would be modern in most aspects, etc. - just that the results it 
+  produces would be fully deterministic in virtual time.
+
+  Problem is, hw is not fast enough for that kind of simulation yet IMO
+  (tools exist but it would not be fun at all to work in such a
+  simulated environment in practice - hence kernel developers would
+  generally ignore it) - so there will be a few years of uncertainty
+  still. ]
+
+	Ingo
