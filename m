@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbYGaNb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751746AbYGaNhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754624AbYGaNb6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 09:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbYGaNbt
+	id S1751746AbYGaNhW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 09:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYGaNhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 09:31:49 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:48633 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751687AbYGaNbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 09:31:48 -0400
-Date: Thu, 31 Jul 2008 17:29:53 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch v3] splice: fix race with page invalidation
-Message-ID: <20080731132953.GB1120@2ka.mipt.ru>
-References: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu> <20080731001131.GA30900@shareable.org> <20080731004214.GA32207@shareable.org> <alpine.LFD.1.10.0807301746500.3277@nehalem.linux-foundation.org> <20080731061201.GA7156@shareable.org> <20080731102612.GA29766@2ka.mipt.ru> <20080731123350.GB16481@shareable.org>
+	Thu, 31 Jul 2008 09:37:09 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:36872 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751496AbYGaNhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 09:37:08 -0400
+Date: Thu, 31 Jul 2008 08:37:06 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: akpm@linux-foundation.org, menage@google.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpuset: make ntasks to be a monotonic increasing value
+Message-Id: <20080731083706.e6bd4acc.pj@sgi.com>
+In-Reply-To: <4891B9E0.2090900@cn.fujitsu.com>
+References: <48912FDD.8060006@cn.fujitsu.com>
+	<20080731072355.b582b2d6.pj@sgi.com>
+	<4891B9E0.2090900@cn.fujitsu.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080731123350.GB16481@shareable.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 01:33:50PM +0100, Jamie Lokier (jamie@shareable.org) wrote:
-> This is why marking the pages COW would be better.  Automatic!
-> There's no need for a notification, merely letting go of the page
-> references - yes, the hardware / TCP acks already do that, no locking
-> or anything!  :-)  The last reference is nothing special, it just means
-> the next file write/truncate sees the count is 1 and doesn't need to
-> COW the page.
+Lai wrote:
+> cgroup_task_count() was called twice in every loop. IMO, it's not need.
 
-It depends... COW can DoS the system: consider attacker who sends a
-page, writes there, sends again and so on in lots of threads. Depending
-on link capacity eventually COW will eat the whole RAM.
+Ah - true - but I suspect you are trying to optimize the code runtime
+(reduce CPU cycles) whereas I am trying to optimize the source code
+readability for humans.
 
-> > There was a linux aio_sendfile() too. Google still knows about its
-> > numbers, graphs and so on... :)
-> 
-> I vaguely remember it's performance didn't seem that good.
+Optimizing out the second cgroup_task_count() then requires more
+subtle semantics on the pre and post conditions on the ntasks variable
+at various points in the code.  This makes it slightly harder for
+humans to understand the code.  That in turn increases the chances
+of a subsequent change to the code introducing a bug, because the
+author of that subsequent change didn't quite realize all the details
+that mattered.  Contributing to the introduction of just one bug in
+that code loop, at anytime in our lifetimes, would probably cause far
+more grief than anything we are trying to fix today.
 
-<q>
-Benchmark of the 100 1MB files transfer (files are in VFS already) using
-sync sendfile() against aio_sendfile_path() shows about 10MB/sec
-performance win (78 MB/s vs 66-72 MB/s over 1 Gb network, sendfile
-sending server is one-way AMD Athlong 64 3500+) for aio_sendfile_path().
-</q>
+> My patch has an additional line: fudge += fudge >> 3;
+> This line will reduce loop times remarkably when loop times is large.
+> (but also loop times is large just in theory)
 
-So, it was really better that sync sendfile :)
+Agreed to this much at least: "just in theory".
 
-> One of the problems is you don't really want AIO all the time, just
-> when a process would block because the data isn't in cache.  You
-> really don't want to be sending *all* ops to worker threads, even
-> kernel threads.  And you preferably don't want the AIO interface
-> overhead for ops satisfied from cache.
+I don't usually add code lines to optimize a case that is just in
+theory, in code paths that are not critical, when even without the
+added code line, it would still work just fine.  For one thing, that
+hurts all the normal cases by slightly increasing the kernel text size,
+hence slightly increasing the number of cache hit misses executing this
+piece of code.
 
-That's how all AIO should work of course. We are getting into a bit of
-offtopic, but aio_sendfile() worked that way as long as syslets,
-although the former did allocate some structures before trying to send
-the data.
+But more importantly, it is one more bit of stuff for humans to
+have to read in the code.
 
-> Syslets got some of the way there, and maybe that's why they were
-> faster than AIO for some things.  There are user-space hacks which are
-> a bit like syslets.  (Bind two processes to the same CPU, process 1
-> wakes process 2 just before 1 does a syscall, and puts 2 back to sleep
-> if 2 didn't wake and do an atomic op to prove it's awake).  I haven't
-> tested their performance, it could suck.
+I prefer to only add kernel source code complexity when it is needed
+in practice for correct function or necessary performance.  The above
+more rapid growth of fudge is not needed for either reason, so far as
+I can tell.
 
-Looks scary :)
-Thread allocation in userspace is rather costly operations compared to
-syslet threads in kernelspace. But depending on IO pattern this may or
-may not be a noticeble factor... It requires testing and numbers.
+Bottom line - my priorities for non-critical code paths, most important first:
+ 1) It must work.
+ 2) Keep it easy for humans to understand.
+ 3) Reduce kernel text size.
+ 4) Reduce CPU cycles.
 
 -- 
-	Evgeniy Polyakov
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
