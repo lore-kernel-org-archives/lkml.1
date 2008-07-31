@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbYGaSG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbYGaSMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754700AbYGaSG2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 14:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbYGaSGT
+	id S1754736AbYGaSMx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 14:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYGaSMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 14:06:19 -0400
-Received: from s15216962.onlinehome-server.info ([217.160.22.205]:52359 "EHLO
-	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751017AbYGaSGS (ORCPT
+	Thu, 31 Jul 2008 14:12:40 -0400
+Received: from metis.extern.pengutronix.de ([83.236.181.26]:52636 "EHLO
+	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752264AbYGaSMi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 14:06:18 -0400
-Date: Thu, 31 Jul 2008 20:06:00 +0200
-From: Enrico Weigelt <weigelt@metux.de>
-To: linux kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: high latency NFS
-Message-ID: <20080731180600.GA8732@nibiru.local>
-Reply-To: weigelt@metux.de
-References: <200807241311.31457.shuey@purdue.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 31 Jul 2008 14:12:38 -0400
+Date: Thu, 31 Jul 2008 20:12:14 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
+       matthew@wil.cx, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [patch 2/4] Configure out file locking features
+Message-ID: <20080731181214.GD8254@pengutronix.de>
+References: <20080731092703.661994657@free-electrons.com> <20080731093220.969460336@free-electrons.com> <20080731135319.GA20212@cs181140183.pp.htv.fi> <20080731162007.285938e0@surf> <20080731153757.GB20212@cs181140183.pp.htv.fi> <20080731182616.4c20f0db@surf> <20080731164918.GE20212@cs181140183.pp.htv.fi> <4891F724.3030406@am.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <200807241311.31457.shuey@purdue.edu>
-User-Agent: Mutt/1.4.1i
-X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
-X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
-X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
-X-Killer: 23, endloesung, Weltuntergang, 
-X-Doof: wer das liest ist doof
+In-Reply-To: <4891F724.3030406@am.sony.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Hannoversche
+	Str. 2, 31134 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-9 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 20:07:00 up 30 days,  6:50,  9 users,  load average: 0.00, 0.01,
+	0.00
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 10.1.0.65
+X-SA-Exim-Mail-From: rsc@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.extern.pengutronix.de); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Michael Shuey <shuey@purdue.edu> wrote:
-> I'm currently toying with Linux's NFS, to see just how fast it can go in a 
-> high-latency environment.  Right now, I'm simulating a 100ms delay between 
-> client and server with netem (just 100ms on the outbound packets from the 
-> client, rather than 50ms each way).  Oddly enough, I'm running into 
-> performance problems. :-)
+On Thu, Jul 31, 2008 at 10:32:20AM -0700, Tim Bird wrote:
+> > And for embedded systems with which applications is it 100% safe to
+> > disable this option?
+>
+> Sony's digital cameras.
 
-NFS is *very bad* for latent links.
-Try 9p with an little metadata-caching proxy in the middle ;-P
+We have also several very small automation & measurement devices in the
+field which run a very dedicated more or less single application which
+can be carefully audited.
 
-cu
+In the OSADL safety working group, people are discussing about Linux for
+safety critical applications. If we want to achieve such scenarios,
+stripped-down systems are an absolute must.
+
+Although increasing processor power even in embedded applications lead
+to more and more standard-line kernels plus normal userspace components
+(i.e. glibc instead of uclibc), there are still applications where the
+final product consists only of the kernel plus the app, whereas during
+development time, the system has a full-blown configuration.
+
+rsc
 -- 
----------------------------------------------------------------------
- Enrico Weigelt    ==   metux IT service - http://www.metux.de/
----------------------------------------------------------------------
- Please visit the OpenSource QM Taskforce:
- 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
- Patches / Fixes for a lot dozens of packages in dozens of versions:
-	http://patches.metux.de/
----------------------------------------------------------------------
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+
