@@ -1,97 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYGaOJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756404AbYGaOKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbYGaOJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 10:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbYGaOJR
+	id S1756404AbYGaOKe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 10:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbYGaOKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 10:09:17 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:59720 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbYGaOJQ (ORCPT
+	Thu, 31 Jul 2008 10:10:24 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:17351 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752883AbYGaOKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 10:09:16 -0400
+	Thu, 31 Jul 2008 10:10:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=P0hWsbCgLnr2sbAAX0gW0GZ4fpEkbLGeu2qLtjJ68aOaLV2O+iGVi5YUoWnUl68Xp0
-         E/n3H5L7YgudjhIxb8roM4DXNOOqzE/aVSWM5m19pxwtqpIB2SCuDD6d4tWS1I1A5MJa
-         VCv4HEsHBAiSxBOO7GDDMNdVpIkfrpbyjPSb0=
-Date: Thu, 31 Jul 2008 10:07:09 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-Subject: Re: linux-next: Tree for July 30
-Message-ID: <20080731140708.GA11229@core.corenet.prv>
-References: <20080730170635.f737ffe9.sfr@canb.auug.org.au> <20080730231029.9818953c.akpm@linux-foundation.org>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=j0T1dzb33pHjfnvyrCw0Q/Oel0RtHSUs+M29aCHMgjxDuiif56RjLSnJWV6nsj7Eef
+         jY0+mOAYclP14akZ2HbqOp1h175gGVWlVlg3jAxGDe7yvInqZSKohIp5mXU+80hf21Ts
+         uDYLGUON2uQYmoqQQhlB6Uva0gKAtPNQIA0yk=
+Message-ID: <520f0cf10807310710i85e5a2u8e5f227bc2b82051@mail.gmail.com>
+Date: Thu, 31 Jul 2008 16:10:21 +0200
+From: "John Kacur" <jkacur@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [PATCH] Fix Bug messages
+Cc: "Sebastien Dugue" <sebastien.dugue@bull.net>,
+       "Chirag Jog" <chirag@linux.vnet.ibm.com>,
+       "J?rgen Mell" <j.mell@t-online.de>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       "Clark Williams" <williams@redhat.com>,
+       "Josh Triplett" <josht@linux.vnet.ibm.com>,
+       "Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>
+In-Reply-To: <1217512907.8157.91.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080730231029.9818953c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <alpine.LFD.1.10.0807252141420.574@apollo.tec.linutronix.de>
+	 <alpine.LFD.1.10.0807291440240.14925@apollo.tec.linutronix.de>
+	 <alpine.LFD.1.10.0807300006180.14925@apollo.tec.linutronix.de>
+	 <200807301101.32417.j.mell@t-online.de>
+	 <20080730171842.GB3420@linux.vnet.ibm.com>
+	 <20080731100023.0221ec2b@bull.net>
+	 <520f0cf10807310313q45599221q3db1b6fd7e7c722f@mail.gmail.com>
+	 <20080731132336.362bd487@bull.net>
+	 <520f0cf10807310649l1083e29bmf0f704e13dee96c@mail.gmail.com>
+	 <1217512907.8157.91.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 11:10:29PM -0700, Andrew Morton wrote:
-> On Wed, 30 Jul 2008 17:06:35 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> 
-> > I have created today's linux-next tree at
-> > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> 
-> The X server broke on my FC8 t61p thinkpad.  Mainline is OK.
-> 
-> Various information is at http://userweb.kernel.org/~akpm/mo/
-> 
-> I'm suspecting the input layer - my synaptics device seems to have
-> disappeared?  See http://userweb.kernel.org/~akpm/mo/Xorg-log-diff.txt
-> 
+On Thu, Jul 31, 2008 at 4:01 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Thu, 2008-07-31 at 15:49 +0200, John Kacur wrote:
+>> Signed-off-by: John Kacur <jkacur@gmail.com>
+>> Index: linux-2.6.26-rt1/net/core/sock.c
+>> ===================================================================
+>> --- linux-2.6.26-rt1.orig/net/core/sock.c
+>> +++ linux-2.6.26-rt1/net/core/sock.c
+>> @@ -1986,11 +1986,12 @@ static __init int net_inuse_init(void)
+>>
+>>  core_initcall(net_inuse_init);
+>>  #else
+>> -static DEFINE_PER_CPU(struct prot_inuse, prot_inuse);
+>> +static DEFINE_PER_CPU_LOCKED(struct prot_inuse, prot_inuse);
+>>
+>>  void sock_prot_inuse_add(struct net *net, struct proto *prot, int val)
+>>  {
+>> -       __get_cpu_var(prot_inuse).val[prot->inuse_idx] += val;
+>> +       int cpu = 0;
+>> +       __get_cpu_var_locked(prot_inuse, cpu).val[prot->inuse_idx] += val;
+>>  }
+>>  EXPORT_SYMBOL_GPL(sock_prot_inuse_add);
+>>
+>> @@ -2000,7 +2001,7 @@ int sock_prot_inuse_get(struct net *net,
+>>         int res = 0;
+>>
+>>         for_each_possible_cpu(cpu)
+>> -               res += per_cpu(prot_inuse, cpu).val[idx];
+>> +               res += per_cpu_var_locked(prot_inuse, cpu).val[idx];
+>>
+>>         return res >= 0 ? res : 0;
+>>  }
+>
+> This doesn't look good. You declare it as a PER_CPU_LOCKED, but then
+> never use the extra lock to synchronize data.
+>
+> Given that sock_proc_inuse_get() is a racy read anyway, the 'right' fix
+> would be to do something like:
+>
+> diff --git a/net/core/sock.c b/net/core/sock.c
+> index 91f8bbc..5a8ace4 100644
+> --- a/net/core/sock.c
+> +++ b/net/core/sock.c
+> @@ -1941,8 +1941,9 @@ static DECLARE_BITMAP(proto_inuse_idx, PROTO_INUSE_NR);
+>  #ifdef CONFIG_NET_NS
+>  void sock_prot_inuse_add(struct net *net, struct proto *prot, int val)
+>  {
+> -       int cpu = smp_processor_id();
+> +       int cpu = get_cpu();
+>        per_cpu_ptr(net->core.inuse, cpu)->val[prot->inuse_idx] += val;
+> +       put_cpu();
+>  }
+>  EXPORT_SYMBOL_GPL(sock_prot_inuse_add);
+>
+> @@ -1988,7 +1989,9 @@ static DEFINE_PER_CPU(struct prot_inuse, prot_inuse);
+>
+>  void sock_prot_inuse_add(struct net *net, struct proto *prot, int val)
+>  {
+> -       __get_cpu_var(prot_inuse).val[prot->inuse_idx] += val;
+> +       int cpu = get_cpu();
+> +       per_cpu(prot_inuse, cpu).val[prot->inuse_idx] += val;
+> +       put_cpu();
+>  }
+>  EXPORT_SYMBOL_GPL(sock_prot_inuse_add);
+>
+> This disables preemption, but only for a very short time - so it doesn't
+> hurt the preempt-latency.
+>
+> The alternative is to take a lock, do the inc, and drop the lock again,
+> which is much more expensive.
+>
+>
 
-I think this patch should help with Synaptics:
-
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: [PATCH] Fix crash on kernels with extended keymap space
-
-The len argument of EVIOCGBIT(ev,len) is the size of the receiving
-buffer in bytes, not maximim number of bits to retrieve.
-
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
- eventcomm.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/eventcomm.c b/eventcomm.c
-index e3257cd..2d0a347 100644
---- a/eventcomm.c
-+++ b/eventcomm.c
-@@ -89,7 +89,7 @@ event_query_is_touchpad(int fd)
- 
-     /* Check for ABS_X, ABS_Y, ABS_PRESSURE and BTN_TOOL_FINGER */
- 
--    SYSCALL(ret = ioctl(fd, EVIOCGBIT(0, EV_MAX), evbits));
-+    SYSCALL(ret = ioctl(fd, EVIOCGBIT(0, sizeof(evbits)), evbits));
-     if (ret < 0)
- 	return FALSE;
-     if (!TEST_BIT(EV_SYN, evbits) ||
-@@ -97,7 +97,7 @@ event_query_is_touchpad(int fd)
- 	!TEST_BIT(EV_KEY, evbits))
- 	return FALSE;
- 
--    SYSCALL(ret = ioctl(fd, EVIOCGBIT(EV_ABS, KEY_MAX), evbits));
-+    SYSCALL(ret = ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(evbits)), evbits));
-     if (ret < 0)
- 	return FALSE;
-     if (!TEST_BIT(ABS_X, evbits) ||
-@@ -105,7 +105,7 @@ event_query_is_touchpad(int fd)
- 	!TEST_BIT(ABS_PRESSURE, evbits))
- 	return FALSE;
- 
--    SYSCALL(ret = ioctl(fd, EVIOCGBIT(EV_KEY, KEY_MAX), evbits));
-+    SYSCALL(ret = ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(evbits)), evbits));
-     if (ret < 0)
- 	return FALSE;
-     if (!TEST_BIT(BTN_TOOL_FINGER, evbits))
--- 
-1.5.5.1
-
+Cool, thanks for the quick feedback. What kind of criteria are used to
+decide between disabling preemption for a short time, or using the
+more expensive lock?
