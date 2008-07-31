@@ -1,129 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbYGaL1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbYGaL3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754271AbYGaL1q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 07:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYGaL1h
+	id S1753981AbYGaL3s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 07:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbYGaL3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 07:27:37 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:47614 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751408AbYGaL1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 07:27:36 -0400
-Date: Thu, 31 Jul 2008 12:27:34 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eric Munson <ebmunson@us.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       libhugetlbfs-devel@lists.sourceforge.net
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Message-ID: <20080731112734.GE1704@csn.ul.ie>
-References: <cover.1216928613.git.ebmunson@us.ibm.com> <200807311604.14349.nickpiggin@yahoo.com.au> <20080730231428.a7bdcfa7.akpm@linux-foundation.org> <200807311626.15709.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <200807311626.15709.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 31 Jul 2008 07:29:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42568 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073AbYGaL3f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 07:29:35 -0400
+Subject: Re: [patch 3/4] Configure out ethtool support
+From: David Woodhouse <dwmw2@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: thomas.petazzoni@free-electrons.com, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org, michael@free-electrons.com,
+       mpm@selenic.com, jgarzik@pobox.com, netdev@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20080731.035121.177567346.davem@davemloft.net>
+References: <20080731092703.661994657@free-electrons.com>
+	 <20080731093221.236840420@free-electrons.com>
+	 <1217500967.3454.140.camel@pmac.infradead.org>
+	 <20080731.035121.177567346.davem@davemloft.net>
+Content-Type: text/plain
+Date: Thu, 31 Jul 2008 12:29:30 +0100
+Message-Id: <1217503770.3454.162.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (31/07/08 16:26), Nick Piggin didst pronounce:
-> On Thursday 31 July 2008 16:14, Andrew Morton wrote:
-> > On Thu, 31 Jul 2008 16:04:14 +1000 Nick Piggin <nickpiggin@yahoo.com.au> 
-> wrote:
-> > > > Do we expect that this change will be replicated in other
-> > > > memory-intensive apps?  (I do).
-> > >
-> > > Such as what? It would be nice to see some numbers with some HPC or java
-> > > or DBMS workload using this. Not that I dispute it will help some cases,
-> > > but 10% (or 20% for ppc) I guess is getting toward the best case, short
-> > > of a specifically written TLB thrasher.
-> >
-> > I didn't realise the STREAM is using vast amounts of automatic memory.
-> > I'd assumed that it was using sane amounts of stack, but the stack TLB
-> > slots were getting zapped by all the heap-memory activity.  Oh well.
+On Thu, 2008-07-31 at 03:51 -0700, David Miller wrote:
+> CONFIG_INET needs it too.
 > 
-> An easy mistake to make because that's probabably how STREAM would normally
-> work. I think what Mel had done is to modify the stream kernel so as to
-> have it operate on arrays of stack memory.
-> 
+> dev_disable_lro() calls the ethtool ops directly.
 
-Yes, I mentioned in the mail that STREAM was patched to use stack for
-its data. It was as much to show the patches were working as advertised
-even though it is an extreme case obviously.
+Ah, right. That's why it didn't show up in my grep.
 
-I had seen stack-hugepage-backing as something that would improve performance
-in addition to something else as opposed to having to stand entirely on its
-own. For example, I would expect many memory-intensive applications to gain
-by just having malloc and stack backed more than backing either in isolation.
+There are solutions to that, as I said. Either we could 'select ETHTOOL'
+in those drivers which enable LRO by default, or we could just make sure
+they _don't_ enable LRO by default when CONFIG_ETHTOOL isn't set.
 
-> > I guess that effect is still there, but smaller.
-> 
-> I imagine it should be, unless you're using a CPU with seperate TLBs for
-> small and huge pages, and your large data set is mapped with huge pages,
-> in which case you might now introduce *new* TLB contention between the
-> stack and the dataset :)
+And if we end up doing LRO generically in software where the hardware
+doesn't handle it, presumably we can do that without having to use
+ethtool to change the hardware behaviour?
 
-Yes, this can happen particularly on older CPUs. For example, on my
-crash-test laptop the Pentium III there reports
+> But it still needs to be conditional, because as I said what I see
+> happening next is this CONFIG_ETHTOOL thing getting jammed into each
+> and every network driver.  (in fact, ethtool support code in a single
+> driver probably drarfs the 6K savings this initial patch is giving
+> us).
 
-TLB and cache info:
-01: Instruction TLB: 4KB pages, 4-way set assoc, 32 entries
-02: Instruction TLB: 4MB pages, 4-way set assoc, 2 entries
+I think we can avoid that. If the actual functions and the struct
+ethtool_ops are static, and if we have something like...
 
-so a workload that sparsely addressed memory (i.e. >= 4MB strides on each
-reference) might suffer more TLB misses with large pages than with small.
-It's hardly new that there are is uncertainity around when and if hugepages
-are of benefit and where.
+#ifdef CONFIG_ETHTOOL
+#define dev_set_ethtool_ops(dev, ops) dev->ethtool_ops = ops
+#else
+#define dev_set_ethtool_ops(dev, ops) (void)ops
+#endif
 
-> Also, interestingly I have actually seen some CPUs whos memory operations
-> get significantly slower when operating on large pages than small (in the
-> case when there is full TLB coverage for both sizes). This would make
-> sense if the CPU only implements a fast L1 TLB for small pages.
-> 
+... then it should all fall out silently. (Yeah, those definitions would
+need 'hardening' but they're a proof of concept).
 
-It's also possible there is a micro-TLB involved that only support small
-pages. It's been the case for a while that what wins on one machine type
-may lose on another.
+> And at which point you'll have a broken system for drivers that
+> enable LRO and the user enables forwarding.
 
-> So for the vast majority of workloads, where stacks are relatively small
-> (or slowly changing), and relatively hot, I suspect this could easily have
-> no benefit at best and slowdowns at worst.
-> 
+Obviously that needs avoiding. Thanks for the technical feedback.
 
-I wouldn't expect an application with small stacks to request its stack
-to be backed by hugepages either. Ideally, it would be enabled because a
-large enough number of DTLB misses were found to be in the stack
-although catching this sort of data is tricky. 
-
-> But I'm not saying that as a reason not to merge it -- this is no
-> different from any other hugepage allocations and as usual they have to be
-> used selectively where they help.... I just wonder exactly where huge
-> stacks will help.
-> 
-
-Benchmark wise, SPECcpu and SPEComp have stack-dependent benchmarks.
-Computations that partition problems with recursion I would expect to benefit
-as well as some JVMs that heavily use the stack (see how many docs suggest
-setting ulimit -s unlimited). Bit out there, but stack-based languages would
-stand to gain by this. The potential gap is for threaded apps as there will
-be stacks that are not the "main" stack.  Backing those with hugepages depends
-on how they are allocated (malloc, it's easy, MAP_ANONYMOUS not so much).
-
-> > I agree that few real-world apps are likely to see gains of this
-> > order.  More benchmarks, please :)
-> 
-> Would be nice, if just out of morbid curiosity :)
-> 
-
-Benchmarks will happen, they just take time, you know the way. The STREAM one
-in the meantime is a "this works" and has an effect. I'm hoping Andrew Hastings
-will have figures at hand and I cc'd him elsewhere in the thread for comment.
-
-Thanks
+After an offline discussion, I understand that if we can sort out the
+actual technical issues, you'll carry this in the net tree. Thanks.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
+
