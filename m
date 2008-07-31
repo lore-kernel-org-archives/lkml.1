@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbYGaJxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbYGaJz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755331AbYGaJxU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 05:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYGaJxK
+	id S1755490AbYGaJz5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 05:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYGaJzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 05:53:10 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48162 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751293AbYGaJxJ (ORCPT
+	Thu, 31 Jul 2008 05:55:47 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36714
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752413AbYGaJzr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 05:53:09 -0400
-Subject: Re: [BUG] wireless : cpu stuck for 61s
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Tomas Winkler <tomasw@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <1ba2fa240807310250kd2df7bfxa3591cf78e68f8dc@mail.gmail.com>
-References: <20080729055731.GA3265@darkstar>
-	 <1217334724.10489.47.camel@johannes.berg>
-	 <20080730020820.8bcc00e2.akpm@linux-foundation.org>
-	 <a8e1da0807300302m35a0a7c0q2ff2e0ab92a69239@mail.gmail.com>
-	 <20080730031047.54e13e2d.akpm@linux-foundation.org>
-	 <a8e1da0807301906j6438e5d8y64105fe8a2e3dffe@mail.gmail.com>
-	 <20080730195637.2197a82d.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0807311156050.27055@sbz-30.cs.Helsinki.FI>
-	 <1ba2fa240807310250kd2df7bfxa3591cf78e68f8dc@mail.gmail.com>
-Date: Thu, 31 Jul 2008 12:53:14 +0300
-Message-Id: <1217497994.7813.184.camel@penberg-laptop>
+	Thu, 31 Jul 2008 05:55:47 -0400
+Date: Thu, 31 Jul 2008 02:55:47 -0700 (PDT)
+Message-Id: <20080731.025547.35826309.davem@davemloft.net>
+To: dwmw2@infradead.org
+Cc: torvalds@linux-foundation.org, thomas.petazzoni@free-electrons.com,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com
+Subject: Re: [patch 0/4] [resend] Add configuration options to disable
+ features not needed on embedded devices
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1217497912.3454.95.camel@pmac.infradead.org>
+References: <20080731092703.661994657@free-electrons.com>
+	<20080731.024027.162488608.davem@davemloft.net>
+	<1217497912.3454.95.camel@pmac.infradead.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-31 at 12:50 +0300, Tomas Winkler wrote:
-> > There's ath5k in the stack trace but that, of course, doesn't
-> > automatically mean it's at fault here. It could have been just the poor
-> > bastard who was the next to allocate 4 KB with kmalloc() noticing the
-> > corruption.
-> >
-> > Hope this helps!
-> 
-> I've seen something similar with fragmentation code in iwl4965 but I
-> can reproduce it only when using SLAB. With SLUB it didn't shown up.
-> Does anyone know what is difference between SLAB and SLUB in this context.?
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Thu, 31 Jul 2008 10:51:52 +0100
 
-Do you have CONFIG_SLUB_DEBUG_ON enabled? (Note: if you only have
-CONFIG_SLUB_DEBUG enabled, then you need to enable debugging at run-time
-by passing slub_debug to kernel command line.)
+> But there are a lot of people who really don't need these features
+> and really want the option of leaving them out.
 
+I'll say it one last time.
+
+If you have ipv4 enabled, you need ETHTOOL.
