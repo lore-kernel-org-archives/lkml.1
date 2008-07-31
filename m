@@ -1,168 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756724AbYGaMsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbYGaMtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756724AbYGaMsN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 08:48:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbYGaMru
+	id S1756108AbYGaMtY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 08:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbYGaMtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 08:47:50 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:10974 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756567AbYGaMrs (ORCPT
+	Thu, 31 Jul 2008 08:49:14 -0400
+Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:26157 "HELO
+	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752855AbYGaMtN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 08:47:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=pY07uJRIiEHojXbGKnGWo4J8nJ7Bv2ZZ7a3OU44MwTCgHYQBI1YIjoWMP/oBrVNLn9
-         LwOOIYJZQc0nHyRwzIs0EIjwmykGibKQSUYpOecMUOb3AoCzgFIPmFDYjSDPOyePE/pS
-         O6FDFr+6XGEruxMyvWmb2B0GahZ7UcByIjciI=
-Message-ID: <919fe2b30807310547k4c5c28fh1ea524bcb320865d@mail.gmail.com>
-Date: Thu, 31 Jul 2008 08:47:46 -0400
-From: "M. Asselstine" <asselsm@mcmaster.ca>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] atyfb_base.c: fix warning
-Cc: "Alexander Beregalov" <a.beregalov@gmail.com>, syrjala@sci.fi,
-       adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080731021552.2f5fe6d6.akpm@linux-foundation.org>
+	Thu, 31 Jul 2008 08:49:13 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=lmHSJpN7SWm91x2LipADO5LpTFzDW0V3L9afXYkAVLMkBzpFUwEU7sagn63A1ewO7axdFOyDdgLXJNyw2bQKL+wpsbDXdbfSC+k1MpoFA4yxQDwwFG7kJGrDp6jX/gA0sSMzc4+YA8y0MKvAyg0nLhrq8E5jTkph6QbSyVgwaTE=  ;
+X-YMail-OSG: ohI5dI8VM1kHNcehTVglTRoCrC0K5_CVPj9BqdNmQkx7FWXw5eL7kM4Ly.PfFNFTfYcyNXsbNB72sqsB7ALYEUNE8cx7F5fHgLQahtS9eRJc7RBP0eB1EEt2Q.hndmDFP0k-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jamie Lokier <jamie@shareable.org>
+Subject: Re: [patch v3] splice: fix race with page invalidation
+Date: Thu, 31 Jul 2008 22:49:01 +1000
+User-Agent: KMail/1.9.5
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu> <20080731102612.GA29766@2ka.mipt.ru> <20080731123350.GB16481@shareable.org>
+In-Reply-To: <20080731123350.GB16481@shareable.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080730210352.GA29355@orion>
-	 <20080731021552.2f5fe6d6.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 19866966fda435c1
+Message-Id: <200807312249.02287.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 5:15 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Thu, 31 Jul 2008 01:03:52 +0400 Alexander Beregalov <a.beregalov@gmail.com> wrote:
+On Thursday 31 July 2008 22:33, Jamie Lokier wrote:
+> Evgeniy Polyakov wrote:
+> > On Thu, Jul 31, 2008 at 07:12:01AM +0100, Jamie Lokier 
+(jamie@shareable.org) wrote:
+> > > The obvious mechanism for completion notifications is the AIO event
+> > > interface.  I.e. aio_sendfile that reports completion when it's safe
+> > > to modify data it was using.  aio_splice would be logical for similar
+> > > reasons.  Note it doesn't mean when the data has reached a particular
+> > > place, it means when the pages it's holding are released.  Pity AIO
+> > > still sucks ;-)
+> >
+> > It is not that simple: page can be held in hardware or tcp queues for
+> > a long time, and the only possible way to know, that system finished
+> > with it, is receiving ack from the remote side. There is a project to
+> > implement such a callback at skb destruction time (it is freed after ack
+> > from the other peer), but do we really need it? System which does care
+> > about transmit will implement own ack mechanism, so page can be unlocked
+> > at higher layer. Actually page can be locked during transfer and
+> > unlocked after rpc reply received, so underlying page invalidation will
+> > be postponed and will not affect sendfile/splice.
 >
->> From: Alexander Beregalov <a.beregalov@gmail.com>
->>
->> atyfb_base.c: fix warning
->>
->> drivers/video/aty/atyfb_base.c:2663: warning: 'aty_resume_chip' defined
->> but not used
->>
->> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
->> Cc: Ville Syrjala <syrjala@sci.fi>
->> Cc: Antonino A. Daplas <adaplas@pol.net>
->> ---
->>
->>  drivers/video/aty/atyfb_base.c |    4 ++++
->>  1 files changed, 4 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
->> index 620ba81..9e5dfb1 100644
->> --- a/drivers/video/aty/atyfb_base.c
->> +++ b/drivers/video/aty/atyfb_base.c
->> @@ -244,7 +244,9 @@ static int atyfb_sync(struct fb_info *info);
->>       */
->>
->>  static int aty_init(struct fb_info *info);
->> +#if defined(CONFIG_PM) && defined(CONFIG_PCI)
->>  static void aty_resume_chip(struct fb_info *info);
->> +#endif
->>  #ifdef CONFIG_ATARI
->>  static int store_video_par(char *videopar, unsigned char m64_num);
->>  #endif
->> @@ -2659,6 +2661,7 @@ aty_init_exit:
->>       return ret;
->>  }
->>
->> +#if defined(CONFIG_PM) && defined(CONFIG_PCI)
->>  static void aty_resume_chip(struct fb_info *info)
->>  {
->>       struct atyfb_par *par = info->par;
->> @@ -2671,6 +2674,7 @@ static void aty_resume_chip(struct fb_info *info)
->>       if (par->aux_start)
->>               aty_st_le32(BUS_CNTL, aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
->>  }
->> +#endif /* defined(CONFIG_PM) && defined(CONFIG_PCI) */
->>
->>  #ifdef CONFIG_ATARI
->>  static int __devinit store_video_par(char *video_str, unsigned char m64_num)
->
-> OK...
->
-> We don't strictly need the first ifdef - it's OK to declare a
-> non-existent function, and ifdefs are ugly.
->
-> But we can reorganise the code a bit more and remove the forward
-> declaration altogether and remove a whole ifdef block too.
->
-> How does this look?
->
+> This is why marking the pages COW would be better.  Automatic!
+> There's no need for a notification, merely letting go of the page
+> references - yes, the hardware / TCP acks already do that, no locking
+> or anything!  :-)  The last reference is nothing special, it just means
+> the next file write/truncate sees the count is 1 and doesn't need to
+> COW the page.
 
-Ah. Much better, this is definitely the way to go.
+Better == more bloat and complexity and corner cases in the VM?
 
-Mark
+If the app wants to ensure some specific data is sent, then it has
+to wait until the receiver receives it before changing it, simple.
 
->  drivers/video/aty/atyfb_base.c |   29 +++++++++++++++--------------
->  1 file changed, 15 insertions(+), 14 deletions(-)
->
-> diff -puN drivers/video/aty/atyfb_base.c~atyfb_basec-fix-warning drivers/video/aty/atyfb_base.c
-> --- a/drivers/video/aty/atyfb_base.c~atyfb_basec-fix-warning
-> +++ a/drivers/video/aty/atyfb_base.c
-> @@ -244,7 +244,7 @@ static int atyfb_sync(struct fb_info *in
->      */
->
->  static int aty_init(struct fb_info *info);
-> -static void aty_resume_chip(struct fb_info *info);
-> +
->  #ifdef CONFIG_ATARI
->  static int store_video_par(char *videopar, unsigned char m64_num);
->  #endif
-> @@ -2023,6 +2023,20 @@ static int atyfb_pci_suspend(struct pci_
->        return 0;
->  }
->
-> +static void aty_resume_chip(struct fb_info *info)
-> +{
-> +       struct atyfb_par *par = info->par;
-> +
-> +       aty_st_le32(MEM_CNTL, par->mem_cntl, par);
-> +
-> +       if (par->pll_ops->resume_pll)
-> +               par->pll_ops->resume_pll(info, &par->pll);
-> +
-> +       if (par->aux_start)
-> +               aty_st_le32(BUS_CNTL,
-> +                       aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
-> +}
-> +
->  static int atyfb_pci_resume(struct pci_dev *pdev)
->  {
->        struct fb_info *info = pci_get_drvdata(pdev);
-> @@ -2659,19 +2673,6 @@ aty_init_exit:
->        return ret;
->  }
->
-> -static void aty_resume_chip(struct fb_info *info)
-> -{
-> -       struct atyfb_par *par = info->par;
-> -
-> -       aty_st_le32(MEM_CNTL, par->mem_cntl, par);
-> -
-> -       if (par->pll_ops->resume_pll)
-> -               par->pll_ops->resume_pll(info, &par->pll);
-> -
-> -       if (par->aux_start)
-> -               aty_st_le32(BUS_CNTL, aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
-> -}
-> -
->  #ifdef CONFIG_ATARI
->  static int __devinit store_video_par(char *video_str, unsigned char m64_num)
->  {
-> _
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+And you still don't avoid the fundamental problem that the receiver
+may not get exactly what the sender has put in flight if we do things
+asynchronously.
