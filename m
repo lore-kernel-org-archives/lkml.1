@@ -1,129 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758567AbYGaVat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758385AbYGaVdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758567AbYGaVat (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 17:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbYGaVak
+	id S1758385AbYGaVdb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 17:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYGaVdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 17:30:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36531 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754037AbYGaVaj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 17:30:39 -0400
-Date: Thu, 31 Jul 2008 14:30:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: halesh.s@india.com, kosaki.motohiro@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: mlock() return value issue in kernel 2.6.23.17
-Message-Id: <20080731143032.2a211c18.akpm@linux-foundation.org>
-In-Reply-To: <20080731211811.3CA9.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <loom.20080731T100441-892@post.gmane.org>
-	<20080731211811.3CA9.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 31 Jul 2008 17:33:23 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:37433 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754736AbYGaVdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 17:33:22 -0400
+Date: Thu, 31 Jul 2008 23:34:10 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: John Kacur <jkacur@gmail.com>
+Cc: linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Change Kbuild message to match default
+Message-ID: <20080731213410.GC25921@uranus.ravnborg.org>
+References: <200807160031.16323.jkacur@gmail.com> <520f0cf10807260234v64297490l6db807fee0864cc5@mail.gmail.com> <20080730202655.GA12148@uranus.ravnborg.org> <520f0cf10807301623l759baa8ub9c669176107fa85@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <520f0cf10807301623l759baa8ub9c669176107fa85@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jul 2008 21:50:06 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+On Thu, Jul 31, 2008 at 01:23:56AM +0200, John Kacur wrote:
+> On Wed, Jul 30, 2008 at 10:26 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
+> > On Sat, Jul 26, 2008 at 11:34:14AM +0200, John Kacur wrote:
+> >> On Wed, Jul 16, 2008 at 12:31 AM, jkacur <jkacur@gmail.com> wrote:
+> >> > Change the Kbuild "If unsure" message to match the default.
+> >> >
+> >> > Signed-off-by: John Kacur <jkacur at gmail dot com>
+> >> >
+> >> > Index: linux-2.6.26/init/Kconfig
+> >> > ===================================================================
+> >> > --- linux-2.6.26.orig/init/Kconfig
+> >> > +++ linux-2.6.26/init/Kconfig
+> >> > @@ -522,7 +522,7 @@ config CC_OPTIMIZE_FOR_SIZE
+> >> >          Enabling this option will pass "-Os" instead of "-O2" to gcc
+> >> >          resulting in a smaller kernel.
+> >> >
+> >> > -         If unsure, say N.
+> >> > +         If unsure, say Y.
+> >> >
+> >> >  config SYSCTL
+> >> >        bool
+> >> >
+> >>
+> >> This seems like a no-brainer to me that the default and the "If
+> >> unsure" message should match, any reason you haven't picked-it up?
+> >
+> > Two reasons:
+> >
+> > 1) I have not started to look at new patches until now
+> >
+> >   And this is due to several reasons.
+> >   First off I have been without internet for a while.
+> >   And secondly I do try to avoid new patches during the
+> >   merge window which does not fix merge issues.
+> 
+> Ok, no problem!
+> 
+> >
+> > 2) I am not convinced that "default y" is really what we want.
+> >   What does popular distroes use (aka what gets wide testing?).
+> >
+> 
+> Hmnn, good point, in any case there is an inconsistency here. I can
+> only speak for my laptop here running openSUSE 11.0 (X86-64)
+> 
+> gunzip -c /proc/config.gz | grep CC_OPTIMIZE_FOR_SIZE
+> CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+> uname -a
+> Linux linux-ipxk 2.6.25.11-0.1-default #1 SMP 2008-07-13 20:48:28
+> +0200 x86_64 x86_64 x86_64 GNU/Linux
 
-> > 
-> > This testcase results with mlock failure with errno 14 that is EFAULT, but this 
-> > has been no where reported that mlock will give EFAULT, When i tested the same 
-> > on older kernel like 2.6.18, I got the correct result i.e errno 12 (ENOMEM).
-> > 
-> > 
-> > I think in source code mlock(2),  setting errno ENOMEM has been missed in 
-> > do_mlock() , on mlock_fixup() failure.
-> > 
-> > Let me know if my understanding is wrong!
-> 
-> Hi Halesh,
-> 
-> Could you try to following patch?
-> 
-> -----------------------------------------------------
-> SUSv3 require following behavior to mlock(2).
-> 
-> [ENOMEM]
->     Some or all of the address range specified by the addr and
->     len arguments does not correspond to valid mapped pages 
->     in the address space of the process.
-> 
-> [EAGAIN]
->     Some or all of the memory identified by the operation could not 
->     be locked when the call was made. 
-> 
-> 
-> This rule isn't so nice and slighly strange.
-> but many people think POSIX/SUS compliance is important.
-> 
-> 
-> ---
->  mm/memory.c |   16 +++++++++++++---
->  mm/mlock.c  |    2 --
->  2 files changed, 13 insertions(+), 5 deletions(-)
-> 
-> Index: b/mm/memory.c
-> ===================================================================
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -2736,16 +2736,26 @@ int make_pages_present(unsigned long add
->  
->  	vma = find_vma(current->mm, addr);
->  	if (!vma)
-> -		return -1;
-> +		return -ENOMEM;
->  	write = (vma->vm_flags & VM_WRITE) != 0;
->  	BUG_ON(addr >= end);
->  	BUG_ON(end > vma->vm_end);
->  	len = DIV_ROUND_UP(end, PAGE_SIZE) - addr/PAGE_SIZE;
->  	ret = get_user_pages(current, current->mm, addr,
->  			len, write, 0, NULL, NULL);
-> -	if (ret < 0)
-> +	if (ret < 0) {
-> +		/*
-> +		   SUS require strange return value to mlock
-> +		    - invalid addr generate to ENOMEM.
-> +		    - out of memory should generate EAGAIN.
-> +		*/
-> +		if (ret == -EFAULT)
-> +			ret = -ENOMEM;
-> +		else if (ret == -ENOMEM)
-> +			ret = -EAGAIN;
->  		return ret;
-> -	return ret == len ? 0 : -1;
-> +	}
-> +	return ret == len ? 0 : -ENOMEM;
->  }
->  
->  #if !defined(__HAVE_ARCH_GATE_AREA)
-> Index: b/mm/mlock.c
-> ===================================================================
-> --- a/mm/mlock.c
-> +++ b/mm/mlock.c
-> @@ -78,8 +78,6 @@ success:
->  
->  	mm->locked_vm -= pages;
->  out:
-> -	if (ret == -ENOMEM)
-> -		ret = -EAGAIN;
->  	return ret;
->  }
->  
-> 
+Thanks - I applied your patch.
 
-I assume that you tested it too?
+	Sam
 
-If it comes down to a choice between complying with SuS versus
-complying with earlier Linux versions then we'd usually prefer to
-comply with earlier Linux versions.
-
-I queued this, but would prefer to await confirmation that it has been
-tested to take us back to the 2.6.18 interface, please.
-
-Also, please send a Signed-off-by: for this change.
