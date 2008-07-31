@@ -1,217 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760589AbYGaCve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760470AbYGaCv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760589AbYGaCve (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 22:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbYGaCtM
+	id S1760470AbYGaCv4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 22:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbYGaCtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 22:49:12 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:60541 "EHLO
+	Wed, 30 Jul 2008 22:49:14 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:60542 "EHLO
 	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754841AbYGaCtK (ORCPT
+	with ESMTP id S1755231AbYGaCtN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 22:49:10 -0400
-Date: Wed, 30 Jul 2008 21:48:35 -0500
+	Wed, 30 Jul 2008 22:49:13 -0400
+Date: Wed, 30 Jul 2008 21:49:04 -0500
 From: David Fries <david@fries.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org
-Subject: [PATCH 7/30] W1: be able to manually add and remove slaves
-Message-ID: <20080731024835.GH12181@spacedout.fries.net>
+Subject: [PATCH 11/30] W1: w1_slave_read_id read bug, use device_attribute
+Message-ID: <20080731024904.GL12181@spacedout.fries.net>
 References: <20080729020433.GA24424@spacedout.fries.net> <20080729161356.2de456fb.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20080729161356.2de456fb.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Wed, 30 Jul 2008 21:48:35 -0500 (CDT)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Wed, 30 Jul 2008 21:49:05 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sysfs entries were added to manually add and remove slave devices.
-This is useful if the automatic bus searching is disabled, and the
-device ids are already known.
+Fix bug reading the id sysfs file.  If less than the full 8 bytes were
+read, the next read would start at the first byte instead of
+continuing.  It needed the offset added to memcpy, or the better
+solution was to replace it with the device attribute instead of bin
+attribute.
 
 Signed-off-by: David Fries <david@fries.net>
 Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 ---
- drivers/w1/w1.c |  137 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 136 insertions(+), 1 deletions(-)
+ drivers/w1/w1.c |   35 ++++++++++-------------------------
+ 1 files changed, 10 insertions(+), 25 deletions(-)
 
 diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
-index 32418d4..354c12a 100644
+index cd5bd23..3b15c57 100644
 --- a/drivers/w1/w1.c
 +++ b/drivers/w1/w1.c
-@@ -56,6 +56,8 @@ module_param_named(slave_ttl, w1_max_slave_ttl, int, 0);
- DEFINE_MUTEX(w1_mlock);
- LIST_HEAD(w1_masters);
+@@ -103,35 +103,20 @@ static ssize_t w1_slave_read_name(struct device *dev, struct device_attribute *a
+ 	return sprintf(buf, "%s\n", sl->name);
+ }
  
-+static int w1_attach_slave_device(struct w1_master *dev, struct w1_reg_num *rn);
-+
- static int w1_master_match(struct device *dev, struct device_driver *drv)
+-static ssize_t w1_slave_read_id(struct kobject *kobj,
+-				struct bin_attribute *bin_attr,
+-				char *buf, loff_t off, size_t count)
++static ssize_t w1_slave_read_id(struct device *dev,
++	struct device_attribute *attr, char *buf)
  {
- 	return 1;
-@@ -357,7 +359,8 @@ static ssize_t w1_master_attribute_show_slave_count(struct device *dev, struct d
+-	struct w1_slave *sl = kobj_to_w1_slave(kobj);
+-
+-	if (off > 8) {
+-		count = 0;
+-	} else {
+-		if (off + count > 8)
+-			count = 8 - off;
+-
+-		memcpy(buf, (u8 *)&sl->reg_num, count);
+-	}
++	struct w1_slave *sl = dev_to_w1_slave(dev);
++	ssize_t count = sizeof(sl->reg_num);
+ 
++	memcpy(buf, (u8 *)&sl->reg_num, count);
  	return count;
  }
  
--static ssize_t w1_master_attribute_show_slaves(struct device *dev, struct device_attribute *attr, char *buf)
-+static ssize_t w1_master_attribute_show_slaves(struct device *dev,
-+	struct device_attribute *attr, char *buf)
- {
- 	struct w1_master *md = dev_to_w1_master(dev);
- 	int c = PAGE_SIZE;
-@@ -382,6 +385,134 @@ static ssize_t w1_master_attribute_show_slaves(struct device *dev, struct device
- 	return PAGE_SIZE - c;
- }
+ static struct device_attribute w1_slave_attr_name =
+ 	__ATTR(name, S_IRUGO, w1_slave_read_name, NULL);
+-
+-static struct bin_attribute w1_slave_attr_bin_id = {
+-      .attr = {
+-              .name = "id",
+-              .mode = S_IRUGO,
+-      },
+-      .size = 8,
+-      .read = w1_slave_read_id,
+-};
++static struct device_attribute w1_slave_attr_id =
++	__ATTR(id, S_IRUGO, w1_slave_read_id, NULL);
  
-+static ssize_t w1_master_attribute_show_add(struct device *dev,
-+	struct device_attribute *attr, char *buf)
-+{
-+	int c = PAGE_SIZE;
-+	c -= snprintf(buf+PAGE_SIZE - c, c,
-+		"write device id xx-xxxxxxxxxxxx to add slave\n");
-+	return PAGE_SIZE - c;
-+}
-+
-+static int w1_atoreg_num(struct device *dev, const char *buf, size_t count,
-+	struct w1_reg_num *rn)
-+{
-+	unsigned int family;
-+	u64 id;
-+	int i;
-+	u64 rn64_le;
-+	/* The CRC value isn't read from the user because the sysfs directory
-+	 * doesn't include it and most messages from the bus search don't
-+	 * print it either.  It would be unreasonable for the user to then
-+	 * provide it.
-+	 */
-+	const char *error_msg = "bad slave string format, expecting "
-+		"ff-dddddddddddd\n";
-+
-+	if (buf[2] != '-') {
-+		dev_err(dev, "%s", error_msg);
-+		return -EINVAL;
-+	}
-+	i = sscanf(buf, "%02x-%012llx", &family, &id);
-+	if (i != 2) {
-+		dev_err(dev, "%s", error_msg);
-+		return -EINVAL;
-+	}
-+	rn->family = family;
-+	rn->id = id;
-+
-+	rn64_le = cpu_to_le64(*(u64 *)rn);
-+	rn->crc = w1_calc_crc8((u8 *)&rn64_le, 7);
-+
-+	#if 0
-+	dev_info(dev, "With CRC device is %02x.%012llx.%02x.\n",
-+		  rn->family, (unsigned long long)rn->id, rn->crc);
-+	#endif
-+
-+	return 0;
-+}
-+
-+/* Searches the slaves in the w1_master and returns a pointer or NULL.
-+ * Note: must hold the mutex
-+ */
-+static struct w1_slave *w1_slave_search_device(struct w1_master *dev,
-+	struct w1_reg_num *rn)
-+{
-+	struct w1_slave *sl;
-+	list_for_each_entry(sl, &dev->slist, w1_slave_entry) {
-+		if (sl->reg_num.family == rn->family &&
-+				sl->reg_num.id == rn->id &&
-+				sl->reg_num.crc == rn->crc) {
-+			return sl;
-+		}
-+	}
-+	return NULL;
-+}
-+
-+static ssize_t w1_master_attribute_store_add(struct device *dev,
-+						struct device_attribute *attr,
-+						const char *buf, size_t count)
-+{
-+	struct w1_master *md = dev_to_w1_master(dev);
-+	struct w1_reg_num rn;
-+	struct w1_slave *sl;
-+	ssize_t result = count;
-+
-+	if (w1_atoreg_num(dev, buf, count, &rn))
-+		return -EINVAL;
-+
-+	mutex_lock(&md->mutex);
-+	sl = w1_slave_search_device(md, &rn);
-+	/* It would be nice to do a targeted search one the one-wire bus
-+	 * for the new device to see if it is out there or not.  But the
-+	 * current search doesn't support that.
-+	 */
-+	if (sl) {
-+		dev_info(dev, "Device %s already exists\n", sl->name);
-+		result = -EINVAL;
-+	} else {
-+		w1_attach_slave_device(md, &rn);
-+	}
-+	mutex_unlock(&md->mutex);
-+
-+	return result;
-+}
-+
-+static ssize_t w1_master_attribute_show_remove(struct device *dev,
-+	struct device_attribute *attr, char *buf)
-+{
-+	int c = PAGE_SIZE;
-+	c -= snprintf(buf+PAGE_SIZE - c, c,
-+		"write device id xx-xxxxxxxxxxxx to remove slave\n");
-+	return PAGE_SIZE - c;
-+}
-+
-+static ssize_t w1_master_attribute_store_remove(struct device *dev,
-+						struct device_attribute *attr,
-+						const char *buf, size_t count)
-+{
-+	struct w1_master *md = dev_to_w1_master(dev);
-+	struct w1_reg_num rn;
-+	struct w1_slave *sl;
-+	ssize_t result = count;
-+
-+	if (w1_atoreg_num(dev, buf, count, &rn))
-+		return -EINVAL;
-+
-+	mutex_lock(&md->mutex);
-+	sl = w1_slave_search_device(md, &rn);
-+	if (sl) {
-+		w1_slave_detach(sl);
-+	} else {
-+		dev_info(dev, "Device %02x-%012llx doesn't exists\n", rn.family,
-+			(unsigned long long)rn.id);
-+		result = -EINVAL;
-+	}
-+	mutex_unlock(&md->mutex);
-+
-+	return result;
-+}
-+
- #define W1_MASTER_ATTR_RO(_name, _mode)				\
- 	struct device_attribute w1_master_attribute_##_name =	\
- 		__ATTR(w1_master_##_name, _mode,		\
-@@ -402,6 +533,8 @@ static W1_MASTER_ATTR_RO(timeout, S_IRUGO);
- static W1_MASTER_ATTR_RO(pointer, S_IRUGO);
- static W1_MASTER_ATTR_RW(search, S_IRUGO | S_IWUGO);
- static W1_MASTER_ATTR_RW(pullup, S_IRUGO | S_IWUGO);
-+static W1_MASTER_ATTR_RW(add, S_IRUGO | S_IWUGO);
-+static W1_MASTER_ATTR_RW(remove, S_IRUGO | S_IWUGO);
+ /* Default family */
  
- static struct attribute *w1_master_default_attrs[] = {
- 	&w1_master_attribute_name.attr,
-@@ -413,6 +546,8 @@ static struct attribute *w1_master_default_attrs[] = {
- 	&w1_master_attribute_pointer.attr,
- 	&w1_master_attribute_search.attr,
- 	&w1_master_attribute_pullup.attr,
-+	&w1_master_attribute_add.attr,
-+	&w1_master_attribute_remove.attr,
- 	NULL
- };
+@@ -649,7 +634,7 @@ static int __w1_attach_slave_device(struct w1_slave *sl)
+ 	}
+ 
+ 	/* Create "id" entry */
+-	err = sysfs_create_bin_file(&sl->dev.kobj, &w1_slave_attr_bin_id);
++	err = device_create_file(&sl->dev, &w1_slave_attr_id);
+ 	if (err < 0) {
+ 		dev_err(&sl->dev,
+ 			"sysfs file creation for [%s] failed. err=%d\n",
+@@ -671,7 +656,7 @@ static int __w1_attach_slave_device(struct w1_slave *sl)
+ 	return 0;
+ 
+ out_rem2:
+-	sysfs_remove_bin_file(&sl->dev.kobj, &w1_slave_attr_bin_id);
++	device_remove_file(&sl->dev, &w1_slave_attr_id);
+ out_rem1:
+ 	device_remove_file(&sl->dev, &w1_slave_attr_name);
+ out_unreg:
+@@ -753,7 +738,7 @@ void w1_slave_detach(struct w1_slave *sl)
+ 	msg.type = W1_SLAVE_REMOVE;
+ 	w1_netlink_send(sl->master, &msg);
+ 
+-	sysfs_remove_bin_file(&sl->dev.kobj, &w1_slave_attr_bin_id);
++	device_remove_file(&sl->dev, &w1_slave_attr_id);
+ 	device_remove_file(&sl->dev, &w1_slave_attr_name);
+ 	device_unregister(&sl->dev);
  
 -- 
 1.4.4.4
