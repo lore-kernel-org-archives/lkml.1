@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbYGaBFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYGaBMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758128AbYGaBFn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 21:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbYGaBFd
+	id S1756816AbYGaBMs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 21:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYGaBMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 21:05:33 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:51730 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234AbYGaBFc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 21:05:32 -0400
-Date: Wed, 30 Jul 2008 21:05:30 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] ftrace: dump out ftrace buffers to console on panic
-In-Reply-To: <20080730175640.f04f81b5.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0807302103340.20120@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0807301700080.16138@gandalf.stny.rr.com> <20080730143028.a8e94161.akpm@linux-foundation.org> <alpine.DEB.1.10.0807302020590.19138@gandalf.stny.rr.com> <20080730175640.f04f81b5.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 30 Jul 2008 21:12:39 -0400
+Received: from waste.org ([66.93.16.53]:54508 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752362AbYGaBMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 21:12:38 -0400
+Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
+From: Matt Mackall <mpm@selenic.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Hugh Dickins <hugh@veritas.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       vegard.nossum@gmail.com, hannes@saeurebad.de
+In-Reply-To: <alpine.LFD.1.10.0807301529190.3277@nehalem.linux-foundation.org>
+References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>
+	 <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>
+	 <1199906151.6245.57.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>
+	 <1199919548.6245.74.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI>
+	 <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0807310045020.22702@sbz-30.cs.Helsinki.FI>
+	 <alpine.LFD.1.10.0807301457020.3277@nehalem.linux-foundation.org>
+	 <84144f020807301522r7fb97bfehe0fcdceef10477b9@mail.gmail.com>
+	 <alpine.LFD.1.10.0807301529190.3277@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 30 Jul 2008 20:03:44 -0500
+Message-Id: <1217466224.18911.224.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 30 Jul 2008, Andrew Morton wrote:
->>
->> I don't mind making it unconditionally available. I only added the config
->> option because I thought people would like to turn it off.
->>
->> I'll resubmit with the above concerns fixed and without the config option.
->
-> Well..  my question about the config option was no more than a question
-> - I don't know the answer.
->
-> Although thinking about it, I guess that anyone who is really squeezy
-> on space just won't be enabling ftrace at all.  Is there any reason
-> other than size for disabling this new feature?
+On Wed, 2008-07-30 at 15:35 -0700, Linus Torvalds wrote:
 
-Just the output to the console on oops. But then again, it only prints a 
-lot if ftrace has stuff in the buffers.
+> [ Of course, google probably mostly returns hits from all those ACM 
+>   portals etc. I wonder why google does that - they're almost totally 
+>   useless search results. Sad. If somebody knows how to turn those ACM 
+>   pay-portals off in google, pls let me know ]
 
-I also lowered the count to keep the pain down when this was configured, 
-but since the size of the buffers is both boot time and run time 
-configurable, it shouldn't be a problem. If people want more buffer space, 
-they simply need to increase it at run time.
+Maybe you, as one of the better known developers in the world, could
+write an open letter suggesting that ACM get a clue and open up their
+archives. It's ridiculous that physicists, biologists, and historians
+should have more and better web resources than the computer scientists.
 
--- Steve
+I propose you start it with "Hey morons".
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
