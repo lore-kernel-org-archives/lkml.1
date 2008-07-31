@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYGaNvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbYGaNy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbYGaNvT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 09:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYGaNvF
+	id S1754971AbYGaNy2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 09:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbYGaNyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 09:51:05 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:18095 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751361AbYGaNvD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 09:51:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=etd77RB/fBv8v5oGa/stjdGXvuBS9c6cJQ09XlkOKq/XRAsEF08kz3BkFmMof3hEXM
-         AMkXciHAAa+DRPZdCIIIt/eriy14E/+V02BnhfBsGxm+f+Pgiy2t0lnpky5I8ziq4bnE
-         OmVduykXNWijSYlcYZWbnQ8KuEf8r+PwEZgcQ=
-Date: Thu, 31 Jul 2008 17:50:58 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Sysrq+B doesn't work on my box
-Message-ID: <20080731135058.GA31888@martell.zuzino.mipt.ru>
-References: <c4e36d110807310645n3ff6e61j17414433c5aee030@mail.gmail.com>
+	Thu, 31 Jul 2008 09:54:16 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:55520 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752191AbYGaNyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 09:54:15 -0400
+Date: Thu, 31 Jul 2008 16:53:19 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
+       matthew@wil.cx, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [patch 2/4] Configure out file locking features
+Message-ID: <20080731135319.GA20212@cs181140183.pp.htv.fi>
+References: <20080731092703.661994657@free-electrons.com> <20080731093220.969460336@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <c4e36d110807310645n3ff6e61j17414433c5aee030@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080731093220.969460336@free-electrons.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 03:45:24PM +0200, Zdenek Kabelac wrote:
-> Hi
+On Thu, Jul 31, 2008 at 11:27:05AM +0200, Thomas Petazzoni wrote:
+> This patch adds the CONFIG_FILE_LOCKING option which allows to remove
+> support for advisory locks. With this patch enabled, the flock()
+> system call, the F_GETLK, F_SETLK and F_SETLKW operations of fcntl()
+> and NFS support are disabled. These features are not necessarly needed
+> on embedded systems. It allows to save ~11 Kb of kernel code and data:
 > 
-> I'd like to get resolved this problem - my T61 machine doesn't reboot
-> with SysRQ+B key.
-> And I never remember if it was ever rebooting.
+>    text	   data	    bss	    dec	    hex	filename
+> 1125436	 118764	 212992	1457192	 163c28	vmlinux.old
+> 1114299	 118564	 212992	1445855	 160fdf	vmlinux
+>  -11137    -200       0  -11337   -2C49 +/-
 > 
-> This is all I know so far and I've no idea where could be the problem.
-> 
-> System is running Fedora rawhide 64bit.
-> 
-> If I press any other  SysRQ combination - it works - so things like
-> Sync, Umount, powerOff do work normally.
-> It's just Boot  which does not even get to the  __handle  routine
-> (I've added one extra simple debug prinkt
-> for this case)
-> 
-> So - who/how/where could mask this key sequence from being delivered
-> to the sysrq driver?
-> (obviously I do not have any problems typing letter 'b' itself)
-> 
-> 
-> 
-> Another issue is - that even with  'echo b >/proc/sysrq-triggers' my
-> machine doesn't reboot.
+> This patch has originally been written by Matt Mackall
+> <mpm@selenic.com>, and is part of the Linux Tiny project.
+>...
 
-Typo here? Do
+As I've already said in the past I'm personally not a huge fan of these 
+patches, but if it brings advantages in real-life situations it's hard
+to argue against it.
 
-	/bin/echo b >/proc/sysrq-trigger
+In which use cases can users safely disable this option, and on what 
+devices have you verified that CONFIG_FILE_LOCKING=n kernels actually 
+work in practice?
 
-(sic)
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
