@@ -1,76 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbYGaBV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbYGaB0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758195AbYGaBV1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 21:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbYGaBVR
+	id S1759383AbYGaB0Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 21:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbYGaB0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 21:21:17 -0400
-Received: from 215.47.DSNET ([211.144.215.47]:46257 "EHLO
-	cnshjsmin03.cn.alcatel-lucent.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751689AbYGaBVR (ORCPT
+	Wed, 30 Jul 2008 21:26:07 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:12823 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753511AbYGaB0F convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 21:21:17 -0400
-X-AuditID: ac189297-ab9fcbb000003fd3-2e-48911b856b75
-Message-ID: <48910E9A.9060103@alcatel-lucent.com>
-Date: Thu, 31 Jul 2008 09:00:10 +0800
-From: gshan <gshan@alcatel-lucent.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Wed, 30 Jul 2008 21:26:05 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: PIIX4: DMA timeout issue
-References: <488ED837.2060509@alcatel-lucent.com> <200807291713.29580.bzolnier@gmail.com> <488FBC6F.2080800@alcatel-lucent.com> <200807302143.37693.bzolnier@gmail.com>
-In-Reply-To: <200807302143.37693.bzolnier@gmail.com>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Jul 2008 01:00:00.0686 (UTC) FILETIME=[C236D4E0:01C8F2A8]
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+Date: Wed, 30 Jul 2008 18:24:05 -0700
+Message-ID: <8A71B368A89016469F72CD08050AD334032EC7F5@maui.asicdesigners.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+Thread-Index: Acjye20kvxPfeh/PSxuVQTjXQDVkYgALwLfQ
+References: <200807300019.m6U0JkdY012558@localhost.localdomain> <4890C287.60508@pobox.com>
+From: "Karen Xie" <kxie@chelsio.com>
+To: "Jeff Garzik" <jgarzik@pobox.com>
+Cc: <netdev@vger.kernel.org>, <open-iscsi@googlegroups.com>,
+       <davem@davemloft.net>, <michaelc@cs.wisc.edu>,
+       "Steve Wise" <swise@opengridcomputing.com>, <rdreier@cisco.com>,
+       <daisyc@us.ibm.com>, <wenxiong@us.ibm.com>, <bhua@us.ibm.com>,
+       "Divy Le Ray" <divy@chelsio.com>,
+       "Dimitrios Michailidis" <dm@chelsio.com>,
+       "Casey Leedom" <leedom@chelsio.com>,
+       "linux-scsi" <linux-scsi@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> On Wednesday 30 July 2008, gshan wrote:
+>Comments:
 >
-> [...]
->  
->   
->> The IRQ routing issue has been fixed. IRQ routing system
->> on my board is somewhat complicated: i8259->mlba (FPGA based
->> PCI device)->MV64460(system controller). I forgot to set MV64460
->> IRQ pin to level sensitive and edge sensitive was used, which caused
->> interrupt lost finally. After changing this to level sensitive, everything
->> seems fine. Now, the problem isn't interrupt lost, but suspending DMA
->> operations.
->>     
->
-> Thanks for explaining this.
->
->   
->>> Also is the problem still present in 2.6.26 or 2.6.27-rc1?
->>>
->>> [ I don't see an information about the kernel version that is
->>>   being used in either of threads? ]
->>>   
->>>       
->> Sorry, I'm using 2.6.21 kernel.
->>     
->
-> Would be great to try with some recent one, the issue may have been
-> fixed already (which is quite likely given a number of bugfixes that
-> went in recent kernels).
->   
-I tried to searched in bugzilla.kernel.org and didn't find
-there has fix on this issue. Yesterday, Jeff suggested me
-to turn to ata driver for PIIX4. I tried this yesterday but still
-have some problems to make PIIX4 workable under ata
-driver. I will continue working on this today.
+>* SCSI drivers should be submitted via the linux-scsi@vger.kernel.org 
+>mailing list.
 
-Gavin
+Will do that. Thanks.
 
-> Thanks,
-> Bart
->   
+>
+>* The driver is clean and readable, well done
+>
+>* From a networking standpoint, our main concern becomes how this 
+>interacts with the networking stack.  In particular, I'm concerned
+based 
+>on reading the source that this driver uses "TCP port stealing" rather 
+>than using a totally separate MAC address (and IP).
+>
+>Stealing a TCP port on an IP/interface already assigned is a common 
+>solution in this space, but also a flawed one.  Precisely because the 
+>kernel and applications are unaware of this "special, magic TCP port" 
+>you open the potential for application problems that are very difficult
+
+>for an admin to diagnose based on observed behavior.
+
+The collisions between the host stack and iSCSI offload are unlikely
+because the iSCSI target server's port is unique (nailed down as 3260).
+If an offload card is plugged in, all iSCSI connections to a given
+target (i.e., destination/port) are offloaded. There is precedence for
+this approach such as RDMA/iWarp.
+
+>
+>So, additional information on your TCP port usage would be greatly 
+>appreciated.  Also, how does this interact with IPv6?  Clearly it 
+>interacts with IPv4...
+
+Currently, IPv6 connection request will not be honored, I will make sure
+the checking is added in the resubmission.
 
