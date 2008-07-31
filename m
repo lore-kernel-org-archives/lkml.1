@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759655AbYGaWTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757923AbYGaWT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759655AbYGaWTi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 18:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbYGaWT3
+	id S1757923AbYGaWT7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 18:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755931AbYGaWTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 18:19:29 -0400
-Received: from mga02.intel.com ([134.134.136.20]:5405 "EHLO mga02.intel.com"
+	Thu, 31 Jul 2008 18:19:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57564 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752094AbYGaWT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 18:19:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,288,1215414000"; 
-   d="scan'208";a="321934211"
-Date: Thu, 31 Jul 2008 15:19:24 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "drepper@redhat.com" <drepper@redhat.com>,
-       "mikpe@it.uu.se" <mikpe@it.uu.se>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 0/9] x86, xsave: xsave/xrstor support
-Message-ID: <20080731221924.GD8563@linux-os.sc.intel.com>
-References: <20080729172917.185593000@linux-os.sc.intel.com> <488FA318.3040905@zytor.com> <20080729232951.GB11223@linux-os.sc.intel.com> <488FAB2B.7050405@zytor.com> <20080730100326.GA9683@elte.hu> <20080730182539.GA17140@elte.hu> <20080730234102.GF11223@linux-os.sc.intel.com> <20080731212915.GH2729@elte.hu> <20080731215808.GB8563@linux-os.sc.intel.com> <20080731221435.GS23938@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1755645AbYGaWTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 18:19:46 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Linux v2.6.27-rc1: linux-next
+Date: Fri, 1 Aug 2008 00:22:36 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+References: <alpine.LFD.1.10.0807281956030.3334@nehalem.linux-foundation.org> <alpine.LFD.1.10.0807290945030.3334@nehalem.linux-foundation.org> <20080730020308.a552c4d8.akpm@linux-foundation.org>
+In-Reply-To: <20080730020308.a552c4d8.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080731221435.GS23938@one.firstfloor.org>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200808010022.37049.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 03:14:35PM -0700, Andi Kleen wrote:
-> > Kernel was enabling watchdog, with out the userspace having the
-> > heartbeat daemon....
+On Wednesday, 30 of July 2008, Andrew Morton wrote:
+> On Tue, 29 Jul 2008 09:59:18 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> Watchdog are  normally only armed when someone opens the device
-> first.
+> >  - I don't think the 'next' thing works as well for the occasional 
+> >    developer that just has a few patches pending as it works for subsystem 
+> >    maintainers that are used to it.
+> 
+> Those people's patches are in -mm, which now holds maybe 100 or more
+> "trees", many of which are small or empty.
+> 
+> My project within the next couple of weeks is to get most of that
+> material into linux-next.  Stephen will be involved ;)
+> 
+> >    IOW, I think 'next' needs enough infrastructure setup from the 
+> >    developer side that I don't think it's reasonable for _everything_ to 
+> >    go through next.
+> 
+> True.  But
+> 
+> a) some of the problematic changes which we've seen simply _should_
+>    have been in linux-next.  Some of them were even coming from
+>    developers whose trees are already in linux-next.
+> 
+> b) A lot of the bugs which hit your tree would have been quickly
+>    found in linux-next too.
+> 
+> 
+> But it's all shuffling deckchairs, really.  Are we actually merging
+> better code as a reasult of all of this?  Are we being more careful and
+> reviewing better and testing better?
+> 
+> Don't think so.
 
-But thats not what I see with for ex with, w83627hf_wdt.c
+Well, if the number of the regressions list entries can be regarded as a
+pointer, then yes, we are. :-)
 
-Its done at the module_init time. (while I thought it should be
-really done when some user level app opens the device, probably
-its poorly written to take care if the kernel panics before starting userland.
-but kernel can even die before the watchdog driver load aswell ;-)
+There are 28 entries in there right now, compared to 53 entries initially in
+the list during the 2.6.26 cycle (see
+http://bugzilla.kernel.org/show_bug.cgi?id=11167 for reference).
+
+Thanks,
+Rafael
