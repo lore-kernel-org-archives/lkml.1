@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751839AbYGaKyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751746AbYGaKyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751839AbYGaKyg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 06:54:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbYGaKyY
+	id S1751746AbYGaKyy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 06:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbYGaKya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 06:54:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56218 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750828AbYGaKyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 06:54:24 -0400
-Date: Thu, 31 Jul 2008 12:53:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Simon Arlott <simon@fire.lp0.eu>, Daniel Walker <dwalker@mvista.com>,
-       Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [patch 1/4] fastboot: make fastboot a config option
-Message-ID: <20080731105337.GK488@elte.hu>
-References: <20080720151140.4aa7c682@infradead.org> <20080720151234.4535ee73@infradead.org> <20080730082335.4da1296f.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080730082335.4da1296f.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 31 Jul 2008 06:54:30 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38813 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751934AbYGaKy3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 06:54:29 -0400
+Subject: Re: [patch 3/4] Configure out ethtool support
+From: David Woodhouse <dwmw2@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: bhutchings@solarflare.com, thomas.petazzoni@free-electrons.com,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com, mpm@selenic.com, jgarzik@pobox.com,
+       netdev@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20080731.034904.190066778.davem@davemloft.net>
+References: <20080731092703.661994657@free-electrons.com>
+	 <20080731093221.236840420@free-electrons.com>
+	 <20080731104004.GN10471@solarflare.com>
+	 <20080731.034904.190066778.davem@davemloft.net>
+Content-Type: text/plain
+Date: Thu, 31 Jul 2008 11:54:24 +0100
+Message-Id: <1217501664.3454.151.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Randy Dunlap <randy.dunlap@oracle.com> wrote:
-
-> > +	  This includes doing some of the device initialization asynchronous
+On Thu, 2008-07-31 at 03:49 -0700, David Miller wrote:
+> From: Ben Hutchings <bhutchings@solarflare.com>
+> Date: Thu, 31 Jul 2008 11:40:05 +0100
 > 
-> 	                                                        asynchronously
+> > You also need to conditionalise dev_disable_lro().
 > 
+> That can only be done once the CONFIG_ETHTOOL select statement
+> is added for CONFIG_INET.
+> 
+> Which basically makes this CONFIG_ETHTOOL thing completely pointless.
 
-fixed in tip/fastboot via the patch below - thanks Randy.
+Other potential approaches include not enabling LRO by default if 
+!CONFIG_ETHTOOL. Or having the driver(s) which _do_ enable LRO by
+default 'select ETHTOOL'.
 
-	Ingo
+-- 
+dwmw2
 
-------------->
->From 1a23ed42e1baf0481cc70c2f71d97b0bf0f1be70 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 31 Jul 2008 12:52:29 +0200
-Subject: [PATCH] fastboot: fix typo in init/Kconfig text
-
-noticed by Randy Dunlap.
-
-Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- init/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/init/Kconfig b/init/Kconfig
-index 4f73780..6b4de4d 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -530,7 +530,7 @@ config FASTBOOT
- 	  The fastboot option will cause the kernel to try to optimize
- 	  for faster boot. 
- 
--	  This includes doing some of the device initialization asynchronous
-+	  This includes doing some of the device initialization asynchronously
- 	  as well as opportunistically trying to mount the root fs early.
- 
- 	  If unsure, say N.
