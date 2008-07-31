@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753569AbYGaQfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbYGaQgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753569AbYGaQfW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 12:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbYGaQfJ
+	id S1754633AbYGaQgI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 12:36:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYGaQfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 12:35:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42370 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751613AbYGaQfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 12:35:08 -0400
-Date: Thu, 31 Jul 2008 18:34:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] lockdep: change scheduler annotation
-Message-ID: <20080731163456.GE26393@elte.hu>
-References: <20080728.161318.38361710.davem@davemloft.net> <20080728235133.GA7956@elte.hu> <20080728.174415.154327359.davem@davemloft.net> <20080729.214503.126934382.davem@davemloft.net> <1217417217.8157.23.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217417217.8157.23.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0190]
+	Thu, 31 Jul 2008 12:35:51 -0400
+Received: from mail.free-electrons.com ([88.191.46.45]:50706 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751834AbYGaQfu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 12:35:50 -0400
+Date: Thu, 31 Jul 2008 18:35:46 +0200
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com, mpm@selenic.com, jgarzik@pobox.com,
+       netdev@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [patch 3/4] Configure out ethtool support
+Message-ID: <20080731183546.2b047cee@surf>
+In-Reply-To: <20080731155820.GC20212@cs181140183.pp.htv.fi>
+References: <1217500967.3454.140.camel@pmac.infradead.org>
+	<20080731.035121.177567346.davem@davemloft.net>
+	<1217503770.3454.162.camel@pmac.infradead.org>
+	<20080731.043355.143045459.davem@davemloft.net>
+	<1217504801.3454.170.camel@pmac.infradead.org>
+	<20080731155820.GC20212@cs181140183.pp.htv.fi>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Le Thu, 31 Jul 2008 18:58:20 +0300,
+Adrian Bunk <bunk@kernel.org> a écrit :
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+> It might have also made more sense to spend some of the energy used
+> in this discussion instead on checking where the global 24 kB size
+> increase Thomas reported for 2.6.27-rc1 compared to 2.6.26 comes from.
 
-> While thinking about David's patch it _finally_ dawned on me that 
-> there is no reason we have a lock class per cpu..
+I agree. This is something I'm working on. I hope to have results soon.
+But I *fear* that the results will be: the size growth is 10 bytes
+here, 22 bytes there, 35 bytes here, spread over hundreds of patches.
+Something we can do anything against.
 
-/me arghs too! :)
-
-> Sorry for being dense :-/
-> 
-> The below changes the annotation from a lock class per cpu, to a 
-> single nested lock, as the scheduler never holds more that 2 rq locks 
-> at a time anyway.
-> 
-> If there was code requiring holding all rq locks this would not work 
-> and the original annotation would be the only option, but that not 
-> being the case, this is a much lighter one.
-> 
-> Compiles and boots on a 2-way x86_64.
-
-applied to tip/sched/urgent - thanks Peter!
-
-	Ingo
+Thomas
+-- 
+Thomas Petazzoni, Free Electrons
+Kernel, drivers and embedded Linux development,
+consulting, training and support.
+http://free-electrons.com
