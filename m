@@ -1,76 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbYGaSMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbYGaSNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754736AbYGaSMx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 14:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYGaSMk
+	id S1756563AbYGaSNV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 14:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbYGaSNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 14:12:40 -0400
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:52636 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752264AbYGaSMi (ORCPT
+	Thu, 31 Jul 2008 14:13:05 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:35736 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752350AbYGaSND (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 14:12:38 -0400
-Date: Thu, 31 Jul 2008 20:12:14 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Adrian Bunk <bunk@kernel.org>,
-       Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
-       matthew@wil.cx, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch 2/4] Configure out file locking features
-Message-ID: <20080731181214.GD8254@pengutronix.de>
-References: <20080731092703.661994657@free-electrons.com> <20080731093220.969460336@free-electrons.com> <20080731135319.GA20212@cs181140183.pp.htv.fi> <20080731162007.285938e0@surf> <20080731153757.GB20212@cs181140183.pp.htv.fi> <20080731182616.4c20f0db@surf> <20080731164918.GE20212@cs181140183.pp.htv.fi> <4891F724.3030406@am.sony.com>
+	Thu, 31 Jul 2008 14:13:03 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <200807291414.55479.yhlu.kernel@gmail.com>
+	<200807302109.21519.yhlu.kernel@gmail.com>
+	<200807302110.10585.yhlu.kernel@gmail.com>
+	<200807310126.12572.yhlu.kernel@gmail.com>
+	<m1iqum2rya.fsf@frodo.ebiederm.org>
+	<20080731145752.2aec5727@lxorguk.ukuu.org.uk>
+Date: Thu, 31 Jul 2008 11:10:33 -0700
+In-Reply-To: <20080731145752.2aec5727@lxorguk.ukuu.org.uk> (Alan Cox's message
+	of "Thu, 31 Jul 2008 14:57:52 +0100")
+Message-ID: <m163ql3ox2.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <4891F724.3030406@am.sony.com>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Hannoversche
-	Str. 2, 31134 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-9 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 20:07:00 up 30 days,  6:50,  9 users,  load average: 0.00, 0.01,
-	0.00
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 10.1.0.65
-X-SA-Exim-Mail-From: rsc@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.extern.pengutronix.de); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Alan Cox <alan@lxorguk.ukuu.org.uk>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4206]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] serial: change remove NR_IRQS in 8250.c
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 10:32:20AM -0700, Tim Bird wrote:
-> > And for embedded systems with which applications is it 100% safe to
-> > disable this option?
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+
+> On Thu, 31 Jul 2008 04:50:21 -0700
+> ebiederm@xmission.com (Eric W. Biederman) wrote:
 >
-> Sony's digital cameras.
+>> > replace
+>> > 	[PATCH] serial: change irq_lists to use dyn_array
+>> > use small array with index to handle irq locking for serial port
+>> > hope 32 slot is enough
+>> 
+>> Could you size this array by NR_UARTS (our worst case usage)
+>> and place irq_no in struct irq_info?
+>
+> NR_UARTS is likely to go away in time so don't get attached to it
 
-We have also several very small automation & measurement devices in the
-field which run a very dedicated more or less single application which
-can be carefully audited.
+I'm not attached to it, but NR_UARTS is a closer approximation to what
+we are trying to do then YH's hard coded 32.  Do you know if we
+actually need the list of uarts per irq or if request_irq having a
+shared isa would work?
 
-In the OSADL safety working group, people are discussing about Linux for
-safety critical applications. If we want to achieve such scenarios,
-stripped-down systems are an absolute must.
+The practical question is how do we cleanly kill the array
+irq_lists[NR_IRQS].  YH's hack where he isn't paying attention to what
+the code is doing and just trying to avoid the problem is not
+something I am fond of seeing being merged.
 
-Although increasing processor power even in embedded applications lead
-to more and more standard-line kernels plus normal userspace components
-(i.e. glibc instead of uclibc), there are still applications where the
-final product consists only of the kernel plus the app, whereas during
-development time, the system has a full-blown configuration.
+It is also true that sorting out 8250.c and by extension the other
+serial drivers that have cloned it is the significant non-arch
+piece of work needed to kill NR_IRQs
 
-rsc
--- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+Eric
+
 
