@@ -1,78 +1,934 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758928AbYGaVpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759088AbYGaVqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758928AbYGaVpo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 17:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758501AbYGaVpS
+	id S1759088AbYGaVqB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 17:46:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758800AbYGaVpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 17:45:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45888 "EHLO mx2.mail.elte.hu"
+	Thu, 31 Jul 2008 17:45:23 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:38315 "EHLO smtpout3.tre.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757594AbYGaVpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 17:45:16 -0400
-Date: Thu, 31 Jul 2008 23:45:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] core fixlet
-Message-ID: <20080731214505.GA22980@elte.hu>
-MIME-Version: 1.0
+	id S1758097AbYGaVpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 17:45:18 -0400
+Date: Thu, 31 Jul 2008 23:44:44 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, John Kacur <jkacur@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roman Zippel <zippel@linux-m68k.org>, Jeff Dike <jdike@addtoit.com>
+Subject: [GIT PULL] kbuild fixes for -rc1
+Message-ID: <20080731214444.GA26604@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Hi Linus.
 
-Please pull the latest core-fixes-for-linus git tree from:
+Please pull following fixes that has accumulated over the last week or so.
+Full diff below.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
+The diffstat does not tell the true story as the difstat shows mainly the
+content changes in generated files.
 
-(the drivers/base/class.c bit has an ack from Greg.)
+PS. All individuals from change logs are included in the mail.
 
-Thanks,
+	Sam
 
-	Ingo
+The following changes since commit 660fc1f4d88b0f5e4bb936e4a5a9b95b70df9e58:
+  Linus Torvalds (1):
+        Merge branch 'merge' of git://git.kernel.org/.../benh/powerpc
 
------------------->
-Randy Dunlap (1):
-      locking: fix mutex @key parameter kernel-doc notation
+are available in the git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
 
- drivers/base/class.c |    1 +
- kernel/mutex.c       |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+Adrian Bunk (3):
+      kconfig: scripts/kconfig/zconf.l: add %option noinput
+      kbuild: scripts/genksyms/lex.l: add %option noinput
+      kbuild: scripts/ver_linux: don't set PATH
 
-diff --git a/drivers/base/class.c b/drivers/base/class.c
-index 839d27c..5667c2f 100644
---- a/drivers/base/class.c
-+++ b/drivers/base/class.c
-@@ -198,6 +198,7 @@ static void class_create_release(struct class *cls)
-  * class_create - create a struct class structure
-  * @owner: pointer to the module that is to "own" this struct class
-  * @name: pointer to a string for the name of this class.
-+ * @key: the lock_class_key for this class; used by mutex lock debugging
-  *
-  * This is used to create a struct class pointer that can then be used
-  * in calls to device_create().
-diff --git a/kernel/mutex.c b/kernel/mutex.c
-index bcdc9ac..12c779d 100644
---- a/kernel/mutex.c
-+++ b/kernel/mutex.c
-@@ -34,6 +34,7 @@
- /***
-  * mutex_init - initialize the mutex
-  * @lock: the mutex to be initialized
-+ * @key: the lock_class_key for the class; used by mutex lock debugging
-  *
-  * Initialize the mutex to unlocked state.
-  *
+Andreas Gruenbacher (2):
+      kbuild: genksyms parser: fix the __attribute__ rule
+      kbuild: genksyms: Include extern information in dumps
+
+Sam Ravnborg (1):
+      kbuild: fix O=... build of um
+
+jkacur (1):
+      Kconfig/init: change help text to match default value
+
+ Makefile                            |    2 +-
+ init/Kconfig                        |    2 +-
+ scripts/genksyms/genksyms.c         |    2 +
+ scripts/genksyms/lex.c_shipped      |  133 +++++++++++++++++++++-----------
+ scripts/genksyms/lex.l              |    2 +
+ scripts/genksyms/parse.c_shipped    |  144 +++++++++++++++++-----------------
+ scripts/genksyms/parse.y            |    2 +-
+ scripts/kconfig/lex.zconf.c_shipped |   86 +++++++++++++++++----
+ scripts/kconfig/zconf.l             |    1 +
+ scripts/ver_linux                   |    1 -
+ 10 files changed, 238 insertions(+), 137 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index aa527a4..f156f40 100644
+--- a/Makefile
++++ b/Makefile
+@@ -930,7 +930,7 @@ ifneq ($(KBUILD_SRC),)
+ 		/bin/false; \
+ 	fi;
+ 	$(Q)if [ ! -d include2 ]; then mkdir -p include2; fi;
+-	$(Q)if [ -e $(srctree)/include/asm-$(SRCARCH)/system.h ]; then  \
++	$(Q)if [ -e $(srctree)/include/asm-$(SRCARCH)/errno.h ]; then  \
+ 	    ln -fsn $(srctree)/include/asm-$(SRCARCH) include2/asm;     \
+ 	    fi
+ endif
+diff --git a/init/Kconfig b/init/Kconfig
+index 250e02c..7e6dae1 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -522,7 +522,7 @@ config CC_OPTIMIZE_FOR_SIZE
+ 	  Enabling this option will pass "-Os" instead of "-O2" to gcc
+ 	  resulting in a smaller kernel.
+ 
+-	  If unsure, say N.
++	  If unsure, say Y.
+ 
+ config SYSCTL
+ 	bool
+diff --git a/scripts/genksyms/genksyms.c b/scripts/genksyms/genksyms.c
+index 4f8a300..c249274 100644
+--- a/scripts/genksyms/genksyms.c
++++ b/scripts/genksyms/genksyms.c
+@@ -545,6 +545,8 @@ int main(int argc, char **argv)
+ 			}
+ 			fputs(sym->name, dumpfile);
+ 			putc(' ', dumpfile);
++			if (sym->is_extern)
++				fputs("extern ", dumpfile);
+ 			print_list(dumpfile, sym->defn);
+ 			putc('\n', dumpfile);
+ 
+diff --git a/scripts/genksyms/lex.c_shipped b/scripts/genksyms/lex.c_shipped
+index 2a17698..2ac23bc 100644
+--- a/scripts/genksyms/lex.c_shipped
++++ b/scripts/genksyms/lex.c_shipped
+@@ -6,10 +6,19 @@
+ 
+ /* A lexical scanner generated by flex */
+ 
++/* %not-for-header */
++
++/* %if-c-only */
++/* %if-not-reentrant */
++
++/* %endif */
++/* %endif */
++/* %ok-for-header */
++
+ #define FLEX_SCANNER
+ #define YY_FLEX_MAJOR_VERSION 2
+ #define YY_FLEX_MINOR_VERSION 5
+-#define YY_FLEX_SUBMINOR_VERSION 33
++#define YY_FLEX_SUBMINOR_VERSION 35
+ #if YY_FLEX_SUBMINOR_VERSION > 0
+ #define FLEX_BETA
+ #endif
+@@ -47,7 +56,7 @@
+ 
+ /* C99 systems have <inttypes.h>. Non-C99 systems may or may not. */
+ 
+-#if __STDC_VERSION__ >= 199901L
++#if defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+ 
+ /* C99 says to define __STDC_LIMIT_MACROS before including stdint.h,
+  * if you want the limit (max/min) macros for int types. 
+@@ -70,7 +79,6 @@ typedef int flex_int32_t;
+ typedef unsigned char flex_uint8_t; 
+ typedef unsigned short int flex_uint16_t;
+ typedef unsigned int flex_uint32_t;
+-#endif /* ! C99 */
+ 
+ /* Limits of integral types. */
+ #ifndef INT8_MIN
+@@ -101,6 +109,8 @@ typedef unsigned int flex_uint32_t;
+ #define UINT32_MAX             (4294967295U)
+ #endif
+ 
++#endif /* ! C99 */
++
+ #endif /* ! FLEXINT_H */
+ 
+ /* %endif */
+@@ -115,11 +125,12 @@ typedef unsigned int flex_uint32_t;
+ 
+ #else	/* ! __cplusplus */
+ 
+-#if __STDC__
++/* C99 requires __STDC__ to be defined as 1. */
++#if defined (__STDC__)
+ 
+ #define YY_USE_CONST
+ 
+-#endif	/* __STDC__ */
++#endif	/* defined (__STDC__) */
+ #endif	/* ! __cplusplus */
+ 
+ #ifdef YY_USE_CONST
+@@ -218,14 +229,9 @@ extern FILE *yyin, *yyout;
+ 
+ #define unput(c) yyunput( c, (yytext_ptr)  )
+ 
+-/* The following is because we cannot portably get our hands on size_t
+- * (without autoconf's help, which isn't available because we want
+- * flex-generated scanners to compile on their own).
+- */
+-
+ #ifndef YY_TYPEDEF_YY_SIZE_T
+ #define YY_TYPEDEF_YY_SIZE_T
+-typedef unsigned int yy_size_t;
++typedef size_t yy_size_t;
+ #endif
+ 
+ #ifndef YY_STRUCT_YY_BUFFER_STATE
+@@ -401,7 +407,7 @@ void yyfree (void *  );
+ /* %% [1.0] yytext/yyin/yyout/yy_state_type/yylineno etc. def's & init go here */
+ /* Begin user sect3 */
+ 
+-#define yywrap() 1
++#define yywrap(n) 1
+ #define YY_SKIP_YYWRAP
+ 
+ #define FLEX_DEBUG
+@@ -613,8 +619,8 @@ int yy_flex_debug = 1;
+ 
+ static yyconst flex_int16_t yy_rule_linenum[13] =
+     {   0,
+-       69,   70,   71,   74,   77,   78,   79,   85,   86,   87,
+-       89,   92
++       71,   72,   73,   76,   79,   80,   81,   87,   88,   89,
++       91,   94
+     } ;
+ 
+ /* The intent behind this definition is that it'll catch
+@@ -665,7 +671,8 @@ char *yytext;
+    quite so pedantic.  */
+ 
+ /* We don't do multiple input files.  */
+-#line 669 "scripts/genksyms/lex.c"
++#define YY_NO_INPUT 1
++#line 676 "scripts/genksyms/lex.c"
+ 
+ #define INITIAL 0
+ #define V2_TOKENS 1
+@@ -695,9 +702,39 @@ static int yy_init_globals (void );
+ /* %endif */
+ /* %if-reentrant */
+ /* %endif */
++/* %endif End reentrant structures and macros. */
++
++/* Accessor methods to globals.
++   These are made visible to non-reentrant scanners for convenience. */
++
++int yylex_destroy (void );
++
++int yyget_debug (void );
++
++void yyset_debug (int debug_flag  );
++
++YY_EXTRA_TYPE yyget_extra (void );
++
++void yyset_extra (YY_EXTRA_TYPE user_defined  );
++
++FILE *yyget_in (void );
++
++void yyset_in  (FILE * in_str  );
++
++FILE *yyget_out (void );
++
++void yyset_out  (FILE * out_str  );
++
++int yyget_leng (void );
++
++char *yyget_text (void );
++
++int yyget_lineno (void );
++
++void yyset_lineno (int line_number  );
++
+ /* %if-bison-bridge */
+ /* %endif */
+-/* %endif End reentrant structures and macros. */
+ 
+ /* Macros after this point can all be overridden by user definitions in
+  * section 1.
+@@ -756,7 +793,7 @@ static int input (void );
+ /* This used to be an fputs(), but since the string might contain NUL's,
+  * we now use fwrite().
+  */
+-#define ECHO (void) fwrite( yytext, yyleng, 1, yyout )
++#define ECHO fwrite( yytext, yyleng, 1, yyout )
+ /* %endif */
+ /* %if-c++-only C++ definition */
+ /* %endif */
+@@ -881,12 +918,12 @@ YY_DECL
+ 	register int yy_act;
+     
+ /* %% [7.0] user's declarations go here */
+-#line 65 "scripts/genksyms/lex.l"
++#line 67 "scripts/genksyms/lex.l"
+ 
+ 
+ 
+  /* Keep track of our location in the original source files.  */
+-#line 890 "scripts/genksyms/lex.c"
++#line 927 "scripts/genksyms/lex.c"
+ 
+ 	if ( !(yy_init) )
+ 		{
+@@ -1004,42 +1041,42 @@ do_action:	/* This label is used only to access EOF actions. */
+ case 1:
+ /* rule 1 can match eol */
+ YY_RULE_SETUP
+-#line 69 "scripts/genksyms/lex.l"
++#line 71 "scripts/genksyms/lex.l"
+ return FILENAME;
+ 	YY_BREAK
+ case 2:
+ /* rule 2 can match eol */
+ YY_RULE_SETUP
+-#line 70 "scripts/genksyms/lex.l"
++#line 72 "scripts/genksyms/lex.l"
+ cur_line++;
+ 	YY_BREAK
+ case 3:
+ /* rule 3 can match eol */
+ YY_RULE_SETUP
+-#line 71 "scripts/genksyms/lex.l"
++#line 73 "scripts/genksyms/lex.l"
+ cur_line++;
+ 	YY_BREAK
+ /* Ignore all other whitespace.  */
+ case 4:
+ YY_RULE_SETUP
+-#line 74 "scripts/genksyms/lex.l"
++#line 76 "scripts/genksyms/lex.l"
+ ;
+ 	YY_BREAK
+ case 5:
+ /* rule 5 can match eol */
+ YY_RULE_SETUP
+-#line 77 "scripts/genksyms/lex.l"
++#line 79 "scripts/genksyms/lex.l"
+ return STRING;
+ 	YY_BREAK
+ case 6:
+ /* rule 6 can match eol */
+ YY_RULE_SETUP
+-#line 78 "scripts/genksyms/lex.l"
++#line 80 "scripts/genksyms/lex.l"
+ return CHAR;
+ 	YY_BREAK
+ case 7:
+ YY_RULE_SETUP
+-#line 79 "scripts/genksyms/lex.l"
++#line 81 "scripts/genksyms/lex.l"
+ return IDENT;
+ 	YY_BREAK
+ /* The Pedant requires that the other C multi-character tokens be
+@@ -1048,36 +1085,36 @@ return IDENT;
+     around them properly.  */
+ case 8:
+ YY_RULE_SETUP
+-#line 85 "scripts/genksyms/lex.l"
++#line 87 "scripts/genksyms/lex.l"
+ return OTHER;
+ 	YY_BREAK
+ case 9:
+ YY_RULE_SETUP
+-#line 86 "scripts/genksyms/lex.l"
++#line 88 "scripts/genksyms/lex.l"
+ return INT;
+ 	YY_BREAK
+ case 10:
+ YY_RULE_SETUP
+-#line 87 "scripts/genksyms/lex.l"
++#line 89 "scripts/genksyms/lex.l"
+ return REAL;
+ 	YY_BREAK
+ case 11:
+ YY_RULE_SETUP
+-#line 89 "scripts/genksyms/lex.l"
++#line 91 "scripts/genksyms/lex.l"
+ return DOTS;
+ 	YY_BREAK
+ /* All other tokens are single characters.  */
+ case 12:
+ YY_RULE_SETUP
+-#line 92 "scripts/genksyms/lex.l"
++#line 94 "scripts/genksyms/lex.l"
+ return yytext[0];
+ 	YY_BREAK
+ case 13:
+ YY_RULE_SETUP
+-#line 95 "scripts/genksyms/lex.l"
++#line 97 "scripts/genksyms/lex.l"
+ ECHO;
+ 	YY_BREAK
+-#line 1081 "scripts/genksyms/lex.c"
++#line 1118 "scripts/genksyms/lex.c"
+ case YY_STATE_EOF(INITIAL):
+ case YY_STATE_EOF(V2_TOKENS):
+ 	yyterminate();
+@@ -1346,6 +1383,14 @@ static int yy_get_next_buffer (void)
+ 	else
+ 		ret_val = EOB_ACT_CONTINUE_SCAN;
+ 
++	if ((yy_size_t) ((yy_n_chars) + number_to_move) > YY_CURRENT_BUFFER_LVALUE->yy_buf_size) {
++		/* Extend the array by 50%, plus the number we really need. */
++		yy_size_t new_size = (yy_n_chars) + number_to_move + ((yy_n_chars) >> 1);
++		YY_CURRENT_BUFFER_LVALUE->yy_ch_buf = (char *) yyrealloc((void *) YY_CURRENT_BUFFER_LVALUE->yy_ch_buf,new_size  );
++		if ( ! YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
++			YY_FATAL_ERROR( "out of dynamic memory in yy_get_next_buffer()" );
++	}
++
+ 	(yy_n_chars) += number_to_move;
+ 	YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[(yy_n_chars)] = YY_END_OF_BUFFER_CHAR;
+ 	YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[(yy_n_chars) + 1] = YY_END_OF_BUFFER_CHAR;
+@@ -1851,7 +1896,9 @@ static void yyensure_buffer_stack (void)
+ 		(yy_buffer_stack) = (struct yy_buffer_state**)yyalloc
+ 								(num_to_alloc * sizeof(struct yy_buffer_state*)
+ 								);
+-		
++		if ( ! (yy_buffer_stack) )
++			YY_FATAL_ERROR( "out of dynamic memory in yyensure_buffer_stack()" );
++								  
+ 		memset((yy_buffer_stack), 0, num_to_alloc * sizeof(struct yy_buffer_state*));
+ 				
+ 		(yy_buffer_stack_max) = num_to_alloc;
+@@ -1869,6 +1916,8 @@ static void yyensure_buffer_stack (void)
+ 								((yy_buffer_stack),
+ 								num_to_alloc * sizeof(struct yy_buffer_state*)
+ 								);
++		if ( ! (yy_buffer_stack) )
++			YY_FATAL_ERROR( "out of dynamic memory in yyensure_buffer_stack()" );
+ 
+ 		/* zero only the new slots.*/
+ 		memset((yy_buffer_stack) + (yy_buffer_stack_max), 0, grow_size * sizeof(struct yy_buffer_state*));
+@@ -2092,7 +2141,7 @@ void yyset_debug (int  bdebug )
+ /* %if-reentrant */
+ /* %if-bison-bridge */
+ /* %endif */
+-/* %endif */
++/* %endif if-c-only */
+ 
+ /* %if-c-only */
+ static int yy_init_globals (void)
+@@ -2124,13 +2173,9 @@ static int yy_init_globals (void)
+ }
+ /* %endif */
+ 
+-/* %if-c-or-c++ */
+-/* %if-c-only */
++/* %if-c-only SNIP! this currently causes conflicts with the c++ scanner */
+ /* yylex_destroy is for both reentrant and non-reentrant scanners. */
+ int yylex_destroy  (void)
+-/* %endif */
+-/* %if-c++-only */
+-/* %endif */
+ {
+     
+     /* Pop the buffer stack, destroying each element. */
+@@ -2144,11 +2189,6 @@ int yylex_destroy  (void)
+ 	yyfree((yy_buffer_stack) );
+ 	(yy_buffer_stack) = NULL;
+ 
+-/* %if-c++-only */
+-/* %endif */
+-
+-/* %if-c-only */
+-
+     /* Reset the globals. This is important in a non-reentrant scanner so the next time
+      * yylex() is called, initialization will occur. */
+     yy_init_globals( );
+@@ -2156,7 +2196,6 @@ int yylex_destroy  (void)
+ /* %if-reentrant */
+ /* %endif */
+     return 0;
+-/* %endif */
+ }
+ /* %endif */
+ 
+@@ -2213,7 +2252,7 @@ void yyfree (void * ptr )
+ 
+ /* %ok-for-header */
+ 
+-#line 95 "scripts/genksyms/lex.l"
++#line 97 "scripts/genksyms/lex.l"
+ 
+ 
+ 
+diff --git a/scripts/genksyms/lex.l b/scripts/genksyms/lex.l
+index 5e544a0..fe50ff9 100644
+--- a/scripts/genksyms/lex.l
++++ b/scripts/genksyms/lex.l
+@@ -62,6 +62,8 @@ MC_TOKEN		([~%^&*+=|<>/-]=)|(&&)|("||")|(->)|(<<)|(>>)
+ /* We don't do multiple input files.  */
+ %option noyywrap
+ 
++%option noinput
++
+ %%
+ 
+ 
+diff --git a/scripts/genksyms/parse.c_shipped b/scripts/genksyms/parse.c_shipped
+index 3e6079f..eaee44e 100644
+--- a/scripts/genksyms/parse.c_shipped
++++ b/scripts/genksyms/parse.c_shipped
+@@ -504,7 +504,7 @@ static const yytype_uint16 yyprhs[] =
+      239,   242,   245,   247,   248,   250,   252,   257,   262,   265,
+      269,   273,   277,   278,   280,   283,   287,   291,   292,   294,
+      296,   299,   303,   306,   307,   309,   311,   315,   318,   321,
+-     323,   326,   327,   329,   332,   333,   335
++     323,   326,   327,   330,   333,   334,   336
+ };
+ 
+ /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
+@@ -542,9 +542,9 @@ static const yytype_int8 yyrhs[] =
+       -1,    -1,    89,    -1,    90,    -1,    89,    90,    -1,    64,
+       91,    44,    -1,     1,    44,    -1,    -1,    92,    -1,    93,
+       -1,    92,    46,    93,    -1,    76,    95,    -1,    37,    94,
+-      -1,    94,    -1,    52,    34,    -1,    -1,    31,    -1,    30,
+-      44,    -1,    -1,    30,    -1,    29,    47,    37,    49,    44,
+-      -1
++      -1,    94,    -1,    52,    34,    -1,    -1,    95,    31,    -1,
++      30,    44,    -1,    -1,    30,    -1,    29,    47,    37,    49,
++      44,    -1
+ };
+ 
+ /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
+@@ -647,7 +647,7 @@ static const yytype_uint8 yyr2[] =
+        2,     2,     1,     0,     1,     1,     4,     4,     2,     3,
+        3,     3,     0,     1,     2,     3,     3,     0,     1,     1,
+        2,     3,     2,     0,     1,     1,     3,     2,     2,     1,
+-       2,     0,     1,     2,     0,     1,     5
++       2,     0,     2,     2,     0,     1,     5
+ };
+ 
+ /* YYDEFACT[STATE-NAME] -- Default rule to reduce with in state
+@@ -667,9 +667,9 @@ static const yytype_uint8 yydefact[] =
+        0,    66,   125,   101,   121,    71,     0,     7,   112,   106,
+       76,    77,     0,     0,     0,   121,    75,     0,   114,   115,
+      119,   105,     0,   110,   124,     0,    36,     0,    73,    72,
+-      61,    20,   122,   102,     0,    93,     0,    84,    87,    88,
+-     118,     0,    76,     0,   120,    74,   117,    80,     0,   111,
+-       0,    35,   126,     0,    21,   103,    70,    94,    56,     0,
++      61,    20,   102,     0,    93,     0,    84,    87,    88,   118,
++       0,    76,     0,   120,    74,   117,    80,     0,   111,     0,
++      35,   126,   122,     0,    21,   103,    70,    94,    56,     0,
+       93,    90,    92,    69,    83,     0,    82,    81,     0,     0,
+      116,   104,     0,    95,     0,    91,    98,     0,    85,    89,
+       79,    78,   100,    99,     0,     0,    97,    96
+@@ -680,44 +680,44 @@ static const yytype_int16 yydefgoto[] =
+ {
+       -1,     1,     2,     3,    35,    72,    55,    36,    64,    65,
+       66,    75,    38,    39,    40,    41,    42,    67,    86,    87,
+-      43,   114,    69,   105,   106,   126,   127,   128,   129,   151,
++      43,   114,    69,   105,   106,   125,   126,   127,   128,   151,
+      152,    44,   144,   145,    54,    76,    77,    78,   107,   108,
+-     109,   110,   123,    45,    94,    46
++     109,   110,   122,    45,    94,    46
+ };
+ 
+ /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
+    STATE-NUM.  */
+-#define YYPACT_NINF -135
++#define YYPACT_NINF -134
+ static const yytype_int16 yypact[] =
+ {
+-    -135,    11,  -135,   312,  -135,  -135,    24,  -135,  -135,  -135,
+-    -135,  -135,   -23,  -135,    -2,  -135,  -135,  -135,  -135,  -135,
+-    -135,  -135,  -135,  -135,   -17,  -135,   -11,  -135,  -135,  -135,
+-      -3,    16,    26,  -135,  -135,  -135,  -135,    34,   482,  -135,
+-    -135,  -135,  -135,  -135,  -135,  -135,  -135,  -135,  -135,  -135,
+-      -8,  -135,    22,    97,  -135,   482,    22,  -135,   482,    56,
+-    -135,  -135,    12,    10,    50,    49,  -135,    34,   -13,    15,
+-    -135,  -135,   482,  -135,    47,   -25,    51,   145,  -135,  -135,
+-      34,  -135,   356,    52,    71,    77,  -135,    10,  -135,  -135,
+-      34,  -135,  -135,  -135,    68,  -135,   193,  -135,  -135,  -135,
+-      48,  -135,     6,    93,    37,    68,    18,    85,    84,  -135,
+-    -135,  -135,    87,  -135,   102,    86,  -135,    89,  -135,  -135,
+-    -135,  -135,  -135,    90,    88,   401,    94,   100,   101,  -135,
+-    -135,    99,  -135,   108,  -135,  -135,  -135,  -135,   230,  -135,
+-     -25,  -135,  -135,   105,  -135,  -135,  -135,  -135,  -135,     9,
+-      42,  -135,    28,  -135,  -135,   445,  -135,  -135,   119,   125,
+-    -135,  -135,   126,  -135,   128,  -135,  -135,   267,  -135,  -135,
+-    -135,  -135,  -135,  -135,   129,   130,  -135,  -135
++    -134,    16,  -134,   312,  -134,  -134,    20,  -134,  -134,  -134,
++    -134,  -134,   -18,  -134,    -3,  -134,  -134,  -134,  -134,  -134,
++    -134,  -134,  -134,  -134,   -26,  -134,   -25,  -134,  -134,  -134,
++      -7,     5,    27,  -134,  -134,  -134,  -134,    46,   482,  -134,
++    -134,  -134,  -134,  -134,  -134,  -134,  -134,  -134,  -134,  -134,
++      -8,  -134,    30,    97,  -134,   482,    30,  -134,   482,     7,
++    -134,  -134,    12,    10,    42,    55,  -134,    46,   -15,    15,
++    -134,  -134,   482,  -134,    25,    26,    47,   145,  -134,  -134,
++      46,  -134,   356,    39,    71,    77,  -134,    10,  -134,  -134,
++      46,  -134,  -134,  -134,  -134,  -134,   193,  -134,  -134,  -134,
++      75,  -134,     6,    95,    43,  -134,    28,    86,    85,  -134,
++    -134,  -134,    88,  -134,   103,    87,  -134,    91,  -134,  -134,
++    -134,  -134,   -23,    90,   401,    94,   101,   102,  -134,  -134,
++      98,  -134,   108,  -134,  -134,   109,  -134,   230,  -134,    26,
++    -134,  -134,  -134,   134,  -134,  -134,  -134,  -134,  -134,     9,
++      48,  -134,    35,  -134,  -134,   445,  -134,  -134,   125,   126,
++    -134,  -134,   128,  -134,   129,  -134,  -134,   267,  -134,  -134,
++    -134,  -134,  -134,  -134,   130,   131,  -134,  -134
+ };
+ 
+ /* YYPGOTO[NTERM-NUM].  */
+ static const yytype_int16 yypgoto[] =
+ {
+-    -135,  -135,   179,  -135,  -135,  -135,  -135,   -47,  -135,  -135,
+-      91,     0,   -58,   -37,  -135,  -135,  -135,   -73,  -135,  -135,
+-     -48,   -32,  -135,   -38,  -135,  -134,  -135,  -135,    29,   -63,
+-    -135,  -135,  -135,  -135,   -20,  -135,  -135,   106,  -135,  -135,
+-      45,    95,    82,  -135,  -135,  -135
++    -134,  -134,   180,  -134,  -134,  -134,  -134,   -33,  -134,  -134,
++      93,     0,   -58,   -37,  -134,  -134,  -134,   -73,  -134,  -134,
++     -54,   -32,  -134,   -81,  -134,  -133,  -134,  -134,    29,   -50,
++    -134,  -134,  -134,  -134,   -20,  -134,  -134,   110,  -134,  -134,
++      49,    96,    80,  -134,  -134,  -134
+ };
+ 
+ /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
+@@ -727,26 +727,26 @@ static const yytype_int16 yypgoto[] =
+ #define YYTABLE_NINF -109
+ static const yytype_int16 yytable[] =
+ {
+-      82,    70,   104,    37,   159,    68,    57,   131,    79,    49,
+-     162,     4,   100,    84,    50,    88,   101,    92,    10,    93,
+-      52,    51,   102,    63,    71,    97,    56,   103,    20,   104,
+-      85,   104,    73,   175,    53,    91,    81,    29,   125,   120,
+-      53,    33,   -93,   132,    58,    70,   147,   101,    95,    61,
+-     163,   137,   150,   102,    63,    80,   149,    63,   -93,    62,
+-      63,   166,    96,    59,   133,   138,   135,   104,    47,    48,
+-      60,    61,    80,    53,   132,   167,   150,   150,   101,   147,
+-     125,    62,    63,   163,   102,    63,   164,   165,    70,   149,
+-      63,    98,    99,    83,    89,    90,   111,   125,    74,   122,
+-     103,   117,     7,     8,     9,    10,    11,    12,    13,   125,
++      82,    70,   104,    37,   159,    68,    57,   130,   142,    88,
++     162,    52,    56,    84,    49,    92,     4,    93,    10,    50,
++      51,   132,    79,   134,    71,    53,    53,   143,    20,   104,
++      85,   104,    73,   120,   175,    91,    81,    29,   124,    97,
++      58,    33,   -93,   131,    83,    70,   147,   101,    95,    61,
++     163,   150,    59,   102,    63,    80,   149,    63,   -93,    62,
++      63,   136,    96,   100,    47,    48,   104,   101,   166,    98,
++      99,    60,    80,   102,    63,   137,   150,   150,   103,   124,
++     131,    53,   167,    61,   101,   147,    89,    70,   117,   163,
++     102,    63,   111,    62,    63,   149,    63,   124,    74,   164,
++     165,    90,     7,     8,     9,    10,    11,    12,    13,   124,
+       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
+-     118,    26,    27,    28,    29,    30,   119,   134,    33,   139,
+-     140,    98,    92,   142,   -22,   141,   154,   146,    34,   161,
+-     143,   -22,  -107,   153,   -22,   -22,   112,   155,   156,   -22,
++     118,    26,    27,    28,    29,    30,   119,   103,    33,   133,
++     138,   139,    98,    92,   -22,   141,   140,   154,    34,   146,
++     142,   -22,  -107,   153,   -22,   -22,   112,   156,   155,   -22,
+        7,     8,     9,    10,    11,    12,    13,   157,    15,    16,
+-      17,    18,    19,    20,    21,    22,    23,    24,   170,    26,
+-      27,    28,    29,    30,   171,   172,    33,   173,   176,   177,
+-       5,   121,   -22,   113,   169,   160,    34,   136,     0,   -22,
+-    -108,     0,   -22,   -22,   124,   130,     0,   -22,     7,     8,
++      17,    18,    19,    20,    21,    22,    23,    24,   161,    26,
++      27,    28,    29,    30,   170,   171,    33,   172,   173,   176,
++     177,     5,   -22,   121,   169,   135,    34,   113,   160,   -22,
++    -108,     0,   -22,   -22,   123,     0,   129,   -22,     7,     8,
+        9,    10,    11,    12,    13,     0,    15,    16,    17,    18,
+       19,    20,    21,    22,    23,    24,     0,    26,    27,    28,
+       29,    30,     0,     0,    33,     0,     0,     0,     0,   -86,
+@@ -784,26 +784,26 @@ static const yytype_int16 yytable[] =
+ 
+ static const yytype_int16 yycheck[] =
+ {
+-      58,    38,    75,     3,   138,    37,    26,     1,    55,    32,
+-       1,     0,    37,     1,    37,    63,    41,    30,     8,    32,
+-      37,    23,    47,    48,    32,    72,    37,    52,    18,   102,
+-      62,   104,    52,   167,    51,    67,    56,    27,    96,    87,
+-      51,    31,    33,    37,    47,    82,    37,    41,    33,    37,
+-      41,    33,   125,    47,    48,    55,    47,    48,    49,    47,
+-      48,    33,    47,    47,   102,    47,   104,   140,    44,    45,
+-      44,    37,    72,    51,    37,    47,   149,   150,    41,    37,
+-     138,    47,    48,    41,    47,    48,   149,   150,   125,    47,
+-      48,    44,    45,    37,    44,    46,    45,   155,     1,    31,
+-      52,    49,     5,     6,     7,     8,     9,    10,    11,   167,
++      58,    38,    75,     3,   137,    37,    26,     1,    31,    63,
++       1,    37,    37,     1,    32,    30,     0,    32,     8,    37,
++      23,   102,    55,   104,    32,    51,    51,    50,    18,   102,
++      62,   104,    52,    87,   167,    67,    56,    27,    96,    72,
++      47,    31,    33,    37,    37,    82,    37,    41,    33,    37,
++      41,   124,    47,    47,    48,    55,    47,    48,    49,    47,
++      48,    33,    47,    37,    44,    45,   139,    41,    33,    44,
++      45,    44,    72,    47,    48,    47,   149,   150,    52,   137,
++      37,    51,    47,    37,    41,    37,    44,   124,    49,    41,
++      47,    48,    45,    47,    48,    47,    48,   155,     1,   149,
++     150,    46,     5,     6,     7,     8,     9,    10,    11,   167,
+       13,    14,    15,    16,    17,    18,    19,    20,    21,    22,
+-      49,    24,    25,    26,    27,    28,    49,    34,    31,    44,
+-      46,    44,    30,    44,    37,    49,    36,    49,    41,    34,
+-      50,    44,    45,    49,    47,    48,     1,    46,    49,    52,
++      49,    24,    25,    26,    27,    28,    49,    52,    31,    34,
++      44,    46,    44,    30,    37,    44,    49,    36,    41,    49,
++      31,    44,    45,    49,    47,    48,     1,    49,    46,    52,
+        5,     6,     7,     8,     9,    10,    11,    49,    13,    14,
+-      15,    16,    17,    18,    19,    20,    21,    22,    49,    24,
++      15,    16,    17,    18,    19,    20,    21,    22,    34,    24,
+       25,    26,    27,    28,    49,    49,    31,    49,    49,    49,
+-       1,    90,    37,    77,   155,   140,    41,   105,    -1,    44,
+-      45,    -1,    47,    48,     1,   100,    -1,    52,     5,     6,
++      49,     1,    37,    90,   155,   105,    41,    77,   139,    44,
++      45,    -1,    47,    48,     1,    -1,   100,    52,     5,     6,
+        7,     8,     9,    10,    11,    -1,    13,    14,    15,    16,
+       17,    18,    19,    20,    21,    22,    -1,    24,    25,    26,
+       27,    28,    -1,    -1,    31,    -1,    -1,    -1,    -1,    36,
+@@ -855,9 +855,9 @@ static const yytype_uint8 yystos[] =
+       46,    74,    30,    32,    97,    33,    47,    60,    44,    45,
+       37,    41,    47,    52,    70,    76,    77,    91,    92,    93,
+       94,    45,     1,    90,    74,    48,    49,    49,    49,    49,
+-      73,    63,    31,    95,     1,    65,    78,    79,    80,    81,
+-      94,     1,    37,    76,    34,    76,    95,    33,    47,    44,
+-      46,    49,    44,    50,    85,    86,    49,    37,    41,    47,
++      73,    63,    95,     1,    65,    78,    79,    80,    81,    94,
++       1,    37,    76,    34,    76,    95,    33,    47,    44,    46,
++      49,    44,    31,    50,    85,    86,    49,    37,    41,    47,
+       70,    82,    83,    49,    36,    46,    49,    49,     1,    78,
+       93,    34,     1,    41,    82,    82,    33,    47,    36,    81,
+       49,    49,    49,    49,     1,    78,    49,    49
+diff --git a/scripts/genksyms/parse.y b/scripts/genksyms/parse.y
+index 408cdf8..10d7dc7 100644
+--- a/scripts/genksyms/parse.y
++++ b/scripts/genksyms/parse.y
+@@ -446,7 +446,7 @@ member_bitfield_declarator:
+ 
+ attribute_opt:
+ 	/* empty */					{ $$ = NULL; }
+-	| ATTRIBUTE_PHRASE
++	| attribute_opt ATTRIBUTE_PHRASE
+ 	;
+ 
+ asm_definition:
+diff --git a/scripts/kconfig/lex.zconf.c_shipped b/scripts/kconfig/lex.zconf.c_shipped
+index 6a61cee..7342ce0 100644
+--- a/scripts/kconfig/lex.zconf.c_shipped
++++ b/scripts/kconfig/lex.zconf.c_shipped
+@@ -5,10 +5,29 @@
+ 
+ /* A lexical scanner generated by flex */
+ 
++#define yy_create_buffer zconf_create_buffer
++#define yy_delete_buffer zconf_delete_buffer
++#define yy_flex_debug zconf_flex_debug
++#define yy_init_buffer zconf_init_buffer
++#define yy_flush_buffer zconf_flush_buffer
++#define yy_load_buffer_state zconf_load_buffer_state
++#define yy_switch_to_buffer zconf_switch_to_buffer
++#define yyin zconfin
++#define yyleng zconfleng
++#define yylex zconflex
++#define yylineno zconflineno
++#define yyout zconfout
++#define yyrestart zconfrestart
++#define yytext zconftext
++#define yywrap zconfwrap
++#define yyalloc zconfalloc
++#define yyrealloc zconfrealloc
++#define yyfree zconffree
++
+ #define FLEX_SCANNER
+ #define YY_FLEX_MAJOR_VERSION 2
+ #define YY_FLEX_MINOR_VERSION 5
+-#define YY_FLEX_SUBMINOR_VERSION 33
++#define YY_FLEX_SUBMINOR_VERSION 35
+ #if YY_FLEX_SUBMINOR_VERSION > 0
+ #define FLEX_BETA
+ #endif
+@@ -30,7 +49,7 @@
+ 
+ /* C99 systems have <inttypes.h>. Non-C99 systems may or may not. */
+ 
+-#if __STDC_VERSION__ >= 199901L
++#if defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+ 
+ /* C99 says to define __STDC_LIMIT_MACROS before including stdint.h,
+  * if you want the limit (max/min) macros for int types. 
+@@ -53,7 +72,6 @@ typedef int flex_int32_t;
+ typedef unsigned char flex_uint8_t; 
+ typedef unsigned short int flex_uint16_t;
+ typedef unsigned int flex_uint32_t;
+-#endif /* ! C99 */
+ 
+ /* Limits of integral types. */
+ #ifndef INT8_MIN
+@@ -84,6 +102,8 @@ typedef unsigned int flex_uint32_t;
+ #define UINT32_MAX             (4294967295U)
+ #endif
+ 
++#endif /* ! C99 */
++
+ #endif /* ! FLEXINT_H */
+ 
+ #ifdef __cplusplus
+@@ -93,11 +113,12 @@ typedef unsigned int flex_uint32_t;
+ 
+ #else	/* ! __cplusplus */
+ 
+-#if __STDC__
++/* C99 requires __STDC__ to be defined as 1. */
++#if defined (__STDC__)
+ 
+ #define YY_USE_CONST
+ 
+-#endif	/* __STDC__ */
++#endif	/* defined (__STDC__) */
+ #endif	/* ! __cplusplus */
+ 
+ #ifdef YY_USE_CONST
+@@ -177,14 +198,9 @@ extern FILE *zconfin, *zconfout;
+ 
+ #define unput(c) yyunput( c, (yytext_ptr)  )
+ 
+-/* The following is because we cannot portably get our hands on size_t
+- * (without autoconf's help, which isn't available because we want
+- * flex-generated scanners to compile on their own).
+- */
+-
+ #ifndef YY_TYPEDEF_YY_SIZE_T
+ #define YY_TYPEDEF_YY_SIZE_T
+-typedef unsigned int yy_size_t;
++typedef size_t yy_size_t;
+ #endif
+ 
+ #ifndef YY_STRUCT_YY_BUFFER_STATE
+@@ -335,7 +351,7 @@ void zconffree (void *  );
+ 
+ /* Begin user sect3 */
+ 
+-#define zconfwrap() 1
++#define zconfwrap(n) 1
+ #define YY_SKIP_YYWRAP
+ 
+ typedef unsigned char YY_CHAR;
+@@ -748,6 +764,7 @@ int zconf_flex_debug = 0;
+ #define YY_MORE_ADJ 0
+ #define YY_RESTORE_YY_MORE_OFFSET
+ char *zconftext;
++#define YY_NO_INPUT 1
+ 
+ /*
+  * Copyright (C) 2002 Roman Zippel <zippel@linux-m68k.org>
+@@ -834,6 +851,35 @@ void alloc_string(const char *str, int size)
+ 
+ static int yy_init_globals (void );
+ 
++/* Accessor methods to globals.
++   These are made visible to non-reentrant scanners for convenience. */
++
++int zconflex_destroy (void );
++
++int zconfget_debug (void );
++
++void zconfset_debug (int debug_flag  );
++
++YY_EXTRA_TYPE zconfget_extra (void );
++
++void zconfset_extra (YY_EXTRA_TYPE user_defined  );
++
++FILE *zconfget_in (void );
++
++void zconfset_in  (FILE * in_str  );
++
++FILE *zconfget_out (void );
++
++void zconfset_out  (FILE * out_str  );
++
++int zconfget_leng (void );
++
++char *zconfget_text (void );
++
++int zconfget_lineno (void );
++
++void zconfset_lineno (int line_number  );
++
+ /* Macros after this point can all be overridden by user definitions in
+  * section 1.
+  */
+@@ -876,7 +922,7 @@ static int input (void );
+ /* This used to be an fputs(), but since the string might contain NUL's,
+  * we now use fwrite().
+  */
+-#define ECHO (void) fwrite( zconftext, zconfleng, 1, zconfout )
++#define ECHO fwrite( zconftext, zconfleng, 1, zconfout )
+ #endif
+ 
+ /* Gets input and stuffs it into "buf".  number of characters read, or YY_NULL,
+@@ -1540,6 +1586,14 @@ static int yy_get_next_buffer (void)
+ 	else
+ 		ret_val = EOB_ACT_CONTINUE_SCAN;
+ 
++	if ((yy_size_t) ((yy_n_chars) + number_to_move) > YY_CURRENT_BUFFER_LVALUE->yy_buf_size) {
++		/* Extend the array by 50%, plus the number we really need. */
++		yy_size_t new_size = (yy_n_chars) + number_to_move + ((yy_n_chars) >> 1);
++		YY_CURRENT_BUFFER_LVALUE->yy_ch_buf = (char *) zconfrealloc((void *) YY_CURRENT_BUFFER_LVALUE->yy_ch_buf,new_size  );
++		if ( ! YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
++			YY_FATAL_ERROR( "out of dynamic memory in yy_get_next_buffer()" );
++	}
++
+ 	(yy_n_chars) += number_to_move;
+ 	YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[(yy_n_chars)] = YY_END_OF_BUFFER_CHAR;
+ 	YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[(yy_n_chars) + 1] = YY_END_OF_BUFFER_CHAR;
+@@ -1926,7 +1980,9 @@ static void zconfensure_buffer_stack (void)
+ 		(yy_buffer_stack) = (struct yy_buffer_state**)zconfalloc
+ 								(num_to_alloc * sizeof(struct yy_buffer_state*)
+ 								);
+-		
++		if ( ! (yy_buffer_stack) )
++			YY_FATAL_ERROR( "out of dynamic memory in zconfensure_buffer_stack()" );
++								  
+ 		memset((yy_buffer_stack), 0, num_to_alloc * sizeof(struct yy_buffer_state*));
+ 				
+ 		(yy_buffer_stack_max) = num_to_alloc;
+@@ -1944,6 +2000,8 @@ static void zconfensure_buffer_stack (void)
+ 								((yy_buffer_stack),
+ 								num_to_alloc * sizeof(struct yy_buffer_state*)
+ 								);
++		if ( ! (yy_buffer_stack) )
++			YY_FATAL_ERROR( "out of dynamic memory in zconfensure_buffer_stack()" );
+ 
+ 		/* zero only the new slots.*/
+ 		memset((yy_buffer_stack) + (yy_buffer_stack_max), 0, grow_size * sizeof(struct yy_buffer_state*));
+diff --git a/scripts/kconfig/zconf.l b/scripts/kconfig/zconf.l
+index 4cea5c8..5164ef7 100644
+--- a/scripts/kconfig/zconf.l
++++ b/scripts/kconfig/zconf.l
+@@ -1,5 +1,6 @@
+ %option backup nostdinit noyywrap never-interactive full ecs
+ %option 8bit backup nodefault perf-report perf-report
++%option noinput
+ %x COMMAND HELP STRING PARAM
+ %{
+ /*
+diff --git a/scripts/ver_linux b/scripts/ver_linux
+index 7ac0e30..dbb3037 100755
+--- a/scripts/ver_linux
++++ b/scripts/ver_linux
+@@ -4,7 +4,6 @@
+ # /bin /sbin /usr/bin /usr/sbin /usr/local/bin, but it may
+ # differ on your system.
+ #
+-PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/sbin:$PATH
+ echo 'If some fields are empty or look unusual you may have an old version.'
+ echo 'Compare to the current minimal requirements in Documentation/Changes.'
+ echo ' '
