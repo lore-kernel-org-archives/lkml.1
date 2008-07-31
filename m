@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYGaHbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbYGaHcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbYGaHbU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 03:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYGaHbI
+	id S1754913AbYGaHcS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 03:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbYGaHcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 03:31:08 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:41800 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752266AbYGaHbH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 03:31:07 -0400
-To: jamie@shareable.org
-CC: miklos@szeredi.hu, torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-reply-to: <20080731001131.GA30900@shareable.org> (message from Jamie Lokier
-	on Thu, 31 Jul 2008 01:11:31 +0100)
-Subject: Re: [patch v3] splice: fix race with page invalidation
-References: <20080731001131.GA30900@shareable.org>
-Message-Id: <E1KOSbz-0007b6-0L@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 31 Jul 2008 09:30:11 +0200
+	Thu, 31 Jul 2008 03:32:00 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64738 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751371AbYGaHb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 03:31:59 -0400
+Message-ID: <48916A0F.1000500@cn.fujitsu.com>
+Date: Thu, 31 Jul 2008 15:30:23 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Miklos Szeredi <miklos@szeredi.hu>, viro@ZenIV.linux.org.uk,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/4] vfs: filp is never NULL in do_generic_file_read()
+References: <20080730130845.905327725@szeredi.hu> <20080730130914.500576799@szeredi.hu> <20080731161554.3C84.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080731161554.3C84.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jul 2008, Jamie Lokier wrote:
-> I'm more concerned by sendfile() users like Apache, Samba, FTPd.  In
-> an earlier thread on this topic, I asked if the splice bug can also
-> result in sendfile() sending blocks of zeros, when a file is truncated
-> after it has been sent, and the answer was yes probably.
+KOSAKI Motohiro wrote:
+>>  	*ppos = ((loff_t)index << PAGE_CACHE_SHIFT) + offset;
+>> -	if (filp)
+>> -		file_accessed(filp);
+>> +	file_accessed(filp);
+>>  }
+>>  
+>>  int file_read_actor(read_descriptor_t *desc, struct page *page,
 > 
-> Not that I checked or anything.  But if it affects sendfile() it's a
-> bigger deal - that has many users.
+> if filp is never NULL, BUG_ON is better?
+> 
 
-Nick also pointed out, that it also affects plain read(2), albeit only
-with a tiny window.
+static inline void file_accessed(struct file *file)
+{
+	if (!(file->f_flags & O_NOATIME))
+		...
+}
 
-But partial truncates are _rare_ (we don't even have a UNIX utility
-for that ;), so in practice all this may not actually matter very
-much.
+So if filp is NULL, we'll get a noisy NULL dereference bug immediately,
+so BUG_ON() is not needed.
 
-Miklos
+
