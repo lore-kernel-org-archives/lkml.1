@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbYGaVik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbYGaVmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758497AbYGaVik (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 17:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbYGaVic
+	id S1757291AbYGaVmh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 17:42:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbYGaVm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 17:38:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48883 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754044AbYGaVib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 17:38:31 -0400
-Date: Thu, 31 Jul 2008 23:37:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, a.p.zijlstra@chello.nl,
-       vatsa@linux.vnet.ibm.com, efault@gmx.de, linux-kernel@vger.kernel.org
-Subject: Re: Fwd: Commit 76a2a6ee8a0660a29127f05989ac59ae1ce865fa breaks
-	PXA270 (at least)?
-Message-ID: <20080731213741.GJ2729@elte.hu>
-References: <20080729223105.GK10982@flint.arm.linux.org.uk> <20080729154605.d540cf6d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080729154605.d540cf6d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 31 Jul 2008 17:42:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33983 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753013AbYGaVm2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 17:42:28 -0400
+Date: Thu, 31 Jul 2008 14:41:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc1 process time accounting
+Message-Id: <20080731144147.82fcd85e.akpm@linux-foundation.org>
+In-Reply-To: <20080731104319.GB5806@ics.muni.cz>
+References: <20080731104319.GB5806@ics.muni.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 31 Jul 2008 12:43:19 +0200
+Lukas Hejtmanek <xhejtman@ics.muni.cz> wrote:
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Tue, 29 Jul 2008 23:31:05 +0100
-> Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> Hello,
 > 
-> > But then some bright spark thought it would be a good idea to get
-> > rid of printk_clock().
-> 
-> <does git-log, searches for printk_clock>
+> I think there is a regression since 2.6.26 in time accounting of processes.
 
-i think this is a fresh regression via the introduction of 
-kernel/sched_clock.c. We lost the (known) early-init behavior of 
-cpu_clock() in the !UNSTABLE_SCHED_CLOCK case. The fix would be to 
-restore that, not to reintroduce printk_clock().
+Could be - we changed quite a bit.
 
-Peter, any ideas?
+> kthreadd and console-kit-daemons claim they spent 5124095 hours using CPU.
 
-	Ingo
+My 2.6.27-rc1-mm1 kthreadd looks OK in `top'.  How are you displaying
+this information?  More details if possible, please..
