@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbYGaP5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756542AbYGaP7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755566AbYGaP5L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 11:57:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbYGaP44
+	id S1756542AbYGaP7d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 11:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbYGaP7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 11:56:56 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:9662 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752415AbYGaP4y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 11:56:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=J6lPuuMNmkDc7D1RAjFdK/MAVG8UPeegvvlYo5CNiuJk1sEwGL8g6M7hUuHFkdZm3G
-         bgnObvCtqxw42Z0JRfKBNoesKnrKzUjwVa7jq/d4O2ZFovfNHm2NluXeHyl7fKkNIB/V
-         84QwbPkHMA58PdongO4MKdJhs0KlPWai3nIQ0=
-Date: Thu, 31 Jul 2008 11:56:48 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-Subject: Re: linux-next: Tree for July 30
-Message-ID: <20080731115301.ZZRA012@mailhub.coreip.homeip.net>
-References: <20080730170635.f737ffe9.sfr@canb.auug.org.au> <20080730231029.9818953c.akpm@linux-foundation.org> <20080731140708.GA11229@core.corenet.prv> <58cb370e0807310836x4a6e3c40rf5c3c8ec8b5caae0@mail.gmail.com>
+	Thu, 31 Jul 2008 11:59:17 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:42536 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752861AbYGaP7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 11:59:16 -0400
+Date: Thu, 31 Jul 2008 18:58:20 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: David Miller <davem@davemloft.net>, thomas.petazzoni@free-electrons.com,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com, mpm@selenic.com, jgarzik@pobox.com,
+       netdev@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [patch 3/4] Configure out ethtool support
+Message-ID: <20080731155820.GC20212@cs181140183.pp.htv.fi>
+References: <1217500967.3454.140.camel@pmac.infradead.org> <20080731.035121.177567346.davem@davemloft.net> <1217503770.3454.162.camel@pmac.infradead.org> <20080731.043355.143045459.davem@davemloft.net> <1217504801.3454.170.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <58cb370e0807310836x4a6e3c40rf5c3c8ec8b5caae0@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1217504801.3454.170.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 05:36:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Thu, Jul 31, 2008 at 4:07 PM, Dmitry Torokhov
-> <dmitry.torokhov@gmail.com> wrote:
-> > On Wed, Jul 30, 2008 at 11:10:29PM -0700, Andrew Morton wrote:
-> >> On Wed, 30 Jul 2008 17:06:35 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >>
-> >> > I have created today's linux-next tree at
-> >> > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> >>
-> >> The X server broke on my FC8 t61p thinkpad.  Mainline is OK.
-> >>
-> >> Various information is at http://userweb.kernel.org/~akpm/mo/
-> >>
-> >> I'm suspecting the input layer - my synaptics device seems to have
-> >> disappeared?  See http://userweb.kernel.org/~akpm/mo/Xorg-log-diff.txt
-> >>
-> >
-> > I think this patch should help with Synaptics:
+On Thu, Jul 31, 2008 at 12:46:41PM +0100, David Woodhouse wrote:
+> On Thu, 2008-07-31 at 04:33 -0700, David Miller wrote:
+> > From: David Woodhouse <dwmw2@infradead.org>
+> > Date: Thu, 31 Jul 2008 12:29:30 +0100
+> > 
+> > > After an offline discussion, I understand that if we can sort out the
+> > > actual technical issues, you'll carry this in the net tree. Thanks.
+> > 
+> > I will, but only because you threatened to bypass me and send them
+> > directly to Linus.  And frankly fighting someone willing to do things
+> > like that is simply not worth my time, so I'll just merge them
+> > blindly.
 > 
-> Which unfortunately doesn't help all people running with older synaptics
-> user-space after commit 0571c5d20aca71c735222132b02aebddf593045c
-> ("Input: expand keycode space").
+> That doesn't make a lot of sense, Dave. Just because I _submit_ them to
+> Linus, that doesn't mean he automatically takes them.
 > 
-> Can't this be solved without breaking Xorg on newer kernels running
-> older synaptics?
-> 
+> I only said I'd submit them directly to Linus because I _think_ he'd
+> agree with Andrew and I, and take them despite your objections. And
+> because I think that's the right thing for him to do.
+>...
 
-No. The X driver is broken. It tells kernel to use buffer bugger than
-allocated and gets its stack smashed. Tslib has also soma funkiness
-in the ioctl handling as well... *shrug*
+I'm sure we can find simpler and less controversial ways to save 6 kB in 
+the network stack. E.g. Ilpo's past work on making inline functions in 
+the network stack out-of-line had far bigger effects than the patch in 
+this discussion. And as a bonus, his work brings benefits to everyone.
 
-We have a couple months to get distros updated...
+It might have also made more sense to spend some of the energy used in 
+this discussion instead on checking where the global 24 kB size increase 
+Thomas reported for 2.6.27-rc1 compared to 2.6.26 comes from.
+
+It's kinda silly to spend time on creating and arguing about non-trivial 
+patches that might save a few kB for very few people while noone seems 
+to work on reducing the continuous size increase of the kernel that 
+affects everyone...
+
+> dwmw2
+
+cu
+Adrian
 
 -- 
-Dmitry
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
