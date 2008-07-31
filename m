@@ -1,84 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbYGaG1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbYGaGoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756525AbYGaG1i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 02:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYGaG1Z
+	id S1754854AbYGaGoT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 02:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYGaGoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 02:27:25 -0400
-Received: from mail164.messagelabs.com ([216.82.253.131]:19585 "EHLO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752502AbYGaG1Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 02:27:24 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-2.tower-164.messagelabs.com!1217485642!8216654!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.13]
-Date: Thu, 31 Jul 2008 08:27:18 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-CC: Adrian Bunk <bunk@kernel.org>, Matthew Wilcox <matthew@wil.cx>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "mpm@selenic.com" <mpm@selenic.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [patch 2/4] Configure out file locking features
-Message-ID: <20080731062718.GA25325@digi.com>
-References: <20080729154520.728594017@free-electrons.com> <20080729154747.872888047@free-electrons.com> <20080729181751.GA24924@parisc-linux.org> <20080730142754.GD19966@cs181140183.pp.htv.fi> <20080730174028.67184ea2@surf>
+	Thu, 31 Jul 2008 02:44:08 -0400
+Received: from il.qumranet.com ([212.179.150.194]:40561 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751519AbYGaGoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 02:44:06 -0400
+Message-ID: <48915F2F.4020407@qumranet.com>
+Date: Thu, 31 Jul 2008 09:43:59 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080730174028.67184ea2@surf>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 31 Jul 2008 06:27:19.0512 (UTC) FILETIME=[7BDDDD80:01C8F2D6]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Adrian Bunk <bunk@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       lguest <lguest@ozlabs.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 1/2] Export get_user_pages_fast
+References: <200807301438.55941.rusty@rustcorp.com.au>	<20080730033523.0f38f7e4.akpm@linux-foundation.org>	<20080730154736.GC21597@cs181140183.pp.htv.fi>	<20080730100355.f1402dcf.akpm@linux-foundation.org>	<20080730170939.GA28604@cs181140183.pp.htv.fi>	<20080730101438.e1484440.akpm@linux-foundation.org>	<4890A375.4060103@qumranet.com> <20080730102928.6216d234.akpm@linux-foundation.org>
+In-Reply-To: <20080730102928.6216d234.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (firebolt.argo.co.il [0.0.0.0]); Thu, 31 Jul 2008 09:44:00 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Thomas,
+Andrew Morton wrote:
+> That is how it is presently implemented.
+>
+>   
 
-Thomas Petazzoni wrote:
-> Le Wed, 30 Jul 2008 17:27:54 +0300,
-> Adrian Bunk <bunk@kernel.org> a écrit :
-> 
-> > It seems the emails containing the patches never made it to the vger 
-> > lists, which makes it a bit hard to comment on them.
-> 
-> Yes, they didn't make it to the lists, for some reason. Maybe it's
-> because I sent them using "quilt mail --send", which uses my local
-> exim4 mail server, and for some reason, vger doesn't like that kind of
-> e-mails. However, my exim4 is configured to sent the e-mails through by
-> ISP SMTP. From my exim4 mainlog:
-> 
-> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg => linux-kernel@vger.kernel.org R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
-> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> linux-embedded@vger.kernel.org R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
-> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> netdev@vger.kernel.org R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
-> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> davem@davemloft.net R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
-> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> mpm@selenic.com R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
-> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> akpm@linux-foundation.org R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
-> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> thomas.petazzoni@free-electrons.com R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
-> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg -> michael@free-electrons.com R=smarthost T=remote_smtp_smarthost H=smtp.free.fr [212.27.48.4]*
-> 2008-07-29 17:47:57 1KNrQS-0007kt-Kg Completed
-> 
-> So from my side, everything seemed to work well. Does anybody has a
-> clue ?
-Don't know if this is the problem, but I had problems getting mails
-through some time ago, too.  For me the problem was that the source
-address was myusername@mymachine.intranet.$mycompany.$tld and
-vger.kernel.org didn't want to take these because the host name had no
-DNS entry.
+Cool.
 
-I fixed that by rewriting the From line in outgoing mails on my host.
-I'm using postfix (from Debian) so I had to add an entry to
-/etc/postfix/sender_canonical.
+> #ifdef CONFIG_HAVE_GET_USER_PAGES_FAST
+> /*
+>  * get_user_pages_fast provides equivalent functionality to get_user_pages,
+>  * operating on current and current->mm (force=0 and doesn't return any vmas).
+>  *
+>  * get_user_pages_fast may take mmap_sem and page tables, so no assumptions
+>  * can be made about locking. get_user_pages_fast is to be implemented in a
+>  * way that is advantageous (vs get_user_pages()) when the user memory area is
+>  * already faulted in and present in ptes. However if the pages have to be
+>  * faulted in, it may turn out to be slightly slower).
+>  */
+> int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+> 			struct page **pages);
+>
+> #else
+> /*
+>  * Should probably be moved to asm-generic, and architectures can include it if
+>  * they don't implement their own get_user_pages_fast.
+>  */
+> #define get_user_pages_fast(start, nr_pages, write, pages)	\
+> ({								\
+> 	struct mm_struct *mm = current->mm;			\
+> 	int ret;						\
+> 								\
+> 	down_read(&mm->mmap_sem);				\
+> 	ret = get_user_pages(current, mm, start, nr_pages,	\
+> 					write, 0, pages, NULL);	\
+> 	up_read(&mm->mmap_sem);					\
+> 								\
+> 	ret;							\
+> })
+> #endif
+>
+>   
 
-Best regards
-Uwe
+Surprised.  Why not an out-of-line function?  Would eliminate the 
+present discussion as well.
 
 -- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
