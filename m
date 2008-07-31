@@ -1,80 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYGaRp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbYGaRp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbYGaRp1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 13:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbYGaRpP
+	id S1756573AbYGaRp7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 13:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYGaRpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 13:45:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52646 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752237AbYGaRpN (ORCPT
+	Thu, 31 Jul 2008 13:45:47 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:58030 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752919AbYGaRpq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 13:45:13 -0400
-Date: Thu, 31 Jul 2008 10:44:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-Subject: Re: linux-next: Tree for July 30
-Message-Id: <20080731104437.5e5669bc.akpm@linux-foundation.org>
-In-Reply-To: <20080731115301.ZZRA012@mailhub.coreip.homeip.net>
-References: <20080730170635.f737ffe9.sfr@canb.auug.org.au>
-	<20080730231029.9818953c.akpm@linux-foundation.org>
-	<20080731140708.GA11229@core.corenet.prv>
-	<58cb370e0807310836x4a6e3c40rf5c3c8ec8b5caae0@mail.gmail.com>
-	<20080731115301.ZZRA012@mailhub.coreip.homeip.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 31 Jul 2008 13:45:46 -0400
+Subject: memory hotplug: hot-add to ZONE_MOVABLE vs. min_free_kbytes
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080731132213.GF1704@csn.ul.ie>
+References: <20080723105318.81BC.E1E9C6FF@jp.fujitsu.com>
+	 <1217347653.4829.17.camel@localhost.localdomain>
+	 <20080730110444.27DE.E1E9C6FF@jp.fujitsu.com>
+	 <1217420161.4545.10.camel@localhost.localdomain>
+	 <20080731132213.GF1704@csn.ul.ie>
+Content-Type: text/plain
+Date: Thu, 31 Jul 2008 19:45:27 +0200
+Message-Id: <1217526327.4643.35.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jul 2008 11:56:48 -0400 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+On Thu, 2008-07-31 at 14:22 +0100, Mel Gorman wrote:
+> > The more memory we add to ZONE_MOVABLE, the less reserved pages will
+> > remain to the other zones. In setup_per_zone_pages_min(), min_free_kbytes
+> > will be redistributed to a zone where the kernel cannot make any use of
+> > it, effectively reducing the available min_free_kbytes. 
+> 
+> I'm not sure what you mean by "available min_free_kbytes". The overall value
+> for min_free_kbytes should be approximately the same whether the zone exists
+> or not. However, you're right in that the distribution of minimum free pages
+> changes with ZONE_MOVABLE because the zones are different sizes now. This
+> affects reclaim, not memory hot-remove.
 
-> On Thu, Jul 31, 2008 at 05:36:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > On Thu, Jul 31, 2008 at 4:07 PM, Dmitry Torokhov
-> > <dmitry.torokhov@gmail.com> wrote:
-> > > On Wed, Jul 30, 2008 at 11:10:29PM -0700, Andrew Morton wrote:
-> > >> On Wed, 30 Jul 2008 17:06:35 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > >>
-> > >> > I have created today's linux-next tree at
-> > >> > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> > >>
-> > >> The X server broke on my FC8 t61p thinkpad.  Mainline is OK.
-> > >>
-> > >> Various information is at http://userweb.kernel.org/~akpm/mo/
-> > >>
-> > >> I'm suspecting the input layer - my synaptics device seems to have
-> > >> disappeared?  See http://userweb.kernel.org/~akpm/mo/Xorg-log-diff.txt
-> > >>
-> > >
-> > > I think this patch should help with Synaptics:
-> > 
-> > Which unfortunately doesn't help all people running with older synaptics
-> > user-space after commit 0571c5d20aca71c735222132b02aebddf593045c
-> > ("Input: expand keycode space").
-> > 
-> > Can't this be solved without breaking Xorg on newer kernels running
-> > older synaptics?
+Sorry for mixing things up in this thread, the min_free_kbytes issue is
+not related to memory hot-remove, but rather to hot-add and the things that
+happen in setup_per_zone_pages_min(), which is called from online_pages().
+It may well be that my assumptions are wrong, but I'd like to explain my
+concerns again:
+
+If we have a system with 1 GB of memory, min_free_kbytes will be calculated
+to 4 MB for ZONE_NORMAL, for example. Now, if we add 3 GB of hotplug memory
+to ZONE_MOVABLE, the total min_free_kbytes will still remain 4 MB but it
+will be distributed differently: ZONE_NORMAL will now have only 1 MB of
+MIGRATE_RESERVE memory left, while ZONE_MOVABLE will have 3 MB, e.g.
+
+My assumption is now, that the reserved 3 MB in ZONE_MOVABLE won't be
+usable by the kernel anymore, e.g. for PF_MEMALLOC, because it is in
+ZONE_MOVABLE now. This is what I mean with "effectively reducing the
+available min_free_kbytes". The system would now behave in the same way
+as a system which only had 1 MB of min_free_kbytes, although
+/proc/sys/vm/min_free_kbytes would still say 4 MB. After all, this tunable
+can have a rather negative impact on a system, especially if it is too
+low, hence my concerns.
+
+
+> > This just doesn't
+> > sound right. I believe that a similar situation is the reason why highmem
+> > pages are skipped in the calculation and I think that we need that for
+> > ZONE_MOVABLE too. Any thoughts on that problem?
 > > 
 > 
-> No. The X driver is broken. It tells kernel to use buffer bugger than
-> allocated and gets its stack smashed. Tslib has also soma funkiness
-> in the ioctl handling as well... *shrug*
+> is_highmem(ZONE_MOVABLE) should be returning true if the zone is really
+> part of himem.
+
+We don't have highmem on s390, I was just trying to give an example: I
+noticed that there is special treatment for highmem pages in
+setup_per_zone_pages_min(), and thought that we may also need to handle
+ZONE_MOVABLE in a special way.
+
+
+> > Setting pages_min to 0 for ZONE_MOVABLE, while not capping pages_low
+> > and pages_high, could be an option. I don't have a sufficient memory
+> > managment overview to tell if that has negative side effects, maybe
+> > someone with a deeper insight could comment on that.
+> > 
 > 
-> We have a couple months to get distros updated...
-> 
+> pages_min of 0 means the other values would be 0 as well. This means that
+> kswapd may never be woken up to free pages within that zone and lead to
+> poor utilisation of the zone as allocators fallback to other zones to
+> avoid direct reclaim. I don't think that is your intention nor will it
+> help memory hot-remove.
 
-aaarrrrgggggghhh.  I don't think this is practical.  This means that
-(for example) FC5 machines (of which I happen to have one) are dead. 
-And lots of other older-distro-based systems.
+Do you mean pages_low and pages_high? In setup_per_zone_pages_min(),
+those would not be set to 0, even if we set pages_min to 0. Again, a
+similar strategy is being used for highmem in that function, only that
+pages_min is set to a small value instead of 0 in that case. So it should
+not affect kswapd but only __GFP_HIGH and PF_MEMALLOC allocations, which
+won't be allocated from ZONE_MOVABLE anyway if I understood that right.
 
-Is there some userspace workaround which doesn't require an X server
-update?
 
-Surely it must be possible to make the kernel contiue to support these
-servers?
+Thanks,
+Gerald
+
 
