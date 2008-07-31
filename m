@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbYGaMlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbYGaMlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755925AbYGaMlj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 08:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbYGaMkk
+	id S1756289AbYGaMlz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 08:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYGaMkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 08:40:40 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:48901 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754685AbYGaMki (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 08:40:38 -0400
-Message-Id: <20080731123932.854951652@de.ibm.com>
-References: <20080731123004.868574766@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 31 Jul 2008 14:30:07 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 3/6] qdio: fix section mismatch bug.
-Content-Disposition: inline; filename=102-qdio-section.diff
+	Thu, 31 Jul 2008 08:40:46 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:51445 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754739AbYGaMko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 08:40:44 -0400
+Date: Thu, 31 Jul 2008 07:40:39 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Robin Holt <holt@sgi.com>,
+       "Torvalds, Linus" <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: GRU driver feedback
+Message-ID: <20080731124039.GA27329@sgi.com>
+References: <20080723141229.GB13247@wotan.suse.de> <20080729185315.GA14260@sgi.com> <200807301550.34500.nickpiggin@yahoo.com.au> <200807311714.05252.nickpiggin@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807311714.05252.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+On Thu, Jul 31, 2008 at 05:14:04PM +1000, Nick Piggin wrote:
+> On Wednesday 30 July 2008 15:50, Nick Piggin wrote:
+> > On Wednesday 30 July 2008 04:53, Robin Holt wrote:
+> 
+> > > In the case where unmap_region is clearing page tables, the caller to
+> > > unmap_region is expected to be holding the mmap_sem writably.  Jacks
+> > > fault handler will immediately return when it fails on the
+> > > down_read_trylock().
+> >
+> > No, you are right of course. I had in my mind the problems faced by
+> > lockless get_user_pages, in which case I was worried about the page table
+> > existence, but missed the fact that you're holding mmap_sem to provide
+> > existence (which it would, as you note, although one day we may want to
+> > reclaim page tables or something that doesn't take mmap_sem, so a big
+> > comment would be nice here).
+> 
+> The other thing is... then GRU should get rid of the local_irq_disable
+> in the atomic pte lookup. By definition it is worthless if we can be
+> operating on an mm that is not running on current (and if I understand
+> correctly, sn2 can avoid sending tlb flush IPIs completely sometimes?)
 
-Fix the two section mismatch warnings below.
-This fixes two real bugs since the code which has __exit annotations
-may already be gone when it is called.
+Done.
 
-WARNING: vmlinux.o(.init.text+0x1cc4a): Section mismatch in reference from the function init_QDIO() to the function .exit.text:qdio_setup_exit()
-The function __init init_QDIO() references
-a function __exit qdio_setup_exit().
-This is often seen when error handling in the init function
-uses functionality in the exit path.
-The fix is often to remove the __exit annotation of
-qdio_setup_exit() so it may be used outside an exit section.
+I'm collecting the fixes & additional comments to be added & will send
+them upstream later.
 
-WARNING: vmlinux.o(.init.text+0x1cc7a): Section mismatch in reference from the function init_QDIO() to the function .exit.text:qdio_remove_perf_stats()
-The function __init init_QDIO() references
-a function __exit qdio_remove_perf_stats().
-This is often seen when error handling in the init function
-uses functionality in the exit path.
-The fix is often to remove the __exit annotation of
-qdio_remove_perf_stats() so it may be used outside an exit section.
+Thanks for the careful review.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
 
- drivers/s390/cio/qdio_perf.c  |    2 +-
- drivers/s390/cio/qdio_setup.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-Index: quilt-2.6/drivers/s390/cio/qdio_perf.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/cio/qdio_perf.c
-+++ quilt-2.6/drivers/s390/cio/qdio_perf.c
-@@ -142,7 +142,7 @@ int __init qdio_setup_perf_stats(void)
- 	return 0;
- }
- 
--void __exit qdio_remove_perf_stats(void)
-+void qdio_remove_perf_stats(void)
- {
- #ifdef CONFIG_PROC_FS
- 	remove_proc_entry("qdio_perf", NULL);
-Index: quilt-2.6/drivers/s390/cio/qdio_setup.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/cio/qdio_setup.c
-+++ quilt-2.6/drivers/s390/cio/qdio_setup.c
-@@ -515,7 +515,7 @@ int __init qdio_setup_init(void)
- 	return 0;
- }
- 
--void __exit qdio_setup_exit(void)
-+void qdio_setup_exit(void)
- {
- 	kmem_cache_destroy(qdio_q_cache);
- }
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+--- jack
