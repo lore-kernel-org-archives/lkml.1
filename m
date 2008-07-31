@@ -1,102 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbYGaGMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYGaGQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756037AbYGaGMZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 02:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYGaGMO
+	id S1755322AbYGaGQG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 02:16:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbYGaGPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 02:12:14 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:59980 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752342AbYGaGMN (ORCPT
+	Thu, 31 Jul 2008 02:15:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54030 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751778AbYGaGPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 02:12:13 -0400
-Date: Thu, 31 Jul 2008 07:12:01 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch v3] splice: fix race with page invalidation
-Message-ID: <20080731061201.GA7156@shareable.org>
-References: <E1KOIYA-0002FG-Rg@pomaz-ex.szeredi.hu> <20080731001131.GA30900@shareable.org> <20080731004214.GA32207@shareable.org> <alpine.LFD.1.10.0807301746500.3277@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807301746500.3277@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 31 Jul 2008 02:15:53 -0400
+Date: Wed, 30 Jul 2008 23:14:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Mel Gorman <mel@csn.ul.ie>, Eric Munson <ebmunson@us.ibm.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, libhugetlbfs-devel@lists.sourceforge.net
+Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
+Message-Id: <20080730231428.a7bdcfa7.akpm@linux-foundation.org>
+In-Reply-To: <200807311604.14349.nickpiggin@yahoo.com.au>
+References: <cover.1216928613.git.ebmunson@us.ibm.com>
+	<20080730172317.GA14138@csn.ul.ie>
+	<20080730103407.b110afc2.akpm@linux-foundation.org>
+	<200807311604.14349.nickpiggin@yahoo.com.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> > Jamie Lokier wrote:
-> > > not being able to tell when a sendfile() has finished with the pages
-> > > its sending.
-> > 
-> > (Except by the socket fully closing or a handshake from the other end,
-> > obviously.)
+On Thu, 31 Jul 2008 16:04:14 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
+> > Do we expect that this change will be replicated in other
+> > memory-intensive apps?  (I do).
 > 
-> Well, people should realize that this is pretty fundamental to zero-copy 
-> scemes. It's why zero-copy is often much less useful than doing a copy in 
-> the first place. How do you know how far in a splice buffer some random 
-> 'struct page' has gotten? Especially with splicing to spicing to tee to 
-> splice...
+> Such as what? It would be nice to see some numbers with some HPC or java
+> or DBMS workload using this. Not that I dispute it will help some cases,
+> but 10% (or 20% for ppc) I guess is getting toward the best case, short
+> of a specifically written TLB thrasher.
 
-Having implemented an equivalent zero-copy thing in userspace, I can
-confidently say it's not fundamental at all.
+I didn't realise the STREAM is using vast amounts of automatic memory. 
+I'd assumed that it was using sane amounts of stack, but the stack TLB
+slots were getting zapped by all the heap-memory activity.  Oh well.
 
-What is fundamental is that you either (a) treat sendfile as an async
-operation, and get a notification when it's finished with the data,
-just like any other async operation, or (b) while sendfile claims those
-pages, they are marked COW.
+I guess that effect is still there, but smaller.
 
-(b) is *much* more useful for the things you actually want to use
-sendfile for, namely a faster copy-file-to-socket with no weird
-complications.  Since you're sending files which you don't *expect* to
-change (but want to behave sensibly if they do), and the pages
-probably aren't mapped into any process, COW would not cost anything.
-
-Right now, sendfile is used by servers of all kinds: http, ftp, file
-servers, you name it.  They all want to believe it's purely a
-performance optimisation, equivalent to write.  On many operations
-systems, it is.  (I count sendfile equivalents on: Windows NT, SCO
-Unixware, Solaris, FreeBSD, Dragonfly, HP-UX, Tru64, AIX and S/390 in
-addition to Linux :-)
-
-> You'd have to have some kind of barrier model (which would be really 
-> complex), or perhaps a "wait for this page to no longer be shared" (which 
-> has issues all its own).
-> 
-> IOW, splice() is very closely related to a magic kind of "mmap()+write()" 
-> in another thread. That's literally what it does internally (except the 
-> "mmap" is just a small magic kernel buffer rather than virtual address 
-> space), and exactly as with mmap, if you modify the file, the other thread 
-> will see if, even though it did it long ago.
-
-That's fine.  But if you use a thread, the thread can tell you when
-it's done.  Then you know what you're sending not an infinite time in
-the future :-)
-
-> Personally, I think the right approach is to just realize that splice() is 
-> _not_ a write() system call, and never will be. If you need synchronous 
-> writing, you simply shouldn't use splice().
-
-People want zero-copy, and no weirdness like sending blocks of zeros
-which the file never contained, and (if you lock the file) knowing
-when to release locks for someone else to edit the file.
-
-Sync or async doesn't matter so much; that's API stuff.
-
-The obvious mechanism for completion notifications is the AIO event
-interface.  I.e. aio_sendfile that reports completion when it's safe
-to modify data it was using.  aio_splice would be logical for similar
-reasons.  Note it doesn't mean when the data has reached a particular
-place, it means when the pages it's holding are released.  Pity AIO
-still sucks ;-)
-
-Btw, Windows had this since forever, it's called overlapped
-TransmitFile with an I/O completion event.  Don't know if it's any
-good though ;-)
-
--- Jamie
+I agree that few real-world apps are likely to see gains of this
+order.  More benchmarks, please :)
