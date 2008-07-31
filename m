@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbYGaAs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbYGaAyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757535AbYGaAs4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jul 2008 20:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbYGaAsq
+	id S1756796AbYGaAyt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jul 2008 20:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbYGaAyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jul 2008 20:48:46 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:56216 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751689AbYGaAsp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jul 2008 20:48:45 -0400
-Date: Thu, 31 Jul 2008 10:48:43 +1000
-From: Simon Horman <horms@verge.net.au>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: kexec@lists.infradead.org, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] kdump: use is_vmcore_usable() and
-	vmcore_unusable() in reserve_elfcorehdr()
-Message-ID: <20080731004842.GA1657@verge.net.au>
-References: <20080729081235.293361145@vergenet.net> <20080729081629.715923799@vergenet.net> <20080730130131.GB16373@redhat.com>
+	Wed, 30 Jul 2008 20:54:39 -0400
+Received: from ozlabs.org ([203.10.76.45]:35579 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752255AbYGaAyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jul 2008 20:54:38 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] Module : call synchronize_sched() between module exit() and free.
+Date: Thu, 31 Jul 2008 10:54:33 +1000
+User-Agent: KMail/1.9.9
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <20080717155724.897537670@polymtl.ca> <20080730114035.GD27711@redhat.com> <20080730140938.GC18210@Krystal>
+In-Reply-To: <20080730140938.GC18210@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080730130131.GB16373@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200807311054.34557.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 09:01:31AM -0400, Vivek Goyal wrote:
-> On Tue, Jul 29, 2008 at 06:12:38PM +1000, Simon Horman wrote:
-> > After recent changes setting elfcorehdr_addr to ELFCORE_ADDR_MAX
-> > will cause is_kdump_kernel() to return 0 when it should return 1.
-> > Instead use vmcore_unusable(), which has been added for this purpose.
-> > 
-> > Signed-off-by: Simon Horman <horms@verge.net.au>
-> > 
-> > Index: linux-2.6/arch/ia64/kernel/setup.c
-> > ===================================================================
-> > --- linux-2.6.orig/arch/ia64/kernel/setup.c	2008-07-29 17:27:43.000000000 +1000
-> > +++ linux-2.6/arch/ia64/kernel/setup.c	2008-07-29 17:50:50.000000000 +1000
-> > @@ -502,11 +502,11 @@ int __init reserve_elfcorehdr(unsigned l
-> >  	 * to work properly.
-> >  	 */
-> >  
-> > -	if (elfcorehdr_addr >= ELFCORE_ADDR_MAX)
-> > +	if (!is_vmcore_usable())
-> >  		return -EINVAL;
-> >  
-> >  	if ((length = vmcore_find_descriptor_size(elfcorehdr_addr)) == 0) {
-> > -		elfcorehdr_addr = ELFCORE_ADDR_MAX;
-> > +		vmcore_unusable();
-> >  		return -EINVAL;
-> >  	}
-> >  
-> 
-> Hi Simon,
-> 
-> I had a question. I am not very sure what reserve_elfcorehdr is doing
-> but doing something similar to reserving some memory area where
-> elfcoreheaders are.
+On Thursday 31 July 2008 00:09:38 Mathieu Desnoyers wrote:
+> * Frank Ch. Eigler (fche@redhat.com) wrote:
+> >(Would it not be desirable for an active marker to cause
+> > module-foo's refcount to increase, so as to prevent unloading at this
+> > time?)
+>
+> No, because I want to be able to unload the marked module and I don't
+> want the fact that a probe is connected to it to change that.
 
-Yes, that is my understanding of what it does.
+Also you might want to put a marker in the module's exit code.
 
-> I see that reserve_elfcorehdr is under CONFIG_PROC_VMCORE. Will it work
-> if CONFIG_PROC_VMCORE=n and somebody wants to use /dev/oldmem?
-> Or reserve_elfcorehdr should be under CONFIG_CRASH_DUMP?
+> Actually there is a detail missing here. Your teardown should be :
+>  teardown() { ... marker_probe_unregister ("foo" , ..., &foo_handler );
+>                   synchronize_sched(); /* Before returning from exit */ }
+>
+> This makes sure that every live marker call are finished and that it is
+> safe to unload module-bar (the probe).
 
-I'm not that familiar with /dev/oldmem, but as far as I can see,
-read_oldmem doesn't do anything with ELF headers, so reservation
-by vmcore_find_descriptor_size() should not be neccessary.
+Perhaps create a synchronize_marker_unregister() wrapper for such uses; it's 
+better documentation and the caller doesn't have to know exactly how it 
+works...
 
-On a related note, I wonder if some consolitation of
-read_oldmem() (used by /dev/oldmem) and read_from_oldmem()
-(used by /proc/vmcore) can be done.
-
--- 
-Horms
-
+Cheers,
+Rusty.
