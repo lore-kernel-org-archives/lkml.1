@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbYGaSNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbYGaSNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756563AbYGaSNV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 14:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbYGaSNF
+	id S1755254AbYGaSNm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 14:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbYGaSNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 14:13:05 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:35736 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752350AbYGaSND (ORCPT
+	Thu, 31 Jul 2008 14:13:30 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:42376 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753315AbYGaSN3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 14:13:03 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <200807291414.55479.yhlu.kernel@gmail.com>
-	<200807302109.21519.yhlu.kernel@gmail.com>
-	<200807302110.10585.yhlu.kernel@gmail.com>
-	<200807310126.12572.yhlu.kernel@gmail.com>
-	<m1iqum2rya.fsf@frodo.ebiederm.org>
-	<20080731145752.2aec5727@lxorguk.ukuu.org.uk>
-Date: Thu, 31 Jul 2008 11:10:33 -0700
-In-Reply-To: <20080731145752.2aec5727@lxorguk.ukuu.org.uk> (Alan Cox's message
-	of "Thu, 31 Jul 2008 14:57:52 +0100")
-Message-ID: <m163ql3ox2.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Alan Cox <alan@lxorguk.ukuu.org.uk>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4206]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] serial: change remove NR_IRQS in 8250.c
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+	Thu, 31 Jul 2008 14:13:29 -0400
+To: torvalds@linux-foundation.org
+CC: nickpiggin@yahoo.com.au, miklos@szeredi.hu, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-reply-to: <alpine.LFD.1.10.0807310957200.3277@nehalem.linux-foundation.org>
+	(message from Linus Torvalds on Thu, 31 Jul 2008 10:00:17 -0700 (PDT))
+Subject: Re: [patch v3] splice: fix race with page invalidation
+References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <200807312259.43402.nickpiggin@yahoo.com.au> <alpine.LFD.1.10.0807310957200.3277@nehalem.linux-foundation.org>
+Message-Id: <E1KOceD-0000nD-JA@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 31 Jul 2008 20:13:09 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+On Thu, 31 Jul 2008, Linus Torvalds wrote:
+> On Thu, 31 Jul 2008, Nick Piggin wrote:
+> > 
+> > It seems like the right way to fix this would be to allow the splicing
+> > process to be notified of a short read, in which case it could try to
+> > refill the pipe with the unread bytes...
+> 
+> Hmm. That should certainly work with the splice model. The users of the 
+> data wouldn't eat (or ignore) the invalid data, they'd just say "invalid 
+> data", and stop. And it would be up to the other side to handle it (it 
+> can see the state of the pipe, we can make it both wake up POLL_ERR _and_ 
+> return an error if somebody tries to write to a "blocked" pipe).
+> 
+> So yes, that's very possible, but it obviously requires splice() users to 
+> be able to handle more cases. I'm not sure it's realistic to expect users 
+> to be that advanced.
 
-> On Thu, 31 Jul 2008 04:50:21 -0700
-> ebiederm@xmission.com (Eric W. Biederman) wrote:
->
->> > replace
->> > 	[PATCH] serial: change irq_lists to use dyn_array
->> > use small array with index to handle irq locking for serial port
->> > hope 32 slot is enough
->> 
->> Could you size this array by NR_UARTS (our worst case usage)
->> and place irq_no in struct irq_info?
->
-> NR_UARTS is likely to go away in time so don't get attached to it
+Worse, it's not guaranteed to make any progress.  E.g. on NFS server
+with data being continually updated, cache on the client will
+basically always be invalid, so the above scheme might just repeat the
+splices forever without success.
 
-I'm not attached to it, but NR_UARTS is a closer approximation to what
-we are trying to do then YH's hard coded 32.  Do you know if we
-actually need the list of uarts per irq or if request_irq having a
-shared isa would work?
-
-The practical question is how do we cleanly kill the array
-irq_lists[NR_IRQS].  YH's hack where he isn't paying attention to what
-the code is doing and just trying to avoid the problem is not
-something I am fond of seeing being merged.
-
-It is also true that sorting out 8250.c and by extension the other
-serial drivers that have cloned it is the significant non-arch
-piece of work needed to kill NR_IRQs
-
-Eric
-
-
+Miklos
