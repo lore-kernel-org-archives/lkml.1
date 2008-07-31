@@ -1,74 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757431AbYGaPqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757317AbYGaPrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757431AbYGaPqe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 11:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbYGaPqO
+	id S1757317AbYGaPrf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 11:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYGaPr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 11:46:14 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:64573 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753884AbYGaPqN (ORCPT
+	Thu, 31 Jul 2008 11:47:26 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:5669 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752769AbYGaPrZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 11:46:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=mZCGojuQc0tEaam2dPrdM9hBuc+SSIW0AXEMQsEef+j0FcLJ7qodyqqOfPfk5PowWD
-         Fx0+mYcl8fXlVckC4gek+RoUA7IUdRCDEvSs2H5HEtTJJcxgiH5C6SkCWqkZTOZFijb3
-         tLIqYze8LDw62cacOdMk7SJazb/p+bcXz1Lpk=
-Message-ID: <b9df5fa10807310846g27913d82icf2a82e77992ba9f@mail.gmail.com>
-Date: Thu, 31 Jul 2008 21:46:11 +0600
-From: "Rakib Mullick" <rakib.mullick@gmail.com>
-To: pj@sgi.com, menage@google.com
-Subject: [PATCH] Removes extra checking in kernel/cpuset.c
-Cc: linux-kernel@vger.kernel.org
+	Thu, 31 Jul 2008 11:47:25 -0400
+Date: Thu, 31 Jul 2008 09:47:23 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
+Message-ID: <20080731154723.GA26577@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	Matthew Wilcox <matthew@wil.cx>,
+	Pierre Ossman <drzeus-list@drzeus.cx>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+References: <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org> <48895D3C.7040100@jp.fujitsu.com> <20080730023842.GA4269@ldl.fc.hp.com> <48919471.6010304@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <48919471.6010304@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello guys, this patch removes an extra checking over 'cs' in
-functions 'guarantee_online_cpus' and 'guarantee_online_mems'.
+* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+> Thank you for patches, Alex-san!
+>
+> I've reviewed those patches and tested them on my ia64 machine
+> that have both shpc and pcie hotplug slots. Your patch looks
+> good.
 
-Thanks.
+Thank you for reviewing and testing.
 
-Signed-off-by: Md.Rakib H. Mullick (rakib.mullick@gmail.com)
+> As you mentioned, we are considering the problem also from the
+> view point of slot detection. But I think your patch is needed
+> regardless of that because there might be platforms whose slots
+> are detected properly but firmware assigns the physical slot
+> number wrongly. I think Alex's patch should go to mainline.
 
---- kernel/cpuset.c.orig	2008-07-31 17:03:34.000000000 +0600
-+++ kernel/cpuset.c	2008-07-31 21:33:34.000000000 +0600
-@@ -282,10 +282,11 @@ static struct file_system_type cpuset_fs
+That is a good point.
 
- static void guarantee_online_cpus(const struct cpuset *cs, cpumask_t *pmask)
- {
--	while (cs && !cpus_intersects(cs->cpus_allowed, cpu_online_map))
--		cs = cs->parent;
--	if (cs)
-+	if (cs) {
-+		while (!cpus_intersects(cs->cpus_allowed, cpu_online_map))
-+			cs = cs->parent;
- 		cpus_and(*pmask, cs->cpus_allowed, cpu_online_map);
+> P.S.: I found a possible improvement, though it is not a big
+> problem and we don't not need to fix it soon. I'd like to tell
+> you about it just in case. Current pci_hp_register() checks if
+> name is duplicated first, before checking if another hotplug
+> driver is already registered to the slot. So, if shpchp/pciehp
+> driver tries to register hotplug slot that is already registered
+> by the other hotplug driver (e.g. acpiphp) with the same name,
+> shpchp/pciehp driver will do as follows:
+>
+> (1) shpchp/pciehp call pci_hp_register()
+> (2) pci_hp_register() returns -EEXIST
+> (3) shpchp/pciehp call pci_hp_register() with other name ("M-1")
+> (4) pci_hp_register() returns -EBUSY
+>
+> if pci_hp_register() checked if another hotplug driver is already
+> registered first, step (2) and (3) could be removed.
+
+Thanks, that seems pretty easy to do.
+
+Would you mind testing this patch as well? You should probably
+apply it on top of the other two patches to see how all three
+patches interact.
+
+Thanks!
+
+/ac
+
+
+From: Alex Chiang <achiang@dl580g5.kio>
+Subject: [PATCH] PCI hotplug: check for claimed slot before duplicate named slot
+
+Kenji Kaneshige observes that:
+
+If shpchp/pciehp driver tries to register hotplug slot that is
+already registered by the other hotplug driver (e.g. acpiphp) with
+the same name, shpchp/pciehp driver will do as follows:
+
+(1) shpchp/pciehp call pci_hp_register()
+(2) pci_hp_register() returns -EEXIST
+(3) shpchp/pciehp call pci_hp_register() with other name ("M-1")
+(4) pci_hp_register() returns -EBUSY
+
+If pci_hp_register() checked if another hotplug driver is already
+registered first, step (2) and (3) could be removed.
+
+This patch does not prevent the *same* driver from attempting
+to register multiple slots with the same name (on systems with
+broken firmware). For that situation, we still need to detect
+a name collision and return -EEXIST if so.
+
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+ drivers/pci/hotplug/pci_hotplug_core.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
+index 5f85b1b..9c379b6 100644
+--- a/drivers/pci/hotplug/pci_hotplug_core.c
++++ b/drivers/pci/hotplug/pci_hotplug_core.c
+@@ -568,10 +568,6 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
+ 		return -EINVAL;
+ 	}
+ 
+-	/* Check if we have already registered a slot with the same name. */
+-	if (get_slot_from_name(slot->name))
+-		return -EEXIST;
+-
+ 	/*
+ 	 * No problems if we call this interface from both ACPI_PCI_SLOT
+ 	 * driver and call it here again. If we've already created the
+@@ -587,6 +583,12 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
+ 		return -EBUSY;
+ 	}
+ 
++	/* Check if we have already registered a slot with the same name. */
++	if (get_slot_from_name(slot->name)) {
++		pci_destroy_slot(pci_slot);
++		return -EEXIST;
 +	}
- 	else
- 		*pmask = cpu_online_map;
- 	BUG_ON(!cpus_intersects(*pmask, cpu_online_map));
-@@ -306,12 +307,13 @@ static void guarantee_online_cpus(const
++
+ 	slot->pci_slot = pci_slot;
+ 	pci_slot->hotplug = slot;
+ 
+@@ -609,7 +611,6 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
+ 	kobject_uevent(&pci_slot->kobj, KOBJ_ADD);
+ 	dbg("Added slot %s to the list\n", slot->name);
+ 
+-
+ 	return result;
+ }
+ 
+-- 
+1.6.0.rc0.g95f8
 
- static void guarantee_online_mems(const struct cpuset *cs, nodemask_t *pmask)
- {
--	while (cs && !nodes_intersects(cs->mems_allowed,
-+	if (cs) {
-+		while (!nodes_intersects(cs->mems_allowed,
- 					node_states[N_HIGH_MEMORY]))
--		cs = cs->parent;
--	if (cs)
-+			cs = cs->parent;
- 		nodes_and(*pmask, cs->mems_allowed,
- 					node_states[N_HIGH_MEMORY]);
-+	}
- 	else
- 		*pmask = node_states[N_HIGH_MEMORY];
- 	BUG_ON(!nodes_intersects(*pmask, node_states[N_HIGH_MEMORY]));
