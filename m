@@ -1,132 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbYGaMBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbYGaMCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992AbYGaMBP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 08:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYGaMA6
+	id S1756188AbYGaMCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 08:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbYGaMCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 08:00:58 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:56056 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751610AbYGaMA5 convert rfc822-to-8bit (ORCPT
+	Thu, 31 Jul 2008 08:02:06 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46800 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751383AbYGaMCE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 08:00:57 -0400
-Date: Thu, 31 Jul 2008 14:00:02 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: michael@ellerman.id.au
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, benh@kernel.crashing.org,
-       paulus@samba.org, jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
-       tinytim@us.ibm.com, tglx@linutronix.de, rostedt@goodmis.org
-Subject: Re: [PATCH] powerpc - Initialize the irq radix tree earlier
-Message-ID: <20080731140002.31bbe4a0@bull.net>
-In-Reply-To: <1217504456.9817.22.camel@localhost>
-References: <1217497241-10685-1-git-send-email-sebastien.dugue@bull.net>
-	<1217497241-10685-2-git-send-email-sebastien.dugue@bull.net>
-	<1217504456.9817.22.camel@localhost>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 31 Jul 2008 08:02:04 -0400
+Date: Thu, 31 Jul 2008 21:00:07 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: [RFC:Patch: 004/008](memory hotplug) Use lock for for_each_online_node
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080731203549.2A3F.E1E9C6FF@jp.fujitsu.com>
+References: <20080731203549.2A3F.E1E9C6FF@jp.fujitsu.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080731205834.2A49.E1E9C6FF@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  Hi Michael,
+Add pgdat_remove_read_lock() and unlock() for parsing 
+for_each_online_node() (and for_each_node_state()).
 
-On Thu, 31 Jul 2008 21:40:56 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
+(for_each_zone also needs same lock, but I don't implement
+it yet.)
 
-> On Thu, 2008-07-31 at 11:40 +0200, Sebastien Dugue wrote:
-> > The radix tree used for fast irq reverse mapping by the XICS is initialized
-> > late in the boot process, after the first interrupt (IPI) gets registered
-> > and after the first IPI is received.
-> > 
-> >   This patch moves the initialization of the XICS radix tree earlier into
-> > the boot process in smp_xics_probe() (the mm is already up but no interrupts
-> > have been registered at that point) to avoid having to insert a mapping into
-> > the tree in interrupt context. This will help in simplifying the locking
-> > constraints and move to a lockless radix tree in subsequent patches.
-> > 
-> >   As a nice side effect, there is no need any longer to check for
-> > (host->revmap_data.tree.gfp_mask != 0) to know if the tree have been
-> > initialized.
-> 
-> Hi Sebastien,
-> 
-> This is a nice cleanup, I think :)
 
-  Thanks.
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 
-> 
-> > diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> > index 6ac8612..0a1445c 100644
-> > --- a/arch/powerpc/kernel/irq.c
-> > +++ b/arch/powerpc/kernel/irq.c
-> > @@ -893,28 +890,28 @@ unsigned int irq_find_mapping(struct irq_host *host,
-> >  }
-> >  EXPORT_SYMBOL_GPL(irq_find_mapping);
-> >  
-> > +void __init irq_radix_revmap_init(void)
-> > +{
-> > + 	struct irq_host *h;
-> > +
-> > +	list_for_each_entry(h, &irq_hosts, link) {
-> > +		if (h->revmap_type == IRQ_HOST_MAP_TREE)
-> > +			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_ATOMIC);
-> > +	}
-> > +}
-> 
-> Note irq_radix_revmap_init() loops over all irq_hosts ...
+---
+ fs/buffer.c         |    4 +++-
+ mm/mempolicy.c      |    9 ++++++++-
+ mm/page-writeback.c |    2 ++
+ mm/page_alloc.c     |    9 ++++++++-
+ mm/vmscan.c         |    2 ++
+ mm/vmstat.c         |    3 +++
+ 6 files changed, 26 insertions(+), 3 deletions(-)
 
-  Yep, but there's only one host (xics)
+Index: current/mm/page_alloc.c
+===================================================================
+--- current.orig/mm/page_alloc.c	2008-07-29 21:21:33.000000000 +0900
++++ current/mm/page_alloc.c	2008-07-29 22:17:44.000000000 +0900
+@@ -2345,6 +2345,7 @@ static int default_zonelist_order(void)
+ 	/* Is there ZONE_NORMAL ? (ex. ppc has only DMA zone..) */
+ 	low_kmem_size = 0;
+ 	total_size = 0;
++	pgdat_remove_read_lock();
+ 	for_each_online_node(nid) {
+ 		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
+ 			z = &NODE_DATA(nid)->node_zones[zone_type];
+@@ -2355,6 +2356,7 @@ static int default_zonelist_order(void)
+ 			}
+ 		}
+ 	}
++	pgdat_remove_read_unlock();
+ 	if (!low_kmem_size ||  /* there are no DMA area. */
+ 	    low_kmem_size > total_size/2) /* DMA/DMA32 is big. */
+ 		return ZONELIST_ORDER_NODE;
+@@ -2365,6 +2367,8 @@ static int default_zonelist_order(void)
+          */
+ 	average_size = total_size /
+ 				(nodes_weight(node_states[N_HIGH_MEMORY]) + 1);
++
++	pgdat_remove_read_lock();
+ 	for_each_online_node(nid) {
+ 		low_kmem_size = 0;
+ 		total_size = 0;
+@@ -2378,9 +2382,12 @@ static int default_zonelist_order(void)
+ 		}
+ 		if (low_kmem_size &&
+ 		    total_size > average_size && /* ignore small node */
+-		    low_kmem_size > total_size * 70/100)
++		    low_kmem_size > total_size * 70/100){
++			pgdat_remove_read_unlock();
+ 			return ZONELIST_ORDER_NODE;
++		}
+ 	}
++	pgdat_remove_read_unlock();
+ 	return ZONELIST_ORDER_ZONE;
+ }
+ 
+Index: current/mm/vmscan.c
+===================================================================
+--- current.orig/mm/vmscan.c	2008-07-29 21:20:42.000000000 +0900
++++ current/mm/vmscan.c	2008-07-29 22:17:44.000000000 +0900
+@@ -2170,6 +2170,7 @@ static int __devinit cpu_callback(struct
+ 	int nid;
+ 
+ 	if (action == CPU_ONLINE || action == CPU_ONLINE_FROZEN) {
++		pgdat_remove_read_lock();
+ 		for_each_node_state(nid, N_HIGH_MEMORY) {
+ 			pg_data_t *pgdat = NODE_DATA(nid);
+ 			node_to_cpumask_ptr(mask, pgdat->node_id);
+@@ -2178,6 +2179,7 @@ static int __devinit cpu_callback(struct
+ 				/* One of our CPUs online: restore mask */
+ 				set_cpus_allowed_ptr(pgdat->kswapd, mask);
+ 		}
++		pgdat_remove_read_unlock();
+ 	}
+ 	return NOTIFY_OK;
+ }
+Index: current/mm/page-writeback.c
+===================================================================
+--- current.orig/mm/page-writeback.c	2008-07-29 21:20:42.000000000 +0900
++++ current/mm/page-writeback.c	2008-07-29 21:23:11.000000000 +0900
+@@ -325,12 +325,14 @@ static unsigned long highmem_dirtyable_m
+ 	int node;
+ 	unsigned long x = 0;
+ 
++	pgdat_remove_read_lock();
+ 	for_each_node_state(node, N_HIGH_MEMORY) {
+ 		struct zone *z =
+ 			&NODE_DATA(node)->node_zones[ZONE_HIGHMEM];
+ 
+ 		x += zone_page_state(z, NR_FREE_PAGES) + zone_lru_pages(z);
+ 	}
++	pgdat_remove_read_unlock();
+ 	/*
+ 	 * Make sure that the number of highmem pages is never larger
+ 	 * than the number of the total dirtyable memory. This can only
+Index: current/mm/mempolicy.c
+===================================================================
+--- current.orig/mm/mempolicy.c	2008-07-29 21:20:42.000000000 +0900
++++ current/mm/mempolicy.c	2008-07-29 22:17:44.000000000 +0900
+@@ -129,15 +129,19 @@ static int is_valid_nodemask(const nodem
+ 	/* Check that there is something useful in this mask */
+ 	k = policy_zone;
+ 
++	pgdat_remove_read_lock();
+ 	for_each_node_mask(nd, *nodemask) {
+ 		struct zone *z;
+ 
+ 		for (k = 0; k <= policy_zone; k++) {
+ 			z = &NODE_DATA(nd)->node_zones[k];
+-			if (z->present_pages > 0)
++			if (z->present_pages > 0) {
++				pgdat_remove_read_unlock();
+ 				return 1;
++			}
+ 		}
+ 	}
++	pgdat_remove_read_unlock();
+ 
+ 	return 0;
+ }
+@@ -1930,6 +1934,8 @@ void __init numa_policy_init(void)
+ 	 * fall back to the largest node if they're all smaller.
+ 	 */
+ 	nodes_clear(interleave_nodes);
++
++	pgdat_remove_read_lock(); /* node_present_pages accesses pgdat */
+ 	for_each_node_state(nid, N_HIGH_MEMORY) {
+ 		unsigned long total_pages = node_present_pages(nid);
+ 
+@@ -1943,6 +1949,7 @@ void __init numa_policy_init(void)
+ 		if ((total_pages << PAGE_SHIFT) >= (16 << 20))
+ 			node_set(nid, interleave_nodes);
+ 	}
++	pgdat_remove_read_unlock();
+ 
+ 	/* All too small, use the largest */
+ 	if (unlikely(nodes_empty(interleave_nodes)))
+Index: current/fs/buffer.c
+===================================================================
+--- current.orig/fs/buffer.c	2008-07-29 21:20:42.000000000 +0900
++++ current/fs/buffer.c	2008-07-29 21:23:11.000000000 +0900
+@@ -369,11 +369,12 @@ void invalidate_bdev(struct block_device
+ static void free_more_memory(void)
+ {
+ 	struct zone *zone;
+-	int nid;
++	int nid, idx;
+ 
+ 	wakeup_pdflush(1024);
+ 	yield();
+ 
++	idx = pgdat_remove_read_lock_sleepable();
+ 	for_each_online_node(nid) {
+ 		(void)first_zones_zonelist(node_zonelist(nid, GFP_NOFS),
+ 						gfp_zone(GFP_NOFS), NULL,
+@@ -382,6 +383,7 @@ static void free_more_memory(void)
+ 			try_to_free_pages(node_zonelist(nid, GFP_NOFS), 0,
+ 						GFP_NOFS);
+ 	}
++	pgdat_remove_read_unlock_sleepable(idx);
+ }
+ 
+ /*
+Index: current/mm/vmstat.c
+===================================================================
+--- current.orig/mm/vmstat.c	2008-07-29 22:06:46.000000000 +0900
++++ current/mm/vmstat.c	2008-07-29 22:07:13.000000000 +0900
+@@ -400,6 +400,8 @@ static void *frag_start(struct seq_file 
+ {
+ 	pg_data_t *pgdat;
+ 	loff_t node = *pos;
++
++	pgdat_remove_read_lock();
+ 	for (pgdat = first_online_pgdat();
+ 	     pgdat && node;
+ 	     pgdat = next_online_pgdat(pgdat))
+@@ -418,6 +420,7 @@ static void *frag_next(struct seq_file *
+ 
+ static void frag_stop(struct seq_file *m, void *arg)
+ {
++	pgdat_remove_read_unlock();
+ }
+ 
+ /* Walk all the zones in a node and print using a callback */
 
-> 
-> > diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-> > index 9d8f8c8..b143fe7 100644
-> > --- a/arch/powerpc/platforms/pseries/smp.c
-> > +++ b/arch/powerpc/platforms/pseries/smp.c
-> > @@ -130,6 +130,7 @@ static void smp_xics_message_pass(int target, int msg)
-> >  
-> >  static int __init smp_xics_probe(void)
-> >  {
-> > +	irq_radix_revmap_init();
-> >  	xics_request_IPIs();
-> 
-> But now it's only called from the xics setup code.
-> 
-> Which seems a bit ugly. In practice it doesn't matter because at the
-> moment xics is the only user of the radix revmap. But if we're going to
-> switch to this sort of initialisation I think xics should only be
-> init'ing the revmap for itself.
+-- 
+Yasunori Goto 
 
-  You're right, that's what I intended to do from the beginning but
-stumbled upon ... hmm, can't remember what, that made me change
-my mind. But I agree, I'm not particularly proud of that. Will look
-again into that.
 
-> 
-> 
-> This boot ordering stuff is pretty hairy, so I might have missed
-> something, but this is how the code is ordered AFAICT:
-> ﻿
-> start_kernel()
-> 	init_IRQ()
-> 	...
-> 	local_irq_enable()
-> 	...
-> 	rest_init()
-> 		kernel_thread()
-> 			kernel_init()
-> 				smp_prepare_cpus()
-> 					smp_xics_probe()	(via smp_ops->probe())
-> 
-> 
-> What's stopping us from taking an irq between local_irq_enable() and
-> smp_xics_probe() ?  Is it just that no one's request_irq()'ed them yet?
-
-  It's hairy, I agree, but as you've mentioned no one has done a request_irq()
-at that point. The first one to do it is smp_xics_probe() for the IPI.
-
-  Thanks for your comments.
-
-  Sebastien.
