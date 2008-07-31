@@ -1,126 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbYGaL7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbYGaMBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755580AbYGaL7u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 07:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYGaL7m
+	id S1755992AbYGaMBP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 08:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYGaMA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 07:59:42 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46735 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751201AbYGaL7l (ORCPT
+	Thu, 31 Jul 2008 08:00:58 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:56056 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751610AbYGaMA5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 07:59:41 -0400
-Date: Thu, 31 Jul 2008 20:58:26 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: [RFC:Patch: 003/008](memory hotplug) check node online in __alloc_pages
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080731203549.2A3F.E1E9C6FF@jp.fujitsu.com>
-References: <20080731203549.2A3F.E1E9C6FF@jp.fujitsu.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080731205654.2A47.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+	Thu, 31 Jul 2008 08:00:57 -0400
+Date: Thu, 31 Jul 2008 14:00:02 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, benh@kernel.crashing.org,
+       paulus@samba.org, jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
+       tinytim@us.ibm.com, tglx@linutronix.de, rostedt@goodmis.org
+Subject: Re: [PATCH] powerpc - Initialize the irq radix tree earlier
+Message-ID: <20080731140002.31bbe4a0@bull.net>
+In-Reply-To: <1217504456.9817.22.camel@localhost>
+References: <1217497241-10685-1-git-send-email-sebastien.dugue@bull.net>
+	<1217497241-10685-2-git-send-email-sebastien.dugue@bull.net>
+	<1217504456.9817.22.camel@localhost>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This is to add pgdat_remove_read_lock()/unlock() for parsing zonelist in
-__alloc_pages_internal().
-The node might be removed before pgdat_remove_read_lock(),
-node_online() must be checked at first. If offlined, don't parse it.
+  Hi Michael,
 
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+On Thu, 31 Jul 2008 21:40:56 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
 
----
- mm/page_alloc.c |   36 ++++++++++++++++++++++++++++++++++--
- 1 file changed, 34 insertions(+), 2 deletions(-)
+> On Thu, 2008-07-31 at 11:40 +0200, Sebastien Dugue wrote:
+> > The radix tree used for fast irq reverse mapping by the XICS is initialized
+> > late in the boot process, after the first interrupt (IPI) gets registered
+> > and after the first IPI is received.
+> > 
+> >   This patch moves the initialization of the XICS radix tree earlier into
+> > the boot process in smp_xics_probe() (the mm is already up but no interrupts
+> > have been registered at that point) to avoid having to insert a mapping into
+> > the tree in interrupt context. This will help in simplifying the locking
+> > constraints and move to a lockless radix tree in subsequent patches.
+> > 
+> >   As a nice side effect, there is no need any longer to check for
+> > (host->revmap_data.tree.gfp_mask != 0) to know if the tree have been
+> > initialized.
+> 
+> Hi Sebastien,
+> 
+> This is a nice cleanup, I think :)
 
-Index: current/mm/page_alloc.c
-===================================================================
---- current.orig/mm/page_alloc.c	2008-07-31 19:01:46.000000000 +0900
-+++ current/mm/page_alloc.c	2008-07-31 19:19:19.000000000 +0900
-@@ -1394,10 +1394,22 @@ get_page_from_freelist(gfp_t gfp_mask, n
- 	int zlc_active = 0;		/* set if using zonelist_cache */
- 	int did_zlc_setup = 0;		/* just call zlc_setup() one time */
- 
-+	pgdat_remove_read_lock();
-+	if (unlikely(!node_online(zonelist_nid))) {
-+		/*
-+		 * Pgdat removing worked before here.
-+		 * Don't touch pgdat/zone/zonelist any more.
-+		 */
-+		pgdat_remove_read_unlock();
-+		return NULL;
-+	}
-+
- 	(void)first_zones_zonelist(zonelist, high_zoneidx, nodemask,
- 							&preferred_zone);
--	if (!preferred_zone)
-+	if (!preferred_zone) {
-+		pgdat_remove_read_unlock();
- 		return NULL;
-+	}
- 
- 	classzone_idx = zone_idx(preferred_zone);
- 
-@@ -1451,6 +1463,7 @@ try_next_zone:
- 		zlc_active = 0;
- 		goto zonelist_scan;
- 	}
-+	pgdat_remove_read_unlock();
- 	return page;
- }
- 
-@@ -1536,10 +1549,21 @@ __alloc_pages_internal(gfp_t gfp_mask, u
- 		return NULL;
- 
- restart:
-+	pgdat_remove_read_lock();
-+	if (unlikely(!node_online(zonelist_nid))) {
-+		/*
-+		 * pgdat removing worked before here.
-+		 * zone & zonelist can't be touched.
-+		 */
-+		pgdat_remove_read_unlock();
-+		goto nopage;
-+	}
- 	zonelist = node_zonelist(zonelist_nid, gfp_mask);;
- 	z = zonelist->_zonerefs;  /* the list of zones suitable for gfp_mask */
-+	zone = z->zone;
-+	pgdat_remove_read_unlock();
- 
--	if (unlikely(!z->zone)) {
-+	if (unlikely(!zone)) {
- 		/*
- 		 * Happens if we have an empty zonelist as a result of
- 		 * GFP_THISNODE being used on a memoryless node
-@@ -1565,9 +1589,17 @@ restart:
- 	if (NUMA_BUILD && (gfp_mask & GFP_THISNODE) == GFP_THISNODE)
- 		goto nopage;
- 
-+	pgdat_remove_read_lock();
-+
-+	if (unlikely(!node_online(zonelist_nid))) {
-+		pgdat_remove_read_unlock();
-+		goto nopage;
-+	}
- 	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
- 		wakeup_kswapd(zone, order);
- 
-+	pgdat_remove_read_unlock();
-+
- 	/*
- 	 * OK, we're below the kswapd watermark and have kicked background
- 	 * reclaim. Now things get more complex, so set up alloc_flags according
+  Thanks.
 
--- 
-Yasunori Goto 
+> 
+> > diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> > index 6ac8612..0a1445c 100644
+> > --- a/arch/powerpc/kernel/irq.c
+> > +++ b/arch/powerpc/kernel/irq.c
+> > @@ -893,28 +890,28 @@ unsigned int irq_find_mapping(struct irq_host *host,
+> >  }
+> >  EXPORT_SYMBOL_GPL(irq_find_mapping);
+> >  
+> > +void __init irq_radix_revmap_init(void)
+> > +{
+> > + 	struct irq_host *h;
+> > +
+> > +	list_for_each_entry(h, &irq_hosts, link) {
+> > +		if (h->revmap_type == IRQ_HOST_MAP_TREE)
+> > +			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_ATOMIC);
+> > +	}
+> > +}
+> 
+> Note irq_radix_revmap_init() loops over all irq_hosts ...
 
+  Yep, but there's only one host (xics)
 
+> 
+> > diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+> > index 9d8f8c8..b143fe7 100644
+> > --- a/arch/powerpc/platforms/pseries/smp.c
+> > +++ b/arch/powerpc/platforms/pseries/smp.c
+> > @@ -130,6 +130,7 @@ static void smp_xics_message_pass(int target, int msg)
+> >  
+> >  static int __init smp_xics_probe(void)
+> >  {
+> > +	irq_radix_revmap_init();
+> >  	xics_request_IPIs();
+> 
+> But now it's only called from the xics setup code.
+> 
+> Which seems a bit ugly. In practice it doesn't matter because at the
+> moment xics is the only user of the radix revmap. But if we're going to
+> switch to this sort of initialisation I think xics should only be
+> init'ing the revmap for itself.
+
+  You're right, that's what I intended to do from the beginning but
+stumbled upon ... hmm, can't remember what, that made me change
+my mind. But I agree, I'm not particularly proud of that. Will look
+again into that.
+
+> 
+> 
+> This boot ordering stuff is pretty hairy, so I might have missed
+> something, but this is how the code is ordered AFAICT:
+> ﻿
+> start_kernel()
+> 	init_IRQ()
+> 	...
+> 	local_irq_enable()
+> 	...
+> 	rest_init()
+> 		kernel_thread()
+> 			kernel_init()
+> 				smp_prepare_cpus()
+> 					smp_xics_probe()	(via smp_ops->probe())
+> 
+> 
+> What's stopping us from taking an irq between local_irq_enable() and
+> smp_xics_probe() ?  Is it just that no one's request_irq()'ed them yet?
+
+  It's hairy, I agree, but as you've mentioned no one has done a request_irq()
+at that point. The first one to do it is smp_xics_probe() for the IPI.
+
+  Thanks for your comments.
+
+  Sebastien.
