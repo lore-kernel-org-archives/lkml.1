@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbYHAT1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbYHATbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758526AbYHAT1j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 15:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbYHAT1b
+	id S1757970AbYHATbz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 15:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbYHATbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 15:27:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46732 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752542AbYHAT1a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 15:27:30 -0400
-Date: Fri, 1 Aug 2008 12:26:53 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-Subject: Re: linux-next: Tree for July 30
-In-Reply-To: <20080801151758.ZZRA012@mailhub.coreip.homeip.net>
-Message-ID: <alpine.LFD.1.10.0808011226300.3277@nehalem.linux-foundation.org>
-References: <20080730170635.f737ffe9.sfr@canb.auug.org.au> <20080731104437.5e5669bc.akpm@linux-foundation.org> <20080731141302.ZZRA012@mailhub.coreip.homeip.net> <200807312048.57575.rjw@sisk.pl> <20080731145023.ZZRA012@mailhub.coreip.homeip.net>
- <alpine.LFD.1.10.0807311207000.3277@nehalem.linux-foundation.org> <20080731151625.ZZRA012@mailhub.coreip.homeip.net> <20080731194207.GA12233@anvil.corenet.prv> <alpine.LFD.1.10.0808011201480.3277@nehalem.linux-foundation.org>
- <20080801151758.ZZRA012@mailhub.coreip.homeip.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 1 Aug 2008 15:31:47 -0400
+Received: from verein.lst.de ([213.95.11.210]:33996 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752704AbYHATbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 15:31:46 -0400
+Date: Fri, 1 Aug 2008 21:31:33 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Jasper Bryant-Greene <jasper@amiton.co.nz>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com, util-linux-ng@vger.kernel.org
+Subject: Re: XFS noikeep remount in 2.6.27-rc1-next-20080730
+Message-ID: <20080801193133.GA838@lst.de>
+References: <1217553598.3860.16.camel@luna.unix.geek.nz> <20080801073033.GF6201@disturbed>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080801073033.GF6201@disturbed>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0.882 () SUBJ_HAS_UNIQ_ID
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 1 Aug 2008, Dmitry Torokhov wrote:
+On Fri, Aug 01, 2008 at 05:30:33PM +1000, Dave Chinner wrote:
+> On Fri, Aug 01, 2008 at 01:19:58PM +1200, Jasper Bryant-Greene wrote:
+> > I mount a bunch of XFS filesystems with "noikeep,attr2,noatime", and a
+> > couple also with "ro".
+> > 
+> > Sometimes I want to remount one of the "ro" ones "rw", to make changes.
+> > This doesn't work anymore in 2.6.27-rc1-next-20080730. The last kernel I
+> > tried which it worked in was 2.6.26 release.
+> > 
+> > luna ~ # mount -o remount,rw /usr
+> > mount: /usr not mounted already, or bad option
+> > 
+> > luna ~ # dmesg | tail -n 1
+> > [18702.291344] XFS: mount option "noikeep" not supported for remount
+> > 
+> > Is this intended behaviour?
 > 
-> Makes sense. Signed-off-by please ;)
+> Side effect of this commit:
+> 
+> http://oss.sgi.com/cgi-bin/gitweb.cgi?p=xfs/xfs-2.6.git;a=commit;h=0327f9d799ebb96f67c80dd732b1fdb09527365e
+> 
+> Christoph?
 
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+I'ts most likely a fallout, but I wonder why.  To get this behaviour
+moutn would have to add all the options it finds in /proc/self/mounts
+to the command line.
 
-		Linus
+Added the util-linux-ng list to shed some light on this, but I suspect
+I'll have to change xfs_fs_remount to check if the option passed in
+is identical to the one we already have and only reject it when it
+changes due to this mount(1) dumbness.
