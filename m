@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbYHANQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbYHANWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755034AbYHANQu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 09:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbYHANQm
+	id S1753363AbYHANWt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 09:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYHANWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 09:16:42 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40801 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751442AbYHANQl (ORCPT
+	Fri, 1 Aug 2008 09:22:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:1220 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902AbYHANWl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 09:16:41 -0400
-Date: Fri, 1 Aug 2008 08:16:36 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for July 31 (GRU build error)
-Message-ID: <20080801131636.GA4023@sgi.com>
-References: <20080731175854.09ea35c8.sfr@canb.auug.org.au> <20080731223758.b5985dd7.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 1 Aug 2008 09:22:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=WnEknJJEOlgDc4Zgsjs9zw6GCAkJ5QuxPrxRJOfaydXFlahFbcmTfsqTlgkqNqlPdu
+         iHpOYet8bTUm05+CASTNP1wgbyl3CADR8DbOVi3t3FR7QfZ2jb8tuIb2wFgCnqrCgheS
+         5Vb+I++6fSTTEa2SfgBI27sLvwUfCrni3eby4=
+Message-ID: <c4e36d110808010622w74d61378ud9624a6ea38357a4@mail.gmail.com>
+Date: Fri, 1 Aug 2008 15:22:40 +0200
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Alistair John Strachan" <alistair@devzero.co.uk>
+Subject: Re: Sysrq+B doesn't work on my box
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200808011356.19027.alistair@devzero.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080731223758.b5985dd7.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+References: <c4e36d110807310645n3ff6e61j17414433c5aee030@mail.gmail.com>
+	 <48921A0C.7020909@goop.org>
+	 <c4e36d110808010254i2274516q4cef62460fe8e8@mail.gmail.com>
+	 <200808011356.19027.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 10:37:58PM -0700, Randy Dunlap wrote:
-> 
-> xp_uv.c:(.text+0x4186b): undefined reference to `gru_copy_gpa'
-> xpc_uv.c:(.text+0x44616): undefined reference to `gru_create_message_queue'
-> xpc_uv.c:(.text+0x44e16): undefined reference to `gru_free_message'
-> xpc_uv.c:(.text+0x44e22): undefined reference to `gru_get_next_message'
-> xpc_uv.c:(.text+0x44e67): undefined reference to `gru_send_message_gpa'
-> xpc_uv.c:(.text+0x45a79): undefined reference to `gru_free_message'
-> xpc_uv.c:(.text+0x45a85): undefined reference to `gru_get_next_message'
-> make[1]: *** [.tmp_vmlinux1] Error 1
+2008/8/1 Alistair John Strachan <alistair@devzero.co.uk>:
+> On Friday 01 August 2008 10:54:19 Zdenek Kabelac wrote:
+>> 2008/7/31 Jeremy Fitzhardinge <jeremy@goop.org>:
+>> > Zdenek Kabelac wrote:
+>> I'll probably try to bisect  rc.sysinit script to check what is the
+>> first command
+>> that breaks the reboot  - but if there is any idea what should I test
+>> first.?
+>
+> Are you using modules? Maybe a driver is loaded and this upsets the BIOS
+> somehow? If that was the case, the driver wouldn't be loaded in an
+> init=/bin/sh situation, as you described before.
+>
 
-This is not actually a GRU problem. XP is missing a dependency. Dean will
-post a patch later today.
 
+Yes - except as I've checked the exactly same modularized kernel
+running Debian on the same box
+has no boot problem.
 
-> 
-> 
-> config attached.
-> 
-> 
-> and please add a GRU maintainer entry somewhere.
- 
-Done. Also added maintainer for XP...
+So it could be the some initialization steps are different so maybe a
+slightly different set of modules
+is installed or they are initialized on different order - I'll check this.
 
---- jack
+Zdenek
