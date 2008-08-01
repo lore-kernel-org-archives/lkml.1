@@ -1,141 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbYHADE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbYHADLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757487AbYHADE6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 23:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbYHADEu
+	id S1756272AbYHADLe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 23:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbYHADL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 23:04:50 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:21340 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751658AbYHADEt (ORCPT
+	Thu, 31 Jul 2008 23:11:26 -0400
+Received: from mga10.intel.com ([192.55.52.92]:57104 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752064AbYHADL0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 23:04:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=T0iGg+pd606ovNDUC1JghXF9NASTaQGEoPRwnHJopoapZTDifEz6Yi5/OFpkGuyxlx
-         eVvqid/ZBLPGZ/aLw2g/YiI7c3dyM26RFdmsG5varG+CZS/BFJkmR5E6phrQYnGZBFkw
-         O0/RH7AzYhwfIWBmSSHFXTKsKVxohqy9vcNbg=
-Date: Thu, 31 Jul 2008 23:04:44 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: INFO: possible recursive locking detected ps2_command
-Message-ID: <20080801030444.GB18953@anvil.corenet.prv>
-References: <c4e36d110807310241n512b01e4v898e883d740de879@mail.gmail.com> <20080731145739.fe8923be.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080731145739.fe8923be.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 31 Jul 2008 23:11:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,290,1215414000"; 
+   d="scan'208";a="366962319"
+Subject: Re: VolanoMark regression with 2.6.27-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: miaox@cn.fujitsu.com
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4892765F.5020401@cn.fujitsu.com>
+References: <1217474425.25608.150.camel@ymzhang>
+	 <1217489463.25608.157.camel@ymzhang>  <1217489949.8157.78.camel@twins>
+	 <1217490560.25608.168.camel@ymzhang> <1217551154.25608.169.camel@ymzhang>
+	 <4892765F.5020401@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Fri, 01 Aug 2008 11:08:37 +0800
+Message-Id: <1217560117.25608.171.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 02:57:39PM -0700, Andrew Morton wrote:
-> 
-> (cc linux-input)
-> 
-> On Thu, 31 Jul 2008 11:41:25 +0200
-> "Zdenek Kabelac" <zdenek.kabelac@gmail.com> wrote:
-> 
-> > Hi
-> > 
-> > During mouse unplugging from psaux connector from the laptops' docking
-> > station I've got attached INFO trace.
-> > (laptops still has synaptics device)
-> > 
 
-Dell?
-
-> > Also for unknown reason to me  psaux mouse & synaptic device do not
-> > work somehow together - is it hw limitation
-> > of /dev/input/mice  interface?
-> > (USB mouse and synaptics do work quite well together)
-> > 
-> > [ INFO: possible recursive locking detected ]
-> > 2.6.27-rc1 #48
+On Fri, 2008-08-01 at 10:35 +0800, Miao Xie wrote:
+> on 2008-8-1 8:39 Zhang, Yanmin wrote:
+> [snip]
+> >> The regression I reported exists on:
+> >> 1) 8-core+HT(totally 16 logical processor) tulsa: 40% regression with volano, 8% with oltp;
+> >> 2) 8-core+HT Montvale Itanium: 9% regression with volano; 8% with oltp;
+> >> 3) 16-core tigerton: %70 with volano, %18 with oltp;
+> >> 4) 8-core stoakley: %15 with oltp, testing failed with volanoMark.
+> >>
+> >> So the issues are popular on different architectures.
+> > I know kernel needs the features and it might not be a good idea to reject them over and over again.
+> > I will collect more data on tigerton and try to optimize it.
 > 
-> (it's 2.6.27-rc1)
+> Could you tell me the exact config options? the same with last time?
+Yes.
+
 > 
-
-Peter, here is the trace we talked about long time ago. For some reason
-lockdep annotation only works once. If reconnect is forced or psmouse
-module is reloaded lockdep starts complaining about passthrough port.
-
-> > ---------------------------------------------
-> > kseriod/166 is trying to acquire lock:
-> >  (&ps2dev->cmd_mutex){--..}, at: [<ffffffff8126e9ae>] ps2_command+0x5e/0x460
-> > 
-> > but task is already holding lock:
-> >  (&ps2dev->cmd_mutex){--..}, at: [<ffffffff8126e9ae>] ps2_command+0x5e/0x460
-> > 
-> > other info that might help us debug this:
-> > 4 locks held by kseriod/166:
-> >  #0:  (serio_mutex){--..}, at: [<ffffffff8126cc1e>] serio_thread+0x3e/0x410
-> >  #1:  (&serio->drv_mutex){--..}, at: [<ffffffff8126bf8b>]
-> > serio_connect_driver+0x2b/0x50
-> >  #2:  (psmouse_mutex){--..}, at: [<ffffffffa009aa00>]
-> > psmouse_connect+0x30/0x2c0 [psmouse]
-> >  #3:  (&ps2dev->cmd_mutex){--..}, at: [<ffffffff8126e9ae>]
-> > ps2_command+0x5e/0x460
-> > 
-> > stack backtrace:
-> > Pid: 166, comm: kseriod Not tainted 2.6.27-rc1 #48
-> > 
-> > Call Trace:
-> >  [<ffffffff81068bda>] __lock_acquire+0xcea/0x13b0
-> >  [<ffffffff81066401>] ? trace_hardirqs_off_caller+0x21/0xc0
-> >  [<ffffffff810664ad>] ? trace_hardirqs_off+0xd/0x10
-> >  [<ffffffff8126e9ae>] ? ps2_command+0x5e/0x460
-> >  [<ffffffff81069336>] lock_acquire+0x96/0xe0
-> >  [<ffffffff8126e9ae>] ? ps2_command+0x5e/0x460
-> >  [<ffffffff81313861>] mutex_lock_nested+0xc1/0x340
-> >  [<ffffffff8126e9ae>] ? ps2_command+0x5e/0x460
-> >  [<ffffffff810135a0>] ? native_sched_clock+0x90/0xb0
-> >  [<ffffffff8126e9ae>] ps2_command+0x5e/0x460
-> >  [<ffffffff81066401>] ? trace_hardirqs_off_caller+0x21/0xc0
-> >  [<ffffffff81065834>] ? get_lock_stats+0x34/0x70
-> >  [<ffffffffa009977d>] psmouse_sliced_command+0x2d/0x90 [psmouse]
-> >  [<ffffffff8126e838>] ? ps2_sendbyte+0x48/0x130
-> >  [<ffffffffa009b8f7>] synaptics_pt_write+0x27/0x60 [psmouse]
-> >  [<ffffffff81315acd>] ? _spin_unlock_irq+0x3d/0x80
-> >  [<ffffffff8126e84d>] ps2_sendbyte+0x5d/0x130
-> >  [<ffffffff81319840>] ? sub_preempt_count+0x80/0x120
-> >  [<ffffffff8126ea4d>] ps2_command+0xfd/0x460
-> >  [<ffffffff81319840>] ? sub_preempt_count+0x80/0x120
-> >  [<ffffffff81315acd>] ? _spin_unlock_irq+0x3d/0x80
-> >  [<ffffffffa0099917>] psmouse_probe+0x27/0xa0 [psmouse]
-> >  [<ffffffff8126c1e1>] ? serio_open+0x11/0x50
-> >  [<ffffffffa009ab48>] psmouse_connect+0x178/0x2c0 [psmouse]
-> >  [<ffffffff8126bf96>] serio_connect_driver+0x36/0x50
-> >  [<ffffffff8126bfcb>] serio_driver_probe+0x1b/0x20
-> >  [<ffffffff81221112>] driver_probe_device+0xa2/0x1e0
-> >  [<ffffffff812212e0>] ? __device_attach+0x0/0x10
-> >  [<ffffffff812212e9>] __device_attach+0x9/0x10
-> >  [<ffffffff8122050b>] bus_for_each_drv+0x6b/0xa0
-> >  [<ffffffff812213b8>] device_attach+0x88/0x90
-> >  [<ffffffff812202d5>] bus_attach_device+0x55/0x80
-> >  [<ffffffff8121ee99>] device_add+0x4f9/0x610
-> >  [<ffffffff81319840>] ? sub_preempt_count+0x80/0x120
-> >  [<ffffffff8126ce1c>] serio_thread+0x23c/0x410
-> >  [<ffffffff810571a0>] ? autoremove_wake_function+0x0/0x40
-> >  [<ffffffff8126cbe0>] ? serio_thread+0x0/0x410
-> >  [<ffffffff81056de9>] kthread+0x49/0x90
-> >  [<ffffffff8100d669>] child_rip+0xa/0x11
-> >  [<ffffffff8103b757>] ? finish_task_switch+0x57/0x110
-> >  [<ffffffff81315acd>] ? _spin_unlock_irq+0x3d/0x80
-> >  [<ffffffff8100cc73>] ? restore_args+0x0/0x30
-> >  [<ffffffff810664ad>] ? trace_hardirqs_off+0xd/0x10
-> >  [<ffffffff81056da0>] ? kthread+0x0/0x90
-> >  [<ffffffff8100d65f>] ? child_rip+0x0/0x11
+> as follows:
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-input" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> # CONFIG_CGROUPS is not set
+> CONFIG_GROUP_SCHED=y
+> CONFIG_FAIR_GROUP_SCHED=y
+> # CONFIG_RT_GROUP_SCHED is not set
+> CONFIG_USER_SCHED=y
+> # CONFIG_CGROUP_SCHED is not set
 
--- 
-Dmitry
+
