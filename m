@@ -1,55 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbYHABc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYHABhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756651AbYHABc4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 21:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYHABcs
+	id S1756732AbYHABhc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 21:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbYHABhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 21:32:48 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:28287 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752149AbYHABcr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 21:32:47 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=XOQGK7Bl1h7eYHGbdTPSMznPu/G1UmzL8+f57J480Jw+ckwLWTRdSAINjfZ5IlUpK0BB05e0L+4eDiGvAFFHAc3Mtk8lTTaez/HrNnHptu/xlNYy4m7v9z7DsinYQjAxPI2J/CIGRtkEfpduq+Z1/KsKsXzQOjLh9SHPy+vnp+I=  ;
-X-YMail-OSG: EWzAIy4VM1kHFHd_4Sh8q6vW4Fi1ynmuvQd.2kjxpKY3hEvgQ4C46VmP6wwZ9UUr.BIpRuqh3ngVC5rY2AmYn_mh5e_Vlrs6oy0pM59rn7HBS7vZakG2r1.eMtRHHsXGYYc-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: x86: Is there still value in having a special tlb flush IPI vector?
-Date: Fri, 1 Aug 2008 11:32:32 +1000
-User-Agent: KMail/1.9.5
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-References: <488E534F.2030204@goop.org> <1217328351.7563.12.camel@twins> <20080731164826.GH26393@elte.hu>
-In-Reply-To: <20080731164826.GH26393@elte.hu>
+	Thu, 31 Jul 2008 21:37:24 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64784 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752124AbYHABhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 21:37:24 -0400
+Message-ID: <4892685E.2000000@cn.fujitsu.com>
+Date: Fri, 01 Aug 2008 09:35:26 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Paul Jackson <pj@sgi.com>
+CC: akpm@linux-foundation.org, menage@google.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpuset: make ntasks to be a monotonic increasing value
+References: <48912FDD.8060006@cn.fujitsu.com>	<20080731072355.b582b2d6.pj@sgi.com>	<4891B9E0.2090900@cn.fujitsu.com> <20080731083706.e6bd4acc.pj@sgi.com>
+In-Reply-To: <20080731083706.e6bd4acc.pj@sgi.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808011132.32856.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 August 2008 02:48, Ingo Molnar wrote:
-> * Peter Zijlstra <peterz@infradead.org> wrote:
+Paul Jackson wrote:
+> Bottom line - my priorities for non-critical code paths, most important first:
+>  1) It must work.
+>  2) Keep it easy for humans to understand.
+>  3) Reduce kernel text size.
+>  4) Reduce CPU cycles.
+> 
 
-> > The overhead of that is a smp_mb() and a list_empty() check in
-> > generic_smp_call_function_single_interrupt() if there is indeed no
-> > work to do.
->
-> that would be a miniscule cost - cacheline is read-shared amongst cpus
-> so there's no real bouncing there. So i'm all for it ...
+I agree, Thank you!
 
-smp_mb would cost some cycles. So would the branch mispredict because
-list_empty would otherwise normally be taken I think. q likely is not
-in cache either.
+How about this one?
 
-I'm not in favour.
+The loop after this patch applied is:
+
+	ntasks_now = cgroup_task_count(cs->css.cgroup);
+	while (1) {
+		ntasks = ntasks_now;			/* guess */
+		ntasks += fudge;
+		mmarray = kmalloc(ntasks * sizeof(*mmarray), GFP_KERNEL);
+		if (!mmarray)
+			goto done;
+		read_lock(&tasklist_lock);		/* block fork */
+		ntasks_now = cgroup_task_count(cs->css.cgroup);
+		if (ntasks_now <= ntasks)
+			break;				/* got enough */
+		read_unlock(&tasklist_lock);		/* try again */
+		kfree(mmarray);
+	}
+
+I think the readability of this code is as good as original's.
+And it's better in semantic meaning.
+
+The old non monotonic increasing value is caused by the redundant
+cgroup_task_count(). Removing it is good for keeping ntasks
+increasing(not need additional arithmetic compare or max statement).
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index d5ab79c..56a057f 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -930,7 +930,7 @@ static int update_tasks_nodemask(struct cpuset *cs, const nodemask_t *oldmem)
+ {
+ 	struct task_struct *p;
+ 	struct mm_struct **mmarray;
+-	int i, n, ntasks;
++	int i, n, ntasks, ntasks_now;
+ 	int migrate;
+ 	int fudge;
+ 	struct cgroup_iter it;
+@@ -949,14 +949,16 @@ static int update_tasks_nodemask(struct cpuset *cs, const nodemask_t *oldmem)
+ 	 * few more lines of code, we can retry until we get a big
+ 	 * enough mmarray[] w/o using GFP_ATOMIC.
+ 	 */
++	ntasks_now = cgroup_task_count(cs->css.cgroup);
+ 	while (1) {
+-		ntasks = cgroup_task_count(cs->css.cgroup);  /* guess */
++		ntasks = ntasks_now;			/* guess */
+ 		ntasks += fudge;
+ 		mmarray = kmalloc(ntasks * sizeof(*mmarray), GFP_KERNEL);
+ 		if (!mmarray)
+ 			goto done;
+ 		read_lock(&tasklist_lock);		/* block fork */
+-		if (cgroup_task_count(cs->css.cgroup) <= ntasks)
++		ntasks_now = cgroup_task_count(cs->css.cgroup);
++		if (ntasks_now <= ntasks)
+ 			break;				/* got enough */
+ 		read_unlock(&tasklist_lock);		/* try again */
+ 		kfree(mmarray);
+
