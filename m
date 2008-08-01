@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758318AbYHAHaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbYHAHay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758318AbYHAHaf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 03:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbYHAHa2
+	id S1754596AbYHAHay (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 03:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758529AbYHAHak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 03:30:28 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48018 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752262AbYHAHa2 (ORCPT
+	Fri, 1 Aug 2008 03:30:40 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:62612 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753467AbYHAHaj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 03:30:28 -0400
-Subject: Re: 2.6.27-rc1 process time accounting
-From: Peter Zijlstra <peterz@infradead.org>
-To: Parag Warudkar <parag.warudkar@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <loom.20080801T025718-689@post.gmane.org>
-References: <20080731104319.GB5806@ics.muni.cz>
-	 <20080731144147.82fcd85e.akpm@linux-foundation.org>
-	 <loom.20080801T025718-689@post.gmane.org>
-Content-Type: text/plain
-Date: Fri, 01 Aug 2008 09:30:28 +0200
-Message-Id: <1217575828.8157.114.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Aug 2008 03:30:39 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEALlWkkh5LDlw/2dsb2JhbACLIKVP
+X-IronPort-AV: E=Sophos;i="4.31,291,1215354600"; 
+   d="scan'208";a="162074320"
+Date: Fri, 1 Aug 2008 17:30:33 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Jasper Bryant-Greene <jasper@amiton.co.nz>
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, hch@lst.de
+Subject: Re: XFS noikeep remount in 2.6.27-rc1-next-20080730
+Message-ID: <20080801073033.GF6201@disturbed>
+Mail-Followup-To: Jasper Bryant-Greene <jasper@amiton.co.nz>,
+	linux-kernel@vger.kernel.org, xfs@oss.sgi.com, hch@lst.de
+References: <1217553598.3860.16.camel@luna.unix.geek.nz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217553598.3860.16.camel@luna.unix.geek.nz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-01 at 03:03 +0000, Parag Warudkar wrote:
-> Andrew Morton <akpm <at> linux-foundation.org> writes:
-> 
-> > 
-> > On Thu, 31 Jul 2008 12:43:19 +0200
-> > Lukas Hejtmanek <xhejtman <at> ics.muni.cz> wrote:
-> > 
-> > > Hello,
-> > > 
-> > > I think there is a regression since 2.6.26 in time accounting of processes.
-> > 
-> > Could be - we changed quite a bit.
-> > 
-> > > kthreadd and console-kit-daemons claim they spent 5124095 hours using CPU.
-> > 
-> > My 2.6.27-rc1-mm1 kthreadd looks OK in `top'.  How are you displaying
-> > this information?  More details if possible, please..
-> > 
-> 
-> Top's doing crazy things on my machine too after booting 2.6.27-rc1 - like Xorg
-> showing 859% CPU usage on 4 CPU machine and generally any process running even
-> shortly shows up as using anywhere between 100 and 150% CPU.
-> 
-> This is on x86 - Q6600 6Gb RAM. Let me know if anything else would be
-> interesting to know.
+[cc'd xfs@oss.sgi.com]
 
-Can you test with tip/sched/clock ?
+On Fri, Aug 01, 2008 at 01:19:58PM +1200, Jasper Bryant-Greene wrote:
+> I mount a bunch of XFS filesystems with "noikeep,attr2,noatime", and a
+> couple also with "ro".
+> 
+> Sometimes I want to remount one of the "ro" ones "rw", to make changes.
+> This doesn't work anymore in 2.6.27-rc1-next-20080730. The last kernel I
+> tried which it worked in was 2.6.26 release.
+> 
+> luna ~ # mount -o remount,rw /usr
+> mount: /usr not mounted already, or bad option
+> 
+> luna ~ # dmesg | tail -n 1
+> [18702.291344] XFS: mount option "noikeep" not supported for remount
+> 
+> Is this intended behaviour?
 
+Side effect of this commit:
+
+http://oss.sgi.com/cgi-bin/gitweb.cgi?p=xfs/xfs-2.6.git;a=commit;h=0327f9d799ebb96f67c80dd732b1fdb09527365e
+
+Christoph?
+
+FWIW, noikeep is the default, so you don't need to specify it.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
