@@ -1,211 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762080AbYHAVP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762165AbYHAVQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762080AbYHAVP4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760894AbYHAVKY
+	id S1762165AbYHAVQT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760696AbYHAVKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:10:24 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:43282 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760931AbYHAVKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:10:22 -0400
-Date: Fri, 1 Aug 2008 14:10:20 -0700
+	Fri, 1 Aug 2008 17:10:35 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:47621 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760678AbYHAVKd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 17:10:33 -0400
+Date: Fri, 1 Aug 2008 14:10:29 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [patch 01/15] Kernel Tracepoints
-Message-ID: <20080801211020.GQ14851@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Tejun Heo <tj@kernel.org>, dipankar@in.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] RCU: implement rcu_read_[un]lock_preempt()
+Message-ID: <20080801211029.GS14851@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <1216108237.12595.122.camel@twins> <20080715132543.GB20037@Krystal> <1216130356.12595.184.camel@twins> <20080715142710.GC20037@Krystal> <1216132928.12595.201.camel@twins> <20080715152224.GE20037@Krystal> <1216135902.12595.214.camel@twins> <20080715160813.GB27626@Krystal> <1216139149.12595.224.camel@twins> <20080715165122.GB30082@Krystal>
+References: <487AEAC6.60307@kernel.org> <1216188469.5232.0.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080715165122.GB30082@Krystal>
+In-Reply-To: <1216188469.5232.0.camel@twins>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 12:51:23PM -0400, Mathieu Desnoyers wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
-> > On Tue, 2008-07-15 at 12:08 -0400, Mathieu Desnoyers wrote:
-> > > * Peter Zijlstra (peterz@infradead.org) wrote:
-> > > > On Tue, 2008-07-15 at 11:22 -0400, Mathieu Desnoyers wrote:
-> > > > > * Peter Zijlstra (peterz@infradead.org) wrote:
-> > > > > > 
-> > > > > > I'm confused by the barrier games here.
-> > > > > > 
-> > > > > > Why not:
-> > > > > > 
-> > > > > >   void **it_func;
-> > > > > > 
-> > > > > >   preempt_disable();
-> > > > > >   it_func = rcu_dereference((tp)->funcs);
-> > > > > >   if (it_func) {
-> > > > > >     for (; *it_func; it_func++)
-> > > > > >       ((void(*)(proto))(*it_func))(args);
-> > > > > >   }
-> > > > > >   preempt_enable();
-> > > > > > 
-> > > > > > That is, why can we skip the barrier when !it_func? is that because at
-> > > > > > that time we don't actually dereference it_func and therefore cannot
-> > > > > > observe stale data?
-> > > > > > 
-> > > > > 
-> > > > > Exactly. I used the implementation of rcu_assign_pointer as a hint that
-> > > > > we did not need barriers when setting the pointer to NULL, and thus we
-> > > > > should not need the read barrier when reading the NULL pointer, because
-> > > > > it references no data.
-> > > > > 
-> > > > > #define rcu_assign_pointer(p, v) \
-> > > > >         ({ \
-> > > > >                 if (!__builtin_constant_p(v) || \
-> > > > >                     ((v) != NULL)) \
-> > > > >                         smp_wmb(); \
-> > > > >                 (p) = (v); \
-> > > > >         })
-> > > > 
-> > > > Yeah, I saw that,.. made me wonder. It basically assumes that when we
-> > > > write:
-> > > > 
-> > > >   rcu_assign_pointer(foo, NULL);
-> > > > 
-> > > > foo will not be used as an index or offset.
-> > > > 
-> > > > I guess Paul has thought it through and verified all in-kernel use
-> > > > cases, but it still makes me feel unconfortable.
-> > > > 
-> > > > > #define rcu_dereference(p)     ({ \
-> > > > >                                 typeof(p) _________p1 = ACCESS_ONCE(p); \
-> > > > >                                 smp_read_barrier_depends(); \
-> > > > >                                 (_________p1); \
-> > > > >                                 })
-> > > > > 
-> > > > > But I think you are right, since we are already in unlikely code, using
-> > > > > rcu_dereference as you do is better than my use of read barrier depends.
-> > > > > It should not change anything in the assembly result except on alpha,
-> > > > > where the read_barrier_depends() is not a nop.
-> > > > > 
-> > > > > I wonder if there would be a way to add this kind of NULL pointer case
-> > > > > check without overhead in rcu_dereference() on alpha. I guess not, since
-> > > > > the pointer is almost never known at compile-time. And I guess Paul must
-> > > > > already have thought about it. The only case where we could add this
-> > > > > test is when we know that we have a if (ptr != NULL) test following the
-> > > > > rcu_dereference(); we could then assume the compiler will merge the two
-> > > > > branches since they depend on the same condition.
-> > > > 
-> > > > I remember seeing a thread about all this special casing NULL, but have
-> > > > never been able to find it again - my google skillz always fail me.
-> > > > 
-> > > > Basically it doesn't work if you use the variable as an index/offset,
-> > > > because in that case 0 is a valid offset and you still generate a data
-> > > > dependency.
-> > > > 
-> > > > IIRC the conclusion was that the gains were too small to spend more time
-> > > > on it, although I would like to hear about the special case in
-> > > > rcu_assign_pointer.
-> > > > 
-> > > > /me goes use git blame....
-> > > > 
-> > > 
-> > > Actually, we could probably do the following, which also adds an extra
-> > > coherency check about non-NULL pointer assumptions :
-> > > 
-> > > #ifdef CONFIG_RCU_DEBUG /* this would be new */
-> > > #define DEBUG_RCU_BUG_ON(x) BUG_ON(x)
-> > > #else
-> > > #define DEBUG_RCU_BUG_ON(x)
-> > > #endif
-> > > 
-> > > #define rcu_dereference(p)     ({ \
-> > >                                 typeof(p) _________p1 = ACCESS_ONCE(p); \
-> > >                                 if (p != NULL) \
-> > >                                   smp_read_barrier_depends(); \
-> > >                                 (_________p1); \
-> > >                                 })
-> > > 
-> > > #define rcu_dereference_non_null(p)     ({ \
-> > >                                 typeof(p) _________p1 = ACCESS_ONCE(p); \
-> > >                                 DEBUG_RCU_BUG_ON(p == NULL); \
-> > >                                 smp_read_barrier_depends(); \
-> > >                                 (_________p1); \
-> > >                                 })
-> > > 
-> > > The use-case where rcu_dereference() would be used is when it is
-> > > followed by a null pointer check (grepping through the sources shows me
-> > > this is a very very common case). In rare cases, it is assumed that the
-> > > pointer is never NULL and it is used just after the rcu_dereference. It
-> > > those cases, the extra test could be saved on alpha by using
-> > > rcu_dereference_non_null(p), which would check the the pointer is indeed
-> > > never NULL under some debug kernel configuration.
-> > > 
-> > > Does it make sense ?
+On Wed, Jul 16, 2008 at 08:07:49AM +0200, Peter Zijlstra wrote:
+> On Mon, 2008-07-14 at 14:57 +0900, Tejun Heo wrote:
+> > With the introduction of preemptible RCU, RCU doesn't gurantee that
+> > its critical section runs on the CPU it started to run.  As there are
+> > cases where non-preemptible RCU critical section makes sense, create
+> > new RCU read lock variants which turns of preemption -
+> > rcu_read_[un]lock_preempt() which are identical to rcu_read_[un]lock()
+> > for classic implementation and have enclosing preempt disable/enable
+> > for preemptible RCU.
 > > 
-> > This would break the case where the dereferenced variable is used as an
-> > index/offset where 0 is a valid value and still generates data
-> > dependencies.
-> > 
-> > So if with your new version we do:
-> > 
-> >   i = rcu_dereference(foo);
-> >   j = table[i];
-> > 
-> > which translates into:
-> > 
-> >   i = ACCESS_ONCE(foo);
-> >   if (i)
-> >     smp_read_barrier_depends();
-> >   j = table[i];
-> > 
-> > which when i == 0, would fail to do the barrier and can thus cause j to
-> > be a wrong value.
-> > 
-> > Sadly I'll have to defer to Paul to explain exactly how that can happen
-> > - I always get my head in a horrible twist with this case.
-> > 
+> > Signed-off-by: Tejun Heo <tj@kernel.org>
 > 
-> I completely agree with you. However, given the current
-> rcu_assign_pointer() implementation, we already have this problem. My
-> proposal assumes the current rcu_assign_pointer() behavior is correct
-> and that those are never ever used for index/offsets.
+> Sorry, NAK.
 > 
-> We could enforce this as a compile-time check with something along the
-> lines of :
-> 
-> #define BUILD_BUG_ON_NOT_OFFSETABLE(x) (void)(x)[0]
-> 
-> And use it both in rcu_assign_pointer() and rcu_dereference().  It would
-> check for any type passed to rcu_assign_pointer and rcu_dereference
-> which is not either a pointer or an array.
-> 
-> Then if someone really want to shoot himself in the foot by casting a
-> pointer to a long after the rcu_deref, that's his problem.
-> 
-> Hrm, looking at rcu_assign_pointer tells me that the ((v) != NULL) test
-> should probably already complain if v is not a pointer. So my build test
-> is probably unneeded.
+> If you need preempt off you need it for other reasons than RCU, so
+> mixing it in the interface doesn't make sense to me.
 
-Yeah, I was thinking in terms of rcu_dereference() working with both
-rcu_assign_pointer() and an as-yet-mythical rcu_assign_index().  Perhaps
-this would be a good time to get better names:
+What Peter said.
 
-Current:	rcu_assign_pointer()	rcu_dereference()
-New Pointers:	rcu_publish_pointer()	rcu_subscribe_pointer()
-New Indexes:	rcu_publish_index()	rcu_subscribe_index()
+For example, you could simply use preempt_disable() and preempt_enable()
+to guard the read side (or wrapper these as Mathieu suggests in
+http://lkml.org/lkml/2008/7/15/605, though Mathieu has not yet
+convinced me that these wrappers are a good idea), and then use either
+call_rcu_sched() or synchronize_sched() for the update side.
 
-And, while I am at it, work in a way of checking for either being in
-the appropriate RCU read-side critical section and/or having the
-needed lock/mutex/whatever held -- something I believe PeterZ was
-prototyping some months back.
+To summarize:
 
-Though I still am having a hard time with the conditional in
-rcu_dereference() vs. the smp_read_barrier_depends()...
+o	Replace your rcu_read_lock_preempt() with preempt_disable().
 
-						Thanx, Paul
+o	Replace your rcu_read_unlock_preempt() with preempt_enable().
+
+o	Replace your use of call_rcu() with call_rcu_sched().
+
+o	Replace your use of synchronize_rcu() with synchronize_sched().
+
+And then you don't need these new primitives.
+
+However!!!  This must be done carefully, as long sections of code
+with preemption disabled are really bad for realtime response.
+
+So, what are you really trying to do, Tejun?
+
+							Thanx, Paul
+
+> > ---
+> > This will be used by following block layer updates.  If this and the
+> > block changes get acked, it'll be best to push this through block
+> > tree.
+> > 
+> > Thanks.
+> > 
+> >  include/linux/rcuclassic.h |    2 ++
+> >  include/linux/rcupdate.h   |   18 ++++++++++++++++++
+> >  include/linux/rcupreempt.h |    6 ++++--
+> >  3 files changed, 24 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
+> > index b3aa05b..08c6153 100644
+> > --- a/include/linux/rcuclassic.h
+> > +++ b/include/linux/rcuclassic.h
+> > @@ -136,6 +136,8 @@ extern struct lockdep_map rcu_lock_map;
+> >  		__release(RCU); \
+> >  		preempt_enable(); \
+> >  	} while (0)
+> > +#define __rcu_read_lock_preempt()	__rcu_read_lock()
+> > +#define __rcu_read_unlock_preempt()	__rcu_read_unlock()
+> >  #define __rcu_read_lock_bh() \
+> >  	do { \
+> >  		local_bh_disable(); \
+> > diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+> > index d42dbec..e0e3486 100644
+> > --- a/include/linux/rcupdate.h
+> > +++ b/include/linux/rcupdate.h
+> > @@ -112,6 +112,24 @@ struct rcu_head {
+> >  #define rcu_read_unlock() __rcu_read_unlock()
+> >  
+> >  /**
+> > + * rcu_read_lock_preempt - mark the beginning of non-preemptible RCU
+> > + *			   critical section
+> > + *
+> > + * Identical to rcu_read_lock() but the critical section is guaranteed
+> > + * to be non-preemptible.  Note that this is identical to
+> > + * rcu_read_lock() on classic RCU implementation.
+> > + */
+> > +#define rcu_read_lock_preempt() __rcu_read_lock_preempt()
+> > +
+> > +/**
+> > + * rcu_read_unlock_preempt - mark the end of of non-preemptible RCU
+> > + *			     critical section
+> > + *
+> > + * See rcu_read_lock_preempt() for more information.
+> > + */
+> > +#define rcu_read_unlock_preempt() __rcu_read_unlock_preempt()
+> > +
+> > +/**
+> >   * rcu_read_lock_bh - mark the beginning of a softirq-only RCU critical section
+> >   *
+> >   * This is equivalent of rcu_read_lock(), but to be used when updates
+> > diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
+> > index 8a05c7e..b263ceb 100644
+> > --- a/include/linux/rcupreempt.h
+> > +++ b/include/linux/rcupreempt.h
+> > @@ -49,8 +49,10 @@ extern void __rcu_read_unlock(void)	__releases(RCU);
+> >  extern int rcu_pending(int cpu);
+> >  extern int rcu_needs_cpu(int cpu);
+> >  
+> > -#define __rcu_read_lock_bh()	{ rcu_read_lock(); local_bh_disable(); }
+> > -#define __rcu_read_unlock_bh()	{ local_bh_enable(); rcu_read_unlock(); }
+> > +#define __rcu_read_lock_preempt()	{ rcu_read_lock(); preempt_disable(); }
+> > +#define __rcu_read_unlock_preempt()	{ preempt_enable(); rcu_read_unlock(); }
+> > +#define __rcu_read_lock_bh()		{ rcu_read_lock(); local_bh_disable(); }
+> > +#define __rcu_read_unlock_bh()		{ local_bh_enable(); rcu_read_unlock(); }
+> >  
+> >  extern void __synchronize_sched(void);
+> >  
+> 
