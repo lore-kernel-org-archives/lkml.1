@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757004AbYHAQts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbYHAQuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757004AbYHAQts (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 12:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbYHAQth
+	id S1757376AbYHAQuU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 12:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbYHAQuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 12:49:37 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:55150 "EHLO mail0.lsil.com"
+	Fri, 1 Aug 2008 12:50:01 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:19281 "EHLO smtpout3.tre.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751724AbYHAQtg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 12:49:36 -0400
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       James Bottomley <James.Bottomley@SteelEye.com>
-CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Patro, Sumant" <Sumant.Patro@lsi.com>,
-       "poswald@novell.com" <poswald@novell.com>,
-       "Austria, Winston" <Winston.Austria@lsi.com>
-Date: Fri, 1 Aug 2008 10:48:48 -0600
-Subject: [PATCH 2/4] scsi: megaraid_sas - Add the shutdown DCMD cmd to
- driver shutdown routine
-Thread-Topic: [PATCH 2/4] scsi: megaraid_sas - Add the shutdown DCMD cmd to
- driver shutdown routine
-Thread-Index: AciItAVU2/gnyqciSguN4aHHEiVCxRrPlpmw
-Message-ID: <4B6A08C587958942AA3002690DD4F8C31B080962@cosmail02.lsi.com>
-In-Reply-To: <1205741587.7479.17.camel@pcp021067pcs.se.lsil.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1755164AbYHAQuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 12:50:00 -0400
+Date: Fri, 1 Aug 2008 18:49:41 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
+Message-ID: <20080801164941.GC2299@uranus.ravnborg.org>
+References: <20080728200500.GA14284@uranus.ravnborg.org> <1217579712.10483.7.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217579712.10483.7.camel@localhost>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the shutdown DCMD cmd to driver shutdown routine to make megaraid sas FW shutdown proper.
+On Fri, Aug 01, 2008 at 10:35:12AM +0200, Martin Schwidefsky wrote:
+> On Mon, 2008-07-28 at 22:05 +0200, Sam Ravnborg wrote:
+> > So I have hacked up support for this in kbuild so
+> > for the simpler cases a simple move of header files as
+> > in:
+> > 	git mv include/asm-$ARCH arch/$ARCH/include/asm
+> > 
+> > is enough.
+> 
+> Just tested it on s390. We need a tiny fix for the qeth driver then it
+> works just fine (qeth has two includes for include/asm-s390 instead of
+> include/asm). I'll queue the qeth fix on git390. The only question is
+> who will do the move? 
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+You will do so and ask Linus to pull it. This most go via the
+arch maintainer.
+And I'm glad that no other changes were needed.
 
----
- drivers/scsi/megaraid/megaraid_sas.c |    1 +
- 1 files changed, 1 insertion(+)
-
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2008-07-31 12:51:06.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2008-07-31 12:54:09.000000000 -0400
-@@ -2863,6 +2863,7 @@ static void megasas_shutdown(struct pci_
- {
-        struct megasas_instance *instance = pci_get_drvdata(pdev);
-        megasas_flush_cache(instance);
-+       megasas_shutdown_controller(instance, MR_DCMD_CTRL_SHUTDOWN);
- }
-
- /**
+	Sam
