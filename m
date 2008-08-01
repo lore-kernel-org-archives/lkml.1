@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757326AbYHALZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbYHALZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757326AbYHALZg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 07:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYHALZ2
+	id S1758264AbYHALZv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 07:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757349AbYHALZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 07:25:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:55575 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752388AbYHALZ1 (ORCPT
+	Fri, 1 Aug 2008 07:25:42 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:43277 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757709AbYHALZl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 07:25:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=X2yxXMYk91x0DNYSkiLP/irCvPztNGu2VJRFosb5UBGxYLFGX+PyG+N1PZ2FqBHwYv
-         sNjfh0dikKBYl8dYO0kZlOIMVv6zU7WFefV+v/PX5kbvIH9bRvP3AcjDmfpXUJYxtPs5
-         i5Cv7B9F5gdb3HPvy6opIkrbCQ/hVLme94vrw=
-Message-ID: <b647ffbd0808010425r16db2957i3e7212903a698c19@mail.gmail.com>
-Date: Fri, 1 Aug 2008 13:25:26 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Peter Oruba" <peter.oruba@amd.com>,
-       "Tigran Aivazian" <tigran@aivazian.fsnet.co.uk>
-Subject: Re: [patch 0/4] x86: AMD microcode patch loading v2 fixes
-Cc: "Max Krasnyansky" <maxk@qualcomm.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <48903431.9060707@amd.com>
+	Fri, 1 Aug 2008 07:25:41 -0400
+Message-ID: <4892F27F.3020300@s5r6.in-berlin.de>
+Date: Fri, 01 Aug 2008 13:24:47 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
+To: Jonathan Corbet <corbet@lwn.net>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Amanda McPherson <amanda@amcpherson.com>, Jiri Kosina <jkosina@suse.cz>,
+       Roland Dreier <rdreier@cisco.com>, Alex Chiang <achiang@hp.com>,
+       =?ISO-8859-1?Q?Jochen_Vo=DF?= <jochen.voss@googlemail.com>
+Subject: Re: [PATCH] A development process document, V2 (diff from V1)
+References: <20080731111443.2179bf4c@bike.lwn.net> <20080731111709.488b9fa7@bike.lwn.net>
+In-Reply-To: <20080731111709.488b9fa7@bike.lwn.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080729154103.007575982@amd.com>
-	 <b647ffbd0807290918kaa0a05es3cebf7a6f15fb790@mail.gmail.com>
-	 <488F581B.7060009@qualcomm.com> <48903431.9060707@amd.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tigran, Peter,
+Jonathan Corbet wrote:
+> --- a/Documentation/development-process/5.Posting
+> +++ b/Documentation/development-process/5.Posting
+...
+> @@ -229,12 +235,18 @@ copies should go to:
+...
+>   - Send a copy to the relevant mailing list, or, if nothing else applies,
+>     the linux-kernel list.
+>  
+> + - If you are fixing a bug, think about whether the fix should go into the
+> +   next stable update.  If so, stable@kernel.org should get a copy of the
+> +   patch.  Also add a "Cc: stable@kernel.org" to the tags within the patch
+
+...patch after it or an equivalent was committed to Linus's tree.  Quote
+the commit ID in your stable submission.  Alternatively, add a "Cc:
+stable@...
+
+> +   itself; that will cause the stable team to get a notification when your
+> +   fix goes into the mainline.
+
+Or IMO preferable:
+
+ - If you are fixing a bug, think about whether the fix should go into
+the next stable update.  If so, read ../stable_kernel_rules.txt.
 
 
-may a firmware package contain a few 'microcode' updates for a specific cpu?
-
-And if so, does each of them provide independent 'errata' fixes? [*]
-
-(or they are just different versions of the same self-consistent/full
-'microcode' update and we may need to apply each of them just e.g.
-because we can't jump from stepping X.1 to X.3 without applying X.2 in
-between?
-
-if it's [1], then I wonder why only a single 'microcode' update (which
-has been previously cached in 'uci->mc') is being applied for the case
-of system-wide resume (apply_microcode_check_cpu()). Don't we need to
-go through the full cpu_request_microcode() cycle to consider all
-updates?
-
-
-TIA,
-
+(I missed the part of the thread where the addition of the -stable
+bullet point was suggested, hence I may be saying something redundant
+here...)
 -- 
-Best regards,
-Dmitry Adamushko
+Stefan Richter
+-=====-==--- =--- ----=
+http://arcgraph.de/sr/
