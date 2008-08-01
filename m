@@ -1,86 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYHAILk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756446AbYHAINF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754837AbYHAILk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 04:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYHAILX
+	id S1756446AbYHAINF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 04:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYHAIMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 04:11:23 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49941
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751838AbYHAILW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 04:11:22 -0400
-Date: Fri, 01 Aug 2008 01:11:22 -0700 (PDT)
-Message-Id: <20080801.011122.32782916.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, a.p.zijlstra@chello.nl
-Subject: Re: [git pull] scheduler fixes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080731.155504.167792984.davem@davemloft.net>
-References: <20080731.150457.77077498.davem@davemloft.net>
-	<20080731222624.GA22426@elte.hu>
-	<20080731.155504.167792984.davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Aug 2008 04:12:48 -0400
+Received: from lucidpixels.com ([75.144.35.66]:45025 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751304AbYHAIMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 04:12:46 -0400
+Date: Fri, 1 Aug 2008 04:12:45 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Matt Garman <matthew.garman@gmail.com>
+cc: David Greaves <david@dgreaves.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: 12 Veliciraptors again w/x4 card (~1gbyte/sec aggregate read)!
+In-Reply-To: <20080801034150.GA32026@sewage.raw-sewage.fake>
+Message-ID: <alpine.DEB.1.10.0808010410340.13630@p34.internal.lan>
+References: <alpine.DEB.1.10.0807071424100.4694@p34.internal.lan> <4872A2F4.2010604@dgreaves.com> <alpine.DEB.1.10.0807080429440.17980@p34.internal.lan> <alpine.DEB.1.10.0807080438560.17980@p34.internal.lan> <20080801034150.GA32026@sewage.raw-sewage.fake>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Thu, 31 Jul 2008 15:55:04 -0700 (PDT)
 
-> I am absolutely sure, I spent the whole night yesterday trying to
-> debug this.
 
-Followup.  I lost two days of my life debugging this because seemingly
-nobody can friggin' agree on what to do about the "printk() wakeup
-issue".  Thanks!
+On Thu, 31 Jul 2008, Matt Garman wrote:
 
-Can we fix this now, please?
+> On Tue, Jul 08, 2008 at 04:39:34AM -0400, Justin Piszcz wrote:
+>> On Tue, 8 Jul 2008, Justin Piszcz wrote:
+>>> On Tue, 8 Jul 2008, David Greaves wrote:
+>>>> Justin Piszcz wrote:
+>>>>> Each PCI-e x1 card has 1 veliciraptor on it now.
+>>>>> Got an x4 card wit 4 sata ports:
+>>>> Useful - which card?
+>>>
+>>> StarTech 4 Port PCI Express x4 SATA II Card Model PEXSATA24E
+>>>
+>>>
+>> Chipset: Marvell 88SX7042
+>> SATA Connectivity: Use four internal ports at the same time or two internal
+>> and two external ports
+>>
+>> Which is fully supported in the latest kernels (didn't try an old kernel):
+>>
+>> linux-2.6.25.10/drivers/ata/sata_mv.c
+>>
+>>   /* Marvell 7042 support */
+>>   { PCI_VDEVICE(MARVELL, 0x7042), chip_7042 },
+>
+> How have that card and the array attached to it been doing since you
+> originally posted this?
+No problems to report yet, working well, I wish I had multiple x4 or x16 
+slots and use those instead of x1 cards (the mobo would need to support 
+the I/O as well)..
 
-The problem was that Peter's patch triggers a print_deadlock_bug()
-in lockdep.c on the runqueue locks.
+>
+> Doesn't that HighPoint 23xx card also use the Marvell 88SX7042 chip?
+I read remeber 'locked' 64kb read problem but not any corruption issue.
 
-But those printk()'s quickly want to do a wakeup, which wants to
-take the runqueue lock this thread already holds.  So I would only
-get the first line of the lockdep debugging followed by a complete
-hang.
+> I remember seeing the threads about the HighPoint card silently
+> corrupting data by silently writing over parts of the disk(s) with
+Also I MD5SUM -c (verify) 100-150GiB of data daily or so to make sure it 
+is OK, so far, no problems.
 
-Doing these wakeups in such a BUG message is unwise.  Please can
-we apply something like the following and save other developers
-countless wasted hours of their time?
+> its own info.  I'm guessing that's not a "feature" of the Marvell
+> chip, but still... admittedly irrational fear here :)
+Have not seen it yet.
 
-Thanks :-)
+>
+> It would be nice if that Supermicro 8-port SATA card (AOC-SAT2-MV8)
+> was available in PCIe... I wonder if it's possible to just graft
+> multiple SiI 3132 controllers (2 SATA each) on a single PCIe card?
+Yes, I asked Supermicro about it and they never mailed me back about a 
+PCIe version..
 
---------------------
+That's a good question, I suppose if it was easy it would have already 
+been done?
 
-debug_locks: Set oops_in_progress if we will log messages.
-
-Otherwise lock debugging messages on runqueue locks can deadlock the
-system due to the wakeups performed by printk().
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/lib/debug_locks.c b/lib/debug_locks.c
-index 0ef01d1..0218b46 100644
---- a/lib/debug_locks.c
-+++ b/lib/debug_locks.c
-@@ -8,6 +8,7 @@
-  *
-  *  Copyright (C) 2006 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
-  */
-+#include <linux/kernel.h>
- #include <linux/rwsem.h>
- #include <linux/mutex.h>
- #include <linux/module.h>
-@@ -37,6 +38,7 @@ int debug_locks_off(void)
- {
- 	if (xchg(&debug_locks, 0)) {
- 		if (!debug_locks_silent) {
-+			oops_in_progress = 1;
- 			console_verbose();
- 			return 1;
- 		}
+Justin.
