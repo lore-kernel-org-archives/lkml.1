@@ -1,59 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758724AbYHAVpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbYHAVp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758724AbYHAVpl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbYHAVpd
+	id S1759925AbYHAVp4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758879AbYHAVpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:45:33 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:24883 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754044AbYHAVpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:45:33 -0400
-Date: Sat, 2 Aug 2008 06:44:48 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] binfmt_elf_fdpic: Convert initial stack alignment to arch_align_stack().
-Message-ID: <20080801214448.GA13448@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	David Howells <dhowells@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080728150501.GC16555@linux-sh.org> <20080728150359.GA16555@linux-sh.org> <20080728150430.GB16555@linux-sh.org> <27552.1217599279@redhat.com>
+	Fri, 1 Aug 2008 17:45:44 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:42402 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758789AbYHAVpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 17:45:42 -0400
+Date: Sat, 2 Aug 2008 00:44:39 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: starvik@axis.com, jesper.nilsson@axis.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: dev-etrax@axis.com, linux-kernel@vger.kernel.org
+Subject: drivers/serial/crisv10.c build error
+Message-ID: <20080801214439.GG19682@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <27552.1217599279@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 03:01:19PM +0100, David Howells wrote:
-> Paul Mundt <lethal@linux-sh.org> wrote:
-> 
-> > +	 * In some cases (e.g. Hyper-Threading), we want to avoid L1
-> > +	 * evictions by the processes running on the same package. One
-> > +	 * thing we can do is to shuffle the initial stack for them, so
-> > +	 * we give the architecture an opportunity to do so here.
-> > +	 */
-> >  #ifdef CONFIG_MMU
-> > -	sp = bprm->p;
-> > +	sp = arch_align_stack(bprm->p);
-> >  #else
-> > -	sp = mm->start_stack;
-> > +	sp = arch_align_stack(mm->start_stack);
-> 
-> Ummm...  You're calling arch_align_stack() under NOMMU...  Is that really a
-> good idea?
-> 
-Not particularly, no.
+Broken to be broken by Alan's changes:
 
-> You can't necessarily move the stack pointer without exiting the allocated
-> region or shrinking the amount of stack space the executable asked for.  If
-> you want to do this sort of thing, you need to tell the memory allocator what
-> you're up to - or at the very least allocate some slack.
-> 
-Yes, that's a good point, and one that probably ought to be documented
-alongside the initial alignment. I'll send an updated patch.
+<--  snip  -->
+
+...
+  CC      drivers/serial/crisv10.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'update_char_time':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:971: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'rs_stop':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:1486: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'add_char_and_flag':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:1776: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'receive_chars_dma':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:1876: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'flush_to_flip_buffer':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2126: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'handle_ser_rx_interrupt_no_dma':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2291: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2354: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2400: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'handle_ser_tx_interrupt':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2551: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2552: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2565: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2566: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'do_softint':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2730: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'startup':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2830: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2831: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'shutdown':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2945: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2945: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2951: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2952: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'change_speed':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2969: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2969: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:2974: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:3102: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:3104: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'set_serial_info':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:3481: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'rs_close':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:3817: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'rs_hangup':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:3921: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'rs_open':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:4083: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:4085: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'line_info':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:4273: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:4275: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:4277: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:4278: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:4280: error: request for member 'tty' in something not a structure or union
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: At top level:
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:4388: warning: initialization from incompatible pointer type
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c: In function 'rs_init':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/crisv10.c:4471: error: request for member 'tty' in something not a structure or union
+make[3]: *** [drivers/serial/crisv10.o] Error 1
+make[2]: *** [drivers/serial] Error 2
+make[1]: *** [drivers] Error 2
+make: *** [sub-make] Error 2
+
+<--  snip  -->
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
