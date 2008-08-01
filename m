@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbYHAPRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752489AbYHAPRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753788AbYHAPRT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 11:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYHAPRI
+	id S1752489AbYHAPRt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 11:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYHAPRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 11:17:08 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:48691 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246AbYHAPRH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 11:17:07 -0400
-Message-ID: <48932975.80508@keyaccess.nl>
-Date: Fri, 01 Aug 2008 17:19:17 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, Wolfram Sang <w.sang@pengutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Wim Van Sebroeck <wim@iguana.be>,
-       =?ISO-8859-15?Q?P=E1draig_Brady?= <P@draigBrady.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "drepper@redhat.com" <drepper@redhat.com>,
-       "mikpe@it.uu.se" <mikpe@it.uu.se>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 0/9] x86, xsave: xsave/xrstor support
-References: <20080730234102.GF11223@linux-os.sc.intel.com> <20080731212915.GH2729@elte.hu> <20080731215808.GB8563@linux-os.sc.intel.com> <20080731221435.GS23938@one.firstfloor.org> <20080731221924.GD8563@linux-os.sc.intel.com> <alpine.LFD.1.10.0807311531271.3277@nehalem.linux-foundation.org> <20080731225004.GD22426@elte.hu> <48926FC3.3000706@keyaccess.nl> <20080801095105.GA18055@elte.hu> <48931D69.2010309@keyaccess.nl> <20080801144917.GY23938@one.firstfloor.org>
-In-Reply-To: <20080801144917.GY23938@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+	Fri, 1 Aug 2008 11:17:40 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:59975 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751247AbYHAPRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 11:17:39 -0400
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: spi-devel-general@lists.sourceforge.net, kernel@avr32linux.org,
+       linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: [PATCH 1/4] avr32: Reduce DataFlash bus speed to 8 MHz on ATNGW100
+Date: Fri,  1 Aug 2008 17:17:13 +0200
+Message-Id: <1217603836-21243-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-Mailer: git-send-email 1.5.6.3
+X-OriginalArrivalTime: 01 Aug 2008 15:17:17.0502 (UTC) FILETIME=[AF5BD5E0:01C8F3E9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01-08-08 16:49, Andi Kleen wrote:
+Doing this in combination with "atmel_spi: fix hang due to missed
+interrupt" appears to eliminate the overruns I'm seeing when using
+JFFS2-on-DataFlash as /usr filesystem on the ATNGW100.
 
->> For real ISA at the least, the best fix I feel is just not go grabbing 
->> resources without anything (ie, ISAPnP) or anyone (ie, the user) telling 
-> 
-> Really old systems don't have isapnp. Neither have smbus devices.
-> 
->> us that's where the hardware's at.
-> 
-> That would mean the users on these systems would need to add tons
-> of obscure command line options.
+Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+---
+The "atmel" releases have been running the DataFlash at 8 MHz for a
+while, so this brings mainline in sync with them.
 
-No, it means users on those 1% of systems that are using drivers that 
-break the other 99% would have to for those one or two drivers that do.
+I think the only way to increase the bus speed beyond this is to use
+faster RAM. I'll look into using SRAM bounce buffers next.
 
-And as said, we don't care.
+I'll apply this patch to my avr32 tree. David, I'll let you decide
+whether the other three patches are important/safe enough for 2.6.27.
+I've verified that they don't break DataFlash on ATNGW100, but they
+could use some testing on other setups, in particular AT91RM9200 and
+other AT91 chips.
 
-Rene.
+ arch/avr32/boards/atngw100/setup.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/avr32/boards/atngw100/setup.c b/arch/avr32/boards/atngw100/setup.c
+index c7fe94d..12b21ac 100644
+--- a/arch/avr32/boards/atngw100/setup.c
++++ b/arch/avr32/boards/atngw100/setup.c
+@@ -47,7 +47,7 @@ static struct eth_platform_data __initdata eth_data[2];
+ static struct spi_board_info spi0_board_info[] __initdata = {
+ 	{
+ 		.modalias	= "mtd_dataflash",
+-		.max_speed_hz	= 10000000,
++		.max_speed_hz	= 8000000,
+ 		.chip_select	= 0,
+ 	},
+ };
+-- 
+1.5.6.3
+
