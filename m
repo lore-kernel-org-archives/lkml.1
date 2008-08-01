@@ -1,88 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbYHAPnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbYHAPon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754955AbYHAPnb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 11:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYHAPnK
+	id S1754471AbYHAPon (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 11:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbYHAPof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 11:43:10 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:24259 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752816AbYHAPnJ (ORCPT
+	Fri, 1 Aug 2008 11:44:35 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41157 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbYHAPoe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 11:43:09 -0400
-In-Reply-To: <20080731231206.80940fba.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Sam Ravnborg <sam@ravnborg.org>, Tony Breeds <tony@bakeyournoodle.com>
-MIME-Version: 1.0
-Subject: Re: [BUILD-FAILURE] 2.6.27-rc1-mm1 - allyesconfig build fails on powerpc
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF6FEAA9CB.C1447125-ONC1257498.004ECFF8-C1257498.00561AEF@de.ibm.com>
-From: Peter 1 Oberparleiter <Peter.Oberparleiter@de.ibm.com>
-Date: Fri, 1 Aug 2008 17:40:29 +0200
-X-MIMETrack: Serialize by Router on D12ML066/12/M/IBM(Release 7.0.2FP2HF322 | September
- 26, 2007) at 01/08/2008 17:42:09,
-	Serialize complete at 01/08/2008 17:42:09
-Content-Type: text/plain; charset="US-ASCII"
+	Fri, 1 Aug 2008 11:44:34 -0400
+Date: Fri, 1 Aug 2008 17:44:45 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Wolfram Sang <w.sang@pengutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Wim Van Sebroeck <wim@iguana.be>,
+       =?iso-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "drepper@redhat.com" <drepper@redhat.com>,
+       "mikpe@it.uu.se" <mikpe@it.uu.se>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 0/9] x86, xsave: xsave/xrstor support
+Message-ID: <20080801154445.GZ23938@one.firstfloor.org>
+References: <20080731215808.GB8563@linux-os.sc.intel.com> <20080731221435.GS23938@one.firstfloor.org> <20080731221924.GD8563@linux-os.sc.intel.com> <alpine.LFD.1.10.0807311531271.3277@nehalem.linux-foundation.org> <20080731225004.GD22426@elte.hu> <48926FC3.3000706@keyaccess.nl> <20080801095105.GA18055@elte.hu> <48931D69.2010309@keyaccess.nl> <20080801144917.GY23938@one.firstfloor.org> <48932975.80508@keyaccess.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48932975.80508@keyaccess.nl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote on 01.08.2008 08:12:06:
-> On Fri, 1 Aug 2008 15:29:36 +1000 Tony Breeds <tony@bakeyournoodle.com> 
-wrote:
-> > On Thu, Jul 31, 2008 at 06:13:28PM +0530, Kamalesh Babulal wrote:
-> > > Hi Andrew,
-> > > 
-> > > make allyesconfig with 2.6.27-rc1-mm1 kernel on powerpc fails 
-> > > with build error
-> > 
-> > <snip>
-> > 
-> > Turning off GCOV "fixes" this.  Not really the best solution but at
-> > least it narrows doen the search effort.
+On Fri, Aug 01, 2008 at 05:19:17PM +0200, Rene Herman wrote:
+> On 01-08-08 16:49, Andi Kleen wrote:
 > 
-> Thanks.
+> >>For real ISA at the least, the best fix I feel is just not go grabbing 
+> >>resources without anything (ie, ISAPnP) or anyone (ie, the user) telling 
+> >
+> >Really old systems don't have isapnp. Neither have smbus devices.
+> >
+> >>us that's where the hardware's at.
+> >
+> >That would mean the users on these systems would need to add tons
+> >of obscure command line options.
 > 
-> > Peter,
-> >    Can you have a look at how this can be fixed, if at all?
-> > 
+> No, it means users on those 1% of systems that are using drivers that 
+> break the other 99% would have to for those one or two drivers that do.
 > 
-> Am not terribly happy with the state of the gcov patches.  They STILL
-> leave thousands of dead symlinks lying around after `make mrproper'
+> And as said, we don't care.
 
+Not sure who "we" is in this context.
 
-This is caused by patch
+Especially dropping easy support for all smbus devices (which are often like
+ this) would seem quite wrong to me. And for real ISA devices there tends to 
+be a surprisingly large user base left for those.
 
-    gcov-create-links-to-gcda-files-in-build-directory.patch
+The config option Ingo proposed is a good idea though.
 
-which can be simply removed as it is no longer needed since patch
+Or they can just use 64bit which never defines CONFIG_ISA, but of course
+still has to support all the similar smbus drivers.
+-Andi
 
-    gcov-add-gcov-profiling-infrastructure-revert-link-changes.patch
-
-has been added to -mm.
-
-> and
-> generally seem to muck up the kbuild system a bit, although nothing
-> that a bit of Sam love wouldn't fix.
-
-Hm, by now the only change to kbuild is the addition of gcc options
--fprofile-arcs/-ftest-coverage depending on the respective config
-symbols. If there is anything else that should be changed, please
-let me know.
-
-> Plus it breaks the build on a few architectures (branch out of range,
-> mainly), but that's a fairly minor thing which could even be worked
-> around in Kconfig (disable the offending code if gcov is enabled)
-
-Some of the problems caused/uncovered by enabling gcov profiling for
-a kernel build on some architectures simply cannot be fixed by a change
-to the kernel patch itself. I'm wondering if it would be possible
-to disable this configuration option when specifying allyesconfig. That
-way at least generic testing wouldn't be affected.
-
-
-Regards,
-  Peter
