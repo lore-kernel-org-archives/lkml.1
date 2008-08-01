@@ -1,107 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYHARao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbYHARcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbYHARao (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 13:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbYHARag
+	id S1756019AbYHARcs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 13:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbYHARcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 13:30:36 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:11915 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbYHARaf (ORCPT
+	Fri, 1 Aug 2008 13:32:41 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:40835 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751701AbYHARck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 13:30:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=H5MNN2AUpRjfq7MFgr57GRXFqotKYVZFT33QbWxPfITkfOGkBrv+eYerv4/BXQg2Mx
-         ixocb3VWMhLkKocnhB//t5TuYJ3a+B4kZfqfJmANBJx4NvZqfoTdpRG9npFeBWyNPfaf
-         Tw38D/0byfcxwAqkVWlcA8KMKSjqMr1+e12tA=
-Message-ID: <3ae3aa420808011030weadc61fvf6f850f0a4cfcb3e@mail.gmail.com>
-Date: Fri, 1 Aug 2008 12:30:34 -0500
-From: "Linas Vepstas" <linasvepstas@gmail.com>
-Reply-To: linasvepstas@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: amd64 sata_nv (massive) memory corruption
+	Fri, 1 Aug 2008 13:32:40 -0400
+Date: Fri, 1 Aug 2008 18:31:37 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Ryan Hope <rmh3093@gmail.com>
+cc: Benny Halevy <bhalevy@panasas.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][RESEND] mm: fix uninitialized variables for find_vma_prepare
+ callers
+In-Reply-To: <48f7fe350808010813u4e71c3e7h4d25127533a12726@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0808011749040.15379@blonde.site>
+References: <48f7fe350808010813u4e71c3e7h4d25127533a12726@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-717760152-1217611897=:15379"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I'm seeing strong, easily reproducible (and silent) corruption on a
-sata-attached
-disk drive on an amd64 board.  It might be the disk itself, but I
-doubt it; googling
-suggests that its somehow iommu-related but I cannot confirm this.
+--8323584-717760152-1217611897=:15379
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-quickie summary:
--- disk is a brand new WDC WD5000AAKS-00YGA0 500GB disk (well, it
-    was brand new a few months ago -- unusued, at any rate)
--- passes smartmon with flying colors, including many repeated short and long
-   self-tests. Been passing for months.  No hint of bad sectors or other errors
-   in smartctl -a display
--- no ide, sata errors in syslog -- no block device errors, no fs errors, etc.
--- No oopses anywhere to be found
--- system works flawlessly with an old PATA disk. (although I'm running it
-   with dma turned off with hdparm, out of paranoia)
--- system is amd64 dual core, ASUS M2N-E mobo, 4GB RAM
-   Northbridge is nVidia Corporation MCP55 Memory Controller (rev a3)
--- I tried moving the sata cable around to other ports, no effect; also tried
-   reseating it on hard drive, no effect.
+On Fri, 1 Aug 2008, Ryan Hope wrote:
+> This was submitted for 2.6.26-rc8-mm1 but it must have gotten overlooked:
 
-corruption is *easily* observed copying files with cp or dd. Also, typically
-filesystem metadata is corrupted too. Creating even a small ext2 filesystem,
-say 1GB, then copying 300MB of files onto it, unmounting it, and running fsk
-will return many dozens of errors. Rerunning e2fsck over and over (as
-e2fsck -f -y /dev/sda6) will report new errors about 1 out of every 3 times
-(on small fs'es -- on big one's it will find new errors every time)
+True, thanks, I guess that's my fault: it got stalled by me, because I
+found it unsatisfying to fix the uninitialization from a compiler point
+of view, whilst leaving it in an undefined state from a usability point
+of view.  But since nothing does use those fields in this case, and my
+amateurish treephobic experiments didn't find a quick solution to that,
+I guess this is an improvement which should go in.
 
-This behaviour has been observed with two different kernels:
-with 2.6.23.9, compiled for 32-bit, and also 2.6.26 complied
-for 64-bit.
+But please, let's credit Benny who posted it, and give his explanation
+of what the patch is for, with some additional comment from me.  Which
+leaves you out - "Reminded-by: Ryan Hope <rmh3093@gmail.com>"?
 
-Googling this uncovers some Dec 2006 LKML emails suggesting an
-iommu problem, which I explored:
--- My default boot complains
-    Your BIOS doesn't leave a aperture memory hole
-    Please enable the IOMMU option in the BIOS setup
-    This costs you 64 MB of RAM
--- I cannot find any option in BIOS that even vaguely hints at IOMMU-like
-    function; at best, I can assign interrupts to PCI slots, but
-that's it.  There's
-    a bunch of IO options for olde-fashioned superio-like stuff: serial,parallel
-    ports, USB stuff, etc. but that's all.
--- booting with iommu=soft does get rid of the aperature memory hole
-   messsage, but does not solve the corruption problem.
--- booting with iommu=force seems to have no effect.
+From: Benny Halevy <bhalevy@panasas.com>
 
-I'm running the powernow-k8 cpu frequency regulator. On a hunch,
-I wondered if this might be the source of the problem; however,
-using the "performance" regulator to keep the clock speed nailed
-at maximum had no effect on the corruption bug.
+gcc 4.3.0 correctly emits the following warnings.
+When a vma covering addr is found, find_vma_prepare indeed returns without
+setting pprev, rb_link, and rb_parent.
 
-Also of note:
--- problem was observed earlier, when system had 3GB RAM in it.
--- The integrated nvidia ethernet seems to work great, no errors, etc.
--- A different PCI ethernet card works great too.
--- I'm running graphics on an anceint matrox card in a PCI slot, and
-    there's no hint of trouble there.
--- I'm using this system as my day-to-day desktop, and there seem to
-   be no other problems. This suggests that if its some pci iommu
-   wackiness, it certainly not affecting anything that isn't sata.
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c: In function =E2=
+=80=98insert_vm_struct=E2=80=99:
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c:2085: warning: =
+=E2=80=98rb_parent=E2=80=99 may be used uninitialized in this function
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c:2085: warning: =
+=E2=80=98rb_link=E2=80=99 may be used uninitialized in this function
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c:2084: warning: =
+=E2=80=98prev=E2=80=99 may be used uninitialized in this function
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c: In function =E2=
+=80=98copy_vma=E2=80=99:
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c:2124: warning: =
+=E2=80=98rb_parent=E2=80=99 may be used uninitialized in this function
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c:2124: warning: =
+=E2=80=98rb_link=E2=80=99 may be used uninitialized in this function
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c:2123: warning: =
+=E2=80=98prev=E2=80=99 may be used uninitialized in this function
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c: In function =E2=
+=80=98do_brk=E2=80=99:
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c:1951: warning: =
+=E2=80=98rb_parent=E2=80=99 may be used uninitialized in this function
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c:1951: warning: =
+=E2=80=98rb_link=E2=80=99 may be used uninitialized in this function
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c:1949: warning: =
+=E2=80=98prev=E2=80=99 may be used uninitialized in this function
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c: In function =E2=
+=80=98mmap_region=E2=80=99:
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c:1092: warning: =
+=E2=80=98rb_parent=E2=80=99 may be used uninitialized in this function
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c:1092: warning: =
+=E2=80=98rb_link=E2=80=99 may be used uninitialized in this function
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/mm/mmap.c:1089: warning: =
+=E2=80=98prev=E2=80=99 may be used uninitialized in this function
 
-I really doubt the problem is the hard-drive; but I'll have to buy another
-one to rule this out. Its possible that there's some problem with the
-sata_nv driver, but there have been historical reports of corruption
-on amd64 with other sata controllers. I can buy another sata controller
-if needed, to experiment.
+Hugh adds: in fact, none of find_vma_prepare's callers use those values
+when a vma is found to be already covering addr, it's either an error
+or an occasion to munmap and repeat.  Okay, let's quieten the compiler
+(but I would prefer it if pprev, rb_link and rb_parent were meaningful
+in that case, rather than whatever's in them from descending the tree).
 
-Other than that, any ideas for any further experiments? What can
-I do to narrow the problem?
+Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
--- Linas Vepstas
+ mm/mmap.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+--- 2.6.27-rc1/mm/mmap.c
++++ linux/mm/mmap.c
+@@ -370,7 +370,7 @@ find_vma_prepare(struct mm_struct *mm, unsigned long ad=
+dr,
+ =09=09if (vma_tmp->vm_end > addr) {
+ =09=09=09vma =3D vma_tmp;
+ =09=09=09if (vma_tmp->vm_start <=3D addr)
+-=09=09=09=09return vma;
++=09=09=09=09break;
+ =09=09=09__rb_link =3D &__rb_parent->rb_left;
+ =09=09} else {
+ =09=09=09rb_prev =3D __rb_parent;
+--8323584-717760152-1217611897=:15379--
