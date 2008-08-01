@@ -1,57 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbYHADDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbYHADE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757324AbYHADDm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 23:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYHADDf
+	id S1757487AbYHADE6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 23:04:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbYHADEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 23:03:35 -0400
-Received: from main.gmane.org ([80.91.229.2]:50126 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752941AbYHADDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 23:03:34 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Parag Warudkar <parag.warudkar@gmail.com>
-Subject: Re: 2.6.27-rc1 process time accounting
-Date: Fri, 1 Aug 2008 03:03:23 +0000 (UTC)
-Message-ID: <loom.20080801T025718-689@post.gmane.org>
-References: <20080731104319.GB5806@ics.muni.cz> <20080731144147.82fcd85e.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Thu, 31 Jul 2008 23:04:50 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:21340 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658AbYHADEt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 23:04:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=T0iGg+pd606ovNDUC1JghXF9NASTaQGEoPRwnHJopoapZTDifEz6Yi5/OFpkGuyxlx
+         eVvqid/ZBLPGZ/aLw2g/YiI7c3dyM26RFdmsG5varG+CZS/BFJkmR5E6phrQYnGZBFkw
+         O0/RH7AzYhwfIWBmSSHFXTKsKVxohqy9vcNbg=
+Date: Thu, 31 Jul 2008 23:04:44 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: INFO: possible recursive locking detected ps2_command
+Message-ID: <20080801030444.GB18953@anvil.corenet.prv>
+References: <c4e36d110807310241n512b01e4v898e883d740de879@mail.gmail.com> <20080731145739.fe8923be.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 24.208.232.147 (Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.0.1) Gecko/2008070206 Firefox/3.0.1)
+Content-Disposition: inline
+In-Reply-To: <20080731145739.fe8923be.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm <at> linux-foundation.org> writes:
-
+On Thu, Jul 31, 2008 at 02:57:39PM -0700, Andrew Morton wrote:
 > 
-> On Thu, 31 Jul 2008 12:43:19 +0200
-> Lukas Hejtmanek <xhejtman <at> ics.muni.cz> wrote:
+> (cc linux-input)
 > 
-> > Hello,
+> On Thu, 31 Jul 2008 11:41:25 +0200
+> "Zdenek Kabelac" <zdenek.kabelac@gmail.com> wrote:
+> 
+> > Hi
 > > 
-> > I think there is a regression since 2.6.26 in time accounting of processes.
+> > During mouse unplugging from psaux connector from the laptops' docking
+> > station I've got attached INFO trace.
+> > (laptops still has synaptics device)
+> > 
+
+Dell?
+
+> > Also for unknown reason to me  psaux mouse & synaptic device do not
+> > work somehow together - is it hw limitation
+> > of /dev/input/mice  interface?
+> > (USB mouse and synaptics do work quite well together)
+> > 
+> > [ INFO: possible recursive locking detected ]
+> > 2.6.27-rc1 #48
 > 
-> Could be - we changed quite a bit.
-> 
-> > kthreadd and console-kit-daemons claim they spent 5124095 hours using CPU.
-> 
-> My 2.6.27-rc1-mm1 kthreadd looks OK in `top'.  How are you displaying
-> this information?  More details if possible, please..
+> (it's 2.6.27-rc1)
 > 
 
-Top's doing crazy things on my machine too after booting 2.6.27-rc1 - like Xorg
-showing 859% CPU usage on 4 CPU machine and generally any process running even
-shortly shows up as using anywhere between 100 and 150% CPU.
+Peter, here is the trace we talked about long time ago. For some reason
+lockdep annotation only works once. If reconnect is forced or psmouse
+module is reloaded lockdep starts complaining about passthrough port.
 
-This is on x86 - Q6600 6Gb RAM. Let me know if anything else would be
-interesting to know.
+> > ---------------------------------------------
+> > kseriod/166 is trying to acquire lock:
+> >  (&ps2dev->cmd_mutex){--..}, at: [<ffffffff8126e9ae>] ps2_command+0x5e/0x460
+> > 
+> > but task is already holding lock:
+> >  (&ps2dev->cmd_mutex){--..}, at: [<ffffffff8126e9ae>] ps2_command+0x5e/0x460
+> > 
+> > other info that might help us debug this:
+> > 4 locks held by kseriod/166:
+> >  #0:  (serio_mutex){--..}, at: [<ffffffff8126cc1e>] serio_thread+0x3e/0x410
+> >  #1:  (&serio->drv_mutex){--..}, at: [<ffffffff8126bf8b>]
+> > serio_connect_driver+0x2b/0x50
+> >  #2:  (psmouse_mutex){--..}, at: [<ffffffffa009aa00>]
+> > psmouse_connect+0x30/0x2c0 [psmouse]
+> >  #3:  (&ps2dev->cmd_mutex){--..}, at: [<ffffffff8126e9ae>]
+> > ps2_command+0x5e/0x460
+> > 
+> > stack backtrace:
+> > Pid: 166, comm: kseriod Not tainted 2.6.27-rc1 #48
+> > 
+> > Call Trace:
+> >  [<ffffffff81068bda>] __lock_acquire+0xcea/0x13b0
+> >  [<ffffffff81066401>] ? trace_hardirqs_off_caller+0x21/0xc0
+> >  [<ffffffff810664ad>] ? trace_hardirqs_off+0xd/0x10
+> >  [<ffffffff8126e9ae>] ? ps2_command+0x5e/0x460
+> >  [<ffffffff81069336>] lock_acquire+0x96/0xe0
+> >  [<ffffffff8126e9ae>] ? ps2_command+0x5e/0x460
+> >  [<ffffffff81313861>] mutex_lock_nested+0xc1/0x340
+> >  [<ffffffff8126e9ae>] ? ps2_command+0x5e/0x460
+> >  [<ffffffff810135a0>] ? native_sched_clock+0x90/0xb0
+> >  [<ffffffff8126e9ae>] ps2_command+0x5e/0x460
+> >  [<ffffffff81066401>] ? trace_hardirqs_off_caller+0x21/0xc0
+> >  [<ffffffff81065834>] ? get_lock_stats+0x34/0x70
+> >  [<ffffffffa009977d>] psmouse_sliced_command+0x2d/0x90 [psmouse]
+> >  [<ffffffff8126e838>] ? ps2_sendbyte+0x48/0x130
+> >  [<ffffffffa009b8f7>] synaptics_pt_write+0x27/0x60 [psmouse]
+> >  [<ffffffff81315acd>] ? _spin_unlock_irq+0x3d/0x80
+> >  [<ffffffff8126e84d>] ps2_sendbyte+0x5d/0x130
+> >  [<ffffffff81319840>] ? sub_preempt_count+0x80/0x120
+> >  [<ffffffff8126ea4d>] ps2_command+0xfd/0x460
+> >  [<ffffffff81319840>] ? sub_preempt_count+0x80/0x120
+> >  [<ffffffff81315acd>] ? _spin_unlock_irq+0x3d/0x80
+> >  [<ffffffffa0099917>] psmouse_probe+0x27/0xa0 [psmouse]
+> >  [<ffffffff8126c1e1>] ? serio_open+0x11/0x50
+> >  [<ffffffffa009ab48>] psmouse_connect+0x178/0x2c0 [psmouse]
+> >  [<ffffffff8126bf96>] serio_connect_driver+0x36/0x50
+> >  [<ffffffff8126bfcb>] serio_driver_probe+0x1b/0x20
+> >  [<ffffffff81221112>] driver_probe_device+0xa2/0x1e0
+> >  [<ffffffff812212e0>] ? __device_attach+0x0/0x10
+> >  [<ffffffff812212e9>] __device_attach+0x9/0x10
+> >  [<ffffffff8122050b>] bus_for_each_drv+0x6b/0xa0
+> >  [<ffffffff812213b8>] device_attach+0x88/0x90
+> >  [<ffffffff812202d5>] bus_attach_device+0x55/0x80
+> >  [<ffffffff8121ee99>] device_add+0x4f9/0x610
+> >  [<ffffffff81319840>] ? sub_preempt_count+0x80/0x120
+> >  [<ffffffff8126ce1c>] serio_thread+0x23c/0x410
+> >  [<ffffffff810571a0>] ? autoremove_wake_function+0x0/0x40
+> >  [<ffffffff8126cbe0>] ? serio_thread+0x0/0x410
+> >  [<ffffffff81056de9>] kthread+0x49/0x90
+> >  [<ffffffff8100d669>] child_rip+0xa/0x11
+> >  [<ffffffff8103b757>] ? finish_task_switch+0x57/0x110
+> >  [<ffffffff81315acd>] ? _spin_unlock_irq+0x3d/0x80
+> >  [<ffffffff8100cc73>] ? restore_args+0x0/0x30
+> >  [<ffffffff810664ad>] ? trace_hardirqs_off+0xd/0x10
+> >  [<ffffffff81056da0>] ? kthread+0x0/0x90
+> >  [<ffffffff8100d65f>] ? child_rip+0x0/0x11
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-input" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Parag
-
-
+-- 
+Dmitry
