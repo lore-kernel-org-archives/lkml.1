@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbYHATYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758727AbYHATZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758000AbYHATYe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 15:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758084AbYHATYB
+	id S1758727AbYHATZv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 15:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbYHATZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 15:24:01 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:52511 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757973AbYHATX6 (ORCPT
+	Fri, 1 Aug 2008 15:25:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41871 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753249AbYHATZn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 15:23:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=pqs1d1/ryprZhMF1+JAgZKl6YWa9AKIDrEfblo3CrDrUWWHJ1jEKIRGrhHIgzPC1Cq
-         1dsNpFgxWR0QX4RjdMmi28sDURbvjy4YOAJPbZITcLWyAyp6+Rc8nRiXW7Nfletp37nO
-         AVGducvzg4qrQCs1+Wj596CL66hv97a2BboBQ=
-Date: Fri, 1 Aug 2008 15:23:52 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-Subject: Re: linux-next: Tree for July 30
-Message-ID: <20080801151758.ZZRA012@mailhub.coreip.homeip.net>
-References: <20080730170635.f737ffe9.sfr@canb.auug.org.au> <20080731104437.5e5669bc.akpm@linux-foundation.org> <20080731141302.ZZRA012@mailhub.coreip.homeip.net> <200807312048.57575.rjw@sisk.pl> <20080731145023.ZZRA012@mailhub.coreip.homeip.net> <alpine.LFD.1.10.0807311207000.3277@nehalem.linux-foundation.org> <20080731151625.ZZRA012@mailhub.coreip.homeip.net> <20080731194207.GA12233@anvil.corenet.prv> <alpine.LFD.1.10.0808011201480.3277@nehalem.linux-foundation.org>
+	Fri, 1 Aug 2008 15:25:43 -0400
+Date: Fri, 1 Aug 2008 12:24:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] lockdep: lock_set_subclass - reset a held lock's
+ subclass
+In-Reply-To: <48935FA4.5010804@goop.org>
+Message-ID: <alpine.LFD.1.10.0808011216360.3277@nehalem.linux-foundation.org>
+References: <20080731.155504.167792984.davem@davemloft.net>  <20080801.011122.32782916.davem@davemloft.net>  <20080801090100.GA25142@elte.hu>  <20080801.021348.233313767.davem@davemloft.net> <1217588920.9686.6.camel@twins> <489350AE.1030609@goop.org>
+ <alpine.LFD.1.10.0808011113530.3277@nehalem.linux-foundation.org> <48935FA4.5010804@goop.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0808011201480.3277@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 12:12:19PM -0700, Linus Torvalds wrote:
+
+
+On Fri, 1 Aug 2008, Jeremy Fitzhardinge wrote:
 > 
-> Ok, I apparently missed this whole subthread yesterday, only getting back 
-> to it when going over my old queues.
-> 
-> On Thu, 31 Jul 2008, Dmitry Torokhov wrote:
-> > 
-> > Input: paper over a bug in Synaptics X driver
-> 
-> Yeah, it's not pretty, but how about moving that EV_KEY thing into the 
-> switch() statement?
+> I have a function traversing a pagetable in vaddr order (low to high), taking
+> pte locks as it builds up batches of pte page updates.  When the batch is
+> issued, it releases all the locks, and won't end up holding more than ~16 at a
+> time.
 
-I want to to be visually separated. It is not a hot path so extra
-comparison won't hurt us.
+Hmm. 
 
-> Also, the printk could certainly be a bit more useful.
+With hashed locks, that is _not_ safe in general. Now, it may well be safe 
+in your case, so I'm not going to say you have a bug, but even if you do 
+them in vaddr order, the thing is, we don't guarantee that the _locks_ are 
+ordered in virtual address order.
 
-I think I will follow Andrew's advice and point people to a page on
-kernel.org (to be written).
+Right now, I think the pte locks are either a single one per mm (in which 
+case I assume you don't take any lock at all), or it's a lock that is 
+embedded in the pmd page iirc.
 
-> have that four-deep indentation by just splitting that horrible function 
-> up a bit.
-> 
-> IOW, start off with a patch like the appended,
+What if you have pmd sharing through some shared area being mapped at two 
+different processes at different addresses? Yeah, I don't think we share 
+pmd's at all (except if you use hugetables and for the kernel), but it's 
+one of those things where subtle changes in how the pte lock allocation 
+could cause problems.
 
-Makes sense. Signed-off-by please ;)
+Eg, I could easily see somebody doing the pte lock as a hash over not just 
+the address, but the "struct mm" pointer too. At which point different 
+parts of the address space might even share the PTE lock, and you'd get 
+deadlocks even without any ABBA behavior, just because the pte lock might 
+be A B C A or something inside the same process.
 
--- 
-Dmitry
+			Linus
