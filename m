@@ -1,50 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbYHAWKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbYHAWL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759471AbYHAWKR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 18:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbYHAWKE
+	id S1760098AbYHAWL4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 18:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYHAWLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 18:10:04 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:54420 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753319AbYHAWKC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 18:10:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Fs77/ytFa6XQGj/QUgBueb7BSS+H1dDcWRq5ojZoCKcovMZM6AHOXWavs72rIm0DNs
-         ShHLM7QAxaExEK5nqLO92eSRzh8Syi6UKIyyRnkbFLzao1fIMpWx8TURCB2VVUbB1Gfm
-         4u/lxpuzUuXBloii9hp1iBSMQ2nEF2sVloDa4=
-Message-ID: <86802c440808011510v535278c7oebbaf75453dcf05b@mail.gmail.com>
-Date: Fri, 1 Aug 2008 15:10:00 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 00/16] dyn_array and nr_irqs support v2
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       hpa <hpa@zytor.com>, "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <86802c440808011430i6cf5cb8cn519777a78dd987b0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Aug 2008 18:11:48 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:55615 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752113AbYHAWLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 18:11:48 -0400
+Date: Sat, 2 Aug 2008 00:12:22 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Paul Mundt <lethal@linux-sh.org>, Adrian Bunk <bunk@kernel.org>,
+       linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: sh O= builds broken
+Message-ID: <20080801221222.GA14125@uranus.ravnborg.org>
+References: <20080801212728.GF19682@cs181140183.pp.htv.fi> <20080801215338.GC13448@linux-sh.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1217583464-28494-1-git-send-email-yhlu.kernel@gmail.com>
-	 <m1iqukwjjg.fsf@frodo.ebiederm.org>
-	 <86802c440808011430i6cf5cb8cn519777a78dd987b0@mail.gmail.com>
+In-Reply-To: <20080801215338.GC13448@linux-sh.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 1, 2008 at 2:30 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Fri, Aug 1, 2008 at 1:46 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
+On Sat, Aug 02, 2008 at 06:53:38AM +0900, Paul Mundt wrote:
+> > 
+> Ok, so this is what I get for moving the auto-generated header outside of
+> include/asm-sh.. it seemed like a good idea at the time.
+Ups - I should have caught that when I reviewd your initial patch.
+kbuild does on purpose not fiddle with the path in the inital
+include specification.
 
->> http://lkml.org/lkml/2008/7/10/532
-
-so using rcu to get irq_desc.
-
-YH
+	Sam
