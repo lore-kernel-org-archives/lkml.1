@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760147AbYHAJnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758986AbYHAJmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760147AbYHAJnM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 05:43:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758021AbYHAJjA
+	id S1758986AbYHAJmu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 05:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757749AbYHAJiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 05:39:00 -0400
-Received: from qb-out-0506.google.com ([72.14.204.237]:14084 "EHLO
+	Fri, 1 Aug 2008 05:38:54 -0400
+Received: from qb-out-0506.google.com ([72.14.204.235]:16382 "EHLO
 	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753209AbYHAJi5 (ORCPT
+	with ESMTP id S1757685AbYHAJiw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 05:38:57 -0400
+	Fri, 1 Aug 2008 05:38:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=fOkZnKS+LcNBdG70CoJkBAAAQ7L5g7z+Cm4rzMSXCWuZHGwxdWcY0N6UJpEWkaXAGo
-         2r6o5uQ7X1TMzLmGfcdfclRd2l42kPjCVE6VP0/rPJQtgh39SzBBc0ZXnBU9309HRw6C
-         eiSSzlXmRo1T7jw7y2hYHcaLWhVCji+6TfLe8=
+        b=tF6Euwkak2GkkVWhoVJmh1KlhjhcnoeCoF9pdqznymZx0/DwlrtCuAiFmvwNHDFXg2
+         2t95GbPCLWnW7ym8ynU3l7kvcVkPi9CRZEZQlBZ5H9PFhiUkvPssF41QiUB1iBh5yN83
+         25YjKLl2OqmG6ax+lGYqkaYMxeqj9Q/s/mrjk=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        hpa <hpa@zytor.com>, Eric Biederman <ebiederm@xmission.com>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 16/16] x86: alloc dyn_array all alltogether
-Date: Fri,  1 Aug 2008 02:37:44 -0700
-Message-Id: <1217583464-28494-17-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 15/16] x86: make 32bit more like with io_apic/dyn_array to 64 bit
+Date: Fri,  1 Aug 2008 02:37:43 -0700
+Message-Id: <1217583464-28494-16-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217583464-28494-16-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1217583464-28494-15-git-send-email-yhlu.kernel@gmail.com>
 References: <1217583464-28494-1-git-send-email-yhlu.kernel@gmail.com>
  <1217583464-28494-2-git-send-email-yhlu.kernel@gmail.com>
  <1217583464-28494-3-git-send-email-yhlu.kernel@gmail.com>
@@ -42,215 +42,145 @@ References: <1217583464-28494-1-git-send-email-yhlu.kernel@gmail.com>
  <1217583464-28494-13-git-send-email-yhlu.kernel@gmail.com>
  <1217583464-28494-14-git-send-email-yhlu.kernel@gmail.com>
  <1217583464-28494-15-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-16-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-also tighten the alignment checking..., and make print out less
+also remove NR_IRQ_VECTORS
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
- arch/x86/kernel/setup_percpu.c |   16 ++++++----
- include/linux/init.h           |    2 -
- init/main.c                    |   65 +++++++++++++++++++++++++++++++----------
- 3 files changed, 62 insertions(+), 21 deletions(-)
+ arch/x86/kernel/io_apic_32.c  |   53 +++++++++++++++++++++++++++++++++---------
+ arch/x86/kernel/setup.c       |    4 +--
+ include/asm-x86/irq_vectors.h |    2 -
+ 3 files changed, 44 insertions(+), 15 deletions(-)
 
-Index: linux-2.6/arch/x86/kernel/setup_percpu.c
+Index: linux-2.6/arch/x86/kernel/io_apic_32.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_percpu.c
-+++ linux-2.6/arch/x86/kernel/setup_percpu.c
-@@ -140,26 +140,31 @@ static void __init setup_cpu_pda_map(voi
+--- linux-2.6.orig/arch/x86/kernel/io_apic_32.c
++++ linux-2.6/arch/x86/kernel/io_apic_32.c
+@@ -70,7 +70,7 @@ int timer_through_8259 __initdata;
   */
- void __init setup_per_cpu_areas(void)
- {
--	ssize_t size, old_size;
-+	ssize_t size, old_size, da_size;
- 	char *ptr;
- 	int cpu;
-+	unsigned long align = 1;
+ int sis_apic_bug = -1;
  
- 	/* Setup cpu_pda map */
- 	setup_cpu_pda_map();
- 
- 	/* Copy section for each CPU (we discard the original) */
- 	old_size = PERCPU_ENOUGH_ROOM;
--	size = old_size + per_cpu_dyn_array_size();
-+	da_size = per_cpu_dyn_array_size(&align);
-+	align = max_t(unsigned long, PAGE_SIZE, align);
-+	size = roundup(old_size + da_size, align);
- 	printk(KERN_INFO "PERCPU: Allocating %zd bytes of per cpu data\n",
- 			  size);
- 
- 	for_each_possible_cpu(cpu) {
- #ifndef CONFIG_NEED_MULTIPLE_NODES
--		ptr = alloc_bootmem_pages(size);
-+		ptr = __alloc_bootmem_nopanic(size, align,
-+				 __pa(MAX_DMA_ADDRESS));
- #else
- 		int node = early_cpu_to_node(cpu);
- 		if (!node_online(node) || !NODE_DATA(node)) {
--			ptr = alloc_bootmem_pages(size);
-+			ptr = __alloc_bootmem_nopanic(size, align,
-+					 __pa(MAX_DMA_ADDRESS));
- 			printk(KERN_INFO
- 			       "cpu %d has no node %d or node-local memory\n",
- 				cpu, node);
-@@ -168,7 +173,8 @@ void __init setup_per_cpu_areas(void)
- 					 cpu, __pa(ptr));
- 		}
- 		else {
--			ptr = alloc_bootmem_pages_node(NODE_DATA(node), size);
-+			ptr = __alloc_bootmem_node(NODE_DATA(node), size, align,
-+							__pa(MAX_DMA_ADDRESS));
- 			if (ptr)
- 				printk(KERN_DEBUG "per cpu data for cpu%d on node%d at %016lx\n",
- 					 cpu, node, __pa(ptr));
-Index: linux-2.6/include/linux/init.h
-===================================================================
---- linux-2.6.orig/include/linux/init.h
-+++ linux-2.6/include/linux/init.h
-@@ -291,7 +291,7 @@ extern struct dyn_array *__per_cpu_dyn_a
- 	DEFINE_PER_CPU_DYN_ARRAY_ADDR(nameX, nameX, nrX, alignX, init_workX)
- 
- extern void pre_alloc_dyn_array(void);
--extern unsigned long per_cpu_dyn_array_size(void);
-+extern unsigned long per_cpu_dyn_array_size(unsigned long *align);
- extern void per_cpu_alloc_dyn_array(int cpu, char *ptr);
- #endif /* __ASSEMBLY__ */
- 
-Index: linux-2.6/init/main.c
-===================================================================
---- linux-2.6.orig/init/main.c
-+++ linux-2.6/init/main.c
-@@ -397,10 +397,14 @@ static void __init setup_per_cpu_areas(v
- 	unsigned long size, i, old_size;
- 	char *ptr;
- 	unsigned long nr_possible_cpus = num_possible_cpus();
-+	unsigned long align = 1;
-+	unsigned da_size;
- 
- 	/* Copy section for each CPU (we discard the original) */
- 	old_size = PERCPU_ENOUGH_ROOM;
--	size = ALIGN(old_size + per_cpu_dyn_array_size(), PAGE_SIZE);
-+	da_size = per_cpu_dyn_array_size(&align);
-+	align = max_t(unsigned long, PAGE_SIZE, align);
-+	size = ALIGN(old_size + da_size, align);
- 	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
- 
- 	for_each_possible_cpu(i) {
-@@ -544,45 +548,78 @@ void __init __weak thread_info_cache_ini
- void pre_alloc_dyn_array(void)
- {
- #ifdef CONFIG_HAVE_DYN_ARRAY
--	unsigned long size, phys = 0;
-+	unsigned long total_size = 0, size, phys;
-+	unsigned long max_align = 1;
- 	struct dyn_array **daa;
-+	char *ptr;
- 
-+	/* get the total size at first */
- 	for (daa = __dyn_array_start ; daa < __dyn_array_end; daa++) {
- 		struct dyn_array *da = *daa;
- 
- 		size = da->size * (*da->nr);
--		print_fn_descriptor_symbol("dyna_array %s ", da->name);
--		printk(KERN_CONT "size:%#lx nr:%d align:%#lx",
-+		print_fn_descriptor_symbol("dyn_array %s ", da->name);
-+		printk(KERN_CONT "size:%#lx nr:%d align:%#lx\n",
- 			da->size, *da->nr, da->align);
--		*da->name = __alloc_bootmem_nopanic(size, da->align, phys);
--		phys = virt_to_phys(*da->name);
-+		total_size += roundup(size, da->align);
-+		if (da->align > max_align)
-+			max_align = da->align;
-+	}
-+	if (total_size)
-+		printk(KERN_DEBUG "dyn_array total_size: %#lx\n",
-+			 total_size);
-+	else
-+		return;
-+
-+	/* allocate them all together */
-+	max_align = max_t(unsigned long, max_align, PAGE_SIZE);
-+	ptr = __alloc_bootmem_nopanic(total_size, max_align, 0);
-+	if (!ptr)
-+		panic("Can not alloc dyn_alloc\n");
-+
-+	phys = virt_to_phys(ptr);
-+	for (daa = __dyn_array_start ; daa < __dyn_array_end; daa++) {
-+		struct dyn_array *da = *daa;
-+
-+		size = da->size * (*da->nr);
-+		print_fn_descriptor_symbol("dyn_array %s ", da->name);
-+
-+		phys = roundup(phys, da->align);
-+		*da->name = phys_to_virt(phys);
- 		printk(KERN_CONT " ==> [%#lx - %#lx]\n", phys, phys + size);
- 
-+		phys += size;
-+
- 		if (da->init_work)
- 			da->init_work(da);
- 	}
- #endif
- }
- 
--unsigned long per_cpu_dyn_array_size(void)
-+unsigned long per_cpu_dyn_array_size(unsigned long *align)
- {
- 	unsigned long total_size = 0;
- #ifdef CONFIG_HAVE_DYN_ARRAY
- 	unsigned long size;
- 	struct dyn_array **daa;
-+	unsigned max_align = 1;
- 
- 	for (daa = __per_cpu_dyn_array_start ; daa < __per_cpu_dyn_array_end; daa++) {
- 		struct dyn_array *da = *daa;
- 
- 		size = da->size * (*da->nr);
--		print_fn_descriptor_symbol("per_cpu_dyna_array %s ", da->name);
-+		print_fn_descriptor_symbol("per_cpu_dyn_array %s ", da->name);
- 		printk(KERN_CONT "size:%#lx nr:%d align:%#lx\n",
- 			da->size, *da->nr, da->align);
- 		total_size += roundup(size, da->align);
-+		if (da->align > max_align)
-+			max_align = da->align;
- 	}
--	if (total_size)
--		printk(KERN_DEBUG "per_cpu_dyna_array total_size: %#lx\n",
-+	if (total_size) {
-+		printk(KERN_DEBUG "per_cpu_dyn_array total_size: %#lx\n",
- 			 total_size);
-+		*align = max_align;
-+	}
- #endif
- 	return total_size;
- }
-@@ -596,14 +633,11 @@ void per_cpu_alloc_dyn_array(int cpu, ch
- 	void **array;
- 
- 	phys = virt_to_phys(ptr);
+-int first_free_entry = NR_IRQS;
++int first_free_entry;
+ /*
+  * # of IRQ routing registers
+  */
+@@ -98,10 +98,7 @@ static int disable_timer_pin_1 __initdat
+  * Rough estimation of how many shared IRQs there are, can
+  * be changed anytime.
+  */
+-#define MAX_PLUS_SHARED_IRQS NR_IRQS
+-#define PIN_MAP_SIZE (MAX_PLUS_SHARED_IRQS + NR_IRQS)
 -
- 	for (daa = __per_cpu_dyn_array_start ; daa < __per_cpu_dyn_array_end; daa++) {
- 		struct dyn_array *da = *daa;
+-int pin_map_size = PIN_MAP_SIZE;
++int pin_map_size;
  
- 		size = da->size * (*da->nr);
--		print_fn_descriptor_symbol("per_cpu_dyna_array %s ", da->name);
--		printk(KERN_CONT "size:%#lx nr:%d align:%#lx",
--			da->size, *da->nr, da->align);
-+		print_fn_descriptor_symbol("per_cpu_dyn_array %s ", da->name);
+ /*
+  * This is performance-critical, we want to do it O(1)
+@@ -112,7 +109,9 @@ int pin_map_size = PIN_MAP_SIZE;
  
- 		phys = roundup(phys, da->align);
- 		addr = (unsigned long)da->name;
-@@ -611,7 +645,8 @@ void per_cpu_alloc_dyn_array(int cpu, ch
- 		array = (void **)addr;
- 		*array = phys_to_virt(phys);
- 		*da->name = *array; /* so init_work could use it directly */
--		printk(KERN_CONT " %p ==> [%#lx - %#lx]\n", array, phys, phys + size);
-+		printk(KERN_CONT " ==> [%#lx - %#lx]\n", phys, phys + size);
+ static struct irq_pin_list {
+ 	int apic, pin, next;
+-} irq_2_pin[PIN_MAP_SIZE];
++} *irq_2_pin;
 +
- 		phys += size;
++DEFINE_DYN_ARRAY(irq_2_pin, sizeof(struct irq_pin_list), pin_map_size, 16, NULL);
  
- 		if (da->init_work) {
+ struct io_apic {
+ 	unsigned int index;
+@@ -403,9 +402,27 @@ static struct irq_cpu_info {
+ 
+ #define CPU_TO_PACKAGEINDEX(i) (first_cpu(per_cpu(cpu_sibling_map, i)))
+ 
+-static cpumask_t balance_irq_affinity[NR_IRQS] = {
+-	[0 ... NR_IRQS-1] = CPU_MASK_ALL
+-};
++static cpumask_t balance_irq_affinity_init = CPU_MASK_ALL;
++
++static cpumask_t *balance_irq_affinity;
++
++
++static void __init irq_affinity_init_work(void *data)
++{
++        struct dyn_array *da = data;
++
++        int i;
++        struct  balance_irq_affinity *affinity;
++
++        affinity = *da->name;
++
++        for (i = 0; i < *da->nr; i++)
++                memcpy(&affinity[i], &balance_irq_affinity_init, sizeof(struct balance_irq_affinity));
++
++}
++
++DEFINE_DYN_ARRAY(balance_irq_affinity, sizeof(struct balance_irq_affinity), nr_irqs, PAGE_SIZE, irq_affinity_init_work);
++
+ 
+ void set_balance_irq_affinity(unsigned int irq, cpumask_t mask)
+ {
+@@ -1170,14 +1187,28 @@ static inline int IO_APIC_irq_trigger(in
+ }
+ 
+ /* irq_vectors is indexed by the sum of all RTEs in all I/O APICs. */
+-static u8 irq_vector[NR_IRQ_VECTORS] __read_mostly = { FIRST_DEVICE_VECTOR , 0 };
++static u8 irq_vector_init_first = FIRST_DEVICE_VECTOR;
++static u8 *irq_vector;
++
++static void __init irq_vector_init_work(void *data)
++{
++	struct dyn_array *da = data;
++
++	u8 *irq_vec;
++
++	irq_vec = *da->name;
++
++	irq_vec[0] = irq_vector_init_first;
++}
++
++DEFINE_DYN_ARRAY(irq_vector, sizeof(u8), nr_irqs, PAGE_SIZE, irq_vector_init_work);
+ 
+ static int __assign_irq_vector(int irq)
+ {
+ 	static int current_vector = FIRST_DEVICE_VECTOR, current_offset;
+ 	int vector, offset;
+ 
+-	BUG_ON((unsigned)irq >= NR_IRQ_VECTORS);
++	BUG_ON((unsigned)irq >= nr_irqs);
+ 
+ 	if (irq_vector[irq] > 0)
+ 		return irq_vector[irq];
+Index: linux-2.6/arch/x86/kernel/setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup.c
++++ linux-2.6/arch/x86/kernel/setup.c
+@@ -861,10 +861,10 @@ void __init setup_arch(char **cmdline_p)
+ 	/* need to wait for nr_cpu_ids settle down */
+ 	if (nr_irqs == NR_IRQS)
+ 		nr_irqs = 32 * nr_cpu_ids + 224;
+-	pin_map_size = nr_irqs * 2;
+-	first_free_entry = nr_irqs;
+ 	init_cpu_to_node();
+ #endif
++	pin_map_size = nr_irqs * 2;
++	first_free_entry = nr_irqs;
+ 
+ 	init_apic_mappings();
+ 	ioapic_init_mappings();
+Index: linux-2.6/include/asm-x86/irq_vectors.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/irq_vectors.h
++++ linux-2.6/include/asm-x86/irq_vectors.h
+@@ -131,8 +131,6 @@
+ 
+ #endif /* VISWS */
+ 
+-#define NR_IRQ_VECTORS		NR_IRQS
+-
+ /* Voyager specific defines */
+ /* These define the CPIs we use in linux */
+ #define VIC_CPI_LEVEL0			0
