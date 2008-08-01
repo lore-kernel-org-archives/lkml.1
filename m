@@ -1,79 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbYHAVsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbYHAVte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758814AbYHAVsf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:48:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759655AbYHAVsR
+	id S1760127AbYHAVte (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbYHAVt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:48:17 -0400
-Received: from smtp1.stealer.net ([88.198.224.204]:36753 "EHLO
-	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759629AbYHAVsQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:48:16 -0400
-Date: Fri, 1 Aug 2008 23:48:04 +0200 (CEST)
-From: Sven Wegener <sven.wegener@stealer.net>
-To: Richard Purdie <rpurdie@rpsys.net>
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] leds: Move triggers before drivers in Makefile
-Message-ID: <alpine.LNX.1.10.0808012344090.2294@titan.stealer.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-Organization: STEALER.net
+	Fri, 1 Aug 2008 17:49:26 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:58279 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752238AbYHAVtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 17:49:25 -0400
+Message-ID: <4893856D.6060909@sgi.com>
+Date: Fri, 01 Aug 2008 16:51:41 -0500
+From: Alan Mayer <ajm@sgi.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -1.0
-X-Spam-Bar: -
-X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Fri, 01 Aug 2008 21:48:14 +0000
-	Bayes: 0.0123 Tokens: new, 211; hammy, 4; neutral, 3; spammy, 0.
-	AutoLearn: no
-	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0123]
-X-Spam-Signature: 90a586bd6757a5de3a3f5f00fafa5c4c401d7d93
-X-DomainKey-Status: no signature
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Cliff Wickman <cpw@sgi.com>, jeremy@goop.org, rusty@rustcorp.com.au,
+       suresh.b.siddha@intel.com, mingo@elte.hu, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Dean Nelson <dcn@sgi.com>
+Subject: Re: [PATCH] x86_64:  Dynamically allocate arch specific system vectors
+References: <48922D16.1080704@sgi.com> <m13alp1z8w.fsf@frodo.ebiederm.org>	<20080801155120.GA21706@sgi.com> <m18wvgv4bj.fsf@frodo.ebiederm.org>
+In-Reply-To: <m18wvgv4bj.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When both triggers and drivers are built-in, we should first register the
-triggers and then the drivers, to make default triggers work during device
-registration. We do this by moving the triggers before the drivers in the
-Makefile as init order is determined by linking order. Sadly this simple
-solution doesn't cover devices registered elsewhere in the kernel. But often
-these drivers provide their own triggers and should themselves take care of
-registering triggers before devices.
+Okay, I think we have it now.  assign_irq_vector *almost* does what we 
+need.  One minor thing is that assign_irq_vector ANDs against 
+cpu_online_map.  We would need cpu_possible_map, so we get the vector on 
+offline cpus that may come online.  The other thing is that 
+assign_irq_vector doesn't allow the specification of interrupt 
+priorities.  It would need to be modified to handle returning either a 
+high priority vector or a low priority vector.  Would modifying the api 
+for assign_irq_vector be the proper approach?
 
-Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
----
- drivers/leds/Makefile |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+The interrupts don't necessarily fire on all cpus, it's just that they 
+*can* fire on any cpu.  For example, the GRU triggers an interrupt (it 
+is very IPI'ish) to a particular cpu in the event of a GRU TLB fault. 
+That cpu handles the fault and returns.  But the fault can happen on any 
+cpu, so all cpus need to be registered for the same vector and irq. 
+This is probably splitting hairs; it is certainly no different in 
+principal from timer interrupts or processor TLB faults.
 
-Patch is based on your current (024e8ac) leds git tree head.
+As far as kernel_stat is concerned.  I see you're point.  NR_CPUS on our 
+machines is going to be big (4K? 8K? something like that).  NR_IRQS is 
+also going to big because of that.  It's unfortunate since the actual 
+number of interrupt sources is going to be an order of magnitude 
+smaller, at least.
 
-diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index ff7982b..fa0f257 100644
---- a/drivers/leds/Makefile
-+++ b/drivers/leds/Makefile
-@@ -4,6 +4,13 @@ obj-$(CONFIG_NEW_LEDS)			+= led-core.o
- obj-$(CONFIG_LEDS_CLASS)		+= led-class.o
- obj-$(CONFIG_LEDS_TRIGGERS)		+= led-triggers.o
- 
-+# LED Triggers
-+# Handle triggers before drivers, to make default triggers work, when built-in.
-+obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
-+obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)	+= ledtrig-ide-disk.o
-+obj-$(CONFIG_LEDS_TRIGGER_HEARTBEAT)	+= ledtrig-heartbeat.o
-+obj-$(CONFIG_LEDS_TRIGGER_DEFAULT_ON)	+= ledtrig-default-on.o
-+
- # LED Platform Drivers
- obj-$(CONFIG_LEDS_ATMEL_PWM)		+= leds-atmel-pwm.o
- obj-$(CONFIG_LEDS_CORGI)		+= leds-corgi.o
-@@ -23,9 +30,3 @@ obj-$(CONFIG_LEDS_CLEVO_MAIL)		+= leds-clevo-mail.o
- obj-$(CONFIG_LEDS_HP6XX)		+= leds-hp6xx.o
- obj-$(CONFIG_LEDS_FSG)			+= leds-fsg.o
- obj-$(CONFIG_LEDS_PCA955X)		+= leds-pca955x.o
--
--# LED Triggers
--obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
--obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)	+= ledtrig-ide-disk.o
--obj-$(CONFIG_LEDS_TRIGGER_HEARTBEAT)	+= ledtrig-heartbeat.o
--obj-$(CONFIG_LEDS_TRIGGER_DEFAULT_ON)	+= ledtrig-default-on.o
+		--ajm
+
+Eric W. Biederman wrote:
+> Cliff Wickman <cpw@sgi.com> writes:
+>> I assume you mean create_irq() and destroy_irq().
+>> They are close to what we need.
+> 
+> Actually that isn't quite what I was thinking.
+> 
+>> However for any given system use:
+>> - we need to request a high priority vector for some irq's, rather than
+>>   one randomly allocated as per __assign_irq_vector().
+> 
+> Well I was actually thinking mostly about reusing assign_irq_vector.
+> 
+> The high priority vector seems to be the place where we would need
+> to reexamine the vector allocator.
+> 
+>> - we want the irq/vector to be targeted to all cpu's (as specified in a
+>>   mask,
+>>   and can include currently offline cpu's) rather than a single cpu. 
+> 
+> __assign_irq_vector should be able to handle that case.
+> 
+>> I suppose those abilities could be added to create_irq(), but we didn't
+>> want to intrude into that interface.
+> 
+> Right.  That part gets custom and there is no intersection.
+> 
+>> A smaller consideration is simplicity of use.  We want any such user to
+>> use
+>> the generic do_IRQ() flow (not alloc_intr_gate()).
+> 
+> My primary concern is that you are generalizing an interface that is
+> designed for alloc_intr_gate consumers.  In particular for people
+> who wish to allocate vectors that can be triggered by software to
+> do this.
+> 
+> If this is normal irq handling I would really prefer to use the
+> normal data structures that we use for allocating vectors to irqs,
+> because that is what you are doing.
+> 
+>> But make it easy to set
+>> up the irq/vector, irq_chip and irq_desc without getting intimate with
+>> the details.
+>> I suppose some other wrapper for an enhanced create_irq() could be done.
+>>
+>> We are going to need such irq/vector pairs for a couple of UV drivers
+>> (drivers/misc/sgi-gru/ and sgi-xp/).  And would prefer it for the UV TLB
+>> shootdown (x86/kernel/tlb.uv.c) rather than using alloc_intr_gate().
+> 
+> I also want to ask why do you need an irq that fires on every cpu?
+> 
+> That concept seems to be responsible for one of the nastiest data
+> structures in the kernel.  Where we track how many times any irq has
+> occurred on any cpu.  Look at the percpu variable kernel_stat.  It
+> seems to be one of the nastiest variables I know of.  Of size:
+> NR_CPUS*NR_CPUS*32  Assuming you have a machine with a reasonable
+> number of irqs per cpu.
+> 
+> Eric
+
+-- 
+Make me an angel
+That flies from Montgomery.
+--
+Alan J. Mayer
+SGI
+ajm@sgi.com
+WORK: 651-683-3131
+HOME: 651-407-0134
+--
