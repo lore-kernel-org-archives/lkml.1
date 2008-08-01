@@ -1,65 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764219AbYHAV1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763222AbYHAV2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764219AbYHAV1e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762344AbYHAVWc
+	id S1763222AbYHAV2S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760984AbYHAVXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:22:32 -0400
-Received: from vms042pub.verizon.net ([206.46.252.42]:41311 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763602AbYHAVWa (ORCPT
+	Fri, 1 Aug 2008 17:23:39 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:31629 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760598AbYHAVXh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:22:30 -0400
-Date: Fri, 01 Aug 2008 17:22:28 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Kernel (2.6.26 final) Oops, problem?
-In-reply-to: <20080801190428.GA2828@debian>
-To: Rabin Vincent <rabin@rab.in>
-Cc: Zhang Rui <rui.zhang@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       ming.m.lin@intel.com
-Message-id: <200808011722.28961.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200807312218.39479.gene.heskett@gmail.com>
- <200807312359.13737.gene.heskett@gmail.com> <20080801190428.GA2828@debian>
-User-Agent: KMail/1.9.9
+	Fri, 1 Aug 2008 17:23:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=nCByYO2izedImHE6GklK0aF43yiNF2gGp8RMwZZH5wytKCf4rdYmwYZgGm8Z00kAfX
+         HZU5qxThw2tWL9KHqrSuX86fpf36qcc8Mypa0Ja/iC9hxnbwHm9Um0G6syuGsOJBjjn5
+         gjrEQJQOQtgI6hWx0INZL8itkWqE2hfFf1Y6k=
+Subject: Re: [PATCH 14/20] parisc: use the new byteorder headers
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080801160647.GA22049@colo.lackof.org>
+References: <1216339783.6029.125.camel@brick>
+	 <20080801160647.GA22049@colo.lackof.org>
+Content-Type: text/plain
+Date: Fri, 01 Aug 2008 14:23:37 -0700
+Message-Id: <1217625817.5846.5.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 August 2008, Rabin Vincent wrote:
+On Fri, 2008-08-01 at 10:06 -0600, Grant Grundler wrote:
+> On Thu, Jul 17, 2008 at 05:09:43PM -0700, Harvey Harrison wrote:
+> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> > ---
+> >  include/asm-parisc/byteorder.h |   37 ++++++++++++-------------------------
+> >  1 files changed, 12 insertions(+), 25 deletions(-)
+> > 
+> > diff --git a/include/asm-parisc/byteorder.h b/include/asm-parisc/byteorder.h
+> > index db14831..5e56b1b 100644
+> > --- a/include/asm-parisc/byteorder.h
+> > +++ b/include/asm-parisc/byteorder.h
+> > @@ -4,9 +4,10 @@
+> >  #include <asm/types.h>
+> >  #include <linux/compiler.h>
+> >  
+> > -#ifdef __GNUC__
+> > +#define __LITTLE_ENDIAN
+> 
+> Sorry, this looks wrong. parisc is big endian.
 
-[...]
->f88133d76ea38761b7379d6233b752ed82250a4a in current git appears to be a
->fix for this.
->
->Rabin
+Sorry, it is wrong.  It of course should be __BIG_ENDIAN
 
-So I assume that it will be in 2.6.27-rc2?
+> > +#define __SWAB_64_THRU_32__
+> 
+> Should this only be defined if BITS_PER_LONG is <=32  ?
+> 
 
-I've not seen it again, and the machine ran fine till I rebooted after fixing 
-the httpd error.log permissions problem in 2.6.27-rc1.
+The new byteorder headers only uses this if no __arch_swab64 is defined.
 
-However, I do see in the log that it is loading the rv200 microcode for 
-something, but my video card is an rv280 based card, a Radeon 9200SE, using 
-that radeon driver.
+Further down in the parisc version, an __arch_swab64 is defined in the
+BITS_PER_LONG >=32 case, making this moot.
 
-Does anyone know if this is correct?
+>From the new linux/swab.h:
 
-The card seems to be ok, and glxgears says its in the low 600 fps at the 
-default image size.  Just barely fast enough for google-earth if one isn't 
-super-picky.  I also have a 2400-HD, but its not any faster with the radeonhd 
-driver.  Neither driver has been updated recently that yumex has told me 
-about.
+static inline __attribute_const__ __u64 ___swab64(__u64 val)
+{
+#ifdef __arch_swab64
+	return __arch_swab64(val);
+#elif defined(__arch_swab64p)
+	return __arch_swab64p(&val);
+#elif defined(__SWAB_64_THRU_32__)
+	__u32 h = val >> 32;
+	__u32 l = val & ((1ULL << 32) - 1);
+	return (((__u64)___swab32(l)) << 32) | ((__u64)(___swab32(h)));
+#else
+	return __const_swab64(val);
+#endif
+}
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Circumstances rule men; men do not rule circumstances.
-		-- Herodotus
+Other than the endianness, any other concerns?
+
+Harvey
+
