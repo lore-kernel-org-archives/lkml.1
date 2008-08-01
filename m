@@ -1,98 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762290AbYHAVWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762204AbYHAVW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762290AbYHAVWK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:22:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760758AbYHAVPP
+	id S1762204AbYHAVW3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:22:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761286AbYHAVPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:15:15 -0400
-Received: from gw.goop.org ([64.81.55.164]:35283 "EHLO mail.goop.org"
+	Fri, 1 Aug 2008 17:15:25 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:40691 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760626AbYHAVPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:15:12 -0400
-Message-ID: <48937CDA.6020700@goop.org>
-Date: Fri, 01 Aug 2008 14:15:06 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1761339AbYHAVPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 17:15:23 -0400
+Date: Sat, 2 Aug 2008 00:14:20 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Or Gerlitz <ogerlitz@voltaire.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: error building linus tree (2.6.27-rc1)
+Message-ID: <20080801211420.GE19682@cs181140183.pp.htv.fi>
+References: <Pine.LNX.4.64.0807292357040.3348@zuben.voltaire.com> <Pine.LNX.4.64.0808012312260.10651@zuben.voltaire.com>
 MIME-Version: 1.0
-To: Steve Wise <swise@opengridcomputing.com>
-CC: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: BUG on booting 2.6.27-rc1
-References: <48937891.2040606@opengridcomputing.com>
-In-Reply-To: <48937891.2040606@opengridcomputing.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0808012312260.10651@zuben.voltaire.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve Wise wrote:
-> Anybody seen this?
->
-> Its on x86_64, FC7 distro quad core cpu.  I have 2 similar systems, 
-> and one boots up ok but the other hits this on -rc1 right off the bat.
->
->
->
->
-> Starting udev: ------------[ cut here ]------------
-> kernel BUG at kernel/stop_machine.c:151!
-> invalid opcode: 0000 [1] SMP
-> CPU 0
-> Modules linked in: dm_snapshot dm_zero dm_mirror dm_log dm_mod 
-> pata_jmicron ata_generic ata_piix libata sd_mod scsi_mod ext3 jbd 
-> mbcache [last unloaded: scsi_wait_scan]
-> Pid: 960, comm: modprobe Not tainted 2.6.27-rc1 #7
-> RIP: 0010:[<ffffffff8105be33>]  [<ffffffff8105be33>] 
-> __stop_machine+0x134/0x1ea
-> RSP: 0018:ffff88012e5dbd68  EFLAGS: 00010286
-> RAX: 00000000fffffff3 RBX: ffff88012b9b1d40 RCX: 0000000000000206
+On Fri, Aug 01, 2008 at 11:14:10PM +0300, Or Gerlitz wrote:
+> On Wed, 30 Jul 2008, Or Gerlitz wrote:
+> 
+> > I get into this
+> > arch/x86/kernel/ldt.c: In function `alloc_ldt':
+> > arch/x86/kernel/ldt.c:67: error: invalid lvalue in unary `&'
+> 
+> Here's the gcc and as versions
+> 
+> $ gcc --version
+> gcc (GCC) 3.4.6 20060404 (Red Hat 3.4.6-8)
+> Copyright (C) 2006 Free Software Foundation, Inc.
+> This is free software; see the source for copying conditions.  There is NO
+> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+>...
 
-RAX = -EACCES
+Ah, thanks.
 
-Presumably that's being returned from security_task_setscheduler(), 
-since it doesn't otherwise appear in __sched_setscheduler().  We 
-probably shouldn't call that if !user.
+It's a known problem that has just been fixed in Linus' tree.
 
-diff -r 4f507097262d kernel/sched.c
---- a/kernel/sched.c	Fri Aug 01 13:14:44 2008 -0700
-+++ b/kernel/sched.c	Fri Aug 01 14:13:59 2008 -0700
-@@ -4998,19 +4998,21 @@
- 			return -EPERM;
- 	}
- 
--#ifdef CONFIG_RT_GROUP_SCHED
--	/*
--	 * Do not allow realtime tasks into groups that have no runtime
--	 * assigned.
--	 */
--	if (user
--	    && rt_policy(policy) && task_group(p)->rt_bandwidth.rt_runtime == 0)
--		return -EPERM;
--#endif
--
--	retval = security_task_setscheduler(p, policy, param);
--	if (retval)
--		return retval;
-+	if (user) {
-+#ifdef CONFIG_RT_GROUP_SCHED
-+		/*
-+		 * Do not allow realtime tasks into groups that have no runtime
-+		 * assigned.
-+		 */
-+		if (rt_policy(policy) && task_group(p)->rt_bandwidth.rt_runtime == 0)
-+			return -EPERM;
-+#endif
-+
-+		retval = security_task_setscheduler(p, policy, param);
-+		if (retval)
-+			return retval;
-+	}
-+
- 	/*
- 	 * make sure no PI-waiters arrive (or leave) while we are
- 	 * changing the priority of the task:
+> Or.
 
+cu
+Adrian
 
+-- 
 
-    J
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
