@@ -1,74 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYHAJcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbYHAJik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbYHAJcW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 05:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYHAJcP
+	id S1756576AbYHAJik (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 05:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbYHAJi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 05:32:15 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33715
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750992AbYHAJcO (ORCPT
+	Fri, 1 Aug 2008 05:38:28 -0400
+Received: from qb-out-0506.google.com ([72.14.204.237]:14084 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbYHAJi1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 05:32:14 -0400
-Date: Fri, 01 Aug 2008 02:32:14 -0700 (PDT)
-Message-Id: <20080801.023214.117218567.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: combinatorial explosion in lockdep
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080801092219.GA15691@elte.hu>
-References: <20080729.214503.126934382.davem@davemloft.net>
-	<20080731163943.GF26393@elte.hu>
-	<20080801092219.GA15691@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Aug 2008 05:38:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=aJjojQmG77NnE57PMjj99Ngz0Q+2TSgrg4v/gDtCjmAe5Qmlhiq/Y3i7WizpBNFgKi
+         vq71mPLhdWk2H9RVxhBEEp1xahCrbJvNEm4fcyKq5YWVva5CnY9XKZDVFxHUM+Dvrxwc
+         5L1TXPryBexko0e5gcFkWU1180uPwS6a7b1YE=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       hpa <hpa@zytor.com>, Eric Biederman <ebiederm@xmission.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH 00/16] dyn_array and nr_irqs support v2
+Date: Fri,  1 Aug 2008 02:37:28 -0700
+Message-Id: <1217583464-28494-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 1 Aug 2008 11:22:19 +0200
+Please check dyn_array support for x86
 
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * David Miller <davem@davemloft.net> wrote:
-> > 
-> > > lockdep: Fix combinatorial explosion in lock subgraph traversal.
-> > 
-> > applied to tip/core/locking - thanks David. I guess we need to test 
-> > this a bit, the patch is far from simple :-)
-> 
-> small build fallout fix below.
+Thanks
 
-Thanks.
+Yinghai Lu
 
-BTW, until something like Peter's attempt is working, we need to also
-scale some of the lockdep limits by NR_CPUS.  The formula I came up
-with that worked with my 32-cpu, 64-cpu and 128-cpu machines was:
-
-#define __LOCKDEP_NR_CPU_SCALE	\
-	((NR_CPUS <= 16) ? 0 : ilog2(NR_CPUS) - 4)
-
-#define MAX_LOCKDEP_ENTRIES	(8192UL << __LOCKDEP_NR_CPU_SCALE)
-
-#define MAX_LOCKDEP_CHAINS_BITS	(16 + __LOCKDEP_NR_CPU_SCALE)
-#define MAX_LOCKDEP_CHAINS	(1UL << MAX_LOCKDEP_CHAINS_BITS)
-
-But this is going to explode for NR_CPUS=4096, but it is the only way
-to get a working lockdep currently, due to the runqueue lock classes.
-
-Also, when these limits reached triggered, we get the same printk
-wakeup deadlock problem I hit with Peter's patch.
-
-I think a non-trivial number of people hit that printk deadlock bug,
-but just didn't report it because the machine essentially hard hangs
-silently.  At best you'd see the:
-
-========================================
-
-initial line from lockdep, but often even that doesn't make it to the
-console.
