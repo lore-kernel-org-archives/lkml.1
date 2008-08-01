@@ -1,108 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbYHAOOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbYHAORm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754560AbYHAOOS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 10:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbYHAOOJ
+	id S1754206AbYHAORm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 10:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYHAORf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 10:14:09 -0400
-Received: from vms044pub.verizon.net ([206.46.252.44]:55775 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751318AbYHAOOI (ORCPT
+	Fri, 1 Aug 2008 10:17:35 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:37600 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752168AbYHAORe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 10:14:08 -0400
-Date: Fri, 01 Aug 2008 10:13:36 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: 2.6.27-rc1: strange fstab issue (Re: 2.6.27-rc1 + selinux new
- options = no httpd)
-In-reply-to: <1217598479.2980.4.camel@localhost.localdomain>
-To: Eric Paris <eparis@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>,
-       aviro@redhat.com
-Message-id: <200808011013.36196.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200807302254.26036.gene.heskett@gmail.com>
- <200808010939.04186.gene.heskett@gmail.com>
- <1217598479.2980.4.camel@localhost.localdomain>
-User-Agent: KMail/1.9.9
+	Fri, 1 Aug 2008 10:17:34 -0400
+Date: Fri, 1 Aug 2008 16:17:43 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] x86: implement multiple queues for smp function call IPIs
+Message-ID: <20080801141743.GV23938@one.firstfloor.org>
+References: <488FA8A9.6000005@goop.org> <20080731220825.GD23801@elte.hu> <48923B7A.3020805@goop.org> <20080731224202.GB22426@elte.hu> <4892980A.2010101@goop.org> <20080801090910.GA3282@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080801090910.GA3282@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 August 2008, Eric Paris wrote:
->On Fri, 2008-08-01 at 09:39 -0400, Gene Heskett wrote:
->> On Thursday 31 July 2008, Rafael J. Wysocki wrote:
->> Update by Gene below.
->>
->> >On Thursday, 31 of July 2008, James Morris wrote:
->> >> On Thu, 31 Jul 2008, Gene Heskett wrote:
->> >> > >Which new options?
->> >> >
->> >> > Make xconfig-->security options:
->> >> >
->> >> > XFRM Networking security hooks
->> >> >
->> >> >  and several others just below it.  Unforch, I can't copy/paste the
->> >> > screen.
->> >>
->> >> I can't really imagine what that is (although if you enable the secmark
->> >> controls under the main SELinux menu, which are disabled by default,
->> >> there could be problems).
->> >
->> >On a possibly related note, I've been observing a strange issue on one of
->> >my test boxes with OpenSUSE 10.3 recently.   Namely, the fsck complains
->> >that there's no passno value in the fstab, although it obviously is
->> > present.
->> >
->> >Strangely enough, if the kernel is compiled with CONFIG_SECURITY_SELINUX
->> > unset, the fsck doesn't complain about the missing passno field any
->> > more.
->> >
->> >Thanks,
->> >Rafael
->>
->> I just did a 2.6.27-rc1 rebuild on a pure, all defaults 'make oldconfig'
->> from my 2.6.26 final .config moved to that src tree.
->>
->> httpd is still being denied access to its log files and dies during the
->> bootup.
->>
->> This is a showstopper for me.
->
->Stephen Smalley just sent me a private note.  Apparently he is having
->e-mail trouble but he did point out the most likely problem.  Can you
->add the patch from
->
->http://marc.info/?l=linux-kernel&m=121726661110266&w=2
+> So ... how about my original suggestion, to add a (default-off) boot 
+> option that reduces the queues to 1? I.e. lets have something in place 
+> from day 1 on that could be quirk-handler-driven, should the need arise. 
+> "apic=simpleipi" or something like that.
+> 
+> In a year or two, once this all has proven itself fine on a broad range 
+> of systems, we'll laugh out loud at being so cautious and can remove the 
+> boot option for good ;-)
 
-Bingo!
-The first version there was off about 10 line numbers so I just added the "|
-MAY_APPEND", as the second version shows and that was it.  Thanks.
+I agree that adding a boot option to turn it off is a good idea (assuming
+it doesn't take too much code to implement) Adding such paranoid boot options early 
+has saved my ass a few times in the past.
 
->And give it a whirl?  Sorry, but we think the problem is that the VFS
->stopped passing all of the relevant information down to the security
->system.  https is only allowed to append to its log files, not actually
->'write.'  Since the VFS is longer differentiating those two operations
->you are getting then denial for write.
->
->I'll try to get this pushed into linus's tree quickly.
+Only tricky bit is use if () not "modulo variable", because the if ()
+will be much faster than a division through an arbitary number.
 
-Looks like its a good to go fix from this angle.  Thanks Eric.
-You could even put a tested by: Gene Heskett in it I suppose. :)
-
->-Eric
-
-
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Fashion is a form of ugliness so intolerable that we have to alter it
-every six months.
-		-- Oscar Wilde
+-Andi
