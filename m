@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752003AbYHAQDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbYHAQFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752003AbYHAQDW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 12:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYHAQC6
+	id S1755079AbYHAQFW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 12:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbYHAQFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 12:02:58 -0400
-Received: from the.earth.li ([217.147.81.2]:35226 "EHLO the.earth.li"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752632AbYHAQC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 12:02:57 -0400
-Date: Fri, 1 Aug 2008 17:02:56 +0100
-From: Jonathan McDowell <noodles@earth.li>
-To: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: X "Hangs" with RS690 + 2.6.26
-Message-ID: <20080801160256.GV30002@earth.li>
-References: <20080725094334.GC30002@earth.li> <alpine.DEB.0.82.0807251107400.30593@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.0.82.0807251107400.30593@skynet.skynet.ie>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 1 Aug 2008 12:05:07 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:51318 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751494AbYHAQFF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 12:05:05 -0400
+Subject: Re: memory hotplug: hot-add to ZONE_MOVABLE vs. min_free_kbytes
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080801192646.EC99.E1E9C6FF@jp.fujitsu.com>
+References: <20080731132213.GF1704@csn.ul.ie>
+	 <1217526327.4643.35.camel@localhost.localdomain>
+	 <20080801192646.EC99.E1E9C6FF@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Fri, 01 Aug 2008 18:04:55 +0200
+Message-Id: <1217606695.5678.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 25, 2008 at 11:10:07AM +0100, Dave Airlie wrote:
-> > I've started to see "hangs" with X on an ATI RS690 with a 2.6.26 kernel.
-> > The symptoms are that load average goes up, X stops accepting keypresses
-> > or mouse clicks, but the cursor still moves around the screen in
-> > response to the mouse being moved. I can't switch to a VT but can ssh in
-> > remotely to see that things are still running. I don't seem to be able
-> > to kill X but "shutdown -r now" cleanly reboots.
-> > 
-> > radeon driver is recent git - 1c5858484da4fb1c9bc3ac3b4d7a97863ab99730
-> > but I've seen it with older revisions too.
-> > 
-> > It can take a couple of days for me to hit the problem, so a git bisect
-> > could be a lengthy process. If anyone has any suggestions about faster
-> > ways to track down the issue I'd like to hear them.
+On Fri, 2008-08-01 at 20:16 +0900, Yasunori Goto wrote:
+> > My assumption is now, that the reserved 3 MB in ZONE_MOVABLE won't be
+> > usable by the kernel anymore, e.g. for PF_MEMALLOC, because it is in
+> > ZONE_MOVABLE now.
 > 
-> git log v2.6.25..v2.6.26 drivers/char/drm
-> 
-> 5e35eff13f7dd0f5c1d82b3b4708b2f7a5f44113
-> 5cfb6956073a9e42d44a26790b7800980634d037
+> I don't make sense here. I suppose there is no relationship between
+> ZONE_MOVABLE, PF_MEMALLOC and MIGRATE_RESERVE pages.
+> Could you tell me more?
 
-No joy.
+Ok, I thought that PF_MEMALLOC allocations work on the MIGRATE_RESERVE
+pageblocks, and that only kernel allocations can use PF_MEMALLOC. I also
+thought that kernel allocations cannot use ZONE_MOVABLE, e.g. for page
+cache memory, because such pages would not be migratable. So I assumed
+that MIGRATE_RESERVE pageblocks in ZONE_MOVABLE would not be available
+for PF_MEMALLOC allocations.
 
-> d396db321bcaec54345e7e9e87cea8482d6ae3a8
+With this assumption, which can be totally wrong, the redistribution
+of MIGRATE_RESERVE pageblocks in setup_per_zone_pages_min() looks like
+it will take away reserved pageblocks that should be available to the
+kernel in emergency situations.
 
-I thought this might be it; nearly 5 days of uptime rather than the
-usual less than 2. But I got the same symptoms today so I'll continue
-working down the list.
+Maybe I should have explained this assumption earlier, because my whole
+min_free_kbytes issue depends on it. If I'm wrong, I apologize for
+confusing you all with this "issue", and I will go back to the original
+problem with removing the lowest memory chunk in ZONE_MOVABLE...
 
-> 259434acccbc823ee8bc00b2d2689ccccd25e1fd
-> d7463eb41d88a39de2653fd41857c4ccddb8707b
-> 45e519052e8f583a709edd442a23f59581d3fe42
-> 2735977b12cb0f113aae24afff04747b6d0f5bf1
-> 3722bfc607d46275369865c02fe8694486d640b5
-> fa0d71b967506031f7cb08ced6095d1c4f988594
-> 9f18409ea3d778a171a9505c0a849d846f352bd0
+Thanks,
+Gerald
 
-J.
 
--- 
-Friends are God's apology for relations.
