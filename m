@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbYHAQQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbYHAQTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194AbYHAQQW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 12:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYHAQQO
+	id S1754661AbYHAQTn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 12:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbYHAQTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 12:16:14 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:54117 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751145AbYHAQQO (ORCPT
+	Fri, 1 Aug 2008 12:19:34 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:53072 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751258AbYHAQTd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 12:16:14 -0400
-Message-ID: <489336C7.8010605@linux.vnet.ibm.com>
-Date: Fri, 01 Aug 2008 21:46:07 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080724)
+	Fri, 1 Aug 2008 12:19:33 -0400
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       "'James.Bottomley@SteelEye.com'" <James.Bottomley@SteelEye.com>
+CC: "'linux-scsi@vger.kernel.org'" <linux-scsi@vger.kernel.org>,
+       "'James.Bottomley@SteelEye.com'" <James.Bottomley@SteelEye.com>,
+       "'akpm@osdl.org'" <akpm@osdl.org>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "Austria, Winston" <Winston.Austria@lsi.com>,
+       "poswald@novell.com" <poswald@novell.com>
+Date: Fri, 1 Aug 2008 10:19:07 -0600
+Subject: [PATCH 1/4] scsi: megaraid_sas - Add the dumy readl to force PCI
+ flush
+Thread-Topic: [PATCH 1/4] scsi: megaraid_sas - Add the dumy readl to force
+ PCI flush
+Thread-Index: Acgx9Krd+BU9hV11RZWgo5JcfegcdQAwCr4gME6S/nA=
+Message-ID: <4B6A08C587958942AA3002690DD4F8C31B08093F@cosmail02.lsi.com>
+In-Reply-To: <FFD04EB4FBD32E4B929B6CFDEDA6AA0D632A9F@NAMAIL1.ad.lsil.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Tony Breeds <tony@bakeyournoodle.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
-       Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-Subject: Re: [BUILD-FAILURE] 2.6.27-rc1-mm1 - allyesconfig build fails on
- powerpc
-References: <20080731000354.24b55d5b.akpm@linux-foundation.org> <4891B370.5040208@linux.vnet.ibm.com> <20080801052936.GZ20457@bakeyournoodle.com>
-In-Reply-To: <20080801052936.GZ20457@bakeyournoodle.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tony Breeds wrote:
-> On Thu, Jul 31, 2008 at 06:13:28PM +0530, Kamalesh Babulal wrote:
->> Hi Andrew,
->>
->> make allyesconfig with 2.6.27-rc1-mm1 kernel on powerpc fails with build error
-> 
-> <snip>
-> 
-> Turning off GCOV "fixes" this.  Not really the best solution but at
-> least it narrows doen the search effort.
+MegaRAID SAS Driver get unexpected Interrupt.  Add the dumy readl to force PCI flush will fix this issue.
 
-Thanks, kernel compiles after turning off the GCOV profiling options.
-> 
-> Peter,
-> 	Can you have a look at how this can be fixed, if at all?
-Peter, 
-	kindly let me know if you want me to test any test patches/fixes.
-> 
-> Yours Tony
-> 
->   linux.conf.au    http://www.marchsouth.org/
->   Jan 19 - 24 2009 The Australian Linux Technical Conference!
-> 
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
+---
+drivers/scsi/megaraid/megaraid_sas.c |    6 ++++++
+1 files changed, 6 insertions(+)
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2008-07-31 12:00:58.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2008-07-31 12:30:35.000000000 -0400
+@@ -198,6 +198,9 @@ megasas_clear_intr_xscale(struct megasas
+         */
+        writel(status, &regs->outbound_intr_status);
+
++       /* Dummy readl to force pci flush */
++       readl(&regs->outbound_intr_status);
++
+        return 0;
+ }
+
+@@ -293,6 +296,9 @@ megasas_clear_intr_ppc(struct megasas_re
+         */
+        writel(status, &regs->outbound_doorbell_clear);
+
++       /* Dummy readl to force pci flush */
++       readl(&regs->outbound_doorbell_clear);
++
+        return 0;
+ }
+ /**
