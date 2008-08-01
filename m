@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760531AbYHAXQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758684AbYHAXS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760531AbYHAXQX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 19:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758419AbYHAXO4
+	id S1758684AbYHAXS1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 19:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYHAXST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 19:14:56 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:40687 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758227AbYHAXOz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 19:14:55 -0400
-Date: Fri, 1 Aug 2008 15:23:16 +0200
-From: Harald Welte <laforge@gnumonks.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: JosephChan@via.com.tw, geert@linux-m68k.org, akpm@linux-foundation.org,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH 13/13] viafb: via_utility.c,
-	via_utility.h, vt1636.c, vt1636.h
-Message-ID: <20080801132316.GA2784@prithivi.gnumonks.org>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E78BE@exchtp03.taipei.via.com.tw> <20080630104407.6adf59ab@lxorguk.ukuu.org.uk>
+	Fri, 1 Aug 2008 19:18:19 -0400
+Received: from colo.lackof.org ([198.49.126.79]:46259 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751474AbYHAXST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 19:18:19 -0400
+Date: Fri, 1 Aug 2008 17:18:07 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Grant Grundler <grundler@parisc-linux.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 14/20] parisc: use the new byteorder headers
+Message-ID: <20080801231807.GA26550@colo.lackof.org>
+References: <1216339783.6029.125.camel@brick> <20080801160647.GA22049@colo.lackof.org> <1217625817.5846.5.camel@brick>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="RnlQjJ0d97Da+TV1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080630104407.6adf59ab@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1217625817.5846.5.camel@brick>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 01, 2008 at 02:23:37PM -0700, Harvey Harrison wrote:
+...
+> > Should this only be defined if BITS_PER_LONG is <=32  ?
+> 
+> The new byteorder headers only uses this if no __arch_swab64 is defined.
+> 
+> Further down in the parisc version, an __arch_swab64 is defined in the
+> BITS_PER_LONG >=32 case, making this moot.
 
---RnlQjJ0d97Da+TV1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ok.
 
-On Mon, Jun 30, 2008 at 10:44:07AM +0100, Alan Cox wrote:
+...
+> Other than the endianness, any other concerns?
 
-> I think at this point however the code is in a state where it would be
-> more productive to merge it and then fix up the remaining smaller details
-> than keep going round back to VIA to change it internally and return.
+Have you had a chance to test this?
+Or can you point me at another big endian arch that has similar 
+use of header files that has been successfully tested?
 
-Well, I'm obviously not having any unbiased opinion on this anymore...
-=2E.. but have a vital interest in getting this driver merged ;)
+I can arrange for access to parisc HW if you have time/interest
+in testing this yourself.
 
-Joseph: Can you please give me an update about what the current state
-of this driver merge is?  This message is the last one that I can find
-ont this subject on linux-fbdev-devel, and it's already one month old.
+thanks,
+grant
 
-Joseph: If there was any further work on this since your last
-13-patch-posting in June, can you please provide me with the latest
-driver patchset?  I'd be happy to help in cleaning this further up and
-finally getting it mainline.
-
-Thanks to everyone involved,
---=20
-- Harald Welte <laforge@gnumonks.org>           http://laforge.gnumonks.org/
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D
-"Privacy in residential applications is a desirable marketing option."
-                                                  (ETSI EN 300 175-7 Ch. A6)
-
---RnlQjJ0d97Da+TV1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQFIkw5EXaXGVTD0i/8RAvZ+AKCkUzm1m+dsYSy2bVd0Eu+Lvi5rEgCfVmID
-q8P8sHevDkvHFqf86PAUn+4=
-=JwZW
------END PGP SIGNATURE-----
-
---RnlQjJ0d97Da+TV1--
+> 
+> Harvey
