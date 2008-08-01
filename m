@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbYHAQrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757004AbYHAQts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757913AbYHAQrq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 12:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbYHAQpo
+	id S1757004AbYHAQts (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 12:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbYHAQth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 12:45:44 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:46747 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756591AbYHAQpn (ORCPT
+	Fri, 1 Aug 2008 12:49:37 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:55150 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751724AbYHAQtg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 12:45:43 -0400
-Date: Fri, 1 Aug 2008 12:45:42 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Ryan Hope <rmh3093@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: reiser4 for 2.6.27-rc1
-Message-ID: <20080801164541.GF8654@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Ryan Hope <rmh3093@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-References: <48f7fe350808010649l1111f48enbb6eca3cfcbba67f@mail.gmail.com> <20080801162548.GD8654@mit.edu> <48f7fe350808010934k32b9de09we657e57087a3e3a5@mail.gmail.com>
+	Fri, 1 Aug 2008 12:49:36 -0400
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>
+CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "poswald@novell.com" <poswald@novell.com>,
+       "Austria, Winston" <Winston.Austria@lsi.com>
+Date: Fri, 1 Aug 2008 10:48:48 -0600
+Subject: [PATCH 2/4] scsi: megaraid_sas - Add the shutdown DCMD cmd to
+ driver shutdown routine
+Thread-Topic: [PATCH 2/4] scsi: megaraid_sas - Add the shutdown DCMD cmd to
+ driver shutdown routine
+Thread-Index: AciItAVU2/gnyqciSguN4aHHEiVCxRrPlpmw
+Message-ID: <4B6A08C587958942AA3002690DD4F8C31B080962@cosmail02.lsi.com>
+In-Reply-To: <1205741587.7479.17.camel@pcp021067pcs.se.lsil.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48f7fe350808010934k32b9de09we657e57087a3e3a5@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 12:34:53PM -0400, Ryan Hope wrote:
-> Hmmm, removing the plugin support might not be so hard....  I might
-> have to try this... I am not impressed with btrfs yet.
+Add the shutdown DCMD cmd to driver shutdown routine to make megaraid sas FW shutdown proper.
 
-Well, if you're going to work on reiser4 (and I think there were other
-people who had also expressed interest/plans to work on it; you might
-try doing a search on the various mailing lists so you can coordinate
-with them and avoid duplicating work), my suggestion to you would be
-to find the comments that were made by the reviewers way back when,
-and make sure those comments have been addressed.
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-Then, re-requests a code review, and promise that you won't abuse, and
-insult the integrity and impugn the motivations of the reviewers like
-Hans did, and hopefully after they review the code, fix those problems
-as well.  Then you can try resubmitting for inclusion.
+---
+ drivers/scsi/megaraid/megaraid_sas.c |    1 +
+ 1 files changed, 1 insertion(+)
 
-Best regards,
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2008-07-31 12:51:06.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2008-07-31 12:54:09.000000000 -0400
+@@ -2863,6 +2863,7 @@ static void megasas_shutdown(struct pci_
+ {
+        struct megasas_instance *instance = pci_get_drvdata(pdev);
+        megasas_flush_cache(instance);
++       megasas_shutdown_controller(instance, MR_DCMD_CTRL_SHUTDOWN);
+ }
 
-    	      	    	 	    	      - Ted
+ /**
