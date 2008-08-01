@@ -1,89 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759538AbYHAVye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760007AbYHAV5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759538AbYHAVye (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbYHAVy1
+	id S1760007AbYHAV5W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbYHAV5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:54:27 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:59097 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752387AbYHAVy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:54:26 -0400
-Date: Sat, 2 Aug 2008 06:53:38 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: sam@ravnborg.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: sh O= builds broken
-Message-ID: <20080801215338.GC13448@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian Bunk <bunk@kernel.org>, sam@ravnborg.org,
-	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080801212728.GF19682@cs181140183.pp.htv.fi>
+	Fri, 1 Aug 2008 17:57:15 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:51327 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753494AbYHAV5O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 17:57:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XOEL9Jdwd4IolZU5EaPIfs6Pp59SfOan2Wx/veLyiHdMGNreW3gEjjjVUNJJRnEc3Z
+         0mypx/x4Vq9sQB1tcndgCQZT/g5JKBCBXA1Ep83PCrKGJvqwJ75PoK0cHdFYoK7d4m10
+         3yC+aorgTDUBB5bxZ64yVmHo6lS+lMwBGNZuE=
+Message-ID: <86802c440808011457g5b72d69bq768cf815046957ec@mail.gmail.com>
+Date: Fri, 1 Aug 2008 14:57:13 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 00/16] dyn_array and nr_irqs support v2
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       hpa <hpa@zytor.com>, "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Mike Travis" <travis@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <86802c440808011430i6cf5cb8cn519777a78dd987b0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080801212728.GF19682@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1217583464-28494-1-git-send-email-yhlu.kernel@gmail.com>
+	 <m1iqukwjjg.fsf@frodo.ebiederm.org>
+	 <86802c440808011430i6cf5cb8cn519777a78dd987b0@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 02, 2008 at 12:27:28AM +0300, Adrian Bunk wrote:
-> Most likely caused by the headers move:
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      init/main.o
-> In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/include/asm/irq.h:4,
->                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/irq.h:23,
->                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/include/asm/hardirq.h:5,
->                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/hardirq.h:7,
->                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/local.h:5,
->                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/include/asm/local.h:4,
->                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/module.h:19,
->                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:13:
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/include/asm/machvec.h:15:27: 
-> error: asm/machtypes.h: No such file or directory
-> make[2]: *** [init/main.o] Error 1
-> 
-> <--  snip  -->
-> 
-Ok, so this is what I get for moving the auto-generated header outside of
-include/asm-sh.. it seemed like a good idea at the time.
+On Fri, Aug 1, 2008 at 2:30 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Fri, Aug 1, 2008 at 1:46 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
 
----
+>> http://lkml.org/lkml/2008/7/10/439
 
-diff --git a/arch/sh/Makefile b/arch/sh/Makefile
-index 25659ce..7b70cfd 100644
---- a/arch/sh/Makefile
-+++ b/arch/sh/Makefile
-@@ -164,7 +164,7 @@ KBUILD_AFLAGS		+= $(cflags-y)
- PHONY += maketools FORCE
- 
- maketools:  include/linux/version.h FORCE
--	$(Q)$(MAKE) $(build)=arch/sh/tools arch/sh/include/asm/machtypes.h
-+	$(Q)$(MAKE) $(build)=arch/sh/tools include/asm-sh/machtypes.h
- 
- all: $(KBUILD_IMAGE)
- 
-@@ -215,4 +215,4 @@ arch/sh/lib64/syscalltab.h: arch/sh/kernel/syscalls_64.S
- 	$(call filechk,gen-syscalltab)
- 
- CLEAN_FILES += arch/sh/lib64/syscalltab.h \
--	       arch/sh/include/asm/machtypes.h
-+	       include/asm-sh/machtypes.h
-diff --git a/arch/sh/tools/Makefile b/arch/sh/tools/Makefile
-index b5d202b..567516b 100644
---- a/arch/sh/tools/Makefile
-+++ b/arch/sh/tools/Makefile
-@@ -10,7 +10,7 @@
- # Shamelessly cloned from ARM.
- #
- 
--arch/sh/include/asm/machtypes.h: $(src)/gen-mach-types $(src)/mach-types
-+include/asm-sh/machtypes.h: $(src)/gen-mach-types $(src)/mach-types
- 	@echo '  Generating $@'
--	$(Q)if [ ! -d arch/sh/include/asm ]; then mkdir -p arch/sh/include/asm; fi
-+	$(Q)if [ ! -d include/asm-sh ]; then mkdir -p include/asm-sh; fi
- 	$(Q)$(AWK) -f $^ > $@ || { rm -f $@; /bin/false; }
+you moved kstat_irqs to irqdesc, and it will not numa-aware. if
+irq_desc is not go with every cpu.
+
+YH
