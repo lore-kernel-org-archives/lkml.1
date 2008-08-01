@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbYHATNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758613AbYHATQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758868AbYHATNs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 15:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbYHATNk
+	id S1758613AbYHATQV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 15:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYHATQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 15:13:40 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52681 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753626AbYHATNk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 15:13:40 -0400
-Date: Fri, 1 Aug 2008 14:13:36 -0500
-From: Robin Holt <holt@sgi.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Robin Holt <holt@sgi.com>, linux-kernel@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Patch] Scale pidhash_shift/pidhash_size up based on
-	num_possible_cpus().
-Message-ID: <20080801191336.GK10501@sgi.com>
-References: <20080731170022.GE9663@sgi.com> <m1prot297c.fsf@frodo.ebiederm.org> <20080731193204.GG9663@sgi.com> <m1iqul25rk.fsf@frodo.ebiederm.org> <20080731200835.GK9663@sgi.com> <m1bq0d1zhz.fsf@frodo.ebiederm.org> <20080801120455.GP9663@sgi.com> <m1proszj3r.fsf@frodo.ebiederm.org>
+	Fri, 1 Aug 2008 15:16:07 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:37596 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752533AbYHATQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 15:16:06 -0400
+Date: Fri, 1 Aug 2008 15:15:59 -0400
+To: Neil Brown <neilb@suse.de>, Michael Shuey <shuey@purdue.edu>,
+       Shehjar Tikoo <shehjart@cse.unsw.edu.au>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, rees@citi.umich.edu, aglo@citi.umich.edu
+Subject: Re: high latency NFS
+Message-ID: <20080801191559.GI7764@fieldses.org>
+References: <200807241311.31457.shuey@purdue.edu> <20080730192110.GA17061@fieldses.org> <4890DFC7.3020309@cse.unsw.edu.au> <200807302235.50068.shuey@purdue.edu> <20080731031512.GA26203@fieldses.org> <18577.25513.494821.481623@notabene.brown> <20080801072320.GE6201@disturbed>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1proszj3r.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080801072320.GE6201@disturbed>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 11:27:20AM -0700, Eric W. Biederman wrote:
-> Robin Holt <holt@sgi.com> writes:
+On Fri, Aug 01, 2008 at 05:23:20PM +1000, Dave Chinner wrote:
+> On Thu, Jul 31, 2008 at 05:03:05PM +1000, Neil Brown wrote:
+> > You might want to track the max length of the request queue too and
+> > start more threads if the queue is long, to allow a quick ramp-up.
 > 
-> > On Thu, Jul 31, 2008 at 03:04:56PM -0700, Eric W. Biederman wrote:
-> >> Robin Holt <holt@sgi.com> writes:
-> >> 
-> >> > Like so???
-> >> >
-> >> > I have not tested this yet.
-> >> 
-> >> Looks reasonable to me.
-> >> 
-> >> In what circumstances was the lookup in the pid hash table with
-> >> long changes causing a performance slowdown?.  We don't perform
-> >> a lot of lookups.
-> >
-> > It was initially detected while profiling 'ps' on a 2048p machine that
-> > had 13 kernel threads per cpu.  We added a couple more device drivers
-> > which added additional threads.  We then started a pthread-on-process
-> > MPI job which had 2048 ranks each with 4 threads (test-case from
-> > customer job).  There were misc other processes out there which brought
-> > our task count up to approx 63k.  Larger page size helped the problem
-> > (went from 16k to 64k).
+> Right, but even request queue depth is not a good indicator. You
+> need to leep track of how many NFSDs are actually doing useful
+> work. That is, if you've got an NFSD on the CPU that is hitting
+> the cache and not blocking, you don't need more NFSDs to handle
+> that load because they can't do any more work than the NFSD
+> that is currently running is. 
 > 
-> Large page size?  Do you mean larger hash size?
-> 
-> What were you measuring that showed improvement with the large hash size?
+> i.e. take the solution that Greg banks used for the CPU scheduler
+> overload issue (limiting the number of nfsds woken but not yet on
+> the CPU),
 
-Oops, confusing details.  That was a different problem we had been
-tracking.
+I don't remember that, or wasn't watching when it happened.... Do you
+have a pointer?
 
-Sorry for the confusion,
-Robin
+> and apply that criteria to spawning new threads.  i.e.
+> we've tried to wake an NFSD, but there are none available so that
+> means more NFSDs are needed for the given load. If we've already
+> tried to wake one and it hasn't run yet, then we've got enough
+> NFSDs....
+
+OK, so you do that instead of trying to directly measure 
+
+> Also, NFSD scheduling needs to be LIFO so that unused NFSDs
+> accumulate idle time and so can be culled easily. If you RR the
+> nfsds, they'll all appear to be doing useful work so it's hard to
+> tell if you've got any idle at all.
+
+Those all sound like good ideas, thanks.
+
+(Still waiting for a volunteer for now, alas.)
+
+--b.
