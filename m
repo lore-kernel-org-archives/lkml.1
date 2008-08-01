@@ -1,105 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYHAEIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbYHAEU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753254AbYHAEIT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 00:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYHAEIG
+	id S1753246AbYHAEU2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 00:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYHAEUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 00:08:06 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:44317 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750766AbYHAEIF (ORCPT
+	Fri, 1 Aug 2008 00:20:14 -0400
+Received: from spam.bandrich.com ([211.72.242.83]:65364 "EHLO
+	spam.bandrich.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750713AbYHAEUM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 00:08:05 -0400
-Date: Fri, 1 Aug 2008 14:08:01 +1000
-From: Simon Horman <horms@verge.net.au>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: kexec@lists.infradead.org, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] kdump: use is_vmcore_usable() and
-	vmcore_unusable() in reserve_elfcorehdr()
-Message-ID: <20080801040759.GG27241@verge.net.au>
-References: <20080729081235.293361145@vergenet.net> <20080729081629.715923799@vergenet.net> <20080730130131.GB16373@redhat.com> <20080731004842.GA1657@verge.net.au> <20080731132152.GB26782@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080731132152.GB26782@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 1 Aug 2008 00:20:12 -0400
+X-Greylist: delayed 2341 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Aug 2008 00:20:11 EDT
+Message-Id: <5ECB2A60-5E13-4DE1-86A1-6FA12DBCEF66@bandrich.com>
+From: Leon Leong <upleong@bandrich.com>
+To: smurf@smurf.noris.de
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: [PATCH] USB: BandRich BandLuxe C150/C250 HSPA Data Card Driver
+Date: Fri, 1 Aug 2008 11:40:12 +0800
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+X-Mailer: Apple Mail (2.926)
+X-bandrich-MailScanner-Information: Please contact the ISP for more information
+X-bandrich-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
+X-bandrich-MailScanner-From: upleong@bandrich.com
+X-MAIL: spam.bandrich.com m713eOb8036185
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 09:21:52AM -0400, Vivek Goyal wrote:
-> On Thu, Jul 31, 2008 at 10:48:43AM +1000, Simon Horman wrote:
-> > On Wed, Jul 30, 2008 at 09:01:31AM -0400, Vivek Goyal wrote:
-> > > On Tue, Jul 29, 2008 at 06:12:38PM +1000, Simon Horman wrote:
-> > > > After recent changes setting elfcorehdr_addr to ELFCORE_ADDR_MAX
-> > > > will cause is_kdump_kernel() to return 0 when it should return 1.
-> > > > Instead use vmcore_unusable(), which has been added for this purpose.
-> > > > 
-> > > > Signed-off-by: Simon Horman <horms@verge.net.au>
-> > > > 
-> > > > Index: linux-2.6/arch/ia64/kernel/setup.c
-> > > > ===================================================================
-> > > > --- linux-2.6.orig/arch/ia64/kernel/setup.c	2008-07-29 17:27:43.000000000 +1000
-> > > > +++ linux-2.6/arch/ia64/kernel/setup.c	2008-07-29 17:50:50.000000000 +1000
-> > > > @@ -502,11 +502,11 @@ int __init reserve_elfcorehdr(unsigned l
-> > > >  	 * to work properly.
-> > > >  	 */
-> > > >  
-> > > > -	if (elfcorehdr_addr >= ELFCORE_ADDR_MAX)
-> > > > +	if (!is_vmcore_usable())
-> > > >  		return -EINVAL;
-> > > >  
-> > > >  	if ((length = vmcore_find_descriptor_size(elfcorehdr_addr)) == 0) {
-> > > > -		elfcorehdr_addr = ELFCORE_ADDR_MAX;
-> > > > +		vmcore_unusable();
-> > > >  		return -EINVAL;
-> > > >  	}
-> > > >  
-> > > 
-> > > Hi Simon,
-> > > 
-> > > I had a question. I am not very sure what reserve_elfcorehdr is doing
-> > > but doing something similar to reserving some memory area where
-> > > elfcoreheaders are.
-> > 
-> > Yes, that is my understanding of what it does.
-> > 
-> 
-> In x86 we never have to reserve that elf header area as we know that
-> booting kernel will never overwrite in that area. (Previous kernel has
-> modified the memory map in such a way so that elf header memory area
-> is not even part of memory range second kernel can use. 
-> 
-> Any idea, why do we need to reserve this area in IA64.
-> 
-> > > I see that reserve_elfcorehdr is under CONFIG_PROC_VMCORE. Will it work
-> > > if CONFIG_PROC_VMCORE=n and somebody wants to use /dev/oldmem?
-> > > Or reserve_elfcorehdr should be under CONFIG_CRASH_DUMP?
-> > 
-> > I'm not that familiar with /dev/oldmem, but as far as I can see,
-> > read_oldmem doesn't do anything with ELF headers, so reservation
-> > by vmcore_find_descriptor_size() should not be neccessary.
-> > 
-> 
-> /dev/oldmem does not directly touch elfcorehdr. But it indirectly does in
-> the sense that it is reading all the previous kernel's memory and dumping
-> it to disk. That would include elfcorehdrs also.
-> 
-> Now if we need to do some kind of reservation for elf headers so that
-> fs/vmcore.c code can read it, then same should be true for /dev/oldmem
-> code also. Otherwise reserving elfcorehdr code should be redundant.
-> 
-> That's why I raised the question that why do we need to reserve that area
-> in case of IA64. And if there is a genuine reason then probably that
-> reason will hold valid in case of /dev/oldmem also and we might have
-> to put is_vmcore_usable() definition also under CONFIG_CRASH_DUMP.
+From: Leon Leong <upleong@bandrich.com>
 
-Hi Vivek,
+This patch adds the Product ID for the BandLuxe C150/C250 3.5G data  
+card series from BandRich Inc.
+After detection, the data card works fine.
 
-yes, I do think that the problem is a bit deeper than my original response.
-I'll investigate this further.
+It was patched against kernel 2.6.27-rc1 with -mm patch
 
--- 
-Horms
+Signed-off-by: Leon Leong <upleong@bandrich.com>
+
+---
+
+Index: drivers/usb/serial/option.c
+===================================================================
+--- linux-2.6.27-rc1/drivers/usb/serial/option.c.orig	2008-07-29  
+10:40:31.000000000 +0800
++++ linux-2.6.27-rc1/drivers/usb/serial/option.c	2008-08-01  
+10:28:09.000000000 +0800
+@@ -186,6 +186,23 @@ static int  option_send_setup(struct tty
+  #define BANDRICH_VENDOR_ID			0x1A8D
+  #define BANDRICH_PRODUCT_C100_1			0x1002
+  #define BANDRICH_PRODUCT_C100_2			0x1003
++#define BANDRICH_PRODUCT_1004			0x1004
++#define BANDRICH_PRODUCT_1005			0x1005
++#define BANDRICH_PRODUCT_1006			0x1006
++#define BANDRICH_PRODUCT_1007			0x1007
++#define BANDRICH_PRODUCT_1008			0x1008
++#define BANDRICH_PRODUCT_1009			0x1009
++#define BANDRICH_PRODUCT_100A			0x100a
++
++#define BANDRICH_PRODUCT_100B			0x100b
++#define BANDRICH_PRODUCT_100C			0x100c
++#define BANDRICH_PRODUCT_100D			0x100d
++#define BANDRICH_PRODUCT_100E			0x100e
++
++#define BANDRICH_PRODUCT_100F			0x100f
++#define BANDRICH_PRODUCT_1010			0x1010
++#define BANDRICH_PRODUCT_1011			0x1011
++#define BANDRICH_PRODUCT_1012			0x1012
+
+  #define AMOI_VENDOR_ID			0x1614
+  #define AMOI_PRODUCT_9508			0x0800
+@@ -302,6 +319,21 @@ static struct usb_device_id option_ids[]
+  	{ USB_DEVICE(ONDA_VENDOR_ID, ONDA_PRODUCT_ET502HS) },
+  	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_C100_1) },
+  	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_C100_2) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_1004) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_1005) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_1006) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_1007) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_1008) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_1009) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_100A) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_100B) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_100C) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_100D) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_100E) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_100F) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_1010) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_1011) },
++	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_1012) },
+  	{ USB_DEVICE(KYOCERA_VENDOR_ID, KYOCERA_PRODUCT_KPC650) },
+  	{ USB_DEVICE(KYOCERA_VENDOR_ID, KYOCERA_PRODUCT_KPC680) },
+  	{ USB_DEVICE(QUALCOMM_VENDOR_ID, 0x6000)}, /* ZTE AC8700 */
+
+===================================================================
+
 
