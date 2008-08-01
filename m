@@ -1,126 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbYHABt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755646AbYHAB7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756796AbYHABt1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 21:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbYHABtT
+	id S1755646AbYHAB7R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 21:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYHAB7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 21:49:19 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63205 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752131AbYHABtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 21:49:18 -0400
-Message-ID: <48926B15.2020405@cn.fujitsu.com>
-Date: Fri, 01 Aug 2008 09:47:01 +0800
-From: zhangxiliang <zhangxiliang@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 31 Jul 2008 21:59:00 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:30547 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752131AbYHAB67 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 21:58:59 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5351"; a="5228985"
+Message-ID: <48926DDD.9030003@qualcomm.com>
+Date: Thu, 31 Jul 2008 18:58:53 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Eric Paris <eparis@redhat.com>
-CC: sgrubb@redhat.com, viro@zeniv.linux.org.uk,
-       Linux Audit <linux-audit@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] the loginuid field should be output in all	AUDIT_CONFIG_CHANGE
- audit messages
-References: <488FE2B9.2040101@cn.fujitsu.com> <1217526122.2902.103.camel@localhost.localdomain>
-In-Reply-To: <1217526122.2902.103.camel@localhost.localdomain>
-Content-Type: text/plain; charset=gb18030
+To: Paul Jackson <pj@sgi.com>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org, menage@google.com,
+       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com
+Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
+References: <1216852381-23445-1-git-send-email-maxk@qualcomm.com> <20080731151421.bb4af984.pj@sgi.com>
+In-Reply-To: <20080731151421.bb4af984.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> shouldn't these be using the "audit_get_loginuid(current)"  and if we
-> are going to output loginuid we also should be outputting sessionid
-
-Thanks for your detailed explanation.
-I have made a new patch for outputing "loginuid" and "sessionid" by audit_get_loginuid(current) and audit_get_sessionid(current).
-If there are some deficiencies, please give me your indication.
-
-Signed-off-by: Zhang Xiliang <zhangxiliang@cn.fujitsu.com>
----
- kernel/auditfilter.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
-index 98c50cc..b7d354e 100644
---- a/kernel/auditfilter.c
-+++ b/kernel/auditfilter.c
-@@ -1022,8 +1022,11 @@ static void audit_update_watch(struct audit_parent *parent,
- 			struct audit_buffer *ab;
- 			ab = audit_log_start(NULL, GFP_KERNEL,
- 				AUDIT_CONFIG_CHANGE);
-+			audit_log_format(ab, "auid=%u ses=%u",
-+				audit_get_loginuid(current),
-+				audit_get_sessionid(current));
- 			audit_log_format(ab,
--				"op=updated rules specifying path=");
-+				" op=updated rules specifying path=");
- 			audit_log_untrustedstring(ab, owatch->path);
- 			audit_log_format(ab, " with dev=%u ino=%lu\n",
- 				 dev, ino);
-@@ -1058,7 +1061,10 @@ static void audit_remove_parent_watches(struct audit_parent *parent)
- 				struct audit_buffer *ab;
- 				ab = audit_log_start(NULL, GFP_KERNEL,
- 					AUDIT_CONFIG_CHANGE);
--				audit_log_format(ab, "op=remove rule path=");
-+				audit_log_format(ab, "auid=%u ses=%u",
-+					audit_get_loginuid(current),
-+					audit_get_sessionid(current));
-+				audit_log_format(ab, " op=remove rule path=");
- 				audit_log_untrustedstring(ab, w->path);
- 				if (r->filterkey) {
- 					audit_log_format(ab, " key=");
--- 
-1.5.4.2
-
-
-Regards
-Zhang Xiliang
-
-Eric Paris said the following on 2008-08-01 1:42:
-> On Wed, 2008-07-30 at 11:40 +0800, zhangxiliang wrote:
->> In the audit message which type is "AUDIT_CONFIG_CHANGE", the output format should contain "auid" field.
+Paul Jackson wrote:
+> Max,
 > 
-> shouldn't these be using the "audit_get_loginuid(current)"  and if we
-> are going to output loginuid we also should be outputting sessionid
+> What kernel version was this patch against?
 > 
-> -Eric
-> 
->> Signed-off-by: Zhang Xiliang <zhangxiliang@cn.fujitsu.com>
->> ---
->>  kernel/auditfilter.c |    6 ++++--
->>  1 files changed, 4 insertions(+), 2 deletions(-)
->>
->> diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
->> index 98c50cc..8a184f5 100644
->> --- a/kernel/auditfilter.c
->> +++ b/kernel/auditfilter.c
->> @@ -1022,8 +1022,9 @@ static void audit_update_watch(struct audit_parent *parent,
->>  			struct audit_buffer *ab;
->>  			ab = audit_log_start(NULL, GFP_KERNEL,
->>  				AUDIT_CONFIG_CHANGE);
->> +			audit_log_format(ab, "auid=%u", current->loginuid);
->>  			audit_log_format(ab,
->> -				"op=updated rules specifying path=");
->> +				" op=updated rules specifying path=");
->>  			audit_log_untrustedstring(ab, owatch->path);
->>  			audit_log_format(ab, " with dev=%u ino=%lu\n",
->>  				 dev, ino);
->> @@ -1058,7 +1059,8 @@ static void audit_remove_parent_watches(struct audit_parent *parent)
->>  				struct audit_buffer *ab;
->>  				ab = audit_log_start(NULL, GFP_KERNEL,
->>  					AUDIT_CONFIG_CHANGE);
->> -				audit_log_format(ab, "op=remove rule path=");
->> +				audit_log_format(ab, "auid=%u", current->loginuid);
->> +				audit_log_format(ab, " op=remove rule path=");
->>  				audit_log_untrustedstring(ab, w->path);
->>  				if (r->filterkey) {
->>  					audit_log_format(ab, " key=");
->> -- 
->> 1.5.4.2
->>
->>
-> 
-> 
-> 
+> I've tried 2.6.27-rc1-mm1, 2.6.27-rc1, and 2.6.26,
+> and it doesn't apply cleanly on any of them.
 > 
 
+It was on top of the then latest -tip.
+I believe it git automerged it with no conflicts on top of .27-rc1.
+I'll resend updated version a bit later.
+
+Max
