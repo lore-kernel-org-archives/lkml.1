@@ -1,38 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759038AbYHAJkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758883AbYHAJjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759038AbYHAJkO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 05:40:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbYHAJij
+	id S1758883AbYHAJjz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 05:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbYHAJii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 05:38:39 -0400
-Received: from qb-out-0506.google.com ([72.14.204.235]:16382 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754174AbYHAJii (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 1 Aug 2008 05:38:38 -0400
+Received: from qb-out-0506.google.com ([72.14.204.237]:14084 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753596AbYHAJig (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 05:38:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Vnna3sYgIER1eJV0ZM/nE1e0KrtdvZFGeh8ZvBvG7PHjH/Igqs2p6Gu1iwPF98kae0
-         w5gvUpRavPiglOKFpf3ceZLQXB+6ySvOXfnO42b7BUe2VYIj9COQg8mE/fZuIBUnSDGh
-         /c1/JZHGbUc7mjmwGMew47NycwqnFLP/DdjIo=
+        b=eoeWur/8haxvkUjM6wU0E1Vv3/qT5lO0buKuGrV/pm+oaCSGZkpMBpIrUwuwrBFu1v
+         KU1ErFBLz3gnkaKxcv2up77sVvNs+85UE2dMRUQK7YtkTQX+QJYwMn3MUHIbvc4MK7DE
+         rBe+Lt0GsKNBoJATwDsUNc7QlE1M+MdQevvZM=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        hpa <hpa@zytor.com>, Eric Biederman <ebiederm@xmission.com>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 06/16] make irq_desc to use dyn_array
-Date: Fri,  1 Aug 2008 02:37:34 -0700
-Message-Id: <1217583464-28494-7-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 05/16] make irq2_iommu to use dyn_array
+Date: Fri,  1 Aug 2008 02:37:33 -0700
+Message-Id: <1217583464-28494-6-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217583464-28494-6-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1217583464-28494-5-git-send-email-yhlu.kernel@gmail.com>
 References: <1217583464-28494-1-git-send-email-yhlu.kernel@gmail.com>
  <1217583464-28494-2-git-send-email-yhlu.kernel@gmail.com>
  <1217583464-28494-3-git-send-email-yhlu.kernel@gmail.com>
  <1217583464-28494-4-git-send-email-yhlu.kernel@gmail.com>
  <1217583464-28494-5-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-6-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -40,72 +39,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
- include/linux/irq.h |    4 ++++
- kernel/irq/handle.c |   31 +++++++++++++++++++++++++++++++
- 2 files changed, 35 insertions(+)
+ drivers/pci/intr_remapping.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/include/linux/irq.h
+Index: linux-2.6/drivers/pci/intr_remapping.c
 ===================================================================
---- linux-2.6.orig/include/linux/irq.h
-+++ linux-2.6/include/linux/irq.h
-@@ -181,7 +181,11 @@ struct irq_desc {
- 	const char		*name;
- } ____cacheline_internodealigned_in_smp;
+--- linux-2.6.orig/drivers/pci/intr_remapping.c
++++ linux-2.6/drivers/pci/intr_remapping.c
+@@ -11,12 +11,14 @@ static struct ioapic_scope ir_ioapic[MAX
+ static int ir_ioapic_num;
+ int intr_remapping_enabled;
  
-+#ifdef CONFIG_HAVE_DYN_ARRAY
-+extern struct irq_desc *irq_desc;
-+#else
- extern struct irq_desc irq_desc[NR_IRQS];
-+#endif
+-static struct {
++static struct irq_2_iommu {
+ 	struct intel_iommu *iommu;
+ 	u16 irte_index;
+ 	u16 sub_handle;
+ 	u8  irte_mask;
+-} irq_2_iommu[NR_IRQS];
++} *irq_2_iommu;
++
++DEFINE_DYN_ARRAY(irq_2_iommu, sizeof(struct irq_2_iommu), nr_irqs, PAGE_SIZE, NULL);
  
- /*
-  * Migration helpers for obsolete names, they will go away:
-Index: linux-2.6/kernel/irq/handle.c
-===================================================================
---- linux-2.6.orig/kernel/irq/handle.c
-+++ linux-2.6/kernel/irq/handle.c
-@@ -48,6 +48,36 @@ handle_bad_irq(unsigned int irq, struct
-  * Controller mappings for all interrupt sources:
-  */
- int nr_irqs = NR_IRQS;
-+
-+#ifdef CONFIG_HAVE_DYN_ARRAY
-+static struct irq_desc irq_desc_init = {
-+	.status = IRQ_DISABLED,
-+	.chip = &no_irq_chip,
-+	.handle_irq = handle_bad_irq,
-+	.depth = 1,
-+	.lock = __SPIN_LOCK_UNLOCKED(irq_desc->lock),
-+#ifdef CONFIG_SMP
-+	.affinity = CPU_MASK_ALL
-+#endif
-+};
-+
-+static void __init init_work(void *data)
-+{
-+	struct dyn_array *da = data;
-+	int i;
-+	struct  irq_desc *desc;
-+
-+	desc = *da->name;
-+
-+	for (i = 0; i < *da->nr; i++)
-+		memcpy(&desc[i], &irq_desc_init, sizeof(struct irq_desc));
-+}
-+
-+struct irq_desc *irq_desc;
-+DEFINE_DYN_ARRAY(irq_desc, sizeof(struct irq_desc), nr_irqs, PAGE_SIZE, init_work);
-+
-+#else
-+
- struct irq_desc irq_desc[NR_IRQS] __cacheline_aligned_in_smp = {
- 	[0 ... NR_IRQS-1] = {
- 		.status = IRQ_DISABLED,
-@@ -60,6 +90,7 @@ struct irq_desc irq_desc[NR_IRQS] __cach
- #endif
- 	}
- };
-+#endif
+ static DEFINE_SPINLOCK(irq_2_ir_lock);
  
- /*
-  * What should we do if we get a hw irq event on an illegal vector?
