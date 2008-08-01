@@ -1,209 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756715AbYHAQpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbYHAQqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756715AbYHAQpy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 12:45:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbYHAQoe
+	id S1756869AbYHAQqS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 12:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbYHAQoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 1 Aug 2008 12:44:34 -0400
-Received: from gate.crashing.org ([63.228.1.57]:50631 "EHLO gate.crashing.org"
+Received: from gate.crashing.org ([63.228.1.57]:50636 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752744AbYHAQoc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 12:44:32 -0400
+	id S1752921AbYHAQod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 12:44:33 -0400
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 03/10] fs-enet: remove code associated with !CONFIG_PPC_MERGE
-Date: Fri,  1 Aug 2008 11:44:13 -0500
-Message-Id: <1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 05/10] rtc: use CONFIG_PPC instead of CONFIG_PPC_MERGE
+Date: Fri,  1 Aug 2008 11:44:15 -0500
+Message-Id: <1217609060-6381-6-git-send-email-galak@kernel.crashing.org>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1217609060-6381-3-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1217609060-6381-5-git-send-email-galak@kernel.crashing.org>
 References: <1217609060-6381-1-git-send-email-galak@kernel.crashing.org>
  <1217609060-6381-2-git-send-email-galak@kernel.crashing.org>
  <1217609060-6381-3-git-send-email-galak@kernel.crashing.org>
-CC: netdev@vger.kernel.org
-CC: jgarzik@pobox.com
+ <1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
+ <1217609060-6381-5-git-send-email-galak@kernel.crashing.org>
+CC: rtc-linux@googlegroups.com
+CC: a.zummo@towertech.it
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that arch/ppc is gone we don't need CONFIG_PPC_MERGE anymore remove
-the dead code associated with !CONFIG_PPC_MERGE.
-
-With this change the pre_request_irq() and post_free_irq() calls became
-nops so they have been removed.
+Now that arch/ppc is dead CONFIG_PPC_MERGE is always defined for all
+powerpc platforms and we want to get rid of it use CONFIG_PPC instead.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- drivers/net/fs_enet/fs_enet-main.c |    2 --
- drivers/net/fs_enet/fs_enet.h      |    2 --
- drivers/net/fs_enet/mac-fcc.c      |   12 ------------
- drivers/net/fs_enet/mac-fec.c      |   30 ------------------------------
- drivers/net/fs_enet/mac-scc.c      |   26 --------------------------
- 5 files changed, 0 insertions(+), 72 deletions(-)
+ drivers/rtc/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index 9a51ec8..e54d003 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -669,7 +669,6 @@ static int fs_request_irq(struct net_device *dev, int irq, const char *name,
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 90ab738..564a3ed 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -577,7 +577,7 @@ config RTC_DRV_RS5C313
  
--	(*fep->ops->pre_request_irq)(dev, irq);
- 	return request_irq(irq, irqf, IRQF_SHARED, name, dev);
- }
- 
-@@ -678,7 +677,6 @@ static void fs_free_irq(struct net_device *dev, int irq)
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 
- 	free_irq(irq, dev);
--	(*fep->ops->post_free_irq)(dev, irq);
- }
- 
- static void fs_timeout(struct net_device *dev)
-diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
-index db46d2e..85a4bab 100644
---- a/drivers/net/fs_enet/fs_enet.h
-+++ b/drivers/net/fs_enet/fs_enet.h
-@@ -34,8 +34,6 @@ struct fs_ops {
- 	void (*adjust_link)(struct net_device *dev);
- 	void (*restart)(struct net_device *dev);
- 	void (*stop)(struct net_device *dev);
--	void (*pre_request_irq)(struct net_device *dev, int irq);
--	void (*post_free_irq)(struct net_device *dev, int irq);
- 	void (*napi_clear_rx_event)(struct net_device *dev);
- 	void (*napi_enable_rx)(struct net_device *dev);
- 	void (*napi_disable_rx)(struct net_device *dev);
-diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
-index 0a97fc2..b8c40d0 100644
---- a/drivers/net/fs_enet/mac-fcc.c
-+++ b/drivers/net/fs_enet/mac-fcc.c
-@@ -421,16 +421,6 @@ static void stop(struct net_device *dev)
- 	fs_cleanup_bds(dev);
- }
- 
--static void pre_request_irq(struct net_device *dev, int irq)
--{
--	/* nothing */
--}
--
--static void post_free_irq(struct net_device *dev, int irq)
--{
--	/* nothing */
--}
--
- static void napi_clear_rx_event(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
-@@ -540,8 +530,6 @@ const struct fs_ops fs_fcc_ops = {
- 	.set_multicast_list	= set_multicast_list,
- 	.restart		= restart,
- 	.stop			= stop,
--	.pre_request_irq	= pre_request_irq,
--	.post_free_irq		= post_free_irq,
- 	.napi_clear_rx_event	= napi_clear_rx_event,
- 	.napi_enable_rx		= napi_enable_rx,
- 	.napi_disable_rx	= napi_disable_rx,
-diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
-index 0a7d1c5..14e5753 100644
---- a/drivers/net/fs_enet/mac-fec.c
-+++ b/drivers/net/fs_enet/mac-fec.c
-@@ -313,11 +313,7 @@ static void restart(struct net_device *dev)
- 	 * Clear any outstanding interrupt.
- 	 */
- 	FW(fecp, ievent, 0xffc0);
--#ifndef CONFIG_PPC_MERGE
--	FW(fecp, ivec, (fep->interrupt / 2) << 29);
--#else
- 	FW(fecp, ivec, (virq_to_hw(fep->interrupt) / 2) << 29);
--#endif
- 
- 	/*
- 	 * adjust to speed (only for DUET & RMII)
-@@ -413,30 +409,6 @@ static void stop(struct net_device *dev)
- 	}
- }
- 
--static void pre_request_irq(struct net_device *dev, int irq)
--{
--#ifndef CONFIG_PPC_MERGE
--	immap_t *immap = fs_enet_immap;
--	u32 siel;
--
--	/* SIU interrupt */
--	if (irq >= SIU_IRQ0 && irq < SIU_LEVEL7) {
--
--		siel = in_be32(&immap->im_siu_conf.sc_siel);
--		if ((irq & 1) == 0)
--			siel |= (0x80000000 >> irq);
--		else
--			siel &= ~(0x80000000 >> (irq & ~1));
--		out_be32(&immap->im_siu_conf.sc_siel, siel);
--	}
--#endif
--}
--
--static void post_free_irq(struct net_device *dev, int irq)
--{
--	/* nothing */
--}
--
- static void napi_clear_rx_event(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
-@@ -529,8 +501,6 @@ const struct fs_ops fs_fec_ops = {
- 	.set_multicast_list	= set_multicast_list,
- 	.restart		= restart,
- 	.stop			= stop,
--	.pre_request_irq	= pre_request_irq,
--	.post_free_irq		= post_free_irq,
- 	.napi_clear_rx_event	= napi_clear_rx_event,
- 	.napi_enable_rx		= napi_enable_rx,
- 	.napi_disable_rx	= napi_disable_rx,
-diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
-index 029b3c7..397608a 100644
---- a/drivers/net/fs_enet/mac-scc.c
-+++ b/drivers/net/fs_enet/mac-scc.c
-@@ -371,30 +371,6 @@ static void stop(struct net_device *dev)
- 	fs_cleanup_bds(dev);
- }
- 
--static void pre_request_irq(struct net_device *dev, int irq)
--{
--#ifndef CONFIG_PPC_MERGE
--	immap_t *immap = fs_enet_immap;
--	u32 siel;
--
--	/* SIU interrupt */
--	if (irq >= SIU_IRQ0 && irq < SIU_LEVEL7) {
--
--		siel = in_be32(&immap->im_siu_conf.sc_siel);
--		if ((irq & 1) == 0)
--			siel |= (0x80000000 >> irq);
--		else
--			siel &= ~(0x80000000 >> (irq & ~1));
--		out_be32(&immap->im_siu_conf.sc_siel, siel);
--	}
--#endif
--}
--
--static void post_free_irq(struct net_device *dev, int irq)
--{
--	/* nothing */
--}
--
- static void napi_clear_rx_event(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
-@@ -488,8 +464,6 @@ const struct fs_ops fs_scc_ops = {
- 	.set_multicast_list	= set_multicast_list,
- 	.restart		= restart,
- 	.stop			= stop,
--	.pre_request_irq	= pre_request_irq,
--	.post_free_irq		= post_free_irq,
- 	.napi_clear_rx_event	= napi_clear_rx_event,
- 	.napi_enable_rx		= napi_enable_rx,
- 	.napi_disable_rx	= napi_disable_rx,
+ config RTC_DRV_PPC
+        tristate "PowerPC machine dependent RTC support"
+-       depends on PPC_MERGE
++       depends on PPC
+        help
+ 	 The PowerPC kernel has machine-specific functions for accessing
+ 	 the RTC. This exposes that functionality through the generic RTC
 -- 
 1.5.5.1
 
