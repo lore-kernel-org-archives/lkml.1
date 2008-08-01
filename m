@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762462AbYHAVR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762586AbYHAVRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762462AbYHAVR1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759993AbYHAVKu
+	id S1762586AbYHAVRs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760972AbYHAVKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:10:50 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:40886 "EHLO e3.ny.us.ibm.com"
+	Fri, 1 Aug 2008 17:10:51 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:42013 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760649AbYHAVKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:10:42 -0400
-Date: Fri, 1 Aug 2008 14:10:36 -0700
+	id S1760693AbYHAVKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 17:10:45 -0400
+Date: Fri, 1 Aug 2008 14:10:43 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: recent -git: BUG in free_thread_xstate
-Message-ID: <20080801211036.GU14851@linux.vnet.ibm.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, peterz@infradead.org,
+       davem@davemloft.net, jarkao2@gmail.com, Larry.Finger@lwfinger.net,
+       kaber@trash.net, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       mingo@redhat.com
+Subject: Re: Kernel WARNING: at net/core/dev.c:1330
+	__netif_schedule+0x2c/0x98()
+Message-ID: <20080801211043.GW14851@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <19f34abd0807231307y191c0ad7tfab4cda57ee88eb@mail.gmail.com> <20080723203109.GH14380@linux-os.sc.intel.com>
+References: <1216890648.7257.258.camel@twins> <200807242038.36693.nickpiggin@yahoo.com.au> <E1KLyUI-0006ZS-Cg@pomaz-ex.szeredi.hu> <200807242106.52672.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080723203109.GH14380@linux-os.sc.intel.com>
+In-Reply-To: <200807242106.52672.nickpiggin@yahoo.com.au>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 23, 2008 at 01:31:09PM -0700, Suresh Siddha wrote:
-> On Wed, Jul 23, 2008 at 01:07:04PM -0700, Vegard Nossum wrote:
-> > Hi,
-> > 
-> > I just got this on c010b2f76c3032e48097a6eef291d8593d5d79a6 (-git from
-> > yesterday):
+On Thu, Jul 24, 2008 at 09:06:51PM +1000, Nick Piggin wrote:
+> On Thursday 24 July 2008 20:55, Miklos Szeredi wrote:
+> > On Thu, 24 Jul 2008, Nick Piggin wrote:
+> > > Hey, something kind of cool (and OT) I've just thought of that we can
+> > > do with ticket locks is to take tickets for 2 (or 64K) nested locks,
+> > > and then wait for them both (all), so the cost is N*lock + longest spin,
+> > > rather than N*lock + N*avg spin.
+> >
+> > Isn't this deadlocky?
+> >
+> > E.g. one task takes ticket x=1, then other task comes in and takes x=2
+> > and y=1, then first task takes y=2.  Then neither can actually
+> > complete both locks.
 > 
-> Do you see this in 2.6.26 aswell? I suspect it is coming from post 2.6.26
-> changes.
+> Oh duh of course you still need mutual exclusion from the first lock
+> to order the subsequent :P
 > 
-> > 
-> > BUG: unable to handle kernel paging request at 00664381
-> > IP: [<c010b274>] free_thread_xstate+0x4/0x30
-> ...
-> 
-> > EIP is at arch/x86/kernel/process.c:36:
-> > 
-> >         if (tsk->thread.xstate) {
-> > 
-> 
-> It looks like the kernel stack of that process got corrupted, corrupting the
-> task pointer in thread_info. Can you send us your config file?
+> So yeah it only works for N > 2 locks, and you have to spin_lock the
+> first one... so unsuitable for scheduler.
 
-I would also like to see the config file.
+Or sort the locks by address or some such.
 
 							Thanx, Paul
