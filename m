@@ -1,80 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbYHAUzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759589AbYHAVBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760098AbYHAUzw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 16:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759946AbYHAUzm
+	id S1759589AbYHAVBz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756235AbYHAVBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 16:55:42 -0400
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:49562 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759933AbYHAUzl (ORCPT
+	Fri, 1 Aug 2008 17:01:46 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:42363 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756200AbYHAVBp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 16:55:41 -0400
-Message-ID: <48937891.2040606@opengridcomputing.com>
-Date: Fri, 01 Aug 2008 15:56:49 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 1 Aug 2008 17:01:45 -0400
+Date: Fri, 1 Aug 2008 14:01:42 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       laijs@cn.fujitsu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Rusty Russel <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] fix rcu vs hotplug race
+Message-ID: <20080801210142.GA14851@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080623103700.GA4043@linux.vnet.ibm.com> <20080623105844.GC28192@elte.hu> <20080623114941.GB3160@in.ibm.com> <20080624110144.GA8695@elte.hu> <20080626152728.GA24972@linux.vnet.ibm.com> <20080627044738.GC3419@in.ibm.com> <20080627051855.GD26167@in.ibm.com> <20080627054959.GB3309@linux.vnet.ibm.com> <20080627145845.GA9229@linux.vnet.ibm.com> <20080701053900.GB8205@in.ibm.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: BUG on booting 2.6.27-rc1
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080701053900.GB8205@in.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anybody seen this?
+On Tue, Jul 01, 2008 at 11:09:00AM +0530, Gautham R Shenoy wrote:
+> On Fri, Jun 27, 2008 at 07:58:45AM -0700, Paul E. McKenney wrote:
+> > On Fri, Jun 27, 2008 at 11:19:59AM +0530, Dhaval Giani wrote:
+> > > On Fri, Jun 27, 2008 at 10:48:55AM +0530, Dipankar Sarma wrote:
+> > > > On Fri, Jun 27, 2008 at 10:17:38AM +0530, Gautham R Shenoy wrote:
+> > > > > IMHO the warning is a spurious one.
+> > > > > Here's the timeline.
+> > > > > CPU_A						 CPU_B
+> > > > > --------------------------------------------------------------
+> > > > > cpu_down():					.
+> > > > > .					   	.
+> > > > > .						.
+> > > > > stop_machine(): /* disables preemption,		.
+> > > > > 		 * and irqs */			.
+> > > > > .						.
+> > > > > .						.
+> > > > > take_cpu_down();				.
+> > > > > .						.
+> > > > > .						.
+> > > > > .						.
+> > > > > cpu_disable(); /*this removes cpu 		.
+> > > > > 		*from cpu_online_map 		.
+> > > > > 		*/				.
+> > > > > .						.
+> > > > > .						.
+> > > > > restart_machine(); /* enables irqs */		.
+> > > > > ------WINDOW DURING WHICH rcp->cpumask is stale ---------------
+> > > > > .						call_rcu();
+> > > > > .						/* disables irqs here */
+> > > > > .						.force_quiescent_state();
+> > > > > .CPU_DEAD:					.for_each_cpu(rcp->cpumask)
+> > > > > .						.   smp_send_reschedule();
+> > > > > .						.
+> > > > > .						.   WARN_ON() for offlined CPU!
+> > > > > .
+> > > > 
+> > > > Exactly. The call_rcu()s are coming from a different subsystem
+> > > > and can happen anytime during the CPU hotplug path. So, RCU subsystem
+> > > > doesn't have anything to do to keep rcu->cpumask consistent.
+> > > > It is *safe* even if we miss poking a cpu or two while
+> > > > forcing quiescent state in all CPUs. The worst that can happen
+> > > > is a delay in grace period. No correctness problem here.
+> > > > 
+> > > 
+> > > One question. What is preventing a CPU from clearing its mask after we
+> > > have checked whether it is online but before we have called into
+> > > smp_send_reschedule?
+> > 
+> > This is my concern as well.  Gautham, at which point in the above
+> > timeline is the offlining CPU marked DYING?  Before stop_machine(), right?
+> 
+> No :) The offlining CPU is marked DYING after stop_machine(), inside
+> take_cpu_down() which is the work we want to execute after stopping the
+> machine.
+> 
+> it's like
+> _cpu_down()
+> |
+> |-> stop_machine_run();
+> |   |
+> |   |-> stop_machine(); /* All CPUs irqs disabled. */
+> |   |
+> |   |-> take_cpu_down() --> sets state to CPU_DYING. disables irqs on
+> |   |				offlined cpu
+> |   |
+> |   |-> restart_machine(); /* All CPUs irqs reenabled */
+> |
+> |-> send_CPU_DEAD_notification.
+> 
+> The very fact that a thread is running with irqs disabled means that
+> stop_machine_run() thread cannot start executing the work it has been
+> assinged to execute. Because for Machine to be stopped, stop_machine()
+> needs to create n-1 high priority threads on n-1 online cpus, which will
+> disable interrupts and preemption, and stop the machine. Then it will
+> run the task assigned to it on the ith cpu, which in this case is the
+> cpu to be offlined.
+> 
+> So, it's the design of stop_machine() that's preventing someone
+> from updating the cpu_online_map while
+> force_quiescent_state() is performing the
+> cpu_is_online() check. Becase we always call force_quiescent_state()
+> with irqs disabled :)
 
-Its on x86_64, FC7 distro quad core cpu.  I have 2 similar systems, and 
-one boots up ok but the other hits this on -rc1 right off the bat.
+Got it, so the patch looks good.
 
+							Thanx, Paul
 
-
-
-Starting udev: ------------[ cut here ]------------
-kernel BUG at kernel/stop_machine.c:151!
-invalid opcode: 0000 [1] SMP
-CPU 0
-Modules linked in: dm_snapshot dm_zero dm_mirror dm_log dm_mod 
-pata_jmicron ata_generic ata_piix libata sd_mod scsi_mod ext3 jbd 
-mbcache [last unloaded: scsi_wait_scan]
-Pid: 960, comm: modprobe Not tainted 2.6.27-rc1 #7
-RIP: 0010:[<ffffffff8105be33>]  [<ffffffff8105be33>] 
-__stop_machine+0x134/0x1ea
-RSP: 0018:ffff88012e5dbd68  EFLAGS: 00010286
-RAX: 00000000fffffff3 RBX: ffff88012b9b1d40 RCX: 0000000000000206
-RDX: 000000000000100f RSI: 0000000000000246 RDI: ffffffff81380cb0
-RBP: ffff88012dbd5e00 R08: 0000000000000000 R09: ffffffff813cfb28
-R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
-R13: ffff88012dbd5e00 R14: 0000000000000000 R15: 00007ff1dab40010
-FS:  00007ff1daba26f0(0000) GS:ffffffff813d0b00(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 00007ff1dab7b00f CR3: 000000012e4a8000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process modprobe (pid: 960, threadinfo ffff88012e5da000, task 
-ffff88012d8c2490)
-Stack:  ffffffff8105bcfc 0000000000000000 0000000000000000 0000000000000000
- ffffffff810517f7 ffffffffa00cc000 0000000000000000 ffffffff8101d469
- 0000000000000063 ffffffff812501ce 0000000000000000 0000000000000000
-Call Trace:
- [<ffffffff8105bcfc>] ? chill+0x0/0x3
- [<ffffffff810517f7>] ? __link_module+0x0/0x1f
- [<ffffffff8101d469>] ? module_finalize+0xa0/0x121
- [<ffffffff812501ce>] ? mutex_lock+0xd/0x1e
- [<ffffffff810517f7>] ? __link_module+0x0/0x1f
- [<ffffffff8105bf0a>] ? stop_machine+0x21/0x30
- [<ffffffff81052dd2>] ? load_module+0x11a0/0x1624
- [<ffffffff81196f5c>] ? bus_register+0x0/0x224
- [<ffffffff810f670f>] ? selinux_capable+0x87/0x90
- [<ffffffff810532a3>] ? sys_init_module+0x4d/0x1a7
- [<ffffffff8100bdbb>] ? system_call_fastpath+0x16/0x1b
-
-
-Code: 00 83 cd ff e9 a0 00 00 00 48 89 c7 44 89 e6 e8 d8 95 fe ff 48 8b 
-7d 00 48 8d 54 24 40 be 01 00 00 00 e8 c7 39 fd ff 85 c0 74 04 <0f> 0b 
-eb fe 44 89 e7 48 c7 c6 98 0d 3d 81 e8 3a ea 0b 00 83 f8
-RIP  [<ffffffff8105be33>] __stop_machine+0x134/0x1ea
- RSP <ffff88012e5dbd68>
----[ end trace 47a6f3d3cb718199 ]---
-
+> > If so, can't we just disable irqs, check for DYING or DEAD, and invoke
+> > smp_send_reschedule() only if not DYING or DEAD?
+> 
+> 
+> 
+> > 
+> > 							Thanx, Paul
+> 
+> -- 
+> Thanks and Regards
+> gautham
