@@ -1,57 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758991AbYHAXU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755695AbYHAXVC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758991AbYHAXU0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 19:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYHAXUP
+	id S1755695AbYHAXVC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 19:21:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYHAXUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 19:20:15 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55870
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752684AbYHAXUO (ORCPT
+	Fri, 1 Aug 2008 19:20:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48966 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbYHAXUy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 19:20:14 -0400
-Date: Fri, 01 Aug 2008 16:20:13 -0700 (PDT)
-Message-Id: <20080801.162013.06459319.davem@davemloft.net>
-To: hugh@veritas.com
-Cc: jeremy@goop.org, torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] lockdep: lock_set_subclass - reset a held lock's
- subclass
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0808012051380.6485@blonde.site>
-References: <alpine.LFD.1.10.0808011113530.3277@nehalem.linux-foundation.org>
-	<48935FA4.5010804@goop.org>
-	<Pine.LNX.4.64.0808012051380.6485@blonde.site>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 1 Aug 2008 19:20:54 -0400
+Subject: Re: mtdsuper.c BLOCK=n compile error
+From: David Woodhouse <dwmw2@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080801225858.GM19682@cs181140183.pp.htv.fi>
+References: <20080801223056.GK19682@cs181140183.pp.htv.fi>
+	 <1217630912.3719.41.camel@shinybook.infradead.org>
+	 <20080801225858.GM19682@cs181140183.pp.htv.fi>
+Content-Type: text/plain
+Date: Sat, 02 Aug 2008 00:20:51 +0100
+Message-Id: <1217632851.3719.47.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hugh Dickins <hugh@veritas.com>
-Date: Fri, 1 Aug 2008 20:59:08 +0100 (BST)
+On Sat, 2008-08-02 at 01:58 +0300, Adrian Bunk wrote:
+> Still gives a compile error for the second bdput().
 
-> On Fri, 1 Aug 2008, Jeremy Fitzhardinge wrote:
-> > 
-> > I have a function traversing a pagetable in vaddr order (low to high), taking
-> > pte locks as it builds up batches of pte page updates.  When the batch is
-> > issued, it releases all the locks, and won't end up holding more than ~16 at a
-> > time.
-> > 
-> > So, I think this is OK.  There are no internal lock ordering issues, and I
-> > don't think there'll be any bad interactions from someone trying to take pte
-> > locks for two separate pagetables.  I don't think there's anyone else trying
-> > to take more than one pte lock at once, but if there were "lock low vaddr then
-> > high" seems like a reasonable locking rule (or more precisely "lowest" to deal
-> > with the case of a pte page being aliased at multiple vaddrs).
-> 
-> Please check the spin_lock_nested() in move_ptes() in mm/mremap.c.
+Er, why is the second bdput() there _anyway_?
 
-It won't work because spin_lock_nested() is limited to a depth
-of 8 and he aparently needs 16.
+[MTD] Fix !CONFIG_BLOCK compile for mtdsuper.c
+    
+As reported by Adrian Bunk, commit d5686b444ff3f72808d2b3fbd58672a86cdf38e7
+(switch mtd and dm-table to lookup_bdev()) causes the following compile
+error with CONFIG_BLOCK=n:
+    
+  CC      drivers/mtd/mtdsuper.o
+drivers/mtd/mtdsuper.c: In function `get_sb_mtd':
+drivers/mtd/mtdsuper.c:184: error: implicit declaration of function 'lookup_bdev'
+drivers/mtd/mtdsuper.c:184: warning: assignment makes pointer from integer without a cast
+drivers/mtd/mtdsuper.c:197: error: implicit declaration of function 'bdput'
+make[3]: *** [drivers/mtd/mtdsuper.o] Error 1
+    
+Fix it by putting the block device lookup inside #ifdef CONFIG_BLOCK
+    
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 
-Taking more than a few locks of the same class at once is bad
-news and it's better to find an alternative method.
+diff --git a/drivers/mtd/mtdsuper.c b/drivers/mtd/mtdsuper.c
+index 9b6af7e..78114e3 100644
+--- a/drivers/mtd/mtdsuper.c
++++ b/drivers/mtd/mtdsuper.c
+@@ -125,8 +125,11 @@ int get_sb_mtd(struct file_system_type *fs_type,
+int flags,
+ 	       int (*fill_super)(struct super_block *, void *, int),
+ 	       struct vfsmount *mnt)
+ {
++#ifdef CONFIG_BLOCK
+ 	struct block_device *bdev;
+-	int mtdnr, ret;
++	int ret;
++#endif
++	int mtdnr;
+ 
+ 	if (!dev_name)
+ 		return -EINVAL;
+@@ -178,6 +181,7 @@ int get_sb_mtd(struct file_system_type *fs_type, int
+flags,
+ 		}
+ 	}
+ 
++#ifdef CONFIG_BLOCK
+ 	/* try the old way - the hack where we allowed users to mount
+ 	 * /dev/mtdblock$(n) but didn't actually _use_ the blockdev
+ 	 */
+@@ -200,12 +204,13 @@ int get_sb_mtd(struct file_system_type *fs_type,
+int flags,
+ 			     mnt);
+ 
+ not_an_MTD_device:
++#endif /* CONFIG_BLOCK */
++
+ 	if (!(flags & MS_SILENT))
+ 		printk(KERN_NOTICE
+ 		       "MTD: Attempt to mount non-MTD device \"%s\"\n",
+ 		       dev_name);
+-	bdput(bdev);
+-	return ret;
++	return -EINVAL;
+ }
+ 
+ EXPORT_SYMBOL_GPL(get_sb_mtd);
+
+-- 
+dwmw2
 
