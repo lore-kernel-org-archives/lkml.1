@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbYHAHB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758311AbYHAHCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758060AbYHAHB6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 03:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbYHAHBr
+	id S1758311AbYHAHCX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 03:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbYHAHCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 03:01:47 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42968
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753325AbYHAHBq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 03:01:46 -0400
-Date: Fri, 01 Aug 2008 00:01:46 -0700 (PDT)
-Message-Id: <20080801.000146.246099981.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: johannes@sipsolutions.net, netdev@axxeo.de, peterz@infradead.org,
-       Larry.Finger@lwfinger.net, kaber@trash.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, mingo@redhat.com
-Subject: Re: Kernel WARNING: at net/core/dev.c:1330
- __netif_schedule+0x2c/0x98()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080801070150.GB4435@ff.dom.local>
-References: <20080731.052932.110299354.davem@davemloft.net>
-	<20080801064810.GA4435@ff.dom.local>
-	<20080801070150.GB4435@ff.dom.local>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Aug 2008 03:02:04 -0400
+Received: from ns2.suse.de ([195.135.220.15]:43030 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755366AbYHAHCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 03:02:03 -0400
+Date: Thu, 31 Jul 2008 23:39:02 -0700
+From: Greg KH <gregkh@suse.de>
+To: ml@mareichelt.de, linux-kernel@vger.kernel.org
+Cc: Willy Tarreau <w@1wt.eu>
+Subject: Re: Linux 2.6.25.13
+Message-ID: <20080801063902.GA9281@suse.de>
+References: <20080728180740.GA28669@kroah.com> <20080731232235.GD10067@tatooine.rebelbase.local> <20080801050214.GE615@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080801050214.GE615@1wt.eu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Fri, 1 Aug 2008 07:01:50 +0000
-
-> On Fri, Aug 01, 2008 at 06:48:10AM +0000, Jarek Poplawski wrote:
-> > On Thu, Jul 31, 2008 at 05:29:32AM -0700, David Miller wrote:
-> ...
-> > > diff --git a/net/core/dev.c b/net/core/dev.c
-> > > index 63d6bcd..69320a5 100644
-> > > --- a/net/core/dev.c
-> > > +++ b/net/core/dev.c
-> > > @@ -4200,6 +4200,7 @@ static void netdev_init_queues(struct net_device *dev)
-> > >  {
-> > >  	netdev_init_one_queue(dev, &dev->rx_queue, NULL);
-> > >  	netdev_for_each_tx_queue(dev, netdev_init_one_queue, NULL);
-> > > +	spin_lock_init(&dev->tx_global_lock);
-> > 
-> > This will probably need some lockdep annotations similar to
-> > _xmit_lock.
+On Fri, Aug 01, 2008 at 07:02:14AM +0200, Willy Tarreau wrote:
 > 
-> ...BTW, we probably could also consider some optimization here: the
-> xmit_lock of the first queue could be treated as special, and only
-> the owner could do such a freezing. This would save changes of
-> functionality to non mq devices. On the other hand, it would need
-> remembering about this special treatment (so, eg. a separate lockdep
-> initialization than all the others).
+> [ please keep people in CC: ]
+> 
+> On Fri, Aug 01, 2008 at 01:22:35AM +0200, markus reichelt wrote:
+> > * Greg KH <gregkh@suse.de> wrote:
+> > 
+> > > I'll also be replying to this message with a copy of the patch
+> > > between 2.6.25.12 and 2.6.25.13
+> > 
+> > Given that the official patches are signed, how about signing such
+> > mails as well?
 
-I think special casing the zero's queue's lock is a bad idea.
-Having a real top-level synchronizer is a powerful tool and
-we could use it for other things.
+With what key?
+
+Do you trust my personal key?  If so, why?  What trust does it imply to
+you that my email message doesn't?  Why not trust the signature on the
+kernel.org server instead?
+
+Also, it makes actually applying patches in the mail a pain, trust me,
+I've tried it in the past.
+
+thanks,
+
+greg k-h
