@@ -1,110 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763069AbYHAVUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763142AbYHAVUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763069AbYHAVUL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761093AbYHAVLW
+	id S1763142AbYHAVUj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761104AbYHAVLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:11:22 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:49959 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761071AbYHAVLS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:11:18 -0400
-Date: Fri, 1 Aug 2008 14:11:14 -0700
+	Fri, 1 Aug 2008 17:11:24 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:49441 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761069AbYHAVLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 17:11:20 -0400
+Date: Fri, 1 Aug 2008 14:11:17 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
+To: =?iso-8859-1?Q?J=FCrgen?= Mell <j.mell@t-online.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
        rt-users <linux-rt-users@vger.kernel.org>,
        Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        Clark Williams <williams@redhat.com>,
        Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>
 Subject: Re: 2.6.26-rt1
-Message-ID: <20080801211114.GC14851@linux.vnet.ibm.com>
+Message-ID: <20080801211117.GD14851@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <alpine.LFD.1.10.0807252141420.574@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807271719130.574@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807291440240.14925@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807300006180.14925@apollo.tec.linutronix.de>
+References: <alpine.LFD.1.10.0807252141420.574@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807291440240.14925@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807300006180.14925@apollo.tec.linutronix.de> <200807301101.32417.j.mell@t-online.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807300006180.14925@apollo.tec.linutronix.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200807301101.32417.j.mell@t-online.de>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 12:21:10AM +0200, Thomas Gleixner wrote:
-> We are pleased to announce the 2.6.26-rt1 tree, which can be
-> downloaded from the location:
->   
->    http://rt.et.redhat.com/download/
+On Wed, Jul 30, 2008 at 11:01:32AM +0200, Jürgen Mell wrote:
+> Hello Thomas,
 > 
-> Information on the RT patch can be found at:
+> On Wednesday, 30. July 2008, Thomas Gleixner wrote:
+> > We are pleased to announce the 2.6.26-rt1 tree, which can be
+> > downloaded from the location:
 > 
->    http://rt.wiki.kernel.org/index.php/Main_Page
+> I have tried the new kernel and have some good news and some bad news:
 > 
-> The merge was mostly done by Steven Rostedt, I just fixed it up, added
-> the fixes from .24-rt17 and tested it on x86 32/64bit.
+> The good news: The machine boots and seems to run without major problems.
 > 
-> This is the first cut of .26-rt, so don't expect it to be perfect.
+> The bad news: It produces continuously lots of bug messages in the error 
+> logs (cf. attached dmesg.tgz). The error at rtmutex.c:743 was already 
+> present in 2.6.25-rt* when ACPI was enabled. The 'using smp_processor_id 
+> ()  in preemptible code' is new here with 2.6.26.
 > 
-> I run out of time, so I dropped Peter's cpu-hotplug patches
-> completely. The hotplug and rcupreempt code has changed radically, so
-> we need to redo that lot. Peter, Paul can you please look into that ?
+> Machine is an old Athlon XP (single core) on an EPOX mainboard with VIA 
+> chipset.
 > 
-> I tried to address the non-x86 issues as far as I could, but I had no
-> chance to compile test them. So please check the wreckage.
-> 
-> to build a 2.6.26-rt1 tree, the following patches should be applied:
-> 
->    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.26.tar.bz2
->    http://rt.et.redhat.com/download/patch-2.6.26-rt1.bz2
->   
-> And like always, Steven's RT version of Matt Mackall's ketchup will get this
-> for you nicely:
-> 
->   http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
-> 
-> As usual the broken out patches are also available.
-> 
-> I'm going on vacation tomorrow so feel free to blame/curse/flame me,
-> but please work with Steven to get it into shape.
+> If I can help with testing, please let me know.
 
-Hmmm...  Still quite a few RCU-related patches in there.  Here is my
-kneejerk reaction on what to do about them:
+The following patch should clear things up.  It is against 2.6.25.8-rt7,
+but should still apply.
 
-o	call_rcu_bh-rename-of-call_rcu.patch should go to mainline.
+------------------------------------------------------------------------
 
-o	rcu-trace-fix-free.patch should go to mainline.
+Disable preemption around statistics for RCU boost and unboost calls.
 
-o	rcu-preempt-fix-bad-dyntick-accounting.patch can be dropped
-	from -rt without going to mainline.
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
-o	Some of rcu-hrt-fixups.patch needs to go over, some need to
-	come back:
+ rcupreempt-boost.c |   20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
-	o	__rcu_process_callbacks() change of local_irq_disable()
-		to local_irq_save() should go to mainline.
+diff -urpNa -X dontdiff linux-2.6.25.8-rt7/kernel/rcupreempt-boost.c linux-2.6.25.8-rt7-preemptfix/kernel/rcupreempt-boost.c
+--- linux-2.6.25.8-rt7/kernel/rcupreempt-boost.c	2008-06-24 14:14:52.000000000 -0700
++++ linux-2.6.25.8-rt7-preemptfix/kernel/rcupreempt-boost.c	2008-06-24 14:38:59.000000000 -0700
+@@ -205,11 +205,23 @@ RCU_BOOST_TRACE_FUNC_DECL(boost_readers)
+ RCU_BOOST_TRACE_FUNC_DECL(try_unboost_readers)
+ RCU_BOOST_TRACE_FUNC_DECL(unboost_readers)
+ RCU_BOOST_TRACE_FUNC_DECL(over_taken)
++static void rcu_trace_boost_boost_called_preempt(void)
++{
++	preempt_disable();
++	rcu_trace_boost_boost_called(RCU_BOOST_ME);
++	preempt_enable();
++}
++static void rcu_trace_boost_unboost_called_preempt(void)
++{
++	preempt_disable();
++	rcu_trace_boost_unboost_called(RCU_BOOST_ME);
++	preempt_enable();
++}
+ #else /* CONFIG_RCU_TRACE */
+ /* These were created by the above macro "RCU_BOOST_TRACE_FUNC_DECL" */
+-# define rcu_trace_boost_task_boost_called(rbd) do { } while (0)
++# define rcu_trace_boost_task_boost_called_preempt(rbd) do { } while (0)
+ # define rcu_trace_boost_task_boosted(rbd) do { } while (0)
+-# define rcu_trace_boost_boost_called(rbd) do { } while (0)
++# define rcu_trace_boost_boost_called_preempt(rbd) do { } while (0)
+ # define rcu_trace_boost_try_boost(rbd) do { } while (0)
+ # define rcu_trace_boost_boosted(rbd) do { } while (0)
+ # define rcu_trace_boost_unboost_called(rbd) do { } while (0)
+@@ -261,7 +273,7 @@ void __rcu_preempt_boost(void)
+ 
+ 	WARN_ON(!current->rcu_read_lock_nesting);
+ 
+-	rcu_trace_boost_boost_called(RCU_BOOST_ME);
++	rcu_trace_boost_boost_called_preempt();
+ 
+ 	/* check to see if we are already boosted */
+ 	if (unlikely(rcu_is_boosted(curr)))
+@@ -313,7 +325,7 @@ void __rcu_preempt_unboost(void)
+ 	int prio;
+ 	unsigned long flags;
+ 
+-	rcu_trace_boost_unboost_called(RCU_BOOST_ME);
++	rcu_trace_boost_unboost_called_preempt();
+ 
+ 	/* if not boosted, then ignore */
+ 	if (likely(!rcu_is_boosted(curr)))
 
-	o	-rt needs to take the change that dropped the parameter
-		for softirq functions.
-
-	o	-rt needs to take the change of rcu_process_callbacks()
-		to static (both declaration and definition).
-
-	o	-rt needs to take the deletion of rcu_advance_callbacks()
-
-o	rcu-new-7.patch needs to move over (torture preemptable RCU)
-	Ditto for rcu-torture-preempt-update.patch.  But not blazingly
-	urgent.
-
-o	RCU boosting needs re-implementation, in the works.
-
-o	preempt_realtime_rcu.patch is mostly about raw_spinlock_t.
-	Is mainline's raw_spinlock_t compatible with that of -rt?
-	If so, this should go to mainline.
-
-o	rcu-preempt-hotplug-hackaround.patch should be able to be
-	dropped at some point (maybe even as of 2.6.26?).
-
-Thoughts?
-
-							Thanx, Paul
