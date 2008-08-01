@@ -1,94 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbYHAUal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbYHAUeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759499AbYHAUal (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 16:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755755AbYHAUae
+	id S1758746AbYHAUeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 16:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbYHAUeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 16:30:34 -0400
-Received: from smtp1.stealer.net ([88.198.224.204]:40127 "EHLO
-	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755111AbYHAUae (ORCPT
+	Fri, 1 Aug 2008 16:34:11 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:45274 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752560AbYHAUeK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 16:30:34 -0400
-Date: Fri, 1 Aug 2008 22:30:09 +0200 (CEST)
-From: Sven Wegener <sven.wegener@stealer.net>
-To: Richard Purdie <rpurdie@rpsys.net>
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] leds: Avoid needless strlen() for attributes
-Message-ID: <alpine.LNX.1.10.0808012226560.2294@titan.stealer.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-Organization: STEALER.net
+	Fri, 1 Aug 2008 16:34:10 -0400
+Date: Fri, 1 Aug 2008 21:33:47 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] lockdep: lock_set_subclass - reset a held lock's subclass
+In-Reply-To: <48937084.8020200@goop.org>
+Message-ID: <Pine.LNX.4.64.0808012130510.11513@blonde.site>
+References: <20080731.155504.167792984.davem@davemloft.net> 
+ <20080801.011122.32782916.davem@davemloft.net>  <20080801090100.GA25142@elte.hu>
+  <20080801.021348.233313767.davem@davemloft.net> <1217588920.9686.6.camel@twins>
+ <489350AE.1030609@goop.org> <alpine.LFD.1.10.0808011113530.3277@nehalem.linux-foundation.org>
+ <48935FA4.5010804@goop.org> <Pine.LNX.4.64.0808012051380.6485@blonde.site>
+ <48937084.8020200@goop.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -0.6
-X-Spam-Bar: /
-X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Fri, 01 Aug 2008 20:30:32 +0000
-	Bayes: 0.1323 Tokens: new, 189; hammy, 2; neutral, 2; spammy, 0.
-	AutoLearn: no
-	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.1323]
-X-Spam-Signature: f0d40743b963f0535c951afaf9505143993ce27a
-X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's no need for the additional call to strlen(), we can directly return the
-value returned by sprintf(). We now return a length value that doesn't include
-the final '\0', but user space shouldn't bother about it anyway.
+On Fri, 1 Aug 2008, Jeremy Fitzhardinge wrote:
+> Hugh Dickins wrote:
+> > Please check the spin_lock_nested() in move_ptes() in mm/mremap.c.
+> >
+> > If you have down_write(&mm->mmap_sem) then you should be safe,
+> > but may need to do something to placate lockdep.  If you don't
+> > have down_write(&mm->mmap_sem), then I think you're in trouble?
+> >
+> > Not a big deal, the move_ptes() locking can be adjusted to suit
+> > your rule, it was just easier to do it the way it is at the time.
+> 
+> Ah, yes, I did look at that.  I think it isn't an issue, because my code is
+> called from dup_mmap(), activate_mm() or exit_mmap().
+> 
+> dup_mmap() already holds mmap_sem.
+> 
+> activate_mm() in exec doesn't hold the sem, but I don't think it's possible
+> for anyone to be racing against it.
+> activate_mm() in unshare doesn't seem to get used.
+> 
+> exit_mmap() gets called when there are no other users, so we'd better not be
+> racing...
 
-Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
----
- drivers/leds/led-class.c     |    5 +----
- drivers/leds/ledtrig-timer.c |    8 ++------
- 2 files changed, 3 insertions(+), 10 deletions(-)
+All safe against mremap, agreed.
 
-Patch is based on your current (024e8ac) leds git tree head.
-
-diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
-index 559a408..1aa24d3 100644
---- a/drivers/leds/led-class.c
-+++ b/drivers/leds/led-class.c
-@@ -34,14 +34,11 @@ static ssize_t led_brightness_show(struct device *dev,
- 		struct device_attribute *attr, char *buf)
- {
- 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
--	ssize_t ret = 0;
- 
- 	/* no lock needed for this */
- 	led_update_brightness(led_cdev);
--	sprintf(buf, "%u\n", led_cdev->brightness);
--	ret = strlen(buf) + 1;
- 
--	return ret;
-+	return sprintf(buf, "%u\n", led_cdev->brightness);
- }
- 
- static ssize_t led_brightness_store(struct device *dev,
-diff --git a/drivers/leds/ledtrig-timer.c b/drivers/leds/ledtrig-timer.c
-index 5c99f4f..db68196 100644
---- a/drivers/leds/ledtrig-timer.c
-+++ b/drivers/leds/ledtrig-timer.c
-@@ -70,9 +70,7 @@ static ssize_t led_delay_on_show(struct device *dev,
- 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
- 	struct timer_trig_data *timer_data = led_cdev->trigger_data;
- 
--	sprintf(buf, "%lu\n", timer_data->delay_on);
--
--	return strlen(buf) + 1;
-+	return sprintf(buf, "%lu\n", timer_data->delay_on);
- }
- 
- static ssize_t led_delay_on_store(struct device *dev,
-@@ -116,9 +114,7 @@ static ssize_t led_delay_off_show(struct device *dev,
- 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
- 	struct timer_trig_data *timer_data = led_cdev->trigger_data;
- 
--	sprintf(buf, "%lu\n", timer_data->delay_off);
--
--	return strlen(buf) + 1;
-+	return sprintf(buf, "%lu\n", timer_data->delay_off);
- }
- 
- static ssize_t led_delay_off_store(struct device *dev,
+Hugh
