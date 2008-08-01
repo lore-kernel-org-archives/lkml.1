@@ -1,54 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761219AbYHAVLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760283AbYHAVMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761219AbYHAVLi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760774AbYHAVJg
+	id S1760283AbYHAVMd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760556AbYHAVJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:09:36 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:39385 "EHLO e3.ny.us.ibm.com"
+	Fri, 1 Aug 2008 17:09:44 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:57570 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760765AbYHAVJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:09:34 -0400
-Date: Fri, 1 Aug 2008 14:09:13 -0700
+	id S1760796AbYHAVJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 17:09:40 -0400
+Date: Fri, 1 Aug 2008 14:09:34 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Luotao Fu <l.fu@pengutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc - RCU
-	issue?
-Message-ID: <20080801210913.GC14851@linux.vnet.ibm.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: 2.6.26-rc9-git4: Reported regressions from 2.6.25
+Message-ID: <20080801210934.GG14851@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080130010716.GB16069@linux.vnet.ibm.com> <47A032E9.4080105@grandegger.com> <20080130102255.GA24890@linux.vnet.ibm.com> <47A0552D.20605@grandegger.com> <20080130105715.GE24890@linux.vnet.ibm.com> <20080130111559.GC20089@pengutronix.de> <486A3EBB.6030905@grandegger.com> <Pine.LNX.4.58.0807011036510.26650@gandalf.stny.rr.com> <486A573E.60107@grandegger.com> <486B607F.9040903@grandegger.com>
+References: <4yrA-dRoNlD.A.jcB.ny-cIB@albercik> <200807101725.36175.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <486B607F.9040903@grandegger.com>
+In-Reply-To: <200807101725.36175.nickpiggin@yahoo.com.au>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 02, 2008 at 01:03:27PM +0200, Wolfgang Grandegger wrote:
-> Wolfgang Grandegger wrote:
->> Steven Rostedt wrote:
->> There seems to be something in trace_mark() keeping latency low:
->>   http://lxr.linux.no/linux+v2.6.24.4/include/linux/marker.h#L52
->> I will follow your suggestions.
->
-> I removed all "likely" and "unlikely" macros, but the latencies did not 
-> improve. Then I added
->
-> 	preempt_disable();
-> 	preempt_enable();
->
-> at the two locations mentioned above, like trace_mark() does,  and disabled 
-> CONFIG_RCU_TRACE. That helped to keep the latencies low, and it did for 
-> 2.6.25.8-rt7 as well. As I see it, adding preemption points seem to prevent 
-> high latencies.
+On Thu, Jul 10, 2008 at 05:25:35PM +1000, Nick Piggin wrote:
+> On Wednesday 09 July 2008 07:37, Rafael J. Wysocki wrote:
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10629
+> > Subject		: 2.6.26-rc1-$sha1: RIP __d_lookup+0x8c/0x160
+> > Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
+> > Date		: 2008-05-05 09:59 (65 days old)
+> > References	: http://lkml.org/lkml/2008/5/5/28
+> > Handled-By	: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> Attached is my fix for this problem. I don't think it is a regression
+> as such, but it can't hurt to go into 2.6.26 IMO.
+> 
+> PREEMPT_RCU without HOTPLUG_CPU is broken. The rcu_online_cpu is called to
+> initially populate rcu_cpu_online_map with all online CPUs when the hotplug
+> event handler is installed, and also to populate the map with CPUs as they
+> come online. The former case is meant to happen with and without HOTPLUG_CPU,
+> but without HOTPLUG_CPU, the rcu_offline_cpu function is no-oped -- while it
+> still gets called, it does not set the rcu CPU map.
+> 
+> With a blank RCU CPU map, grace periods get to tick by completely oblivious
+> to active RCU read side critical sections. This results in free-before-grace
+> bugs.
+> 
+> Fix is obvious once the problem is known. (Also, change __devinit to
+> __cpuinit so the function gets thrown away on !HOTPLUG_CPU kernels).
 
-Interesting.  Perhaps a preempt_enable_no_resched() somewhere that
-should be preempt_enable()?
+I officially feel extremely stupid.  Thank you -very- much for tracking
+this down, Nick!!!  And especially for the fix!
 
-							Thanx, Paul
+I will give this a good testing.  In the meantime:
+
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> ---
+> 
+> Annoyed this wasn't a crazy obscure error in the algorithm I could fix :)
+> I spent all day debugging it and had to make a special test case (rcutorture
+> didn't seem to trigger it), and a big RCU state logging infrastructure to log
+> millions of RCU state transitions and events. Oh well.
+> 
+> Index: linux-2.6/kernel/rcupreempt.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/rcupreempt.c	2008-07-10 17:08:56.000000000 +1000
+> +++ linux-2.6/kernel/rcupreempt.c	2008-07-10 17:09:10.000000000 +1000
+> @@ -925,26 +925,22 @@ void rcu_offline_cpu(int cpu)
+>  	spin_unlock_irqrestore(&rdp->lock, flags);
+>  }
+> 
+> -void __devinit rcu_online_cpu(int cpu)
+> -{
+> -	unsigned long flags;
+> -
+> -	spin_lock_irqsave(&rcu_ctrlblk.fliplock, flags);
+> -	cpu_set(cpu, rcu_cpu_online_map);
+> -	spin_unlock_irqrestore(&rcu_ctrlblk.fliplock, flags);
+> -}
+> -
+>  #else /* #ifdef CONFIG_HOTPLUG_CPU */
+> 
+>  void rcu_offline_cpu(int cpu)
+>  {
+>  }
+> 
+> -void __devinit rcu_online_cpu(int cpu)
+> +#endif /* #else #ifdef CONFIG_HOTPLUG_CPU */
+> +
+> +void __cpuinit rcu_online_cpu(int cpu)
+>  {
+> -}
+> +	unsigned long flags;
+> 
+> -#endif /* #else #ifdef CONFIG_HOTPLUG_CPU */
+> +	spin_lock_irqsave(&rcu_ctrlblk.fliplock, flags);
+> +	cpu_set(cpu, rcu_cpu_online_map);
+> +	spin_unlock_irqrestore(&rcu_ctrlblk.fliplock, flags);
+> +}
+> 
+>  static void rcu_process_callbacks(struct softirq_action *unused)
+>  {
+
