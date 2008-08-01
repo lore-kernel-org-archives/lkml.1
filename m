@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759870AbYHAUrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbYHAUuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759870AbYHAUrX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 16:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYHAUrQ
+	id S1758909AbYHAUuS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 16:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYHAUuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 16:47:16 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:64556 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753082AbYHAUrQ (ORCPT
+	Fri, 1 Aug 2008 16:50:06 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:59373 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752796AbYHAUuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 16:47:16 -0400
-Date: Fri, 1 Aug 2008 13:46:17 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: mgross@linux.intel.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, richard@hughsie.com
-Subject: Re: spell check patch to pm_qos_params.c
-Message-Id: <20080801134617.e82c802c.randy.dunlap@oracle.com>
-In-Reply-To: <20080801175245.GC23227@linux.intel.com>
-References: <20080801175245.GC23227@linux.intel.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Fri, 1 Aug 2008 16:50:05 -0400
+X-SourceIP: 80.57.229.25
+Subject: Re: [PATCH] lockdep: lock_set_subclass - reset a held lock's
+	subclass
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: David Miller <davem@davemloft.net>, mingo@elte.hu,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <489350AE.1030609@goop.org>
+References: <20080731.155504.167792984.davem@davemloft.net>
+	 <20080801.011122.32782916.davem@davemloft.net>
+	 <20080801090100.GA25142@elte.hu>
+	 <20080801.021348.233313767.davem@davemloft.net>
+	 <1217588920.9686.6.camel@twins>  <489350AE.1030609@goop.org>
+Content-Type: text/plain
+Date: Fri, 01 Aug 2008 22:49:56 +0200
+Message-Id: <1217623796.9016.8.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Aug 2008 10:52:45 -0700 mark gross wrote:
+On Fri, 2008-08-01 at 11:06 -0700, Jeremy Fitzhardinge wrote:
+> Peter Zijlstra wrote:
+> > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Subject: lockdep: lock_set_subclass - reset a held lock's subclass
+> >
+> > this can be used to reset a held lock's subclass, for arbitrary-depth
+> > iterated data structures such as trees or lists which have per-node
+> > locks.
+> >   
+> 
+> Hey, can I use this to suppress the spurious lockdep warnings I get when 
+> I try to hold more than one pte lock at once?
 
-> This is a documentation clean up patch form Richard Hughes.
+No, you still cannot hold more than 48 locks at any one time, and this
+somewhat horrible annotation only works if you don't generate double
+classes in the same chain.
 
-from
+What it can do is:
 
-> 
-> With a minor tweak to clarify units for kbs.
-> 
-> Please apply.
-> 
-> thanks,
-> 
-> --mgross
-> 
-> 
-> Signed-off-by: mark gross <mgross@linux.intel.com>
-> 
->  Documentation/power/pm_qos_interface.txt |    7 ++++++-
->  include/linux/pm_qos_params.h            |    2 +-
->  kernel/pm_qos_params.c                   |   16 ++++++++--------
->  3 files changed, 15 insertions(+), 10 deletions(-)
-> 
-> 
-> Index: linux-2.6/Documentation/power/pm_qos_interface.txt
-> ===================================================================
-> --- linux-2.6.orig/Documentation/power/pm_qos_interface.txt	2008-08-01 09:28:42.000000000 -0700
-> +++ linux-2.6/Documentation/power/pm_qos_interface.txt	2008-08-01 10:46:04.000000000 -0700
+  L1
+   L2
+    U1
+     L3
+      U2
+       etc..
 
-> @@ -7,6 +7,11 @@
->  Currently we have {cpu_dma_latency, network_latency, network_throughput} as the
->  initial set of pm_qos parameters.
->  
-> +Each parameters have defined units:
+What you do is:
 
-   Each parameter has defined units:
-
-> + * latency: usec
-> + * timeout: usec
-> + * throughput: kbs (kilo bit / sec)
-> +
->  The infrastructure exposes multiple misc device nodes one per implemented
->  parameter.  The set of parameters implement is defined by pm_qos_power_init()
->  and pm_qos_params.h.  This is done because having the available parameters
+  spin_lock(L1)
+   spin_lock_nested(L2, 1)
+    spin_unlock(L1);
+    lockdep_set_subclass(L2, 0); // because L1, who was 0 isn't there anymore
+     spin_lock_nested(L3, 1);
+      spin_unlock(L2);
+      lockdep_set_subclass(L2, 0); // blah blah..
+       etc...
 
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+
