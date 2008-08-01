@@ -1,115 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763142AbYHAVUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756890AbYHAVUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763142AbYHAVUj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761104AbYHAVLY
+	id S1756890AbYHAVUx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761171AbYHAVLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:11:24 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:49441 "EHLO e4.ny.us.ibm.com"
+	Fri, 1 Aug 2008 17:11:32 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:49902 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761069AbYHAVLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:11:20 -0400
-Date: Fri, 1 Aug 2008 14:11:17 -0700
+	id S1761148AbYHAVLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 17:11:30 -0400
+Date: Fri, 1 Aug 2008 14:11:28 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: =?iso-8859-1?Q?J=FCrgen?= Mell <j.mell@t-online.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Clark Williams <williams@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>
-Subject: Re: 2.6.26-rt1
-Message-ID: <20080801211117.GD14851@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/2] rcu: trace fix possible mem-leak
+Message-ID: <20080801211128.GF14851@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <alpine.LFD.1.10.0807252141420.574@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807291440240.14925@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807300006180.14925@apollo.tec.linutronix.de> <200807301101.32417.j.mell@t-online.de>
+References: <20080730182053.872043059@goodmis.org> <20080730182239.523848312@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200807301101.32417.j.mell@t-online.de>
+In-Reply-To: <20080730182239.523848312@goodmis.org>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 11:01:32AM +0200, Jürgen Mell wrote:
-> Hello Thomas,
+On Wed, Jul 30, 2008 at 02:20:55PM -0400, Steven Rostedt wrote:
+> In the initialization of the RCU trace module, if
+> rcupreempt_debugfs_init() fails, we never free the the trace buffer.
 > 
-> On Wednesday, 30. July 2008, Thomas Gleixner wrote:
-> > We are pleased to announce the 2.6.26-rt1 tree, which can be
-> > downloaded from the location:
+> This patch frees the trace buffer in case the debugfs fails.
+
+Looks good as well!
+
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> ---
+>  kernel/rcupreempt_trace.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
 > 
-> I have tried the new kernel and have some good news and some bad news:
+> Index: linux-compile.git/kernel/rcupreempt_trace.c
+> ===================================================================
+> --- linux-compile.git.orig/kernel/rcupreempt_trace.c	2008-07-15 23:55:47.000000000 -0400
+> +++ linux-compile.git/kernel/rcupreempt_trace.c	2008-07-30 13:58:41.000000000 -0400
+> @@ -308,11 +308,16 @@ out:
 > 
-> The good news: The machine boots and seems to run without major problems.
+>  static int __init rcupreempt_trace_init(void)
+>  {
+> +	int ret;
+> +
+>  	mutex_init(&rcupreempt_trace_mutex);
+>  	rcupreempt_trace_buf = kmalloc(RCUPREEMPT_TRACE_BUF_SIZE, GFP_KERNEL);
+>  	if (!rcupreempt_trace_buf)
+>  		return 1;
+> -	return rcupreempt_debugfs_init();
+> +	ret = rcupreempt_debugfs_init();
+> +	if (ret)
+> +		kfree(rcupreempt_trace_buf);
+> +	return ret;
+>  }
 > 
-> The bad news: It produces continuously lots of bug messages in the error 
-> logs (cf. attached dmesg.tgz). The error at rtmutex.c:743 was already 
-> present in 2.6.25-rt* when ACPI was enabled. The 'using smp_processor_id 
-> ()  in preemptible code' is new here with 2.6.26.
+>  static void __exit rcupreempt_trace_cleanup(void)
 > 
-> Machine is an old Athlon XP (single core) on an EPOX mainboard with VIA 
-> chipset.
-> 
-> If I can help with testing, please let me know.
-
-The following patch should clear things up.  It is against 2.6.25.8-rt7,
-but should still apply.
-
-------------------------------------------------------------------------
-
-Disable preemption around statistics for RCU boost and unboost calls.
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
- rcupreempt-boost.c |   20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
-
-diff -urpNa -X dontdiff linux-2.6.25.8-rt7/kernel/rcupreempt-boost.c linux-2.6.25.8-rt7-preemptfix/kernel/rcupreempt-boost.c
---- linux-2.6.25.8-rt7/kernel/rcupreempt-boost.c	2008-06-24 14:14:52.000000000 -0700
-+++ linux-2.6.25.8-rt7-preemptfix/kernel/rcupreempt-boost.c	2008-06-24 14:38:59.000000000 -0700
-@@ -205,11 +205,23 @@ RCU_BOOST_TRACE_FUNC_DECL(boost_readers)
- RCU_BOOST_TRACE_FUNC_DECL(try_unboost_readers)
- RCU_BOOST_TRACE_FUNC_DECL(unboost_readers)
- RCU_BOOST_TRACE_FUNC_DECL(over_taken)
-+static void rcu_trace_boost_boost_called_preempt(void)
-+{
-+	preempt_disable();
-+	rcu_trace_boost_boost_called(RCU_BOOST_ME);
-+	preempt_enable();
-+}
-+static void rcu_trace_boost_unboost_called_preempt(void)
-+{
-+	preempt_disable();
-+	rcu_trace_boost_unboost_called(RCU_BOOST_ME);
-+	preempt_enable();
-+}
- #else /* CONFIG_RCU_TRACE */
- /* These were created by the above macro "RCU_BOOST_TRACE_FUNC_DECL" */
--# define rcu_trace_boost_task_boost_called(rbd) do { } while (0)
-+# define rcu_trace_boost_task_boost_called_preempt(rbd) do { } while (0)
- # define rcu_trace_boost_task_boosted(rbd) do { } while (0)
--# define rcu_trace_boost_boost_called(rbd) do { } while (0)
-+# define rcu_trace_boost_boost_called_preempt(rbd) do { } while (0)
- # define rcu_trace_boost_try_boost(rbd) do { } while (0)
- # define rcu_trace_boost_boosted(rbd) do { } while (0)
- # define rcu_trace_boost_unboost_called(rbd) do { } while (0)
-@@ -261,7 +273,7 @@ void __rcu_preempt_boost(void)
- 
- 	WARN_ON(!current->rcu_read_lock_nesting);
- 
--	rcu_trace_boost_boost_called(RCU_BOOST_ME);
-+	rcu_trace_boost_boost_called_preempt();
- 
- 	/* check to see if we are already boosted */
- 	if (unlikely(rcu_is_boosted(curr)))
-@@ -313,7 +325,7 @@ void __rcu_preempt_unboost(void)
- 	int prio;
- 	unsigned long flags;
- 
--	rcu_trace_boost_unboost_called(RCU_BOOST_ME);
-+	rcu_trace_boost_unboost_called_preempt();
- 
- 	/* if not boosted, then ignore */
- 	if (likely(!rcu_is_boosted(curr)))
-
+> -- 
