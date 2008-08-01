@@ -1,83 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756446AbYHAINF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbYHAIRI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756446AbYHAINF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 04:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYHAIMs
+	id S1756602AbYHAIRI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 04:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYHAIQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 04:12:48 -0400
-Received: from lucidpixels.com ([75.144.35.66]:45025 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751304AbYHAIMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 04:12:46 -0400
-Date: Fri, 1 Aug 2008 04:12:45 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Matt Garman <matthew.garman@gmail.com>
-cc: David Greaves <david@dgreaves.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: 12 Veliciraptors again w/x4 card (~1gbyte/sec aggregate read)!
-In-Reply-To: <20080801034150.GA32026@sewage.raw-sewage.fake>
-Message-ID: <alpine.DEB.1.10.0808010410340.13630@p34.internal.lan>
-References: <alpine.DEB.1.10.0807071424100.4694@p34.internal.lan> <4872A2F4.2010604@dgreaves.com> <alpine.DEB.1.10.0807080429440.17980@p34.internal.lan> <alpine.DEB.1.10.0807080438560.17980@p34.internal.lan> <20080801034150.GA32026@sewage.raw-sewage.fake>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Fri, 1 Aug 2008 04:16:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45044 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751652AbYHAIQw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 04:16:52 -0400
+Date: Fri, 1 Aug 2008 01:14:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Dave Young <hidave.darkstar@gmail.com>,
+       johannes@sipsolutions.net, tomasw@gmail.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       ath5k-devel@venema.h4ckr.net, me@bobcopeland.com,
+       linville@tuxdriver.com, stable@kernel.org
+Subject: Re: [PATCH] ath5k : ath5k_config_interface deadlock fix
+Message-Id: <20080801011415.ff4821a3.akpm@linux-foundation.org>
+In-Reply-To: <4892C359.9000304@cs.helsinki.fi>
+References: <20080801074014.GA3341@darkstar>
+	<4892C2CA.7010003@gmail.com>
+	<4892C359.9000304@cs.helsinki.fi>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 01 Aug 2008 11:03:37 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
+> Jiri Slaby wrote:
+> > Dave Young napsal(a):
+> >> In the drivers/net/wireless/ath5k/base.c, there's recursive locking of 
+> >> sc->lock
+> >> This casue the kernel stuck
+> >>
+> >> Bug report please see:
+> >> http://lkml.org/lkml/2008/7/29/32
+> >>
+> >> Fixed it by remove the lock in sub routine "ath5k_beacon_update",
+> >> The ath5k_config_interface is the only caller to it.
+> >>
+> >> [  171.430207] =============================================
+> >> [  171.432140] [ INFO: possible recursive locking detected ]
+> >> [  171.433113] 2.6.27-rc1-smp #4
+> >> [  171.434079] ---------------------------------------------
+> >> [  171.435039] ath5k_pci/2447 is trying to acquire lock:
+> >> [  171.435990]  (&sc->lock){--..}, at: [<f89ee9b5>] 
+> >> ath5k_config_interface+0xd5/0x340 [ath5k]
+> >> [  171.437046] [  171.437048] but task is already holding lock:
+> >> [  171.438903]  (&sc->lock){--..}, at: [<f89ee91d>] 
+> >> ath5k_config_interface+0x3d/0x340 [ath5k]
+> >> [  171.439953] [  171.439954] other info that might help us debug this:
+> >> [  171.441795] 3 locks held by ath5k_pci/2447:
+> >> [  171.442729]  #0:  ((name)){--..}, at: [<c013a122>] 
+> >> run_workqueue+0x102/0x1d0
+> >> [  171.443800]  #1:  (&(&local->scan_work)->work){--..}, at: 
+> >> [<c013a122>] run_workqueue+0x102/0x1d0
+> >> [  171.444859]  #2:  (&sc->lock){--..}, at: [<f89ee91d>] 
+> >> ath5k_config_interface+0x3d/0x340 [ath5k]
+> > 
+> > Should be fixed already:
+> > http://git.kernel.org/?p=linux/kernel/git/linville/wireless-2.6.git;a=commitdiff_plain;h=bc05116ab33d30342e2b4b1bcc6d6e1184e9df97 
+> 
+> I guess that didn't make it to -stable?
 
-On Thu, 31 Jul 2008, Matt Garman wrote:
-
-> On Tue, Jul 08, 2008 at 04:39:34AM -0400, Justin Piszcz wrote:
->> On Tue, 8 Jul 2008, Justin Piszcz wrote:
->>> On Tue, 8 Jul 2008, David Greaves wrote:
->>>> Justin Piszcz wrote:
->>>>> Each PCI-e x1 card has 1 veliciraptor on it now.
->>>>> Got an x4 card wit 4 sata ports:
->>>> Useful - which card?
->>>
->>> StarTech 4 Port PCI Express x4 SATA II Card Model PEXSATA24E
->>>
->>>
->> Chipset: Marvell 88SX7042
->> SATA Connectivity: Use four internal ports at the same time or two internal
->> and two external ports
->>
->> Which is fully supported in the latest kernels (didn't try an old kernel):
->>
->> linux-2.6.25.10/drivers/ata/sata_mv.c
->>
->>   /* Marvell 7042 support */
->>   { PCI_VDEVICE(MARVELL, 0x7042), chip_7042 },
->
-> How have that card and the array attached to it been doing since you
-> originally posted this?
-No problems to report yet, working well, I wish I had multiple x4 or x16 
-slots and use those instead of x1 cards (the mobo would need to support 
-the I/O as well)..
-
->
-> Doesn't that HighPoint 23xx card also use the Marvell 88SX7042 chip?
-I read remeber 'locked' 64kb read problem but not any corruption issue.
-
-> I remember seeing the threads about the HighPoint card silently
-> corrupting data by silently writing over parts of the disk(s) with
-Also I MD5SUM -c (verify) 100-150GiB of data daily or so to make sure it 
-is OK, so far, no problems.
-
-> its own info.  I'm guessing that's not a "feature" of the Marvell
-> chip, but still... admittedly irrational fear here :)
-Have not seen it yet.
-
->
-> It would be nice if that Supermicro 8-port SATA card (AOC-SAT2-MV8)
-> was available in PCIe... I wonder if it's possible to just graft
-> multiple SiI 3132 controllers (2 SATA each) on a single PCIe card?
-Yes, I asked Supermicro about it and they never mailed me back about a 
-PCIe version..
-
-That's a good question, I suppose if it was easy it would have already 
-been done?
-
-Justin.
+(cc stable!)
