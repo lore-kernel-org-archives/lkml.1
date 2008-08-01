@@ -1,97 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbYHAS3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbYHAS3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbYHAS3V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 14:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYHAS3G
+	id S1757970AbYHAS3e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 14:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbYHAS3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 14:29:06 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:54380 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752102AbYHAS3E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 14:29:09 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:23612 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751833AbYHAS3E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 1 Aug 2008 14:29:04 -0400
-To: nickpiggin@yahoo.com.au
-CC: miklos@szeredi.hu, torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-reply-to: <200808011122.51792.nickpiggin@yahoo.com.au> (message from Nick
-	Piggin on Fri, 1 Aug 2008 11:22:51 +1000)
-Subject: Re: [patch v3] splice: fix race with page invalidation
-References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807310957200.3277@nehalem.linux-foundation.org> <E1KOceD-0000nD-JA@pomaz-ex.szeredi.hu> <200808011122.51792.nickpiggin@yahoo.com.au>
-Message-Id: <E1KOzMt-0003fa-Ah@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 01 Aug 2008 20:28:47 +0200
+Date: Fri, 1 Aug 2008 20:29:00 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Neil Brown <neilb@suse.de>,
+       Arthur Jones <ajones@riverbed.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-raid@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PULL REQUEST] md bug fixes and minor improvements
+Message-ID: <20080801182859.GK20055@kernel.dk>
+References: <18578.31924.259887.735206@notabene.brown> <alpine.LFD.1.10.0808011007240.3277@nehalem.linux-foundation.org> <20080801172231.GF20055@kernel.dk> <1217612088.24551.5.camel@dwillia2-linux.ch.intel.com> <20080801174024.GH20055@kernel.dk> <1217614945.24551.16.camel@dwillia2-linux.ch.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217614945.24551.16.camel@dwillia2-linux.ch.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Aug 2008, Nick Piggin wrote:
-> Well, a) it probably makes sense in that case to provide another mode
-> of operation which fills the data synchronously from the sender and
-> copys it to the pipe (although the sender might just use read/write)
-> And b) we could *also* look at clearing PG_uptodate as an optimisation
-> iff that is found to help.
+On Fri, Aug 01 2008, Dan Williams wrote:
+> 
+> On Fri, 2008-08-01 at 10:40 -0700, Jens Axboe wrote:
+> > On Fri, Aug 01 2008, Dan Williams wrote:
+> > >
+> > > On Fri, 2008-08-01 at 19:22 +0200, Jens Axboe wrote:
+> > > > It is a bit asymmetrical, largely due to the fact that the ->unplug_fn()
+> > > > itself grabs the lock. The below patch should fix it, since Neil has
+> > > > added a proper queue lock to the md queues. If someone can confirm that
+> > > > this fixes it, I'll queue up a patch with proper descriptions.
+> > > >
+> > > > > I guess Jens is gone too..
+> > > >
+> > > > I'm back, just been busy this week :-)
+> > > >
+> > > > diff --git a/drivers/md/bitmap.c b/drivers/md/bitmap.c
+> > > > index 621a272..f19b52f 100644
+> > > > --- a/drivers/md/bitmap.c
+> > > > +++ b/drivers/md/bitmap.c
+> > > > @@ -1234,7 +1234,9 @@ int bitmap_startwrite(struct bitmap *bitmap, sector_t offset, unsigned long sect
+> > > >             case 0:
+> > > >                     bitmap_file_set_bit(bitmap, offset);
+> > > >                     bitmap_count_page(bitmap,offset, 1);
+> > > > +                   spin_lock_irq(&bitmap->mddev->queue->queue_lock);
+> > > >                     blk_plug_device(bitmap->mddev->queue);
+> > > > +                   spin_unlock_irq(&bitmap->mddev->queue->queue_lock);
+> > > >                     /* fall through */
+> > > >             case 1:
+> > > >                     *bmc = 2;
+> > > >
+> > >
+> > > We also need to protect the blk_plug_device call a few lines down (and
+> > > an obvious compile fix).
+> > 
+> > Old source I guess, just one blk_plug_device() in the copy I have here.
+> > Just checked latest git, still just one blk_plug_device(), are you
+> > diffing against -mm or something like that? Or linux-next?
+> 
+> No, my mistake... I crossed my eyes and misread your patch as protecting
+> blk_unplug() a few lines up, sorry.
 
-IMO it's not worth it to complicate the API just for the sake of
-correctness in the so-very-rare read error case.  Users of the splice
-API will simply ignore this requirement, because things will work fine
-on ext3 and friends, and will break only rarely on NFS and FUSE.
+Ah, didn't read that closely in your patch, that would get you into
+trouble :-)
 
-So I think it's much better to make the API simple: invalid pages are
-OK, and for I/O errors we return -EIO on the pipe.  It's not 100%
-correct, but all in all it will result in less buggy programs.
+> > And queue_lock is of course a pointer, I didn't even compile the
+> > thing... Thanks for the updated variant!
+> 
+> I have verified that:
+> 
+> 	mdadm --create /dev/md0 /dev/sd[bc] -n 2 -l 1 --bitmap=internal
+> 	dd if=/dev/zero of=/dev/md0 bs=1024k count=1
+> 
+> ...no longer triggers the warning with your fix.
 
-Thanks,
-Miklos
-----
+Goodie, thanks!
 
-Subject: mm: dont clear PG_uptodate on truncate/invalidate
+-- 
+Jens Axboe
 
-From: Miklos Szeredi <mszeredi@suse.cz>
-
-Brian Wang reported that a FUSE filesystem exported through NFS could return
-I/O errors on read.  This was traced to splice_direct_to_actor() returning a
-short or zero count when racing with page invalidation.
-
-However this is not FUSE or NFSD specific, other filesystems (notably NFS)
-also call invalidate_inode_pages2() to purge stale data from the cache.
-
-If this happens while such pages are sitting in a pipe buffer, then splice(2)
-from the pipe can return zero, and read(2) from the pipe can return ENODATA.
-
-The zero return is especially bad, since it implies end-of-file or
-disconnected pipe/socket, and is documented as such for splice.  But returning
-an error for read() is also nasty, when in fact there was no error (data
-becoming stale is not an error).
-
-The same problems can be triggered by "hole punching" with
-madvise(MADV_REMOVE).
-
-Fix this by not clearing the PG_uptodate flag on truncation and
-invalidation.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- mm/truncate.c |    2 --
- 1 file changed, 2 deletions(-)
-
-Index: linux-2.6/mm/truncate.c
-===================================================================
---- linux-2.6.orig/mm/truncate.c	2008-07-28 17:45:02.000000000 +0200
-+++ linux-2.6/mm/truncate.c	2008-08-01 20:18:51.000000000 +0200
-@@ -104,7 +104,6 @@ truncate_complete_page(struct address_sp
- 	cancel_dirty_page(page, PAGE_CACHE_SIZE);
- 
- 	remove_from_page_cache(page);
--	ClearPageUptodate(page);
- 	ClearPageMappedToDisk(page);
- 	page_cache_release(page);	/* pagecache ref */
- }
-@@ -356,7 +355,6 @@ invalidate_complete_page2(struct address
- 	BUG_ON(PagePrivate(page));
- 	__remove_from_page_cache(page);
- 	spin_unlock_irq(&mapping->tree_lock);
--	ClearPageUptodate(page);
- 	page_cache_release(page);	/* pagecache ref */
- 	return 1;
- failed:
