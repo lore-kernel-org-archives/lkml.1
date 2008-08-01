@@ -1,221 +1,418 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763021AbYHAV1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761715AbYHAV03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763021AbYHAV1M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762654AbYHAVSa
+	id S1761715AbYHAV03 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762456AbYHAVR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:18:30 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:37780 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762652AbYHAVS1 convert rfc822-to-8bit (ORCPT
+	Fri, 1 Aug 2008 17:17:26 -0400
+Received: from lsg.lsg.lab.novell.com ([151.155.230.1]:46142 "EHLO
+	lsg.lsg.lab.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761028AbYHAVRY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:18:27 -0400
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "Yang, Bo" <Bo.Yang@lsi.com>,
-       James Bottomley <James.Bottomley@SteelEye.com>
-CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Patro, Sumant" <Sumant.Patro@lsi.com>,
-       "poswald@novell.com" <poswald@novell.com>,
-       "Austria, Winston" <Winston.Austria@lsi.com>
-Date: Fri, 1 Aug 2008 15:17:26 -0600
-Subject: [PATCH 3/4] scsi: megaraid_sas - Add the new controllers support
-Thread-Topic: [PATCH 3/4] scsi: megaraid_sas - Add the new controllers
- support
-Thread-Index: AciItAVU2/gnyqciSguN4aHHEiVCxRrPlpmwAAF0YNA=
-Message-ID: <4B6A08C587958942AA3002690DD4F8C31B080A66@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C31B080962@cosmail02.lsi.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 1 Aug 2008 17:17:24 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH RT RFC 7/7] rtmutex: pi-boost locks as late as possible
+To: mingo@elte.hu, paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+       tglx@linutronix.de, rosted@goodmis.org
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       gregory.haskins@gmail.com
+Date: Fri, 01 Aug 2008 15:17:23 -0600
+Message-ID: <20080801211722.3469.55953.stgit@lsg.lsg.lab.novell.com>
+In-Reply-To: <20080801210945.3469.1183.stgit@lsg.lsg.lab.novell.com>
+References: <20080801210945.3469.1183.stgit@lsg.lsg.lab.novell.com>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the new controllers (0x78 0x79) support to the driver.  Those controllers are LSI's next generation (gen2) SAS controllers.
+Adaptive-locking technology often times acquires the lock by
+spinning on a running-owner instead of sleeping.  It is unecessary
+to go through pi-boosting if the owner is of equal or (logically)
+lower priority. Therefore, we can save some significant overhead
+by deferring the boost until absolutely necessary.  This has shown
+to improve overall performance in PREEMPT_RT
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+Special thanks to Peter Morreale for suggesting the optimization to
+only consider skipping the boost if the owner is >= to current
 
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: Peter Morreale <pmorreale@novell.com>
 ---
- drivers/scsi/megaraid/megaraid_sas.c |  111 ++++++++++++++++++++++++++++++++++-
- drivers/scsi/megaraid/megaraid_sas.h |    4 +
- 2 files changed, 113 insertions(+), 2 deletions(-)
 
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2008-07-31 12:56:07.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2008-07-31 13:32:02.000000000 -0400
-@@ -10,7 +10,7 @@
-  *        2 of the License, or (at your option) any later version.
-  *
-  * FILE                : megaraid_sas.c
-- * Version     : v00.00.03.20-rc1
-+ * Version     : v00.00.04.01-rc1
-  *
-  * Authors:
-  *     (email-id : megaraidlinux@lsi.com)
-@@ -71,6 +71,10 @@ static struct pci_device_id megasas_pci_
-        /* ppc IOP */
-        {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS1078DE)},
-        /* ppc IOP */
-+       {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS1078GEN2)},
-+       /* gen2*/
-+       {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS0079GEN2)},
-+       /* gen2*/
-        {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_VERDE_ZCR)},
-        /* xscale IOP, vega */
-        {PCI_DEVICE(PCI_VENDOR_ID_DELL, PCI_DEVICE_ID_DELL_PERC5)},
-@@ -324,6 +328,100 @@ static struct megasas_instance_template
+ include/linux/rtmutex.h |    1 
+ kernel/rtmutex.c        |  195 ++++++++++++++++++++++++++++++++++++-----------
+ kernel/rtmutex_common.h |    1 
+ 3 files changed, 153 insertions(+), 44 deletions(-)
+
+diff --git a/include/linux/rtmutex.h b/include/linux/rtmutex.h
+index d984244..1d98107 100644
+--- a/include/linux/rtmutex.h
++++ b/include/linux/rtmutex.h
+@@ -33,6 +33,7 @@ struct rt_mutex {
+ 		struct pi_node   node;
+ 		struct pi_sink   snk;
+ 		int              prio;
++		int              boosters;
+ 	} pi;
+ #ifdef CONFIG_DEBUG_RT_MUTEXES
+ 	int			save_state;
+diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
+index 0f64298..de213ac 100644
+--- a/kernel/rtmutex.c
++++ b/kernel/rtmutex.c
+@@ -76,14 +76,15 @@ rt_mutex_set_owner(struct rt_mutex *lock, struct task_struct *owner,
+ {
+ 	unsigned long val = (unsigned long)owner | mask;
+ 
+-	if (rt_mutex_has_waiters(lock)) {
++	if (lock->pi.boosters) {
+ 		struct task_struct *prev_owner = rt_mutex_owner(lock);
+ 
+ 		rtmutex_pi_owner(lock, prev_owner, 0);
+ 		rtmutex_pi_owner(lock, owner, 1);
++	}
+ 
++	if (rt_mutex_has_waiters(lock))
+ 		val |= RT_MUTEX_HAS_WAITERS;
+-	}
+ 
+ 	lock->owner = (struct task_struct *)val;
+ }
+@@ -177,7 +178,7 @@ static inline int rtmutex_pi_update(struct pi_sink *snk,
+ 
+ 	spin_lock_irqsave(&lock->wait_lock, iflags);
+ 
+-	if (rt_mutex_has_waiters(lock)) {
++	if (lock->pi.boosters) {
+ 		owner = rt_mutex_owner(lock);
+ 
+ 		if (owner && owner != RT_RW_READER) {
+@@ -206,6 +207,7 @@ static void init_pi(struct rt_mutex *lock)
+ 	pi_node_init(&lock->pi.node);
+ 
+ 	lock->pi.prio = MAX_PRIO;
++	lock->pi.boosters = 0;
+ 	pi_source_init(&lock->pi.src, &lock->pi.prio);
+ 	lock->pi.snk = rtmutex_pi_snk;
+ 
+@@ -303,6 +305,16 @@ static inline int try_to_take_rt_mutex(struct rt_mutex *lock)
+ 	return do_try_to_take_rt_mutex(lock, STEAL_NORMAL);
+ }
+ 
++static inline void requeue_waiter(struct rt_mutex *lock,
++				  struct rt_mutex_waiter *waiter)
++{
++	BUG_ON(!waiter->task);
++
++	plist_del(&waiter->list_entry, &lock->wait_list);
++	plist_node_init(&waiter->list_entry, waiter->pi.prio);
++	plist_add(&waiter->list_entry, &lock->wait_list);
++}
++
+ /*
+  * These callbacks are invoked whenever a waiter has changed priority.
+  * So we should requeue it within the lock->wait_list
+@@ -343,11 +355,8 @@ static inline int rtmutex_waiter_pi_update(struct pi_sink *snk,
+ 	 * pi list.  Therefore, if waiter->pi.prio has changed since we
+ 	 * queued ourselves, requeue it.
+ 	 */
+-	if (waiter->task && waiter->list_entry.prio != waiter->pi.prio) {
+-		plist_del(&waiter->list_entry, &lock->wait_list);
+-		plist_node_init(&waiter->list_entry, waiter->pi.prio);
+-		plist_add(&waiter->list_entry, &lock->wait_list);
+-	}
++	if (waiter->task && waiter->list_entry.prio != waiter->pi.prio)
++		requeue_waiter(lock, waiter);
+ 
+ 	spin_unlock_irqrestore(&lock->wait_lock, iflags);
+ 
+@@ -359,20 +368,9 @@ static struct pi_sink rtmutex_waiter_pi_snk = {
+     .update = rtmutex_waiter_pi_update,
  };
-
- /**
-+*      The following functions are defined for gen2 (deviceid : 0x78 0x79)
-+*      controllers
-+*/
-+
-+/**
-+ * megasas_enable_intr_gen2 -  Enables interrupts
-+ * @regs:                      MFI register set
-+ */
-+static inline void
-+megasas_enable_intr_gen2(struct megasas_register_set __iomem *regs)
-+{
-+       writel(0xFFFFFFFF, &(regs)->outbound_doorbell_clear);
-+
-+       /* write ~0x00000005 (4 & 1) to the intr mask*/
-+       writel(~MFI_GEN2_ENABLE_INTERRUPT_MASK, &(regs)->outbound_intr_mask);
-+
-+       /* Dummy readl to force pci flush */
-+       readl(&regs->outbound_intr_mask);
-+}
-+
-+/**
-+ * megasas_disable_intr_gen2 - Disables interrupt
-+ * @regs:                      MFI register set
-+ */
-+static inline void
-+megasas_disable_intr_gen2(struct megasas_register_set __iomem *regs)
-+{
-+       u32 mask = 0xFFFFFFFF;
-+       writel(mask, &regs->outbound_intr_mask);
-+       /* Dummy readl to force pci flush */
-+       readl(&regs->outbound_intr_mask);
-+}
-+
-+/**
-+ * megasas_read_fw_status_reg_gen2 - returns the current FW status value
-+ * @regs:                      MFI register set
-+ */
-+static u32
-+megasas_read_fw_status_reg_gen2(struct megasas_register_set __iomem *regs)
-+{
-+       return readl(&(regs)->outbound_scratch_pad);
-+}
-+
-+/**
-+ * megasas_clear_interrupt_gen2 -      Check & clear interrupt
-+ * @regs:                              MFI register set
-+ */
-+static int
-+megasas_clear_intr_gen2(struct megasas_register_set __iomem *regs)
-+{
-+       u32 status;
-+       /*
-+        * Check if it is our interrupt
-+        */
-+       status = readl(&regs->outbound_intr_status);
-+
-+       if (!(status & MFI_GEN2_ENABLE_INTERRUPT_MASK)) {
-+               return 1;
-+       }
-+
-+       /*
-+        * Clear the interrupt by writing back the same value
-+        */
-+       writel(status, &regs->outbound_doorbell_clear);
-+
-+       /* Dummy readl to force pci flush */
-+       readl(&regs->outbound_intr_status);
-+
-+       return 0;
-+}
-+/**
-+ * megasas_fire_cmd_gen2 -     Sends command to the FW
-+ * @frame_phys_addr :          Physical address of cmd
-+ * @frame_count :              Number of frames for the command
-+ * @regs :                     MFI register set
-+ */
-+static inline void
-+megasas_fire_cmd_gen2(dma_addr_t frame_phys_addr, u32 frame_count,
-+                       struct megasas_register_set __iomem *regs)
-+{
-+       writel((frame_phys_addr | (frame_count<<1))|1,
-+                       &(regs)->inbound_queue_port);
-+}
-+
-+static struct megasas_instance_template megasas_instance_template_gen2 = {
-+
-+       .fire_cmd = megasas_fire_cmd_gen2,
-+       .enable_intr = megasas_enable_intr_gen2,
-+       .disable_intr = megasas_disable_intr_gen2,
-+       .clear_intr = megasas_clear_intr_gen2,
-+       .read_fw_status_reg = megasas_read_fw_status_reg_gen2,
-+};
-+
-+/**
- *      This is the end of set of functions & definitions
- *      specific to ppc (deviceid : 0x60) controllers
- */
-@@ -1982,7 +2080,12 @@ static int megasas_init_mfi(struct megas
-        /*
-         * Map the message registers
-         */
--       instance->base_addr = pci_resource_start(instance->pdev, 0);
-+       if ((instance->pdev->device == PCI_DEVICE_ID_LSI_SAS1078GEN2) ||
-+               (instance->pdev->device == PCI_DEVICE_ID_LSI_SAS0079GEN2)) {
-+               instance->base_addr = pci_resource_start(instance->pdev, 1);
-+       } else {
-+               instance->base_addr = pci_resource_start(instance->pdev, 0);
-+       }
-
-        if (pci_request_regions(instance->pdev, "megasas: LSI")) {
-                printk(KERN_DEBUG "megasas: IO memory region busy!\n");
-@@ -2004,6 +2107,10 @@ static int megasas_init_mfi(struct megas
-                case PCI_DEVICE_ID_LSI_SAS1078DE:
-                        instance->instancet = &megasas_instance_template_ppc;
-                        break;
-+               case PCI_DEVICE_ID_LSI_SAS1078GEN2:
-+               case PCI_DEVICE_ID_LSI_SAS0079GEN2:
-+                       instance->instancet = &megasas_instance_template_gen2;
-+                       break;
-                case PCI_DEVICE_ID_LSI_SAS1064R:
-                case PCI_DEVICE_ID_DELL_PERC5:
-                default:
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2008-07-31 12:50:41.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2008-07-31 12:50:41.000000000 -0400
-@@ -28,6 +28,8 @@
- #define        PCI_DEVICE_ID_LSI_SAS1078R              0x0060
- #define        PCI_DEVICE_ID_LSI_SAS1078DE             0x007C
- #define        PCI_DEVICE_ID_LSI_VERDE_ZCR             0x0413
-+#define        PCI_DEVICE_ID_LSI_SAS1078GEN2           0x0078
-+#define        PCI_DEVICE_ID_LSI_SAS0079GEN2           0x0079
-
+ 
+-/*
+- * This must be called with lock->wait_lock held.
+- */
+-static int add_waiter(struct rt_mutex *lock,
+-		      struct rt_mutex_waiter *waiter,
+-		      unsigned long *flags)
++static void boost_lock(struct rt_mutex *lock,
++		       struct rt_mutex_waiter *waiter)
+ {
+-	int has_waiters = rt_mutex_has_waiters(lock);
+-
+-	waiter->task = current;
+-	waiter->lock = lock;
+-	waiter->pi.prio = current->prio;
+-	plist_node_init(&waiter->list_entry, waiter->pi.prio);
+-	plist_add(&waiter->list_entry, &lock->wait_list);
+ 	waiter->pi.snk = rtmutex_waiter_pi_snk;
+ 
+ 	/*
+@@ -397,35 +395,28 @@ static int add_waiter(struct rt_mutex *lock,
+ 	 * If we previously had no waiters, we are transitioning to
+ 	 * a mode where we need to boost the owner
+ 	 */
+-	if (!has_waiters) {
++	if (!lock->pi.boosters) {
+ 		struct task_struct *owner = rt_mutex_owner(lock);
+ 		rtmutex_pi_owner(lock, owner, 1);
+ 	}
+ 
+-	spin_unlock_irqrestore(&lock->wait_lock, *flags);
+-	task_pi_update(current, 0);
+-	spin_lock_irqsave(&lock->wait_lock, *flags);
+-
+-	return 0;
++	lock->pi.boosters++;
++	waiter->pi.boosted = 1;
+ }
+ 
+-/*
+- * Remove a waiter from a lock
+- *
+- * Must be called with lock->wait_lock held
+- */
+-static void remove_waiter(struct rt_mutex *lock,
+-			  struct rt_mutex_waiter *waiter)
++static void deboost_lock(struct rt_mutex *lock,
++			 struct rt_mutex_waiter *waiter,
++			 struct task_struct *p)
+ {
+-	struct task_struct *p = waiter->task;
++	BUG_ON(!waiter->pi.boosted);
+ 
+-	plist_del(&waiter->list_entry, &lock->wait_list);
+-	waiter->task = NULL;
++	waiter->pi.boosted = 0;
++	lock->pi.boosters--;
+ 
+ 	/*
+ 	 * We can stop boosting the owner if there are no more waiters
+ 	 */
+-	if (!rt_mutex_has_waiters(lock)) {
++	if (!lock->pi.boosters) {
+ 		struct task_struct *owner = rt_mutex_owner(lock);
+ 		rtmutex_pi_owner(lock, owner, 0);
+ 	}
+@@ -446,6 +437,51 @@ static void remove_waiter(struct rt_mutex *lock,
+ }
+ 
  /*
-  * =====================================
-@@ -580,6 +582,8 @@ struct megasas_ctrl_info {
- #define MEGASAS_COMPLETION_TIMER_INTERVAL      (HZ/10)
++ * This must be called with lock->wait_lock held.
++ */
++static void _add_waiter(struct rt_mutex *lock,
++			struct rt_mutex_waiter *waiter)
++{
++	waiter->task = current;
++	waiter->lock = lock;
++	waiter->pi.prio = current->prio;
++	plist_node_init(&waiter->list_entry, waiter->pi.prio);
++	plist_add(&waiter->list_entry, &lock->wait_list);
++}
++
++static int add_waiter(struct rt_mutex *lock,
++		      struct rt_mutex_waiter *waiter,
++		      unsigned long *flags)
++{
++	_add_waiter(lock, waiter);
++
++	boost_lock(lock, waiter);
++
++	spin_unlock_irqrestore(&lock->wait_lock, *flags);
++	task_pi_update(current, 0);
++	spin_lock_irqsave(&lock->wait_lock, *flags);
++
++	return 0;
++}
++
++/*
++ * Remove a waiter from a lock
++ *
++ * Must be called with lock->wait_lock held
++ */
++static void remove_waiter(struct rt_mutex *lock,
++			   struct rt_mutex_waiter *waiter)
++{
++	struct task_struct *p = waiter->task;
++
++	plist_del(&waiter->list_entry, &lock->wait_list);
++	waiter->task = NULL;
++
++	if (waiter->pi.boosted)
++		deboost_lock(lock, waiter, p);
++}
++
++/*
+  * Wake up the next waiter on the lock.
+  *
+  * Remove the top waiter from the current tasks waiter list and from
+@@ -558,6 +594,24 @@ static int adaptive_wait(struct rt_mutex_waiter *waiter,
+ 		if (orig_owner != rt_mutex_owner(waiter->lock))
+ 			return 0;
+ 
++		/* Special handling for when we are not in pi-boost mode */
++		if (!waiter->pi.boosted) {
++			/*
++			 * Are we higher priority than the owner?  If so
++			 * we should bail out immediately so that we can
++			 * pi boost them.
++			 */
++			if (current->prio < orig_owner->prio)
++				return 0;
++
++			/*
++			 * Did our priority change? If so, we need to
++			 * requeue our position in the list
++			 */
++			if (waiter->pi.prio != current->prio)
++				return 0;
++		}
++
+ 		/* Owner went to bed, so should we */
+ 		if (!task_is_current(orig_owner))
+ 			return 1;
+@@ -599,6 +653,7 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
+ 	unsigned long saved_state, state, flags;
+ 	struct task_struct *orig_owner;
+ 	int missed = 0;
++	int boosted = 0;
+ 
+ 	init_waiter(&waiter);
+ 
+@@ -631,26 +686,54 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
+ 		}
+ 		missed = 1;
+ 
++		orig_owner = rt_mutex_owner(lock);
++
+ 		/*
+ 		 * waiter.task is NULL the first time we come here and
+ 		 * when we have been woken up by the previous owner
+ 		 * but the lock got stolen by an higher prio task.
+ 		 */
+-		if (!waiter.task) {
+-			add_waiter(lock, &waiter, &flags);
++		if (!waiter.task)
++			_add_waiter(lock, &waiter);
++
++		/*
++		 * We only need to pi-boost the owner if they are lower
++		 * priority than us.  We dont care if this is racy
++		 * against priority changes as we will break out of
++		 * the adaptive spin anytime any priority changes occur
++		 * without boosting enabled.
++		 */
++		if (!waiter.pi.boosted && current->prio < orig_owner->prio) {
++			boost_lock(lock, &waiter);
++			boosted = 1;
++
++			spin_unlock_irqrestore(&lock->wait_lock, flags);
++			task_pi_update(current, 0);
++			spin_lock_irqsave(&lock->wait_lock, flags);
++
+ 			/* Wakeup during boost ? */
+ 			if (unlikely(!waiter.task))
+ 				continue;
+ 		}
+ 
+ 		/*
++		 * If we are not currently pi-boosting the lock, we have to
++		 * monitor whether our priority changed since the last
++		 * time it was recorded and requeue ourselves if it moves.
++		 */
++		if (!waiter.pi.boosted && waiter.pi.prio != current->prio) {
++			waiter.pi.prio = current->prio;
++
++			requeue_waiter(lock, &waiter);
++		}
++
++		/*
+ 		 * Prevent schedule() to drop BKL, while waiting for
+ 		 * the lock ! We restore lock_depth when we come back.
+ 		 */
+ 		saved_flags = current->flags & PF_NOSCHED;
+ 		current->lock_depth = -1;
+ 		current->flags &= ~PF_NOSCHED;
+-		orig_owner = rt_mutex_owner(lock);
+ 		get_task_struct(orig_owner);
+ 		spin_unlock_irqrestore(&lock->wait_lock, flags);
+ 
+@@ -664,6 +747,24 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
+ 			 * barrier which we rely upon to ensure current->state
+ 			 * is visible before we test waiter.task.
+ 			 */
++			if (waiter.task && !waiter.pi.boosted) {
++				spin_lock_irqsave(&lock->wait_lock, flags);
++
++				/*
++				 * We get here if we have not yet boosted
++				 * the lock, yet we are going to sleep. If
++				 * we are still pending (waiter.task != 0),
++				 * then go ahead and boost them now
++				 */
++				if (waiter.task) {
++					boost_lock(lock, &waiter);
++					boosted = 1;
++				}
++
++				spin_unlock_irqrestore(&lock->wait_lock, flags);
++				task_pi_update(current, 0);
++			}
++
+ 			if (waiter.task)
+ 				schedule_rt_mutex(lock);
+ 		} else
+@@ -696,7 +797,8 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
+ 	spin_unlock_irqrestore(&lock->wait_lock, flags);
+ 
+ 	/* Undo any pi boosting, if necessary */
+-	task_pi_update(current, 0);
++	if (boosted)
++		task_pi_update(current, 0);
+ 
+ 	debug_rt_mutex_free_waiter(&waiter);
+ }
+@@ -708,6 +810,7 @@ static void  noinline __sched
+ rt_spin_lock_slowunlock(struct rt_mutex *lock)
+ {
+ 	unsigned long flags;
++	int deboost = 0;
+ 
+ 	spin_lock_irqsave(&lock->wait_lock, flags);
+ 
+@@ -721,12 +824,16 @@ rt_spin_lock_slowunlock(struct rt_mutex *lock)
+ 		return;
+ 	}
+ 
++	if (lock->pi.boosters)
++		deboost = 1;
++
+ 	wakeup_next_waiter(lock, 1);
+ 
+ 	spin_unlock_irqrestore(&lock->wait_lock, flags);
+ 
+-	/* Undo pi boosting when necessary */
+-	task_pi_update(current, 0);
++	if (deboost)
++		/* Undo pi boosting when necessary */
++		task_pi_update(current, 0);
+ }
+ 
+ void __lockfunc rt_spin_lock(spinlock_t *lock)
+diff --git a/kernel/rtmutex_common.h b/kernel/rtmutex_common.h
+index 7bf32d0..34e2381 100644
+--- a/kernel/rtmutex_common.h
++++ b/kernel/rtmutex_common.h
+@@ -55,6 +55,7 @@ struct rt_mutex_waiter {
+ 	struct {
+ 		struct pi_sink   snk;
+ 		int              prio;
++		int              boosted;
+ 	} pi;
+ #ifdef CONFIG_DEBUG_RT_MUTEXES
+ 	unsigned long		ip;
 
- #define MFI_REPLY_1078_MESSAGE_INTERRUPT       0x80000000
-+#define MFI_REPLY_GEN2_MESSAGE_INTERRUPT       0x00000001
-+#define MFI_GEN2_ENABLE_INTERRUPT_MASK         0x00000001 | 0x00000004
-
- /*
- * register set for both 1068 and 1078 controllers
