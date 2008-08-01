@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYHAXFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbYHAXGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753214AbYHAXFv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 19:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYHAXFo
+	id S1755737AbYHAXGw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 19:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYHAXGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 19:05:44 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58846 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751054AbYHAXFo (ORCPT
+	Fri, 1 Aug 2008 19:06:45 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56615 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751223AbYHAXGo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 19:05:44 -0400
-Subject: Re: [patch 01/17] RCU read sched
+	Fri, 1 Aug 2008 19:06:44 -0400
+Subject: Re: [PATCH] RCU: implement rcu_read_[un]lock_preempt()
 From: Peter Zijlstra <peterz@infradead.org>
 To: paulmck@linux.vnet.ibm.com
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>
-In-Reply-To: <20080801211025.GR14851@linux.vnet.ibm.com>
-References: <20080715222604.331269462@polymtl.ca>
-	 <20080715222746.136282703@polymtl.ca>
-	 <20080801211025.GR14851@linux.vnet.ibm.com>
+Cc: Tejun Heo <tj@kernel.org>, dipankar@in.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20080801211029.GS14851@linux.vnet.ibm.com>
+References: <487AEAC6.60307@kernel.org> <1216188469.5232.0.camel@twins>
+	 <20080801211029.GS14851@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Sat, 02 Aug 2008 01:04:29 +0200
-Message-Id: <1217631869.9016.16.camel@twins>
+Date: Sat, 02 Aug 2008 01:06:13 +0200
+Message-Id: <1217631973.9016.19.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -31,46 +32,46 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Fri, 2008-08-01 at 14:10 -0700, Paul E. McKenney wrote:
-> On Tue, Jul 15, 2008 at 06:26:05PM -0400, Mathieu Desnoyers wrote:
-> > Add rcu_read_lock_sched() and rcu_read_unlock_sched() to rcupdate.h to match the
-> > recently added write-side call_rcu_sched() and rcu_barrier_sched(). They also
-> > match the no-so-recently-added synchronize_sched().
+> On Wed, Jul 16, 2008 at 08:07:49AM +0200, Peter Zijlstra wrote:
+> > On Mon, 2008-07-14 at 14:57 +0900, Tejun Heo wrote:
+> > > With the introduction of preemptible RCU, RCU doesn't gurantee that
+> > > its critical section runs on the CPU it started to run.  As there are
+> > > cases where non-preemptible RCU critical section makes sense, create
+> > > new RCU read lock variants which turns of preemption -
+> > > rcu_read_[un]lock_preempt() which are identical to rcu_read_[un]lock()
+> > > for classic implementation and have enclosing preempt disable/enable
+> > > for preemptible RCU.
+> > > 
+> > > Signed-off-by: Tejun Heo <tj@kernel.org>
 > > 
-> > It will help following matching use of the update/read lock primitives. Those
-> > new read lock will replace preempt_disable()/enable() used in pair with
-> > RCU-classic synchronization.
+> > Sorry, NAK.
+> > 
+> > If you need preempt off you need it for other reasons than RCU, so
+> > mixing it in the interface doesn't make sense to me.
 > 
-> Looks good, but...
+> What Peter said.
 > 
-> synchronize_sched(), call_rcu_sched(), and rcu_barrier_sched() can also
-> pair up with:
+> For example, you could simply use preempt_disable() and preempt_enable()
+> to guard the read side (or wrapper these as Mathieu suggests in
+> http://lkml.org/lkml/2008/7/15/605, though Mathieu has not yet
+> convinced me that these wrappers are a good idea), and then use either
+> call_rcu_sched() or synchronize_sched() for the update side.
 > 
-> o	local_irq_save() and local_irq_restore()
-> o	local_irq_disable() and local_irq_enable()
-
-> o	spin_lock_irqsave() and spin_lock_irqrestore()
-
-You can't actually, as on PREEMP_RT these will not actuall disable
-preemption.
-
-> o	etc. etc.
+> To summarize:
 > 
-> I do very much like the idea of marking the intent of matching with
-> RCU, but am getting a bit queasy about adding rcu_read_lock_sched_irq()
-> and so on.
+> o	Replace your rcu_read_lock_preempt() with preempt_disable().
+> 
+> o	Replace your rcu_read_unlock_preempt() with preempt_enable().
+> 
+> o	Replace your use of call_rcu() with call_rcu_sched().
+> 
+> o	Replace your use of synchronize_rcu() with synchronize_sched().
+> 
+> And then you don't need these new primitives.
+> 
+> However!!!  This must be done carefully, as long sections of code
+> with preemption disabled are really bad for realtime response.
 
-I'm thinking that if you disable interrupts, you're doing that for
-another reason than RCU, so I'm not seeing the need for
-rcu_read_lock_sched_irq variants.
-
-Also, we should be very careful with using the *sched* RCU variant as it
-really relies on disabling preemption - we should only use it when there
-really is no other option, as we generally prefer to keep stuff
-preemptable.
-
-> Thoughts?  Other than having an rcu_read_lock_sched_nop() or some
-> other window-dressing macro that doesn't really do anything?  (Which
-> might really be the right thing to do...)
-
-Afraid you lost me here..
+Right - what I said in the other mail, we should really not use the
+sched-RCU variant if we can avoid it.
 
