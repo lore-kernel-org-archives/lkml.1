@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbYHARJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbYHARRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802AbYHARJS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 13:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYHARJE
+	id S1753894AbYHARRm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 13:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbYHARRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 13:09:04 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:58593 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751776AbYHARJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 13:09:03 -0400
-Date: Fri, 1 Aug 2008 19:08:55 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] MMC fixes for v2.6.27-rc2
-Message-ID: <20080801190855.71023311@mjolnir.drzeus.cx>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-18224-1217610540-0001-2"
+	Fri, 1 Aug 2008 13:17:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34399 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751776AbYHARRb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 13:17:31 -0400
+Date: Fri, 1 Aug 2008 10:16:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Neil Brown <neilb@suse.de>
+cc: Arthur Jones <ajones@riverbed.com>,
+       Dan Williams <dan.j.williams@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-raid@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PULL REQUEST] md bug fixes and minor improvements
+In-Reply-To: <18578.31924.259887.735206@notabene.brown>
+Message-ID: <alpine.LFD.1.10.0808011007240.3277@nehalem.linux-foundation.org>
+References: <18578.31924.259887.735206@notabene.brown>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_freyr.drzeus.cx-18224-1217610540-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-Linus, please pull from
+On Fri, 1 Aug 2008, Neil Brown wrote:
+> 
+> Hi Linus,
+>  please pull the following bugfixes for drivers/md.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-li=
-nus
+Hmm. This doesn't seem to include any fix for the reported unlocked 
+blk_plug() from MD?
 
-to receive the following updates:
+See the emails from Rafael on the kernel mailing list for details 
+(WARNING: at /home/rafael/src/linux-next/include/linux/blkdev.h:447), but 
+it boils down to
 
- drivers/mmc/card/block.c     |   17 +++++---
- drivers/mmc/card/mmc_test.c  |   85 +-------------------------------------=
----
- drivers/mmc/core/core.c      |    5 +-
- drivers/mmc/host/au1xmmc.c   |    8 +++-
- drivers/mmc/host/sdhci-pci.c |    3 +-
- drivers/mmc/host/sdhci.c     |   15 ++++++-
- drivers/mmc/host/sdhci.h     |    2 +
- 7 files changed, 40 insertions(+), 95 deletions(-)
+	WARNING: at /home/rafael/src/linux-2.6/include/linux/blkdev.h:447 blk_plug_device+0x9b/0xb0()
+	Pid: 2268, comm: kjournald Not tainted 2.6.27-rc1-git #211
 
-Manuel Lauss (1):
-      au1xmmc: raise segment size limit.
+	Call Trace:
+	 [<ffffffff8023af5f>] warn_on_slowpath+0x5f/0x80
+	 [<ffffffff8034fc7b>] blk_plug_device+0x9b/0xb0
+	 [<ffffffff8044d5bf>] bitmap_startwrite+0xbf/0x1b0
 
-Pierre Ossman (6):
-      sdhci: handle bug in JMB38x for sizes < 4 bytes
-      sdhci: disable DMA for req, not completely
-      sdhci: check correct return value
-      mmc_test: Revert "mmc_test: test oversized sg lists"
-      mmc: properly iterate over sg list in debug check
-      mmc_block: use proper sg iterators
+where it really looks like "bitmap_startwrite()" just calls 
+blk_plug_device() without holding the queue lock. The rule for that 
+function is documented to be:
 
---=20
-     -- Pierre Ossman
+ * This is called with interrupts off and no requests on the queue and
+ * with the queue lock held.
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+Hmm?
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+Now, admittedly, the blk interfaces here are a bit inconsistent: I think 
+blk_unplug() is supposed to be called _without_ the lock, so it's a bit 
+odd that blk_plug_device() is supposed to b called with it held, but 
+somebody should double-check me on that one.
 
---=_freyr.drzeus.cx-18224-1217610540-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+I guess Jens is gone too..
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkiTQysACgkQ7b8eESbyJLjZdgCeOnwgHvIp/4ztEEXHweBqhUs9
-/ssAoJy2CT7VqJWPtOfscAnYQnRHxNXz
-=SqUC
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-18224-1217610540-0001-2--
+		Linus
