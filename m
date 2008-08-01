@@ -1,69 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbYHAJN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754488AbYHAJWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754700AbYHAJN4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 05:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbYHAJNt
+	id S1754488AbYHAJWj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 05:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbYHAJWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 05:13:49 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34334
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752274AbYHAJNt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 05:13:49 -0400
-Date: Fri, 01 Aug 2008 02:13:48 -0700 (PDT)
-Message-Id: <20080801.021348.233313767.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, a.p.zijlstra@chello.nl
-Subject: Re: [git pull] scheduler fixes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080801090100.GA25142@elte.hu>
-References: <20080731.155504.167792984.davem@davemloft.net>
-	<20080801.011122.32782916.davem@davemloft.net>
-	<20080801090100.GA25142@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Aug 2008 05:22:31 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50262 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751863AbYHAJWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 05:22:30 -0400
+Date: Fri, 1 Aug 2008 11:22:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: combinatorial explosion in lockdep
+Message-ID: <20080801092219.GA15691@elte.hu>
+References: <20080728.161318.38361710.davem@davemloft.net> <20080728235133.GA7956@elte.hu> <20080728.174415.154327359.davem@davemloft.net> <20080729.214503.126934382.davem@davemloft.net> <20080731163943.GF26393@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080731163943.GF26393@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> 
+> * David Miller <davem@davemloft.net> wrote:
+> 
+> > lockdep: Fix combinatorial explosion in lock subgraph traversal.
+> 
+> applied to tip/core/locking - thanks David. I guess we need to test 
+> this a bit, the patch is far from simple :-)
+
+small build fallout fix below.
+
+	Ingo
+
+---------------->
+>From 8887b1c04671c66dcde3d4104913ba9587e1e40c Mon Sep 17 00:00:00 2001
 From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 1 Aug 2008 11:01:00 +0200
+Date: Fri, 1 Aug 2008 11:23:50 +0200
+Subject: [PATCH] lockdep: build fix
 
-> I'm wondering, does this mean that Peter's:
-> 
->     lockdep: change scheduler annotation
-> 
-> is still not good enough yet?
+fix:
 
-It doesn't work, the problem is this:
+ kernel/built-in.o: In function `lockdep_stats_show':
+ lockdep_proc.c:(.text+0x3cb2f): undefined reference to `lockdep_count_forward_deps'
+ kernel/built-in.o: In function `l_show':
+ lockdep_proc.c:(.text+0x3d02b): undefined reference to `lockdep_count_forward_deps'
+ lockdep_proc.c:(.text+0x3d047): undefined reference to `lockdep_count_backward_deps'
 
-[ 7819.764377] =============================================
-[ 7819.775495] [ INFO: possible recursive locking detected ]
-[ 7819.780969] 2.6.27-rc1-lockdep #12
-[ 7819.786256] ---------------------------------------------
-[ 7819.791548] cc1/29466 is trying to acquire lock:
-[ 7819.796685]  (&rq->lock/1){.+..}, at: [<0000000000455548>] double_lock_balance+0x78/0x90
-[ 7819.806849] 
-[ 7819.806859] but task is already holding lock:
-[ 7819.815871]  (&rq->lock/1){.+..}, at: [<0000000000455538>] double_lock_balance+0x68/0x90
-[ 7819.825448] 
-[ 7819.825456] other info that might help us debug this:
-[ 7819.834373] 1 lock held by cc1/29466:
-[ 7819.838709]  #0:  (&rq->lock/1){.+..}, at: [<0000000000455538>] double_lock_balance+0x68/0x90
-[ 7819.847818] 
-[ 7819.847827] stack backtrace:
-[ 7819.855832] Call Trace:
-[ 7819.859696]  [000000000047ecac] __lock_acquire+0xbdc/0xf98
-[ 7819.863669]  [000000000047f7c4] lock_acquire+0x64/0x7c
-[ 7819.867613]  [00000000006d67d4] _spin_lock_nested+0x1c/0x58
-[ 7819.871612]  [0000000000455548] double_lock_balance+0x78/0x90
-[ 7819.875600]  [00000000006d3afc] schedule+0x324/0x8d0
-[ 7819.879536]  [00000000004c089c] pipe_wait+0x58/0x8c
-[ 7819.883462]  [00000000004c0c94] pipe_write+0x3c4/0x480
-[ 7819.887597]  [00000000004ba150] do_sync_write+0x80/0xd0
-[ 7819.891460]  [00000000004ba92c] vfs_write+0x70/0x10c
-[ 7819.895264]  [00000000004bad18] sys_write+0x2c/0x60
-[ 7819.899073]  [0000000000406294] linux_sparc_syscall32+0x34/0x40
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/lockdep_internals.h |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/lockdep_internals.h b/kernel/lockdep_internals.h
+index 68d44ec..f5c6a14 100644
+--- a/kernel/lockdep_internals.h
++++ b/kernel/lockdep_internals.h
+@@ -53,8 +53,21 @@ extern unsigned int nr_process_chains;
+ extern unsigned int max_lockdep_depth;
+ extern unsigned int max_recursion_depth;
+ 
++#ifdef CONFIG_PROVE_LOCKING
+ extern unsigned long lockdep_count_forward_deps(struct lock_class *);
+ extern unsigned long lockdep_count_backward_deps(struct lock_class *);
++#else
++static inline unsigned long
++lockdep_count_forward_deps(struct lock_class *class)
++{
++	return 0;
++}
++static inline unsigned long
++lockdep_count_backward_deps(struct lock_class *class)
++{
++	return 0;
++}
++#endif
+ 
+ #ifdef CONFIG_DEBUG_LOCKDEP
+ /*
