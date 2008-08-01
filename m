@@ -1,158 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbYHAIpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756842AbYHAIu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbYHAIpn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 04:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYHAIpe
+	id S1756842AbYHAIu2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 04:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbYHAIuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 04:45:34 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40962 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbYHAIpc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 04:45:32 -0400
-Message-ID: <4892CCCD.3010202@jp.fujitsu.com>
-Date: Fri, 01 Aug 2008 17:43:57 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Fri, 1 Aug 2008 04:50:18 -0400
+Received: from webmail-outgoing.us4.outblaze.com ([205.158.62.67]:55269 "EHLO
+	webmail-outgoing.us4.outblaze.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752424AbYHAIuR convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 04:50:17 -0400
+X-Greylist: delayed 1170 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Aug 2008 04:50:17 EDT
+X-OB-Received: from unknown (205.158.62.232)
+  by wfilter.us4.outblaze.com; 1 Aug 2008 08:30:46 -0000
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
-References: <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org> <48895D3C.7040100@jp.fujitsu.com> <20080730023842.GA4269@ldl.fc.hp.com> <48919471.6010304@jp.fujitsu.com> <20080731154723.GA26577@ldl.fc.hp.com>
-In-Reply-To: <20080731154723.GA26577@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: "Halesh S" <halesh.s@india.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: kosaki.motohiro@jp.fujitsu.com, halesh.s@india.com,
+       linux-kernel@vger.kernel.org, madhvesh.s@ap.sony.com,
+       halesh.sadashiv@ap.sony.com
+Date: Fri, 1 Aug 2008 03:00:45 -0530
+Subject: Re: mlock() return value issue in kernel 2.6.23.17
+X-Originating-Ip: 125.17.166.34
+X-Originating-Server: ws5-11.us4.outblaze.com
+Message-Id: <20080801083046.15330CB59C@ws5-11.us4.outblaze.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
->> Thank you for patches, Alex-san!
->>
->> I've reviewed those patches and tested them on my ia64 machine
->> that have both shpc and pcie hotplug slots. Your patch looks
->> good.
-> 
-> Thank you for reviewing and testing.
-> 
->> As you mentioned, we are considering the problem also from the
->> view point of slot detection. But I think your patch is needed
->> regardless of that because there might be platforms whose slots
->> are detected properly but firmware assigns the physical slot
->> number wrongly. I think Alex's patch should go to mainline.
-> 
-> That is a good point.
-> 
->> P.S.: I found a possible improvement, though it is not a big
->> problem and we don't not need to fix it soon. I'd like to tell
->> you about it just in case. Current pci_hp_register() checks if
->> name is duplicated first, before checking if another hotplug
->> driver is already registered to the slot. So, if shpchp/pciehp
->> driver tries to register hotplug slot that is already registered
->> by the other hotplug driver (e.g. acpiphp) with the same name,
->> shpchp/pciehp driver will do as follows:
->>
->> (1) shpchp/pciehp call pci_hp_register()
->> (2) pci_hp_register() returns -EEXIST
->> (3) shpchp/pciehp call pci_hp_register() with other name ("M-1")
->> (4) pci_hp_register() returns -EBUSY
->>
->> if pci_hp_register() checked if another hotplug driver is already
->> registered first, step (2) and (3) could be removed.
-> 
-> Thanks, that seems pretty easy to do.
-> 
-> Would you mind testing this patch as well? You should probably
-> apply it on top of the other two patches to see how all three
-> patches interact.
-> 
-> Thanks!
-> 
-> /ac
-> 
-> 
-> From: Alex Chiang <achiang@dl580g5.kio>
-> Subject: [PATCH] PCI hotplug: check for claimed slot before duplicate named slot
-> 
-> Kenji Kaneshige observes that:
-> 
-> If shpchp/pciehp driver tries to register hotplug slot that is
-> already registered by the other hotplug driver (e.g. acpiphp) with
-> the same name, shpchp/pciehp driver will do as follows:
-> 
-> (1) shpchp/pciehp call pci_hp_register()
-> (2) pci_hp_register() returns -EEXIST
-> (3) shpchp/pciehp call pci_hp_register() with other name ("M-1")
-> (4) pci_hp_register() returns -EBUSY
-> 
-> If pci_hp_register() checked if another hotplug driver is already
-> registered first, step (2) and (3) could be removed.
-> 
-> This patch does not prevent the *same* driver from attempting
-> to register multiple slots with the same name (on systems with
-> broken firmware). For that situation, we still need to detect
-> a name collision and return -EEXIST if so.
-> 
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
->  drivers/pci/hotplug/pci_hotplug_core.c |   11 ++++++-----
->  1 files changed, 6 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
-> index 5f85b1b..9c379b6 100644
-> --- a/drivers/pci/hotplug/pci_hotplug_core.c
-> +++ b/drivers/pci/hotplug/pci_hotplug_core.c
-> @@ -568,10 +568,6 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
->  		return -EINVAL;
->  	}
->  
-> -	/* Check if we have already registered a slot with the same name. */
-> -	if (get_slot_from_name(slot->name))
-> -		return -EEXIST;
-> -
->  	/*
->  	 * No problems if we call this interface from both ACPI_PCI_SLOT
->  	 * driver and call it here again. If we've already created the
-> @@ -587,6 +583,12 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
->  		return -EBUSY;
->  	}
->  
-> +	/* Check if we have already registered a slot with the same name. */
-> +	if (get_slot_from_name(slot->name)) {
-> +		pci_destroy_slot(pci_slot);
-> +		return -EEXIST;
-> +	}
-> +
->  	slot->pci_slot = pci_slot;
->  	pci_slot->hotplug = slot;
->  
-> @@ -609,7 +611,6 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
->  	kobject_uevent(&pci_slot->kobj, KOBJ_ADD);
->  	dbg("Added slot %s to the list\n", slot->name);
->  
-> -
->  	return result;
->  }
->  
 
-Unfortunately, we can't simply move the following check after pci_create_slot().
+Hi,
 
-> -	/* Check if we have already registered a slot with the same name. */
-> -	if (get_slot_from_name(slot->name))
-> -		return -EEXIST;
-> -
+Thanks everyone.
+I confirm that the patch fixes the issue with Rlimit and invalid address.
 
-With this change, kobject_init_and_add() called in pci_create_slot() will
-show stack trace if a hotplug driver attempts to register multiple slot with
-the same name. That is, stack trace will be shown on the platform that wrongly
-assing the physical slot number to multiple slots. I'm very sorry, but I don't
-have enough time to consider how to fix it today.
+Signed-off-by: halesh.sadashiv@ap.sony.com
 
 Thanks,
-Kenji Kaneshige
+Halesh
 
 
+
+> ----- Original Message -----
+> From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+> To: "Andrew Morton" <akpm@linux-foundation.org>
+> Subject: Re: mlock() return value issue in kernel 2.6.23.17
+> Date: Fri, 01 Aug 2008 16:23:40 +0900
+> 
+> 
+> Hi Andrew,
+> 
+> > I assume that you tested it too?
+> 
+> Yes, my x86_64 box works well.
+> 
+> sorry, ambiguity e-mail.
+> 
+> halesh's test check two point.
+>    - mlock rlimit
+>    - invlid address range
+> 
+> and, I think rlimit already works well.
+> So, I ask halesh re-confirming.
+> 
+> > If it comes down to a choice between complying with SuS versus
+> > complying with earlier Linux versions then we'd usually prefer to
+> > comply with earlier Linux versions.
+> 
+> I see.
+> 
+> > I queued this, but would prefer to await confirmation that it has been
+> > tested to take us back to the 2.6.18 interface, please.
+> 
+> Yes.
+> this patch wasn't tested on split-lru yet.
+> I'll do that. (and probably fix it)
+> 
+> > Also, please send a Signed-off-by: for this change.
+> 
+> Agghh, sorry. it is stupid forgotten.
+
+>
+
+
+=
+
+
+-- 
+_______________________________________________
+Search for products and services at: 
+http://search.mail.com
