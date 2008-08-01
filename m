@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbYHADmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753101AbYHADpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754554AbYHADmK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 23:42:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbYHADly
+	id S1753101AbYHADpK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 23:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbYHADo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 23:41:54 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:28600 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750900AbYHADlx (ORCPT
+	Thu, 31 Jul 2008 23:44:58 -0400
+Received: from venus.billgatliff.com ([209.251.101.201]:44023 "EHLO
+	venus.billgatliff.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751032AbYHADo6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 23:41:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xvsBSAOrvE/P87gTdd7We0bkrs9DxkQg6CrbOkyPQGEIYf7NYOLQc2v1UZlsOZ7Mxo
-         hXmU9WUJpHtnHE8jBmCOq+oEffRvpEG0C0Ss39ftWuMmOp0fv9AqSIBJ7ALCVp0mXmrV
-         h6Ndzzn708giI/QIJD3o7JitIoGIj69Gonrm0=
-Date: Thu, 31 Jul 2008 22:41:50 -0500
-From: Matt Garman <matthew.garman@gmail.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: David Greaves <david@dgreaves.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: 12 Veliciraptors again w/x4 card (~1gbyte/sec aggregate read)!
-Message-ID: <20080801034150.GA32026@sewage.raw-sewage.fake>
-References: <alpine.DEB.1.10.0807071424100.4694@p34.internal.lan> <4872A2F4.2010604@dgreaves.com> <alpine.DEB.1.10.0807080429440.17980@p34.internal.lan> <alpine.DEB.1.10.0807080438560.17980@p34.internal.lan>
+	Thu, 31 Jul 2008 23:44:58 -0400
+Message-ID: <489286B6.20502@billgatliff.com>
+Date: Thu, 31 Jul 2008 22:44:54 -0500
+From: Bill Gatliff <bgat@billgatliff.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0807080438560.17980@p34.internal.lan>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, vatsa@linux.vnet.ibm.com,
+       efault@gmx.de, linux-kernel@vger.kernel.org
+Subject: Re: Fwd: Commit 76a2a6ee8a0660a29127f05989ac59ae1ce865fa breaks PXA270
+ (at least)?
+References: <20080729223105.GK10982@flint.arm.linux.org.uk> <20080729154605.d540cf6d.akpm@linux-foundation.org> <20080731213741.GJ2729@elte.hu> <1217540875.8157.105.camel@twins> <20080731215703.GA5392@flint.arm.linux.org.uk>
+In-Reply-To: <20080731215703.GA5392@flint.arm.linux.org.uk>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 08, 2008 at 04:39:34AM -0400, Justin Piszcz wrote:
-> On Tue, 8 Jul 2008, Justin Piszcz wrote:
->> On Tue, 8 Jul 2008, David Greaves wrote:
->>> Justin Piszcz wrote:
->>>> Each PCI-e x1 card has 1 veliciraptor on it now.
->>>> Got an x4 card wit 4 sata ports:
->>> Useful - which card?
+Russell King - ARM Linux wrote:
+> On Thu, Jul 31, 2008 at 11:47:55PM +0200, Peter Zijlstra wrote:
+>> On Thu, 2008-07-31 at 23:37 +0200, Ingo Molnar wrote:
+>>> * Andrew Morton <akpm@linux-foundation.org> wrote:
+>>>
+>>>> On Tue, 29 Jul 2008 23:31:05 +0100
+>>>> Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+>>>>
+>>>>> But then some bright spark thought it would be a good idea to get
+>>>>> rid of printk_clock().
+>>>> <does git-log, searches for printk_clock>
+>>> i think this is a fresh regression via the introduction of 
+>>> kernel/sched_clock.c. We lost the (known) early-init behavior of 
+>>> cpu_clock() in the !UNSTABLE_SCHED_CLOCK case. The fix would be to 
+>>> restore that, not to reintroduce printk_clock().
+>>>
+>>> Peter, any ideas?
+>> How about something like this, it builds an atificial delay, exactly
+>> like we already have for the HAVE_UNSTABLE_SCHED_CLOCK case.
 >>
->> StarTech 4 Port PCI Express x4 SATA II Card Model PEXSATA24E
+>> This keeps cpu_clock() 0 until after sched_clock_init().
 >>
->>
-> Chipset: Marvell 88SX7042
-> SATA Connectivity: Use four internal ports at the same time or two internal 
-> and two external ports
->
-> Which is fully supported in the latest kernels (didn't try an old kernel):
->
-> linux-2.6.25.10/drivers/ata/sata_mv.c
->
->   /* Marvell 7042 support */
->   { PCI_VDEVICE(MARVELL, 0x7042), chip_7042 },
+>> Russell, Bill, is this sufficient?
+> 
+> It looks like it should.  Bill - can you test the patch in Peter's mail
+> please?
 
-How have that card and the array attached to it been doing since you
-originally posted this?
+I've got one foot out the door headed towards a business trip.  I can check it
+out Monday or Tuesday.
 
-Doesn't that HighPoint 23xx card also use the Marvell 88SX7042 chip?
-I remember seeing the threads about the HighPoint card silently
-corrupting data by silently writing over parts of the disk(s) with
-its own info.  I'm guessing that's not a "feature" of the Marvell
-chip, but still... admittedly irrational fear here :)
 
-It would be nice if that Supermicro 8-port SATA card (AOC-SAT2-MV8)
-was available in PCIe... I wonder if it's possible to just graft
-multiple SiI 3132 controllers (2 SATA each) on a single PCIe card?
-
+b.g.
+-- 
+Bill Gatliff
+bgat@billgatliff.com
