@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbYHAAog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbYHAAwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755159AbYHAAog (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 20:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbYHAAo2
+	id S1755504AbYHAAwn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 20:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbYHAAwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 20:44:28 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51387 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752366AbYHAAo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 20:44:28 -0400
-Date: Thu, 31 Jul 2008 17:44:25 -0700
-From: Mark Fasheh <mfasheh@suse.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git patches] Ocfs2 and Configfs fixes
-Message-ID: <20080801004425.GL28014@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 31 Jul 2008 20:52:30 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:4474 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751425AbYHAAw3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 20:52:29 -0400
+From: Divy Le Ray <divy@chelsio.com>
+Organization: Chelsio Communications
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+Date: Thu, 31 Jul 2008 17:51:59 -0700
+User-Agent: KMail/1.9.9
+Cc: "Jeff Garzik" <jgarzik@pobox.com>, "Karen Xie" <kxie@chelsio.com>,
+       netdev@vger.kernel.org, open-iscsi@googlegroups.com,
+       davem@davemloft.net, michaelc@cs.wisc.edu,
+       "Steve Wise" <swise@opengridcomputing.com>, daisyc@us.ibm.com,
+       wenxiong@us.ibm.com, bhua@us.ibm.com,
+       "Dimitrios Michailidis" <dm@chelsio.com>,
+       "Casey Leedom" <leedom@chelsio.com>,
+       "linux-scsi" <linux-scsi@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+References: <200807300019.m6U0JkdY012558@localhost.localdomain> <4890C287.60508@pobox.com> <aday73jxdfs.fsf@cisco.com>
+In-Reply-To: <aday73jxdfs.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+Message-Id: <200807311752.00911.divy@chelsio.com>
+X-OriginalArrivalTime: 01 Aug 2008 00:51:21.0359 (UTC) FILETIME=[B71591F0:01C8F370]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The only non-fix here is Joel's new configfs convenience macros, but nobody
-is using them yet, so I think the patch is safe.
+On Wednesday 30 July 2008 02:35:51 pm Roland Dreier wrote:
+>  > * From a networking standpoint, our main concern becomes how this
+>  > interacts with the networking stack.  In particular, I'm concerned
+>  > based on reading the source that this driver uses "TCP port stealing"
+>  > rather than using a totally separate MAC address (and IP).
+>  >
+>  > Stealing a TCP port on an IP/interface already assigned is a common
+>  > solution in this space, but also a flawed one.  Precisely because the
+>  > kernel and applications are unaware of this "special, magic TCP port"
+>  > you open the potential for application problems that are very
+>  > difficult for an admin to diagnose based on observed behavior.
+>
+> That's true, but using a separate MAC and IP opens up a bunch of other
+> operational problems.  I don't think the right answer for iSCSI offload
+> is clear yet.
+>
+>  - R.
 
-By the way, these patches (as usual) are all rebased on top of your latest
-tree. I think that since the vast majority of ocfs2 and configfs patches are
-self-contained and within a small area of the kernel that this should
-probably be fine. If you feel otherwise however, please let me know and I'll
-happily respin this as a set of topic-branch merges.
-	--Mark
+Hi Jeff,
 
---
-Mark Fasheh
+We've considered the approach of having a separate IP/MAC addresses to manage
+iSCSI connections. In such a context, the stack would have to be unaware of
+this iSCSI specific IP address. The iSCSI driver would then have to implement
+at least its own ARP reply mechanism. DHCP too would have to be managed
+separately. Most network setting/monitoring tools would also be unavailable.
 
-Please pull from 'upstream-linus' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
+The open-iscsi initiator is not a huge consumer of TCP connections, allocating
+a TCP port from the stack would be reasonable in terms of resources in this
+context. It is however unclear if it is an acceptable approach.
 
-to receive the following updates:
+Our current implementation was designed to be the most tolerable one
+within the constraints - real or expected - aforementioned.
 
- Documentation/filesystems/configfs/configfs.txt    |   17 ++-
- ...figfs_example.c => configfs_example_explicit.c} |   18 +-
- ...onfigfs_example.c => configfs_example_macros.c} |   75 ++------
- fs/configfs/configfs_internal.h                    |    3 +
- fs/configfs/dir.c                                  |  210 ++++++++++++++++----
- fs/configfs/symlink.c                              |   26 +++
- fs/ocfs2/aops.c                                    |   29 ++--
- fs/ocfs2/file.c                                    |    2 +-
- fs/ocfs2/journal.c                                 |  173 +++++++++++++----
- fs/ocfs2/journal.h                                 |    3 +-
- fs/ocfs2/ocfs2.h                                   |    2 +
- fs/ocfs2/ocfs2_fs.h                                |    5 +-
- fs/ocfs2/super.c                                   |   12 +-
- include/linux/configfs.h                           |   68 ++++++-
- 14 files changed, 475 insertions(+), 168 deletions(-)
- copy Documentation/filesystems/configfs/{configfs_example.c => configfs_example_explicit.c} (96%)
- rename Documentation/filesystems/configfs/{configfs_example.c => configfs_example_macros.c} (85%)
+Cheers,
+Divy
 
-Joel Becker (3):
-      configfs: Include linux/err.h in linux/configfs.h
-      configfs: Pin configfs subsystems separately from new config_items.
-      configfs: Convenience macros for attribute definition.
-
-Julia Lawall (1):
-      ocfs2: Release mutex in error handling code
-
-Louis Rilling (5):
-      configfs: Fix symlink() to a removing item
-      configfs: Fix failing symlink() making rmdir() fail
-      configfs: Prevent userspace from creating new entries under attaching directories
-      configfs: Lock new directory inodes before removing on cleanup after failure
-      configfs: Fix open directory making rmdir() fail
-
-Sunil Mushran (3):
-      ocfs2: Add counter in struct ocfs2_dinode to track journal replays
-      ocfs2: Fix race between mount and recovery
-      ocfs2: Fix oops when racing files truncates with writes into an mmap region
-
---
-Mark Fasheh
