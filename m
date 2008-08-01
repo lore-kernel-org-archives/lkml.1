@@ -1,141 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbYHAQ1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbYHAQ2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194AbYHAQ1R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 12:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYHAQ1C
+	id S1755384AbYHAQ2R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 12:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbYHAQ2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 12:27:02 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:39037 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751367AbYHAQ1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 12:27:00 -0400
-Date: Fri, 1 Aug 2008 17:26:57 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: memory hotplug: hot-add to ZONE_MOVABLE vs. min_free_kbytes
-Message-ID: <20080801162656.GA10388@csn.ul.ie>
-References: <20080723105318.81BC.E1E9C6FF@jp.fujitsu.com> <1217347653.4829.17.camel@localhost.localdomain> <20080730110444.27DE.E1E9C6FF@jp.fujitsu.com> <1217420161.4545.10.camel@localhost.localdomain> <20080731132213.GF1704@csn.ul.ie> <1217526327.4643.35.camel@localhost.localdomain>
+	Fri, 1 Aug 2008 12:28:06 -0400
+Received: from qb-out-0506.google.com ([72.14.204.236]:1769 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751516AbYHAQ2D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 12:28:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=ZDKqFCHVFgZZ7pa+5LM7n5+QByBR94pMl9Xt9y/PYWQgp4FNW3lN7whRgzDN287Ek4
+         q954A3mgWtDiONuOt3cER0KkwJ1KaV/EtvZRy1Vym9Wy6Sx0IIEbRzsQW2ExnvIHS3gQ
+         kImpfqkOh2bZgXTIonqlwJwgZ8yNeb5ublnko=
+Message-ID: <4893399E.8080503@tuffmail.co.uk>
+Date: Fri, 01 Aug 2008 17:28:14 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1217526327.4643.35.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Bob Copeland <me@bobcopeland.com>
+CC: Jiri Slaby <jirislaby@gmail.com>, tomasw@gmail.com,
+       Dave Young <hidave.darkstar@gmail.com>, stable@kernel.org,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linville@tuxdriver.com, Pekka Enberg <penberg@cs.helsinki.fi>,
+       ath5k-devel@venema.h4ckr.net, johannes@sipsolutions.net,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [ath5k-devel] [PATCH] ath5k : ath5k_config_interface deadlock
+ fix
+References: <20080801074014.GA3341@darkstar> <4892C2CA.7010003@gmail.com>	<4892C359.9000304@cs.helsinki.fi>	<20080801011415.ff4821a3.akpm@linux-foundation.org>	<b6c5339f0808010643i58dbb2a7jf459359451061ae4@mail.gmail.com>	<4893257C.1020907@gmail.com> <b6c5339f0808010823o434298ecn7b274c46fe857aba@mail.gmail.com>
+In-Reply-To: <b6c5339f0808010823o434298ecn7b274c46fe857aba@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (31/07/08 19:45), Gerald Schaefer didst pronounce:
-> On Thu, 2008-07-31 at 14:22 +0100, Mel Gorman wrote:
-> > > The more memory we add to ZONE_MOVABLE, the less reserved pages will
-> > > remain to the other zones. In setup_per_zone_pages_min(), min_free_kbytes
-> > > will be redistributed to a zone where the kernel cannot make any use of
-> > > it, effectively reducing the available min_free_kbytes. 
-> > 
-> > I'm not sure what you mean by "available min_free_kbytes". The overall value
-> > for min_free_kbytes should be approximately the same whether the zone exists
-> > or not. However, you're right in that the distribution of minimum free pages
-> > changes with ZONE_MOVABLE because the zones are different sizes now. This
-> > affects reclaim, not memory hot-remove.
-> 
-> Sorry for mixing things up in this thread, the min_free_kbytes issue is
-> not related to memory hot-remove, but rather to hot-add and the things that
-> happen in setup_per_zone_pages_min(), which is called from online_pages().
-> It may well be that my assumptions are wrong, but I'd like to explain my
-> concerns again:
-> 
-> If we have a system with 1 GB of memory, min_free_kbytes will be calculated
-> to 4 MB for ZONE_NORMAL, for example. Now, if we add 3 GB of hotplug memory
-> to ZONE_MOVABLE, the total min_free_kbytes will still remain 4 MB but it
-> will be distributed differently: ZONE_NORMAL will now have only 1 MB of
-> MIGRATE_RESERVE memory left, while ZONE_MOVABLE will have 3 MB, e.g.
-> 
+Bob Copeland wrote:
+> On Fri, Aug 1, 2008 at 11:02 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
+>   
+>>> Not to worry, the commit that introduced it was
+>>> 9d139c810a2aa17365cc548d0cd2a189d8433c65, which as far as I can tell
+>>> came in after 2.6.26.
+>>>       
+>> git-describe 9d139c810a2aa17365cc548d0cd2a189d8433c65
+>> v2.6.26-rc8-1219-g9d139c8
+>>     
+>
+> I'm not that expert in git, what does that mean?  Some other commits
+> for 2.6.27 also show a 2.6.26-rc from git-describe (e.g. my
+> 3a078876caee).
+>
+> For my own investigation, I did a 'git-checkout v2.6.26' and looked at
+> the code to see the patch had not been applied yet.  Is there an
+> easier way to definitively say commit X is/is not in tagged release Y?
+>
+>   
 
-Ok, I haven't double checked your figures but lets go with the assumption -
-adding memory means min_free_kbytes will be distributed differently.
+Aha!  I think we want git-describe --contains.
 
-> My assumption is now, that the reserved 3 MB in ZONE_MOVABLE won't be
-> usable by the kernel anymore, e.g. for PF_MEMALLOC, because it is in
-> ZONE_MOVABLE now.
+$ git-describe --contains 2b142900784c6e38c8d39fa57d5f95ef08e735d8
+v2.6.27-rc1~55^2~1
 
-Nothing stops PF_MEMALLOC being used and the only thing that stops 3MB
-being used in ZONE_MOVABLE is min_free_kbytes, not the fact there is a
-MIGRATE_RESERVE there. PF_MEMALLOC and MIGRATE_RESERVE are not related.
+Alan
 
-I think you are confusing what MIGRATE_RESERVE is for. A number of pageblocks
-at the start of a zone are marked MIGRATE_RESERVE depending on the size of
-min_free_kbytes for that value. The kernel will try avoiding allocating from
-there so that high-order-atomic-allocatons have a chance of succeeding from
-there. It's not kept aside for emergency-allocations.
-
-> This is what I mean with "effectively reducing the
-> available min_free_kbytes". The system would now behave in the same way
-> as a system which only had 1 MB of min_free_kbytes, although
-> /proc/sys/vm/min_free_kbytes would still say 4 MB. After all, this tunable
-> can have a rather negative impact on a system, especially if it is too
-> low, hence my concerns.
-> 
-
-Increase min_free_kbytes on memory hot-add?
-
-> 
-> > > This just doesn't
-> > > sound right. I believe that a similar situation is the reason why highmem
-> > > pages are skipped in the calculation and I think that we need that for
-> > > ZONE_MOVABLE too. Any thoughts on that problem?
-> > > 
-> > 
-> > is_highmem(ZONE_MOVABLE) should be returning true if the zone is really
-> > part of himem.
-> 
-> We don't have highmem on s390, I was just trying to give an example: I
-> noticed that there is special treatment for highmem pages in
-> setup_per_zone_pages_min(), and thought that we may also need to handle
-> ZONE_MOVABLE in a special way.
-> 
-
-ZONE_MOVABLE should be treated the same as highmem would be in terms of
-tuning
-
-> 
-> > > Setting pages_min to 0 for ZONE_MOVABLE, while not capping pages_low
-> > > and pages_high, could be an option. I don't have a sufficient memory
-> > > managment overview to tell if that has negative side effects, maybe
-> > > someone with a deeper insight could comment on that.
-> > > 
-> > 
-> > pages_min of 0 means the other values would be 0 as well. This means that
-> > kswapd may never be woken up to free pages within that zone and lead to
-> > poor utilisation of the zone as allocators fallback to other zones to
-> > avoid direct reclaim. I don't think that is your intention nor will it
-> > help memory hot-remove.
-> 
-> Do you mean pages_low and pages_high? In setup_per_zone_pages_min(),
-> those would not be set to 0, even if we set pages_min to 0. Again, a
-> similar strategy is being used for highmem in that function, only that
-> pages_min is set to a small value instead of 0 in that case. So it should
-> not affect kswapd but only __GFP_HIGH and PF_MEMALLOC allocations, which
-> won't be allocated from ZONE_MOVABLE anyway if I understood that right.
-> 
-
-Ok, I'm losing track here, maybe it's just too late on a friday. right now,
-ZONE_MOVABLE should be setup similar to what HIGHMEM would have been. It
-shouldn't get its pages_min value set to 0 and even if it did, it would not
-help memory hot-remove.
-
-Also, nothing stops __GFP_HIGH or PF_MEMALLOC using ZONE_MOVABLE as long as the
-caller is using __GFP_MOVABLE. However, as it is unlikely that combination
-of flags would occur I'd be open to examining how min_free_kbytes gets
-distibuted. It is an independent topic to why the beginning of the zone is
-not removable though. I suspect MIGRATE_RESERVE is a red herring.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
