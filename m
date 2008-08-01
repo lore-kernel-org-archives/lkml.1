@@ -1,106 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764290AbYHAV1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764373AbYHAV2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764290AbYHAV1t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760711AbYHAVXh
+	id S1764373AbYHAV2p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759474AbYHAV0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:23:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55341 "EHLO mx1.redhat.com"
+	Fri, 1 Aug 2008 17:26:05 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:38149 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932111AbYHAVXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:23:35 -0400
+	id S1759934AbYHAV0C convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 17:26:02 -0400
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>
+CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "poswald@novell.com" <poswald@novell.com>,
+       "Austria, Winston" <Winston.Austria@lsi.com>
+Date: Fri, 1 Aug 2008 15:25:06 -0600
+Subject: [PATCH 4/4] scsi: megaraid_sas - Version and Documentation Update
+Thread-Topic: [PATCH 4/4] scsi: megaraid_sas - Version and Documentation
+ Update
+Thread-Index: AciItAVU2/gnyqciSguN4aHHEiVCxRrPlpmwAAF0YNAACRk1MA==
+Message-ID: <4B6A08C587958942AA3002690DD4F8C31B080A6F@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C31B080A66@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: Q: wait_task_inactive() and !CONFIG_SMP && CONFIG_PREEMPT
-In-Reply-To: Oleg Nesterov's message of  Friday, 1 August 2008 15:49:54 +0400 <20080801114954.GA76@tv-sign.ru>
-References: <200807260245.m6Q2jwB4012297@imap1.linux-foundation.org>
-	<20080727121540.GB178@tv-sign.ru>
-	<20080727200551.D3F6A154284@magilla.localdomain>
-	<20080728125704.GA98@tv-sign.ru>
-	<20080728233915.0D00015427E@magilla.localdomain>
-	<20080729122010.GB177@tv-sign.ru>
-	<20080801012747.7E17F15427E@magilla.localdomain>
-	<20080801114954.GA76@tv-sign.ru>
-X-Windows: graphics hacking :: Roman numerals : sqrt (pi)
-Message-Id: <20080801212254.F3E0C154252@magilla.localdomain>
-Date: Fri,  1 Aug 2008 14:22:54 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This means we can't use wait_task_inactive(p) unless we know p->state
-> is already != TASK_RUNNING. OK, the current callers assume exactly this.
+Update the Version and Documentation.
 
-Correct.
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-> But perhaps we should change the state checks from "==" to "&", note
-> that pfm_task_incompatible() checks task_is_stopped_or_traced().
+---
+ Documentation/scsi/ChangeLog.megaraid_sas |   23 +++++++++++++++++++++++
+ drivers/scsi/megaraid/megaraid_sas.h      |    6 +++---
+ 2 files changed, 26 insertions(+), 3 deletions(-)
 
-No, the intent is "not changed at all", not "in some acceptable state".  So
-the caller should sample ->state, decide that value is ok, and pass that
-same value in.  Then wait_task_inactive succeeds only if exactly that value
-stayed in place and the target got off the CPU.  (If it came out and went
-back into the exact same state before we got into wait_task_inactive, we
-don't really care.  The callers have outside means to know that either is
-good enough for their purposes, or is impossible.)
+diff -rupN linux-2.6.28_orig/Documentation/scsi/ChangeLog.megaraid_sas linux-2.6.28_new/Documentation/scsi/ChangeLog.megaraid_sas
+--- linux-2.6.28_orig/Documentation/scsi/ChangeLog.megaraid_sas 2008-07-31 13:34:16.000000000 -0400
++++ linux-2.6.28_new/Documentation/scsi/ChangeLog.megaraid_sas  2008-07-31 14:18:36.000000000 -0400
+@@ -1,3 +1,26 @@
++
++1 Release Date    : Thur.July. 24 11:41:51 PST 2008 -
++                       (emaild-id:megaraidlinux@lsi.com)
++                       Sumant Patro
++                       Bo Yang
++
++2 Current Version : 00.00.04.01
++3 Older Version   : 00.00.03.22
++
++1. Add the new controller (0078, 0079) support to the driver
++       Those controllers are LSI's next generatation(gen2) SAS controllers.
++
++1 Release Date    : Mon.June. 23 10:12:45 PST 2008 -
++                       (emaild-id:megaraidlinux@lsi.com)
++                       Sumant Patro
++                       Bo Yang
++
++2 Current Version : 00.00.03.22
++3 Older Version   : 00.00.03.20
++
++1. Add shutdown DCMD cmd to the shutdown routine to make FW shutdown proper.
++2. Unexpected interrupt occurs in HWR Linux driver, add the dumy readl pci flush will fix this issue.
++
+ 1 Release Date    : Mon. March 10 11:02:31 PDT 2008 -
+                        (emaild-id:megaraidlinux@lsi.com)
+                        Sumant Patro
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2008-07-31 13:34:16.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2008-07-31 13:41:56.000000000 -0400
+@@ -18,9 +18,9 @@
+ /*
+  * MegaRAID SAS Driver meta data
+  */
+-#define MEGASAS_VERSION                        "00.00.03.20-rc1"
+-#define MEGASAS_RELDATE                        "March 10, 2008"
+-#define MEGASAS_EXT_VERSION            "Mon. March 10 11:02:31 PDT 2008"
++#define MEGASAS_VERSION                                "00.00.04.01"
++#define MEGASAS_RELDATE                                "July 24, 2008"
++#define MEGASAS_EXT_VERSION                    "Thu July 24 11:41:51 PST 2008"
 
-> I meant, it buys nothing because the task can set its state == TASK_RUNNING
-> right after preempt_enable(), because the task can be runnable despite
-> the fact its state is (say) TASK_UNINTERRUPTIBLE.
-
-Right, but we don't care about that.  The predicate really is "says
-expected ->state, and is off the CPU", not "... and is not runnable".
-
-> I think we misunderstood each other. I never said the _current_ callers have
-> problems (except the dummy version can't just return 1 of course).
-
-Callers like the current ones are the only reasons we have this function.
-Its only purpose is to meet those needs.  If those requirements are not as
-strong as a "generic" specification of what the function does, then we can
-just change the specification.
-
-> I proposed to synchronize 2 implementations to avoid the possible problems,
-> and personally I still dislike the fact that !SMP version has the very
-> different behaviour.
-
-It's only "very different" if what you call its "behavior" is an abstract
-specification based on what the SMP version happens to do, rather than
-saying "its behavior" is just to meet the guarantees I set out earlier.
-Meeting those guarantees is what the function is for.  So it should do the
-cheapest thing to satisfies them in each configuration.
-
-> But yes, if we only want to "fix" the current callers, we can make the !SMP
-> version
-[...]
-> 		int ret = 0;
-
-unsigned long
-
-> 
-> 		preempt_disable();
-> 		if (!match_state || p->state == match_state)
-> 			ret = (p->nvcsw + p->nivcsw) | LONG_MIN;
-> 		preempt_enable();
-
-In the !match_state case (nearly moot now anyway), there's no need to set
-the return value.  Callers passing 0 never expected a return value.
-
-> This is fine on SMP, afaics.
-> 
-> More precisely, this is fine if wait_task_inactive(p) returns success only
-> when p->se.on_rq == 0, we shouldn't worry about preemption (nivcsw) at all.
-
-Ok.  I was looking at the !SMP PREEMPT context when I said that.  I don't
-dispute your rationale about the SMP case; it relies on scheduler innards
-that I don't know at all well.
-
-
-Thanks,
-Roland
+ /*
+  * Device IDs
