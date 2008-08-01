@@ -1,82 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751552AbYHAWxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbYHAWzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751552AbYHAWxy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 18:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759294AbYHAWx3
+	id S1754880AbYHAWzv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 18:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbYHAWzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 18:53:29 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:34903 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759171AbYHAWx1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 18:53:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:references:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=qIqSXCbQHSp924bkQO9lIrsznvvo96bhY0vMSHQT33sEGj+3XlEG+JZMsmDd1v+hlA
-         ArpLKIaOqp69zkcSwpxXMorkhxDuJWDeRAVYNzIukmk4kM786jq/lD72h1Ipv5fP/+Fu
-         f0CLL9ZxTQc57A7+5bk3rLNjl7SbXg3nOKJ6k=
-From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Vitaly Mayatskikh <v.mayatskih@gmail.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Optimize tail handling for copy_user
-References: <m3ljzmdrqh.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0807280846320.3486@nehalem.linux-foundation.org>
-	<m3ljzj60mk.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0807301016020.3334@nehalem.linux-foundation.org>
-	<m3abfyqgbg.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0808011308470.3277@nehalem.linux-foundation.org>
-	<m3wsj0l7cv.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0808011524150.6819@nehalem.linux-foundation.org>
-Date: Sat, 02 Aug 2008 00:53:32 +0200
-In-Reply-To: <alpine.LFD.1.10.0808011524150.6819@nehalem.linux-foundation.org>
-	(Linus Torvalds's message of "Fri, 1 Aug 2008 15:30:26 -0700 (PDT)")
-Message-ID: <m3sktol53n.fsf@gravicappa.englab.brq.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Fri, 1 Aug 2008 18:55:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35220 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750864AbYHAWzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 18:55:42 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [PATCH 3/6] Container Freezer: Implement freezer cgroup subsystem
+Date: Sat, 2 Aug 2008 00:58:36 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+References: <20080801050659.924495279@us.ibm.com> <20080801050700.797996261@us.ibm.com>
+In-Reply-To: <20080801050700.797996261@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808020058.37407.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Friday, 1 of August 2008, Matt Helsley wrote:
+> This patch implements a new freezer subsystem in the control groups framework.
+> It provides a way to stop and resume execution of all tasks in a cgroup by
+> writing in the cgroup filesystem.
+> 
+> The freezer subsystem in the container filesystem defines a file named
+> freezer.state. Writing "FROZEN" to the state file will freeze all tasks in the
+> cgroup. Subsequently writing "RUNNING" will unfreeze the tasks in the cgroup.
+> Reading will return the current state.
+> 
+> * Examples of usage :
+> 
+>    # mkdir /containers/freezer
+>    # mount -t cgroup -ofreezer freezer  /containers
+>    # mkdir /containers/0
+>    # echo $some_pid > /containers/0/tasks
+> 
+> to get status of the freezer subsystem :
+> 
+>    # cat /containers/0/freezer.state
+>    RUNNING
+> 
+> to freeze all tasks in the container :
+> 
+>    # echo FROZEN > /containers/0/freezer.state
+>    # cat /containers/0/freezer.state
+>    FREEZING
+>    # cat /containers/0/freezer.state
+>    FROZEN
+> 
+> to unfreeze all tasks in the container :
+> 
+>    # echo RUNNING > /containers/0/freezer.state
+>    # cat /containers/0/freezer.state
+>    RUNNING
+> 
+> This is the basic mechanism which should do the right thing for user space task
+> in a simple scenario.
+> 
+> It's important to note that freezing can be incomplete. In that case we return
+> EBUSY. This means that some tasks in the cgroup are busy doing something that
+> prevents us from completely freezing the cgroup at this time. After EBUSY,
+> the cgroup will remain partially frozen -- reflected by freezer.state reporting
+> "FREEZING" when read. The state will remain "FREEZING" until one of these
+> things happens:
+> 
+> 	1) Userspace cancels the freezing operation by writing "RUNNING" to
+> 		the freezer.state file
+> 	2) Userspace retries the freezing operation by writing "FROZEN" to
+> 		the freezer.state file (writing "FREEZING" is not legal
+> 		and returns EIO)
+> 	3) The tasks that blocked the cgroup from entering the "FROZEN"
+> 		state disappear from the cgroup's set of tasks.
+> 
+> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> Acked-by: Serge E. Hallyn <serue@us.ibm.com>
+> Tested-by: Matt Helsley <matthltc@us.ibm.com>
+> ---
+>  include/linux/cgroup_freezer.h |   71 ++++++++
+>  include/linux/cgroup_subsys.h  |    6 
+>  include/linux/freezer.h        |   16 +-
+>  init/Kconfig                   |    7 
+>  kernel/Makefile                |    1 
+>  kernel/cgroup_freezer.c        |  328 +++++++++++++++++++++++++++++++++++++++++
+>  6 files changed, 425 insertions(+), 4 deletions(-)
+>  create mode 100644 include/linux/cgroup_freezer.h
+>  create mode 100644 kernel/cgroup_freezer.c
+> 
+> Index: linux-2.6.27-rc1-mm1/include/linux/cgroup_freezer.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6.27-rc1-mm1/include/linux/cgroup_freezer.h
+> @@ -0,0 +1,71 @@
+> +#ifndef _LINUX_CGROUP_FREEZER_H
+> +#define _LINUX_CGROUP_FREEZER_H
+> +/*
+> + * cgroup_freezer.h -  control group freezer subsystem interface
+> + *
+> + * Copyright IBM Corporation, 2007
+> + *
+> + * Author : Cedric Le Goater <clg@fr.ibm.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of version 2.1 of the GNU Lesser General Public License
+> + * as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it would be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> + */
+> +
+> +#include <linux/cgroup.h>
+> +
+> +#ifdef CONFIG_CGROUP_FREEZER
+> +
+> +enum freezer_state {
+> +	STATE_RUNNING = 0,
+> +	STATE_FREEZING,
+> +	STATE_FROZEN,
+> +};
+> +
+> +struct freezer {
+> +	struct cgroup_subsys_state css;
+> +	enum freezer_state state;
+> +	spinlock_t lock; /* protects _writes_ to state */
+> +};
+> +
+> +static inline struct freezer *cgroup_freezer(
+> +		struct cgroup *cgroup)
+> +{
+> +	return container_of(
+> +		cgroup_subsys_state(cgroup, freezer_subsys_id),
+> +		struct freezer, css);
+> +}
+> +
+> +static inline struct freezer *task_freezer(struct task_struct *task)
+> +{
+> +	return container_of(task_subsys_state(task, freezer_subsys_id),
+> +			    struct freezer, css);
+> +}
+> +
+> +static inline int cgroup_frozen(struct task_struct *task)
+> +{
+> +	struct freezer *freezer;
+> +	enum freezer_state state;
+> +
+> +	task_lock(task);
+> +	freezer = task_freezer(task);
+> +	state = freezer->state;
+> +	task_unlock(task);
+> +
+> +	return state == STATE_FROZEN;
+> +}
+> +
+> +#else /* !CONFIG_CGROUP_FREEZER */
+> +
+> +static inline int cgroup_frozen(struct task_struct *task)
+> +{
+> +	return 0;
+> +}
+> +
+> +#endif /* !CONFIG_CGROUP_FREEZER */
+> +
+> +#endif /* _LINUX_CGROUP_FREEZER_H */
 
-> I was actually thinking more along the lines of actually doing a 
-> test-suite with the few most relevant system calls (to catch the few cases 
-> that matter), and judicious use of mmap/munmap to make sure to trigger it 
-> in-kernel.
+Hmm.  I wonder if we really need a separate file for this.  I'd prefer it to be
+in freezer.h, unless there's a good reason not to place it in there.
 
-Well, my test is a kernel module (with help of systemtap). It tests
-copy_from_user, copy_to_user, copy_user_generic_unrolled,
-copy_user_generic_string and __copy_user_nocache directly. Test
-allocates a page in kernel space and uses a page in user space (this is
-for range checks in copy_from/to_user) and tries to make a fault in
-every possible place of these routines. I don't know how to get a
-userspace page from kernel module easily, and did a dirty hack with
-available pages and sys_mprotect. However, it works.
-
-> It probably doesn't really need all that many system calls to trigger all 
-> the relevant paths. A "read()" should trigger the "to_user()" case, and a 
-> write() to a file should trigger the 'from_user_nocache()" case. And while 
-> the "from_user()" case with zeroing migth be harder to see (because all 
-> _normal_ users should also look at the error case and return EFAULT), I 
-> think there are a few cases where we just depend on the zeroing.
-
-I found it hard to do a good testing for copy_user from user space
-program and have used systemtap.
-
-> Doing a
->
-> 	git grep '	copy_from_user('
->
-> (that's a tab in that grep thing) shows at least the termios code doing 
-> it, for example. But fewer cases than I expected.
->
-> 			Linus
-
-It might be a good idea to find such potentially faulty places.
-
--- 
-wbr, Vitaly
+Thanks,
+Rafael
