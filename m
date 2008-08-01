@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758199AbYHAHfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbYHAHg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758199AbYHAHfg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 03:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbYHAHf1
+	id S1758757AbYHAHg2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 03:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbYHAHgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 03:35:27 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:63130 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753209AbYHAHf0 (ORCPT
+	Fri, 1 Aug 2008 03:36:16 -0400
+Received: from ik-out-1112.google.com ([66.249.90.177]:14094 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753180AbYHAHgP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 03:35:26 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
-Date: Fri, 1 Aug 2008 09:35:04 +0200
-User-Agent: KMail/1.9.9
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       David Howells <dhowells@redhat.com>, Greg Ungerer <gerg@snapgear.com>,
-       linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       uClinux list <uclinux-dev@uclinux.org>
-References: <200807300907.25186.arnd@arndb.de> <200807312147.25837.arnd@arndb.de> <20080731201352.GB25305@uranus.ravnborg.org>
-In-Reply-To: <20080731201352.GB25305@uranus.ravnborg.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 1 Aug 2008 03:36:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tvPsfa7roZiAcOec8FCTen6tpKbF9TqdaQXN1HFVPOLGvIsxr8ZZtCrf5O0OkQuxk5
+         2YhDYv+xGRLzS0NElM5jEfkxevQ60+Dilay9mH2TeNl4mrX1cq588h4MxSCrPHdC5ILL
+         nOrQMwoKWcd7lENl3U3QHiMlFLw6Lf/cKRjTU=
+Date: Fri, 1 Aug 2008 07:41:32 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: johannes@sipsolutions.net, netdev@axxeo.de, peterz@infradead.org,
+       Larry.Finger@lwfinger.net, kaber@trash.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, mingo@redhat.com
+Subject: Re: Kernel WARNING: at net/core/dev.c:1330
+	__netif_schedule+0x2c/0x98()
+Message-ID: <20080801074132.GA5158@ff.dom.local>
+References: <20080731.052932.110299354.davem@davemloft.net> <20080801064810.GA4435@ff.dom.local> <20080801070150.GB4435@ff.dom.local> <20080801.000146.246099981.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808010935.05949.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+pViZ2GxCx2Gxc7u6mQppB7CgIAtT6kPKVFTC
- BkBA2K//6b3ku2Nevkwkzfvyfx8AgSklb2Q4lpBZ6aNQpx1f4N
- WstozlkGx+9TWGG9R/DsQ==
+In-Reply-To: <20080801.000146.246099981.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 31 July 2008, Sam Ravnborg wrote:
-> > #ifdef __KERNEL__
-> > #ifdef CONFIG_MMU
-> > #include "${BASE}_mmu.h"
-> > #else
-> > #include "${BASE}_nommu.h"
-> > #endif
-> > #else
-> > #include "${BASE}_mmu.h"
-> > #endif
-> > EOF
-> > }
+On Fri, Aug 01, 2008 at 12:01:46AM -0700, David Miller wrote:
+> From: Jarek Poplawski <jarkao2@gmail.com>
+> Date: Fri, 1 Aug 2008 07:01:50 +0000
 > 
-> This will leak a CONFIG_ symbol if the header file
-> is exported. Can we do it with a gcc defined symbol?
-> [See how I did it for sparc for instance]
+> > On Fri, Aug 01, 2008 at 06:48:10AM +0000, Jarek Poplawski wrote:
+> > > On Thu, Jul 31, 2008 at 05:29:32AM -0700, David Miller wrote:
+> > ...
+> > > > diff --git a/net/core/dev.c b/net/core/dev.c
+> > > > index 63d6bcd..69320a5 100644
+> > > > --- a/net/core/dev.c
+> > > > +++ b/net/core/dev.c
+> > > > @@ -4200,6 +4200,7 @@ static void netdev_init_queues(struct net_device *dev)
+> > > >  {
+> > > >  	netdev_init_one_queue(dev, &dev->rx_queue, NULL);
+> > > >  	netdev_for_each_tx_queue(dev, netdev_init_one_queue, NULL);
+> > > > +	spin_lock_init(&dev->tx_global_lock);
+> > > 
+> > > This will probably need some lockdep annotations similar to
+> > > _xmit_lock.
+> > 
+> > ...BTW, we probably could also consider some optimization here: the
+> > xmit_lock of the first queue could be treated as special, and only
+> > the owner could do such a freezing. This would save changes of
+> > functionality to non mq devices. On the other hand, it would need
+> > remembering about this special treatment (so, eg. a separate lockdep
+> > initialization than all the others).
+> 
+> I think special casing the zero's queue's lock is a bad idea.
+> Having a real top-level synchronizer is a powerful tool and
+> we could use it for other things.
 
-Is there a compiler defined symbol for this? I thought the tool
-chain was identical. Do you think my #ifdef __KERNEL__ does
-not do what I wanted it to do? It should make sure that
-user space always sees the _mmu variant.
+Sure, if there is really no problem with lockdep here, there is no
+need for this at all.
 
-	Arnd <><
+Thanks for the explanations,
+Jarek P.
