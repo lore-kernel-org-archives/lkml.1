@@ -1,119 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbYHAL3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYHALk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbYHAL3T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 07:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbYHAL3K
+	id S1756148AbYHALk2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 07:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbYHALkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 07:29:10 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46714 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbYHAL3J (ORCPT
+	Fri, 1 Aug 2008 07:40:14 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:18852 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752154AbYHALkM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 07:29:09 -0400
-Date: Fri, 01 Aug 2008 20:16:20 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Subject: Re: memory hotplug: hot-add to ZONE_MOVABLE vs. min_free_kbytes
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1217526327.4643.35.camel@localhost.localdomain>
-References: <20080731132213.GF1704@csn.ul.ie> <1217526327.4643.35.camel@localhost.localdomain>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080801192646.EC99.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Fri, 1 Aug 2008 07:40:12 -0400
+Subject: RE: [patch 2/3] kmsg: Kernel message catalog script.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Michael Holzheu'" <holzheu@de.ibm.com>,
+       "'Gerrit Huizenga'" <gh@us.ibm.com>,
+       "'Greg Kroah-Hartman'" <gregkh@suse.de>,
+       "'Randy Dunlap'" <randy.dunlap@oracle.com>, "'Jan Kara'" <jack@suse.cz>,
+       "'Pavel Machek'" <pavel@ucw.cz>, "'Sam Ravnborg'" <sam@ravnborg.org>,
+       "'Joe Perches'" <joe@perches.com>,
+       "'Jochen =?ISO-8859-1?Q?Vo=DF=27?=" <jochen.voss@googlemail.com>,
+       "'Kunai Takashi'" <kunai@linux-foundation.jp>,
+       "'Tim Bird'" <tim.bird@am.sony.com>
+In-Reply-To: <007c01c8f2f7$89f55620$9de00260$@css.fujitsu.com>
+References: <20080730165656.118280544@de.ibm.com>
+	 <20080730171157.170172806@de.ibm.com>
+	 <007c01c8f2f7$89f55620$9de00260$@css.fujitsu.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Fri, 01 Aug 2008 13:39:48 +0200
+Message-Id: <1217590788.10483.14.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-07-31 at 19:23 +0900, Takashi Nishiie wrote:
+>   However, there is a problem of the scale in numbering of not only a
+> specific module but also all modules to the message. (There might be 
+> at least 34000 relating messages or more. )
 
-> Sorry for mixing things up in this thread, the min_free_kbytes issue is
-> not related to memory hot-remove, but rather to hot-add and the things that
-> happen in setup_per_zone_pages_min(), which is called from online_pages().
-> It may well be that my assumptions are wrong, but I'd like to explain my
-> concerns again:
-> 
-> If we have a system with 1 GB of memory, min_free_kbytes will be calculated
-> to 4 MB for ZONE_NORMAL, for example. Now, if we add 3 GB of hotplug memory
-> to ZONE_MOVABLE, the total min_free_kbytes will still remain 4 MB but it
-> will be distributed differently: ZONE_NORMAL will now have only 1 MB of
-> MIGRATE_RESERVE memory left, while ZONE_MOVABLE will have 3 MB, e.g.
-> 
-
-Right.
-
-> My assumption is now, that the reserved 3 MB in ZONE_MOVABLE won't be
-> usable by the kernel anymore, e.g. for PF_MEMALLOC, because it is in
-> ZONE_MOVABLE now.
-
-I don't make sense here. I suppose there is no relationship between
-ZONE_MOVABLE, PF_MEMALLOC and MIGRATE_RESERVE pages.
-Could you tell me more?
-
-
-> This is what I mean with "effectively reducing the
-> available min_free_kbytes". The system would now behave in the same way
-> as a system which only had 1 MB of min_free_kbytes, although
-> /proc/sys/vm/min_free_kbytes would still say 4 MB. After all, this tunable
-> can have a rather negative impact on a system, especially if it is too
-> low, hence my concerns.
->
-> > > Setting pages_min to 0 for ZONE_MOVABLE, while not capping pages_low
-> > > and pages_high, could be an option. I don't have a sufficient memory
-> > > managment overview to tell if that has negative side effects, maybe
-> > > someone with a deeper insight could comment on that.
-> > > 
-> > 
-> > pages_min of 0 means the other values would be 0 as well. This means that
-> > kswapd may never be woken up to free pages within that zone and lead to
-> > poor utilisation of the zone as allocators fallback to other zones to
-> > avoid direct reclaim. I don't think that is your intention nor will it
-> > help memory hot-remove.
-> 
-> Do you mean pages_low and pages_high? In setup_per_zone_pages_min(),
-> those would not be set to 0, even if we set pages_min to 0. Again, a
-> similar strategy is being used for highmem in that function, only that
-> pages_min is set to a small value instead of 0 in that case. So it should
-> not affect kswapd but only __GFP_HIGH and PF_MEMALLOC allocations, which
-> won't be allocated from ZONE_MOVABLE anyway if I understood that right.
-
-
-pages_min seems to be used in get_pages_from_freelist().
-Do you mean following is not executed?
-
-
-                if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
-                        unsigned long mark;
-                        if (alloc_flags & ALLOC_WMARK_MIN)
-                                mark = zone->pages_min;           <------!!!
-                        else if (alloc_flags & ALLOC_WMARK_LOW)
-                                mark = zone->pages_low;
-                        else
-                                mark = zone->pages_high;
-                        if (!zone_watermark_ok(zone, order, mark,   <-----!!!
-                                    classzone_idx, alloc_flags)) {
-                                if (!zone_reclaim_mode ||
-                                    !zone_reclaim(zone, gfp_mask, order))
-                                        goto this_zone_full;
-                        }
-                }
-
-But even if pages_min is not used as you said, I suppose it is
-accidental by changing source code.
-It should work as watermark to keep its meaning.
-If not, it would be cause of bug in the future by misunderstanding.
-
-
-Bye.
+Could you explain this a bit more? I'm not sure I understood it
+correctly. I'm unsure about the term "relating message". A single ksmg
+message can be printed from several modules if it is the same message.
+Do you want to create a list of modules that issue a particular message?
 
 -- 
-Yasunori Goto 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
 
