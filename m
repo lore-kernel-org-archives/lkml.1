@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbYHAB3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbYHABc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756878AbYHAB3c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 21:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbYHAB3Z
+	id S1756651AbYHABc4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 21:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYHABcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 21:29:25 -0400
-Received: from [116.90.133.99] ([116.90.133.99]:41068 "EHLO mars.unix.geek.nz"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751999AbYHAB3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 21:29:25 -0400
-X-Greylist: delayed 573 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jul 2008 21:29:24 EDT
-Subject: XFS noikeep remount in 2.6.27-rc1-next-20080730
-From: Jasper Bryant-Greene <jasper@amiton.co.nz>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Amiton Ltd
-Date: Fri, 01 Aug 2008 13:19:58 +1200
-Message-Id: <1217553598.3860.16.camel@luna.unix.geek.nz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 31 Jul 2008 21:32:48 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:28287 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752149AbYHABcr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 21:32:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=XOQGK7Bl1h7eYHGbdTPSMznPu/G1UmzL8+f57J480Jw+ckwLWTRdSAINjfZ5IlUpK0BB05e0L+4eDiGvAFFHAc3Mtk8lTTaez/HrNnHptu/xlNYy4m7v9z7DsinYQjAxPI2J/CIGRtkEfpduq+Z1/KsKsXzQOjLh9SHPy+vnp+I=  ;
+X-YMail-OSG: EWzAIy4VM1kHFHd_4Sh8q6vW4Fi1ynmuvQd.2kjxpKY3hEvgQ4C46VmP6wwZ9UUr.BIpRuqh3ngVC5rY2AmYn_mh5e_Vlrs6oy0pM59rn7HBS7vZakG2r1.eMtRHHsXGYYc-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: x86: Is there still value in having a special tlb flush IPI vector?
+Date: Fri, 1 Aug 2008 11:32:32 +1000
+User-Agent: KMail/1.9.5
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+References: <488E534F.2030204@goop.org> <1217328351.7563.12.camel@twins> <20080731164826.GH26393@elte.hu>
+In-Reply-To: <20080731164826.GH26393@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808011132.32856.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I mount a bunch of XFS filesystems with "noikeep,attr2,noatime", and a
-couple also with "ro".
+On Friday 01 August 2008 02:48, Ingo Molnar wrote:
+> * Peter Zijlstra <peterz@infradead.org> wrote:
 
-Sometimes I want to remount one of the "ro" ones "rw", to make changes.
-This doesn't work anymore in 2.6.27-rc1-next-20080730. The last kernel I
-tried which it worked in was 2.6.26 release.
+> > The overhead of that is a smp_mb() and a list_empty() check in
+> > generic_smp_call_function_single_interrupt() if there is indeed no
+> > work to do.
+>
+> that would be a miniscule cost - cacheline is read-shared amongst cpus
+> so there's no real bouncing there. So i'm all for it ...
 
-luna ~ # mount -o remount,rw /usr
-mount: /usr not mounted already, or bad option
+smp_mb would cost some cycles. So would the branch mispredict because
+list_empty would otherwise normally be taken I think. q likely is not
+in cache either.
 
-luna ~ # dmesg | tail -n 1
-[18702.291344] XFS: mount option "noikeep" not supported for remount
-
-Is this intended behaviour?
-
--jasper
-
+I'm not in favour.
