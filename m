@@ -1,166 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759204AbYHAMMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759324AbYHAMMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759204AbYHAMMF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 08:12:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758774AbYHAMLs
+	id S1759324AbYHAMMZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 08:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbYHAMMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 08:11:48 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34391 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758737AbYHAMLr (ORCPT
+	Fri, 1 Aug 2008 08:12:13 -0400
+Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:33386 "EHLO
+	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755612AbYHAMMM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 08:11:47 -0400
-Date: Fri, 1 Aug 2008 08:11:44 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] ftrace: printk formatting infrastructure
-In-Reply-To: <20080731221145.57c8d016.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0808010807260.27680@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0808010021110.20407@gandalf.stny.rr.com> <20080731221145.57c8d016.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 1 Aug 2008 08:12:12 -0400
+Subject: [PATCH] hrtimer: reorder struct hrtimer to save 8 bytes on 64 bit
+	builds
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: tglx@linutronix.de
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 01 Aug 2008 13:11:49 +0100
+Message-Id: <1217592709.2953.7.camel@castor.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+reorder struct hrtimer to save 8 bytes on 64 bit builds when
+CONFIG_TIMER_STATS selected.
+(also removes 8 bytes from signal_struct)
 
-On Thu, 31 Jul 2008, Andrew Morton wrote:
+Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+---
+patch against 2.6.27-rc1.
+compiled & tested on AMD64 desktop machine.
 
-> 
-> Seems like it would be useful.
-> 
-> Do we have any evidence that reandom developers are using ftrace yet? 
-> And any feedback from them?
+richard
 
-It's still new. I've had a lot of interest in this at OLS from various 
-developers. One person asked me about this feature during my tutorial.
 
-One thing on my todo list is to back port ftrace to previous kernels. I 
-had a few requests to do just that, since a lot of driver developers and 
-embedded programmers are using older kernels.
+ include/linux/hrtimer.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-> 
-> >
-> > ...
-> >
-> > +static void
-> > +trace_seq_print_cont(struct trace_seq *s, struct trace_iterator *iter)
-> > +{
-> > +	struct trace_array *tr = iter->tr;
-> > +	struct trace_array_cpu *data = tr->data[iter->cpu];
-> > +	struct trace_entry *ent;
-> > +	struct trace_cont *cont;
-> > +
-> > +	ent = trace_entry_idx(tr, data, iter, iter->cpu);
-> > +	if (!ent || ent->type != TRACE_CONT) {
-> > +		trace_seq_putc(s, '\n');
-> > +		return;
-> > +	}
-> > +
-> > +	do {
-> > +		cont = (struct trace_cont *)ent;
-> 
-> What you have here is umm, a variant record, or its in-memory equiv
-> which probably has a name.
+diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+index 6d93dce..7d1dcf9 100644
+--- a/include/linux/hrtimer.h
++++ b/include/linux/hrtimer.h
+@@ -115,12 +115,12 @@ struct hrtimer {
+ 	enum hrtimer_restart		(*function)(struct hrtimer *);
+ 	struct hrtimer_clock_base	*base;
+ 	unsigned long			state;
+-	enum hrtimer_cb_mode		cb_mode;
+ 	struct list_head		cb_entry;
++	enum hrtimer_cb_mode		cb_mode;
+ #ifdef CONFIG_TIMER_STATS
++	int				start_pid;
+ 	void				*start_site;
+ 	char				start_comm[16];
+-	int				start_pid;
+ #endif
+ };
+ 
+-- 
+1.5.5.1
 
-Yeah I know, I didn't like that.
 
-> 
-> > ...
-> >
-> > +/*
-> > + * When an item needs more than one entry to fill a buffer
-> > + * it can use this structure.
-> > + */
-> > +struct trace_cont {
-> > +	char type;
-> > +	char buf[];
-> > +};
-> 
-> Would it not be cleaner and clearer to do this:
-> 
-> struct trace_entry {
-> 	char			type;
-> 	union {
-> 		struct {
-> 			char			cpu;
-> 			char			flags;
-> 			char			preempt_count;
-> 			int			pid;
-> 			cycle_t			t;
-> 			union {
-> 				struct ftrace_entry		fn;
-> 				struct ctx_switch_entry		ctx;
-> 				struct special_entry		special;
-> 				struct stack_entry		stack;
-> 				struct mmiotrace_rw		mmiorw;
-> 				struct mmiotrace_map		mmiomap;
-> 			};
-> 		};
-> 		char buf[0];
-> 		<other things here>
-> 	}
-> };
-> 
-> So the first byte (`type') indicates which of the members of that union
-> are actually contained in the payload.
-> 
-> That way it's all typesafe and avoids casting.
-> 
-> 
-> Of course, rather than using the anonymous union/struct trickery it
-> would be much nicer and clearer to do it this way:
-> 
-> struct trace_field {
-> 	char			cpu;
-> 	char			flags;
-> 	char			preempt_count;
-> 	int			pid;
-> 	cycle_t			t;
-> 	union {
-> 		struct ftrace_entry		fn;
-> 		struct ctx_switch_entry		ctx;
-> 		struct special_entry		special;
-> 		struct stack_entry		stack;
-> 		struct mmiotrace_rw		mmiorw;
-> 		struct mmiotrace_map		mmiomap;
-> 	};
-> };
-> 
-> struct trace_cont_field {
-> 	char buf[];
-> };
-> 
-> ...
-> 
-> struct trace_entry {
-> 	char type;
-> 	union {
-> 		struct trace_field trace_field;
-> 		struct trace_cont_field trace_cont_field;
-> 		...
-> 	};
-> };
-> 
-> however that would require a large (but very simple) edit to the
-> existing code.
-
-Hehe, that was actually the reason I didn't do it this way.  I didn't want 
-this patch to "blow up" in size.
-
-> 
-> In the long run, the larger patch would be better though.
-> 
-
-I agree. I'll rewrite the patch and to hell with the diff size ;-)
-
-Hmm, Perhaps I'll rewrite this in two patches. One with the struct change, 
-and the other with the meat of the change.
-
--- Steve
 
