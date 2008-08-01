@@ -1,71 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbYHASML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbYHASPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756107AbYHASML (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 14:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbYHASL5
+	id S1753939AbYHASPm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 14:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbYHASPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 14:11:57 -0400
-Received: from home.keithp.com ([63.227.221.253]:1899 "EHLO keithp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751844AbYHASL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 14:11:57 -0400
-X-Greylist: delayed 309 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Aug 2008 14:11:56 EDT
-Subject: Re: [PATCH] drm: Add GEM ("graphics execution manager") to i915
-	driver.
-From: Keith Packard <keithp@keithp.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: keithp@keithp.com, Eric Anholt <eric@anholt.net>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080801084405.62d3c823.randy.dunlap@oracle.com>
-References: <1217573919-7496-1-git-send-email-eric@anholt.net>
-	 <1217573919-7496-2-git-send-email-eric@anholt.net>
-	 <1217573919-7496-3-git-send-email-eric@anholt.net>
-	 <20080801084405.62d3c823.randy.dunlap@oracle.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-2oOhEfuwxg8GmAPUuIZR"
-Date: Fri, 01 Aug 2008 11:11:50 -0700
-Message-Id: <1217614310.23437.251.camel@koto.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Fri, 1 Aug 2008 14:15:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37447 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750897AbYHASPe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 14:15:34 -0400
+Date: Fri, 1 Aug 2008 11:14:09 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] lockdep: lock_set_subclass - reset a held lock's
+ subclass
+In-Reply-To: <489350AE.1030609@goop.org>
+Message-ID: <alpine.LFD.1.10.0808011113530.3277@nehalem.linux-foundation.org>
+References: <20080731.155504.167792984.davem@davemloft.net>  <20080801.011122.32782916.davem@davemloft.net>  <20080801090100.GA25142@elte.hu>  <20080801.021348.233313767.davem@davemloft.net> <1217588920.9686.6.camel@twins> <489350AE.1030609@goop.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-2oOhEfuwxg8GmAPUuIZR
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2008-08-01 at 08:44 -0700, Randy Dunlap wrote:
+On Fri, 1 Aug 2008, Jeremy Fitzhardinge wrote:
+> 
+> Hey, can I use this to suppress the spurious lockdep warnings I get when I try
+> to hold more than one pte lock at once?
 
-> "the 2d driver" ... "the 3d driver".
-> Just curious:  Is there only one of each of these?
+So how sure are you that they are spurious?
 
-We only need one X.org 2D and one Mesa 3D driver for each card, but DRI
-supports as many rendering APIs as you like, including XvMC which offers
-accelerated video decode on top of DRI as well.
-
-So, the answer is that yes, at this point, we have only the two Intel
-integrated graphics drivers using GEM, but also no, the interface can
-support as many drivers as you want.
-
-I hope that GEM will encourage more graphics API research as it allows
-multiple user-space APIs to talk to the same underlying hardware
-resources.
-
---=20
-keith.packard@intel.com
-
---=-2oOhEfuwxg8GmAPUuIZR
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBIk1HmQp8BWwlsTdMRAhyJAKCuFvQpgXcXxjDb1wwvY17NSM1g4gCgjtqV
-je76tTWJnKnDn/49YV5vNeU=
-=Hd+D
------END PGP SIGNATURE-----
-
---=-2oOhEfuwxg8GmAPUuIZR--
-
+			Linus
