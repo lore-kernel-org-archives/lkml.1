@@ -1,81 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbYHADVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066AbYHADg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757755AbYHADVj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 23:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbYHADVb
+	id S1756066AbYHADg1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 23:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbYHADgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 23:21:31 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:53546 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752637AbYHADVa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 23:21:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=lZovjS+dhsLJHkJI1ZmH4vB2KaHenEsP5cJuOotf9d3OtA7ScjcVq3MiMHBO/nn1hS
-         +zf5XZ1mmLa867DRVhIQPsgTJ0hB0bJLfA/Nu4LWkdObRKVXYb4J2wSluNHe7t7kWXHG
-         YVvjjRm33qi3KX7YMUwRx69B8NXksMilxNUS4=
-Message-ID: <b9df5fa10807312021p54400700ub679efb389839416@mail.gmail.com>
-Date: Fri, 1 Aug 2008 09:21:28 +0600
-From: "Rakib Mullick" <rakib.mullick@gmail.com>
-To: pj@sgi.com, menage@google.com
-Subject: [RESEND][PATCH] Removes extra checking in kernel/cpuset.c
-Cc: linux-kernel@vger.kernel.org
+	Thu, 31 Jul 2008 23:36:19 -0400
+Received: from ozlabs.org ([203.10.76.45]:33853 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751032AbYHADgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 23:36:18 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PULL] typesafe callbacks for kthread and stop_machine
+Date: Fri, 1 Aug 2008 10:39:29 +1000
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Bert Wesarg <bert.wesarg@googlemail.com>,
+       Tejun Heo <htejun@gmail.com>
+References: <200807311452.36025.rusty@rustcorp.com.au> <20080731140643.GO23938@one.firstfloor.org>
+In-Reply-To: <20080731140643.GO23938@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200808011039.30195.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frist, thanks for sending comments about the patch. Now, in this
-function what we're trying is to get a value for *pmask . After
-setting *pmask value we again call 'cpus_intersects' , then if  'cs'
-became NULL then a BUG_ON will be triggered from the last line of the
-function. As Paul Jackson mentioned about two nits , so I resend it.
-Hopefully my point is clear. If anything else please let me know.
+On Friday 01 August 2008 00:06:43 Andi Kleen wrote:
+> On Thu, Jul 31, 2008 at 02:52:35PM +1000, Rusty Russell wrote:
+> > Just the two places I look after.  And this time the conglomerate patch
+> > is included below for more random commentry.
+>
+> I must say I personally don't like the wrapper macros that you require
+> for each function that uses this. A wrapper macro has a large impact
+> on code readability because everyone following a call chain has
+> to do an additional grep/open file etc. step. I have my doubts not having
+> casts outweights that disadvantage.
 
-Thanks a lot.
+Yes, but the benefits of using them everywhere is that they do become part of 
+the landscape.  "Oh, that's a typesafe callback, OK".
 
-Signed-off-by: Md.Rakib H. Mullick (rakib.mullick@gmail.com)
+If this were just about neatness, I'd share your doubts.  But I want to be 
+able to change the type of a var and have the compiler complain when I hand 
+it to a function which expects the old type.  This bit me a few months back, 
+leading to this experiment.
 
-diff -upr linux-2.6.26-rc9.orig/kernel/cpuset.c linux-2.6.26-rc9/kernel/cpuset.c
---- linux-2.6.26-rc9.orig/kernel/cpuset.c	2008-08-01 08:38:41.000000000 +0600
-+++ linux-2.6.26-rc9/kernel/cpuset.c	2008-08-01 08:33:37.000000000 +0600
-@@ -282,11 +282,11 @@ static struct file_system_type cpuset_fs
+> I know that gcc has this funky transparent union extension that
+> glibc socket() uses to allow different address types without casts.
+> It has the advantage of not needing wrapper macros. Any chance of
+> using that instead? Or has that one been considered already and
+> discarded?
 
- static void guarantee_online_cpus(const struct cpuset *cs, cpumask_t *pmask)
- {
--	while (cs && !cpus_intersects(cs->cpus_allowed, cpu_online_map))
--		cs = cs->parent;
--	if (cs)
-+	if (cs) {
-+		while (!cpus_intersects(cs->cpus_allowed, cpu_online_map))
-+			cs = cs->parent;
- 		cpus_and(*pmask, cs->cpus_allowed, cpu_online_map);
--	else
-+	} else
- 		*pmask = cpu_online_map;
- 	BUG_ON(!cpus_intersects(*pmask, cpu_online_map));
- }
-@@ -306,13 +306,13 @@ static void guarantee_online_cpus(const
+That's aimed at a slightly different case, where the function knows what types 
+it can get.  But that doesn't work for truly generic callbacks: the type is 
+completely controlled by the caller. ie. we want to allow whatever type 
+matches the arg.
 
- static void guarantee_online_mems(const struct cpuset *cs, nodemask_t *pmask)
- {
--	while (cs && !nodes_intersects(cs->mems_allowed,
-+	if (cs) {
-+		while (!nodes_intersects(cs->mems_allowed,
- 					node_states[N_HIGH_MEMORY]))
--		cs = cs->parent;
--	if (cs)
-+			cs = cs->parent;
- 		nodes_and(*pmask, cs->mems_allowed,
- 					node_states[N_HIGH_MEMORY]);
--	else
-+	} else
- 		*pmask = node_states[N_HIGH_MEMORY];
- 	BUG_ON(!nodes_intersects(*pmask, node_states[N_HIGH_MEMORY]));
- }
+Hope that clarifies,
+Rusty.
