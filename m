@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759836AbYHAWO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758509AbYHAWTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759836AbYHAWO4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 18:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbYHAWOs
+	id S1758509AbYHAWTT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 18:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbYHAWTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 18:14:48 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:42640 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752106AbYHAWOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 18:14:47 -0400
-Date: Sat, 2 Aug 2008 01:13:44 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>, Paul Mundt <lethal@linux-sh.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] sh: fix LIBGCC
-Message-ID: <20080801221344.GI19682@cs181140183.pp.htv.fi>
+	Fri, 1 Aug 2008 18:19:10 -0400
+Received: from mk-outboundfilter-4.mail.uk.tiscali.com ([212.74.114.32]:55150
+	"EHLO mk-outboundfilter-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753464AbYHAWTJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 18:19:09 -0400
+X-Trace: 118059334/mk-outboundfilter-2.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6
+X-SBRS: None
+X-RemoteIP: 195.149.44.6
+X-IP-MAIL-FROM: alistair@devzero.co.uk
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsAEAO8ok0jDlSwG/2dsb2JhbACBW4lEpSo
+X-IronPort-AV: E=Sophos;i="4.31,295,1215385200"; 
+   d="scan'208";a="118059334"
+X-IP-Direction: IN
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: linasvepstas@gmail.com
+Subject: Re: amd64 sata_nv (massive) memory corruption
+Date: Fri, 1 Aug 2008 23:19:04 +0100
+User-Agent: KMail/1.10.0 (Linux/2.6.27-rc1-damocles; KDE/4.1.0; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <3ae3aa420808011030weadc61fvf6f850f0a4cfcb3e@mail.gmail.com>
+In-Reply-To: <3ae3aa420808011030weadc61fvf6f850f0a4cfcb3e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200808012319.05038.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit f15cbe6f1a4b4d9df59142fc8e4abb973302cf44
-(sh: migrate to arch/sh/include/) moved KBUILD_CFLAGS
-(which is used by LIBGCC) below LIBGCC, causing build
-errors like the following:
+On Friday 01 August 2008 18:30:34 Linas Vepstas wrote:
+> Hi,
+>
+> I'm seeing strong, easily reproducible (and silent) corruption on a
+> sata-attached
+> disk drive on an amd64 board.  It might be the disk itself, but I
+> doubt it; googling
+> suggests that its somehow iommu-related but I cannot confirm this.
 
-<--  snip  -->
+Nowhere do you explicitly say you have memtest86'ed the RAM. Checking 4GB of 
+RAM will take some time (probably several hours) but it will mostly eliminate 
+bad memory as the cause of the corruption.
 
-...
-  LD      .tmp_vmlinux1
-arch/sh/kernel/built-in.o: In function `module_clk_recalc':
-clock-sh4.c:(.text+0x80f0): undefined reference to `__udivsi3_i4i'
-...
-make[1]: *** [.tmp_vmlinux1] Error 1
+IME these kinds of bugs are almost always bad RAM. Since the part of the RAM 
+that is bad may never be used by kernel code, you may experience no crashes. 
+This is especially true of machines with a lot of RAM. However since your 
+filesystem cache can easily consume all 4GB over time, you could see this kind 
+of corruption when copying files.
 
-<--  snip  -->
-
-Reported-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-
- arch/sh/Makefile |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-d85920b1d9470920dad5f6541952d6765fcde8de 
-diff --git a/arch/sh/Makefile b/arch/sh/Makefile
-index 7b70cfd..01d85c7 100644
---- a/arch/sh/Makefile
-+++ b/arch/sh/Makefile
-@@ -95,8 +95,6 @@ head-y			:= arch/sh/kernel/init_task.o
- head-$(CONFIG_SUPERH32)	+= arch/sh/kernel/head_32.o
- head-$(CONFIG_SUPERH64)	+= arch/sh/kernel/head_64.o
- 
--LIBGCC := $(shell $(CC) $(KBUILD_CFLAGS) -print-libgcc-file-name)
--
- core-y				+= arch/sh/kernel/ arch/sh/mm/ arch/sh/boards/
- core-$(CONFIG_SH_FPU_EMU)	+= arch/sh/math-emu/
- 
-@@ -145,10 +143,6 @@ cpuincdir-$(CONFIG_CPU_SH4)	+= cpu-sh4
- cpuincdir-$(CONFIG_CPU_SH5)	+= cpu-sh5
- cpuincdir-y			+= cpu-common	# Must be last
- 
--libs-$(CONFIG_SUPERH32)		:= arch/sh/lib/	$(libs-y)
--libs-$(CONFIG_SUPERH64)		:= arch/sh/lib64/ $(libs-y)
--libs-y				+= $(LIBGCC)
--
- drivers-y			+= arch/sh/drivers/
- drivers-$(CONFIG_OPROFILE)	+= arch/sh/oprofile/
- 
-@@ -161,6 +155,12 @@ KBUILD_CFLAGS		+= -pipe $(cflags-y)
- KBUILD_CPPFLAGS		+= $(cflags-y)
- KBUILD_AFLAGS		+= $(cflags-y)
- 
-+LIBGCC := $(shell $(CC) $(KBUILD_CFLAGS) -print-libgcc-file-name)
-+
-+libs-$(CONFIG_SUPERH32)		:= arch/sh/lib/	$(libs-y)
-+libs-$(CONFIG_SUPERH64)		:= arch/sh/lib64/ $(libs-y)
-+libs-y				+= $(LIBGCC)
-+
- PHONY += maketools FORCE
- 
- maketools:  include/linux/version.h FORCE
+-- 
+Cheers,
+Alistair.
