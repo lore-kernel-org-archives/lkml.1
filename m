@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752890AbYHADCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbYHADDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752890AbYHADCc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 23:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbYHADCV
+	id S1757324AbYHADDm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 23:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYHADDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 23:02:21 -0400
-Received: from mx1.suse.de ([195.135.220.2]:49942 "EHLO mx1.suse.de"
+	Thu, 31 Jul 2008 23:03:35 -0400
+Received: from main.gmane.org ([80.91.229.2]:50126 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750991AbYHADCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 23:02:21 -0400
-From: Neil Brown <neilb@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 1 Aug 2008 13:02:12 +1000
-MIME-Version: 1.0
+	id S1752941AbYHADDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 23:03:34 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Parag Warudkar <parag.warudkar@gmail.com>
+Subject: Re: 2.6.27-rc1 process time accounting
+Date: Fri, 1 Aug 2008 03:03:23 +0000 (UTC)
+Message-ID: <loom.20080801T025718-689@post.gmane.org>
+References: <20080731104319.GB5806@ics.muni.cz> <20080731144147.82fcd85e.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18578.31924.259887.735206@notabene.brown>
-Cc: Arthur Jones <ajones@riverbed.com>,
-       Dan Williams <dan.j.williams@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: [PULL REQUEST] md bug fixes and minor improvements
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 24.208.232.147 (Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.0.1) Gecko/2008070206 Firefox/3.0.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton <akpm <at> linux-foundation.org> writes:
 
-Hi Linus,
- please pull the following bugfixes for drivers/md.
+> 
+> On Thu, 31 Jul 2008 12:43:19 +0200
+> Lukas Hejtmanek <xhejtman <at> ics.muni.cz> wrote:
+> 
+> > Hello,
+> > 
+> > I think there is a regression since 2.6.26 in time accounting of processes.
+> 
+> Could be - we changed quite a bit.
+> 
+> > kthreadd and console-kit-daemons claim they spent 5124095 hours using CPU.
+> 
+> My 2.6.27-rc1-mm1 kthreadd looks OK in `top'.  How are you displaying
+> this information?  More details if possible, please..
+> 
 
-Thanks,
-NeilBrown
+Top's doing crazy things on my machine too after booting 2.6.27-rc1 - like Xorg
+showing 859% CPU usage on 4 CPU machine and generally any process running even
+shortly shows up as using anywhere between 100 and 150% CPU.
+
+This is on x86 - Q6600 6Gb RAM. Let me know if anything else would be
+interesting to know.
+
+Parag
 
 
-
-The following changes since commit 6e86841d05f371b5b9b86ce76c02aaee83352298:
-  Linus Torvalds (1):
-        Linux 2.6.27-rc1
-
-are available in the git repository at:
-
-  git://neil.brown.name/md/ for-linus
-
-Arthur Jones (1):
-      md: raid10: wake up frozen array
-
-Dan Williams (5):
-      md: move async_tx_issue_pending_all outside spin_lock_irq
-      md: fix merge error
-      md: delay notification of 'active_idle' to the recovery thread
-      md: do not progress the resync process if the stripe was blocked
-      md: do not count blocked devices as spares
-
- drivers/md/md.c           |    8 ++++++--
- drivers/md/raid10.c       |    3 +++
- drivers/md/raid5.c        |   29 ++++++++++++++++++-----------
- include/linux/raid/md_k.h |    1 +
- 4 files changed, 28 insertions(+), 13 deletions(-)
