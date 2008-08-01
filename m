@@ -1,86 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYHABoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbYHABt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732AbYHABoF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 21:44:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbYHABnx
+	id S1756796AbYHABt1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 21:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbYHABtT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 21:43:53 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:23148 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751830AbYHABnw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 21:43:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=tzp7tf5D+NOv0drHoV21x+sEGlcYSIxlEVsuEe4moHeS+t0hsYp1eTXp6Ec5CrLtAs
-         LfEpJteVDGDKlURO/80fssFIuVz7hk50qhjX6nfRFzkNxMD/KWPYALkMSeHzivwZJzd9
-         lX5NpV6SPdy5agKrKOxsf+aaMwCV+ii3OQiaA=
-Message-ID: <7d1d9c250807311843j58246eeco4411ad9e5deda78a@mail.gmail.com>
-Date: Thu, 31 Jul 2008 21:43:50 -0400
-From: "Paul Gortmaker" <paul.gortmaker@gmail.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: [RFC] suggested fix for 83xx/85xx PowerPC UART break bug
-Cc: "Paul Gortmaker" <paul.gortmaker@windriver.com>,
-       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <EF0F4B21-1612-445C-AEBF-CD7B72762AD1@kernel.crashing.org>
+	Thu, 31 Jul 2008 21:49:19 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63205 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752131AbYHABtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 21:49:18 -0400
+Message-ID: <48926B15.2020405@cn.fujitsu.com>
+Date: Fri, 01 Aug 2008 09:47:01 +0800
+From: zhangxiliang <zhangxiliang@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Eric Paris <eparis@redhat.com>
+CC: sgrubb@redhat.com, viro@zeniv.linux.org.uk,
+       Linux Audit <linux-audit@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] the loginuid field should be output in all	AUDIT_CONFIG_CHANGE
+ audit messages
+References: <488FE2B9.2040101@cn.fujitsu.com> <1217526122.2902.103.camel@localhost.localdomain>
+In-Reply-To: <1217526122.2902.103.camel@localhost.localdomain>
+Content-Type: text/plain; charset=gb18030
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080731152616.GA14248@windriver.com>
-	 <EF0F4B21-1612-445C-AEBF-CD7B72762AD1@kernel.crashing.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 4:31 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
->
-> On Jul 31, 2008, at 10:26 AM, Paul Gortmaker wrote:
->
+> shouldn't these be using the "audit_get_loginuid(current)"  and if we
+> are going to output loginuid we also should be outputting sessionid
+
+Thanks for your detailed explanation.
+I have made a new patch for outputing "loginuid" and "sessionid" by audit_get_loginuid(current) and audit_get_sessionid(current).
+If there are some deficiencies, please give me your indication.
+
+Signed-off-by: Zhang Xiliang <zhangxiliang@cn.fujitsu.com>
+---
+ kernel/auditfilter.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
+index 98c50cc..b7d354e 100644
+--- a/kernel/auditfilter.c
++++ b/kernel/auditfilter.c
+@@ -1022,8 +1022,11 @@ static void audit_update_watch(struct audit_parent *parent,
+ 			struct audit_buffer *ab;
+ 			ab = audit_log_start(NULL, GFP_KERNEL,
+ 				AUDIT_CONFIG_CHANGE);
++			audit_log_format(ab, "auid=%u ses=%u",
++				audit_get_loginuid(current),
++				audit_get_sessionid(current));
+ 			audit_log_format(ab,
+-				"op=updated rules specifying path=");
++				" op=updated rules specifying path=");
+ 			audit_log_untrustedstring(ab, owatch->path);
+ 			audit_log_format(ab, " with dev=%u ino=%lu\n",
+ 				 dev, ino);
+@@ -1058,7 +1061,10 @@ static void audit_remove_parent_watches(struct audit_parent *parent)
+ 				struct audit_buffer *ab;
+ 				ab = audit_log_start(NULL, GFP_KERNEL,
+ 					AUDIT_CONFIG_CHANGE);
+-				audit_log_format(ab, "op=remove rule path=");
++				audit_log_format(ab, "auid=%u ses=%u",
++					audit_get_loginuid(current),
++					audit_get_sessionid(current));
++				audit_log_format(ab, " op=remove rule path=");
+ 				audit_log_untrustedstring(ab, w->path);
+ 				if (r->filterkey) {
+ 					audit_log_format(ab, " key=");
+-- 
+1.5.4.2
+
+
+Regards
+Zhang Xiliang
+
+Eric Paris said the following on 2008-08-01 1:42:
+> On Wed, 2008-07-30 at 11:40 +0800, zhangxiliang wrote:
+>> In the audit message which type is "AUDIT_CONFIG_CHANGE", the output format should contain "auid" field.
+> 
+> shouldn't these be using the "audit_get_loginuid(current)"  and if we
+> are going to output loginuid we also should be outputting sessionid
+> 
+> -Eric
+> 
+>> Signed-off-by: Zhang Xiliang <zhangxiliang@cn.fujitsu.com>
+>> ---
+>>  kernel/auditfilter.c |    6 ++++--
+>>  1 files changed, 4 insertions(+), 2 deletions(-)
 >>
->> This is something I'd tripped over earlier, and wanted to follow up on
->> to get an acceptable fix in for everyone's benefit before it falls through
->> the cracks again.
+>> diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
+>> index 98c50cc..8a184f5 100644
+>> --- a/kernel/auditfilter.c
+>> +++ b/kernel/auditfilter.c
+>> @@ -1022,8 +1022,9 @@ static void audit_update_watch(struct audit_parent *parent,
+>>  			struct audit_buffer *ab;
+>>  			ab = audit_log_start(NULL, GFP_KERNEL,
+>>  				AUDIT_CONFIG_CHANGE);
+>> +			audit_log_format(ab, "auid=%u", current->loginuid);
+>>  			audit_log_format(ab,
+>> -				"op=updated rules specifying path=");
+>> +				" op=updated rules specifying path=");
+>>  			audit_log_untrustedstring(ab, owatch->path);
+>>  			audit_log_format(ab, " with dev=%u ino=%lu\n",
+>>  				 dev, ino);
+>> @@ -1058,7 +1059,8 @@ static void audit_remove_parent_watches(struct audit_parent *parent)
+>>  				struct audit_buffer *ab;
+>>  				ab = audit_log_start(NULL, GFP_KERNEL,
+>>  					AUDIT_CONFIG_CHANGE);
+>> -				audit_log_format(ab, "op=remove rule path=");
+>> +				audit_log_format(ab, "auid=%u", current->loginuid);
+>> +				audit_log_format(ab, " op=remove rule path=");
+>>  				audit_log_untrustedstring(ab, w->path);
+>>  				if (r->filterkey) {
+>>  					audit_log_format(ab, " key=");
+>> -- 
+>> 1.5.4.2
 >>
->> There seems to be an issue with recent 83xx/85xx SOC UARTs, in which a
->> break
->> triggers a short lived IRQ storm (hence killing any hope of using SysRQ).
->> The only fix I found to work was to just ignore the bogus events that
->> had the associated signature bit set.
 >>
->> This fix is what I was using against earlier kernels, but I hate to add
->> more
->> board/arch specific ifdefs to files like 8250.c, so I'm wondering if
->> anyone has any other suggestions before I simply end up cleaning up the
->> boardlist (now ppc is dead) and respinning the patch much as it is now
->> and resending.
->
-> How did you test this or generate it?  I was thinking about this the other
-> day and figured we need to try and track this down with the HW guys.  If we
-> can generate a simple test I can try and run it through the various
-> boards/parts we have and see which ones show the issue and which dont.
+> 
+> 
+> 
+> 
 
-Actually, it is dead easy to reproduce.  The obvious symptom is that you'll
-get a random complaint that SysRQ doesn't work.  You send the break via
-whatever comm program you use, and 9 out of 10 times, you get the SysRQ
-help menu pop up immediately, before you've even entered another character.
-
-Once you dig a bit deeper, then you see that simply sending the break via
-the comm program (and nothing else) will result in roughly 300 to 2000 events
-as reported via "cat /proc/interrupts" on the UART in question.
-
-I've tested with at least 5 different boards, with minicom, ckermit and even
-with a commercial digiport in the path, and in all cases it came up the same.
-
-Paul.
-
->
-> - k
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-serial" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
