@@ -1,197 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbYHBALk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbYHBAO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755522AbYHBALk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 20:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbYHBALe
+	id S1756125AbYHBAO5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 20:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYHBAOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 20:11:34 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:60973 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752087AbYHBALd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 20:11:33 -0400
-Subject: Re: [PATCH 3/6] Container Freezer: Implement freezer cgroup
-	subsystem
-From: Matt Helsley <matthltc@us.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-In-Reply-To: <200808020058.37407.rjw@sisk.pl>
-References: <20080801050659.924495279@us.ibm.com>
-	 <20080801050700.797996261@us.ibm.com>  <200808020058.37407.rjw@sisk.pl>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 01 Aug 2008 17:11:31 -0700
-Message-Id: <1217635891.25300.292.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Aug 2008 20:14:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46409 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751974AbYHBAOt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 20:14:49 -0400
+Date: Fri, 1 Aug 2008 16:35:53 -0700
+From: Greg KH <greg@kroah.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH stable] ftrace document crucial update
+Message-ID: <20080801233553.GA24276@kroah.com>
+References: <alpine.DEB.1.10.0807302256180.21982@gandalf.stny.rr.com> <20080731164850.GA10422@kroah.com> <alpine.DEB.1.10.0807311610021.5784@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0807311610021.5784@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2008-08-02 at 00:58 +0200, Rafael J. Wysocki wrote:
-> On Friday, 1 of August 2008, Matt Helsley wrote:
-> > This patch implements a new freezer subsystem in the control groups framework.
-> > It provides a way to stop and resume execution of all tasks in a cgroup by
-> > writing in the cgroup filesystem.
-> > 
-> > The freezer subsystem in the container filesystem defines a file named
-> > freezer.state. Writing "FROZEN" to the state file will freeze all tasks in the
-> > cgroup. Subsequently writing "RUNNING" will unfreeze the tasks in the cgroup.
-> > Reading will return the current state.
-> > 
-> > * Examples of usage :
-> > 
-> >    # mkdir /containers/freezer
-> >    # mount -t cgroup -ofreezer freezer  /containers
-> >    # mkdir /containers/0
-> >    # echo $some_pid > /containers/0/tasks
-> > 
-> > to get status of the freezer subsystem :
-> > 
-> >    # cat /containers/0/freezer.state
-> >    RUNNING
-> > 
-> > to freeze all tasks in the container :
-> > 
-> >    # echo FROZEN > /containers/0/freezer.state
-> >    # cat /containers/0/freezer.state
-> >    FREEZING
-> >    # cat /containers/0/freezer.state
-> >    FROZEN
-> > 
-> > to unfreeze all tasks in the container :
-> > 
-> >    # echo RUNNING > /containers/0/freezer.state
-> >    # cat /containers/0/freezer.state
-> >    RUNNING
-> > 
-> > This is the basic mechanism which should do the right thing for user space task
-> > in a simple scenario.
-> > 
-> > It's important to note that freezing can be incomplete. In that case we return
-> > EBUSY. This means that some tasks in the cgroup are busy doing something that
-> > prevents us from completely freezing the cgroup at this time. After EBUSY,
-> > the cgroup will remain partially frozen -- reflected by freezer.state reporting
-> > "FREEZING" when read. The state will remain "FREEZING" until one of these
-> > things happens:
-> > 
-> > 	1) Userspace cancels the freezing operation by writing "RUNNING" to
-> > 		the freezer.state file
-> > 	2) Userspace retries the freezing operation by writing "FROZEN" to
-> > 		the freezer.state file (writing "FREEZING" is not legal
-> > 		and returns EIO)
-> > 	3) The tasks that blocked the cgroup from entering the "FROZEN"
-> > 		state disappear from the cgroup's set of tasks.
-> > 
-> > Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-> > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> > Acked-by: Serge E. Hallyn <serue@us.ibm.com>
-> > Tested-by: Matt Helsley <matthltc@us.ibm.com>
-> > ---
-> >  include/linux/cgroup_freezer.h |   71 ++++++++
-> >  include/linux/cgroup_subsys.h  |    6 
-> >  include/linux/freezer.h        |   16 +-
-> >  init/Kconfig                   |    7 
-> >  kernel/Makefile                |    1 
-> >  kernel/cgroup_freezer.c        |  328 +++++++++++++++++++++++++++++++++++++++++
-> >  6 files changed, 425 insertions(+), 4 deletions(-)
-> >  create mode 100644 include/linux/cgroup_freezer.h
-> >  create mode 100644 kernel/cgroup_freezer.c
-> > 
-> > Index: linux-2.6.27-rc1-mm1/include/linux/cgroup_freezer.h
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6.27-rc1-mm1/include/linux/cgroup_freezer.h
-> > @@ -0,0 +1,71 @@
-> > +#ifndef _LINUX_CGROUP_FREEZER_H
-> > +#define _LINUX_CGROUP_FREEZER_H
-> > +/*
-> > + * cgroup_freezer.h -  control group freezer subsystem interface
-> > + *
-> > + * Copyright IBM Corporation, 2007
-> > + *
-> > + * Author : Cedric Le Goater <clg@fr.ibm.com>
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify it
-> > + * under the terms of version 2.1 of the GNU Lesser General Public License
-> > + * as published by the Free Software Foundation.
-> > + *
-> > + * This program is distributed in the hope that it would be useful, but
-> > + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-> > + */
-> > +
-> > +#include <linux/cgroup.h>
-> > +
-> > +#ifdef CONFIG_CGROUP_FREEZER
-> > +
-> > +enum freezer_state {
-> > +	STATE_RUNNING = 0,
-> > +	STATE_FREEZING,
-> > +	STATE_FROZEN,
-> > +};
-> > +
-> > +struct freezer {
-> > +	struct cgroup_subsys_state css;
-> > +	enum freezer_state state;
-> > +	spinlock_t lock; /* protects _writes_ to state */
-> > +};
-> > +
-> > +static inline struct freezer *cgroup_freezer(
-> > +		struct cgroup *cgroup)
-> > +{
-> > +	return container_of(
-> > +		cgroup_subsys_state(cgroup, freezer_subsys_id),
-> > +		struct freezer, css);
-> > +}
-> > +
-> > +static inline struct freezer *task_freezer(struct task_struct *task)
-> > +{
-> > +	return container_of(task_subsys_state(task, freezer_subsys_id),
-> > +			    struct freezer, css);
-> > +}
-> > +
-> > +static inline int cgroup_frozen(struct task_struct *task)
-> > +{
-> > +	struct freezer *freezer;
-> > +	enum freezer_state state;
-> > +
-> > +	task_lock(task);
-> > +	freezer = task_freezer(task);
-> > +	state = freezer->state;
-> > +	task_unlock(task);
-> > +
-> > +	return state == STATE_FROZEN;
-> > +}
-> > +
-> > +#else /* !CONFIG_CGROUP_FREEZER */
-> > +
-> > +static inline int cgroup_frozen(struct task_struct *task)
-> > +{
-> > +	return 0;
-> > +}
-> > +
-> > +#endif /* !CONFIG_CGROUP_FREEZER */
-> > +
-> > +#endif /* _LINUX_CGROUP_FREEZER_H */
+On Thu, Jul 31, 2008 at 04:10:49PM -0400, Steven Rostedt wrote:
 > 
-> Hmm.  I wonder if we really need a separate file for this.  I'd prefer it to be
-> in freezer.h, unless there's a good reason not to place it in there.
+> On Thu, 31 Jul 2008, Greg KH wrote:
+> 
+> > On Wed, Jul 30, 2008 at 11:05:02PM -0400, Steven Rostedt wrote:
+> > > 
+> > > It has come to my attention that ftrace.txt was pulled into 2.6.26 
+> > > prematurely. That is Linus pulled it in before it was well tested. A 
+> > > series of updates were made to it shortly afterward, but by then it was 
+> > > too late. The release was out, and ftrace.txt was greatly inadequate.
+> > > 
+> > > This patch is a sum of all the critical updates to keep ftrace.txt in a 
+> > > stable state. I strongly urge the stable team to get this into 2.6.26.1.
+> > > Otherwise people may be greatly disappointed while reading ftrace.txt just 
+> > > to realize that it is horribly out of date.
+> > > 
+> > > Never mind that ftrace itself doesn't exist is 2.6.26.
+> > > 
+> > > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> > 
+> > Then why don't I just delete the file from the 2.6.26 tree entirely?
+> > That would make more sense, right?
+> 
+> Nope! I'm leading by example here. We should have good documentation 
+> before the code! ;-)
 
-	Yeah, it's a pretty small header so combining it with another header
-would be nice. However if we combine it with freezer.h we'd be including
-cgroup.h in unrelated filesystem code. An alternative might be to put it
-into a cgroup header for "small" subsystems (which might just be
-cgroup.h for now..).
+Bah, that only confuses people :)
 
-Thanks for the review!
+I'll just go delete the whole thing, makes more sense.  That way you
+will not send me patches for the Documentation when things change in the
+upstream version...
 
-Cheers,
-	-Matt
+thanks,
 
+greg k-h
