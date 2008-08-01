@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbYHAU1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbYHAU26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759333AbYHAU1U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 16:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbYHAU1I
+	id S1759447AbYHAU26 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 16:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbYHAU2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 16:27:08 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:55182 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752560AbYHAU1H (ORCPT
+	Fri, 1 Aug 2008 16:28:51 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57852 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754732AbYHAU2u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 16:27:07 -0400
-Date: Fri, 1 Aug 2008 13:57:14 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jgarzik@pobox.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 03/10] fs-enet: remove code associated with !CONFIG_PPC_MERGE
-Message-ID: <20080801185714.GA26062@ld0162-tx32.am.freescale.net>
-References: <1217609060-6381-1-git-send-email-galak@kernel.crashing.org> <1217609060-6381-2-git-send-email-galak@kernel.crashing.org> <1217609060-6381-3-git-send-email-galak@kernel.crashing.org> <1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
-Mime-Version: 1.0
+	Fri, 1 Aug 2008 16:28:50 -0400
+Date: Fri, 1 Aug 2008 11:26:12 -0700
+From: Greg KH <greg@kroah.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for August 1 (sysfs.h)
+Message-ID: <20080801182612.GB4788@kroah.com>
+References: <20080801165808.68f833ec.sfr@canb.auug.org.au> <20080801111452.1b4c55d3.randy.dunlap@oracle.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20080801111452.1b4c55d3.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 11:44:13AM -0500, Kumar Gala wrote:
-> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-> index 9a51ec8..e54d003 100644
-> --- a/drivers/net/fs_enet/fs_enet-main.c
-> +++ b/drivers/net/fs_enet/fs_enet-main.c
-> @@ -669,7 +669,6 @@ static int fs_request_irq(struct net_device *dev, int irq, const char *name,
->  {
->  	struct fs_enet_private *fep = netdev_priv(dev);
->  
-> -	(*fep->ops->pre_request_irq)(dev, irq);
->  	return request_irq(irq, irqf, IRQF_SHARED, name, dev);
->  }
+On Fri, Aug 01, 2008 at 11:14:52AM -0700, Randy Dunlap wrote:
+> When CONFIG_SYSFS=n:
+> 
+>   CC      arch/x86/kernel/asm-offsets.s
+> In file included from linux-next-20080801/include/linux/kobject.h:21,
+>                  from linux-next-20080801/include/linux/module.h:16,
+>                  from linux-next-20080801/include/linux/crypto.h:21,
+>                  from linux-next-20080801/arch/x86/kernel/asm-offsets_64.c:7,
+>                  from linux-next-20080801/arch/x86/kernel/asm-offsets.c:4:
+> linux-next-20080801/include/linux/sysfs.h:247: error: return type is an incomplete type
+> linux-next-20080801/include/linux/sysfs.h: In function 'sysfs_get':
+> linux-next-20080801/include/linux/sysfs.h:248: warning: 'return' with a value, in function returning void
+> make[2]: *** [arch/x86/kernel/asm-offsets.s] Error 1
 
-This makes "fep" an unused variable.  Eliminate this function entirely,
-and call request_irq directly from the caller.
+Ah, missed a "*".  It's Neil's fault :)
 
->  
-> @@ -678,7 +677,6 @@ static void fs_free_irq(struct net_device *dev, int irq)
->  	struct fs_enet_private *fep = netdev_priv(dev);
->  
->  	free_irq(irq, dev);
-> -	(*fep->ops->post_free_irq)(dev, irq);
->  }
+I'll go fix this up, it's for when CONFIG_SYSFS is set to N, right?
 
-Likewise.
+thanks,
 
--Scott
+greg k-h
