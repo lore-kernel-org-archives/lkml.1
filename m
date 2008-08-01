@@ -1,114 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYHAGF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbYHAGGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061AbYHAGF2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 02:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYHAGFT
+	id S1756770AbYHAGGo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 02:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbYHAGGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 02:05:19 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:56740 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751673AbYHAGFS (ORCPT
+	Fri, 1 Aug 2008 02:06:36 -0400
+Received: from wr-out-0506.google.com ([64.233.184.232]:9680 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752195AbYHAGGf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 02:05:18 -0400
-Message-ID: <4892A719.5090302@snapgear.com>
-Date: Fri, 01 Aug 2008 16:03:05 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 1 Aug 2008 02:06:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=snBNwHySNhxC018tMqncP1DUdBNdGnLHw2svDV5b1Ds+ZZH+tWI7K6rqg8m+GDti4F
+         21Pvmn+hoa/f1zI8qykWDPhapj0G+XyxqHb0qU4juAh9DTaHN08fP4EFxRI1lVtMlOUB
+         49vNmB7ulY/70Xz4hk/ZomqvbGysK3Ms5/lkg=
+Message-ID: <264b990a0807312306jc064bbbp144342de555ac4f1@mail.gmail.com>
+Date: Fri, 1 Aug 2008 13:06:33 +0700
+From: "Yudha Harimantoro T" <yudha.ht@gmail.com>
+To: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+Subject: Error on Make Modules [2.6.27-rc1]
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
-References: <20080728200500.GA14284@uranus.ravnborg.org> <48900EE4.8030606@snapgear.com> <20080730083853.GB18366@uranus.ravnborg.org>
-In-Reply-To: <20080730083853.GB18366@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+Hi,
+I make with 2.6.27-rc1 with my oldconfig.
 
-Sam Ravnborg wrote:
-> On Wed, Jul 30, 2008 at 04:49:08PM +1000, Greg Ungerer wrote:
->> Hi Sam,
->>
->> Sam Ravnborg wrote:
->>> The traditional location of the arch specific Makefiles
->>> has been at:
->>>
->>> 	include/asm-$ARCH
->>>
->>> But as suggested by several people over time and lately
->>> by Linus in the following post:
->>> http://kerneltrap.org/mailarchive/linux-kernel/2008/5/21/1903924
->>>
->>> is is suggested to move the arch specific files under arch/
->>> and for the header files this is arch/$ARCH/include.
->>>
->>> So I have hacked up support for this in kbuild so
->>> for the simpler cases a simple move of header files as
->>> in:
->>> 	git mv include/asm-$ARCH arch/$ARCH/include/asm
->>>
->>> is enough.
->>>
->>> If Linus will accept it then I think -rc1 is a perfect
->>> time to do it as people has less stuff pending touching
->>> the header files that are moved.
->>> Validation is easy - does the usual configs build?
->>>
->>> For the archs that plays games with symlinks this is a
->>> splendid opportunity to get rid af these.
->>> The receipe is simple:
->>> Use 
->>> 	KBUILD_CFLAGS += -Iarch/$ARCH/include/$CPU
->>>
->>> to select the CPU and then do a copy of the header files
->>> like this:
->>>
->>> 	git mv include/asm-$ARCH/$CPU arch/$ARCH/include/$CPU/cpu
->>>
->>> Then the code can continue to use:
->>>
->>> 	#include <cpu/foo.h>
->>>
->>> I already converted sparc to use arch/sparc/include -
->>> while I merged the header files for sparc and sparc64.
->>> This change is already upstream.
->>>
->>> And for SH I posted a receipe which you can read here:
->>> http://lkml.org/lkml/2008/7/28/83
->>>
->>> It is SH specific but anyway pretty generic.
->>>
->>> I am limited in time and resources at the moment but I
->>> would be glad to help out as time permits should there
->>> be any questions.
->> I just tried moving the include/asm-m68knommu directory
->> to arch/m68knommu/include/asm and it all worked fine.
->> Clean compile first go :-)  Nice.  (As noted
->> asm-offsets.h was still generated in incldue/asm-m68knommu
->> afterwards though).
->>
->> So what is the status, should I prepare git/patch
->> for Linus?
-> Yes please do so.
+I build the kernel and there's error on modules.
+Errors :
+-----------------------------------------------------------------------
+root@system:/usr/src/linux# make
+...................
+...................
+CC      net/xfrm/xfrm_ipcomp.mod.ko
+LD [M] net/xfrm/xfrm_ipcomp.ko
+make[1]: Nothing to be done for `__fw_modbuild'.
+root@system:/usr/src/linux# make modules
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    scripts/checksyscalls.sh
+  Building modules, stage 2.
+  MODPOST 545 modules
+make[1]: Nothing to be done for `__fw_modbuild'.
+root@system:/usr/src/linux#
+-----------------------------------------------------------------------
 
-The move change can be pulled from:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-linus
-
-If there is no complaints I'll send Linus a pull request in a
-couple of days time.
-
-Regards
-Greg
-
-
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-Secure Computing Corporation                PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+Best regards,
+Yudha_HT
