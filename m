@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757073AbYHATrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbYHATsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757073AbYHATrp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 15:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYHATrg
+	id S1754732AbYHATsb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 15:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYHATsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 15:47:36 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48002 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752135AbYHATrf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 15:47:35 -0400
-Subject: Re: [patch 0/4] [resend] Add configuration options to disable
-	features
-From: David Woodhouse <dwmw2@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Josh Boyer <jwboyer@gmail.com>,
-       Ulrich Teichert <krypton@ulrich-teichert.org>,
-       Tim Bird <tim.bird@am.sony.com>, David Miller <davem@davemloft.net>,
-       thomas.petazzoni@free-electrons.com, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, michael@free-electrons.com
-In-Reply-To: <alpine.LFD.1.10.0808011212430.3277@nehalem.linux-foundation.org>
-References: <200807311850.m6VIoqCE015883@arbas.nms.ulrich-teichert.org>
-	 <1217533588.2328.1.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0808011212430.3277@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 01 Aug 2008 20:47:23 +0100
-Message-Id: <1217620043.3454.492.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Fri, 1 Aug 2008 15:48:23 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:52713 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752865AbYHATsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 15:48:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	b=DEjA1OZ/PBfxonI193NN3bYwS03fCjQBb1b7ztW8mBPBWnVt3b1HQTEGpkk/t4tS65VxVQzWCYhmV6XRHl5m5NHKJzHveo4smTRxPboXo8D6m3Q+K/qZ+ARjLBCHzUT+;
+Message-ID: <48936881.6030907@simon.arlott.org.uk>
+Date: Fri, 01 Aug 2008 20:48:17 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
+MIME-Version: 1.0
+To: Jonathan Corbet <corbet@lwn.net>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Amanda McPherson <amanda@amcpherson.com>, Jiri Kosina <jkosina@suse.cz>,
+       Roland Dreier <rdreier@cisco.com>, Alex Chiang <achiang@hp.com>,
+       =?UTF-8?B?Sm9jaGVuIFZvw58=?= <jochen.voss@googlemail.com>
+Subject: Re: [PATCH] A development process document, V2
+References: <20080731111443.2179bf4c@bike.lwn.net>
+In-Reply-To: <20080731111443.2179bf4c@bike.lwn.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-01 at 12:15 -0700, Linus Torvalds wrote:
-> 
-> On Thu, 31 Jul 2008, Josh Boyer wrote:
-> > On Thu, 2008-07-31 at 20:50 +0200, Ulrich Teichert wrote:
-> > > 
-> > > I do not think of NTP as desktop or server application, but that's
-> > > probably just me,
-> > 
-> > No, it's not just you.  NTP is useful in cases where things do care
-> > about time but hardware designers were too cheap to put an RTC on the
-> > board.
-> 
-> In fact, didn't one of the netgear firewall/switch/routers end up being 
-> famous for overloading some NTP service exactly because all the _millions_ 
-> of routers ended up using the same (incorrect) NTP host?
-> 
-> So NTP is very definitely an embedded thing too.
+On 31/07/08 18:14, Jonathan Corbet wrote:
+> +4.1: PITFALLS
+> +
+> +Coding style
+> +
+> +The kernel has long had a standard coding style, described in
+> +Documentation/CodingStyle.  For much of that time, the policies described
+> +in that file were taken as being, at most, advisory.  As a result, there is
+> +a substantial amount of code in the kernel which does not meed the coding
 
-And it's _still_ a red herring.
-
-I just booted a !CONFIG_IGMP kernel on my workstation and NTP is running
-just fine (as is IPv6).
-
-Even though ntpd has a configure test for multicast and can be built
-without multicast support at all, it isn't even necessary to build it
-that way -- the stock Fedora build of it works just fine.
-
-(Actually, I never managed to get ntpd to work _with_ multicast, but
-that's a different issue... :)
+meed -> meet
 
 -- 
-dwmw2
-
+Simon Arlott
