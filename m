@@ -1,103 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755695AbYHAXVC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759873AbYHAXW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755695AbYHAXVC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 19:21:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYHAXUy
+	id S1759873AbYHAXW7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 19:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYHAXWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 19:20:54 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48966 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752628AbYHAXUy (ORCPT
+	Fri, 1 Aug 2008 19:22:52 -0400
+Received: from smtp1.stealer.net ([88.198.224.204]:36915 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011AbYHAXWv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 19:20:54 -0400
-Subject: Re: mtdsuper.c BLOCK=n compile error
-From: David Woodhouse <dwmw2@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080801225858.GM19682@cs181140183.pp.htv.fi>
-References: <20080801223056.GK19682@cs181140183.pp.htv.fi>
-	 <1217630912.3719.41.camel@shinybook.infradead.org>
-	 <20080801225858.GM19682@cs181140183.pp.htv.fi>
-Content-Type: text/plain
-Date: Sat, 02 Aug 2008 00:20:51 +0100
-Message-Id: <1217632851.3719.47.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 1 Aug 2008 19:22:51 -0400
+Date: Sat, 2 Aug 2008 01:22:42 +0200 (CEST)
+From: Sven Wegener <sven.wegener@stealer.net>
+To: Richard Purdie <rpurdie@rpsys.net>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] leds: Move triggers before drivers in Makefile
+In-Reply-To: <alpine.LNX.1.10.0808012344090.2294@titan.stealer.net>
+Message-ID: <alpine.LNX.1.10.0808020120290.2294@titan.stealer.net>
+References: <alpine.LNX.1.10.0808012344090.2294@titan.stealer.net>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+Organization: STEALER.net
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -0.6
+X-Spam-Bar: /
+X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Fri, 01 Aug 2008 23:22:50 +0000
+	Bayes: 0.1441 Tokens: new, 146; hammy, 2; neutral, 3; spammy, 0.
+	AutoLearn: no
+	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.1441]
+X-Spam-Signature: a8efd9044424f68989115984e351256d34beb4b7
+X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-08-02 at 01:58 +0300, Adrian Bunk wrote:
-> Still gives a compile error for the second bdput().
+On Fri, 1 Aug 2008, Sven Wegener wrote:
 
-Er, why is the second bdput() there _anyway_?
+> When both triggers and drivers are built-in, we should first register the
+> triggers and then the drivers, to make default triggers work during device
+> registration. We do this by moving the triggers before the drivers in the
+> Makefile as init order is determined by linking order. Sadly this simple
+> solution doesn't cover devices registered elsewhere in the kernel. But often
+> these drivers provide their own triggers and should themselves take care of
+> registering triggers before devices.
+> 
+> Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
 
-[MTD] Fix !CONFIG_BLOCK compile for mtdsuper.c
-    
-As reported by Adrian Bunk, commit d5686b444ff3f72808d2b3fbd58672a86cdf38e7
-(switch mtd and dm-table to lookup_bdev()) causes the following compile
-error with CONFIG_BLOCK=n:
-    
-  CC      drivers/mtd/mtdsuper.o
-drivers/mtd/mtdsuper.c: In function `get_sb_mtd':
-drivers/mtd/mtdsuper.c:184: error: implicit declaration of function 'lookup_bdev'
-drivers/mtd/mtdsuper.c:184: warning: assignment makes pointer from integer without a cast
-drivers/mtd/mtdsuper.c:197: error: implicit declaration of function 'bdput'
-make[3]: *** [drivers/mtd/mtdsuper.o] Error 1
-    
-Fix it by putting the block device lookup inside #ifdef CONFIG_BLOCK
-    
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Ignore this one, we also attach default triggers to devices while loading 
+the triggers.
 
-diff --git a/drivers/mtd/mtdsuper.c b/drivers/mtd/mtdsuper.c
-index 9b6af7e..78114e3 100644
---- a/drivers/mtd/mtdsuper.c
-+++ b/drivers/mtd/mtdsuper.c
-@@ -125,8 +125,11 @@ int get_sb_mtd(struct file_system_type *fs_type,
-int flags,
- 	       int (*fill_super)(struct super_block *, void *, int),
- 	       struct vfsmount *mnt)
- {
-+#ifdef CONFIG_BLOCK
- 	struct block_device *bdev;
--	int mtdnr, ret;
-+	int ret;
-+#endif
-+	int mtdnr;
- 
- 	if (!dev_name)
- 		return -EINVAL;
-@@ -178,6 +181,7 @@ int get_sb_mtd(struct file_system_type *fs_type, int
-flags,
- 		}
- 	}
- 
-+#ifdef CONFIG_BLOCK
- 	/* try the old way - the hack where we allowed users to mount
- 	 * /dev/mtdblock$(n) but didn't actually _use_ the blockdev
- 	 */
-@@ -200,12 +204,13 @@ int get_sb_mtd(struct file_system_type *fs_type,
-int flags,
- 			     mnt);
- 
- not_an_MTD_device:
-+#endif /* CONFIG_BLOCK */
-+
- 	if (!(flags & MS_SILENT))
- 		printk(KERN_NOTICE
- 		       "MTD: Attempt to mount non-MTD device \"%s\"\n",
- 		       dev_name);
--	bdput(bdev);
--	return ret;
-+	return -EINVAL;
- }
- 
- EXPORT_SYMBOL_GPL(get_sb_mtd);
-
--- 
-dwmw2
-
+Sven
