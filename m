@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757715AbYHAMDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYHAMFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757715AbYHAMDS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 08:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbYHAMDG
+	id S1758067AbYHAMFH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 08:05:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbYHAME5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 08:03:06 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:57670 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752594AbYHAMDG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 08:03:06 -0400
-From: Louis Rilling <louis.rilling@kerlabs.com>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Louis Rilling <louis.rilling@kerlabs.com>
-Subject: [PATCH] configfs: Consolidate locking around configfs_detach_prep() in configfs_rmdir()
-Date: Fri,  1 Aug 2008 14:03:02 +0200
-Message-Id: <1217592182-26845-1-git-send-email-louis.rilling@kerlabs.com>
-X-Mailer: git-send-email 1.5.5.3
+	Fri, 1 Aug 2008 08:04:57 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:39286 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753626AbYHAME4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 08:04:56 -0400
+Date: Fri, 1 Aug 2008 07:04:55 -0500
+From: Robin Holt <holt@sgi.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Robin Holt <holt@sgi.com>, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Paul Menage <menage@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Patch] Scale pidhash_shift/pidhash_size up based on
+	num_possible_cpus().
+Message-ID: <20080801120455.GP9663@sgi.com>
+References: <20080731170022.GE9663@sgi.com> <m1prot297c.fsf@frodo.ebiederm.org> <20080731193204.GG9663@sgi.com> <m1iqul25rk.fsf@frodo.ebiederm.org> <20080731200835.GK9663@sgi.com> <m1bq0d1zhz.fsf@frodo.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1bq0d1zhz.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It appears that configfs_rmdir() can protect configfs_detach_prep() retries with
-less calls to {spin,mutex}_{lock,unlock}, and a cleaner code.
+On Thu, Jul 31, 2008 at 03:04:56PM -0700, Eric W. Biederman wrote:
+> Robin Holt <holt@sgi.com> writes:
+> 
+> > Like so???
+> >
+> > I have not tested this yet.
+> 
+> Looks reasonable to me.
+> 
+> In what circumstances was the lookup in the pid hash table with
+> long changes causing a performance slowdown?.  We don't perform
+> a lot of lookups.
 
-This patch does not change any behavior, except that it removes two useless
-lock/unlock pairs having nothing inside to protect and providing a useless
-barrier.
+It was initially detected while profiling 'ps' on a 2048p machine that
+had 13 kernel threads per cpu.  We added a couple more device drivers
+which added additional threads.  We then started a pthread-on-process
+MPI job which had 2048 ranks each with 4 threads (test-case from
+customer job).  There were misc other processes out there which brought
+our task count up to approx 63k.  Larger page size helped the problem
+(went from 16k to 64k).
 
-Signed-off-by: Louis Rilling <louis.rilling@kerlabs.com>
----
- fs/configfs/dir.c |   17 +++++++----------
- 1 files changed, 7 insertions(+), 10 deletions(-)
-
-diff --git a/fs/configfs/dir.c b/fs/configfs/dir.c
-index 7a8db78..8e93341 100644
---- a/fs/configfs/dir.c
-+++ b/fs/configfs/dir.c
-@@ -1311,16 +1311,18 @@ static int configfs_rmdir(struct inode *dir, struct dentry *dentry)
- 	 * Ensure that no racing symlink() will make detach_prep() fail while
- 	 * the new link is temporarily attached
- 	 */
--	mutex_lock(&configfs_symlink_mutex);
--	spin_lock(&configfs_dirent_lock);
- 	do {
- 		struct mutex *wait_mutex;
- 
-+		mutex_lock(&configfs_symlink_mutex);
-+		spin_lock(&configfs_dirent_lock);
- 		ret = configfs_detach_prep(dentry, &wait_mutex);
--		if (ret) {
-+		if (ret)
- 			configfs_detach_rollback(dentry);
--			spin_unlock(&configfs_dirent_lock);
--			mutex_unlock(&configfs_symlink_mutex);
-+		spin_unlock(&configfs_dirent_lock);
-+		mutex_unlock(&configfs_symlink_mutex);
-+
-+		if (ret) {
- 			if (ret != -EAGAIN) {
- 				config_item_put(parent_item);
- 				return ret;
-@@ -1329,13 +1331,8 @@ static int configfs_rmdir(struct inode *dir, struct dentry *dentry)
- 			/* Wait until the racing operation terminates */
- 			mutex_lock(wait_mutex);
- 			mutex_unlock(wait_mutex);
--
--			mutex_lock(&configfs_symlink_mutex);
--			spin_lock(&configfs_dirent_lock);
- 		}
- 	} while (ret == -EAGAIN);
--	spin_unlock(&configfs_dirent_lock);
--	mutex_unlock(&configfs_symlink_mutex);
- 
- 	/* Get a working ref for the duration of this function */
- 	item = configfs_get_config_item(dentry);
--- 
-1.5.5.3
-
+Thanks,
+Robin
