@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbYHAQTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbYHAQUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754661AbYHAQTn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 12:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbYHAQTe
+	id S1755886AbYHAQUS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 12:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbYHAQUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 12:19:34 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:53072 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751258AbYHAQTd convert rfc822-to-8bit (ORCPT
+	Fri, 1 Aug 2008 12:20:00 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:59556 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751367AbYHAQT7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 12:19:33 -0400
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       "'James.Bottomley@SteelEye.com'" <James.Bottomley@SteelEye.com>
-CC: "'linux-scsi@vger.kernel.org'" <linux-scsi@vger.kernel.org>,
-       "'James.Bottomley@SteelEye.com'" <James.Bottomley@SteelEye.com>,
-       "'akpm@osdl.org'" <akpm@osdl.org>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "Patro, Sumant" <Sumant.Patro@lsi.com>,
-       "Austria, Winston" <Winston.Austria@lsi.com>,
-       "poswald@novell.com" <poswald@novell.com>
-Date: Fri, 1 Aug 2008 10:19:07 -0600
-Subject: [PATCH 1/4] scsi: megaraid_sas - Add the dumy readl to force PCI
- flush
-Thread-Topic: [PATCH 1/4] scsi: megaraid_sas - Add the dumy readl to force
- PCI flush
-Thread-Index: Acgx9Krd+BU9hV11RZWgo5JcfegcdQAwCr4gME6S/nA=
-Message-ID: <4B6A08C587958942AA3002690DD4F8C31B08093F@cosmail02.lsi.com>
-In-Reply-To: <FFD04EB4FBD32E4B929B6CFDEDA6AA0D632A9F@NAMAIL1.ad.lsil.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 1 Aug 2008 12:19:59 -0400
+Date: Fri, 1 Aug 2008 17:19:58 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] audit fixes
+Message-ID: <20080801161958.GQ28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MegaRAID SAS Driver get unexpected Interrupt.  Add the dumy readl to force PCI flush will fix this issue.
+	Misc audit fixes.  Please pull from
+git://git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current.git/ audit.b54
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+Shortlog:
+Eric Paris (1):
+      Audit: Collect signal info when SIGUSR2 is sent to auditd
 
----
-drivers/scsi/megaraid/megaraid_sas.c |    6 ++++++
-1 files changed, 6 insertions(+)
+Vesa-Matti J Kari (1):
+      kernel/audit.c control character detection is off-by-one
 
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2008-07-31 12:00:58.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2008-07-31 12:30:35.000000000 -0400
-@@ -198,6 +198,9 @@ megasas_clear_intr_xscale(struct megasas
-         */
-        writel(status, &regs->outbound_intr_status);
+zhangxiliang (3):
+      Re: [PATCH] the loginuid field should be output in all AUDIT_CONFIG_CHANGE audit messages
+      Fix the kernel panic of audit_filter_task when key field is set
+      Fix the bug of using AUDIT_STATUS_RATE_LIMIT when set fail, no error output.
 
-+       /* Dummy readl to force pci flush */
-+       readl(&regs->outbound_intr_status);
-+
-        return 0;
- }
-
-@@ -293,6 +296,9 @@ megasas_clear_intr_ppc(struct megasas_re
-         */
-        writel(status, &regs->outbound_doorbell_clear);
-
-+       /* Dummy readl to force pci flush */
-+       readl(&regs->outbound_doorbell_clear);
-+
-        return 0;
- }
- /**
+Diffstat:
+ kernel/audit.c       |   13 +++++++++----
+ kernel/auditfilter.c |   10 ++++++++--
+ kernel/auditsc.c     |    4 ++--
+ 3 files changed, 19 insertions(+), 8 deletions(-)
