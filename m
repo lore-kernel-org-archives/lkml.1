@@ -1,78 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbYHAL6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757715AbYHAMDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757653AbYHAL6P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 07:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYHAL57
+	id S1757715AbYHAMDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 08:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbYHAMDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 07:57:59 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:39079 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753855AbYHAL56 (ORCPT
+	Fri, 1 Aug 2008 08:03:06 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:57670 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752594AbYHAMDG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 07:57:58 -0400
-Date: Fri, 1 Aug 2008 12:57:27 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: David Miller <davem@davemloft.net>
-cc: mingo@elte.hu, peterz@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: combinatorial explosion in lockdep
-In-Reply-To: <20080801.023214.117218567.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0808011246210.18137@blonde.site>
-References: <20080729.214503.126934382.davem@davemloft.net>
- <20080731163943.GF26393@elte.hu> <20080801092219.GA15691@elte.hu>
- <20080801.023214.117218567.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 1 Aug 2008 08:03:06 -0400
+From: Louis Rilling <louis.rilling@kerlabs.com>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+       Louis Rilling <louis.rilling@kerlabs.com>
+Subject: [PATCH] configfs: Consolidate locking around configfs_detach_prep() in configfs_rmdir()
+Date: Fri,  1 Aug 2008 14:03:02 +0200
+Message-Id: <1217592182-26845-1-git-send-email-louis.rilling@kerlabs.com>
+X-Mailer: git-send-email 1.5.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Aug 2008, David Miller wrote:
-> 
-> I think a non-trivial number of people hit that printk deadlock bug,
-> but just didn't report it because the machine essentially hard hangs
-> silently.  At best you'd see the:
-> 
-> ========================================
-> 
-> initial line from lockdep, but often even that doesn't make it to the
-> console.
+It appears that configfs_rmdir() can protect configfs_detach_prep() retries with
+less calls to {spin,mutex}_{lock,unlock}, and a cleaner code.
 
-Not just with lockdep.  A couple of months back CONFIG_DEBUG_SPINLOCK
-was giving me spinlock debug messages under load on x86_64 duo laptop,
-but hung up before showing the intended backtrace.  I added the patch
-below, but IIRC shifted over to other issues (and switched from cfq to
-anticipatory scheduler, which made a difference) before finding out if
-this patch really helped.  If it makes sense to you, please add it in.
+This patch does not change any behavior, except that it removes two useless
+lock/unlock pairs having nothing inside to protect and providing a useless
+barrier.
 
-Hugh
-
-[PATCH] set oops_in_progress for spinlock lockup
-
-Set oops_in_progress while reporting spinlock lockup,
-to avoid deadlock inside printk() or the backtraces.
-
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Louis Rilling <louis.rilling@kerlabs.com>
 ---
+ fs/configfs/dir.c |   17 +++++++----------
+ 1 files changed, 7 insertions(+), 10 deletions(-)
 
- lib/spinlock_debug.c |    2 ++
- 1 file changed, 2 insertions(+)
-
---- 2.6.27-rc1/lib/spinlock_debug.c	2008-01-24 22:58:37.000000000 +0000
-+++ linux/lib/spinlock_debug.c	2008-08-01 12:41:52.000000000 +0100
-@@ -113,6 +113,7 @@ static void __spin_lock_debug(spinlock_t
- 		/* lockup suspected: */
- 		if (print_once) {
- 			print_once = 0;
-+			oops_in_progress = 1;
- 			printk(KERN_EMERG "BUG: spinlock lockup on CPU#%d, "
- 					"%s/%d, %p\n",
- 				raw_smp_processor_id(), current->comm,
-@@ -121,6 +122,7 @@ static void __spin_lock_debug(spinlock_t
- #ifdef CONFIG_SMP
- 			trigger_all_cpu_backtrace();
- #endif
-+			oops_in_progress = 0;
+diff --git a/fs/configfs/dir.c b/fs/configfs/dir.c
+index 7a8db78..8e93341 100644
+--- a/fs/configfs/dir.c
++++ b/fs/configfs/dir.c
+@@ -1311,16 +1311,18 @@ static int configfs_rmdir(struct inode *dir, struct dentry *dentry)
+ 	 * Ensure that no racing symlink() will make detach_prep() fail while
+ 	 * the new link is temporarily attached
+ 	 */
+-	mutex_lock(&configfs_symlink_mutex);
+-	spin_lock(&configfs_dirent_lock);
+ 	do {
+ 		struct mutex *wait_mutex;
+ 
++		mutex_lock(&configfs_symlink_mutex);
++		spin_lock(&configfs_dirent_lock);
+ 		ret = configfs_detach_prep(dentry, &wait_mutex);
+-		if (ret) {
++		if (ret)
+ 			configfs_detach_rollback(dentry);
+-			spin_unlock(&configfs_dirent_lock);
+-			mutex_unlock(&configfs_symlink_mutex);
++		spin_unlock(&configfs_dirent_lock);
++		mutex_unlock(&configfs_symlink_mutex);
++
++		if (ret) {
+ 			if (ret != -EAGAIN) {
+ 				config_item_put(parent_item);
+ 				return ret;
+@@ -1329,13 +1331,8 @@ static int configfs_rmdir(struct inode *dir, struct dentry *dentry)
+ 			/* Wait until the racing operation terminates */
+ 			mutex_lock(wait_mutex);
+ 			mutex_unlock(wait_mutex);
+-
+-			mutex_lock(&configfs_symlink_mutex);
+-			spin_lock(&configfs_dirent_lock);
  		}
- 	}
- }
+ 	} while (ret == -EAGAIN);
+-	spin_unlock(&configfs_dirent_lock);
+-	mutex_unlock(&configfs_symlink_mutex);
+ 
+ 	/* Get a working ref for the duration of this function */
+ 	item = configfs_get_config_item(dentry);
+-- 
+1.5.5.3
+
