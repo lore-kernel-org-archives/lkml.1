@@ -1,90 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbYHAIjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbYHAIpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbYHAIjy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 04:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYHAIjp
+	id S1754684AbYHAIpn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 04:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYHAIpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 04:39:45 -0400
-Received: from 215.47.DSNET ([211.144.215.47]:49639 "EHLO
-	cnshjsmin03.cn.alcatel-lucent.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752045AbYHAIjn (ORCPT
+	Fri, 1 Aug 2008 04:45:34 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40962 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbYHAIpc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 04:39:43 -0400
-X-AuditID: ac189297-ae201bb000003fd3-c1-4892d87e883a
-Message-ID: <4892CB94.8090703@alcatel-lucent.com>
-Date: Fri, 01 Aug 2008 16:38:44 +0800
-From: gshan <gshan@alcatel-lucent.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Fri, 1 Aug 2008 04:45:32 -0400
+Message-ID: <4892CCCD.3010202@jp.fujitsu.com>
+Date: Fri, 01 Aug 2008 17:43:57 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: PIIX4: DMA timeout issue
-References: <488ED837.2060509@alcatel-lucent.com>	<488F1C6C.9000002@garzik.org>	<48902EB5.8070102@alcatel-lucent.com> <20080730114934.5a593cf4@lxorguk.ukuu.org.uk> <48913FFD.5070901@alcatel-lucent.com> <4892BEBA.2000602@kernel.org>
-In-Reply-To: <4892BEBA.2000602@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 01 Aug 2008 08:38:34.0250 (UTC) FILETIME=[FBFD46A0:01C8F3B1]
-X-Brightmail-Tracker: AAAAAA==
+To: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: post 2.6.26 requires pciehp_slot_with_bus
+References: <20080724235127.40bd0ac9@mjolnir.drzeus.cx> <200807241506.58973.jbarnes@virtuousgeek.org> <20080724222914.GG5307@ldl.fc.hp.com> <20080725004926.5f201c70@mjolnir.drzeus.cx> <20080724230827.GA30302@ldl.fc.hp.com> <20080725012916.06679a6d@mjolnir.drzeus.cx> <20080725032909.GA6701@parisc-linux.org> <48895D3C.7040100@jp.fujitsu.com> <20080730023842.GA4269@ldl.fc.hp.com> <48919471.6010304@jp.fujitsu.com> <20080731154723.GA26577@ldl.fc.hp.com>
+In-Reply-To: <20080731154723.GA26577@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alex Chiang wrote:
+> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>> Thank you for patches, Alex-san!
+>>
+>> I've reviewed those patches and tested them on my ia64 machine
+>> that have both shpc and pcie hotplug slots. Your patch looks
+>> good.
+> 
+> Thank you for reviewing and testing.
+> 
+>> As you mentioned, we are considering the problem also from the
+>> view point of slot detection. But I think your patch is needed
+>> regardless of that because there might be platforms whose slots
+>> are detected properly but firmware assigns the physical slot
+>> number wrongly. I think Alex's patch should go to mainline.
+> 
+> That is a good point.
+> 
+>> P.S.: I found a possible improvement, though it is not a big
+>> problem and we don't not need to fix it soon. I'd like to tell
+>> you about it just in case. Current pci_hp_register() checks if
+>> name is duplicated first, before checking if another hotplug
+>> driver is already registered to the slot. So, if shpchp/pciehp
+>> driver tries to register hotplug slot that is already registered
+>> by the other hotplug driver (e.g. acpiphp) with the same name,
+>> shpchp/pciehp driver will do as follows:
+>>
+>> (1) shpchp/pciehp call pci_hp_register()
+>> (2) pci_hp_register() returns -EEXIST
+>> (3) shpchp/pciehp call pci_hp_register() with other name ("M-1")
+>> (4) pci_hp_register() returns -EBUSY
+>>
+>> if pci_hp_register() checked if another hotplug driver is already
+>> registered first, step (2) and (3) could be removed.
+> 
+> Thanks, that seems pretty easy to do.
+> 
+> Would you mind testing this patch as well? You should probably
+> apply it on top of the other two patches to see how all three
+> patches interact.
+> 
+> Thanks!
+> 
+> /ac
+> 
+> 
+> From: Alex Chiang <achiang@dl580g5.kio>
+> Subject: [PATCH] PCI hotplug: check for claimed slot before duplicate named slot
+> 
+> Kenji Kaneshige observes that:
+> 
+> If shpchp/pciehp driver tries to register hotplug slot that is
+> already registered by the other hotplug driver (e.g. acpiphp) with
+> the same name, shpchp/pciehp driver will do as follows:
+> 
+> (1) shpchp/pciehp call pci_hp_register()
+> (2) pci_hp_register() returns -EEXIST
+> (3) shpchp/pciehp call pci_hp_register() with other name ("M-1")
+> (4) pci_hp_register() returns -EBUSY
+> 
+> If pci_hp_register() checked if another hotplug driver is already
+> registered first, step (2) and (3) could be removed.
+> 
+> This patch does not prevent the *same* driver from attempting
+> to register multiple slots with the same name (on systems with
+> broken firmware). For that situation, we still need to detect
+> a name collision and return -EEXIST if so.
+> 
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+>  drivers/pci/hotplug/pci_hotplug_core.c |   11 ++++++-----
+>  1 files changed, 6 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
+> index 5f85b1b..9c379b6 100644
+> --- a/drivers/pci/hotplug/pci_hotplug_core.c
+> +++ b/drivers/pci/hotplug/pci_hotplug_core.c
+> @@ -568,10 +568,6 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
+>  		return -EINVAL;
+>  	}
+>  
+> -	/* Check if we have already registered a slot with the same name. */
+> -	if (get_slot_from_name(slot->name))
+> -		return -EEXIST;
+> -
+>  	/*
+>  	 * No problems if we call this interface from both ACPI_PCI_SLOT
+>  	 * driver and call it here again. If we've already created the
+> @@ -587,6 +583,12 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
+>  		return -EBUSY;
+>  	}
+>  
+> +	/* Check if we have already registered a slot with the same name. */
+> +	if (get_slot_from_name(slot->name)) {
+> +		pci_destroy_slot(pci_slot);
+> +		return -EEXIST;
+> +	}
+> +
+>  	slot->pci_slot = pci_slot;
+>  	pci_slot->hotplug = slot;
+>  
+> @@ -609,7 +611,6 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
+>  	kobject_uevent(&pci_slot->kobj, KOBJ_ADD);
+>  	dbg("Added slot %s to the list\n", slot->name);
+>  
+> -
+>  	return result;
+>  }
+>  
 
->> Alan/Jeff, I tried to install ATA driver on PIIX4. After fixing IRQ number
->> to 143 for primary and secondary channel. I got following output and
->> it seems the driver has been loaded sucessfully. However, I couldn't
->> see any information from /proc/devices. Do you have any ideas?
->>     
->
-> You need the SCSI disk driver - sd_mod.ko.
->
->   
-Thanks a lot. It seems it starts to work now.
+Unfortunately, we can't simply move the following check after pci_create_slot().
 
-piix_init: enter
-piix_init_one: pci device: �\
-                             @
-piix_init_one: vendor=0x00008086, device=0x00007111
-piix_init_one: piix_host_priv allocated
-piix_init_one: ent->driver_data=0
-ata_pci_init_one: n_ports=2
-ata_pci_init_one: pci device enabled
-ata_pci_init_one: pci device class=0x00010180
-ata_pci_init_one: legacy_mode=8
-ata_pci_init_one: DMA mode has been set
-ata_pci_init_legacy_port: port_mask=0x0000000b
-ata_pci_init_legacy_port: ATA_PRIMARY_CMD=0x000001f0, 
-ATA_PRIMARY_CTL=0x000003f6
-ata_pci_init_legacy_port: ATA_SECONDARY_CMD=0x00000170, 
-ATA_SECONDARY_CTL=0x00000376
-ata_pci_init_legacy_port: BMDMA=0xfbf00000
-, phys=0x00001000, phys_end=0x0000100f
-ata_pci_init_legacy_port: probe_ent initialized
-ata_pci_init_legacy_port: IRQ line of primary channel is 143
-ata_pci_init_legacy_port: IRQ line of secondary channel is 143
-ata_pci_init_one: Master set
-ata1: PATA max UDMA/33 cmd 0xfbeff1f0 ctl 0xfbeff3f6 bmdma 0xfbf00000 
-irq 143
-ata2: PATA max UDMA/33 cmd 0xfbeff170 ctl 0xfbeff376 bmdma 0xfbf00008 
-irq 143
-scsi0 : ata_piix
-scsi1 : ata_piix
-ata2.00: ATA-6: HTE721010G9AT00, MCZOA51A, max UDMA/100
-ata2.00: 195371568 sectors, multi 0: LBA48
-ata2.00: configured for UDMA/33
- 1:0:0:0: Direct-Access     ATA      HTE721010G9AT00  MCZO PQ: 0 ANSI: 5
-SCSI device sda: 195371568 512-byte hdwr sectors (100030 MB)
-sda: Write Protect is off
-SCSI device sda: write cache: enabled, read cache: enabled, doesn't 
-support DPO or FUA
-SCSI device sda: 195371568 512-byte hdwr sectors (100030 MB)
-sda: Write Protect is off
-SCSI device sda: write cache: enabled, read cache: enabled, doesn't 
-support DPO or FUA
- sda: sda1 sda4 < sda5 sda6 sda7 sda8 >
-sd 1:0:0:0: Attached scsi disk sda
-sd 1:0:0:0: Attached scsi generic sg0 type 0
+> -	/* Check if we have already registered a slot with the same name. */
+> -	if (get_slot_from_name(slot->name))
+> -		return -EEXIST;
+> -
 
-Gavin
+With this change, kobject_init_and_add() called in pci_create_slot() will
+show stack trace if a hotplug driver attempts to register multiple slot with
+the same name. That is, stack trace will be shown on the platform that wrongly
+assing the physical slot number to multiple slots. I'm very sorry, but I don't
+have enough time to consider how to fix it today.
+
+Thanks,
+Kenji Kaneshige
+
+
