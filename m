@@ -1,77 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762898AbYHAV0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763021AbYHAV1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762898AbYHAV0s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762630AbYHAVR7
+	id S1763021AbYHAV1M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:27:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762654AbYHAVSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:17:59 -0400
-Received: from mk-outboundfilter-5.mail.uk.tiscali.com ([212.74.114.1]:46766
-	"EHLO mk-outboundfilter-5.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762626AbYHAVR6 (ORCPT
+	Fri, 1 Aug 2008 17:18:30 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:37780 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762652AbYHAVS1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:17:58 -0400
-X-Trace: 64428217/mk-outboundfilter-5.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6
-X-SBRS: None
-X-RemoteIP: 195.149.44.6
-X-IP-MAIL-FROM: alistair@devzero.co.uk
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AoQFAO8Zk0jDlSwG/2dsb2JhbACBW4lEpRs
-X-IronPort-AV: E=Sophos;i="4.31,295,1215385200"; 
-   d="scan'208";a="64428217"
-X-IP-Direction: IN
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-Subject: Re: Sysrq+B doesn't work on my box
-Date: Fri, 1 Aug 2008 22:17:53 +0100
-User-Agent: KMail/1.10.0 (Linux/2.6.27-rc1-damocles; KDE/4.1.0; x86_64; ; )
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       Avi Kivity <avi@qumranet.com>
-References: <c4e36d110807310645n3ff6e61j17414433c5aee030@mail.gmail.com> <c4e36d110808010622w74d61378ud9624a6ea38357a4@mail.gmail.com> <c4e36d110808011325q612d57dcnfe99e6ef42b1c4ae@mail.gmail.com>
-In-Reply-To: <c4e36d110808011325q612d57dcnfe99e6ef42b1c4ae@mail.gmail.com>
+	Fri, 1 Aug 2008 17:18:27 -0400
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       "Yang, Bo" <Bo.Yang@lsi.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>
+CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "poswald@novell.com" <poswald@novell.com>,
+       "Austria, Winston" <Winston.Austria@lsi.com>
+Date: Fri, 1 Aug 2008 15:17:26 -0600
+Subject: [PATCH 3/4] scsi: megaraid_sas - Add the new controllers support
+Thread-Topic: [PATCH 3/4] scsi: megaraid_sas - Add the new controllers
+ support
+Thread-Index: AciItAVU2/gnyqciSguN4aHHEiVCxRrPlpmwAAF0YNA=
+Message-ID: <4B6A08C587958942AA3002690DD4F8C31B080A66@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C31B080962@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808012217.53449.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 2008/8/1 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
-> > 2008/8/1 Alistair John Strachan <alistair@devzero.co.uk>:
-> >> On Friday 01 August 2008 10:54:19 Zdenek Kabelac wrote:
-> >>> 2008/7/31 Jeremy Fitzhardinge <jeremy@goop.org>:
-> >>> > Zdenek Kabelac wrote:
-> >>>
-> >>> I'll probably try to bisect  rc.sysinit script to check what is the
-> >>> first command
-> >>> that breaks the reboot  - but if there is any idea what should I test
-> >>> first.?
-> >>
-> >> Are you using modules? Maybe a driver is loaded and this upsets the BIOS
-> >> somehow? If that was the case, the driver wouldn't be loaded in an
-> >> init=/bin/sh situation, as you described before.
-> >
-> > Yes - except as I've checked the exactly same modularized kernel
-> > running Debian on the same box
-> > has no boot problem.
->
-> Ok - idea with checking loaded modules was actually the right way to a
-> very quick discovery that KVM loaded in my Fedora are the source of
-> troubles - without them the second mystery is also a history :)
->
-> So - is it normal, that loaded KVM modules eliminate emergency reboot
-> (bug or feature)?
+Add the new controllers (0x78 0x79) support to the driver.  Those controllers are LSI's next generation (gen2) SAS controllers.
 
-Obviously not :-) Added Avi to CC.
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-Avi, Zdenek is having a problem on his T61 where the Alt-SysRq-B emergency 
-reboot mechanism stops working after he loads the KVM module. Any ideas?
+---
+ drivers/scsi/megaraid/megaraid_sas.c |  111 ++++++++++++++++++++++++++++++++++-
+ drivers/scsi/megaraid/megaraid_sas.h |    4 +
+ 2 files changed, 113 insertions(+), 2 deletions(-)
 
--- 
-Cheers,
-Alistair.
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2008-07-31 12:56:07.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2008-07-31 13:32:02.000000000 -0400
+@@ -10,7 +10,7 @@
+  *        2 of the License, or (at your option) any later version.
+  *
+  * FILE                : megaraid_sas.c
+- * Version     : v00.00.03.20-rc1
++ * Version     : v00.00.04.01-rc1
+  *
+  * Authors:
+  *     (email-id : megaraidlinux@lsi.com)
+@@ -71,6 +71,10 @@ static struct pci_device_id megasas_pci_
+        /* ppc IOP */
+        {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS1078DE)},
+        /* ppc IOP */
++       {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS1078GEN2)},
++       /* gen2*/
++       {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS0079GEN2)},
++       /* gen2*/
+        {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_VERDE_ZCR)},
+        /* xscale IOP, vega */
+        {PCI_DEVICE(PCI_VENDOR_ID_DELL, PCI_DEVICE_ID_DELL_PERC5)},
+@@ -324,6 +328,100 @@ static struct megasas_instance_template
+ };
+
+ /**
++*      The following functions are defined for gen2 (deviceid : 0x78 0x79)
++*      controllers
++*/
++
++/**
++ * megasas_enable_intr_gen2 -  Enables interrupts
++ * @regs:                      MFI register set
++ */
++static inline void
++megasas_enable_intr_gen2(struct megasas_register_set __iomem *regs)
++{
++       writel(0xFFFFFFFF, &(regs)->outbound_doorbell_clear);
++
++       /* write ~0x00000005 (4 & 1) to the intr mask*/
++       writel(~MFI_GEN2_ENABLE_INTERRUPT_MASK, &(regs)->outbound_intr_mask);
++
++       /* Dummy readl to force pci flush */
++       readl(&regs->outbound_intr_mask);
++}
++
++/**
++ * megasas_disable_intr_gen2 - Disables interrupt
++ * @regs:                      MFI register set
++ */
++static inline void
++megasas_disable_intr_gen2(struct megasas_register_set __iomem *regs)
++{
++       u32 mask = 0xFFFFFFFF;
++       writel(mask, &regs->outbound_intr_mask);
++       /* Dummy readl to force pci flush */
++       readl(&regs->outbound_intr_mask);
++}
++
++/**
++ * megasas_read_fw_status_reg_gen2 - returns the current FW status value
++ * @regs:                      MFI register set
++ */
++static u32
++megasas_read_fw_status_reg_gen2(struct megasas_register_set __iomem *regs)
++{
++       return readl(&(regs)->outbound_scratch_pad);
++}
++
++/**
++ * megasas_clear_interrupt_gen2 -      Check & clear interrupt
++ * @regs:                              MFI register set
++ */
++static int
++megasas_clear_intr_gen2(struct megasas_register_set __iomem *regs)
++{
++       u32 status;
++       /*
++        * Check if it is our interrupt
++        */
++       status = readl(&regs->outbound_intr_status);
++
++       if (!(status & MFI_GEN2_ENABLE_INTERRUPT_MASK)) {
++               return 1;
++       }
++
++       /*
++        * Clear the interrupt by writing back the same value
++        */
++       writel(status, &regs->outbound_doorbell_clear);
++
++       /* Dummy readl to force pci flush */
++       readl(&regs->outbound_intr_status);
++
++       return 0;
++}
++/**
++ * megasas_fire_cmd_gen2 -     Sends command to the FW
++ * @frame_phys_addr :          Physical address of cmd
++ * @frame_count :              Number of frames for the command
++ * @regs :                     MFI register set
++ */
++static inline void
++megasas_fire_cmd_gen2(dma_addr_t frame_phys_addr, u32 frame_count,
++                       struct megasas_register_set __iomem *regs)
++{
++       writel((frame_phys_addr | (frame_count<<1))|1,
++                       &(regs)->inbound_queue_port);
++}
++
++static struct megasas_instance_template megasas_instance_template_gen2 = {
++
++       .fire_cmd = megasas_fire_cmd_gen2,
++       .enable_intr = megasas_enable_intr_gen2,
++       .disable_intr = megasas_disable_intr_gen2,
++       .clear_intr = megasas_clear_intr_gen2,
++       .read_fw_status_reg = megasas_read_fw_status_reg_gen2,
++};
++
++/**
+ *      This is the end of set of functions & definitions
+ *      specific to ppc (deviceid : 0x60) controllers
+ */
+@@ -1982,7 +2080,12 @@ static int megasas_init_mfi(struct megas
+        /*
+         * Map the message registers
+         */
+-       instance->base_addr = pci_resource_start(instance->pdev, 0);
++       if ((instance->pdev->device == PCI_DEVICE_ID_LSI_SAS1078GEN2) ||
++               (instance->pdev->device == PCI_DEVICE_ID_LSI_SAS0079GEN2)) {
++               instance->base_addr = pci_resource_start(instance->pdev, 1);
++       } else {
++               instance->base_addr = pci_resource_start(instance->pdev, 0);
++       }
+
+        if (pci_request_regions(instance->pdev, "megasas: LSI")) {
+                printk(KERN_DEBUG "megasas: IO memory region busy!\n");
+@@ -2004,6 +2107,10 @@ static int megasas_init_mfi(struct megas
+                case PCI_DEVICE_ID_LSI_SAS1078DE:
+                        instance->instancet = &megasas_instance_template_ppc;
+                        break;
++               case PCI_DEVICE_ID_LSI_SAS1078GEN2:
++               case PCI_DEVICE_ID_LSI_SAS0079GEN2:
++                       instance->instancet = &megasas_instance_template_gen2;
++                       break;
+                case PCI_DEVICE_ID_LSI_SAS1064R:
+                case PCI_DEVICE_ID_DELL_PERC5:
+                default:
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2008-07-31 12:50:41.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2008-07-31 12:50:41.000000000 -0400
+@@ -28,6 +28,8 @@
+ #define        PCI_DEVICE_ID_LSI_SAS1078R              0x0060
+ #define        PCI_DEVICE_ID_LSI_SAS1078DE             0x007C
+ #define        PCI_DEVICE_ID_LSI_VERDE_ZCR             0x0413
++#define        PCI_DEVICE_ID_LSI_SAS1078GEN2           0x0078
++#define        PCI_DEVICE_ID_LSI_SAS0079GEN2           0x0079
+
+ /*
+  * =====================================
+@@ -580,6 +582,8 @@ struct megasas_ctrl_info {
+ #define MEGASAS_COMPLETION_TIMER_INTERVAL      (HZ/10)
+
+ #define MFI_REPLY_1078_MESSAGE_INTERRUPT       0x80000000
++#define MFI_REPLY_GEN2_MESSAGE_INTERRUPT       0x00000001
++#define MFI_GEN2_ENABLE_INTERRUPT_MASK         0x00000001 | 0x00000004
+
+ /*
+ * register set for both 1068 and 1078 controllers
