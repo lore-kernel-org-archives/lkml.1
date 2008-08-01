@@ -1,94 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760700AbYHAWXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760604AbYHAWZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760700AbYHAWXb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 18:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756536AbYHAWXH
+	id S1760604AbYHAWZB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 18:25:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756437AbYHAWYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 18:23:07 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:54174 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755937AbYHAWXF (ORCPT
+	Fri, 1 Aug 2008 18:24:52 -0400
+Received: from sov-mail-b0016.gradwell.net ([193.84.87.40]:51425 "EHLO
+	sov-mail-b0016.gradwell.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756141AbYHAWYv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 18:23:05 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Alan Mayer <ajm@sgi.com>
-Cc: Cliff Wickman <cpw@sgi.com>, jeremy@goop.org, rusty@rustcorp.com.au,
-       suresh.b.siddha@intel.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Dean Nelson <dcn@sgi.com>
-In-Reply-To: <4893856D.6060909@sgi.com> (Alan Mayer's message of "Fri, 01 Aug
-	2008 16:51:41 -0500")
-References: <48922D16.1080704@sgi.com> <m13alp1z8w.fsf@frodo.ebiederm.org>
-	<20080801155120.GA21706@sgi.com> <m18wvgv4bj.fsf@frodo.ebiederm.org>
-	<4893856D.6060909@sgi.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-Date: Fri, 01 Aug 2008 15:14:42 -0700
-Message-ID: <m11w18tmb1.fsf@frodo.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Alan Mayer <ajm@sgi.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.2 SARE_LWSHORTT BODY: SARE_LWSHORTT
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.5000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] x86_64:  Dynamically allocate arch specific system vectors
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+	Fri, 1 Aug 2008 18:24:51 -0400
+Date: Fri, 1 Aug 2008 23:22:40 +0100
+From: Alex Buell <alex.buell@munted.org.uk>
+To: <linux-kernel@vger.kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Robert Hancock <hancockr@shaw.ca>,
+       Tomas Styblo <tripie@cpan.org>, <linux-usb@vger.kernel.org>,
+       <usb-storage@lists.one-eyed-alien.net>
+Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix -
+ device 152d:2338
+Message-Id: <20080801232240.d24166de.alex.buell@munted.org.uk>
+In-Reply-To: <20080801221504.49464f85.alex.buell@munted.org.uk>
+References: <4890C72D.7040604@shaw.ca>
+	<Pine.LNX.4.44L0.0807301700310.2322-100000@iolanthe.rowland.org>
+	<20080801221504.49464f85.alex.buell@munted.org.uk>
+Organization: One tortoiseshell cat, very high maintenance
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i686-pc-linux-gnu)
+X-Face: "wUuhsy:X)M;>-dA\j"&y@*\$91]iX10Iv1WG_oNbGYpo,eqc06O?"VSeRTx]xM\LiITUh01z}<|GF/4Gzz(MAU~;p4AS,%TB69M:vB-9+i'#W7$UQCW&UP#zt{VdLlzEiw8k~jL<
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Mayer <ajm@sgi.com> writes:
+On Fri, 1 Aug 2008 22:15:04 +0100, I waved a wand and this message
+magically appears in front of Alex Buell:
 
-> Okay, I think we have it now.  assign_irq_vector *almost* does what we need.
-> One minor thing is that assign_irq_vector ANDs against cpu_online_map.  We would
-> need cpu_possible_map, so we get the vector on offline cpus that may come
-> online.  The other thing is that assign_irq_vector doesn't allow the
-> specification of interrupt priorities.  It would need to be modified to handle
-> returning either a high priority vector or a low priority vector.  Would
-> modifying the api for assign_irq_vector be the proper approach?
+> I've done a lot of mkfs and fsck, haven't seen any problems so far.
+> Fingers crossed that this patch works. 
 
-I don't know if it makes sense to modify assign_irq_vector or to 
-have a companion function that uses the same data structures.
+Spoke too soon, that patch that was posted doesn't work for me. Here's
+my log:
 
-I think I would work on the companion function and if the code
-can be made sufficiently similar merge the two functions.
+Aug  1 23:18:08 lithium scsi 5:0:0:0: Direct-Access     SAMSUNG  SP1213C          0-30 PQ: 0 ANSI: 2 CCS
+Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] 234493056 512-byte hardware sectors (120060 MB)
+Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Write Protect is off
+Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Mode Sense: 00 38 00 00
+Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Assuming drive cache: write through
+Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] 234493056 512-byte hardware sectors (120060 MB)
+Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Write Protect is off
+Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Mode Sense: 00 38 00 00
+Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Assuming drive cache: write through
+Aug  1 23:18:08 lithium sda: sda1
+Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Attached SCSI disk
+Aug  1 23:18:08 lithium sd 5:0:0:0: Attached scsi generic sg1 type 0
+Aug  1 23:18:08 lithium usb-storage: device scan complete
+Aug  1 23:19:11 lithium sd 5:0:0:0: [sda] Sense Key : 0x0 [current] 
+Aug  1 23:19:11 lithium sd 5:0:0:0: [sda] ASC=0x0 ASCQ=0x0
+Aug  1 23:19:11 lithium ERROR: (device sda1): dbAllocNext: Corrupt dmap page
+Aug  1 23:19:11 lithium ERROR: (device sda1): dbAllocNext: Corrupt dmap page
+Aug  1 23:19:20 lithium sd 5:0:0:0: [sda] Sense Key : 0x0 [current] 
+Aug  1 23:19:20 lithium sd 5:0:0:0: [sda] ASC=0x0 ASCQ=0x0
+Aug  1 23:19:20 lithium sd 5:0:0:0: [sda] Sense Key : 0x0 [current] 
+Aug  1 23:19:20 lithium sd 5:0:0:0: [sda] ASC=0x0 ASCQ=0x0
+Aug  1 23:19:20 lithium sd 5:0:0:0: [sda] Sense Key : 0x0 [current] 
+Aug  1 23:19:20 lithium sd 5:0:0:0: [sda] ASC=0x0 ASCQ=0x0
+Aug  1 23:20:01 lithium cron[13504]: (root) CMD (test -x /usr/sbin/run-crons && /usr/sbin/run-crons )
+Aug  1 23:20:34 lithium usb 1-3.4.3: USB disconnect, address 8
 
-> The interrupts don't necessarily fire on all cpus, it's just that they *can*
-> fire on any cpu.  For example, the GRU triggers an interrupt (it is very
-> IPI'ish) to a particular cpu in the event of a GRU TLB fault. That cpu handles
-> the fault and returns.  But the fault can happen on any cpu, so all cpus need to
-> be registered for the same vector and irq. This is probably splitting hairs; it
-> is certainly no different in principal from timer interrupts or processor TLB
-> faults.
+:-(
+-- 
+http://www.munted.org.uk
 
-Reasonable.  As long as you don't need to read a status register to figure
-out what to do that sounds reasonable.  This does sound very much like
-splitting hairs on a very platform specific capability.
-
-If we can generalize the mechanism to things like per cpu timer
-interrupts and such so that we reduced the total amount of code we
-have to maintain I would find it a very compelling mechanism.
-
-> As far as kernel_stat is concerned.  I see you're point.  NR_CPUS on our
-> machines is going to be big (4K? 8K? something like that).  NR_IRQS is also
-> going to big because of that.  It's unfortunate since the actual number of
-> interrupt sources is going to be an order of magnitude smaller, at least.
-
-The number of interrupts sources is going to be smaller only because
-SGI machines have or at least appear to have poor I/O compared to most
-of the rest of machines in existence.  NR_CPUS*16 is a fairly
-reasonable estimate on most machines in existence.  In the short term
-it is going to get worse in the presence of MSI-X.  I was talking to a
-developer at Intel last week about 256 irqs for one card.  I keep
-having dreams about finding a way to just keep stats for a few cpus
-but alas I don't think that is going to happen.  Silly us.
-
-Eric
+Fearsome grindings.
