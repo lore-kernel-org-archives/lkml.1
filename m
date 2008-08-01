@@ -1,65 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbYHALZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbYHAL3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758264AbYHALZv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 07:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757349AbYHALZm
+	id S1756911AbYHAL3T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 07:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbYHAL3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 07:25:42 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:43277 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757709AbYHALZl (ORCPT
+	Fri, 1 Aug 2008 07:29:10 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46714 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750898AbYHAL3J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 07:25:41 -0400
-Message-ID: <4892F27F.3020300@s5r6.in-berlin.de>
-Date: Fri, 01 Aug 2008 13:24:47 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Fri, 1 Aug 2008 07:29:09 -0400
+Date: Fri, 01 Aug 2008 20:16:20 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Subject: Re: memory hotplug: hot-add to ZONE_MOVABLE vs. min_free_kbytes
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1217526327.4643.35.camel@localhost.localdomain>
+References: <20080731132213.GF1704@csn.ul.ie> <1217526327.4643.35.camel@localhost.localdomain>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080801192646.EC99.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Jonathan Corbet <corbet@lwn.net>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Amanda McPherson <amanda@amcpherson.com>, Jiri Kosina <jkosina@suse.cz>,
-       Roland Dreier <rdreier@cisco.com>, Alex Chiang <achiang@hp.com>,
-       =?ISO-8859-1?Q?Jochen_Vo=DF?= <jochen.voss@googlemail.com>
-Subject: Re: [PATCH] A development process document, V2 (diff from V1)
-References: <20080731111443.2179bf4c@bike.lwn.net> <20080731111709.488b9fa7@bike.lwn.net>
-In-Reply-To: <20080731111709.488b9fa7@bike.lwn.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Corbet wrote:
-> --- a/Documentation/development-process/5.Posting
-> +++ b/Documentation/development-process/5.Posting
-...
-> @@ -229,12 +235,18 @@ copies should go to:
-...
->   - Send a copy to the relevant mailing list, or, if nothing else applies,
->     the linux-kernel list.
->  
-> + - If you are fixing a bug, think about whether the fix should go into the
-> +   next stable update.  If so, stable@kernel.org should get a copy of the
-> +   patch.  Also add a "Cc: stable@kernel.org" to the tags within the patch
 
-...patch after it or an equivalent was committed to Linus's tree.  Quote
-the commit ID in your stable submission.  Alternatively, add a "Cc:
-stable@...
+> Sorry for mixing things up in this thread, the min_free_kbytes issue is
+> not related to memory hot-remove, but rather to hot-add and the things that
+> happen in setup_per_zone_pages_min(), which is called from online_pages().
+> It may well be that my assumptions are wrong, but I'd like to explain my
+> concerns again:
+> 
+> If we have a system with 1 GB of memory, min_free_kbytes will be calculated
+> to 4 MB for ZONE_NORMAL, for example. Now, if we add 3 GB of hotplug memory
+> to ZONE_MOVABLE, the total min_free_kbytes will still remain 4 MB but it
+> will be distributed differently: ZONE_NORMAL will now have only 1 MB of
+> MIGRATE_RESERVE memory left, while ZONE_MOVABLE will have 3 MB, e.g.
+> 
 
-> +   itself; that will cause the stable team to get a notification when your
-> +   fix goes into the mainline.
+Right.
 
-Or IMO preferable:
+> My assumption is now, that the reserved 3 MB in ZONE_MOVABLE won't be
+> usable by the kernel anymore, e.g. for PF_MEMALLOC, because it is in
+> ZONE_MOVABLE now.
 
- - If you are fixing a bug, think about whether the fix should go into
-the next stable update.  If so, read ../stable_kernel_rules.txt.
+I don't make sense here. I suppose there is no relationship between
+ZONE_MOVABLE, PF_MEMALLOC and MIGRATE_RESERVE pages.
+Could you tell me more?
 
 
-(I missed the part of the thread where the addition of the -stable
-bullet point was suggested, hence I may be saying something redundant
-here...)
+> This is what I mean with "effectively reducing the
+> available min_free_kbytes". The system would now behave in the same way
+> as a system which only had 1 MB of min_free_kbytes, although
+> /proc/sys/vm/min_free_kbytes would still say 4 MB. After all, this tunable
+> can have a rather negative impact on a system, especially if it is too
+> low, hence my concerns.
+>
+> > > Setting pages_min to 0 for ZONE_MOVABLE, while not capping pages_low
+> > > and pages_high, could be an option. I don't have a sufficient memory
+> > > managment overview to tell if that has negative side effects, maybe
+> > > someone with a deeper insight could comment on that.
+> > > 
+> > 
+> > pages_min of 0 means the other values would be 0 as well. This means that
+> > kswapd may never be woken up to free pages within that zone and lead to
+> > poor utilisation of the zone as allocators fallback to other zones to
+> > avoid direct reclaim. I don't think that is your intention nor will it
+> > help memory hot-remove.
+> 
+> Do you mean pages_low and pages_high? In setup_per_zone_pages_min(),
+> those would not be set to 0, even if we set pages_min to 0. Again, a
+> similar strategy is being used for highmem in that function, only that
+> pages_min is set to a small value instead of 0 in that case. So it should
+> not affect kswapd but only __GFP_HIGH and PF_MEMALLOC allocations, which
+> won't be allocated from ZONE_MOVABLE anyway if I understood that right.
+
+
+pages_min seems to be used in get_pages_from_freelist().
+Do you mean following is not executed?
+
+
+                if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+                        unsigned long mark;
+                        if (alloc_flags & ALLOC_WMARK_MIN)
+                                mark = zone->pages_min;           <------!!!
+                        else if (alloc_flags & ALLOC_WMARK_LOW)
+                                mark = zone->pages_low;
+                        else
+                                mark = zone->pages_high;
+                        if (!zone_watermark_ok(zone, order, mark,   <-----!!!
+                                    classzone_idx, alloc_flags)) {
+                                if (!zone_reclaim_mode ||
+                                    !zone_reclaim(zone, gfp_mask, order))
+                                        goto this_zone_full;
+                        }
+                }
+
+But even if pages_min is not used as you said, I suppose it is
+accidental by changing source code.
+It should work as watermark to keep its meaning.
+If not, it would be cause of bug in the future by misunderstanding.
+
+
+Bye.
+
 -- 
-Stefan Richter
--=====-==--- =--- ----=
-http://arcgraph.de/sr/
+Yasunori Goto 
+
+
