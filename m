@@ -1,41 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbYHASfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbYHASf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759447AbYHASfb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 14:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758614AbYHASdP
+	id S1759505AbYHASf4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 14:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759376AbYHASe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 14:33:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49131 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758179AbYHASdN (ORCPT
+	Fri, 1 Aug 2008 14:34:58 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:25002 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759370AbYHASe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 14:33:13 -0400
-Date: Fri, 1 Aug 2008 11:32:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: nickpiggin@yahoo.com.au, jens.axboe@oracle.com, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch v3] splice: fix race with page invalidation
-In-Reply-To: <E1KOzMt-0003fa-Ah@pomaz-ex.szeredi.hu>
-Message-ID: <alpine.LFD.1.10.0808011131500.3277@nehalem.linux-foundation.org>
-References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0807310957200.3277@nehalem.linux-foundation.org> <E1KOceD-0000nD-JA@pomaz-ex.szeredi.hu> <200808011122.51792.nickpiggin@yahoo.com.au> <E1KOzMt-0003fa-Ah@pomaz-ex.szeredi.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 1 Aug 2008 14:34:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=a12HrHPV9iumc+mpkQ02Zd6NyqbOhpd89WGdyvbnbaFh/dHkl1ZBg2SeB6huACEii0
+         SCImYYpVFC6khVs+3VaXnJ4EBTdRyU5OOgICN7wAEDnjYSDO1m6GDs4tExrayPjala9/
+         4jjJlbQQY2x5r7eITvcA7AmctcADSh+644UNU=
+Date: Fri, 1 Aug 2008 14:34:51 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Andres Salomon <dilinger@queued.net>
+Cc: linux-input@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] OLPC: psmouse: touchpad driver
+Message-ID: <20080801143150.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080801142004.2d3d1349@fred>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080801142004.2d3d1349@fred>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 01, 2008 at 02:20:04PM -0400, Andres Salomon wrote:
+> 
+> This adds support for OLPC's touchpad.  It has lots of neat features,
+> none of which are enabled because the hardware is too buggy.  Instead,
+> we use it like a normal touchpad, but with a number of workarounds in
+> place to deal with the frequent hardware spasms.  Humidity changes,
+> sweat, tinfoil underwear, plugging in AC, drinks, evil felines.. All
+> tend to cause the touchpad to freak out.
+> 
+> Stuff like this keeps me from getting bored.
+> 
 
+Good stuff, thank you. I bet you named the module olpc and gave pregix
+hgpk to all the functions to mess with mt feeble brain ;) Maybe we
+should rename the module to hgpk as well?
 
-On Fri, 1 Aug 2008, Miklos Szeredi wrote:
+> From psmouse-base, we use psmouse_set_state quite a bit, as well
+> as piggy-backing off of kpsmoused_wq; so, this also makes those
+> available to protocol extensions.
 >
-> Subject: mm: dont clear PG_uptodate on truncate/invalidate 
-> From: Miklos Szeredi <mszeredi@suse.cz>
 
-Ok, this one I have no problems with what-so-ever. I'd like Ack's for this 
-kind of change (and obviously hope that it's tested), but it looks clean 
-and I think the new rules are better (not just for this case).
+Do you think we should provide assessor functions to deal with
+kpsmoused instead of playing with it directly? I was thinking about
+starting it on-demand for protocols that may use it and shut it off by
+default.
 
-		Linus
+-- 
+Dmitry
