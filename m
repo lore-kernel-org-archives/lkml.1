@@ -1,35 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760649AbYHAVIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760727AbYHAVJL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760649AbYHAVIs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760576AbYHAVIU
+	id S1760727AbYHAVJL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:09:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760428AbYHAVIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:08:20 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:60848 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760283AbYHAVIR (ORCPT
+	Fri, 1 Aug 2008 17:08:38 -0400
+Received: from vms044pub.verizon.net ([206.46.252.44]:56665 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760505AbYHAVIf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:08:17 -0400
-Date: Fri, 01 Aug 2008 17:08:08 -0400 (EDT)
+	Fri, 1 Aug 2008 17:08:35 -0400
+Date: Fri, 01 Aug 2008 17:08:30 -0400 (EDT)
 From: Len Brown <lenb@kernel.org>
 Subject: Re: ACPI OSI disaster on latest HP laptops - critical temperature
  shutdown
-In-reply-to: <alpine.LFD.1.10.0807261406230.2958@localhost.localdomain>
+In-reply-to: <alpine.LFD.1.10.0807261409290.2958@localhost.localdomain>
 X-X-Sender: lenb@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Thomas Renninger <trenn@suse.de>, Arjan van de Ven <arjan@linux.intel.com>,
+To: Thomas Renninger <trenn@suse.de>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
        linux-acpi <linux-acpi@vger.kernel.org>,
        "Moore, Robert" <robert.moore@intel.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andi Kleen <ak@linux.intel.com>,
        Christian Kornacker <ckornacker@suse.de>
-Message-id: <alpine.LFD.1.10.0808011708010.3011@localhost.localdomain>
+Message-id: <alpine.LFD.1.10.0808011708230.3011@localhost.localdomain>
 MIME-version: 1.0
 Content-type: TEXT/PLAIN; charset=US-ASCII
 References: <200807241727.41715.trenn@suse.de>
  <alpine.LFD.1.10.0807241952270.6098@localhost.localdomain>
- <200807251319.12786.trenn@suse.de> <200807251726.14366.rjw@sisk.pl>
- <alpine.LFD.1.10.0807261406230.2958@localhost.localdomain>
+ <200807251319.12786.trenn@suse.de>
+ <alpine.LFD.1.10.0807261409290.2958@localhost.localdomain>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,39 +39,94 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Sat, 26 Jul 2008, Len Brown wrote:
 
+> > > re: OSI(Windows...)
+> > >
+> > > Linux will continue to claim OSI compatibility with Windows
+> > > until the day when the majority of Linux systems
+> > > have passed a Linux compatibility test rather than
+> > > a Windows compatibility test.
 > 
+> > And to try that out we need the acpi_osi=windows_false boot
+> > param I sent recently. So will you accept that one?
 > 
-> On Fri, 25 Jul 2008, Rafael J. Wysocki wrote:
+> I believe that adding and using such a parameter would make
+> Linux worse, not better.  So it is unlikely that I'd accept it.
 > 
-> > On Friday, 25 of July 2008, Thomas Renninger wrote:
-> > > On Friday 25 July 2008 02:04:32 Len Brown wrote:
-> > [--snip--]
-> > > 
-> > > Len, this is not about the thermal zone, it is just
-> > > a real-world example of something I told you will happen
-> > > if Linux stays _OSI transparent with Windows.
-> > > 
-> > > This is about that they have to provide a BIOS hot-fix for
-> > > VISTA or VISTA SP and thus breaking Linux because there
-> > > is no way to distinguish anymore.
-> > > Windows 2007 likely will have that fixed and they provide
-> > > a sane _CRT trip point again.
-> > > This is an example of Windows versions workarounds that could
-> > > get much more complex, like initializing HW differently or
-> > > whatever.
-> > > _OSI is used by vendors as a convenient possibility to
-> > > adjust/workaround Windows bugs in their BIOSes, without
-> > > the need to pay Millions to Microsoft to fix their things.
+> > Also we need this documented.
+> > Will you accept a Documentation/acpi/known_osi_vendor_hooks.txt
+> > file. Like that we get an idea of what kind of features come
+> > in through which Windows version and more important, what kind of
+> > ugly Windows bug workarounds exist (the latter will probably be more).
+> 
+> I believe that this thread illustrates a BIOS bug that Vista
+> doesn't catch.  That doens't mean it is a Vista bug, or or
+> a BIOS workaround for a Vista bug.
+> 
+> I believe that there are many such holes in Windows testing.
+> They don't have to do a good job validating ACPI --
+> they just care if Windows works or not.
+> 
+> If we should document every BIOS issue that is worked
+> around by Linux is an interesting idea for a project.
+> It sounds like a pretty big project to me.
+> I guess I'd wonder what the return on investment would be
+> and if that is the best way to apply our resources.
+> 
+> > > Re: OSI(Linux)
+> > >
+> > > I've looked at O(100) DSDT's that look at OSI(Linux),
+> > > and all but serveral systems from two vendors do it by mistake.
+> > > They simply copied it from the bugged Intel reference code.
+> > >
+> > > OSI(Linux) will _never_ be restored to Linux, ever.
+> 
+> > But it should not have been removed without announcing it half a
+> > year before. It silently moved distributions and vendors into a
+> > situation where they cannot support Linux and Windows with
+> > the same BIOS anymore.
+> 
+> Linux started complaining about OSI(Linux) in 2.6.22, a year ago.
+> Linux changed the default to disable OSI(Linux) in 2.6.23 --
+> 3 months after the warning started.
+> 
+> If I were to do it again, I would have changed faster, not slower,
+> for allowing the spread of OSI(Linux) use is bad for Linux,
+> not good.
+> 
+> Of course a distro is free to maintain whatever OSI strings
+> that they think they can their OEMs can support.
+> 
+> > _OSI is mainly not used for interfaces/features in
+> > reality (as you stated in the other mail), but to workaround very
+> > specific Windows version bugs.
 > > 
-> > This is a valid point, IMO.
+> > While the mainline kernel stays transparent to _OSI you
+> > advise distributions to exactly not do that and provide e.g.
+> > a "SLE 11" or "RHEL X" _OSI string to be able to
+> > support the system on Linux and Windows, is that correct?
+> > Or do you advise them to provide two separate BIOSes?
+> > The last option, "do not implement Windows version bug
+> > fixes" we cannot influence.
+> > I do not see more options with the current implementation.
 > > 
-> > If vendors use _OSI(Windows) to work around Windows bugs, we get broken
-> > automatically on those systems unless we put in some DMI-based hacks.
+> > > re: the HP BIOS bug at hand.
+> > >
+> > > Linux deletes the entire thermal zone when we see this.
+> > OpenSUSE 11.0 (2.6.25) and SLES10-SP2 (2.6.16) shut down when
+> > the thermal driver is loaded. Probably every kernel in every
+> > distribution out there currently is doing that.
 > 
-> I belive that the AML Thomas shared does not
-> illustrate a Vista bug workaround in a BIOS.
-> Rather it is simply a BIOS bug that Vista doesn't catch.
+> Clearly Arjan's patch nees to be backported to the stable releases --
+> even though it would have no benefit on Arjan's machine,
+> it would benefit the HP that you have.
 > 
+> Andi,
+> Please send 39a2d7c72b358c6253a2ec28e17b023b7f6f41c
+> (ACPI: Reject below-freezing temperatures as invalid critical 
+> temperatures)
+> to 2.6.25.stable (and any stable release that will take it)
+> 
+> thanks,
 > -Len
 > 
 > 
