@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbYHANP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbYHANQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbYHANP1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 09:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbYHANPK
+	id S1755034AbYHANQu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 09:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbYHANQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 09:15:10 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:45757 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750916AbYHANPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 09:15:09 -0400
-Date: Fri, 1 Aug 2008 08:15:07 -0500
+	Fri, 1 Aug 2008 09:16:42 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40801 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751442AbYHANQl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 09:16:41 -0400
+Date: Fri, 1 Aug 2008 08:16:36 -0500
 From: Jack Steiner <steiner@sgi.com>
-To: sfr@canb.auug.org.au
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] - Add maintainers for GRU, XPC, XPNET and XP
-Message-ID: <20080801131507.GA109173@sgi.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for July 31 (GRU build error)
+Message-ID: <20080801131636.GA4023@sgi.com>
+References: <20080731175854.09ea35c8.sfr@canb.auug.org.au> <20080731223758.b5985dd7.randy.dunlap@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080731223758.b5985dd7.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add MAINTAINERS for GRU, XPNET, XPC and XP drivers.
+On Thu, Jul 31, 2008 at 10:37:58PM -0700, Randy Dunlap wrote:
+> 
+> xp_uv.c:(.text+0x4186b): undefined reference to `gru_copy_gpa'
+> xpc_uv.c:(.text+0x44616): undefined reference to `gru_create_message_queue'
+> xpc_uv.c:(.text+0x44e16): undefined reference to `gru_free_message'
+> xpc_uv.c:(.text+0x44e22): undefined reference to `gru_get_next_message'
+> xpc_uv.c:(.text+0x44e67): undefined reference to `gru_send_message_gpa'
+> xpc_uv.c:(.text+0x45a79): undefined reference to `gru_free_message'
+> xpc_uv.c:(.text+0x45a85): undefined reference to `gru_get_next_message'
+> make[1]: *** [.tmp_vmlinux1] Error 1
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+This is not actually a GRU problem. XP is missing a dependency. Dean will
+post a patch later today.
 
 
----
- MAINTAINERS |   10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-Index: linux/MAINTAINERS
-===================================================================
---- linux.orig/MAINTAINERS	2008-07-16 17:48:07.000000000 -0500
-+++ linux/MAINTAINERS	2008-08-01 08:06:03.000000000 -0500
-@@ -3716,6 +3716,16 @@ L:	linux-visws-devel@lists.sf.net
- W:	http://linux-visws.sf.net
- S:	Maintained for 2.6.
+> 
+> 
+> config attached.
+> 
+> 
+> and please add a GRU maintainer entry somewhere.
  
-+SGI GRU DRIVER
-+P:	Jack Steiner
-+M:	steiner@sgi.com
-+S:	Maintained
-+
-+SGI XP/XPC/XPNET DRIVER
-+P:	Dean Nelson
-+M:	dcn@sgi.com
-+S:	Maintained
-+
- SIMTEC EB110ATX (Chalice CATS)
- P:	Ben Dooks
- P:	Vincent Sanders
+Done. Also added maintainer for XP...
+
+--- jack
