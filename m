@@ -1,63 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759340AbYHAUli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759601AbYHAUm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759340AbYHAUli (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 16:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbYHAUl1
+	id S1759601AbYHAUm7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 16:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbYHAUmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 16:41:27 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:48610 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754205AbYHAUl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 16:41:26 -0400
-Date: Fri, 1 Aug 2008 22:41:57 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Miller <davem@davemloft.net>, linux-next@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: linux-next: m68k build failure
-Message-ID: <20080801204157.GA12390@uranus.ravnborg.org>
-References: <20080730175233.02dbf021.sfr@canb.auug.org.au> <20080730.010234.193703201.davem@davemloft.net> <20080730084935.GA18545@uranus.ravnborg.org> <20080801153710.815bbb74.sfr@canb.auug.org.au> <Pine.LNX.4.64.0808011551120.30950@anakin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0808011551120.30950@anakin>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 1 Aug 2008 16:42:52 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:44046 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754783AbYHAUmv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 16:42:51 -0400
+Date: Fri, 1 Aug 2008 16:42:49 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH v2 3/2] ftrace: ftrace_printk doc moved
+In-Reply-To: <20080801133427.51b17904.randy.dunlap@oracle.com>
+Message-ID: <alpine.DEB.1.10.0808011641440.2547@gandalf.stny.rr.com>
+References: <20080801162639.175407419@goodmis.org> <20080801163737.420519487@goodmis.org> <20080801094331.626195c8.randy.dunlap@oracle.com> <alpine.DEB.1.10.0808011248080.31922@gandalf.stny.rr.com> <20080801105255.82a6520f.randy.dunlap@oracle.com>
+ <alpine.DEB.1.10.0808011411540.31922@gandalf.stny.rr.com> <20080801133427.51b17904.randy.dunlap@oracle.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 03:52:22PM +0200, Geert Uytterhoeven wrote:
-> 	Hi Stephen,
+
+On Fri, 1 Aug 2008, Randy Dunlap wrote:
+
+> On Fri, 1 Aug 2008 14:17:42 -0400 (EDT) Steven Rostedt wrote:
 > 
-> On Fri, 1 Aug 2008, Stephen Rothwell wrote:
-> > On Wed, 30 Jul 2008 10:49:35 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
-> > >
-> > > Full list of relevant files:
-> > > include/asm-m68k/contregs.h:#include <asm-sparc/contregs.h>
-> > > include/asm-m68k/fbio.h:#include <asm-sparc/fbio.h>
-> > > include/asm-m68k/idprom.h:#include <asm-sparc/idprom.h>
 > > 
-> > I applied the following patch to today's linux-next.
+> > Based on Randy Dunlap's suggestion, the ftrace_printk kernel-doc belongs
+> > with the ftrace_printk macro that should be used. Not with the
+> > __ftrace_printk internal function.
+> > 
+> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> > ---
+> >  include/linux/ftrace.h |   19 ++++++++++++++++++-
+> >  kernel/trace/trace.c   |   16 ----------------
+> >  2 files changed, 18 insertions(+), 17 deletions(-)
+> > 
+> > Index: linux-tip.git/include/linux/ftrace.h
+> > ===================================================================
+> > --- linux-tip.git.orig/include/linux/ftrace.h	2008-08-01 12:20:56.000000000 -0400
+> > +++ linux-tip.git/include/linux/ftrace.h	2008-08-01 14:11:13.000000000 -0400
+> > @@ -137,7 +137,24 @@ static inline void tracer_disable(void)
+> >  extern void
+> >  ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3);
+> >  extern void ftrace_dump(void);
+> > -# define ftrace_printk(x...) __ftrace_printk(_THIS_IP_, x)
+> > +
+> > +/**
+> > + * ftrace_printk - printf formatting in the ftrace buffer
+> > + * @fmt - the printf format for printing.
 > 
-> Thanks!
+>     * @fmt: the printf format for printing
+
+OK, thanks.
+
 > 
-> BTW, is there a (good) way to have this without duplicating those header files?
+> > + *
+> > + * Note: __ftrace_printk is an internal function for ftrace_printk and
+> > + *       the @ip is passed in via the ftrace_printk macro.
+> > + *
+> > + * This function allows a kernel developer to debug fast path sections
+> > + * that printk is not appropriate for. By scattering in various
+> > + * printk like tracing in the code, a developer can quickly see
+> > + * where problems are occurring.
+> > + *
+> > + * This is intended as a debugging tool for the developer only.
+> > + * Please reframe from leaving ftrace_printks scattered around in
+> 
+>              refrain
 
-The only solution I can come up with right now is:
+Heh,  I manually fixed that before sending out the original. I never fixed 
+it in the quilt queue. Darn!
 
-Makefile:
-ccflags-y += -Iarch/sparc/include
+-- Steve
 
-foo.c:
-#include <asm/fbio.h>
-
-Disadvantage is that we loose the explicit documentation that this
-is header files from another architecture.
-So we should at least add a comment saying this.
-
-And the above would not work if the file has same filename,
-but then that is not a likely situation either.
-
-	Sam
+> 
+> > + * your code.
+> > + */
+> > +# define ftrace_printk(fmt...) __ftrace_printk(_THIS_IP_, fmt)
+> >  extern int
