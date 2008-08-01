@@ -1,39 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYHALk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbYHALqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756148AbYHALk2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 07:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbYHALkO
+	id S1756091AbYHALqT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 07:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYHALqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 07:40:14 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:18852 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752154AbYHALkM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 07:40:12 -0400
-Subject: RE: [patch 2/3] kmsg: Kernel message catalog script.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Michael Holzheu'" <holzheu@de.ibm.com>,
-       "'Gerrit Huizenga'" <gh@us.ibm.com>,
-       "'Greg Kroah-Hartman'" <gregkh@suse.de>,
-       "'Randy Dunlap'" <randy.dunlap@oracle.com>, "'Jan Kara'" <jack@suse.cz>,
-       "'Pavel Machek'" <pavel@ucw.cz>, "'Sam Ravnborg'" <sam@ravnborg.org>,
-       "'Joe Perches'" <joe@perches.com>,
-       "'Jochen =?ISO-8859-1?Q?Vo=DF=27?=" <jochen.voss@googlemail.com>,
-       "'Kunai Takashi'" <kunai@linux-foundation.jp>,
-       "'Tim Bird'" <tim.bird@am.sony.com>
-In-Reply-To: <007c01c8f2f7$89f55620$9de00260$@css.fujitsu.com>
-References: <20080730165656.118280544@de.ibm.com>
-	 <20080730171157.170172806@de.ibm.com>
-	 <007c01c8f2f7$89f55620$9de00260$@css.fujitsu.com>
+	Fri, 1 Aug 2008 07:46:11 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:43933 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751868AbYHALqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 07:46:10 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [PATCH 4/6] Container Freezer: Skip frozen cgroups during
+	power management resume
+From: Nigel Cunningham <ncunningham@crca.org.au>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Paul Menage <menage@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+In-Reply-To: <20080801050701.070484831@us.ibm.com>
+References: <20080801050659.924495279@us.ibm.com>
+	 <20080801050701.070484831@us.ibm.com>
 Content-Type: text/plain
-Organization: IBM Corporation
-Date: Fri, 01 Aug 2008 13:39:48 +0200
-Message-Id: <1217590788.10483.14.camel@localhost>
+Organization: Christian Reformed Churches of Australia
+Date: Fri, 01 Aug 2008 20:24:40 +1000
+Message-Id: <1217586280.27551.18.camel@nigel-laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -41,20 +35,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-31 at 19:23 +0900, Takashi Nishiie wrote:
->   However, there is a problem of the scale in numbering of not only a
-> specific module but also all modules to the message. (There might be 
-> at least 34000 relating messages or more. )
+Hi.
 
-Could you explain this a bit more? I'm not sure I understood it
-correctly. I'm unsure about the term "relating message". A single ksmg
-message can be printed from several modules if it is the same message.
-Do you want to create a list of modules that issue a particular message?
+On Thu, 2008-07-31 at 22:07 -0700, Matt Helsley wrote:
+> When a system is resumed after a suspend, it will also unfreeze
+> frozen cgroups.
+> 
+> This patchs modifies the resume sequence to skip the tasks which
+> are part of a frozen control group.
+> 
+> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> Acked-by: Serge E. Hallyn <serue@us.ibm.com>
+> Tested-by: Matt Helsley <matthltc@us.ibm.com>
 
--- 
-blue skies,
-  Martin.
+I understand the freezer pretty well, so maybe I can help a little.
 
-"Reality continues to ruin my life." - Calvin.
+Acked-by: Nigel Cunningham <nigel@tuxonice.net>
 
+> ---
+>  kernel/power/process.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> index 444cea8..ce9e280 100644
+> --- a/kernel/power/process.c
+> +++ b/kernel/power/process.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/module.h>
+>  #include <linux/syscalls.h>
+>  #include <linux/freezer.h>
+> +#include <linux/cgroup_freezer.h>
+>  
+>  /* 
+>   * Timeout for stopping processes
+> @@ -135,6 +136,9 @@ static void thaw_tasks(bool nosig_only)
+>  		if (nosig_only && should_send_signal(p))
+>  			continue;
+>  
+> +		if (cgroup_frozen(p))
+> +			continue;
+> +
+>  		thaw_process(p);
+>  	} while_each_thread(g, p);
+>  	read_unlock(&tasklist_lock);
+> -- 
+> 1.5.3.7
+> 
 
