@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYHAIHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYHAILk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbYHAIHF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 04:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYHAIGr
+	id S1754837AbYHAILk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 04:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYHAILX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 04:06:47 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:59474 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751304AbYHAIGp (ORCPT
+	Fri, 1 Aug 2008 04:11:23 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49941
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751838AbYHAILW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 04:06:45 -0400
-Message-ID: <4892C359.9000304@cs.helsinki.fi>
-Date: Fri, 01 Aug 2008 11:03:37 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
-MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Dave Young <hidave.darkstar@gmail.com>, johannes@sipsolutions.net,
-       akpm@linux-foundation.org, tomasw@gmail.com,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       ath5k-devel@venema.h4ckr.net, me@bobcopeland.com,
-       linville@tuxdriver.com
-Subject: Re: [PATCH] ath5k : ath5k_config_interface deadlock fix
-References: <20080801074014.GA3341@darkstar> <4892C2CA.7010003@gmail.com>
-In-Reply-To: <4892C2CA.7010003@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri, 1 Aug 2008 04:11:22 -0400
+Date: Fri, 01 Aug 2008 01:11:22 -0700 (PDT)
+Message-Id: <20080801.011122.32782916.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, a.p.zijlstra@chello.nl
+Subject: Re: [git pull] scheduler fixes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080731.155504.167792984.davem@davemloft.net>
+References: <20080731.150457.77077498.davem@davemloft.net>
+	<20080731222624.GA22426@elte.hu>
+	<20080731.155504.167792984.davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> Dave Young napsal(a):
->> In the drivers/net/wireless/ath5k/base.c, there's recursive locking of 
->> sc->lock
->> This casue the kernel stuck
->>
->> Bug report please see:
->> http://lkml.org/lkml/2008/7/29/32
->>
->> Fixed it by remove the lock in sub routine "ath5k_beacon_update",
->> The ath5k_config_interface is the only caller to it.
->>
->> [  171.430207] =============================================
->> [  171.432140] [ INFO: possible recursive locking detected ]
->> [  171.433113] 2.6.27-rc1-smp #4
->> [  171.434079] ---------------------------------------------
->> [  171.435039] ath5k_pci/2447 is trying to acquire lock:
->> [  171.435990]  (&sc->lock){--..}, at: [<f89ee9b5>] 
->> ath5k_config_interface+0xd5/0x340 [ath5k]
->> [  171.437046] [  171.437048] but task is already holding lock:
->> [  171.438903]  (&sc->lock){--..}, at: [<f89ee91d>] 
->> ath5k_config_interface+0x3d/0x340 [ath5k]
->> [  171.439953] [  171.439954] other info that might help us debug this:
->> [  171.441795] 3 locks held by ath5k_pci/2447:
->> [  171.442729]  #0:  ((name)){--..}, at: [<c013a122>] 
->> run_workqueue+0x102/0x1d0
->> [  171.443800]  #1:  (&(&local->scan_work)->work){--..}, at: 
->> [<c013a122>] run_workqueue+0x102/0x1d0
->> [  171.444859]  #2:  (&sc->lock){--..}, at: [<f89ee91d>] 
->> ath5k_config_interface+0x3d/0x340 [ath5k]
-> 
-> Should be fixed already:
-> http://git.kernel.org/?p=linux/kernel/git/linville/wireless-2.6.git;a=commitdiff_plain;h=bc05116ab33d30342e2b4b1bcc6d6e1184e9df97 
+From: David Miller <davem@davemloft.net>
+Date: Thu, 31 Jul 2008 15:55:04 -0700 (PDT)
 
-I guess that didn't make it to -stable?
+> I am absolutely sure, I spent the whole night yesterday trying to
+> debug this.
+
+Followup.  I lost two days of my life debugging this because seemingly
+nobody can friggin' agree on what to do about the "printk() wakeup
+issue".  Thanks!
+
+Can we fix this now, please?
+
+The problem was that Peter's patch triggers a print_deadlock_bug()
+in lockdep.c on the runqueue locks.
+
+But those printk()'s quickly want to do a wakeup, which wants to
+take the runqueue lock this thread already holds.  So I would only
+get the first line of the lockdep debugging followed by a complete
+hang.
+
+Doing these wakeups in such a BUG message is unwise.  Please can
+we apply something like the following and save other developers
+countless wasted hours of their time?
+
+Thanks :-)
+
+--------------------
+
+debug_locks: Set oops_in_progress if we will log messages.
+
+Otherwise lock debugging messages on runqueue locks can deadlock the
+system due to the wakeups performed by printk().
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/lib/debug_locks.c b/lib/debug_locks.c
+index 0ef01d1..0218b46 100644
+--- a/lib/debug_locks.c
++++ b/lib/debug_locks.c
+@@ -8,6 +8,7 @@
+  *
+  *  Copyright (C) 2006 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
+  */
++#include <linux/kernel.h>
+ #include <linux/rwsem.h>
+ #include <linux/mutex.h>
+ #include <linux/module.h>
+@@ -37,6 +38,7 @@ int debug_locks_off(void)
+ {
+ 	if (xchg(&debug_locks, 0)) {
+ 		if (!debug_locks_silent) {
++			oops_in_progress = 1;
+ 			console_verbose();
+ 			return 1;
+ 		}
