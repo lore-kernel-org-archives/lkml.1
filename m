@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762728AbYHAVY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761732AbYHAVZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762728AbYHAVY7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759775AbYHAVRK
+	id S1761732AbYHAVZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762421AbYHAVRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:17:10 -0400
-Received: from lsg.lsg.lab.novell.com ([151.155.230.1]:46117 "EHLO
+	Fri, 1 Aug 2008 17:17:15 -0400
+Received: from lsg.lsg.lab.novell.com ([151.155.230.1]:46126 "EHLO
 	lsg.lsg.lab.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762412AbYHAVRI (ORCPT
+	with ESMTP id S1761468AbYHAVRN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:17:08 -0400
+	Fri, 1 Aug 2008 17:17:13 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH RT RFC 4/7] RT: wrap the rt_rwlock "add reader" logic
+Subject: [PATCH RT RFC 5/7] rtmutex: use runtime init for rtmutexes
 To: mingo@elte.hu, paulmck@linux.vnet.ibm.com, peterz@infradead.org,
        tglx@linutronix.de, rosted@goodmis.org
 Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
        gregory.haskins@gmail.com
-Date: Fri, 01 Aug 2008 15:17:07 -0600
-Message-ID: <20080801211707.3469.57684.stgit@lsg.lsg.lab.novell.com>
+Date: Fri, 01 Aug 2008 15:17:12 -0600
+Message-ID: <20080801211712.3469.25099.stgit@lsg.lsg.lab.novell.com>
 In-Reply-To: <20080801210945.3469.1183.stgit@lsg.lsg.lab.novell.com>
 References: <20080801210945.3469.1183.stgit@lsg.lsg.lab.novell.com>
 User-Agent: StGIT/0.13
@@ -28,74 +28,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We will use this later in the series to add PI functions on "add".
+The system already has facilities to perform late/run-time init for
+rtmutexes.  We want to add more advanced initialization later in the
+series so we force all rtmutexes through the init path in preparation
+for the later patches.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- kernel/rtmutex.c |   16 +++++++++++-----
- 1 files changed, 11 insertions(+), 5 deletions(-)
+ include/linux/rtmutex.h |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
-index 12de859..62fdc3d 100644
---- a/kernel/rtmutex.c
-+++ b/kernel/rtmutex.c
-@@ -1122,6 +1122,12 @@ static void rw_check_held(struct rw_mutex *rwm)
- # define rw_check_held(rwm)	do { } while (0)
- #endif
+diff --git a/include/linux/rtmutex.h b/include/linux/rtmutex.h
+index b263bac..14774ce 100644
+--- a/include/linux/rtmutex.h
++++ b/include/linux/rtmutex.h
+@@ -64,8 +64,6 @@ struct hrtimer_sleeper;
  
-+static inline void
-+rt_rwlock_add_reader(struct reader_lock_struct *rls, struct rw_mutex *rwm)
-+{
-+	list_add(&rls->list, &rwm->readers);
-+}
-+
- /*
-  * The fast path does not add itself to the reader list to keep
-  * from needing to grab the spinlock. We need to add the owner
-@@ -1163,7 +1169,7 @@ rt_rwlock_update_owner(struct rw_mutex *rwm, struct task_struct *own)
- 	if (rls->list.prev && !list_empty(&rls->list))
- 		return;
+ #define __RT_MUTEX_INITIALIZER(mutexname) \
+ 	{ .wait_lock = RAW_SPIN_LOCK_UNLOCKED(mutexname) \
+-	, .wait_list = PLIST_HEAD_INIT(mutexname.wait_list, &mutexname.wait_lock) \
+-	, .owner = NULL \
+ 	__DEBUG_RT_MUTEX_INITIALIZER(mutexname)}
  
--	list_add(&rls->list, &rwm->readers);
-+	rt_rwlock_add_reader(rls, rwm);
- 
- 	/* change to reader, so no one else updates too */
- 	rt_rwlock_set_owner(rwm, RT_RW_READER, RT_RWLOCK_CHECK);
-@@ -1197,7 +1203,7 @@ static int try_to_take_rw_read(struct rw_mutex *rwm, int mtx)
- 			 * it hasn't been added to the link list yet.
- 			 */
- 			if (!rls->list.prev || list_empty(&rls->list))
--				list_add(&rls->list, &rwm->readers);
-+				rt_rwlock_add_reader(rls, rwm);
- 			rt_rwlock_set_owner(rwm, RT_RW_READER, 0);
- 			rls->count++;
- 			incr = 0;
-@@ -1276,7 +1282,7 @@ static int try_to_take_rw_read(struct rw_mutex *rwm, int mtx)
- 			rls->lock = rwm;
- 			rls->count = 1;
- 			WARN_ON(rls->list.prev && !list_empty(&rls->list));
--			list_add(&rls->list, &rwm->readers);
-+			rt_rwlock_add_reader(rls, rwm);
- 		} else
- 			WARN_ON_ONCE(1);
- 		spin_unlock(&current->pi_lock);
-@@ -1473,7 +1479,7 @@ __rt_read_fasttrylock(struct rw_mutex *rwm)
- 			spin_lock(&mutex->wait_lock);
- 			rls = &current->owned_read_locks[reader_count];
- 			if (!rls->list.prev || list_empty(&rls->list))
--				list_add(&rls->list, &rwm->readers);
-+				rt_rwlock_add_reader(rlw, rwm);
- 			spin_unlock(&mutex->wait_lock);
- 		} else
- 			spin_unlock(&current->pi_lock);
-@@ -2083,7 +2089,7 @@ rt_mutex_downgrade_write(struct rw_mutex *rwm)
- 
- 	/* Set us up for multiple readers or conflicts */
- 
--	list_add(&rls->list, &rwm->readers);
-+	rt_rwlock_add_reader(rls, rwm);
- 	rwm->owner = RT_RW_READER;
- 
- 	/*
+ #define DEFINE_RT_MUTEX(mutexname) \
 
