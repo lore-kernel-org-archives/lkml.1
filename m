@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759563AbYHAUOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbYHAUWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759563AbYHAUOb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 16:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758033AbYHAUOQ
+	id S1758066AbYHAUWm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 16:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbYHAUWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 16:14:16 -0400
-Received: from fwil.voltaire.com ([193.47.165.2]:35581 "EHLO exil.voltaire.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757460AbYHAUOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 16:14:16 -0400
-Date: Fri, 1 Aug 2008 23:14:10 +0300 (IDT)
-From: Or Gerlitz <ogerlitz@voltaire.com>
-To: bunk@kernel.org
-cc: linux-kernel@vger.kernel.org
-Subject: Re: error building linus tree (2.6.27-rc1)
-In-Reply-To: <Pine.LNX.4.64.0807292357040.3348@zuben.voltaire.com>
-Message-ID: <Pine.LNX.4.64.0808012312260.10651@zuben.voltaire.com>
-References: <Pine.LNX.4.64.0807292357040.3348@zuben.voltaire.com>
+	Fri, 1 Aug 2008 16:22:34 -0400
+Received: from gw.goop.org ([64.81.55.164]:45383 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751631AbYHAUWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 16:22:33 -0400
+Message-ID: <48937084.8020200@goop.org>
+Date: Fri, 01 Aug 2008 13:22:28 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 01 Aug 2008 20:14:11.0010 (UTC) FILETIME=[29097220:01C8F413]
+To: Hugh Dickins <hugh@veritas.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] lockdep: lock_set_subclass - reset a held lock's subclass
+References: <20080731.155504.167792984.davem@davemloft.net>  <20080801.011122.32782916.davem@davemloft.net>  <20080801090100.GA25142@elte.hu>  <20080801.021348.233313767.davem@davemloft.net> <1217588920.9686.6.camel@twins> <489350AE.1030609@goop.org> <alpine.LFD.1.10.0808011113530.3277@nehalem.linux-foundation.org> <48935FA4.5010804@goop.org> <Pine.LNX.4.64.0808012051380.6485@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0808012051380.6485@blonde.site>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2008, Or Gerlitz wrote:
+Hugh Dickins wrote:
+> Please check the spin_lock_nested() in move_ptes() in mm/mremap.c.
+>
+> If you have down_write(&mm->mmap_sem) then you should be safe,
+> but may need to do something to placate lockdep.  If you don't
+> have down_write(&mm->mmap_sem), then I think you're in trouble?
+>
+> Not a big deal, the move_ptes() locking can be adjusted to suit
+> your rule, it was just easier to do it the way it is at the time.
 
-> I get into this
-> arch/x86/kernel/ldt.c: In function `alloc_ldt':
-> arch/x86/kernel/ldt.c:67: error: invalid lvalue in unary `&'
+Ah, yes, I did look at that.  I think it isn't an issue, because my code 
+is called from dup_mmap(), activate_mm() or exit_mmap().
 
-Here's the gcc and as versions
+dup_mmap() already holds mmap_sem.
 
-$ gcc --version
-gcc (GCC) 3.4.6 20060404 (Red Hat 3.4.6-8)
-Copyright (C) 2006 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+activate_mm() in exec doesn't hold the sem, but I don't think it's 
+possible for anyone to be racing against it.
+activate_mm() in unshare doesn't seem to get used.
 
-$ as --version
+exit_mmap() gets called when there are no other users, so we'd better 
+not be racing...
 
-GNU assembler 2.15.92.0.2 20040927
-Copyright 2002 Free Software Foundation, Inc.
-This program is free software; you may redistribute it under the terms of
-the GNU General Public License.  This program has absolutely no warranty.
-This assembler was configured for a target of `x86_64-redhat-linux'.
-
-Or.
+    J
