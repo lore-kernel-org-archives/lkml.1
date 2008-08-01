@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbYHAS42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757463AbYHAS7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758114AbYHAS42 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 14:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbYHAS4U
+	id S1757463AbYHAS7Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 14:59:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbYHAS7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 14:56:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54157 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752135AbYHAS4T (ORCPT
+	Fri, 1 Aug 2008 14:59:08 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:41201 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751879AbYHAS7G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 14:56:19 -0400
-Date: Fri, 1 Aug 2008 11:49:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Robin Holt <holt@sgi.com>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Patch] Scale pidhash_shift/pidhash_size up based on
- num_possible_cpus().
-In-Reply-To: <20080801120455.GP9663@sgi.com>
-Message-ID: <alpine.LFD.1.10.0808011149140.3277@nehalem.linux-foundation.org>
-References: <20080731170022.GE9663@sgi.com> <m1prot297c.fsf@frodo.ebiederm.org> <20080731193204.GG9663@sgi.com> <m1iqul25rk.fsf@frodo.ebiederm.org> <20080731200835.GK9663@sgi.com> <m1bq0d1zhz.fsf@frodo.ebiederm.org> <20080801120455.GP9663@sgi.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 1 Aug 2008 14:59:06 -0400
+Date: Fri, 01 Aug 2008 14:52:11 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: 2.6.27-rc1 + selinux new options = no httpd
+In-reply-to: <1217526473.20373.250.camel@moss-spartans.epoch.ncsc.mil>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Eric Paris <eparis@redhat.com>, James Morris <jmorris@namei.org>,
+       linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>
+Message-id: <200808011452.11401.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200807302254.26036.gene.heskett@gmail.com>
+ <1217515455.2902.94.camel@localhost.localdomain>
+ <1217526473.20373.250.camel@moss-spartans.epoch.ncsc.mil>
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 31 July 2008, Stephen Smalley wrote:
+>On Thu, 2008-07-31 at 10:44 -0400, Eric Paris wrote:
+>> On Thu, 2008-07-31 at 09:09 -0400, Gene Heskett wrote:
+>> > On Thursday 31 July 2008, James Morris wrote:
+>> > >What AVC messages are you seeing?
+>> >
+>> > I posted the whole screen from setroubleshoot earlier.
+>>
+>> I'm sorry but I can't seem to find it in your original message...
+>>
+>> http://marc.info/?l=linux-kernel&m=121747333012971&w=2
+>>
+>> Do you have another pointer?  I can't think of anything that went into
+>> 2.6.27 related to SELinux that should have in any way changed file
+>> access checks but I'll poke through the changelog and see if something
+>> stands out...
+>
+>I suspect it is the append bug introduced by the vfs changes, fixed by
+>http://marc.info/?l=linux-kernel&m=121726661110266&w=2
+>
+>httpd would only be allowed append permission to its log file by policy.
 
+This fixed it right up a few hours ago, Steven.  Thanks.
 
-On Fri, 1 Aug 2008, Robin Holt wrote:
-> 
-> It was initially detected while profiling 'ps' on a 2048p machine that
-> had 13 kernel threads per cpu.
-
-Grr. Wouldn't it be better to concentrate on that "13 kernel threads per 
-cpu" part?
-
-		Linus
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Keep the phase, baby.
