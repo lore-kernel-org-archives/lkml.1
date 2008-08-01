@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758956AbYHAUZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbYHAU1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758956AbYHAUZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 16:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYHAUZW
+	id S1759333AbYHAU1U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 16:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbYHAU1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 16:25:22 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:34575 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbYHAUZV (ORCPT
+	Fri, 1 Aug 2008 16:27:08 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:55182 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752560AbYHAU1H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 16:25:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=XVg53s2J1CO4IlbQMcI6ceBPmdw5iIUTDBJFhC3/XIB2Xjveg4pIcOGIt3lGSFQPGH
-         LkIb37UT9VK18ap9uP0aEvZGOuN5/0O4X+/pJ3vYTVbNS0DgI3PHF8okrMgTWjak7ta3
-         jbXHmBF48qJhq8f4pTaZm3JO07ED9IwB+alqc=
-Message-ID: <c4e36d110808011325q612d57dcnfe99e6ef42b1c4ae@mail.gmail.com>
-Date: Fri, 1 Aug 2008 22:25:19 +0200
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Alistair John Strachan" <alistair@devzero.co.uk>
-Subject: Re: Sysrq+B doesn't work on my box
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <c4e36d110808010622w74d61378ud9624a6ea38357a4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Aug 2008 16:27:07 -0400
+Date: Fri, 1 Aug 2008 13:57:14 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jgarzik@pobox.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 03/10] fs-enet: remove code associated with !CONFIG_PPC_MERGE
+Message-ID: <20080801185714.GA26062@ld0162-tx32.am.freescale.net>
+References: <1217609060-6381-1-git-send-email-galak@kernel.crashing.org> <1217609060-6381-2-git-send-email-galak@kernel.crashing.org> <1217609060-6381-3-git-send-email-galak@kernel.crashing.org> <1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <c4e36d110807310645n3ff6e61j17414433c5aee030@mail.gmail.com>
-	 <48921A0C.7020909@goop.org>
-	 <c4e36d110808010254i2274516q4cef62460fe8e8@mail.gmail.com>
-	 <200808011356.19027.alistair@devzero.co.uk>
-	 <c4e36d110808010622w74d61378ud9624a6ea38357a4@mail.gmail.com>
+In-Reply-To: <1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/1 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
-> 2008/8/1 Alistair John Strachan <alistair@devzero.co.uk>:
->> On Friday 01 August 2008 10:54:19 Zdenek Kabelac wrote:
->>> 2008/7/31 Jeremy Fitzhardinge <jeremy@goop.org>:
->>> > Zdenek Kabelac wrote:
->>> I'll probably try to bisect  rc.sysinit script to check what is the
->>> first command
->>> that breaks the reboot  - but if there is any idea what should I test
->>> first.?
->>
->> Are you using modules? Maybe a driver is loaded and this upsets the BIOS
->> somehow? If that was the case, the driver wouldn't be loaded in an
->> init=/bin/sh situation, as you described before.
->>
->
->
-> Yes - except as I've checked the exactly same modularized kernel
-> running Debian on the same box
-> has no boot problem.
+On Fri, Aug 01, 2008 at 11:44:13AM -0500, Kumar Gala wrote:
+> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+> index 9a51ec8..e54d003 100644
+> --- a/drivers/net/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/fs_enet/fs_enet-main.c
+> @@ -669,7 +669,6 @@ static int fs_request_irq(struct net_device *dev, int irq, const char *name,
+>  {
+>  	struct fs_enet_private *fep = netdev_priv(dev);
+>  
+> -	(*fep->ops->pre_request_irq)(dev, irq);
+>  	return request_irq(irq, irqf, IRQF_SHARED, name, dev);
+>  }
 
-Ok - idea with checking loaded modules was actually the right way to a
-very quick discovery that KVM loaded in my Fedora are the source of
-troubles - without them the second mystery is also a history :)
+This makes "fep" an unused variable.  Eliminate this function entirely,
+and call request_irq directly from the caller.
 
-So - is it normal, that loaded KVM modules eliminate emergency reboot
-(bug or feature)?
+>  
+> @@ -678,7 +677,6 @@ static void fs_free_irq(struct net_device *dev, int irq)
+>  	struct fs_enet_private *fep = netdev_priv(dev);
+>  
+>  	free_irq(irq, dev);
+> -	(*fep->ops->post_free_irq)(dev, irq);
+>  }
 
-Zdenek
+Likewise.
+
+-Scott
