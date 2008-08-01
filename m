@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbYHARsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYHARtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755462AbYHARsc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 13:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYHARsY
+	id S1756667AbYHARtn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 13:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYHARtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 13:48:24 -0400
-Received: from gw.goop.org ([64.81.55.164]:55908 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003AbYHARsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 13:48:24 -0400
-Message-ID: <48934C54.60806@goop.org>
-Date: Fri, 01 Aug 2008 10:48:04 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Mike Travis <travis@sgi.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>, Jack Steiner <steiner@sgi.com>,
-       Alan Mayer <ajm@sgi.com>, Cliff Wickman <cpw@sgi.com>
-Subject: Re: kernel BUG at arch/x86/kernel/io_apic_64.c:357!
-References: <20080729160939.GA4484@linux.vnet.ibm.com>	<86802c440807291135m7f8e2163xdde14545e311649a@mail.gmail.com>	<86802c440807291220t7813effcwb32ae6c18e3cddfe@mail.gmail.com>	<m1d4kwbg8f.fsf@frodo.ebiederm.org> <488F96DD.6020505@sgi.com>	<m1bq0g8euy.fsf@frodo.ebiederm.org> <488FAAD9.4090907@goop.org>	<m1vdyo44v4.fsf@frodo.ebiederm.org> <488FBAEC.5000306@goop.org> <m1fxps17bu.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1fxps17bu.fsf@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 1 Aug 2008 13:49:36 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:17892 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751464AbYHARtf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 13:49:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :date:message-id:mime-version:x-mailer:content-transfer-encoding
+         :sender;
+        b=eNE39HqT8A2ZEYF8v41g7AYyj3oUOlDacT16A7bc1PLKOrsRS59bJf1e4C2S56zIlo
+         cEJv26zqNftU82b22HXoeztlCRgc8oFKXXhJEWvsSEIanaImpOT0qf+Fzf50jiAL+6Fz
+         UwE+/1ABWtAGpkBw5L5SqsgMaLofzk+hrNg+k=
+Subject: Re: [PATCH 10/10] mtd: remove code associated with
+	!CONFIG_PPC_MERGE
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Reply-To: jwboyer@linux.vnet.ibm.com
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       linux-mtd@lists.infradead.org
+In-Reply-To: <1217609060-6381-11-git-send-email-galak@kernel.crashing.org>
+References: <1217609060-6381-1-git-send-email-galak@kernel.crashing.org>
+	 <1217609060-6381-2-git-send-email-galak@kernel.crashing.org>
+	 <1217609060-6381-3-git-send-email-galak@kernel.crashing.org>
+	 <1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
+	 <1217609060-6381-5-git-send-email-galak@kernel.crashing.org>
+	 <1217609060-6381-6-git-send-email-galak@kernel.crashing.org>
+	 <1217609060-6381-7-git-send-email-galak@kernel.crashing.org>
+	 <1217609060-6381-8-git-send-email-galak@kernel.crashing.org>
+	 <1217609060-6381-9-git-send-email-galak@kernel.crashing.org>
+	 <1217609060-6381-10-git-send-email-galak@kernel.crashing.org>
+	 <1217609060-6381-11-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain
+Date: Fri, 01 Aug 2008 13:49:30 -0400
+Message-Id: <1217612970.2328.8.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Sorry.  Probably too much context in my head.
-> The model I use is irq sources throw interrupts and then the cpus catch them.
-> Sometimes those in flight irqs go through several transformations.
->   
+On Fri, 2008-08-01 at 11:44 -0500, Kumar Gala wrote:
+> Now that arch/ppc is gone we don't need CONFIG_PPC_MERGE anymore
+> remove the dead code associated with !CONFIG_PPC_MERGE.
+> 
+> The mtd maps should be using the OF based mechanism.
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-OK, that's more or less my mental model too.
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-> Given that the event channels that logical irq are bound to change over time
-> I would say they appear to be not irq sources.  Those are the physical
-> lines coming out of hardware devices (if physical), and the equivalent
-> parts of the hardware when the irqs are sent message based.
->
-> So it does sound like the event channels function much like vectors.  Which
-> are the token thrown from ioapics to cpus to tell them which irq has happened
-> but have nothing to do with it.
->   
-
-Yes and no.  The event channels are similar to the actual interrupt 
-wires coming out of a PCI card, but they generally connect to virtual 
-devices, and so are a lot more dynamic than physical devices.  The event 
-channel remapping scenario I described is pretty much exactly analogous 
-to having a hotplug PCI device being pulled and then replugged into a 
-different slot with a different interrupt line.
-
-> The sources and the linux irq numbers should be stable if you don't unplug
-> anything.  The rest are implementation details the architecture should hide.
->   
-
-Yeah, plugging can happen as a quite regular thing.
-
-> In that case I don't see any reason we could not be receiving irqs with the
-> cpus catching vectors and with events showing up in event channels.  Having
-> both running at the same time is a little odd but doable.
->   
-
-Yes, it's a bit odd, but there are two distinct configurations where 
-it's a useful thing to have, where the system is running in a hybrid 
-Xen/native environment.
-
-    J
