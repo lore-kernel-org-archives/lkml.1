@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759601AbYHAUm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758926AbYHAUp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759601AbYHAUm7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 16:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbYHAUmw
+	id S1758926AbYHAUp6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 16:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbYHAUpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 16:42:52 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:44046 "EHLO
+	Fri, 1 Aug 2008 16:45:51 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:45838 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754783AbYHAUmv (ORCPT
+	with ESMTP id S1751388AbYHAUpu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 16:42:51 -0400
-Date: Fri, 1 Aug 2008 16:42:49 -0400 (EDT)
+	Fri, 1 Aug 2008 16:45:50 -0400
+Date: Fri, 1 Aug 2008 16:45:49 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Randy Dunlap <randy.dunlap@oracle.com>
@@ -19,9 +19,9 @@ cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH v2 3/2] ftrace: ftrace_printk doc moved
+Subject: [PATCH v3 3/2] ftrace: ftrace_printk doc moved
 In-Reply-To: <20080801133427.51b17904.randy.dunlap@oracle.com>
-Message-ID: <alpine.DEB.1.10.0808011641440.2547@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.1.10.0808011644410.2547@gandalf.stny.rr.com>
 References: <20080801162639.175407419@goodmis.org> <20080801163737.420519487@goodmis.org> <20080801094331.626195c8.randy.dunlap@oracle.com> <alpine.DEB.1.10.0808011248080.31922@gandalf.stny.rr.com> <20080801105255.82a6520f.randy.dunlap@oracle.com>
  <alpine.DEB.1.10.0808011411540.31922@gandalf.stny.rr.com> <20080801133427.51b17904.randy.dunlap@oracle.com>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
@@ -32,61 +32,71 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 1 Aug 2008, Randy Dunlap wrote:
+Based on Randy Dunlap's suggestion, the ftrace_printk kernel-doc belongs
+with the ftrace_printk macro that should be used. Not with the
+__ftrace_printk internal function.
 
-> On Fri, 1 Aug 2008 14:17:42 -0400 (EDT) Steven Rostedt wrote:
-> 
-> > 
-> > Based on Randy Dunlap's suggestion, the ftrace_printk kernel-doc belongs
-> > with the ftrace_printk macro that should be used. Not with the
-> > __ftrace_printk internal function.
-> > 
-> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> > ---
-> >  include/linux/ftrace.h |   19 ++++++++++++++++++-
-> >  kernel/trace/trace.c   |   16 ----------------
-> >  2 files changed, 18 insertions(+), 17 deletions(-)
-> > 
-> > Index: linux-tip.git/include/linux/ftrace.h
-> > ===================================================================
-> > --- linux-tip.git.orig/include/linux/ftrace.h	2008-08-01 12:20:56.000000000 -0400
-> > +++ linux-tip.git/include/linux/ftrace.h	2008-08-01 14:11:13.000000000 -0400
-> > @@ -137,7 +137,24 @@ static inline void tracer_disable(void)
-> >  extern void
-> >  ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3);
-> >  extern void ftrace_dump(void);
-> > -# define ftrace_printk(x...) __ftrace_printk(_THIS_IP_, x)
-> > +
-> > +/**
-> > + * ftrace_printk - printf formatting in the ftrace buffer
-> > + * @fmt - the printf format for printing.
-> 
->     * @fmt: the printf format for printing
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ include/linux/ftrace.h |   19 ++++++++++++++++++-
+ kernel/trace/trace.c   |   16 ----------------
+ 2 files changed, 18 insertions(+), 17 deletions(-)
 
-OK, thanks.
+Index: linux-tip.git/include/linux/ftrace.h
+===================================================================
+--- linux-tip.git.orig/include/linux/ftrace.h	2008-08-01 12:20:56.000000000 -0400
++++ linux-tip.git/include/linux/ftrace.h	2008-08-01 16:43:56.000000000 -0400
+@@ -137,7 +137,24 @@ static inline void tracer_disable(void)
+ extern void
+ ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3);
+ extern void ftrace_dump(void);
+-# define ftrace_printk(x...) __ftrace_printk(_THIS_IP_, x)
++
++/**
++ * ftrace_printk - printf formatting in the ftrace buffer
++ * @fmt: the printf format for printing
++ *
++ * Note: __ftrace_printk is an internal function for ftrace_printk and
++ *       the @ip is passed in via the ftrace_printk macro.
++ *
++ * This function allows a kernel developer to debug fast path sections
++ * that printk is not appropriate for. By scattering in various
++ * printk like tracing in the code, a developer can quickly see
++ * where problems are occurring.
++ *
++ * This is intended as a debugging tool for the developer only.
++ * Please refrain from leaving ftrace_printks scattered around in
++ * your code.
++ */
++# define ftrace_printk(fmt...) __ftrace_printk(_THIS_IP_, fmt)
+ extern int
+ __ftrace_printk(unsigned long ip, const char *fmt, ...)
+ 	__attribute__ ((format (printf, 2, 3)));
+Index: linux-tip.git/kernel/trace/trace.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/trace.c	2008-08-01 12:20:56.000000000 -0400
++++ linux-tip.git/kernel/trace/trace.c	2008-08-01 14:10:36.000000000 -0400
+@@ -3243,22 +3243,6 @@ void ftrace_dump(void)
+ 	(sizeof(struct trace_field) - offsetof(struct trace_field, print.buf))
+ #define TRACE_CONT_BUF_SIZE sizeof(struct trace_field)
+ 
+-/**
+- * ftrace_printk - printf formatting in the ftrace buffer
+- * @fmt - the printf format for printing.
+- *
+- * Note: __ftrace_printk is an internal function for ftrace_printk and
+- *       the @ip is passed in via the ftrace_printk macro.
+- *
+- * This function allows a kernel developer to debug fast path sections
+- * that printk is not appropriate for. By scattering in various
+- * printk like tracing in the code, a developer can quickly see
+- * where problems are occurring.
+- *
+- * This is intended as a debugging tool for the developer only.
+- * Please reframe from leaving ftrace_printks scattered around in
+- * your code.
+- */
+ int __ftrace_printk(unsigned long ip, const char *fmt, ...)
+ {
+ 	struct trace_array *tr = &global_trace;
 
-> 
-> > + *
-> > + * Note: __ftrace_printk is an internal function for ftrace_printk and
-> > + *       the @ip is passed in via the ftrace_printk macro.
-> > + *
-> > + * This function allows a kernel developer to debug fast path sections
-> > + * that printk is not appropriate for. By scattering in various
-> > + * printk like tracing in the code, a developer can quickly see
-> > + * where problems are occurring.
-> > + *
-> > + * This is intended as a debugging tool for the developer only.
-> > + * Please reframe from leaving ftrace_printks scattered around in
-> 
->              refrain
-
-Heh,  I manually fixed that before sending out the original. I never fixed 
-it in the quilt queue. Darn!
-
--- Steve
-
-> 
-> > + * your code.
-> > + */
-> > +# define ftrace_printk(fmt...) __ftrace_printk(_THIS_IP_, fmt)
-> >  extern int
