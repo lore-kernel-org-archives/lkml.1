@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYHAMFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758397AbYHAMGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758067AbYHAMFH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 08:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbYHAME5
+	id S1758397AbYHAMGs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 08:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754366AbYHAMGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 08:04:57 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:39286 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753626AbYHAME4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 08:04:56 -0400
-Date: Fri, 1 Aug 2008 07:04:55 -0500
-From: Robin Holt <holt@sgi.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Robin Holt <holt@sgi.com>, linux-kernel@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Patch] Scale pidhash_shift/pidhash_size up based on
-	num_possible_cpus().
-Message-ID: <20080801120455.GP9663@sgi.com>
-References: <20080731170022.GE9663@sgi.com> <m1prot297c.fsf@frodo.ebiederm.org> <20080731193204.GG9663@sgi.com> <m1iqul25rk.fsf@frodo.ebiederm.org> <20080731200835.GK9663@sgi.com> <m1bq0d1zhz.fsf@frodo.ebiederm.org>
+	Fri, 1 Aug 2008 08:06:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34753 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754333AbYHAMGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 08:06:38 -0400
+Message-ID: <4892FC11.4020105@redhat.com>
+Date: Fri, 01 Aug 2008 08:05:37 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+Reply-To: rwheeler@redhat.com
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1bq0d1zhz.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Josef Bacik <jbacik@redhat.com>, linux-fsdevel@vger.kernel.org,
+       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org
+Subject: high resolution timers, scheduling & sleep granularity
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 03:04:56PM -0700, Eric W. Biederman wrote:
-> Robin Holt <holt@sgi.com> writes:
-> 
-> > Like so???
-> >
-> > I have not tested this yet.
-> 
-> Looks reasonable to me.
-> 
-> In what circumstances was the lookup in the pid hash table with
-> long changes causing a performance slowdown?.  We don't perform
-> a lot of lookups.
 
-It was initially detected while profiling 'ps' on a 2048p machine that
-had 13 kernel threads per cpu.  We added a couple more device drivers
-which added additional threads.  We then started a pthread-on-process
-MPI job which had 2048 ranks each with 4 threads (test-case from
-customer job).  There were misc other processes out there which brought
-our task count up to approx 63k.  Larger page size helped the problem
-(went from 16k to 64k).
+Hi Thomas & Ingo,
 
-Thanks,
-Robin
+Josef has been working on some patches to try and get ext3/4 to 
+dynamically detect the latency of a storage device and use that base 
+latency to tune the amount of time we sleep waiting for others to join 
+in a transaction. The logic in question lives in jbd/transaction.c 
+(transaction_stop).
+
+The code was originally developed to try and allow multiple threads to 
+join in a big, slow transaction. For example, transacations that write 
+to a slow ATA or S-ATA drive take in the neighborhood of 10 to 20 ms.
+
+Faster devices, for example a disk array,  can complete the transaction 
+in 1.3 ms. Even higher speed SSD devices boast of a latency of 0.1ms, 
+not to mention RAM disks ;-)
+
+The current logic makes us wait way too long, especially with a 250HZ 
+kernel since we sleep many times longer than it takes to complete the IO ;-)
+
+Do either of you have any thoughts on how to get a better, fine grained 
+sleep capability that we could use that would allow us to sleep in 
+sub-jiffie chunks?
+
+Regards,
+
+Ric
+
