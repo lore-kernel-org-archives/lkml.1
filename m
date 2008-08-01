@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760015AbYHAWbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760671AbYHAWcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760015AbYHAWbU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 18:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbYHAWbL
+	id S1760671AbYHAWcP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 18:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbYHAWcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 18:31:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48100 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754981AbYHAWbK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 18:31:10 -0400
-Date: Fri, 1 Aug 2008 15:30:26 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Optimize tail handling for copy_user
-In-Reply-To: <m3wsj0l7cv.fsf@gravicappa.englab.brq.redhat.com>
-Message-ID: <alpine.LFD.1.10.0808011524150.6819@nehalem.linux-foundation.org>
-References: <m3ljzmdrqh.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0807280846320.3486@nehalem.linux-foundation.org> <m3ljzj60mk.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0807301016020.3334@nehalem.linux-foundation.org>
- <m3abfyqgbg.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0808011308470.3277@nehalem.linux-foundation.org> <m3wsj0l7cv.fsf@gravicappa.englab.brq.redhat.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 1 Aug 2008 18:32:00 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:43168 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755338AbYHAWb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 18:31:59 -0400
+Date: Sat, 2 Aug 2008 01:30:56 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: nAl Viro <viro@zeniv.linux.org.uk>, dwmw2@infradead.org
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: mtdsuper.c BLOCK=n compile error
+Message-ID: <20080801223056.GK19682@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit d5686b444ff3f72808d2b3fbd58672a86cdf38e7
+(switch mtd and dm-table to lookup_bdev()) causes
+the following compile error with CONFIG_BLOCK=n:
 
+<--  snip  -->
 
-On Sat, 2 Aug 2008, Vitaly Mayatskikh wrote:
-> 
-> Well, I have sanity test for it (at http://people.redhat.com/vmayatsk/copy_user_x8664/), 
-> but unfortunately it shows what I want to see, not the truth. I'm going
-> to make a large regression testing next week.
+...
+  CC      drivers/mtd/mtdsuper.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/mtd/mtdsuper.c: In function `get_sb_mtd':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/mtd/mtdsuper.c:184: error: implicit declaration of function 'lookup_bdev'
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/mtd/mtdsuper.c:184: warning: assignment makes pointer from integer without a cast
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/mtd/mtdsuper.c:197: error: implicit declaration of function 'bdput'
+make[3]: *** [drivers/mtd/mtdsuper.o] Error 1
 
-I was actually thinking more along the lines of actually doing a 
-test-suite with the few most relevant system calls (to catch the few cases 
-that matter), and judicious use of mmap/munmap to make sure to trigger it 
-in-kernel.
+<--  snip  -->
 
-It probably doesn't really need all that many system calls to trigger all 
-the relevant paths. A "read()" should trigger the "to_user()" case, and a 
-write() to a file should trigger the 'from_user_nocache()" case. And while 
-the "from_user()" case with zeroing migth be harder to see (because all 
-_normal_ users should also look at the error case and return EFAULT), I 
-think there are a few cases where we just depend on the zeroing.
+cu
+Adrian
 
-Doing a
+-- 
 
-	git grep '	copy_from_user('
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-(that's a tab in that grep thing) shows at least the termios code doing 
-it, for example. But fewer cases than I expected.
-
-			Linus
