@@ -1,93 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbYHARWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbYHAR1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755771AbYHARWq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 13:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYHARWh
+	id S1754596AbYHAR1U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 13:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYHAR1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 13:22:37 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:28311 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751845AbYHARWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 13:22:36 -0400
-Date: Fri, 1 Aug 2008 19:22:33 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Neil Brown <neilb@suse.de>, Arthur Jones <ajones@riverbed.com>,
-       Dan Williams <dan.j.williams@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-raid@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PULL REQUEST] md bug fixes and minor improvements
-Message-ID: <20080801172231.GF20055@kernel.dk>
-References: <18578.31924.259887.735206@notabene.brown> <alpine.LFD.1.10.0808011007240.3277@nehalem.linux-foundation.org>
+	Fri, 1 Aug 2008 13:27:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46716 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751388AbYHAR1N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 13:27:13 -0400
+Date: Fri, 1 Aug 2008 10:26:33 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>, "Randy.Dunlap" <rdunlap@xenotime.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] Introduce down_try() so we can move away from
+ down_trylock()
+In-Reply-To: <200807292301.18733.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.1.10.0808011022230.3277@nehalem.linux-foundation.org>
+References: <200807291015.02865.rusty@rustcorp.com.au> <6599ad830807281727r63a57a1g11972c5395828aae@mail.gmail.com> <200807292301.18733.rusty@rustcorp.com.au>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0808011007240.3277@nehalem.linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01 2008, Linus Torvalds wrote:
-> 
-> 
-> On Fri, 1 Aug 2008, Neil Brown wrote:
-> > 
-> > Hi Linus,
-> >  please pull the following bugfixes for drivers/md.
-> 
-> Hmm. This doesn't seem to include any fix for the reported unlocked 
-> blk_plug() from MD?
-> 
-> See the emails from Rafael on the kernel mailing list for details 
-> (WARNING: at /home/rafael/src/linux-next/include/linux/blkdev.h:447), but 
-> it boils down to
-> 
-> 	WARNING: at /home/rafael/src/linux-2.6/include/linux/blkdev.h:447 blk_plug_device+0x9b/0xb0()
-> 	Pid: 2268, comm: kjournald Not tainted 2.6.27-rc1-git #211
-> 
-> 	Call Trace:
-> 	 [<ffffffff8023af5f>] warn_on_slowpath+0x5f/0x80
-> 	 [<ffffffff8034fc7b>] blk_plug_device+0x9b/0xb0
-> 	 [<ffffffff8044d5bf>] bitmap_startwrite+0xbf/0x1b0
-> 
-> where it really looks like "bitmap_startwrite()" just calls 
-> blk_plug_device() without holding the queue lock. The rule for that 
-> function is documented to be:
-> 
->  * This is called with interrupts off and no requests on the queue and
->  * with the queue lock held.
-> 
-> Hmm?
-> 
-> Now, admittedly, the blk interfaces here are a bit inconsistent: I think 
-> blk_unplug() is supposed to be called _without_ the lock, so it's a bit 
-> odd that blk_plug_device() is supposed to b called with it held, but 
-> somebody should double-check me on that one.
 
-It is a bit asymmetrical, largely due to the fact that the ->unplug_fn()
-itself grabs the lock. The below patch should fix it, since Neil has
-added a proper queue lock to the md queues. If someone can confirm that
-this fixes it, I'll queue up a patch with proper descriptions.
 
-> I guess Jens is gone too..
+On Tue, 29 Jul 2008, Rusty Russell wrote:
+> 
+> Introduce down_try()
 
-I'm back, just been busy this week :-)
+I hate that name. Everybody else uses "xxx_trylock()", now you introduce a 
+short version of that that just has the same return value as everybody 
+else except for semaphores that admittedly were odd.
 
-diff --git a/drivers/md/bitmap.c b/drivers/md/bitmap.c
-index 621a272..f19b52f 100644
---- a/drivers/md/bitmap.c
-+++ b/drivers/md/bitmap.c
-@@ -1234,7 +1234,9 @@ int bitmap_startwrite(struct bitmap *bitmap, sector_t offset, unsigned long sect
- 		case 0:
- 			bitmap_file_set_bit(bitmap, offset);
- 			bitmap_count_page(bitmap,offset, 1);
-+			spin_lock_irq(&bitmap->mddev->queue->queue_lock);
- 			blk_plug_device(bitmap->mddev->queue);
-+			spin_unlock_irq(&bitmap->mddev->queue->queue_lock);
- 			/* fall through */
- 		case 1:
- 			*bmc = 2;
+Also, all actual _users_ of down_trylock() seem to be prime candidates for 
+turning into mutexes anyway - with the _possible_ exception of the console 
+semaphore which has problems with the mutex debugging code.
 
--- 
-Jens Axboe
+> I planned on removing the much-disliked down_trylock() (with its
+> backwards return codes) in 2.6.27, but it's creating something of a
+> logjam with other patches in -mm and linux-next.
+> 
+> Andrew suggested introducing "down_try" as a wrapper now, to make
+> the transition easier.
 
+The transition to WHAT? To crap?
+
+There is no need to introduce yet another temporary thing just to make 
+things even _more_ confusing.
+
+Yeah, I'm grumpy. I'm always pretty grumpy, but I'm trying to go through 
+some backlog where I had been going "hmm, why would I do this", and this 
+one wasn't the only one where my reaction was "if I pull/apply this, the 
+end result is worse".
+
+Guys, some quality control and critical thinking, please.
+
+			Linus
