@@ -1,202 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760038AbYHAVCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760145AbYHAVDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760038AbYHAVCg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756554AbYHAVCX
+	id S1760145AbYHAVDX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbYHAVDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:02:23 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:40469 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756536AbYHAVCV (ORCPT
+	Fri, 1 Aug 2008 17:03:04 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:43648 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757072AbYHAVDD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:02:21 -0400
-Date: Fri, 01 Aug 2008 17:02:16 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: ACPI OSI disaster on latest HP laptops - critical temperature
- shutdowns
-In-reply-to: <alpine.LFD.1.10.0807261434380.2958@localhost.localdomain>
-X-X-Sender: lenb@localhost.localdomain
-To: Thomas Renninger <trenn@suse.de>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       Christian Kornacker <ckornacker@suse.de>
-Message-id: <alpine.LFD.1.10.0808011701500.3011@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <200807241727.41715.trenn@suse.de>
- <alpine.LFD.1.10.0807261434380.2958@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 1 Aug 2008 17:03:03 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Cliff Wickman <cpw@sgi.com>
+Cc: Alan Mayer <ajm@sgi.com>, jeremy@goop.org, rusty@rustcorp.com.au,
+       suresh.b.siddha@intel.com, mingo@elte.hu, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Dean Nelson <dcn@sgi.com>
+References: <48922D16.1080704@sgi.com> <m13alp1z8w.fsf@frodo.ebiederm.org>
+	<20080801155120.GA21706@sgi.com>
+Date: Fri, 01 Aug 2008 14:00:16 -0700
+In-Reply-To: <20080801155120.GA21706@sgi.com> (Cliff Wickman's message of
+	"Fri, 1 Aug 2008 10:51:20 -0500")
+Message-ID: <m18wvgv4bj.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Cliff Wickman <cpw@sgi.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.5000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] x86_64:  Dynamically allocate arch specific system vectors
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From lenb@kernel.org Sat Jul 26 14:40:36 2008
-Date: Sat, 26 Jul 2008 14:40:35 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-To: Thomas Renninger <trenn@suse.de>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, linux-acpi <linux-acpi@vger.kernel.org>, "Moore, Robert" <robert.moore@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>, Christian Kornacker <ckornacker@suse.de>
-Subject: Re: ACPI OSI disaster on latest HP laptops - critical temperature shutdowns
+Cliff Wickman <cpw@sgi.com> writes:
+>
+> I assume you mean create_irq() and destroy_irq().
+> They are close to what we need.
 
-Thomas,
+Actually that isn't quite what I was thinking.
 
-Thank you for debugging and reporting this issue.
-I agree with some of your observations and conclusions,
-but not with others, so lets review this carefully.
+> However for any given system use:
+> - we need to request a high priority vector for some irq's, rather than
+>   one randomly allocated as per __assign_irq_vector().
 
-39a2d7c72b358c6253a2ec28e17b023b7f6f41c
-(ACPI: Reject below-freezing temperatures as invalid critical temperatures)
-was general workaround resulting from a specific HP machine
-with a BIOS bug.
+Well I was actually thinking mostly about reusing assign_irq_vector.
 
-The machine functioned properly in 2.6.25, but shutdown
-in 2.6.26-rc1.  Arjan and I debugged this together.
-Unfortunately, we both neglected to put the bug URL
-in the commit-it, so here it is:
+The high priority vector seems to be the place where we would need
+to reexamine the vector allocator.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10686
+> - we want the irq/vector to be targeted to all cpu's (as specified in a
+>   mask,
+>   and can include currently offline cpu's) rather than a single cpu. 
 
-The failure in bug 10686 is similar, but not identical
-to the one you reported here with CRT returning 0.
-Arjan's HP has a _CRT with no return statement at all.
-In Linux-2.6.25, this _CRT was rejected with
+__assign_irq_vector should be able to handle that case.
 
-ACPI Exception (thermal-0365): AE_BAD_DATA, No critical threshold [20070126]
+> I suppose those abilities could be added to create_irq(), but we didn't
+> want to intrude into that interface.
 
-and the entire thermal zone was rejected.
+Right.  That part gets custom and there is no intersection.
 
-4e3156b183aa087bc19804b3295c7c1a71f64752
-(ACPICA: changed order of interpretation of operand objects)
-ironically, a MS bug compatibility patch,
-had the side effect of causing the implicit return
-workaround applied to _CRT to return 2006 rather than bombing out.
-This was interpreted as 200.7K, or -73C.
+> A smaller consideration is simplicity of use.  We want any such user to
+> use
+> the generic do_IRQ() flow (not alloc_intr_gate()).
 
-Bob looked into this one, and determined that the latest
-ACPICA will return 0 here.
+My primary concern is that you are generalizing an interface that is
+designed for alloc_intr_gate consumers.  In particular for people
+who wish to allocate vectors that can be triggered by software to
+do this.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10686#c9
+If this is normal irq handling I would really prefer to use the
+normal data structures that we use for allocating vectors to irqs,
+because that is what you are doing.
 
-Bob,
-It may be helpful if you can elaborate on "latest ACPICA"
-in this comment -- ie what release, or better yet, what patch
-will cause Linux behavior to change on this code fragment?
+> But make it easy to set
+> up the irq/vector, irq_chip and irq_desc without getting intimate with
+> the details.
+> I suppose some other wrapper for an enhanced create_irq() could be done.
+>
+> We are going to need such irq/vector pairs for a couple of UV drivers
+> (drivers/misc/sgi-gru/ and sgi-xp/).  And would prefer it for the UV TLB
+> shootdown (x86/kernel/tlb.uv.c) rather than using alloc_intr_gate().
 
-If we suddenly start returning 0 there, we'll still be okay
-because Arjan's patch above will still catch it.
+I also want to ask why do you need an irq that fires on every cpu?
 
-Anyway, we had a choice of simple fixes for Arjan's HP.
-At the time, the question was whether to reject
-the entire thermal zone -- failing like 2.6.25
-(a thermal zone w/o a _CRT is invalid per spec)
-or to reject just the _CRT (ala thermal.nocrt).
+That concept seems to be responsible for one of the nastiest data
+structures in the kernel.  Where we track how many times any irq has
+occurred on any cpu.  Look at the percpu variable kernel_stat.  It
+seems to be one of the nastiest variables I know of.  Of size:
+NR_CPUS*NR_CPUS*32  Assuming you have a machine with a reasonable
+number of irqs per cpu.
 
-We decided to keep it simple (and similar to 2.6.25)
-and reject the entire thermal zone.  Thinking about this more,
-I think it would be a good idea to instead go
-the thermal.nocrt route -- for if this machine
-had ACPI fan control (this one doesn't),
-the rest of the thermal zone
-would be pretty important to normal use....
-
-Rui,
-as maintainer of ACPI_THERMAL, perhaps you can look into that,
-if Thomas doesn't beat you to it?
-
-In light of Thomas' sighting and Bob's mention that the
-latest interpreter will return 0 here...
-
-ALL THIS TELLS US is that Vista doesn't fail certification
-when _CRT returns 0.
-
-IT DOES NOT TELL US that Vista has any sort of _CRT bug,
-or that Vista mandates _CRT=0.
-The T61 I'm typing on has a valid _CRT and a Vista sticker...
-
-The AML Thomas' showed did this:
-
-                If (_OSI ("Windows 2006")) {
-                    Store (0x40, TPOS)
-                }
-
-            Method (_CRT, 0, Serialized) {
-                If (LLess (TPOS, 0x40)) {
-                    Return (...valid...)
-                }
-                Else {
-                    Return (Zero)
-		}
-
-I draw a totally different conclusion than Thomas does.
-
-This does not look like a Vista workaround to me,
-it looks like a simple BIOS bug that Vista doesn't catch.
-
-We've seen BIOS bugs like this many times.
-They are consistent with this conversation:
-
-Morning:
-BIOS Manager: "please quickly update this platform to support Vista"
-BIOS writer: "I'm busy today, but have 30 minutes if I work through lunch..."
-
-Afternoon:
-BIOS Manager: "did you look at that Vista update yet?"
-BIOS Writer: "yes, I think I did it in only 20 minutes"
-BIOS Manager: "you're awesome!  lets send it through WHQL,
-	as I've got something else for you to do."
-
-The BIOS passes WHQL and nobody with a brain ever looks
-at the source code again...
-
-It would be useful to find out what Vista actually _does_
-with _CRT=0.  ie. do they throw out the thermal zone,
-or just the _CRT.  Linux should ideally do the same.
-However, the fact that plenty of systems with Vista stickers
-are shipping with valid _CRT proves that it isn't Vista that
-is mandating _CRT=0.
-
-So I DO NOT BELIEVE that this sighting is proof that we should disable
-OSI compatibility with Vista or any other version of Windows.
-I feel STRONGLY that it is better to be compatible with the
-tested path through the BIOS -- even if that tested
-path includes workarounds for BIOS bugs that Windows
-doesn't catch.  (or workarounds for real Windows bugs --
-though I don't believe this thread isn't an example of one)
-The alternative would be the FAR GREATER EVIL of trying
-to be compatible with an entirely untested path
-through the BIOS.  We've been there before and it
-was horrific.
-
-I think we all agree that the LONG term solution is to have
-tools where OEMs can CERTIFY compatibility with Linux
-and a large portion of the machines that Linux runs on
-having passed that certification.  When that happens,
-that is the time to re-visit our current strategy of
-being bug compatible with Windows.  While I believe that
-this is a realistic and valuable goal in some markets,
-is seems unrealistic in the foreseeable future
-in other markets.  ie. I think it is valuable and worth pursuing,
-but I would not expect universal success in the foreseeable
-future.
-
-Andi,
-I ACK Thomas' suggestion to check for <= 0C for HOT,
-PSV and ACx trip points.  While we don't have such a
-failure in hand and thus this is not urgent, it can
-only make Linux more bomb proof.  We might dress it
-up a bit, however.  I think that with acpi=strict,
-we should complain loudly if this workaround is invoked,
-if not disable it altogether.  Thus an OEM who can
-boot with acpi=strict and not get warnings or failures
-knows that they're not requiring any of our out-of-spec
-workarounds.
-
-Further, Thomas' sighting demonstrates that it is important
-to get Arjan's patch back into the .stable releases.
-
-thanks,
--Len
-
-
+Eric
