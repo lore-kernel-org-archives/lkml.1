@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753639AbYHAQLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752303AbYHAQMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753639AbYHAQLy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 12:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYHAQLn
+	id S1752303AbYHAQMV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 12:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbYHAQLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 12:11:43 -0400
-Received: from qb-out-0506.google.com ([72.14.204.226]:64859 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751145AbYHAQLm (ORCPT
+	Fri, 1 Aug 2008 12:11:53 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:53885 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753277AbYHAQLv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 12:11:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=h6uK944w4LGSyyfmA+zW02/JdKecQbOHAn7qFIwC0VCCchfb2GOzxcY0gJwHSnYaia
-         P0AYiTgpPaM6G7y5MAvbRlrx4bBNeANT/vPHfB6Ipm0TmP8iZ7Va/jmqh0CaJJJNj0lW
-         BZvvuChotdhQsEhK0+g9W5M0zwiFz/lo9kAfA=
-Message-ID: <489335CA.9000204@tuffmail.co.uk>
-Date: Fri, 01 Aug 2008 17:11:54 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 1 Aug 2008 12:11:51 -0400
+Date: Fri, 1 Aug 2008 10:11:49 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Matt Domsch <Matt_Domsch@dell.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Ric Wheeler <rwheeler@redhat.com>, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jim Meyering <jim@meyering.net>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
+Subject: Re: tools support for non-512 byte sector sizes
+Message-ID: <20080801161149.GA26461@parisc-linux.org>
+References: <488F524F.6020905@redhat.com> <20080729182611.GB24924@parisc-linux.org> <1217356645.6103.48.camel@localhost.localdomain> <yq13alsr0g0.fsf@sermon.lab.mkp.net> <20080730135147.GA4513@auslistsprd01.us.dell.com>
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Bob Copeland <me@bobcopeland.com>, tomasw@gmail.com,
-       Dave Young <hidave.darkstar@gmail.com>, stable@kernel.org,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linville@tuxdriver.com, Pekka Enberg <penberg@cs.helsinki.fi>,
-       ath5k-devel@venema.h4ckr.net, johannes@sipsolutions.net,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: git-describe [Was: ath5k_config_interface deadlock fix]
-References: <20080801074014.GA3341@darkstar> <4892C2CA.7010003@gmail.com>		<4892C359.9000304@cs.helsinki.fi>		<20080801011415.ff4821a3.akpm@linux-foundation.org>	<b6c5339f0808010643i58dbb2a7jf459359451061ae4@mail.gmail.com> <4893257C.1020907@gmail.com> <48932A10.8080004@tuffmail.co.uk> <48932AFA.5020903@gmail.com>
-In-Reply-To: <48932AFA.5020903@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080730135147.GA4513@auslistsprd01.us.dell.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> Alan Jenkins napsal(a):
->> There must be a better way (for efficient merges, right?).  But all I
->> can think of is comparing the files in question against the diff.  I
->> checked myself and the changes don't appear to have been included in
->> v2.6.26.
->
-> Ah, I see. Is this a git-describe bug or my misunderstanding of the tool?
+On Wed, Jul 30, 2008 at 08:51:47AM -0500, Matt Domsch wrote:
+> I have access to disks with native 4KB sectors now too.  Would
+> interested parties be willing to share test plans, so we could be sure
+> we have coverage wrt correctness: kernel internals, userspace tools like parted,
+> fdisk, kpartx, apps using O_DIRECT)?  Benchmarking winds up being an
+> NDA activity this early in the game so I don't want the focus of any
+> joint work to be benchmarks yet.
 
-It's not an implementation bug.  It's just very easy to misunderstand.
+Are they SCSI?  I just got round to trying 4k sector sizes in ata_ram
+(after adding file backed capability) and found that libata currently
+silently ignores the identify bits that report sector size.  I'll work
+on fixing that this afternoon if nobody beats me to it.
 
-git-describe only looks _back_ in time to what the current commit is
-based on.  In this case the commit was based on v2.6.26-rc8 - but it
-_wasn't_ merged into 2.6.26.  It was presumably merged in for
-v2.6.27-rc1.  This is a perfectly legal history in GIT.
-
-It's probably most often encountered during git-bisect.  If you bisect
-e.g. between v2.6.26 and v.2.6.27-rc1, you're likely to see commits
-which were based on v2.6.26-rc8.
-
-If that doesn't help, try finding an introduction to GIT with some good
-pictures.  I think it's easier to understand it visually.
-
-Alan
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
