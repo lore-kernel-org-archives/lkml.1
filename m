@@ -1,186 +1,424 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758986AbYHAJmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbYHAJwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758986AbYHAJmu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 05:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757749AbYHAJiy
+	id S1757340AbYHAJwI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 05:52:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbYHAJvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 05:38:54 -0400
-Received: from qb-out-0506.google.com ([72.14.204.235]:16382 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757685AbYHAJiw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 05:38:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=tF6Euwkak2GkkVWhoVJmh1KlhjhcnoeCoF9pdqznymZx0/DwlrtCuAiFmvwNHDFXg2
-         2t95GbPCLWnW7ym8ynU3l7kvcVkPi9CRZEZQlBZ5H9PFhiUkvPssF41QiUB1iBh5yN83
-         25YjKLl2OqmG6ax+lGYqkaYMxeqj9Q/s/mrjk=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       hpa <hpa@zytor.com>, Eric Biederman <ebiederm@xmission.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 15/16] x86: make 32bit more like with io_apic/dyn_array to 64 bit
-Date: Fri,  1 Aug 2008 02:37:43 -0700
-Message-Id: <1217583464-28494-16-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217583464-28494-15-git-send-email-yhlu.kernel@gmail.com>
-References: <1217583464-28494-1-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-2-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-3-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-4-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-5-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-6-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-7-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-8-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-9-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-10-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-11-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-12-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-13-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-14-git-send-email-yhlu.kernel@gmail.com>
- <1217583464-28494-15-git-send-email-yhlu.kernel@gmail.com>
+	Fri, 1 Aug 2008 05:51:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44155 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751934AbYHAJvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 05:51:53 -0400
+Date: Fri, 1 Aug 2008 11:51:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Wim Van Sebroeck <wim@iguana.be>,
+       =?iso-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>,
+       Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "drepper@redhat.com" <drepper@redhat.com>,
+       "mikpe@it.uu.se" <mikpe@it.uu.se>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 0/9] x86, xsave: xsave/xrstor support
+Message-ID: <20080801095105.GA18055@elte.hu>
+References: <20080730100326.GA9683@elte.hu> <20080730182539.GA17140@elte.hu> <20080730234102.GF11223@linux-os.sc.intel.com> <20080731212915.GH2729@elte.hu> <20080731215808.GB8563@linux-os.sc.intel.com> <20080731221435.GS23938@one.firstfloor.org> <20080731221924.GD8563@linux-os.sc.intel.com> <alpine.LFD.1.10.0807311531271.3277@nehalem.linux-foundation.org> <20080731225004.GD22426@elte.hu> <48926FC3.3000706@keyaccess.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48926FC3.3000706@keyaccess.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-also remove NR_IRQ_VECTORS
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+* Rene Herman <rene.herman@keyaccess.nl> wrote:
 
----
- arch/x86/kernel/io_apic_32.c  |   53 +++++++++++++++++++++++++++++++++---------
- arch/x86/kernel/setup.c       |    4 +--
- include/asm-x86/irq_vectors.h |    2 -
- 3 files changed, 44 insertions(+), 15 deletions(-)
+> On 01-08-08 00:50, Ingo Molnar wrote:
+>
+>> there are a handful of old ISA-ish drivers that can crash randconfig  
+>> kernels in various ways. [indefinite lockups, crashes, stomped-over  
+>> hardware, non-working keyboard, etc.]
+>>
+>> I mapped most of them out via many months of trial-and-error - but it  
+>> would still be nice to have some separate config option to disable the  
+>> known ones. CONFIG_ALLOW_NON_GENERIC or something like that - which i  
+>> would unset in the randconfig runs.
+>>
+>> ( They are not CONFIG_BROKEN per se, because often it's hardware that
+>>   cannot be probed in any reliable way - the driver just assumes it's   
+>> there. )
+>
+> If you have a list, I might be able to do something about some of 
+> them.
 
-Index: linux-2.6/arch/x86/kernel/io_apic_32.c
+find attached below a newer version of the original list i published 
+half a year ago:
+
+   http://people.redhat.com/mingo/auto-qa-patches/Kconfig-qa.patch
+
+these are just pragmatic local hacks to get things going. (There are 
+more per machine quirks as well.)
+
+i have not used a BROKEN annotation because CONFIG_BROKEN is 
+impractical: it just kills code altogether, indiscriminately. There's no 
+way for users to enable CONFIG_BROKEN in the upstream kernel - nothing 
+selects it and it's not an interactive option either.
+
+So by all means if we mark a driver or a kernel feature as 
+CONFIG_BROKEN, it's killed altogether for all practical purposes.
+
+What we'd need is some more gradual approach: for example a way to mark 
+"drivers that are not expected to boot on a whitebox PC", without 
+removing them altogether via a CONFIG_BROKEN dependency - often it's 
+hardware that cannot be probed safely.
+
+	Ingo
+
+------------------>
+Index: linux/security/smack/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/io_apic_32.c
-+++ linux-2.6/arch/x86/kernel/io_apic_32.c
-@@ -70,7 +70,7 @@ int timer_through_8259 __initdata;
-  */
- int sis_apic_bug = -1;
- 
--int first_free_entry = NR_IRQS;
-+int first_free_entry;
- /*
-  * # of IRQ routing registers
-  */
-@@ -98,10 +98,7 @@ static int disable_timer_pin_1 __initdat
-  * Rough estimation of how many shared IRQs there are, can
-  * be changed anytime.
-  */
--#define MAX_PLUS_SHARED_IRQS NR_IRQS
--#define PIN_MAP_SIZE (MAX_PLUS_SHARED_IRQS + NR_IRQS)
--
--int pin_map_size = PIN_MAP_SIZE;
-+int pin_map_size;
- 
- /*
-  * This is performance-critical, we want to do it O(1)
-@@ -112,7 +109,9 @@ int pin_map_size = PIN_MAP_SIZE;
- 
- static struct irq_pin_list {
- 	int apic, pin, next;
--} irq_2_pin[PIN_MAP_SIZE];
-+} *irq_2_pin;
-+
-+DEFINE_DYN_ARRAY(irq_2_pin, sizeof(struct irq_pin_list), pin_map_size, 16, NULL);
- 
- struct io_apic {
- 	unsigned int index;
-@@ -403,9 +402,27 @@ static struct irq_cpu_info {
- 
- #define CPU_TO_PACKAGEINDEX(i) (first_cpu(per_cpu(cpu_sibling_map, i)))
- 
--static cpumask_t balance_irq_affinity[NR_IRQS] = {
--	[0 ... NR_IRQS-1] = CPU_MASK_ALL
--};
-+static cpumask_t balance_irq_affinity_init = CPU_MASK_ALL;
-+
-+static cpumask_t *balance_irq_affinity;
-+
-+
-+static void __init irq_affinity_init_work(void *data)
-+{
-+        struct dyn_array *da = data;
-+
-+        int i;
-+        struct  balance_irq_affinity *affinity;
-+
-+        affinity = *da->name;
-+
-+        for (i = 0; i < *da->nr; i++)
-+                memcpy(&affinity[i], &balance_irq_affinity_init, sizeof(struct balance_irq_affinity));
-+
-+}
-+
-+DEFINE_DYN_ARRAY(balance_irq_affinity, sizeof(struct balance_irq_affinity), nr_irqs, PAGE_SIZE, irq_affinity_init_work);
-+
- 
- void set_balance_irq_affinity(unsigned int irq, cpumask_t mask)
- {
-@@ -1170,14 +1187,28 @@ static inline int IO_APIC_irq_trigger(in
- }
- 
- /* irq_vectors is indexed by the sum of all RTEs in all I/O APICs. */
--static u8 irq_vector[NR_IRQ_VECTORS] __read_mostly = { FIRST_DEVICE_VECTOR , 0 };
-+static u8 irq_vector_init_first = FIRST_DEVICE_VECTOR;
-+static u8 *irq_vector;
-+
-+static void __init irq_vector_init_work(void *data)
-+{
-+	struct dyn_array *da = data;
-+
-+	u8 *irq_vec;
-+
-+	irq_vec = *da->name;
-+
-+	irq_vec[0] = irq_vector_init_first;
-+}
-+
-+DEFINE_DYN_ARRAY(irq_vector, sizeof(u8), nr_irqs, PAGE_SIZE, irq_vector_init_work);
- 
- static int __assign_irq_vector(int irq)
- {
- 	static int current_vector = FIRST_DEVICE_VECTOR, current_offset;
- 	int vector, offset;
- 
--	BUG_ON((unsigned)irq >= NR_IRQ_VECTORS);
-+	BUG_ON((unsigned)irq >= nr_irqs);
- 
- 	if (irq_vector[irq] > 0)
- 		return irq_vector[irq];
-Index: linux-2.6/arch/x86/kernel/setup.c
+--- linux.orig/security/smack/Kconfig
++++ linux/security/smack/Kconfig
+@@ -1,6 +1,9 @@
+ config SECURITY_SMACK
+ 	bool "Simplified Mandatory Access Control Kernel Support"
+ 	depends on NETLABEL && SECURITY_NETWORK
++	# breaks networking (TCP connections)
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT
+ 	default n
+ 	help
+ 	  This selects the Simplified Mandatory Access Control Kernel.
+Index: linux/drivers/block/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -861,10 +861,10 @@ void __init setup_arch(char **cmdline_p)
- 	/* need to wait for nr_cpu_ids settle down */
- 	if (nr_irqs == NR_IRQS)
- 		nr_irqs = 32 * nr_cpu_ids + 224;
--	pin_map_size = nr_irqs * 2;
--	first_free_entry = nr_irqs;
- 	init_cpu_to_node();
- #endif
-+	pin_map_size = nr_irqs * 2;
-+	first_free_entry = nr_irqs;
- 
- 	init_apic_mappings();
- 	ioapic_init_mappings();
-Index: linux-2.6/include/asm-x86/irq_vectors.h
+--- linux.orig/drivers/block/Kconfig
++++ linux/drivers/block/Kconfig
+@@ -71,6 +71,11 @@ config BLK_DEV_XD
+ config PARIDE
+ 	tristate "Parallel port IDE device support"
+ 	depends on PARPORT_PC
++
++	# the probe can hang during bootup on non-PARIDE boxes
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if PARIDE = y
++
+ 	---help---
+ 	  There are many external CD-ROM and disk devices that connect through
+ 	  your computer's parallel port. Most of them are actually IDE devices
+Index: linux/drivers/i2c/busses/Kconfig
 ===================================================================
---- linux-2.6.orig/include/asm-x86/irq_vectors.h
-+++ linux-2.6/include/asm-x86/irq_vectors.h
-@@ -131,8 +131,6 @@
+--- linux.orig/drivers/i2c/busses/Kconfig
++++ linux/drivers/i2c/busses/Kconfig
+@@ -610,6 +610,11 @@ config I2C_ELEKTOR
+ config I2C_PCA_ISA
+ 	tristate "PCA9564 on an ISA bus"
+ 	depends on ISA
++
++	# takes away IRQ10 on venus and thus breaks e1000
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT
++
+ 	select I2C_ALGOPCA
+ 	default n
+ 	help
+Index: linux/drivers/ide/Kconfig
+===================================================================
+--- linux.orig/drivers/ide/Kconfig
++++ linux/drivers/ide/Kconfig
+@@ -9,6 +9,11 @@ config HAVE_IDE
+ menuconfig IDE
+ 	tristate "ATA/ATAPI/MFM/RLL support"
+ 	depends on HAVE_IDE
++
++	# my test box expects /dev/sda, not /dev/hda
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if IDE = y
++
+ 	depends on BLOCK
+ 	---help---
+ 	  If you say Y here, your kernel will be able to manage low cost mass
+Index: linux/drivers/isdn/icn/Kconfig
+===================================================================
+--- linux.orig/drivers/isdn/icn/Kconfig
++++ linux/drivers/isdn/icn/Kconfig
+@@ -4,6 +4,11 @@
+ config ISDN_DRV_ICN
+ 	tristate "ICN 2B and 4B support"
+ 	depends on ISA
++
++	# crashed on venus, see config-Sun_May_25_11_00_41_CEST_2008.bad
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT
++
+ 	help
+ 	  This enables support for two kinds of ISDN-cards made by a German
+ 	  company called ICN.  2B is the standard version for a single ISDN
+Index: linux/drivers/media/video/Kconfig
+===================================================================
+--- linux.orig/drivers/media/video/Kconfig
++++ linux/drivers/media/video/Kconfig
+@@ -481,6 +481,9 @@ config VIDEO_SAA6588
+ config VIDEO_PMS
+ 	tristate "Mediavision Pro Movie Studio Video For Linux"
+ 	depends on ISA && VIDEO_V4L1
++	# hung on bootup on mars, see config-Wed_Jun__4_14_33_56_CEST_2008.bad
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT
+ 	help
+ 	  Say Y if you have such a thing.
  
- #endif /* VISWS */
+Index: linux/drivers/mtd/Kconfig
+===================================================================
+--- linux.orig/drivers/mtd/Kconfig
++++ linux/drivers/mtd/Kconfig
+@@ -1,6 +1,11 @@
+ menuconfig MTD
+ 	tristate "Memory Technology Device (MTD) support"
+ 	depends on HAS_IOMEM
++
++	# dangerous to enable - sometimes hangs on probe
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if MTD = y
++
+ 	help
+ 	  Memory Technology Devices are flash, RAM and similar chips, often
+ 	  used for solid state file systems on embedded devices. This option
+Index: linux/drivers/net/appletalk/Kconfig
+===================================================================
+--- linux.orig/drivers/net/appletalk/Kconfig
++++ linux/drivers/net/appletalk/Kconfig
+@@ -52,6 +52,11 @@ config LTPC
+ config COPS
+ 	tristate "COPS LocalTalk PC support"
+ 	depends on DEV_APPLETALK && (ISA || EISA)
++	#
++	# Can hang
++	#
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if COPS = y
+ 	help
+ 	  This allows you to use COPS AppleTalk cards to connect to LocalTalk
+ 	  networks. You also need version 1.3.3 or later of the netatalk
+Index: linux/drivers/scsi/Kconfig
+===================================================================
+--- linux.orig/drivers/scsi/Kconfig
++++ linux/drivers/scsi/Kconfig
+@@ -1520,6 +1520,11 @@ config SCSI_NSP32
+ config SCSI_DEBUG
+ 	tristate "SCSI debugging host simulator"
+ 	depends on SCSI
++
++	# this creates a fake /dev/sda which confuses the bzImage bootup
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if SCSI_DEBUG = y
++
+ 	help
+ 	  This is a host adapter simulator that can simulate multiple hosts
+ 	  each with multiple dummy SCSI devices (disks). It defaults to one
+Index: linux/drivers/video/Kconfig
+===================================================================
+--- linux.orig/drivers/video/Kconfig
++++ linux/drivers/video/Kconfig
+@@ -236,6 +236,11 @@ comment "Frame buffer hardware drivers"
  
--#define NR_IRQ_VECTORS		NR_IRQS
--
- /* Voyager specific defines */
- /* These define the CPIs we use in linux */
- #define VIC_CPI_LEVEL0			0
+ config FB_CIRRUS
+ 	tristate "Cirrus Logic support"
++
++	# can hang on a box without this hardware
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if FB_CIRRUS = y
++
+ 	depends on FB && (ZORRO || PCI)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+@@ -546,6 +551,11 @@ config FB_CT65550
+ 
+ config FB_ASILIANT
+ 	bool "Asiliant (Chips) 69000 display support"
++
++	# can hang on a box without this hardware
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if FB_ASILIANT = y
++
+ 	depends on (FB = y) && PCI
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+@@ -564,6 +574,11 @@ config FB_IMSTT
+ 
+ config FB_VGA16
+ 	tristate "VGA 16-color graphics support"
++
++	# can hang on a box without this hardware
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if FB_VGA16 = y
++
+ 	depends on FB && (X86 || PPC)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+@@ -674,6 +689,11 @@ config FB_UVESA
+ 
+ config FB_VESA
+ 	bool "VESA VGA graphics support"
++
++	# can hang on a box without this hardware
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if FB_VESA = y
++
+ 	depends on (FB = y) && X86
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+@@ -1299,6 +1319,11 @@ config FB_MATROX_MULTIHEAD
+ 
+ config FB_RADEON
+ 	tristate "ATI Radeon display support"
++
++	# can hang on a box without this hardware
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if FB_RADEON = y
++
+ 	depends on FB && PCI
+ 	select FB_BACKLIGHT if FB_RADEON_BACKLIGHT
+ 	select FB_MODE_HELPERS
+@@ -1581,6 +1606,11 @@ config FB_VT8623
+ 
+ config FB_CYBLA
+ 	tristate "Cyberblade/i1 support"
++
++	# can hang on a box without this hardware
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if FB_CYBLA = y
++
+ 	depends on FB && PCI && X86_32 && !64BIT
+ 	select FB_CFB_IMAGEBLIT
+ 	select VIDEO_SELECT
+@@ -2006,6 +2036,11 @@ config FB_SH7760
+ 
+ config FB_VIRTUAL
+ 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
++
++	# can hang on a box without this hardware
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if FB_VIRTUAL = y
++
+ 	depends on FB
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+Index: linux/drivers/video/console/Kconfig
+===================================================================
+--- linux.orig/drivers/video/console/Kconfig
++++ linux/drivers/video/console/Kconfig
+@@ -61,6 +61,11 @@ config VIDEO_SELECT
+ 
+ config MDA_CONSOLE
+ 	depends on !M68K && !PARISC && ISA
++
++	# can hang on a box without this hardware
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if MDA_CONSOLE = y
++
+ 	tristate "MDA text console (dual-headed) (EXPERIMENTAL)"
+ 	---help---
+ 	  Say Y here if you have an old MDA or monochrome Hercules graphics
+@@ -113,6 +118,10 @@ config DUMMY_CONSOLE_ROWS
+ 
+ config FRAMEBUFFER_CONSOLE
+ 	tristate "Framebuffer Console support"
++
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if FRAMEBUFFER_CONSOLE = y
++
+ 	depends on FB
+ 	select CRC32
+ 	help
+Index: linux/drivers/watchdog/Kconfig
+===================================================================
+--- linux.orig/drivers/watchdog/Kconfig
++++ linux/drivers/watchdog/Kconfig
+@@ -324,6 +324,12 @@ config SC520_WDT
+ config EUROTECH_WDT
+ 	tristate "Eurotech CPU-1220/1410 Watchdog Timer"
+ 	depends on X86
++
++	# this ISA driver puts itself on IRQ10 - if IRQ10 happens to
++	# trigger then that will cause a watchdog-initiated reboot
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if EUROTECH_WDT = y
++
+ 	help
+ 	  Enable support for the watchdog timer on the Eurotech CPU-1220 and
+ 	  CPU-1410 cards.  These are PC/104 SBCs. Spec sheets and product
+@@ -830,6 +836,11 @@ config MIXCOMWD
+ config WDT
+ 	tristate "WDT Watchdog timer"
+ 	depends on ISA
++
++	# this ISA driver sits on IRQ11 by default - blocking forcedeth
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if WDT = y
++
+ 	---help---
+ 	  If you have a WDT500P or WDT501P watchdog board, say Y here,
+ 	  otherwise N. It is not possible to probe for this board, which means
+Index: linux/fs/Kconfig
+===================================================================
+--- linux.orig/fs/Kconfig
++++ linux/fs/Kconfig
+@@ -1636,6 +1636,11 @@ config NFS_V4
+ config ROOT_NFS
+ 	bool "Root file system on NFS"
+ 	depends on NFS_FS=y && IP_PNP
++
++	# hangs a non-root-NFS box during bootup
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT
++
+ 	help
+ 	  If you want your system to mount its root file system via NFS,
+ 	  choose Y here.  This is common practice for managing systems
+Index: linux/security/Kconfig
+===================================================================
+--- linux.orig/security/Kconfig
++++ linux/security/Kconfig
+@@ -85,6 +85,11 @@ config SECURITY_FILE_CAPABILITIES
+ config SECURITY_ROOTPLUG
+ 	bool "Root Plug Support"
+ 	depends on USB=y && SECURITY
++
++	# fails with hard-to-debug "could not find init" boot failure
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT
++
+ 	help
+ 	  This is a sample LSM module that should only be used as such.
+ 	  It prevents any programs running with egid == 0 if a specific
+Index: linux/security/selinux/Kconfig
+===================================================================
+--- linux.orig/security/selinux/Kconfig
++++ linux/security/selinux/Kconfig
+@@ -100,6 +100,11 @@ config SECURITY_SELINUX_CHECKREQPROT_VAL
+ config SECURITY_SELINUX_ENABLE_SECMARK_DEFAULT
+ 	bool "NSA SELinux enable new secmark network controls by default"
+ 	depends on SECURITY_SELINUX
++
++	# old system booted up with this cannot ssh out
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT
++
+ 	default n
+ 	help
+ 	  This option determines whether the new secmark-based network
