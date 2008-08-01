@@ -1,68 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbYHBAET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbYHBAGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754042AbYHBAET (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 20:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYHBAEL
+	id S1755522AbYHBAGo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 20:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYHBAGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 20:04:11 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39938 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751813AbYHBAEK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 20:04:10 -0400
-Subject: Re: [patch 01/15] Kernel Tracepoints
-From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-In-Reply-To: <20080801211020.GQ14851@linux.vnet.ibm.com>
-References: <1216108237.12595.122.camel@twins>
-	 <20080715132543.GB20037@Krystal> <1216130356.12595.184.camel@twins>
-	 <20080715142710.GC20037@Krystal> <1216132928.12595.201.camel@twins>
-	 <20080715152224.GE20037@Krystal> <1216135902.12595.214.camel@twins>
-	 <20080715160813.GB27626@Krystal> <1216139149.12595.224.camel@twins>
-	 <20080715165122.GB30082@Krystal>
-	 <20080801211020.GQ14851@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Sat, 02 Aug 2008 02:03:57 +0200
-Message-Id: <1217635437.9016.29.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 1 Aug 2008 20:06:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:60164 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751974AbYHBAGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 20:06:37 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18579.41468.973986.175252@cargo.ozlabs.ibm.com>
+Date: Sat, 2 Aug 2008 09:53:32 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/10] powerpc: Remove use of CONFIG_PPC_MERGE
+In-Reply-To: <1217609060-6381-1-git-send-email-galak@kernel.crashing.org>
+References: <1217609060-6381-1-git-send-email-galak@kernel.crashing.org>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-01 at 14:10 -0700, Paul E. McKenney wrote:
+Kumar Gala writes:
 
-> Yeah, I was thinking in terms of rcu_dereference() working with both
-> rcu_assign_pointer() and an as-yet-mythical rcu_assign_index().  Perhaps
-> this would be a good time to get better names:
+> This set of patches remove Kconfig and code related to CONFIG_PPC_MERGE
+> and !CONFIG_PPC_MERGE.  There is some discussion about that one last
+> use of !PPC_MERGE with respect to the 4xx MTD_NAND_NDFC driver.
 > 
-> Current:	rcu_assign_pointer()	rcu_dereference()
-> New Pointers:	rcu_publish_pointer()	rcu_subscribe_pointer()
-> New Indexes:	rcu_publish_index()	rcu_subscribe_index()
+> Paul, is this something you'd be willing to entertain for 2.6.27?
 
-Is it really worth the effort, splitting it out into these two cases?
+Yes, since it's just dead code removal.
 
-> And, while I am at it, work in a way of checking for either being in
-> the appropriate RCU read-side critical section and/or having the
-> needed lock/mutex/whatever held -- something I believe PeterZ was
-> prototyping some months back.
-
-Yeah - I have (bitrotted a bit, but should be salvageable) lockdep
-annotations for rcu_dereference().
-
-The problem with them is the huge amount of false positives.. Take for
-example the Radix tree code, its perfectly fine to use the radix tree
-code without RCU - say you do the old rwlock style, still it uses
-rcu_dereference().
-
-I never figured out a suitable way to annotate that.
-
+Paul.
