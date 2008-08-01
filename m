@@ -1,15 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761975AbYHAVO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760719AbYHAVOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761975AbYHAVO6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760503AbYHAVKQ
+	id S1760719AbYHAVOm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760910AbYHAVKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:10:16 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:42948 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760906AbYHAVKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 1 Aug 2008 17:10:14 -0400
-Date: Fri, 1 Aug 2008 14:10:12 -0700
+Received: from e33.co.us.ibm.com ([32.97.110.151]:35419 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759998AbYHAVKK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 17:10:10 -0400
+Date: Fri, 1 Aug 2008 14:10:06 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
@@ -21,19 +22,19 @@ Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 Subject: Re: [patch 01/15] Kernel Tracepoints
-Message-ID: <20080801211012.GO14851@linux.vnet.ibm.com>
+Message-ID: <20080801211006.GN14851@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080709145929.352201601@polymtl.ca> <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins> <20080715132543.GB20037@Krystal> <1216130356.12595.184.camel@twins> <20080715142710.GC20037@Krystal> <1216132928.12595.201.camel@twins> <20080715152224.GE20037@Krystal> <1216135902.12595.214.camel@twins> <20080715160813.GB27626@Krystal>
+References: <20080709145929.352201601@polymtl.ca> <20080709150043.693920317@polymtl.ca> <1216108237.12595.122.camel@twins> <20080715132543.GB20037@Krystal> <1216130356.12595.184.camel@twins> <20080715142710.GC20037@Krystal> <1216132928.12595.201.camel@twins> <20080715152224.GE20037@Krystal> <1216135902.12595.214.camel@twins> <20080715155018.GA27626@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080715160813.GB27626@Krystal>
+In-Reply-To: <20080715155018.GA27626@Krystal>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2008 at 12:08:13PM -0400, Mathieu Desnoyers wrote:
+On Tue, Jul 15, 2008 at 11:50:18AM -0400, Mathieu Desnoyers wrote:
 > * Peter Zijlstra (peterz@infradead.org) wrote:
 > > On Tue, 2008-07-15 at 11:22 -0400, Mathieu Desnoyers wrote:
 > > > * Peter Zijlstra (peterz@infradead.org) wrote:
@@ -79,7 +80,18 @@ On Tue, Jul 15, 2008 at 12:08:13PM -0400, Mathieu Desnoyers wrote:
 > > 
 > > I guess Paul has thought it through and verified all in-kernel use
 > > cases, but it still makes me feel unconfortable.
-> > 
+
+The idea was to create an rcu_assign_index() for that case, if and when
+it arose, something like the following:
+
+	#define rcu_assign_index(p, v, a) \
+		({ \
+			smp_wmb(); \
+			(p) = (v); \
+		})
+
+							Thanx, Paul
+
 > > > #define rcu_dereference(p)     ({ \
 > > >                                 typeof(p) _________p1 = ACCESS_ONCE(p); \
 > > >                                 smp_read_barrier_depends(); \
@@ -113,45 +125,16 @@ On Tue, Jul 15, 2008 at 12:08:13PM -0400, Mathieu Desnoyers wrote:
 > > /me goes use git blame....
 > > 
 > 
-> Actually, we could probably do the following, which also adds an extra
-> coherency check about non-NULL pointer assumptions :
+> Seems to come from :
 > 
-> #ifdef CONFIG_RCU_DEBUG /* this would be new */
-> #define DEBUG_RCU_BUG_ON(x) BUG_ON(x)
-> #else
-> #define DEBUG_RCU_BUG_ON(x)
-> #endif
+> commit d99c4f6b13b3149bc83703ab1493beaeaaaf8a2d
 > 
-> #define rcu_dereference(p)     ({ \
->                                 typeof(p) _________p1 = ACCESS_ONCE(p); \
->                                 if (p != NULL) \
->                                   smp_read_barrier_depends(); \
->                                 (_________p1); \
->                                 })
+> which refers to this discussion :
 > 
-> #define rcu_dereference_non_null(p)     ({ \
->                                 typeof(p) _________p1 = ACCESS_ONCE(p); \
->                                 DEBUG_RCU_BUG_ON(p == NULL); \
->                                 smp_read_barrier_depends(); \
->                                 (_________p1); \
->                                 })
-
-The big question is "why"?  smp_read_barrier_depends() is pretty
-lightweight, after all.
-
-						Thanx, Paul
-
-> The use-case where rcu_dereference() would be used is when it is
-> followed by a null pointer check (grepping through the sources shows me
-> this is a very very common case). In rare cases, it is assumed that the
-> pointer is never NULL and it is used just after the rcu_dereference. It
-> those cases, the extra test could be saved on alpha by using
-> rcu_dereference_non_null(p), which would check the the pointer is indeed
-> never NULL under some debug kernel configuration.
-> 
-> Does it make sense ?
+> http://www.mail-archive.com/netdev@vger.kernel.org/msg54852.html
 > 
 > Mathieu
+> 
 > 
 > > > > If so, does this really matter since we're already in an unlikely
 > > > > section? Again, if so, this deserves a comment ;-)
