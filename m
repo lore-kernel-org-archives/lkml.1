@@ -1,77 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbYHASBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbYHASGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755814AbYHASBz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 14:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYHASBp
+	id S1756164AbYHASGv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 14:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYHASGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 14:01:45 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:33862 "EHLO aun.it.uu.se"
+	Fri, 1 Aug 2008 14:06:44 -0400
+Received: from gw.goop.org ([64.81.55.164]:46655 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003AbYHASBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 14:01:44 -0400
-Date: Fri, 1 Aug 2008 20:01:34 +0200 (MEST)
-Message-Id: <200808011801.m71I1YLM006716@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: khc@pm.waw.pl
-Subject: [PATCH 2.6.27-rc1] ixp4xx_eth: fix dma_mapping_error() compile errors
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+	id S1752038AbYHASGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 14:06:44 -0400
+Message-ID: <489350AE.1030609@goop.org>
+Date: Fri, 01 Aug 2008 11:06:38 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: David Miller <davem@davemloft.net>, mingo@elte.hu,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] lockdep: lock_set_subclass - reset a held lock's subclass
+References: <20080731.155504.167792984.davem@davemloft.net>	 <20080801.011122.32782916.davem@davemloft.net>	 <20080801090100.GA25142@elte.hu>	 <20080801.021348.233313767.davem@davemloft.net> <1217588920.9686.6.camel@twins>
+In-Reply-To: <1217588920.9686.6.camel@twins>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The arm ixp4xx_eth driver doesn't compile in 2.6.27-rc1:
+Peter Zijlstra wrote:
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Subject: lockdep: lock_set_subclass - reset a held lock's subclass
+>
+> this can be used to reset a held lock's subclass, for arbitrary-depth
+> iterated data structures such as trees or lists which have per-node
+> locks.
+>   
 
-  CC [M]  drivers/net/arm/ixp4xx_eth.o
-drivers/net/arm/ixp4xx_eth.c: In function 'eth_poll':
-drivers/net/arm/ixp4xx_eth.c:554: warning: passing argument 1 of 'dma_mapping_error' makes pointer from integer without a cast
-drivers/net/arm/ixp4xx_eth.c:554: error: too few arguments to function 'dma_mapping_error'
-drivers/net/arm/ixp4xx_eth.c: In function 'eth_xmit':
-drivers/net/arm/ixp4xx_eth.c:701: warning: passing argument 1 of 'dma_mapping_error' makes pointer from integer without a cast
-drivers/net/arm/ixp4xx_eth.c:701: error: too few arguments to function 'dma_mapping_error'
-drivers/net/arm/ixp4xx_eth.c: In function 'init_queues':
-drivers/net/arm/ixp4xx_eth.c:886: warning: passing argument 1 of 'dma_mapping_error' makes pointer from integer without a cast
-drivers/net/arm/ixp4xx_eth.c:886: error: too few arguments to function 'dma_mapping_error'
-make[3]: *** [drivers/net/arm/ixp4xx_eth.o] Error 1
-make[2]: *** [drivers/net/arm] Error 2
-make[1]: *** [drivers/net] Error 2
-make: *** [drivers] Error 2
+Hey, can I use this to suppress the spurious lockdep warnings I get when 
+I try to hold more than one pte lock at once?
 
-dma_mapping_error() changed in 2.6.27-rc1 to also take a device parameter,
-but nobody bothered updating ixp4xx_eth.c. Fixed by passing the appropriate
-device value in the dma_mapping_error() calls.
-
-Tested on an ixp425 box.
-
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
----
-
-diff -rupN linux-2.6.27-rc1/drivers/net/arm/ixp4xx_eth.c linux-2.6.27-rc1.arm-ixp4xx_eth-dma_mapping_error-fix/drivers/net/arm/ixp4xx_eth.c
---- linux-2.6.27-rc1/drivers/net/arm/ixp4xx_eth.c	2008-07-29 10:40:10.000000000 +0200
-+++ linux-2.6.27-rc1.arm-ixp4xx_eth-dma_mapping_error-fix/drivers/net/arm/ixp4xx_eth.c	2008-08-01 19:38:35.000000000 +0200
-@@ -551,7 +551,7 @@ static int eth_poll(struct napi_struct *
- 		if ((skb = netdev_alloc_skb(dev, RX_BUFF_SIZE))) {
- 			phys = dma_map_single(&dev->dev, skb->data,
- 					      RX_BUFF_SIZE, DMA_FROM_DEVICE);
--			if (dma_mapping_error(phys)) {
-+			if (dma_mapping_error(&dev->dev, phys)) {
- 				dev_kfree_skb(skb);
- 				skb = NULL;
- 			}
-@@ -698,7 +698,7 @@ static int eth_xmit(struct sk_buff *skb,
- #endif
- 
- 	phys = dma_map_single(&dev->dev, mem, bytes, DMA_TO_DEVICE);
--	if (dma_mapping_error(phys)) {
-+	if (dma_mapping_error(&dev->dev, phys)) {
- #ifdef __ARMEB__
- 		dev_kfree_skb(skb);
- #else
-@@ -883,7 +883,7 @@ static int init_queues(struct port *port
- 		desc->buf_len = MAX_MRU;
- 		desc->data = dma_map_single(&port->netdev->dev, data,
- 					    RX_BUFF_SIZE, DMA_FROM_DEVICE);
--		if (dma_mapping_error(desc->data)) {
-+		if (dma_mapping_error(&port->netdev->dev, desc->data)) {
- 			free_buffer(buff);
- 			return -EIO;
- 		}
+    J
