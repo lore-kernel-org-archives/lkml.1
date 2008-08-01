@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759439AbYHAX0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbYHAX1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759439AbYHAX0V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 19:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbYHAX0O
+	id S1760598AbYHAX1j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 19:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbYHAX1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 19:26:14 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41900 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751231AbYHAX0N (ORCPT
+	Fri, 1 Aug 2008 19:27:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52780 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751556AbYHAX1b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 19:26:13 -0400
-Subject: Re: mtdsuper.c BLOCK=n compile error
-From: David Woodhouse <dwmw2@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1217632851.3719.47.camel@shinybook.infradead.org>
-References: <20080801223056.GK19682@cs181140183.pp.htv.fi>
-	 <1217630912.3719.41.camel@shinybook.infradead.org>
-	 <20080801225858.GM19682@cs181140183.pp.htv.fi>
-	 <1217632851.3719.47.camel@shinybook.infradead.org>
-Content-Type: text/plain
-Date: Sat, 02 Aug 2008 00:26:11 +0100
-Message-Id: <1217633171.3719.50.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 1 Aug 2008 19:27:31 -0400
+Date: Fri, 1 Aug 2008 16:26:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: hugh@veritas.com, jeremy@goop.org, a.p.zijlstra@chello.nl, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] lockdep: lock_set_subclass - reset a held lock's
+ subclass
+In-Reply-To: <20080801.162013.06459319.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.10.0808011623040.6819@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0808011113530.3277@nehalem.linux-foundation.org> <48935FA4.5010804@goop.org> <Pine.LNX.4.64.0808012051380.6485@blonde.site> <20080801.162013.06459319.davem@davemloft.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-08-02 at 00:20 +0100, David Woodhouse wrote:
-> Er, why is the second bdput() there _anyway_?
-
-Oh, I see. I have to stop posting patches -- I think it's past my
-bedtime.
-
-http://git.infradead.org/users/dwmw2/random-2.6.git?a=commitdiff;h=10f8e16418a5a69eda36cdbfc4ad17531c52fe92
 
 
--- 
-dwmw2
+On Fri, 1 Aug 2008, David Miller wrote:
+> 
+> Taking more than a few locks of the same class at once is bad
+> news and it's better to find an alternative method.
 
+It's not always wrong.
+
+If you can guarantee that anybody that takes more than one lock of a 
+particular class will always take a single top-level lock _first_, then 
+that's all good. You can obviously screw up and take the same lock _twice_ 
+(which will deadlock), but at least you cannot get into ABBA situations.
+
+So maybe the right thing to do is to just teach lockdep about "lock 
+protection locks". That would have solved the multi-queue issues for 
+networking too - all the actual network drivers would still have taken 
+just their single queue lock, but the one case that needs to take all of 
+them would have taken a separate top-level lock first.
+
+Never mind that the multi-queue locks were always taken in the same order: 
+it's never wrong to just have some top-level serialization, and anybody 
+who needs to take <n> locks might as well do <n+1>, because they sure as 
+hell aren't going to be on _any_ fastpaths.
+
+So the simplest solution really sounds like just teaching lockdep about 
+that one special case. It's not "nesting" exactly, although it's obviously 
+related to it.
+
+			Linus
