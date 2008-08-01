@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761826AbYHAWrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760291AbYHAWss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761826AbYHAWrG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 18:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761206AbYHAWm6
+	id S1760291AbYHAWss (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 18:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYHAWsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 18:42:58 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:44281 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761173AbYHAWm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 18:42:56 -0400
-Date: Sat, 2 Aug 2008 01:41:53 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Yudha Harimantoro T <yudha.ht@gmail.com>,
-       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       Avuton Olrich <avuton@gmail.com>
-Subject: Re: Error on Make Modules [2.6.27-rc1]
-Message-ID: <20080801224153.GL19682@cs181140183.pp.htv.fi>
-References: <264b990a0807312306jc064bbbp144342de555ac4f1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <264b990a0807312306jc064bbbp144342de555ac4f1@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 1 Aug 2008 18:48:38 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57551 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751039AbYHAWsh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 18:48:37 -0400
+Subject: Re: mtdsuper.c BLOCK=n compile error
+From: David Woodhouse <dwmw2@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080801223056.GK19682@cs181140183.pp.htv.fi>
+References: <20080801223056.GK19682@cs181140183.pp.htv.fi>
+Content-Type: text/plain
+Date: Fri, 01 Aug 2008 23:48:31 +0100
+Message-Id: <1217630912.3719.41.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 01:06:33PM +0700, Yudha Harimantoro T wrote:
-> Hi,
-> I make with 2.6.27-rc1 with my oldconfig.
+On Sat, 2008-08-02 at 01:30 +0300, Adrian Bunk wrote:
+> Commit d5686b444ff3f72808d2b3fbd58672a86cdf38e7
+> (switch mtd and dm-table to lookup_bdev()) causes
+> the following compile error with CONFIG_BLOCK=n:
 > 
-> I build the kernel and there's error on modules.
-> Errors :
-> -----------------------------------------------------------------------
-> root@system:/usr/src/linux# make
-> ...................
-> ...................
-> CC      net/xfrm/xfrm_ipcomp.mod.ko
-> LD [M] net/xfrm/xfrm_ipcomp.ko
-> make[1]: Nothing to be done for `__fw_modbuild'.
-> root@system:/usr/src/linux# make modules
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CALL    scripts/checksyscalls.sh
->   Building modules, stage 2.
->   MODPOST 545 modules
-> make[1]: Nothing to be done for `__fw_modbuild'.
-> root@system:/usr/src/linux#
-> -----------------------------------------------------------------------
+> <--  snip  -->
+> 
+> ...
+>   CC      drivers/mtd/mtdsuper.o
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/mtd/mtdsuper.c: In function `get_sb_mtd':
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/mtd/mtdsuper.c:184: error: implicit declaration of function 'lookup_bdev'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/mtd/mtdsuper.c:184: warning: assignment makes pointer from integer without a cast
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/mtd/mtdsuper.c:197: error: implicit declaration of function 'bdput'
+> make[3]: *** [drivers/mtd/mtdsuper.o] Error 1
+> 
+> <--  snip  -->
 
-Thanks for your report, everything is fine here.
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 
-@David, Sam:
-
-This is the second report where a user thought this was an error 
-message.
-
-Kbuild does otherwise not show raw messages from GNU make.
-
-Can you somehow hide this message?
-
-> Best regards,
-> Yudha_HT
-
-cu
-Adrian
+diff --git a/drivers/mtd/mtdsuper.c b/drivers/mtd/mtdsuper.c
+index 9b6af7e..e03250b 100644
+--- a/drivers/mtd/mtdsuper.c
++++ b/drivers/mtd/mtdsuper.c
+@@ -178,6 +178,7 @@ int get_sb_mtd(struct file_system_type *fs_type, int
+flags,
+ 		}
+ 	}
+ 
++#ifdef CONFIG_BLOCK
+ 	/* try the old way - the hack where we allowed users to mount
+ 	 * /dev/mtdblock$(n) but didn't actually _use_ the blockdev
+ 	 */
+@@ -200,6 +201,7 @@ int get_sb_mtd(struct file_system_type *fs_type, int
+flags,
+ 			     mnt);
+ 
+ not_an_MTD_device:
++#endif /* CONFIG_BLOCK */
+ 	if (!(flags & MS_SILENT))
+ 		printk(KERN_NOTICE
+ 		       "MTD: Attempt to mount non-MTD device \"%s\"\n",
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
