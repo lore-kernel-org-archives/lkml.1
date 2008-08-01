@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758684AbYHAXS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758991AbYHAXU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758684AbYHAXS1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 19:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYHAXST
+	id S1758991AbYHAXU0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 19:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYHAXUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 19:18:19 -0400
-Received: from colo.lackof.org ([198.49.126.79]:46259 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751474AbYHAXST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 19:18:19 -0400
-Date: Fri, 1 Aug 2008 17:18:07 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kyle McMartin <kyle@mcmartin.ca>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 14/20] parisc: use the new byteorder headers
-Message-ID: <20080801231807.GA26550@colo.lackof.org>
-References: <1216339783.6029.125.camel@brick> <20080801160647.GA22049@colo.lackof.org> <1217625817.5846.5.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217625817.5846.5.camel@brick>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 1 Aug 2008 19:20:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55870
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752684AbYHAXUO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 19:20:14 -0400
+Date: Fri, 01 Aug 2008 16:20:13 -0700 (PDT)
+Message-Id: <20080801.162013.06459319.davem@davemloft.net>
+To: hugh@veritas.com
+Cc: jeremy@goop.org, torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] lockdep: lock_set_subclass - reset a held lock's
+ subclass
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0808012051380.6485@blonde.site>
+References: <alpine.LFD.1.10.0808011113530.3277@nehalem.linux-foundation.org>
+	<48935FA4.5010804@goop.org>
+	<Pine.LNX.4.64.0808012051380.6485@blonde.site>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 02:23:37PM -0700, Harvey Harrison wrote:
-...
-> > Should this only be defined if BITS_PER_LONG is <=32  ?
+From: Hugh Dickins <hugh@veritas.com>
+Date: Fri, 1 Aug 2008 20:59:08 +0100 (BST)
+
+> On Fri, 1 Aug 2008, Jeremy Fitzhardinge wrote:
+> > 
+> > I have a function traversing a pagetable in vaddr order (low to high), taking
+> > pte locks as it builds up batches of pte page updates.  When the batch is
+> > issued, it releases all the locks, and won't end up holding more than ~16 at a
+> > time.
+> > 
+> > So, I think this is OK.  There are no internal lock ordering issues, and I
+> > don't think there'll be any bad interactions from someone trying to take pte
+> > locks for two separate pagetables.  I don't think there's anyone else trying
+> > to take more than one pte lock at once, but if there were "lock low vaddr then
+> > high" seems like a reasonable locking rule (or more precisely "lowest" to deal
+> > with the case of a pte page being aliased at multiple vaddrs).
 > 
-> The new byteorder headers only uses this if no __arch_swab64 is defined.
-> 
-> Further down in the parisc version, an __arch_swab64 is defined in the
-> BITS_PER_LONG >=32 case, making this moot.
+> Please check the spin_lock_nested() in move_ptes() in mm/mremap.c.
 
-Ok.
+It won't work because spin_lock_nested() is limited to a depth
+of 8 and he aparently needs 16.
 
-...
-> Other than the endianness, any other concerns?
+Taking more than a few locks of the same class at once is bad
+news and it's better to find an alternative method.
 
-Have you had a chance to test this?
-Or can you point me at another big endian arch that has similar 
-use of header files that has been successfully tested?
-
-I can arrange for access to parisc HW if you have time/interest
-in testing this yourself.
-
-thanks,
-grant
-
-> 
-> Harvey
