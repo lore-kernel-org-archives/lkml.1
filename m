@@ -1,106 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbYHAUg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759340AbYHAUli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756396AbYHAUg4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 16:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbYHAUgZ
+	id S1759340AbYHAUli (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 16:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbYHAUl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 16:36:25 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:34355 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756200AbYHAUgX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 16:36:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=uzV8rj9dvJYKHzuzu01/oFyCyFrQs2cKWiZEXeX2K2OidBA27fDmrDEGkpqlE//1Hr
-         a4O7Adgni313cbjFQWAIkBuSZtK8vqu7KwODX6/DMqhzjAhTeDrOFmx7RumFDHXyUGYU
-         CUPdxfUXXkW++atoswJGorNRE9vJwSTeaMKiU=
-Message-ID: <2c0942db0808011336h32112df2v706a452a6db518ba@mail.gmail.com>
-Date: Fri, 1 Aug 2008 13:36:22 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Sven Wegener" <sven.wegener@stealer.net>
-Subject: Re: [PATCH] leds: Avoid needless strlen() for attributes
-Cc: "Richard Purdie" <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LNX.1.10.0808012226560.2294@titan.stealer.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Aug 2008 16:41:27 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:48610 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754205AbYHAUl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 16:41:26 -0400
+Date: Fri, 1 Aug 2008 22:41:57 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Miller <davem@davemloft.net>, linux-next@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: linux-next: m68k build failure
+Message-ID: <20080801204157.GA12390@uranus.ravnborg.org>
+References: <20080730175233.02dbf021.sfr@canb.auug.org.au> <20080730.010234.193703201.davem@davemloft.net> <20080730084935.GA18545@uranus.ravnborg.org> <20080801153710.815bbb74.sfr@canb.auug.org.au> <Pine.LNX.4.64.0808011551120.30950@anakin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LNX.1.10.0808012226560.2294@titan.stealer.net>
-X-Google-Sender-Auth: 1714e56d9ed21e2b
+In-Reply-To: <Pine.LNX.4.64.0808011551120.30950@anakin>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 1, 2008 at 1:30 PM, Sven Wegener <sven.wegener@stealer.net> wrote:
-> There's no need for the additional call to strlen(), we can directly return the
-> value returned by sprintf(). We now return a length value that doesn't include
-> the final '\0', but user space shouldn't bother about it anyway.
+On Fri, Aug 01, 2008 at 03:52:22PM +0200, Geert Uytterhoeven wrote:
+> 	Hi Stephen,
+> 
+> On Fri, 1 Aug 2008, Stephen Rothwell wrote:
+> > On Wed, 30 Jul 2008 10:49:35 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
+> > >
+> > > Full list of relevant files:
+> > > include/asm-m68k/contregs.h:#include <asm-sparc/contregs.h>
+> > > include/asm-m68k/fbio.h:#include <asm-sparc/fbio.h>
+> > > include/asm-m68k/idprom.h:#include <asm-sparc/idprom.h>
+> > 
+> > I applied the following patch to today's linux-next.
+> 
+> Thanks!
+> 
+> BTW, is there a (good) way to have this without duplicating those header files?
 
-Why not just add 1 to the return value of sprintf, and guarantee that
-userspace sees the same thing before and after? It's simple enough to
-do, and avoids guessing about what userspace may or may not be doing.
+The only solution I can come up with right now is:
 
-> Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
-> ---
->  drivers/leds/led-class.c     |    5 +----
->  drivers/leds/ledtrig-timer.c |    8 ++------
->  2 files changed, 3 insertions(+), 10 deletions(-)
->
-> Patch is based on your current (024e8ac) leds git tree head.
->
-> diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
-> index 559a408..1aa24d3 100644
-> --- a/drivers/leds/led-class.c
-> +++ b/drivers/leds/led-class.c
-> @@ -34,14 +34,11 @@ static ssize_t led_brightness_show(struct device *dev,
->                struct device_attribute *attr, char *buf)
->  {
->        struct led_classdev *led_cdev = dev_get_drvdata(dev);
-> -       ssize_t ret = 0;
->
->        /* no lock needed for this */
->        led_update_brightness(led_cdev);
-> -       sprintf(buf, "%u\n", led_cdev->brightness);
-> -       ret = strlen(buf) + 1;
->
-> -       return ret;
-> +       return sprintf(buf, "%u\n", led_cdev->brightness);
->  }
->
->  static ssize_t led_brightness_store(struct device *dev,
-> diff --git a/drivers/leds/ledtrig-timer.c b/drivers/leds/ledtrig-timer.c
-> index 5c99f4f..db68196 100644
-> --- a/drivers/leds/ledtrig-timer.c
-> +++ b/drivers/leds/ledtrig-timer.c
-> @@ -70,9 +70,7 @@ static ssize_t led_delay_on_show(struct device *dev,
->        struct led_classdev *led_cdev = dev_get_drvdata(dev);
->        struct timer_trig_data *timer_data = led_cdev->trigger_data;
->
-> -       sprintf(buf, "%lu\n", timer_data->delay_on);
-> -
-> -       return strlen(buf) + 1;
-> +       return sprintf(buf, "%lu\n", timer_data->delay_on);
->  }
->
->  static ssize_t led_delay_on_store(struct device *dev,
-> @@ -116,9 +114,7 @@ static ssize_t led_delay_off_show(struct device *dev,
->        struct led_classdev *led_cdev = dev_get_drvdata(dev);
->        struct timer_trig_data *timer_data = led_cdev->trigger_data;
->
-> -       sprintf(buf, "%lu\n", timer_data->delay_off);
-> -
-> -       return strlen(buf) + 1;
-> +       return sprintf(buf, "%lu\n", timer_data->delay_off);
->  }
->
->  static ssize_t led_delay_off_store(struct device *dev,
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Makefile:
+ccflags-y += -Iarch/sparc/include
+
+foo.c:
+#include <asm/fbio.h>
+
+Disadvantage is that we loose the explicit documentation that this
+is header files from another architecture.
+So we should at least add a comment saying this.
+
+And the above would not work if the file has same filename,
+but then that is not a likely situation either.
+
+	Sam
