@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752303AbYHAQMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbYHAQQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752303AbYHAQMV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 12:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbYHAQLx
+	id S1754194AbYHAQQW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 12:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYHAQQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 12:11:53 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:53885 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753277AbYHAQLv (ORCPT
+	Fri, 1 Aug 2008 12:16:14 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:54117 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751145AbYHAQQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 12:11:51 -0400
-Date: Fri, 1 Aug 2008 10:11:49 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Matt Domsch <Matt_Domsch@dell.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Ric Wheeler <rwheeler@redhat.com>, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jim Meyering <jim@meyering.net>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
-Subject: Re: tools support for non-512 byte sector sizes
-Message-ID: <20080801161149.GA26461@parisc-linux.org>
-References: <488F524F.6020905@redhat.com> <20080729182611.GB24924@parisc-linux.org> <1217356645.6103.48.camel@localhost.localdomain> <yq13alsr0g0.fsf@sermon.lab.mkp.net> <20080730135147.GA4513@auslistsprd01.us.dell.com>
+	Fri, 1 Aug 2008 12:16:14 -0400
+Message-ID: <489336C7.8010605@linux.vnet.ibm.com>
+Date: Fri, 01 Aug 2008 21:46:07 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080730135147.GA4513@auslistsprd01.us.dell.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Tony Breeds <tony@bakeyournoodle.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Subject: Re: [BUILD-FAILURE] 2.6.27-rc1-mm1 - allyesconfig build fails on
+ powerpc
+References: <20080731000354.24b55d5b.akpm@linux-foundation.org> <4891B370.5040208@linux.vnet.ibm.com> <20080801052936.GZ20457@bakeyournoodle.com>
+In-Reply-To: <20080801052936.GZ20457@bakeyournoodle.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 30, 2008 at 08:51:47AM -0500, Matt Domsch wrote:
-> I have access to disks with native 4KB sectors now too.  Would
-> interested parties be willing to share test plans, so we could be sure
-> we have coverage wrt correctness: kernel internals, userspace tools like parted,
-> fdisk, kpartx, apps using O_DIRECT)?  Benchmarking winds up being an
-> NDA activity this early in the game so I don't want the focus of any
-> joint work to be benchmarks yet.
+Tony Breeds wrote:
+> On Thu, Jul 31, 2008 at 06:13:28PM +0530, Kamalesh Babulal wrote:
+>> Hi Andrew,
+>>
+>> make allyesconfig with 2.6.27-rc1-mm1 kernel on powerpc fails with build error
+> 
+> <snip>
+> 
+> Turning off GCOV "fixes" this.  Not really the best solution but at
+> least it narrows doen the search effort.
 
-Are they SCSI?  I just got round to trying 4k sector sizes in ata_ram
-(after adding file backed capability) and found that libata currently
-silently ignores the identify bits that report sector size.  I'll work
-on fixing that this afternoon if nobody beats me to it.
+Thanks, kernel compiles after turning off the GCOV profiling options.
+> 
+> Peter,
+> 	Can you have a look at how this can be fixed, if at all?
+Peter, 
+	kindly let me know if you want me to test any test patches/fixes.
+> 
+> Yours Tony
+> 
+>   linux.conf.au    http://www.marchsouth.org/
+>   Jan 19 - 24 2009 The Australian Linux Technical Conference!
+> 
+
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
