@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbYHAWwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751732AbYHAWwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbYHAWwQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 18:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbYHAWv6
+	id S1751732AbYHAWwh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 18:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbYHAWwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 18:51:58 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58208 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750972AbYHAWv4 (ORCPT
+	Fri, 1 Aug 2008 18:52:25 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36389 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751726AbYHAWwY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 18:51:56 -0400
-Subject: Re: Error on Make Modules [2.6.27-rc1]
-From: David Woodhouse <dwmw2@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Yudha Harimantoro T <yudha.ht@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       Avuton Olrich <avuton@gmail.com>
-In-Reply-To: <20080801224153.GL19682@cs181140183.pp.htv.fi>
-References: <264b990a0807312306jc064bbbp144342de555ac4f1@mail.gmail.com>
-	 <20080801224153.GL19682@cs181140183.pp.htv.fi>
-Content-Type: text/plain
-Date: Fri, 01 Aug 2008 23:51:40 +0100
-Message-Id: <1217631100.3719.44.camel@shinybook.infradead.org>
+	Fri, 1 Aug 2008 18:52:24 -0400
+Date: Sat, 2 Aug 2008 00:52:36 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Jack Steiner <steiner@sgi.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ACPI: bounds check IRQ to prevent memory corruption
+Message-ID: <20080801225236.GA15372@one.firstfloor.org>
+References: <20080801215755.4761.92512.stgit@tigger.helgaas>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080801215755.4761.92512.stgit@tigger.helgaas>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-08-02 at 01:41 +0300, Adrian Bunk wrote:
-> Can you somehow hide this message?
+On Fri, Aug 01, 2008 at 03:58:17PM -0600, Bjorn Helgaas wrote:
+> 
+> acpi_penalize_isa_irq() should validate irq before using it to
+> index the acpi_irq_penalty[] table.
 
-I'll leave the __fw_install one alone, so that if there's nothing to do
-for 'make firmware_install' it says so rather than just doing nothing.
-The other two can shut up, as requested.
+Applied to test thanks.
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+> I think this should go in 2.6.27.
 
-diff --git a/scripts/Makefile.fwinst b/scripts/Makefile.fwinst
-index f63a663..6bf8e87 100644
---- a/scripts/Makefile.fwinst
-+++ b/scripts/Makefile.fwinst
-@@ -50,8 +50,12 @@ PHONY +=  __fw_install __fw_modinst FORCE
- .PHONY: $(PHONY)
- 
- __fw_install: $(installed-fw)
-+
- __fw_modinst: $(installed-mod-fw)
-+	@:
-+
- __fw_modbuild: $(addprefix $(obj)/,$(mod-fw))
-+	@:
- 
- FORCE:
- 
+Agreed.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+-Andi
