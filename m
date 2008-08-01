@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762204AbYHAVW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763673AbYHAVWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762204AbYHAVW3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761286AbYHAVPZ
+	id S1763673AbYHAVWq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762019AbYHAVPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:15:25 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:40691 "EHLO smtp4.pp.htv.fi"
+	Fri, 1 Aug 2008 17:15:32 -0400
+Received: from mail.queued.net ([207.210.101.209]:4448 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761339AbYHAVPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:15:23 -0400
-Date: Sat, 2 Aug 2008 00:14:20 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Or Gerlitz <ogerlitz@voltaire.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: error building linus tree (2.6.27-rc1)
-Message-ID: <20080801211420.GE19682@cs181140183.pp.htv.fi>
-References: <Pine.LNX.4.64.0807292357040.3348@zuben.voltaire.com> <Pine.LNX.4.64.0808012312260.10651@zuben.voltaire.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0808012312260.10651@zuben.voltaire.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1762011AbYHAVPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 17:15:30 -0400
+Date: Fri, 1 Aug 2008 17:15:18 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] OLPC: psmouse: touchpad driver
+Message-ID: <20080801171518.4c041a47@fred>
+In-Reply-To: <20080801143150.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080801142004.2d3d1349@fred>
+	<20080801143150.ZZRA012@mailhub.coreip.homeip.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 11:14:10PM +0300, Or Gerlitz wrote:
-> On Wed, 30 Jul 2008, Or Gerlitz wrote:
+On Fri, 1 Aug 2008 14:34:51 -0400
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+
+> On Fri, Aug 01, 2008 at 02:20:04PM -0400, Andres Salomon wrote:
+> > 
+> > This adds support for OLPC's touchpad.  It has lots of neat
+> > features, none of which are enabled because the hardware is too
+> > buggy.  Instead, we use it like a normal touchpad, but with a
+> > number of workarounds in place to deal with the frequent hardware
+> > spasms.  Humidity changes, sweat, tinfoil underwear, plugging in
+> > AC, drinks, evil felines.. All tend to cause the touchpad to freak
+> > out.
+> > 
+> > Stuff like this keeps me from getting bored.
+> > 
 > 
-> > I get into this
-> > arch/x86/kernel/ldt.c: In function `alloc_ldt':
-> > arch/x86/kernel/ldt.c:67: error: invalid lvalue in unary `&'
+> Good stuff, thank you. I bet you named the module olpc and gave pregix
+> hgpk to all the functions to mess with mt feeble brain ;) Maybe we
+> should rename the module to hgpk as well?
 > 
-> Here's the gcc and as versions
+
+I thought about it, but decided not to for now now (olpc.c is what
+people will recognize it as; people familiar w/ the spec will recognize
+it as HGPK).  Granted, olpc.c is not a good long term name, as hardware
+will most definitely be changed in the XO-2 (and maybe even before
+then, who knows?)
+
+So, I wouldn't be against renaming it hgpk.c, but I'm not sure that
+people would recognize it when looking for it.
+
+
+> > From psmouse-base, we use psmouse_set_state quite a bit, as well
+> > as piggy-backing off of kpsmoused_wq; so, this also makes those
+> > available to protocol extensions.
+> >
 > 
-> $ gcc --version
-> gcc (GCC) 3.4.6 20060404 (Red Hat 3.4.6-8)
-> Copyright (C) 2006 Free Software Foundation, Inc.
-> This is free software; see the source for copying conditions.  There is NO
-> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
->...
+> Do you think we should provide assessor functions to deal with
+> kpsmoused instead of playing with it directly? I was thinking about
+> starting it on-demand for protocols that may use it and shut it off by
+> default.
+> 
 
-Ah, thanks.
-
-It's a known problem that has just been fixed in Linus' tree.
-
-> Or.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Sure.  Do you already have code to do the on-demand stuff, so I can
+make sure what I end up writing works w/ your code?
