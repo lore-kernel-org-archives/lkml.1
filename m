@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760749AbYHAWqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762293AbYHAWqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760749AbYHAWqL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 18:46:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760820AbYHAWmJ
+	id S1762293AbYHAWqt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 18:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760954AbYHAWmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 18:42:09 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:52161 "EHLO
+	Fri, 1 Aug 2008 18:42:44 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:52193 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760797AbYHAWmI (ORCPT
+	with ESMTP id S1760950AbYHAWmm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 18:42:08 -0400
-Date: Fri, 1 Aug 2008 18:41:28 -0400
+	Fri, 1 Aug 2008 18:42:42 -0400
+Date: Fri, 1 Aug 2008 18:41:34 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: stable@kernel.org
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Nix <nix@esperi.org.uk>
-Subject: [PATCH 6/14] uml: deal with host time going backwards
-Message-ID: <20080801224128.GA13721@c2.user-mode-linux.org>
+       Benny Halevy <bhalevy@panasas.com>, Adrian Bunk <bunk@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>
+Subject: [PATCH 12/14] [UML] fix gcc ICEs and unresolved externs
+Message-ID: <20080801224134.GA13708@c2.user-mode-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,45 +27,79 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From b547462b600e9d284f9d40ed558ca2b8904af185 Mon Sep 17 00:00:00 2001
+>From f9498bcc86dbf5249a4d9baff6ba508c3d4c86fa Mon Sep 17 00:00:00 2001
 
-Protection against the host's time going backwards (eg, ntp activity on
-the host) by keeping track of the time at the last tick and if it's
-greater than the current time, keep time stopped until the host catches
-up.
+There are various constraints on the use of unit-at-a-time:
+ - i386 uses no-unit-at-a-time for pre-4.0 (not 4.3)
+ - x86_64 uses unit-at-a-time always
 
-Cc: Nix <nix@esperi.org.uk>
+Uli reported a crash on x86_64 with gcc 4.1.2 with unit-at-a-time,
+resulting in commit c0a18111e571138747a98af18b3a2124df56a0d1
+
+Ingo reported a gcc internal error with gcc 4.3 with no-unit-at-a-timem,
+resulting in 22eecde2f9034764a3fd095eecfa3adfb8ec9a98
+
+Benny Halevy is seeing extern inlines not resolved with gcc 4.3 with
+no-unit-at-a-time
+
+This patch reintroduces unit-at-a-time for gcc >= 4.0, bringing back the
+possibility of Uli's crash.  If that happens, we'll debug it.
+
+I started seeing both the internal compiler errors and unresolved
+inlines on Fedora 9.  This patch fixes both problems, without so far
+reintroducing the crash reported by Uli.
+
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Cc: Benny Halevy <bhalevy@panasas.com>
+Cc: Adrian Bunk <bunk@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Ulrich Drepper <drepper@redhat.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 ---
- arch/um/os-Linux/time.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ arch/um/Makefile        |    1 -
+ arch/um/Makefile-i386   |    7 +++++++
+ arch/um/Makefile-x86_64 |    3 +++
+ 3 files changed, 10 insertions(+), 1 deletions(-)
 
-diff --git a/arch/um/os-Linux/time.c b/arch/um/os-Linux/time.c
-index bee98f4..dec5678 100644
---- a/arch/um/os-Linux/time.c
-+++ b/arch/um/os-Linux/time.c
-@@ -106,6 +106,10 @@ static void deliver_alarm(void)
- 	unsigned long long this_tick = os_nsecs();
- 	int one_tick = UM_NSEC_PER_SEC / UM_HZ;
+diff --git a/arch/um/Makefile b/arch/um/Makefile
+index dbeab15..ca40397 100644
+--- a/arch/um/Makefile
++++ b/arch/um/Makefile
+@@ -77,7 +77,6 @@ include $(srctree)/$(ARCH_DIR)/Makefile-os-$(OS)
+ KERNEL_DEFINES = $(strip -Derrno=kernel_errno -Dsigprocmask=kernel_sigprocmask \
+ 			 -Dmktime=kernel_mktime $(ARCH_KERNEL_DEFINES))
+ KBUILD_CFLAGS += $(KERNEL_DEFINES)
+-KBUILD_CFLAGS += $(call cc-option,-fno-unit-at-a-time,)
  
-+	/* Protection against the host's time going backwards */
-+	if ((last_tick != 0) && (this_tick < last_tick))
-+		this_tick = last_tick;
+ PHONY += linux
+ 
+diff --git a/arch/um/Makefile-i386 b/arch/um/Makefile-i386
+index 561e373..302cbe5 100644
+--- a/arch/um/Makefile-i386
++++ b/arch/um/Makefile-i386
+@@ -32,4 +32,11 @@ cflags-y += $(call cc-option,-mpreferred-stack-boundary=2)
+ # an unresolved reference.
+ cflags-y += -ffreestanding
+ 
++# Disable unit-at-a-time mode on pre-gcc-4.0 compilers, it makes gcc use
++# a lot more stack due to the lack of sharing of stacklots.  Also, gcc
++# 4.3.0 needs -funit-at-a-time for extern inline functions.
++KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0400 ] ; then \
++			echo $(call cc-option,-fno-unit-at-a-time); \
++			else echo $(call cc-option,-funit-at-a-time); fi ;)
 +
- 	if (last_tick == 0)
- 		last_tick = this_tick - one_tick;
+ KBUILD_CFLAGS += $(cflags-y)
+diff --git a/arch/um/Makefile-x86_64 b/arch/um/Makefile-x86_64
+index 8ed362f..a9cd7e7 100644
+--- a/arch/um/Makefile-x86_64
++++ b/arch/um/Makefile-x86_64
+@@ -21,3 +21,6 @@ HEADER_ARCH := x86
  
-@@ -148,6 +152,9 @@ static int after_sleep_interval(struct timespec *ts)
- 		start_usecs = usec;
- 
- 	start_usecs -= skew / UM_NSEC_PER_USEC;
-+	if (start_usecs < 0)
-+		start_usecs = 0;
+ LINK-$(CONFIG_LD_SCRIPT_DYN) += -Wl,-rpath,/lib64
+ LINK-y += -m64
 +
- 	tv = ((struct timeval) { .tv_sec  = start_usecs / UM_USEC_PER_SEC,
- 				 .tv_usec = start_usecs % UM_USEC_PER_SEC });
- 	interval = ((struct itimerval) { { 0, usec }, tv });
++# Do unit-at-a-time unconditionally on x86_64, following the host
++KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
 -- 
 1.5.5.1
+
