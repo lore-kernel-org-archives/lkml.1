@@ -1,110 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753046AbYHAO6L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbYHAPC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753046AbYHAO6L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 10:58:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYHAO54
+	id S1752647AbYHAPC2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 11:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYHAPCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 10:57:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46957 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751136AbYHAO5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 10:57:55 -0400
-Date: Fri, 1 Aug 2008 10:34:37 -0400
-From: Josef Bacik <jbacik@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Josef Bacik <jbacik@redhat.com>, Ric Wheeler <rwheeler@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-fsdevel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: high resolution timers, scheduling & sleep granularity
-Message-ID: <20080801143437.GA31517@unused.rdu.redhat.com>
-References: <4892FC11.4020105@redhat.com> <20080801132537.GB14001@unused.rdu.redhat.com> <1217602211.4684.9.camel@twins>
+	Fri, 1 Aug 2008 11:02:20 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:23498 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbYHAPCT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 11:02:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=yEMSd0/lYQhYJKmpkHrom2yKMaNo2vtEPBJipYZEg5kESnfhf17QQE3Q1ofRI5yGWL
+         2sF3baxr7GzAscKNdQcY5ahKYi+14lTnHf8Sj9Sx0kVQhdqEYHODJ0/8nSPJyhaqv2nw
+         MZBVfNCccnKFYEDOjyx2IN0Q6fZrZUqAjc5N8=
+Message-ID: <4893257C.1020907@gmail.com>
+Date: Fri, 01 Aug 2008 17:02:20 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217602211.4684.9.camel@twins>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Bob Copeland <me@bobcopeland.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Dave Young <hidave.darkstar@gmail.com>, johannes@sipsolutions.net,
+       tomasw@gmail.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       linville@tuxdriver.com, stable@kernel.org
+Subject: Re: [PATCH] ath5k : ath5k_config_interface deadlock fix
+References: <20080801074014.GA3341@darkstar> <4892C2CA.7010003@gmail.com>	 <4892C359.9000304@cs.helsinki.fi>	 <20080801011415.ff4821a3.akpm@linux-foundation.org> <b6c5339f0808010643i58dbb2a7jf459359451061ae4@mail.gmail.com>
+In-Reply-To: <b6c5339f0808010643i58dbb2a7jf459359451061ae4@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 04:50:11PM +0200, Peter Zijlstra wrote:
-> On Fri, 2008-08-01 at 09:25 -0400, Josef Bacik wrote:
+Bob Copeland napsal(a):
+> On Fri, Aug 1, 2008 at 4:14 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+>> On Fri, 01 Aug 2008 11:03:37 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>>
+>>> Jiri Slaby wrote:
+>>>> Dave Young napsal(a):
+>>>>> In the drivers/net/wireless/ath5k/base.c, there's recursive locking of
+>>>>> sc->lock
+>>>> Should be fixed already:
+>>>> http://git.kernel.org/?p=linux/kernel/git/linville/wireless-2.6.git;a=commitdiff_plain;h=bc05116ab33d30342e2b4b1bcc6d6e1184e9df97
+>>> I guess that didn't make it to -stable?
+>> (cc stable!)
 > 
-> > Index: linux-2.6/fs/jbd/transaction.c
-> > ===================================================================
-> > --- linux-2.6.orig/fs/jbd/transaction.c
-> > +++ linux-2.6/fs/jbd/transaction.c
-> 
-> > @@ -63,6 +65,32 @@ get_transaction(journal_t *journal, tran
-> >  	return transaction;
-> >  }
-> >  
-> > +static void precision_sleep(unsigned long time)
-> > +{
-> > +	struct hrtimer_sleeper t;
-> > +
-> > +	hrtimer_init_on_stack(&t.timer, CLOCK_REALTIME, HRTIMER_MODE_ABS);
-> > +	hrtimer_init_sleeper(&t, current);
-> > +	t.timer.expires = ktime_add_ns(ktime_get_real(), time);
-> > +
-> > +	do {
-> > +		set_current_state(TASK_UNINTERRUPTIBLE);
-> > +
-> > +		hrtimer_start(&t.timer, t.timer.expires, HRTIMER_MODE_ABS);
-> > +		if (!hrtimer_active(&t.timer))
-> > +			t.task = NULL;
-> > +
-> > +		if (likely(t.task))
-> > +			schedule();
-> > +
-> > +		hrtimer_cancel(&t.timer);
-> > +	} while (t.task);
-> > +
-> > +	set_current_state(TASK_RUNNING);
-> > +
-> > +	destroy_hrtimer_on_stack(&t.timer);
-> > +}
-> > +
-> >  /*
-> >   * Handle management.
-> >   *
-> 
-> I was convinced we already had such a creature,. but I guess I was wrong
-> as I can't find it ;-)
-> 
-> Anyway, I'm thinking this function ought to live in kernel/hrtimer.c and
-> possibly get renamed to something like hrtimer_sleep_ns() or some such
-> (means you can also reuse the do_nanosleep helper in there).
-> 
-> Also, have you considered the impact on platforms that do not support
-> hrtimers, or don't have high resolution clock events available?
->
+> Not to worry, the commit that introduced it was
+> 9d139c810a2aa17365cc548d0cd2a189d8433c65, which as far as I can tell
+> came in after 2.6.26.
 
-Not yet :), this is just a proof of concept atm, eventually if I do use hrtimers
-I would just fallback to using jiffies if the arch doesn't support hrtimers as
-it still gets significantly better performance than what we currently have.
-Thanks,
+git-describe 9d139c810a2aa17365cc548d0cd2a189d8433c65
+v2.6.26-rc8-1219-g9d139c8
 
-Josef
-
- 
-> > Index: linux-2.6/kernel/hrtimer.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/hrtimer.c
-> > +++ linux-2.6/kernel/hrtimer.c
-> > @@ -1458,6 +1458,7 @@ void hrtimer_init_sleeper(struct hrtimer
-> >  	sl->timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_SOFTIRQ;
-> >  #endif
-> >  }
-> > +EXPORT_SYMBOL_GPL(hrtimer_init_sleeper);
-> >  
-> >  static int __sched do_nanosleep(struct hrtimer_sleeper *t, enum hrtimer_mode mode)
-> >  {
-> 
-> That also gets rid of this export..
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
