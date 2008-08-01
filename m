@@ -1,79 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757635AbYHASRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbYHASRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757635AbYHASRB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 14:17:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757400AbYHASQt
+	id S1757641AbYHASRr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 14:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbYHASRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 14:16:49 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:57250 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752038AbYHASQr (ORCPT
+	Fri, 1 Aug 2008 14:17:38 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:33865 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751844AbYHASRh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 14:16:47 -0400
-Date: Fri, 01 Aug 2008 12:16:16 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: high resolution timers, scheduling & sleep granularity
-In-reply-to: <20080801132537.GB14001@unused.rdu.redhat.com>
-To: Josef Bacik <jbacik@redhat.com>
-Cc: Ric Wheeler <rwheeler@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org,
-       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org
-Message-id: <20080801181616.GZ3292@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <4892FC11.4020105@redhat.com>
- <20080801132537.GB14001@unused.rdu.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 1 Aug 2008 14:17:37 -0400
+Date: Fri, 1 Aug 2008 11:14:52 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       gregkh <greg@kroah.com>
+Subject: Re: linux-next: Tree for August 1 (sysfs.h)
+Message-Id: <20080801111452.1b4c55d3.randy.dunlap@oracle.com>
+In-Reply-To: <20080801165808.68f833ec.sfr@canb.auug.org.au>
+References: <20080801165808.68f833ec.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 01, 2008  09:25 -0400, Josef Bacik wrote:
-> +	if (unlikely(!journal->j_average_commit_time))
-> +		journal->j_average_commit_time = commit_time;
-> +	else
-> +		journal->j_average_commit_time = (commit_time +
-> +					journal->j_average_commit_time) / 2;
+When CONFIG_SYSFS=n:
 
-You may also consider making this a decaying average, so that minor changes
-in the workload are smoothed out.  Also, it is probably easier to read
-likely(foo) instead of unlikely(!foo)...
+  CC      arch/x86/kernel/asm-offsets.s
+In file included from linux-next-20080801/include/linux/kobject.h:21,
+                 from linux-next-20080801/include/linux/module.h:16,
+                 from linux-next-20080801/include/linux/crypto.h:21,
+                 from linux-next-20080801/arch/x86/kernel/asm-offsets_64.c:7,
+                 from linux-next-20080801/arch/x86/kernel/asm-offsets.c:4:
+linux-next-20080801/include/linux/sysfs.h:247: error: return type is an incomplete type
+linux-next-20080801/include/linux/sysfs.h: In function 'sysfs_get':
+linux-next-20080801/include/linux/sysfs.h:248: warning: 'return' with a value, in function returning void
+make[2]: *** [arch/x86/kernel/asm-offsets.s] Error 1
 
-	if (likely(journal->j_average_commit_time != 0))
-		journal->j_average_commit_time =
-			(commit_time * 3 + journal->j_average_commit_time) / 4;
-	else
-		journal->j_average_commit_time = commit_time;
 
-> +	if (journal->print_count < 100) {
-> +		journal->print_count++;
-> +		printk(KERN_ERR "avg commit time = %lu\n",
-> +		       journal->j_average_commit_time);
-> +	}
 
-There is already the jbd stats patch in jbd2 that is reporting this
-information for the previous transactions.
 
->  
-> +		spin_lock(&journal->j_state_lock);
-> +		commit_time = journal->j_average_commit_time;
-> +		spin_unlock(&journal->j_state_lock);
-> +
-> +		sleep_time = elapsed_jiffies(transaction->t_start_time, jiffies);
-> +		if (!sleep_time)
-> +			sleep_time = 1;
-> +		sleep_time = (commit_time / sleep_time) * commit_time;
-
-I was also going to comment on the use of jiffies here, but Ric beat me
-to it.
-
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
-
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
