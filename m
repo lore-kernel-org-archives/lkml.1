@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbYHARyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbYHAR4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbYHARyj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 13:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbYHARyb
+	id S1756628AbYHAR4i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 13:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbYHAR4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 13:54:31 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:64987 "EHLO
+	Fri, 1 Aug 2008 13:56:30 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:10531 "EHLO
 	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751909AbYHARyb (ORCPT
+	with ESMTP id S1751361AbYHAR43 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 13:54:31 -0400
-Date: Fri, 1 Aug 2008 10:52:55 -0700
+	Fri, 1 Aug 2008 13:56:29 -0400
+Date: Fri, 1 Aug 2008 10:50:28 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH v2 2/2] ftrace: printk formatting infrastructure
-Message-Id: <20080801105255.82a6520f.randy.dunlap@oracle.com>
-In-Reply-To: <alpine.DEB.1.10.0808011248080.31922@gandalf.stny.rr.com>
-References: <20080801162639.175407419@goodmis.org>
-	<20080801163737.420519487@goodmis.org>
-	<20080801094331.626195c8.randy.dunlap@oracle.com>
-	<alpine.DEB.1.10.0808011248080.31922@gandalf.stny.rr.com>
+To: Dean Nelson <dcn@sgi.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jack Steiner <steiner@sgi.com>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] add reverse dependency of CONFIG_SGI_XP upon
+ CONFIG_SGI_GRU
+Message-Id: <20080801105028.3411f703.randy.dunlap@oracle.com>
+In-Reply-To: <20080801145526.GA29354@sgi.com>
+References: <20080731175854.09ea35c8.sfr@canb.auug.org.au>
+	<20080731223758.b5985dd7.randy.dunlap@oracle.com>
+	<20080801145526.GA29354@sgi.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -38,77 +36,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Aug 2008 12:53:17 -0400 (EDT) Steven Rostedt wrote:
+On Fri, 1 Aug 2008 09:55:26 -0500 Dean Nelson wrote:
 
+> Add a reverse dependency of CONFIG_SGI_XP upon CONFIG_SGI_GRU to Kconfig.
 > 
-> On Fri, 1 Aug 2008, Randy Dunlap wrote:
-> 
-> > On Fri, 01 Aug 2008 12:26:41 -0400 Steven Rostedt wrote:
-> > 
-> > > +/**
-> > > + * ftrace_printk - printf formatting in the ftrace buffer
-> > > + * @fmt - the printf format for printing.
-> > 
-> >     * @fmt: the printf format for printing
-> >     * @ip: <description>
-> > 
-> > > + *
-> > > + * Note: __ftrace_printk is an internal function for ftrace_printk and
-> > > + *       the @ip is passed in via the ftrace_printk macro.
-> 
-> The above note actually explains this ;-)
+> Signed-off-by: Dean Nelson <dcn@sgi.com>
 
-I read that.
+Yes, this helps, but there is another problem.  When CONFIG_NET=n, these
+build errors happen:
 
-> Should I move the description to the ftrace_printk macro?
+drivers/built-in.o: In function `xpnet_connection_activity':
+xpnet.c:(.text+0x114442): undefined reference to `netif_carrier_on'
+xpnet.c:(.text+0x114458): undefined reference to `dev_alloc_skb'
+xpnet.c:(.text+0x1144b0): undefined reference to `skb_put'
+xpnet.c:(.text+0x11451b): undefined reference to `eth_type_trans'
+xpnet.c:(.text+0x11455f): undefined reference to `netif_rx_ni'
+xpnet.c:(.text+0x11457f): undefined reference to `netif_carrier_off'
+drivers/built-in.o: In function `xpnet_send_completed':
+xpnet.c:(.text+0x114614): undefined reference to `dev_kfree_skb_any'
+drivers/built-in.o: In function `xpnet_dev_hard_start_xmit':
+xpnet.c:(.text+0x1147c4): undefined reference to `kfree_skb'
+xpnet.c:(.text+0x114871): undefined reference to `kfree_skb'
+drivers/built-in.o: In function `xpnet_init':
+xpnet.c:(.init.text+0xa818): undefined reference to `ether_setup'
+xpnet.c:(.init.text+0xa829): undefined reference to `alloc_netdev_mq'
+xpnet.c:(.init.text+0xa841): undefined reference to `netif_carrier_off'
+xpnet.c:(.init.text+0xa930): undefined reference to `register_netdev'
+xpnet.c:(.init.text+0xa946): undefined reference to `free_netdev'
+drivers/built-in.o: In function `xpnet_exit':
+xpnet.c:(.exit.text+0xcbd): undefined reference to `unregister_netdev'
+xpnet.c:(.exit.text+0xcc9): undefined reference to `free_netdev'
+make[1]: *** [.tmp_vmlinux1] Error 1
 
-Probably.
 
-> In include/linux/ftrace.h you see:
+> ---
 > 
-> #ifdef CONFIG_TRACING
-> [...]
-> # define ftrace_printk(x...) __ftrace_printk(_THIS_IP_, x)
-> extern int
-> __ftrace_printk(unsigned long ip, const char *fmt, ...)
->         __attribute__ ((format (printf, 2, 3)));
-> #else
-> [...]
-> static inline int
-> ftrace_printk(const char *fmt, ...) __attribute__ ((format (printf, 1, 
-> 0)))
-> {
->         return 0;
-> }
-> #endif
+>  drivers/misc/Kconfig |    1 +
+>  1 file changed, 1 insertion(+)
 > 
-> The true API is ftrace_printk(const char *fmt) and the __ftrace_printk
-> version should not be used.
-> 
-> Do you still think I should document the @ip?
-
-Just move the kernel-doc to the macro then.
-
-> I could also just remove the passing of _THIS_IP_ and use _RET_IP_ 
-> inside of ftrace_printk but the _THIS_IP_ seems to be more accurate 
-> especially when we have stack unwinding returns.
-> 
-> -- Steve
-> 
-> 
-> 
-> > > + *
-> > > + * This function allows a kernel developer to debug fast path sections
-> > > + * that printk is not appropriate for. By scattering in various
-> > > + * printk like tracing in the code, a developer can quickly see
-> > > + * where problems are occurring.
-> > > + *
-> > > + * This is intended as a debugging tool for the developer only.
-> > > + * Please reframe from leaving ftrace_printks scattered around in
-> > > + * your code.
-> > > + */
-> > > +int __ftrace_printk(unsigned long ip, const char *fmt, ...)
-> > > +{
+> Index: linux/drivers/misc/Kconfig
+> ===================================================================
+> --- linux.orig/drivers/misc/Kconfig	2008-07-31 12:34:08.000000000 -0500
+> +++ linux/drivers/misc/Kconfig	2008-08-01 09:16:53.000000000 -0500
+> @@ -429,6 +429,7 @@ config SGI_XP
+>  	depends on IA64_GENERIC || IA64_SGI_SN2 || IA64_SGI_UV || (X86_64 && SMP)
+>  	select IA64_UNCACHED_ALLOCATOR if IA64_GENERIC || IA64_SGI_SN2
+>  	select GENERIC_ALLOCATOR if IA64_GENERIC || IA64_SGI_SN2
+> +	select SGI_GRU if IA64_GENERIC || IA64_SGI_UV || (X86_64 && SMP)
+>  	---help---
+>  	  An SGI machine can be divided into multiple Single System
+>  	  Images which act independently of each other and have
 
 
 ---
