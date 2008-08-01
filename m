@@ -1,54 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759873AbYHAXW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbYHAXYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759873AbYHAXW7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 19:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYHAXWw
+	id S1760233AbYHAXYr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 19:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYHAXYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 19:22:52 -0400
-Received: from smtp1.stealer.net ([88.198.224.204]:36915 "EHLO
-	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbYHAXWv (ORCPT
+	Fri, 1 Aug 2008 19:24:37 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:44804 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbYHAXYg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 19:22:51 -0400
-Date: Sat, 2 Aug 2008 01:22:42 +0200 (CEST)
-From: Sven Wegener <sven.wegener@stealer.net>
-To: Richard Purdie <rpurdie@rpsys.net>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] leds: Move triggers before drivers in Makefile
-In-Reply-To: <alpine.LNX.1.10.0808012344090.2294@titan.stealer.net>
-Message-ID: <alpine.LNX.1.10.0808020120290.2294@titan.stealer.net>
-References: <alpine.LNX.1.10.0808012344090.2294@titan.stealer.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-Organization: STEALER.net
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -0.6
-X-Spam-Bar: /
-X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Fri, 01 Aug 2008 23:22:50 +0000
-	Bayes: 0.1441 Tokens: new, 146; hammy, 2; neutral, 3; spammy, 0.
-	AutoLearn: no
-	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.1441]
-X-Spam-Signature: a8efd9044424f68989115984e351256d34beb4b7
-X-DomainKey-Status: no signature
+	Fri, 1 Aug 2008 19:24:36 -0400
+Subject: Re: [PATCH 2/6] Container Freezer: Make refrigerator always
+	available
+From: Matt Helsley <matthltc@us.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Michael Opdenacker <michael@free-electrons.com>,
+       linux-embedded@vger.kernel.org
+In-Reply-To: <200808020053.18638.rjw@sisk.pl>
+References: <20080801050659.924495279@us.ibm.com>
+	 <20080801162712.63721e8c@surf>
+	 <1217617689.25300.213.camel@localhost.localdomain>
+	 <200808020053.18638.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-7
+Organization: IBM Linux Technology Center
+Date: Fri, 01 Aug 2008 16:24:34 -0700
+Message-Id: <1217633074.25300.281.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Aug 2008, Sven Wegener wrote:
 
-> When both triggers and drivers are built-in, we should first register the
-> triggers and then the drivers, to make default triggers work during device
-> registration. We do this by moving the triggers before the drivers in the
-> Makefile as init order is determined by linking order. Sadly this simple
-> solution doesn't cover devices registered elsewhere in the kernel. But often
-> these drivers provide their own triggers and should themselves take care of
-> registering triggers before devices.
-> 
-> Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+On Sat, 2008-08-02 at 00:53 +-0200, Rafael J. Wysocki wrote:
++AD4 On Friday, 1 of August 2008, Matt Helsley wrote:
++AD4 +AD4 
++AD4 +AD4 On Fri, 2008-08-01 at 16:27 +-0200, Thomas Petazzoni wrote:
++AD4 +AD4 +AD4 Hi,
++AD4 +AD4 +AD4 
++AD4 +AD4 +AD4 Le Thu, 31 Jul 2008 22:07:01 -0700,
++AD4 +AD4 +AD4 Matt Helsley +ADw-matthltc+AEA-us.ibm.com+AD4 a +AOk-crit :
++AD4 +AD4 +AD4 
++AD4 +AD4 +AD4 +AD4 --- a/kernel/Makefile
++AD4 +AD4 +AD4 +AD4 +-+-+- b/kernel/Makefile
++AD4 +AD4 +AD4 +AD4 +AEAAQA -5,7 +-5,7 +AEAAQA
++AD4 +AD4 +AD4 +AD4  obj-y     +AD0 sched.o fork.o exec+AF8-domain.o panic.o printk.o +AFw
++AD4 +AD4 +AD4 +AD4  	    cpu.o exit.o itimer.o time.o softirq.o resource.o +AFw
++AD4 +AD4 +AD4 +AD4  	    sysctl.o capability.o ptrace.o timer.o user.o +AFw
++AD4 +AD4 +AD4 +AD4 -	    signal.o sys.o kmod.o workqueue.o pid.o +AFw
++AD4 +AD4 +AD4 +AD4 +-	    signal.o sys.o kmod.o workqueue.o pid.o freezer.o +AFw
++AD4 +AD4 +AD4 
++AD4 +AD4 +AD4 I have the impression that the code in kernel/power/process.c was
++AD4 +AD4 +AD4 compiled only if CONFIG+AF8-PM+AF8-SLEEP was set. Now that the code has been
++AD4 +AD4 +AD4 moved to kernel/freezer.c, it is unconditionnaly compiled in every
++AD4 +AD4 +AD4 kernel. Is that correct ?
++AD4 +AD4 +AD4
++AD4 +AD4 +AD4 If so, is it possible to put this new feature under some
++AD4 +AD4 +AD4 CONFIG+AF8-SOMETHING option, for people who care about the kernel size ?
++AD4 +AD4 
++AD4 +AD4 	How about making it depend on a combination of CONFIG variables?
++AD4 +AD4 Here's an RFC PATCH. Completely untested.
++AD4 +AD4 
++AD4 +AD4 Signed-off-by: Matt Helsley +ADw-matthltc+AEA-us.ibm.com+AD4
++AD4 
++AD4 Can you please also make the contents of include/linux/freezer.h depend on
++AD4 CONFIG+AF8-FREEZER instead of CONFIG+AF8-PM+AF8-SLEEP?
 
-Ignore this one, we also attach default triggers to devices while loading 
-the triggers.
+Good point -- I'll add that to this patch and repost.
 
-Sven
++AD4 Also, I'm not really sure if kernel/power/Kconfig is the right place to define
++AD4 CONFIG+AF8-FREEZER.
+
+	There's no nice place to put it since we're dealing with CONFIG+AF8
+variables in two different Kconfig files. I put it in
+kernel/power/Kconfig because I wasn't certain Kbuild would do the right
+thing if I referenced PM+AF8-SLEEP from init/Kconfig.
+
++AD4 Perhaps we should even move freezer.c from kernel/power to kernel
+
+It's already there. Perhaps you meant something else
+(kernel/power/process.c?)?
+
++AD4 and define CONFIG+AF8-FREEZER in Kconfig in there.  Andrew, what do you think?
+
+The Kconfig files in kernel/ are Kconfig.hz and Kconfig.preemt which
+don't seem appropriate. I suppose we could add another (perhaps
+Kconfig.cgroup).
+
+Thanks for the review+ACE
+
+Cheers,
+	-Matt
+
