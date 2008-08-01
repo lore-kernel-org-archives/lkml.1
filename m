@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757907AbYHALrE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbYHAL6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757907AbYHALrE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 07:47:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758005AbYHALq2
+	id S1757653AbYHAL6P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 07:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYHAL57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 07:46:28 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:35337 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757927AbYHALq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 07:46:27 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [PATCH 2/6] Container Freezer: Make refrigerator always
-	available
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Paul Menage <menage@google.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-In-Reply-To: <20080801050700.528446138@us.ibm.com>
-References: <20080801050659.924495279@us.ibm.com>
-	 <20080801050700.528446138@us.ibm.com>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Fri, 01 Aug 2008 20:33:11 +1000
-Message-Id: <1217586791.27551.24.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Aug 2008 07:57:59 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:39079 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753855AbYHAL56 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 07:57:58 -0400
+Date: Fri, 1 Aug 2008 12:57:27 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: David Miller <davem@davemloft.net>
+cc: mingo@elte.hu, peterz@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: combinatorial explosion in lockdep
+In-Reply-To: <20080801.023214.117218567.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0808011246210.18137@blonde.site>
+References: <20080729.214503.126934382.davem@davemloft.net>
+ <20080731163943.GF26393@elte.hu> <20080801092219.GA15691@elte.hu>
+ <20080801.023214.117218567.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Thu, 2008-07-31 at 22:07 -0700, Matt Helsley wrote:
-> Now that the TIF_FREEZE flag is available in all architectures,
-> extract the refrigerator() and freeze_task() from kernel/power/process.c
-> and make it available to all.
+On Fri, 1 Aug 2008, David Miller wrote:
 > 
-> The refrigerator() can now be used in a control group subsystem
-> implementing a control group freezer.
+> I think a non-trivial number of people hit that printk deadlock bug,
+> but just didn't report it because the machine essentially hard hangs
+> silently.  At best you'd see the:
 > 
-> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> Acked-by: Serge E. Hallyn <serue@us.ibm.com>
-> Tested-by: Matt Helsley <matthltc@us.ibm.com>
+> ========================================
+> 
+> initial line from lockdep, but often even that doesn't make it to the
+> console.
 
-Acked-by: Nigel Cunningham <nigel@tuxonice.net>
+Not just with lockdep.  A couple of months back CONFIG_DEBUG_SPINLOCK
+was giving me spinlock debug messages under load on x86_64 duo laptop,
+but hung up before showing the intended backtrace.  I added the patch
+below, but IIRC shifted over to other issues (and switched from cfq to
+anticipatory scheduler, which made a difference) before finding out if
+this patch really helped.  If it makes sense to you, please add it in.
 
+Hugh
 
+[PATCH] set oops_in_progress for spinlock lockup
+
+Set oops_in_progress while reporting spinlock lockup,
+to avoid deadlock inside printk() or the backtraces.
+
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+
+ lib/spinlock_debug.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- 2.6.27-rc1/lib/spinlock_debug.c	2008-01-24 22:58:37.000000000 +0000
++++ linux/lib/spinlock_debug.c	2008-08-01 12:41:52.000000000 +0100
+@@ -113,6 +113,7 @@ static void __spin_lock_debug(spinlock_t
+ 		/* lockup suspected: */
+ 		if (print_once) {
+ 			print_once = 0;
++			oops_in_progress = 1;
+ 			printk(KERN_EMERG "BUG: spinlock lockup on CPU#%d, "
+ 					"%s/%d, %p\n",
+ 				raw_smp_processor_id(), current->comm,
+@@ -121,6 +122,7 @@ static void __spin_lock_debug(spinlock_t
+ #ifdef CONFIG_SMP
+ 			trigger_all_cpu_backtrace();
+ #endif
++			oops_in_progress = 0;
+ 		}
+ 	}
+ }
