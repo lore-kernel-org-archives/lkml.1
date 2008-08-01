@@ -1,128 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbYHARuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbYHARwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756891AbYHARuh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 13:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYHARu3
+	id S1756621AbYHARwy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 13:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbYHARwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 13:50:29 -0400
-Received: from mga09.intel.com ([134.134.136.24]:3248 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751934AbYHARu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 13:50:28 -0400
+	Fri, 1 Aug 2008 13:52:47 -0400
+Received: from mga10.intel.com ([192.55.52.92]:45622 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751732AbYHARwq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 13:52:46 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.31,294,1215414000"; 
-   d="scan'208";a="425013078"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+   d="scan'208";a="603331382"
+Date: Fri, 1 Aug 2008 10:52:45 -0700
+From: mark gross <mgross@linux.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, richard@hughsie.com
+Subject: spell check patch to pm_qos_params.c
+Message-ID: <20080801175245.GC23227@linux.intel.com>
+Reply-To: mgross@linux.intel.com
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C8F3FF.14BB2A36"
-Subject: [PATCH] acpi: Add support for AddressRangeUnusuable ACPI memory type
-Date: Fri, 1 Aug 2008 10:50:23 -0700
-Message-ID: <D936D925018D154694D8A362EEB08920050E2B52@orsmsx416.amr.corp.intel.com>
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] acpi: Add support for AddressRangeUnusuable ACPI memory type
-Thread-Index: Acjz/xKSlSRdUNn+SsCysahYgLwUTw==
-From: "Cihula, Joseph" <joseph.cihula@intel.com>
-To: <linux-kernel@vger.kernel.org>, <x86@kernel.org>,
-       <linux-acpi@vger.kernel.org>
-Cc: "Kleen, Andi" <andi.kleen@intel.com>, "Wang, Shane" <shane.wang@intel.com>,
-       "Wei, Gang" <gang.wei@intel.com>, "Brown, Len" <len.brown@intel.com>
-X-OriginalArrivalTime: 01 Aug 2008 17:50:27.0409 (UTC) FILETIME=[14F85C10:01C8F3FF]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 01 Aug 2008 17:52:45.0871 (UTC) FILETIME=[677FFBF0:01C8F3FF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+This is a documentation clean up patch form Richard Hughes.
 
-------_=_NextPart_001_01C8F3FF.14BB2A36
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+With a minor tweak to clarify units for kbs.
 
-Add support for the E820_UNUSABLE memory type, which is defined in
-Revision 3.0b (Oct. 10, 2006) of the ACPI Specification on p. 394 Table
-14-1:
-	AddressRangeUnusuable
-	This range of address contains memory in which errors have been
-detected. This range must not be used by the OSPM.
+Please apply.
 
-This patch applies cleanly to the tip of the current git tree (with the
-merged 32/64b e820.c file).
+thanks,
 
-Signed-off-by:  Joseph Cihula <joseph.cihula@intel.com>
-Signed-off-by:  Shane Wang <shane.wang@intel.com>
-Signed-off-by:  Gang Wei <gang.wei@intel.com>
+--mgross
 
-diff -uprN linux.trees.git/arch/x86/kernel/e820.c
-acpi-linux/arch/x86/kernel/e820.c
---- linux.trees.git/arch/x86/kernel/e820.c	2008-08-01
-08:14:10.000000000 -0700
-+++ acpi-linux/arch/x86/kernel/e820.c	2008-08-01 08:24:19.000000000
--0700
-@@ -148,6 +148,9 @@ void __init e820_print_map(char *who)
- 		case E820_NVS:
- 			printk(KERN_CONT "(ACPI NVS)\n");
- 			break;
-+		case E820_UNUSABLE:
-+			printk("(unusable)\n");
-+			break;
- 		default:
- 			printk(KERN_CONT "type %u\n", e820.map[i].type);
- 			break;
-@@ -1260,6 +1263,7 @@ static inline const char *e820_type_to_s
- 	case E820_RAM:	return "System RAM";
- 	case E820_ACPI:	return "ACPI Tables";
- 	case E820_NVS:	return "ACPI Non-volatile Storage";
-+	case E820_UNUSABLE:	return "Unusable memory";
- 	default:	return "reserved";
- 	}
- }
-diff -uprN linux.trees.git/include/asm-x86/e820.h
-acpi-linux/include/asm-x86/e820.h
---- linux.trees.git/include/asm-x86/e820.h	2008-08-01
-08:14:24.000000000 -0700
-+++ acpi-linux/include/asm-x86/e820.h	2008-08-01 08:25:55.000000000
--0700
-@@ -43,6 +43,7 @@
- #define E820_RESERVED	2
- #define E820_ACPI	3
- #define E820_NVS	4
-+#define E820_UNUSABLE	5
-=20
- /* reserved RAM used by kernel itself */
- #define E820_RESERVED_KERN        128
 
-------_=_NextPart_001_01C8F3FF.14BB2A36
-Content-Type: application/octet-stream;
-	name="linux-acpi-tip.patch"
-Content-Transfer-Encoding: base64
-Content-Description: linux-acpi-tip.patch
-Content-Disposition: attachment;
-	filename="linux-acpi-tip.patch"
+Signed-off-by: mark gross <mgross@linux.intel.com>
 
-ZGlmZiAtdXByTiBsaW51eC50cmVlcy5naXQvYXJjaC94ODYva2VybmVsL2U4MjAuYyBhY3BpLWxp
-bnV4L2FyY2gveDg2L2tlcm5lbC9lODIwLmMKLS0tIGxpbnV4LnRyZWVzLmdpdC9hcmNoL3g4Ni9r
-ZXJuZWwvZTgyMC5jCTIwMDgtMDgtMDEgMDg6MTQ6MTAuMDAwMDAwMDAwIC0wNzAwCisrKyBhY3Bp
-LWxpbnV4L2FyY2gveDg2L2tlcm5lbC9lODIwLmMJMjAwOC0wOC0wMSAwODoyNDoxOS4wMDAwMDAw
-MDAgLTA3MDAKQEAgLTE0OCw2ICsxNDgsOSBAQCB2b2lkIF9faW5pdCBlODIwX3ByaW50X21hcChj
-aGFyICp3aG8pCiAJCWNhc2UgRTgyMF9OVlM6CiAJCQlwcmludGsoS0VSTl9DT05UICIoQUNQSSBO
-VlMpXG4iKTsKIAkJCWJyZWFrOworCQljYXNlIEU4MjBfVU5VU0FCTEU6CisJCQlwcmludGsoIih1
-bnVzYWJsZSlcbiIpOworCQkJYnJlYWs7CiAJCWRlZmF1bHQ6CiAJCQlwcmludGsoS0VSTl9DT05U
-ICJ0eXBlICV1XG4iLCBlODIwLm1hcFtpXS50eXBlKTsKIAkJCWJyZWFrOwpAQCAtMTI2MCw2ICsx
-MjYzLDcgQEAgc3RhdGljIGlubGluZSBjb25zdCBjaGFyICplODIwX3R5cGVfdG9fcwogCWNhc2Ug
-RTgyMF9SQU06CXJldHVybiAiU3lzdGVtIFJBTSI7CiAJY2FzZSBFODIwX0FDUEk6CXJldHVybiAi
-QUNQSSBUYWJsZXMiOwogCWNhc2UgRTgyMF9OVlM6CXJldHVybiAiQUNQSSBOb24tdm9sYXRpbGUg
-U3RvcmFnZSI7CisJY2FzZSBFODIwX1VOVVNBQkxFOglyZXR1cm4gIlVudXNhYmxlIG1lbW9yeSI7
-CiAJZGVmYXVsdDoJcmV0dXJuICJyZXNlcnZlZCI7CiAJfQogfQpkaWZmIC11cHJOIGxpbnV4LnRy
-ZWVzLmdpdC9pbmNsdWRlL2FzbS14ODYvZTgyMC5oIGFjcGktbGludXgvaW5jbHVkZS9hc20teDg2
-L2U4MjAuaAotLS0gbGludXgudHJlZXMuZ2l0L2luY2x1ZGUvYXNtLXg4Ni9lODIwLmgJMjAwOC0w
-OC0wMSAwODoxNDoyNC4wMDAwMDAwMDAgLTA3MDAKKysrIGFjcGktbGludXgvaW5jbHVkZS9hc20t
-eDg2L2U4MjAuaAkyMDA4LTA4LTAxIDA4OjI1OjU1LjAwMDAwMDAwMCAtMDcwMApAQCAtNDMsNiAr
-NDMsNyBAQAogI2RlZmluZSBFODIwX1JFU0VSVkVECTIKICNkZWZpbmUgRTgyMF9BQ1BJCTMKICNk
-ZWZpbmUgRTgyMF9OVlMJNAorI2RlZmluZSBFODIwX1VOVVNBQkxFCTUKIAogLyogcmVzZXJ2ZWQg
-UkFNIHVzZWQgYnkga2VybmVsIGl0c2VsZiAqLwogI2RlZmluZSBFODIwX1JFU0VSVkVEX0tFUk4g
-ICAgICAgIDEyOAo=
+ Documentation/power/pm_qos_interface.txt |    7 ++++++-
+ include/linux/pm_qos_params.h            |    2 +-
+ kernel/pm_qos_params.c                   |   16 ++++++++--------
+ 3 files changed, 15 insertions(+), 10 deletions(-)
 
-------_=_NextPart_001_01C8F3FF.14BB2A36--
+
+Index: linux-2.6/Documentation/power/pm_qos_interface.txt
+===================================================================
+--- linux-2.6.orig/Documentation/power/pm_qos_interface.txt	2008-08-01 09:28:42.000000000 -0700
++++ linux-2.6/Documentation/power/pm_qos_interface.txt	2008-08-01 10:46:04.000000000 -0700
+@@ -1,4 +1,4 @@
+-PM quality of Service interface.
++PM Quality Of Service Interface.
+ 
+ This interface provides a kernel and user mode interface for registering
+ performance expectations by drivers, subsystems and user space applications on
+@@ -7,6 +7,11 @@
+ Currently we have {cpu_dma_latency, network_latency, network_throughput} as the
+ initial set of pm_qos parameters.
+ 
++Each parameters have defined units:
++ * latency: usec
++ * timeout: usec
++ * throughput: kbs (kilo bit / sec)
++
+ The infrastructure exposes multiple misc device nodes one per implemented
+ parameter.  The set of parameters implement is defined by pm_qos_power_init()
+ and pm_qos_params.h.  This is done because having the available parameters
+Index: linux-2.6/include/linux/pm_qos_params.h
+===================================================================
+--- linux-2.6.orig/include/linux/pm_qos_params.h	2008-08-01 09:28:48.000000000 -0700
++++ linux-2.6/include/linux/pm_qos_params.h	2008-08-01 10:27:36.000000000 -0700
+@@ -1,6 +1,6 @@
+ /* interface for the pm_qos_power infrastructure of the linux kernel.
+  *
+- * Mark Gross
++ * Mark Gross <mgross@linux.intel.com>
+  */
+ #include <linux/list.h>
+ #include <linux/notifier.h>
+Index: linux-2.6/kernel/pm_qos_params.c
+===================================================================
+--- linux-2.6.orig/kernel/pm_qos_params.c	2008-08-01 09:28:49.000000000 -0700
++++ linux-2.6/kernel/pm_qos_params.c	2008-08-01 10:27:36.000000000 -0700
+@@ -24,7 +24,7 @@
+  * requirement that the application has is cleaned up when closes the file
+  * pointer or exits the pm_qos_object will get an opportunity to clean up.
+  *
+- * mark gross mgross@linux.intel.com
++ * Mark Gross <mgross@linux.intel.com>
+  */
+ 
+ #include <linux/pm_qos_params.h>
+@@ -211,8 +211,8 @@
+  * @value: defines the qos request
+  *
+  * This function inserts a new entry in the pm_qos_class list of requested qos
+- * performance charactoistics.  It recomputes the agregate QoS expectations for
+- * the pm_qos_class of parrameters.
++ * performance characteristics.  It recomputes the aggregate QoS expectations for
++ * the pm_qos_class of parameters.
+  */
+ int pm_qos_add_requirement(int pm_qos_class, char *name, s32 value)
+ {
+@@ -250,10 +250,10 @@
+  * @name: identifies the request
+  * @value: defines the qos request
+  *
+- * Updates an existing qos requierement for the pm_qos_class of parameters along
++ * Updates an existing qos requirement for the pm_qos_class of parameters along
+  * with updating the target pm_qos_class value.
+  *
+- * If the named request isn't in the lest then no change is made.
++ * If the named request isn't in the list then no change is made.
+  */
+ int pm_qos_update_requirement(int pm_qos_class, char *name, s32 new_value)
+ {
+@@ -287,7 +287,7 @@
+  * @pm_qos_class: identifies which list of qos request to us
+  * @name: identifies the request
+  *
+- * Will remove named qos request from pm_qos_class list of parrameters and
++ * Will remove named qos request from pm_qos_class list of parameters and
+  * recompute the current target value for the pm_qos_class.
+  */
+ void pm_qos_remove_requirement(int pm_qos_class, char *name)
+@@ -319,7 +319,7 @@
+  * @notifier: notifier block managed by caller.
+  *
+  * will register the notifier into a notification chain that gets called
+- * uppon changes to the pm_qos_class target value.
++ * upon changes to the pm_qos_class target value.
+  */
+  int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
+ {
+@@ -338,7 +338,7 @@
+  * @notifier: notifier block to be removed.
+  *
+  * will remove the notifier from the notification chain that gets called
+- * uppon changes to the pm_qos_class target value.
++ * upon changes to the pm_qos_class target value.
+  */
+ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
+ {
+
