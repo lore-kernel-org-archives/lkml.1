@@ -1,105 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbYHAJ42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbYHAKHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759000AbYHAJ42 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 05:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbYHAJ4V
+	id S1756383AbYHAKHM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 06:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbYHAKG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 05:56:21 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53644 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753261AbYHAJ4U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 05:56:20 -0400
-Date: Fri, 01 Aug 2008 18:42:21 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [RFC:Patch: 000/008](memory hotplug) rough idea of pgdat removing
-Cc: Badari Pulavarty <pbadari@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       linux-mm <linux-mm@kvack.org>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4891C66A.3040302@linux-foundation.org>
-References: <20080731203549.2A3F.E1E9C6FF@jp.fujitsu.com> <4891C66A.3040302@linux-foundation.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080801180522.EC97.E1E9C6FF@jp.fujitsu.com>
+	Fri, 1 Aug 2008 06:06:59 -0400
+Received: from webmail-outgoing.us4.outblaze.com ([205.158.62.67]:40551 "EHLO
+	webmail-outgoing.us4.outblaze.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751788AbYHAKG7 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 06:06:59 -0400
+X-OB-Received: from unknown (205.158.62.232)
+  by wfilter.us4.outblaze.com; 1 Aug 2008 10:06:57 -0000
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+From: "Halesh S" <halesh.s@india.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, madhvesh.s@ap.sony.com,
+       halesh.sadashiv@ap.sony.com
+Date: Fri, 1 Aug 2008 04:36:57 -0530
+Subject: Re: mlock() return value issue in kernel 2.6.23.17
+X-Originating-Ip: 125.17.166.34
+X-Originating-Server: ws5-11.us4.outblaze.com
+Message-Id: <20080801100657.2CF84CB59C@ws5-11.us4.outblaze.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yasunori Goto wrote:
+
+Hi,
+
+> ----- Original Message -----
+> From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+> To: "Halesh S" <halesh.s@india.com>
+> Subject: Re: mlock() return value issue in kernel 2.6.23.17
+> Date: Fri, 01 Aug 2008 17:56:55 +0900
 > 
-> > Current my idea is using RCU feature for waiting them.
-> > Because it is the least impact against reader's performance,
-> > and pgdat remover can wait finish of reader's access to pgdat
-> > which is removing by synchronize_sched().
 > 
-> The use of RCU disables preemption which has implications as to
-> what can be done in a loop over nodes or zones.
-
-Yeap. It's the one of (big) cons.
-
-> This would also potentially add more overhead to the page allocator hotpaths.
-
-Agree.
-
-To tell the truth, I tried hackbench with 3rd patch which add rcu_read_lock
-in hot-path before this post to make rough estimate its impact.
-
-%hackbench 100 process 2000
-
-without patch.
-  39.93
-
-with patch
-  39.99
-(Both is 10 times avarage)
-
-I guess this result has effect of disable preemption.
-So, throughput looks not so bad, but probably, latency would be worse
-as you mind.
-
-Kame-san advised me I should take more other benchmarks which can get memory
-performance. I'll do it next week.
-
-> > If you have better idea, please let me know.
+> Hi
 > 
-> Use stop_machine()? The removal of a zone or node is a pretty rare event
-> after all and it would avoid having to deal with rcu etc etc.
+> > Thanks everyone.
+> > I confirm that the patch fixes the issue with Rlimit and invalid address.
+> >
+> > Signed-off-by: halesh.sadashiv@ap.sony.com
 > 
+> No.
+> your test program need run as root.
+> then, it doesn't test rlimit.
 
-I thought it at first, but are there the following worst case?
+>
+
+Sorry, test program not checks the rlimit.as it run as root.
+Your patch fixes the issue for invalid address.
+
+It confirms the SUSv3.
+
+Signed-off-by: halesh.sadashiv@ap.sony.com
 
 
-   CPU 0                                    CPU 1
--------------------------------------------------------
-__alloc_pages()
-    
-    parsing_zonelist()
-        :
-    enter page_reclarim()
-    sleep (and remember zone)                 :
-                                              :
-                                        update zonelist and node_online_map
-                                          with stop_machine_run()
-                                        free pgdat().
-                                        remove the Node electrically.
-
-    wake up and touch remembered
-       zone,  but it is removed
-    (Oops!!!)
+Thanks,
+Halesh
 
 
 
-Anyway, I'm happy if there is better way than my poor idea. :-)
 
-Thanks for your comment.
+
+
+
+=
 
 
 -- 
-Yasunori Goto 
-
-
+_______________________________________________
+Search for products and services at: 
+http://search.mail.com
