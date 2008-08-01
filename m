@@ -1,124 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbYHAVte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759538AbYHAVye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760127AbYHAVte (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 17:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbYHAVt0
+	id S1759538AbYHAVye (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 17:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbYHAVy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 17:49:26 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:58279 "EHLO relay.sgi.com"
+	Fri, 1 Aug 2008 17:54:27 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:59097 "EHLO mx.gate01.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752238AbYHAVtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 17:49:25 -0400
-Message-ID: <4893856D.6060909@sgi.com>
-Date: Fri, 01 Aug 2008 16:51:41 -0500
-From: Alan Mayer <ajm@sgi.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	id S1752387AbYHAVy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 17:54:26 -0400
+Date: Sat, 2 Aug 2008 06:53:38 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: sam@ravnborg.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: sh O= builds broken
+Message-ID: <20080801215338.GC13448@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian Bunk <bunk@kernel.org>, sam@ravnborg.org,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080801212728.GF19682@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Cliff Wickman <cpw@sgi.com>, jeremy@goop.org, rusty@rustcorp.com.au,
-       suresh.b.siddha@intel.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Dean Nelson <dcn@sgi.com>
-Subject: Re: [PATCH] x86_64:  Dynamically allocate arch specific system vectors
-References: <48922D16.1080704@sgi.com> <m13alp1z8w.fsf@frodo.ebiederm.org>	<20080801155120.GA21706@sgi.com> <m18wvgv4bj.fsf@frodo.ebiederm.org>
-In-Reply-To: <m18wvgv4bj.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080801212728.GF19682@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Okay, I think we have it now.  assign_irq_vector *almost* does what we 
-need.  One minor thing is that assign_irq_vector ANDs against 
-cpu_online_map.  We would need cpu_possible_map, so we get the vector on 
-offline cpus that may come online.  The other thing is that 
-assign_irq_vector doesn't allow the specification of interrupt 
-priorities.  It would need to be modified to handle returning either a 
-high priority vector or a low priority vector.  Would modifying the api 
-for assign_irq_vector be the proper approach?
+On Sat, Aug 02, 2008 at 12:27:28AM +0300, Adrian Bunk wrote:
+> Most likely caused by the headers move:
+> 
+> <--  snip  -->
+> 
+> ...
+>   CC      init/main.o
+> In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/include/asm/irq.h:4,
+>                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/irq.h:23,
+>                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/include/asm/hardirq.h:5,
+>                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/hardirq.h:7,
+>                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/local.h:5,
+>                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/include/asm/local.h:4,
+>                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/module.h:19,
+>                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:13:
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/include/asm/machvec.h:15:27: 
+> error: asm/machtypes.h: No such file or directory
+> make[2]: *** [init/main.o] Error 1
+> 
+> <--  snip  -->
+> 
+Ok, so this is what I get for moving the auto-generated header outside of
+include/asm-sh.. it seemed like a good idea at the time.
 
-The interrupts don't necessarily fire on all cpus, it's just that they 
-*can* fire on any cpu.  For example, the GRU triggers an interrupt (it 
-is very IPI'ish) to a particular cpu in the event of a GRU TLB fault. 
-That cpu handles the fault and returns.  But the fault can happen on any 
-cpu, so all cpus need to be registered for the same vector and irq. 
-This is probably splitting hairs; it is certainly no different in 
-principal from timer interrupts or processor TLB faults.
+---
 
-As far as kernel_stat is concerned.  I see you're point.  NR_CPUS on our 
-machines is going to be big (4K? 8K? something like that).  NR_IRQS is 
-also going to big because of that.  It's unfortunate since the actual 
-number of interrupt sources is going to be an order of magnitude 
-smaller, at least.
-
-		--ajm
-
-Eric W. Biederman wrote:
-> Cliff Wickman <cpw@sgi.com> writes:
->> I assume you mean create_irq() and destroy_irq().
->> They are close to what we need.
-> 
-> Actually that isn't quite what I was thinking.
-> 
->> However for any given system use:
->> - we need to request a high priority vector for some irq's, rather than
->>   one randomly allocated as per __assign_irq_vector().
-> 
-> Well I was actually thinking mostly about reusing assign_irq_vector.
-> 
-> The high priority vector seems to be the place where we would need
-> to reexamine the vector allocator.
-> 
->> - we want the irq/vector to be targeted to all cpu's (as specified in a
->>   mask,
->>   and can include currently offline cpu's) rather than a single cpu. 
-> 
-> __assign_irq_vector should be able to handle that case.
-> 
->> I suppose those abilities could be added to create_irq(), but we didn't
->> want to intrude into that interface.
-> 
-> Right.  That part gets custom and there is no intersection.
-> 
->> A smaller consideration is simplicity of use.  We want any such user to
->> use
->> the generic do_IRQ() flow (not alloc_intr_gate()).
-> 
-> My primary concern is that you are generalizing an interface that is
-> designed for alloc_intr_gate consumers.  In particular for people
-> who wish to allocate vectors that can be triggered by software to
-> do this.
-> 
-> If this is normal irq handling I would really prefer to use the
-> normal data structures that we use for allocating vectors to irqs,
-> because that is what you are doing.
-> 
->> But make it easy to set
->> up the irq/vector, irq_chip and irq_desc without getting intimate with
->> the details.
->> I suppose some other wrapper for an enhanced create_irq() could be done.
->>
->> We are going to need such irq/vector pairs for a couple of UV drivers
->> (drivers/misc/sgi-gru/ and sgi-xp/).  And would prefer it for the UV TLB
->> shootdown (x86/kernel/tlb.uv.c) rather than using alloc_intr_gate().
-> 
-> I also want to ask why do you need an irq that fires on every cpu?
-> 
-> That concept seems to be responsible for one of the nastiest data
-> structures in the kernel.  Where we track how many times any irq has
-> occurred on any cpu.  Look at the percpu variable kernel_stat.  It
-> seems to be one of the nastiest variables I know of.  Of size:
-> NR_CPUS*NR_CPUS*32  Assuming you have a machine with a reasonable
-> number of irqs per cpu.
-> 
-> Eric
-
--- 
-Make me an angel
-That flies from Montgomery.
---
-Alan J. Mayer
-SGI
-ajm@sgi.com
-WORK: 651-683-3131
-HOME: 651-407-0134
---
+diff --git a/arch/sh/Makefile b/arch/sh/Makefile
+index 25659ce..7b70cfd 100644
+--- a/arch/sh/Makefile
++++ b/arch/sh/Makefile
+@@ -164,7 +164,7 @@ KBUILD_AFLAGS		+= $(cflags-y)
+ PHONY += maketools FORCE
+ 
+ maketools:  include/linux/version.h FORCE
+-	$(Q)$(MAKE) $(build)=arch/sh/tools arch/sh/include/asm/machtypes.h
++	$(Q)$(MAKE) $(build)=arch/sh/tools include/asm-sh/machtypes.h
+ 
+ all: $(KBUILD_IMAGE)
+ 
+@@ -215,4 +215,4 @@ arch/sh/lib64/syscalltab.h: arch/sh/kernel/syscalls_64.S
+ 	$(call filechk,gen-syscalltab)
+ 
+ CLEAN_FILES += arch/sh/lib64/syscalltab.h \
+-	       arch/sh/include/asm/machtypes.h
++	       include/asm-sh/machtypes.h
+diff --git a/arch/sh/tools/Makefile b/arch/sh/tools/Makefile
+index b5d202b..567516b 100644
+--- a/arch/sh/tools/Makefile
++++ b/arch/sh/tools/Makefile
+@@ -10,7 +10,7 @@
+ # Shamelessly cloned from ARM.
+ #
+ 
+-arch/sh/include/asm/machtypes.h: $(src)/gen-mach-types $(src)/mach-types
++include/asm-sh/machtypes.h: $(src)/gen-mach-types $(src)/mach-types
+ 	@echo '  Generating $@'
+-	$(Q)if [ ! -d arch/sh/include/asm ]; then mkdir -p arch/sh/include/asm; fi
++	$(Q)if [ ! -d include/asm-sh ]; then mkdir -p include/asm-sh; fi
+ 	$(Q)$(AWK) -f $^ > $@ || { rm -f $@; /bin/false; }
