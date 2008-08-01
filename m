@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbYHAAwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbYHABLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755504AbYHAAwn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jul 2008 20:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbYHAAwa
+	id S1755159AbYHABLs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jul 2008 21:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbYHABLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jul 2008 20:52:30 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:4474 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751425AbYHAAw3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jul 2008 20:52:29 -0400
-From: Divy Le Ray <divy@chelsio.com>
-Organization: Chelsio Communications
-To: "Roland Dreier" <rdreier@cisco.com>
-Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-Date: Thu, 31 Jul 2008 17:51:59 -0700
-User-Agent: KMail/1.9.9
-Cc: "Jeff Garzik" <jgarzik@pobox.com>, "Karen Xie" <kxie@chelsio.com>,
-       netdev@vger.kernel.org, open-iscsi@googlegroups.com,
-       davem@davemloft.net, michaelc@cs.wisc.edu,
-       "Steve Wise" <swise@opengridcomputing.com>, daisyc@us.ibm.com,
-       wenxiong@us.ibm.com, bhua@us.ibm.com,
-       "Dimitrios Michailidis" <dm@chelsio.com>,
-       "Casey Leedom" <leedom@chelsio.com>,
-       "linux-scsi" <linux-scsi@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-References: <200807300019.m6U0JkdY012558@localhost.localdomain> <4890C287.60508@pobox.com> <aday73jxdfs.fsf@cisco.com>
-In-Reply-To: <aday73jxdfs.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jul 2008 21:11:39 -0400
+Received: from mx2.suse.de ([195.135.220.15]:52278 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752671AbYHABLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jul 2008 21:11:38 -0400
+Date: Fri, 1 Aug 2008 03:11:37 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/mm: Implement _PAGE_SPECIAL & pte_special() for 32-bit
+Message-ID: <20080801011137.GA20407@wotan.suse.de>
+References: <Pine.LNX.4.64.0807311345380.8012@blarg.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807311752.00911.divy@chelsio.com>
-X-OriginalArrivalTime: 01 Aug 2008 00:51:21.0359 (UTC) FILETIME=[B71591F0:01C8F370]
+In-Reply-To: <Pine.LNX.4.64.0807311345380.8012@blarg.am.freescale.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 July 2008 02:35:51 pm Roland Dreier wrote:
->  > * From a networking standpoint, our main concern becomes how this
->  > interacts with the networking stack.  In particular, I'm concerned
->  > based on reading the source that this driver uses "TCP port stealing"
->  > rather than using a totally separate MAC address (and IP).
->  >
->  > Stealing a TCP port on an IP/interface already assigned is a common
->  > solution in this space, but also a flawed one.  Precisely because the
->  > kernel and applications are unaware of this "special, magic TCP port"
->  > you open the potential for application problems that are very
->  > difficult for an admin to diagnose based on observed behavior.
->
-> That's true, but using a separate MAC and IP opens up a bunch of other
-> operational problems.  I don't think the right answer for iSCSI offload
-> is clear yet.
->
->  - R.
+On Thu, Jul 31, 2008 at 01:48:31PM -0500, Kumar Gala wrote:
+> Implement _PAGE_SPECIAL and pte_special() for 32-bit powerpc. This bit will
+> be used by the fast get_user_pages() to differenciate PTEs that correspond
+> to a valid struct page from special mappings that don't such as IO mappings
+> obtained via io_remap_pfn_ranges().
+> 
+> We currently only implement this on sub-arch that support SMP or will so
+> in the future (6xx, 44x, FSL-BookE) and not (8xx, 40x).
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-Hi Jeff,
+Cool
 
-We've considered the approach of having a separate IP/MAC addresses to manage
-iSCSI connections. In such a context, the stack would have to be unaware of
-this iSCSI specific IP address. The iSCSI driver would then have to implement
-at least its own ARP reply mechanism. DHCP too would have to be managed
-separately. Most network setting/monitoring tools would also be unavailable.
+> ---
+> Nick, do you forsee using _PAGE_SPECIAL for other applications that would
+> be of interested to non-SMP hw?
+> 
+> We can look at adding it into 8xx and 40x, but was being lazy as I assume
+> there is no point.
 
-The open-iscsi initiator is not a huge consumer of TCP connections, allocating
-a TCP port from the stack would be reasonable in terms of resources in this
-context. It is however unclear if it is an acceptable approach.
+I don't forsee it being used for anything else, but it is possible I guess.
 
-Our current implementation was designed to be the most tolerable one
-within the constraints - real or expected - aforementioned.
+We currently will also use it in the VM (vm_normal_page), turning
+that function into a much more compact and simple version. It doesn't
+do a great deal for performance, but you _may_ want to consider using it
+just so the entire powerpc architecture takes this same path.
 
-Cheers,
-Divy
-
+Not a big deal though.
