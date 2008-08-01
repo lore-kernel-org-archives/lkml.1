@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbYHAPcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbYHAPhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754495AbYHAPcQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 11:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYHAPcB
+	id S1753530AbYHAPhI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 11:37:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYHAPg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 11:32:01 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36817 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751177AbYHAPcA (ORCPT
+	Fri, 1 Aug 2008 11:36:57 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39704 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbYHAPg5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 11:32:00 -0400
-Message-ID: <48932B1B.70303@zytor.com>
-Date: Fri, 01 Aug 2008 08:26:19 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 1 Aug 2008 11:36:57 -0400
+Date: Fri, 1 Aug 2008 16:36:56 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] vfs patches
+Message-ID: <20080801153655.GP28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-CC: Peter Oruba <peter.oruba@amd.com>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Max Krasnyansky <maxk@qualcomm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 0/4] x86: AMD microcode patch loading v2 fixes
-References: <20080729154103.007575982@amd.com>	 <b647ffbd0807290918kaa0a05es3cebf7a6f15fb790@mail.gmail.com>	 <488F581B.7060009@qualcomm.com> <48903431.9060707@amd.com> <b647ffbd0808010425r16db2957i3e7212903a698c19@mail.gmail.com>
-In-Reply-To: <b647ffbd0808010425r16db2957i3e7212903a698c19@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Adamushko wrote:
-> Tigran, Peter,
-> 
-> may a firmware package contain a few 'microcode' updates for a specific cpu?
-> 
-> And if so, does each of them provide independent 'errata' fixes? [*]
-> 
-> (or they are just different versions of the same self-consistent/full
-> 'microcode' update and we may need to apply each of them just e.g.
-> because we can't jump from stepping X.1 to X.3 without applying X.2 in
-> between?
-> 
-> if it's [1], then I wonder why only a single 'microcode' update (which
-> has been previously cached in 'uci->mc') is being applied for the case
-> of system-wide resume (apply_microcode_check_cpu()). Don't we need to
-> go through the full cpu_request_microcode() cycle to consider all
-> updates?
-> 
+Assorted fixes, better dup2() atomicity, more nameidata eviction, Alexey's
+sanitizing of procfs inumbers and of IDR use in fs/*/* in general.  Please,
+pull from
 
-No, there is only ever one microcode; you only run the latest one.
+git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
 
-	-hpa
+Shortlog:
+Al Viro (7):
+      ipv4_static_sysctl_init() should be under CONFIG_SYSCTL
+      merge locate_fd() and get_unused_fd()
+      clean dup2() up a bit
+      fix races and leaks in vfs_quota_on() users
+      fix bdev leak in block_dev.c do_open()
+      switch mtd and dm-table to lookup_bdev()
+      pass struct path * to do_add_mount()
+
+Alexey Dobriyan (3):
+      proc: fix inode number bogorithmetic
+      proc: switch inode number allocation to IDA
+      devpts: switch to IDA
+
+Miklos Szeredi (1):
+      [patch 3/4] vfs: remove unused nameidata argument of may_create()
+
+Stephen Smalley (1):
+      Re: BUG at security/selinux/avc.c:883 (was: Re: linux-next: Tree
+
+Diffstat:
+ drivers/md/dm-table.c    |   29 ++--------
+ drivers/mtd/mtdsuper.c   |   33 ++++-------
+ fs/afs/mntpt.c           |    2 +-
+ fs/block_dev.c           |    5 +-
+ fs/cifs/cifs_dfs_ref.c   |    2 +-
+ fs/devpts/inode.c        |   16 +++---
+ fs/dquot.c               |   33 +++++++----
+ fs/ext3/super.c          |    3 +-
+ fs/ext4/super.c          |    3 +-
+ fs/fcntl.c               |  140 +++++++++++++--------------------------------
+ fs/file.c                |   61 ++++++++++++++++++++
+ fs/namei.c               |   17 +++---
+ fs/namespace.c           |   16 +++---
+ fs/nfs/namespace.c       |    2 +-
+ fs/open.c                |   56 ------------------
+ fs/proc/generic.c        |   27 ++++-----
+ fs/reiserfs/super.c      |   16 +++--
+ include/linux/file.h     |    3 +-
+ include/linux/mount.h    |    3 +-
+ include/linux/quotaops.h |    2 +
+ net/ipv4/route.c         |    2 +
+ 21 files changed, 203 insertions(+), 268 deletions(-)
+
