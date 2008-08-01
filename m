@@ -1,171 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbYHAHXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbYHAHZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758206AbYHAHXn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 03:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbYHAHX3
+	id S1757952AbYHAHZA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 03:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYHAHYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 03:23:29 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:31198 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753042AbYHAHX1 (ORCPT
+	Fri, 1 Aug 2008 03:24:53 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49156 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751106AbYHAHYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 03:23:27 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEALlWkkh5LDlw/2dsb2JhbACLIKVP
-X-IronPort-AV: E=Sophos;i="4.31,291,1215354600"; 
-   d="scan'208";a="162069615"
-Date: Fri, 1 Aug 2008 17:23:20 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Neil Brown <neilb@suse.de>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, Michael Shuey <shuey@purdue.edu>,
-       Shehjar Tikoo <shehjart@cse.unsw.edu.au>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, rees@citi.umich.edu, aglo@citi.umich.edu
-Subject: Re: high latency NFS
-Message-ID: <20080801072320.GE6201@disturbed>
-Mail-Followup-To: Neil Brown <neilb@suse.de>,
-	"J. Bruce Fields" <bfields@fieldses.org>,
-	Michael Shuey <shuey@purdue.edu>,
-	Shehjar Tikoo <shehjart@cse.unsw.edu.au>,
-	linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-	rees@citi.umich.edu, aglo@citi.umich.edu
-References: <200807241311.31457.shuey@purdue.edu> <20080730192110.GA17061@fieldses.org> <4890DFC7.3020309@cse.unsw.edu.au> <200807302235.50068.shuey@purdue.edu> <20080731031512.GA26203@fieldses.org> <18577.25513.494821.481623@notabene.brown>
+	Fri, 1 Aug 2008 03:24:52 -0400
+Date: Fri, 01 Aug 2008 16:23:40 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: mlock() return value issue in kernel 2.6.23.17
+Cc: kosaki.motohiro@jp.fujitsu.com, halesh.s@india.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080731143032.2a211c18.akpm@linux-foundation.org>
+References: <20080731211811.3CA9.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080731143032.2a211c18.akpm@linux-foundation.org>
+Message-Id: <20080801161651.FEBE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18577.25513.494821.481623@notabene.brown>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 05:03:05PM +1000, Neil Brown wrote:
-> On Wednesday July 30, bfields@fieldses.org wrote:
-> > > 
-> > > I was only using the default 8 nfsd threads on the server.  When I raised 
-> > > this to 256, the read bandwidth went from about 6 MB/sec to about 95 
-> > > MB/sec, at 100ms of netem-induced latency.
-> > 
-> > So this is yet another reminder that someone needs to implement some
-> > kind of automatic tuning of the number of threads.
-> > 
-> > I guess the first question is what exactly the policy for that should
-> > be?  How do we decide when to add another thread?  How do we decide when
-> > there are too many?
-> 
-> Or should the first question be "what are we trying to achieve?"?
-> 
-> Do we want to:
->     Automatically choose a number of threads that would match what a
->       well informed sysadmin might choose
-> or
->     regularly adjust the number of threads to find an optimal balance
->       between prompt request processing (minimal queue length),
->       minimal resource usage (idle threads waste memory)
->     and not overloading the filesystem (how much concurrency does the
->         filesystem/storage subsystem realistically support.
-> 
-> And then we need to think about how this relates to NUMA situations
-> where we have different numbers of threads on each node.
-> 
-> 
-> I think we really want to aim for the first of the above options, but
-> that the result will end up looking a bit like a very simplistic
-> attempt at the second.  "simplicitic" is key - we don't want
-> "complex".
+Hi Andrew,
 
-Having implemented the second option on a different NUMA aware
-OS and NFS server, I can say that it isn't that complex, nor that
-hard to screw up.
+> I assume that you tested it too?
 
-	1. spawn a new thread only if all NFSDs are busy and there
-	   are still requests queued to be serviced.
-	2. rate limit the speed at which you spawn new NFSD threads.
-	   About 5/s per node was about right.
-	3. define an idle time for each thread before they
-	   terminate. That is, is a thread has not been asked to
-	   do any work for 30s, exit.
-	4. use the NFSD thread pools to allow per-pool independence.
+Yes, my x86_64 box works well.
 
-> I think that in the NUMA case we probably want to balance each node
-> independently.
-> 
-> The difficulties - I think - are:
->   - make sure we can handle a sudden surge of requests, certainly a
->     surge up to levels that we have previously seen.
->     I think the means we either don't kill excess threads, or
->     only kill them up to a limit: e.g. never fewer than 50% of
->     the maximum number of threads
+sorry, ambiguity e-mail.
 
-You only want to increase the number of threads for sustained
-loads or regular peaks of load. You don't want simple transients
-to cause massive numbers of threads to spawn so rate limiting
-the spawning rate is needed.
+halesh's test check two point.
+  - mlock rlimit
+  - invlid address range
 
->   - make sure we don't create too many threads if something clags up
->     and nothing is getting through.  This means we need to monitor the
->     number of requests dequeued and not make new threads when that is
->     zero.
+and, I think rlimit already works well.
+So, I ask halesh re-confirming.
 
-That second case is easy - only allow a new thread to be spawned when a
-request is dequeued. Hence if all the NFSDs are clagged, then we
-won't waste resources clagging more of them.
+> If it comes down to a choice between complying with SuS versus
+> complying with earlier Linux versions then we'd usually prefer to
+> comply with earlier Linux versions.
 
-> So how about:
->   For each node we watch the length of the queue of
->   requests-awaiting-threads and the queue of threads
->   awaiting requests and maintain these values:
->     - max number of threads ever concurrently running
->     - number of requests dequeued
->     - min length request queue
->     - min length of thread queue
-> 
->   Then every few (5?) seconds we sample these numbers and reset them
->      (except the first).
->      If 
->         the min request queue length is non-zero and 
->         the number of requests dequeued is non-zero
->      Then
->         start a new thread
->      If
->         the number of threads exceeds half the maximum and
->         the min length of the thread queue exceeds 0
->      Then
->         stop one (idle) thread
+I see.
 
-The period of adjustment is really too low to be useful - a single
-extra thread is meaningless if you go from 8 to 9 when you really need
-30 or 40 nfsds. Taking minutes to get to the required number is
-really too slow. You want to go from 8 to 40 within a few seconds of
-that load starting....
+> I queued this, but would prefer to await confirmation that it has been
+> tested to take us back to the 2.6.18 interface, please.
 
-> You might want to track the max length of the request queue too and
-> start more threads if the queue is long, to allow a quick ramp-up.
+Yes.
+this patch wasn't tested on split-lru yet.
+I'll do that. (and probably fix it)
 
-Right, but even request queue depth is not a good indicator. You
-need to leep track of how many NFSDs are actually doing useful
-work. That is, if you've got an NFSD on the CPU that is hitting
-the cache and not blocking, you don't need more NFSDs to handle
-that load because they can't do any more work than the NFSD
-that is currently running is. 
+> Also, please send a Signed-off-by: for this change.
 
-i.e. take the solution that Greg banks used for the CPU scheduler
-overload issue (limiting the number of nfsds woken but not yet on
-the CPU), and apply that criteria to spawning new threads.  i.e.
-we've tried to wake an NFSD, but there are none available so that
-means more NFSDs are needed for the given load. If we've already
-tried to wake one and it hasn't run yet, then we've got enough
-NFSDs....
+Agghh, sorry. it is stupid forgotten.
 
-Also, NFSD scheduling needs to be LIFO so that unused NFSDs
-accumulate idle time and so can be culled easily. If you RR the
-nfsds, they'll all appear to be doing useful work so it's hard to
-tell if you've got any idle at all.
 
-HTH.
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
