@@ -1,57 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbYHAPPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753454AbYHAPQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753180AbYHAPPX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 11:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYHAPPK
+	id S1753454AbYHAPQZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 11:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYHAPQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 11:15:10 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:55333 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbYHAPPJ (ORCPT
+	Fri, 1 Aug 2008 11:16:17 -0400
+Received: from smtp01.mtn.co.za ([196.13.230.214]:1793 "EHLO smtp01.mtn.co.za"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751110AbYHAPQR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 11:15:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=FJz2z0k2LoAJQZGekTyCP+4Px0vDlsQpiwhWd7+Oo3SFUo3zhgt861j4ppeCbkGi26
-         Or6h/y5kdTqSnYAZglrca6GLYQu+aIZFi9XxwGUqV5vRAwblsfeg90Ifn1d21GVhmlw+
-         PHYuMOMiNODvJ0qy2wfI5o8+evZmahaZPIiiQ=
-Message-ID: <48f7fe350808010815w319e6da9u77ec1613a13d95e1@mail.gmail.com>
-Date: Fri, 1 Aug 2008 11:15:05 -0400
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH][RESEND] mm: fix uninitialized variables for find_vma_prepare callers
-In-Reply-To: <48f7fe350808010813u4e71c3e7h4d25127533a12726@mail.gmail.com>
+	Fri, 1 Aug 2008 11:16:17 -0400
+X-Greylist: delayed 617 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Aug 2008 11:16:17 EDT
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48f7fe350808010813u4e71c3e7h4d25127533a12726@mail.gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: POSIX_FADV_DONTNEED
+Date: Fri, 1 Aug 2008 17:05:39 +0200
+Message-ID: <70D00C33FCD1FD4A860DEAC228277C0C048425D1@MTNMAIL1.mtn.co.za>
+Thread-Topic: POSIX_FADV_DONTNEED
+thread-index: Acjz6BK0ShYuO2mRRpeDqhqXXVujlw==
+From: "Trevor Woollacott [ MTN - Innovation Centre ]" <Woolla_T@mtn.co.za>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 01 Aug 2008 15:08:37.0358 (UTC) FILETIME=[795428E0:01C8F3E8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I forgot to mention that this patch is for 2.6.27-rc1-mm1...
 
--Ryan
+Hi all
 
-On Fri, Aug 1, 2008 at 11:13 AM, Ryan Hope <rmh3093@gmail.com> wrote:
-> This was submitted for 2.6.26-rc8-mm1 but it must have gotten overlooked:
->
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index 4c5211b..3d65a03 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -372,7 +372,7 @@ find_vma_prepare(struct mm_struct *mm, unsigned long addr,
->                if (vma_tmp->vm_end > addr) {
->                        vma = vma_tmp;
->                        if (vma_tmp->vm_start <= addr)
-> -                               return vma;
-> +                               break;
->                        __rb_link = &__rb_parent->rb_left;
->                } else {
->                        rb_prev = __rb_parent;
->
+Does anyone know if posix_fadvise() with POSIX_FADV_DONTNEED is
+blocking/unblocking?
+
+Thanks,
+Trevor
+
+NOTE: This e-mail message is subject to the MTN Group disclaimer see http://www.mtn.co.za/default.aspx?pid=34411 
