@@ -1,216 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbYHBBJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbYHBBK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbYHBBJu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 21:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYHBBJl
+	id S1754783AbYHBBK5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 21:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYHBBKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 21:09:41 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:10329 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751496AbYHBBJk (ORCPT
+	Fri, 1 Aug 2008 21:10:50 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:44515 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbYHBBKt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 21:09:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=QvXkhbaj7SZh2zBl5W1BMK29hxMVpzrcXFyqRq8QMKQDv3Jsv1CLj4TQHyl5PzDf60
-         SUVVuPew3TQcbtDxwCPMJyY2Y1s5H3PNxQcPLA4Rp3bQxCUaPOCJUedroP/OJ+73iIU1
-         QXpu/u10Tkjmsd/zxwv9mm8HJrx48zAi1vUNI=
-Message-ID: <86802c440808011809t275aa511h4a1e9d70ede21702@mail.gmail.com>
-Date: Fri, 1 Aug 2008 18:09:38 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 00/16] dyn_array and nr_irqs support v2
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       hpa <hpa@zytor.com>, "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m1wsj0nyx6.fsf@frodo.ebiederm.org>
+	Fri, 1 Aug 2008 21:10:49 -0400
+Message-ID: <4893B415.9070906@linux.vnet.ibm.com>
+Date: Sat, 02 Aug 2008 06:40:45 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
+To: Linux Containers <containers@lists.osdl.org>
+CC: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       libcg-devel <libcg-devel@lists.sourceforge.net>
+Subject: Control groups and Resource Management notes (part II)
+References: <489315B2.2080506@linux.vnet.ibm.com>
+In-Reply-To: <489315B2.2080506@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1217583464-28494-1-git-send-email-yhlu.kernel@gmail.com>
-	 <m1iqukwjjg.fsf@frodo.ebiederm.org>
-	 <86802c440808011430i6cf5cb8cn519777a78dd987b0@mail.gmail.com>
-	 <m1wsj0nyx6.fsf@frodo.ebiederm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 1, 2008 at 3:38 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->
->> On Fri, Aug 1, 2008 at 1:46 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
->>> Yinghai Lu <yhlu.kernel@gmail.com> writes:
->>>
->>>> Please check dyn_array support for x86
->>>
->>> YH you have not addressed any of my core concerns and this exceeds my review
->> limit.
->>
->> i mean drivers/serial/8250.c
->
-> Still not based on UART_NR.  Although Alan said he would take a look at it
-> next week, because he thinks this is important work.
+Here's part II (part I can be found at
+(https://lists.linux-foundation.org/pipermail/containers/2008-August/012128.html)
 
-change that to list?
+Resource management (cont'd)
+============================
+7. Disk IO controller - There was a general discussion on the various disk IO
+controllers
+	a. DM - IOBand
+	b. IO throttle
+	c. Anticipatory
+	d. CFQ
 
->
->>> Unfortunately I don't feel like this is a productive process.
->>>
->>> My core concerns are:
->>> - You have not separated out and separately pushed the regression patch.  So
->> that we can
->>> fix the current rc release.  Simply tuning NR_IRQS is all I feel comfortable
->> with for
->>>  fixing things in the post merge window period.
->>
->> Increase NR_IRQS to 512 for x86_64?
->
-> x86_32 has it set to 1024 so 512 is too small.  I think your patch
-> which essentially restores the old behavior is the right way to go for
-> this merge window.  I just want to carefully look at it and ensure we
-> are restoring the old heuristics.  On a lot of large machines we wind
-> up having irqs for pci slots that are never filled with cards.
+It was decided that it would be best for all the stake holders to work together
+and let Jens Axboe and the block layer experts figure out what would be right
+for the Linux kernel
 
-it seems 32bit summit need NR_IRQS=256, NR_IRQ_VECTOR=1024
+8. Network traffic control - Paul discussed network traffic control and the
+approach followed by Google. The existing classifier mechanism can be easily
+extended by adding a classifier id (based on the control group). This is used in
+combination with netfilters. Balbir mentioned that Thomas Graf was also looking
+at something similar and raised the issue of input bandwidth control. Balbir
+also pointed people to CKRM where the solution has been implemented. The OpenVZ
+and Google team will post their patches
 
->
->>> - The generic code has no business with dealing with NR_IRQS sized arrays.
->>> Since we don't have a generic problem I don't see why we should have a generic
->> dyn_array solution.
->> besides
->>
->> arch/x86/kernel/io_apic_32.c:DEFINE_DYN_ARRAY(irq_2_pin, sizeof(struct
->> irq_pin_list), pin_map_size, 16, NULL);
->> arch/x86/kernel/io_apic_32.c:DEFINE_DYN_ARRAY(balance_irq_affinity,
->> sizeof(struct balance_irq_affinity), nr_irqs, PAGE_SIZE,
->> irq_affinity_init_work);
->> arch/x86/kernel/io_apic_32.c:DEFINE_DYN_ARRAY(irq_vector, sizeof(u8),
->> nr_irqs, PAGE_SIZE, irq_vector_init_work);
->> arch/x86/kernel/io_apic_64.c:DEFINE_DYN_ARRAY(irq_cfg, sizeof(struct
->> irq_cfg), nr_irqs, PAGE_SIZE, init_work);
->> arch/x86/kernel/io_apic_64.c:DEFINE_DYN_ARRAY(irq_2_pin, sizeof(struct
->> irq_pin_list), pin_map_size, sizeof(struct irq_pin_list), NULL);
->
-> You have noticed how much of those arrays I have collapsed into irq_cfg
-> on x86_64.  We can ultimately do the same on x86_32.  The
-> tricky one is irq_2_pin.  I believe the proper solution is to just
-> dynamically allocate entries and place a pointer in irq_cfg.  Although
-> we may be able to simply a place a single entry in irq_cfg.
+9. Network permissions - There was a recommendation to use security hooks for
+network permissions. Paul explained what they use permissions with
+	a. connect
+	b. bind
+	c. accept
 
-so there will be irq_desc and irq_cfg lists?
+The issue of using netlabels was brought up.
 
-wonder if helper to get irq_desc and irq_cfg for one irq_no could be bottleneck?
+10. Freezer subsystem - The freezer system was discussed briefly. Serge
+mentioned the patches and wanted to collect feedback (if any) on them.
 
-PS: cpumask_t domain in irq_cfg need to updated... it wast 512bytes
-when NR_CPUS=4096
-could change it to unsigned int. logical mode (flat, x2apic logical) it as mask
-and (physical flat mode, and x2apic physical) it is cpu number.
+11. OOM Handler - The OOM handler was discussed in detail. Balbir mentioned
+certain short comings of the OOM handler
+	a. Logic - it is based on total_vm, is that the correct metric for
+                   OOMing?
+	b. Concurrency - it kills several tasks at once
 
->
->> kernel/sched.c:DEFINE_PER_CPU_DYN_ARRAY_ADDR(per_cpu__kstat_irqs,
->> per_cpu__kstat.irqs, sizeof(unsigned int), nr_irqs, sizeof(unsigned
->> long), NULL);
->>
->> and kstat.irqs is the killer... every cpu will have that. [NR_CPUS][NR_IRQS]...
->
-> Yes.  See my patch in the referenced lkml link.
->
->>> - The dyn_array infrastructure does not provide for per numa node allocation
->> of
->>>  irq_desc structures, limiting NUMA scalability.
->>
->> you plan to move irq_desc when irq_affinity is set to cpus on other node?
->> something like DEFINE_PER_NODE_DYN_ARRAY ?
->
-> Not when irq_affinity is set.  But rather allocate it with the on the
-> node where the device that generates the irq and the node where the
-> irq controller the irq goes through is located on.  Which is where we
-> should be handling the irq if we want performance.
->
->>> - You appear to be papering over problems instead of digging in and actually
->> fixing them.
->>
->> use dyn_array is less intrusive at this point. and dyn_array related
->> code is not big.
->> just NR_IRQS to nr_irqs to make the patches more bigger. actually it is simple.
->>
->> with acpi_madt probing, nr_irqs is much small. like 48 or 98. and
->> current one is MACRO 224 or 256.
->
-> I agree with your sentiment if we can actually allocate the irqs by
-> demand instead of preallocating them based on worst case usage we
-> should use much less memory.
+There was a discussion on moving the policy for OOM handling to user space. Paul
+described how the OOM handler has been modified at google to notify user space
+when a CPUSet runs out of memory. Balbir asked if OOMing on reaching limits is a
+good idea, it was generally discussed that it might not be such a good idea.
 
-yes.
+Control group library
+=====================
+Dhaval and Balbir introduced libcgroups and the purpose of the library and the
+goals. Balbir described on paper what the current design looks like, it consists of
 
->
-> I figure that keeping any type of nr_irqs around you are requiring
-> us to estimate the worst case number of irqs we need to deal with.
+	1. API
+	2. Test framework
+	3. A configuration subsystem
 
-need to comprise flexibility and performance..., or say waste some
-space to get some performance...
+Dhaval discussed configuration syntax of XML versus home made. The issue of
+classification of tasks was brought up. The reason that we want to classify
+tasks is that we want them to move at fork/exec time to the correct cgroup so that
 
->
-> The challenge is that we have hot plug devices with MSI-X capabilities
-> on them.  Just one of those could add 4K irqs (worst case).  256 or
-> so I have actually heard hardware guys talking about.
-good know. so one cpu handle one card? or need 16 cpus serve one
-cards? or they got new cpu to NR_VECTORS  with 32bit?
+1. They don't consume resources in the parents group
+2. The movement is automatic
 
-then need to keep struct irq_desc, can not put everything into it.
+It was generally agreed upon that the classification should take place in user
+space. Eric and others suggested having a wrapper to start the application in
+the correct cgroup (wrapper around fork/exec). Dave suggested that one might
+even go the extent of hacking, such that a process is ptraced after fork/exec,
+moved to the correct group and resumed. Using SELinux contexts was also recommended.
 
->
-> But even one msi vector on a pci card that doesn't have normal irqs could
-> mess up a tightly sized nr_irqs based soley on acpi_madt probing.
+Vivek brought up using PAM plugins to do classifications, this suggestion was
+nicely received. The decision was to do classification in user space and then
+think of kernel space if it cannot be done in user space. Denis suggested that
+classification is useful. In OpenVZ they classify all apache children to a
+different group. Balbir asked Denis to post their classification infrastructure
+as RFC.
 
-v2 double that last_gsi_end
+Balbir asked for contributions to libcgroup. Libcgroup will effect system design
+ and both administrators and application administrators. Now is a good time to
+get *involved*.
 
->
->>> YH Here is what I was suggesting when the topic of killing NR_IRQs came up a
->> week or so
->>> ago.
->>> http://lkml.org/lkml/2008/7/10/439
->>> http://lkml.org/lkml/2008/7/10/532
->>>
->>> Which essentially boils down to:
->>> - Removing NR_IRQS from the non-irq infrastructure code.
->>> - Add a config option for architectures that are not going to use an array
->>> - In the genirq code have a lookup function that goes from irq number to
->> irq_desc *.
->>
->> so we need one pointer array with that lookup function? what is the
->> pointer array index size?
->> or use list in that lookup function?
->
-> Please read the articles I mentioned.  My first approximation would
-> be a linked list.  irq is always defined as "unsigned int irq"
->
->> how about percpu kstat.irqs?
->
-> Again in the referenced articles is my old patch that turns kstat.irqs
-> inside out.  Allowing us to handle that case with a normal percpu
-> allocation per irq.  Ultimately I think that is smaller.
-so it is
-kstat_irqs[cpu][NR_IRQS] ==> irq_desc..kstat_irqs[nr_cpus]
->
->>> The rest we should be able to handle in a arch dependent fashion.
->>>
->>> When we are done we should be able to create a stable irq number for msi
->> interrupts
->>> that is something like: bus:dev:fun:vector_no which is 8+5+3+12=28 bits long.
->>
->> how about irq migration from one cpu to another with different vector_no ?
->
-> Sorry I was referring to the MSI-X source vector number which is a 12
-> bit index into an array of MSI-X vectors on the pci device, not the
-> vector we receive the irq at on the pci card.
-
-cpu is going to check that vectors in addition to vectors in IDT?
-
-YH
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
