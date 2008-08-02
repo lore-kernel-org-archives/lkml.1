@@ -1,79 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYHBMK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbYHBM3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818AbYHBMK2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 08:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYHBMKU
+	id S1754826AbYHBM3a (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 08:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbYHBM3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 08:10:20 -0400
-Received: from jenny.ondioline.org ([66.220.1.122]:34743 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752465AbYHBMKT (ORCPT
+	Sat, 2 Aug 2008 08:29:23 -0400
+Received: from vsmtp03.dti.ne.jp ([202.216.231.138]:49385 "EHLO
+	vsmtp03.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752951AbYHBM3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 08:10:19 -0400
-X-Greylist: delayed 420 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 Aug 2008 08:10:19 EDT
-From: Paul Collins <paul@burly.ondioline.org>
-To: linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org, linuxppc-dev@ozlabs.org
-Subject: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux, post-2.6.27-rc1
-Mail-Followup-To: linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org,
-	linuxppc-dev@ozlabs.org
-Date: Sun, 03 Aug 2008 00:03:18 +1200
-Message-ID: <87tze38vzt.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 2 Aug 2008 08:29:22 -0400
+From: hooanon05@yahoo.co.jp
+To: robert.richter@amd.com
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: oprofile? lockdep warning from 2.6.27-rc1-mm1
+Date: Sat, 02 Aug 2008 21:28:42 +0900
+Message-ID: <7045.1217680122@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just got the oops below on a ppc32 NFS4 server.  I was cross-compiling
-Linux with an amd64 client at the time.  The server is running Linus's
-tree as of 94ad374a0751f40d25e22e036c37f7263569d24c, the client is
-running 2.6.26.
 
-The server's kernel was cross-compiled with gcc 4.2.4-3 and binutils
-2.18.50.20080610-1, both built from the Debian sources following their
-toolchain-building procedures.
+Hello,
 
-Annoyingly, I can't kill two of the client processes:
+While I was testing my filesystem module on 2.6.27-rc1-mm1, I got this
+message from oprofile. Is this a known problem, or did I miss something?
+sync_buffer() is the one in drivers/oprofile/buffer_sync.c instead of
+fs/buffer.c.
 
-    1 11634 11634   977 ?           -1 D     1000   0:00 make ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- oldconfig vmlinux modules
-    1 23887 11634   977 ?           -1 D     1000   0:00 [powerpc-linux-g]
 
-Here's the oops.  The instruction dump really was all Xes.
+Junjiro R. Okajima
 
-  Unable to handle kernel paging request for instruction fetch
-  Faulting instruction address: 0x00000000
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  PowerMac
-  Modules linked in: snd_aoa_codec_tas snd_aoa_fabric_layout snd_aoa snd_aoa_i2sbus snd_aoa_soundbus radeon drm b43 mac80211 cfg80211 pcmcia snd_pcm_oss snd_pcm snd_page_alloc yenta_socket rsrc_nonstatic pcmcia_core ssb uninorth_agp agpgart ehci_hcd ohci_hcd [last unloaded: snd_aoa_soundbus]
-  NIP: 00000000 LR: c0159a44 CTR: 00000000
-  REGS: c1d81c70 TRAP: 0400   Not tainted  (2.6.27-rc1-00158-g643fbd8)
-  MSR: 40009032 <EE,ME,IR,DR>  CR: 82002024  XER: 20000000
-  TASK = c1c7b210[2306] 'nfsd' THREAD: c1d80000
-  GPR00: c0159bcc c1d81d20 c1c7b210 82002044 c2e538d4 82002044 002e499d f92d835f
-  GPR08: 00000000 c2e55ac4 c2e55adc c1d81d50 82002024 00000000 018985fc 01898404
-  GPR16: 01898710 018c7894 c04b03f4 c04b03e0 c0173da0 c05f4e84 fffff000 00000001
-  GPR24: c00c05dc 00000000 82002044 00000000 c2e538d4 c2e538d4 c0437120 c1d81d20
-  NIP [00000000] 0x0
-  LR [c0159a44] find_acceptable_alias+0x44/0x108
-  Call Trace:
-  [c1d81d20] [c00cbab8] exportfs_d_alloc+0x40/0x70 (unreliable)
-  [c1d81d50] [c0159bcc] exportfs_decode_fh+0xc4/0x200
-  [c1d81e80] [c015d568] fh_verify+0x2e8/0x578
-  [c1d81ed0] [c016b1ec] nfsd4_putfh+0x60/0x78
-  [c1d81ef0] [c016afd0] nfsd4_proc_compound+0x1e4/0x34c
-  [c1d81f30] [c015a060] nfsd_dispatch+0xfc/0x220
-  [c1d81f50] [c0400c70] svc_process+0x3e4/0x6e8
-  [c1d81f90] [c015a8bc] nfsd+0x1c4/0x294
-  [c1d81fd0] [c0049e48] kthread+0x5c/0x9c
-  [c1d81ff0] [c00125c0] kernel_thread+0x44/0x60
-  Instruction dump:
-  XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-  XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-  ---[ end trace 88de9451d0d3e759 ]---
+----------------------------------------------------------------------
 
--- 
-Paul Collins
-Wellington, New Zealand
++ sudo opcontrol --setup --vmlinux=/home/jro/transparent/linux-2.6.27-rc1-mm1/D/vmlinux
++ sudo opcontrol --reset
++ sudo opcontrol --start
+Using default event: GLOBAL_POWER_EVENTS:100000:1:1:1
+Using 2.6+ OProfile kernel interface.
+Reading module info.
+Daemon started.
 
-Dag vijandelijk luchtschip de huismeester is dood
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.27-rc1-mm1jrousD #1
+-------------------------------------------------------
+events/0/7 is trying to acquire lock:
+ (&mm->mmap_sem){----}, at: [<c02d6500>] sync_buffer+0xe7/0x3c9
+
+but task is already holding lock:
+ (buffer_mutex){--..}, at: [<c02d6445>] sync_buffer+0x2c/0x3c9
+
+which lock already depends on the new lock.
+
+
+the existing dependency chain (in reverse order) is:
+
+-> #3 (buffer_mutex){--..}:
+       [<c01427d7>] __lock_acquire+0x1195/0x128d
+       [<c014296e>] lock_acquire+0x9f/0xb9
+       [<c0369f33>] mutex_lock_nested+0xbd/0x39f
+       [<c02d6445>] sync_buffer+0x2c/0x3c9
+       [<c02d6170>] wq_sync_buffer+0x3e/0x5c
+       [<c012ff4a>] run_workqueue+0x128/0x226
+       [<c0130b0c>] worker_thread+0x72/0xa7
+       [<c0133217>] kthread+0x37/0x59
+       [<c0103e37>] kernel_thread_helper+0x7/0x10
+       [<ffffffff>] 0xffffffff
+
+-> #2 (&(&b->work)->work){--..}:
+       [<c01427d7>] __lock_acquire+0x1195/0x128d
+       [<c014296e>] lock_acquire+0x9f/0xb9
+       [<c012ff45>] run_workqueue+0x123/0x226
+       [<c0130b0c>] worker_thread+0x72/0xa7
+       [<c0133217>] kthread+0x37/0x59
+       [<c0103e37>] kernel_thread_helper+0x7/0x10
+       [<ffffffff>] 0xffffffff
+
+-> #1 (events){--..}:
+       [<c01427d7>] __lock_acquire+0x1195/0x128d
+       [<c014296e>] lock_acquire+0x9f/0xb9
+       [<c01306ac>] flush_work+0x51/0xd2
+       [<c0130bda>] schedule_on_each_cpu+0x99/0xbf
+       [<c0166266>] lru_add_drain_all+0xd/0xf
+       [<c01703a6>] __mlock_vma_pages_range+0x44/0x294
+       [<c01706eb>] mlock_fixup+0xf5/0x1c3
+       [<c0170832>] do_mlockall+0x79/0x8d
+       [<c0170b7d>] sys_mlockall+0x74/0x9e
+       [<c0103151>] sysenter_do_call+0x12/0x31
+       [<ffffffff>] 0xffffffff
+
+-> #0 (&mm->mmap_sem){----}:
+       [<c01425fa>] __lock_acquire+0xfb8/0x128d
+       [<c014296e>] lock_acquire+0x9f/0xb9
+       [<c036a77e>] down_read+0x3d/0x74
+       [<c02d6500>] sync_buffer+0xe7/0x3c9
+       [<c02d6170>] wq_sync_buffer+0x3e/0x5c
+       [<c012ff4a>] run_workqueue+0x128/0x226
+       [<c0130b0c>] worker_thread+0x72/0xa7
+       [<c0133217>] kthread+0x37/0x59
+       [<c0103e37>] kernel_thread_helper+0x7/0x10
+       [<ffffffff>] 0xffffffff
+
+other info that might help us debug this:
+
+3 locks held by events/0/7:
+ #0:  (events){--..}, at: [<c012fefc>] run_workqueue+0xda/0x226
+ #1:  (&(&b->work)->work){--..}, at: [<c012ff22>] run_workqueue+0x100/0x226
+ #2:  (buffer_mutex){--..}, at: [<c02d6445>] sync_buffer+0x2c/0x3c9
+
+stack backtrace:
+Pid: 7, comm: events/0 Not tainted 2.6.27-rc1-mm1jrousD #1
+ [<c013fb3b>] print_circular_bug_tail+0x68/0x71
+ [<c013f1ce>] ? print_circular_bug_entry+0x43/0x4b
+ [<c01425fa>] __lock_acquire+0xfb8/0x128d
+ [<c0236cc4>] ? debug_smp_processor_id+0x28/0xdc
+ [<c013e7ed>] ? trace_hardirqs_off+0xb/0xd
+ [<c014296e>] lock_acquire+0x9f/0xb9
+ [<c02d6500>] ? sync_buffer+0xe7/0x3c9
+ [<c036a77e>] down_read+0x3d/0x74
+ [<c02d6500>] ? sync_buffer+0xe7/0x3c9
+ [<c02d6500>] sync_buffer+0xe7/0x3c9
+ [<c02d6170>] wq_sync_buffer+0x3e/0x5c
+ [<c012ff22>] ? run_workqueue+0x100/0x226
+ [<c012ff4a>] run_workqueue+0x128/0x226
+ [<c012ff22>] ? run_workqueue+0x100/0x226
+ [<c02d6132>] ? wq_sync_buffer+0x0/0x5c
+ [<c0130b0c>] worker_thread+0x72/0xa7
+ [<c01334d6>] ? autoremove_wake_function+0x0/0x3a
+ [<c0130a9a>] ? worker_thread+0x0/0xa7
+ [<c0133217>] kthread+0x37/0x59
+ [<c01331e0>] ? kthread+0x0/0x59
+ [<c0103e37>] kernel_thread_helper+0x7/0x10
+ =======================
+Using log file /var/lib/oprofile/oprofiled.log
+Profiler running.
