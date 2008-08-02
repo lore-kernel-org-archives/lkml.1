@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757628AbYHBSs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbYHBSzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757628AbYHBSs4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 14:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbYHBSsr
+	id S1758633AbYHBSzw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 14:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbYHBSzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 14:48:47 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:18323 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753006AbYHBSsq (ORCPT
+	Sat, 2 Aug 2008 14:55:18 -0400
+Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:36303 "EHLO
+	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753435AbYHBSzP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 14:48:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=HM5Z7RyVid7Xpp2UnsjujiHEqXWGkn3V8z0bi5ryeBLm08ItSOTl9WARbBlOhSgD9b
-         G9SznDrR7z21OidZyDgundzxyD/E76LAMDu12/vwC3y74TON5K0re2qgwcIjiyjh7pHR
-         qZ91S1qXoWbFjsDusZ5xsR7MzQ4WbVk5m29XY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: [PATCH] ide-generic: skip automatic probing of legacy iobases (was: Re: [PATCH] ide-floppy fix)
-Date: Sat, 2 Aug 2008 20:46:16 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <20080715053356.GA18628@gollum.tnic> <200808021902.12191.bzolnier@gmail.com> <20080802183253.GA2239@gollum.tnic>
-In-Reply-To: <20080802183253.GA2239@gollum.tnic>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808022046.16990.bzolnier@gmail.com>
+	Sat, 2 Aug 2008 14:55:15 -0400
+From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
+To: p_gortmaker@yahoo.com
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] drivers/net: Remove 'return' of void function NS8390p_init()
+Date: Sat,  2 Aug 2008 15:55:11 -0300
+Message-Id: <1217703313-23407-2-git-send-email-gustavo@las.ic.unicamp.br>
+X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <1217703313-23407-1-git-send-email-gustavo@las.ic.unicamp.br>
+References: <gustavo@las.ic.unicamp.br>
+ <1217703313-23407-1-git-send-email-gustavo@las.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 August 2008, Borislav Petkov wrote:
-> On Sat, Aug 02, 2008 at 07:02:12PM +0200, Bartlomiej Zolnierkiewicz wrote:
+We don't need this into a void function.
 
-[...]
+Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+---
+ drivers/net/8390p.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> > > As a result, i have now a new bool-Kconfig option BLK_DEV_GENERIC_ONLY which
-> > > gets reverse-selected only when no pci ide controller which is using the generic
-> > > ide_host_register() from within ide_pci_init_one() is selected in Kconfig. This
-> > > is tested both with and without a pci ide driver selected in addition to
-> > > ide-generic.
-> > 
-> > How's about just leaving the final decision up to the user with changing
-> > probe_mask in ide_generic from 0x3 to 0x0 and automatically probing for
-> > ports 0-1 iff there is no IDE PCI controller present (otherwise check
-> > probe_mask).
-> 
-> Wait, let me get this straight: you want to set probe_mask to 0x0 as a default,
-> which skips probing of the primary and secondary ports, and to do the checking
+diff --git a/drivers/net/8390p.c b/drivers/net/8390p.c
+index 71f1988..fd46f6c 100644
+--- a/drivers/net/8390p.c
++++ b/drivers/net/8390p.c
+@@ -39,7 +39,7 @@ struct net_device *__alloc_eip_netdev(int size)
+ 
+ void NS8390p_init(struct net_device *dev, int startp)
+ {
+-	return __NS8390_init(dev, startp);
++	__NS8390_init(dev, startp);
+ }
+ 
+ EXPORT_SYMBOL(eip_open);
+-- 
+1.5.4.5
 
-Yes.
-
-> whether the IDE PCI controller uses legacy iobases only when the user has
-> enforced it by setting probe_mask to 0x3? At least this is how i understand
-> it...
-
-Nope, always do the checking and if there is no IDE PCI controller do the
-probing (& if there is IDE PCI controller present check probe_mask bits).
