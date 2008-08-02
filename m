@@ -1,97 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752303AbYHBCVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYHBCbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752303AbYHBCVp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 22:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbYHBCVi
+	id S1754648AbYHBCbG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 22:31:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYHBCaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 22:21:38 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58969 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752224AbYHBCVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 22:21:37 -0400
-Message-ID: <4893C42A.60803@cn.fujitsu.com>
-Date: Sat, 02 Aug 2008 10:19:22 +0800
-From: zhangxiliang <zhangxiliang@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Fri, 1 Aug 2008 22:30:55 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:37723 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752280AbYHBCay (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 22:30:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FZrT2SM4+fZTBv0gqCyIdtP9AYdvEYwy8VPxnatvwMmGYM/0n1eBbD0M7saBTWP9Db
+         pww9m0IBFXHyXEG2L+lg2jmD4R3Ngd6SVOiVn8uStc02KMJhGnsa6lFp0N3nG1V+9Mjy
+         E+47QxxxjxDH76t+4QhegkXFq9/iIHDwOciww=
+Date: Sat, 2 Aug 2008 06:30:40 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Theodore Tso <tytso@mit.edu>, Ryan Hope <rmh3093@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: reiser4 for 2.6.27-rc1
+Message-ID: <20080802023040.GB23534@martell.zuzino.mipt.ru>
+References: <48f7fe350808010649l1111f48enbb6eca3cfcbba67f@mail.gmail.com> <20080801162548.GD8654@mit.edu>
 MIME-Version: 1.0
-To: Eric Paris <eparis@redhat.com>, Steve Grubb <sgrubb@redhat.com>,
-       viro@zeniv.linux.org.uk, Linux Audit <linux-audit@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix the kernel panic of audit_filter_task when key field
- is set
-References: <4892F063.1080109@cn.fujitsu.com>
-In-Reply-To: <4892F063.1080109@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080801162548.GD8654@mit.edu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] Fix the kernel panic of audit_filter_task when AUDIT_PERM or AUDIT_FILETYPE field is set
+On Fri, Aug 01, 2008 at 12:25:48PM -0400, Theodore Tso wrote:
+> On Fri, Aug 01, 2008 at 09:49:55AM -0400, Ryan Hope wrote:
+> > Why is reiser4 still not in a vanilla kernel for testing. I have had
+> > to apply the reiser4 patches from -mm kernels to vanilla based
+> > patchset for over a year now. Reiser4 works fine, what will it take to
+> > get it included in vanilla? Here is a patch to add reiser4 to
+> > 2.6.27-rc1:
+> > 
+> > http://zen-sources.org/files/reiser4-for-2.6.27-rc1.patch
+> 
+> The reasons laid out in these web pages haven't changed.
+> 
+> http://kernelnewbies.org/WhyReiser4IsNotIn
+> http://lkml.org/lkml/2006/7/28/180
+> http://www.gossamer-threads.com/lists/engine?do=post_view_flat;post=668645;page=1;sb=post_latest_reply;so=ASC;mh=25;list=linux
+> 
+> Now that Hans is out of the picture, and Namesys seems to have
+> collapsed, maybe someone can yank out the plugin architecture that
+> Linus and others have objected to, which as near as I could tell was
+> part of the Namesys's somewhat dodgy business plan of creating and
+> selling (possibly proprietary; not sure what license they were going
+> to be under) plugin modules for Reiser4 to make money.  The other
+> issue that was raised during the review were some locking issues
+> raised by Al Viro, if memory serves correctly.  I'm not sure if they
+> were ever fixed;
 
-When calling audit_filter_task(), it calls audit_filter_rules() with audit_context is NULL.
-If the AUDIT_PERM or AUDIT_FILETYPE field is set, audit_match_perm() or audit_match_filetype() will use ctx->xx.
-But the ctx is NULL in this condition, so kernel will panic.
-
-Signed-off-by: Zhang Xiliang <zhangxiliang@cn.fujitsu.com>
----
- kernel/auditsc.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index 012c94e..29b6964 100644
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -243,6 +243,8 @@ static inline int open_arg(int flags, int mask)
- 
- static int audit_match_perm(struct audit_context *ctx, int mask)
- {
-+	if(!ctx)
-+		return 0;
- 	unsigned n = ctx->major;
- 	switch (audit_classify_syscall(ctx->arch, n)) {
- 	case 0:	/* native */
-@@ -284,6 +286,8 @@ static int audit_match_filetype(struct audit_context *ctx, int which)
- {
- 	unsigned index = which & ~S_IFMT;
- 	mode_t mode = which & S_IFMT;
-+	if(!ctx)
-+		return 0;
- 	if (index >= ctx->name_count)
- 		return 0;
- 	if (ctx->names[index].ino == -1)
-
-
-zhangxiliang said the following on 2008-08-01 19:15:
-> When calling audit_filter_task(), it calls audit_filter_rules() with audit_context is NULL.
-> If the key field is set, the result in audit_filter_rules() will be set to 1 and 
-> ctx->filterkey will be set to key.
-> But the ctx is NULL in this condition, so kernel will panic.
-> 
-> Signed-off-by: Zhang Xiliang <zhangxiliang@cn.fujitsu.com>
-> ---
->  kernel/auditsc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-> index 4699950..012c94e 100644
-> --- a/kernel/auditsc.c
-> +++ b/kernel/auditsc.c
-> @@ -610,7 +610,7 @@ static int audit_filter_rules(struct task_struct *tsk,
->  		if (!result)
->  			return 0;
->  	}
-> -	if (rule->filterkey)
-> +	if (rule->filterkey && ctx)
->  		ctx->filterkey = kstrdup(rule->filterkey, GFP_ATOMIC);
->  	switch (rule->action) {
->  	case AUDIT_NEVER:    *state = AUDIT_DISABLED;	    break;
-> 
-> --
-> Linux-audit mailing list
-> Linux-audit@redhat.com
-> https://www.redhat.com/mailman/listinfo/linux-audit
-> 
-> 
-> 
+	"That because the real plugins are long gone.  It's just that neither the
+	complainers nor the fanboys in this thread ever read the code or generally
+	had any clue of their own."
+					--hch, 1 Aug 2006
 
