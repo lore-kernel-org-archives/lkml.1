@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbYHBPlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbYHBPm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756904AbYHBPlc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 11:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYHBPlY
+	id S1757283AbYHBPm3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 11:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbYHBPmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 11:41:24 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:36634 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753481AbYHBPlX (ORCPT
+	Sat, 2 Aug 2008 11:42:22 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38436 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753772AbYHBPmV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 11:41:23 -0400
-Date: Sat, 2 Aug 2008 16:41:14 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Len Brown <lenb@kernel.org>, Thomas Renninger <trenn@suse.de>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       Christian Kornacker <ckornacker@suse.de>
-Subject: Re: ACPI OSI disaster on latest HP laptops - critical temperature shutdown
-Message-ID: <20080802154114.GA28879@srcf.ucam.org>
-References: <200807241727.41715.trenn@suse.de> <alpine.LFD.1.10.0807241952270.6098@localhost.localdomain> <200807251319.12786.trenn@suse.de> <alpine.LFD.1.10.0807250948320.3884@localhost.localdomain> <alpine.LFD.1.10.0808011706350.3011@localhost.localdomain> <20080801223657.GD23558@khazad-dum.debian.net> <20080802054204.GB12646@srcf.ucam.org> <20080802143833.GC14069@khazad-dum.debian.net>
+	Sat, 2 Aug 2008 11:42:21 -0400
+Message-ID: <4894800F.40802@zytor.com>
+Date: Sat, 02 Aug 2008 08:41:03 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080802143833.GC14069@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/16] dyn_array and nr_irqs support v2
+References: <1217583464-28494-1-git-send-email-yhlu.kernel@gmail.com>	<m1iqukwjjg.fsf@frodo.ebiederm.org>	<86802c440808011430i6cf5cb8cn519777a78dd987b0@mail.gmail.com>	<m1wsj0nyx6.fsf@frodo.ebiederm.org>	<86802c440808011809t275aa511h4a1e9d70ede21702@mail.gmail.com>	<m163qkjirc.fsf@frodo.ebiederm.org>	<86802c440808011901w2aa40b25u45f5686b262cc2aa@mail.gmail.com>	<4893C066.60401@zytor.com> <m1abfwi1ht.fsf@frodo.ebiederm.org>	<4893D459.4030209@zytor.com> <m14p64gh81.fsf@frodo.ebiederm.org>
+In-Reply-To: <m14p64gh81.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 02, 2008 at 11:38:33AM -0300, Henrique de Moraes Holschuh wrote:
-
-> Yes.  IBM ThinkPads store the result of each version test separately, and I
-> recall I saw at least one DSDT code path that didn't test all of them in
-> order to select a branch of code to run.
-
-As an example, here's a section from the T61:
-
-                    If (\_OSI ("Windows 2001"))
-                    {
-                        Store (0x01, \WNTF)
-                        Store (0x01, \WXPF)
-                        Store (0x00, \WSPV)
-                    }
-
-                    If (\_OSI ("Windows 2001 SP1"))
-                    {
-                        Store (0x01, \WSPV)
-                    }
-
-                    If (\_OSI ("Windows 2001 SP2"))
-                    {
-                        Store (0x02, \WSPV)
-                    }
-
-And then later:
-
-           If (LAnd (\WXPF, LGreaterEqual (\WSPV, 0x01)))
-            {
-                PPMS (0x02)
-            }
-
-The only way WXPF can be non-zero and WSPV can be greater or equal to 
-one is if more than one of those tests succeeded.
-
-> > Not all BIOSes would support this, so we'd need to support the Windows 
-> > workarounds anyway. At that point, there's no real benefit in having 
-> > multiple codepaths.
+Eric W. Biederman wrote:
 > 
-> Sorry, but I will disagree.
+> Yes.  I want the option of using those bits.  It might not be smart to
+> use them to encode a physical location and the irq number but just
+> having the option would be nice.
 > 
-> Anything that can help in the future with the vendors that are better at
-> Linux support is a good thing.  You are right that we will still have to
-> deal with the others, but there are such things as vendor-specific windows
-> workarounds (they didn't want to change their firmware, or they couldn't, or
-> the others didn't care to add the workaround, etc).  If that vendor uses the
-> "NotWindows" OSI correctly, we would not need to take any special action.
 
-Allowing vendors to special-case Linux means that we have to have a 
-special-case path for the minority of vendors who ask for this. It's 
-added complexity and we don't actually gain anything from it.
+Urk!  First of all, there isn't enough space as we have already proven 
+(on the machines where it actually matters there just aren't enough 
+bits), but doing this kind of stuff *optionally* is going to hurt even 
+worse.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Furthermore, this crap will break anyway the *next* time someone comes 
+up with a new clever way to do interrupts -- and to truly get stable 
+identifiers, we can't treat HyperTransport MSI as APICs anymore, yadda, 
+yadda...
+
+> Making /proc/interrupts useful without breaking user space is going to be
+> an interesting challenge one of these days.
+
+If changing to non-numbers in /proc/interrupts will break userspace, 
+then userspace will have to deal with a numeric token in 
+/proc/interrupts which will have to be looked up elsewhere (perhaps in a 
+sysfs directory) to get a more meaningful index.
+
+	-hpa
