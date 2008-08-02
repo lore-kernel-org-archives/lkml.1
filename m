@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbYHBDc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYHBDcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754560AbYHBDc3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 23:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbYHBDcS
+	id S1756197AbYHBDcn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 23:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbYHBDce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 23:32:18 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:2077 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751532AbYHBDcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 23:32:17 -0400
-Date: Fri, 1 Aug 2008 23:29:46 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Tomas Winkler <tomasw@gmail.com>
-Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2008-08-01
-Message-ID: <20080802032946.GA29921@tuxdriver.com>
-References: <20080801205830.GA10071@tuxdriver.com> <1ba2fa240808011443u1a5553fpfca046f047773217@mail.gmail.com>
+	Fri, 1 Aug 2008 23:32:34 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55006 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755065AbYHBDce (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 23:32:34 -0400
+Message-ID: <4893D459.4030209@zytor.com>
+Date: Fri, 01 Aug 2008 20:28:25 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1ba2fa240808011443u1a5553fpfca046f047773217@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/16] dyn_array and nr_irqs support v2
+References: <1217583464-28494-1-git-send-email-yhlu.kernel@gmail.com>	<m1iqukwjjg.fsf@frodo.ebiederm.org>	<86802c440808011430i6cf5cb8cn519777a78dd987b0@mail.gmail.com>	<m1wsj0nyx6.fsf@frodo.ebiederm.org>	<86802c440808011809t275aa511h4a1e9d70ede21702@mail.gmail.com>	<m163qkjirc.fsf@frodo.ebiederm.org>	<86802c440808011901w2aa40b25u45f5686b262cc2aa@mail.gmail.com>	<4893C066.60401@zytor.com> <m1abfwi1ht.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1abfwi1ht.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 02, 2008 at 12:43:32AM +0300, Tomas Winkler wrote:
-> On Fri, Aug 1, 2008 at 11:58 PM, John W. Linville
-> <linville@tuxdriver.com> wrote:
-> > Dave,
-> >
-> > Another big batch of wireless fixes for 2.6.27.  The ath5k series is
-> > more than fixes, but I included it because it enables new ath5k
-> > hardware.  (The ath5k.h changes in particular are documentation cleanups
-> > for registers based on info gleaned from the newly posted ath9k driver.)
-> > The others patches are fixes, some more obvious than others. :-)
-> >
-> > Let me know if there are any problems!
+Eric W. Biederman wrote:
 > 
-> All the iwlwifi patches should go up otherwise the support for 5000 HW
-> will be incomplete.
+> Having a human readable name like: eth0irq22 or hbairq5 is likely just
+> as good in the case of msi.  Still all of the users interfaces today take numbers.
+> So we are stuck with dealing with numbers for a long time to come.
+> 
 
-Then they should have been posted before 2.6.26 was released...
+Long sparse numbers are messy, too, though.  It might be interesting to 
+have a routine somewhere like "irq_name()" to output a human-readable 
+IRQ name, which in case of MSI-X could contain the PCI device name.
 
--- 
-John W. Linville
-linville@tuxdriver.com
+	-hpa
