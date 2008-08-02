@@ -1,64 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756268AbYHBOv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbYHBPMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756268AbYHBOv6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 10:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYHBOvs
+	id S1755692AbYHBPMi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 11:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYHBPM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 10:51:48 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:42253 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752476AbYHBOvr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 10:51:47 -0400
-X-Sasl-enc: 2ZQoq+1uDmRHkpvfCHC+moliH8nL6TNFfb7fU6vLjq4f 1217688704
-Date: Sat, 2 Aug 2008 11:51:41 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Norbert Preining <preining@logic.at>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <lenb@kernel.org>,
-       Thomas Renninger <trenn@suse.de>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       Christian Kornacker <ckornacker@suse.de>
-Subject: Re: ACPI OSI disaster on latest HP laptops - critical temperature
-	shutdown
-Message-ID: <20080802145141.GA14626@khazad-dum.debian.net>
-References: <200807241727.41715.trenn@suse.de> <alpine.LFD.1.10.0807241952270.6098@localhost.localdomain> <200807251319.12786.trenn@suse.de> <alpine.LFD.1.10.0807250948320.3884@localhost.localdomain> <alpine.LFD.1.10.0808011706350.3011@localhost.localdomain> <20080801223657.GD23558@khazad-dum.debian.net> <20080802054204.GB12646@srcf.ucam.org> <20080802143833.GC14069@khazad-dum.debian.net> <20080802144452.GA25565@gamma.logic.tuwien.ac.at>
+	Sat, 2 Aug 2008 11:12:28 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:37764 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752783AbYHBPM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 11:12:27 -0400
+Date: Sat, 2 Aug 2008 17:12:23 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: chas@cmf.nrl.navy.mil, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/10] drivers/atm: Use DIV_ROUND_UP
+Message-ID: <Pine.LNX.4.64.0808021711550.20095@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080802144452.GA25565@gamma.logic.tuwien.ac.at>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 02 Aug 2008, Norbert Preining wrote:
-> There something else strange, no idea if that is related, sometimes it
-> just hangs after 
-> 	Setting the clock.
-> That is a message of Debian/sid and probably calls hwclock or something
-> similar.
+From: Julia Lawall <julia@diku.dk>
 
-Yes, it is a call to hwclock.  It recently started to cause lockups on my
-ThinkPad T43 too (it is a regression of some sort, either in hwclock or the
-kernel), but I was too busy to care.  I just removed the hwclock calls on
-the init path completely, since my clock is in UTC anyway and they were just
-wasting boot time.
+The kernel.h macro DIV_ROUND_UP performs the computation (((n) + (d) - 1) /
+(d)) but is perhaps more readable.
 
-Interestingly enough, the hwclock call to SET the clock on the shutdown path
-never causes any problems.   This could be a Debian userspace issue, or
-hwclock reading of the RTC is broken, but writes are not.
+In the case of the file drivers/atm/eni.c, I am a little bit suspicious of
+the -1 at the end of the affected expression.  Please check that that is
+what is wanted.
 
-But the thermal hang is something else entirely.  You have at least two
-different bugs causing you grief.
+An extract of the semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+// <smpl>
+@haskernel@
+@@
+
+#include <linux/kernel.h>
+
+@depends on haskernel@
+expression n,d;
+@@
+
+(
+- (n + d - 1) / d
++ DIV_ROUND_UP(n,d)
+|
+- (n + (d - 1)) / d
++ DIV_ROUND_UP(n,d)
+)
+
+@depends on haskernel@
+expression n,d;
+@@
+
+- DIV_ROUND_UP((n),d)
++ DIV_ROUND_UP(n,d)
+
+@depends on haskernel@
+expression n,d;
+@@
+
+- DIV_ROUND_UP(n,(d))
++ DIV_ROUND_UP(n,d)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/atm/eni.c     |    2 +-
+ drivers/atm/horizon.c |    8 ++++----
+ drivers/atm/zatm.c    |    6 +++---
+ 3 files changed, 8 insertions(+), 8 deletions(-)
+
+diff -u -p a/drivers/atm/eni.c b/drivers/atm/eni.c
+--- a/drivers/atm/eni.c
++++ b/drivers/atm/eni.c
+@@ -1270,7 +1270,7 @@ static int comp_tx(struct eni_dev *eni_d
+ 			if (*pre < 3) (*pre)++; /* else fail later */
+ 			div = pre_div[*pre]*-*pcr;
+ 			DPRINTK("max div %d\n",div);
+-			*res = (TS_CLOCK+div-1)/div-1;
++			*res = DIV_ROUND_UP(TS_CLOCK, div)-1;
+ 		}
+ 		if (*res < 0) *res = 0;
+ 		if (*res > MID_SEG_MAX_RATE) *res = MID_SEG_MAX_RATE;
+diff -u -p a/drivers/atm/horizon.c b/drivers/atm/horizon.c
+--- a/drivers/atm/horizon.c
++++ b/drivers/atm/horizon.c
+@@ -635,7 +635,7 @@ static int make_rate (const hrz_dev * de
+ 		// take care of rounding
+ 		switch (r) {
+ 			case round_down:
+-				pre = (br+(c<<div)-1)/(c<<div);
++				pre = DIV_ROUND_UP(br, c<<div);
+ 				// but p must be non-zero
+ 				if (!pre)
+ 					pre = 1;
+@@ -668,7 +668,7 @@ static int make_rate (const hrz_dev * de
+ 			// take care of rounding
+ 			switch (r) {
+ 				case round_down:
+-					pre = (br+(c<<div)-1)/(c<<div);
++					pre = DIV_ROUND_UP(br, c<<div);
+ 					break;
+ 				case round_nearest:
+ 					pre = (br+(c<<div)/2)/(c<<div);
+@@ -698,7 +698,7 @@ got_it:
+ 		if (bits)
+ 			*bits = (div<<CLOCK_SELECT_SHIFT) | (pre-1);
+ 		if (actual) {
+-			*actual = (br + (pre<<div) - 1) / (pre<<div);
++			*actual = DIV_ROUND_UP(br, pre<<div);
+ 			PRINTD (DBG_QOS, "actual rate: %u", *actual);
+ 		}
+ 		return 0;
+@@ -1967,7 +1967,7 @@ static int __devinit hrz_init (hrz_dev *
+   // Set the max AAL5 cell count to be just enough to contain the
+   // largest AAL5 frame that the user wants to receive
+   wr_regw (dev, MAX_AAL5_CELL_COUNT_OFF,
+-	   (max_rx_size + ATM_AAL5_TRAILER + ATM_CELL_PAYLOAD - 1) / ATM_CELL_PAYLOAD);
++	   DIV_ROUND_UP(max_rx_size + ATM_AAL5_TRAILER, ATM_CELL_PAYLOAD));
+   
+   // Enable receive
+   wr_regw (dev, RX_CONFIG_OFF, rd_regw (dev, RX_CONFIG_OFF) | RX_ENABLE);
+diff -u -p a/drivers/atm/zatm.c b/drivers/atm/zatm.c
+--- a/drivers/atm/zatm.c
++++ b/drivers/atm/zatm.c
+@@ -496,8 +496,8 @@ static int open_rx_first(struct atm_vcc 
+ 			vcc->qos.rxtp.max_sdu = 65464;
+ 			/* fix this - we may want to receive 64kB SDUs
+ 			   later */
+-		cells = (vcc->qos.rxtp.max_sdu+ATM_AAL5_TRAILER+
+-		    ATM_CELL_PAYLOAD-1)/ATM_CELL_PAYLOAD;
++		cells = DIV_ROUND_UP(vcc->qos.rxtp.max_sdu + ATM_AAL5_TRAILER,
++				ATM_CELL_PAYLOAD);
+ 		zatm_vcc->pool = pool_index(cells*ATM_CELL_PAYLOAD);
+ 	}
+ 	else {
+@@ -820,7 +820,7 @@ static int alloc_shaper(struct atm_dev *
+ 			}
+ 			else {
+ 				i = 255;
+-				m = (ATM_OC3_PCR*255+max-1)/max;
++				m = DIV_ROUND_UP(ATM_OC3_PCR*255, max);
+ 			}
+ 		}
+ 		if (i > m) {
