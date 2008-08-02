@@ -1,107 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbYHBPrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757140AbYHBPut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756749AbYHBPrz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 11:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbYHBPrq
+	id S1757140AbYHBPut (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 11:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYHBPul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 11:47:46 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:16756 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752476AbYHBPrp (ORCPT
+	Sat, 2 Aug 2008 11:50:41 -0400
+Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:59997 "EHLO
+	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752783AbYHBPul (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 11:47:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SN34UkaQFHrfAF2ZfmwT/fC/vwdpd9FykvSMVqF0Fb947VL4Ul4ucSKoLUuf1UfQat
-         yXPUKYIn9XIIoaYHjkOKS7B3KEyKQrwxo3KyhxuOjIkZcCMp91XTebaHau7h2eRTwtY0
-         Ix3cPAdqQhQcWmmDgxILvbeVWH2gWNHEdl674=
-Message-ID: <48f7fe350808020847iff03890nc6d910f7b77fee9e@mail.gmail.com>
-Date: Sat, 2 Aug 2008 11:47:45 -0400
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: "Edward Shishkin" <edward.shishkin@gmail.com>
-Subject: Re: reiser4 for 2.6.27-rc1
-Cc: "Theodore Tso" <tytso@mit.edu>, "Ric Wheeler" <ricwheeler@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Reiserfs mailing list" <reiserfs-devel@vger.kernel.org>
-In-Reply-To: <489390C6.8020903@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48f7fe350808010649l1111f48enbb6eca3cfcbba67f@mail.gmail.com>
-	 <20080801162548.GD8654@mit.edu>
-	 <48f7fe350808010934k32b9de09we657e57087a3e3a5@mail.gmail.com>
-	 <20080801164541.GF8654@mit.edu> <489352D8.2020700@gmail.com>
-	 <489390C6.8020903@gmail.com>
+	Sat, 2 Aug 2008 11:50:41 -0400
+From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: [PATCH 1/1] x86: coding style fixes to arch/x86/kernel/traps_64.c
+Date: Sat,  2 Aug 2008 12:50:37 -0300
+Message-Id: <1217692237-17603-2-git-send-email-gustavo@las.ic.unicamp.br>
+X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <1217692237-17603-1-git-send-email-gustavo@las.ic.unicamp.br>
+References: <gustavo@las.ic.unicamp.br>
+ <1217692237-17603-1-git-send-email-gustavo@las.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can you explain a little more what this "plugin design documentation"
-actually is and how it supposed to help?
--Ryan
+Fix coding style of traps_64.c with improvements suggested by Ingo.
 
-On Fri, Aug 1, 2008 at 6:40 PM, Edward Shishkin
-<edward.shishkin@gmail.com> wrote:
-> Ric Wheeler wrote:
->> Theodore Tso wrote:
->>> On Fri, Aug 01, 2008 at 12:34:53PM -0400, Ryan Hope wrote:
->>>
->
-> Hi, I am here :)
-> Join our mailing list:
->
-> http://vger.kernel.org/vger-lists.html#reiserfs-devel
-> http://marc.info/?l=reiserfs-devel&r=1&w=2
->
-> There are many interesting tasks to resolve/investigate..
->
->>>> Hmmm, removing the plugin support might not be so hard....  I might
->>>> have to try this...
->
-> Please, don't try to do this.
->
-> I am working on the plugin design document. It will be ready
-> approximately in September. I believe that it'll address all the
-> mentioned complaints.
->
->>>> I am not impressed with btrfs yet.
->>>>
->>>
->>> Well, if you're going to work on reiser4 (and I think there were other
->>> people who had also expressed interest/plans to work on it; you might
->>> try doing a search on the various mailing lists so you can coordinate
->>> with them and avoid duplicating work), my suggestion to you would be
->>> to find the comments that were made by the reviewers way back when,
->>> and make sure those comments have been addressed.
->>>
->>> Then, re-requests a code review, and promise that you won't abuse, and
->>> insult the integrity and impugn the motivations of the reviewers
->
-> Well, Ted, I'll promise ;)
-> We'll adhere strictly the propositional logic in the review thread..
->
-> Thanks,
-> Edward.
->
->>> like
->>> Hans did, and hopefully after they review the code, fix those problems
->>> as well.  Then you can try resubmitting for inclusion.
->>>
->>> Best regards,
->>>
->>>                                              - Ted
->>>
->>
->> My most up to date information is that Edward is still actively
->> working on reiser4....
->>
->> ric
->>
->>
->
->
->
+Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+---
+ arch/x86/kernel/traps_64.c |   14 ++++++++------
+ 1 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
+index fe36d96..5df5d2e 100644
+--- a/arch/x86/kernel/traps_64.c
++++ b/arch/x86/kernel/traps_64.c
+@@ -84,8 +84,8 @@ static inline void preempt_conditional_cli(struct pt_regs *regs)
+ 
+ void printk_address(unsigned long address, int reliable)
+ {
+-	printk(" [<%016lx>] %s%pS\n", address, reliable ?
+-			"" : "? ", (void *) address);
++	printk(" [<%016lx>] %s%pS\n",
++			address, reliable ?	"" : "? ", (void *) address);
+ }
+ 
+ static unsigned long *in_exception_stack(unsigned cpu, unsigned long stack,
+@@ -98,8 +98,8 @@ static unsigned long *in_exception_stack(unsigned cpu, unsigned long stack,
+ 		[STACKFAULT_STACK - 1] = "#SS",
+ 		[MCE_STACK - 1] = "#MC",
+ #if DEBUG_STKSZ > EXCEPTION_STKSZ
+-		[N_EXCEPTION_STACKS ... N_EXCEPTION_STACKS + DEBUG_STKSZ /
+-			EXCEPTION_STKSZ - 2] = "#DB[?]"
++		[N_EXCEPTION_STACKS ...
++			N_EXCEPTION_STACKS + DEBUG_STKSZ / EXCEPTION_STKSZ - 2] = "#DB[?]"
+ #endif
+ 	};
+ 	unsigned k;
+@@ -363,8 +363,10 @@ show_stack_log_lvl(struct task_struct *task, struct pt_regs *regs,
+ 	unsigned long *irqstack =
+ 		(unsigned long *) (cpu_pda(cpu)->irqstackptr - IRQSTACKSIZE);
+ 
+-	/* debugging aid: "show_stack(NULL, NULL);" prints the
+-	  back trace for this cpu. */
++	/*
++	 * debugging aid: "show_stack(NULL, NULL);" prints the
++	 * back trace for this cpu.
++	 */
+ 
+ 	if (sp == NULL) {
+ 		if (task)
+-- 
+1.5.4.5
+
