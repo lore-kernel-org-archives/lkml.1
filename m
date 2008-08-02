@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbYHBPOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbYHBPPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757607AbYHBPOk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 11:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbYHBPO0
+	id S1757025AbYHBPPb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 11:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYHBPPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 11:14:26 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:37848 "EHLO mgw2.diku.dk"
+	Sat, 2 Aug 2008 11:15:09 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:49392 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756634AbYHBPOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 11:14:24 -0400
-Date: Sat, 2 Aug 2008 17:14:21 +0200 (CEST)
+	id S1752476AbYHBPPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 11:15:07 -0400
+Date: Sat, 2 Aug 2008 17:15:05 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 6/10] drivers/mtd: Use DIV_ROUND_UP
-Message-ID: <Pine.LNX.4.64.0808021713580.20095@ask.diku.dk>
+To: jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 7/10] drivers/net/wan: Use DIV_ROUND_UP
+Message-ID: <Pine.LNX.4.64.0808021714220.20095@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -65,45 +65,18 @@ expression n,d;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/mtd/chips/cfi_cmdset_0001.c |    2 +-
- drivers/mtd/chips/gen_probe.c       |    2 +-
- drivers/mtd/ssfdc.c                 |    3 +--
- 3 files changed, 3 insertions(+), 4 deletions(-)
+ drivers/net/wan/sbni.c     |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u -p a/drivers/mtd/chips/cfi_cmdset_0001.c b/drivers/mtd/chips/cfi_cmdset_0001.c
---- a/drivers/mtd/chips/cfi_cmdset_0001.c
-+++ b/drivers/mtd/chips/cfi_cmdset_0001.c
-@@ -1640,7 +1640,7 @@ static int __xipram do_write_buffer(stru
+diff -u -p a/drivers/net/wan/sbni.c b/drivers/net/wan/sbni.c
+--- a/drivers/net/wan/sbni.c
++++ b/drivers/net/wan/sbni.c
+@@ -856,7 +856,7 @@ prepare_to_send( struct sk_buff  *skb,  
+ 		len = SBNI_MIN_LEN;
  
- 	/* Figure out the number of words to write */
- 	word_gap = (-adr & (map_bankwidth(map)-1));
--	words = (len - word_gap + map_bankwidth(map) - 1) / map_bankwidth(map);
-+	words = DIV_ROUND_UP(len - word_gap, map_bankwidth(map));
- 	if (!word_gap) {
- 		words--;
- 	} else {
-diff -u -p a/drivers/mtd/chips/gen_probe.c b/drivers/mtd/chips/gen_probe.c
---- a/drivers/mtd/chips/gen_probe.c
-+++ b/drivers/mtd/chips/gen_probe.c
-@@ -111,7 +111,7 @@ static struct cfi_private *genprobe_iden
- 		max_chips = 1;
- 	}
+ 	nl->tx_buf_p	= skb;
+-	nl->tx_frameno	= (len + nl->maxframe - 1) / nl->maxframe;
++	nl->tx_frameno	= DIV_ROUND_UP(len, nl->maxframe);
+ 	nl->framelen	= len < nl->maxframe  ?  len  :  nl->maxframe;
  
--	mapsize = sizeof(long) * ( (max_chips + BITS_PER_LONG-1) / BITS_PER_LONG );
-+	mapsize = sizeof(long) * DIV_ROUND_UP(max_chips, BITS_PER_LONG);
- 	chip_map = kzalloc(mapsize, GFP_KERNEL);
- 	if (!chip_map) {
- 		printk(KERN_WARNING "%s: kmalloc failed for CFI chip map\n", map->name);
-diff -u -p a/drivers/mtd/ssfdc.c b/drivers/mtd/ssfdc.c
---- a/drivers/mtd/ssfdc.c
-+++ b/drivers/mtd/ssfdc.c
-@@ -321,8 +321,7 @@ static void ssfdcr_add_mtd(struct mtd_bl
- 	DEBUG(MTD_DEBUG_LEVEL1,
- 		"SSFDC_RO: cis_block=%d,erase_size=%d,map_len=%d,n_zones=%d\n",
- 		ssfdc->cis_block, ssfdc->erase_size, ssfdc->map_len,
--		(ssfdc->map_len + MAX_PHYS_BLK_PER_ZONE - 1) /
--		MAX_PHYS_BLK_PER_ZONE);
-+		DIV_ROUND_UP(ssfdc->map_len, MAX_PHYS_BLK_PER_ZONE));
- 
- 	/* Set geometry */
- 	ssfdc->heads = 16;
+ 	outb( inb( dev->base_addr + CSR0 ) | TR_REQ,  dev->base_addr + CSR0 );
