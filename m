@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbYHBAZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758441AbYHBAZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756930AbYHBAZo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 20:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbYHBAZG
+	id S1758441AbYHBAZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 20:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYHBAZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 20:25:06 -0400
-Received: from c-98-210-159-26.hsd1.ca.comcast.net ([98.210.159.26]:46978 "EHLO
+	Fri, 1 Aug 2008 20:25:07 -0400
+Received: from c-98-210-159-26.hsd1.ca.comcast.net ([98.210.159.26]:46980 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750897AbYHBAZD (ORCPT
+	with ESMTP id S1751833AbYHBAZD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 1 Aug 2008 20:25:03 -0400
-X-Greylist: delayed 534 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Aug 2008 20:25:02 EDT
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 2 of 8] x86-64: use smp_call_function_mask for SMP TLB
-	invalidations
-X-Mercurial-Node: ad55f33413c68f49edbb9546a4c7282be9f368b6
-Message-Id: <ad55f33413c68f49edbb.1217636087@localhost>
+Subject: [PATCH 8 of 8] smp function calls: add kernel parameter to disable
+	multiple queues
+X-Mercurial-Node: 25bf2d9a2e4c0e839b764a0d079aec295e63d325
+Message-Id: <25bf2d9a2e4c0e839b76.1217636093@localhost>
 In-Reply-To: <patchbomb.1217636085@localhost>
-Date: Fri, 01 Aug 2008 17:14:47 -0700
+Date: Fri, 01 Aug 2008 17:14:53 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
@@ -29,300 +28,145 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that smp_call_function_mask exists and is scalable, there's no
-reason to have a special TLB flush IPI.  This saves a mass of code.
-
-In the process, I removed a copy of a cpumask_t.  The UV tlb flush
-code relies on that copy, so I propagated it down.
+There was some concern that using multiple queues - and their
+associated APIC vectors - may trigger bugs in various dubious APIC
+implementations.  This patch adds a command line option to force the
+kernel to use a single queue, even if the architecture can support
+more.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Cliff Wickman <cpw@sgi.com>
 ---
- arch/x86/kernel/entry_64.S    |   15 ----
- arch/x86/kernel/irqinit_64.c  |   10 ---
- arch/x86/kernel/tlb_64.c      |  125 ++++++-----------------------------------
- arch/x86/kernel/tlb_uv.c      |    5 -
- include/asm-x86/irq_vectors.h |    4 -
- include/asm-x86/uv/uv_bau.h   |    2
- 6 files changed, 23 insertions(+), 138 deletions(-)
+ Documentation/kernel-parameters.txt |    5 +++++
+ arch/x86/kernel/smp.c               |    2 +-
+ arch/x86/xen/smp.c                  |    6 ++++--
+ include/linux/smp.h                 |   26 ++++++++++++++++++++++++++
+ kernel/smp.c                        |   14 +++++++++++++-
+ 5 files changed, 49 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -869,21 +869,6 @@
- 	apicinterrupt RESCHEDULE_VECTOR,smp_reschedule_interrupt
- END(reschedule_interrupt)
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1894,6 +1894,11 @@
+ 	simeth=		[IA-64]
+ 	simscsi=
  
--	.macro INVALIDATE_ENTRY num
--ENTRY(invalidate_interrupt\num)
--	apicinterrupt INVALIDATE_TLB_VECTOR_START+\num,smp_invalidate_interrupt	
--END(invalidate_interrupt\num)
--	.endm
--
--	INVALIDATE_ENTRY 0
--	INVALIDATE_ENTRY 1
--	INVALIDATE_ENTRY 2
--	INVALIDATE_ENTRY 3
--	INVALIDATE_ENTRY 4
--	INVALIDATE_ENTRY 5
--	INVALIDATE_ENTRY 6
--	INVALIDATE_ENTRY 7
--
- ENTRY(call_function_interrupt)
- 	apicinterrupt CALL_FUNCTION_VECTOR,smp_call_function_interrupt
- END(call_function_interrupt)
-diff --git a/arch/x86/kernel/irqinit_64.c b/arch/x86/kernel/irqinit_64.c
---- a/arch/x86/kernel/irqinit_64.c
-+++ b/arch/x86/kernel/irqinit_64.c
-@@ -187,16 +187,6 @@
- 	 */
- 	alloc_intr_gate(RESCHEDULE_VECTOR, reschedule_interrupt);
- 
--	/* IPIs for invalidation */
--	alloc_intr_gate(INVALIDATE_TLB_VECTOR_START+0, invalidate_interrupt0);
--	alloc_intr_gate(INVALIDATE_TLB_VECTOR_START+1, invalidate_interrupt1);
--	alloc_intr_gate(INVALIDATE_TLB_VECTOR_START+2, invalidate_interrupt2);
--	alloc_intr_gate(INVALIDATE_TLB_VECTOR_START+3, invalidate_interrupt3);
--	alloc_intr_gate(INVALIDATE_TLB_VECTOR_START+4, invalidate_interrupt4);
--	alloc_intr_gate(INVALIDATE_TLB_VECTOR_START+5, invalidate_interrupt5);
--	alloc_intr_gate(INVALIDATE_TLB_VECTOR_START+6, invalidate_interrupt6);
--	alloc_intr_gate(INVALIDATE_TLB_VECTOR_START+7, invalidate_interrupt7);
--
- 	/* IPI for generic function call */
- 	alloc_intr_gate(CALL_FUNCTION_VECTOR, call_function_interrupt);
- 
-diff --git a/arch/x86/kernel/tlb_64.c b/arch/x86/kernel/tlb_64.c
---- a/arch/x86/kernel/tlb_64.c
-+++ b/arch/x86/kernel/tlb_64.c
-@@ -1,24 +1,16 @@
--#include <linux/init.h>
--
- #include <linux/mm.h>
--#include <linux/delay.h>
--#include <linux/spinlock.h>
- #include <linux/smp.h>
- #include <linux/kernel_stat.h>
--#include <linux/mc146818rtc.h>
--#include <linux/interrupt.h>
-+#include <linux/module.h>
- 
--#include <asm/mtrr.h>
--#include <asm/pgalloc.h>
- #include <asm/tlbflush.h>
- #include <asm/mmu_context.h>
--#include <asm/proto.h>
--#include <asm/apicdef.h>
--#include <asm/idle.h>
++	single_ipi_queue [X86]
++			Force the use of a single queue for smp function calls.
++			This means that only a single vector is used, which may avoid
++			bugs in some APIC implementations.
 +
-+/* For UV tlb flush */
- #include <asm/uv/uv_hub.h>
- #include <asm/uv/uv_bau.h>
-+#include <asm/genapic.h>	/* for is_uv_system */
+ 	slram=		[HW,MTD]
  
--#include <mach_ipi.h>
- /*
-  *	Smarter SMP flushing macros.
-  *		c/o Linus Torvalds.
-@@ -27,34 +19,12 @@
-  *	writing to user space from interrupts. (Its not allowed anyway).
-  *
-  *	Optimizations Manfred Spraul <manfred@colorfullife.com>
-- *
-- *	More scalable flush, from Andi Kleen
-- *
-- *	To avoid global state use 8 different call vectors.
-- *	Each CPU uses a specific vector to trigger flushes on other
-- *	CPUs. Depending on the received vector the target CPUs look into
-- *	the right per cpu variable for the flush data.
-- *
-- *	With more than 8 CPUs they are hashed to the 8 available
-- *	vectors. The limited global vector space forces us to this right now.
-- *	In future when interrupts are split into per CPU domains this could be
-- *	fixed, at the cost of triggering multiple IPIs in some cases.
-  */
- 
--union smp_flush_state {
--	struct {
--		cpumask_t flush_cpumask;
--		struct mm_struct *flush_mm;
--		unsigned long flush_va;
--		spinlock_t tlbstate_lock;
--	};
--	char pad[SMP_CACHE_BYTES];
--} ____cacheline_aligned;
--
--/* State is put into the per CPU data section, but padded
--   to a full cache line because other CPUs can access it and we don't
--   want false sharing in the per cpu data segment. */
--static DEFINE_PER_CPU(union smp_flush_state, flush_state);
-+struct tlb_flush {
-+	struct mm_struct *mm;
-+	unsigned long va;
-+};
- 
- /*
-  * We cannot call mmdrop() because we are in interrupt context,
-@@ -117,95 +87,38 @@
-  * Interrupts are disabled.
-  */
- 
--asmlinkage void smp_invalidate_interrupt(struct pt_regs *regs)
-+static void tlb_invalidate(void *arg)
+ 	slub_debug[=options[,slabs]]	[MM, SLUB]
+diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
+--- a/arch/x86/kernel/smp.c
++++ b/arch/x86/kernel/smp.c
+@@ -129,7 +129,7 @@
+ void native_send_call_func_ipi(cpumask_t mask)
  {
-+	struct tlb_flush *f = arg;
+ 	cpumask_t allbutself;
+-	unsigned queue = smp_processor_id() % CONFIG_GENERIC_SMP_QUEUES;
++	unsigned queue = smp_ipi_choose_queue();
+ 
+ 	allbutself = cpu_online_map;
+ 	cpu_clear(smp_processor_id(), allbutself);
+diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
+--- a/arch/x86/xen/smp.c
++++ b/arch/x86/xen/smp.c
+@@ -373,7 +373,7 @@
+ static void xen_smp_send_call_function_ipi(cpumask_t mask)
+ {
  	int cpu;
--	int sender;
--	union smp_flush_state *f;
+-	unsigned queue = smp_processor_id() % CONFIG_GENERIC_SMP_QUEUES;
++	unsigned queue = smp_ipi_choose_queue();
  
- 	cpu = smp_processor_id();
--	/*
--	 * orig_rax contains the negated interrupt vector.
--	 * Use that to determine where the sender put the data.
--	 */
--	sender = ~regs->orig_ax - INVALIDATE_TLB_VECTOR_START;
--	f = &per_cpu(flush_state, sender);
+ 	/*
+ 	 * We can't afford to allocate N callfunc vectors * M cpu
+@@ -411,10 +411,12 @@
+ 	unsigned queue;
  
--	if (!cpu_isset(cpu, f->flush_cpumask))
--		goto out;
--		/*
--		 * This was a BUG() but until someone can quote me the
--		 * line from the intel manual that guarantees an IPI to
--		 * multiple CPUs is retried _only_ on the erroring CPUs
--		 * its staying as a return
--		 *
--		 * BUG();
--		 */
--
--	if (f->flush_mm == read_pda(active_mm)) {
-+	if (f->mm == read_pda(active_mm)) {
- 		if (read_pda(mmu_state) == TLBSTATE_OK) {
--			if (f->flush_va == TLB_FLUSH_ALL)
-+			if (f->va == TLB_FLUSH_ALL)
- 				local_flush_tlb();
- 			else
--				__flush_tlb_one(f->flush_va);
-+				__flush_tlb_one(f->va);
- 		} else
- 			leave_mm(cpu);
+ 	irq_enter();
++
+ 	queue = start_queue;
+ 	do {
+ 		generic_smp_call_function_interrupt(queue);
+-		queue = (queue + 1) % CONFIG_GENERIC_SMP_QUEUES;
++		if (++queue == smp_ipi_nqueues())
++			queue = 0;
+ 	} while(queue != start_queue);
+ 
+ #ifdef CONFIG_X86_32
+diff --git a/include/linux/smp.h b/include/linux/smp.h
+--- a/include/linux/smp.h
++++ b/include/linux/smp.h
+@@ -168,4 +168,30 @@
+ 
+ void smp_setup_processor_id(void);
+ 
++#ifdef CONFIG_USE_GENERIC_SMP_HELPERS
++extern bool __read_mostly smp_single_ipi_queue;
++
++static inline unsigned smp_ipi_nqueues(void)
++{
++	unsigned nqueues = 1;
++
++#ifdef CONFIG_GENERIC_SMP_QUEUES
++	nqueues = CONFIG_GENERIC_SMP_QUEUES;
++#endif
++
++	return nqueues;
++}
++
++static inline unsigned smp_ipi_choose_queue(void)
++{
++	unsigned cpu = smp_processor_id();
++	unsigned nqueues = smp_ipi_nqueues();
++
++	if (nqueues == 1 || smp_single_ipi_queue)
++		return 0;
++
++	return cpu % nqueues;
++}
++#endif
++
+ #endif /* __LINUX_SMP_H */
+diff --git a/kernel/smp.c b/kernel/smp.c
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -10,6 +10,8 @@
+ #include <linux/rcupdate.h>
+ #include <linux/rculist.h>
+ #include <linux/smp.h>
++
++bool __read_mostly smp_single_ipi_queue = false;
+ 
+ #ifdef CONFIG_GENERIC_SMP_QUEUES
+ #define	NQUEUES	CONFIG_GENERIC_SMP_QUEUES
+@@ -310,7 +312,7 @@
+ 	cpus_and(mask, mask, allbutself);
+ 	num_cpus = cpus_weight(mask);
+ 
+-	queue_no = cpu % NQUEUES;
++	queue_no = smp_ipi_choose_queue();
+ 	queue = &call_function_queues[queue_no];
+ 
+ 	/*
+@@ -424,6 +426,16 @@
+ 		spin_lock_init(&call_function_queues[i].lock);
  	}
--out:
--	ack_APIC_irq();
--	cpu_clear(cpu, f->flush_cpumask);
- 	add_pda(irq_tlb_count, 1);
+ 
++	printk(KERN_INFO "smp function calls: using %d/%d queues\n",
++	       smp_ipi_nqueues(), NQUEUES);
++
+ 	return 0;
  }
- 
- void native_flush_tlb_others(const cpumask_t *cpumaskp, struct mm_struct *mm,
- 			     unsigned long va)
- {
--	int sender;
--	union smp_flush_state *f;
--	cpumask_t cpumask = *cpumaskp;
-+	struct tlb_flush flush = {
-+		.mm = mm,
-+		.va = va,
-+	};
- 
--	if (is_uv_system() && uv_flush_tlb_others(&cpumask, mm, va))
-+	if (is_uv_system() && uv_flush_tlb_others(cpumaskp, mm, va))
- 		return;
- 
--	/* Caller has disabled preemption */
--	sender = smp_processor_id() % NUM_INVALIDATE_TLB_VECTORS;
--	f = &per_cpu(flush_state, sender);
--
--	/*
--	 * Could avoid this lock when
--	 * num_online_cpus() <= NUM_INVALIDATE_TLB_VECTORS, but it is
--	 * probably not worth checking this for a cache-hot lock.
--	 */
--	spin_lock(&f->tlbstate_lock);
--
--	f->flush_mm = mm;
--	f->flush_va = va;
--	cpus_or(f->flush_cpumask, cpumask, f->flush_cpumask);
--
--	/*
--	 * We have to send the IPI only to
--	 * CPUs affected.
--	 */
--	send_IPI_mask(cpumask, INVALIDATE_TLB_VECTOR_START + sender);
--
--	while (!cpus_empty(f->flush_cpumask))
--		cpu_relax();
--
--	f->flush_mm = NULL;
--	f->flush_va = 0;
--	spin_unlock(&f->tlbstate_lock);
-+	smp_call_function_mask(*cpumaskp, tlb_invalidate, &flush, 1);
- }
--
--static int __cpuinit init_smp_flush(void)
--{
--	int i;
--
--	for_each_possible_cpu(i)
--		spin_lock_init(&per_cpu(flush_state, i).tlbstate_lock);
--
--	return 0;
--}
--core_initcall(init_smp_flush);
- 
- void flush_tlb_current_task(void)
- {
-diff --git a/arch/x86/kernel/tlb_uv.c b/arch/x86/kernel/tlb_uv.c
---- a/arch/x86/kernel/tlb_uv.c
-+++ b/arch/x86/kernel/tlb_uv.c
-@@ -295,7 +295,7 @@
-  * Returns 1 if all remote flushing was done.
-  * Returns 0 if some remote flushing remains to be done.
-  */
--int uv_flush_tlb_others(cpumask_t *cpumaskp, struct mm_struct *mm,
-+int uv_flush_tlb_others(const cpumask_t *cpumaskp, struct mm_struct *mm,
- 			unsigned long va)
- {
- 	int i;
-@@ -305,6 +305,7 @@
- 	int this_blade;
- 	int locals = 0;
- 	struct bau_desc *bau_desc;
-+	cpumask_t cpumask = *cpumaskp;
- 
- 	cpu = uv_blade_processor_id();
- 	this_blade = uv_numa_blade_id();
-@@ -339,7 +340,7 @@
- 	bau_desc->payload.address = va;
- 	bau_desc->payload.sending_cpu = smp_processor_id();
- 
--	return uv_flush_send_and_wait(cpu, this_blade, bau_desc, cpumaskp);
-+	return uv_flush_send_and_wait(cpu, this_blade, bau_desc, &cpumask);
- }
- 
- /*
-diff --git a/include/asm-x86/irq_vectors.h b/include/asm-x86/irq_vectors.h
---- a/include/asm-x86/irq_vectors.h
-+++ b/include/asm-x86/irq_vectors.h
-@@ -75,10 +75,6 @@
- #define CALL_FUNCTION_SINGLE_VECTOR	0xfb
- #define THERMAL_APIC_VECTOR		0xfa
- #define THRESHOLD_APIC_VECTOR		0xf9
--#define INVALIDATE_TLB_VECTOR_END	0xf7
--#define INVALIDATE_TLB_VECTOR_START	0xf0	/* f0-f7 used for TLB flush */
--
--#define NUM_INVALIDATE_TLB_VECTORS	8
- 
- #endif
- 
-diff --git a/include/asm-x86/uv/uv_bau.h b/include/asm-x86/uv/uv_bau.h
---- a/include/asm-x86/uv/uv_bau.h
-+++ b/include/asm-x86/uv/uv_bau.h
-@@ -330,7 +330,7 @@
- #define cpubit_isset(cpu, bau_local_cpumask) \
- 	test_bit((cpu), (bau_local_cpumask).bits)
- 
--extern int uv_flush_tlb_others(cpumask_t *, struct mm_struct *, unsigned long);
-+extern int uv_flush_tlb_others(const cpumask_t *, struct mm_struct *, unsigned long);
- extern void uv_bau_message_intr1(void);
- extern void uv_bau_timeout_intr1(void);
- 
+ early_initcall(init_smp_function_call);
++
++static __init int set_single_ipi_queue(char *str)
++{
++	smp_single_ipi_queue = true;
++	return 0;
++}
++early_param("single_ipi_queue", set_single_ipi_queue);
 
 
