@@ -1,43 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYHBDcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbYHBDnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbYHBDcn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 23:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbYHBDce
+	id S1753356AbYHBDnT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 23:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbYHBDnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 23:32:34 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55006 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755065AbYHBDce (ORCPT
+	Fri, 1 Aug 2008 23:43:09 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:46571 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751474AbYHBDnI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 23:32:34 -0400
-Message-ID: <4893D459.4030209@zytor.com>
-Date: Fri, 01 Aug 2008 20:28:25 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 1 Aug 2008 23:43:08 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Mike Travis" <travis@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <1217642575-22727-1-git-send-email-yhlu.kernel@gmail.com>
+	<86802c440808011916q1a279ael995eaeaa655c239@mail.gmail.com>
+	<m14p64i0lr.fsf@frodo.ebiederm.org>
+	<86802c440808012011s109b27bbvb49e1794f66d9acc@mail.gmail.com>
+Date: Fri, 01 Aug 2008 20:37:34 -0700
+In-Reply-To: <86802c440808012011s109b27bbvb49e1794f66d9acc@mail.gmail.com>
+	(Yinghai Lu's message of "Fri, 1 Aug 2008 20:11:43 -0700")
+Message-ID: <m1k5f0gk8x.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/16] dyn_array and nr_irqs support v2
-References: <1217583464-28494-1-git-send-email-yhlu.kernel@gmail.com>	<m1iqukwjjg.fsf@frodo.ebiederm.org>	<86802c440808011430i6cf5cb8cn519777a78dd987b0@mail.gmail.com>	<m1wsj0nyx6.fsf@frodo.ebiederm.org>	<86802c440808011809t275aa511h4a1e9d70ede21702@mail.gmail.com>	<m163qkjirc.fsf@frodo.ebiederm.org>	<86802c440808011901w2aa40b25u45f5686b262cc2aa@mail.gmail.com>	<4893C066.60401@zytor.com> <m1abfwi1ht.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1abfwi1ht.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Yinghai Lu" <yhlu.kernel@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0006]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] x86: 64bit support more than 256 irq v2
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> 
-> Having a human readable name like: eth0irq22 or hbairq5 is likely just
-> as good in the case of msi.  Still all of the users interfaces today take numbers.
-> So we are stuck with dealing with numbers for a long time to come.
-> 
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-Long sparse numbers are messy, too, though.  It might be interesting to 
-have a routine somewhere like "irq_name()" to output a human-readable 
-IRQ name, which in case of MSI-X could contain the PCI device name.
+> On Fri, Aug 1, 2008 at 7:58 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
+>> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>>
+>>> On Fri, Aug 1, 2008 at 7:02 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>>>> Dhaval Giani got:
+>>>> kernel BUG at arch/x86/kernel/io_apic_64.c:357!
+>>>> invalid opcode: 0000 [1] SMP
+>>>> CPU 24
+>>>> ...
+>>>>
+>>>> his system (x3950) has 8 ioapic, irq > 256
+> ..
+>>
+>> There was a patch that came out a while ago that set NR_IRQS as NR_IOAPICS*32
+> from
+>> SGI.  Where that got to I don't recall.
+>
+> #ifdef CONFIG_X86_32
+> # define MAX_IO_APICS 64
+> #else
+> # define MAX_IO_APICS 128
+> # define MAX_LOCAL_APIC 32768
+> #endif
+>
+> so they can take 128*32 = 4096?
 
-	-hpa
+Yes.  The real problem was just the complete explosion of irqs on SGI
+machines that have paltry I/O to the outside world compared to their cpu
+count.  Have 131072 irqs seemed a little much for them.
+
+It is all a game of tuning heuristics right now, and if we can totally
+kill NR_IRQS it all goes away.  But that is an issue to solve before
+the next merge window not to kill the regression.
+
+Eric
+
