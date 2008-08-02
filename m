@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbYHBNqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbYHBOCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755100AbYHBNqs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 09:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbYHBNql
+	id S1754366AbYHBOCv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 10:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbYHBOCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 09:46:41 -0400
-Received: from gustav.zipernowsky.hu ([193.225.20.248]:52843 "EHLO
-	gustav.zipernowsky.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751057AbYHBNql (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 09:46:41 -0400
-MIME-Version: 1.0
-Date: Sat, 02 Aug 2008 15:46:35 +0200
-From: Oliver Pinter <oliver@zipernowsky.hu>
-To: Shirish Pargaonkar <shirishp@gmail.com>, stable@kernel.org
-Cc: Steve French <sfrench@us.ibm.com>, Oliver Pinter <oliver.pntr@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: [RFC, 2.6.26.2-rc1] Fix possible double free if search immediately after
- search rewind fails
-Reply-To: oliver.pntr@gmail.com
-Message-ID: <cb7ec8dab44793445d62fe469b12a280@zipernowsky.hu>
-User-Agent: RoundCube Webmail/0.1
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+	Sat, 2 Aug 2008 10:02:44 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:60328 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751057AbYHBOCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 10:02:43 -0400
+Date: Sat, 2 Aug 2008 09:02:41 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>, Mike Travis <travis@sgi.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Add seq_cpumask(), seq_nodemask()
+Message-Id: <20080802090241.8a989016.pj@sgi.com>
+In-Reply-To: <20080802112828.GA3536@martell.zuzino.mipt.ru>
+References: <20080802112828.GA3536@martell.zuzino.mipt.ru>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 76c510ad2e7d56cfe8f2cc7b23783e5c687cf704 Mon Sep 17 00:00:00 2001
-From: Shirish Pargaonkar <shirishp@gmail.com>
-Date: Thu, 24 Jul 2008 14:48:33 +0000
-Subject: [PATCH] [CIFS] Fix possible double free if search immediately
-after search rewind fails
+Mike - this patch and the next one in this series from Alexey
+look like they would be of interest to you.
 
-[ Upstream commit 76c510ad2e7d56cfe8f2cc7b23783e5c687cf704 ]
+Alexey - I recommend you add Mike to the CC list, if there is
+further work on these particular patches.
 
-Signed-off-by: Shirish Pargaonkar <shirishp@us.ibm.com>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
-CC: Oliver Pinter <oliver.pntr@gmail.com>
+At first glance, this looks good - thanks.
 
-diff --git a/fs/cifs/readdir.c b/fs/cifs/readdir.c
-index 83f3069..5f40ed3 100644
---- a/fs/cifs/readdir.c
-+++ b/fs/cifs/readdir.c
-@@ -690,6 +690,7 @@ static int find_cifs_entry(const int xid, struct
-cifsTconInfo *pTcon,
- 			else
- 				cifs_buf_release(cifsFile->srch_inf.
- 						ntwrk_buf_start);
-+			cifsFile->srch_inf.ntwrk_buf_start = NULL;
- 		}
- 		rc = initiate_cifs_search(xid, file);
- 		if (rc) {
+Reviewed-by: Paul Jackson <pj@sgi.com>
 
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
