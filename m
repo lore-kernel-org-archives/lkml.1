@@ -1,60 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbYHBE1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbYHBEeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752565AbYHBE1U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 00:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866AbYHBE1K
+	id S1752831AbYHBEeW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 00:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866AbYHBEeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 00:27:10 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:31163 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750783AbYHBE1J (ORCPT
+	Sat, 2 Aug 2008 00:34:14 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:12990 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750837AbYHBEeN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 00:27:09 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=KAirq0fxnGGhaP8mTzZXxn6LnTcfMRrwbXI49WDop4ijSufoUl01WEl0tCXx/szdTCsoGhXvanPS3bZ2f7RKgjiK6S06jv0mrs6l3ioWjJdFDOJk/jP/+Pwm2ci6B3fHe3sF1a9iyFVQWCMHfMUSzGEP7jKHEGSBOGahOxGLeOE=  ;
-X-YMail-OSG: S7JvdEgVM1kt1wcDjhHk.GbORWkzFz_Me0Xx8ppCvXDOFJz0iX.23vxq74j0IoieAt8nb5dzq7GcM5S2MlHhkhFCSDNH.YgWhHnocgpnTPK_YRUWewIinpT1LZGcXpGtMM4-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [patch v3] splice: fix race with page invalidation
-Date: Sat, 2 Aug 2008 14:26:50 +1000
-User-Agent: KMail/1.9.5
-Cc: torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <200808011122.51792.nickpiggin@yahoo.com.au> <E1KOzMt-0003fa-Ah@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1KOzMt-0003fa-Ah@pomaz-ex.szeredi.hu>
+	Sat, 2 Aug 2008 00:34:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding:from
+         :sender;
+        b=MejWvJ8bGXeOMqfNOWJSN/iYUc0Ej7utLlIiNbmMM8KBXh4L12XD4TIwZeI3Q7kiRN
+         J+TAFkiFioHGnENqLcsQaGmDeddjYeLN1Olt0nZrEE3pJxrpc2Ci2KFTuCG8bzmsefP0
+         CcIh7ydNRntWwSdKDdKmbcujgQjnRpxIQTQ0E=
+Message-ID: <4893E3AE.4000204@gmail.com>
+Date: Sat, 02 Aug 2008 00:33:50 -0400
+Reply-To: david@identd.dyndns.org
+User-Agent: Thunderbird 2.0a1 (Windows/20060724)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Hans Verkuil <hverkuil@xs4all.nl>
+CC: v4l <video4linux-list@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: V4L2 & request_module("char-major-...")
+References: <200807302324.15221.hverkuil@xs4all.nl>
+In-Reply-To: <200807302324.15221.hverkuil@xs4all.nl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808021426.50436.nickpiggin@yahoo.com.au>
+From: David Ellingsworth <david@identd.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 August 2008 04:28, Miklos Szeredi wrote:
-> On Fri, 1 Aug 2008, Nick Piggin wrote:
-> > Well, a) it probably makes sense in that case to provide another mode
-> > of operation which fills the data synchronously from the sender and
-> > copys it to the pipe (although the sender might just use read/write)
-> > And b) we could *also* look at clearing PG_uptodate as an optimisation
-> > iff that is found to help.
+Hans Verkuil wrote:
+> Hi all,
 >
-> IMO it's not worth it to complicate the API just for the sake of
-> correctness in the so-very-rare read error case.  Users of the splice
-> API will simply ignore this requirement, because things will work fine
-> on ext3 and friends, and will break only rarely on NFS and FUSE.
+> I'm in the process of converting v4l2-dev.c (2.6.27, in earlier kernels 
+> it was called videodev.c) from using register_chrdev() to using 
+> register_chrdev_region() and cdev_add().
 >
-> So I think it's much better to make the API simple: invalid pages are
-> OK, and for I/O errors we return -EIO on the pipe.  It's not 100%
-> correct, but all in all it will result in less buggy programs.
+> The problem I have is that register_chrdev provides a file_operations 
+> struct. The video_open() function in there performs this piece of code 
+> when a video device is opened:
+>
+>         vfl = video_device[minor];
+>         if (vfl == NULL) {
+>                 mutex_unlock(&videodev_lock);
+>                 request_module("char-major-%d-%d", VIDEO_MAJOR, minor);
+>                 mutex_lock(&videodev_lock);
+>                 vfl = video_device[minor];
+>                 if (vfl == NULL) {
+>                         mutex_unlock(&videodev_lock);
+>                         unlock_kernel();
+>                         return -ENODEV;
+>                 }
+>         }
+>
+> It checks if a V4L2 driver registered this particular minor, if not then 
+> it tries to load the appropriate module with a char-major-x-x alias. If 
+> still no luck, then we bail out.
+>
+> Now, as I understand it this can only happen if someone used mknod to 
+> create device nodes and is not using udev. It's not clear to me however 
+> how this can ever work: the char-major alias relies on the fact that 
+> someone has to link the minor number with an actual V4L driver, but you 
+> do not generally know what minor number will be used by a specific 
+> driver (depends on load order, etc). Or am I missing something?
+>
+> My questions are:
+>
+> 1) is this code still relevant?
+>   
+The code is relevant as long as v4l2-dev allocs and associates a block 
+of minor number with it's fops.
+> 2) if so, how can I replace this code when I switch to cdev since in 
+> that case there is no longer a video_open() that can be used for this.
+>   
+It's interesting that you mention this, I've examined this same problem. 
+Essentially, if v4l2-dev only calls cdev_add on minor numbers which have 
+been used, there is no need to keep the request_module call in 
+video_open. Since v4l2-dev currently calls register_chrdev in 
+videodev_init, cdev_add is always called on the entire block. If 
+register_chrdev_region is used instead, cdev_add can be called during 
+video_register_device_index and the call to request_module can be removed.
+> 3) I also saw after some googling this proposed patch: 
+> http://linux.derkeiler.com/Mailing-Lists/Kernel/2003-09/2925.html
+> It adds a MODULE_ALIAS_CHARDEV_MAJOR line for videodev.c. Either this 
+> patch was never applied or quickly removed in videodev.c since it's not 
+> there. I'm not sure how this relates to the request_module in the 
+> current code and whether it should be added after all or not.
+>   
+I haven't reviewed this patch, but converting v4l2-dev to use 
+register_chrdev_region is rather trivial. However, removing video_open 
+can't be done without a) patching char_dev or b) reference counting the 
+video_device struct. v4l2-dev currently uses a static fops which 
+references video_open. The dependency on v4l2-dev's fops can be removed 
+if the cdev struct passed to cdev_add is initialized with the the fops 
+provided by drivers which use v4l2-dev. This means a cdev struct would 
+be needed for every video_device struct created. Embedding the cdev 
+struct in the video_device struct and using cdev_init would surely solve 
+this problem, but it exposes another problem.
 
-That's true, but I hate how we always (in the VM, at least) just brush
-error handling under the carpet because it is too hard :(
+The problem results from how the cdev struct is reference counted. 
+Taking a close look at char_dev you'll see that the reference count of 
+the kobject in the cdev struct is initialized during cdev_init or 
+cdev_alloc, incremented during cdev_open, and decremented during 
+cdev_del and __fputs(file_table.c) using cdev_get and cdev_put. Once 
+cdev's kobject reference count reaches 0, cdev_default_release or 
+cdev_dynamic_release will be called to cleanup or free the struct 
+depending on how it was initialized. Unfortunately, cdev_default_release 
+nor cdev_dynamic_release provide a way to synchronize freeing of the 
+containing struct. Thus, if a cdev struct is embedded into the 
+video_device struct, the video_device struct must be reference counted 
+in the same way which essentially ensures keeping video_open and the 
+addition of video_close. The alternative is to add an optional release 
+callback to the cdev struct and call that function during 
+cdev_default_release and cdev_dynamic_release so that the containing 
+video_device struct may be freed properly.
 
-I guess your patch is OK, though. I don't see any reasons it could cause
-problems...
+In addition to the above problem, there is the issue of sysfs. The 
+video_device struct has a release callback, but it's use is far from 
+correct. Currently this callback _always_ occurs in 
+video_unregister_device when unregister_device is called. If a cdev 
+struct is embedded in the video_device struct, this would certainly 
+result in the freeing of the cdev struct at an inappropriate time. Some 
+thought will have to be given about how to handle this properly. 
+Personally, I believe the kobject callback (video_release) should only 
+free sysfs related structures and not the entire video_device struct, 
+like soo many drivers currently do.
+
+I have some patches which address all of the above issues, but I have 
+not had time to thoroughly test them and have therefore not yet 
+submitted them. I'd be willing to send them to you if you're interested.
+
+Regards,
+
+David Ellingsworth
+> I had a hard time finding any useful information about this, so I hope 
+> someone can shed some light on this. It's the last piece of the puzzle 
+> that I need before I can drag the old and venerable v4l2-dev.c formerly 
+> known as videodev.c into the 21st century :-)
+>
+> Regards,
+>
+> 	Hans
+>
+> --
+> video4linux-list mailing list
+> Unsubscribe mailto:video4linux-list-request@redhat.com?subject=unsubscribe
+> https://www.redhat.com/mailman/listinfo/video4linux-list
+>   
+
