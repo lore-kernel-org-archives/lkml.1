@@ -1,64 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbYHBPve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbYHBQDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757402AbYHBPve (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 11:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYHBPvK
+	id S1756776AbYHBQDw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 12:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbYHBQDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 11:51:10 -0400
-Received: from smtp1.stealer.net ([88.198.224.204]:33289 "EHLO
-	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755692AbYHBPvI (ORCPT
+	Sat, 2 Aug 2008 12:03:44 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:56294 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752476AbYHBQDn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 11:51:08 -0400
-Date: Sat, 2 Aug 2008 17:50:54 +0200 (CEST)
-From: Sven Wegener <sven.wegener@stealer.net>
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-cc: Bob Moore <robert.moore@intel.com>, Andi Kleen <ak@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: acer-wmi broken in latest git kernel on TravelMate 6492 (Insufficient
- arguments - method [WQAA])
-Message-ID: <alpine.LNX.1.10.0808021640310.2294@titan.stealer.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-Organization: STEALER.net
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.2
-X-Spam-Bar: --
-X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Sat, 02 Aug 2008 15:51:06 +0000
-	Bayes: 0.0001 Tokens: new, 198; hammy, 7; neutral, 3; spammy, 0.
-	AutoLearn: no
-	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
-	*  0.3 SARE_SUB_OBFU_Q0 FVGT - subject contains odd letter combination
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0001]
-X-Spam-Signature: eb566866938972d0bb4ac555b4596e1f94e5e146
-X-DomainKey-Status: no signature
+	Sat, 2 Aug 2008 12:03:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:content-type:date:message-id
+         :mime-version:x-mailer:content-transfer-encoding:sender;
+        b=LnckKme75nrjDXfqcB1UdrYZ8asfJxdB2yGZNv1LEutnTT9JEBXAmtuLiffw6Xr1PJ
+         e1DaSl6xaMJxNo+klXqdc6CoC0EgP8xHnfMyJqqVE7lrvyy/7wkUwBKGSqj+HctlnB1R
+         u7hstgeFQtx88yi829Nn1D+gzr+k1KnNnyBNA=
+Subject: Kconfig no longer outputs a .config with freshly updated defconfigs
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Reply-To: jwboyer@linux.vnet.ibm.com
+To: sam@ravnborg.org
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 02 Aug 2008 12:03:33 -0400
+Message-Id: <1217693013.2328.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+I was going through the somewhat tedious task of updating the 4xx
+defconfigs today, and I noticed some odd behavior from Kconfig.
+Basically, I would do:
 
-running Linus' latest (2b12a4c) git kernel, acer-wmi triggers the 
-following ACPI Error on my Acer TravelMate 6492:
+	make ppc44x_defconfig
+	make oldconfig
+	<build>
+	cp .config arch/powerpc/configs/ppc44x_defconfig
+	make distclean
 
-acer-wmi: Acer Laptop ACPI-WMI Extras
-ACPI Error (nseval-0159): Insufficient arguments - method [WQAA] needs 1, found 0 [20080609]
-acer-wmi: Unable to detect available WMID devices
+I did this for a number of configs.  Then I went back and tried to build
+ppc44x_defconfig again and I got this result:
 
-Reverting commit f3454ae8104efb2dbf0d08ec42c6f5d0fe9225bc (ACPICA: Add 
-argument count checking to control method invocation via 
-acpi_evaluate_object) makes acer_wmi work as before.
+[jwboyer@localhost linux-2.6]$ make ppc44x_defconfig
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/basic/docproc
+  HOSTCC  scripts/kconfig/conf.o
+  HOSTCC  scripts/kconfig/kxgettext.o
+  SHIPPED scripts/kconfig/zconf.tab.c
+  SHIPPED scripts/kconfig/lex.zconf.c
+  SHIPPED scripts/kconfig/zconf.hash.c
+  HOSTCC  scripts/kconfig/zconf.tab.o
+scripts/kconfig/lex.zconf.c:1628: warning: ‘input’ defined but not used
+  HOSTLD  scripts/kconfig/conf
+[jwboyer@localhost linux-2.6]$ make oldconfig
+scripts/kconfig/conf -o arch/powerpc/Kconfig
+#
+# using defaults found in /boot/config-2.6.25.13-104.fc9.ppc64
+#
 
-Doing a little debugging the call trace starting at acer_wmi_init() is:
+There was no .config file present after the initial 'make
+ppc44x_defconfig', so it defaulted to using something in /boot.  I'm a
+bit baffled here, but that seems to be common to any newly updated
+defconfig I've done.
 
-WMID_set_capabilities() (called from drivers/misc/acer-wmi.c:1192)
-wmi_query_block(WMID_GUID2, 1, &out) (called from drivers/misc/acer-wmi.c:747)
-acpi_evaluate_object(handle, method, NULL, out) (called from drivers/acpi/wmi.c:350)
-acpi_ns_evaluate(info) (called from drivers/acpi/namespace/nsxfeval.c:258)
+Was there a change to Kconfig recently that won't copy the defconfig
+file to .config if there are no symbol changes or something like that?
 
-Is it a bug in acer-wmi or in Acer's ACPI implementation? I can provide 
-more information as necessary.
+josh
 
-Sven
