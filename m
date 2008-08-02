@@ -1,90 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbYHBDp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbYHBEHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754560AbYHBDp2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 23:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYHBDpV
+	id S1752500AbYHBEHP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 00:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbYHBEHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 23:45:21 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:47243 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751532AbYHBDpU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 23:45:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=CJfCGHh60G0QZYwPnSoBc6s/X7OypMtmeXAKqeBGvlxcGWbOMzl65mT2DmVpPcFi9R
-         kbyaivat8oT2ns4AbfVZqoMbpZuLm+BRCo0RyyIN/kRKupSGGtEqH5AB4/hdvRBLkRER
-         B9m5flqJD88naoR0F3HTCoTvuImdhTEmpsWrY=
-Date: Sat, 2 Aug 2008 07:45:11 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/13] proc tty: introduce ->proc_fops
-Message-ID: <20080802034511.GA8487@martell.zuzino.mipt.ru>
-References: <20080729012908.GA3135@martell.zuzino.mipt.ru> <20080729105350.009f5af0@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080729105350.009f5af0@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sat, 2 Aug 2008 00:07:01 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52794 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751315AbYHBEHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 00:07:00 -0400
+Date: Sat, 2 Aug 2008 14:06:50 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       David Miller <davem@davemloft.net>, linux-next@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: linux-next: m68k build failure
+Message-Id: <20080802140650.ed81402d.sfr@canb.auug.org.au>
+In-Reply-To: <20080801204157.GA12390@uranus.ravnborg.org>
+References: <20080730175233.02dbf021.sfr@canb.auug.org.au>
+	<20080730.010234.193703201.davem@davemloft.net>
+	<20080730084935.GA18545@uranus.ravnborg.org>
+	<20080801153710.815bbb74.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.0808011551120.30950@anakin>
+	<20080801204157.GA12390@uranus.ravnborg.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__2_Aug_2008_14_06_50_+1000_ISkAY9GDq13rjiXQ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 10:53:50AM +0100, Alan Cox wrote:
-> On Tue, 29 Jul 2008 05:29:08 +0400
-> Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> 
-> > Add struct tty_operations:proc_fops .
-> > 
-> > The intent is gradual switch of TTY drivers from ->read_proc usage.
-> > proc entries are created with proc_create_data() which even fixes
-> > early-read races.
-> > 
-> > Eventually ->read_proc code will be removed from TTY code, thus helping
-> > remove ->read_proc from whole proc code.
-> 
-> I'm going to NAK this but not because I think the concept is wrong. I
-> think the way its been done is perhaps wrong.
-> 
-> You've added ifdefs to a lot of drivers and more basically duplicate
-> code.
+--Signature=_Sat__2_Aug_2008_14_06_50_+1000_ISkAY9GDq13rjiXQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It's boileplate code which is hard to screwup, unlike boilerplate at the
-end of every ->read_proc hook.
+Hi Sam,
 
-> Is there a reason you can't keep the ->read_proc method in the tty
-> code but as a function called by a single instance of proc_fops and
-> seq_file methods for the whole tty driver layer.
-> 
-> Ie have a single tty seq_file method that calls driver->ops->read_proc as
-> the seqfile iterator ?
+On Fri, 1 Aug 2008 22:41:57 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
+>
+> On Fri, Aug 01, 2008 at 03:52:22PM +0200, Geert Uytterhoeven wrote:
+> >=20
+> > BTW, is there a (good) way to have this without duplicating those heade=
+r files?
+>=20
+> The only solution I can come up with right now is:
+>=20
+> Makefile:
+> ccflags-y +=3D -Iarch/sparc/include
+>=20
+> foo.c:
+> #include <asm/fbio.h>
+>=20
+> Disadvantage is that we loose the explicit documentation that this
+> is header files from another architecture.
+> So we should at least add a comment saying this.
+>=20
+> And the above would not work if the file has same filename,
+> but then that is not a likely situation either.
 
-I think it should be struct tty_operations::proc_fops .
+There is at least one of the m68k header files that includes the sparc
+file of the same name and then does other stuff.  So this scheme would
+not cover that  (unless we used #include_next?)=20
 
-In fact, posted conversions are bit incorrect.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Let's look at cyclades. It prints banner, then information about each
-card. The very right way to print it via seq_files is implement
-struct seq_operations::start, next, stop, show.
+--Signature=_Sat__2_Aug_2008_14_06_50_+1000_ISkAY9GDq13rjiXQ
+Content-Type: application/pgp-signature
 
-If TTY driver prints something simple, just one show hook is enough.
-If TTY driver wants something more complex, right way start to be
-seq_operations and one hook is not enough anymore.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-But I don't really care about this exact issue, as long as ->read_proc
-TTY hook is gone as ->read_proc proc hook.
+iEYEARECAAYFAkiT3VoACgkQjjKRsyhoI8w7hgCeLw3jIy3pfCWMGitfQfyakM39
+1ncAoISz17ijuk7I3GQNbUSF44+jV7Kq
+=xOzC
+-----END PGP SIGNATURE-----
 
-> >  int count, int *eof, void *data);
-> > +#ifdef CONFIG_PROC_FS
-> > +	const struct file_operations *proc_fops;
-> > +#endif
-> 
-> I'd prefer you didn't put variables in the middle of the methods. Also
-> the ifdef isn't needed. It's not worth one pointer to create a load of
-> ifdefs
-
-OK.
-
+--Signature=_Sat__2_Aug_2008_14_06_50_+1000_ISkAY9GDq13rjiXQ--
