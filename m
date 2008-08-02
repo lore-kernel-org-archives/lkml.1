@@ -1,105 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYHBVl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbYHBVzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbYHBVl0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 17:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYHBVlR
+	id S1754185AbYHBVzw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 17:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbYHBVzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 17:41:17 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:62082 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751934AbYHBVlQ convert rfc822-to-8bit (ORCPT
+	Sat, 2 Aug 2008 17:55:44 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:51996 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752403AbYHBVzo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 17:41:16 -0400
+	Sat, 2 Aug 2008 17:55:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=J1yVmXoAFx/mQZJO7/qpo0EDfliIhelucOdtdWWOttIxuvvr8qWSNviGtT6F2x/o/7
-         OCa+1ZWxIn7AZ6U8TxEKJjJy5WqMFuuerHvKw8vc20bis9DbHs7FzNbIsV61x616Q9ck
-         vRXrum4hsK9R6Tw1gG97bzA+yeiKThYnmLXt8=
-From: Oliver Pinter <oliver.pntr@gmail.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
-Subject: [RFC, 2.6.26.2-rc1] posix timers: timer_delete: remove the bogus "->it_process != NULL" check
-Date: Sat, 2 Aug 2008 23:52:45 +0200
-User-Agent: KMail/1.9.9
-Cc: Roland McGrath <roland@redhat.com>, john stultz <johnstul@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Oliver Pinter <oliver.pntr@gmail.com>, w@1wt.eu
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ifun2ZdZbJik7rxvxtgN6zc7FxxZ0p1npNDLIMkKygV0KOzSpGurBvqiAkpGqTPdmf
+         BvJBR+IrWMsQjRAuGTMEZ/8qkN2tiqmdG5hNIox/9uYFZKcLysCtI47i9q5tGKuv8eFk
+         KVnNs3QWrCnmEZanOaeatB32wv+qG4QIffBCM=
+Message-ID: <4894D7C6.8030804@gmail.com>
+Date: Sat, 02 Aug 2008 16:55:18 -0500
+From: Roger Heflin <rogerheflin@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200808022352.45700.oliver.pntr@gmail.com>
+To: linasvepstas@gmail.com
+CC: Alistair John Strachan <alistair@devzero.co.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: amd64 sata_nv (massive) memory corruption
+References: <3ae3aa420808011030weadc61fvf6f850f0a4cfcb3e@mail.gmail.com>	 <200808012319.05038.alistair@devzero.co.uk> <3ae3aa420808011951l58da4010r1ff0876f255565b0@mail.gmail.com>
+In-Reply-To: <3ae3aa420808011951l58da4010r1ff0876f255565b0@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is an RFC for sending this patch for stable, when this patch needed, then send ACK and CC stable,
-if not then send NAK.
+Linas Vepstas wrote:
+> 2008/8/1 Alistair John Strachan <alistair@devzero.co.uk>:
+>> On Friday 01 August 2008 18:30:34 Linas Vepstas wrote:
+>>> Hi,
+>>>
+>>> I'm seeing strong, easily reproducible (and silent) corruption on a
+>>> sata-attached
+>>> disk drive on an amd64 board.  It might be the disk itself, but I
+>>> doubt it; googling
+>>> suggests that its somehow iommu-related but I cannot confirm this.
+>> Nowhere do you explicitly say you have memtest86'ed the RAM.
+> 
+> It passes memtest86+ just fine. The system has been in heavy
+> use doing big science calculations on big datasets (multi-gigabyte)
+> for months; these do not get corrupted when copied/moved around
+> on the old parallel IDE disk, nor moving/copying on an NFS mount
+> to a file server. Only the SATA disk is misbehaving.
 
----
+That MB uses DDR2 so I don't know if this is useful or not, I saw the issue on 
+MB's using DDR.
 
->From 4b7a1304267bff68260ae861784b27130e805be3 Mon Sep 17 00:00:00 2001
-From: Oleg Nesterov <oleg@tv-sign.ru>
-Date: Fri, 25 Jul 2008 01:47:26 -0700
-Subject: [PATCH] posix timers: timer_delete: remove the bogus "->it_process != NULL" check
+I have seen issues when using all 4 dimm slots on a number of MB's that only 
+appear to show up on DMA when using fast dual core cpus, if the CPU is slower 
+things work just fine, and if you don't do heavy use of network or disk things 
+are just fine.   And these machines would pass memtest without any issues.
 
-[ Upstream commit 4b7a1304267bff68260ae861784b27130e805be3 ]
+You might try slowing down the cpu to the slowest and see if you can still 
+duplicate it, if you cannot, bring the speed up a step and retest, if it only 
+happens at the highest speed, it might be something similar.   In the end the 
+solution was to have the MB maker add an option in the bios to slow down the 
+ram, in the DDR case we had 4 double sided dimms (8 loads on the CPU) and AMD 
+documents said DDR memory with 6 or more loads needed to be running at 333 and 
+not 400, and as I said I don't know if it also applies to DDR2 in a similar way. 
+   Note that if we used a slower dual core cpu it did not push things hard 
+enough to show the error either, I believe we had the issues with 280/285's but 
+not with 275's and lower (these were dual socket boards, with 4 dimms on each 
+cpu, 8 loads per cpu).
 
-sys_timer_delete() and itimer_delete() check "timer->it_process != NULL",
-this looks completely bogus.  ->it_process == NULL means that this timer
-is already under destruction or it is not fully initialized, this must not
-happen.
-
-	sys_timer_delete: the timer is locked, and lock_timer() can't succeed
-	if ->it_process == NULL.
-
-	itimer_delete: it is called by exit_itimers() when there are no other
-	threads which can play with signal_struct->posix_timers.
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-Acked-by: Roland McGrath <roland@redhat.com>
-Cc: john stultz <johnstul@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Roland McGrath <roland@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Oliver Pinter <oliver.pntr@gmail.com>
-
-diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
-index dbd8398..17f5326 100644
---- a/kernel/posix-timers.c
-+++ b/kernel/posix-timers.c
-@@ -856,11 +856,10 @@ retry_delete:
- 	 * This keeps any tasks waiting on the spin lock from thinking
- 	 * they got something (see the lock code above).
- 	 */
--	if (timer->it_process) {
--		if (timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
--			put_task_struct(timer->it_process);
--		timer->it_process = NULL;
--	}
-+	if (timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
-+		put_task_struct(timer->it_process);
-+	timer->it_process = NULL;
-+
- 	unlock_timer(timer, flags);
- 	release_posix_timer(timer, IT_ID_SET);
- 	return 0;
-@@ -885,11 +884,10 @@ retry_delete:
- 	 * This keeps any tasks waiting on the spin lock from thinking
- 	 * they got something (see the lock code above).
- 	 */
--	if (timer->it_process) {
--		if (timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
--			put_task_struct(timer->it_process);
--		timer->it_process = NULL;
--	}
-+	if (timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
-+		put_task_struct(timer->it_process);
-+	timer->it_process = NULL;
-+
- 	unlock_timer(timer, flags);
- 	release_posix_timer(timer, IT_ID_SET);
- }
+                                  Roger
