@@ -1,322 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbYHBQjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbYHBQv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757402AbYHBQjP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 12:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbYHBQi4
+	id S1757409AbYHBQv2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 12:51:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYHBQvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 12:38:56 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:44647 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754122AbYHBQiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 12:38:55 -0400
-Date: Sat, 2 Aug 2008 12:38:48 -0400
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
-       matthew@wil.cx, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch 2/4] Configure out file locking features
-Message-ID: <20080802163848.GB30454@fieldses.org>
-References: <20080731092703.661994657@free-electrons.com> <20080731093220.969460336@free-electrons.com>
+	Sat, 2 Aug 2008 12:51:22 -0400
+Received: from phoenix.slamd64.com ([217.10.145.2]:51320 "EHLO
+	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753553AbYHBQvV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 12:51:21 -0400
+X-Greylist: delayed 1343 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 Aug 2008 12:51:21 EDT
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Sven Wegener <sven.wegener@stealer.net>
+Subject: Re: acer-wmi broken in latest git kernel on TravelMate 6492 (Insufficient arguments - method [WQAA])
+Date: Sat, 2 Aug 2008 17:28:45 +0100
+User-Agent: KMail/1.9.9
+Cc: Bob Moore <robert.moore@intel.com>, Andi Kleen <ak@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <alpine.LNX.1.10.0808021640310.2294@titan.stealer.net>
+In-Reply-To: <alpine.LNX.1.10.0808021640310.2294@titan.stealer.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080731093220.969460336@free-electrons.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Message-Id: <200808021728.46046.carlos@strangeworlds.co.uk>
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Sat, 02 Aug 2008 16:28:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 11:27:05AM +0200, Thomas Petazzoni wrote:
-> This patch adds the CONFIG_FILE_LOCKING option which allows to remove
-> support for advisory locks. With this patch enabled, the flock()
-> system call, the F_GETLK, F_SETLK and F_SETLKW operations of fcntl()
-> and NFS support are disabled. These features are not necessarly needed
-> on embedded systems. It allows to save ~11 Kb of kernel code and data:
+On Saturday 02 August 2008 16:50:54 Sven Wegener wrote:
+> Is it a bug in acer-wmi or in Acer's ACPI implementation? I can provide 
+> more information as necessary.
 
-Out of curiosity, why does the nfs client need disabling, but not nfsd,
-gfs2, fuse, etc.?
+Neither - it's a bug in wmi.c
 
---b.
+Try the following patch:
+---
+ACPI: WMI: Set instance for query block calls
 
-> 
->    text	   data	    bss	    dec	    hex	filename
-> 1125436	 118764	 212992	1457192	 163c28	vmlinux.old
-> 1114299	 118564	 212992	1445855	 160fdf	vmlinux
->  -11137    -200       0  -11337   -2C49 +/-
-> 
-> This patch has originally been written by Matt Mackall
-> <mpm@selenic.com>, and is part of the Linux Tiny project.
-> 
-> Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-> Signed-off-by: Matt Mackall <mpm@selenic.com>
-> Cc: matthew@wil.cx
-> Cc: linux-fsdevel@vger.kernel.org
-> Cc: mpm@selenic.com
-> Cc: akpm@linux-foundation.org
-> 
-> ---
->  fs/Kconfig          |    2 +-
->  fs/Makefile         |    3 ++-
->  fs/proc/proc_misc.c |    4 ++++
->  include/linux/fs.h  |   52 +++++++++++++++++++++++++++++++++++++++++++++-------
->  init/Kconfig        |    8 ++++++++
->  kernel/sys_ni.c     |    1 +
->  kernel/sysctl.c     |    6 +++++-
->  7 files changed, 66 insertions(+), 10 deletions(-)
-> 
-> Index: linuxdev/fs/Kconfig
-> ===================================================================
-> --- linuxdev.orig/fs/Kconfig
-> +++ linuxdev/fs/Kconfig
-> @@ -1559,7 +1559,7 @@
->  
->  config NFS_FS
->  	tristate "NFS client support"
-> -	depends on INET
-> +	depends on INET && FILE_LOCKING
->  	select LOCKD
->  	select SUNRPC
->  	select NFS_ACL_SUPPORT if NFS_V3_ACL
-> Index: linuxdev/fs/Makefile
-> ===================================================================
-> --- linuxdev.orig/fs/Makefile
-> +++ linuxdev/fs/Makefile
-> @@ -7,7 +7,7 @@
->  
->  obj-y :=	open.o read_write.o file_table.o super.o \
->  		char_dev.o stat.o exec.o pipe.o namei.o fcntl.o \
-> -		ioctl.o readdir.o select.o fifo.o locks.o dcache.o inode.o \
-> +		ioctl.o readdir.o select.o fifo.o dcache.o inode.o \
->  		attr.o bad_inode.o file.o filesystems.o namespace.o \
->  		seq_file.o xattr.o libfs.o fs-writeback.o \
->  		pnode.o drop_caches.o splice.o sync.o utimes.o \
-> @@ -28,6 +28,7 @@
->  obj-$(CONFIG_TIMERFD)		+= timerfd.o
->  obj-$(CONFIG_EVENTFD)		+= eventfd.o
->  obj-$(CONFIG_AIO)               += aio.o
-> +obj-$(CONFIG_FILE_LOCKING)      += locks.o
->  obj-$(CONFIG_COMPAT)		+= compat.o compat_ioctl.o
->  
->  nfsd-$(CONFIG_NFSD)		:= nfsctl.o
-> Index: linuxdev/fs/proc/proc_misc.c
-> ===================================================================
-> --- linuxdev.orig/fs/proc/proc_misc.c
-> +++ linuxdev/fs/proc/proc_misc.c
-> @@ -677,6 +677,7 @@
->  	return proc_calc_metrics(page, start, off, count, eof, len);
->  }
->  
-> +#ifdef CONFIG_FILE_LOCKING
->  static int locks_open(struct inode *inode, struct file *filp)
->  {
->  	return seq_open(filp, &locks_seq_operations);
-> @@ -688,6 +689,7 @@
->  	.llseek		= seq_lseek,
->  	.release	= seq_release,
->  };
-> +#endif /* CONFIG_FILE_LOCKING */
->  
->  static int execdomains_read_proc(char *page, char **start, off_t off,
->  				 int count, int *eof, void *data)
-> @@ -881,7 +883,9 @@
->  #ifdef CONFIG_PRINTK
->  	proc_create("kmsg", S_IRUSR, NULL, &proc_kmsg_operations);
->  #endif
-> +#ifdef CONFIG_FILE_LOCKING
->  	proc_create("locks", 0, NULL, &proc_locks_operations);
-> +#endif
->  	proc_create("devices", 0, NULL, &proc_devinfo_operations);
->  	proc_create("cpuinfo", 0, NULL, &proc_cpuinfo_operations);
->  #ifdef CONFIG_BLOCK
-> Index: linuxdev/include/linux/fs.h
-> ===================================================================
-> --- linuxdev.orig/include/linux/fs.h
-> +++ linuxdev/include/linux/fs.h
-> @@ -983,6 +983,13 @@
->  
->  #include <linux/fcntl.h>
->  
-> +extern void send_sigio(struct fown_struct *fown, int fd, int band);
-> +
-> +/* fs/sync.c */
-> +extern int do_sync_mapping_range(struct address_space *mapping, loff_t offset,
-> +			loff_t endbyte, unsigned int flags);
-> +
-> +#ifdef CONFIG_FILE_LOCKING
->  extern int fcntl_getlk(struct file *, struct flock __user *);
->  extern int fcntl_setlk(unsigned int, struct file *, unsigned int,
->  			struct flock __user *);
-> @@ -993,14 +1000,9 @@
->  			struct flock64 __user *);
->  #endif
->  
-> -extern void send_sigio(struct fown_struct *fown, int fd, int band);
->  extern int fcntl_setlease(unsigned int fd, struct file *filp, long arg);
->  extern int fcntl_getlease(struct file *filp);
->  
-> -/* fs/sync.c */
-> -extern int do_sync_mapping_range(struct address_space *mapping, loff_t offset,
-> -			loff_t endbyte, unsigned int flags);
-> -
->  /* fs/locks.c */
->  extern void locks_init_lock(struct file_lock *);
->  extern void locks_copy_lock(struct file_lock *, struct file_lock *);
-> @@ -1023,6 +1025,33 @@
->  extern int lock_may_read(struct inode *, loff_t start, unsigned long count);
->  extern int lock_may_write(struct inode *, loff_t start, unsigned long count);
->  extern struct seq_operations locks_seq_operations;
-> +#else /* !CONFIG_FILE_LOCKING */
-> +#define fcntl_getlk(a, b) (-EINVAL)
-> +#define fcntl_setlk(a, b, c, d) (-EACCES)
-> +#if BITS_PER_LONG == 32
-> +#define fcntl_getlk64(a, b) (-EINVAL)
-> +#define fcntl_setlk64(a, b, c, d) (-EACCES)
-> +#endif
-> +#define fcntl_setlease(a, b, c) (0)
-> +#define fcntl_getlease(a) (0)
-> +#define locks_init_lock(a)
-> +#define locks_copy_lock(a, b)
-> +#define locks_remove_posix(a, b)
-> +#define locks_remove_flock(a)
-> +#define posix_test_lock(a, b) (0)
-> +#define posix_lock_file(a, b) (-ENOLCK)
-> +#define posix_lock_file_wait(a, b) (-ENOLCK)
-> +#define posix_unblock_lock(a, b) (-ENOENT)
-> +#define vfs_test_lock(a, b) (0)
-> +#define vfs_lock_file(a, b, c, d) (-ENOLCK)
-> +#define vfs_cancel_lock(a, b) (0)
-> +#define flock_lock_file_wait(a, b) (-ENOLCK)
-> +#define __break_lease(a, b) (0)
-> +#define lease_get_mtime(a, b)
-> +#define lock_may_read(a, b, c) (1)
-> +#define lock_may_write(a, b, c) (1)
-> +#endif /* !CONFIG_FILE_LOCKING */
-> +
->  
->  struct fasync_struct {
->  	int	magic;
-> @@ -1554,9 +1583,12 @@
->  /* /sys/fs */
->  extern struct kobject *fs_kobj;
->  
-> +extern int rw_verify_area(int, struct file *, loff_t *, size_t);
-> +
->  #define FLOCK_VERIFY_READ  1
->  #define FLOCK_VERIFY_WRITE 2
->  
-> +#ifdef CONFIG_FILE_LOCKING
->  extern int locks_mandatory_locked(struct inode *);
->  extern int locks_mandatory_area(int, struct inode *, struct file *, loff_t, size_t);
->  
-> @@ -1587,8 +1619,6 @@
->  	return 0;
->  }
->  
-> -extern int rw_verify_area(int, struct file *, loff_t *, size_t);
-> -
->  static inline int locks_verify_truncate(struct inode *inode,
->  				    struct file *filp,
->  				    loff_t size)
-> @@ -1609,6 +1639,14 @@
->  		return __break_lease(inode, mode);
->  	return 0;
->  }
-> +#else /* !CONFIG_FILE_LOCKING */
-> +#define locks_mandatory_locked(a) (0)
-> +#define locks_mandatory_area(a, b, c, d, e) (0)
-> +#define mandatory_lock(a) (0)
-> +#define locks_verify_locked(a) (0)
-> +#define locks_verify_truncate(a, b, c) (0)
-> +#define break_lease(a, b) (0)
-> +#endif /* CONFIG_FILE_LOCKING */
->  
->  /* fs/open.c */
->  
-> Index: linuxdev/init/Kconfig
-> ===================================================================
-> --- linuxdev.orig/init/Kconfig
-> +++ linuxdev/init/Kconfig
-> @@ -732,6 +732,14 @@
->            by some high performance threaded applications. Disabling
->            this option saves about 7k.
->  
-> +config FILE_LOCKING
-> +	bool "Enable POSIX file locking API" if EMBEDDED
-> +	default y
-> +	help
-> +	  This option enables standard file locking support, required
-> +          for filesystems like NFS and for the flock() system
-> +          call. Disabling this option saves about 11k.
-> +
->  config VM_EVENT_COUNTERS
->  	default y
->  	bool "Enable VM event counters for /proc/vmstat" if EMBEDDED
-> Index: linuxdev/kernel/sys_ni.c
-> ===================================================================
-> --- linuxdev.orig/kernel/sys_ni.c
-> +++ linuxdev/kernel/sys_ni.c
-> @@ -130,6 +130,7 @@
->  cond_syscall(sys_io_submit);
->  cond_syscall(sys_io_cancel);
->  cond_syscall(sys_io_getevents);
-> +cond_syscall(sys_flock);
->  
->  /* arch-specific weak syscall entries */
->  cond_syscall(sys_pciconfig_read);
-> Index: linuxdev/kernel/sysctl.c
-> ===================================================================
-> --- linuxdev.orig/kernel/sysctl.c
-> +++ linuxdev/kernel/sysctl.c
-> @@ -97,7 +97,7 @@
->  static int neg_one = -1;
->  #endif
->  
-> -#ifdef CONFIG_MMU
-> +#if defined(CONFIG_MMU) && defined(CONFIG_FILE_LOCKING)
->  static int two = 2;
->  #endif
->  
-> @@ -1260,6 +1260,7 @@
->  		.extra1		= &minolduid,
->  		.extra2		= &maxolduid,
->  	},
-> +#ifdef CONFIG_FILE_LOCKING
->  	{
->  		.ctl_name	= FS_LEASES,
->  		.procname	= "leases-enable",
-> @@ -1268,6 +1269,7 @@
->  		.mode		= 0644,
->  		.proc_handler	= &proc_dointvec,
->  	},
-> +#endif
->  #ifdef CONFIG_DNOTIFY
->  	{
->  		.ctl_name	= FS_DIR_NOTIFY,
-> @@ -1279,6 +1281,7 @@
->  	},
->  #endif
->  #ifdef CONFIG_MMU
-> +#ifdef CONFIG_FILE_LOCKING
->  	{
->  		.ctl_name	= FS_LEASE_TIME,
->  		.procname	= "lease-break-time",
-> @@ -1290,6 +1293,7 @@
->  		.extra1		= &zero,
->  		.extra2		= &two,
->  	},
-> +#endif /* CONFIG_FILE_LOCKING */
->  #ifdef CONFIG_AIO
->  	{
->  		.procname	= "aio-nr",
-> 
-> -- 
-> Thomas Petazzoni, Free Electrons
-> Kernel, drivers and embedded Linux development,
-> consulting, training and support.
-> http://free-electrons.com
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+
+Although the necessary data structure was set up, it was never actually
+passed in, so data block calls have only been working by sheer chance.
+
+(On Acer laptops. the data block methods we've been calling never look at
+the instance value, hence acer-wmi never triggered this before).
+
+f3454ae8104efb2dbf0d08ec42c6f5d0fe9225bc brought this to light.
+
+Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+---
+
+ drivers/acpi/wmi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+
+diff --git a/drivers/acpi/wmi.c b/drivers/acpi/wmi.c
+index c33b1c6..cfe2c83 100644
+--- a/drivers/acpi/wmi.c
++++ b/drivers/acpi/wmi.c
+@@ -347,7 +347,7 @@ struct acpi_buffer *out)
+ 	strcpy(method, "WQ");
+ 	strncat(method, block->object_id, 2);
+ 
+-	status = acpi_evaluate_object(handle, method, NULL, out);
++	status = acpi_evaluate_object(handle, method, &input, out);
+ 
+ 	/*
+ 	 * If ACPI_WMI_EXPENSIVE, call the relevant WCxx method, even if
