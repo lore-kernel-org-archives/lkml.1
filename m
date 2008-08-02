@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759932AbYHBTgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761613AbYHBTgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759932AbYHBTgG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 15:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758959AbYHBT2k
+	id S1761613AbYHBTgf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 15:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759099AbYHBT2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 15:28:40 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38047 "EHLO ogre.sisk.pl"
+	Sat, 2 Aug 2008 15:28:42 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38043 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758230AbYHBT2V convert rfc822-to-8bit (ORCPT
+	id S1758209AbYHBT2V convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 2 Aug 2008 15:28:21 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Steve Wise" <swise@opengridcomputing.com>
+       "Adrian Bunk" <bunk@kernel.org>,
+       "David Woodhouse" <dwmw2@infradead.org>
 References: <cbItfVMShGI.A.olC.UMLlIB@albercik>
 In-Reply-To: <cbItfVMShGI.A.olC.UMLlIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,8 +20,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <5ZeQ4vXWqRC.A.KHD.pMLlIB@albercik>
-Subject: [Bug #11227] BUG on booting 2.6.27-rc1
+Message-ID: <5ZeQ4vXWqRC.A.bMD.rMLlIB@albercik>
+Subject: [Bug #11225] mtdsuper.c BLOCK=n compile error
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat,  2 Aug 2008 20:04:20 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,12 +36,12 @@ from 2.6.26.  Please verify if it still should be listed
 and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11227
-Subject		: BUG on booting 2.6.27-rc1
-Submitter	: Steve Wise <swise@opengridcomputing.com>
-Date		: 2008-08-01 20:56 (2 days old)
-References	: http://marc.info/?l=linux-kernel&m=121762419708424&w=4
-Handled-By	: Jeremy Fitzhardinge <jeremy@goop.org>
-Patch		: http://marc.info/?l=linux-kernel&m=121762583111470&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11225
+Subject		: mtdsuper.c BLOCK=n compile error
+Submitter	: Adrian Bunk <bunk@kernel.org>
+Date		: 2008-08-01 15:33 (2 days old)
+References	: http://lkml.org/lkml/2008/8/1/454
+Handled-By	: David Woodhouse <dwmw2@infradead.org>
+Patch		: http://lkml.org/lkml/2008/8/1/499
 
 
