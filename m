@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbYHBNYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYHBNlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756262AbYHBNYs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 09:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbYHBNYl
+	id S1754103AbYHBNlZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 09:41:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbYHBNlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 09:24:41 -0400
-Received: from mail.deathmatch.net ([70.167.247.36]:44561 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752560AbYHBNYk (ORCPT
+	Sat, 2 Aug 2008 09:41:17 -0400
+Received: from gustav.zipernowsky.hu ([193.225.20.248]:43382 "EHLO
+	gustav.zipernowsky.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751744AbYHBNlQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 09:24:40 -0400
-Date: Sat, 2 Aug 2008 09:24:10 -0400
-From: Bob Copeland <me@bobcopeland.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: linux-karma-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] omfs: fix warning
-Message-ID: <20080802132410.GA18961@hash.localnet>
-References: <20080802080725.GA4856@orion>
+	Sat, 2 Aug 2008 09:41:16 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080802080725.GA4856@orion>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Date: Sat, 02 Aug 2008 15:41:10 +0200
+From: Oliver Pinter <oliver@zipernowsky.hu>
+To: Adrian Bunk <bunk@kernel.org>, stable@kernel.org
+Subject: [RFC, 2.6.26.2-rc1] 5176/1: arm/Makefile: fix: ARM946T -> ARM946E
+Reply-To: oliver.pntr@gmail.com
+Message-ID: <2ff16ca447a63e5f8d062a30a60b6678@zipernowsky.hu>
+User-Agent: RoundCube Webmail/0.1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 02, 2008 at 12:07:25PM +0400, Alexander Beregalov wrote:
-> From: Alexander Beregalov <a.beregalov@gmail.com>
-> 
-> omfs: fix warnings
-> 
-> fs/omfs/inode.c:495: warning: format '%llx' expects type 'long long
-> 	unsigned int', but argument 2 has type 'u64'
-> fs/omfs/inode.c:495: warning: format '%llx' expects type 'long
-> 	long unsigned int', but argument 3 has type '__be64'
-> 
-> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-> Cc: Bob Copeland <me@bobcopeland.com>
+>From e6bb83fd2f39eff3ae3e5ad6cac91d154d7ef3b1 Mon Sep 17 00:00:00 2001
+From: Adrian Bunk <bunk@kernel.org>
+Date: Sat, 19 Jul 2008 17:52:59 +0100
+Subject: [PATCH] [ARM] 5176/1: arm/Makefile: fix: ARM946T -> ARM946E
 
-Thanks!
+[ Upstream commit e6bb83fd2f39eff3ae3e5ad6cac91d154d7ef3b1 ]
 
-Acked-by: Bob Copeland <me@bobcopeland.com>
+This patch fixes a typo introduced by
+commit f37f46eb1c0bd0b11c34ef06c7365658be989d80
+([ARM] nommu: add ARM946E-S core support).
 
-(And I'm downloading cross compilers as I type this.)
+Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-Andrew, should I continue to send omfs patches through you, or do I need
-to publish a git repo?
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Hyok S. Choi <hyok.choi@samsung.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+CC: Oliver Pinter <oliver.pntr@gmail.com>
 
->  			"super and root blocks (%llx, %llx)\n",
-> -			sbi->s_num_blocks, be64_to_cpu(omfs_rb->r_num_blocks));
-> +			(unsigned long long)sbi->s_num_blocks,
-> +			(unsigned long long)be64_to_cpu(omfs_rb->r_num_blocks));
->  		goto out_brelse_bh2;
+diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+index b20995a..2f07477 100644
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -67,7 +67,7 @@ tune-$(CONFIG_CPU_ARM720T)	:=-mtune=arm7tdmi
+ tune-$(CONFIG_CPU_ARM740T)	:=-mtune=arm7tdmi
+ tune-$(CONFIG_CPU_ARM9TDMI)	:=-mtune=arm9tdmi
+ tune-$(CONFIG_CPU_ARM940T)	:=-mtune=arm9tdmi
+-tune-$(CONFIG_CPU_ARM946T)	:=$(call
+cc-option,-mtune=arm9e,-mtune=arm9tdmi)
++tune-$(CONFIG_CPU_ARM946E)	:=$(call
+cc-option,-mtune=arm9e,-mtune=arm9tdmi)
+ tune-$(CONFIG_CPU_ARM920T)	:=-mtune=arm9tdmi
+ tune-$(CONFIG_CPU_ARM922T)	:=-mtune=arm9tdmi
+ tune-$(CONFIG_CPU_ARM925T)	:=-mtune=arm9tdmi
 
--- 
-Bob Copeland %% www.bobcopeland.com
 
