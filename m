@@ -1,21 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbYHBPNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbYHBPOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbYHBPNt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 11:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbYHBPNi
+	id S1757402AbYHBPOX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 11:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754971AbYHBPOB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 11:13:38 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:37793 "EHLO mgw2.diku.dk"
+	Sat, 2 Aug 2008 11:14:01 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:37834 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756771AbYHBPNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 11:13:37 -0400
-Date: Sat, 2 Aug 2008 17:13:34 +0200 (CEST)
+	id S1753729AbYHBPOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 11:14:00 -0400
+Date: Sat, 2 Aug 2008 17:13:57 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/10] drivers/media/video: Use DIV_ROUND_UP
-Message-ID: <Pine.LNX.4.64.0808021713100.20095@ask.diku.dk>
+To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 5/10] drivers/misc: Use DIV_ROUND_UP
+Message-ID: <Pine.LNX.4.64.0808021713350.20095@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -66,62 +64,18 @@ expression n,d;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/media/video/bw-qcam.c       |    4 ++--
- drivers/media/video/uvc/uvc_video.c |    2 +-
- drivers/media/video/zoran_device.c  |    4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/misc/sgi-gru/grukservices.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u -p a/drivers/media/video/bw-qcam.c b/drivers/media/video/bw-qcam.c
---- a/drivers/media/video/bw-qcam.c
-+++ b/drivers/media/video/bw-qcam.c
-@@ -495,7 +495,7 @@ static void qc_set(struct qcam_device *q
- 		val2 = (((q->port_mode & QC_MODE_MASK) == QC_BIDIR) ? 24 : 8) *
- 		    q->transfer_scale;
- 	}
--	val = (val + val2 - 1) / val2;
-+	val = DIV_ROUND_UP(val, val2);
- 	qc_command(q, 0x13);
- 	qc_command(q, val);
+diff -u -p a/drivers/misc/sgi-gru/grukservices.c b/drivers/misc/sgi-gru/grukservices.c
+--- a/drivers/misc/sgi-gru/grukservices.c
++++ b/drivers/misc/sgi-gru/grukservices.c
+@@ -466,7 +466,7 @@ int gru_send_message_gpa(unsigned long m
+ 	STAT(mesq_send);
+ 	BUG_ON(bytes < sizeof(int) || bytes > 2 * GRU_CACHE_LINE_BYTES);
  
-@@ -651,7 +651,7 @@ static long qc_capture(struct qcam_devic
- 	transperline = q->width * q->bpp;
- 	divisor = (((q->port_mode & QC_MODE_MASK) == QC_BIDIR) ? 24 : 8) *
- 	    q->transfer_scale;
--	transperline = (transperline + divisor - 1) / divisor;
-+	transperline = DIV_ROUND_UP(transperline, divisor);
- 
- 	for (i = 0, yield = yieldlines; i < linestotrans; i++)
- 	{
-diff -u -p a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
---- a/drivers/media/video/uvc/uvc_video.c
-+++ b/drivers/media/video/uvc/uvc_video.c
-@@ -644,7 +644,7 @@ static int uvc_init_video_isoc(struct uv
- 	if (size > UVC_MAX_FRAME_SIZE)
- 		return -EINVAL;
- 
--	npackets = (size + psize - 1) / psize;
-+	npackets = DIV_ROUND_UP(size, psize);
- 	if (npackets > UVC_MAX_ISO_PACKETS)
- 		npackets = UVC_MAX_ISO_PACKETS;
- 
-diff -u -p a/drivers/media/video/zoran_device.c b/drivers/media/video/zoran_device.c
---- a/drivers/media/video/zoran_device.c
-+++ b/drivers/media/video/zoran_device.c
-@@ -377,7 +377,7 @@ zr36057_set_vfe (struct zoran           
- 
- 	/* horizontal */
- 	VidWinWid = video_width;
--	X = (VidWinWid * 64 + tvn->Wa - 1) / tvn->Wa;
-+	X = DIV_ROUND_UP(VidWinWid * 64, tvn->Wa);
- 	We = (VidWinWid * 64) / X;
- 	HorDcm = 64 - X;
- 	hcrop1 = 2 * ((tvn->Wa - We) / 4);
-@@ -403,7 +403,7 @@ zr36057_set_vfe (struct zoran           
- 	/* Vertical */
- 	DispMode = !(video_height > BUZ_MAX_HEIGHT / 2);
- 	VidWinHt = DispMode ? video_height : video_height / 2;
--	Y = (VidWinHt * 64 * 2 + tvn->Ha - 1) / tvn->Ha;
-+	Y = DIV_ROUND_UP(VidWinHt * 64 * 2, tvn->Ha);
- 	He = (VidWinHt * 64) / Y;
- 	VerDcm = 64 - Y;
- 	vcrop1 = (tvn->Ha / 2 - He) / 2;
+-	clines = (bytes + GRU_CACHE_LINE_BYTES - 1) / GRU_CACHE_LINE_BYTES;
++	clines = DIV_ROUND_UP(bytes, GRU_CACHE_LINE_BYTES);
+ 	if (gru_get_cpu_resources(bytes, &cb, &dsr))
+ 		return MQE_BUG_NO_RESOURCES;
+ 	memcpy(dsr, mesg, bytes);
