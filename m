@@ -1,96 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbYHBW25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbYHBWhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754878AbYHBW25 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 18:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbYHBW2u
+	id S1754575AbYHBWhB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 18:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYHBWgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 18:28:50 -0400
-Received: from smtp1.stealer.net ([88.198.224.204]:44827 "EHLO
-	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752392AbYHBW2t (ORCPT
+	Sat, 2 Aug 2008 18:36:53 -0400
+Received: from jenny.ondioline.org ([66.220.1.122]:39148 "EHLO
+	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752392AbYHBWgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 18:28:49 -0400
-Date: Sun, 3 Aug 2008 00:27:39 +0200 (CEST)
-From: Sven Wegener <sven.wegener@stealer.net>
-To: Oliver Pinter <pinter.oliver.villany@gmail.com>
-cc: Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org, w@1wt.eu,
-       Roland McGrath <roland@redhat.com>, john stultz <johnstul@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Roland McGrath <roland@redhat.com>,
-       Oliver Pinter <oliver.pntr@gmail.com>
-Subject: Re: [RFC, 2.6.26.2-rc1] posix timers: release_posix_timer: kill the
- bogus put_task_struct(->it_process)
-In-Reply-To: <200808022345.20963.oliver.pntr@gmail.com>
-Message-ID: <alpine.LNX.1.10.0808030006040.2294@titan.stealer.net>
-References: <200808022345.20963.oliver.pntr@gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-Organization: STEALER.net
+	Sat, 2 Aug 2008 18:36:52 -0400
+From: Paul Collins <paul@burly.ondioline.org>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org, linuxppc-dev@ozlabs.org,
+       Neil Brown <neilb@suse.de>
+Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux, post-2.6.27-rc1
+References: <87tze38vzt.fsf@burly.wgtn.ondioline.org>
+	<20080802184554.GB715@fieldses.org>
+Date: Sun, 03 Aug 2008 10:36:51 +1200
+In-Reply-To: <20080802184554.GB715@fieldses.org> (J. Bruce Fields's message of
+	"Sat, 2 Aug 2008 14:45:54 -0400")
+Message-ID: <87abfvm4cc.fsf@burly.wgtn.ondioline.org>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.5
-X-Spam-Bar: --
-X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Sat, 02 Aug 2008 22:27:51 +0000
-	Bayes: 0.0000 Tokens: new, 319; hammy, 9; neutral, 5; spammy, 0.
-	AutoLearn: no
-	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-X-Spam-Signature: 72295b34047a3320802020d79064578f0ec5015c
-X-DomainKey-Status: no signature
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 Aug 2008, Oliver Pinter wrote:
+"J. Bruce Fields" <bfields@fieldses.org> writes:
 
-> It is an RFC for sending this patch for stable, when this patch needed, then send ACK and CC stable,
-> if not then send NAK.
+> On Sun, Aug 03, 2008 at 12:03:18AM +1200, Paul Collins wrote:
+>> I just got the oops below on a ppc32 NFS4 server.  I was cross-compiling
+>> Linux with an amd64 client at the time.  The server is running Linus's
+>> tree as of 94ad374a0751f40d25e22e036c37f7263569d24c, the client is
+>> running 2.6.26.
+>> 
+>> The server's kernel was cross-compiled with gcc 4.2.4-3 and binutils
+>> 2.18.50.20080610-1, both built from the Debian sources following their
+>> toolchain-building procedures.
+>
+> Without having really thought about this,
+>
+> 	496d6c32d4d057cb44272d9bd587ff97d023ee92 "nfsd: fix spurious
+> 	EACCESS in reconnect_path()"
+>
+> is one suspect; it might be worth checking whether the problem's
+> reproduceable with that reverted.  But I assume we're not so lucky as to
+> have a 100% reproduceable problem here?
 
-I'd say big NAK. Have you ever looked at the full commit message and patch 
-at all? It says "release_posix_timer() can't be called with ->it_process 
-!= NULL.". Point. The rest is the explanation why this can't happen. And 
-looking at the patch, we see that it just removes code that actually never 
-gets executed under the mentioned preconditions. It's a pure cleanup patch 
-and doesn't qualify for -stable. Same goes for the other posix timer patch 
-you mailed out.
+Unknown.  I've kicked off a fresh build.  Here's hoping!
 
-> ---
-> From 96347e7759e2e433c427defa0fa1adfc8cce6226 Mon Sep 17 00:00:00 2001
-> From: Oleg Nesterov <oleg@tv-sign.ru>
-> Date: Fri, 25 Jul 2008 01:47:27 -0700
-> Subject: [PATCH] posix timers: release_posix_timer: kill the bogus put_task_struct(->it_process);
-> 
-> [ Upstream commit 96347e7759e2e433c427defa0fa1adfc8cce6226 ]
-> 
-> release_posix_timer() can't be called with ->it_process != NULL.  Once
-> sys_timer_create() sets ->it_process it must not call
-> release_posix_timer(), otherwise we can race with another thread doing
-> sys_timer_delete(), this timer is visible to idr_find() and unlocked.
-> 
-> The same is true for two other callers (actually, for any possible
-> caller), sys_timer_delete() and itimer_delete().  They must clear
-> ->it_process before unlock_timer() + release_posix_timer().
-> 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-> Acked-by: Roland McGrath <roland@redhat.com>
-> Cc: john stultz <johnstul@us.ibm.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Roland McGrath <roland@redhat.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> CC: Oliver Pinter <oliver.pntr@gmail.com>
-> 
-> diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
-> index 17f5326..9a21681 100644
-> --- a/kernel/posix-timers.c
-> +++ b/kernel/posix-timers.c
-> @@ -449,9 +449,6 @@ static void release_posix_timer(struct k_itimer *tmr, int it_id_set)
->  		spin_unlock_irqrestore(&idr_lock, flags);
->  	}
->  	sigqueue_free(tmr->sigq);
-> -	if (unlikely(tmr->it_process) &&
-> -	    tmr->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
-> -		put_task_struct(tmr->it_process);
->  	kmem_cache_free(posix_timers_cache, tmr);
->  }
->  
+> What do your export options look like?
+
+  $ cat /etc/exports
+  /srv/nfsv4            *(sec=krb5:krb5i:krb5p,rw,fsid=0,crossmnt,insecure,no_subtree_check)
+  /srv/nfsv4/home/paul  *(sec=krb5:krb5i:krb5p,rw,insecure,no_subtree_check)
+  $ mount | grep bind
+  /home/paul on /srv/nfsv4/home/paul type none (rw,bind)
+
+-- 
+Paul Collins
+Wellington, New Zealand
+
+Dag vijandelijk luchtschip de huismeester is dood
