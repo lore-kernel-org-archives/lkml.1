@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbYHBPMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbYHBPNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755692AbYHBPMi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 11:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYHBPM2
+	id S1756749AbYHBPNA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 11:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756253AbYHBPMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 11:12:28 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:37764 "EHLO mgw2.diku.dk"
+	Sat, 2 Aug 2008 11:12:50 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:37777 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752783AbYHBPM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 11:12:27 -0400
-Date: Sat, 2 Aug 2008 17:12:23 +0200 (CEST)
+	id S1752931AbYHBPMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 11:12:48 -0400
+Date: Sat, 2 Aug 2008 17:12:46 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: chas@cmf.nrl.navy.mil, linux-kernel@vger.kernel.org,
+To: axboe@kernel.dk, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/10] drivers/atm: Use DIV_ROUND_UP
-Message-ID: <Pine.LNX.4.64.0808021711550.20095@ask.diku.dk>
+Subject: [PATCH 2/10] drivers/block: Use DIV_ROUND_UP
+Message-ID: <Pine.LNX.4.64.0808021712240.20095@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -25,10 +25,6 @@ From: Julia Lawall <julia@diku.dk>
 
 The kernel.h macro DIV_ROUND_UP performs the computation (((n) + (d) - 1) /
 (d)) but is perhaps more readable.
-
-In the case of the file drivers/atm/eni.c, I am a little bit suspicious of
-the -1 at the end of the affected expression.  Please check that that is
-what is wanted.
 
 An extract of the semantic patch that makes this change is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
@@ -69,82 +65,81 @@ expression n,d;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/atm/eni.c     |    2 +-
- drivers/atm/horizon.c |    8 ++++----
- drivers/atm/zatm.c    |    6 +++---
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/block/cciss.c    |    8 ++++----
+ drivers/block/cpqarray.c |    2 +-
+ drivers/block/floppy.c   |    8 ++++----
+ 3 files changed, 9 insertions(+), 9 deletions(-)
 
-diff -u -p a/drivers/atm/eni.c b/drivers/atm/eni.c
---- a/drivers/atm/eni.c
-+++ b/drivers/atm/eni.c
-@@ -1270,7 +1270,7 @@ static int comp_tx(struct eni_dev *eni_d
- 			if (*pre < 3) (*pre)++; /* else fail later */
- 			div = pre_div[*pre]*-*pcr;
- 			DPRINTK("max div %d\n",div);
--			*res = (TS_CLOCK+div-1)/div-1;
-+			*res = DIV_ROUND_UP(TS_CLOCK, div)-1;
- 		}
- 		if (*res < 0) *res = 0;
- 		if (*res > MID_SEG_MAX_RATE) *res = MID_SEG_MAX_RATE;
-diff -u -p a/drivers/atm/horizon.c b/drivers/atm/horizon.c
---- a/drivers/atm/horizon.c
-+++ b/drivers/atm/horizon.c
-@@ -635,7 +635,7 @@ static int make_rate (const hrz_dev * de
- 		// take care of rounding
- 		switch (r) {
- 			case round_down:
--				pre = (br+(c<<div)-1)/(c<<div);
-+				pre = DIV_ROUND_UP(br, c<<div);
- 				// but p must be non-zero
- 				if (!pre)
- 					pre = 1;
-@@ -668,7 +668,7 @@ static int make_rate (const hrz_dev * de
- 			// take care of rounding
- 			switch (r) {
- 				case round_down:
--					pre = (br+(c<<div)-1)/(c<<div);
-+					pre = DIV_ROUND_UP(br, c<<div);
- 					break;
- 				case round_nearest:
- 					pre = (br+(c<<div)/2)/(c<<div);
-@@ -698,7 +698,7 @@ got_it:
- 		if (bits)
- 			*bits = (div<<CLOCK_SELECT_SHIFT) | (pre-1);
- 		if (actual) {
--			*actual = (br + (pre<<div) - 1) / (pre<<div);
-+			*actual = DIV_ROUND_UP(br, pre<<div);
- 			PRINTD (DBG_QOS, "actual rate: %u", *actual);
- 		}
- 		return 0;
-@@ -1967,7 +1967,7 @@ static int __devinit hrz_init (hrz_dev *
-   // Set the max AAL5 cell count to be just enough to contain the
-   // largest AAL5 frame that the user wants to receive
-   wr_regw (dev, MAX_AAL5_CELL_COUNT_OFF,
--	   (max_rx_size + ATM_AAL5_TRAILER + ATM_CELL_PAYLOAD - 1) / ATM_CELL_PAYLOAD);
-+	   DIV_ROUND_UP(max_rx_size + ATM_AAL5_TRAILER, ATM_CELL_PAYLOAD));
-   
-   // Enable receive
-   wr_regw (dev, RX_CONFIG_OFF, rd_regw (dev, RX_CONFIG_OFF) | RX_ENABLE);
-diff -u -p a/drivers/atm/zatm.c b/drivers/atm/zatm.c
---- a/drivers/atm/zatm.c
-+++ b/drivers/atm/zatm.c
-@@ -496,8 +496,8 @@ static int open_rx_first(struct atm_vcc 
- 			vcc->qos.rxtp.max_sdu = 65464;
- 			/* fix this - we may want to receive 64kB SDUs
- 			   later */
--		cells = (vcc->qos.rxtp.max_sdu+ATM_AAL5_TRAILER+
--		    ATM_CELL_PAYLOAD-1)/ATM_CELL_PAYLOAD;
-+		cells = DIV_ROUND_UP(vcc->qos.rxtp.max_sdu + ATM_AAL5_TRAILER,
-+				ATM_CELL_PAYLOAD);
- 		zatm_vcc->pool = pool_index(cells*ATM_CELL_PAYLOAD);
+diff -u -p a/drivers/block/cciss.c b/drivers/block/cciss.c
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -3438,8 +3438,8 @@ static int __devinit cciss_init_one(stru
+ 	       hba[i]->intr[SIMPLE_MODE_INT], dac ? "" : " not");
+ 
+ 	hba[i]->cmd_pool_bits =
+-	    kmalloc(((hba[i]->nr_cmds + BITS_PER_LONG -
+-		      1) / BITS_PER_LONG) * sizeof(unsigned long), GFP_KERNEL);
++	    kmalloc(DIV_ROUND_UP(hba[i]->nr_cmds, BITS_PER_LONG)
++			* sizeof(unsigned long), GFP_KERNEL);
+ 	hba[i]->cmd_pool = (CommandList_struct *)
+ 	    pci_alloc_consistent(hba[i]->pdev,
+ 		    hba[i]->nr_cmds * sizeof(CommandList_struct),
+@@ -3471,8 +3471,8 @@ static int __devinit cciss_init_one(stru
+ 	/* command and error info recs zeroed out before
+ 	   they are used */
+ 	memset(hba[i]->cmd_pool_bits, 0,
+-	       ((hba[i]->nr_cmds + BITS_PER_LONG -
+-		 1) / BITS_PER_LONG) * sizeof(unsigned long));
++	       DIV_ROUND_UP(hba[i]->nr_cmds, BITS_PER_LONG)
++			* sizeof(unsigned long));
+ 
+ #ifdef CCISS_DEBUG
+ 	printk(KERN_DEBUG "Scanning for drives on controller cciss%d\n", i);
+diff -u -p a/drivers/block/cpqarray.c b/drivers/block/cpqarray.c
+--- a/drivers/block/cpqarray.c
++++ b/drivers/block/cpqarray.c
+@@ -424,7 +424,7 @@ static int __init cpqarray_register_ctlr
+ 		hba[i]->pci_dev, NR_CMDS * sizeof(cmdlist_t),
+ 		&(hba[i]->cmd_pool_dhandle));
+ 	hba[i]->cmd_pool_bits = kcalloc(
+-		(NR_CMDS+BITS_PER_LONG-1)/BITS_PER_LONG, sizeof(unsigned long),
++		DIV_ROUND_UP(NR_CMDS, BITS_PER_LONG), sizeof(unsigned long),
+ 		GFP_KERNEL);
+ 
+ 	if (!hba[i]->cmd_pool_bits || !hba[i]->cmd_pool)
+diff -u -p a/drivers/block/floppy.c b/drivers/block/floppy.c
+--- a/drivers/block/floppy.c
++++ b/drivers/block/floppy.c
+@@ -1355,20 +1355,20 @@ static void fdc_specify(void)
  	}
- 	else {
-@@ -820,7 +820,7 @@ static int alloc_shaper(struct atm_dev *
- 			}
- 			else {
- 				i = 255;
--				m = (ATM_OC3_PCR*255+max-1)/max;
-+				m = DIV_ROUND_UP(ATM_OC3_PCR*255, max);
- 			}
- 		}
- 		if (i > m) {
+ 
+ 	/* Convert step rate from microseconds to milliseconds and 4 bits */
+-	srt = 16 - (DP->srt * scale_dtr / 1000 + NOMINAL_DTR - 1) / NOMINAL_DTR;
++	srt = 16 - DIV_ROUND_UP(DP->srt * scale_dtr / 1000, NOMINAL_DTR);
+ 	if (slow_floppy) {
+ 		srt = srt / 4;
+ 	}
+ 	SUPBOUND(srt, 0xf);
+ 	INFBOUND(srt, 0);
+ 
+-	hlt = (DP->hlt * scale_dtr / 2 + NOMINAL_DTR - 1) / NOMINAL_DTR;
++	hlt = DIV_ROUND_UP(DP->hlt * scale_dtr / 2, NOMINAL_DTR);
+ 	if (hlt < 0x01)
+ 		hlt = 0x01;
+ 	else if (hlt > 0x7f)
+ 		hlt = hlt_max_code;
+ 
+-	hut = (DP->hut * scale_dtr / 16 + NOMINAL_DTR - 1) / NOMINAL_DTR;
++	hut = DIV_ROUND_UP(DP->hut * scale_dtr / 16, NOMINAL_DTR);
+ 	if (hut < 0x1)
+ 		hut = 0x1;
+ 	else if (hut > 0xf)
+@@ -2385,7 +2385,7 @@ static void rw_interrupt(void)
+ 
+ #ifdef FLOPPY_SANITY_CHECK
+ 	if (nr_sectors / ssize >
+-	    (in_sector_offset + current_count_sectors + ssize - 1) / ssize) {
++	    DIV_ROUND_UP(in_sector_offset + current_count_sectors, ssize)) {
+ 		DPRINT("long rw: %x instead of %lx\n",
+ 		       nr_sectors, current_count_sectors);
+ 		printk("rs=%d s=%d\n", R_SECTOR, SECTOR);
