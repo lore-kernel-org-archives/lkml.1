@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbYHBCvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbYHBCwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756002AbYHBCvr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 22:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYHBCvj
+	id S1752730AbYHBCwL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 22:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYHBCvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 22:51:39 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56679 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751942AbYHBCvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 22:51:38 -0400
-Message-ID: <4893CBA9.9020008@cn.fujitsu.com>
-Date: Sat, 02 Aug 2008 10:51:21 +0800
-From: Yu Zhiguo <yuzg@cn.fujitsu.com>
-User-Agent: Thunderbird 1.5.0.7 (Windows/20060909)
+	Fri, 1 Aug 2008 22:51:55 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:21676 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754699AbYHBCvy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 22:51:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=Nqq789e1BhcIdyM5kYTcbopDql+2wC//cbnNz4xKW6gvzOzaOV+txQ4/d1RluU8Eh1
+         2V5U8djsJT65bH1mdSbwyDG807DBA1CH4fMCmUxBDD9mI9pRQX9D0kFr/WO+ntN7NXNO
+         KEVbYg5bfz2K0GFR6Xz7EiqnJMcsUsjOCZIIM=
+Message-ID: <3ae3aa420808011951l58da4010r1ff0876f255565b0@mail.gmail.com>
+Date: Fri, 1 Aug 2008 21:51:53 -0500
+From: "Linas Vepstas" <linasvepstas@gmail.com>
+Reply-To: linasvepstas@gmail.com
+To: "Alistair John Strachan" <alistair@devzero.co.uk>
+Subject: Re: amd64 sata_nv (massive) memory corruption
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200808012319.05038.alistair@devzero.co.uk>
 MIME-Version: 1.0
-To: zhangxiliang <zhangxiliang@cn.fujitsu.com>
-CC: Eric Paris <eparis@redhat.com>, Steve Grubb <sgrubb@redhat.com>,
-       viro@zeniv.linux.org.uk, Linux Audit <linux-audit@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix the kernel panic of audit_filter_task when key field
- is set
-References: <4892F063.1080109@cn.fujitsu.com> <4893C42A.60803@cn.fujitsu.com>
-In-Reply-To: <4893C42A.60803@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3ae3aa420808011030weadc61fvf6f850f0a4cfcb3e@mail.gmail.com>
+	 <200808012319.05038.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2008/8/1 Alistair John Strachan <alistair@devzero.co.uk>:
+> On Friday 01 August 2008 18:30:34 Linas Vepstas wrote:
+>> Hi,
+>>
+>> I'm seeing strong, easily reproducible (and silent) corruption on a
+>> sata-attached
+>> disk drive on an amd64 board.  It might be the disk itself, but I
+>> doubt it; googling
+>> suggests that its somehow iommu-related but I cannot confirm this.
+>
+> Nowhere do you explicitly say you have memtest86'ed the RAM.
 
-zhangxiliang wrote:
+It passes memtest86+ just fine. The system has been in heavy
+use doing big science calculations on big datasets (multi-gigabyte)
+for months; these do not get corrupted when copied/moved around
+on the old parallel IDE disk, nor moving/copying on an NFS mount
+to a file server. Only the SATA disk is misbehaving.
 
->  static int audit_match_perm(struct audit_context *ctx, int mask)
->  {
-> +	if(!ctx)
-> +		return 0;
->  	unsigned n = ctx->major;
-
-Please check this patch with scripts/checkpatch.pl and then resend it.
-
-
->  	switch (audit_classify_syscall(ctx->arch, n)) {
->  	case 0:	/* native */
-> @@ -284,6 +286,8 @@ static int audit_match_filetype(struct audit_context *ctx, int which)
->  {
->  	unsigned index = which & ~S_IFMT;
->  	mode_t mode = which & S_IFMT;
-> +	if(!ctx)
-> +		return 0;
->  	if (index >= ctx->name_count)
->  		return 0;
->  	if (ctx->names[index].ino == -1)
-> 
-> 
-
+--linas
