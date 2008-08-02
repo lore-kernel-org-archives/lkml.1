@@ -1,176 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758482AbYHBRQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbYHBRTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758482AbYHBRQx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 13:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYHBRQT
+	id S1757218AbYHBRTv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 13:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbYHBRTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 13:16:19 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:9344 "EHLO
+	Sat, 2 Aug 2008 13:19:40 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:8181 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752533AbYHBRQR (ORCPT
+	with ESMTP id S1751668AbYHBRTj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 13:16:17 -0400
+	Sat, 2 Aug 2008 13:19:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type
          :content-transfer-encoding:content-disposition:message-id;
-        b=nwDS2m3whAd3M8d3+CPtz564Nz56yx4R+LIYhcrJwrCZIewvtR5VfdlB2/MQoa+E2U
-         dxnMpid10cd/au0BUjadHqouyhFWP+ABiM4lVjGSF6QzqpGRb+4iInHHpjcb1ZXFvRhf
-         BHCp86DrXS6M0meCo5qS18H9FpJneLyGp5b6g=
+        b=DLeuUthZmTc6PRHLRzNVu2tEVmI/ERiSfWBS/oaoBWL2BSCP8g8MXXnzAz8XLa6mzj
+         DWpEqMTXByLuD8WsPQ4jI1gnIxtfSrD853MvQMIj0TVD/V3lqOB7SxWbTkiHZUM3iWjk
+         DlNIncURk067pS+2cKcSsRP5QvIQ268b/qOa0=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 3/3] ide: lba_capacity_is_ok() -> ata_id_is_lba_capacity_ok()
-Date: Sat, 2 Aug 2008 19:13:25 +0200
+Subject: [PATCH 1/2] hpt366: add hpt3xx_disable_fast_irq() helper
+Date: Sat, 2 Aug 2008 19:15:03 +0200
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
+Cc: linux-kernel@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808021913.25884.bzolnier@gmail.com>
+Message-Id: <200808021915.03424.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename lba_capacity_is_ok() to ata_id_is_lba_capacity_ok()
-and move it to <linux/ata.h> (remove needless parens while at it).
+* Factor out disabling of "fast interrupt" prediction from
+  init_hwif_hpt366() to hpt3xx_disable_fast_irq() helper.
 
-Cc: Jeff Garzik <jgarzik@pobox.com>
+* Use hpt3xx_disable_fast_irq() in ->init_chipset instead of
+  ->init_hwif method.
+
+  This is a preparation for adding proper PCI PM support.
+
+While at it:
+
+* Cache chip type in chip_type variable in hpt3xx_disable_fast_irq().
+
+There should be no functional changes caused by this patch.
+
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-disk.c |   52 -------------------------------------------------
- include/linux/ata.h    |   50 +++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 51 insertions(+), 51 deletions(-)
+ drivers/ide/pci/hpt366.c |   58 ++++++++++++++++++++++++++---------------------
+ 1 file changed, 33 insertions(+), 25 deletions(-)
 
-Index: b/drivers/ide/ide-disk.c
+Index: b/drivers/ide/pci/hpt366.c
 ===================================================================
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -80,56 +80,6 @@ static void ide_disk_put(struct ide_disk
- 	mutex_unlock(&idedisk_ref_mutex);
+--- a/drivers/ide/pci/hpt366.c
++++ b/drivers/ide/pci/hpt366.c
+@@ -969,6 +969,36 @@ static int __devinit hpt37x_calibrate_dp
+ 	return 1;
  }
  
--/*
-- * lba_capacity_is_ok() performs a sanity check on the claimed "lba_capacity"
-- * value for this drive (from its reported identification information).
-- *
-- * Returns:	1 if lba_capacity looks sensible
-- *		0 otherwise
-- *
-- * It is called only once for each drive.
-- */
--static int lba_capacity_is_ok(u16 *id)
--{
--	unsigned long lba_sects, chs_sects, head, tail;
--
--	/* No non-LBA info .. so valid! */
--	if (id[ATA_ID_CYLS] == 0)
--		return 1;
--
--	lba_sects = ata_id_u32(id, ATA_ID_LBA_CAPACITY);
--
--	/*
--	 * The ATA spec tells large drives to return
--	 * C/H/S = 16383/16/63 independent of their size.
--	 * Some drives can be jumpered to use 15 heads instead of 16.
--	 * Some drives can be jumpered to use 4092 cyls instead of 16383.
--	 */
--	if ((id[ATA_ID_CYLS] == 16383 ||
--	     (id[ATA_ID_CYLS] == 4092 && id[ATA_ID_CUR_CYLS] == 16383)) &&
--	    id[ATA_ID_SECTORS] == 63 &&
--	    (id[ATA_ID_HEADS] == 15 || id[ATA_ID_HEADS] == 16) &&
--	    (lba_sects >= 16383 * 63 * id[ATA_ID_HEADS]))
--		return 1;
--
--	chs_sects = id[ATA_ID_CYLS] * id[ATA_ID_HEADS] * id[ATA_ID_SECTORS];
--
--	/* perform a rough sanity check on lba_sects:  within 10% is OK */
--	if ((lba_sects - chs_sects) < chs_sects/10)
--		return 1;
--
--	/* some drives have the word order reversed */
--	head = ((lba_sects >> 16) & 0xffff);
--	tail = (lba_sects & 0xffff);
--	lba_sects = (head | (tail << 16));
--	if ((lba_sects - chs_sects) < chs_sects/10) {
--		*(__le32 *)&id[ATA_ID_LBA_CAPACITY] = __cpu_to_le32(lba_sects);
--		return 1;	/* lba_capacity is (now) good */
--	}
--
--	return 0;	/* lba_capacity value may be bad */
--}
--
- static const u8 ide_rw_cmds[] = {
- 	ATA_CMD_READ_MULTI,
- 	ATA_CMD_WRITE_MULTI,
-@@ -452,7 +402,7 @@ static void init_idedisk_capacity(ide_dr
- 		drive->capacity64 = ata_id_u64(id, ATA_ID_LBA_CAPACITY_2);
- 		if (hpa)
- 			idedisk_check_hpa(drive);
--	} else if (ata_id_has_lba(id) && lba_capacity_is_ok(id)) {
-+	} else if (ata_id_has_lba(id) && ata_id_is_lba_capacity_ok(id)) {
- 		/* drive speaks 28-bit LBA */
- 		drive->select.b.lba = 1;
- 		drive->capacity64 = ata_id_u32(id, ATA_ID_LBA_CAPACITY);
-Index: b/include/linux/ata.h
-===================================================================
---- a/include/linux/ata.h
-+++ b/include/linux/ata.h
-@@ -767,6 +767,56 @@ static inline int atapi_id_dmadir(const 
- 	return ata_id_major_version(dev_id) >= 7 && (dev_id[62] & 0x8000);
- }
- 
-+/*
-+ * ata_id_is_lba_capacity_ok() performs a sanity check on
-+ * the claimed LBA capacity value for the device.
-+ *
-+ * Returns 1 if LBA capacity looks sensible, 0 otherwise.
-+ *
-+ * It is called only once for each device.
-+ */
-+static inline int ata_id_is_lba_capacity_ok(u16 *id)
++static void __devinit hpt3xx_disable_fast_irq(struct pci_dev *dev, u8 mcr_addr)
 +{
-+	unsigned long lba_sects, chs_sects, head, tail;
-+
-+	/* No non-LBA info .. so valid! */
-+	if (id[ATA_ID_CYLS] == 0)
-+		return 1;
-+
-+	lba_sects = ata_id_u32(id, ATA_ID_LBA_CAPACITY);
++	struct ide_host *host	= pci_get_drvdata(dev);
++	struct hpt_info *info	= host->host_priv + (&dev->dev == host->dev[1]);
++	u8  chip_type		= info->chip_type;
++	u8  new_mcr, old_mcr	= 0;
 +
 +	/*
-+	 * The ATA spec tells large drives to return
-+	 * C/H/S = 16383/16/63 independent of their size.
-+	 * Some drives can be jumpered to use 15 heads instead of 16.
-+	 * Some drives can be jumpered to use 4092 cyls instead of 16383.
++	 * Disable the "fast interrupt" prediction.  Don't hold off
++	 * on interrupts. (== 0x01 despite what the docs say)
 +	 */
-+	if ((id[ATA_ID_CYLS] == 16383 ||
-+	     (id[ATA_ID_CYLS] == 4092 && id[ATA_ID_CUR_CYLS] == 16383)) &&
-+	    id[ATA_ID_SECTORS] == 63 &&
-+	    (id[ATA_ID_HEADS] == 15 || id[ATA_ID_HEADS] == 16) &&
-+	    (lba_sects >= 16383 * 63 * id[ATA_ID_HEADS]))
-+		return 1;
++	pci_read_config_byte(dev, mcr_addr + 1, &old_mcr);
 +
-+	chs_sects = id[ATA_ID_CYLS] * id[ATA_ID_HEADS] * id[ATA_ID_SECTORS];
++	if (chip_type >= HPT374)
++		new_mcr = old_mcr & ~0x07;
++	else if (chip_type >= HPT370) {
++		new_mcr = old_mcr;
++		new_mcr &= ~0x02;
++#ifdef HPT_DELAY_INTERRUPT
++		new_mcr &= ~0x01;
++#else
++		new_mcr |=  0x01;
++#endif
++	} else					/* HPT366 and HPT368  */
++		new_mcr = old_mcr & ~0x80;
 +
-+	/* perform a rough sanity check on lba_sects: within 10% is OK */
-+	if (lba_sects - chs_sects < chs_sects/10)
-+		return 1;
-+
-+	/* some drives have the word order reversed */
-+	head = (lba_sects >> 16) & 0xffff;
-+	tail = lba_sects & 0xffff;
-+	lba_sects = head | (tail << 16);
-+
-+	if (lba_sects - chs_sects < chs_sects/10) {
-+		*(__le32 *)&id[ATA_ID_LBA_CAPACITY] = __cpu_to_le32(lba_sects);
-+		return 1;	/* LBA capacity is (now) good */
-+	}
-+
-+	return 0;	/* LBA capacity value may be bad */
++	if (new_mcr != old_mcr)
++		pci_write_config_byte(dev, mcr_addr + 1, new_mcr);
 +}
 +
- static inline void ata_id_to_hd_driveid(u16 *id)
+ static unsigned int __devinit init_chipset_hpt366(struct pci_dev *dev)
  {
- #ifdef __BIG_ENDIAN
+ 	unsigned long io_base	= pci_resource_start(dev, 4);
+@@ -1207,9 +1237,11 @@ static unsigned int __devinit init_chips
+ 	 * NOTE: This register is only writeable via I/O space.
+ 	 */
+ 	if (chip_type == HPT371N && clock == ATA_CLOCK_66MHZ)
+-
+ 		outb(inb(io_base + 0x9c) | 0x04, io_base + 0x9c);
+ 
++	hpt3xx_disable_fast_irq(dev, 0x50);
++	hpt3xx_disable_fast_irq(dev, 0x54);
++
+ 	return dev->irq;
+ }
+ 
+@@ -1265,7 +1297,6 @@ static void __devinit init_hwif_hpt366(i
+ 	struct hpt_info *info	= host->host_priv + (hwif->dev == host->dev[1]);
+ 	int serialize		= HPT_SERIALIZE_IO;
+ 	u8  chip_type		= info->chip_type;
+-	u8  new_mcr, old_mcr	= 0;
+ 
+ 	/* Cache the channel's MISC. control registers' offset */
+ 	hwif->select_data	= hwif->channel ? 0x54 : 0x50;
+@@ -1288,29 +1319,6 @@ static void __devinit init_hwif_hpt366(i
+ 	/* Serialize access to this device if needed */
+ 	if (serialize && hwif->mate)
+ 		hwif->serialized = hwif->mate->serialized = 1;
+-
+-	/*
+-	 * Disable the "fast interrupt" prediction.  Don't hold off
+-	 * on interrupts. (== 0x01 despite what the docs say)
+-	 */
+-	pci_read_config_byte(dev, hwif->select_data + 1, &old_mcr);
+-
+-	if (info->chip_type >= HPT374)
+-		new_mcr = old_mcr & ~0x07;
+-	else if (info->chip_type >= HPT370) {
+-		new_mcr = old_mcr;
+-		new_mcr &= ~0x02;
+-
+-#ifdef HPT_DELAY_INTERRUPT
+-		new_mcr &= ~0x01;
+-#else
+-		new_mcr |=  0x01;
+-#endif
+-	} else					/* HPT366 and HPT368  */
+-		new_mcr = old_mcr & ~0x80;
+-
+-	if (new_mcr != old_mcr)
+-		pci_write_config_byte(dev, hwif->select_data + 1, new_mcr);
+ }
+ 
+ static int __devinit init_dma_hpt366(ide_hwif_t *hwif,
