@@ -1,90 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752951AbYHBX3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbYHBXdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752951AbYHBX3r (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 19:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYHBX3j
+	id S1753202AbYHBXdP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 19:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYHBXdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 19:29:39 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:15238 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751293AbYHBX3i (ORCPT
+	Sat, 2 Aug 2008 19:33:01 -0400
+Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:42655 "EHLO
+	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751287AbYHBXdA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 19:29:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=v5luxYta3j+g5U5V/9TULwyuiOehmNjeINZTB+aEpK2VhKmD5CfZO80Yp9VarlRpw/
-         cAdKv/JynwRbu47zbuhjOyfexbx94rkwu6CpSPEZjihHWb9CELyo4EJ67h3nFPsC+B92
-         vT00lLAoJc0tnLhOD7EWRO6W5uO/5as96NB+U=
-Message-ID: <dd18b0c30808021629y374d0e96t1f8f8d063b1872d1@mail.gmail.com>
-Date: Sat, 2 Aug 2008 16:29:37 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "John Kacur" <jkacur@gmail.com>
-Subject: Re: Can't boot 2.6.26-rt1
-Cc: "Steven Rostedt" <rostedt@goodmis.org>, linux-rt-users@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <520f0cf10808021524j37497b0bpaf8188f77154f6d3@mail.gmail.com>
+	Sat, 2 Aug 2008 19:33:00 -0400
+Date: Sun, 3 Aug 2008 00:47:25 +0200
+From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: sdhci: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter -
+	disabling IRQ
+Message-ID: <20080802224725.GA6574@hardeman.nu>
+Mail-Followup-To: Pierre Ossman <drzeus-list@drzeus.cx>,
+	linux-kernel@vger.kernel.org
+References: <20080624181656.GB14243@hardeman.nu> <20080710083457.7887d363@mjolnir.drzeus.cx> <20080711164706.GA8943@hardeman.nu> <20080719015531.6c8a1981@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 Content-Disposition: inline
-References: <520f0cf10808021416n286855f9s126d416230aee249@mail.gmail.com>
-	 <alpine.DEB.1.10.0808021731010.15392@gandalf.stny.rr.com>
-	 <520f0cf10808021524j37497b0bpaf8188f77154f6d3@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080719015531.6c8a1981@mjolnir.drzeus.cx>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 2, 2008 at 3:24 PM, John Kacur <jkacur@gmail.com> wrote:
-> On Sat, Aug 2, 2008 at 11:31 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
->>
->> On Sat, 2 Aug 2008, John Kacur wrote:
->>
->>> VFS: Cannot open root device
->>
->> Do you use an initrd boot disk? If so make sure the initrd is correct.
->> Sometimes it is best to first get a 2.6.26 kernel booting without initrd
->> and then use that same config on the -rt kernel.
->>
->> -- Steve
+On Sat, Jul 19, 2008 at 01:55:31AM +0200, Pierre Ossman wrote:
+>On Fri, 11 Jul 2008 18:47:06 +0200 David Härdeman <david@hardeman.nu> wrote:
+>> On Thu, Jul 10, 2008 at 08:34:57AM +0200, Pierre Ossman wrote:
+>> >And can you give me a complete
+>> >dmesg dump. The sdhci hardware might not be the culprit, but just a
+>> >trigger in that it enables that interrupt line.
+>> 
+>> Attached below....and /proc/interrupts says:
+>> 
 >
-> Thanks Justin and Steve for the hints - it turned out to be simple,
-> somehow the make install scripts were mangling the location of the
-> initrd, a quick edit to grub and everything is working again.
-> John
->
->>
->>> "disk/by-id/scsi-SATA_WDC_WD1600BEVS-WD-WXEZ07100576-part 7" or
->>> unknown block(0,0)
->>> Please append a correct "root = " boot option; here are the available
->>> partitions.
->>> Pid:1,comm:swapper Not tainted
->>> 2.6.26-rt1-default#1linux-rt-users@vger.kernel.org
->>> [< ffff ffff 8046 c149 >] rt_mutex_lock+0x22/0x50
->>> [< ffff ffff 8046 cae6 >] _mutex_unlock+0xe/0x10
->>> [< ffff ffff 8020 cb00 >] exit_intr+0x10/0x1e
->>> [< ffff ffff 8028 633d >] trace_hardirqs_on_caller+0x1e/0x133
->>> [< ffff ffff 8020 d608 >] child_rip+0xa/0x12
->>> [< ffff ffff 8020 cb69 >] restore_args+0x0/0x30
->>> [< ffff ffff 8020 d5fe >] child_rip+0x0/0x12
->>>
->>> preempt count 00000001
->>> 1-level deep critical section nesting
->>> [< ffff ffff 8047 43e2 >] .... panic +0x43/0x167
->>> [< ffff ffff 8073 6338 >] (<= mount_block_root+0x258/0x26f
->>>
->>
->>
->
+>I see that you have an iwl4965. I got this precise problem when I
+>toggled the rfkill switch on my laptop. It is fixed in 2.6.26 though.
+>Could you try upgrading the kernel and see if it's the same bug?
 
-Cool;
-yeah last week this happened as well
-to me, something so simple. causing me
-to run around freaking out.
-regards;
+Unfortunately the problem is still present with 2.6.26 (Debian package 
+linux-image-2.6.26-1-amd64):
+
+[  640.407901] irq 19: nobody cared (try booting with the "irqpoll" option)
+[  640.407906] Pid: 0, comm: swapper Not tainted 2.6.26-1-amd64 #1
+[  640.407908] 
+[  640.407909] Call Trace:
+[  640.407910]  <IRQ>  [<ffffffff8026c46b>] __report_bad_irq+0x30/0x72
+[  640.407937]  [<ffffffff8026c6aa>] note_interrupt+0x1fd/0x23b
+[  640.407945]  [<ffffffff8026cf33>] handle_fasteoi_irq+0xa5/0xc8
+[  640.407951]  [<ffffffff8020f590>] do_IRQ+0x6d/0xd9
+[  640.407956]  [<ffffffff8020c43d>] ret_from_intr+0x0/0x19
+[  640.407958]  <EOI>  [<ffffffff8021e480>] hpet_legacy_next_event+0x0/0x34
+[  640.407974]  [<ffffffffa002f46e>] :processor:acpi_idle_enter_simple+0x18d/0x1ff
+[  640.407983]  [<ffffffff803a704c>] cpuidle_idle_call+0x7a/0xb2
+[  640.407986]  [<ffffffff803a6fd2>] cpuidle_idle_call+0x0/0xb2
+[  640.407989]  [<ffffffff8020ac79>] cpu_idle+0x89/0xb3
+[  640.408003] 
+[  640.408004] handlers:
+[  640.408005] [<ffffffffa012e9ab>] (sdhci_irq+0x0/0x5de [sdhci])
+[  640.408010] Disabling IRQ #19
 
 -- 
-Justin P. Mattock
+David Härdeman
