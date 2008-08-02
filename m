@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbYHBPOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbYHBPOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757402AbYHBPOX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 11:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754971AbYHBPOB
+	id S1757607AbYHBPOk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 11:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbYHBPO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 11:14:01 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:37834 "EHLO mgw2.diku.dk"
+	Sat, 2 Aug 2008 11:14:26 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:37848 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753729AbYHBPOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 11:14:00 -0400
-Date: Sat, 2 Aug 2008 17:13:57 +0200 (CEST)
+	id S1756634AbYHBPOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 11:14:24 -0400
+Date: Sat, 2 Aug 2008 17:14:21 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/10] drivers/misc: Use DIV_ROUND_UP
-Message-ID: <Pine.LNX.4.64.0808021713350.20095@ask.diku.dk>
+To: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 6/10] drivers/mtd: Use DIV_ROUND_UP
+Message-ID: <Pine.LNX.4.64.0808021713580.20095@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -64,18 +65,45 @@ expression n,d;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/misc/sgi-gru/grukservices.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/mtd/chips/cfi_cmdset_0001.c |    2 +-
+ drivers/mtd/chips/gen_probe.c       |    2 +-
+ drivers/mtd/ssfdc.c                 |    3 +--
+ 3 files changed, 3 insertions(+), 4 deletions(-)
 
-diff -u -p a/drivers/misc/sgi-gru/grukservices.c b/drivers/misc/sgi-gru/grukservices.c
---- a/drivers/misc/sgi-gru/grukservices.c
-+++ b/drivers/misc/sgi-gru/grukservices.c
-@@ -466,7 +466,7 @@ int gru_send_message_gpa(unsigned long m
- 	STAT(mesq_send);
- 	BUG_ON(bytes < sizeof(int) || bytes > 2 * GRU_CACHE_LINE_BYTES);
+diff -u -p a/drivers/mtd/chips/cfi_cmdset_0001.c b/drivers/mtd/chips/cfi_cmdset_0001.c
+--- a/drivers/mtd/chips/cfi_cmdset_0001.c
++++ b/drivers/mtd/chips/cfi_cmdset_0001.c
+@@ -1640,7 +1640,7 @@ static int __xipram do_write_buffer(stru
  
--	clines = (bytes + GRU_CACHE_LINE_BYTES - 1) / GRU_CACHE_LINE_BYTES;
-+	clines = DIV_ROUND_UP(bytes, GRU_CACHE_LINE_BYTES);
- 	if (gru_get_cpu_resources(bytes, &cb, &dsr))
- 		return MQE_BUG_NO_RESOURCES;
- 	memcpy(dsr, mesg, bytes);
+ 	/* Figure out the number of words to write */
+ 	word_gap = (-adr & (map_bankwidth(map)-1));
+-	words = (len - word_gap + map_bankwidth(map) - 1) / map_bankwidth(map);
++	words = DIV_ROUND_UP(len - word_gap, map_bankwidth(map));
+ 	if (!word_gap) {
+ 		words--;
+ 	} else {
+diff -u -p a/drivers/mtd/chips/gen_probe.c b/drivers/mtd/chips/gen_probe.c
+--- a/drivers/mtd/chips/gen_probe.c
++++ b/drivers/mtd/chips/gen_probe.c
+@@ -111,7 +111,7 @@ static struct cfi_private *genprobe_iden
+ 		max_chips = 1;
+ 	}
+ 
+-	mapsize = sizeof(long) * ( (max_chips + BITS_PER_LONG-1) / BITS_PER_LONG );
++	mapsize = sizeof(long) * DIV_ROUND_UP(max_chips, BITS_PER_LONG);
+ 	chip_map = kzalloc(mapsize, GFP_KERNEL);
+ 	if (!chip_map) {
+ 		printk(KERN_WARNING "%s: kmalloc failed for CFI chip map\n", map->name);
+diff -u -p a/drivers/mtd/ssfdc.c b/drivers/mtd/ssfdc.c
+--- a/drivers/mtd/ssfdc.c
++++ b/drivers/mtd/ssfdc.c
+@@ -321,8 +321,7 @@ static void ssfdcr_add_mtd(struct mtd_bl
+ 	DEBUG(MTD_DEBUG_LEVEL1,
+ 		"SSFDC_RO: cis_block=%d,erase_size=%d,map_len=%d,n_zones=%d\n",
+ 		ssfdc->cis_block, ssfdc->erase_size, ssfdc->map_len,
+-		(ssfdc->map_len + MAX_PHYS_BLK_PER_ZONE - 1) /
+-		MAX_PHYS_BLK_PER_ZONE);
++		DIV_ROUND_UP(ssfdc->map_len, MAX_PHYS_BLK_PER_ZONE));
+ 
+ 	/* Set geometry */
+ 	ssfdc->heads = 16;
