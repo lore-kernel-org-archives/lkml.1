@@ -1,51 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbYHBC6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbYHBC64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756362AbYHBC6R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 22:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYHBC6F
+	id S1753855AbYHBC64 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 22:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYHBC6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 22:58:05 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:21324 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752280AbYHBC6D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 22:58:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=vedQVqPTpVAITsuVsPndCnE8UToFna7NuRJrZJq7DDjsauHz5Ouh2IDxeE2Qln22P4
-         a8IsClKbyXJzgslPlxzufb7saE//6sidpsZpb+nDZysjRXdiYWqk+5QlS1zzBO1KNSB+
-         yjbPrrBr15CAJ/UTjgfFN7S13h/w7aEEktnPw=
-Message-ID: <86802c440808011958v73e6b9a9y19a034b63b9d2986@mail.gmail.com>
-Date: Fri, 1 Aug 2008 19:58:02 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Mike Travis" <travis@sgi.com>
-Subject: Re: [PATCH 00/16] dyn_array and nr_irqs support v2
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       hpa <hpa@zytor.com>, "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m1iqukwjjg.fsf@frodo.ebiederm.org>
+	Fri, 1 Aug 2008 22:58:49 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51282 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752335AbYHBC6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Aug 2008 22:58:48 -0400
+Message-ID: <4893CCE5.7020907@cn.fujitsu.com>
+Date: Sat, 02 Aug 2008 10:56:37 +0800
+From: zhangxiliang <zhangxiliang@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+CC: Eric Paris <eparis@redhat.com>, Steve Grubb <sgrubb@redhat.com>,
+       viro@zeniv.linux.org.uk, Linux Audit <linux-audit@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yu Zhiguo <yuzg@cn.fujitsu.com>
+Subject: Re: [PATCH] Fix the kernel panic of audit_filter_task when key field
+ is set
+References: <4892F063.1080109@cn.fujitsu.com> <4893C42A.60803@cn.fujitsu.com> <4893CBA9.9020008@cn.fujitsu.com>
+In-Reply-To: <4893CBA9.9020008@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1217583464-28494-1-git-send-email-yhlu.kernel@gmail.com>
-	 <m1iqukwjjg.fsf@frodo.ebiederm.org>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 1, 2008 at 1:46 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> My core concerns are:
-> - The generic code has no business with dealing with NR_IRQS sized arrays.
->  Since we don't have a generic problem I don't see why we should have a generic dyn_array solution.
+Sorry, I miss a blank between if and "(". 
+And I add "unlikely" to check "ctx" in audit_match_perm() and audit_match_filetype().
+This is a new patch for it.
 
-there is some NR_IRQS arrays are left over and not put into PER_CPU?
+Signed-off-by: Zhang Xiliang <zhangxiliang@cn.fujitsu.com>
+---
+ kernel/auditsc.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-Wonder if could use dyn_array with some of them.
+diff --git a/kernel/auditsc.c b/kernel/auditsc.c
+index 4699950..57a001a 100644
+--- a/kernel/auditsc.c
++++ b/kernel/auditsc.c
+@@ -243,6 +243,9 @@ static inline int open_arg(int flags, int mask)
+ 
+ static int audit_match_perm(struct audit_context *ctx, int mask)
+ {
++	if (unlikely(!ctx))
++		return 0;
++
+ 	unsigned n = ctx->major;
+ 	switch (audit_classify_syscall(ctx->arch, n)) {
+ 	case 0:	/* native */
+@@ -284,6 +287,10 @@ static int audit_match_filetype(struct audit_context *ctx, int which)
+ {
+ 	unsigned index = which & ~S_IFMT;
+ 	mode_t mode = which & S_IFMT;
++
++	if (unlikely(!ctx))
++		return 0;
++
+ 	if (index >= ctx->name_count)
+ 		return 0;
+ 	if (ctx->names[index].ino == -1)
 
-YH
+Yu Zhiguo said the following on 2008-08-02 10:51:
+> 
+> zhangxiliang wrote:
+> 
+>>  static int audit_match_perm(struct audit_context *ctx, int mask)
+>>  {
+>> +    if(!ctx)
+>> +        return 0;
+>>      unsigned n = ctx->major;
+> 
+> Please check this patch with scripts/checkpatch.pl and then resend it.
+> 
+> 
+>>      switch (audit_classify_syscall(ctx->arch, n)) {
+>>      case 0:    /* native */
+>> @@ -284,6 +286,8 @@ static int audit_match_filetype(struct
+>> audit_context *ctx, int which)
+>>  {
+>>      unsigned index = which & ~S_IFMT;
+>>      mode_t mode = which & S_IFMT;
+>> +    if(!ctx)
+>> +        return 0;
+>>      if (index >= ctx->name_count)
+>>          return 0;
+>>      if (ctx->names[index].ino == -1)
+>>
+>>
+> 
+> 
+> 
+> 
+
