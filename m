@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757840AbYHBSD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbYHBSQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757840AbYHBSD7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 14:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYHBSDv
+	id S1758606AbYHBSQg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 14:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758086AbYHBSQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 14:03:51 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:46219 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753202AbYHBSDu (ORCPT
+	Sat, 2 Aug 2008 14:16:26 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:49930 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754286AbYHBSQZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 14:03:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=w/NL2V6STF7VBQsj/gh0qyN/HWjUQAII4zKTIEXdDj5ViMaryjPeV4cTPE53HP3QK7
-         5fo98q/6/S1q1Yf4U1O/oMDSWtDBENOGbn/ECg1NIvkfASGjBOe5P2efn8yYNxtXaqaf
-         ILgpYnm6Fg48pEW172LIipOZgLi4s44nMvL1Y=
-Message-ID: <590657100808021103n1a825705m9af120b103ca7573@mail.gmail.com>
-Date: Sat, 2 Aug 2008 11:03:49 -0700
-From: "Harvey Harrison" <harvey.harrison@gmail.com>
-To: "Grant Grundler" <grundler@parisc-linux.org>
-Subject: Re: [PATCH 14/20] parisc: use the new byteorder headers
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Kyle McMartin" <kyle@mcmartin.ca>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080801231807.GA26550@colo.lackof.org>
+	Sat, 2 Aug 2008 14:16:25 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4894A46D.10607@s5r6.in-berlin.de>
+Date: Sat, 02 Aug 2008 20:16:13 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Julia Lawall <julia@diku.dk>
+CC: ben.collins@ubuntu.com, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/10] drivers/ieee1394: Use DIV_ROUND_UP
+References: <Pine.LNX.4.64.0808021712460.20095@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0808021712460.20095@ask.diku.dk>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1216339783.6029.125.camel@brick>
-	 <20080801160647.GA22049@colo.lackof.org>
-	 <1217625817.5846.5.camel@brick>
-	 <20080801231807.GA26550@colo.lackof.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My reply yesterday didn't seem to make it out.
+Julia Lawall wrote:
+> -#define bytes_to_quads(_b) (((_b) + sizeof(u32) - 1) / sizeof(u32))
+> +#define bytes_to_quads(_b) DIV_ROUND_UP(_b, sizeof(u32))
+...
+> -	return (dg_size + adj_max_payload - 1) / adj_max_payload;
+> +	return DIV_ROUND_UP(dg_size, adj_max_payload);
 
-On Fri, Aug 1, 2008 at 4:18 PM, Grant Grundler
-<grundler@parisc-linux.org> wrote:
-> On Fri, Aug 01, 2008 at 02:23:37PM -0700, Harvey Harrison wrote:
->> Other than the endianness, any other concerns?
->
-> Have you had a chance to test this?
-
-le-only personally (X86-32).
-
-> Or can you point me at another big endian arch that has similar
-> use of header files that has been successfully tested?
->
-
-AVR32 got a maintainer ack, I'm assuming that was tested.  It's not
-functionally any different than the existing code really, other
-than allowing compile-time folding in the cpu_to_{endian} helpers.
-
-Mips was also acked, but that can be little or big endian.
-
-> I can arrange for access to parisc HW if you have time/interest
-> in testing this yourself.
->
-
-Sure, drop me a note.
-
-I'll have intermittant connection for the next week, so there might be
-a few days before I can reply.
-
-Harvey
+I cut the changelog down to the necessary and committed it to 
+linux1394-2.6.git.  Thanks,
+-- 
+Stefan Richter
+-=====-==--- =--- ---=-
+http://arcgraph.de/sr/
