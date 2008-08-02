@@ -1,204 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758681AbYHBRLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758042AbYHBRMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758681AbYHBRLA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 13:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757791AbYHBRJp
+	id S1758042AbYHBRMh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 13:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbYHBRM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 13:09:45 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:7593 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756602AbYHBRJf (ORCPT
+	Sat, 2 Aug 2008 13:12:29 -0400
+Received: from lopsy-lu.misterjones.org ([62.4.18.26]:44971 "EHLO
+	young-lust.wild-wind.fr.eu.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750834AbYHBRM1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 13:09:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=Z10sBHps3W6K2WvBsHlp6o699OWBIWevosQ8yzBnPjubUZb7b/qKdYLT4oRazfe3GT
-         En4+cKL9PAg+bxXVruJveXTfLcyfG/1iRyXqzZhdcCBjuSl/W4tvqZbLIshQ+6NTwzTa
-         wB8zdbSyAzzE8hvDyIvFpOakxEphcH8wgRQh8=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: [PATCH] ide-generic: skip automatic probing of legacy iobases (was: Re: [PATCH] ide-floppy fix)
-Date: Sat, 2 Aug 2008 19:02:12 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <20080715053356.GA18628@gollum.tnic> <200807232051.12226.bzolnier@gmail.com> <20080801054831.GA14636@gollum.tnic>
-In-Reply-To: <20080801054831.GA14636@gollum.tnic>
+	Sat, 2 Aug 2008 13:12:27 -0400
+From: Marc Zyngier <maz@misterjones.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [BUG][PATCH][2.6.27-rc1] Fix IHEX firmware generation/loading
+Organization: Metropolis -- Nowhere
+X-Attribution: maz
+Reply-to: maz@misterjones.org
+Date: Sat, 02 Aug 2008 19:12:23 +0200
+Message-ID: <wrpy73fl4so.fsf@hina.wild-wind.fr.eu.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200808021902.12191.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 192.168.70.139
+X-SA-Exim-Rcpt-To: dwmw2@infradead.org, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: maz@misterjones.org
+X-SA-Exim-Scanned: No (on young-lust.wild-wind.fr.eu.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David,
 
-Hi,
+I upgraded my console server to 2.6.27-rc1, and found that io_edgeport
+was Oops-ing badly. I captured this Oops, with io_edgeport.debug
+enabled:
 
-On Friday 01 August 2008, Borislav Petkov wrote:
-> 
-> [ removed stable@kernel.org from the CC-list ]
-> 
-> On Wed, Jul 23, 2008 at 08:51:11PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > On Wednesday 23 July 2008, Borislav Petkov wrote:
-> > 
-> > [...]
-> > 
-> > > > Now it should be finally fixed.
-> > > 
-> > > True story. Works here too.
-> > 
-> > Thanks for verifying it.
-> > 
-> > > Hm, let's see whether there's time during the weekend. I already have something
-> > > stolen from pata_legacy but I'll do some more testing first. By the way, what
-> > > are the chances of exporting those pieces of code from drivers/ata/pata_legacy.c
-> > > and adding the function def into some header instead of duplicating the code into
-> > > ide_generic.c?
-> > 
-> > Good idea (<linux/ata.h> sounds like a perfect spot).
-> 
-> Hi Bart,
-> 
-> i finally found some time to work on the iobase-exclusion. Actually, i dropped
-> the original idea of reusing pata_legacy code without duplicating it since this
-> got the whole SATA pulled in in Kconfig, which, imo, outweighs the savings from
-> not duplicating one function. I ended up refitting the pata_legacy iobase checks
-> into ide-generic.
+[   27.984039] firmware: requesting edgeport/down.fw
+[   29.764896] drivers/usb/serial/io_edgeport.c: downloading firmware version (930) 1.16.4
+[   29.764943] drivers/usb/serial/io_edgeport.c: sram_write - 4, 0, 255
+[   29.792629] drivers/usb/serial/io_edgeport.c: sram_write - be04, 380, 14393
+[   31.449750] drivers/usb/serial/io_edgeport.c: sram_write - 1273, 16a9, 8437
+[   31.867944] BUG: unable to handle kernel paging request at c88d9000
+[   31.869058] IP: [<c88e60d8>] :io_edgeport:edge_startup+0xc63/0x1597
+[   31.869405] *pde = 0690b067 *pte = 00000000 
+[   31.869405] Oops: 0000 [#1] 
+[   31.869405] Modules linked in: snd_cs4236 snd_cs4236_lib snd_wavefront snd_opl3_lib snd_cs4231_lib snd_pcm snd_hwdep snd_mpu401_uart snd_timer snd_rawmidi snd_page_alloc snd_seq_device snd soundcore psmouse i2c_piix4 usbhid(+) hid serio_raw ff_memless io_edgeport(+) i2c_core usbserial rocket pcspkr evdev ext2 mbcache ide_disk ata_piix ata_generic libata scsi_mod dock uhci_hcd piix ide_pci_generic ide_core usbcore e100 mii
+[   31.869405] 
+[   31.869405] Pid: 914, comm: modprobe Not tainted (2.6.27-rc1 #1)
+[   31.869405] EIP: 0060:[<c88e60d8>] EFLAGS: 00010212 CPU: 0
+[   31.869405] EIP is at edge_startup+0xc63/0x1597 [io_edgeport]
+[   31.869405] EAX: 00000040 EBX: 75220a75 ECX: 00000006 EDX: 00000040
+[   31.869405] ESI: c88d8ffe EDI: c6cd6948 EBP: c69d5800 ESP: c7ac5c58
+[   31.869405]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+[   31.869405] Process modprobe (pid: 914, ti=c7ac4000 task=c6919400 task.ti=c7ac4000)
+[   31.869405] Stack: 012560c0 c6c48b40 08082e80 c68fa800 c03228fc c69d5c44 c7ad3de0 127316a9 
+[   31.869405]        c88e8616 00001273 00001273 c68fa800 c88d8fd6 2d290046 c6cd6920 00000040 
+[   31.869405]        c7ac5ccd c038ff93 00000052 0000000f 00000296 c7ac5ccd 00000006 00000296 
+[   31.869405] Call Trace:
+[   31.869405]  [<c8876040>] usb_serial_probe+0x935/0xc4a [usbserial]
+[   31.869405]  [<c01bcddb>] ida_get_new_above+0xd8/0x1b0
+[   31.869405]  [<c0177e08>] find_inode+0x1b/0x56
+[   31.869405]  [<c019f5dc>] sysfs_ilookup_test+0x0/0xd
+[   31.869405]  [<c0177cb8>] iput+0x21/0x49
+[   31.869405]  [<c019fb1b>] sysfs_addrm_finish+0x46/0x16b
+[   31.869405]  [<c019f872>] __sysfs_add_one+0x11/0x80
+[   31.869405]  [<c8842f6e>] usb_match_one_id+0x1c/0x71 [usbcore]
+[   31.869405]  [<c88433fc>] usb_autopm_do_device+0xaa/0xb1 [usbcore]
+[   31.869405]  [<c88438bf>] usb_probe_interface+0xdf/0x112 [usbcore]
+[   31.869405]  [<c020a26d>] driver_probe_device+0x9c/0x12d
+[   31.869405]  [<c020a335>] __driver_attach+0x37/0x55
+[   31.869405]  [<c0209d05>] bus_for_each_dev+0x31/0x57
+[   31.869405]  [<c020a121>] driver_attach+0x11/0x13
+[   31.869405]  [<c020a2fe>] __driver_attach+0x0/0x55
+[   31.869405]  [<c020978e>] bus_add_driver+0x91/0x1a7
+[   31.869405]  [<c020a499>] driver_register+0x7d/0xd6
+[   31.869405]  [<c8843a6e>] usb_register_driver+0x56/0xad [usbcore]
+[   31.869405]  [<c8829059>] edgeport_init+0x59/0xa2 [io_edgeport]
+[   31.869405]  [<c0137be3>] sys_init_module+0x13f9/0x159e
+[   31.869405]  [<c0103842>] syscall_call+0x7/0xb
+[   31.869405]  =======================
+[   31.869405] Code: 9c 24 86 00 00 00 76 0a 66 c7 84 24 86 00 00 00 40 00 0f b7 94 24 86 00 00 00 8b 7c 24 38 8b 74 24 30 89 d1 89 54 24 3c c1 e9 02 <f3> a5 89 d1 83 e1 03 74 02 f3 a4 8b 8c 24 80 00 00 00 8b 01 8b 
+[   31.869405] EIP: [<c88e60d8>] edge_startup+0xc63/0x1597 [io_edgeport] SS:ESP 0068:c7ac5c58
+[   31.869405] ---[ end trace ed926a14b0da94f9 ]---
 
-Why not try <linux/ata.h> + inline trick instead?
+Looks like the machine crashes while sending the firmware to the
+device. From the driver POV, it looks awfully wrong!
 
-[ <linux/ata.h> is shared by both stacks so by moving the function there
-  + making it inline it can also be shared without the need for dependency
-  on libata. ]
+Looking at the firmware file (firmware/edgeport/down.fw, produced from
+firmware/edgeport/down.H16), something is definitly looking funny:
 
-> As a result, i have now a new bool-Kconfig option BLK_DEV_GENERIC_ONLY which
-> gets reverse-selected only when no pci ide controller which is using the generic
-> ide_host_register() from within ide_pci_init_one() is selected in Kconfig. This
-> is tested both with and without a pci ide driver selected in addition to
-> ide-generic.
+$ od -A x -x firmware/edgeport/down.fw | head
+000000 0000 0000 0000 1001 0400 0000 ff00 0000
+000010 0000 0002 0280 b044 ff00 0b00 0000 4402
+000020 0072 0000 ff00 1300 0000 0002 0013 0000
+000030 ff00 1b00 0000 0002 001b 0000 ff00 2300
+000040 0000 0002 0023 0000 ff00 2b00 0000 0002
+000050 002b 0000 ff00 3300 0000 0002 0033 0000
+[...]
 
-How's about just leaving the final decision up to the user with changing
-probe_mask in ide_generic from 0x3 to 0x0 and automatically probing for
-ports 0-1 iff there is no IDE PCI controller present (otherwise check
-probe_mask).
+You may notice that the ->len field is always set to zero. This is
+bad. I tracked it down to firmware/ihex2fw.c::output_records():
 
-This is should remove the need for Kconfig magic and is a sane default
-since a lot of people get caught using ide_generic by mistake and not by
-intent (IOW they forgot to enable the right IDE PCI host driver).
+       p->len = htonl(p->len);
 
-[ The small minority which may use it by intent (I don't see any practical
-  reasons for doing it though) would still be able to override the default
-  with ide_generic.probe_mask=0x3 kernel parameter. ]
+Given that ->len is an uint16_t, turning this htonl() to htons() helps
+a lot:
 
-> ---
-> From: Borislav Petkov <petkovbb@gmail.com>
-> Date: Fri, 1 Aug 2008 07:33:13 +0200
-> Subject: [PATCH] ide-generic: skip automatic probing of legacy iobases
-> 
-> A number of pci ide controllers use legacy IO bases for their primary
-> and secondary ports. Skip probing those when both a specific host
-> driver _and_ ide-generic are enabled. The checking code originates from
-> drivers/ata/pata_legacy.c and is only reorganized into ide-generic.
-> 
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> ---
->  drivers/ide/Kconfig       |    4 +++
->  drivers/ide/ide-generic.c |   49 +++++++++++++++++++++++++++++++++++++++++++-
->  2 files changed, 51 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/ide/Kconfig b/drivers/ide/Kconfig
-> index 611319b..f103f5f 100644
-> --- a/drivers/ide/Kconfig
-> +++ b/drivers/ide/Kconfig
-> @@ -386,10 +386,14 @@ config BLK_DEV_OFFBOARD
->  config BLK_DEV_GENERIC
->  	tristate "Generic PCI IDE Chipset Support"
->  	select BLK_DEV_IDEPCI
-> +	select BLK_DEV_GENERIC_ONLY if !(BLK_DEV_AEC62XX || BLK_DEV_ALI15X3 || BLK_DEV_AMD74XX || BLK_DEV_ATIIXP || BLK_DEV_CMD64X || BLK_DEV_CS5530 || BLK_DEV_CS5535 || BLK_DEV_HPT34X || BLK_DEV_HPT366 || BLK_DEV_IT821X || BLK_DEV_IT8213 || BLK_DEV_JMICRON || BLK_DEV_NS87415 || BLK_DEV_OPTI621 || BLK_DEV_PDC202XX_OLD || BLK_DEV_PDC202XX_NEW || BLK_DEV_PIIX || BLK_DEV_RZ1000 || BLK_DEV_SC1200 || BLK_DEV_SVWKS || BLK_DEV_SIIMAGE || BLK_DEV_SIS5513 || BLK_DEV_SL82C105 || BLK_DEV_SLC90E66 || BLK_DEV_TC86C001 || BLK_DEV_TRIFLEX || BLK_DEV_TRM290 || BLK_DEV_VIA82CXXX)
->          help
->            This option provides generic support for various PCI IDE Chipsets
->            which otherwise might not be supported.
->  
-> +config BLK_DEV_GENERIC_ONLY
-> +	bool
-> +
->  config BLK_DEV_OPTI621
->  	tristate "OPTi 82C621 chipset enhanced support (EXPERIMENTAL)"
->  	depends on EXPERIMENTAL
-> diff --git a/drivers/ide/ide-generic.c b/drivers/ide/ide-generic.c
-> index 8fe8b5b..3ce78f9 100644
-> --- a/drivers/ide/ide-generic.c
-> +++ b/drivers/ide/ide-generic.c
-> @@ -100,12 +100,55 @@ static const u16 legacy_bases[] = { 0x1f0, 0x170, 0x1e8, 0x168, 0x1e0, 0x160 };
->  static const int legacy_irqs[]  = { 14, 15, 11, 10, 8, 12 };
->  #endif
->  
-> +static void ide_generic_check_pci_uses_legacy_iobases(int *primary,
-> +						      int *secondary)
-> +{
-> +
-> +#if !defined(CONFIG_BLK_DEV_GENERIC_ONLY)
-> +	struct pci_dev *p = NULL;
-> +	u16 val;
-> +
-> +	for_each_pci_dev(p) {
-> +		int r;
-> +
-> +		for (r = 0; r < 6; r++) {
-> +			if (pci_resource_start(p, r) == 0x1f0)
-> +				*primary = 1;
-> +			if (pci_resource_start(p, r) == 0x170)
-> +				*secondary = 1;
-> +		}
-> +
-> +		/* Cyrix CS5510 pre SFF MWDMA ATA on the bridge */
-> +		if (p->vendor == 0x1078 && p->device == 0x0000)
-> +			*primary = *secondary = 1;
-> +
-> +		/* Cyrix CS5520 pre SFF MWDMA ATA on the bridge */
-> +		if (p->vendor == 0x1078 && p->device == 0x0002)
-> +			*primary = *secondary = 1;
-> +
-> +		/* Intel MPIIX - PIO ATA on non PCI side of bridge */
-> +		if (p->vendor == 0x8086 && p->device == 0x1234) {
-> +
-> +			pci_read_config_word(p, 0x6C, &val);
-> +			if (val & 0x8000) {
-> +				/* ATA port enabled */
-> +				if (val & 0x4000)
-> +					*secondary = 1;
-> +				else
-> +					*primary = 1;
-> +			}
-> +		}
-> +	}
-> +#endif
-> +
-> +}
-> +
->  static int __init ide_generic_init(void)
->  {
->  	hw_regs_t hw[MAX_HWIFS], *hws[MAX_HWIFS];
->  	struct ide_host *host;
->  	unsigned long io_addr;
-> -	int i, rc;
-> +	int i, rc, primary = 0, secondary = 0;
->  
->  #ifdef CONFIG_MIPS
->  	if (!ide_probe_legacy())
-> @@ -116,7 +159,9 @@ static int __init ide_generic_init(void)
->  
->  	memset(hws, 0, sizeof(hw_regs_t *) * MAX_HWIFS);
->  
-> -	for (i = 0; i < ARRAY_SIZE(legacy_bases); i++) {
-> +	ide_generic_check_pci_uses_legacy_iobases(&primary, &secondary);
-> +
-> +	for (i = primary + secondary; i < ARRAY_SIZE(legacy_bases); i++) {
->  		io_addr = legacy_bases[i];
->  
->  		hws[i] = NULL;
+$ od -A x -x firmware/edgeport/down.fw | head
+000000 0000 0000 0400 1001 0400 0000 ff00 0000
+000010 0600 0002 0280 b044 ff00 0b00 0300 4402
+000020 0072 0000 ff00 1300 0300 0002 0013 0000
+000030 ff00 1b00 0300 0002 001b 0000 ff00 2300
+000040 0300 0002 0023 0000 ff00 2b00 0300 0002
+000050 002b 0000 ff00 3300 0300 0002 0033 0000
+[..]
+
+See, our ->len field is back.
+
+And while we're at it, let this function generate six null bytes
+instead of five to mark the end of the firmware blob, since that's
+what it should be (4 bytes for the address, and 2 for the len).
+
+But now, instead of Oops-ing, the machine refuses to validate the file
+(include/linux/ihex.c::ihex_validate_fw() returns -EINVAL). Of course,
+since ->len was always zero, and thus indicating the end of the
+firmware blob, this function never validated *anything*!
+
+Lets have a look at this:
+
+struct ihex_binrec {
+        __be32 addr;
+        __be16 len;
+        uint8_t data[0];
+} __attribute__((aligned(4)));
+
+Hmmm... sizeof(struct ihex_binrec) = 8. Oh wait, we're doing our best
+to actually *pack* this stuff... Let's try __attribute__((packed)) !
+Now sizeof(struct ihex_binrec) = 6, which is much better, since that's
+what ihex2fw is actually dumping.
+
+Hooray, after much head scratching, my EdgePort is back to work, and I
+can actually use it to debug my other stuff...
+
+David, please apply.
+
+	M.
+---
+
+Fix both the IHEX firmware generation (len field always null, and EOF
+marker a byte too short) and loading (struct ihex_binrec needs to be
+packed to reflect the on-disk structure).
+
+Signed-of-by: Marc Zyngier <maz@misterjones.org>
+
+diff --git a/firmware/ihex2fw.c b/firmware/ihex2fw.c
+index 660b191..8f7fdaa 100644
+--- a/firmware/ihex2fw.c
++++ b/firmware/ihex2fw.c
+@@ -250,19 +250,19 @@ static void file_record(struct ihex_binrec *record)
+ 
+ static int output_records(int outfd)
+ {
+-	unsigned char zeroes[5] = {0, 0, 0, 0, 0};
++	unsigned char zeroes[6] = {0, 0, 0, 0, 0, 0};
+ 	struct ihex_binrec *p = records;
+ 
+ 	while (p) {
+ 		uint16_t writelen = (p->len + 9) & ~3;
+ 
+ 		p->addr = htonl(p->addr);
+-		p->len = htonl(p->len);
++		p->len = htons(p->len);
+ 		write(outfd, &p->addr, writelen);
+ 		p = p->next;
+ 	}
+ 	/* EOF record is zero length, since we don't bother to represent
+ 	   the type field in the binary version */
+-	write(outfd, zeroes, 5);
++	write(outfd, zeroes, 6);
+ 	return 0;
+ }
+diff --git a/include/linux/ihex.h b/include/linux/ihex.h
+index 2baace2..31d8629 100644
+--- a/include/linux/ihex.h
++++ b/include/linux/ihex.h
+@@ -18,7 +18,7 @@ struct ihex_binrec {
+ 	__be32 addr;
+ 	__be16 len;
+ 	uint8_t data[0];
+-} __attribute__((aligned(4)));
++} __attribute__((packed));
+ 
+ /* Find the next record, taking into account the 4-byte alignment */
+ static inline const struct ihex_binrec *
+
+-- 
+And if you don't know where you're going, any road will take you there...
