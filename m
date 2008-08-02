@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755289AbYHBMu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYHBM4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755289AbYHBMu1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 08:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbYHBMuO
+	id S1755403AbYHBM4Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 08:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYHBM4B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 08:50:14 -0400
-Received: from gustav.zipernowsky.hu ([193.225.20.248]:60106 "EHLO
+	Sat, 2 Aug 2008 08:56:01 -0400
+Received: from gustav.zipernowsky.hu ([193.225.20.248]:41373 "EHLO
 	gustav.zipernowsky.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752688AbYHBMuN (ORCPT
+	with ESMTP id S1752816AbYHBM4A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 08:50:13 -0400
+	Sat, 2 Aug 2008 08:56:00 -0400
 MIME-Version: 1.0
-Date: Sat, 02 Aug 2008 14:15:19 +0200
+Date: Sat, 02 Aug 2008 14:55:54 +0200
 From: Oliver Pinter <oliver@zipernowsky.hu>
-To: Aristeu Rozanski <arozansk@redhat.com>, stable@kernel.org
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oliver Pinter <oliver.pntr@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [RFC, 2.6.26.2-rc1] 8250: fix break handling for Intel 82571
+To: Thomas Gleixner <tglx@linutronix.de>, stable@kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Oliver Pinter <oliver.pntr@gmail.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>
+Subject: [RFC, 2.6.26.2-rc1] ACPI/CPUIDLE: prevent setting pm_idle to NULL
 Reply-To: oliver.pntr@gmail.com
-Message-ID: <1d4319c1f50ad90092a972689d90a707@zipernowsky.hu>
+Message-ID: <a6fb304c173b4edee8671f93c6fe7ebb@zipernowsky.hu>
 User-Agent: RoundCube Webmail/0.1
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
@@ -28,67 +27,77 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 7500b1f602aad75901774a67a687ee985d85893f Mon Sep 17 00:00:00 2001
-From: Aristeu Rozanski <arozansk@redhat.com>
-Date: Wed, 23 Jul 2008 21:29:45 -0700
-Subject: [PATCH] 8250: fix break handling for Intel 82571
+>From b032bf70df2e43149ce2b4e9a865b076c6140753 Mon Sep 17 00:00:00 2001
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Sun, 27 Jul 2008 23:47:12 +0200
+Subject: [PATCH] ACPI/CPUIDLE: prevent setting pm_idle to NULL
 
-[ Upstream commit 7500b1f602aad75901774a67a687ee985d85893f ]
+[ Upstream commit b032bf70df2e43149ce2b4e9a865b076c6140753 ]
 
-Intel 82571 has a "Serial Over LAN" feature that doesn't properly
-implements the receiving of break characters.  When a break is received,
-it doesn't set UART_LSR_DR and unless another character is received, the
-break won't be received by the application.
+pm_idle_save resp. pm_idle_old can be NULL when the restore code in
+acpi_processor_cst_has_changed() resp. cpuidle_uninstall_idle_handler()
+is called. This can set pm_idle unconditinally to NULL, which causes the
+kernel to panic when calling pm_idle in the x86 idle code. This was
+covered by an extra check for !pm_idle in the x86 idle code, which was
+removed during the x86 idle code refactoring.
 
-Signed-off-by: Aristeu Rozanski <arozansk@redhat.com>
-Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Instead of restoring the pm_idle check in the x86 code prevent the
+acpi/cpuidle code to set pm_idle to NULL.
+
+Reported by: Dhaval Giani http://lkml.org/lkml/2008/7/2/309
+Based on a debug patch from Ingo Molnar
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Oliver Pinter <oliver.pntr@gmail.com>
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 27f34a9..a97f1ae 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1293,7 +1293,18 @@ receive_chars(struct uart_8250_port *up, unsigned
-int *status)
- 	char flag;
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index b7f2963..283c08f 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1332,9 +1332,15 @@ int acpi_processor_cst_has_changed(struct
+acpi_processor *pr)
+ 	if (!pr->flags.power_setup_done)
+ 		return -ENODEV;
  
- 	do {
--		ch = serial_inp(up, UART_RX);
-+		if (likely(lsr & UART_LSR_DR))
-+			ch = serial_inp(up, UART_RX);
-+		else
-+			/*
-+			 * Intel 82571 has a Serial Over Lan device that will
-+			 * set UART_LSR_BI without setting UART_LSR_DR when
-+			 * it receives a break. To avoid reading from the
-+			 * receive buffer without UART_LSR_DR bit set, we
-+			 * just force the read character to be 0
-+			 */
-+			ch = 0;
-+
- 		flag = TTY_NORMAL;
- 		up->port.icount.rx++;
+-	/* Fall back to the default idle loop */
+-	pm_idle = pm_idle_save;
+-	synchronize_sched();	/* Relies on interrupts forcing exit from idle. */
++	/*
++	 * Fall back to the default idle loop, when pm_idle_save had
++	 * been initialized.
++	 */
++	if (pm_idle_save) {
++		pm_idle = pm_idle_save;
++		/* Relies on interrupts forcing exit from idle. */
++		synchronize_sched();
++	}
  
-@@ -1342,7 +1353,7 @@ receive_chars(struct uart_8250_port *up, unsigned int
-*status)
+ 	pr->flags.power = 0;
+ 	result = acpi_processor_get_power_info(pr);
+@@ -1896,7 +1902,8 @@ int acpi_processor_power_exit(struct acpi_processor
+*pr,
  
- ignore_char:
- 		lsr = serial_inp(up, UART_LSR);
--	} while ((lsr & UART_LSR_DR) && (max_count-- > 0));
-+	} while ((lsr & (UART_LSR_DR | UART_LSR_BI)) && (max_count-- > 0));
- 	spin_unlock(&up->port.lock);
- 	tty_flip_buffer_push(tty);
- 	spin_lock(&up->port.lock);
-@@ -1425,7 +1436,7 @@ serial8250_handle_port(struct uart_8250_port *up)
+ 	/* Unregister the idle handler when processor #0 is removed. */
+ 	if (pr->id == 0) {
+-		pm_idle = pm_idle_save;
++		if (pm_idle_save)
++			pm_idle = pm_idle_save;
  
- 	DEBUG_INTR("status = %x...", status);
- 
--	if (status & UART_LSR_DR)
-+	if (status & (UART_LSR_DR | UART_LSR_BI))
- 		receive_chars(up, &status);
- 	check_modem_status(up);
- 	if (status & UART_LSR_THRE)
+ 		/*
+ 		 * We are about to unload the current idle thread pm callback
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 5405769..5ce07b5 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -94,7 +94,7 @@ void cpuidle_install_idle_handler(void)
+  */
+ void cpuidle_uninstall_idle_handler(void)
+ {
+-	if (enabled_devices && (pm_idle != pm_idle_old)) {
++	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
+ 		pm_idle = pm_idle_old;
+ 		cpuidle_kick_cpus();
+ 	}
 
 
