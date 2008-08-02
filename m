@@ -1,117 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171AbYHBUrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbYHBVMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753171AbYHBUrd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 16:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbYHBUrY
+	id S1753250AbYHBVMX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 17:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYHBVMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 16:47:24 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38523 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750866AbYHBUrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 16:47:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH 2/2] ide: add proper PCI PM support
-Date: Sat, 2 Aug 2008 22:49:38 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <200808021917.04847.bzolnier@gmail.com>
-In-Reply-To: <200808021917.04847.bzolnier@gmail.com>
+	Sat, 2 Aug 2008 17:12:14 -0400
+Received: from mail-in-09.arcor-online.net ([151.189.21.49]:47935 "EHLO
+	mail-in-09.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751627AbYHBVMN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 17:12:13 -0400
+Date: Sat, 2 Aug 2008 23:16:12 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Calvin Walton <calvin.walton@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       7eggert@gmx.de
+Subject: Re: [PATCH] FILESYSTEMS: Make "advanced partitions" immediately 
+ unselectable.
+In-Reply-To: <10758824.1217687776711.JavaMail.oracle@acsmt303.oracle.com>
+Message-ID: <alpine.LSU.0.999.0808022214460.4469@be1.lrz>
+References: <aTS0O-4U1-33@gated-at.bofh.it> <aTV89-39s-5@gated-at.bofh.it>
+ <aTZYh-4i3-21@gated-at.bofh.it> <aUrrl-78m-3@gated-at.bofh.it>
+ <aUxwQ-1Hn-19@gated-at.bofh.it> <aUERB-Zl-5@gated-at.bofh.it>
+ <aUFXh-3m9-3@gated-at.bofh.it> <aUJ4U-1xe-19@gated-at.bofh.it>
+ <aUJeD-1N6-13@gated-at.bofh.it> <aUUME-5MM-11@gated-at.bofh.it>
+ <aV05W-1wO-41@gated-at.bofh.it> <E1KPGQ3-0001T9-RS@be1.7eggert.dyndns.org>
+ <10758824.1217687776711.JavaMail.oracle@acsmt303.oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808022249.38969.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 2 of August 2008, Bartlomiej Zolnierkiewicz wrote:
-> * Keep pointer to ->init_chipset method also in
->   struct ide_host and set it in ide_host_alloc_all().
+On Sat, 2 Aug 2008, Randy Dunlap wrote:
+> --- Original Message ---
+> > Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > 
+> > > I don't see the "if PARTITION_ADVANCED" block as being compatible with the
+> > > need to have default partition types per $ARCH.
+> > > Do you see some way around that problem?
+> > 
+> > You need menuconfig_usedefaults.
 > 
-> * Add ide_pci_suspend() and ide_pci_resume() helpers
->   (default ->suspend and ->resume implementations).
-> 
-> * ->init_chipset can no longer be marked __devinit.
-> 
-> * Add proper PCI PM support to IDE PCI host drivers
->   (rz1000.c and tc86c001.c are skipped for now since
->   they need to be converted from using ->init_hwif
->   to use ->init_chipset instead).
+> Where is that?
 
-Well, first, the work on improving the PCI PM support by IDE drivers is much
-appreciated.
+Currently nowhere, it's just my idea of how to solve the problem.
+It would be a variant of KConfig's menuconfig option, having the desired
+behaviour.
 
-Still, since you're adding new routines etc., it may be a good time to
-implement them using the new PM framework, as defined in
-include/linux/pm.h (please also have a look at drivers/pci/pci-driver.c for the
-PCI bus type's PM callbacks implementation details).  Unfortunately, it's not
-been well documented yet, so if you have any questions, please ask.
-
-In fact, we need some example implementations of the new PM callbacks and
-since you know the drivers in question very well, we could use your
-implementations as examples, if you don't mind.  [Certainly, they would be
-better than PM callbacks written by me for any driver. ;-) ]
-
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
-
-[--snip--]  
-
->  static int __init via_ide_init(void)
-> Index: b/drivers/ide/setup-pci.c
-> ===================================================================
-> --- a/drivers/ide/setup-pci.c
-> +++ b/drivers/ide/setup-pci.c
-> @@ -659,3 +659,36 @@ void ide_pci_remove(struct pci_dev *dev)
->  	pci_disable_device(dev);
->  }
->  EXPORT_SYMBOL_GPL(ide_pci_remove);
-> +
-> +#ifdef CONFIG_PM
-> +int ide_pci_suspend(struct pci_dev *dev, pm_message_t state)
-> +{
-> +	pci_save_state(dev);
-> +	pci_disable_device(dev);
-> +	pci_set_power_state(dev, pci_choose_state(dev, state));
-
-pci_choose_state() is now considered as obsolete.  You can use
-pci_target_state() or even pci_prepare_to_sleep() here.
-
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ide_pci_suspend);
-> +
-> +int ide_pci_resume(struct pci_dev *dev)
-> +{
-> +	struct ide_host *host = pci_get_drvdata(dev);
-> +	int rc;
-> +
-> +	pci_set_power_state(dev, PCI_D0);
-> +
-
-If you decide to use pci_prepare_to_sleep() above, please use
-pci_back_from_sleep() here.
-
-> +	rc = pci_enable_device(dev);
-> +	if (rc)
-> +		return rc;
-> +
-> +	pci_restore_state(dev);
-> +	pci_set_master(dev);
-> +
-> +	if (host->init_chipset)
-> +		host->init_chipset(dev);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ide_pci_resume);
-> +#endif
-
-Thanks,
-Rafael
+Unfortunately I don't have time to implement that, especially since I don't 
+know that part of the code. The last few weeks, I was barely able to
+assemble my new desk.
+-- 
+To define recursion, we must first define recursion.
