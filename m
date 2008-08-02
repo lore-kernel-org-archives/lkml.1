@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbYHBBBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYHBBCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442AbYHBBBS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 21:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYHBBBH
+	id S1754103AbYHBBCU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 21:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbYHBBCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 21:01:07 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:52839 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751844AbYHBBBG (ORCPT
+	Fri, 1 Aug 2008 21:02:13 -0400
+Received: from wx-out-0506.google.com ([66.249.82.225]:53101 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751847AbYHBBCL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 21:01:06 -0400
-Date: Fri, 1 Aug 2008 21:00:44 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Greg KH <greg@kroah.com>
-Cc: stable@kernel.org, WANG Cong <xiyou.wangcong@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [stable] [PATCH 1/14] uml: fix build when SLOB is enabled
-Message-ID: <20080802010044.GA16405@c2.user-mode-linux.org>
-References: <20080801224125.GA13727@c2.user-mode-linux.org> <20080801230624.GA22233@kroah.com>
+	Fri, 1 Aug 2008 21:02:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=m2cdMwL1VvgJb09Cy+bm9WzLz5qTBWOnDfGh0M9s5k2iIAAarieLoK/+xb6MVEO6CS
+         E9FTQSLxH+pZIZcr+2fXb51Hh7ta1AHhDtHxGnBdnmAR0vYRcGczF4HA++VOgqHR34cW
+         RsLRtm0b73Jm1SqfzOVuz+EVdKtgSmosJ6P6o=
+Message-ID: <82e4877d0808011802i1c220d2dq1da6e929711ff68@mail.gmail.com>
+Date: Fri, 1 Aug 2008 21:02:09 -0400
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: 2.6.27-rc1 process time accounting
+Cc: linux-kernel@vger.kernel.org, "akpm@osdl.org" <akpm@linux-foundation.org>
+In-Reply-To: <1217575828.8157.114.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080801230624.GA22233@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20080731104319.GB5806@ics.muni.cz>
+	 <20080731144147.82fcd85e.akpm@linux-foundation.org>
+	 <loom.20080801T025718-689@post.gmane.org>
+	 <1217575828.8157.114.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 04:06:24PM -0700, Greg KH wrote:
-> On Fri, Aug 01, 2008 at 06:41:25PM -0400, Jeff Dike wrote:
-> > >From 94409ded7768e15b0d0a5a172d611073c72308de Mon Sep 17 00:00:00 2001
-> 
-> These git commit ids don't match up to anything in Linus's tree at all
-> :(
+On Fri, Aug 1, 2008 at 3:30 AM, Peter Zijlstra <peterz@infradead.org> wrote:
 
-Hmmm, OK I'll figure out where the commit ids came from.  I
-cherry-picked them from 2.6.26 into 2.6.25.13, so I guess they got new
-ids when I did that.
+> Can you test with tip/sched/clock ?
 
-I'll resend with the original ids...
+-tip from today  seems alright - for the 5 minutes I tested with
+x11perf the top shows max CPU usage around 125%.
 
-> Oh, in the future it is simple to get patches into the -stable tree
-> automatically, just add:
-> 	Cc: Stable <stable@kernel.org>
-> to the signed-off-by: area of the patch.  When it goes into Linus's
-> tree, it will be automatically sent to us for inclusion in the next
-> -stable release.
+I assume changes from -tip will flow in mainline sooner or later - if
+so this should be sorted out soon.
 
-Yeah, I'll do that in future, but it was a little late for these
-patches.
-
-				Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
+Parag
