@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYHBIHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbYHBIZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbYHBIHz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 04:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYHBIHl
+	id S1753965AbYHBIZZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 04:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYHBIZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 04:07:41 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:49609 "EHLO
+	Sat, 2 Aug 2008 04:25:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:56208 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbYHBIHj (ORCPT
+	with ESMTP id S1752148AbYHBIZF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 04:07:39 -0400
+	Sat, 2 Aug 2008 04:25:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=HkOEP7Oaf8qgpwNoLWGNXcLAAGKh54OGlw3BC7kzPxxS3RIJwpLoiUw8UfhlHRVysZ
-         0y/xfz5LnFhRhwNdoW36UgGflhfakpw6n4tuwGsb9Q0klSrr48zSLjRcKBQyD+hcR7Fd
-         HE+UfcVspbcYK/DKRbazxHUUkS6pouZLj79nI=
-Date: Sat, 2 Aug 2008 12:07:25 +0400
+        b=YFqHiuSX+nhDTEWgbli0J1fFNdeFRyc8lo7tE3l0MTJqsx9/HE5EInhprQcrz1Omfc
+         TNiPPIXxDW0Epyo1T+i6uukfiSCiT1p6JDCT1lHCLEZLy3/cROn1t7Fx+/cXiIa+8bfl
+         jj6EKv8kInZ9pFhcQuo3saztHfKQdEgbIMPm0=
+Date: Sat, 2 Aug 2008 12:24:54 +0400
 From: Alexander Beregalov <a.beregalov@gmail.com>
-To: me@bobcopeland.com, linux-karma-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] omfs: fix warning
-Message-ID: <20080802080725.GA4856@orion>
+To: righi.andrea@gmail.com, oleg@tv-sign.ru, linux-kernel@vger.kernel.org
+Subject: [PATCH] proc: fix warnings
+Message-ID: <20080802082454.GB4856@orion>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,32 +32,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alexander Beregalov <a.beregalov@gmail.com>
 
-omfs: fix warnings
+proc: fix warnings
 
-fs/omfs/inode.c:495: warning: format '%llx' expects type 'long long
-	unsigned int', but argument 2 has type 'u64'
-fs/omfs/inode.c:495: warning: format '%llx' expects type 'long
-	long unsigned int', but argument 3 has type '__be64'
+fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
+unsigned int', but argument 3 has type 'u64'
+fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
+unsigned int', but argument 4 has type 'u64'
+fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
+unsigned int', but argument 5 has type 'u64'
+fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
+unsigned int', but argument 6 has type 'u64'
+fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
+unsigned int', but argument 7 has type 'u64'
+fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
+unsigned int', but argument 8 has type 'u64'
+fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
+unsigned int', but argument 9 has type 'u64'
+
 
 Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Bob Copeland <me@bobcopeland.com>
+Cc: Andrea Righi <righi.andrea@gmail.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
 
 ---
 
- fs/omfs/inode.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ fs/proc/base.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/fs/omfs/inode.c b/fs/omfs/inode.c
-index d865f55..a95fe59 100644
---- a/fs/omfs/inode.c
-+++ b/fs/omfs/inode.c
-@@ -492,7 +492,8 @@ static int omfs_fill_super(struct super_block *sb, void *data, int silent)
- 	if (sbi->s_num_blocks != be64_to_cpu(omfs_rb->r_num_blocks)) {
- 		printk(KERN_ERR "omfs: block count discrepancy between "
- 			"super and root blocks (%llx, %llx)\n",
--			sbi->s_num_blocks, be64_to_cpu(omfs_rb->r_num_blocks));
-+			(unsigned long long)sbi->s_num_blocks,
-+			(unsigned long long)be64_to_cpu(omfs_rb->r_num_blocks));
- 		goto out_brelse_bh2;
- 	}
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 01ed610..a28840b 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -2423,10 +2423,13 @@ static int do_io_accounting(struct task_struct *task, char *buffer, int whole)
+ 			"read_bytes: %llu\n"
+ 			"write_bytes: %llu\n"
+ 			"cancelled_write_bytes: %llu\n",
+-			acct.rchar, acct.wchar,
+-			acct.syscr, acct.syscw,
+-			acct.read_bytes, acct.write_bytes,
+-			acct.cancelled_write_bytes);
++			(unsigned long long)acct.rchar,
++			(unsigned long long)acct.wchar,
++			(unsigned long long)acct.syscr,
++			(unsigned long long)acct.syscw,
++			(unsigned long long)acct.read_bytes,
++			(unsigned long long)acct.write_bytes,
++			(unsigned long long)acct.cancelled_write_bytes);
+ }
  
+ static int proc_tid_io_accounting(struct task_struct *task, char *buffer)
