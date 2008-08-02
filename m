@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbYHBQv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbYHBQxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbYHBQv2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 12:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYHBQvW
+	id S1757600AbYHBQxn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 12:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbYHBQxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 12:51:22 -0400
-Received: from phoenix.slamd64.com ([217.10.145.2]:51320 "EHLO
-	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753553AbYHBQvV (ORCPT
+	Sat, 2 Aug 2008 12:53:37 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41002 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754786AbYHBQxh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 12:51:21 -0400
-X-Greylist: delayed 1343 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 Aug 2008 12:51:21 EDT
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: Sven Wegener <sven.wegener@stealer.net>
-Subject: Re: acer-wmi broken in latest git kernel on TravelMate 6492 (Insufficient arguments - method [WQAA])
-Date: Sat, 2 Aug 2008 17:28:45 +0100
-User-Agent: KMail/1.9.9
-Cc: Bob Moore <robert.moore@intel.com>, Andi Kleen <ak@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <alpine.LNX.1.10.0808021640310.2294@titan.stealer.net>
-In-Reply-To: <alpine.LNX.1.10.0808021640310.2294@titan.stealer.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 2 Aug 2008 12:53:37 -0400
+Date: Sat, 2 Aug 2008 11:53:34 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, travis@sgi.com
+Subject: Re: [PATCH 2/2] cpuset: use seq_cpumask(), seq_nodemask()
+Message-Id: <20080802115334.dd2732af.pj@sgi.com>
+In-Reply-To: <20080802142838.GA338@martell.zuzino.mipt.ru>
+References: <20080802113131.GB3536@martell.zuzino.mipt.ru>
+	<20080802090542.51052006.pj@sgi.com>
+	<20080802142838.GA338@martell.zuzino.mipt.ru>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808021728.46046.carlos@strangeworlds.co.uk>
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Sat, 02 Aug 2008 16:28:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 August 2008 16:50:54 Sven Wegener wrote:
-> Is it a bug in acer-wmi or in Acer's ACPI implementation? I can provide 
-> more information as necessary.
+Alexey wrote:
+> That's just a reminder to cpuset people whether /proc/*/status broken or
+> not. Can be safely deleted. :-)
 
-Neither - it's a bug in wmi.c
+What can be safely deleted - the patch, or the comment of the patch?
 
-Try the following patch:
----
-ACPI: WMI: Set instance for query block calls
+I'm confused.
 
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-
-Although the necessary data structure was set up, it was never actually
-passed in, so data block calls have only been working by sheer chance.
-
-(On Acer laptops. the data block methods we've been calling never look at
-the instance value, hence acer-wmi never triggered this before).
-
-f3454ae8104efb2dbf0d08ec42c6f5d0fe9225bc brought this to light.
-
-Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
----
-
- drivers/acpi/wmi.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-diff --git a/drivers/acpi/wmi.c b/drivers/acpi/wmi.c
-index c33b1c6..cfe2c83 100644
---- a/drivers/acpi/wmi.c
-+++ b/drivers/acpi/wmi.c
-@@ -347,7 +347,7 @@ struct acpi_buffer *out)
- 	strcpy(method, "WQ");
- 	strncat(method, block->object_id, 2);
- 
--	status = acpi_evaluate_object(handle, method, NULL, out);
-+	status = acpi_evaluate_object(handle, method, &input, out);
- 
- 	/*
- 	 * If ACPI_WMI_EXPENSIVE, call the relevant WCxx method, even if
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
