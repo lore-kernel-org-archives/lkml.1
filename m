@@ -1,43 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbYHBTY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbYHBTYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758209AbYHBTY0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 15:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758107AbYHBTXt
+	id S1759333AbYHBTYm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 15:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755817AbYHBTYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 15:23:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37986 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756684AbYHBTXs convert rfc822-to-8bit (ORCPT
+	Sat, 2 Aug 2008 15:24:13 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:21641 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755424AbYHBTYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 15:23:48 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Gu Rui" <chaos.proton@gmail.com>
-References: <cbItfVMShGI.A.olC.UMLlIB@albercik>
-In-Reply-To: <cbItfVMShGI.A.olC.UMLlIB@albercik>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <5ZeQ4vXWqRC.A.X4E.8NLlIB@albercik>
-Subject: [Bug #11141] no battery or DC status - Dell i1501
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat,  2 Aug 2008 19:59:51 +0200 (CEST)
+	Sat, 2 Aug 2008 15:24:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=OM3g5SF+v8qHgStyKt8cQrLg35YSGeTLZ0oCZgy3ZP0MvGCQ70nqfoXS5L/zIM6ang
+         adIagsAIYn1TVKIc2mCNnDar+Ge1dod5U8t+xVoOAG7rL6gNHrDC2izYDNGHj1tAPJUZ
+         /L718jXSn+kbzxlcEUOSflMuVVz1qEQdRynwI=
+Date: Sat, 2 Aug 2008 21:24:06 +0200
+From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: hpa <hpa@zytor.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       tglx <tglx@linutronix.de>
+Subject: [PATCH 2/5] x86: Coding style fixes to arch/x86/kernel/bios_uv.c
+Message-ID: <20080802212406.047e8ae6@paolo-desktop>
+X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+Before:
+total: 5 errors, 0 warnings, 48 lines checked
 
-The following bug entry is on the current list of known regressions
-from 2.6.26.  Please verify if it still should be listed
-and let me know (either way).
+After:
+total: 0 errors, 0 warnings, 58 lines checked
 
+paolo@paolo-desktop:~/linux.trees.git$ md5sum /tmp/bios_uv.o.*
+9afe794594831166704744184e192ed8  /tmp/bios_uv.o.after
+9afe794594831166704744184e192ed8  /tmp/bios_uv.o.before
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11141
-Subject		: no battery or DC status - Dell i1501
-Submitter	: Gu Rui <chaos.proton@gmail.com>
-Date		: 2008-07-21 19:43 (13 days old)
+Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+---
+ arch/x86/kernel/bios_uv.c |   20 +++++++++++++++-----
+ 1 files changed, 15 insertions(+), 5 deletions(-)
 
+diff --git a/arch/x86/kernel/bios_uv.c b/arch/x86/kernel/bios_uv.c
+index c639bd5..100e759 100644
+--- a/arch/x86/kernel/bios_uv.c
++++ b/arch/x86/kernel/bios_uv.c
+@@ -25,11 +25,21 @@ x86_bios_strerror(long status)
+ {
+ 	const char *str;
+ 	switch (status) {
+-	case  0: str = "Call completed without error"; break;
+-	case -1: str = "Not implemented"; break;
+-	case -2: str = "Invalid argument"; break;
+-	case -3: str = "Call completed with error"; break;
+-	default: str = "Unknown BIOS status code"; break;
++	case  0:
++		str = "Call completed without error";
++		break;
++	case -1:
++		str = "Not implemented";
++		break;
++	case -2:
++		str = "Invalid argument";
++		break;
++	case -3:
++		str = "Call completed with error";
++		break;
++	default:
++		str = "Unknown BIOS status code";
++		break;
+ 	}
+ 	return str;
+ }
+-- 
+1.5.6.rc1.21.g03300
 
