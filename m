@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYHBCbG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbYHBCcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbYHBCbG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 22:31:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYHBCaz
+	id S1755816AbYHBCcU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 22:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYHBCcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 22:30:55 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:37723 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752280AbYHBCay (ORCPT
+	Fri, 1 Aug 2008 22:32:10 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:55132 "EHLO
+	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752303AbYHBCcJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 22:30:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=FZrT2SM4+fZTBv0gqCyIdtP9AYdvEYwy8VPxnatvwMmGYM/0n1eBbD0M7saBTWP9Db
-         pww9m0IBFXHyXEG2L+lg2jmD4R3Ngd6SVOiVn8uStc02KMJhGnsa6lFp0N3nG1V+9Mjy
-         E+47QxxxjxDH76t+4QhegkXFq9/iIHDwOciww=
-Date: Sat, 2 Aug 2008 06:30:40 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Theodore Tso <tytso@mit.edu>, Ryan Hope <rmh3093@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: reiser4 for 2.6.27-rc1
-Message-ID: <20080802023040.GB23534@martell.zuzino.mipt.ru>
-References: <48f7fe350808010649l1111f48enbb6eca3cfcbba67f@mail.gmail.com> <20080801162548.GD8654@mit.edu>
+	Fri, 1 Aug 2008 22:32:09 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=Qv7oak6kF0f45mvCiH0A:9 a=Ve4RqPuhGblrs9nSUx8A:7 a=VhaIVnTB2GmvDzjL_Fwefujf1SsA:4 a=Gr1l-fY1kBQA:10 a=CDgK0yFw8z8A:10
+Message-ID: <4893C722.3010100@shaw.ca>
+Date: Fri, 01 Aug 2008 20:32:02 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080801162548.GD8654@mit.edu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Alex Buell <alex.buell@munted.org.uk>
+CC: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
+       Tomas Styblo <tripie@cpan.org>, linux-usb@vger.kernel.org,
+       usb-storage@lists.one-eyed-alien.net
+Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device
+ 152d:2338
+References: <4890C72D.7040604@shaw.ca> <Pine.LNX.4.44L0.0807301700310.2322-100000@iolanthe.rowland.org> <20080801221504.49464f85.alex.buell@munted.org.uk> <20080801232240.d24166de.alex.buell@munted.org.uk>
+In-Reply-To: <20080801232240.d24166de.alex.buell@munted.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 12:25:48PM -0400, Theodore Tso wrote:
-> On Fri, Aug 01, 2008 at 09:49:55AM -0400, Ryan Hope wrote:
-> > Why is reiser4 still not in a vanilla kernel for testing. I have had
-> > to apply the reiser4 patches from -mm kernels to vanilla based
-> > patchset for over a year now. Reiser4 works fine, what will it take to
-> > get it included in vanilla? Here is a patch to add reiser4 to
-> > 2.6.27-rc1:
-> > 
-> > http://zen-sources.org/files/reiser4-for-2.6.27-rc1.patch
+Alex Buell wrote:
+> On Fri, 1 Aug 2008 22:15:04 +0100, I waved a wand and this message
+> magically appears in front of Alex Buell:
 > 
-> The reasons laid out in these web pages haven't changed.
+>> I've done a lot of mkfs and fsck, haven't seen any problems so far.
+>> Fingers crossed that this patch works. 
 > 
-> http://kernelnewbies.org/WhyReiser4IsNotIn
-> http://lkml.org/lkml/2006/7/28/180
-> http://www.gossamer-threads.com/lists/engine?do=post_view_flat;post=668645;page=1;sb=post_latest_reply;so=ASC;mh=25;list=linux
+> Spoke too soon, that patch that was posted doesn't work for me. Here's
+> my log:
 > 
-> Now that Hans is out of the picture, and Namesys seems to have
-> collapsed, maybe someone can yank out the plugin architecture that
-> Linus and others have objected to, which as near as I could tell was
-> part of the Namesys's somewhat dodgy business plan of creating and
-> selling (possibly proprietary; not sure what license they were going
-> to be under) plugin modules for Reiser4 to make money.  The other
-> issue that was raised during the review were some locking issues
-> raised by Al Viro, if memory serves correctly.  I'm not sure if they
-> were ever fixed;
+> Aug  1 23:18:08 lithium scsi 5:0:0:0: Direct-Access     SAMSUNG  SP1213C          0-30 PQ: 0 ANSI: 2 CCS
+> Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] 234493056 512-byte hardware sectors (120060 MB)
+> Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Write Protect is off
+> Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Mode Sense: 00 38 00 00
+> Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Assuming drive cache: write through
+> Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] 234493056 512-byte hardware sectors (120060 MB)
+> Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Write Protect is off
+> Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Mode Sense: 00 38 00 00
+> Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Assuming drive cache: write through
+> Aug  1 23:18:08 lithium sda: sda1
+> Aug  1 23:18:08 lithium sd 5:0:0:0: [sda] Attached SCSI disk
+> Aug  1 23:18:08 lithium sd 5:0:0:0: Attached scsi generic sg1 type 0
+> Aug  1 23:18:08 lithium usb-storage: device scan complete
+> Aug  1 23:19:11 lithium sd 5:0:0:0: [sda] Sense Key : 0x0 [current] 
+> Aug  1 23:19:11 lithium sd 5:0:0:0: [sda] ASC=0x0 ASCQ=0x0
 
-	"That because the real plugins are long gone.  It's just that neither the
-	complainers nor the fanboys in this thread ever read the code or generally
-	had any clue of their own."
-					--hch, 1 Aug 2006
+These patches (mine or Alan's) won't stop those messages from showing 
+up. The request should get retried, though.
 
+> Aug  1 23:19:11 lithium ERROR: (device sda1): dbAllocNext: Corrupt dmap page
+> Aug  1 23:19:11 lithium ERROR: (device sda1): dbAllocNext: Corrupt dmap page
+
+Not sure what is producing these messages?
+
+> Aug  1 23:19:20 lithium sd 5:0:0:0: [sda] Sense Key : 0x0 [current] 
+> Aug  1 23:19:20 lithium sd 5:0:0:0: [sda] ASC=0x0 ASCQ=0x0
+> Aug  1 23:19:20 lithium sd 5:0:0:0: [sda] Sense Key : 0x0 [current] 
+> Aug  1 23:19:20 lithium sd 5:0:0:0: [sda] ASC=0x0 ASCQ=0x0
+> Aug  1 23:19:20 lithium sd 5:0:0:0: [sda] Sense Key : 0x0 [current] 
+> Aug  1 23:19:20 lithium sd 5:0:0:0: [sda] ASC=0x0 ASCQ=0x0
+> Aug  1 23:20:01 lithium cron[13504]: (root) CMD (test -x /usr/sbin/run-crons && /usr/sbin/run-crons )
+> Aug  1 23:20:34 lithium usb 1-3.4.3: USB disconnect, address 8
+> 
+> :-(
