@@ -1,109 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYHBTYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbYHBTY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755403AbYHBTYK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 15:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbYHBTXn
+	id S1758209AbYHBTY0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 15:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758107AbYHBTXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 15:23:43 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:21641 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754286AbYHBTXm (ORCPT
+	Sat, 2 Aug 2008 15:23:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37986 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756684AbYHBTXs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 15:23:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=pfhnVpCdjmf0ZCHMFofPUP2xIdx5Msw3s4HMQZeaKaCJE3CS41+twSZ5g1Ren9YTVa
-         Aw+0+rh4sOwX6D0M/N5jotOLQb3lcypwY470eMvnot02HahUt7RZqYlC0Pblkges95nb
-         iLty5Os/spCRDGc+9PIiE+wfokJ4Bs01noDg4=
-Date: Sat, 2 Aug 2008 21:23:36 +0200
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, tglx <tglx@linutronix.de>,
-       hpa <hpa@zytor.com>
-Subject: [PATCH 1/5] x86: Coding style fixes to
- arch/x86/boot/compressed/misc.c
-Message-ID: <20080802212336.6defeb03@paolo-desktop>
-X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Aug 2008 15:23:48 -0400
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Gu Rui" <chaos.proton@gmail.com>
+References: <cbItfVMShGI.A.olC.UMLlIB@albercik>
+In-Reply-To: <cbItfVMShGI.A.olC.UMLlIB@albercik>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <5ZeQ4vXWqRC.A.X4E.8NLlIB@albercik>
+Subject: [Bug #11141] no battery or DC status - Dell i1501
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sat,  2 Aug 2008 19:59:51 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before:
-total: 4 errors, 6 warnings, 439 lines checked
+This message has been generated automatically as a part of a report
+of recent regressions.
 
-After:
-total: 1 errors, 5 warnings, 441 lines checked
+The following bug entry is on the current list of known regressions
+from 2.6.26.  Please verify if it still should be listed
+and let me know (either way).
 
-Before
 
- -#include <asm/io.h>
- +#include <linux/io.h>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11141
+Subject		: no battery or DC status - Dell i1501
+Submitter	: Gu Rui <chaos.proton@gmail.com>
+Date		: 2008-07-21 19:43 (13 days old)
 
-paolo@paolo-desktop:~/linux.trees.git$ md5sum /tmp/misc.o.*
-8b2394e1fe519a9542e9a7e3e7b69c39  /tmp/misc.o.after
-8b2394e1fe519a9542e9a7e3e7b69c39  /tmp/misc.o.before
-
-After
-
- -#include <asm/io.h>
- +#include <linux/io.h>
-
-paolo@paolo-desktop:~/linux.trees.git$ md5sum /tmp/misc.o.*
-59a2d264284be5e72b5af4f3a8ccfb47  /tmp/misc.o.after
-8b2394e1fe519a9542e9a7e3e7b69c39  /tmp/misc.o.before
-
-Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
----
- arch/x86/boot/compressed/misc.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
-index 9fea737..2a3f77e 100644
---- a/arch/x86/boot/compressed/misc.c
-+++ b/arch/x86/boot/compressed/misc.c
-@@ -27,7 +27,7 @@
- #include <linux/linkage.h>
- #include <linux/screen_info.h>
- #include <linux/elf.h>
--#include <asm/io.h>
-+#include <linux/io.h>
- #include <asm/page.h>
- #include <asm/boot.h>
- #include <asm/bootparam.h>
-@@ -251,7 +251,7 @@ static void __putstr(int error, const char *s)
- 				y--;
- 			}
- 		} else {
--			vidmem [(x + cols * y) * 2] = c;
-+			vidmem[(x + cols * y) * 2] = c;
- 			if (++x >= cols) {
- 				x = 0;
- 				if (++y >= lines) {
-@@ -277,7 +277,8 @@ static void *memset(void *s, int c, unsigned n)
- 	int i;
- 	char *ss = s;
- 
--	for (i = 0; i < n; i++) ss[i] = c;
-+	for (i = 0; i < n; i++)
-+		ss[i] = c;
- 	return s;
- }
- 
-@@ -287,7 +288,8 @@ static void *memcpy(void *dest, const void *src, unsigned n)
- 	const char *s = src;
- 	char *d = dest;
- 
--	for (i = 0; i < n; i++) d[i] = s[i];
-+	for (i = 0; i < n; i++)
-+		d[i] = s[i];
- 	return dest;
- }
- 
--- 
-1.5.6.rc1.21.g03300
 
