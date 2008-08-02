@@ -1,58 +1,41 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753158AbYHBE4B (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 2 Aug 2008 00:56:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYHBEzw
+	id S1758022AbYHBSQX (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 2 Aug 2008 14:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbYHBSQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 00:55:52 -0400
-Received: from orne.fr.clara.net ([212.43.206.200]:54117 "EHLO
-	smtp-defer.fr.clara.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbYHBEzv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 00:55:51 -0400
-X-Greylist: delayed 1189 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 Aug 2008 00:55:51 EDT
-Message-ID: <59133.78.138.19.210.1217651641.squirrel@mail.miel-uzes.com>
-Date: Sat, 2 Aug 2008 06:34:01 +0200 (CEST)
-Subject: CONFIRM YOUR WEBMAIL.WINTUE.NL ACCOUNT.
-From: "webmail.win.tue.nl Helpdesk" <account-team@win.tue.nl>
-Reply-To: account-team@live.com
-User-Agent: SquirrelMail/1.5.1
+	Sat, 2 Aug 2008 14:16:13 -0400
+Received: from tomts24-srv.bellnexxia.net ([209.226.175.187]:53800 "EHLO
+	tomts24-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754494AbYHBSQN convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 14:16:13 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkuWANc/lEjR4q+H/2dsb2JhbACBMYgWgSqFX5oHhRk
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [81.199.180.91]
+From: <altimed@nb.sympatico.ca>
+Reply-To: claims_office148@btinternet.com
+To: <info@winner.org>
+Subject: Contact Mr.Smith Stanford
+Date: Sat, 2 Aug 2008 14:16:11 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-To: undisclosed-recipients:;
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Message-Id: <20080802181611.FRRN1580.tomts24-srv.bellnexxia.net@toip41-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753158AbYHBE4B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758022AbYHBSQX@vger.kernel.org>
 
-Dear User: webmail.win.tue.nl
-webmail.win.tue.nl  technical support will be conducting a scheduled routine
-maintenance To improve our services, please be informed that we are going to
-upgrade our system on 2th August, to 7th August 2008 from 0:00am to
-7:00am. that may affect email delivery notifications on our transaction
-network. We would need the following information to enable us preserve
-your account.
+Your E-Address was selected online in this Monthly's AWARD PROMO. Your =
+draw has a total value of =A31,000,000.00.Please acknowledge the receip=
+t of
+this mail with the details below to : Mr.Smith
+Stanford.(claims_office148@btinternet.com) for your claimsz
 
-CONFIRM YOUR EMAIL IDENTITY BELOW
-
-Email Username : ........
-Email Password : .......
-Country or Territory : .......
-phone number:.....
-
-You are to forward the following informations to our technical support
-center.
-We apologize for the inconvenience this may cause you.
-We assure you more quality service at the end of this maintenance.
-
-We understand that, you need to be certain, your personal information will
-be secure we take safeguarding your personal information very seriously.
-
-Warning!!! Account owner that refuses to update his or her account within
-Three days of receiving this warning will lose his or her account
-permanently.
-
-Yours sincerely, webmail.win.tue.nl technical support
-Thank you for using webmail.win.tue.nl
-Notification Code: WWP2H77JJAJ.
-
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
