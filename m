@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbYHBXqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbYHBXtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753235AbYHBXqw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 19:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYHBXqo
+	id S1753861AbYHBXtj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 19:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYHBXtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 19:46:44 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:36760 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751341AbYHBXqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 19:46:44 -0400
-Date: Sun, 3 Aug 2008 02:45:35 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: viro@zeniv.linux.org.uk, dwmw2@infradead.org,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/mtd/mtdsuper.c: fix build error
-Message-ID: <20080802234535.GA8929@cs181140183.pp.htv.fi>
-References: <20080802225304.GD4856@orion> <20080802233240.GA4385@cs181140183.pp.htv.fi> <a4423d670808021640he3ec660k1b5ddfcb6efd1ae5@mail.gmail.com>
+	Sat, 2 Aug 2008 19:49:24 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:4326 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751476AbYHBXtX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 19:49:23 -0400
+Date: Sat, 2 Aug 2008 19:49:22 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Alex Buell <alex.buell@munted.org.uk>
+cc: linux-kernel@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>,
+       Tomas Styblo <tripie@cpan.org>, <linux-usb@vger.kernel.org>,
+       <usb-storage@lists.one-eyed-alien.net>
+Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device
+ 152d:2338
+In-Reply-To: <20080801232240.d24166de.alex.buell@munted.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0808021948240.18555-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <a4423d670808021640he3ec660k1b5ddfcb6efd1ae5@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 03, 2008 at 03:40:12AM +0400, Alexander Beregalov wrote:
-> 2008/8/3 Adrian Bunk <bunk@kernel.org>:
-> > On Sun, Aug 03, 2008 at 02:53:04AM +0400, Alexander Beregalov wrote:
-> >> From: Alexander Beregalov <a.beregalov@gmail.com>
-> >>
-> >> drivers/mtd/mtdsuper.c: fix build error
-> >>
-> >> drivers/mtd/mtdsuper.c:184: error: implicit declaration of
-> >>       function 'lookup_bdev'
-> >> drivers/mtd/mtdsuper.c:197: error: implicit declaration of
-> >>       function 'bdput'
-> >
-> >
-> > It already gets fs.h indirectly through linux/mtd/super.h, so while
-> > your patch might be correct it cannot fix a compile error.
-> >
-> > If that's with CONFIG_BLOCK=n then it's
-> >  http://bugzilla.kernel.org/show_bug.cgi?id=11225
-> >
-> > Otherwise please send your .config .
+On Fri, 1 Aug 2008, Alex Buell wrote:
+
+> On Fri, 1 Aug 2008 22:15:04 +0100, I waved a wand and this message
+> magically appears in front of Alex Buell:
 > 
-> I do not have this config, I collect log from builds with randconfig
-> and try to fix problems.
->...
+> > I've done a lot of mkfs and fsck, haven't seen any problems so far.
+> > Fingers crossed that this patch works. 
+> 
+> Spoke too soon, that patch that was posted doesn't work for me. Here's
+> my log:
 
-You must store the config of the failed builds somewhere, since 
-otherwise (like in this case) you cannot verify whether a patch
-actually fixes a problem.
+Which patch?  Several different ones have been posted.
 
-cu
-Adrian
+The log doesn't provide much help.  We need to see a log with 
+CONFIG_USB_STORAGE_DEBUG enabled.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Alan Stern
 
