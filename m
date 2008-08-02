@@ -1,83 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbYHBIZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbYHBIeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965AbYHBIZZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 04:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYHBIZI
+	id S1754171AbYHBIeR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 04:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbYHBIeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 04:25:08 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:56208 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752148AbYHBIZF (ORCPT
+	Sat, 2 Aug 2008 04:34:04 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54001
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752173AbYHBIeD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 04:25:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=YFqHiuSX+nhDTEWgbli0J1fFNdeFRyc8lo7tE3l0MTJqsx9/HE5EInhprQcrz1Omfc
-         TNiPPIXxDW0Epyo1T+i6uukfiSCiT1p6JDCT1lHCLEZLy3/cROn1t7Fx+/cXiIa+8bfl
-         jj6EKv8kInZ9pFhcQuo3saztHfKQdEgbIMPm0=
-Date: Sat, 2 Aug 2008 12:24:54 +0400
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: righi.andrea@gmail.com, oleg@tv-sign.ru, linux-kernel@vger.kernel.org
-Subject: [PATCH] proc: fix warnings
-Message-ID: <20080802082454.GB4856@orion>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sat, 2 Aug 2008 04:34:03 -0400
+Date: Sat, 02 Aug 2008 01:34:00 -0700 (PDT)
+Message-Id: <20080802.013400.253519655.davem@davemloft.net>
+To: a.p.zijlstra@chello.nl
+Cc: mingo@elte.hu, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] lockdep: re-annotate scheduler runqueues
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1217588923.9686.7.camel@twins>
+References: <20080801090100.GA25142@elte.hu>
+	<20080801.021348.233313767.davem@davemloft.net>
+	<1217588923.9686.7.camel@twins>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander Beregalov <a.beregalov@gmail.com>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Fri, 01 Aug 2008 13:08:43 +0200
 
-proc: fix warnings
+> The thing that triggered it for David is a regular kernel build with
+> large concurrency.
 
-fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
-unsigned int', but argument 3 has type 'u64'
-fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
-unsigned int', but argument 4 has type 'u64'
-fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
-unsigned int', but argument 5 has type 'u64'
-fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
-unsigned int', but argument 6 has type 'u64'
-fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
-unsigned int', but argument 7 has type 'u64'
-fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
-unsigned int', but argument 8 has type 'u64'
-fs/proc/base.c:2429: warning: format '%llu' expects type 'long long
-unsigned int', but argument 9 has type 'u64'
+Peter, I've been beating up these two patches here for a while
+on my 64-cpu box and it hasn't budged yet.
 
-
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Andrea Righi <righi.andrea@gmail.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>
-
----
-
- fs/proc/base.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
-
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 01ed610..a28840b 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -2423,10 +2423,13 @@ static int do_io_accounting(struct task_struct *task, char *buffer, int whole)
- 			"read_bytes: %llu\n"
- 			"write_bytes: %llu\n"
- 			"cancelled_write_bytes: %llu\n",
--			acct.rchar, acct.wchar,
--			acct.syscr, acct.syscw,
--			acct.read_bytes, acct.write_bytes,
--			acct.cancelled_write_bytes);
-+			(unsigned long long)acct.rchar,
-+			(unsigned long long)acct.wchar,
-+			(unsigned long long)acct.syscr,
-+			(unsigned long long)acct.syscw,
-+			(unsigned long long)acct.read_bytes,
-+			(unsigned long long)acct.write_bytes,
-+			(unsigned long long)acct.cancelled_write_bytes);
- }
- 
- static int proc_tid_io_accounting(struct task_struct *task, char *buffer)
+I'll let you know if anything happens, but it looks good so far.
