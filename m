@@ -1,233 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYHBOeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbYHBOhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbYHBOeZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 10:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYHBOeS
+	id S1756033AbYHBOhU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 10:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbYHBOhI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 10:34:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37145 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbYHBOeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 10:34:17 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Cedric Le Goater <clg@fr.ibm.com>
-Subject: Re: [PATCH 3/6] Container Freezer: Implement freezer cgroup subsystem
-Date: Sat, 2 Aug 2008 16:37:21 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Matt Helsley <matthltc@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-References: <20080801050659.924495279@us.ibm.com> <1217635891.25300.292.camel@localhost.localdomain> <48940F0F.4050604@fr.ibm.com>
-In-Reply-To: <48940F0F.4050604@fr.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 2 Aug 2008 10:37:08 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:29162 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752783AbYHBOhH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 10:37:07 -0400
+Message-ID: <10758824.1217687776711.JavaMail.oracle@acsmt303.oracle.com>
+Date: Sat, 2 Aug 2008 09:36:16 -0500 (CDT)
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Calvin Walton <calvin.walton@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       7eggert@gmx.de
+Subject: Re: [PATCH] FILESYSTEMS: Make "advanced partitions" immediately  unselectable.
+In-Reply-To: <E1KPGQ3-0001T9-RS@be1.7eggert.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808021637.22831.rjw@sisk.pl>
+References: <aTS0O-4U1-33@gated-at.bofh.it> <aTV89-39s-5@gated-at.bofh.it> <aTZYh-4i3-21@gated-at.bofh.it> <aUrrl-78m-3@gated-at.bofh.it> <aUxwQ-1Hn-19@gated-at.bofh.it> <aUERB-Zl-5@gated-at.bofh.it> <aUFXh-3m9-3@gated-at.bofh.it> <aUJ4U-1xe-19@gated-at.bofh.it> <aUJeD-1N6-13@gated-at.bofh.it> <aUUME-5MM-11@gated-at.bofh.it> <aV05W-1wO-41@gated-at.bofh.it> <E1KPGQ3-0001T9-RS@be1.7eggert.dyndns.org>
+X-Priority: 3
+X-Mailer: Oracle Webmail Client(UIX)
+Content-Language: en-US
+Accept-Language: en-US
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 2 of August 2008, Cedric Le Goater wrote:
-> Matt Helsley wrote:
-> > On Sat, 2008-08-02 at 00:58 +0200, Rafael J. Wysocki wrote:
-> >> On Friday, 1 of August 2008, Matt Helsley wrote:
-> >>> This patch implements a new freezer subsystem in the control groups framework.
-> >>> It provides a way to stop and resume execution of all tasks in a cgroup by
-> >>> writing in the cgroup filesystem.
-> >>>
-> >>> The freezer subsystem in the container filesystem defines a file named
-> >>> freezer.state. Writing "FROZEN" to the state file will freeze all tasks in the
-> >>> cgroup. Subsequently writing "RUNNING" will unfreeze the tasks in the cgroup.
-> >>> Reading will return the current state.
-> >>>
-> >>> * Examples of usage :
-> >>>
-> >>>    # mkdir /containers/freezer
-> >>>    # mount -t cgroup -ofreezer freezer  /containers
-> >>>    # mkdir /containers/0
-> >>>    # echo $some_pid > /containers/0/tasks
-> >>>
-> >>> to get status of the freezer subsystem :
-> >>>
-> >>>    # cat /containers/0/freezer.state
-> >>>    RUNNING
-> >>>
-> >>> to freeze all tasks in the container :
-> >>>
-> >>>    # echo FROZEN > /containers/0/freezer.state
-> >>>    # cat /containers/0/freezer.state
-> >>>    FREEZING
-> >>>    # cat /containers/0/freezer.state
-> >>>    FROZEN
-> >>>
-> >>> to unfreeze all tasks in the container :
-> >>>
-> >>>    # echo RUNNING > /containers/0/freezer.state
-> >>>    # cat /containers/0/freezer.state
-> >>>    RUNNING
-> >>>
-> >>> This is the basic mechanism which should do the right thing for user space task
-> >>> in a simple scenario.
-> >>>
-> >>> It's important to note that freezing can be incomplete. In that case we return
-> >>> EBUSY. This means that some tasks in the cgroup are busy doing something that
-> >>> prevents us from completely freezing the cgroup at this time. After EBUSY,
-> >>> the cgroup will remain partially frozen -- reflected by freezer.state reporting
-> >>> "FREEZING" when read. The state will remain "FREEZING" until one of these
-> >>> things happens:
-> >>>
-> >>> 	1) Userspace cancels the freezing operation by writing "RUNNING" to
-> >>> 		the freezer.state file
-> >>> 	2) Userspace retries the freezing operation by writing "FROZEN" to
-> >>> 		the freezer.state file (writing "FREEZING" is not legal
-> >>> 		and returns EIO)
-> >>> 	3) The tasks that blocked the cgroup from entering the "FROZEN"
-> >>> 		state disappear from the cgroup's set of tasks.
-> >>>
-> >>> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-> >>> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> >>> Acked-by: Serge E. Hallyn <serue@us.ibm.com>
-> >>> Tested-by: Matt Helsley <matthltc@us.ibm.com>
-> >>> ---
-> >>>  include/linux/cgroup_freezer.h |   71 ++++++++
-> >>>  include/linux/cgroup_subsys.h  |    6 
-> >>>  include/linux/freezer.h        |   16 +-
-> >>>  init/Kconfig                   |    7 
-> >>>  kernel/Makefile                |    1 
-> >>>  kernel/cgroup_freezer.c        |  328 +++++++++++++++++++++++++++++++++++++++++
-> >>>  6 files changed, 425 insertions(+), 4 deletions(-)
-> >>>  create mode 100644 include/linux/cgroup_freezer.h
-> >>>  create mode 100644 kernel/cgroup_freezer.c
-> >>>
-> >>> Index: linux-2.6.27-rc1-mm1/include/linux/cgroup_freezer.h
-> >>> ===================================================================
-> >>> --- /dev/null
-> >>> +++ linux-2.6.27-rc1-mm1/include/linux/cgroup_freezer.h
-> >>> @@ -0,0 +1,71 @@
-> >>> +#ifndef _LINUX_CGROUP_FREEZER_H
-> >>> +#define _LINUX_CGROUP_FREEZER_H
-> >>> +/*
-> >>> + * cgroup_freezer.h -  control group freezer subsystem interface
-> >>> + *
-> >>> + * Copyright IBM Corporation, 2007
-> >>> + *
-> >>> + * Author : Cedric Le Goater <clg@fr.ibm.com>
-> >>> + *
-> >>> + * This program is free software; you can redistribute it and/or modify it
-> >>> + * under the terms of version 2.1 of the GNU Lesser General Public License
-> >>> + * as published by the Free Software Foundation.
-> >>> + *
-> >>> + * This program is distributed in the hope that it would be useful, but
-> >>> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> >>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-> >>> + */
-> >>> +
-> >>> +#include <linux/cgroup.h>
-> >>> +
-> >>> +#ifdef CONFIG_CGROUP_FREEZER
-> >>> +
-> >>> +enum freezer_state {
-> >>> +	STATE_RUNNING = 0,
-> >>> +	STATE_FREEZING,
-> >>> +	STATE_FROZEN,
-> >>> +};
-> >>> +
-> >>> +struct freezer {
-> >>> +	struct cgroup_subsys_state css;
-> >>> +	enum freezer_state state;
-> >>> +	spinlock_t lock; /* protects _writes_ to state */
-> >>> +};
-> >>> +
-> >>> +static inline struct freezer *cgroup_freezer(
-> >>> +		struct cgroup *cgroup)
-> >>> +{
-> >>> +	return container_of(
-> >>> +		cgroup_subsys_state(cgroup, freezer_subsys_id),
-> >>> +		struct freezer, css);
-> >>> +}
-> >>> +
-> >>> +static inline struct freezer *task_freezer(struct task_struct *task)
-> >>> +{
-> >>> +	return container_of(task_subsys_state(task, freezer_subsys_id),
-> >>> +			    struct freezer, css);
-> >>> +}
-> >>> +
-> >>> +static inline int cgroup_frozen(struct task_struct *task)
-> >>> +{
-> >>> +	struct freezer *freezer;
-> >>> +	enum freezer_state state;
-> >>> +
-> >>> +	task_lock(task);
-> >>> +	freezer = task_freezer(task);
-> >>> +	state = freezer->state;
-> >>> +	task_unlock(task);
-> >>> +
-> >>> +	return state == STATE_FROZEN;
-> >>> +}
-> >>> +
-> >>> +#else /* !CONFIG_CGROUP_FREEZER */
-> >>> +
-> >>> +static inline int cgroup_frozen(struct task_struct *task)
-> >>> +{
-> >>> +	return 0;
-> >>> +}
-> >>> +
-> >>> +#endif /* !CONFIG_CGROUP_FREEZER */
-> >>> +
-> >>> +#endif /* _LINUX_CGROUP_FREEZER_H */
-> >> Hmm.  I wonder if we really need a separate file for this.  I'd prefer it to be
-> >> in freezer.h, unless there's a good reason not to place it in there.
-> > 
-> > 	Yeah, it's a pretty small header so combining it with another header
-> > would be nice. However if we combine it with freezer.h we'd be including
-> > cgroup.h in unrelated filesystem code. An alternative might be to put it
-> > into a cgroup header for "small" subsystems (which might just be
-> > cgroup.h for now..).
-> > 
-> > Thanks for the review!
-> 
-> I'm not sure the inline is really useful. In that case, we could probably do 
-> something like the following : 
-> 
-> include/linux/freezer.h :
-> 
-> 	#ifdef CONFIG_CGROUP_FREEZER
-> 
-> 	extern int cgroup_frozen(struct task_struct *task);
-> 
-> 	#else /* !CONFIG_CGROUP_FREEZER */
-> 
-> 	static inline int cgroup_frozen(struct task_struct *task)
-> 	{
-> 		return 0;
-> 	}
-> 
-> 	#endif /* !CONFIG_CGROUP_FREEZER */
-> 
-> and in kernel/cgroup_freezer.c:
-> 
-> 	int cgroup_frozen(struct task_struct *task)
-> 	{
-> 		struct freezer *freezer;
-> 		enum freezer_state state;
-> 
-> 		task_lock(task);
-> 		freezer = task_freezer(task);
-> 		state = freezer->state;
-> 		task_unlock(task);
-> 
-> 		return state == STATE_FROZEN;
-> 	}
-> 
-> and kill include/linux/cgroup_freezer.h ? 
 
-I'd prefer this.
+--- Original Message ---
+> Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > I don't see the "if PARTITION_ADVANCED" block as being compatible with the
+> > need to have default partition types per $ARCH.
+> > Do you see some way around that problem?
+> 
+> You need menuconfig_usedefaults.
 
-Thanks,
-Rafael
+Where is that?
+
+~Randy
+
+
