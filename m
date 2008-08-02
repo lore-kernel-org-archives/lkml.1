@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760452AbYHBTeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761071AbYHBTfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760452AbYHBTeu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 15:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758757AbYHBT2h
+	id S1761071AbYHBTfX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 15:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758933AbYHBT2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 15:28:37 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38043 "EHLO ogre.sisk.pl"
+	Sat, 2 Aug 2008 15:28:38 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38041 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758377AbYHBT2Y convert rfc822-to-8bit (ORCPT
+	id S1759382AbYHBT2X convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 15:28:24 -0400
+	Sat, 2 Aug 2008 15:28:23 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Adrian Bunk" <bunk@kernel.org>
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       "Paul Collins" <paul@burly.ondioline.org>
 References: <cbItfVMShGI.A.olC.UMLlIB@albercik>
 In-Reply-To: <cbItfVMShGI.A.olC.UMLlIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +20,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <5ZeQ4vXWqRC.A.4uC.aMLlIB@albercik>
-Subject: [Bug #11233] serial/bfin_5xx.c build error
+Message-ID: <5ZeQ4vXWqRC.A.V9C.kMLlIB@albercik>
+Subject: [Bug #11229] nfsd, v4: oops in find_acceptable_alias, ppc32 Linux, post-2.6.27-rc1
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat,  2 Aug 2008 20:04:20 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +36,11 @@ from 2.6.26.  Please verify if it still should be listed
 and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11233
-Subject		: serial/bfin_5xx.c build error
-Submitter	: Adrian Bunk <bunk@kernel.org>
-Date		: 2008-08-02 11:18 (1 days old)
-References	: http://lkml.org/lkml/2008/8/2/116
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11229
+Subject		: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux, post-2.6.27-rc1
+Submitter	: Paul Collins <paul@burly.ondioline.org>
+Date		: 2008-08-02 12:03 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=121767906702209&w=4
+Handled-By	: J. Bruce Fields <bfields@fieldses.org>
 
 
