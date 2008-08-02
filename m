@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbYHBRwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757840AbYHBSD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758022AbYHBRwe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 13:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYHBRw0
+	id S1757840AbYHBSD7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 14:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYHBSDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 13:52:26 -0400
-Received: from isilmar.linta.de ([213.133.102.198]:55105 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751136AbYHBRw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 13:52:26 -0400
-Date: Sat, 2 Aug 2008 19:52:18 +0200
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: torvalds@osdl.org, akpm@osdl.org
-Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [git pull] PCMCIA bugfix for 2.6.27
-Message-ID: <20080802175218.GA4899@comet.dominikbrodowski.net>
-Mail-Followup-To: torvalds@osdl.org, akpm@osdl.org,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+	Sat, 2 Aug 2008 14:03:51 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:46219 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753202AbYHBSDu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 14:03:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=w/NL2V6STF7VBQsj/gh0qyN/HWjUQAII4zKTIEXdDj5ViMaryjPeV4cTPE53HP3QK7
+         5fo98q/6/S1q1Yf4U1O/oMDSWtDBENOGbn/ECg1NIvkfASGjBOe5P2efn8yYNxtXaqaf
+         ILgpYnm6Fg48pEW172LIipOZgLi4s44nMvL1Y=
+Message-ID: <590657100808021103n1a825705m9af120b103ca7573@mail.gmail.com>
+Date: Sat, 2 Aug 2008 11:03:49 -0700
+From: "Harvey Harrison" <harvey.harrison@gmail.com>
+To: "Grant Grundler" <grundler@parisc-linux.org>
+Subject: Re: [PATCH 14/20] parisc: use the new byteorder headers
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Kyle McMartin" <kyle@mcmartin.ca>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080801231807.GA26550@colo.lackof.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <1216339783.6029.125.camel@brick>
+	 <20080801160647.GA22049@colo.lackof.org>
+	 <1217625817.5846.5.camel@brick>
+	 <20080801231807.GA26550@colo.lackof.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+My reply yesterday didn't seem to make it out.
 
-there's a small PCMCIA bugfix available in the git repository at:
+On Fri, Aug 1, 2008 at 4:18 PM, Grant Grundler
+<grundler@parisc-linux.org> wrote:
+> On Fri, Aug 01, 2008 at 02:23:37PM -0700, Harvey Harrison wrote:
+>> Other than the endianness, any other concerns?
+>
+> Have you had a chance to test this?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-fixes-2.6.git
+le-only personally (X86-32).
 
-Please pull from that location. The diffstat and list of changes follows,
-the individual diffs is also attached below
+> Or can you point me at another big endian arch that has similar
+> use of header files that has been successfully tested?
+>
 
-Thanks,
-	Dominik
+AVR32 got a maintainer ack, I'm assuming that was tested.  It's not
+functionally any different than the existing code really, other
+than allowing compile-time folding in the cpu_to_{endian} helpers.
 
-Dominik Brodowski (1):
-      pcmcia: rsrc_nonstatic: check value, not pointer
+Mips was also acked, but that can be little or big endian.
 
- drivers/pcmcia/rsrc_nonstatic.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> I can arrange for access to parisc HW if you have time/interest
+> in testing this yourself.
+>
 
----
+Sure, drop me a note.
 
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Date: Mon, 28 Jul 2008 16:37:10 +0200
-Subject: [PATCH 01/17] pcmcia: rsrc_nonstatic: check value, not pointer
+I'll have intermittant connection for the next week, so there might be
+a few days before I can reply.
 
-Bug found by Harvey Harrison and Stephen Rothwell.
-
-Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
----
- drivers/pcmcia/rsrc_nonstatic.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/pcmcia/rsrc_nonstatic.c b/drivers/pcmcia/rsrc_nonstatic.c
-index d0c1d63..203e579 100644
---- a/drivers/pcmcia/rsrc_nonstatic.c
-+++ b/drivers/pcmcia/rsrc_nonstatic.c
-@@ -275,7 +275,7 @@ static int readable(struct pcmcia_socket *s, struct resource *res,
- 		destroy_cis_cache(s);
- 	}
- 	s->cis_mem.res = NULL;
--	if ((ret != 0) || (count == 0))
-+	if ((ret != 0) || (*count == 0))
- 		return 0;
- 	return 1;
- }
--- 
-1.5.4.3
-
+Harvey
