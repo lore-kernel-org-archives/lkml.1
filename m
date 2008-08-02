@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbYHBNPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbYHBNQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755662AbYHBNPo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 09:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYHBNPg
+	id S1756345AbYHBNQS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 09:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYHBNQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 09:15:36 -0400
-Received: from gustav.zipernowsky.hu ([193.225.20.248]:34209 "EHLO
-	gustav.zipernowsky.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751957AbYHBNPf (ORCPT
+	Sat, 2 Aug 2008 09:16:05 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:3281 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752560AbYHBNQD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 09:15:35 -0400
+	Sat, 2 Aug 2008 09:16:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-transfer-encoding:x-mailer;
+        b=SfNd81SiLJR+30Xj89sQ7luU3PWdBw3jPV0mwMNFatFdX99OoJ2+g1cUIJfo1OsDbq
+         ye37kD55nspEN4sx33q4MH2M16GYm9trZvEh3qiHLenOWZMPf/ydbTES+lFZpljAegFU
+         /qlDSCiLn/COhsPkPXDRxbMdGOldhqjtiMImM=
+Date: Sat, 02 Aug 2008 21:16:02 +0800
+From: Huang Weiyi <weiyi.huang@gmail.com>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: mm/hugetlb.c: removed duplicated #include
+Message-Id: <20080802211031.D63E.WEIYI.HUANG@gmail.com>
 MIME-Version: 1.0
-Date: Sat, 02 Aug 2008 15:15:26 +0200
-From: Oliver Pinter <oliver@zipernowsky.hu>
-To: Krzysztof Helt <krzysztof.h1@wp.pl>, stable@kernel.org
-Cc: linux-kernel@vger.kernel.org, Rene Herman <rene.herman@gmail.com>,
-       Takashi Iwai <tiwai@suse.de>, Oliver Pinter <oliver.pntr@gmail.com>
-Subject: [RFC, 2.6.26.2-rc1] ALSA: cs4232: fix crash during chip PNP detection
-Reply-To: oliver.pntr@gmail.com
-Message-ID: <132676714a8f13219734d5b2e6ac3384@zipernowsky.hu>
-User-Agent: RoundCube Webmail/0.1
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.24.02 [en]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From b15ebe2616289da258f85b3ff142fca237ef9f59 Mon Sep 17 00:00:00 2001
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Date: Wed, 23 Jul 2008 07:48:49 +0200
-Subject: [PATCH] ALSA: cs4232: fix crash during chip PNP detection
+Both commit 7cb93181629c613ee2b8f4ffe3446f8003074842 and
+78a34ae29bf1c9df62a5bd0f0798b6c62a54d520 added #include <asm/io.h> 
+in mm/hugetlb.c, but in 2 sightly different places.
 
-[ Upstream commit b15ebe2616289da258f85b3ff142fca237ef9f59 ]
+This patch fixed it.
 
-The acard->wss pointer is uninitialized in this function
-which leads to crash during chip PNP detection.
+Signed-off-by: Huang Weiyi <hwy@cn.fujitsu.com>
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-Acked-by: Rene Herman <rene.herman@gmail.com>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
-CC: Oliver Pinter <oliver.pntr@gmail.com>
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 28a2980..d61b954 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -20,7 +20,6 @@
+ #include <asm/io.h>
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+-#include <asm/io.h>
 
-diff --git a/sound/isa/cs423x/cs4236.c b/sound/isa/cs423x/cs4236.c
-index dbe63db..4d4b8dd 100644
---- a/sound/isa/cs423x/cs4236.c
-+++ b/sound/isa/cs423x/cs4236.c
-@@ -325,6 +325,7 @@ static int __devinit snd_cs423x_pnp_init_mpu(int dev,
-struct pnp_dev *pdev)
- static int __devinit snd_card_cs4232_pnp(int dev, struct snd_card_cs4236
-*acard,
- 					 struct pnp_dev *pdev)
- {
-+	acard->wss = pdev;
- 	if (snd_cs423x_pnp_init_wss(dev, acard->wss) < 0)
- 		return -EBUSY;
- 	cport[dev] = -1;
-
+ #include <linux/hugetlb.h>
+ #include "internal.h"
 
