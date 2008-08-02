@@ -1,97 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbYHBTrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbYHBTuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbYHBTrs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 15:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbYHBTrk
+	id S1759427AbYHBTuQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 15:50:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbYHBTuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 15:47:40 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:48447 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754102AbYHBTrk convert rfc822-to-8bit (ORCPT
+	Sat, 2 Aug 2008 15:50:03 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:46155 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754128AbYHBTuB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 15:47:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=Yxo62OqK5rbsNPKWD0ofWE3c9CUH+dAq/vpoVoHZBNwe19RaFHGLGoKRSMUWP0E+BL
-         dNxFlOIl5mMui5rplbKDetq1M0EFf9efepdU0YznIl5263IwgG1eA7+UgtQBDJCHcSBJ
-         YjLLFj0qjASQilk2ixu/5typ635uJ0vO/54wM=
-From: Oliver Pinter <oliver.pntr@gmail.com>
-To: Jon Tollefson <kniht@linux.vnet.ibm.com>, stable@kernel.org
-Subject: [RFC, 2.6.26.2-rc1] fs: check for statfs overflow
-Date: Sat, 2 Aug 2008 21:59:18 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Nishanth Aravamudan <nacc@us.ibm.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oliver Pinter <oliver.pntr@gmail.com>
+	Sat, 2 Aug 2008 15:50:01 -0400
+Date: Sat, 2 Aug 2008 20:49:54 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Len Brown <lenb@kernel.org>, Thomas Renninger <trenn@suse.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@linux.intel.com>,
+       Christian Kornacker <ckornacker@suse.de>
+Subject: Re: ACPI OSI disaster on latest HP laptops - critical temperature shutdown
+Message-ID: <20080802194954.GB1168@srcf.ucam.org>
+References: <200807241727.41715.trenn@suse.de> <alpine.LFD.1.10.0807241952270.6098@localhost.localdomain> <200807251319.12786.trenn@suse.de> <alpine.LFD.1.10.0807250948320.3884@localhost.localdomain> <alpine.LFD.1.10.0808011706350.3011@localhost.localdomain> <20080801223657.GD23558@khazad-dum.debian.net> <20080802054204.GB12646@srcf.ucam.org> <20080802143833.GC14069@khazad-dum.debian.net> <20080802154114.GA28879@srcf.ucam.org> <20080802174958.GA20430@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808022159.18575.oliver.pntr@gmail.com>
+In-Reply-To: <20080802174958.GA20430@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From f4a67cceee4a6f5ed38011a698c9e34747270ae5 Mon Sep 17 00:00:00 2001
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Date: Wed, 23 Jul 2008 21:27:55 -0700
-Subject: [PATCH] fs: check for statfs overflow
+On Sat, Aug 02, 2008 at 02:49:58PM -0300, Henrique de Moraes Holschuh wrote:
 
-[ Upstream commit f4a67cceee4a6f5ed38011a698c9e34747270ae5 ]
+> Correction: special case ALL non-windows.  There's a reason why I said
+> ACPICA should provide OSI(NonWindows).
 
-Adds a check for an overflow in the filesystem size so if someone is
-checking with statfs() on a 16G blocksize hugetlbfs in a 32bit binary that
-it will report back EOVERFLOW instead of a size of 0.
+The only two operating systems of any significance that can run on 
+generic hardware are Windows and Linux. Given that BIOS authors hate the 
+human race, OSI(NonWindows) is equivalent to OSI(Linux).
 
-Acked-by: Nishanth Aravamudan <nacc@us.ibm.com>
-Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Oliver Pinter <oliver.pntr@gmail.com>
-
-diff --git a/fs/compat.c b/fs/compat.c
-index ed43e17..b466042 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -197,8 +197,8 @@ static int put_compat_statfs(struct compat_statfs __user *ubuf, struct kstatfs *
- {
- 	
- 	if (sizeof ubuf->f_blocks == 4) {
--		if ((kbuf->f_blocks | kbuf->f_bfree | kbuf->f_bavail) &
--		    0xffffffff00000000ULL)
-+		if ((kbuf->f_blocks | kbuf->f_bfree | kbuf->f_bavail |
-+		     kbuf->f_bsize | kbuf->f_frsize) & 0xffffffff00000000ULL)
- 			return -EOVERFLOW;
- 		/* f_files and f_ffree may be -1; it's okay
- 		 * to stuff that into 32 bits */
-@@ -271,8 +271,8 @@ out:
- static int put_compat_statfs64(struct compat_statfs64 __user *ubuf, struct kstatfs *kbuf)
- {
- 	if (sizeof ubuf->f_blocks == 4) {
--		if ((kbuf->f_blocks | kbuf->f_bfree | kbuf->f_bavail) &
--		    0xffffffff00000000ULL)
-+		if ((kbuf->f_blocks | kbuf->f_bfree | kbuf->f_bavail |
-+		     kbuf->f_bsize | kbuf->f_frsize) & 0xffffffff00000000ULL)
- 			return -EOVERFLOW;
- 		/* f_files and f_ffree may be -1; it's okay
- 		 * to stuff that into 32 bits */
-diff --git a/fs/open.c b/fs/open.c
-index a99ad09..bb98d2f 100644
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -64,7 +64,8 @@ static int vfs_statfs_native(struct dentry *dentry, struct statfs *buf)
- 		memcpy(buf, &st, sizeof(st));
- 	else {
- 		if (sizeof buf->f_blocks == 4) {
--			if ((st.f_blocks | st.f_bfree | st.f_bavail) &
-+			if ((st.f_blocks | st.f_bfree | st.f_bavail |
-+			     st.f_bsize | st.f_frsize) &
- 			    0xffffffff00000000ULL)
- 				return -EOVERFLOW;
- 			/*
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
