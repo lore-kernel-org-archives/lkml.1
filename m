@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbYHBQxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757801AbYHBQy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757600AbYHBQxn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 12:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbYHBQxh
+	id S1757801AbYHBQy6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 12:54:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbYHBQyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 12:53:37 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41002 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754786AbYHBQxh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 12:53:37 -0400
-Date: Sat, 2 Aug 2008 11:53:34 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, travis@sgi.com
-Subject: Re: [PATCH 2/2] cpuset: use seq_cpumask(), seq_nodemask()
-Message-Id: <20080802115334.dd2732af.pj@sgi.com>
-In-Reply-To: <20080802142838.GA338@martell.zuzino.mipt.ru>
-References: <20080802113131.GB3536@martell.zuzino.mipt.ru>
-	<20080802090542.51052006.pj@sgi.com>
-	<20080802142838.GA338@martell.zuzino.mipt.ru>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Aug 2008 12:54:52 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49610 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755662AbYHBQyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 12:54:52 -0400
+Date: Sat, 2 Aug 2008 19:53:44 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] sh/boards/Makefile typo fix
+Message-ID: <20080802165344.GP19682@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey wrote:
-> That's just a reminder to cpuset people whether /proc/*/status broken or
-> not. Can be safely deleted. :-)
+The following build error was caused by an obvious typo:
 
-What can be safely deleted - the patch, or the comment of the patch?
+<--  snip  -->
 
-I'm confused.
+...
+  LD      arch/sh/mm/built-in.o
+make[2]: *** No rule to make target `arch/sh/boards/board-shmin..o', needed by `arch/sh/boards/built-in.o'.  Stop.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+<--  snip  -->
+
+Reported-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+399bc393a7499892af33d7a4621516c5f5c359d8 
+diff --git a/arch/sh/boards/Makefile b/arch/sh/boards/Makefile
+index ff9b93c..463022c 100644
+--- a/arch/sh/boards/Makefile
++++ b/arch/sh/boards/Makefile
+@@ -5,4 +5,4 @@ obj-$(CONFIG_SH_AP325RXA)	+= board-ap325rxa.o
+ obj-$(CONFIG_SH_MAGIC_PANEL_R2)	+= board-magicpanelr2.o
+ obj-$(CONFIG_SH_RSK7203)	+= board-rsk7203.o
+ obj-$(CONFIG_SH_SH7785LCR)	+= board-sh7785lcr.o
+-obj-$(CONFIG_SH_SHMIN)		+= board-shmin..o
++obj-$(CONFIG_SH_SHMIN)		+= board-shmin.o
+
