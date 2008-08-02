@@ -1,68 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753417AbYHBGgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbYHBHGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753417AbYHBGgr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 02:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYHBGgh
+	id S1753419AbYHBHGj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 03:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYHBHGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 02:36:37 -0400
-Received: from esbens.latnet.lv ([92.240.66.74]:53462 "EHLO esbens.latnet.lv"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752005AbYHBGgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 02:36:36 -0400
-X-Greylist: delayed 1855 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 Aug 2008 02:36:36 EDT
-From: Aivils Stoss <aivils.stoss@latnet.lv>
-To: linux-input@vger.kernel.org, jkosina@suse.cz, linux-kernel@vger.kernel.org,
-       linuxconsole-dev@lists.sourceforge.net
-Subject: PROBLEM: USB keyboards works only 4 per PC host port
-Date: Sat, 2 Aug 2008 07:05:31 +0100
-User-Agent: KMail/1.9.7
+	Sat, 2 Aug 2008 03:06:31 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:8615 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751153AbYHBHGa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Aug 2008 03:06:30 -0400
+Message-ID: <f73f7ab80808020006i7f0ac456ve9b9f73568c11294@mail.gmail.com>
+Date: Sat, 2 Aug 2008 03:06:29 -0400
+From: "Kyle Moffett" <kyle@moffetthome.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Per-instance devpts
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, sukadev@us.ibm.com,
+       "Andrew Morton" <akpm@osdl.org>, serue@us.ibm.com, matthltc@us.ibm.com,
+       "Pavel Emelyanov" <xemul@openvz.org>,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Greg KH" <greg@kroah.com>
+In-Reply-To: <f73f7ab80808020004j15b0d0e5x5fa911242641b34d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808020705.31740.aivils.stoss@latnet.lv>
+References: <20080412172933.GA19295@us.ibm.com>
+	 <1208027215.28187.17.camel@x61.ebiederm.org>
+	 <48935205.3090807@zytor.com>
+	 <f73f7ab80808020004j15b0d0e5x5fa911242641b34d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello All!
+My apologies, I accidentally hit "reply" instead of "reply all" and
+this got sent only to Peter.
 
-PROBLEM: USB keyboards works only 4 per PC host port.
+On Fri, Aug 1, 2008 at 2:12 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> This is what it would appear would have to change, and I'd like to get
+> people's feeing for the user-space impact:
+>
+> 1. /dev/ptmx would have to change to a symlink, ptmx -> pts/ptmx.
+> 2. Permissions on /dev/ptmx would not be persistent, and would have to
+>   be set via devpts mount options (unless they're 0666 root.tty, which
+>   would presumably be the default.)
+> 3. The /proc/sys/kernel/pty limit would be global; a per-filesystem
+>   limit could be added on top or instead (presumably via a filesystem
+>   mount options.)
 
-I work for project which will use 15 - 25 keyboards for children teaching.
-I discover current Linux 2.6.22 , 2.6.24, 2.6.26 dot not support more
-than 4 keyboards per single PC host port. All plugged in keyboards
-are listed as USB devices, listed as input devices, but capable to
-send input events are only 4 keyboards, no matter where keyboards
-are plugged in to HUB cascade. All plugged in keyboards switch LED's,
-when i press NumLock.
+Here's my suggestion:
 
-I tested various usb-hub units and various host PC hardware, i even
-replace hub power supplay units from 5V1A to 5V3A. All tested cases
-give best results - 4 keyboards per PC host port and worstest - some PC
-cannot do more than 8 keyboards at all.
-I suppose this is Linux kernel bug because i test keyboards under
-Windows, which support any schema of cascading of usb hubs.
+By default, without any mount options, use the current "legacy"
+behavior.  The devpts filesystem would point to a "global" instance on
+the whole box, controlled by the traditional /dev/ptmx device node.
+There would *NOT* be a /dev/pts/ptmx node.
 
-I will send any log file if that is necessary, but trouble will pop up
-in a row of kernels. 2.6.22 didn't have error messages. 2.6.24, 2.6.26
-tend to total slow down with eternal reset messages:
-Jul 25 07:16:00 awork kernel: input,hiddev97: USB HID v1.10 Mouse 
-[USB-compliant keyboard] on usb-0000:00:1d.0-1.1.2
-Jul 25 07:16:01 awork kernel: usb 2-1.1.1: reset low speed USB device using 
-uhci_hcd and address 17
-Jul 25 07:16:01 awork kernel: usb 2-1.1.2: reset low speed USB device using 
-uhci_hcd and address 18
-Jul 25 07:16:02 awork kernel: usb 2-1.1.1: reset low speed USB device using 
-uhci_hcd and address 17
-Jul 25 07:16:03 awork kernel: usb 2-1.1.2: reset low speed USB device using 
-uhci_hcd and address 18
-Jul 25 07:16:04 awork kernel: usb 2-1.1.1: reset low speed USB device using 
-uhci_hcd and address 17
-Jul 25 07:16:05 awork kernel: usb 2-1.1.2: reset low speed USB device using 
-uhci_hcd and address 18
+If the devpts filesystem is mounted with a special option ("permount"?
+"noglobal"?), then it will create a new devpts instance associated
+with the filesystem.  A devpts mounted that way *WILL* have a magic
+/dev/pts/ptmx node.
 
+If the kernel is built with CONFIG_DEVPTS_FORCE_PERMOUNT then the
+traditional /dev/ptmx device node will be neutered (IE: always return
+-ENODEV) and the "permount" option will be forced for all devpts
+mounts.  This will also remove the static global devpts instance.
 
-Best regards,
-Aivils Stoss
+Once distros add the ptmx=>pts/ptmx symlink and validate their
+software they can turn on that config option and be able to safely
+virtualize /dev/pts.
+
+For the distros which don't, sysadmins can easily patch their own udev
+and init scripts to turn on the "permount" option and set up the ptmx
+symlink, although child namespaces will still theoretically be able to
+get outside of their namespace through the mostly-unused global devpts
+instance.
+
+Cheers,
+Kyle Moffett
