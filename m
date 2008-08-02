@@ -1,57 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbYHBPm3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbYHBPrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757283AbYHBPm3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 11:42:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbYHBPmW
+	id S1756749AbYHBPrz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 11:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbYHBPrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 11:42:22 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38436 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753772AbYHBPmV (ORCPT
+	Sat, 2 Aug 2008 11:47:46 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:16756 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752476AbYHBPrp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 11:42:21 -0400
-Message-ID: <4894800F.40802@zytor.com>
-Date: Sat, 02 Aug 2008 08:41:03 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 2 Aug 2008 11:47:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=SN34UkaQFHrfAF2ZfmwT/fC/vwdpd9FykvSMVqF0Fb947VL4Ul4ucSKoLUuf1UfQat
+         yXPUKYIn9XIIoaYHjkOKS7B3KEyKQrwxo3KyhxuOjIkZcCMp91XTebaHau7h2eRTwtY0
+         Ix3cPAdqQhQcWmmDgxILvbeVWH2gWNHEdl674=
+Message-ID: <48f7fe350808020847iff03890nc6d910f7b77fee9e@mail.gmail.com>
+Date: Sat, 2 Aug 2008 11:47:45 -0400
+From: "Ryan Hope" <rmh3093@gmail.com>
+To: "Edward Shishkin" <edward.shishkin@gmail.com>
+Subject: Re: reiser4 for 2.6.27-rc1
+Cc: "Theodore Tso" <tytso@mit.edu>, "Ric Wheeler" <ricwheeler@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Reiserfs mailing list" <reiserfs-devel@vger.kernel.org>
+In-Reply-To: <489390C6.8020903@gmail.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/16] dyn_array and nr_irqs support v2
-References: <1217583464-28494-1-git-send-email-yhlu.kernel@gmail.com>	<m1iqukwjjg.fsf@frodo.ebiederm.org>	<86802c440808011430i6cf5cb8cn519777a78dd987b0@mail.gmail.com>	<m1wsj0nyx6.fsf@frodo.ebiederm.org>	<86802c440808011809t275aa511h4a1e9d70ede21702@mail.gmail.com>	<m163qkjirc.fsf@frodo.ebiederm.org>	<86802c440808011901w2aa40b25u45f5686b262cc2aa@mail.gmail.com>	<4893C066.60401@zytor.com> <m1abfwi1ht.fsf@frodo.ebiederm.org>	<4893D459.4030209@zytor.com> <m14p64gh81.fsf@frodo.ebiederm.org>
-In-Reply-To: <m14p64gh81.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48f7fe350808010649l1111f48enbb6eca3cfcbba67f@mail.gmail.com>
+	 <20080801162548.GD8654@mit.edu>
+	 <48f7fe350808010934k32b9de09we657e57087a3e3a5@mail.gmail.com>
+	 <20080801164541.GF8654@mit.edu> <489352D8.2020700@gmail.com>
+	 <489390C6.8020903@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> 
-> Yes.  I want the option of using those bits.  It might not be smart to
-> use them to encode a physical location and the irq number but just
-> having the option would be nice.
-> 
+Can you explain a little more what this "plugin design documentation"
+actually is and how it supposed to help?
+-Ryan
 
-Urk!  First of all, there isn't enough space as we have already proven 
-(on the machines where it actually matters there just aren't enough 
-bits), but doing this kind of stuff *optionally* is going to hurt even 
-worse.
-
-Furthermore, this crap will break anyway the *next* time someone comes 
-up with a new clever way to do interrupts -- and to truly get stable 
-identifiers, we can't treat HyperTransport MSI as APICs anymore, yadda, 
-yadda...
-
-> Making /proc/interrupts useful without breaking user space is going to be
-> an interesting challenge one of these days.
-
-If changing to non-numbers in /proc/interrupts will break userspace, 
-then userspace will have to deal with a numeric token in 
-/proc/interrupts which will have to be looked up elsewhere (perhaps in a 
-sysfs directory) to get a more meaningful index.
-
-	-hpa
+On Fri, Aug 1, 2008 at 6:40 PM, Edward Shishkin
+<edward.shishkin@gmail.com> wrote:
+> Ric Wheeler wrote:
+>> Theodore Tso wrote:
+>>> On Fri, Aug 01, 2008 at 12:34:53PM -0400, Ryan Hope wrote:
+>>>
+>
+> Hi, I am here :)
+> Join our mailing list:
+>
+> http://vger.kernel.org/vger-lists.html#reiserfs-devel
+> http://marc.info/?l=reiserfs-devel&r=1&w=2
+>
+> There are many interesting tasks to resolve/investigate..
+>
+>>>> Hmmm, removing the plugin support might not be so hard....  I might
+>>>> have to try this...
+>
+> Please, don't try to do this.
+>
+> I am working on the plugin design document. It will be ready
+> approximately in September. I believe that it'll address all the
+> mentioned complaints.
+>
+>>>> I am not impressed with btrfs yet.
+>>>>
+>>>
+>>> Well, if you're going to work on reiser4 (and I think there were other
+>>> people who had also expressed interest/plans to work on it; you might
+>>> try doing a search on the various mailing lists so you can coordinate
+>>> with them and avoid duplicating work), my suggestion to you would be
+>>> to find the comments that were made by the reviewers way back when,
+>>> and make sure those comments have been addressed.
+>>>
+>>> Then, re-requests a code review, and promise that you won't abuse, and
+>>> insult the integrity and impugn the motivations of the reviewers
+>
+> Well, Ted, I'll promise ;)
+> We'll adhere strictly the propositional logic in the review thread..
+>
+> Thanks,
+> Edward.
+>
+>>> like
+>>> Hans did, and hopefully after they review the code, fix those problems
+>>> as well.  Then you can try resubmitting for inclusion.
+>>>
+>>> Best regards,
+>>>
+>>>                                              - Ted
+>>>
+>>
+>> My most up to date information is that Edward is still actively
+>> working on reiser4....
+>>
+>> ric
+>>
+>>
+>
+>
+>
