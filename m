@@ -1,94 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbYHBNSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbYHBNXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756149AbYHBNSm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 09:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYHBNSe
+	id S1755791AbYHBNXS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 09:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbYHBNXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 09:18:34 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:38185 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752976AbYHBNSd (ORCPT
+	Sat, 2 Aug 2008 09:23:09 -0400
+Received: from smtp-out28.alice.it ([85.33.2.28]:3347 "EHLO
+	smtp-out28.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752832AbYHBNXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 09:18:33 -0400
-Date: Sat, 2 Aug 2008 14:18:01 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-cc: Rafael Wysocki <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, linux-pm@lists.osdl.org
-Subject: Re: [BUG] 2.6.27-rc1 in ext3_find_entry
-In-Reply-To: <48942E23.7070402@tuffmail.co.uk>
-Message-ID: <Pine.LNX.4.64.0808021352001.15876@blonde.site>
-References: <48932F07.9090407@tuffmail.co.uk> <48942E23.7070402@tuffmail.co.uk>
+	Sat, 2 Aug 2008 09:23:08 -0400
+X-Greylist: delayed 613 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 Aug 2008 09:23:07 EDT
+Message-ID: <48945D43.5070800@alice.it>
+Date: Sat, 02 Aug 2008 15:12:35 +0200
+From: Mario Vanoni <vanonim@alice.it>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080716 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.26.1
+Content-Type: multipart/mixed;
+ boundary="------------020202070201040707020507"
+X-OriginalArrivalTime: 02 Aug 2008 13:12:52.0027 (UTC) FILETIME=[780080B0:01C8F4A1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 Aug 2008, Alan Jenkins wrote:
-> Alan Jenkins wrote:
-> > ...followed by several secondary BUGs; most happened as I tried to open
-> > new Konsole instances.  My computer soon became unusable - X restarted
-> > and then froze, but it responded to SysRQs.  It may just have been all
-> > my processes dying, but there was more disk activity than I expected.
-> >
-> > Strictly speaking I was running v2.6.26-8042-gce6fce4, with a two-line
-> > patch to fix a different problem (see
-> > <http://bugzilla.kernel.org/show_bug.cgi?id=11178>).
+This is a multi-part message in MIME format.
+--------------020202070201040707020507
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-(Yes, I owe you for that patch: saved me a bisect, thank you!)
+NOT in LKML, cc if needed please
 
-> >
-> > In case it matters, this happened some time after a series of maybe 3
-> > suspend/resume cycles in quick succession.  As you can see it happened
-> > in the middle of running git; I forget exactly what I was doing.
-> 
-> It happened again.  I didn't get any BUG in ext3 this time; just a
-> disabling stream of BUGs in copy_page_c.  They started a few seconds
-> after resume.  So I'm now confident that this is triggered by suspend to
-> ram.
-> 
-> I first noticed it after running an ls command (ls /var/cache/polipo),
-> which was Killed.  I was running polipo at the time; it wouldn't have
-> been the first access to this directory.  However it was probably the
-> first access to this directory after the computer was woken from suspend
-> to ram.
-> 
-> I had the same two-line PCI patch applied.  This time it was atop a
-> genuine descendant of v2.6.27-rc1, viz v2.6.27-rc1-156-g94ad374.
-> 
-> I've put the full trace showing all the BUGs at
-> <http://www-student.cs.york.ac.uk/~aj504/dmesg-suspend-BUG-copy_page_c.txt>. 
+Works perfectly on 3 machines, static kernel, now >4h.
 
-Your first report had twenty oopses of this kind:
-[  228.358397] BUG: unable to handle kernel paging request at ffff88004fcXXXXX
-[  228.358423] PGD 202063 PUD 8067 PMD 800000004fc03000 
-whereas it should be               PMD 800000004fc001e3
+Compilation gives WARNING: ... Section mismatch ...,
+see attach compiled with
+make CONFIG_DEBUG_SECTION_MISMATCH=y -j 2 bzImage 2> kernel.stderr
 
-Your second report had six oopses of this kind:
-[19280.236437] BUG: unable to handle kernel paging request at ffff88004fbXXXXX
-[19280.236645] PGD 202063 PUD 8067 PMD 803c85370cfc01e3 
-whereas it should be               PMD 800000004fa001e3
+Slackware 12.1, gcc 4.2.3, Intel Core 2 6320, 4GB mem.
 
-Those corrupted PMD entries are why it's crashing: not (or very unlikely
-to be) a problem with ext3 or copy_page_c themselves.  But it does seem
-likely that it's connected with suspend/resume.
+Congrats for the updated kernel
+Mario Vanoni
 
-I think I'd try editing my drivers/base/power/main.c, inserting some
-tests and printks in suspend_device, suspend_device_noirq, resume_device,
-resume_device_noirq (hope they're sensible places: Rafael may have better
-advice).
+--------------020202070201040707020507
+Content-Type: text/plain;
+ name="kernel.stderr"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="kernel.stderr"
 
-You want to check that the unsigned long at 0xffff8800000083e8
-is                                          0x800000004fa001e3
-and the unsigned long at                    0xffff8800000083f0
-is                                          0x800000004fc001e3
-with printk of device name where it goes wrong.
+WARNING: arch/x86/kernel/built-in.o(.text+0x104de): Section mismatch in reference from the function cpu_exit_clear() to the function .cpuinit.text:cpu_uninit()
+The function cpu_exit_clear() references
+the function __cpuinit cpu_uninit().
+This is often because cpu_exit_clear lacks a __cpuinit 
+annotation or the annotation of cpu_uninit is wrong.
 
-Or you may find I'm wrong and those are different from the start
-(changing a page attribute within a 0x200000 range would have to
-break up the 0x1e3 entries: I do wonder whether a change of page
-attribute might even be responsible).
+WARNING: kernel/built-in.o(.text+0x51e1): Section mismatch in reference from the function init_hrtick() to the variable .cpuinit.data:hotplug_hrtick_nb.31442
+The function init_hrtick() references
+the variable __cpuinitdata hotplug_hrtick_nb.31442.
+This is often because init_hrtick lacks a __cpuinitdata 
+annotation or the annotation of hotplug_hrtick_nb.31442 is wrong.
 
-Hugh
+fs/autofs4/symlink.c: In function 'autofs4_follow_link':
+fs/autofs4/symlink.c:18: warning: passing argument 2 of 'nd_set_link' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_fromio':
+include/asm/io_32.h:210: warning: passing argument 2 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_toio':
+include/asm/io_32.h:216: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_fromio':
+include/asm/io_32.h:210: warning: passing argument 2 of '__memcpy' discards qualifiers from pointer target type
+net/bridge/br_netfilter.c: In function 'br_nf_forward_arp':
+net/bridge/br_netfilter.c:717: warning: passing argument 4 of 'nf_hook_thresh' discards qualifiers from pointer target type
+net/bridge/br_netfilter.c:717: warning: passing argument 5 of 'nf_hook_thresh' discards qualifiers from pointer target type
+drivers/ide/pci/aec62xx.c: In function 'init_chipset_aec62xx':
+drivers/ide/pci/aec62xx.c:146: warning: passing argument 2 of 'pci_set_drvdata' discards qualifiers from pointer target type
+drivers/ide/pci/aec62xx.c:148: warning: passing argument 2 of 'pci_set_drvdata' discards qualifiers from pointer target type
+drivers/ide/pci/hpt366.c: In function 'hpt366_init_one':
+drivers/ide/pci/hpt366.c:1588: warning: passing argument 2 of 'pci_set_drvdata' discards qualifiers from pointer target type
+drivers/ide/pci/hpt366.c:1596: warning: passing argument 2 of 'pci_set_drvdata' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_toio':
+include/asm/io_32.h:216: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_toio':
+include/asm/io_32.h:216: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_toio':
+include/asm/io_32.h:216: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_toio':
+include/asm/io_32.h:216: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_toio':
+include/asm/io_32.h:216: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_fromio':
+include/asm/io_32.h:210: warning: passing argument 2 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_toio':
+include/asm/io_32.h:216: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_fromio':
+include/asm/io_32.h:210: warning: passing argument 2 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_toio':
+include/asm/io_32.h:216: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_fromio':
+include/asm/io_32.h:210: warning: passing argument 2 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memset_io':
+include/asm/io_32.h:204: warning: passing argument 1 of '__constant_c_and_count_memset' discards qualifiers from pointer target type
+include/asm/io_32.h:204: warning: passing argument 1 of '__constant_c_memset' discards qualifiers from pointer target type
+include/asm/io_32.h:204: warning: passing argument 1 of '__memset_generic' discards qualifiers from pointer target type
+include/asm/io_32.h:204: warning: passing argument 1 of '__memset_generic' discards qualifiers from pointer target type
+drivers/net/wan/farsync.c: In function 'fst_intr_rx':
+drivers/net/wan/farsync.c:1339: warning: cast to pointer from integer of different size
+drivers/net/wan/farsync.c: In function 'do_bottom_half_tx':
+drivers/net/wan/farsync.c:1437: warning: cast to pointer from integer of different size
+include/asm/io_32.h: In function 'memcpy_fromio':
+include/asm/io_32.h:210: warning: passing argument 2 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_toio':
+include/asm/io_32.h:216: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_fromio':
+include/asm/io_32.h:210: warning: passing argument 2 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_toio':
+include/asm/io_32.h:216: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_fromio':
+include/asm/io_32.h:210: warning: passing argument 2 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_toio':
+include/asm/io_32.h:216: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memset_io':
+include/asm/io_32.h:204: warning: passing argument 1 of '__constant_c_and_count_memset' discards qualifiers from pointer target type
+include/asm/io_32.h:204: warning: passing argument 1 of '__constant_c_memset' discards qualifiers from pointer target type
+include/asm/io_32.h:204: warning: passing argument 1 of '__memset_generic' discards qualifiers from pointer target type
+include/asm/io_32.h:204: warning: passing argument 1 of '__memset_generic' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_fromio':
+include/asm/io_32.h:210: warning: passing argument 2 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_toio':
+include/asm/io_32.h:216: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+drivers/net/tun.c: In function 'tun_chr_aio_read':
+drivers/net/tun.c:463: warning: passing argument 3 of 'tun_put_user' discards qualifiers from pointer target type
+drivers/net/tun.c: In function 'tun_chr_aio_write':
+drivers/net/tun.c:362: warning: passing argument 2 of 'tun_get_user' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_fromio':
+include/asm/io_32.h:210: warning: passing argument 2 of '__memcpy' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memcpy_fromio':
+include/asm/io_32.h:210: warning: passing argument 2 of '__memcpy' discards qualifiers from pointer target type
+net/ipv4/netfilter/ipt_ULOG.c: In function 'ipt_ulog_packet':
+net/ipv4/netfilter/ipt_ULOG.c:213: warning: passing argument 1 of '__net_timestamp' discards qualifiers from pointer target type
+include/asm/io_32.h: In function 'memset_io':
+include/asm/io_32.h:204: warning: passing argument 1 of '__constant_c_and_count_memset' discards qualifiers from pointer target type
+include/asm/io_32.h:204: warning: passing argument 1 of '__constant_c_memset' discards qualifiers from pointer target type
+include/asm/io_32.h:204: warning: passing argument 1 of '__memset_generic' discards qualifiers from pointer target type
+include/asm/io_32.h:204: warning: passing argument 1 of '__memset_generic' discards qualifiers from pointer target type
+WARNING: vmlinux.o(.text+0x107ee): Section mismatch in reference from the function cpu_exit_clear() to the function .cpuinit.text:cpu_uninit()
+The function cpu_exit_clear() references
+the function __cpuinit cpu_uninit().
+This is often because cpu_exit_clear lacks a __cpuinit 
+annotation or the annotation of cpu_uninit is wrong.
+
+WARNING: vmlinux.o(.text+0x20651): Section mismatch in reference from the function init_hrtick() to the variable .cpuinit.data:hotplug_hrtick_nb.31442
+The function init_hrtick() references
+the variable __cpuinitdata hotplug_hrtick_nb.31442.
+This is often because init_hrtick lacks a __cpuinitdata 
+annotation or the annotation of hotplug_hrtick_nb.31442 is wrong.
+
+Root device is (8, 1)
+Setup is 10620 bytes (padded to 10752 bytes).
+System is 3837 kB
+CRC cdb3bc56
+
+--------------020202070201040707020507--
