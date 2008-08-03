@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbYHCPQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758377AbYHCPTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758049AbYHCPQw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 11:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbYHCPQo
+	id S1758377AbYHCPTU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 11:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbYHCPTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 11:16:44 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:49002 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755585AbYHCPQn (ORCPT
+	Sun, 3 Aug 2008 11:19:06 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:51370 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755859AbYHCPTD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 11:16:43 -0400
+	Sun, 3 Aug 2008 11:19:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=lZoBr0s1bfDgX/+4OuL4c0pLg82XRmwBP2vXD8KmpEXmSjfdwwFA8sf1zJCPI5X76Y
-         bhbORrSfAa4gk3x0zorcj7Gr2A1MnDWvtR8qSQeLFXB5k9f/cjFOr4YtYt19byyl+2tR
-         QmI/d5/2KI/LdvjnvZ8FhiNnUnp+T9drQvZtw=
-Message-ID: <863e9df20808030816w3ace806cwb577f81deb2633f3@mail.gmail.com>
-Date: Sun, 3 Aug 2008 20:46:42 +0530
-From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
-To: "Ming Lei" <tom.leiming@gmail.com>
-Subject: Re: [RFC] ftrace: support tracing functions in one module
-Cc: "Steven Rostedt" <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Steven Rostedt" <srostedt@redhat.com>
-In-Reply-To: <d82e647a0808030050n3b72d96dh91c0ac94eadc34f@mail.gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=FzKmTsCKS77NoKCOT/Tk8S854nUorSKAzACoveXTuYFbD2w70bhNk1bHLraw1daXjn
+         8xzLwzDZdkR2+Lg/JpZHwYE3Q1IYvGbH4boQMxNb54F40S99Ly9iawjVYp9ymR+YlWV3
+         rAFI9eMyCnHpPXSzgZ4yZpmj9VRST1fWJOu04=
+Message-ID: <4895CC61.6040301@gmail.com>
+Date: Sun, 03 Aug 2008 22:18:57 +0700
+From: Hong Tran Duc <hongtd2k@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Matthew Wilcox <matthew@wil.cx>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Oops when read/write or mount/unmount continuously ~ 600.000
+ times
+References: <4895A96E.2040303@gmail.com> <20080803133817.GG26461@parisc-linux.org>
+In-Reply-To: <20080803133817.GG26461@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d82e647a0808030050n3b72d96dh91c0ac94eadc34f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 3, 2008 at 1:20 PM, Ming Lei <tom.leiming@gmail.com> wrote:
-> Could you add the support of tracing functions in one module only to ftrace?
+Matthew Wilcox wrote:
+> On Sun, Aug 03, 2008 at 07:49:50PM +0700, Hong Tran Duc wrote:
+>   
+>> The reasons is almost linked list on those function was broken. Ex: 
+>> linkedlist->next linkedlist->prev = NULL or set to invalid address.
+>> In the situation SIGILL, the instruction pointer (NIP) is same as the 
+>> return address register (LR).
+>>     
+>
+> In later kernels, we have a list debugging option which lets you find
+> list corruptions earlier.
+>   
+I'm not have much experience with linux kernel architecture, so I don't 
+know where I can focus on.
 
-You can do that at compile time only by selective compilation of
-files/modules which need to be traced with the -pg CFLAG. For
-instance, the inlined patch enables tracing of all functions in
-softirq.o only.
+Currently, I'm suspecting these module are affected with this Oops: 
+Block I/O management and filesystem, some Wait Queue  ? Is that correct ?
+Or would you give me some suggestion what is the most suspicious ? or 
+some debugging option you told above ?
 
-Regards,
-Abhishek Sagar
+Thanks for your help,
 
---
-## For testing only
 
-diff --git a/Makefile b/Makefile
-index 40f2481..09d216b 100644
---- a/Makefile
-+++ b/Makefile
-@@ -532,10 +532,6 @@ KBUILD_CFLAGS      += -g
- KBUILD_AFLAGS  += -gdwarf-2
- endif
+-- 
+nm.
 
--ifdef CONFIG_FTRACE
--KBUILD_CFLAGS  += -pg
--endif
--
- # We trigger additional mismatches with less inlining
- ifdef CONFIG_DEBUG_SECTION_MISMATCH
- KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 82f1f3f..c099be3 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -14,14 +14,8 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o \
- CFLAGS_REMOVE_sched.o = -mno-spe
+GPG Key ID: 0xDD253B25
+Fingerprint: 2B17 D64A 9561 A443 2ABC 1302 4641 D0B7 DD25 3B25
 
- ifdef CONFIG_FTRACE
--# Do not trace debug files and internal ftrace files
--CFLAGS_REMOVE_lockdep.o = -pg
--CFLAGS_REMOVE_lockdep_proc.o = -pg
--CFLAGS_REMOVE_mutex-debug.o = -pg
--CFLAGS_REMOVE_rtmutex-debug.o = -pg
--CFLAGS_REMOVE_cgroup-debug.o = -pg
--CFLAGS_REMOVE_sched_clock.o = -pg
--CFLAGS_REMOVE_sched.o = -mno-spe -pg
-+CFLAGS_softirq.o = -pg
-+CFLAGS_REMOVE_sched.o = -mno-spe
- endif
-
- obj-$(CONFIG_PROFILING) += profile.o
