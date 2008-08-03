@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYHCS2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758288AbYHCSaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbYHCS2V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 14:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYHCS2N
+	id S1758288AbYHCSaH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 14:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbYHCS34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 14:28:13 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:36605 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752249AbYHCS2M (ORCPT
+	Sun, 3 Aug 2008 14:29:56 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:11323 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751628AbYHCS3z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 14:28:12 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5352"; a="5277794"
-Message-ID: <4895F8CE.6010204@qualcomm.com>
-Date: Sun, 03 Aug 2008 11:28:30 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 3 Aug 2008 14:29:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=QMC1aPd482kvmKDkbMyfSOGoSHXL4fF1NN4z72w/Io7qJgIrB/uqURpJCVzwTdqHV9
+         aAz2phgIxYUc6l6b5ihKjiZyJg9GOMB5S079dqycB0Phr41IijzJNplDI17lrbUD+Cgj
+         Nu4pt94xmn21vgR8GjzOc2mCFMMwOifjLazDc=
+Date: Sun, 3 Aug 2008 20:29:19 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <andi@firstfloor.org>
+Subject: acpi error on 2.6.27-rc1+ (ACPI Error (dsobject-0501))
+Message-ID: <20080803182913.GB8691@joi>
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: penberg@cs.helsinki.fi, cl@linux-foundation.org, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SLUB: detach SLUB_DEBUG and SYSFS
-References: <20080801000405.GA7072@martell.zuzino.mipt.ru>
-In-Reply-To: <20080801000405.GA7072@martell.zuzino.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
+I noticed that 2.6.27-rc1+ (2b12a4c524812fb3f6ee590a02e65b95c8c32229) prints this:
+Completing Region/Field/Buffer/Package initialization:.ACPI Error (dsobject-0501): Package List length (EA) larger than NumElements count (3), truncated
 
+Is it something to worry about?
+I've put full log, config and acpidump on http://www.kadu.net/~joi/kernel/2008.08.03/
 
-Alexey Dobriyan wrote:
-> Right now, SYSFS=n means no SLUB debugging, no even basic poisoning,
-> to hell with tunables.
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> ---
-> 
->  init/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -736,7 +736,7 @@ config VM_EVENT_COUNTERS
->  config SLUB_DEBUG
->  	default y
->  	bool "Enable SLUB debugging support" if EMBEDDED
-> -	depends on SLUB && SYSFS
-> +	depends on SLUB
->  	help
->  	  SLUB has extensive debug support features. Disabling these can
->  	  result in significant savings in code size. This also disables
-
-While at it, can you guys move this into lib/Kconfig.debug ?
-
-Max
+Marcin
