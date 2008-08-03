@@ -1,58 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbYHCRmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757467AbYHCRnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756512AbYHCRmc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 13:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbYHCRmW
+	id S1757467AbYHCRnB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 13:43:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbYHCRmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 13:42:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41238 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751263AbYHCRmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 13:42:21 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: Kernel Summit request for Discussion of future of ATA (libata) and IDE
-Date: Sun, 3 Aug 2008 19:45:03 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>
-References: <1217779055.4179.10.camel@localhost.localdomain> <20080803173941.314edf33@lxorguk.ukuu.org.uk> <20080803173254.GI615@1wt.eu>
-In-Reply-To: <20080803173254.GI615@1wt.eu>
+	Sun, 3 Aug 2008 13:42:53 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:40994 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751397AbYHCRmw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 13:42:52 -0400
+Message-ID: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
+Date: Sun, 3 Aug 2008 11:22:36 -0600 (MDT)
+Subject: [ANNOUNCE] Merkey's Kernel Debugger
+From: jmerkey@wolfmountaingroup.com
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808031945.04160.rjw@sisk.pl>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 3 of August 2008, Willy Tarreau wrote:
-> On Sun, Aug 03, 2008 at 05:39:41PM +0100, Alan Cox wrote:
-> > Actually what a material number of embedded systems need is a single
-> > dumb-as-a-rock CF only PIO driver which doesn't suck in large chunks of
-> > midlayer code. I'm just not sure that trend will continue as CF is giving
-> > way to other smaller media.
-> 
-> I bet we'll see CF for a long time, because it is the only cheap
-> removable media to support IDE emulation and be bootable from an
-> unmodified PC BIOS. SD is cheaper and will soon provide larger
-> capacities, but it still requires a separate controller and is
-> not bootable with standard BIOSes.
-> 
-> Anyway, in my experience, libata supports CF on embedded controllers
-> pretty well. So maybe we should start marking IDE drivers deprecated
-> to encourage people to try libata instead and report breakage if any.
 
-Well, I know of at least one case of PC hardware in which an old IDE driver
-basically works while the libata/pata poeple have no idea why their driver
-doesn't:
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9157
+This is a linux port of the kernel debugger I wrote in 2000 for the
+MANOS/Gadugi Operating System.  I created this particular
+port in June of this year from the MANOS/Gadugi source code I released
+under the GNU public license in 2000.
 
-Thanks,
-Rafael
+I wrote the SMP debugger use in SMP Netware in 1994 and 1995, and that was
+later rolled into the main Netware kernel, though a lot of folks
+contributed helped merge it into Netware.  This debugger closely resembles
+the legacy Netware kernel debugger, and I find it easier to use than kdb
+with less
+crashes and problems.
+
+This version is ia32 only at present, but I am completing x86_64 support
+and will post it as it is completed.  I basically wrote this tool for
+my own internal use and for my projects since I could not find a debugger
+in linux I was used to.  I add support to it as I need it for my own
+internal use.
+
+This linux port of my kernel debugger does not require kdb or the kdb hooks
+and is more minimal than kdb and has some features kdb does not, such as
+Intel style disassembly with dereferencing of data during disassembly
+and a very robust mathematical numeric support with conditional breakpoints.
+
+I created a far more robust version of this debugger in 2001 which
+included source level support, integrated screen and keyboard support,
+remote networking capability, and loader support and licensed it to another
+company.  I was placed under a 5 year non-compete not to port
+this tool to Linux until end of year 2007.  The folks who licensed it
+did absolutely nothing with it of consequence, and 2007 has come and gone,
+so I am released from the non-compete and decided to port the debugger
+from my old Open Source operating system and I figured it might be as useful
+to others as it has been for my projects.
+
+I will be posting user space modules which can be loaded with this version
+at some point which will enable source level debugging and a bunch of
+other features.  This add ons may get farmed out to another company for
+support.
+
+KNOWN ISSUES
+------------
+
+This debugger works very well on SMP systems, but some of the directed
+NMI features are intended for post mortem crashed systems.
+
+All numbers entered are interpreted as hex.  If you want a number
+interpreted from the debugger console in decimal, add an 'r' to the end of
+the number for "real number".
+
+There is awesome help support in the debugger.  type "help" or "help
+<command name>".
+
+I have support for post-mortem directed NMI breakpoints from the debugger
+console if you want to halt another processor which can hang on some
+systems, but usually does not.
+
+I do not have ia64 support and since Intel in 2000 refused to share ia64
+information with me, I never completed the ia64 section of the debugger.
+If and when I obtain an ia64 system, I will look into putting it in or
+try to adapt the disassembler out of kdb which has ia64 and x86_64 support.
+
+
+
+vanilla kernels
+
+ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.18-ia32-08-02-08.patch
+ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.19-ia32-08-02-08.patch
+ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.20-ia32-08-02-08.patch
+ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.21-ia32-08-02-08.patch
+ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.22-ia32-08-02-08.patch
+ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.23-ia32-08-02-08.patch
+ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.24-ia32-08-02-08.patch
+ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.25-ia32-08-02-08.patch
+ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.26-ia32-08-02-08.patch
+
+
+Linux distributions
+
+ftp://ftp.wolfmountaingroup.org/pub/mdb/distro/mdb-2.6.16-ia32-SLES-10-08-02-08.patch
+ftp://ftp.wolfmountaingroup.org/pub/mdb/distro/mdb-2.6.18-el5-08-02-08.patch
+ftp://ftp.wolfmountaingroup.org/pub/mdb/distro/mdb-2.6.22.5-31-ia32-suse10.3-08-01-08.patch
+ftp://ftp.wolfmountaingroup.org/pub/mdb/distro/mdb-2.6.23-ia32-fc8-08-02-08.patch
+ftp://ftp.wolfmountaingroup.org/pub/mdb/distro/mdb-2.6.25.14-ia32-fc9-08-02-08.patch
+
+Any additional code fixes I would appreciate being placed back into the
+tree, so please sent them back to me if you find the debugger useful.
+
+I commend Keith Owens for his work on kdb and his project is more than
+welcome to share and adapt the code from mdb if it is useful for their
+project.  I am certainly looking seriously at using the disassembler in
+kdb for mdb, with my enhancements rolled into it.
+
+Jeffrey Vernon Merkey
+
+
+
+
+
