@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760183AbYHCXKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760169AbYHCXhP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760183AbYHCXKk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 19:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758840AbYHCXKb
+	id S1760169AbYHCXhP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 19:37:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758880AbYHCXhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 19:10:31 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53201 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758725AbYHCXKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 19:10:30 -0400
-Message-ID: <48963AE1.8080308@garzik.org>
-Date: Sun, 03 Aug 2008 19:10:25 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 3 Aug 2008 19:37:01 -0400
+Received: from smtprelay08.ispgateway.de ([80.67.29.8]:58959 "EHLO
+	smtprelay08.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758757AbYHCXhA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 19:37:00 -0400
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Keith Packard <keithp@keithp.com>
+Subject: files/process scaling problem? (was: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM)
+Date: Mon, 4 Aug 2008 01:35:31 +0200
+User-Agent: KMail/1.9.9
+Cc: John Stoffel <john@stoffel.org>, Christoph Hellwig <hch@infradead.org>,
+       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org
+References: <1217573919-7496-1-git-send-email-eric@anholt.net> <18581.43362.460694.60862@stoffel.org> <1217785943.23437.330.camel@koto.keithp.com>
+In-Reply-To: <1217785943.23437.330.camel@koto.keithp.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>
-Subject: Re: Kernel Summit request for Discussion of future of ATA (libata)
- and	IDE
-References: <1217779055.4179.10.camel@localhost.localdomain>
-In-Reply-To: <1217779055.4179.10.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200808040135.32563.ioe-lkml@rameria.de>
+X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> Right at the moment, we have two separate subsystems for running IDE
-> type devices:  driver/ide and drivers/ata.  The claim I've seen is that
-> drivers/ata can do everything drivers/ide can do plus it does sata.  I
-> also note that no major distribution seems to enable anything in
-> drivers/ide anymore, so given this is it time to deprecate drivers/ide?
+Hi Keith,
+
+On Sunday 03 August 2008, Keith Packard wrote:
+> > Just seeing your statement that you wanted to add ioctls made me
+> > shudder and try to visuallize a better way to do this.  
 > 
-> A counter argument to the above is that not all drivers (particularly
-> the older ones where hw is scarce) are converted to drivers/ata, so
-> drivers/ide seems to be needed for some legacy systems (in which case it
-> can be deprecated but not removed).  I've also noted that some embedded
-> distributions seem to be using drivers/ide, but I'm not really sure
-> whether this is inertia or some overriding need.
-> 
-> The proposal is to discuss the future of these two subsystems and arrive
-> at a consensus what's happening to each going forwards.
+> I could use fds if the kernel supported applications needing many
+> thousand of them, and also some way to keep these FDs from polluting the
+> fd space used by select(2) (yeah, I know, don't use select).
 
-I'm not in any rush to change the status quo as I see it: don't remove 
-drivers/ide but encourage new drivers to be under libata.
+You may just have identified a scaling problem here. 
+I see no difference to many thousand TCP/IP connections in your description.
 
-I am a bit disappointed at all the drivers/ide churn.  I had hoped it 
-would sit around and be a stable alternative, a fallback to libata.
+What actions on many thousand fds are supported poorly or not at all?
+Are you only concerned about the memory requirements?
 
-	Jeff
+Please elaborate or point me to a place where you did already :-)
 
 
+Best Regards
 
+Ingo Oeser
