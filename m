@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757840AbYHCDDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbYHCDEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757840AbYHCDDk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 23:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbYHCDAg
+	id S1758236AbYHCDEU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 23:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbYHCDAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 23:00:36 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:17221 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754009AbYHCDAb (ORCPT
+	Sat, 2 Aug 2008 23:00:40 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:28702 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754656AbYHCDAf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 23:00:31 -0400
+	Sat, 2 Aug 2008 23:00:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=lW0TWPRFDaHCYqM98C3xfDDRumvfCj0uITorzDOF2vmA5x55HWGPf+rFuuNR1FC5CX
-         qnlL1JfoLxbyJuhxgwbkbTSPSAdqIxVgQlTLINvoULdLzxbJ8CxTJrOgS9oTlKnuvLJy
-         mvQnE3ZT6+ROD9SIkPQ+0g44oHjKvN8BUG8lM=
+        b=tA2iAac5htdtpBwDFtDkeGs7lCeoQaGY/Q2xYCtufySenrBXmul1RH/dEcIG9Qt4TO
+         PeSNeMkzl+rESK0b85aAd875WxQMOcTkjWkMo1hxwTyGRaJ4J5lX8hX7UlS8p/TNPvZW
+         BkbReR/14OwqIT3Kys47NWJVtDZpKifrB55kA=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,11 +23,11 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 09/25] drivers/char to use nr_irqs
-Date: Sat,  2 Aug 2008 19:59:09 -0700
-Message-Id: <1217732365-16595-10-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 11/25] drivers intr remapping to use nr_irqs
+Date: Sat,  2 Aug 2008 19:59:11 -0700
+Message-Id: <1217732365-16595-12-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217732365-16595-9-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1217732365-16595-11-git-send-email-yhlu.kernel@gmail.com>
 References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-2-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-3-git-send-email-yhlu.kernel@gmail.com>
@@ -37,65 +37,93 @@ References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-7-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-8-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-9-git-send-email-yhlu.kernel@gmail.com>
+ <1217732365-16595-10-git-send-email-yhlu.kernel@gmail.com>
+ <1217732365-16595-11-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 ---
- drivers/char/hpet.c       |    2 +-
- drivers/char/random.c     |    4 ++--
- drivers/char/vr41xx_giu.c |    2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/pci/intr_remapping.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
-index 2908a0e..8d562ae 100644
---- a/drivers/char/hpet.c
-+++ b/drivers/char/hpet.c
-@@ -219,7 +219,7 @@ static void hpet_timer_set_irq(struct hpet_dev *devp)
- 	for (irq = find_first_bit(&v, HPET_MAX_IRQ); irq < HPET_MAX_IRQ;
- 		irq = find_next_bit(&v, HPET_MAX_IRQ, 1 + irq)) {
+diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
+index bb642cc..980566e 100644
+--- a/drivers/pci/intr_remapping.c
++++ b/drivers/pci/intr_remapping.c
+@@ -22,7 +22,7 @@ static DEFINE_SPINLOCK(irq_2_ir_lock);
  
--		if (irq >= NR_IRQS) {
-+		if (irq >= nr_irqs) {
- 			irq = HPET_MAX_IRQ;
- 			break;
- 		}
-diff --git a/drivers/char/random.c b/drivers/char/random.c
-index e0d0e37..fdbdcfc 100644
---- a/drivers/char/random.c
-+++ b/drivers/char/random.c
-@@ -647,7 +647,7 @@ EXPORT_SYMBOL_GPL(add_input_randomness);
- 
- void add_interrupt_randomness(int irq)
+ int irq_remapped(int irq)
  {
--	if (irq >= NR_IRQS || irq_timer_state[irq] == NULL)
-+	if (irq >= nr_irqs || irq_timer_state[irq] == NULL)
- 		return;
+-	if (irq > NR_IRQS)
++	if (irq > nr_irqs)
+ 		return 0;
  
- 	DEBUG_ENT("irq event %d\n", irq);
-@@ -911,7 +911,7 @@ void rand_initialize_irq(int irq)
+ 	if (!irq_2_iommu[irq].iommu)
+@@ -35,7 +35,7 @@ int get_irte(int irq, struct irte *entry)
  {
- 	struct timer_rand_state *state;
+ 	int index;
  
--	if (irq >= NR_IRQS || irq_timer_state[irq])
-+	if (irq >= nr_irqs || irq_timer_state[irq])
- 		return;
+-	if (!entry || irq > NR_IRQS)
++	if (!entry || irq > nr_irqs)
+ 		return -1;
  
- 	/*
-diff --git a/drivers/char/vr41xx_giu.c b/drivers/char/vr41xx_giu.c
-index ffe9b4e..54c8372 100644
---- a/drivers/char/vr41xx_giu.c
-+++ b/drivers/char/vr41xx_giu.c
-@@ -641,7 +641,7 @@ static int __devinit giu_probe(struct platform_device *dev)
+ 	spin_lock(&irq_2_ir_lock);
+@@ -126,7 +126,7 @@ int map_irq_to_irte_handle(int irq, u16 *sub_handle)
+ 	int index;
+ 
+ 	spin_lock(&irq_2_ir_lock);
+-	if (irq >= NR_IRQS || !irq_2_iommu[irq].iommu) {
++	if (irq >= nr_irqs || !irq_2_iommu[irq].iommu) {
+ 		spin_unlock(&irq_2_ir_lock);
+ 		return -1;
  	}
+@@ -140,7 +140,7 @@ int map_irq_to_irte_handle(int irq, u16 *sub_handle)
+ int set_irte_irq(int irq, struct intel_iommu *iommu, u16 index, u16 subhandle)
+ {
+ 	spin_lock(&irq_2_ir_lock);
+-	if (irq >= NR_IRQS || irq_2_iommu[irq].iommu) {
++	if (irq >= nr_irqs || irq_2_iommu[irq].iommu) {
+ 		spin_unlock(&irq_2_ir_lock);
+ 		return -1;
+ 	}
+@@ -158,7 +158,7 @@ int set_irte_irq(int irq, struct intel_iommu *iommu, u16 index, u16 subhandle)
+ int clear_irte_irq(int irq, struct intel_iommu *iommu, u16 index)
+ {
+ 	spin_lock(&irq_2_ir_lock);
+-	if (irq >= NR_IRQS || !irq_2_iommu[irq].iommu) {
++	if (irq >= nr_irqs || !irq_2_iommu[irq].iommu) {
+ 		spin_unlock(&irq_2_ir_lock);
+ 		return -1;
+ 	}
+@@ -180,7 +180,7 @@ int modify_irte(int irq, struct irte *irte_modified)
+ 	struct intel_iommu *iommu;
  
- 	irq = platform_get_irq(dev, 0);
--	if (irq < 0 || irq >= NR_IRQS)
-+	if (irq < 0 || irq >= nr_irqs)
- 		return -EBUSY;
+ 	spin_lock(&irq_2_ir_lock);
+-	if (irq >= NR_IRQS || !irq_2_iommu[irq].iommu) {
++	if (irq >= nr_irqs || !irq_2_iommu[irq].iommu) {
+ 		spin_unlock(&irq_2_ir_lock);
+ 		return -1;
+ 	}
+@@ -205,7 +205,7 @@ int flush_irte(int irq)
+ 	struct intel_iommu *iommu;
  
- 	return cascade_irq(irq, giu_get_irq);
+ 	spin_lock(&irq_2_ir_lock);
+-	if (irq >= NR_IRQS || !irq_2_iommu[irq].iommu) {
++	if (irq >= nr_irqs || !irq_2_iommu[irq].iommu) {
+ 		spin_unlock(&irq_2_ir_lock);
+ 		return -1;
+ 	}
+@@ -248,7 +248,7 @@ int free_irte(int irq)
+ 	struct intel_iommu *iommu;
+ 
+ 	spin_lock(&irq_2_ir_lock);
+-	if (irq >= NR_IRQS || !irq_2_iommu[irq].iommu) {
++	if (irq >= nr_irqs || !irq_2_iommu[irq].iommu) {
+ 		spin_unlock(&irq_2_ir_lock);
+ 		return -1;
+ 	}
 -- 
 1.5.4.5
 
