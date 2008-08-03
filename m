@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbYHCSZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYHCS2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756978AbYHCSZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 14:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYHCSZR
+	id S1757884AbYHCS2V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 14:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYHCS2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 14:25:17 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:56399 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751263AbYHCSZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 14:25:15 -0400
+	Sun, 3 Aug 2008 14:28:13 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:36605 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752249AbYHCS2M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 14:28:12 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5352"; a="5277794"
+Message-ID: <4895F8CE.6010204@qualcomm.com>
+Date: Sun, 03 Aug 2008 11:28:30 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: penberg@cs.helsinki.fi, cl@linux-foundation.org, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SLUB: detach SLUB_DEBUG and SYSFS
+References: <20080801000405.GA7072@martell.zuzino.mipt.ru>
+In-Reply-To: <20080801000405.GA7072@martell.zuzino.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18581.63477.482538.137844@harpo.it.uu.se>
-Date: Sun, 3 Aug 2008 20:24:53 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Mikael Pettersson" <mikpe@it.uu.se>
-Subject: Re: [Bug #11205] x86: 2.6.27-rc1 does not build with gcc-3.2.3 any more
-In-Reply-To: <5ZeQ4vXWqRC.A.PFE.SNLlIB@albercik>
-References: <cbItfVMShGI.A.olC.UMLlIB@albercik>
-	<5ZeQ4vXWqRC.A.PFE.SNLlIB@albercik>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat,  2 Aug 2008 20:04:20 +0200 (CEST), Rafael J. Wysocki <rjw@sisk.pl> wrote:
->This message has been generated automatically as a part of a report
->of recent regressions.
->
->The following bug entry is on the current list of known regressions
->from 2.6.26.  Please verify if it still should be listed
->and let me know (either way).
->
->
->Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D11205
->Subject		: x86: 2.6.27-rc1 does not build with gcc-3.2.3 any more
->Submitter	: Mikael Pettersson <mikpe@it.uu.se>
->Date		: 2008-07-30 11:02 (4 days old)
->References	: http://marc.info/?l=3Dlinux-kernel&m=3D121741584608240&w=3D4
 
-The bug is still present.
-Patch here <http://marc.info/?l=linux-kernel&m=121742199419686&w=2>.
+
+Alexey Dobriyan wrote:
+> Right now, SYSFS=n means no SLUB debugging, no even basic poisoning,
+> to hell with tunables.
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> ---
+> 
+>  init/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -736,7 +736,7 @@ config VM_EVENT_COUNTERS
+>  config SLUB_DEBUG
+>  	default y
+>  	bool "Enable SLUB debugging support" if EMBEDDED
+> -	depends on SLUB && SYSFS
+> +	depends on SLUB
+>  	help
+>  	  SLUB has extensive debug support features. Disabling these can
+>  	  result in significant savings in code size. This also disables
+
+While at it, can you guys move this into lib/Kconfig.debug ?
+
+Max
