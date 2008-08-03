@@ -1,83 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbYHCKbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbYHCKeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755254AbYHCKbl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 06:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYHCKbc
+	id S1755905AbYHCKeb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 06:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbYHCKeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 06:31:32 -0400
-Received: from ik-out-1112.google.com ([66.249.90.177]:43833 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbYHCKbc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 06:31:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:user-agent:mime-version:to:cc:subject:references:in-reply-to
-         :content-type:content-transfer-encoding:from:sender:message-id;
-        b=oaTJyEUb2bFkFv9w8iAibZ9pr9JnPnzrzFYvu5WBvTqrlEaqVdcws3td5/IIQpteiD
-         UG0BoEgL70nnlbm4bKeOBO0cbbcgjmanaeIx316HBO+5eHett/K6Wj58ZRyrltMQ6fqD
-         3uqThekq0C53ldbVYTyPFOpWr+ff2hRbIzU84=
-Date: Sun, 03 Aug 2008 11:31:27 +0100
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: S K <nospamnoham@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: cpufreq doesn't seem to work in Intel Q9300
-References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>
-In-Reply-To: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-From: none <aj504@student.cs.york.ac.uk>
-Message-ID: <48958901.06a0100a.35d6.2df9@mx.google.com>
+	Sun, 3 Aug 2008 06:34:23 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:43956 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752942AbYHCKeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 06:34:22 -0400
+Date: Sun, 3 Aug 2008 14:37:55 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Sven Wegener <sven.wegener@stealer.net>
+Cc: Oliver Pinter <pinter.oliver.villany@gmail.com>,
+       linux-kernel@vger.kernel.org, w@1wt.eu,
+       Roland McGrath <roland@redhat.com>, john stultz <johnstul@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Oliver Pinter <oliver.pntr@gmail.com>
+Subject: Re: [RFC, 2.6.26.2-rc1] posix timers: release_posix_timer: kill the bogus put_task_struct(->it_process)
+Message-ID: <20080803103755.GA79@tv-sign.ru>
+References: <200808022345.20963.oliver.pntr@gmail.com> <alpine.LNX.1.10.0808030006040.2294@titan.stealer.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.10.0808030006040.2294@titan.stealer.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-S K wrote:
-> Hi,
+On 08/03, Sven Wegener wrote:
+>
+> On Sat, 2 Aug 2008, Oliver Pinter wrote:
 > 
->   I have an Intel Core 2 Quad and running kernel
-> 2.6.25.11-97.fc9.i686. cpufreq doesn't seem to work. The cpufreq
-> scaling monitor in Gnome says CPU Freq scaling is not supported in my
-> CPU. The CPU can run at 2.0 and 2.5 GHz but mine always runs at 2.5
-> GHz in Linux.
+> > It is an RFC for sending this patch for stable, when this patch needed, then send ACK and CC stable,
+> > if not then send NAK.
 > 
-> So I checked  /sys and there is no cpufreq dir in /sys/...
-> 
-> # ls /sys/devices/system/cpu/
-> cpu0  cpu1  cpu2  cpu3  cpuidle  sched_mc_power_savings
-> # ls /sys/devices/system/cpu/cpuidle/
-> current_driver  current_governor_ro
-> 
-> I have no clue what cpuidle directory is for.
-> 
-> I added cpufreq.debug=7 in kernel boot params and saw the following in
-> the dmesg:
-> 
-> speedstep-smi: No supported Intel CPU detected.
-> cpufreq-core: CPU 0: _PPC is 0 - frequency not limited
-> cpufreq-core: CPU 3: _PPC is 0 - frequency not limited
-> cpufreq-core: CPU 1: _PPC is 0 - frequency not limited
-> cpufreq-core: CPU 2: _PPC is 0 - frequency not limited
-> cpuidle: using governor ladder
-> cpuidle: using governor menu
-> 
-> I looked at arch/x86/kernel/cpu/cpufreq/speedstep-smi.c and it seems
-> to detect only Pentium IIIs.
-> 
-> Anyone know what files have the cpufreq code for Intel Core 2?
-> Does cpufreq support Intel Core 2 Quads? Especially the Q9300? If not,
-> anything I can do to help?
+> I'd say big NAK. Have you ever looked at the full commit message and patch 
+> at all? It says "release_posix_timer() can't be called with ->it_process 
+> != NULL.". Point. The rest is the explanation why this can't happen. And 
+> looking at the patch, we see that it just removes code that actually never 
+> gets executed under the mentioned preconditions. It's a pure cleanup patch 
+> and doesn't qualify for -stable. Same goes for the other posix timer patch 
+> you mailed out.
 
-I have an Intel Core 2 Duo and it uses the ACPI cpufreq driver; your
-Quad should do the same.  So this is likely an ACPI/BIOS issue.
+I agree. Perhaps the changelog was badly written...
 
-If you ask ACPI people they will ask you to post the output of acpidump.
-Also you should probably check if you have a BIOS option that needs to be
-enabled for this to work.
+These 2 patches are just cleanups which remove the dead code,
+this is not the -stable material.
 
-BTW, cpuidle is something quite different, it is about how to save power 
-when CPU is doing nothing (i.e. idle :-).  Cpu frequency scaling is how to
-save power when CPU is working (but doesn't need to run flat out).
+Oleg.
 
-Alan
