@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbYHCEe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbYHCEfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934AbYHCEe7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 00:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYHCEeh
+	id S1755406AbYHCEfX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 00:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYHCEej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 00:34:37 -0400
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.123]:56645 "EHLO
+	Sun, 3 Aug 2008 00:34:39 -0400
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:53663 "EHLO
 	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751297AbYHCEeg (ORCPT
+	with ESMTP id S1751254AbYHCEeg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 3 Aug 2008 00:34:36 -0400
-Date: Sun, 03 Aug 2008 00:34:06 -0400
-Message-ID: <87abfu7m4h.wl%ysato@users.sourceforge.jp>
+Date: Sun, 03 Aug 2008 00:21:33 -0400
+Message-ID: <87hca27mpe.wl%ysato@users.sourceforge.jp>
 From: Yoshinori Sato <ysato@users.sourceforge.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/3] h8300 update timer handler
+Subject: [PATCH 0/3] h8300 update timer handler - delete files
 User-Agent: Wanderlust/2.15.6 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?ISO-8859-4?Q?Goj=F2?=) APEL/10.7 Emacs/22.2
  (x86_64-pc-linux-gnu) MULE/5.0 (SAKAKI)
@@ -25,44 +25,390 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-h8300 new timer handlers.
+delete old timer handler.
 
-1/3 - new timer handler
-2/3 - delete obsolute files
-3/3 - misc update
+Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 
- arch/h8300/Kconfig.cpu                         |  115 ++++++++++-------------
- arch/h8300/kernel/Makefile                     |    2 +-
- arch/h8300/kernel/time.c                       |    5 +-
- arch/h8300/kernel/timer/Makefile               |    6 ++
- arch/h8300/kernel/timer/itu.c                  |   83 +++++++++++++++++
- arch/h8300/kernel/timer/timer16.c              |   78 ++++++++++++++++
- arch/h8300/kernel/timer/timer8.c               |  103 +++++++++++++++++++++
- arch/h8300/kernel/timer/tpu.c                  |  102 +++++++++++++++++++++
- arch/h8300/platform/h8300h/aki3068net/Makefile |    1 -
- arch/h8300/platform/h8300h/aki3068net/timer.c  |   51 -----------
- arch/h8300/platform/h8300h/generic/Makefile    |    1 -
- arch/h8300/platform/h8300h/generic/timer.c     |   95 -------------------
- arch/h8300/platform/h8300h/h8max/Makefile      |    1 -
- arch/h8300/platform/h8300h/h8max/timer.c       |   52 -----------
- arch/h8300/platform/h8s/edosk2674/Makefile     |    1 -
- arch/h8300/platform/h8s/edosk2674/timer.c      |   54 -----------
- arch/h8300/platform/h8s/generic/Makefile       |    1 -
- arch/h8300/platform/h8s/generic/timer.c        |   53 -----------
- include/asm-h8300/io.h                         |   34 +++++++
- include/asm-h8300/timer.h                      |   25 +++++
- 20 files changed, 486 insertions(+), 377 deletions(-)
- create mode 100644 arch/h8300/kernel/timer/Makefile
- create mode 100644 arch/h8300/kernel/timer/itu.c
- create mode 100644 arch/h8300/kernel/timer/timer16.c
- create mode 100644 arch/h8300/kernel/timer/timer8.c
- create mode 100644 arch/h8300/kernel/timer/tpu.c
- delete mode 100644 arch/h8300/platform/h8300h/aki3068net/timer.c
- delete mode 100644 arch/h8300/platform/h8300h/generic/timer.c
- delete mode 100644 arch/h8300/platform/h8300h/h8max/timer.c
- delete mode 100644 arch/h8300/platform/h8s/edosk2674/timer.c
- delete mode 100644 arch/h8300/platform/h8s/generic/timer.c
- create mode 100644 include/asm-h8300/timer.h
+diff --git a/arch/h8300/platform/h8300h/aki3068net/Makefile b/arch/h8300/platform/h8300h/aki3068net/Makefile
+index b03c328..b7ff780 100644
+--- a/arch/h8300/platform/h8300h/aki3068net/Makefile
++++ b/arch/h8300/platform/h8300h/aki3068net/Makefile
+@@ -3,4 +3,3 @@
+ #
+ 
+ extra-y := crt0_ram.o
+-obj-y := timer.o
+diff --git a/arch/h8300/platform/h8300h/aki3068net/timer.c b/arch/h8300/platform/h8300h/aki3068net/timer.c
+deleted file mode 100644
+index 27cd85d..0000000
+--- a/arch/h8300/platform/h8300h/aki3068net/timer.c
++++ /dev/null
+@@ -1,51 +0,0 @@
+-/*
+- *  linux/arch/h8300/platform/h8300h/aki3068net/timer.c
+- *
+- *  Yoshinori Sato <ysato@users.sourcefoge.jp>
+- *
+- *  Platform depend Timer Handler
+- *
+- */
+-
+-#include <linux/errno.h>
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/param.h>
+-#include <linux/string.h>
+-#include <linux/mm.h>
+-#include <linux/interrupt.h>
+-#include <linux/init.h>
+-#include <linux/timex.h>
+-
+-#include <asm/segment.h>
+-#include <asm/io.h>
+-#include <asm/irq.h>
+-#include <asm/regs306x.h>
+-
+-#define CMFA 6
+-
+-#define CMIEA 0x40
+-#define CCLR_CMA 0x08
+-#define CLK_DIV8192 0x03
+-
+-#define H8300_TIMER_FREQ CONFIG_CPU_CLOCK*1000/8192 /* Timer input freq. */
+-
+-void __init platform_timer_setup(irqreturn_t (*timer_int)(int, void *, struct pt_regs *))
+-{
+-	/* setup 8bit timer ch2 */
+-	ctrl_outb(H8300_TIMER_FREQ / HZ, TCORA2);      /* set interval */
+-	ctrl_outb(0x00, _8TCSR2);                      /* no output */
+-	request_irq(40, timer_int, 0, "timer", 0);
+-	ctrl_outb(CMIEA|CCLR_CMA|CLK_DIV8192, _8TCR2); /* start count */
+-}
+-
+-void platform_timer_eoi(void)
+-{
+-	*(volatile unsigned char *)_8TCSR2 &= ~(1 << CMFA);
+-}
+-
+-void platform_gettod(int *year, int *mon, int *day, int *hour,
+-		 int *min, int *sec)
+-{
+-	*year = *mon = *day = *hour = *min = *sec = 0;
+-}
+diff --git a/arch/h8300/platform/h8300h/generic/Makefile b/arch/h8300/platform/h8300h/generic/Makefile
+index 32b964a..2b12a17 100644
+--- a/arch/h8300/platform/h8300h/generic/Makefile
++++ b/arch/h8300/platform/h8300h/generic/Makefile
+@@ -3,4 +3,3 @@
+ #
+ 
+ extra-y :=  crt0_$(MODEL).o
+-obj-y := timer.o
+diff --git a/arch/h8300/platform/h8300h/generic/timer.c b/arch/h8300/platform/h8300h/generic/timer.c
+deleted file mode 100644
+index 6f5cefe..0000000
+--- a/arch/h8300/platform/h8300h/generic/timer.c
++++ /dev/null
+@@ -1,95 +0,0 @@
+-/*
+- *  linux/arch/h8300/platform/h8300h/generic/timer.c
+- *
+- *  Yoshinori Sato <ysato@users.sourceforge.jp>
+- *
+- *  Platform depend Timer Handler
+- *
+- */
+-
+-#include <linux/errno.h>
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/param.h>
+-#include <linux/string.h>
+-#include <linux/mm.h>
+-#include <linux/interrupt.h>
+-
+-#include <asm/segment.h>
+-#include <asm/io.h>
+-#include <asm/irq.h>
+-
+-#include <linux/timex.h>
+-
+-#if defined(CONFIG_H83007) || defined(CONFIG_H83068)
+-#include <asm/regs306x.h>
+-#define CMFA 6
+-
+-#define CMIEA 0x40
+-#define CCLR_CMA 0x08
+-#define CLK_DIV8192 0x03
+-
+-#define H8300_TIMER_FREQ CONFIG_CPU_CLOCK*1000/8192 /* Timer input freq. */
+-
+-void __init platform_timer_setup(irqreturn_t (*timer_int)(int, void *, struct pt_regs *))
+-{
+-	/* setup 8bit timer ch2 */
+-	ctrl_outb(H8300_TIMER_FREQ / HZ, TCORA2);      /* set interval */
+-	ctrl_outb(0x00, _8TCSR2);                      /* no output */
+-	request_irq(40, timer_int, 0, "timer", 0);
+-	ctrl_outb(CMIEA|CCLR_CMA|CLK_DIV8192, _8TCR2); /* start count */
+-}
+-
+-void platform_timer_eoi(void)
+-{
+-	*(volatile unsigned char *)_8TCSR2 &= ~(1 << CMFA);
+-}
+-#endif
+-
+-#if defined(CONFIG_H83002) || defined(CONFIG_H83048)
+-/* FIXME! */
+-#define TSTR 0x00ffff60
+-#define TSNC 0x00ffff61
+-#define TMDR 0x00ffff62
+-#define TFCR 0x00ffff63
+-#define TOER 0x00ffff90
+-#define TOCR 0x00ffff91
+-/* ITU0 */
+-#define TCR  0x00ffff64
+-#define TIOR 0x00ffff65
+-#define TIER 0x00ffff66
+-#define TSR  0x00ffff67
+-#define TCNT 0x00ffff68
+-#define GRA  0x00ffff6a
+-#define GRB  0x00ffff6c
+-
+-#define CCLR_CMGRA 0x20
+-#define CLK_DIV8 0x03
+-
+-#define H8300_TIMER_FREQ CONFIG_CPU_CLOCK*1000/8 /* Timer input freq. */
+-
+-void __init platform_timer_setup(irqreturn_t (*timer_int)(int, void *, struct pt_regs *))
+-{
+-	*(unsigned short *)GRA= H8300_TIMER_FREQ / HZ;  /* set interval */
+-	*(unsigned short *)TCNT=0;                      /* clear counter */
+-	ctrl_outb(0x80|CCLR_CMGRA|CLK_DIV8, TCR);       /* set ITU0 clock */
+-	ctrl_outb(0x88, TIOR);                          /* no output */
+-	request_irq(26, timer_int, 0, "timer", 0);
+-	ctrl_outb(0xf9, TIER);                          /* compare match GRA interrupt */
+-	ctrl_outb(ctrl_inb(TSNC) & ~0x01, TSNC);        /* ITU0 async */
+-	ctrl_outb(ctrl_inb(TMDR) & ~0x01, TMDR);        /* ITU0 normal mode */
+-	ctrl_outb(ctrl_inb(TSTR) | 0x01, TSTR);         /* ITU0 Start */
+-	return 0;
+-}
+-
+-void platform_timer_eoi(void)
+-{
+-	ctrl_outb(ctrl_inb(TSR) & ~0x01,TSR);
+-}
+-#endif
+-
+-void platform_gettod(int *year, int *mon, int *day, int *hour,
+-		 int *min, int *sec)
+-{
+-	*year = *mon = *day = *hour = *min = *sec = 0;
+-}
+diff --git a/arch/h8300/platform/h8300h/h8max/Makefile b/arch/h8300/platform/h8300h/h8max/Makefile
+index b03c328..b7ff780 100644
+--- a/arch/h8300/platform/h8300h/h8max/Makefile
++++ b/arch/h8300/platform/h8300h/h8max/Makefile
+@@ -3,4 +3,3 @@
+ #
+ 
+ extra-y := crt0_ram.o
+-obj-y := timer.o
+diff --git a/arch/h8300/platform/h8300h/h8max/timer.c b/arch/h8300/platform/h8300h/h8max/timer.c
+deleted file mode 100644
+index 85a574a..0000000
+--- a/arch/h8300/platform/h8300h/h8max/timer.c
++++ /dev/null
+@@ -1,52 +0,0 @@
+-/*
+- *  linux/arch/h8300/platform/h8300h/h8max/timer.c
+- *
+- *  Yoshinori Sato <ysato@users.sourcefoge.jp>
+- *
+- *  Platform depend Timer Handler
+- *
+- */
+-
+-#include <linux/errno.h>
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/param.h>
+-#include <linux/string.h>
+-#include <linux/mm.h>
+-#include <linux/interrupt.h>
+-#include <linux/init.h>
+-#include <linux/timex.h>
+-
+-#include <asm/segment.h>
+-#include <asm/io.h>
+-#include <asm/irq.h>
+-#include <asm/regs306x.h>
+-
+-#define CMFA 6
+-
+-#define CMIEA 0x40
+-#define CCLR_CMA 0x08
+-#define CLK_DIV8192 0x03
+-
+-#define H8300_TIMER_FREQ CONFIG_CPU_CLOCK*1000/8192 /* Timer input freq. */
+-
+-void __init platform_timer_setup(irqreturn_t (*timer_int)(int, void *, struct pt_regs *))
+-{
+-	/* setup 8bit timer ch2 */
+-	ctrl_outb(H8300_TIMER_FREQ / HZ, TCORA2);      /* set interval */
+-	ctrl_outb(0x00, _8TCSR2);                      /* no output */
+-	request_irq(40, timer_int, 0, "timer", 0);
+-	ctrl_outb(CMIEA|CCLR_CMA|CLK_DIV8192, _8TCR2); /* start count */
+-}
+-
+-void platform_timer_eoi(void)
+-{
+-	*(volatile unsigned char *)_8TCSR2 &= ~(1 << CMFA);
+-}
+-
+-void platform_gettod(int *year, int *mon, int *day, int *hour,
+-		 int *min, int *sec)
+-{
+-	*year = *mon = *day = *hour = *min = *sec = 0;
+-}
+-
+diff --git a/arch/h8300/platform/h8s/edosk2674/Makefile b/arch/h8300/platform/h8s/edosk2674/Makefile
+index f763654..8e34972 100644
+--- a/arch/h8300/platform/h8s/edosk2674/Makefile
++++ b/arch/h8300/platform/h8s/edosk2674/Makefile
+@@ -3,4 +3,3 @@
+ #
+ 
+ extra-y := crt0_$(MODEL).o
+-obj-y := timer.o
+diff --git a/arch/h8300/platform/h8s/edosk2674/timer.c b/arch/h8300/platform/h8s/edosk2674/timer.c
+deleted file mode 100644
+index bfb1424..0000000
+--- a/arch/h8300/platform/h8s/edosk2674/timer.c
++++ /dev/null
+@@ -1,54 +0,0 @@
+-/*
+- *  linux/arch/h8300/platform/h8s/edosk2674/timer.c
+- *
+- *  Yoshinori Sato <ysato@users.sourceforge.jp>
+- *
+- *  Platform depend Timer Handler
+- *
+- */
+-
+-#include <linux/errno.h>
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/param.h>
+-#include <linux/string.h>
+-#include <linux/mm.h>
+-#include <linux/interrupt.h>
+-#include <linux/init.h>
+-#include <linux/timex.h>
+-
+-#include <asm/segment.h>
+-#include <asm/io.h>
+-#include <asm/irq.h>
+-#include <asm/regs267x.h>
+-
+-#define CMFA 6
+-
+-#define CMIEA 0x40
+-#define CCLR_CMA 0x08
+-#define CLK_DIV8192 0x03
+-
+-#define H8300_TIMER_FREQ CONFIG_CPU_CLOCK*1000/8192 /* Timer input freq. */
+-
+-void __init platform_timer_setup(irqreturn_t (*timer_int)(int, void *, struct pt_regs *))
+-{
+-	/* 8bit timer module enabled */
+-	ctrl_outb(ctrl_inb(MSTPCRL) & ~0x01, MSTPCRL);
+-	/* setup 8bit timer ch1 */
+-	ctrl_outb(H8300_TIMER_FREQ / HZ, _8TCORA1);      /* set interval */
+-	ctrl_outb(0x00, _8TCSR1);                        /* no output */
+-	request_irq(76, timer_int, 0, "timer" ,0);
+-	ctrl_outb(CMIEA|CCLR_CMA|CLK_DIV8192, _8TCR1);   /* start count */
+-}
+-
+-void platform_timer_eoi(void)
+-{
+-	*(volatile unsigned char *)_8TCSR1 &= ~(1 << CMFA);
+-}
+-
+-void platform_gettod(int *year, int *mon, int *day, int *hour,
+-		 int *min, int *sec)
+-{
+-/* FIXME! not RTC support */
+-	*year = *mon = *day = *hour = *min = *sec = 0;
+-}
+diff --git a/arch/h8300/platform/h8s/generic/Makefile b/arch/h8300/platform/h8s/generic/Makefile
+index 055d53a..44b4685 100644
+--- a/arch/h8300/platform/h8s/generic/Makefile
++++ b/arch/h8300/platform/h8s/generic/Makefile
+@@ -3,4 +3,3 @@
+ #
+ 
+ extra-y =  crt0_$(MODEL).o
+-obj-y := timer.o
+diff --git a/arch/h8300/platform/h8s/generic/timer.c b/arch/h8300/platform/h8s/generic/timer.c
+deleted file mode 100644
+index c2211c6..0000000
+--- a/arch/h8300/platform/h8s/generic/timer.c
++++ /dev/null
+@@ -1,53 +0,0 @@
+-/*
+- *  linux/arch/h8300/platform/h8s/generic/timer.c
+- *
+- *  Yoshinori Sato <ysato@users.sourceforge.jp>
+- *
+- *  Platform depend Timer Handler
+- *
+- */
+-
+-#include <linux/errno.h>
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/param.h>
+-#include <linux/string.h>
+-#include <linux/mm.h>
+-#include <linux/interrupt.h>
+-#include <linux/init.h>
+-#include <linux/timex.h>
+-
+-#include <asm/segment.h>
+-#include <asm/io.h>
+-#include <asm/irq.h>
+-#include <asm/regs267x.h>
+-
+-#define CMFA 6
+-
+-#define CMIEA 0x40
+-#define CCLR_CMA 0x08
+-#define CLK_DIV8192 0x03
+-
+-#define H8300_TIMER_FREQ CONFIG_CPU_CLOCK*1000/8192 /* Timer input freq. */
+-
+-void __init platform_timer_setup(irqreturn_t (*timer_int)(int, void *, struct pt_regs *))
+-{
+-	/* 8bit timer module enabled */
+-	ctrl_outb(ctrl_inb(MSTPCRL) & ~0x01, MSTPCRL);
+-	/* setup 8bit timer ch1 */
+-	ctrl_outb(H8300_TIMER_FREQ / HZ, _8TCORA1);      /* set interval */
+-	ctrl_outb(0x00, _8TCSR1);                        /* no output */
+-	request_irq(76, timer_int, 0, "timer" ,0);
+-	ctrl_outb(CMIEA|CCLR_CMA|CLK_DIV8192, _8TCR1);   /* start count */
+-}
+-
+-void platform_timer_eoi(void)
+-{
+-	*(volatile unsigned char *)_8TCSR1 &= ~(1 << CMFA);
+-}
+-
+-void platform_gettod(int *year, int *mon, int *day, int *hour,
+-		 int *min, int *sec)
+-{
+-	*year = *mon = *day = *hour = *min = *sec = 0;
+-}
 
 -- 
 Yoshinori Sato
