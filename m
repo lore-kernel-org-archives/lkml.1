@@ -1,95 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbYHCEVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbYHCE0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754981AbYHCEVY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 00:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYHCEVQ
+	id S1754512AbYHCE0a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 00:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbYHCE0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 00:21:16 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:46825 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751008AbYHCEVQ (ORCPT
+	Sun, 3 Aug 2008 00:26:21 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:55159 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751008AbYHCE0U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 00:21:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=wXPMbRNR17shSyw3j0aZSFigcLrbFQSOMqm8XHxyx0pg8QnAbDJEFxGE/A5lESG0o3
-         e/vEyTMz2kWvXNJSEedPUbtGnWqawc0EQZeIyyAiGT6foKJPrCxeTLRmDqGT+uFYr367
-         hvIZ0cooY1Z5k8QhNL2WTZB4I1qsRKbrTogTM=
-Message-ID: <86802c440808022121u3dcdbda2s5ff463f4b330ca17@mail.gmail.com>
-Date: Sat, 2 Aug 2008 21:21:14 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: [PATCH 03/25] add dyn_array support
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <871w163fuw.fsf@saeurebad.de>
+	Sun, 3 Aug 2008 00:26:20 -0400
+X-Sasl-enc: E6OqiKrMiK/F1ynf5XjbCWabPNPAYWSiB9BTI4dxI/r/ 1217737578
+Date: Sun, 3 Aug 2008 01:26:14 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Philip Langdale <philipl@overt.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       toshiba_acpi@memebeam.org, Ivo van Doorn <ivdoorn@gmail.com>,
+       linux-wireless@vger.kernel.org
+Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling
+	through rfkill (v2)
+Message-ID: <20080803042613.GC6053@khazad-dum.debian.net>
+References: <4894B1B4.6050003@overt.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-2-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-3-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-4-git-send-email-yhlu.kernel@gmail.com>
-	 <871w163fuw.fsf@saeurebad.de>
+In-Reply-To: <4894B1B4.6050003@overt.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 2, 2008 at 9:03 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
-> Hi,
->
-> Yinghai Lu <yhlu.kernel@gmail.com> writes:
->
->> could have crazy big arrays and allocate them in bootmem at init stage.
->> also also to allocate array according to size we need to use to avoid wasting
->> memory
->> use CONFIG_HAVE_DYN_ARRAY to enable it or not
->>
->> usage:
->>
->> |static struct irq_desc irq_desc_init __initdata = {
->> |       .status = IRQ_DISABLED,
->> |       .chip = &no_irq_chip,
->> |       .handle_irq = handle_bad_irq,
->> |       .depth = 1,
->> |       .lock = __SPIN_LOCK_UNLOCKED(irq_desc->lock),
->> |#ifdef CONFIG_SMP
->> |       .affinity = CPU_MASK_ALL
->> |#endif
->> |};
->> |
->> |static void __init init_work(void *data)
->> |{
->> |       struct dyn_array *da = data;
->> |       struct  irq_desc *desc;
->> |       int i;
->> |
->> |       desc = *da->name;
->
-> Where *da->name might be NULL...
+On Sat, 02 Aug 2008, Philip Langdale wrote:
+> +static int bt_rfkill_toggle_radio(void *data, enum rfkill_state state)
+> +{
+> +	u32 result1, result2;
+> +	u32 value;
+> +	bool radio_state;
+> +
+> +	struct toshiba_acpi_dev *dev = data;
+> +
+> +	value = state == RFKILL_STATE_UNBLOCKED;
 
-you can not pass compiling
+value = (state == RFKILL_STATE_UNBLOCKED);
 
-+#define DEFINE_DYN_ARRAY(nameX, sizeX, nrX, alignX, init_workX) \
-+               static struct dyn_array __dyn_array_##nameX __initdata = \
-+               {       .name = (void **)&nameX,\
-+                       .size = sizeX,\
-+                       .nr   = &nrX,\
-+                       .align = alignX,\
-+                       .init_work = init_workX,\
-+               }; \
-+               static struct dyn_array *__dyn_array_ptr_##nameX __used \
-+               __attribute__((__section__(".dyn_array.init"))) = \
-+                       &__dyn_array_##nameX
-+
+It is a lot easier to read without confusing the == for a =.
 
-YH
+> +	case RFKILL_STATE_HARD_BLOCKED:
+> +		printk(MY_NOTICE "Ignored HARD_BLOCKED request by software\n");
+> +		break;
+
+You don't really need the above, rfkill won't ever call your toggle_radio
+callback like that.
+
+If you want paranoid checking, do this instead:
+
+default:
+	/* maybe WARN(), WARN_ON() or printk here */
+	return -EINVAL;
+
+> +static void bt_acpi_notify(acpi_handle handle, u32 event, void *data)
+> +{
+> +	struct toshiba_acpi_dev *dev = data;
+> +
+> +	switch (event) {
+> +	case BT_ACPI_SOFT_UNBLOCKED_EVENT:
+> +		if (!dev->ignore_next_bt_event) {
+> +			bt_rfkill_toggle_radio(data, RFKILL_STATE_UNBLOCKED);
+> +			rfkill_force_state(dev->rfk_dev,
+> +					   RFKILL_STATE_UNBLOCKED);
+
+This one got me confused.  Why do you need that bt_rfkill_toggle_radio call
+here?
+
+> +	if (toshiba_acpi.rfk_dev) {
+> +		rfkill_unregister(toshiba_acpi.rfk_dev);
+> +		rfkill_free(toshiba_acpi.rfk_dev);
+> +	}
+
+Read the kernel-doc headers of every rfkill function you call at least
+once...  Never rfkill_free() something you rfkill_unregister()'ed.
+
+rfkill_free() is just for the error unwind of a failure between
+rfkill_allocate() and rfkill_register().
+
+> +		toshiba_acpi.rfk_dev->dev.class->suspend = NULL;
+> +		toshiba_acpi.rfk_dev->dev.class->resume = NULL;
+
+Why?
+
+> +		ret = rfkill_register(toshiba_acpi.rfk_dev);
+> +		if (ret) {
+> +			printk(MY_ERR "unable to register rfkill device\n");
+> +			toshiba_acpi_exit();
+> +			return -ENOMEM;
+> +		}
+> +
+> +		if (hci_get_bt_on(&bt_on) == HCI_SUCCESS && bt_on) {
+> +			toshiba_acpi.rfk_dev->state = RFKILL_STATE_UNBLOCKED;
+> +		} else if (hci_get_radio_state(&radio_on) == HCI_SUCCESS && radio_on) {
+> +			toshiba_acpi.rfk_dev->state = RFKILL_STATE_HARD_BLOCKED;
+> +		} else {
+> +			toshiba_acpi.rfk_dev->state = RFKILL_STATE_SOFT_BLOCKED;
+> +		}
+
+Do the above between rfkill_allocate() and rfkill_register().
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
