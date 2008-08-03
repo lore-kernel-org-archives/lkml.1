@@ -1,89 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbYHCFEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbYHCFKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755189AbYHCFEi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 01:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbYHCFEa
+	id S1755496AbYHCFKY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 01:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYHCFKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 01:04:30 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:50682 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751425AbYHCFEa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 01:04:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=HUOw34QSC3N8xTC/iWtLg89KuRvy/B1WnEfFsaD6moOphCacW3uUoRWEE7QshxUe/n
-         z4sqfJjzg3pQi1wpb7EXpkAj3vrc4v50Rtq5Rc0uBV4dcMzp+iE9oCCIMzbUJehv5BGL
-         Xasvf17PaydQkgNNC+791MydrCYkX0DTBu434=
-Message-ID: <86802c440808022204s62ff2b35g391125babdb2e8e4@mail.gmail.com>
-Date: Sat, 2 Aug 2008 22:04:28 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: [PATCH 03/25] add dyn_array support
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <87sktm1yuu.fsf@saeurebad.de>
+	Sun, 3 Aug 2008 01:10:08 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:45384 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751241AbYHCFKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 01:10:07 -0400
+Date: Sat, 2 Aug 2008 22:08:00 -0700
+From: sukadev@us.ibm.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@osdl.org>,
+       serue@us.ibm.com, matthltc@us.ibm.com,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       sukadev@us.ibm.com
+Subject: Re: Per-instance devpts
+Message-ID: <20080803050800.GA4322@us.ibm.com>
+References: <20080412172933.GA19295@us.ibm.com> <1208027215.28187.17.camel@x61.ebiederm.org> <48935205.3090807@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-2-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-3-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-4-git-send-email-yhlu.kernel@gmail.com>
-	 <871w163fuw.fsf@saeurebad.de>
-	 <86802c440808022121u3dcdbda2s5ff463f4b330ca17@mail.gmail.com>
-	 <87sktm1yuu.fsf@saeurebad.de>
+In-Reply-To: <48935205.3090807@zytor.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 2, 2008 at 9:55 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
-> Hi,
->
-> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->
->> On Sat, Aug 2, 2008 at 9:03 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
->>> Hi,
->>>
->>> Yinghai Lu <yhlu.kernel@gmail.com> writes:
->>>
->>>> could have crazy big arrays and allocate them in bootmem at init stage.
->>>> also also to allocate array according to size we need to use to avoid wasting
->>>> memory
->>>> use CONFIG_HAVE_DYN_ARRAY to enable it or not
->>>>
->>>> usage:
->>>>
->>>> |static struct irq_desc irq_desc_init __initdata = {
->>>> |       .status = IRQ_DISABLED,
->>>> |       .chip = &no_irq_chip,
->>>> |       .handle_irq = handle_bad_irq,
->>>> |       .depth = 1,
->>>> |       .lock = __SPIN_LOCK_UNLOCKED(irq_desc->lock),
->>>> |#ifdef CONFIG_SMP
->>>> |       .affinity = CPU_MASK_ALL
->>>> |#endif
->>>> |};
->>>> |
->>>> |static void __init init_work(void *data)
->>>> |{
->>>> |       struct dyn_array *da = data;
->>>> |       struct  irq_desc *desc;
->>>> |       int i;
->>>> |
->>>> |       desc = *da->name;
->>>
->>> Where *da->name might be NULL...
+H. Peter Anvin [hpa@zytor.com] wrote:
+> Since the issue of PTY namespaces came up (and was rejected) back in April, 
+> I have thought a little bit about changing ptys to be tied directly into a 
+> devpts instance.  devpts would then be a "normal" filesystem, which can be 
+> mounted multiple times (or not at all).  pty's would then become private to 
+> a devpts instance.
 
-*da->name = __alloc_bootmem_nopanic(size, da->align, phys);
+Sorry, I thought we were going with a complete device namespace - since that
+would address other devices as well and would avoid the following user-space
+issue. 
 
-YH
+I guess this issue came up in OLS recently and have been looking into this
+again.  I have some helper patches to explore multiple mounts of devpts
+without namespace stuff and can send them out in a couple of days.
+
+>
+> This is what it would appear would have to change, and I'd like to get 
+> people's feeing for the user-space impact:
+>
+> 1. /dev/ptmx would have to change to a symlink, ptmx -> pts/ptmx.
+
+IIRC, /dev/tty also needs a similar symlink.
+
+> 2. Permissions on /dev/ptmx would not be persistent, and would have to
+>    be set via devpts mount options (unless they're 0666 root.tty, which
+>    would presumably be the default.)
+> 3. The /proc/sys/kernel/pty limit would be global; a per-filesystem
+>    limit could be added on top or instead (presumably via a filesystem
+>    mount options.)
+>
+> I worry #1 would have substantial user-space impact, but I don't see a way 
+> around it, since there would be no obvious way to associate /dev/ptmx with 
+> a filesystem.
+
+Sukadev
