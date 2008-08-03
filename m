@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757770AbYHCQsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbYHCQux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757770AbYHCQsP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 12:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbYHCQr7
+	id S1758116AbYHCQux (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 12:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbYHCQup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 12:47:59 -0400
-Received: from fk-out-0910.google.com ([209.85.128.188]:35016 "EHLO
+	Sun, 3 Aug 2008 12:50:45 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:34670 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756277AbYHCQr6 (ORCPT
+	with ESMTP id S1756421AbYHCQuo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 12:47:58 -0400
+	Sun, 3 Aug 2008 12:50:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=CYHqCn2x7So8jlhNwSUJa79EL/WV0kR/ohkxUDuboWQxVPq15bsMF8pAA9iswAgKsI
-         NAqtDlRMBxchwuzohzcUzdOaZTxJJhqfKoT7OxJvH/3GVClBOo3FSwc3EVZI2SDnDEBv
-         qD8TpPdoTNiFw6YsHlBust2goJx/imvQLlRXk=
-Date: Sun, 3 Aug 2008 18:47:23 +0200
+        b=Z82aCn49ZSz5ZRGBHRWWZCdL7nudV834pf7QUJTuoY+fbeMw85+lN+eCyztl/nuXSm
+         4nOPkzTvNe55xlLuJKy+WNAQzFpXvMxqb05zya+M1P5hwksIRSPsx6XH4EeOl4cj6psk
+         TsKyq1abdrN36Stj0nDGcxAfEzBjZQgyAVx4I=
+Date: Sun, 3 Aug 2008 18:50:14 +0200
 From: Marcin Slusarz <marcin.slusarz@gmail.com>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>
-Subject: [PATCH] ALSA: pcm_native: remove unused label
-Message-ID: <20080803164719.GA5414@joi>
+Cc: Oliver Neukum <oliver@neukum.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH] usb: cdc-acm: flags passed to spin_lock_irqsave must be
+	unsigned
+Message-ID: <20080803165011.GB5414@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,29 +32,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-gcc warns about it:
-sound/core/pcm_native.c: In function 'snd_pcm_fasync':
-sound/core/pcm_native.c:3262: warning: label 'out' defined but not used
+gcc warned about it:
+drivers/usb/class/cdc-acm.c: In function 'acm_waker':
+drivers/usb/class/cdc-acm.c:527: warning: comparison of distinct pointer types lacks a cast
+drivers/usb/class/cdc-acm.c:529: warning: comparison of distinct pointer types lacks a cast
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Takashi Iwai <tiwai@suse.de>
-Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Oliver Neukum <oliver@neukum.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- sound/core/pcm_native.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ drivers/usb/class/cdc-acm.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-index c49b9d9..333cff6 100644
---- a/sound/core/pcm_native.c
-+++ b/sound/core/pcm_native.c
-@@ -3259,7 +3259,6 @@ static int snd_pcm_fasync(int fd, struct file * file, int on)
- 	runtime = substream->runtime;
+diff --git a/drivers/usb/class/cdc-acm.c b/drivers/usb/class/cdc-acm.c
+index 0725b18..a92395b 100644
+--- a/drivers/usb/class/cdc-acm.c
++++ b/drivers/usb/class/cdc-acm.c
+@@ -512,7 +512,7 @@ static void acm_softint(struct work_struct *work)
+ static void acm_waker(struct work_struct *waker)
+ {
+ 	struct acm *acm = container_of(waker, struct acm, waker);
+-	long flags;
++	unsigned long flags;
+ 	int rv;
  
- 	err = fasync_helper(fd, file, on, &runtime->fasync);
--out:
- 	unlock_kernel();
- 	if (err < 0)
- 		return err;
+ 	rv = usb_autopm_get_interface(acm->control);
 -- 
 1.5.4.5
 
