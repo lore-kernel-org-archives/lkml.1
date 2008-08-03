@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758400AbYHCO43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758485AbYHCO6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758400AbYHCO43 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 10:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbYHCO4V
+	id S1758485AbYHCO6p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 10:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbYHCO6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 10:56:21 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:32890 "EHLO smtps.tip.net.au"
+	Sun, 3 Aug 2008 10:58:38 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47278 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755390AbYHCO4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 10:56:20 -0400
-Date: Mon, 4 Aug 2008 00:56:11 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: Tree for July 29
-Message-Id: <20080804005611.edda857c.sfr@canb.auug.org.au>
-In-Reply-To: <20080729144558.GC32430@isilmar.linta.de>
-References: <20080729172337.b3d74100.sfr@canb.auug.org.au>
-	<20080729144558.GC32430@isilmar.linta.de>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__4_Aug_2008_00_56_11_+1000_jeGPjDl+JCGwc=nJ"
+	id S1755859AbYHCO6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 10:58:37 -0400
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, ppc-dev <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>, Roland Dreier <rdreier@cisco.com>,
+       general@lists.openfabrics.org
+Message-Id: <A5259752-468C-4CBA-BEF3-4E088ED1A5B9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20080801152030.ff10b6b2.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH v2] powerpc: move include files to arch/powerpc/include/asm
+Date: Sun, 3 Aug 2008 09:58:14 -0500
+References: <20080801152030.ff10b6b2.sfr@canb.auug.org.au>
+X-Mailer: Apple Mail (2.926)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__4_Aug_2008_00_56_11_+1000_jeGPjDl+JCGwc=nJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Dominik,
+On Aug 1, 2008, at 12:20 AM, Stephen Rothwell wrote:
 
-On Tue, 29 Jul 2008 16:45:58 +0200 Dominik Brodowski <linux@dominikbrodowsk=
-i.net> wrote:
+> from include/asm-powerpc.  This is the result of a
 >
-> On Tue, Jul 29, 2008 at 05:23:37PM +1000, Stephen Rothwell wrote:
-> > Changes since next-20080728:
->=20
-> is linux-next now open for 2.6.28 stuff?
+> mkdir arch/powerpc/include/asm
+> git mv include/asm-powerpc/* arch/powerpc/include/asm
+>
+> Followed by a few documentation/comment fixups and a couple of places
+> where <asm-powepc/...> was being used explicitly.  Of the latter only
+> one was outside the arch code and it is a driver only built for  
+> powerpc.
+>
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>
+> v2 don't change other arch files - the fixups are only in comments  
+> anyway.
+>
+> This patch can be applied with "git am" - the full patch is way to bug
+> for our mailing lists.
+>
+> This has been built for all the powerpc defconfigs including
+> all{no,mod,yes}config.  There was only one failure, but that is
+> expected anyway (I had to apply patches for the iommu and hfcmulti
+> breakages).
 
-Yeah, I would say it is, now.  (Notice how I cleverly delayed it for a
-week :-))
+Paul, what's the plan for this change?  If this is something that will  
+go in so can we get a tree with it so we can base other patches on it  
+(like the PPC_MERGE cleanup)?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__4_Aug_2008_00_56_11_+1000_jeGPjDl+JCGwc=nJ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiVxwsACgkQjjKRsyhoI8zsZQCgsZyzXPSlJg8BJaS70l8p+rAm
-WrUAnjrfIFbYd0nQRWwkDIZqFOoH2Nt1
-=kW3d
------END PGP SIGNATURE-----
-
---Signature=_Mon__4_Aug_2008_00_56_11_+1000_jeGPjDl+JCGwc=nJ--
+- k
