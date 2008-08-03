@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbYHCK1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbYHCKbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755477AbYHCK1U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 06:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYHCK1M
+	id S1755254AbYHCKbl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 06:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYHCKbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 06:27:12 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:33470 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516AbYHCK1L (ORCPT
+	Sun, 3 Aug 2008 06:31:32 -0400
+Received: from ik-out-1112.google.com ([66.249.90.177]:43833 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751472AbYHCKbc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 06:27:11 -0400
+	Sun, 3 Aug 2008 06:31:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=IeGKAP1CLzFSSQQl2WAnesB/2594emu6NRDSlLvM7owKtsJ4RVF2qvhD+LBLdEHI3R
-         B3VBWNUTLJL3Vriby0qBaF+eokQSSzaQ9D1mfiQ1SXPc5RClmLJEE8MTnbIVe4GMnSp+
-         4lUgACCHe5efVtvO+7Ahw1v5FmS9/xbtiwuXU=
-Date: Sun, 3 Aug 2008 15:56:51 +0530
-From: Rabin Vincent <rabin@rab.in>
-To: Parag Warudkar <parag.warudkar@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Serge.A.S@tochka.ru, mxhaard@users.sourceforge.net, moinejf@free.fr,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       video4linux-list@redhat.com
-Subject: Re: gspca_zc3xx oops - 2.6.27-rc1
-Message-ID: <20080803102651.GB4178@debian>
-References: <82e4877d0808020922x64177318j6f8fe15955704521@mail.gmail.com> <20080803073705.GA2754@debian> <82e4877d0808030052g4c345811u642667b2a8d87a1d@mail.gmail.com>
+        d=googlemail.com; s=gamma;
+        h=date:user-agent:mime-version:to:cc:subject:references:in-reply-to
+         :content-type:content-transfer-encoding:from:sender:message-id;
+        b=oaTJyEUb2bFkFv9w8iAibZ9pr9JnPnzrzFYvu5WBvTqrlEaqVdcws3td5/IIQpteiD
+         UG0BoEgL70nnlbm4bKeOBO0cbbcgjmanaeIx316HBO+5eHett/K6Wj58ZRyrltMQ6fqD
+         3uqThekq0C53ldbVYTyPFOpWr+ff2hRbIzU84=
+Date: Sun, 03 Aug 2008 11:31:27 +0100
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <82e4877d0808030052g4c345811u642667b2a8d87a1d@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: S K <nospamnoham@gmail.com>
+CC: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: cpufreq doesn't seem to work in Intel Q9300
+References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>
+In-Reply-To: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+From: none <aj504@student.cs.york.ac.uk>
+Message-ID: <48958901.06a0100a.35d6.2df9@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 03, 2008 at 03:52:24AM -0400, Parag Warudkar wrote:
-> On Sun, Aug 3, 2008 at 3:37 AM, Rabin Vincent <rabin@rab.in> wrote:
-[..]
-> > Now sd->gamma shouldn't be zero because in sd_ctrls, the minimum value for it
-> > is set to 1.  This range should be checked by vidioc_s_ctrl in gspca.c, and we
-> > have this there:
-> >
-> >               if (ctrl->value < ctrls->qctrl.minimum
-> >                   && ctrl->value > ctrls->qctrl.maximum)
-> >                        return -ERANGE;
-> >
+S K wrote:
+> Hi,
 > 
-> Sounds more appropriate but I am not sure how vidioc_s_ctrl leads to
-> the call trace in the OOPS - at least it doesn't show up there.
+>   I have an Intel Core 2 Quad and running kernel
+> 2.6.25.11-97.fc9.i686. cpufreq doesn't seem to work. The cpufreq
+> scaling monitor in Gnome says CPU Freq scaling is not supported in my
+> CPU. The CPU can run at 2.0 and 2.5 GHz but mine always runs at 2.5
+> GHz in Linux.
+> 
+> So I checked  /sys and there is no cpufreq dir in /sys/...
+> 
+> # ls /sys/devices/system/cpu/
+> cpu0  cpu1  cpu2  cpu3  cpuidle  sched_mc_power_savings
+> # ls /sys/devices/system/cpu/cpuidle/
+> current_driver  current_governor_ro
+> 
+> I have no clue what cpuidle directory is for.
+> 
+> I added cpufreq.debug=7 in kernel boot params and saw the following in
+> the dmesg:
+> 
+> speedstep-smi: No supported Intel CPU detected.
+> cpufreq-core: CPU 0: _PPC is 0 - frequency not limited
+> cpufreq-core: CPU 3: _PPC is 0 - frequency not limited
+> cpufreq-core: CPU 1: _PPC is 0 - frequency not limited
+> cpufreq-core: CPU 2: _PPC is 0 - frequency not limited
+> cpuidle: using governor ladder
+> cpuidle: using governor menu
+> 
+> I looked at arch/x86/kernel/cpu/cpufreq/speedstep-smi.c and it seems
+> to detect only Pentium IIIs.
+> 
+> Anyone know what files have the cpufreq code for Intel Core 2?
+> Does cpufreq support Intel Core 2 Quads? Especially the Q9300? If not,
+> anything I can do to help?
 
-The call trace is for the ioctl which starts the capturing.  However,
-the gamma value is not set when starting the capturing, but would have
-been set earlier using a separate ioctl -- that one would have gone
-through vidioc_s_ctrl.
+I have an Intel Core 2 Duo and it uses the ACPI cpufreq driver; your
+Quad should do the same.  So this is likely an ACPI/BIOS issue.
 
-Rabin
+If you ask ACPI people they will ask you to post the output of acpidump.
+Also you should probably check if you have a BIOS option that needs to be
+enabled for this to work.
+
+BTW, cpuidle is something quite different, it is about how to save power 
+when CPU is doing nothing (i.e. idle :-).  Cpu frequency scaling is how to
+save power when CPU is working (but doesn't need to run flat out).
+
+Alan
