@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756374AbYHCMQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYHCMSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756374AbYHCMQq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 08:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbYHCMQg
+	id S1756732AbYHCMSQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 08:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYHCMSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 08:16:36 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47351 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753572AbYHCMQe (ORCPT
+	Sun, 3 Aug 2008 08:18:03 -0400
+Received: from www17.your-server.de ([213.133.104.17]:48616 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753572AbYHCMSB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 08:16:34 -0400
-Date: Sun, 3 Aug 2008 12:59:07 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: petkovbb@gmail.com
-Cc: petkovbb@googlemail.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       alan@redhat.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 1/2] pata_legacy: export functionality to ide
-Message-ID: <20080803125907.67676948@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080803073756.GA8762@gollum.tnic>
-References: <20080715053356.GA18628@gollum.tnic>
-	<200808021902.12191.bzolnier@gmail.com>
-	<20080802183253.GA2239@gollum.tnic>
-	<200808022046.16990.bzolnier@gmail.com>
-	<20080803073756.GA8762@gollum.tnic>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 3 Aug 2008 08:18:01 -0400
+Subject: next-20080801: BUG in pktcdvd while mounting dvd
+From: Thomas Meyer <thomas@m3y3r.de>
+To: Linux-Next <linux-next@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>, alan@lxorguk.ukuu.org.uk,
+       petero2@telia.com
+Content-Type: text/plain
+Date: Sun, 03 Aug 2008 14:18:04 +0200
+Message-Id: <1217765884.9907.5.camel@dhcppc0>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 Aug 2008 09:37:56 +0200
-Borislav Petkov <petkovbb@googlemail.com> wrote:
+Greetings.
 
-> Ok, here's a definitely better solution:
+Please have a look at this bug report:
 
-Please don't stuff large important pieces of code in header files where
-they will be overlooked
+http://kerneloops.org/raw.php?rawid=47211
 
-NAK this.
+reverting commit 5b6155ee70e9c4d2ad7e6f514c8eee06e2711c3a fixes the
+problem
 
-I'm happy to have a shared library directory for ATA stuff, containing
-useful C code, but hiding stuff in headers like that is just plain wrong.
+commit 5b6155ee70e9c4d2ad7e6f514c8eee06e2711c3a
+Author: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date:   Fri Jul 4 09:29:16 2008 +0200
+
+    pktcdvd: push BKL down into driver
+    
+    Push the lock_kernel down into the driver and switch to
+unlocked_ioctl
+    
+    [akpm@linux-foundation.org: build fix]
+    Signed-off-by: Alan Cox <alan@redhat.com>
+    Acked-by: Peter Osterlund <petero2@telia.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+
 
