@@ -1,102 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbYHCBm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbYHCBml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753802AbYHCBm1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 21:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYHCBmS
+	id S1755028AbYHCBml (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 21:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbYHCBmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 21:42:18 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:54453 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751516AbYHCBmR (ORCPT
+	Sat, 2 Aug 2008 21:42:25 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:29930 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752611AbYHCBmY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 21:42:17 -0400
-To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: New ext4 patchset: 2.6.27-rc1-ext4-1 and 2.6.26-ext4-5
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1KPSbv-0001ou-CM@closure.thunk.org>
-Date: Sat, 02 Aug 2008 21:42:15 -0400
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sat, 2 Aug 2008 21:42:24 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmEMAO6olEh5LDlw/2dsb2JhbACKY6JD
+X-IronPort-AV: E=Sophos;i="4.31,298,1215354600"; 
+   d="scan'208";a="162956948"
+Date: Sun, 3 Aug 2008 11:42:18 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       andi@firstfloor.org, Rik van Riel <riel@redhat.com>, mpm@selenic.com
+Subject: Re: [patch 15/19] Filesystem: XFS slab defragmentation
+Message-ID: <20080803014218.GA6119@disturbed>
+Mail-Followup-To: Christoph Lameter <cl@linux-foundation.org>,
+	Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+	Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+	andi@firstfloor.org, Rik van Riel <riel@redhat.com>,
+	mpm@selenic.com
+References: <20080801182324.572058187@lameter.com> <20080801182347.427403976@lameter.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080801182347.427403976@lameter.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 09, 2008 at 07:21:16PM -0700, Christoph Lameter wrote:
+> Support inode defragmentation for xfs
+> 
+> Reviewed-by: Rik van Riel <riel@redhat.com>
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> 
+> ---
+>  fs/xfs/linux-2.6/xfs_super.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> Index: linux-2.6/fs/xfs/linux-2.6/xfs_super.c
+> ===================================================================
+> --- linux-2.6.orig/fs/xfs/linux-2.6/xfs_super.c	2008-07-31 12:18:12.000000000 -0500
+> +++ linux-2.6/fs/xfs/linux-2.6/xfs_super.c	2008-07-31 12:18:15.000000000 -0500
+> @@ -861,6 +861,7 @@
+>  	xfs_ioend_zone = kmem_zone_init(sizeof(xfs_ioend_t), "xfs_ioend");
+>  	if (!xfs_ioend_zone)
+>  		goto out_destroy_vnode_zone;
+> +	kmem_cache_setup_defrag(xfs_vnode_zone, get_inodes, kick_inodes);
+>  
+>  	xfs_ioend_pool = mempool_create_slab_pool(4 * MAX_BUF_PER_PAGE,
+>  						  xfs_ioend_zone);
 
-I've released a new ext4 patchset against the 2.6.27-rc1 kernel.  This
-includes a number of bug fixes reported by benchmarkers plus some
-cleanups.
+I think that hunk is mis-applied. You're configuring the
+xfs_vnode_zone defrag after allocating the xfs_ioend_zone. This
+should be afew lines higher up, right?
 
-As before I've also released updated the patch set vs. 2.6.26 stock
-kernel, for those people who don't want to play with development kernels
-but who still want to test out ext4.
+Cheers,
 
-As a git tree:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.27-rc1-ext4-1
-http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.27-rc1-ext4-1
-
-As a patchset:
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-rc1-ext4-1
-
-The patch vs. 2.6.26:
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-ext4-5
-
-						- Ted
-
-Akira Fujita (7):
-      ext4: online defrag-- Main function of defrag and ioctl implementation
-      ext4: online defrag-- Allocate new contiguous blocks with mballoc
-      ext4: online defrag-- Read and write file data with memory page
-      ext4: online defrag-- Exchange the blocks between two inodes
-      ext4: online defrag-- Defragmentation for the relevant files (-r mode)
-      ext4: online defrag-- Check the free space fragmentation (-f mode)
-      ext4: online defrag-- Move victim files for the target file (-f mode)
-
-Aneesh Kumar K.V (6):
-      ext4: Fix data corruption when writing to prealloc area
-      ext4: Improve error handling in mballoc
-      ext4: Convert the usage of NR_CPUS to nr_cpu_ids.
-      ext4: Don't allow lg prealloc list to be grow large.
-      ext4: Cleanup the block reservation code path
-      ext4: undo the stable boundary patch changes
-
-Eric Sandeen (5):
-      ext4: sync up block and inode bitmap reading functions
-      ext4: lock block groups when initializing
-      ext4: fix ext4_da_write_begin error path
-      ext4: remove write-only variables from ext4_ordered_write_end
-      Hook ext4 to the vfs fiemap interface.
-
-Hidehiro Kawai (2):
-      ext4: don't read inode block if the buffer has a write error
-      jbd2: don't abort if flushing file data failed
-
-Josef Bacik (1):
-      Any block based fs (this patch includes ext3) just has to declare its own
-
-Li Zefan (1):
-      ext4: improve ext4_fill_flex_info() a bit
-
-Mingming Cao (1):
-      Ext4: journal credits reservation fixes
-
-Theodore Ts'o (12):
-      ext4: Allow read/only mounts with corrupted block group checksums
-      ext4: Fix ext4_ext_journal_restart()
-      ext4: Fix lack of credits BUG() when deleting a badly fragmented inode
-      ext4: don't assume extents can't cross block groups when truncating
-      ext4: Cleanup whitespace and other miscellaneous style issues
-      ext4: unexport jbd2_journal_update_superblock
-      ext4: Stable/Unstable boundary
-      This patch should be merged with ext4-online-defrag-alloc-contiguous-blks.patch
-      This patch should be merged with ext4-online-defrag-relocate-file-data.patch
-      Basic vfs-level fiemap infrastructure, which sets up a new ->fiemap
-      Plug ocfs2 into ->fiemap. Some portions of ocfs2_get_clusters() had to be
-      patch ext4_fix_printk_checkpatch_issues
-
-
-
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
