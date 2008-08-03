@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759644AbYHCVCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759511AbYHCVIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759644AbYHCVCR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 17:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756651AbYHCVCF
+	id S1759511AbYHCVIF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 17:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbYHCVHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 17:02:05 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:42209 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756079AbYHCVCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 17:02:05 -0400
-Date: Mon, 4 Aug 2008 00:00:51 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Satish Eerpini <eerpini@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel Installer
-Message-ID: <20080803210051.GF7442@cs181140183.pp.htv.fi>
-References: <93655eb70808031350q16a5765bk3125e53bd042ba0e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <93655eb70808031350q16a5765bk3125e53bd042ba0e@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 3 Aug 2008 17:07:52 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33960
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755345AbYHCVHv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 17:07:51 -0400
+Date: Sun, 03 Aug 2008 14:07:51 -0700 (PDT)
+Message-Id: <20080803.140751.57839905.davem@davemloft.net>
+To: sven.wegener@stealer.net
+Cc: marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, den@openvz.org
+Subject: Re: [PATCH] net: Add missing extra2 parameter for ip_default_ttl
+ sysctl
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LNX.1.10.0808032214130.29048@titan.stealer.net>
+References: <alpine.LNX.1.10.0808032110520.7765@titan.stealer.net>
+	<1217793894.8154.38.camel@iris.sw.ru>
+	<alpine.LNX.1.10.0808032214130.29048@titan.stealer.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 04, 2008 at 02:20:19AM +0530, Satish Eerpini wrote:
-> Hello everyone , :
+From: Sven Wegener <sven.wegener@stealer.net>
+Date: Sun, 3 Aug 2008 22:18:59 +0200 (CEST)
+
+> Commit 76e6ebfb40a2455c18234dcb0f9df37533215461 acceses the extra2 parameter of
+> the ip_default_ttl ctl_table, but it is never set to a meaningful value. When
+> e84f84f276473dcc673f360e8ff3203148bdf0e2 is applied, we'll oops in
+> rt_cache_invalidate(). Set extra2 to init_net, to avoid that.
 > 
-> i have been writing a kernel installer which may make the kernel
-> installation process a lot more easier for noobs , (don ask me why
-> noobs would like to compile a kernel) ,  but atleast till they learn
-> to do it the good way !
-> 
-> i have written some code which is below , well i am stuck at one thing , ...
-> once the .config file is set , is there any method to compute the
-> exact no of files that are going to be compiled ??
->...
+> Reported-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+> Tested-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Acked-by: Denis V. Lunev <den@openvz.org>
 
-Replacing the normal build output with something different doesn't make
-anything easier.
+Applied, thanks a lot.
 
-Especially considering that your "once the .config file is set" seems to 
-assume the user already configured the kernel himself...
+Please provide commit header line text when referencing SHA IDs,
+as the SHA IDs can change when patches are applied to different
+trees.  Here is the actual changelog message I used so you can
+see what I mean:
 
-> Thanks
-> Satish
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+    net: Add missing extra2 parameter for ip_default_ttl sysctl
+    
+    Commit 76e6ebfb40a2455c18234dcb0f9df37533215461 ("netns: add namespace
+    parameter to rt_cache_flush") acceses the extra2 parameter of the
+    ip_default_ttl ctl_table, but it is never set to a meaningful
+    value. When e84f84f276473dcc673f360e8ff3203148bdf0e2 ("netns: place
+    rt_genid into struct net") is applied, we'll oops in
+    rt_cache_invalidate(). Set extra2 to init_net, to avoid that.
+    
+    Reported-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+    Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+    Tested-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+    Acked-by: Denis V. Lunev <den@openvz.org>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
