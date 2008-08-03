@@ -1,161 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759555AbYHCVN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759520AbYHCV3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759555AbYHCVN0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 17:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756664AbYHCVNR
+	id S1759520AbYHCV3T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 17:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756956AbYHCV3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 17:13:17 -0400
-Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:1643 "EHLO
-	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756512AbYHCVNR (ORCPT
+	Sun, 3 Aug 2008 17:29:04 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:45537 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756858AbYHCV3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 17:13:17 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Kyuma Ohta <whatisthis.sowhat@gmail.com>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: [ivtv-devel] [PATCH AVAIL.]ivtv:Crash 2.6.26 with KUROTOSIKOU CX23416-STVLP
-Date: Sun, 3 Aug 2008 23:12:25 +0200
-User-Agent: KMail/1.9.9
-Cc: ivtv-devel ML <ivtv-devel@ivtvdriver.org>,
-       Video4Linux ML <video4linux-list@redhat.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <1216308014.1146.22.camel@melchior> <200807171758.19702.hverkuil@xs4all.nl> <1216336451.1146.41.camel@melchior>
-In-Reply-To: <1216336451.1146.41.camel@melchior>
+	Sun, 3 Aug 2008 17:29:03 -0400
+Message-ID: <4896225D.9090203@cs.helsinki.fi>
+Date: Mon, 04 Aug 2008 00:25:49 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_58hlIMqMAmQ0PfZ"
-Message-Id: <200808032312.25222.hverkuil@xs4all.nl>
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Christoph Lameter <cl@linux-foundation.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: No, really, stop trying to delete slab until you've finished
+ making slub perform as well
+References: <20080801182324.572058187@lameter.com> <20080803015847.GD26461@parisc-linux.org>
+In-Reply-To: <20080803015847.GD26461@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_58hlIMqMAmQ0PfZ
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi Matthew,
 
-Hi Ohta,
+Matthew Wilcox wrote:
+> Do we have to once again explain that slab still outperforms slub on at
+> least one important benchmark?  I hope Nick Piggin finds time to finish
+> tuning slqb; it already outperforms slub.
 
-Well, I picked up my card this weekend and tested it. It turns out to be 
-an i2c-core.c bug: chips with i2c addresses in the 0x5x range are 
-probed differently than other chips and the probe command contains an 
-error. The upd64083 has an address in that range and so was hit by this 
-bug. The attached patch for linux/drivers/i2c/i2c-core.c will fix it.
+No, you don't have to. I haven't merged that patch nor do I intend to do 
+so until the regressions are fixed.
 
-As you can see, this mail also goes to Jean Delvare so that he can move 
-this upstream (should also go to the 2.6.26-stable series, Jean!).
+And yes, I'm still waiting to hear from you how we're now doing with 
+higher order page allocations...
 
-For the ivtv driver this bug will only hit cards where ivtv has to probe 
-for an upd64083.
-
-SoB for this patch:
-
-Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
-
-I've verified that this is only an issue with kernels 2.6.26 and up. 
-Older kernels are not affected unless the ivtv driver from the v4l-dvb 
-repository is used. To be more precise: this bug has been in i2c-core.c 
-since 2.6.22, but the ivtv driver in 2.6.26 was the first driver that 
-used i2c_new_probed_device() with an i2c address in a range that caused 
-the broken probe to be used.
-
-Thanks for the report Ohta!
-
-Regards,
-
-	Hans
-
-On Friday 18 July 2008 01:13:45 Kyuma Ohta wrote:
-> Dear Hans,
-> Thanx for reply.
->
-> Hans Verkuil wrote:
-> > On Thursday 17 July 2008 17:20:14 Kyuma Ohta wrote:
-> > > Hi,
-> > > I'm testing 2.6.26/amd64 with Athlon64 x2 Box with
-> > > KUROTOSIKOU CX23416-STVLP,always crash ivtv driver
-> > > when loading upd64083 driver.
-> > > I checked crash dump,this issue cause of loading
-> > > upd64083.ko with i2c_probed_new_device().
-> > > So,I fixed ivtv-i2c.c of 2.6.26 vanilla,and
-> > > fixed *pretty* differnce memory allocation,structure
-> > > of upd64083.c.
-> > > I'm running patched 2.6.26 vanilla with below attached
-> > > patches over 24hrs,and over 10hrs recording from ivtv,
-> > > not happend anything;-)
-> > > Please apply below to 2.6.26.x..
-> > >
-> > > Best regards,
-> > > Ohta.
-> >
-> > Hi Ohta,
-> >
-> > Thanks for the patches. If I'm not mistaken there are several
-> > variants of this card: without upd* devices, only with upd64083 and
-> > with both upd devices. Which one do you have?
-> >
-> > Can you also show the dmesg output when ivtv loads?
-> >
-> > Looking at the four patches, I would say that the only relevant
-> > patch is the fix-probing patch. If you try it with only that one
-> > applied, does it still work correct for you? Note that this patch
-> > will not work with a KUROTOSIKOU card that has no upd* devices at
-> > all.
-> >
-> > Can you also give me the kernel backtrace when you load ivtv with
-> > the vanilla 2.6.26? I do not quite understand why it should crash.
-> >
-> > Regards,
-> >
-> > 	Hans
->
-> I have a ivtv card with *both* upd64083 and upd64031a.
-> I don't still try testing apply only one of patch,only
-> apply all of...
->
-> I attach compressed logs when loading ivtv at boottime,
-> parallel probing saa7134 v4l2 device,
-> both applied (successed) ,not applied (failed).
->
-> Best regards,
-> Ohta
->
->
->
-> E-Mail: whatisthis.sowhat@gmail.com (Public)
-> Home Page: http://d.hatena.ne.jp/artane/
->   (Sorry,not maintaining,and written in Japanese only...)
-> Twitter: Artanejp (Mainly Japanese)
-> ICQ: 366538955
-> KEYID: 6B79F95F
-> FINGERPRINT:
-> 9AB3 8569 6033 FDBE 352B  CB6D DBFA B9E2 6B79 F95F
-
-
-
---Boundary-00=_58hlIMqMAmQ0PfZ
-Content-Type: text/x-diff;
-  charset="iso-8859-15";
-  name="i2c-core.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="i2c-core.diff"
-
---- linux-2.6.26/drivers/i2c/i2c-core.c.orig	2008-08-03 22:54:53.000000000 +0200
-+++ linux-2.6.26/drivers/i2c/i2c-core.c	2008-08-03 22:48:02.000000000 +0200
-@@ -1196,9 +1196,11 @@
- 		if ((addr_list[i] & ~0x07) == 0x30
- 		 || (addr_list[i] & ~0x0f) == 0x50
- 		 || !i2c_check_functionality(adap, I2C_FUNC_SMBUS_QUICK)) {
-+			union i2c_smbus_data data;
-+
- 			if (i2c_smbus_xfer(adap, addr_list[i], 0,
- 					   I2C_SMBUS_READ, 0,
--					   I2C_SMBUS_BYTE, NULL) >= 0)
-+					   I2C_SMBUS_BYTE, &data) >= 0)
- 				break;
- 		} else {
- 			if (i2c_smbus_xfer(adap, addr_list[i], 0,
-
---Boundary-00=_58hlIMqMAmQ0PfZ--
+		Pekka
