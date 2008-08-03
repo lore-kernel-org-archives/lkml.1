@@ -1,113 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259AbYHCFsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbYHCFxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756259AbYHCFsr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 01:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYHCFsj
+	id S1755973AbYHCFxS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 01:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYHCFxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 01:48:39 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:56176 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751241AbYHCFsi (ORCPT
+	Sun, 3 Aug 2008 01:53:09 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:40192 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751573AbYHCFxI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 01:48:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=snpjrt2ccueuVwjvHXaM49jngSexYcVzcxhwSHjRTncU4KGJFn90BaKtdetoGdWGEO
-         ++jAHiajCQgz2pQjoLNQa5Ck9IYxRzu3dHLOTLlDH5zt+uyTBYWlC6Vd/q6vLa3RBmO6
-         8UT5gB/ycAT1GhkWtR7QM4rUhniDC1d/fHzEo=
-Message-ID: <86802c440808022248g261f98bcp48042fe845751059@mail.gmail.com>
-Date: Sat, 2 Aug 2008 22:48:37 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: [PATCH 03/25] add dyn_array support
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+	Sun, 3 Aug 2008 01:53:08 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <87k5ey1wgp.fsf@saeurebad.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-3-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-4-git-send-email-yhlu.kernel@gmail.com>
-	 <871w163fuw.fsf@saeurebad.de>
-	 <86802c440808022121u3dcdbda2s5ff463f4b330ca17@mail.gmail.com>
-	 <87sktm1yuu.fsf@saeurebad.de>
-	 <86802c440808022204s62ff2b35g391125babdb2e8e4@mail.gmail.com>
-	 <87od4a1x6y.fsf@saeurebad.de>
-	 <86802c440808022239i447f9627t98e5867b0b08e709@mail.gmail.com>
-	 <87k5ey1wgp.fsf@saeurebad.de>
+Date: Sat, 02 Aug 2008 22:51:40 -0700
+In-Reply-To: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
+	(Yinghai Lu's message of "Sat, 2 Aug 2008 19:59:00 -0700")
+Message-ID: <m1fxpm8x3n.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Yinghai Lu <yhlu.kernel@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.0596]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 00/25] dyn_array and nr_irqs support v3
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 2, 2008 at 10:47 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
-> Hi,
->
-> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->
->> On Sat, Aug 2, 2008 at 10:31 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
->>> Hi,
->>>
->>> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->>>
->>>> On Sat, Aug 2, 2008 at 9:55 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
->>>>> Hi,
->>>>>
->>>>> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->>>>>
->>>>>> On Sat, Aug 2, 2008 at 9:03 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
->>>>>>> Hi,
->>>>>>>
->>>>>>> Yinghai Lu <yhlu.kernel@gmail.com> writes:
->>>>>>>
->>>>>>>> could have crazy big arrays and allocate them in bootmem at init stage.
->>>>>>>> also also to allocate array according to size we need to use to avoid wasting
->>>>>>>> memory
->>>>>>>> use CONFIG_HAVE_DYN_ARRAY to enable it or not
->>>>>>>>
->>>>>>>> usage:
->>>>>>>>
->>>>>>>> |static struct irq_desc irq_desc_init __initdata = {
->>>>>>>> |       .status = IRQ_DISABLED,
->>>>>>>> |       .chip = &no_irq_chip,
->>>>>>>> |       .handle_irq = handle_bad_irq,
->>>>>>>> |       .depth = 1,
->>>>>>>> |       .lock = __SPIN_LOCK_UNLOCKED(irq_desc->lock),
->>>>>>>> |#ifdef CONFIG_SMP
->>>>>>>> |       .affinity = CPU_MASK_ALL
->>>>>>>> |#endif
->>>>>>>> |};
->>>>>>>> |
->>>>>>>> |static void __init init_work(void *data)
->>>>>>>> |{
->>>>>>>> |       struct dyn_array *da = data;
->>>>>>>> |       struct  irq_desc *desc;
->>>>>>>> |       int i;
->>>>>>>> |
->>>>>>>> |       desc = *da->name;
->>>>>>>
->>>>>>> Where *da->name might be NULL...
->>>>
->>>> *da->name = __alloc_bootmem_nopanic(size, da->align, phys);
->>>
->>> Exactly.  Now, look up the possible return values of
->>> __alloc_bootmem_nopanic and we are almost there...
->>
->> 04 fix that via allocating that all together
->
-> No patch should introduce wrong behaviour but instead be an atomic
-> switch to another working state.  If 4 gets reverted for any reason
-> whatsoever, you will be left with a buggy version.
 
-ok, next version i will remove _nopanic
+It appears that quite a few of the places you have changed are testing
+to see if an irq is valid.  The idiomatic way to perform that test in
+the kernel is:
 
-Yh
+if (irq)
+
+With no test to see if you are >= NR_IRQS.
+
+I expect that is the change we want in the drivers that are performing such a silly
+extra check.
+
+Eric
+
+
