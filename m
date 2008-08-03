@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbYHCFKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbYHCFNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbYHCFKY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 01:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYHCFKI
+	id S1755572AbYHCFNT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 01:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbYHCFNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 01:10:08 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:45384 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751241AbYHCFKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 01:10:07 -0400
-Date: Sat, 2 Aug 2008 22:08:00 -0700
-From: sukadev@us.ibm.com
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@osdl.org>,
-       serue@us.ibm.com, matthltc@us.ibm.com,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       sukadev@us.ibm.com
-Subject: Re: Per-instance devpts
-Message-ID: <20080803050800.GA4322@us.ibm.com>
-References: <20080412172933.GA19295@us.ibm.com> <1208027215.28187.17.camel@x61.ebiederm.org> <48935205.3090807@zytor.com>
+	Sun, 3 Aug 2008 01:13:07 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:55553 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751693AbYHCFNG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 01:13:06 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <1217642575-22727-1-git-send-email-yhlu.kernel@gmail.com>
+Date: Sat, 02 Aug 2008 22:09:26 -0700
+In-Reply-To: <1217642575-22727-1-git-send-email-yhlu.kernel@gmail.com>
+	(Yinghai Lu's message of "Fri, 1 Aug 2008 19:02:55 -0700")
+Message-ID: <m1myjuadmh.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48935205.3090807@zytor.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Yinghai Lu <yhlu.kernel@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.0512]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] x86: 64bit support more than 256 irq v2
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin [hpa@zytor.com] wrote:
-> Since the issue of PTY namespaces came up (and was rejected) back in April, 
-> I have thought a little bit about changing ptys to be tied directly into a 
-> devpts instance.  devpts would then be a "normal" filesystem, which can be 
-> mounted multiple times (or not at all).  pty's would then become private to 
-> a devpts instance.
+Yinghai Lu <yhlu.kernel@gmail.com> writes:
 
-Sorry, I thought we were going with a complete device namespace - since that
-would address other devices as well and would avoid the following user-space
-issue. 
-
-I guess this issue came up in OLS recently and have been looking into this
-again.  I have some helper patches to explore multiple mounts of devpts
-without namespace stuff and can send them out in a couple of days.
-
+> Dhaval Giani got:
+> kernel BUG at arch/x86/kernel/io_apic_64.c:357!
+> invalid opcode: 0000 [1] SMP
+> CPU 24
+> ...
 >
-> This is what it would appear would have to change, and I'd like to get 
-> people's feeing for the user-space impact:
+> his system (x3950) has 8 ioapic, irq > 256
 >
-> 1. /dev/ptmx would have to change to a symlink, ptmx -> pts/ptmx.
-
-IIRC, /dev/tty also needs a similar symlink.
-
-> 2. Permissions on /dev/ptmx would not be persistent, and would have to
->    be set via devpts mount options (unless they're 0666 root.tty, which
->    would presumably be the default.)
-> 3. The /proc/sys/kernel/pty limit would be global; a per-filesystem
->    limit could be added on top or instead (presumably via a filesystem
->    mount options.)
+> caused by
+>         commit 9b7dc567d03d74a1fbae84e88949b6a60d922d82
+>         Author: Thomas Gleixner <tglx@linutronix.de>
+>         Date:   Fri May 2 20:10:09 2008 +0200
 >
-> I worry #1 would have substantial user-space impact, but I don't see a way 
-> around it, since there would be no obvious way to associate /dev/ptmx with 
-> a filesystem.
+>            x86: unify interrupt vector defines
+>
+>            The interrupt vector defines are copied 4 times around with minimal
+>            differences. Move them all into asm-x86/irq_vectors.h
+>
+> because 64bit allow same vector for different cpu to serve different irq
+>
+> need to create that array dynamically later
 
-Sukadev
+YH Thank you for splitting this out.  This still doesn't restore the
+pre merge NR_IRQS heuristic.  So I don't think it is a proper regression fix.
+
+Eric
