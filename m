@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbYHCDFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbYHCDF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758187AbYHCDFl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 23:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbYHCDAq
+	id S1756060AbYHCDF5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 23:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbYHCDAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 23:00:46 -0400
+	Sat, 2 Aug 2008 23:00:47 -0400
 Received: from wa-out-1112.google.com ([209.85.146.180]:17221 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752261AbYHCDAo (ORCPT
+	with ESMTP id S1754983AbYHCDAq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 23:00:44 -0400
+	Sat, 2 Aug 2008 23:00:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=mEJTukTfbpdcNynFn06dAmuwUOsYNIF20V48/jw8fHIBR1pr/YwH2kYsBPoSknFwVd
-         p03vqJ/I0Fe5m2KttA33qeIqirDsYsPQqVluPy9yf7gWlwgsCInnbuBJY9iYIgTRHVcv
-         souJbawUfKm0VS5ztOiX1vJ28Lg+Qj69NEndk=
+        b=rH82acHsm5DICbH4D0kjBYnMGlXZHlgZocG6hr0lac7r8FYsB3x12Cm8Rq17J5YnzU
+         BnGsYJXfi3sXiXWoTfjkpfFkErBwx2VXMJCP1S3L5TUVzCbRsY4fq8UOWaj6TAAKg+s9
+         6laIf4sMKnQOKwbzgIS7ecAJvYXUtILF4Pqd4=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,11 +23,11 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 15/25] drivers/serial to use nr_irqs
-Date: Sat,  2 Aug 2008 19:59:15 -0700
-Message-Id: <1217732365-16595-16-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 16/25] drivers proc to use nr_irqs
+Date: Sat,  2 Aug 2008 19:59:16 -0700
+Message-Id: <1217732365-16595-17-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217732365-16595-15-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1217732365-16595-16-git-send-email-yhlu.kernel@gmail.com>
 References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-2-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-3-git-send-email-yhlu.kernel@gmail.com>
@@ -43,158 +43,63 @@ References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-13-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-14-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-15-git-send-email-yhlu.kernel@gmail.com>
+ <1217732365-16595-16-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 ---
- drivers/serial/8250.c                   |    4 ++--
- drivers/serial/amba-pl010.c             |    2 +-
- drivers/serial/amba-pl011.c             |    2 +-
- drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
- drivers/serial/m32r_sio.c               |    4 ++--
- drivers/serial/serial_core.c            |    2 +-
- drivers/serial/serial_lh7a40x.c         |    2 +-
- drivers/serial/sh-sci.c                 |    2 +-
- drivers/serial/ucc_uart.c               |    2 +-
- 9 files changed, 11 insertions(+), 11 deletions(-)
+ fs/proc/proc_misc.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 3a4d677..3920324 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2433,7 +2433,7 @@ static void serial8250_config_port(struct uart_port *port, int flags)
- static int
- serial8250_verify_port(struct uart_port *port, struct serial_struct *ser)
- {
--	if (ser->irq >= NR_IRQS || ser->irq < 0 ||
-+	if (ser->irq >= nr_irqs || ser->irq < 0 ||
- 	    ser->baud_base < 9600 || ser->type < PORT_UNKNOWN ||
- 	    ser->type >= ARRAY_SIZE(uart_config) || ser->type == PORT_CIRRUS ||
- 	    ser->type == PORT_STARTECH)
-@@ -2964,7 +2964,7 @@ static int __init serial8250_init(void)
- 		"%d ports, IRQ sharing %sabled\n", nr_uarts,
- 		share_irqs ? "en" : "dis");
+diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
+index ded9698..1968251 100644
+--- a/fs/proc/proc_misc.c
++++ b/fs/proc/proc_misc.c
+@@ -503,7 +503,7 @@ static int show_stat(struct seq_file *p, void *v)
+ 	struct timespec boottime;
+ 	unsigned int *per_irq_sum;
+ 
+-	per_irq_sum = kzalloc(sizeof(unsigned int)*NR_IRQS, GFP_KERNEL);
++	per_irq_sum = kzalloc(sizeof(unsigned int)*nr_irqs, GFP_KERNEL);
+ 	if (!per_irq_sum)
+ 		return -ENOMEM;
+ 
+@@ -525,7 +525,7 @@ static int show_stat(struct seq_file *p, void *v)
+ 		softirq = cputime64_add(softirq, kstat_cpu(i).cpustat.softirq);
+ 		steal = cputime64_add(steal, kstat_cpu(i).cpustat.steal);
+ 		guest = cputime64_add(guest, kstat_cpu(i).cpustat.guest);
+-		for (j = 0; j < NR_IRQS; j++) {
++		for (j = 0; j < nr_irqs; j++) {
+ 			unsigned int temp = kstat_cpu(i).irqs[j];
+ 			sum += temp;
+ 			per_irq_sum[j] += temp;
+@@ -571,7 +571,7 @@ static int show_stat(struct seq_file *p, void *v)
+ 	}
+ 	seq_printf(p, "intr %llu", (unsigned long long)sum);
  
 -	for (i = 0; i < NR_IRQS; i++)
 +	for (i = 0; i < nr_irqs; i++)
- 		spin_lock_init(&irq_lists[i].lock);
+ 		seq_printf(p, " %u", per_irq_sum[i]);
  
- 	ret = uart_register_driver(&serial8250_reg);
-diff --git a/drivers/serial/amba-pl010.c b/drivers/serial/amba-pl010.c
-index 90b56c2..7156268 100644
---- a/drivers/serial/amba-pl010.c
-+++ b/drivers/serial/amba-pl010.c
-@@ -512,7 +512,7 @@ static int pl010_verify_port(struct uart_port *port, struct serial_struct *ser)
- 	int ret = 0;
- 	if (ser->type != PORT_UNKNOWN && ser->type != PORT_AMBA)
- 		ret = -EINVAL;
--	if (ser->irq < 0 || ser->irq >= NR_IRQS)
-+	if (ser->irq < 0 || ser->irq >= nr_irqs)
- 		ret = -EINVAL;
- 	if (ser->baud_base < 9600)
- 		ret = -EINVAL;
-diff --git a/drivers/serial/amba-pl011.c b/drivers/serial/amba-pl011.c
-index 9d08f27..b718004 100644
---- a/drivers/serial/amba-pl011.c
-+++ b/drivers/serial/amba-pl011.c
-@@ -572,7 +572,7 @@ static int pl010_verify_port(struct uart_port *port, struct serial_struct *ser)
- 	int ret = 0;
- 	if (ser->type != PORT_UNKNOWN && ser->type != PORT_AMBA)
- 		ret = -EINVAL;
--	if (ser->irq < 0 || ser->irq >= NR_IRQS)
-+	if (ser->irq < 0 || ser->irq >= nr_irqs)
- 		ret = -EINVAL;
- 	if (ser->baud_base < 9600)
- 		ret = -EINVAL;
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index a4f8692..b09fdc2 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -589,7 +589,7 @@ static int cpm_uart_verify_port(struct uart_port *port,
- 
- 	if (ser->type != PORT_UNKNOWN && ser->type != PORT_CPM)
- 		ret = -EINVAL;
--	if (ser->irq < 0 || ser->irq >= NR_IRQS)
-+	if (ser->irq < 0 || ser->irq >= nr_irqs)
- 		ret = -EINVAL;
- 	if (ser->baud_base < 9600)
- 		ret = -EINVAL;
-diff --git a/drivers/serial/m32r_sio.c b/drivers/serial/m32r_sio.c
-index 23d0305..611c97a 100644
---- a/drivers/serial/m32r_sio.c
-+++ b/drivers/serial/m32r_sio.c
-@@ -922,7 +922,7 @@ static void m32r_sio_config_port(struct uart_port *port, int flags)
- static int
- m32r_sio_verify_port(struct uart_port *port, struct serial_struct *ser)
+ 	seq_printf(p,
+@@ -625,13 +625,13 @@ static const struct file_operations proc_stat_operations = {
+  */
+ static void *int_seq_start(struct seq_file *f, loff_t *pos)
  {
--	if (ser->irq >= NR_IRQS || ser->irq < 0 ||
-+	if (ser->irq >= nr_irqs || ser->irq < 0 ||
- 	    ser->baud_base < 9600 || ser->type < PORT_UNKNOWN ||
- 	    ser->type >= ARRAY_SIZE(uart_config))
- 		return -EINVAL;
-@@ -1162,7 +1162,7 @@ static int __init m32r_sio_init(void)
+-	return (*pos <= NR_IRQS) ? pos : NULL;
++	return (*pos <= nr_irqs) ? pos : NULL;
+ }
  
- 	printk(KERN_INFO "Serial: M32R SIO driver\n");
- 
--	for (i = 0; i < NR_IRQS; i++)
-+	for (i = 0; i < nr_irqs; i++)
- 		spin_lock_init(&irq_lists[i].lock);
- 
- 	ret = uart_register_driver(&m32r_sio_reg);
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index f977c98..effd0bd 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -741,7 +741,7 @@ static int uart_set_info(struct uart_state *state,
- 	if (port->ops->verify_port)
- 		retval = port->ops->verify_port(port, &new_serial);
- 
--	if ((new_serial.irq >= NR_IRQS) || (new_serial.irq < 0) ||
-+	if ((new_serial.irq >= nr_irqs) || (new_serial.irq < 0) ||
- 	    (new_serial.baud_base < 9600))
- 		retval = -EINVAL;
- 
-diff --git a/drivers/serial/serial_lh7a40x.c b/drivers/serial/serial_lh7a40x.c
-index cb49a5a..61dc8b3 100644
---- a/drivers/serial/serial_lh7a40x.c
-+++ b/drivers/serial/serial_lh7a40x.c
-@@ -460,7 +460,7 @@ static int lh7a40xuart_verify_port (struct uart_port* port,
- 
- 	if (ser->type != PORT_UNKNOWN && ser->type != PORT_LH7A40X)
- 		ret = -EINVAL;
--	if (ser->irq < 0 || ser->irq >= NR_IRQS)
-+	if (ser->irq < 0 || ser->irq >= nr_irqs)
- 		ret = -EINVAL;
- 	if (ser->baud_base < 9600) /* *** FIXME: is this true? */
- 		ret = -EINVAL;
-diff --git a/drivers/serial/sh-sci.c b/drivers/serial/sh-sci.c
-index 3df2aae..667b4b8 100644
---- a/drivers/serial/sh-sci.c
-+++ b/drivers/serial/sh-sci.c
-@@ -1157,7 +1157,7 @@ static int sci_verify_port(struct uart_port *port, struct serial_struct *ser)
+ static void *int_seq_next(struct seq_file *f, void *v, loff_t *pos)
  {
- 	struct sci_port *s = &sci_ports[port->line];
- 
--	if (ser->irq != s->irqs[SCIx_TXI_IRQ] || ser->irq > NR_IRQS)
-+	if (ser->irq != s->irqs[SCIx_TXI_IRQ] || ser->irq > nr_irqs)
- 		return -EINVAL;
- 	if (ser->baud_base < 2400)
- 		/* No paper tape reader for Mitch.. */
-diff --git a/drivers/serial/ucc_uart.c b/drivers/serial/ucc_uart.c
-index 5c5d18d..503f0b9 100644
---- a/drivers/serial/ucc_uart.c
-+++ b/drivers/serial/ucc_uart.c
-@@ -1066,7 +1066,7 @@ static int qe_uart_verify_port(struct uart_port *port,
- 	if (ser->type != PORT_UNKNOWN && ser->type != PORT_CPM)
- 		return -EINVAL;
- 
--	if (ser->irq < 0 || ser->irq >= NR_IRQS)
-+	if (ser->irq < 0 || ser->irq >= nr_irqs)
- 		return -EINVAL;
- 
- 	if (ser->baud_base < 9600)
+ 	(*pos)++;
+-	if (*pos > NR_IRQS)
++	if (*pos > nr_irqs)
+ 		return NULL;
+ 	return pos;
+ }
 -- 
 1.5.4.5
 
