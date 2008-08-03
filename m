@@ -1,74 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759542AbYHCUHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759557AbYHCUJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759542AbYHCUHh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 16:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbYHCUH3
+	id S1759557AbYHCUJg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 16:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYHCUJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 16:07:29 -0400
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:63625 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753004AbYHCUH2 (ORCPT
+	Sun, 3 Aug 2008 16:09:28 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:36863 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753754AbYHCUJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 16:07:28 -0400
-Message-ID: <48960FFE.1020408@lwfinger.net>
-Date: Sun, 03 Aug 2008 15:07:26 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Sun, 3 Aug 2008 16:09:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lMR8FwNyhbizHzW6j5tAhPOUfx+2ohu8zKq4+NAq64elWbqUfuCQDQXiO6eSiXt4Xz
+         t78lOFREwKM4764M/O6ZHqgLII1bLBXkiDim5njWH509eP48E5is5MVZ/19az0Vpy+EW
+         Iah6bibhjGdOrCABjw6LBo166t71gWgoC2ujw=
+Message-ID: <58cb370e0808031309n54052c51m744c479aa69b2f4a@mail.gmail.com>
+Date: Sun, 3 Aug 2008 22:09:25 +0200
+From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: Kernel Summit request for Discussion of future of ATA (libata) and IDE
+Cc: ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+In-Reply-To: <1217779055.4179.10.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Chr <chunkeey@web.de>
-CC: "David S. Miller" <davem@davemloft.net>,
-       wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: p54usb broken by commit b19fa1f
-References: <4893CF3D.1070504@lwfinger.net> <200808021457.46438.chunkeey@web.de>
-In-Reply-To: <200808021457.46438.chunkeey@web.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1217779055.4179.10.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chr wrote:
-> On Saturday 02 August 2008 05:06:37 Larry Finger wrote:
->> In testing 2.6.27-rc1, I found that p54usb caused my machine to freeze. A
->> few times, I was able to use the KDE system status applet to see that the
->> system was using essentially 100% of the CPU's. One other time, the system
->> responded a little - enough for me to see tha wpa_supplicant was consuming
->> 100% of the my AMD Turion 64 X2 running an x86_64 kernel. From bisection,
->> the problem is due to
->>
->> commit b19fa1fa91845234961c64dbd564671aa7c0fd27
->> Author: David S. Miller <davem@davemloft.net>
->> Date:   Tue Jul 8 23:14:24 2008 -0700
->>
->>      net: Delete NETDEVICES_MULTIQUEUE kconfig option.
->>
->>      Multiple TX queue support is a core networking feature.
->>
->>      Signed-off-by: David S. Miller <davem@davemloft.net>
->>
->> Obviously, something in the driver cannot handle multiqueues, but I
->> have not found anything, and I have not been able to get any logged events
->> that show what is going wrong.
->>
-> 
-> Hmm that's a bit odd as my p54usb-adapter seems to work usual with
-> 2.6.27-rc1?!... That said: it doesn't work nearly as stable as the
-> minipci card that I have too. Is there anyone else who can confirm
-> that this problem is specific to the p54 driver & 2.6.27-rc1?
+I'm using gmail's interface (I don't have access to my laptop ATM) so
+the mail may look a bit weird...
 
-The problem is triggered by the following section:
+On Sun, Aug 3, 2008 at 5:57 PM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+> Right at the moment, we have two separate subsystems for running IDE
+> type devices:  driver/ide and drivers/ata.  The claim I've seen is that
+> drivers/ata can do everything drivers/ide can do plus it does sata.  I
 
-         if (priv->fw_var >= 0x300) {
-                 /* Firmware supports QoS, use it! */
-                 priv->tx_stats[0].limit = 3;
-                 priv->tx_stats[1].limit = 4;
-                 priv->tx_stats[2].limit = 3;
-                 priv->tx_stats[3].limit = 1;
-                 dev->queues = 4;
-         }
+This claim doesn't seem to have confirmation in facts:
 
-If fw_var is less than 0x300, then the bug does not trigger. On my system, if I 
-change the number of queues to 1, then all is OK.
+* There is still hardware that is simply not-supported by libata at all:
 
-Larry
+  - architecture specific hardware (ppc, m68k, mips, arm)
+
+  - "difficult" legacy PC-class hardware (i.e. secondary interface on
+CY82C693 etc)
+
+* There are still regressions in many libata PCI host drivers dating back
+  to their rushed introduction.
+
+* There are still corner case in libata core - PIO is dead slow
+compared to drivers/ide/,
+  "serialized" hosts are not supported, some quirks for obsolete
+hardware got lost...
+
+> also note that no major distribution seems to enable anything in
+> drivers/ide anymore, so given this is it time to deprecate drivers/ide?
+
+Major distributions make their own decisions (I don't remeber anybody from
+these distros discussing the conversion on linux-kernel or linux-ide) which
+sometimes don't match with what kernel.org kernels are doing.
+
+[ Actually one distro went so far as CONFIG_IDE=n even before support for
+  all PC-class IDE PCI hardware present in drivers/ide was available
+in libata. ]
+
+Also the same major distros that use libata on x86 are using
+drivers/ide on non-x86.
+
+> A counter argument to the above is that not all drivers (particularly
+> the older ones where hw is scarce) are converted to drivers/ata, so
+> drivers/ide seems to be needed for some legacy systems (in which case it
+> can be deprecated but not removed).  I've also noted that some embedded
+> distributions seem to be using drivers/ide, but I'm not really sure
+> whether this is inertia or some overriding need.
+
+drivers/ide deprecation would be a premature thing.
+
+> The proposal is to discuss the future of these two subsystems and arrive
+> at a consensus what's happening to each going forwards.
+
+Well, I'm looking forward to discuss the future of Linux ATA support.
+
+Thanks,
+Bart
