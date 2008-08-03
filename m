@@ -1,77 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760044AbYHCWdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760012AbYHCW76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760044AbYHCWdx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 18:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757409AbYHCWdp
+	id S1760012AbYHCW76 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 18:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758257AbYHCW7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 18:33:45 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43042 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757306AbYHCWdo (ORCPT
+	Sun, 3 Aug 2008 18:59:47 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:49502 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758236AbYHCW7q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 18:33:44 -0400
-Date: Sun, 3 Aug 2008 23:16:28 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linasvepstas@gmail.com
-Cc: "John Stoffel" <john@stoffel.org>,
-       "Alistair John Strachan" <alistair@devzero.co.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: amd64 sata_nv (massive) memory corruption
-Message-ID: <20080803231628.1361b75f@lxorguk.ukuu.org.uk>
-In-Reply-To: <3ae3aa420808031523i1d9559d9i19dd5fcc9d5719c7@mail.gmail.com>
-References: <3ae3aa420808011030weadc61fvf6f850f0a4cfcb3e@mail.gmail.com>
-	<200808012319.05038.alistair@devzero.co.uk>
-	<3ae3aa420808011951l58da4010r1ff0876f255565b0@mail.gmail.com>
-	<18580.48861.657366.629904@stoffel.org>
-	<3ae3aa420808021501k2e871dc0y344dd7f9a7b80614@mail.gmail.com>
-	<18581.6873.353028.695909@stoffel.org>
-	<3ae3aa420808031523i1d9559d9i19dd5fcc9d5719c7@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Aug 2008 18:59:46 -0400
+From: "Moore, Eric" <Eric.Moore@lsi.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+CC: "Prakash, Sathya" <Sathya.Prakash@lsi.com>
+Date: Sun, 3 Aug 2008 16:59:40 -0600
+Subject: RE: [PATCH 2/2] fusion:  Implement generic interrupt misroute
+ handling
+Thread-Topic: [PATCH 2/2] fusion:  Implement generic interrupt misroute
+ handling
+Thread-Index: Acj1k3z/G5K1cs9/Tfe9q50vapdQFgAJ8zB2
+Message-ID: <660360F4F2570145BD872F298951B17A3ADCEDB9@cosmail03.lsi.com>
+References: <1217786709.4179.27.camel@localhost.localdomain>
+In-Reply-To: <1217786709.4179.27.camel@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I then did some more debugging, and isolated the original data corruption
-> problem to a bad pair of RAM sticks. But this was subtle, so let me recap:
-> 
-> -- The bad ram passes memtest86+
+Thanks, I will try this out.   However I thought I saw lost interrupts occurring randomly, meaning it was not necessarily the first config page access.  I'm back in the office on 8/11, I will test it out then and provide feedback.
 
-You are assuming bad RAM then not bad bus loadings, corrosion on the
-pins.. ?
+Eric
 
-> So I'm wondering: can we devise a test to validate system-bus interactions
-> like this? Clearly, the memtest86 test validates the RAM and the northbridge
-> bus between CPU and system RAM, so that seems OK.
+________________________________________
+From: James Bottomley [James.Bottomley@HansenPartnership.com]
+Sent: Sunday, August 03, 2008 12:05 PM
+To: linux-scsi; linux-kernel; linux-pci@vger.kernel.org
+Cc: Moore, Eric
+Subject: [PATCH 2/2] fusion:  Implement generic interrupt misroute handling
 
-If you have a good enough pile of hardware and the right monitoring stuff
-loaded then you should get EDAC event logs from the PCI/PCI-X for PCI
-card logged traps, MCE errors for the higher level busses, L1/L2 cache or
-CPU parity errors and ECC traps for memory problems either via EDAC or
-MCE.
+This patch uses the new pci_lost_interrupt() callback to note the loss
+of an interrupt, and if the reason is MSI, to work around the problem.
 
-If you are using a generic end user motherboard then you don't.
+I used the manufacturer config page for this, because every fusion type
+has that one and its loss means that mpt_config() which is interrupt
+driven, failed.
 
-> doesn't exist. I have no clue about SATA.  Is there possibly some ide or
-> scsi command that can be used to loop-back? Some sort of "send bytes
-> to disk, but don't actually write them to platter" command? Maybe just
-> a write to some scratch ram on the disk drive itself? Even just a few bytes
+James
 
-Yes for SCSI. In theory yes for ATA but I've never tested to see what the
-level of actual support is, and I'm not sure you can test it in DMA mode.
+---
+diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
+index d6a0074..2d75c58 100644
+--- a/drivers/message/fusion/mptbase.c
++++ b/drivers/message/fusion/mptbase.c
+@@ -168,7 +168,7 @@ static int  mpt_readScsiDevicePageHeaders(MPT_ADAPTER *ioc, int portnum);
+ static void    mpt_read_ioc_pg_1(MPT_ADAPTER *ioc);
+ static void    mpt_read_ioc_pg_4(MPT_ADAPTER *ioc);
+ static void    mpt_timer_expired(unsigned long data);
+-static void    mpt_get_manufacturing_pg_0(MPT_ADAPTER *ioc);
++static int     mpt_get_manufacturing_pg_0(MPT_ADAPTER *ioc);
+ static int     SendEventNotification(MPT_ADAPTER *ioc, u8 EvSwitch);
+ static int     SendEventAck(MPT_ADAPTER *ioc, EventNotificationReply_t *evnp);
+ static int     mpt_host_page_access_control(MPT_ADAPTER *ioc, u8 access_control_value, int sleepFlag);
+@@ -2052,6 +2052,7 @@ mpt_do_ioc_recovery(MPT_ADAPTER *ioc, u32 reason, int sleepFlag)
+        int      irq_allocated = 0;
+        u8      *a;
 
-> would be enough to implement a loopback test. Maybe some sort of
++ retry:
+        printk(MYIOC_s_INFO_FMT "Initiating %s\n", ioc->name,
+            reason == MPT_HOSTEVENT_IOC_BRINGUP ? "bringup" : "recovery");
 
-For the simpler cases perhaps. The more interesting approaches I think
-are the fs level ones where you accept the fact that hardware sucks and
-do end to end checksumming from the fs or even the app in some
-situations. We don't yet have that functionality mainstream although it
-might make an interesting device mapper module ...
+@@ -2268,6 +2269,7 @@ mpt_do_ioc_recovery(MPT_ADAPTER *ioc, u32 reason, int sleepFlag)
+         *      and we try GetLanConfigPages again...
+         */
+        if ((ret == 0) && (reason == MPT_HOSTEVENT_IOC_BRINGUP)) {
++               int rc;
+
+                /*
+                 * Initalize link list for inactive raid volumes.
+@@ -2275,6 +2277,22 @@ mpt_do_ioc_recovery(MPT_ADAPTER *ioc, u32 reason, int sleepFlag)
+                mutex_init(&ioc->raid_data.inactive_list_mutex);
+                INIT_LIST_HEAD(&ioc->raid_data.inactive_list);
+
++               /* May fail becuase of IRQ misrouting */
++               rc = mpt_get_manufacturing_pg_0(ioc);
++               if (rc) {
++                       if (pci_lost_interrupt(ioc->pcidev) ==
++                           PCI_LOST_IRQ_DISABLE_MSI) {
++                               free_irq(ioc->pci_irq, ioc);
++                               ioc->msi_enable = 0;
++                               pci_disable_msi(ioc->pcidev);
++                               goto retry;
++                       }
++                       printk(MYIOC_s_ERR_FMT "Cannot recover IRQ routing\n",
++                              ioc->name);
++                       return -1;
++               }
++
++
+                if (ioc->bus_type == SAS) {
+
+                        /* clear persistency table */
+@@ -2326,7 +2344,6 @@ mpt_do_ioc_recovery(MPT_ADAPTER *ioc, u32 reason, int sleepFlag)
+                }
+
+                GetIoUnitPage2(ioc);
+-               mpt_get_manufacturing_pg_0(ioc);
+        }
+
+        /*
+@@ -5697,13 +5714,14 @@ mpt_read_ioc_pg_1(MPT_ADAPTER *ioc)
+        return;
+ }
+
+-static void
++static int
+ mpt_get_manufacturing_pg_0(MPT_ADAPTER *ioc)
+ {
+        CONFIGPARMS             cfg;
+        ConfigPageHeader_t      hdr;
+        dma_addr_t              buf_dma;
+        ManufacturingPage0_t    *pbuf = NULL;
++       int                     ret;
+
+        memset(&cfg, 0 , sizeof(CONFIGPARMS));
+        memset(&hdr, 0 , sizeof(ConfigPageHeader_t));
+@@ -5714,20 +5732,23 @@ mpt_get_manufacturing_pg_0(MPT_ADAPTER *ioc)
+        cfg.action = MPI_CONFIG_ACTION_PAGE_HEADER;
+        cfg.timeout = 10;
+
+-       if (mpt_config(ioc, &cfg) != 0)
++       ret = mpt_config(ioc, &cfg);
++       if (ret != 0)
+                goto out;
+
+        if (!cfg.cfghdr.hdr->PageLength)
+                goto out;
+
+        cfg.action = MPI_CONFIG_ACTION_PAGE_READ_CURRENT;
++       ret = -ENOMEM;
+        pbuf = pci_alloc_consistent(ioc->pcidev, hdr.PageLength * 4, &buf_dma);
+        if (!pbuf)
+                goto out;
+
+        cfg.physAddr = buf_dma;
+
+-       if (mpt_config(ioc, &cfg) != 0)
++       ret = mpt_config(ioc, &cfg);
++       if (ret != 0)
+                goto out;
+
+        memcpy(ioc->board_name, pbuf->BoardName, sizeof(ioc->board_name));
+@@ -5738,6 +5759,7 @@ mpt_get_manufacturing_pg_0(MPT_ADAPTER *ioc)
+
+        if (pbuf)
+                pci_free_consistent(ioc->pcidev, hdr.PageLength * 4, pbuf, buf_dma);
++       return ret;
+ }
+
+ /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 
-Alan
