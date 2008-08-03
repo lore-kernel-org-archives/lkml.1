@@ -1,79 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760293AbYHCWSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760020AbYHCWXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760293AbYHCWSt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 18:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757363AbYHCWSj
+	id S1760020AbYHCWXj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 18:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757363AbYHCWXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 18:18:39 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44743 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757540AbYHCWSi (ORCPT
+	Sun, 3 Aug 2008 18:23:31 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:25522 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757306AbYHCWXa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 18:18:38 -0400
-Date: Sun, 3 Aug 2008 23:01:20 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>
-Subject: Re: Kernel Summit request for Discussion of future of ATA (libata)
- and IDE
-Message-ID: <20080803230120.155aa3e5@lxorguk.ukuu.org.uk>
-In-Reply-To: <58cb370e0808031309n54052c51m744c479aa69b2f4a@mail.gmail.com>
-References: <1217779055.4179.10.camel@localhost.localdomain>
-	<58cb370e0808031309n54052c51m744c479aa69b2f4a@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 3 Aug 2008 18:23:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=Q59AsaS+zj+kLLpxe710Nl4iazbcByAQ1ZDzf+2KfRywSMOP+WzqUlUMViU0L8j8ax
+         LJ0S49/ebjM010o5nSXGQU+n63cQDZSYffCC2yCI2nfXfvS9yOoulT22/cqf6zMNuBMa
+         i/QTgnM/7WMrSgSD0UNqrTw7rECzOOEg8MybM=
+Message-ID: <3ae3aa420808031523i1d9559d9i19dd5fcc9d5719c7@mail.gmail.com>
+Date: Sun, 3 Aug 2008 17:23:29 -0500
+From: "Linas Vepstas" <linasvepstas@gmail.com>
+Reply-To: linasvepstas@gmail.com
+To: "John Stoffel" <john@stoffel.org>
+Subject: Re: amd64 sata_nv (massive) memory corruption
+Cc: "Alistair John Strachan" <alistair@devzero.co.uk>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <18581.6873.353028.695909@stoffel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3ae3aa420808011030weadc61fvf6f850f0a4cfcb3e@mail.gmail.com>
+	 <200808012319.05038.alistair@devzero.co.uk>
+	 <3ae3aa420808011951l58da4010r1ff0876f255565b0@mail.gmail.com>
+	 <18580.48861.657366.629904@stoffel.org>
+	 <3ae3aa420808021501k2e871dc0y344dd7f9a7b80614@mail.gmail.com>
+	 <18581.6873.353028.695909@stoffel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->   - "difficult" legacy PC-class hardware (i.e. secondary interface on
-> CY82C693 etc)
+2008/8/2 John Stoffel <john@stoffel.org>:
 
-Yep - probably an hours work but I've simply not been able to get the
-relevant hardware to test.
+>> Linas
 
-> * There are still regressions in many libata PCI host drivers dating back
->   to their rushed introduction.
+>>> Can you post the output of dmesg after a boot,
 
-I don't think we have any that are real straight forward "you
-forgot something" regressions now. There are a few "works with A not B"
-cases in both directions that we'll probably take ages to figure out.
+I found the problem, and its not in dmesg
 
-> * There are still corner case in libata core - PIO is dead slow
-> compared to drivers/ide/,
+> Linas> Then, rather stupidly, I flashed the latest BIOS for the
+> Linas> motherboard and now have a dead motherboard (it hangs on its
+> Linas> way through BIOS, well before the bootloader.)  So I'm off to
+> Linas> buy a new mobo today.
+>
+> Awww fuckies.  Sorry to suggest this path to you.  You might be able
+> to get it back by clearing the CMOS as well.
 
-There are two there - libata keeps IRQs blocked for longer in PIO mode as
-well which is a factor for realtime that needs looking at, as well as
-using 16bit not 32bit I/O for most devices (which is trivial to fix). The
-IRQ masking stuff is more complex and old IDE handles it far better for
-PIO on non shared IRQ interfaces. That is actually probably the most
-complicated thing to address of the stuff you'd want to do if you were
-going to kill off old IDE.
+That fixed it, but only *after* the machine cooled off overnight!
+While it was warm, it was so unstable I couldn't even pilot around in BIOS
+without it hanging. After cooling off, it was still unstable, but held
+it together
+long enough for me to ask for "factory defaults" -- and that fixed it.
+(Grrr. What are these BIOS people thinking?)
 
->   "serialized" hosts are not supported, some quirks for obsolete
-> hardware got lost...
+I then did some more debugging, and isolated the original data corruption
+problem to a bad pair of RAM sticks. But this was subtle, so let me recap:
 
-Serialized hardware has been supported since 2.6.24 or so. Not sure there
-are any quirks for obsolete hardware now missing but its always fun
-trying to nail them all. Libata can support per command serializing and
-pretty much arbitarily complex serializing rules via qc_defer.
+-- The bad ram passes memtest86+
+-- It's been in heavy use for some 3-4 months, for memory intensive compute,
+   and memory-intensive SQL, with not the slightest hint of any stability or
+   corruption problems, Uptime might have been around 3-4 months.
+-- Corruption was prompt and widespread on the sata interface.
 
-> > The proposal is to discuss the future of these two subsystems and arrive
-> > at a consensus what's happening to each going forwards.
-> 
-> Well, I'm looking forward to discuss the future of Linux ATA support.
+I remove the bad RAM, that the sata interface appears to be stable.
+I've been doing file copies and diffs for hours without a hint of trouble.
 
-Have fun, but don't expect me to respect any decisions made off public
-lists. I don't really see any point worrying about it - porting m68k to
-libata is of minimal value for example and there is little likelyhood of
-Amiga AHCI SATA suddenely appearing.
+This would seem to bring this chapter to a close.
 
-Alan
+======================================================
+
+What I don't like is that the corruption was utterly silent -- and disastereous:
+Originally, I had the sata disk paired to a pata disk in a RAID array, and the
+raid array was getting corrupted -- corrupted system files would get worse,
+as I tried reinstalling them. It took a while to realize that it was the sata
+disk, and it took a bit longer to realize it wasn't the disk itself, but the
+bad-ram-on-sata-channel.
+
+So I'm wondering: can we devise a test to validate system-bus interactions
+like this? Clearly, the memtest86 test validates the RAM and the northbridge
+bus between CPU and system RAM, so that seems OK.
+
+I assume the sata controller is attached via pci or pci-e -- although the pci
+controller and the sata controller are on the same chip, (nVidia nForce 570
+chipset) so it may be an 'emulated' pci bus of some sort. The problem would
+seem to be some sort of bus timing issue between this particular RAM,
+and the pci bus in the chipset -- bad "eyes" on some signal line, or ground
+bounce or whatever, or maybe a rare chipset bug.
+
+So the question is: is there some sort of sata (or pci) "loopback mode",
+where we could pump data through all of the busses and controllers, up
+near to the point where it would normally go out to the serdes to the disk,
+but instead have it loop back, so that we could test the buses between
+endpoints?  I've never heard of a pci/pci-e loopback, but that doesn't mean it
+doesn't exist. I have no clue about SATA.  Is there possibly some ide or
+scsi command that can be used to loop-back? Some sort of "send bytes
+to disk, but don't actually write them to platter" command? Maybe just
+a write to some scratch ram on the disk drive itself? Even just a few bytes
+would be enough to implement a loopback test. Maybe some sort of
+"queue this block, but don't write it yet", followed by a "give me dump of
+the command queue" -- such a loopback test would have found my problem
+pretty quickly I suspect.
+
+Ideas solicited.
+
+--linas
+
+p.s. the corruption appears to be single bits -- the rest of the word, and
+surrounding words, seem fine.
