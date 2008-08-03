@@ -1,125 +1,45 @@
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758906AbYHCStT (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 3 Aug 2008 14:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYHCStI
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 14:49:08 -0400
-Received: from connect-ua-211.dg.net.ua ([213.186.218.211]:33092 "EHLO
-	mail.connect.com.ua" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752730AbYHCStH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 14:49:07 -0400
-To: linux-kernel@vger.kernel.org
-Subject: =?UTF-8?B?0JrQvtC90L3QtdC60YIgfCDQl9C80ZbQvdC4INC30LAg0L7RgdGC0LDQvdC9?=  =?UTF-8?B?0ZbQuSDRgtC40LbQtNC10L3RjA==?=
-Date: Sun, 3 Aug 2008 21:49:02 +0300
-From: =?UTF-8?B?0JrQvtC80LDQvdC00LAg0JrQvtC90L3QtdC60YLQsA==?= 
-	<donotreply@connect.com.ua>
-Reply-to: Connect <donotreply@connect.com.ua>
-Message-ID: <143b6e72a6b182e16d29d19bda45838c@localhost.localdomain>
-X-Priority: 3
-X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.0 rc1]
+X-Warning: Original message contained 8-bit characters, however during
+	   the SMTP transport session the receiving system did not announce
+	   capability of receiving 8-bit SMTP (RFC 1651-1653), and as this
+	   message does not have MIME headers (RFC 2045-2049) to enable
+	   encoding change, we had very little choice.
+X-Warning: We ASSUME it is less harmful to add the MIME headers, and
+	   convert the text to Quoted-Printable, than not to do so,
+	   and to strip the message to 7-bits.. (RFC 1428 Appendix A)
+X-Warning: We don't know what character set the user used, thus we had to
+	   write these MIME-headers with our local system default value.
 MIME-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+	id S1760233AbYHCXMv (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 3 Aug 2008 19:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758236AbYHCXMl
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 3 Aug 2008 19:12:41 -0400
+Received: from qmta05.westchester.pa.mail.comcast.net ([76.96.62.48]:42726
+	"EHLO QMTA05.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758104AbYHCXMl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 19:12:41 -0400
+X-Authority-Analysis: v=1.0 c=1 p=uqgHIb_X6basZDXzKMoA:9
+ a=0OQfG65Qhs1cfofZGhyXlUQ4YVIA:4 a=J6z3QGszeo8A:10 a=7mayv77iRtYA:10
+From: nokia30online@comcast.net
+Subject: Nokia Connecting People.....
+Date: Sun, 03 Aug 2008 23:12:22 +0000
+Message-Id: <080320082312.24645.48963B51000674E10000604522073000330A0207040201CFCC0E07050102@comcast.net>
+X-Mailer: AT&T Message Center Version 1 (Oct 30 2007)
+X-Authenticated-Sender: bm9raWEzMG9ubGluZUBjb21jYXN0Lm5ldA==
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758906AbYHCStT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760233AbYHCXMv@vger.kernel.org>
 
-=D0=92=D1=96=D1=82=D0=B0=D1=94=D0=BC=D0=BE, =D0=92=D0=BB=D0=B0=D0=B4=D0=
-=B8=D0=BC=D0=B8=D1=80 =D0=9A=D0=B8=D1=80=D0=B8=D0=BB=D0=BE=D0=B2!
-
-=D0=9F=D1=80=D0=BE=D0=BF=D0=BE=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=B4=D0=BE=
- =D0=B2=D0=B0=D1=88=D0=BE=D1=97 =D1=83=D0=B2=D0=B0=D0=B3=D0=B8 =D0=BF=D0=
-=B5=D1=80=D0=B5=D0=BB=D1=96=D0=BA =D0=BD=D0=B0=D0=B9=D0=B1=D1=96=D0=BB=D1=
-=8C=D1=88 =D1=86=D1=96=D0=BA=D0=B0=D0=B2=D0=B8=D1=85 =D0=BF=D0=BE=D0=B4=
-=D1=96=D0=B9 =D0=BD=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82=D1=
-=96 =D0=B7=D0=B0 =D0=BE=D1=81=D1=82=D0=B0=D0=BD=D0=BD=D1=96=D0=B9 =D1=87=
-=D0=B0=D1=81:
-
-=D0=91=D0=BB=D0=B8=D0=B7=D1=8C=D0=BA=D0=BE =D1=82=D0=B8=D0=B6=D0=BD=D1=8F=
- =D1=82=D0=BE=D0=BC=D1=83 =D0=B7=D0=BC=D1=96=D0=BD=D0=B8=D0=B2=D1=81=D1=
-=8F =D0=B7=D0=BE=D0=B2=D0=BD=D1=96=D1=88=D0=BD=D1=96=D0=B9 =D0=B2=D0=B8=
-=D0=B3=D0=BB=D1=8F=D0=B4 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82=D1=83=
-. =D0=A1=D1=83=D0=B4=D1=8F=D1=87=D0=B8 =D0=BF=D0=BE =D0=B2=D1=96=D0=B4=D0=
-=B3=D1=83=D0=BA=D0=B0=D1=85, =D0=B1=D0=B0=D0=B3=D0=B0=D1=82=D1=8C=D0=BE=
-=D0=BC =D0=B2=D1=96=D0=BD =D0=BF=D1=80=D0=B8=D0=BF=D0=B0=D0=B2 =D0=B4=D0=
-=BE =D0=B4=D1=83=D1=88=D1=96. =D0=9A=D1=80=D1=96=D0=BC =D1=82=D0=BE=D0=B3=
-=D0=BE, =D0=BC=D0=B8 =D1=96=D1=81=D1=82=D0=BE=D1=82=D0=BD=D0=BE =D0=BF=D0=
-=B5=D1=80=D0=B5=D1=80=D0=BE=D0=B1=D0=B8=D0=BB=D0=B8 =D1=80=D0=BE=D0=B7=D0=
-=B4=D1=96=D0=BB "=D0=A4=D0=BE=D1=82=D0=BE". =D0=9D=D0=B0=D0=B9=D0=B1=D0=
-=BB=D0=B8=D0=B6=D1=87=D0=B8=D0=BC =D1=87=D0=B0=D1=81=D0=BE=D0=BC =D0=BD=
-=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82=D1=96 =D0=B7`=D1=8F=D0=
-=B2=D0=B8=D1=82=D1=8C=D1=81=D1=8F =D0=B4=D1=83=D0=B6=D0=B5 =D0=B1=D0=B0=
-=D0=B6=D0=B0=D0=BD=D0=B0 =D0=B4=D0=BB=D1=8F =D0=B1=D0=B0=D0=B3=D0=B0=D1=
-=82=D1=8C=D0=BE=D1=85 =D1=84=D1=83=D0=BD=D0=BA=D1=86=D1=96=D1=8F - =D0=B7=
-=D0=B0=D0=B2=D0=B0=D0=BD=D1=82=D0=B0=D0=B6=D0=B5=D0=BD=D0=BD=D1=8F =D0=B0=
-=D1=83=D0=B4=D1=96=D0=BE. =D0=92=D0=B8 =D0=B7=D0=BC=D0=BE=D0=B6=D0=B5=D1=
-=82=D0=B5 =D0=B4=D0=BE=D0=B4=D0=B0=D0=B2=D0=B0=D1=82=D0=B8 =D1=81=D0=B2=
-=D0=BE=D1=8E =D1=83=D0=BB=D1=8E=D0=B1=D0=BB=D0=B5=D0=BD=D1=83 =D0=BC=D1=
-=83=D0=B7=D0=B8=D0=BA=D1=83 =D1=81=D0=BE=D0=B1=D1=96 =D0=B2 =D0=B0=D0=BD=
-=D0=BA=D0=B5=D1=82=D1=83, =D0=B4=D0=BE =D0=B3=D1=80=D1=83=D0=BF=D0=B8 =D1=
-=96 =D1=82. =D0=B4. =D0=9D=D0=B5 =D0=B7=D0=B0 =D0=B3=D0=BE=D1=80=D0=B0=D0=
-=BC=D0=B8 =D1=82=D0=B0=D0=BA=D0=BE=D0=B6 =D0=BF=D0=BE=D1=8F=D0=B2=D0=B0=
- =D0=BD=D0=BE=D0=B2=D0=B8=D0=BD, =D1=96=D0=B3=D0=BE=D1=80, =D1=96=D1=81=
-=D1=82=D0=BE=D1=82=D0=BD=D0=B5 =D0=BF=D0=BE=D0=BB=D1=96=D0=BF=D1=88=D0=B5=
-=D0=BD=D0=BD=D1=8F =D0=BF=D0=BE=D1=88=D1=83=D0=BA=D1=83 =D0=BB=D1=8E=D0=
-=B4=D0=B5=D0=B9, =D0=B0 =D1=82=D0=B0=D0=BA=D0=BE=D0=B6 =D1=83=D0=B4=D0=BE=
-=D1=81=D0=BA=D0=BE=D0=BD=D0=B0=D0=BB=D0=B5=D0=BD=D0=BD=D1=8F =D1=80=D0=BE=
-=D0=B7=D0=B4=D1=96=D0=BB=D1=83 "=D0=A0=D0=BE=D0=B1=D0=BE=D1=82=D0=B0". =
-=D0=9C=D0=B8 =D0=BF=D1=80=D0=B0=D1=86=D1=8E=D1=94=D0=BC=D0=BE =D1=89=D0=
-=BE=D1=81=D0=B8=D0=BB=D0=B8, =D1=89=D0=BE=D0=B1 =D0=B7=D1=80=D0=BE=D0=B1=
-=D0=B8=D1=82=D0=B8 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82 =D1=89=D0=
-=B5 =D0=BA=D1=80=D0=B0=D1=89=D0=B8=D0=BC. =D0=A1=D0=BF=D0=B0=D1=81=D0=B8=
-=D0=B1=D1=96 =D0=B7=D0=B0 =D0=BF=D1=96=D0=B4=D1=82=D1=80=D0=B8=D0=BC=D0=
-=BA=D1=83.
-
-
-=D0=9D=D0=BE=D0=B2=D0=B5 =D0=B2i=D0=B4=D0=B5=D0=BE:
-Prikol, 4843 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4=D0=B0: ht=
-tp://connect.ua/video/view?id=3D63586
-Guinness - =D0=92 =D0=94=D0=B5=D0=BD=D1=8C =D0=A1=D0=B8=D1=81=D0=90=D0=B4=
-=D0=BC=D0=B8=D0=BD=D0=BE=D0=B2 =D0=BF=D0=BE=D1=81=D0=B2=D1=8F=D1=89=D0=B0=
-=D0=B5=D1=82=D1=81=D1=8F %), 1729 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=
-=8F=D0=B4i=D0=B2: http://connect.ua/video/view?id=3D65131
-=D0=A0=D0=B5=D0=B4=D1=87=D0=B0=D0=B9=D1=88=D0=B5=D0=B5 =D0=B7=D1=80=D0=B5=
-=D0=BB=D0=B8=D1=89=D0=B5 =D0=BD=D0=B0 =D1=88=D0=BE=D1=81=D1=81=D0=B5!!,=
- 2104 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4=D0=B0: http://co=
-nnect.ua/video/view?id=3D66789
-=D0=92=D1=81i =D0=B2i=D0=B4=D0=B5=D0=BE http://connect.ua/video
-
-=D0=AF=D0=BA=D1=89=D0=BE =D0=B2=D0=BA=D0=B0=D0=B7=D0=B0=D0=BD=D0=B5 =D0=
-=B2=D0=B8=D1=89=D0=B5 =D0=BF=D0=BE=D1=81=D0=B8=D0=BB=D0=B0=D0=BD=D0=BD=D1=
-=8F =D0=BD=D0=B5 =D0=B2=D1=96=D0=B4=D0=BA=D1=80=D0=B8=D0=B2=D0=B0=D1=94=
-=D1=82=D1=8C=D1=81=D1=8F, =D0=B7=D0=BA=D0=BE=D0=BF=D1=96=D1=8E=D0=B9=D1=
-=82=D0=B5 =D0=B9=D0=BE=D0=B3=D0=BE =D0=B4=D0=BE =D0=B1=D1=83=D1=84=D0=B5=
-=D1=80=D0=B0 =D0=BE=D0=B1=D0=BC=D1=96=D0=BD=D1=83, =D0=B2=D1=81=D1=82=D0=
-=B0=D0=B2=D1=82=D0=B5 =D0=B2 =D0=B0=D0=B4=D1=80=D0=B5=D1=81=D0=BD=D0=B8=
-=D0=B9 =D1=80=D1=8F=D0=B4=D0=BE=D0=BA =D0=B1=D1=80=D0=B0=D1=83=D0=B7=D0=
-=B5=D1=80=D0=B0 =D1=82=D0=B0 =D0=BD=D0=B0=D1=82=D0=B8=D1=81=D0=BD=D1=96=
-=D1=82=D1=8C Enter.
-
-=D0=92=D0=B8 =D0=BE=D1=82=D1=80=D0=B8=D0=BC=D0=B0=D0=BB=D0=B8 =D1=86=D0=
-=B5=D0=B9 =D0=BB=D0=B8=D1=81=D1=82, =D1=82=D0=BE=D0=BC=D1=83 =D1=89=D0=BE=
- =D0=B7=D0=B0=D1=80=D0=B5=D1=94=D1=81=D1=82=D1=80=D0=BE=D0=B2=D0=B0=D0=BD=
-=D1=96 =D0=BD=D0=B0 =D1=81=D0=B0=D0=B9=D1=82=D1=96 =D0=BD=D0=B0=D1=86=D1=
-=96=D0=BE=D0=BD=D0=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D1=83=D0=BA=D1=80=D0=
-=B0=D1=97=D0=BD=D1=81=D1=8C=D0=BA=D0=BE=D1=97 =D1=81=D0=BE=D1=86=D1=96=D0=
-=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D0=BC=D0=B5=D1=80=D0=B5=D0=B6=D1=96 =
-Connect.ua
-
-=D0=92=D0=B8 =D0=BC=D0=BE=D0=B6=D0=B5=D1=82=D0=B5 =D0=B7=D0=BC=D1=96=D0=
-=BD=D0=B8=D1=82=D0=B8 =D0=BF=D0=B0=D1=80=D0=B0=D0=BC=D0=B5=D1=82=D1=80=D0=
-=B8 =D0=B2=D1=96=D0=B4=D0=BF=D1=80=D0=B0=D0=B2=D0=BB=D0=B5=D0=BD=D0=BD=D1=
-=8F =D0=BF=D0=BE=D0=B2=D1=96=D0=B4=D0=BE=D0=BC=D0=BB=D0=B5=D0=BD=D1=8C =
-=D0=B2 =D0=BE=D0=BF=D1=86=D1=96=D1=8F=D1=85 =D0=B0=D0=BD=D0=BA=D0=B5=D1=
-=82=D0=B8.
-
-=D0=9E=D0=B1`=D1=94=D0=B4=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=A3=D0=BA=D1=
-=80=D0=B0=D1=97=D0=BD=D1=83!
-=D0=9A=D0=BE=D0=BC=D0=B0=D0=BD=D0=B4=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=
-=D0=BA=D1=82=D1=83
-
+You have just been granted the sum of =A3345,000.00 GBP in the on going=
+ Nokia Email Promo, contact Dr. Anthony Floyd, Email: dr.anthonyfloyd01=
+@doramail.com OR dr.anthonyfloyd@yahoo.co.uk  Tell: +447045764575 HAVE =
+YOU USED A NOKIA PHONE?
 --
 To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
  in
