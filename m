@@ -1,136 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYHCICd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbYHCIDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889AbYHCICd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 04:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbYHCICJ
+	id S1757079AbYHCIDa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 04:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYHCIDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 04:02:09 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:24689 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752650AbYHCICG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 04:02:06 -0400
-Date: Sun, 3 Aug 2008 10:00:19 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Roman Zippel <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org
-Subject: Re: Kconfig no longer outputs a .config with freshly updated defconfigs
-Message-ID: <20080803080019.GA13265@uranus.ravnborg.org>
-References: <1217693013.2328.22.camel@localhost.localdomain> <20080802192646.GR19682@cs181140183.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080802192646.GR19682@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 3 Aug 2008 04:03:15 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62581 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752722AbYHCIDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 04:03:12 -0400
+Message-ID: <489565BC.3000408@cn.fujitsu.com>
+Date: Sun, 03 Aug 2008 16:01:00 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: paulmck@linux.vnet.ibm.com
+CC: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Gautham Shenoy <ego@in.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 2/2] rcu classic: new algorithm for	callbacks-processing(v2)
+References: <48708F2F.2060406@cn.fujitsu.com> <20080718140930.GT6875@elte.hu> <20080721100433.GC8384@linux.vnet.ibm.com> <20080801211053.GZ14851@linux.vnet.ibm.com>
+In-Reply-To: <20080801211053.GZ14851@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 02, 2008 at 10:26:47PM +0300, Adrian Bunk wrote:
-> On Sat, Aug 02, 2008 at 12:03:33PM -0400, Josh Boyer wrote:
-> > I was going through the somewhat tedious task of updating the 4xx
-> > defconfigs today, and I noticed some odd behavior from Kconfig.
-> > Basically, I would do:
-> > 
-> > 	make ppc44x_defconfig
-> > 	make oldconfig
-> > 	<build>
-> > 	cp .config arch/powerpc/configs/ppc44x_defconfig
-> > 	make distclean
-> > 
-> > I did this for a number of configs.  Then I went back and tried to build
-> > ppc44x_defconfig again and I got this result:
-> > 
-> > [jwboyer@localhost linux-2.6]$ make ppc44x_defconfig
-> >   HOSTCC  scripts/basic/fixdep
-> >   HOSTCC  scripts/basic/docproc
-> >   HOSTCC  scripts/kconfig/conf.o
-> >   HOSTCC  scripts/kconfig/kxgettext.o
-> >   SHIPPED scripts/kconfig/zconf.tab.c
-> >   SHIPPED scripts/kconfig/lex.zconf.c
-> >   SHIPPED scripts/kconfig/zconf.hash.c
-> >   HOSTCC  scripts/kconfig/zconf.tab.o
-> > scripts/kconfig/lex.zconf.c:1628: warning: ‘input’ defined but not used
-> >   HOSTLD  scripts/kconfig/conf
-> > [jwboyer@localhost linux-2.6]$ make oldconfig
-> > scripts/kconfig/conf -o arch/powerpc/Kconfig
-> > #
-> > # using defaults found in /boot/config-2.6.25.13-104.fc9.ppc64
-> > #
-> > 
-> > There was no .config file present after the initial 'make
-> > ppc44x_defconfig', so it defaulted to using something in /boot.  I'm a
-> > bit baffled here, but that seems to be common to any newly updated
-> > defconfig I've done.
-> > 
-> > Was there a change to Kconfig recently that won't copy the defconfig
-> > file to .config if there are no symbol changes or something like that?
+Paul E. McKenney wrote:
+
+[...]
+
+>>  /**
+>>   * call_rcu - Queue an RCU callback for invocation after a grace period.
+>>   * @head: structure to be used for queueing the RCU updates.
+>> @@ -133,18 +172,11 @@ void call_rcu(struct rcu_head *head,
+>>  				void (*func)(struct rcu_head *rcu))
+>>  {
+>>  	unsigned long flags;
+>> -	struct rcu_data *rdp;
+>>  
+>>  	head->func = func;
+>>  	head->next = NULL;
+>>  	local_irq_save(flags);
 > 
-> Thanks for your bug report, this should have worked.
+> I very much like the gathering of common code from call_rcu() and
+> call_rcu_bh() into __call_rcu().  But why not also move the
+> local_irq_save() and local_irq_restore() to __call_rcu(), perhaps
+> along with the initialization of head->next?
+
+We should put __get_cpu_var into preempt_disable critical section.
+So I didn't move the local_irq_save() and local_irq_restore()
+to __call_rcu().
+
+I greed your changes except the changes here.
+percpu_ptr() may help for us.
+
 > 
-> @Sam:
-> I've bisected this and it is caused by
-> commit f443d2eccf077afd8a839cc7ed66cc4d520c5f05
-> (kconfig: speed up all*config + randconfig).
+> (I understand the motivation for keeping the initialization of the
+> fields of "head" at this level -- otherwise, you must add another
+> argument to __call_rcu().  But might be worth considering...)
 > 
-> Minimal example for reproducing it:
+>> -	rdp = &__get_cpu_var(rcu_data);
+>> -	*rdp->nxttail = head;
+>> -	rdp->nxttail = &head->next;
+>> -	if (unlikely(++rdp->qlen > qhimark)) {
+>> -		rdp->blimit = INT_MAX;
+>> -		force_quiescent_state(rdp, &rcu_ctrlblk);
+>> -	}
+>> +	__call_rcu(head, &rcu_ctrlblk, &__get_cpu_var(rcu_data));
+>>  	local_irq_restore(flags);
+>>  }
+>>  EXPORT_SYMBOL_GPL(call_rcu);
+>> @@ -169,20 +201,11 @@ void call_rcu_bh(struct rcu_head *head,
+>>  				void (*func)(struct rcu_head *rcu))
+>>  {
+>>  	unsigned long flags;
+>> -	struct rcu_data *rdp;
+>>  
+>>  	head->func = func;
+>>  	head->next = NULL;
+>>  	local_irq_save(flags);
+>> -	rdp = &__get_cpu_var(rcu_bh_data);
+>> -	*rdp->nxttail = head;
+>> -	rdp->nxttail = &head->next;
+>> -
+>> -	if (unlikely(++rdp->qlen > qhimark)) {
+>> -		rdp->blimit = INT_MAX;
+>> -		force_quiescent_state(rdp, &rcu_bh_ctrlblk);
+>> -	}
+>> -
+>> +	__call_rcu(head, &rcu_bh_ctrlblk, &__get_cpu_var(rcu_bh_data));
+>>  	local_irq_restore(flags);
+>>  }
+>>  EXPORT_SYMBOL_GPL(call_rcu_bh);
+>> @@ -211,12 +234,6 @@ EXPORT_SYMBOL_GPL(rcu_batches_completed_
+>>  static inline void raise_rcu_softirq(void)
+>>  {
+>>  	raise_softirq(RCU_SOFTIRQ);
+>> -	/*
+>> -	 * The smp_mb() here is required to ensure that this cpu's
+>> -	 * __rcu_process_callbacks() reads the most recently updated
+>> -	 * value of rcu->cur.
+>> -	 */
+>> -	smp_mb();
 > 
-> make x86_64_defconfig
-> cp .config arch/x86/configs/x86_64_defconfig
-> rm .config
-> make x86_64_defconfig
-> ls .config
+> I have not yet convinced myself that it is OK to get rid of this memory
+> barrier.  This memory barrier was intended order to handle the following
+> sequence of events:
+> 
+> 	rcu_read_lock_bh();  /* no memory barrier. */
+> 	p = rcu_dereference(some_global_pointer);
+> 	do_something_with(p);
+> 	rcu_read_unlock_bh();  /* no memory barrier. */
+> 
+> 	---- scheduling-clock interrupt occurs, eventually invoking
+> 	---- rcu_check_callbacks()
+> 
+> 	---- And the access to "p" above could potentially be reordered
+> 	---- into the grace-period computation
+> 
+> Such reordering is of course quite unlikely to be harmful, due to the
+> long duration of RCU grace periods.  But I am paranoid.
+> 
+> If this memory barrier turns out to be necessary, one approach would
+> to be to place it at the beginning of rcu_check_callbacks(), which is
+> a better place for it in any case.
+> 
+> Thoughts?
 
-Thanks Adrian.
+I hasn't thought it before. I thought that smp_mb is used for
+rcu->cur as the original comment had told.
 
-The code has started to check if anything changed
-and if not - then do not write out a new config.
-So in your sample above we would not see any changes
-compared to what we read in autoconf.h so we did nto write
-out a new autoconf.h (and thus no .config).
+I prefer to add memory barrier to rcu_process_callbacks as your patch.
 
-The right fix seems to check for .config and for changes
-and in both cases to write a new config.
+But I has a question here:
 
-Patch below.
+In this case, p->rcu_head is not in donelist. So __rcu_process_callbacks
+is only access to p->rcu_head(p->rcu_head.next). And other cpus don't
+access to p->rcu_head which has been queued on this cpu' rcu_data.
 
-	Sam
+Is this reordering harmful(How this reordering make other
+cpus' access wrong)?
+
+[...]
 
 
-diff --git a/scripts/kconfig/conf.c b/scripts/kconfig/conf.c
-index 9fba838..7c938c2 100644
---- a/scripts/kconfig/conf.c
-+++ b/scripts/kconfig/conf.c
-@@ -464,6 +464,21 @@ static int conf_update(void)
- 	return 0;
- }
- 
-+/* Write out config if config has changed or .config is missing */
-+static int conf_do_write(void)
-+{
-+	struct stat tmpstat;
-+
-+	/* Any config changes */
-+	if (conf_get_changed())
-+		return 1;
-+	/* .config missing */
-+	if (stat(conf_get_configname(), &tmpstat))
-+		return 1;
-+
-+	return 0;
-+}
-+
- int main(int ac, char **av)
- {
- 	int opt;
-@@ -596,7 +611,7 @@ int main(int ac, char **av)
- 		break;
- 	}
- 
--	if (conf_get_changed() && conf_write(NULL)) {
-+	if (conf_do_write() && conf_write(NULL)) {
- 		fprintf(stderr, _("\n*** Error during writing of the kernel configuration.\n\n"));
- 		exit(1);
- 	}
