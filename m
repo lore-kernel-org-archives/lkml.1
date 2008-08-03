@@ -1,82 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758681AbYHCRtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758307AbYHCRwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758681AbYHCRtN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 13:49:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYHCRs6
+	id S1758307AbYHCRwi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 13:52:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbYHCRwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 13:48:58 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:32826 "EHLO e3.ny.us.ibm.com"
+	Sun, 3 Aug 2008 13:52:30 -0400
+Received: from home.keithp.com ([63.227.221.253]:1865 "EHLO keithp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751789AbYHCRs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 13:48:57 -0400
-Date: Sun, 3 Aug 2008 10:46:46 -0700
-From: sukadev@us.ibm.com
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@osdl.org>, serue@us.ibm.com, matthltc@us.ibm.com,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: Per-instance devpts
-Message-ID: <20080803174646.GA20254@us.ibm.com>
-References: <20080412172933.GA19295@us.ibm.com> <1208027215.28187.17.camel@x61.ebiederm.org> <48935205.3090807@zytor.com> <20080803050800.GA4322@us.ibm.com> <20080803130439.743ff0ae@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080803130439.743ff0ae@lxorguk.ukuu.org.uk>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1751628AbYHCRwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 13:52:30 -0400
+Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
+From: Keith Packard <keithp@keithp.com>
+To: John Stoffel <john@stoffel.org>
+Cc: keithp@keithp.com, Christoph Hellwig <hch@infradead.org>,
+       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <18581.43362.460694.60862@stoffel.org>
+References: <1217573919-7496-1-git-send-email-eric@anholt.net>
+	 <1217573919-7496-2-git-send-email-eric@anholt.net>
+	 <20080801205052.GA28747@infradead.org>
+	 <1217631718.23437.290.camel@koto.keithp.com>
+	 <18581.43362.460694.60862@stoffel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-VIOzSuaqLMN3hfg7+KAl"
+Date: Sun, 03 Aug 2008 10:52:23 -0700
+Message-Id: <1217785943.23437.330.camel@koto.keithp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox [alan@lxorguk.ukuu.org.uk] wrote:
-| > > 1. /dev/ptmx would have to change to a symlink, ptmx -> pts/ptmx.
-| > 
-| > IIRC, /dev/tty also needs a similar symlink.
-| 
-| Making them symlinks is asking for trouble because some code does go
-| around using stat and the like and tools like MAKEDEV have definite ideas.
-| 
-| For /dev/tty the definition is precisely that it is your controlling
-| tty. No reference to namespace and a task whose controlling tty is in a
-| different namespace should still open the controlling tty not some
-| parallel in another universe when you open /dev/tty.
 
-Well, I thought the problem was something like this:
+--=-VIOzSuaqLMN3hfg7+KAl
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-If /dev/pts/1 is the controlling terminal and there are multiple mounts
-of devpts, when we open /dev/tty, kernel would somehow have to find the
-right instance of devpts.
+On Sun, 2008-08-03 at 08:49 -0400, John Stoffel wrote:
 
-When init_dev() calls devpts_get_tty(), it would need to specify the devpts
-instance. So tty_open() of "/dev/tty" would somehow have to find it based on
-the /dev/tty inode (which could be in ext3).
+> Why?  If you need thousands of files, won't the overhead of managing
+> them dynamically start to be a big load as well? =20
 
-(I thought the issue was similar with /dev/ptmx, ptmx allocates a new
-index, /dev/tty accesses an existing index, but both need to somehow
-find the right pts instance -no ?)
+We're not having any trouble with upwards of 40000 shmem file objects at
+this point. Most of these are around 4 pages in size, although they
+range up to around 16MB. A typical 3D game will use around 100MB or so
+of this kind of data at one time.
 
-| 
-| If you want to make sure the controlling tty is in the right namespace
-| that can be done in userspace when transferring control into a namespace.
-| In many cases I doubt that is even what is wanted.
-| 
-| > > 2. Permissions on /dev/ptmx would not be persistent, and would have to
-| > >    be set via devpts mount options (unless they're 0666 root.tty, which
-| > >    would presumably be the default.)
-| > > 3. The /proc/sys/kernel/pty limit would be global; a per-filesystem
-| > >    limit could be added on top or instead (presumably via a filesystem
-| > >    mount options.)
-| > >
-| > > I worry #1 would have substantial user-space impact, but I don't see a way 
-| > > around it, since there would be no obvious way to associate /dev/ptmx with 
-| > > a filesystem.
-| 
-| /dev/tty and /dev/ptmx already primarily operate by identifying a device
-| and switching the work to that. Actually putting a bit of namespace logic
-| in the driver code so the actual files stay as expected (device nodes
-| etc) seems a *lot* simpler than trying to do symlink hacks.
-| 
-| Alan
+> I assume (sorry for not looking at the code in depth) that you're
+> trying to setup specific regions of memory with various attributes for
+> the DRI/DRM/GEM/TTF access to Video cards? =20
+
+Not really; these are objects used in the rendering process, vertices,
+command buffers, constant buffers, textures, programs, rendering
+surfaces and various other state buffers.  Lots of these are write-once
+(from the CPU) and read-many (from the GPU), like textures, programs and
+vertices. Some of these are effectively streamed from the CPU to the
+GPU.
+
+Each sequence of rendering commands requires that a set of these objects
+be pinned to physical memory and bound to the graphics translation table
+within the GPU.
+
+Oh, and I allocate enough that I need to make them pageable as well;
+under memory pressure, I can pull objects back out of the GTT binding
+table and unpin the pages, letting shmem write them to disk.
+
+> Just seeing your statement that you wanted to add ioctls made me
+> shudder and try to visuallize a better way to do this. =20
+
+I could use fds if the kernel supported applications needing many
+thousand of them, and also some way to keep these FDs from polluting the
+fd space used by select(2) (yeah, I know, don't use select).
+
+> I realize you're trying to make the drivers generic so that the *BSD
+> port is simple too, but... thousands of files (per X server?  per
+> xclient) just seems like the wrong level.
+
+I'm not worried about BSD; I want to build the right API for Linux at
+this point.
+
+And, yes, thousands of objects per 3D application. Each X pixmap will
+end up in one of these objects as well, and so something like Firefox
+will likely allocate several hundred. To keep the rendering engine busy,
+we'll have a couple hundred command buffers allocated as well, of 16KB
+apiece.
+
+> Maybe you just need to open the *entire* card with one FD and then
+> have your own VFS like abstraction in there, which doesn't require
+> lots of filehandles? =20
+
+That's what I'm doing at present; the card is opened with a single fd
+and then these shmem objects are allocated within an ioctl from there.
+What I don't want to do is use a single linear address space for these
+objects; it's just useless overhead.
+
+> Dunno... just trying to figure out what you're try to mediate here
+> with ioctl() and how it could be improved/simplified.
+
+Suggestions welcome; I just need a few thousand multi-page allocations,
+which the kernel deals with quite easily these days.
+
+--=20
+keith.packard@intel.com
+
+--=-VIOzSuaqLMN3hfg7+KAl
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQBIlfBXQp8BWwlsTdMRAj/hAJ9aDQouA4TPNpdraH9pjOFCB/LtdACgrfGw
+RzjYBGERNAAXHkFIKHXsOiU=
+=ZQ+1
+-----END PGP SIGNATURE-----
+
+--=-VIOzSuaqLMN3hfg7+KAl--
+
