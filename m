@@ -1,88 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759104AbYHCTVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbYHCTYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759104AbYHCTVi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 15:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYHCTVa
+	id S1758927AbYHCTYq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 15:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbYHCTYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 15:21:30 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:56225 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752761AbYHCTV3 (ORCPT
+	Sun, 3 Aug 2008 15:24:35 -0400
+Received: from smtp1.stealer.net ([88.198.224.204]:39197 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751889AbYHCTYe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 15:21:29 -0400
-Subject: Re: Kernel Summit request for Discussion of future of ATA (libata)
-	and IDE
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>
-In-Reply-To: <20080803194501.24fa3e51@lxorguk.ukuu.org.uk>
-References: <1217779055.4179.10.camel@localhost.localdomain>
-	 <20080803173941.314edf33@lxorguk.ukuu.org.uk>
-	 <1217783433.4179.18.camel@localhost.localdomain>
-	 <20080803194501.24fa3e51@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Sun, 03 Aug 2008 14:21:24 -0500
-Message-Id: <1217791284.4179.34.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Aug 2008 15:24:34 -0400
+Date: Sun, 3 Aug 2008 21:24:20 +0200 (CEST)
+From: Sven Wegener <sven.wegener@stealer.net>
+To: "Denis V. Lunev" <den@openvz.org>
+cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: oops in rt_cache_invalidate (2.6.27-rc1-2b12a4c)
+In-Reply-To: <1217789775.8154.34.camel@iris.sw.ru>
+Message-ID: <alpine.LNX.1.10.0808032110520.7765@titan.stealer.net>
+References: <20080803170241.GD5414@joi> <1217789775.8154.34.camel@iris.sw.ru>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+Organization: STEALER.net
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.5
+X-Spam-Bar: --
+X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Sun, 03 Aug 2008 19:24:33 +0000
+	Bayes: 0.0000 Tokens: new, 406; hammy, 9; neutral, 7; spammy, 0.
+	AutoLearn: no
+	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+X-Spam-Signature: 460c538deb0231fe202f280e16880263e59aed01
+X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-08-03 at 19:45 +0100, Alan Cox wrote:
-> > > There is a trend in new hardware to interfaces that simply won't fit old
-> > > IDE so that process of libata only drivers is likely to continue.
+On Sun, 3 Aug 2008, Denis V. Lunev wrote:
+
+> On Sun, 2008-08-03 at 19:02 +0200, Marcin Slusarz wrote:
+> > [   21.035097] Adding 1020112k swap on /dev/sda2.  Priority:-1 extents:1 across:1020112k
+> > [   22.340292] BUG: unable to handle kernel NULL pointer dereference at 00000000000002c0
+> > [   22.341002] IP: [<ffffffff80442a7e>] rt_cache_invalidate+0x25/0x32
+> > [   22.341002] PGD 3dc7c067 PUD 3d198067 PMD 0
+> > [   22.341002] Oops: 0002 [1] PREEMPT
+> > [   22.341002] CPU 0
+> > [   22.341002] Modules linked in: usbhid uhci_hcd tuner tea5767 tda8290 tuner_xc2028 xc5000 tda9887 tuner_simple tuner_types mt20xx tea5761 tda9875 ehci_hcd usbcore bttv ir_common compat_ioctl32 videodev v4l1_compat i2c_algo_bit snd_via82xx snd_ac97_codec v4l2_common ac97_bus snd_pcm videobuf_dma_sg snd_timer snd_page_alloc i2c_viapro videobuf_core btcx_risc snd_mpu401_uart snd_rawmidi tveeprom snd_seq_device snd soundcore
+> > [   22.341002] Pid: 2248, comm: sysctl Not tainted 2.6.27-rc1-00507-g75aecb1 #261
+> > [   22.341002] RIP: 0010:[<ffffffff80442a7e>]  [<ffffffff80442a7e>] rt_cache_invalidate+0x25/0x32
+> > [   22.341002] RSP: 0018:ffff88003cd6de08  EFLAGS: 00010202
+> > [   22.341002] RAX: 0000000000000052 RBX: 0000000000000000 RCX: 0000000000000000
+> > [   22.341002] RDX: ffff88003cd6dda8 RSI: ffff88003cd6dda9 RDI: ffff88003cd6ddb2
+> > [   22.341002] RBP: ffff88003cd6de28 R08: 0000000000000000 R09: ffff88003cd6dbb8
+> > [   22.341002] R10: 00000000a94180f7 R11: ffff88003cd6dc0c R12: 0000000000000001
+> > [   22.341002] R13: ffffffff8062a90c R14: 0000000000000000 R15: 0000000000000040
+> > [   22.341002] FS:  00007f0674ee66f0(0000) GS:ffffffff80625200(0000) knlGS:0000000000000000
+> > [   22.341002] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > [   22.341002] CR2: 00000000000002c0 CR3: 000000003d1a3000 CR4: 00000000000006e0
+> > [   22.341002] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > [   22.341002] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > [   22.341002] Process sysctl (pid: 2248, threadinfo ffff88003cd6c000, task ffff88003d0dd900)
+> > [   22.341002] Stack:  ffff88003cd6de38 ffffffff80233c93 51ff88003cd6df48 0000000000000000
+> > [   22.341002]  ffff88003cd6de58 ffffffff80442c4c ffffffff80620740 0000000000000001
+> > [   22.341002]  ffffffff8062a90c 0000000000000000 ffff88003cd6de98 ffffffff8046a63b
+> > [   22.341002] Call Trace:
+> > [   22.341002]  [<ffffffff80233c93>] ? do_proc_dointvec+0x3d/0x3f
+> > [   22.341002]  [<ffffffff80442c4c>] rt_cache_flush+0x17/0xe2
+> > [   22.341002]  [<ffffffff8046a63b>] ipv4_doint_and_flush+0x42/0x52
+> > [   22.341002]  [<ffffffff802d263b>] proc_sys_call_handler+0x96/0xbb
+> > [   22.341002]  [<ffffffff802d2674>] proc_sys_write+0x14/0x16
+> > [   22.341002]  [<ffffffff8028f8fd>] vfs_write+0xb3/0x13c
+> > [   22.341002]  [<ffffffff8028fdd0>] sys_write+0x4c/0x74
+> > [   22.341002]  [<ffffffff8020b3fb>] system_call_fastpath+0x16/0x1b
+> > [   22.341002]
+> > [   22.341002]
+> > [   22.341002] Code: 18 01 00 00 c9 c3 55 48 89 e5 53 48 83 ec 18 66 66 90 66 90 be 01 00 00 00 48 89 fb 48 8d 7d f7 e8 a3 fd f5 ff 0f b6 45 f7 ff c0 <01> 83 c0 02 00 00 48 83 c4 18 5b c9 c3 55 48 89 e5 53 48 83 ec
+> > [   22.341002] RIP  [<ffffffff80442a7e>] rt_cache_invalidate+0x25/0x32
+> > [   22.341002]  RSP <ffff88003cd6de08>
+> > [   22.341002] CR2: 00000000000002c0
+> > [   23.182975] ---[ end trace cc508a4cd3aa37ce ]---
+> > [   33.359352] NET: Registered protocol family 17
+> > [   36.346255] Marking TSC unstable due to cpufreq changes
+> > [   40.893522] Clocksource tsc unstable (delta = -221374484 ns)
 > > 
-> > Yes, that's SATA ... but legacy remains for a long time.
+> > It's 2b12a4c524812fb3f6ee590a02e65b95c8c32229 + some unreleated trivial patches.
 > 
-> It isn't that simple. The newer PATA controllers are diverging from the
-> old style interfaces as well.
-> 
-> > Yes, I understand this ... if that means drivers/ata can't possibly be
-> > used by embedded until its dependence on SCSI is broken, then so be
-> > it ... but I think we should at least investigate what the issues and
-> > potential solutions are.
-> 
-> The simpler embedded wants a pure CF driver - no scsi, no libata, no
-> drivers/ide overhead, just about 4K of CF only pio driver.
+> Could you send you .config?
 
-I'd be a bit surprised if that's anything other than a niche.  PIO is
-deadly slow and wasteful of precious CPU cycles ... and embedded devices
-seem to be interested in performance as well (which the DMA modes
-bring).
+No need to, the issue can be triggered by
 
-> > Well, I did notice from the lists that both drivers/ide and drivers/ata
-> > would be represented.  I've also observed that there's been a singular
-> > lack of discussion of this on the lists; plus it's the type of emotive
-> > issue that in-person discussions help to extract the heat from.
-> 
-> We've certainly discussed it in the past and I'm not sure its gotten that
-> personal - many people contribute to both trees for example, or are
-> directly cc'ing stuff between trees to ensure they stay in sync and any
-> useful info gets in both.
+sysctl net.ipv4.ip_default_ttl=1
 
-My observation was merely that I hadn't seen it discussed.
+when 76e6ebfb40a2455c18234dcb0f9df37533215461 is applied.
 
-> Anyway with my libata hat on I would say its far too early to worry about
-> this. Right now we have platforms that need old IDE and it is still
-> proving very useful to be able to ask people to try both. I don't quite
-> know why Bart is putting so much effort into polishing up the old IDE but
-> if he's enjoying it I don't really care 8)
+ipv4_doint_and_flush and ipv4_doint_and_flush_strategy access the member 
+extra2 of the ctl_table, but it is never set to a meaningful value. Don't 
+know if it's just the following that is missing or if we need another 
+namespace.
 
-Hey, I'd be the last person to discourage anyone from maintaining
-obsolete systems ... however, the outside world looking in on this is
-interested to know where they should be starting if they have some type
-of CF/IDE device to support.  What we really want to avoid is someone
-spending months on a device driver only to have us turn around and
-deprecate the subsystem.
+net: Add missing extra2 prameter for ip_default_ttl sysctl
 
-I don't envisage anything in terms of code changes (or removal) coming
-out of this.  What I would like is a nice roadmap of where to start for
-people contemplating writing IDE drivers.
+Commit 76e6ebfb40a2455c18234dcb0f9df37533215461 needs the extra2 parameter 
+set to init_net, else we'll oops when setting the ip_default_ttl sysctl.
 
-James
+Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+---
+ net/ipv4/sysctl_net_ipv4.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-
+diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
+index 770d827..e0689fd 100644
+--- a/net/ipv4/sysctl_net_ipv4.c
++++ b/net/ipv4/sysctl_net_ipv4.c
+@@ -232,6 +232,7 @@ static struct ctl_table ipv4_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= &ipv4_doint_and_flush,
+ 		.strategy	= &ipv4_doint_and_flush_strategy,
++		.extra2		= &init_net,
+ 	},
+ 	{
+ 		.ctl_name	= NET_IPV4_NO_PMTU_DISC,
