@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYHCKu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbYHCKwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbYHCKu2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 06:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbYHCKuS
+	id S1755905AbYHCKwR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 06:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYHCKwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 06:50:18 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:37118 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751298AbYHCKuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 06:50:17 -0400
-Date: Sun, 3 Aug 2008 14:53:38 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: oliver.pntr@gmail.com
-Cc: stable@kernel.org, Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC, 2.6.26.2-rc1] signals: do_signal_stop: kill the SIGNAL_UNKILLABLE check
-Message-ID: <20080803105338.GB79@tv-sign.ru>
-References: <e65964651c0f02f5554e1e4c5e40a876@zipernowsky.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e65964651c0f02f5554e1e4c5e40a876@zipernowsky.hu>
-User-Agent: Mutt/1.5.11
+	Sun, 3 Aug 2008 06:52:08 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53970 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752001AbYHCKwH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 06:52:07 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <48958DC2.7070506@s5r6.in-berlin.de>
+Date: Sun, 03 Aug 2008 12:51:46 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, tglx <tglx@linutronix.de>
+Subject: Re: [PATCH 2/5] x86: Coding style fixes to arch/x86/kernel/bios_uv.c
+References: <20080802212406.047e8ae6@paolo-desktop> <48952DB3.20101@zytor.com>
+In-Reply-To: <48952DB3.20101@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/02, Oliver Pinter wrote:
->
-> >From 2b201a9eddf509e8e935b45e573648e36f4b623f Mon Sep 17 00:00:00 2001
-> From: Oleg Nesterov <oleg@tv-sign.ru>
-> Date: Fri, 25 Jul 2008 01:47:31 -0700
-> Subject: [PATCH] signals: do_signal_stop: kill the SIGNAL_UNKILLABLE check
+H. Peter Anvin wrote:
+> Paolo Ciarrocchi wrote:
+>>
+>> diff --git a/arch/x86/kernel/bios_uv.c b/arch/x86/kernel/bios_uv.c
+>> index c639bd5..100e759 100644
+>> --- a/arch/x86/kernel/bios_uv.c
+>> +++ b/arch/x86/kernel/bios_uv.c
+>> @@ -25,11 +25,21 @@ x86_bios_strerror(long status)
+>>  {
+>>      const char *str;
+>>      switch (status) {
+>> -    case  0: str = "Call completed without error"; break;
+>> -    case -1: str = "Not implemented"; break;
+>> -    case -2: str = "Invalid argument"; break;
+>> -    case -3: str = "Call completed with error"; break;
+>> -    default: str = "Unknown BIOS status code"; break;
+>> +    case  0:
+>> +        str = "Call completed without error";
+>> +        break;
+>> +    case -1:
+>> +        str = "Not implemented";
+>> +        break;
+>> +    case -2:
+>> +        str = "Invalid argument";
+>> +        break;
+>> +    case -3:
+>> +        str = "Call completed with error";
+>> +        break;
+>> +    default:
+>> +        str = "Unknown BIOS status code";
+>> +        break;
+>>      }
+>>      return str;
+>>  }
 > 
-> [ Upstream commit 2b201a9eddf509e8e935b45e573648e36f4b623f ]
-> 
-> fae5fa44f1fd079ffbed8e0add929dd7bbd1347f changed do_signal_stop() to check
-> SIGNAL_UNKILLABLE, this wasn't needed.  If signal_group_exit() == F, the
-> signal sent to SIGNAL_UNKILLABLE task must be already filtered out by the
-> caller, get_signal_to_deliver().  And if signal_group_exit() == T we are
-> not going to stop.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-> Acked-by: Roland McGrath <roland@redhat.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> CC: Oliver Pinter <oliver.pntr@gmail.com>
-> 
-> diff --git a/kernel/signal.c b/kernel/signal.c
-> index 15f901a..0514da5 100644
-> --- a/kernel/signal.c
-> +++ b/kernel/signal.c
-> @@ -1649,8 +1649,7 @@ static int do_signal_stop(int signr)
->  	} else {
->  		struct task_struct *t;
->  
-> -		if (unlikely((sig->flags & (SIGNAL_STOP_DEQUEUED | SIGNAL_UNKILLABLE))
-> -					 != SIGNAL_STOP_DEQUEUED) ||
-> +		if (!likely(sig->flags & SIGNAL_STOP_DEQUEUED) ||
+> This should be an array in the first place...
 
-Again, I don't think this minor cleanup is good for -stable.
-
-It doesn't fix any bug, it only removes the unnecessary uglification (which
-was previously added by me in fae5fa44f1fd079ffbed8e0add929dd7bbd1347f).
-
-Oleg.
-
+Besides, by following CodingStyle to the letter, it arguably breaks 
+rather than fixes coding style.  The former code was easy enough to read.
+-- 
+Stefan Richter
+-=====-==--- =--- ---==
+http://arcgraph.de/sr/
