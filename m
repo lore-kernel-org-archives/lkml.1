@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbYHCRE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbYHCRHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758757AbYHCRE7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 13:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756564AbYHCREv
+	id S1758590AbYHCRHy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 13:07:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756446AbYHCRHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 13:04:51 -0400
-Received: from gw.beattie-home.net ([66.93.38.225]:46186 "EHLO
-	mail.beattie-home.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756446AbYHCREv (ORCPT
+	Sun, 3 Aug 2008 13:07:46 -0400
+Received: from smtp1.stealer.net ([88.198.224.204]:49662 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756285AbYHCRHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 13:04:51 -0400
-Subject: Re: ioctl's suck?
-From: Brian Beattie <beattie@beattie-home.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080803135622.7f624327@lxorguk.ukuu.org.uk>
-References: <1217714096.6280.35.camel@kokopelli>
-	 <20080803135622.7f624327@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Sun, 03 Aug 2008 10:04:55 -0700
-Message-Id: <1217783095.6280.63.camel@kokopelli>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Aug 2008 13:07:45 -0400
+Date: Sun, 3 Aug 2008 19:07:30 +0200 (CEST)
+From: Sven Wegener <sven.wegener@stealer.net>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Glauber Costa <gcosta@redhat.com>,
+       Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86, acpi: temp_stack is used only when CONFIG_SMP is
+ set
+In-Reply-To: <20080803165210.GC5414@joi>
+Message-ID: <alpine.LNX.1.10.0808031901120.7765@titan.stealer.net>
+References: <20080803165210.GC5414@joi>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+Organization: STEALER.net
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.5
+X-Spam-Bar: --
+X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Sun, 03 Aug 2008 17:07:41 +0000
+	Bayes: 0.0003 Tokens: new, 192; hammy, 6; neutral, 2; spammy, 0.
+	AutoLearn: no
+	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0003]
+X-Spam-Signature: 200408c8e770f9a1febacbeb53e1e4db1ffbef7e
+X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-08-03 at 13:56 +0100, Alan Cox wrote:
-> > I could add a control device and pass ascii strings for status and OOB
-> > messages, would that be an improvement?
+On Sun, 3 Aug 2008, Marcin Slusarz wrote:
+
+> arch/x86/kernel/acpi/sleep.c:24: warning: 'temp_stack' defined but not used
 > 
-> Usually not. The idea that ioctl can be replaced with ascii messages is
-> clueless rubbish that generally gets spouted by people with their head
-> in the clouds of conceptual elegance and no grasp of reality.
-
-Yeah, I can see that.  Though the case has been made that ioctls are
-only usable by C/C++ while I'm sure there are other languages, I'm
-working in the embedded space and mostly work with C and sh so my
-experience is limited and that is of less direct importance to me.
-
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Glauber Costa <gcosta@redhat.com>
+> Cc: Pavel Machek <pavel@suse.cz>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/kernel/acpi/sleep.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> There are certain things you can expose that way usefully via sysfs
-> - things like general stateless status information. Ioctl however provides
-> an interface tied to file handle not name (which is essential in a hotplug
-> environment) and an ordering to events so you know the response you get
-> matches the query you made.
+> diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
+> index fa2161d..9103cb6 100644
+> --- a/arch/x86/kernel/acpi/sleep.c
+> +++ b/arch/x86/kernel/acpi/sleep.c
+> @@ -20,7 +20,7 @@ unsigned long acpi_realmode_flags;
+>  /* address in low memory of the wakeup routine. */
+>  static unsigned long acpi_realmode;
+>  
+> -#ifdef CONFIG_64BIT
+> +#ifdef CONFIG_SMP
+>  static char temp_stack[10240];
+>  #endif
+>  
 
-Yeah coherence (if I'm using that word correctly) would be critical, and
-a separate file handle would make that tricky.
+Now it still generates the warning, but on i386 with CONFIG_SMP set, 
+instead of x86_64 without CONFIG_SMP. We only need temp_stack, when both 
+CONFIG_64BIT and CONFIG_SMP are activated.
 
-
-> Alan
--- 
-A: Because it messes up the order in which people normally read text.
-Q: Why is top-posting a bad thing?
-
-Brian Beattie   LFS12947 | "Honor isn't about making the right choices.
-beattie@beattie-home.net | It's about dealing with the consequences."
-www.beattie-home.net     | -- Midori Koto
-
+Sven
