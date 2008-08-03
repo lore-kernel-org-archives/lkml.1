@@ -1,69 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbYHCVkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbYHCVxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759568AbYHCVkn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 17:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757239AbYHCVkf
+	id S1759568AbYHCVxf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 17:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756881AbYHCVx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 17:40:35 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:56314 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757209AbYHCVke (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 17:40:34 -0400
-Date: Sun, 3 Aug 2008 17:38:51 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: full list of unused CONFIGs under drivers/
-Message-ID: <alpine.LFD.1.10.0808031737280.16642@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sun, 3 Aug 2008 17:53:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42291 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752646AbYHCVx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 17:53:26 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: Re: acpi error on 2.6.27-rc1+ (ACPI Error (dsobject-0501))
+Date: Sun, 3 Aug 2008 23:55:58 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+References: <20080803182913.GB8691@joi>
+In-Reply-To: <20080803182913.GB8691@joi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808032355.59016.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Probably CC this to linux-acpi as well.]
 
-  amazingly, the full list of unused CONFIG variables under drivers/
-now fits on a single page.  whoo hoo.  apparently, incessant nagging
-gets results.  :-)
-
-===== FB_N411
-drivers/video/Kconfig:708:config FB_N411
-===== MTD_NAND_ATMEL_ECC_SOFT
-drivers/mtd/nand/Kconfig:313:config MTD_NAND_ATMEL_ECC_SOFT
-===== SCSI_QLOGIC_FC_FIRMWARE
-drivers/scsi/Kconfig:1328:config SCSI_QLOGIC_FC_FIRMWARE
-===== SERIAL_CPM_SCC1
-drivers/serial/Kconfig:1138:config SERIAL_CPM_SCC1
-===== SERIAL_CPM_SCC2
-drivers/serial/Kconfig:1144:config SERIAL_CPM_SCC2
-===== SERIAL_CPM_SCC3
-drivers/serial/Kconfig:1150:config SERIAL_CPM_SCC3
-===== SERIAL_CPM_SCC4
-drivers/serial/Kconfig:1156:config SERIAL_CPM_SCC4
-===== SERIAL_CPM_SMC1
-drivers/serial/Kconfig:1162:config SERIAL_CPM_SMC1
-===== SERIAL_CPM_SMC2
-drivers/serial/Kconfig:1168:config SERIAL_CPM_SMC2
-===== USB_OHCI_HCD_PCI
-drivers/usb/host/Kconfig:186:config USB_OHCI_HCD_PCI
-
-rday
---
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+On Sunday, 3 of August 2008, Marcin Slusarz wrote:
+> Hi
+> I noticed that 2.6.27-rc1+ (2b12a4c524812fb3f6ee590a02e65b95c8c32229) prints this:
+> Completing Region/Field/Buffer/Package initialization:.ACPI Error (dsobject-0501): Package List length (EA) larger than NumElements count (3), truncated
+> 
+> Is it something to worry about?
+> I've put full log, config and acpidump on http://www.kadu.net/~joi/kernel/2008.08.03/
