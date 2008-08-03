@@ -1,65 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbYHCPC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbYHCPIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758800AbYHCPC4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 11:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756277AbYHCPCq
+	id S1758079AbYHCPIT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 11:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756240AbYHCPIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 11:02:46 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40641 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756240AbYHCPCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 11:02:46 -0400
-Date: Mon, 4 Aug 2008 01:02:38 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, ppc-dev <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>, Roland Dreier <rdreier@cisco.com>,
-       general@lists.openfabrics.org
-Subject: Re: [PATCH v2] powerpc: move include files to
- arch/powerpc/include/asm
-Message-Id: <20080804010238.a493e1c0.sfr@canb.auug.org.au>
-In-Reply-To: <A5259752-468C-4CBA-BEF3-4E088ED1A5B9@kernel.crashing.org>
-References: <20080801152030.ff10b6b2.sfr@canb.auug.org.au>
-	<A5259752-468C-4CBA-BEF3-4E088ED1A5B9@kernel.crashing.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__4_Aug_2008_01_02_38_+1000_UEqVS_pRBb.n0ozB"
+	Sun, 3 Aug 2008 11:08:10 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:24649 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755390AbYHCPII (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 11:08:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent:from;
+        b=dB3UvxAq2+Cpxc7RNGQsWssMgxE8PsHwzvK7Gfhe0u/T2JK2XP8/0eTPFg9xWxEXl8
+         GJ22BHwqsLW9EBjFTQS8XeNTDZyGjcWJd5EE9yE5E0aZVOy2i0woH0PVLs29KmGzRb0T
+         yr17CYczJylBwnHfvX+HgmfTPtRpreobke5lI=
+Date: Sun, 3 Aug 2008 17:08:03 +0200
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: alan@redhat.com, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 2/2] ide-generic: handle probing of legacy io-ports
+Message-ID: <20080803150803.GC27766@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, alan@redhat.com,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <20080715053356.GA18628@gollum.tnic> <200808022046.16990.bzolnier@gmail.com> <20080803073842.GB8762@gollum.tnic> <200808031611.11033.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808031611.11033.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__4_Aug_2008_01_02_38_+1000_UEqVS_pRBb.n0ozB
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, Aug 03, 2008 at 04:11:10PM +0200, Bartlomiej Zolnierkiewicz wrote:
 
-On Sun, 3 Aug 2008 09:58:14 -0500 Kumar Gala <galak@kernel.crashing.org> wr=
-ote:
->
-> Paul, what's the plan for this change?  If this is something that will =20
-> go in so can we get a tree with it so we can base other patches on it =20
-> (like the PPC_MERGE cleanup)?
+[.. ]
 
-It looks like Linus is happy to take these patches, so if Paul is game he
-could just shove it in powerpc-{next,master,merge} and ask Linus to pull
-it.  The sooner the better in that case.
+> There are still some issues to address though.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Issues addressed. Here's v2:
 
---Signature=_Mon__4_Aug_2008_01_02_38_+1000_UEqVS_pRBb.n0ozB
-Content-Type: application/pgp-signature
+---
+From: Borislav Petkov <petkovbb@gmail.com>
+Date: Sun, 3 Aug 2008 09:28:53 +0200
+Subject: [PATCH] ide-generic: handle probing of legacy io-ports v2
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Avoid probing the io-ports in case an IDE PCI controller is present and it uses
+the legacy iobases. If we still want to enforce the probing, we do
 
-iEYEARECAAYFAkiVyI4ACgkQjjKRsyhoI8ypigCgs1ZlTYhitZ49N+k40abxXlV/
-UqIAoK6Vlu4nVDo+6dXUim3w2XUk4EsC
-=rBK2
------END PGP SIGNATURE-----
+ide_generic.probe_mask=0x3f
 
---Signature=_Mon__4_Aug_2008_01_02_38_+1000_UEqVS_pRBb.n0ozB--
+on the kernel command line.
+
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+---
+ drivers/ide/ide-generic.c |   21 +++++++++++++++++----
+ 1 files changed, 17 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/ide/ide-generic.c b/drivers/ide/ide-generic.c
+index 8fe8b5b..1beb51b 100644
+--- a/drivers/ide/ide-generic.c
++++ b/drivers/ide/ide-generic.c
+@@ -27,7 +27,7 @@
+ 
+ #define DRV_NAME	"ide_generic"
+ 
+-static int probe_mask = 0x03;
++static int probe_mask;
+ module_param(probe_mask, int, 0);
+ MODULE_PARM_DESC(probe_mask, "probe mask for legacy ISA IDE ports");
+ 
+@@ -105,14 +105,27 @@ static int __init ide_generic_init(void)
+ 	hw_regs_t hw[MAX_HWIFS], *hws[MAX_HWIFS];
+ 	struct ide_host *host;
+ 	unsigned long io_addr;
+-	int i, rc;
++	int i, rc, dummy, primary = 0, secondary = 0;
+ 
+ #ifdef CONFIG_MIPS
+ 	if (!ide_probe_legacy())
+ 		return -ENODEV;
+ #endif
+-	printk(KERN_INFO DRV_NAME ": please use \"probe_mask=0x3f\" module "
+-			 "parameter for probing all legacy ISA IDE ports\n");
++	ata_legacy_check_iobases(&primary, &secondary, &dummy);
++
++	if (!probe_mask) {
++		printk(KERN_INFO DRV_NAME ": please use \"probe_mask=0x3f\" "
++		       "module parameter for probing all legacy ISA IDE ports\n");
++
++		if (primary == 0)
++			probe_mask |= 0x1;
++
++		if (secondary == 0)
++			probe_mask |= 0x2;
++	} else {
++		printk(KERN_WARNING "%s: enforcing probing of io ports upon "
++			"user request.\n", DRV_NAME);
++	}
+ 
+ 	memset(hws, 0, sizeof(hw_regs_t *) * MAX_HWIFS);
+ 
+-- 
+1.5.5.4
+
+-- 
+Regards/Gruss,
+    Boris.
