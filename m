@@ -1,101 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbYHCR0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758844AbYHCR2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758683AbYHCR0f (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 13:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756602AbYHCR00
+	id S1758844AbYHCR2R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 13:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756739AbYHCR2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 13:26:26 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:61484 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756433AbYHCR0Z (ORCPT
+	Sun, 3 Aug 2008 13:28:04 -0400
+Received: from smtp1.stealer.net ([88.198.224.204]:43141 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756724AbYHCR2C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 13:26:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lJgBm9XL9iaboz1W6pJCChRAjLIEoALDbkdhtqCrPDc0LsZTGAnbgyJ7l73Z+tvjj1
-         zwFqQ+g3jNe3MZcymxkBVlr3+3dT6sP/AoBt6XoHOmzSd/Rh5nYYFiLwoT3/eiAUJGxT
-         JHUxIyZ87n4IhpH16KY27pM61kElB6vgdGjfM=
-Date: Sun, 3 Aug 2008 19:25:48 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Sven Wegener <sven.wegener@stealer.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Glauber Costa <gcosta@redhat.com>,
-       Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86, acpi: temp_stack is used only when CONFIG_SMP is
-	set
-Message-ID: <20080803172535.GE5414@joi>
-References: <20080803165210.GC5414@joi> <alpine.LNX.1.10.0808031901120.7765@titan.stealer.net>
+	Sun, 3 Aug 2008 13:28:02 -0400
+Date: Sun, 3 Aug 2008 19:27:52 +0200 (CEST)
+From: Sven Wegener <sven.wegener@stealer.net>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
+       Jaroslav Kysela <perex@perex.cz>
+Subject: Re: [PATCH] ALSA: pcm_native: remove unused label
+In-Reply-To: <20080803164719.GA5414@joi>
+Message-ID: <alpine.LNX.1.10.0808031921280.7765@titan.stealer.net>
+References: <20080803164719.GA5414@joi>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+Organization: STEALER.net
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0808031901120.7765@titan.stealer.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.5
+X-Spam-Bar: --
+X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Sun, 03 Aug 2008 17:28:00 +0000
+	Bayes: 0.0000 Tokens: new, 190; hammy, 8; neutral, 3; spammy, 0.
+	AutoLearn: no
+	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+X-Spam-Signature: d865ac9019443a6aa9183014f90b66d16f44ec1c
+X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 03, 2008 at 07:07:30PM +0200, Sven Wegener wrote:
-> On Sun, 3 Aug 2008, Marcin Slusarz wrote:
+On Sun, 3 Aug 2008, Marcin Slusarz wrote:
+
+> gcc warns about it:
+> sound/core/pcm_native.c: In function 'snd_pcm_fasync':
+> sound/core/pcm_native.c:3262: warning: label 'out' defined but not used
 > 
-> > arch/x86/kernel/acpi/sleep.c:24: warning: 'temp_stack' defined but not used
-> > 
-> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > Cc: Glauber Costa <gcosta@redhat.com>
-> > Cc: Pavel Machek <pavel@suse.cz>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > ---
-> >  arch/x86/kernel/acpi/sleep.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
-> > index fa2161d..9103cb6 100644
-> > --- a/arch/x86/kernel/acpi/sleep.c
-> > +++ b/arch/x86/kernel/acpi/sleep.c
-> > @@ -20,7 +20,7 @@ unsigned long acpi_realmode_flags;
-> >  /* address in low memory of the wakeup routine. */
-> >  static unsigned long acpi_realmode;
-> >  
-> > -#ifdef CONFIG_64BIT
-> > +#ifdef CONFIG_SMP
-> >  static char temp_stack[10240];
-> >  #endif
-> >  
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Takashi Iwai <tiwai@suse.de>
+> Cc: Jaroslav Kysela <perex@perex.cz>
+> ---
+>  sound/core/pcm_native.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
 > 
-> Now it still generates the warning, but on i386 with CONFIG_SMP set, 
-> instead of x86_64 without CONFIG_SMP. We only need temp_stack, when both 
-> CONFIG_64BIT and CONFIG_SMP are activated.
+> diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+> index c49b9d9..333cff6 100644
+> --- a/sound/core/pcm_native.c
+> +++ b/sound/core/pcm_native.c
+> @@ -3259,7 +3259,6 @@ static int snd_pcm_fasync(int fd, struct file * file, int on)
+>  	runtime = substream->runtime;
+>  
+>  	err = fasync_helper(fd, file, on, &runtime->fasync);
+> -out:
+>  	unlock_kernel();
+>  	if (err < 0)
+>  		return err;
 
-Yes. Thanks for looking at the patch!
+Uhm, no, there's
 
----
->From c6e673acf02e8bf04866cadf17c1cb1fa4d852ea Mon Sep 17 00:00:00 2001
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH] x86, acpi: temp_stack is used only when CONFIG_64BIT && CONFIG_SMP is set
+snd_assert(substream != NULL, goto out);
 
-arch/x86/kernel/acpi/sleep.c:24: warning: 'temp_stack' defined but not used
+one line above your context. The snd_assert() macro will only include the 
+second argument with CONFIG_SND_DEBUG, without CONFIG_SND_DEBUG it just 
+evaulates the first parameter and triggers the warning.
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Glauber Costa <gcosta@redhat.com>
-Cc: Pavel Machek <pavel@suse.cz>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Sven Wegener <sven.wegener@stealer.net>
----
- arch/x86/kernel/acpi/sleep.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
-index fa2161d..81e5ab6 100644
---- a/arch/x86/kernel/acpi/sleep.c
-+++ b/arch/x86/kernel/acpi/sleep.c
-@@ -20,7 +20,7 @@ unsigned long acpi_realmode_flags;
- /* address in low memory of the wakeup routine. */
- static unsigned long acpi_realmode;
- 
--#ifdef CONFIG_64BIT
-+#if defined(CONFIG_SMP) && defined(CONFIG_64BIT)
- static char temp_stack[10240];
- #endif
- 
--- 
-1.5.4.5
+Sven
