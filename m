@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbYHCRhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbYHCRmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758927AbYHCRhY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 13:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbYHCRhM
+	id S1756512AbYHCRmc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 13:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbYHCRmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 13:37:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59345 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756446AbYHCRhL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 13:37:11 -0400
-Date: Sun, 3 Aug 2008 10:35:41 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>, "Randy.Dunlap" <rdunlap@xenotime.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] Introduce down_try() so we can move away from
- down_trylock()
-In-Reply-To: <alpine.LFD.1.10.0808031031380.3668@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0808031034400.3668@nehalem.linux-foundation.org>
-References: <200807291015.02865.rusty@rustcorp.com.au> <200807292301.18733.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808011022230.3277@nehalem.linux-foundation.org> <200808031833.32048.rusty@rustcorp.com.au>
- <alpine.LFD.1.10.0808031031380.3668@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sun, 3 Aug 2008 13:42:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41238 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751263AbYHCRmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 13:42:21 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Willy Tarreau <w@1wt.eu>
+Subject: Re: Kernel Summit request for Discussion of future of ATA (libata) and IDE
+Date: Sun, 3 Aug 2008 19:45:03 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+References: <1217779055.4179.10.camel@localhost.localdomain> <20080803173941.314edf33@lxorguk.ukuu.org.uk> <20080803173254.GI615@1wt.eu>
+In-Reply-To: <20080803173254.GI615@1wt.eu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808031945.04160.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 3 Aug 2008, Linus Torvalds wrote:
+On Sunday, 3 of August 2008, Willy Tarreau wrote:
+> On Sun, Aug 03, 2008 at 05:39:41PM +0100, Alan Cox wrote:
+> > Actually what a material number of embedded systems need is a single
+> > dumb-as-a-rock CF only PIO driver which doesn't suck in large chunks of
+> > midlayer code. I'm just not sure that trend will continue as CF is giving
+> > way to other smaller media.
 > 
-> Anyway, I NAK'ed your patches. Deal with it.
+> I bet we'll see CF for a long time, because it is the only cheap
+> removable media to support IDE emulation and be bootable from an
+> unmodified PC BIOS. SD is cheaper and will soon provide larger
+> capacities, but it still requires a separate controller and is
+> not bootable with standard BIOSes.
+> 
+> Anyway, in my experience, libata supports CF on embedded controllers
+> pretty well. So maybe we should start marking IDE drivers deprecated
+> to encourage people to try libata instead and report breakage if any.
 
-Btw, "dealing with it" can just be "don't bother".
+Well, I know of at least one case of PC hardware in which an old IDE driver
+basically works while the libata/pata poeple have no idea why their driver
+doesn't:
 
-Leaving old stuff _alone_ is a perfectly good approach. Being slightly 
-ugly for historical reasons is much less of a problem than just "change 
-for change's sake".
+http://bugzilla.kernel.org/show_bug.cgi?id=9157
 
-			Linus
+Thanks,
+Rafael
