@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757890AbYHCRny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbYHCRps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757890AbYHCRny (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 13:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYHCRnq
+	id S1757471AbYHCRps (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 13:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYHCRpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 13:43:46 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:63031 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbYHCRnq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 13:43:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=lE9n04cjVwh5JOQqArOBv+0qb06X1E1B7lExlmQvMVEL2mYa3IYf/ftQwxbroiQtpX
-         MdORieR7XaAN47xjXfCCaRhETuo5orUpvdrJBZX0J/qs2UkW9U+hfqer5pVA8zySQhjX
-         7FICq2k48uY5sF+6CjXK/6AvhvrXlt3H7HVfQ=
-Message-ID: <86802c440808031043i1c0605c8wb5ba46b032397bbe@mail.gmail.com>
-Date: Sun, 3 Aug 2008 10:43:44 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 15/25] drivers/serial to use nr_irqs
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080803140205.6c8d6090@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Aug 2008 13:45:40 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:33165 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752249AbYHCRpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 13:45:39 -0400
+Date: Sun, 3 Aug 2008 21:49:11 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mark McLoughlin <markmc@redhat.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH 3/3] posix-timers: simplify de_thread()->exit_itimers() path
+Message-ID: <20080803174911.GA4919@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-9-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-10-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-11-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-12-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-13-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-14-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-15-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-16-git-send-email-yhlu.kernel@gmail.com>
-	 <20080803140205.6c8d6090@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 3, 2008 at 6:02 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> -     for (i = 0; i < NR_IRQS; i++)
->> +     for (i = 0; i < nr_irqs; i++)
->>               spin_lock_init(&irq_lists[i].lock);
->>
->
-> Don't you need to change how the array is allocated too ?
+de_thread() postpones release_task(leader) until after exit_itimers().
+This was needed because !SIGEV_THREAD_ID timers could use ->group_leader
+without get_task_struct(). With the recent changes we can release the
+leader earlier and simplify the code.
 
-this one is applied before removing NR_IRQS usage in array definition.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-YH
+--- 26-rc2/fs/exec.c~3_DE_THREAD	2008-08-03 17:16:40.000000000 +0400
++++ 26-rc2/fs/exec.c	2008-08-03 21:35:33.000000000 +0400
+@@ -757,7 +757,6 @@ static int de_thread(struct task_struct 
+ 	struct signal_struct *sig = tsk->signal;
+ 	struct sighand_struct *oldsighand = tsk->sighand;
+ 	spinlock_t *lock = &oldsighand->siglock;
+-	struct task_struct *leader = NULL;
+ 	int count;
+ 
+ 	if (thread_group_empty(tsk))
+@@ -795,7 +794,7 @@ static int de_thread(struct task_struct 
+ 	 * and to assume its PID:
+ 	 */
+ 	if (!thread_group_leader(tsk)) {
+-		leader = tsk->group_leader;
++		struct task_struct *leader = tsk->group_leader;
+ 
+ 		sig->notify_count = -1;	/* for exit_notify() */
+ 		for (;;) {
+@@ -849,8 +848,9 @@ static int de_thread(struct task_struct 
+ 
+ 		BUG_ON(leader->exit_state != EXIT_ZOMBIE);
+ 		leader->exit_state = EXIT_DEAD;
+-
+ 		write_unlock_irq(&tasklist_lock);
++
++		release_task(leader);
+ 	}
+ 
+ 	sig->group_exit_task = NULL;
+@@ -859,8 +859,6 @@ static int de_thread(struct task_struct 
+ no_thread_group:
+ 	exit_itimers(sig);
+ 	flush_itimer_signals();
+-	if (leader)
+-		release_task(leader);
+ 
+ 	if (atomic_read(&oldsighand->count) != 1) {
+ 		struct sighand_struct *newsighand;
+
