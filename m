@@ -1,42 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYHCDvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbYHCECR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbYHCDvj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 23:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbYHCDvb
+	id S1752722AbYHCECR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 00:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbYHCECD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 23:51:31 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:51652 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752097AbYHCDva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 23:51:30 -0400
-Date: Sat, 2 Aug 2008 22:51:27 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, menage@google.com,
-       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com, lizf@cn.fujitsu.com
-Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
- (2.6.27-rc1)
-Message-Id: <20080802225127.2b0d138b.pj@sgi.com>
-In-Reply-To: <48948C3A.6050805@qualcomm.com>
-References: <1217631552-22129-1-git-send-email-maxk@qualcomm.com>
-	<20080802063900.6615e5ca.pj@sgi.com>
-	<48948C3A.6050805@qualcomm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 3 Aug 2008 00:02:03 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51360 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751008AbYHCECB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 00:02:01 -0400
+Message-ID: <48952DB3.20101@zytor.com>
+Date: Sat, 02 Aug 2008 21:01:55 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       tglx <tglx@linutronix.de>
+Subject: Re: [PATCH 2/5] x86: Coding style fixes to arch/x86/kernel/bios_uv.c
+References: <20080802212406.047e8ae6@paolo-desktop>
+In-Reply-To: <20080802212406.047e8ae6@paolo-desktop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max wrote:
-> It's on top of the latest mainline
+Paolo Ciarrocchi wrote:
+> 
+> diff --git a/arch/x86/kernel/bios_uv.c b/arch/x86/kernel/bios_uv.c
+> index c639bd5..100e759 100644
+> --- a/arch/x86/kernel/bios_uv.c
+> +++ b/arch/x86/kernel/bios_uv.c
+> @@ -25,11 +25,21 @@ x86_bios_strerror(long status)
+>  {
+>  	const char *str;
+>  	switch (status) {
+> -	case  0: str = "Call completed without error"; break;
+> -	case -1: str = "Not implemented"; break;
+> -	case -2: str = "Invalid argument"; break;
+> -	case -3: str = "Call completed with error"; break;
+> -	default: str = "Unknown BIOS status code"; break;
+> +	case  0:
+> +		str = "Call completed without error";
+> +		break;
+> +	case -1:
+> +		str = "Not implemented";
+> +		break;
+> +	case -2:
+> +		str = "Invalid argument";
+> +		break;
+> +	case -3:
+> +		str = "Call completed with error";
+> +		break;
+> +	default:
+> +		str = "Unknown BIOS status code";
+> +		break;
+>  	}
+>  	return str;
+>  }
 
-"the latest mainline" ... I guess that means the same
-as what I termed "Linus's latest git version" ?
+This should be an array in the first place...
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+	-hpa
