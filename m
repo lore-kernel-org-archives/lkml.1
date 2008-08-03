@@ -1,121 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759589AbYHCUDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759502AbYHCUFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759589AbYHCUDU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 16:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbYHCUDM
+	id S1759502AbYHCUFR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 16:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbYHCUFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 16:03:12 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:45616 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755692AbYHCUDL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 16:03:11 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-8-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-9-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-10-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-11-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-12-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-13-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-14-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-15-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-16-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-17-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-18-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-19-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-20-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-21-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-22-git-send-email-yhlu.kernel@gmail.com>
-	<20080803161447.791705bb@lxorguk.ukuu.org.uk>
-Date: Sun, 03 Aug 2008 12:57:23 -0700
-In-Reply-To: <20080803161447.791705bb@lxorguk.ukuu.org.uk> (Alan Cox's message
-	of "Sun, 3 Aug 2008 16:14:47 +0100")
-Message-ID: <m1hca150t8.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Alan Cox <alan@lxorguk.ukuu.org.uk>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
-	*      [score: 0.3109]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 21/25] serial: change remove NR_IRQS in 8250.c v2
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+	Sun, 3 Aug 2008 16:05:01 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:1659 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752761AbYHCUFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 16:05:00 -0400
+Subject: Re: oops in rt_cache_invalidate (2.6.27-rc1-2b12a4c)
+From: "Denis V. Lunev" <den@openvz.org>
+To: Sven Wegener <sven.wegener@stealer.net>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <alpine.LNX.1.10.0808032110520.7765@titan.stealer.net>
+References: <20080803170241.GD5414@joi>
+	 <1217789775.8154.34.camel@iris.sw.ru>
+	 <alpine.LNX.1.10.0808032110520.7765@titan.stealer.net>
+Content-Type: text/plain
+Organization: OpenVz kernel team
+Date: Mon, 04 Aug 2008 00:04:54 +0400
+Message-Id: <1217793894.8154.38.camel@iris.sw.ru>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+On Sun, 2008-08-03 at 21:24 +0200, Sven Wegener wrote:
+> On Sun, 3 Aug 2008, Denis V. Lunev wrote:
+> 
+> > On Sun, 2008-08-03 at 19:02 +0200, Marcin Slusarz wrote:
+> > > [   21.035097] Adding 1020112k swap on /dev/sda2.  Priority:-1 extents:1 across:1020112k
+> > > [   22.340292] BUG: unable to handle kernel NULL pointer dereference at 00000000000002c0
+> > > [   22.341002] IP: [<ffffffff80442a7e>] rt_cache_invalidate+0x25/0x32
+> > > [   22.341002] PGD 3dc7c067 PUD 3d198067 PMD 0
+> > > [   22.341002] Oops: 0002 [1] PREEMPT
+> > > [   22.341002] CPU 0
+> > > [   22.341002] Modules linked in: usbhid uhci_hcd tuner tea5767 tda8290 tuner_xc2028 xc5000 tda9887 tuner_simple tuner_types mt20xx tea5761 tda9875 ehci_hcd usbcore bttv ir_common compat_ioctl32 videodev v4l1_compat i2c_algo_bit snd_via82xx snd_ac97_codec v4l2_common ac97_bus snd_pcm videobuf_dma_sg snd_timer snd_page_alloc i2c_viapro videobuf_core btcx_risc snd_mpu401_uart snd_rawmidi tveeprom snd_seq_device snd soundcore
+> > > [   22.341002] Pid: 2248, comm: sysctl Not tainted 2.6.27-rc1-00507-g75aecb1 #261
+> > > [   22.341002] RIP: 0010:[<ffffffff80442a7e>]  [<ffffffff80442a7e>] rt_cache_invalidate+0x25/0x32
+> > > [   22.341002] RSP: 0018:ffff88003cd6de08  EFLAGS: 00010202
+> > > [   22.341002] RAX: 0000000000000052 RBX: 0000000000000000 RCX: 0000000000000000
+> > > [   22.341002] RDX: ffff88003cd6dda8 RSI: ffff88003cd6dda9 RDI: ffff88003cd6ddb2
+> > > [   22.341002] RBP: ffff88003cd6de28 R08: 0000000000000000 R09: ffff88003cd6dbb8
+> > > [   22.341002] R10: 00000000a94180f7 R11: ffff88003cd6dc0c R12: 0000000000000001
+> > > [   22.341002] R13: ffffffff8062a90c R14: 0000000000000000 R15: 0000000000000040
+> > > [   22.341002] FS:  00007f0674ee66f0(0000) GS:ffffffff80625200(0000) knlGS:0000000000000000
+> > > [   22.341002] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > > [   22.341002] CR2: 00000000000002c0 CR3: 000000003d1a3000 CR4: 00000000000006e0
+> > > [   22.341002] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > > [   22.341002] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > > [   22.341002] Process sysctl (pid: 2248, threadinfo ffff88003cd6c000, task ffff88003d0dd900)
+> > > [   22.341002] Stack:  ffff88003cd6de38 ffffffff80233c93 51ff88003cd6df48 0000000000000000
+> > > [   22.341002]  ffff88003cd6de58 ffffffff80442c4c ffffffff80620740 0000000000000001
+> > > [   22.341002]  ffffffff8062a90c 0000000000000000 ffff88003cd6de98 ffffffff8046a63b
+> > > [   22.341002] Call Trace:
+> > > [   22.341002]  [<ffffffff80233c93>] ? do_proc_dointvec+0x3d/0x3f
+> > > [   22.341002]  [<ffffffff80442c4c>] rt_cache_flush+0x17/0xe2
+> > > [   22.341002]  [<ffffffff8046a63b>] ipv4_doint_and_flush+0x42/0x52
+> > > [   22.341002]  [<ffffffff802d263b>] proc_sys_call_handler+0x96/0xbb
+> > > [   22.341002]  [<ffffffff802d2674>] proc_sys_write+0x14/0x16
+> > > [   22.341002]  [<ffffffff8028f8fd>] vfs_write+0xb3/0x13c
+> > > [   22.341002]  [<ffffffff8028fdd0>] sys_write+0x4c/0x74
+> > > [   22.341002]  [<ffffffff8020b3fb>] system_call_fastpath+0x16/0x1b
+> > > [   22.341002]
+> > > [   22.341002]
+> > > [   22.341002] Code: 18 01 00 00 c9 c3 55 48 89 e5 53 48 83 ec 18 66 66 90 66 90 be 01 00 00 00 48 89 fb 48 8d 7d f7 e8 a3 fd f5 ff 0f b6 45 f7 ff c0 <01> 83 c0 02 00 00 48 83 c4 18 5b c9 c3 55 48 89 e5 53 48 83 ec
+> > > [   22.341002] RIP  [<ffffffff80442a7e>] rt_cache_invalidate+0x25/0x32
+> > > [   22.341002]  RSP <ffff88003cd6de08>
+> > > [   22.341002] CR2: 00000000000002c0
+> > > [   23.182975] ---[ end trace cc508a4cd3aa37ce ]---
+> > > [   33.359352] NET: Registered protocol family 17
+> > > [   36.346255] Marking TSC unstable due to cpufreq changes
+> > > [   40.893522] Clocksource tsc unstable (delta = -221374484 ns)
+> > > 
+> > > It's 2b12a4c524812fb3f6ee590a02e65b95c8c32229 + some unreleated trivial patches.
+> > 
+> > Could you send you .config?
+> 
+> No need to, the issue can be triggered by
+> 
+> sysctl net.ipv4.ip_default_ttl=1
+> 
+> when 76e6ebfb40a2455c18234dcb0f9df37533215461 is applied.
+> 
+> ipv4_doint_and_flush and ipv4_doint_and_flush_strategy access the member 
+> extra2 of the ctl_table, but it is never set to a meaningful value. Don't 
+> know if it's just the following that is missing or if we need another 
+> namespace.
+> 
+> net: Add missing extra2 prameter for ip_default_ttl sysctl
+> 
+> Commit 76e6ebfb40a2455c18234dcb0f9df37533215461 needs the extra2 parameter 
+> set to init_net, else we'll oops when setting the ip_default_ttl sysctl.
+> 
+> Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+> ---
+>  net/ipv4/sysctl_net_ipv4.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
+> index 770d827..e0689fd 100644
+> --- a/net/ipv4/sysctl_net_ipv4.c
+> +++ b/net/ipv4/sysctl_net_ipv4.c
+> @@ -232,6 +232,7 @@ static struct ctl_table ipv4_table[] = {
+>  		.mode		= 0644,
+>  		.proc_handler	= &ipv4_doint_and_flush,
+>  		.strategy	= &ipv4_doint_and_flush_strategy,
+> +		.extra2		= &init_net,
+>  	},
+>  	{
+>  		.ctl_name	= NET_IPV4_NO_PMTU_DISC,
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-> On Sat,  2 Aug 2008 19:59:21 -0700
-> Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> use small array with index to handle irq locking for serial port
->> hope 32 slot is enough
->
->
-> Untested alternative approach
+Acked-by: Denis V. Lunev <den@openvz.org>
 
-I like it.
-
-Good catch on the m68k serial driver.
-
-
-> 8250: Remove NR_IRQ usage
->
-> From: Alan Cox <alan@redhat.com>
-
-Now to pick a few nits ;)
-
-You are short a definition of NR_IRQ_HASH that is trivial.
-
->
->  drivers/serial/68328serial.c |   11 ++---------
->  drivers/serial/8250.c        |   41 ++++++++++++++++++++++++++++++++++-------
->  2 files changed, 36 insertions(+), 16 deletions(-)
-
-
-> diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-> index a97f1ae..7165e88 100644
-> --- a/drivers/serial/8250.c
-> +++ b/drivers/serial/8250.c
-> @@ -145,11 +145,14 @@ struct uart_8250_port {
->  };
->  
->  struct irq_info {
-> -	spinlock_t		lock;
-> +	struct			irq_info *next;
-	struct hlist_node	hchain;
-Would allow us to use the generic hash table code.
-> +	int			irq;
-> +	spinlock_t		lock;	/* Protects list not the hash */
->  	struct list_head	*head;
->  };
->  
-> -static struct irq_info irq_lists[NR_IRQS];
-> +static struct irq_info *irq_lists[NR_IRQ_HASH];
-> +static DEFINE_SPINLOCK(hash_lock);	/* Used to walk the hash */
-static DEFINE_MUTEX(hash_mutex);
-
-kzalloc sleeps....
-
-Looks like we can also tweak serial_do_unlink to free irq_info when
-the list goes empty, so we don't have a leak if the driver is ever
-unloaded.
-
-Eric
