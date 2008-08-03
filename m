@@ -1,67 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbYHCExV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbYHCE4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754549AbYHCExV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 00:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbYHCExJ
+	id S1755362AbYHCE4Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 00:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYHCE4C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 00:53:09 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:59327 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751470AbYHCExH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 00:53:07 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Sun, 3 Aug 2008 00:56:02 -0400
+Received: from saeurebad.de ([85.214.36.134]:60239 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751425AbYHCE4B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 00:56:01 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
        "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>
-References: <cbItfVMShGI.A.olC.UMLlIB@albercik>
-	<5ZeQ4vXWqRC.A.NTE.bNLlIB@albercik>
-Date: Sat, 02 Aug 2008 21:47:23 -0700
-In-Reply-To: <5ZeQ4vXWqRC.A.NTE.bNLlIB@albercik> (Rafael J. Wysocki's message
-	of "Sat, 2 Aug 2008 20:04:19 +0200 (CEST)")
-Message-ID: <m1tze2aen8.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+       "Mike Travis" <travis@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 03/25] add dyn_array support
+References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-2-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-3-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-4-git-send-email-yhlu.kernel@gmail.com>
+	<871w163fuw.fsf@saeurebad.de>
+	<86802c440808022121u3dcdbda2s5ff463f4b330ca17@mail.gmail.com>
+Date: Sun, 03 Aug 2008 06:55:37 +0200
+In-Reply-To: <86802c440808022121u3dcdbda2s5ff463f4b330ca17@mail.gmail.com>
+	(Yinghai Lu's message of "Sat, 2 Aug 2008 21:21:14 -0700")
+Message-ID: <87sktm1yuu.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ****;"Rafael J. Wysocki" <rjw@sisk.pl>
-X-Spam-Relay-Country: 
-X-Spam-Report: *  7.0 XM_URI_RBL URI's domain appears in surbl.xmission.com
-	*      [URIs: marc.info]
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0429]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [Bug #11201] kernel BUG at arch/x86/kernel/io_apic_64.c:357!
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Hi,
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+
+> On Sat, Aug 2, 2008 at 9:03 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
+>> Hi,
+>>
+>> Yinghai Lu <yhlu.kernel@gmail.com> writes:
+>>
+>>> could have crazy big arrays and allocate them in bootmem at init stage.
+>>> also also to allocate array according to size we need to use to avoid wasting
+>>> memory
+>>> use CONFIG_HAVE_DYN_ARRAY to enable it or not
+>>>
+>>> usage:
+>>>
+>>> |static struct irq_desc irq_desc_init __initdata = {
+>>> |       .status = IRQ_DISABLED,
+>>> |       .chip = &no_irq_chip,
+>>> |       .handle_irq = handle_bad_irq,
+>>> |       .depth = 1,
+>>> |       .lock = __SPIN_LOCK_UNLOCKED(irq_desc->lock),
+>>> |#ifdef CONFIG_SMP
+>>> |       .affinity = CPU_MASK_ALL
+>>> |#endif
+>>> |};
+>>> |
+>>> |static void __init init_work(void *data)
+>>> |{
+>>> |       struct dyn_array *da = data;
+>>> |       struct  irq_desc *desc;
+>>> |       int i;
+>>> |
+>>> |       desc = *da->name;
+>>
+>> Where *da->name might be NULL...
 >
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed
-> and let me know (either way).
+> you can not pass compiling
+>
+> +#define DEFINE_DYN_ARRAY(nameX, sizeX, nrX, alignX, init_workX) \
+> +               static struct dyn_array __dyn_array_##nameX __initdata = \
+> +               {       .name = (void **)&nameX,\
 
-Yes it should still be listed.
+I didn't mean da->name.  Please reread my email, including the part you
+stripped off in the reply.
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11201
-> Subject		: kernel BUG at arch/x86/kernel/io_apic_64.c:357!
-> Submitter	: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> Date		: 2008-07-29 16:21 (5 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121734804508255&w=4
-> Handled-By	: Yinghai Lu <yhlu.kernel@gmail.com>
-> 		  Eric W. Biederman <ebiederm@xmission.com>
-> Patch		: http://marc.info/?l=linux-kernel&m=121735924628623&w=4
+> +                       .size = sizeX,\
+> +                       .nr   = &nrX,\
+> +                       .align = alignX,\
+> +                       .init_work = init_workX,\
+> +               }; \
+> +               static struct dyn_array *__dyn_array_ptr_##nameX __used \
+> +               __attribute__((__section__(".dyn_array.init"))) = \
+> +                       &__dyn_array_##nameX
+> +
+>
+> YH
+
+	Hannes
