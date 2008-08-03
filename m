@@ -1,22 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYHCBsI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbYHCByZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753827AbYHCBsI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 21:48:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYHCBrz
+	id S1753861AbYHCByZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 21:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYHCByP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 21:47:55 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:47556 "EHLO
+	Sat, 2 Aug 2008 21:54:15 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:35258 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751180AbYHCBrz (ORCPT
+	with ESMTP id S1751180AbYHCByO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 21:47:55 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] ext4 bugfixes/cleanups
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1KPShM-0007Ks-M0@closure.thunk.org>
-Date: Sat, 02 Aug 2008 21:47:52 -0400
+	Sat, 2 Aug 2008 21:54:14 -0400
+Date: Sat, 2 Aug 2008 21:54:04 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       andi@firstfloor.org, Rik van Riel <riel@redhat.com>, mpm@selenic.com,
+       Dave Chinner <david@fromorbit.com>
+Subject: Re: [patch 14/19] Filesystem: Ext4 filesystem defrag
+Message-ID: <20080803015404.GC11488@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+	Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+	andi@firstfloor.org, Rik van Riel <riel@redhat.com>,
+	mpm@selenic.com, Dave Chinner <david@fromorbit.com>
+References: <20080801182324.572058187@lameter.com> <20080801182347.191898393@lameter.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080801182347.191898393@lameter.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -24,45 +40,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Fri, May 09, 2008 at 07:21:15PM -0700, Christoph Lameter wrote:
+> Support defragmentation for extX filesystem inodes
 
-Please pull from:
+You forgot to change "extX" to "ext4".  :-)
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
+> Reviewed-by: Rik van Riel <riel@redhat.com>
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+Acked-by: "Theodore Ts'o" <tytso@mit.edu>
 
-This patch series contains a number of bug fixes that have been
-discovered by primarily by benchmarkers and people who have been trying
-out ext4.  A few cleanups have been included as well.
-
-Thanks!!
-
-                                                - Ted
-
-Aneesh Kumar K.V (5):
-      ext4: Fix data corruption when writing to prealloc area
-      ext4: Improve error handling in mballoc
-      ext4: Convert the usage of NR_CPUS to nr_cpu_ids.
-      ext4: Don't allow lg prealloc list to be grow large.
-      ext4: Cleanup the block reservation code path
-
-Eric Sandeen (4):
-      ext4: sync up block and inode bitmap reading functions
-      ext4: lock block groups when initializing
-      ext4: fix ext4_da_write_begin error path
-      ext4: remove write-only variables from ext4_ordered_write_end
-
-Hidehiro Kawai (2):
-      ext4: don't read inode block if the buffer has a write error
-      jbd2: don't abort if flushing file data failed
-
-Li Zefan (1):
-      ext4: improve ext4_fill_flex_info() a bit
-
-Theodore Ts'o (6):
-      ext4: Allow read/only mounts with corrupted block group checksums
-      ext4: Fix ext4_ext_journal_restart()
-      ext4: Fix lack of credits BUG() when deleting a badly fragmented inode
-      ext4: don't assume extents can't cross block groups when truncating
-      ext4: Cleanup whitespace and other miscellaneous style issues
-      ext4: unexport jbd2_journal_update_superblock
-
+						- Ted
