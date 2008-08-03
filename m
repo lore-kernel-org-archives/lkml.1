@@ -1,64 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbYHCBhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbYHCBm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753664AbYHCBhM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 21:37:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYHCBhA
+	id S1753802AbYHCBm1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 21:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYHCBmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 21:37:00 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:27418 "EHLO
-	pd7mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751516AbYHCBg7 (ORCPT
+	Sat, 2 Aug 2008 21:42:18 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:54453 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751516AbYHCBmR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 21:36:59 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=Kzvv9J8FBGoA5Q_Uz3YA:9 a=ogobqr4psVy2MerJqr0A:7 a=9qOOT9UHCdaM68xlmbcWOLAcuPIA:4
-Message-ID: <48950B8F.70602@shaw.ca>
-Date: Sat, 02 Aug 2008 19:36:15 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Brian Beattie <beattie@beattie-home.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: ioctl's suck?
-References: <fa.pDV0CxkUWw00OFrnybFqbUSeaQA@ifi.uio.no>
-In-Reply-To: <fa.pDV0CxkUWw00OFrnybFqbUSeaQA@ifi.uio.no>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Aug 2008 21:42:17 -0400
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: New ext4 patchset: 2.6.27-rc1-ext4-1 and 2.6.26-ext4-5
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1KPSbv-0001ou-CM@closure.thunk.org>
+Date: Sat, 02 Aug 2008 21:42:15 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian Beattie wrote:
-> The other day Linus (I think) made the statement, that I don't disagree
-> with, that I will parapharse as "ioctl's suck".  If I recall correctly
-> and understand he was saying that a device that uses ioctls is broken.
-> (this is my paraphrase and if it offends anybody it is my fault not the
-> original author's).
-> 
-> This got me to thinking about a device driver that I'm working on.
-> Currently I have some ioctls to handle status and out of band messages
-> and I'm wondering about eliminating the ioctls.  I'm wondering if
-> anybody has any ideas or opinions that they would like to share, about
-> just what i wrong with ioctls and/or how to avoid them.
 
-As I see it the main problems are:
+I've released a new ext4 patchset against the 2.6.27-rc1 kernel.  This
+includes a number of bug fixes reported by benchmarkers plus some
+cleanups.
 
--Unless the ioctl parameter structures are laid out carefully, you end 
-up with problems like different structure layouts between 32/64-bit 
-processes, etc.
+As before I've also released updated the patch set vs. 2.6.26 stock
+kernel, for those people who don't want to play with development kernels
+but who still want to test out ext4.
 
--They can't really be used by anything other than a C or C++ program. 
-Anything else (shell script, Python, Java, etc.) is pretty much out of 
-luck unless it can use a C shim layer of some sort.
+As a git tree:
 
-> 
-> I can see a number of problems with ioctls that I can'tr quite put into
-> words.
-> 
-> I could add a control device and pass ascii strings for status and OOB
-> messages, would that be an improvement?
+git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.27-rc1-ext4-1
+http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.27-rc1-ext4-1
 
-Quite likely. For something like a status that's being read out of the 
-device, a sysfs file would seem a more logical choice. If you're sitting 
-there waiting for messages to show up, though, a separate device node 
-might be better.
+As a patchset:
+
+ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-rc1-ext4-1
+
+The patch vs. 2.6.26:
+
+ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.26-ext4-5
+
+						- Ted
+
+Akira Fujita (7):
+      ext4: online defrag-- Main function of defrag and ioctl implementation
+      ext4: online defrag-- Allocate new contiguous blocks with mballoc
+      ext4: online defrag-- Read and write file data with memory page
+      ext4: online defrag-- Exchange the blocks between two inodes
+      ext4: online defrag-- Defragmentation for the relevant files (-r mode)
+      ext4: online defrag-- Check the free space fragmentation (-f mode)
+      ext4: online defrag-- Move victim files for the target file (-f mode)
+
+Aneesh Kumar K.V (6):
+      ext4: Fix data corruption when writing to prealloc area
+      ext4: Improve error handling in mballoc
+      ext4: Convert the usage of NR_CPUS to nr_cpu_ids.
+      ext4: Don't allow lg prealloc list to be grow large.
+      ext4: Cleanup the block reservation code path
+      ext4: undo the stable boundary patch changes
+
+Eric Sandeen (5):
+      ext4: sync up block and inode bitmap reading functions
+      ext4: lock block groups when initializing
+      ext4: fix ext4_da_write_begin error path
+      ext4: remove write-only variables from ext4_ordered_write_end
+      Hook ext4 to the vfs fiemap interface.
+
+Hidehiro Kawai (2):
+      ext4: don't read inode block if the buffer has a write error
+      jbd2: don't abort if flushing file data failed
+
+Josef Bacik (1):
+      Any block based fs (this patch includes ext3) just has to declare its own
+
+Li Zefan (1):
+      ext4: improve ext4_fill_flex_info() a bit
+
+Mingming Cao (1):
+      Ext4: journal credits reservation fixes
+
+Theodore Ts'o (12):
+      ext4: Allow read/only mounts with corrupted block group checksums
+      ext4: Fix ext4_ext_journal_restart()
+      ext4: Fix lack of credits BUG() when deleting a badly fragmented inode
+      ext4: don't assume extents can't cross block groups when truncating
+      ext4: Cleanup whitespace and other miscellaneous style issues
+      ext4: unexport jbd2_journal_update_superblock
+      ext4: Stable/Unstable boundary
+      This patch should be merged with ext4-online-defrag-alloc-contiguous-blks.patch
+      This patch should be merged with ext4-online-defrag-relocate-file-data.patch
+      Basic vfs-level fiemap infrastructure, which sets up a new ->fiemap
+      Plug ocfs2 into ->fiemap. Some portions of ocfs2_get_clusters() had to be
+      patch ext4_fix_printk_checkpatch_issues
+
+
+
