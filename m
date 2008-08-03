@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbYHCDIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbYHCDUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755896AbYHCDIy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 23:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbYHCDBJ
+	id S1754848AbYHCDUp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 23:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbYHCDUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 23:01:09 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:17221 "EHLO
+	Sat, 2 Aug 2008 23:20:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:19127 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755775AbYHCDBH (ORCPT
+	with ESMTP id S1751834AbYHCDUf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 23:01:07 -0400
+	Sat, 2 Aug 2008 23:20:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=sXWbia9n4Hl5WpXgHE1UD5xZEufdQ4EHLgE4KXlmgtzro0NZigrDUMMvkLPA/j/pvF
-         fTzJEuvHaT7LsHx+S0k9RCd8TPLk0mEcgzq7+rbwnb80gTkZHdORBhR+Z4SsOt2IbIBw
-         +V5dr6Sw0KqLxiFkUHv9dUGGRI4F+y3XCERyA=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 25/25] x86: remove nr_irq_vectors
-Date: Sat,  2 Aug 2008 19:59:25 -0700
-Message-Id: <1217732365-16595-26-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217732365-16595-25-git-send-email-yhlu.kernel@gmail.com>
-References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-2-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-3-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-4-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-5-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-6-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-7-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-8-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-9-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-10-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-11-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-12-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-13-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-14-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-15-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-16-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-17-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-18-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-19-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-20-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-21-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-22-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-23-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-24-git-send-email-yhlu.kernel@gmail.com>
- <1217732365-16595-25-git-send-email-yhlu.kernel@gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=pgiWYtQs2aPhUB8JgkyaT2eNJgYqPzpUqs8htizRxWKyNgF9eTtxSQvoD1YXyOPjXH
+         S9FOOcu3OwQPHJq4s2j5JkNtiPu3bygVH19xOUtGu5/zH9KBNv6htbDCjkdB9WRIYw9C
+         5d27n2F+LN8GX67fXIw8YF0j1LCSzy5ELaKBE=
+Message-ID: <489523DC.2090903@gmail.com>
+Date: Sun, 03 Aug 2008 12:19:56 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Elias Oltmanns <eo@nebensachen.de>, Jeff Garzik <jeff@garzik.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Pavel Machek <pavel@ucw.cz>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] libata: Implement disk shock protection support
+References: <87prp1kvyy.fsf@denkblock.local>	<20080726062142.29070.10413.stgit@denkblock.local>	<4892B8FE.1070400@gmail.com> <20080801233459.11e9b254@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080801233459.11e9b254@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
----
- include/asm-x86/irq_vectors.h |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+Alan Cox wrote:
+>> However, SATA or not, there simply isn't a way to abort commands in ATA.
+>>  Issuing random command while other commands are in progress simply is
+>> state machine violation and there will be many interesting results
+>> including complete system lockup (ATA controller dying while holding the
+>> PCI bus).  The only reliable way to abort in-flight commands are by
+>> issuing hardreset.  However, ATA reset protocol is not designed for
+>> quick recovery.  The machine is gonna hit the ground hard way before the
+>> reset protocol is complete.
+> 
+> Actually you cau can issue idle immediate on older ATA devices. I am not
+> clear if that was stuck back into the current accelerometer friendly
+> drives or not. Would need to check with IBLenovo
 
-diff --git a/include/asm-x86/irq_vectors.h b/include/asm-x86/irq_vectors.h
-index 0817a19..821ff99 100644
---- a/include/asm-x86/irq_vectors.h
-+++ b/include/asm-x86/irq_vectors.h
-@@ -127,8 +127,6 @@
- 
- #endif /* VISWS */
- 
--#define NR_IRQ_VECTORS		NR_IRQS
--
- /* Voyager specific defines */
- /* These define the CPIs we use in linux */
- #define VIC_CPI_LEVEL0			0
+Was that something intentional or was it a happy accident?  There can be
+bus ownership problem on PATA and on SATA this is much more state logic
+on both sides of the cable and I think things like that would be more
+difficult to work accidentally.
+
+Thanks.
+
 -- 
-1.5.4.5
-
+tejun
