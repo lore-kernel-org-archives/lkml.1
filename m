@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbYHCRqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759291AbYHCRq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753772AbYHCRqE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 13:46:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756858AbYHCRpq
+	id S1759291AbYHCRq0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 13:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758184AbYHCRpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 13:45:46 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:33166 "EHLO mail.screens.ru"
+	Sun, 3 Aug 2008 13:45:51 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:33176 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756682AbYHCRpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 13:45:45 -0400
-Date: Sun, 3 Aug 2008 21:49:10 +0400
+	id S1757315AbYHCRpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 13:45:50 -0400
+Date: Sun, 3 Aug 2008 21:49:11 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Mark McLoughlin <markmc@redhat.com>,
        Michael Kerrisk <mtk.manpages@googlemail.com>,
        Roland McGrath <roland@redhat.com>,
        Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] posix-timers: don't switch to ->group_leader if ->it_process dies
-Message-ID: <20080803174910.GA4913@tv-sign.ru>
+Subject: [PATCH 2/3] posix-timers: always do get_task_struct(timer->it_process)
+Message-ID: <20080803174911.GA4916@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,56 +26,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(textually depends on posix-timers-fix-posix_timer_event-vs-dequeue_signal-race.patch)
-
-posix_timer_event() drops SIGEV_THREAD_ID and switches to ->group_leader if
-send_sigqueue() fails.
-
-This is not very useful and doesn't work reliably. send_sigqueue() can only
-fail if ->it_process is dead. But it can die before it dequeues the SI_TIMER
-signal, in that case the timer stops anyway.
-
-Remove this code. I guess it was needed a long ago to ensure that the timer
-is not destroyed when when its creator thread dies.
-
-Q: perhaps it makes sense to change sys_timer_settime() to return an error
-if ->it_process is dead?
+Change the code to get/put timer->it_process regardless of SIGEV_THREAD_ID.
+This streamlines the create/destroy paths and allows us to simplify the
+usage of exit_itimers() in de_thread().
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- 26-rc2/kernel/posix-timers.c~1_DONT_RESEND	2008-07-23 20:24:05.000000000 +0400
-+++ 26-rc2/kernel/posix-timers.c	2008-08-03 20:25:41.000000000 +0400
-@@ -298,6 +298,7 @@ void do_schedule_next_timer(struct sigin
+--- 26-rc2/kernel/posix-timers.c~2_GET_LEADER	2008-08-03 20:25:41.000000000 +0400
++++ 26-rc2/kernel/posix-timers.c	2008-08-03 21:13:25.000000000 +0400
+@@ -540,11 +540,10 @@ sys_timer_create(const clockid_t which_c
+ 			 */
+ 			spin_lock_irqsave(&process->sighand->siglock, flags);
+ 			if (!(process->flags & PF_EXITING)) {
++				get_task_struct(process);
+ 				new_timer->it_process = process;
+ 				list_add(&new_timer->list,
+ 					 &process->signal->posix_timers);
+-				if (new_timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
+-					get_task_struct(process);
+ 				spin_unlock_irqrestore(&process->sighand->siglock, flags);
+ 			} else {
+ 				spin_unlock_irqrestore(&process->sighand->siglock, flags);
+@@ -561,6 +560,7 @@ sys_timer_create(const clockid_t which_c
+ 		new_timer->it_sigev_signo = SIGALRM;
+ 		new_timer->it_sigev_value.sival_int = new_timer->it_id;
+ 		process = current->group_leader;
++		get_task_struct(process);
+ 		spin_lock_irqsave(&process->sighand->siglock, flags);
+ 		new_timer->it_process = process;
+ 		list_add(&new_timer->list, &process->signal->posix_timers);
+@@ -853,8 +853,7 @@ retry_delete:
+ 	 * This keeps any tasks waiting on the spin lock from thinking
+ 	 * they got something (see the lock code above).
+ 	 */
+-	if (timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
+-		put_task_struct(timer->it_process);
++	put_task_struct(timer->it_process);
+ 	timer->it_process = NULL;
  
- int posix_timer_event(struct k_itimer *timr, int si_private)
- {
-+	int shared, ret;
- 	/*
- 	 * FIXME: if ->sigq is queued we can race with
- 	 * dequeue_signal()->do_schedule_next_timer().
-@@ -316,20 +317,10 @@ int posix_timer_event(struct k_itimer *t
- 	timr->sigq->info.si_tid = timr->it_id;
- 	timr->sigq->info.si_value = timr->it_sigev_value;
+ 	unlock_timer(timer, flags);
+@@ -881,8 +880,7 @@ retry_delete:
+ 	 * This keeps any tasks waiting on the spin lock from thinking
+ 	 * they got something (see the lock code above).
+ 	 */
+-	if (timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
+-		put_task_struct(timer->it_process);
++	put_task_struct(timer->it_process);
+ 	timer->it_process = NULL;
  
--	if (timr->it_sigev_notify & SIGEV_THREAD_ID) {
--		struct task_struct *leader;
--		int ret = send_sigqueue(timr->sigq, timr->it_process, 0);
--
--		if (likely(ret >= 0))
--			return ret;
--
--		timr->it_sigev_notify = SIGEV_SIGNAL;
--		leader = timr->it_process->group_leader;
--		put_task_struct(timr->it_process);
--		timr->it_process = leader;
--	}
--
--	return send_sigqueue(timr->sigq, timr->it_process, 1);
-+	shared = !(timr->it_sigev_notify & SIGEV_THREAD_ID);
-+	ret = send_sigqueue(timr->sigq, timr->it_process, shared);
-+	/* If we failed to send the signal the timer stops. */
-+	return ret > 0;
- }
- EXPORT_SYMBOL_GPL(posix_timer_event);
- 
+ 	unlock_timer(timer, flags);
 
