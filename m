@@ -1,45 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbYHCEUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbYHCEVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752722AbYHCEUV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 00:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbYHCEUI
+	id S1754981AbYHCEVY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 00:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYHCEVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 00:20:08 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:53487 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751183AbYHCEUH (ORCPT
+	Sun, 3 Aug 2008 00:21:16 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:46825 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751008AbYHCEVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 00:20:07 -0400
+	Sun, 3 Aug 2008 00:21:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=OH8u/l8qDto5CWxkt2rHWYILocQmGCbNGs8HJTgF+69+lN2JyZ3xZq8394KcNuPJ01
-         5rDUMT4tI0EQY3K8z0fT5dNxo2ksXvB6GRqCCyFbJZIefSjMn+UpcFRpSsOirt6pb2ci
-         dvEqbGXia8Nw+O8qneU6Dk7IU+TcaCaoRKGwc=
-Message-ID: <a32c680e0808022120g6cec9061k435ac20780583120@mail.gmail.com>
-Date: Sun, 3 Aug 2008 00:20:05 -0400
-From: Chris <kavefish@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Process Status Callback to Module
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=wXPMbRNR17shSyw3j0aZSFigcLrbFQSOMqm8XHxyx0pg8QnAbDJEFxGE/A5lESG0o3
+         e/vEyTMz2kWvXNJSEedPUbtGnWqawc0EQZeIyyAiGT6foKJPrCxeTLRmDqGT+uFYr367
+         hvIZ0cooY1Z5k8QhNL2WTZB4I1qsRKbrTogTM=
+Message-ID: <86802c440808022121u3dcdbda2s5ff463f4b330ca17@mail.gmail.com>
+Date: Sat, 2 Aug 2008 21:21:14 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Johannes Weiner" <hannes@saeurebad.de>
+Subject: Re: [PATCH 03/25] add dyn_array support
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Mike Travis" <travis@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <871w163fuw.fsf@saeurebad.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
+	 <1217732365-16595-2-git-send-email-yhlu.kernel@gmail.com>
+	 <1217732365-16595-3-git-send-email-yhlu.kernel@gmail.com>
+	 <1217732365-16595-4-git-send-email-yhlu.kernel@gmail.com>
+	 <871w163fuw.fsf@saeurebad.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I need a spot of help and I'm hoping someone can set me straight.  I'm
-working on a module that keeps state about a small number of
-processes.  Each time one of those processes exit, the module should
-purge the corresponding state and I'm struggling to find a nice way to
-do that.  Is there an existing callback mechanism to kick the module
-with notification upon a process exit?  I've briefly read about the
-connector project, but AFAIK that's geared to notify userspace rather
-than a kernel module.  Any pointers would be greatly appreciated.
+On Sat, Aug 2, 2008 at 9:03 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
+> Hi,
+>
+> Yinghai Lu <yhlu.kernel@gmail.com> writes:
+>
+>> could have crazy big arrays and allocate them in bootmem at init stage.
+>> also also to allocate array according to size we need to use to avoid wasting
+>> memory
+>> use CONFIG_HAVE_DYN_ARRAY to enable it or not
+>>
+>> usage:
+>>
+>> |static struct irq_desc irq_desc_init __initdata = {
+>> |       .status = IRQ_DISABLED,
+>> |       .chip = &no_irq_chip,
+>> |       .handle_irq = handle_bad_irq,
+>> |       .depth = 1,
+>> |       .lock = __SPIN_LOCK_UNLOCKED(irq_desc->lock),
+>> |#ifdef CONFIG_SMP
+>> |       .affinity = CPU_MASK_ALL
+>> |#endif
+>> |};
+>> |
+>> |static void __init init_work(void *data)
+>> |{
+>> |       struct dyn_array *da = data;
+>> |       struct  irq_desc *desc;
+>> |       int i;
+>> |
+>> |       desc = *da->name;
+>
+> Where *da->name might be NULL...
 
-If replying, kindly CC my address directly b/c I'm not subscribed to the list.
+you can not pass compiling
 
-Cheers,
-Chris
++#define DEFINE_DYN_ARRAY(nameX, sizeX, nrX, alignX, init_workX) \
++               static struct dyn_array __dyn_array_##nameX __initdata = \
++               {       .name = (void **)&nameX,\
++                       .size = sizeX,\
++                       .nr   = &nrX,\
++                       .align = alignX,\
++                       .init_work = init_workX,\
++               }; \
++               static struct dyn_array *__dyn_array_ptr_##nameX __used \
++               __attribute__((__section__(".dyn_array.init"))) = \
++                       &__dyn_array_##nameX
++
+
+YH
