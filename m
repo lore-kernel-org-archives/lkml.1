@@ -1,65 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756451AbYHCNIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbYHCNMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756451AbYHCNIB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 09:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754486AbYHCNHz
+	id S1756659AbYHCNMj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 09:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbYHCNMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 09:07:55 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:42652 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754122AbYHCNHy (ORCPT
+	Sun, 3 Aug 2008 09:12:30 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:44179 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753986AbYHCNM3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 09:07:54 -0400
-Date: Sun, 3 Aug 2008 07:07:38 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       "Randy.Dunlap" <rdunlap@xenotime.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] Introduce down_try() so we can move away from down_trylock()
-Message-ID: <20080803130737.GF26461@parisc-linux.org>
-References: <200807291015.02865.rusty@rustcorp.com.au> <200807292301.18733.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808011022230.3277@nehalem.linux-foundation.org> <200808031833.32048.rusty@rustcorp.com.au>
+	Sun, 3 Aug 2008 09:12:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=ZMaq81Wsw7AeSx6J7mdmQ6EXUB+gFmCOoyGBvIMtpwrLG0ugd1y6GswonoXd6Kn6K9
+         wrnHa4vMoj1Mu+cVS5QWYycaP/LGAIBOr2dmIeVkxA3kkx484+XzNv2R5qk73uOSybxH
+         3v7b4WYFWZcqzGQR9byBN2Q6UOSXuYK13DbX0=
+Message-ID: <ea11fea30808030612m7ab72e85xf34e290d674d955d@mail.gmail.com>
+Date: Sun, 3 Aug 2008 18:42:27 +0530
+From: "Manish Katiyar" <mkatiyar@gmail.com>
+To: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+Subject: [PATCH] resend: Remove warning 'unused variable battery' in drivers/acpi/sbs.c
+Cc: kernel-janitors@vger.kernel.org, astarikovskiy@suse.de,
+       LKML <linux-kernel@vger.kernel.org>, trivial@kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <200808031833.32048.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 03, 2008 at 06:33:30PM +1000, Rusty Russell wrote:
-> On Saturday 02 August 2008 03:26:33 Linus Torvalds wrote:
-> > Also, all actual _users_ of down_trylock() seem to be prime candidates for
-> > turning into mutexes anyway - with the _possible_ exception of the console
-> > semaphore which has problems with the mutex debugging code.
-> 
-> And Willy is working on that.  Still.  Frankly, I gave up waiting.
+Resend of the patch to remove the following warning:
+drivers/acpi/sbs.c: In function 'acpi_battery_remove':
+drivers/acpi/sbs.c:819: warning: unused variable 'battery'
 
-It's low-priority for me.  SSDs are much more exciting.
 
-> > Guys, some quality control and critical thinking, please.
-> 
-> Good idea.  If we'd done that we wouldn't have the down_trylock() brain 
-> damage.
+Signed-off-by:- "Manish Katiyar" <mkatiyar@gmail.com>
 
-I believe down_trylock() came first.  spin_trylock() was then the one
-that was gratuitously different and mutex_trylock() decided to follow
-the spinning semantics rather than the sleeping semantics.  But yeah,
-whatever, big mess.  I'm not convinced down_try() is an improvement.
+---
+ drivers/acpi/sbs.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-But I bet we could have got rid of most of the users of down_trylock()
-in the time that's been spent wanking about down_try().  Hey, let's make
-it return bool!  Hey, let's argue about the name!  Hey, let's argue
-about the documentation!
+diff --git a/drivers/acpi/sbs.c b/drivers/acpi/sbs.c
+index 10a3651..8493603 100644
+--- a/drivers/acpi/sbs.c
++++ b/drivers/acpi/sbs.c
+@@ -816,7 +816,9 @@ static int acpi_battery_add(struct acpi_sbs *sbs, int id)
 
-Sometimes the bikeshed needs to be bulldozed, not given another lick of
-paint.
+ static void acpi_battery_remove(struct acpi_sbs *sbs, int id)
+ {
++#if defined (CONFIG_ACPI_SYSFS_POWER) || (CONFIG_ACPI_PROCFS_POWER)
+       struct acpi_battery *battery = &sbs->battery[id];
++#endif
+ #ifdef CONFIG_ACPI_SYSFS_POWER
+       if (battery->bat.dev) {
+               if (battery->have_sysfs_alarm)
+--
+1.5.4.3
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+
+Thanks -
+Manish
+
+On Sun, Aug 3, 2008 at 6:00 PM, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+> On Sun, 3 Aug 2008, Manish Katiyar wrote:
+>
+>> Below patch removes the following warning:
+>> drivers/acpi/sbs.c: In function 'acpi_battery_remove':
+>> drivers/acpi/sbs.c:819: warning: unused variable 'battery'
+>>
+>>
+>>
+>> Signed-off-by:- "Manish Katiyar" <mkatiyar@gmail.com>
+>>
+>> ---
+>>  drivers/acpi/sbs.c |    2 ++
+>>  1 files changed, 2 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/acpi/sbs.c b/drivers/acpi/sbs.c
+>> index 10a3651..8493603 100644
+>> --- a/drivers/acpi/sbs.c
+>> +++ b/drivers/acpi/sbs.c
+>> @@ -816,7 +816,9 @@ static int acpi_battery_add(struct acpi_sbs *sbs, int id)
+>>
+>>  static void acpi_battery_remove(struct acpi_sbs *sbs, int id)
+>>  {
+>> +#ifdef CONFIG_ACPI_SYSFS_POWER || CONFIG_ACPI_PROCFS_POWER
+>
+> I don't think you can use || operator in ifdef like that... ...Try
+> #if defined(...) || (...) instead.
+>
+>
+> --
+>  i.
+>
