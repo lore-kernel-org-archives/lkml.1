@@ -1,28 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYHCFkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbYHCFru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbYHCFkT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 01:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbYHCFkG
+	id S1755791AbYHCFru (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 01:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYHCFrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 01:40:06 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:50332 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751573AbYHCFkF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 01:40:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OhRBrSrn6Iwy2llBOH1iEzP+ihWMaD20ZDOBJXHh3eOZHgJqEh6SmEMLV43Za+UbXX
-         lsy5Ok9A42qwPB78HOtH/GBsyd+UNcKj/quQXS2Du7ikukKLI/y1Feeu3v6MSDn/0SEG
-         KDUYh4dK7FYA+aIk/XrixOnlTrXkXpdOeVrSA=
-Message-ID: <86802c440808022240k7fa89035ga60cbe9840e9b88@mail.gmail.com>
-Date: Sat, 2 Aug 2008 22:40:04 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: [PATCH 03/25] add dyn_array support
+	Sun, 3 Aug 2008 01:47:42 -0400
+Received: from saeurebad.de ([85.214.36.134]:60443 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751241AbYHCFrl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 01:47:41 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
 Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
@@ -30,26 +18,33 @@ Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
        "Mike Travis" <travis@sgi.com>,
        "Andrew Morton" <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <86802c440808022239i447f9627t98e5867b0b08e709@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Subject: Re: [PATCH 03/25] add dyn_array support
 References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-2-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-3-git-send-email-yhlu.kernel@gmail.com>
-	 <1217732365-16595-4-git-send-email-yhlu.kernel@gmail.com>
-	 <871w163fuw.fsf@saeurebad.de>
-	 <86802c440808022121u3dcdbda2s5ff463f4b330ca17@mail.gmail.com>
-	 <87sktm1yuu.fsf@saeurebad.de>
-	 <86802c440808022204s62ff2b35g391125babdb2e8e4@mail.gmail.com>
-	 <87od4a1x6y.fsf@saeurebad.de>
-	 <86802c440808022239i447f9627t98e5867b0b08e709@mail.gmail.com>
+	<1217732365-16595-2-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-3-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-4-git-send-email-yhlu.kernel@gmail.com>
+	<871w163fuw.fsf@saeurebad.de>
+	<86802c440808022121u3dcdbda2s5ff463f4b330ca17@mail.gmail.com>
+	<87sktm1yuu.fsf@saeurebad.de>
+	<86802c440808022204s62ff2b35g391125babdb2e8e4@mail.gmail.com>
+	<87od4a1x6y.fsf@saeurebad.de>
+	<86802c440808022239i447f9627t98e5867b0b08e709@mail.gmail.com>
+Date: Sun, 03 Aug 2008 07:47:18 +0200
+In-Reply-To: <86802c440808022239i447f9627t98e5867b0b08e709@mail.gmail.com>
+	(Yinghai Lu's message of "Sat, 2 Aug 2008 22:39:01 -0700")
+Message-ID: <87k5ey1wgp.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 2, 2008 at 10:39 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Hi,
+
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+
 > On Sat, Aug 2, 2008 at 10:31 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
 >> Hi,
 >>
@@ -100,6 +95,8 @@ On Sat, Aug 2, 2008 at 10:39 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 >
 > 04 fix that via allocating that all together
 
-should be 05
+No patch should introduce wrong behaviour but instead be an atomic
+switch to another working state.  If 4 gets reverted for any reason
+whatsoever, you will be left with a buggy version.
 
-YH
+	Hannes
