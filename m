@@ -1,63 +1,316 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbYHCIgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbYHCIyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755908AbYHCIgw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 04:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbYHCIgo
+	id S1754981AbYHCIyV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 04:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYHCIyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 04:36:44 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:44679 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752647AbYHCIgm (ORCPT
+	Sun, 3 Aug 2008 04:54:12 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:50038 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751794AbYHCIyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 04:36:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=h9ZlLOGi3LYUVU72fD9V6j/rqcImt0pFC6Oa7tnD3suOC0yWswaa8oMTGpQrEuUj53
-         IXFOAXwa7mlP5dNBwNOXsu7ErXA3Y3Ny9K3Df3969vg1KqtLGC/So7qqRBjM6Jb5qO+6
-         p3FcCQVBvEgdbJNkWVreLWdBGYxmWWTiYL678=
-Message-ID: <48956E15.6070409@tuffmail.co.uk>
-Date: Sun, 03 Aug 2008 09:36:37 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [Bug #11178] Secondary hard drive fails during both hibernation
- and resume.
-References: <cbItfVMShGI.A.olC.UMLlIB@albercik> <5ZeQ4vXWqRC.A.q2E.4NLlIB@albercik>
-In-Reply-To: <5ZeQ4vXWqRC.A.q2E.4NLlIB@albercik>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 3 Aug 2008 04:54:09 -0400
+Subject: [GIT PULL] asm-s390 move.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Sun, 03 Aug 2008 10:54:02 +0200
+Message-Id: <1217753642.29252.6.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed
-> and let me know (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11178
-> Subject		: Secondary hard drive fails during both hibernation and resume.
-> Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> Date		: 2008-07-30 04:53 (4 days old)
-> Handled-By	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> Patch		: http://bugzilla.kernel.org/attachment.cgi?id=17043&action=view
->   
-Please keep listed.
+Hi Linus,
 
-The problem and patch are recently confirmed by Hugh Dickins (on LKML)
-and Dionisus Torimens (bugzilla duplicate).
+please pull (again) from 'for-linus' branch of
 
-Ta
-Alan
+	git://git390.osdl.marist.edu/pub/scm/linux-2.6.git for-linus
+
+Your last pull has been a little bit too early, I comitted the asm header
+file move shortly after. I want to get over with it, it makes no sense
+to postpone it. The kernel compiles with defconfig, allmodconfig and
+allyesconfig.
+
+Martin Schwidefsky (1):
+      [S390] move include/asm-s390 to arch/s390/include/asm
+
+ {include/asm-s390 => arch/s390/include/asm}/Kbuild |    0 
+ {include/asm-s390 => arch/s390/include/asm}/airq.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/appldata.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/atomic.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/auxvec.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/bitops.h    |    0 
+ {include/asm-s390 => arch/s390/include/asm}/bug.h  |    0 
+ {include/asm-s390 => arch/s390/include/asm}/bugs.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/byteorder.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/cache.h     |    0 
+ .../s390/include/asm}/cacheflush.h                 |    0 
+ .../asm-s390 => arch/s390/include/asm}/ccwdev.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/ccwgroup.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/checksum.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/chpid.h     |    0 
+ {include/asm-s390 => arch/s390/include/asm}/chsc.h |    0 
+ {include/asm-s390 => arch/s390/include/asm}/cio.h  |    0 
+ {include/asm-s390 => arch/s390/include/asm}/cmb.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/compat.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/cpcmd.h     |    0 
+ {include/asm-s390 => arch/s390/include/asm}/cpu.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/cputime.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/current.h   |    0 
+ {include/asm-s390 => arch/s390/include/asm}/dasd.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/debug.h     |    0 
+ .../asm-s390 => arch/s390/include/asm}/delay.h     |    0 
+ .../asm-s390 => arch/s390/include/asm}/device.h    |    0 
+ {include/asm-s390 => arch/s390/include/asm}/diag.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/div64.h     |    0 
+ {include/asm-s390 => arch/s390/include/asm}/dma.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/ebcdic.h    |    0 
+ {include/asm-s390 => arch/s390/include/asm}/elf.h  |    0 
+ .../s390/include/asm}/emergency-restart.h          |    0 
+ .../asm-s390 => arch/s390/include/asm}/errno.h     |    0 
+ {include/asm-s390 => arch/s390/include/asm}/etr.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/extmem.h    |    0 
+ {include/asm-s390 => arch/s390/include/asm}/fb.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/fcntl.h     |    0 
+ {include/asm-s390 => arch/s390/include/asm}/fcx.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/futex.h     |    0 
+ .../asm-s390 => arch/s390/include/asm}/hardirq.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/hugetlb.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/idals.h     |    0 
+ {include/asm-s390 => arch/s390/include/asm}/io.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/ioctl.h     |    0 
+ .../asm-s390 => arch/s390/include/asm}/ioctls.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/ipcbuf.h    |    0 
+ {include/asm-s390 => arch/s390/include/asm}/ipl.h  |    0 
+ {include/asm-s390 => arch/s390/include/asm}/irq.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/irq_regs.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/irqflags.h  |    0 
+ {include/asm-s390 => arch/s390/include/asm}/isc.h  |    0 
+ {include/asm-s390 => arch/s390/include/asm}/itcw.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/kdebug.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/kexec.h     |    0 
+ .../s390/include/asm}/kmap_types.h                 |    0 
+ .../asm-s390 => arch/s390/include/asm}/kprobes.h   |    0 
+ {include/asm-s390 => arch/s390/include/asm}/kvm.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/kvm_host.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/kvm_para.h  |    0 
+ .../s390/include/asm}/kvm_virtio.h                 |    0 
+ .../asm-s390 => arch/s390/include/asm}/linkage.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/local.h     |    0 
+ .../asm-s390 => arch/s390/include/asm}/lowcore.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/mathemu.h   |    0 
+ {include/asm-s390 => arch/s390/include/asm}/mman.h |    0 
+ {include/asm-s390 => arch/s390/include/asm}/mmu.h  |    0 
+ .../s390/include/asm}/mmu_context.h                |    0 
+ .../asm-s390 => arch/s390/include/asm}/module.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/monwriter.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/msgbuf.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/mutex.h     |    0 
+ {include/asm-s390 => arch/s390/include/asm}/page.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/param.h     |    0 
+ {include/asm-s390 => arch/s390/include/asm}/pci.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/percpu.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/pgalloc.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/pgtable.h   |    0 
+ {include/asm-s390 => arch/s390/include/asm}/poll.h |    0 
+ .../s390/include/asm}/posix_types.h                |    0 
+ .../asm-s390 => arch/s390/include/asm}/processor.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/ptrace.h    |    0 
+ {include/asm-s390 => arch/s390/include/asm}/qdio.h |    0 
+ {include/asm-s390 => arch/s390/include/asm}/qeth.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/reset.h     |    0 
+ .../asm-s390 => arch/s390/include/asm}/resource.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/rwsem.h     |    0 
+ .../asm-s390 => arch/s390/include/asm}/s390_ext.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/s390_rdev.h |    0 
+ .../s390/include/asm}/scatterlist.h                |    0 
+ .../asm-s390 => arch/s390/include/asm}/schid.h     |    0 
+ {include/asm-s390 => arch/s390/include/asm}/sclp.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/sections.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/segment.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/sembuf.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/setup.h     |    0 
+ .../s390/include/asm}/sfp-machine.h                |    0 
+ .../asm-s390 => arch/s390/include/asm}/sfp-util.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/shmbuf.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/shmparam.h  |    0 
+ .../s390/include/asm}/sigcontext.h                 |    0 
+ .../asm-s390 => arch/s390/include/asm}/siginfo.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/signal.h    |    0 
+ {include/asm-s390 => arch/s390/include/asm}/sigp.h |    0 
+ {include/asm-s390 => arch/s390/include/asm}/smp.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/socket.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/sockios.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/sparsemem.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/spinlock.h  |    0 
+ .../s390/include/asm}/spinlock_types.h             |    0 
+ {include/asm-s390 => arch/s390/include/asm}/stat.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/statfs.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/string.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/suspend.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/sysinfo.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/system.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/tape390.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/termbits.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/termios.h   |    0 
+ .../s390/include/asm}/thread_info.h                |    0 
+ .../asm-s390 => arch/s390/include/asm}/timer.h     |    0 
+ .../asm-s390 => arch/s390/include/asm}/timex.h     |    0 
+ {include/asm-s390 => arch/s390/include/asm}/tlb.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/tlbflush.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/todclk.h    |    0 
+ .../asm-s390 => arch/s390/include/asm}/topology.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/types.h     |    0 
+ .../asm-s390 => arch/s390/include/asm}/uaccess.h   |    0 
+ .../asm-s390 => arch/s390/include/asm}/ucontext.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/unaligned.h |    0 
+ .../asm-s390 => arch/s390/include/asm}/unistd.h    |    0 
+ {include/asm-s390 => arch/s390/include/asm}/user.h |    0 
+ {include/asm-s390 => arch/s390/include/asm}/vtoc.h |    0 
+ {include/asm-s390 => arch/s390/include/asm}/xor.h  |    0 
+ .../asm-s390 => arch/s390/include/asm}/zcrypt.h    |    0 
+ 135 files changed, 0 insertions(+), 0 deletions(-)
+ rename {include/asm-s390 => arch/s390/include/asm}/Kbuild (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/airq.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/appldata.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/atomic.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/auxvec.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/bitops.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/bug.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/bugs.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/byteorder.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/cache.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/cacheflush.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/ccwdev.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/ccwgroup.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/checksum.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/chpid.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/chsc.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/cio.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/cmb.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/compat.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/cpcmd.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/cpu.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/cputime.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/current.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/dasd.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/debug.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/delay.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/device.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/diag.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/div64.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/dma.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/ebcdic.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/elf.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/emergency-restart.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/errno.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/etr.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/extmem.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/fb.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/fcntl.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/fcx.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/futex.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/hardirq.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/hugetlb.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/idals.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/io.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/ioctl.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/ioctls.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/ipcbuf.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/ipl.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/irq.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/irq_regs.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/irqflags.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/isc.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/itcw.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/kdebug.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/kexec.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/kmap_types.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/kprobes.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/kvm.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/kvm_host.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/kvm_para.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/kvm_virtio.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/linkage.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/local.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/lowcore.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/mathemu.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/mman.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/mmu.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/mmu_context.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/module.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/monwriter.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/msgbuf.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/mutex.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/page.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/param.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/pci.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/percpu.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/pgalloc.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/pgtable.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/poll.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/posix_types.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/processor.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/ptrace.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/qdio.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/qeth.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/reset.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/resource.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/rwsem.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/s390_ext.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/s390_rdev.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/scatterlist.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/schid.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/sclp.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/sections.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/segment.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/sembuf.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/setup.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/sfp-machine.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/sfp-util.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/shmbuf.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/shmparam.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/sigcontext.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/siginfo.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/signal.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/sigp.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/smp.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/socket.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/sockios.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/sparsemem.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/spinlock.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/spinlock_types.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/stat.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/statfs.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/string.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/suspend.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/sysinfo.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/system.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/tape390.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/termbits.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/termios.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/thread_info.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/timer.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/timex.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/tlb.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/tlbflush.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/todclk.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/topology.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/types.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/uaccess.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/ucontext.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/unaligned.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/unistd.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/user.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/vtoc.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/xor.h (100%)
+ rename {include/asm-s390 => arch/s390/include/asm}/zcrypt.h (100%)
+
+
