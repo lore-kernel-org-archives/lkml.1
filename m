@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbYHCEeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbYHCEe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbYHCEeq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 00:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbYHCEeh
+	id S1755934AbYHCEe7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 00:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYHCEeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 3 Aug 2008 00:34:37 -0400
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:61789 "EHLO
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.123]:56645 "EHLO
 	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751241AbYHCEeg (ORCPT
+	with ESMTP id S1751297AbYHCEeg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 3 Aug 2008 00:34:36 -0400
-Date: Sun, 03 Aug 2008 00:33:08 -0400
-Message-ID: <87d4kq7m63.wl%ysato@users.sourceforge.jp>
+Date: Sun, 03 Aug 2008 00:34:06 -0400
+Message-ID: <87abfu7m4h.wl%ysato@users.sourceforge.jp>
 From: Yoshinori Sato <ysato@users.sourceforge.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] h8300 update timer handler - misc update
+Subject: [PATCH 0/3] h8300 update timer handler
 User-Agent: Wanderlust/2.15.6 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?ISO-8859-4?Q?Goj=F2?=) APEL/10.7 Emacs/22.2
  (x86_64-pc-linux-gnu) MULE/5.0 (SAKAKI)
@@ -25,335 +25,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Update selection
-- Update common timer handler
-- Add support functions
+h8300 new timer handlers.
 
-Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+1/3 - new timer handler
+2/3 - delete obsolute files
+3/3 - misc update
 
-diff --git a/arch/h8300/Kconfig.cpu b/arch/h8300/Kconfig.cpu
-index 582797d..b65dcfe 100644
---- a/arch/h8300/Kconfig.cpu
-+++ b/arch/h8300/Kconfig.cpu
-@@ -1,5 +1,7 @@
- menu "Processor type and features"
- 
-+source "kernel/time/Kconfig"
-+
- choice
- 	prompt "H8/300 platform"
- 	default H8300H_GENERIC
-@@ -11,6 +13,7 @@ config H8300H_GENERIC
- 
- config H8300H_AKI3068NET
- 	bool "AE-3068/69"
-+	select CONFIG_H83068
- 	help
- 	  AKI-H8/3068F / AKI-H8/3069F Flashmicom LAN Board Support
- 	  More Information. (Japanese Only)
-@@ -21,6 +24,7 @@ config H8300H_AKI3068NET
- 
- config H8300H_H8MAX
- 	bool "H8MAX"
-+	select CONFIG_H83068
- 	help
- 	  H8MAX Evaluation Board Support
- 	  More Information. (Japanese Only)
-@@ -28,6 +32,7 @@ config H8300H_H8MAX
- 
- config H8300H_SIM
- 	bool "H8/300H Simulator"
-+	select CONFIG_H83007
- 	help
- 	  GDB Simulator Support
- 	  More Information.
-@@ -40,6 +45,7 @@ config H8S_GENERIC
- 
- config H8S_EDOSK2674
- 	bool "EDOSK-2674"
-+	select CONFIG_H8S2768
- 	help
- 	  Renesas EDOSK-2674 Evaluation Board Support
- 	  More Information.
-@@ -55,44 +61,37 @@ config H8S_SIM
- 
- endchoice
- 
--if (H8300H_GENERIC || H8S_GENERIC)
--menu "Detail Selection"
--if (H8300H_GENERIC)
- choice
- 	prompt "CPU Selection"
- 
- config H83002
- 	bool "H8/3001,3002,3003"
-+	select CPU_H8300H
- 
- config H83007
- 	bool "H8/3006,3007"
-+	select CPU_H8300H
- 
- config H83048
- 	bool "H8/3044,3045,3046,3047,3048,3052"
-+	select CPU_H8300H
- 
- config H83068
- 	bool "H8/3065,3066,3067,3068,3069"
--endchoice
--endif
--
--if (H8S_GENERIC)
--choice
--	prompt "CPU Selection"
-+	select CPU_H8300H
- 
- config H8S2678
- 	bool "H8S/2670,2673,2674R,2675,2676"
-+	select CPU_H8S
-+
- endchoice
--endif
- 
- config CPU_CLOCK
- 	int "CPU Clock Frequency (/1KHz)"
- 	default "20000"
- 	help
- 	  CPU Clock Frequency divide to 1000
--endmenu
--endif
- 
--if (H8300H_GENERIC || H8S_GENERIC || H8300H_SIM || H8S_SIM || H8S_EDOSK2674)
- choice
- 	prompt "Kernel executes from"
- 	---help---
-@@ -107,75 +106,61 @@ config ROMKERNEL
- 	bool "ROM"
- 	help
- 	  The kernel will be resident in FLASH/ROM when running.
--
- endchoice
--endif
- 
--if (H8300H_AKI3068NET)
--config H83068
--	bool
--	default y
- 
--config CPU_CLOCK
--	int
--	default "20000"
--
--config RAMKERNEL
-+config CPU_H8300H
- 	bool
-+	depends on (H83002 || H83007 || H83048 || H83068)
- 	default y
--endif
- 
--if (H8300H_H8MAX)
--config H83068
-+config CPU_H8S
- 	bool
-+	depends on H8S2678
- 	default y
- 
--config CPU_CLOCK
--	int
--	default 25000
-+choice
-+	prompt "Timer"
-+config H8300_TIMER8
-+	bool "8bit timer (2ch cascade)"
-+	depends on (H83007 || H83068 || H8S2678)
- 
--config RAMKERNEL
--	bool
--	default y
--endif
-+config H8300_TIMER16
-+	bool "16bit timer"
-+	depends on (H83007 || H83068)
- 
--if (H8300H_SIM)
--config H83007
--	bool
--	default y
-+config H8300_ITU
-+	bool "ITU"
-+	depends on (H83002 || H83048)
- 
--config CPU_CLOCK
--	int
--	default "16000"
--endif
-+config H8300_TPU
-+	bool "TPU"
-+	depends on H8S2678
-+endchoice
- 
--if (H8S_EDOSK2674)
--config H8S2678
--	bool
--	default y
--config CPU_CLOCK
--	int
--	default 33000
-+if H8300_TIMER8
-+choice
-+	prompt "Timer Channel"
-+config H8300_TIMER8_CH0
-+	bool "Channel 0"
-+config H8300_TIMER8_CH2
-+	bool "Channel 2"
-+	depends on CPU_H8300H
-+endchoice
- endif
- 
--if (H8S_SIM)
--config H8S2678
--	bool
--	default y
--config CPU_CLOCK
--	int
--	default 33000
--endif
-+config H8300_TIMER16_CH
-+	int "16bit timer channel (0 - 2)"
-+	depends on H8300_TIMER16
-+	range 0 2
- 
--config CPU_H8300H
--	bool
--	depends on (H83002 || H83007 || H83048 || H83068)
--	default y
-+config H8300_ITU_CH
-+	int "ITU channel"
-+	depends on H8300_ITU
- 
--config CPU_H8S
--	bool
--	depends on H8S2678
--	default y
-+config H8300_TPU_CH
-+	int "TPU channel"
-+	depends on H8300_TPU
- 
- config PREEMPT
- 	bool "Preemptible Kernel"
-diff --git a/arch/h8300/kernel/Makefile b/arch/h8300/kernel/Makefile
-index 6c248c3..8d4d2a5 100644
---- a/arch/h8300/kernel/Makefile
-+++ b/arch/h8300/kernel/Makefile
-@@ -7,6 +7,6 @@ extra-y := vmlinux.lds
- obj-y := process.o traps.o ptrace.o irq.o \
- 	 sys_h8300.o time.o signal.o \
-          setup.o gpio.o init_task.o syscalls.o \
--	 entry.o
-+	 entry.o timer/
- 
- obj-$(CONFIG_MODULES) += module.o h8300_ksyms.o 
-diff --git a/arch/h8300/kernel/time.c b/arch/h8300/kernel/time.c
-index d0d2f26..14e06f9 100644
---- a/arch/h8300/kernel/time.c
-+++ b/arch/h8300/kernel/time.c
-@@ -27,27 +27,21 @@
- #include <linux/profile.h>
- 
- #include <asm/io.h>
--#include <asm/target_time.h>
-+#include <asm/timer.h>
- 
- #define	TICK_SIZE (tick_nsec / 1000)
- 
--/*
-- * timer_interrupt() needs to keep up the real-time clock,
-- * as well as call the "do_timer()" routine every clocktick
-- */
--static void timer_interrupt(int irq, void *dummy, struct pt_regs * regs)
-+void h8300_timer_tick(void)
- {
--	/* may need to kick the hardware timer */
--	platform_timer_eoi();
--
-+	if (current->pid)
-+		profile_tick(CPU_PROFILING);
-+	write_seqlock(&xtime_lock);
- 	do_timer(1);
--#ifndef CONFIG_SMP
--	update_process_times(user_mode(regs));
--#endif
--	profile_tick(CPU_PROFILING);
-+	write_sequnlock(&xtime_lock);
-+	update_process_times(user_mode(get_irq_regs()));
- }
- 
--void time_init(void)
-+void __init time_init(void)
- {
- 	unsigned int year, mon, day, hour, min, sec;
- 
-@@ -57,12 +51,13 @@
- 	year = 1980;
- 	mon = day = 1;
- 	hour = min = sec = 0;
--	platform_gettod (&year, &mon, &day, &hour, &min, &sec);
--
-+#ifdef CONFIG_H8300_GETTOD 
-+	h8300_gettod (&year, &mon, &day, &hour, &min, &sec);
-+#endif
- 	if ((year += 1900) < 1970)
- 		year += 100;
- 	xtime.tv_sec = mktime(year, mon, day, hour, min, sec);
- 	xtime.tv_nsec = 0;
- 
--	platform_timer_setup(timer_interrupt);
-+	h8300_timer_setup();
- }
-diff --git a/include/asm-h8300/io.h b/include/asm-h8300/io.h
-index 26dc6cc..34d1d3b 100644
---- a/include/asm-h8300/io.h
-+++ b/include/asm-h8300/io.h
-@@ -295,6 +295,40 @@ static __inline__ void ctrl_outl(unsigned long b, unsigned long addr)
-         *(volatile unsigned long*)addr = b;
- }
- 
-+static __inline__ void ctrl_bclr(int b, unsigned long addr)
-+{
-+	if (__builtin_constant_p(b))
-+		switch (b) {
-+		case 0: __asm__("bclr #0,@%0"::"r"(addr)); break;
-+		case 1: __asm__("bclr #1,@%0"::"r"(addr)); break;
-+		case 2: __asm__("bclr #2,@%0"::"r"(addr)); break;
-+		case 3: __asm__("bclr #3,@%0"::"r"(addr)); break;
-+		case 4: __asm__("bclr #4,@%0"::"r"(addr)); break;
-+		case 5: __asm__("bclr #5,@%0"::"r"(addr)); break;
-+		case 6: __asm__("bclr #6,@%0"::"r"(addr)); break;
-+		case 7: __asm__("bclr #7,@%0"::"r"(addr)); break;
-+		}
-+	else
-+		__asm__("bclr %w0,@%1"::"r"(b), "r"(addr));
-+}
-+
-+static __inline__ void ctrl_bset(int b, unsigned long addr)
-+{
-+	if (__builtin_constant_p(b))
-+		switch (b) {
-+		case 0: __asm__("bset #0,@%0"::"r"(addr)); break;
-+		case 1: __asm__("bset #1,@%0"::"r"(addr)); break;
-+		case 2: __asm__("bset #2,@%0"::"r"(addr)); break;
-+		case 3: __asm__("bset #3,@%0"::"r"(addr)); break;
-+		case 4: __asm__("bset #4,@%0"::"r"(addr)); break;
-+		case 5: __asm__("bset #5,@%0"::"r"(addr)); break;
-+		case 6: __asm__("bset #6,@%0"::"r"(addr)); break;
-+		case 7: __asm__("bset #7,@%0"::"r"(addr)); break;
-+		}
-+	else
-+		__asm__("bset %w0,@%1"::"r"(b), "r"(addr));
-+}
-+
- /* Pages to physical address... */
- #define page_to_phys(page)      ((page - mem_map) << PAGE_SHIFT)
- #define page_to_bus(page)       ((page - mem_map) << PAGE_SHIFT)
+ arch/h8300/Kconfig.cpu                         |  115 ++++++++++-------------
+ arch/h8300/kernel/Makefile                     |    2 +-
+ arch/h8300/kernel/time.c                       |    5 +-
+ arch/h8300/kernel/timer/Makefile               |    6 ++
+ arch/h8300/kernel/timer/itu.c                  |   83 +++++++++++++++++
+ arch/h8300/kernel/timer/timer16.c              |   78 ++++++++++++++++
+ arch/h8300/kernel/timer/timer8.c               |  103 +++++++++++++++++++++
+ arch/h8300/kernel/timer/tpu.c                  |  102 +++++++++++++++++++++
+ arch/h8300/platform/h8300h/aki3068net/Makefile |    1 -
+ arch/h8300/platform/h8300h/aki3068net/timer.c  |   51 -----------
+ arch/h8300/platform/h8300h/generic/Makefile    |    1 -
+ arch/h8300/platform/h8300h/generic/timer.c     |   95 -------------------
+ arch/h8300/platform/h8300h/h8max/Makefile      |    1 -
+ arch/h8300/platform/h8300h/h8max/timer.c       |   52 -----------
+ arch/h8300/platform/h8s/edosk2674/Makefile     |    1 -
+ arch/h8300/platform/h8s/edosk2674/timer.c      |   54 -----------
+ arch/h8300/platform/h8s/generic/Makefile       |    1 -
+ arch/h8300/platform/h8s/generic/timer.c        |   53 -----------
+ include/asm-h8300/io.h                         |   34 +++++++
+ include/asm-h8300/timer.h                      |   25 +++++
+ 20 files changed, 486 insertions(+), 377 deletions(-)
+ create mode 100644 arch/h8300/kernel/timer/Makefile
+ create mode 100644 arch/h8300/kernel/timer/itu.c
+ create mode 100644 arch/h8300/kernel/timer/timer16.c
+ create mode 100644 arch/h8300/kernel/timer/timer8.c
+ create mode 100644 arch/h8300/kernel/timer/tpu.c
+ delete mode 100644 arch/h8300/platform/h8300h/aki3068net/timer.c
+ delete mode 100644 arch/h8300/platform/h8300h/generic/timer.c
+ delete mode 100644 arch/h8300/platform/h8300h/h8max/timer.c
+ delete mode 100644 arch/h8300/platform/h8s/edosk2674/timer.c
+ delete mode 100644 arch/h8300/platform/h8s/generic/timer.c
+ create mode 100644 include/asm-h8300/timer.h
 
 -- 
 Yoshinori Sato
