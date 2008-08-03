@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757790AbYHCNXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757156AbYHCNbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757790AbYHCNXn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 09:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757471AbYHCNX3
+	id S1757156AbYHCNbL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 09:31:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbYHCNbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 09:23:29 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51108 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757434AbYHCNX1 (ORCPT
+	Sun, 3 Aug 2008 09:31:00 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:29076 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754794AbYHCNbA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 09:23:27 -0400
-Date: Sun, 3 Aug 2008 14:05:36 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Elias Oltmanns <eo@nebensachen.de>, Jeff Garzik <jeff@garzik.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Pavel Machek <pavel@ucw.cz>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] libata: Implement disk shock protection support
-Message-ID: <20080803140536.062c2ef1@lxorguk.ukuu.org.uk>
-In-Reply-To: <489523DC.2090903@gmail.com>
-References: <87prp1kvyy.fsf@denkblock.local>
-	<20080726062142.29070.10413.stgit@denkblock.local>
-	<4892B8FE.1070400@gmail.com>
-	<20080801233459.11e9b254@lxorguk.ukuu.org.uk>
-	<489523DC.2090903@gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Aug 2008 09:31:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=i88yRCozYaFcRR0E8c6sw2Sq6TtofQTwu/HtKt+U5uAekJY8xkwOz7vMPMLBq7W2WN
+         VyAKCUr/YMBYTae7aoEX2xhKvgrfuKfUI+LjCKU8UB/PbPL5SQ5vir5mz3+z9BKnet+7
+         VIkBsZK5q7BM+mxst2lNkcrOjAdtcDhs5fOy4=
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [PATCH] gpiolib: dump correct irq trigger type
+Date: Sun,  3 Aug 2008 17:30:06 +0400
+Message-Id: <1217770206-6193-1-git-send-email-dbaryshkov@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Was that something intentional or was it a happy accident?  There can be
-> bus ownership problem on PATA and on SATA this is much more state logic
+Use desc->action->flags for dumping irq flags, it is populated with
+correct trigger type.
 
-IDLE IMMEDIATE is part of the "historic" specification rather than modern
-ATA standards. Older drives support it happily newer ones tended to get
-quite cross.
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/gpio/gpiolib.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-> on both sides of the cable and I think things like that would be more
-> difficult to work accidentally.
-
-We'd have to query the drive vendors to see what they expected.
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index beaf6b3..a35d19d 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -2,6 +2,7 @@
+ #include <linux/module.h>
+ #include <linux/irq.h>
+ #include <linux/spinlock.h>
++#include <linux/interrupt.h>
+ 
+ #include <asm/gpio.h>
+ 
+@@ -570,7 +571,7 @@ static void gpiolib_dbg_show(struct seq_file *s, struct gpio_chip *chip)
+ 			if (irq >= 0 && desc->action) {
+ 				char *trigger;
+ 
+-				switch (desc->status & IRQ_TYPE_SENSE_MASK) {
++				switch (desc->action->flags & IRQ_TYPE_SENSE_MASK) {
+ 				case IRQ_TYPE_NONE:
+ 					trigger = "(default)";
+ 					break;
+-- 
+1.5.6.3
 
