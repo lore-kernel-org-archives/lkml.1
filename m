@@ -1,69 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYHCLyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbYHCL5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061AbYHCLyS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 07:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYHCLyI
+	id S1756396AbYHCL5Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 07:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbYHCL47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 07:54:08 -0400
-Received: from khc.piap.pl ([195.187.100.11]:56036 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753141AbYHCLyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 07:54:07 -0400
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, tglx <tglx@linutronix.de>
-Subject: Re: [PATCH 2/5] x86: Coding style fixes to arch/x86/kernel/bios_uv.c
-References: <20080802212406.047e8ae6@paolo-desktop> <48952DB3.20101@zytor.com>
-	<48958DC2.7070506@s5r6.in-berlin.de>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 03 Aug 2008 13:54:03 +0200
-In-Reply-To: <48958DC2.7070506@s5r6.in-berlin.de> (Stefan Richter's message of "Sun\, 03 Aug 2008 12\:51\:46 +0200")
-Message-ID: <m3iquigvqc.fsf@maximus.localdomain>
+	Sun, 3 Aug 2008 07:56:59 -0400
+Received: from elrond2.infotech.no ([82.134.31.41]:52439 "EHLO
+	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753772AbYHCL46 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 07:56:58 -0400
+Message-ID: <48959CFA.6080500@torque.net>
+Date: Sun, 03 Aug 2008 13:56:42 +0200
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Matthew Frost <artusemrys@yahoo.com>
+CC: Matthew Frost <artusemrys@sbcglobal.net>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
+       linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [usb-storage] BUG: SCSI: usb storage SDHC card doesn't work in
+ 2.6.27-rc1
+References: <656254.26203.qm@web83208.mail.mud.yahoo.com>
+In-Reply-To: <656254.26203.qm@web83208.mail.mud.yahoo.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
-
->>>      const char *str;
->>>      switch (status) {
->>> -    case  0: str = "Call completed without error"; break;
->>> -    case -1: str = "Not implemented"; break;
->>> -    case -2: str = "Invalid argument"; break;
->>> -    case -3: str = "Call completed with error"; break;
->>> -    default: str = "Unknown BIOS status code"; break;
->>> +    case  0:
->>> +        str = "Call completed without error";
->>> +        break;
->>> +    case -1:
->>> +        str = "Not implemented";
->>> +        break;
->>> +    case -2:
->>> +        str = "Invalid argument";
->>> +        break;
->>> +    case -3:
->>> +        str = "Call completed with error";
->>> +        break;
->>> +    default:
->>> +        str = "Unknown BIOS status code";
->>> +        break;
->>>      }
->>>      return str;
->>>  }
+Matthew Frost wrote:
+> --- Matthew Frost <artusemrys@sbcglobal.net> wrote:
+> 
+>> Alan Stern wrote:
+>>>> The patches to fix this that I have tried do not apply
+>>>> cleanly to lk 2.6.26 (and break during compile if forced:
+>>>> "us->fflags" is not defined).
+>>>>
+>>>> Is there a lk 2.6.26 patch available?
+>>> Sorry about that; my patches are against the USB development tree and
+>>> I tend to forget to redo them against the vanilla kernel.  Below is a
+>>> patch against 2.6.26.  Or you can just edit the original patch and
+>>> change the occurrences of "fflags" to "flags".
+>>>
+>>> Alan Stern
+>>>
+>>>
+>>> Index: 2.6.26/drivers/usb/storage/transport.c
+>>> ===================================================================
+>>> --- 2.6.26.orig/drivers/usb/storage/transport.c
+>>> +++ 2.6.26/drivers/usb/storage/transport.c
+>>> @@ -1034,8 +1034,21 @@ int usb_stor_Bulk_transport(struct scsi_
+>>>  
+>>>  	/* try to compute the actual residue, based on how much data
+>>>  	 * was really transferred and what the device tells us */
+>>> -	if (residue) {
+>>> -		if (!(us->flags & US_FL_IGNORE_RESIDUE)) {
+>>> +	if (residue && !(us->flags & US_FL_IGNORE_RESIDUE)) {
+>>> +
+>>> +		/* Heuristically detect devices that generate bogus residues
+>>> +		 * by seeing what happens with INQUIRY and READ CAPACITY
+>>> +		 * commands.
+>>> +		 */
+>>> +		if (bcs->Status == US_BULK_STAT_OK &&
+>>> +				scsi_get_resid(srb) == 0 &&
+>>> +					((srb->cmnd[0] == INQUIRY &&
+>>> +						transfer_length == 36) ||
+>>> +					(srb->cmnd[0] == READ_CAPACITY &&
+>>> +						transfer_length == 8))) {
+>>> +			us->flags |= US_FL_IGNORE_RESIDUE;
+>>> +
+>>> +		} else {
+>>>  			residue = min(residue, transfer_length);
+>>>  			scsi_set_resid(srb, max(scsi_get_resid(srb),
+>>>  			                                       (int) residue));
+>>>
+>>>
+>> Thanks!  I've been trying to fix it manually, and it wouldn't work.  Trying
+>> this version now.  Let's see if this fixes my problem.
 >>
->> This should be an array in the first place...
->
-> Besides, by following CodingStyle to the letter, it arguably breaks
-> rather than fixes coding style.  The former code was easy enough to
-> read.
+>> Matt Frost
 
-Right. The latter is much worse. That's why nobody can trust
-CodingStyle and/or checkpatch automatically. It's only sane mode
-of operation is as a help tool for authors and maintainers, to
-quickly locate _potential_ problems.
--- 
-Krzysztof Halasa
+The above patch made my USB key:
+   Alcor Micro Corp. Transcend JetFlash 110 USB 2.0 Flash Drive (2GB)
+usable in a pretty clean lk 2.6.26 .
+
+Thanks
+Doug Gilbert
+
+
+
