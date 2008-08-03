@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbYHCDCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbYHCDCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755256AbYHCDCK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Aug 2008 23:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYHCDAZ
+	id S1757338AbYHCDCm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Aug 2008 23:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYHCDAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Aug 2008 23:00:25 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:17221 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752601AbYHCDAV (ORCPT
+	Sat, 2 Aug 2008 23:00:30 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:10980 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752811AbYHCDA0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Aug 2008 23:00:21 -0400
+	Sat, 2 Aug 2008 23:00:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=mmDagxT5NiK1wknBxwHK6nqzMpf+fBkpCkXZPpZ+R+kEPOm+Hs+hyiAGgWXyryLIpv
-         TLHFsSyHvYnu6ACs2uQFiUfYCDMnOPqrsBAK/wqz7swNmecJWlVC/noBBOxGmYgKN+8l
-         Ol6ImAxCrLy5ccFH/osDglDIjbdDMa62YzCk0=
+        b=Va8GGo5/RzpjoeorKvR9W1UejWfvNjliYYdCLUYDgQns8MYIoJLojnx9s7A66/4VdJ
+         2XvC5LiPH3ROr9+w3Wnt23XufphOD48v6rZbCO589tdecuzXFjnBie7W2u+FAGKsZ3sC
+         3bdLfrjRBxnrsUs676Br9l3Kf7oGnd5hX4C34=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,228 +23,339 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 05/25] x86: alloc dyn_array all alltogether
-Date: Sat,  2 Aug 2008 19:59:05 -0700
-Message-Id: <1217732365-16595-6-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 07/25] introduce nr_irqs
+Date: Sat,  2 Aug 2008 19:59:07 -0700
+Message-Id: <1217732365-16595-8-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217732365-16595-5-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1217732365-16595-7-git-send-email-yhlu.kernel@gmail.com>
 References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-2-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-3-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-4-git-send-email-yhlu.kernel@gmail.com>
  <1217732365-16595-5-git-send-email-yhlu.kernel@gmail.com>
+ <1217732365-16595-6-git-send-email-yhlu.kernel@gmail.com>
+ <1217732365-16595-7-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so could spare some memory with small alignment in bootmem
-
-also tighten the alignment checking..., and make print out less debug info
+and at this point it is equal NR_IRQS
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 ---
- arch/x86/kernel/setup_percpu.c |   16 +++++++---
- include/linux/init.h           |    2 +-
- init/main.c                    |   65 ++++++++++++++++++++++++++++++---------
- 3 files changed, 62 insertions(+), 21 deletions(-)
+ include/linux/irq.h    |    2 ++
+ kernel/irq/autoprobe.c |   10 +++++-----
+ kernel/irq/chip.c      |   20 ++++++++++----------
+ kernel/irq/handle.c    |    3 ++-
+ kernel/irq/manage.c    |   16 ++++++++--------
+ kernel/irq/proc.c      |    2 +-
+ kernel/irq/resend.c    |    4 ++--
+ kernel/irq/spurious.c  |    4 ++--
+ 8 files changed, 32 insertions(+), 29 deletions(-)
 
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 13ba7a8..4702c12 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -140,26 +140,31 @@ static void __init setup_cpu_pda_map(void)
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index 1d73d1a..bd69d90 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -24,6 +24,8 @@
+ #include <asm/ptrace.h>
+ #include <asm/irq_regs.h>
+ 
++extern int nr_irqs;
++
+ struct irq_desc;
+ typedef	void (*irq_flow_handler_t)(unsigned int irq,
+ 					    struct irq_desc *desc);
+diff --git a/kernel/irq/autoprobe.c b/kernel/irq/autoprobe.c
+index 533068c..c689e98 100644
+--- a/kernel/irq/autoprobe.c
++++ b/kernel/irq/autoprobe.c
+@@ -38,7 +38,7 @@ unsigned long probe_irq_on(void)
+ 	 * something may have generated an irq long ago and we want to
+ 	 * flush such a longstanding irq before considering it as spurious.
+ 	 */
+-	for (i = NR_IRQS-1; i > 0; i--) {
++	for (i = nr_irqs-1; i > 0; i--) {
+ 		desc = irq_desc + i;
+ 
+ 		spin_lock_irq(&desc->lock);
+@@ -68,7 +68,7 @@ unsigned long probe_irq_on(void)
+ 	 * (we must startup again here because if a longstanding irq
+ 	 * happened in the previous stage, it may have masked itself)
+ 	 */
+-	for (i = NR_IRQS-1; i > 0; i--) {
++	for (i = nr_irqs-1; i > 0; i--) {
+ 		desc = irq_desc + i;
+ 
+ 		spin_lock_irq(&desc->lock);
+@@ -89,7 +89,7 @@ unsigned long probe_irq_on(void)
+ 	 * Now filter out any obviously spurious interrupts
+ 	 */
+ 	mask = 0;
+-	for (i = 0; i < NR_IRQS; i++) {
++	for (i = 0; i < nr_irqs; i++) {
+ 		unsigned int status;
+ 
+ 		desc = irq_desc + i;
+@@ -130,7 +130,7 @@ unsigned int probe_irq_mask(unsigned long val)
+ 	int i;
+ 
+ 	mask = 0;
+-	for (i = 0; i < NR_IRQS; i++) {
++	for (i = 0; i < nr_irqs; i++) {
+ 		struct irq_desc *desc = irq_desc + i;
+ 		unsigned int status;
+ 
+@@ -173,7 +173,7 @@ int probe_irq_off(unsigned long val)
+ {
+ 	int i, irq_found = 0, nr_irqs = 0;
+ 
+-	for (i = 0; i < NR_IRQS; i++) {
++	for (i = 0; i < nr_irqs; i++) {
+ 		struct irq_desc *desc = irq_desc + i;
+ 		unsigned int status;
+ 
+diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+index 3cd441e..20a9307 100644
+--- a/kernel/irq/chip.c
++++ b/kernel/irq/chip.c
+@@ -27,7 +27,7 @@ void dynamic_irq_init(unsigned int irq)
+ 	struct irq_desc *desc;
+ 	unsigned long flags;
+ 
+-	if (irq >= NR_IRQS) {
++	if (irq >= nr_irqs) {
+ 		WARN(1, KERN_ERR "Trying to initialize invalid IRQ%d\n", irq);
+ 		return;
+ 	}
+@@ -60,7 +60,7 @@ void dynamic_irq_cleanup(unsigned int irq)
+ 	struct irq_desc *desc;
+ 	unsigned long flags;
+ 
+-	if (irq >= NR_IRQS) {
++	if (irq >= nr_irqs) {
+ 		WARN(1, KERN_ERR "Trying to cleanup invalid IRQ%d\n", irq);
+ 		return;
+ 	}
+@@ -92,7 +92,7 @@ int set_irq_chip(unsigned int irq, struct irq_chip *chip)
+ 	struct irq_desc *desc;
+ 	unsigned long flags;
+ 
+-	if (irq >= NR_IRQS) {
++	if (irq >= nr_irqs) {
+ 		WARN(1, KERN_ERR "Trying to install chip for IRQ%d\n", irq);
+ 		return -EINVAL;
+ 	}
+@@ -121,7 +121,7 @@ int set_irq_type(unsigned int irq, unsigned int type)
+ 	unsigned long flags;
+ 	int ret = -ENXIO;
+ 
+-	if (irq >= NR_IRQS) {
++	if (irq >= nr_irqs) {
+ 		printk(KERN_ERR "Trying to set irq type for IRQ%d\n", irq);
+ 		return -ENODEV;
+ 	}
+@@ -148,7 +148,7 @@ int set_irq_data(unsigned int irq, void *data)
+ 	struct irq_desc *desc;
+ 	unsigned long flags;
+ 
+-	if (irq >= NR_IRQS) {
++	if (irq >= nr_irqs) {
+ 		printk(KERN_ERR
+ 		       "Trying to install controller data for IRQ%d\n", irq);
+ 		return -EINVAL;
+@@ -174,7 +174,7 @@ int set_irq_msi(unsigned int irq, struct msi_desc *entry)
+ 	struct irq_desc *desc;
+ 	unsigned long flags;
+ 
+-	if (irq >= NR_IRQS) {
++	if (irq >= nr_irqs) {
+ 		printk(KERN_ERR
+ 		       "Trying to install msi data for IRQ%d\n", irq);
+ 		return -EINVAL;
+@@ -200,7 +200,7 @@ int set_irq_chip_data(unsigned int irq, void *data)
+ 	struct irq_desc *desc = irq_desc + irq;
+ 	unsigned long flags;
+ 
+-	if (irq >= NR_IRQS || !desc->chip) {
++	if (irq >= nr_irqs || !desc->chip) {
+ 		printk(KERN_ERR "BUG: bad set_irq_chip_data(IRQ#%d)\n", irq);
+ 		return -EINVAL;
+ 	}
+@@ -544,7 +544,7 @@ __set_irq_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
+ 	struct irq_desc *desc;
+ 	unsigned long flags;
+ 
+-	if (irq >= NR_IRQS) {
++	if (irq >= nr_irqs) {
+ 		printk(KERN_ERR
+ 		       "Trying to install type control for IRQ%d\n", irq);
+ 		return;
+@@ -609,7 +609,7 @@ void __init set_irq_noprobe(unsigned int irq)
+ 	struct irq_desc *desc;
+ 	unsigned long flags;
+ 
+-	if (irq >= NR_IRQS) {
++	if (irq >= nr_irqs) {
+ 		printk(KERN_ERR "Trying to mark IRQ%d non-probeable\n", irq);
+ 
+ 		return;
+@@ -627,7 +627,7 @@ void __init set_irq_probe(unsigned int irq)
+ 	struct irq_desc *desc;
+ 	unsigned long flags;
+ 
+-	if (irq >= NR_IRQS) {
++	if (irq >= nr_irqs) {
+ 		printk(KERN_ERR "Trying to mark IRQ%d probeable\n", irq);
+ 
+ 		return;
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index f4c8a03..e9d022c 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -47,6 +47,7 @@ handle_bad_irq(unsigned int irq, struct irq_desc *desc)
+  *
+  * Controller mappings for all interrupt sources:
   */
- void __init setup_per_cpu_areas(void)
++int nr_irqs = NR_IRQS;
+ struct irq_desc irq_desc[NR_IRQS] __cacheline_aligned_in_smp = {
+ 	[0 ... NR_IRQS-1] = {
+ 		.status = IRQ_DISABLED,
+@@ -265,7 +266,7 @@ void early_init_irq_lock_class(void)
  {
--	ssize_t size, old_size;
-+	ssize_t size, old_size, da_size;
- 	char *ptr;
- 	int cpu;
-+	unsigned long align = 1;
+ 	int i;
  
- 	/* Setup cpu_pda map */
- 	setup_cpu_pda_map();
- 
- 	/* Copy section for each CPU (we discard the original) */
- 	old_size = PERCPU_ENOUGH_ROOM;
--	size = old_size + per_cpu_dyn_array_size();
-+	da_size = per_cpu_dyn_array_size(&align);
-+	align = max_t(unsigned long, PAGE_SIZE, align);
-+	size = roundup(old_size + da_size, align);
- 	printk(KERN_INFO "PERCPU: Allocating %zd bytes of per cpu data\n",
- 			  size);
- 
- 	for_each_possible_cpu(cpu) {
- #ifndef CONFIG_NEED_MULTIPLE_NODES
--		ptr = alloc_bootmem_pages(size);
-+		ptr = __alloc_bootmem_nopanic(size, align,
-+				 __pa(MAX_DMA_ADDRESS));
- #else
- 		int node = early_cpu_to_node(cpu);
- 		if (!node_online(node) || !NODE_DATA(node)) {
--			ptr = alloc_bootmem_pages(size);
-+			ptr = __alloc_bootmem_nopanic(size, align,
-+					 __pa(MAX_DMA_ADDRESS));
- 			printk(KERN_INFO
- 			       "cpu %d has no node %d or node-local memory\n",
- 				cpu, node);
-@@ -168,7 +173,8 @@ void __init setup_per_cpu_areas(void)
- 					 cpu, __pa(ptr));
- 		}
- 		else {
--			ptr = alloc_bootmem_pages_node(NODE_DATA(node), size);
-+			ptr = __alloc_bootmem_node(NODE_DATA(node), size, align,
-+							__pa(MAX_DMA_ADDRESS));
- 			if (ptr)
- 				printk(KERN_DEBUG "per cpu data for cpu%d on node%d at %016lx\n",
- 					 cpu, node, __pa(ptr));
-diff --git a/include/linux/init.h b/include/linux/init.h
-index 9fbe61b..2e42af8 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -291,7 +291,7 @@ extern struct dyn_array *__per_cpu_dyn_array_start[], *__per_cpu_dyn_array_end[]
- 	DEFINE_PER_CPU_DYN_ARRAY_ADDR(nameX, nameX, nrX, alignX, init_workX)
- 
- extern void pre_alloc_dyn_array(void);
--extern unsigned long per_cpu_dyn_array_size(void);
-+extern unsigned long per_cpu_dyn_array_size(unsigned long *align);
- extern void per_cpu_alloc_dyn_array(int cpu, char *ptr);
- #endif /* __ASSEMBLY__ */
- 
-diff --git a/init/main.c b/init/main.c
-index a600562..3454b4a 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -397,10 +397,14 @@ static void __init setup_per_cpu_areas(void)
- 	unsigned long size, i, old_size;
- 	char *ptr;
- 	unsigned long nr_possible_cpus = num_possible_cpus();
-+	unsigned long align = 1;
-+	unsigned da_size;
- 
- 	/* Copy section for each CPU (we discard the original) */
- 	old_size = PERCPU_ENOUGH_ROOM;
--	size = ALIGN(old_size + per_cpu_dyn_array_size(), PAGE_SIZE);
-+	da_size = per_cpu_dyn_array_size(&align);
-+	align = max_t(unsigned long, PAGE_SIZE, align);
-+	size = ALIGN(old_size + da_size, align);
- 	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
- 
- 	for_each_possible_cpu(i) {
-@@ -544,45 +548,78 @@ void __init __weak thread_info_cache_init(void)
- void pre_alloc_dyn_array(void)
- {
- #ifdef CONFIG_HAVE_DYN_ARRAY
--	unsigned long size, phys = 0;
-+	unsigned long total_size = 0, size, phys;
-+	unsigned long max_align = 1;
- 	struct dyn_array **daa;
-+	char *ptr;
- 
-+	/* get the total size at first */
- 	for (daa = __dyn_array_start ; daa < __dyn_array_end; daa++) {
- 		struct dyn_array *da = *daa;
- 
- 		size = da->size * (*da->nr);
--		print_fn_descriptor_symbol("dyna_array %s ", da->name);
--		printk(KERN_CONT "size:%#lx nr:%d align:%#lx",
-+		print_fn_descriptor_symbol("dyn_array %s ", da->name);
-+		printk(KERN_CONT "size:%#lx nr:%d align:%#lx\n",
- 			da->size, *da->nr, da->align);
--		*da->name = __alloc_bootmem_nopanic(size, da->align, phys);
--		phys = virt_to_phys(*da->name);
-+		total_size += roundup(size, da->align);
-+		if (da->align > max_align)
-+			max_align = da->align;
-+	}
-+	if (total_size)
-+		printk(KERN_DEBUG "dyn_array total_size: %#lx\n",
-+			 total_size);
-+	else
-+		return;
-+
-+	/* allocate them all together */
-+	max_align = max_t(unsigned long, max_align, PAGE_SIZE);
-+	ptr = __alloc_bootmem_nopanic(total_size, max_align, 0);
-+	if (!ptr)
-+		panic("Can not alloc dyn_alloc\n");
-+
-+	phys = virt_to_phys(ptr);
-+	for (daa = __dyn_array_start ; daa < __dyn_array_end; daa++) {
-+		struct dyn_array *da = *daa;
-+
-+		size = da->size * (*da->nr);
-+		print_fn_descriptor_symbol("dyn_array %s ", da->name);
-+
-+		phys = roundup(phys, da->align);
-+		*da->name = phys_to_virt(phys);
- 		printk(KERN_CONT " ==> [%#lx - %#lx]\n", phys, phys + size);
- 
-+		phys += size;
-+
- 		if (da->init_work)
- 			da->init_work(da);
- 	}
- #endif
+-	for (i = 0; i < NR_IRQS; i++)
++	for (i = 0; i < nr_irqs; i++)
+ 		lockdep_set_class(&irq_desc[i].lock, &irq_desc_lock_class);
  }
  
--unsigned long per_cpu_dyn_array_size(void)
-+unsigned long per_cpu_dyn_array_size(unsigned long *align)
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 22d10d3..3bd67c8 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -34,7 +34,7 @@ void synchronize_irq(unsigned int irq)
+ 	struct irq_desc *desc = irq_desc + irq;
+ 	unsigned int status;
+ 
+-	if (irq >= NR_IRQS)
++	if (irq >= nr_irqs)
+ 		return;
+ 
+ 	do {
+@@ -143,7 +143,7 @@ void disable_irq_nosync(unsigned int irq)
+ 	struct irq_desc *desc = irq_desc + irq;
+ 	unsigned long flags;
+ 
+-	if (irq >= NR_IRQS)
++	if (irq >= nr_irqs)
+ 		return;
+ 
+ 	spin_lock_irqsave(&desc->lock, flags);
+@@ -171,7 +171,7 @@ void disable_irq(unsigned int irq)
  {
- 	unsigned long total_size = 0;
- #ifdef CONFIG_HAVE_DYN_ARRAY
- 	unsigned long size;
- 	struct dyn_array **daa;
-+	unsigned max_align = 1;
+ 	struct irq_desc *desc = irq_desc + irq;
  
- 	for (daa = __per_cpu_dyn_array_start ; daa < __per_cpu_dyn_array_end; daa++) {
- 		struct dyn_array *da = *daa;
+-	if (irq >= NR_IRQS)
++	if (irq >= nr_irqs)
+ 		return;
  
- 		size = da->size * (*da->nr);
--		print_fn_descriptor_symbol("per_cpu_dyna_array %s ", da->name);
-+		print_fn_descriptor_symbol("per_cpu_dyn_array %s ", da->name);
- 		printk(KERN_CONT "size:%#lx nr:%d align:%#lx\n",
- 			da->size, *da->nr, da->align);
- 		total_size += roundup(size, da->align);
-+		if (da->align > max_align)
-+			max_align = da->align;
- 	}
--	if (total_size)
--		printk(KERN_DEBUG "per_cpu_dyna_array total_size: %#lx\n",
-+	if (total_size) {
-+		printk(KERN_DEBUG "per_cpu_dyn_array total_size: %#lx\n",
- 			 total_size);
-+		*align = max_align;
-+	}
- #endif
- 	return total_size;
+ 	disable_irq_nosync(irq);
+@@ -214,7 +214,7 @@ void enable_irq(unsigned int irq)
+ 	struct irq_desc *desc = irq_desc + irq;
+ 	unsigned long flags;
+ 
+-	if (irq >= NR_IRQS)
++	if (irq >= nr_irqs)
+ 		return;
+ 
+ 	spin_lock_irqsave(&desc->lock, flags);
+@@ -290,7 +290,7 @@ int can_request_irq(unsigned int irq, unsigned long irqflags)
+ {
+ 	struct irqaction *action;
+ 
+-	if (irq >= NR_IRQS || irq_desc[irq].status & IRQ_NOREQUEST)
++	if (irq >= nr_irqs || irq_desc[irq].status & IRQ_NOREQUEST)
+ 		return 0;
+ 
+ 	action = irq_desc[irq].action;
+@@ -349,7 +349,7 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+ 	int shared = 0;
+ 	int ret;
+ 
+-	if (irq >= NR_IRQS)
++	if (irq >= nr_irqs)
+ 		return -EINVAL;
+ 
+ 	if (desc->chip == &no_irq_chip)
+@@ -503,7 +503,7 @@ void free_irq(unsigned int irq, void *dev_id)
+ 	unsigned long flags;
+ 
+ 	WARN_ON(in_interrupt());
+-	if (irq >= NR_IRQS)
++	if (irq >= nr_irqs)
+ 		return;
+ 
+ 	desc = irq_desc + irq;
+@@ -617,7 +617,7 @@ int request_irq(unsigned int irq, irq_handler_t handler,
+ 	 */
+ 	if ((irqflags & IRQF_SHARED) && !dev_id)
+ 		return -EINVAL;
+-	if (irq >= NR_IRQS)
++	if (irq >= nr_irqs)
+ 		return -EINVAL;
+ 	if (irq_desc[irq].status & IRQ_NOREQUEST)
+ 		return -EINVAL;
+diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
+index 6c6d35d..74d7922 100644
+--- a/kernel/irq/proc.c
++++ b/kernel/irq/proc.c
+@@ -234,7 +234,7 @@ void init_irq_proc(void)
+ 	/*
+ 	 * Create entries for all existing IRQs.
+ 	 */
+-	for (i = 0; i < NR_IRQS; i++)
++	for (i = 0; i < nr_irqs; i++)
+ 		register_irq_proc(i);
  }
-@@ -596,14 +633,11 @@ void per_cpu_alloc_dyn_array(int cpu, char *ptr)
- 	void **array;
  
- 	phys = virt_to_phys(ptr);
--
- 	for (daa = __per_cpu_dyn_array_start ; daa < __per_cpu_dyn_array_end; daa++) {
- 		struct dyn_array *da = *daa;
+diff --git a/kernel/irq/resend.c b/kernel/irq/resend.c
+index a804679..cba8aa5 100644
+--- a/kernel/irq/resend.c
++++ b/kernel/irq/resend.c
+@@ -33,8 +33,8 @@ static void resend_irqs(unsigned long arg)
+ 	struct irq_desc *desc;
+ 	int irq;
  
- 		size = da->size * (*da->nr);
--		print_fn_descriptor_symbol("per_cpu_dyna_array %s ", da->name);
--		printk(KERN_CONT "size:%#lx nr:%d align:%#lx",
--			da->size, *da->nr, da->align);
-+		print_fn_descriptor_symbol("per_cpu_dyn_array %s ", da->name);
+-	while (!bitmap_empty(irqs_resend, NR_IRQS)) {
+-		irq = find_first_bit(irqs_resend, NR_IRQS);
++	while (!bitmap_empty(irqs_resend, nr_irqs)) {
++		irq = find_first_bit(irqs_resend, nr_irqs);
+ 		clear_bit(irq, irqs_resend);
+ 		desc = irq_desc + irq;
+ 		local_irq_disable();
+diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
+index 19fe9d6..e26ca1e 100644
+--- a/kernel/irq/spurious.c
++++ b/kernel/irq/spurious.c
+@@ -91,7 +91,7 @@ static int misrouted_irq(int irq)
+ 	int i;
+ 	int ok = 0;
  
- 		phys = roundup(phys, da->align);
- 		addr = (unsigned long)da->name;
-@@ -611,7 +645,8 @@ void per_cpu_alloc_dyn_array(int cpu, char *ptr)
- 		array = (void **)addr;
- 		*array = phys_to_virt(phys);
- 		*da->name = *array; /* so init_work could use it directly */
--		printk(KERN_CONT " %p ==> [%#lx - %#lx]\n", array, phys, phys + size);
-+		printk(KERN_CONT " ==> [%#lx - %#lx]\n", phys, phys + size);
-+
- 		phys += size;
+-	for (i = 1; i < NR_IRQS; i++) {
++	for (i = 1; i < nr_irqs; i++) {
+ 		struct irq_desc *desc = irq_desc + i;
  
- 		if (da->init_work) {
+ 		if (i == irq)	/* Already tried */
+@@ -107,7 +107,7 @@ static int misrouted_irq(int irq)
+ static void poll_spurious_irqs(unsigned long dummy)
+ {
+ 	int i;
+-	for (i = 1; i < NR_IRQS; i++) {
++	for (i = 1; i < nr_irqs; i++) {
+ 		struct irq_desc *desc = irq_desc + i;
+ 		unsigned int status;
+ 
 -- 
 1.5.4.5
 
