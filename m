@@ -1,139 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbYHCONR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbYHCONt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757490AbYHCONR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 10:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbYHCONA
+	id S1757880AbYHCONt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 10:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbYHCONk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 10:13:00 -0400
-Received: from calf.ext.ti.com ([198.47.26.144]:47664 "EHLO calf.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755424AbYHCOM7 convert rfc822-to-8bit (ORCPT
+	Sun, 3 Aug 2008 10:13:40 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:15720 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755589AbYHCONj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 10:12:59 -0400
-From: "Dasgupta, Romit" <romit@ti.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: David Engraf <david.engraf@netcom.eu>, Greg KH <greg@kroah.com>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Sun, 3 Aug 2008 19:42:45 +0530
-Subject: [PATCH] [PM] Fixes missing PM entries in sysfs without
- CONFIG_PM_SLEEP
-Thread-Topic: [PATCH] [PM] Fixes missing PM entries in sysfs without
- CONFIG_PM_SLEEP
-Thread-Index: Acj0+fqPPF3uXLmbS4Gff3qvTw7L+QAdJ6FQ
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB593013C91EF11@dbde02.ent.ti.com>
-References: <B85A65D85D7EB246BE421B3FB0FBB593013C91EE00@dbde02.ent.ti.com>
- <Pine.LNX.4.44L0.0808021944110.18555-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808021944110.18555-100000@netrider.rowland.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Sun, 3 Aug 2008 10:13:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=AZfaviO8RdmTiEKBzuA2OUVfTHcPv/ifhro9wwuNbHYaQlbrzHglsIek1bLsrGcs+y
+         U80y1aLJWmPAAUWQVWkJ94xre1E27ws7rR3leO0rkN7+kbGdNXOtpWWhN9s94m29UpqB
+         1h4oj6qQdbQa1hcQLniy35SjBvjUCLqddDWi8=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [PATCH 2/2] ide-generic: handle probing of legacy io-ports
+Date: Sun, 3 Aug 2008 16:11:10 +0200
+User-Agent: KMail/1.9.9
+Cc: alan@redhat.com, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <20080715053356.GA18628@gollum.tnic> <200808022046.16990.bzolnier@gmail.com> <20080803073842.GB8762@gollum.tnic>
+In-Reply-To: <20080803073842.GB8762@gollum.tnic>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200808031611.11033.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan,
-         Here is a patch for you. Tested with
 
-1) CONFIG_SUSPEND, CONFIG_HIBERNATION i.e. with CONFIG_PM_SLEEP
-2) without CONFIG_PM_SLEEP but with CONFIG_PM
-3) without CONFIG_PM
+On Sunday 03 August 2008, Borislav Petkov wrote:
+> From: Borislav Petkov <petkovbb@gmail.com>
+> Date: Sun, 3 Aug 2008 09:28:53 +0200
+> Subject: [PATCH 2/2] ide-generic: handle probing of legacy io-ports
+> 
+> Avoid probing the io-ports in case an IDE PCI controller is present and it uses
+> the legacy iobases. If we still want to enforce the probing, we do
+> 
+> ide_generic.probe_mask=0x3f
+> 
+> on the kernel command line.
+> 
+> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 
-Thanks,
--Romit
+Thanks for reworking the patch, looks much better now.
 
+There are still some issues to address though.
 
-Description: Fixes missing PM entries in sysfs without CONFIG_PM_SLEEP.
-Signed-off-by: Romit Dasgupta <romit@ti.com>
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-index a3252c0..ad8112d 100644
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -1,3 +1,25 @@
-+#ifdef CONFIG_PM
-+
-+/*
-+ * sysfs.c
-+ */
-+
-+extern int dpm_sysfs_add(struct device *);
-+extern void dpm_sysfs_remove(struct device *);
-+
-+#else /* CONFIG_PM */
-+
-+static inline int dpm_sysfs_add(struct device *dev)
-+{
-+       return 0;
-+}
-+
-+static inline void dpm_sysfs_remove(struct device *dev)
-+{
-+}
-+
-+#endif
-+
- #ifdef CONFIG_PM_SLEEP
+> ---
+>  drivers/ide/ide-generic.c |   23 ++++++++++++++++++-----
+>  1 files changed, 18 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/ide/ide-generic.c b/drivers/ide/ide-generic.c
+> index 8fe8b5b..7d79616 100644
+> --- a/drivers/ide/ide-generic.c
+> +++ b/drivers/ide/ide-generic.c
+> @@ -27,7 +27,7 @@
+>  
+>  #define DRV_NAME	"ide_generic"
+>  
+> -static int probe_mask = 0x03;
+> +static int probe_mask = 0x00;
 
- /*
-@@ -16,29 +38,13 @@ extern void device_pm_remove(struct device *);
+No need to initialize it now.
 
- #else /* CONFIG_PM_SLEEP */
+>  module_param(probe_mask, int, 0);
+>  MODULE_PARM_DESC(probe_mask, "probe mask for legacy ISA IDE ports");
+>  
+> @@ -105,18 +105,31 @@ static int __init ide_generic_init(void)
+>  	hw_regs_t hw[MAX_HWIFS], *hws[MAX_HWIFS];
+>  	struct ide_host *host;
+>  	unsigned long io_addr;
+> -	int i, rc;
+> +	int i, rc, dummy, primary = 0, secondary = 0;
+>  
+>  #ifdef CONFIG_MIPS
+>  	if (!ide_probe_legacy())
+>  		return -ENODEV;
+>  #endif
+> -	printk(KERN_INFO DRV_NAME ": please use \"probe_mask=0x3f\" module "
+> -			 "parameter for probing all legacy ISA IDE ports\n");
+> +	ata_legacy_check_iobases(&primary, &secondary, &dummy);
+> +
+> +	if (primary) {
 
--static inline int device_pm_add(struct device *dev) { return 0; }
--static inline void device_pm_remove(struct device *dev) {}
--
--#endif
--
--#ifdef CONFIG_PM
--
--/*
-- * sysfs.c
-- */
--
--extern int dpm_sysfs_add(struct device *);
--extern void dpm_sysfs_remove(struct device *);
--
--#else /* CONFIG_PM */
--
--static inline int dpm_sysfs_add(struct device *dev)
-+static inline int device_pm_add(struct device *dev)
- {
--       return 0;
-+       return dpm_sysfs_add(dev);
- }
--
--static inline void dpm_sysfs_remove(struct device *dev)
-+static inline void device_pm_remove(struct device *dev)
- {
-+       dpm_sysfs_remove(dev);
- }
+Shouldn't this also check for secondary?
 
- #endif
+> +		if (probe_mask) {
+> +			printk(KERN_WARNING "%s: enforcing probing of io ports "
+> +			       "upon user request.\n", DRV_NAME);
+> +			primary = 0;
+> +			secondary = 0;
+> +		} else
+> +			printk(KERN_INFO DRV_NAME ": please use "
+> +			       \"probe_mask=0x3f\" module parameter for probing"
+> +			       "all legacy ISA IDE ports\n");
 
->-----Original Message-----
->From: Alan Stern [mailto:stern@rowland.harvard.edu]
->Sent: Sunday, August 03, 2008 5:16 AM
->To: Dasgupta, Romit
->Cc: David Engraf; Greg KH; linux-usb@vger.kernel.org
->Subject: RE: usb_create_sysfs_dev_files in hub.c:1586 fails on system boot
->
->On Fri, 1 Aug 2008, Dasgupta, Romit wrote:
->
->> CONFIG_PM_SLEEP needs to be enabled for power to be added as a sysfs and
->that is dependent on CONFIG_SUSPEND (Suspend to RAM and standby).
->
->You're right.  I thought we had fixed that some time ago, but it's
->still wrong.  In particular, the inline definition of device_pm_add()
->in drivers/base/power/power.h is wrong; it needs to call
->dpm_sysfs_add().
->
->I can't make up a patch now; I'll do it on Monday if nobody beats me to
->it.
->
->Alan Stern
+Help message is no longer printed for !primary
+(we always want to have it unless probe_mask is set).
 
+> +
+> +	} else
+> +		probe_mask = 0x3;
+
+I think this was meant to be 'probe_mask |= 3;'?
+
+>  	memset(hws, 0, sizeof(hw_regs_t *) * MAX_HWIFS);
+>  
+> -	for (i = 0; i < ARRAY_SIZE(legacy_bases); i++) {
+> +	for (i = primary + secondary; i < ARRAY_SIZE(legacy_bases); i++) {
+
+No need for primary/secondary checking here now as everything
+is controlled by probe_mask.
+
+Thus we can check for probe_mask first in the previous chunk
+and it can be rewritten/simplified to something like:
+
+	ata_legacy_check_iobases(&primary, &secondary, &dummy);
+
+	if (probe_mask == 0) {
+		printk(KERN_INFO DRV_NAME ": please use "
+		       \"probe_mask=0x3f\" module parameter for probing"
+		       "all legacy ISA IDE ports\n");
+
+		if (primary == 0)
+			probe_mask |= 1;
+
+		if (secondary == 0)
+			probe_mask |= 2;
+	}
