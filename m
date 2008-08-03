@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759291AbYHCRq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758681AbYHCRtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759291AbYHCRq0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 13:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758184AbYHCRpv
+	id S1758681AbYHCRtN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 13:49:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYHCRs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 13:45:51 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:33176 "EHLO mail.screens.ru"
+	Sun, 3 Aug 2008 13:48:58 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:32826 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757315AbYHCRpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 13:45:50 -0400
-Date: Sun, 3 Aug 2008 21:49:11 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mark McLoughlin <markmc@redhat.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] posix-timers: always do get_task_struct(timer->it_process)
-Message-ID: <20080803174911.GA4916@tv-sign.ru>
-Mime-Version: 1.0
+	id S1751789AbYHCRs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 13:48:57 -0400
+Date: Sun, 3 Aug 2008 10:46:46 -0700
+From: sukadev@us.ibm.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@osdl.org>, serue@us.ibm.com, matthltc@us.ibm.com,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: Per-instance devpts
+Message-ID: <20080803174646.GA20254@us.ibm.com>
+References: <20080412172933.GA19295@us.ibm.com> <1208027215.28187.17.camel@x61.ebiederm.org> <48935205.3090807@zytor.com> <20080803050800.GA4322@us.ibm.com> <20080803130439.743ff0ae@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080803130439.743ff0ae@lxorguk.ukuu.org.uk>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change the code to get/put timer->it_process regardless of SIGEV_THREAD_ID.
-This streamlines the create/destroy paths and allows us to simplify the
-usage of exit_itimers() in de_thread().
+Alan Cox [alan@lxorguk.ukuu.org.uk] wrote:
+| > > 1. /dev/ptmx would have to change to a symlink, ptmx -> pts/ptmx.
+| > 
+| > IIRC, /dev/tty also needs a similar symlink.
+| 
+| Making them symlinks is asking for trouble because some code does go
+| around using stat and the like and tools like MAKEDEV have definite ideas.
+| 
+| For /dev/tty the definition is precisely that it is your controlling
+| tty. No reference to namespace and a task whose controlling tty is in a
+| different namespace should still open the controlling tty not some
+| parallel in another universe when you open /dev/tty.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Well, I thought the problem was something like this:
 
---- 26-rc2/kernel/posix-timers.c~2_GET_LEADER	2008-08-03 20:25:41.000000000 +0400
-+++ 26-rc2/kernel/posix-timers.c	2008-08-03 21:13:25.000000000 +0400
-@@ -540,11 +540,10 @@ sys_timer_create(const clockid_t which_c
- 			 */
- 			spin_lock_irqsave(&process->sighand->siglock, flags);
- 			if (!(process->flags & PF_EXITING)) {
-+				get_task_struct(process);
- 				new_timer->it_process = process;
- 				list_add(&new_timer->list,
- 					 &process->signal->posix_timers);
--				if (new_timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
--					get_task_struct(process);
- 				spin_unlock_irqrestore(&process->sighand->siglock, flags);
- 			} else {
- 				spin_unlock_irqrestore(&process->sighand->siglock, flags);
-@@ -561,6 +560,7 @@ sys_timer_create(const clockid_t which_c
- 		new_timer->it_sigev_signo = SIGALRM;
- 		new_timer->it_sigev_value.sival_int = new_timer->it_id;
- 		process = current->group_leader;
-+		get_task_struct(process);
- 		spin_lock_irqsave(&process->sighand->siglock, flags);
- 		new_timer->it_process = process;
- 		list_add(&new_timer->list, &process->signal->posix_timers);
-@@ -853,8 +853,7 @@ retry_delete:
- 	 * This keeps any tasks waiting on the spin lock from thinking
- 	 * they got something (see the lock code above).
- 	 */
--	if (timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
--		put_task_struct(timer->it_process);
-+	put_task_struct(timer->it_process);
- 	timer->it_process = NULL;
- 
- 	unlock_timer(timer, flags);
-@@ -881,8 +880,7 @@ retry_delete:
- 	 * This keeps any tasks waiting on the spin lock from thinking
- 	 * they got something (see the lock code above).
- 	 */
--	if (timer->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
--		put_task_struct(timer->it_process);
-+	put_task_struct(timer->it_process);
- 	timer->it_process = NULL;
- 
- 	unlock_timer(timer, flags);
+If /dev/pts/1 is the controlling terminal and there are multiple mounts
+of devpts, when we open /dev/tty, kernel would somehow have to find the
+right instance of devpts.
 
+When init_dev() calls devpts_get_tty(), it would need to specify the devpts
+instance. So tty_open() of "/dev/tty" would somehow have to find it based on
+the /dev/tty inode (which could be in ext3).
+
+(I thought the issue was similar with /dev/ptmx, ptmx allocates a new
+index, /dev/tty accesses an existing index, but both need to somehow
+find the right pts instance -no ?)
+
+| 
+| If you want to make sure the controlling tty is in the right namespace
+| that can be done in userspace when transferring control into a namespace.
+| In many cases I doubt that is even what is wanted.
+| 
+| > > 2. Permissions on /dev/ptmx would not be persistent, and would have to
+| > >    be set via devpts mount options (unless they're 0666 root.tty, which
+| > >    would presumably be the default.)
+| > > 3. The /proc/sys/kernel/pty limit would be global; a per-filesystem
+| > >    limit could be added on top or instead (presumably via a filesystem
+| > >    mount options.)
+| > >
+| > > I worry #1 would have substantial user-space impact, but I don't see a way 
+| > > around it, since there would be no obvious way to associate /dev/ptmx with 
+| > > a filesystem.
+| 
+| /dev/tty and /dev/ptmx already primarily operate by identifying a device
+| and switching the work to that. Actually putting a bit of namespace logic
+| in the driver code so the actual files stay as expected (device nodes
+| etc) seems a *lot* simpler than trying to do symlink hacks.
+| 
+| Alan
