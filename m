@@ -1,98 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbYHCKBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbYHCKIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754701AbYHCKBB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 06:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYHCKAx
+	id S1754487AbYHCKIx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 06:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYHCKIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 06:00:53 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:16897 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753101AbYHCKAv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 06:00:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=I4+ebPoX6RSWTTVgyjjiSW51Ktdghzkl951/52LDpeaG2/ZImWxfFo9woEs5h0M0bT
-         Q5EPdV+BX+MP/MLFFWxNytup07GTR7XWwWaPWl1sgxDbGHKwTHPPCupBRRLpYnxTy0za
-         U3O/n3DMX8uKgbHZFsGGlrNA/ROf7WcZDUwMk=
-Message-ID: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>
-Date: Sun, 3 Aug 2008 03:00:50 -0700
-From: "S K" <nospamnoham@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: cpufreq doesn't seem to work in Intel Q9300
+	Sun, 3 Aug 2008 06:08:45 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:47906 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750933AbYHCKIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 06:08:44 -0400
+Date: Sun, 3 Aug 2008 13:07:32 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Roman Zippel <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+Subject: Re: Kconfig no longer outputs a .config with freshly updated
+	defconfigs
+Message-ID: <20080803100732.GA7442@cs181140183.pp.htv.fi>
+References: <1217693013.2328.22.camel@localhost.localdomain> <20080802192646.GR19682@cs181140183.pp.htv.fi> <20080803080019.GA13265@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080803080019.GA13265@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Aug 03, 2008 at 10:00:19AM +0200, Sam Ravnborg wrote:
+> On Sat, Aug 02, 2008 at 10:26:47PM +0300, Adrian Bunk wrote:
+> > On Sat, Aug 02, 2008 at 12:03:33PM -0400, Josh Boyer wrote:
+> > > I was going through the somewhat tedious task of updating the 4xx
+> > > defconfigs today, and I noticed some odd behavior from Kconfig.
+> > > Basically, I would do:
+> > > 
+> > > 	make ppc44x_defconfig
+> > > 	make oldconfig
+> > > 	<build>
+> > > 	cp .config arch/powerpc/configs/ppc44x_defconfig
+> > > 	make distclean
+> > > 
+> > > I did this for a number of configs.  Then I went back and tried to build
+> > > ppc44x_defconfig again and I got this result:
+> > > 
+> > > [jwboyer@localhost linux-2.6]$ make ppc44x_defconfig
+> > >   HOSTCC  scripts/basic/fixdep
+> > >   HOSTCC  scripts/basic/docproc
+> > >   HOSTCC  scripts/kconfig/conf.o
+> > >   HOSTCC  scripts/kconfig/kxgettext.o
+> > >   SHIPPED scripts/kconfig/zconf.tab.c
+> > >   SHIPPED scripts/kconfig/lex.zconf.c
+> > >   SHIPPED scripts/kconfig/zconf.hash.c
+> > >   HOSTCC  scripts/kconfig/zconf.tab.o
+> > > scripts/kconfig/lex.zconf.c:1628: warning: ‘input’ defined but not used
+> > >   HOSTLD  scripts/kconfig/conf
+> > > [jwboyer@localhost linux-2.6]$ make oldconfig
+> > > scripts/kconfig/conf -o arch/powerpc/Kconfig
+> > > #
+> > > # using defaults found in /boot/config-2.6.25.13-104.fc9.ppc64
+> > > #
+> > > 
+> > > There was no .config file present after the initial 'make
+> > > ppc44x_defconfig', so it defaulted to using something in /boot.  I'm a
+> > > bit baffled here, but that seems to be common to any newly updated
+> > > defconfig I've done.
+> > > 
+> > > Was there a change to Kconfig recently that won't copy the defconfig
+> > > file to .config if there are no symbol changes or something like that?
+> > 
+> > Thanks for your bug report, this should have worked.
+> > 
+> > @Sam:
+> > I've bisected this and it is caused by
+> > commit f443d2eccf077afd8a839cc7ed66cc4d520c5f05
+> > (kconfig: speed up all*config + randconfig).
+> > 
+> > Minimal example for reproducing it:
+> > 
+> > make x86_64_defconfig
+> > cp .config arch/x86/configs/x86_64_defconfig
+> > rm .config
+> > make x86_64_defconfig
+> > ls .config
+> 
+> Thanks Adrian.
+> 
+> The code has started to check if anything changed
+> and if not - then do not write out a new config.
+> So in your sample above we would not see any changes
+> compared to what we read in autoconf.h so we did nto write
+> out a new autoconf.h (and thus no .config).
+> 
+> The right fix seems to check for .config and for changes
+> and in both cases to write a new config.
+> 
+> Patch below.
 
-  I have an Intel Core 2 Quad and running kernel
-2.6.25.11-97.fc9.i686. cpufreq doesn't seem to work. The cpufreq
-scaling monitor in Gnome says CPU Freq scaling is not supported in my
-CPU. The CPU can run at 2.0 and 2.5 GHz but mine always runs at 2.5
-GHz in Linux.
+This breaks with:
 
-So I checked  /sys and there is no cpufreq dir in /sys/...
+make ARCH=x86 x86_64_defconfig
+cp .config arch/x86/configs/x86_64_defconfig
+make ARCH=x86 i386_defconfig
+make ARCH=x86 x86_64_defconfig
 
-# ls /sys/devices/system/cpu/
-cpu0  cpu1  cpu2  cpu3  cpuidle  sched_mc_power_savings
-# ls /sys/devices/system/cpu/cpuidle/
-current_driver  current_governor_ro
+Why can't we simply always write the .config?
 
-I have no clue what cpuidle directory is for.
+> 	Sam
+>...
 
-I added cpufreq.debug=7 in kernel boot params and saw the following in
-the dmesg:
+cu
+Adrian
 
-speedstep-smi: No supported Intel CPU detected.
-cpufreq-core: CPU 0: _PPC is 0 - frequency not limited
-cpufreq-core: CPU 3: _PPC is 0 - frequency not limited
-cpufreq-core: CPU 1: _PPC is 0 - frequency not limited
-cpufreq-core: CPU 2: _PPC is 0 - frequency not limited
-cpuidle: using governor ladder
-cpuidle: using governor menu
+-- 
 
-I looked at arch/x86/kernel/cpu/cpufreq/speedstep-smi.c and it seems
-to detect only Pentium IIIs.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Anyone know what files have the cpufreq code for Intel Core 2?
-Does cpufreq support Intel Core 2 Quads? Especially the Q9300? If not,
-anything I can do to help?
-
-Thanks,
-SK
-
-# cat /proc/cpuinfo
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 23
-model name	: Intel(R) Core(TM)2 Quad  CPU   Q9300  @ 2.50GHz
-stepping	: 7
-cpu MHz		: 2502.516
-cache size	: 3072 KB
-physical id	: 0
-siblings	: 4
-core id		: 0
-cpu cores	: 4
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 10
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
-constant_tsc arch_perfmon pebs bts pni monitor ds_cpl vmx smx est tm2
-ssse3 cx16 xtpr sse4_1 lahf_lm
-bogomips	: 5015.23
-clflush size	: 64
-<snipped the rest> - shows 3 more similar sections.
