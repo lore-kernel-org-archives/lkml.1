@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbYHCPkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758346AbYHCPmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758079AbYHCPkF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 11:40:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbYHCPjy
+	id S1758346AbYHCPmc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 11:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbYHCPmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 11:39:54 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49935 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756052AbYHCPjw (ORCPT
+	Sun, 3 Aug 2008 11:42:24 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:47068 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756061AbYHCPmX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 11:39:52 -0400
-Date: Sun, 3 Aug 2008 16:22:14 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: petkovbb@gmail.com
-Cc: petkovbb@googlemail.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       alan@redhat.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 1/2] pata_legacy: export functionality to ide
-Message-ID: <20080803162214.394b13a1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080803143837.GA26672@gollum.tnic>
-References: <20080715053356.GA18628@gollum.tnic>
-	<200808021902.12191.bzolnier@gmail.com>
-	<20080802183253.GA2239@gollum.tnic>
-	<200808022046.16990.bzolnier@gmail.com>
-	<20080803073756.GA8762@gollum.tnic>
-	<20080803125907.67676948@lxorguk.ukuu.org.uk>
-	<20080803143837.GA26672@gollum.tnic>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 3 Aug 2008 11:42:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=j6aP5euwuR1dqlx/w/C3bO06uf1xopTffiHlSGdQWzsAnYz2aLPEF01rVSopyWlp02
+         5MWx49bWArZ9TYon2tXQh4pxzMenkgQR6Di9w+McwL4ccLG8pjYogbCRC+UdvkxySkuc
+         2sgiptQdDzbLVQPjSPYfO9D1lDNE6X3tZV3Sk=
+Subject: [rfc-patch, bugfix] x86-microcode
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Oruba <peter.oruba@amd.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Max Krasnyansky <maxk@qualcomm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 03 Aug 2008 17:42:15 +0200
+Message-Id: <1217778135.4912.40.camel@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> conventions, it is still the best one considering the other possibilities:
-> 
-> a) code duplication: dumb idea, bloated kernel for no reason
 
-I think you might want to start somewhere else if that worries you. Its
-also a mostly bogus reasoning as almost nobody builds with both, in fact
-you have to be pretty careful if you do that or it all falls over in a
-heap.
+Hi,
 
-For previous cases (eg ide timing) it has actually made more sense to
-split the code. The moment you get future different behaviour between
-libata and old IDE on any of these devices the sharing will just break
-again (eg if one or the other drops chipset support for one of those
-devices or adds one for another device)
 
-> b) evil Kconfig SELECT pulling in core libata just so that ide might be calling
-> a function or two.
+[ consider it a pre-release and RFC... I'm a bit in hurry now and just send what I have got by this moment.
+Although, I expect it to be workable ]
 
-That would be stunningly dumb. I happen to think we have developers whose
-minds extent to adding libata-common.c and pulling in a single file if we
-do that. Yes people have the past done stupid stuff like pulling all of
-CONFIG_IDE in for a single USB device but that was because nobody noticed
-and fixed it promptly not because it was a good idea.
 
-Alan
+this change is supposed to fix bug#11197 (note, its name "Oops in microcode sysfs registration" is misleading)
+
+The problem description can be found here:
+http://www.ussg.iu.edu/hypermail/linux/kernel/0807.3/3791.html
+or
+http://lkml.org/lkml/2008/7/24/260
+
+perhaps it does look quite bulky for -rc, although it's mainly move-redesign-some-bits of the code and
+I tried to preserve the original logic (even if it looked like a possible optimizations might had been applied)
+as much as possible.
+
+The basic idea is that we introduce another mechanism to run ucode-updates on a target cpu
+and replace set_cpus_allowed_ptr() in (1) cpu-hotplug events and (2) module load.
+
+
+[1/2] x86-microcode: generic updates
+
+Basically, it introduces microcode_update_cpu() which can be run either from start_secondary()
+(perhaps via a function pointer) or scheduled via keventd ([2/2]) and reworks the logic of cpu-hotplug events.
+
+[2/2] x86-microcode: do updates via workqueue
+
+
+More testing is necessary. I tested without ucode-package (so only generic machinery) and for
+- load/unload module;
+- cpu-hotplug (so it doesn't give an oops anymore)
+
+hm, suspend/resume seems to be broken even without the 'microcode' module (will check the date of my previous kernel).
+
+
+--Dmitry
+
+
+
