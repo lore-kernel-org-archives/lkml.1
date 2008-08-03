@@ -1,124 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759502AbYHCUFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759542AbYHCUHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759502AbYHCUFR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 16:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbYHCUFB
+	id S1759542AbYHCUHh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 16:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbYHCUH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 16:05:01 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:1659 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752761AbYHCUFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 16:05:00 -0400
-Subject: Re: oops in rt_cache_invalidate (2.6.27-rc1-2b12a4c)
-From: "Denis V. Lunev" <den@openvz.org>
-To: Sven Wegener <sven.wegener@stealer.net>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <alpine.LNX.1.10.0808032110520.7765@titan.stealer.net>
-References: <20080803170241.GD5414@joi>
-	 <1217789775.8154.34.camel@iris.sw.ru>
-	 <alpine.LNX.1.10.0808032110520.7765@titan.stealer.net>
-Content-Type: text/plain
-Organization: OpenVz kernel team
-Date: Mon, 04 Aug 2008 00:04:54 +0400
-Message-Id: <1217793894.8154.38.camel@iris.sw.ru>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Sun, 3 Aug 2008 16:07:29 -0400
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:63625 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753004AbYHCUH2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 16:07:28 -0400
+Message-ID: <48960FFE.1020408@lwfinger.net>
+Date: Sun, 03 Aug 2008 15:07:26 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Chr <chunkeey@web.de>
+CC: "David S. Miller" <davem@davemloft.net>,
+       wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: p54usb broken by commit b19fa1f
+References: <4893CF3D.1070504@lwfinger.net> <200808021457.46438.chunkeey@web.de>
+In-Reply-To: <200808021457.46438.chunkeey@web.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-08-03 at 21:24 +0200, Sven Wegener wrote:
-> On Sun, 3 Aug 2008, Denis V. Lunev wrote:
+Chr wrote:
+> On Saturday 02 August 2008 05:06:37 Larry Finger wrote:
+>> In testing 2.6.27-rc1, I found that p54usb caused my machine to freeze. A
+>> few times, I was able to use the KDE system status applet to see that the
+>> system was using essentially 100% of the CPU's. One other time, the system
+>> responded a little - enough for me to see tha wpa_supplicant was consuming
+>> 100% of the my AMD Turion 64 X2 running an x86_64 kernel. From bisection,
+>> the problem is due to
+>>
+>> commit b19fa1fa91845234961c64dbd564671aa7c0fd27
+>> Author: David S. Miller <davem@davemloft.net>
+>> Date:   Tue Jul 8 23:14:24 2008 -0700
+>>
+>>      net: Delete NETDEVICES_MULTIQUEUE kconfig option.
+>>
+>>      Multiple TX queue support is a core networking feature.
+>>
+>>      Signed-off-by: David S. Miller <davem@davemloft.net>
+>>
+>> Obviously, something in the driver cannot handle multiqueues, but I
+>> have not found anything, and I have not been able to get any logged events
+>> that show what is going wrong.
+>>
 > 
-> > On Sun, 2008-08-03 at 19:02 +0200, Marcin Slusarz wrote:
-> > > [   21.035097] Adding 1020112k swap on /dev/sda2.  Priority:-1 extents:1 across:1020112k
-> > > [   22.340292] BUG: unable to handle kernel NULL pointer dereference at 00000000000002c0
-> > > [   22.341002] IP: [<ffffffff80442a7e>] rt_cache_invalidate+0x25/0x32
-> > > [   22.341002] PGD 3dc7c067 PUD 3d198067 PMD 0
-> > > [   22.341002] Oops: 0002 [1] PREEMPT
-> > > [   22.341002] CPU 0
-> > > [   22.341002] Modules linked in: usbhid uhci_hcd tuner tea5767 tda8290 tuner_xc2028 xc5000 tda9887 tuner_simple tuner_types mt20xx tea5761 tda9875 ehci_hcd usbcore bttv ir_common compat_ioctl32 videodev v4l1_compat i2c_algo_bit snd_via82xx snd_ac97_codec v4l2_common ac97_bus snd_pcm videobuf_dma_sg snd_timer snd_page_alloc i2c_viapro videobuf_core btcx_risc snd_mpu401_uart snd_rawmidi tveeprom snd_seq_device snd soundcore
-> > > [   22.341002] Pid: 2248, comm: sysctl Not tainted 2.6.27-rc1-00507-g75aecb1 #261
-> > > [   22.341002] RIP: 0010:[<ffffffff80442a7e>]  [<ffffffff80442a7e>] rt_cache_invalidate+0x25/0x32
-> > > [   22.341002] RSP: 0018:ffff88003cd6de08  EFLAGS: 00010202
-> > > [   22.341002] RAX: 0000000000000052 RBX: 0000000000000000 RCX: 0000000000000000
-> > > [   22.341002] RDX: ffff88003cd6dda8 RSI: ffff88003cd6dda9 RDI: ffff88003cd6ddb2
-> > > [   22.341002] RBP: ffff88003cd6de28 R08: 0000000000000000 R09: ffff88003cd6dbb8
-> > > [   22.341002] R10: 00000000a94180f7 R11: ffff88003cd6dc0c R12: 0000000000000001
-> > > [   22.341002] R13: ffffffff8062a90c R14: 0000000000000000 R15: 0000000000000040
-> > > [   22.341002] FS:  00007f0674ee66f0(0000) GS:ffffffff80625200(0000) knlGS:0000000000000000
-> > > [   22.341002] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > > [   22.341002] CR2: 00000000000002c0 CR3: 000000003d1a3000 CR4: 00000000000006e0
-> > > [   22.341002] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > > [   22.341002] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > > [   22.341002] Process sysctl (pid: 2248, threadinfo ffff88003cd6c000, task ffff88003d0dd900)
-> > > [   22.341002] Stack:  ffff88003cd6de38 ffffffff80233c93 51ff88003cd6df48 0000000000000000
-> > > [   22.341002]  ffff88003cd6de58 ffffffff80442c4c ffffffff80620740 0000000000000001
-> > > [   22.341002]  ffffffff8062a90c 0000000000000000 ffff88003cd6de98 ffffffff8046a63b
-> > > [   22.341002] Call Trace:
-> > > [   22.341002]  [<ffffffff80233c93>] ? do_proc_dointvec+0x3d/0x3f
-> > > [   22.341002]  [<ffffffff80442c4c>] rt_cache_flush+0x17/0xe2
-> > > [   22.341002]  [<ffffffff8046a63b>] ipv4_doint_and_flush+0x42/0x52
-> > > [   22.341002]  [<ffffffff802d263b>] proc_sys_call_handler+0x96/0xbb
-> > > [   22.341002]  [<ffffffff802d2674>] proc_sys_write+0x14/0x16
-> > > [   22.341002]  [<ffffffff8028f8fd>] vfs_write+0xb3/0x13c
-> > > [   22.341002]  [<ffffffff8028fdd0>] sys_write+0x4c/0x74
-> > > [   22.341002]  [<ffffffff8020b3fb>] system_call_fastpath+0x16/0x1b
-> > > [   22.341002]
-> > > [   22.341002]
-> > > [   22.341002] Code: 18 01 00 00 c9 c3 55 48 89 e5 53 48 83 ec 18 66 66 90 66 90 be 01 00 00 00 48 89 fb 48 8d 7d f7 e8 a3 fd f5 ff 0f b6 45 f7 ff c0 <01> 83 c0 02 00 00 48 83 c4 18 5b c9 c3 55 48 89 e5 53 48 83 ec
-> > > [   22.341002] RIP  [<ffffffff80442a7e>] rt_cache_invalidate+0x25/0x32
-> > > [   22.341002]  RSP <ffff88003cd6de08>
-> > > [   22.341002] CR2: 00000000000002c0
-> > > [   23.182975] ---[ end trace cc508a4cd3aa37ce ]---
-> > > [   33.359352] NET: Registered protocol family 17
-> > > [   36.346255] Marking TSC unstable due to cpufreq changes
-> > > [   40.893522] Clocksource tsc unstable (delta = -221374484 ns)
-> > > 
-> > > It's 2b12a4c524812fb3f6ee590a02e65b95c8c32229 + some unreleated trivial patches.
-> > 
-> > Could you send you .config?
-> 
-> No need to, the issue can be triggered by
-> 
-> sysctl net.ipv4.ip_default_ttl=1
-> 
-> when 76e6ebfb40a2455c18234dcb0f9df37533215461 is applied.
-> 
-> ipv4_doint_and_flush and ipv4_doint_and_flush_strategy access the member 
-> extra2 of the ctl_table, but it is never set to a meaningful value. Don't 
-> know if it's just the following that is missing or if we need another 
-> namespace.
-> 
-> net: Add missing extra2 prameter for ip_default_ttl sysctl
-> 
-> Commit 76e6ebfb40a2455c18234dcb0f9df37533215461 needs the extra2 parameter 
-> set to init_net, else we'll oops when setting the ip_default_ttl sysctl.
-> 
-> Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
-> ---
->  net/ipv4/sysctl_net_ipv4.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
-> index 770d827..e0689fd 100644
-> --- a/net/ipv4/sysctl_net_ipv4.c
-> +++ b/net/ipv4/sysctl_net_ipv4.c
-> @@ -232,6 +232,7 @@ static struct ctl_table ipv4_table[] = {
->  		.mode		= 0644,
->  		.proc_handler	= &ipv4_doint_and_flush,
->  		.strategy	= &ipv4_doint_and_flush_strategy,
-> +		.extra2		= &init_net,
->  	},
->  	{
->  		.ctl_name	= NET_IPV4_NO_PMTU_DISC,
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Hmm that's a bit odd as my p54usb-adapter seems to work usual with
+> 2.6.27-rc1?!... That said: it doesn't work nearly as stable as the
+> minipci card that I have too. Is there anyone else who can confirm
+> that this problem is specific to the p54 driver & 2.6.27-rc1?
 
-Acked-by: Denis V. Lunev <den@openvz.org>
+The problem is triggered by the following section:
 
+         if (priv->fw_var >= 0x300) {
+                 /* Firmware supports QoS, use it! */
+                 priv->tx_stats[0].limit = 3;
+                 priv->tx_stats[1].limit = 4;
+                 priv->tx_stats[2].limit = 3;
+                 priv->tx_stats[3].limit = 1;
+                 dev->queues = 4;
+         }
+
+If fw_var is less than 0x300, then the bug does not trigger. On my system, if I 
+change the number of queues to 1, then all is OK.
+
+Larry
