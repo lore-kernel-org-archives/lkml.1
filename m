@@ -1,84 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbYHDSkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760494AbYHDSte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756277AbYHDSkR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 14:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbYHDSjk
+	id S1760494AbYHDSte (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 14:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758435AbYHDStA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 14:39:40 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:56293 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754980AbYHDSjh (ORCPT
+	Mon, 4 Aug 2008 14:49:00 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:26731 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760270AbYHDSs6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 14:39:37 -0400
-Date: Mon, 4 Aug 2008 19:39:32 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Keith Packard <keithp@keithp.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Hellwig <hch@infradead.org>, Eric Anholt <eric@anholt.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
-In-Reply-To: <1217870748.24714.79.camel@koto.keithp.com>
-Message-ID: <Pine.LNX.4.64.0808041855050.5717@blonde.site>
-References: <1217573919-7496-1-git-send-email-eric@anholt.net> 
- <200808041902.23970.nickpiggin@yahoo.com.au>  <1217845590.24714.45.camel@koto.keithp.com>
-  <200808042043.46710.nickpiggin@yahoo.com.au>  <1217850352.24714.66.camel@koto.keithp.com>
-  <Pine.LNX.4.64.0808041720500.25617@blonde.site> <1217870748.24714.79.camel@koto.keithp.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 4 Aug 2008 14:48:58 -0400
+X-SourceIP: 80.57.229.25
+Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Dave Jones <davej@redhat.com>, Roland Dreier <rdreier@cisco.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080804172728.GJ11476@duo.random>
+References: <20080804130317.994042639@chello.nl>
+	 <20080804131012.246115111@chello.nl> <ada63qgvppx.fsf@cisco.com>
+	 <1217859571.3589.7.camel@twins> <aday73cua99.fsf@cisco.com>
+	 <1217860332.3589.11.camel@twins> <20080804145318.GA17867@redhat.com>
+	 <1217861763.3589.13.camel@twins> <20080804162657.GI11476@duo.random>
+	 <1217867935.3589.35.camel@twins>  <20080804172728.GJ11476@duo.random>
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 20:48:49 +0200
+Message-Id: <1217875729.3589.54.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Aug 2008, Keith Packard wrote:
-> On Mon, 2008-08-04 at 18:09 +0100, Hugh Dickins wrote:
+On Mon, 2008-08-04 at 19:27 +0200, Andrea Arcangeli wrote:
+> On Mon, Aug 04, 2008 at 06:38:55PM +0200, Peter Zijlstra wrote:
+> > You also need CONFIG_PROVE_LOCKING, but I'll assume that's set too.
 > 
-> > Whether such usage conforms to VFS API I'm not so sure: as I understand
-> > it, it's really for internal use by a filesystem
+> Sorry, that wasn't the problem, but my current testing passed because
+> of another error... to test this report I rebuilt a kvm configured for
+> rhel not for mainline so it wasn't the right test...
 > 
-> Sure, but presumably it could even be used by a layered file system?
-
-Could, yes, but should? I wouldn't presume to answer with any authority.
-
-> >  - if it's going to be
-> > used beyond that, we ought to add a check that the filesystem it's used
-> > upon really has a ->readpage method (and I'd rather we add such a check
-> > than you do it at your end, in case we change the implementation later
-> > to use something other than a ->readpage method - Nick, you'll be
-> > nauseated to hear I was looking to see if ->fault with a pseudo-vma
-> > could do it).  But if the layering police are happy with this, I am.
+> When "long ago" I tested that this was working fine (actually when
+> Andrew asked me), I guess lockdep was working because the
+> implementation with the vmalloc array was slightly different,
+> otherwise I don't know. I'm fairly certain that it worked fine at some
+> point, and I didn't expect the refactoring to generate false positives.
 > 
-> It seems like I should put a check into my code that is kernel version
-> dependent so that I can't oops if someone tries to use a filesystem that
-> doesn't have ->readpage.
+> > Dave Jones just handed me:
+> > 
+> >   https://bugzilla.redhat.com/show_bug.cgi?id=457779
+> 
+> I can reproduce this now yes after a 'make sync'.
+> 
+> Obviously this is a bug in lockdep that it trips over this otherwise
+> if lockdep was right the kernel should deadlock while this is just a
+> false positive and everything runs fine.
+> 
+> I assume it can't understand the spinlock address is different (I
+> think it uses the address as key only for static locks), so I wonder
+> if you could call print_deadlock_bug() from the failure path of the
+> spinlock to solve this?
+> 
+> Do things like double_rq_lock works just because rq1 and rq2 don't
+> have the same name like in my case where all locks are called "mapping"->?
 
-Well, I guess put the check on ->readpage into your code for now, and
-by the time GEM gets into Linus's tree, we should have -EINVAL checks
-on NULL filler() in __read_cache_page() and read_cache_page_async(),
-so remove check at your end before final submission.
+Lockdep doesn't look at individual lock instances, but instead works on
+lock classes. The rq locks used to have a separate class each, but the
+third patch in this series changes that.
 
-(You could leave it there, and strictly we ought to update GEM if we
-make any change to our implementation; but it is the kind of detail
-that gets overlooked - witness the way I failed to grasp the readahead
-side-effects of adding ->readpage into tmpfs until recently.  I'm just
-afraid we'd break you unwittingly: better not, though easily fixed.)
+The advantage of not working on lock instances is that the dependency
+graph becomes much smaller, and it will report problems much earlier,
+the down-side is that you will have to augment the information a little.
 
-I'm not sending the patch right now, waiting to see if this direction
-wins general favour.
+Normally locks are grouped in classes based on their init site; eg.
+every instance initialized by a particular spin_lock_init() will belong
+to the same class.
 
-> So, when I release the pages from the page cache, I'm currently calling
-> mark_page_accessed for all pages, and set_page_dirty for pages which may
-> have been written by the GPU. Are those calls still needed?
+Besides this grouping, you can use things like spin_lock_nested(), which
+can be used to annotate simple recursion (up to 8 sub-classes).
 
-I think you should drop the mark_page_accessed(): that's done in
-read_cache_page_async() as part of the initial read_mapping_page().
-But do it again when releasing if you think there's a good chance
-that object will be wanted again shortly.  set_page_dirty() if
-modified by GPU, yes, that would still be needed.
+Then there is the possibility to explicitly create classes and assign
+locks to classes using lockdep_set_class().
 
-For how long are these objects' pages pinned in memory like this?
-I ask because Rik & Lee have patches in -mm, trying to avoid long
-scans of LRUs cluttered with unevictable pages.  I've no idea
-whether you're adding a lot or a little to that problem.
+Either way - there is a limit of MAX_LOCK_DEPTH (48) locks that can be
+tracked per task (including nesting interrupts).
 
-Hugh
+Making that dynamic is rather challenging - as it would involve
+allocating memory while potentially holding allocator locks.
+
+> > David Miller just did a patch that might fix that.
+> 
+> Woow cool, after 11 months I lost any hope that lockdep could ever
+> work in that environment... Was it an actual bug or is this some way
+> to lower the complexity of the graph build?
+
+He reduced the search complexity of the graph, look at the first patch
+in this series.
+
