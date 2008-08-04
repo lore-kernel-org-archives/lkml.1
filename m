@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763676AbYHDVDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764744AbYHDVDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763676AbYHDVDA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:03:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764028AbYHDVBv
+	id S1764744AbYHDVDv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764240AbYHDVCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:01:51 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38160 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764004AbYHDVBu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:01:50 -0400
-Date: Mon, 4 Aug 2008 21:44:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Stuart <dstuart@rogers.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Problems with disk + network on 2.6.25.11-60.fc8
-Message-ID: <20080804214441.0811138e@lxorguk.ukuu.org.uk>
-In-Reply-To: <4897671F.1050003@rogers.com>
-References: <48973EB9.90408@rogers.com>
-	<20080804184232.601881a8@lxorguk.ukuu.org.uk>
-	<4897671F.1050003@rogers.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Aug 2008 17:02:23 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3344 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763631AbYHDVCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:02:21 -0400
+Date: Mon, 4 Aug 2008 16:45:58 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-08-04
+Message-ID: <20080804204558.GA5866@tuxdriver.com>
+References: <20080804193753.GA30345@tuxdriver.com> <1217882288.7819.19.camel@californication>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217882288.7819.19.camel@californication>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok so the pdc202xx_old hardware flakes out when you have very high
-network load (I'd guess in fact very high bus traffic).
+On Mon, Aug 04, 2008 at 10:38:08PM +0200, Marcel Holtmann wrote:
+> Hi John,
+> 
+> > Luis R. Rodriguez (4):
+> >       list.h: Add list_splice_tail() and list_splice_tail_init()
+> >       list.h: add list_cut_position()
+> 
+> have these two changes got reviewed on LKML? I don't see any ACKs for it
+> in the commit message.
 
-The actual log is the disk I/O timing out, then the drive being busy
-(probably due to the timeout and a DMA transfer getting stuck). We reset
-it and carry on.
+Hmmm...no.  I thought the original patches had been copied to
+linux-kernel, but it looks like that is not the case.
 
-Libata happens to log this a lot more visibly than old kernels which is
-useful but does mean people sometimes don't notice.
+The original patches are archived here:
 
-The rest then fits - the freeze I'd expect as we block I/O while trying
-to get the drive back.
+	http://marc.info/?l=linux-wireless&m=121783421908441&w=2
 
-Doubt the Nvidia module is involved as I'd then expect problems under
-high graphical load but you can certainly test that. I don't suppose
-you've got a spare PCI network card you could try instead to see if it is
-the network card bits ?
+	http://marc.info/?l=linux-wireless&m=121783422008445&w=2
 
-Alan
+What problems do you see with them?
+
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
