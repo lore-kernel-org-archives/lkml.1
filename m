@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762751AbYHDUXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763523AbYHDUXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762751AbYHDUXH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762362AbYHDUWw
+	id S1763523AbYHDUXc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbYHDUXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:22:52 -0400
-Received: from mx1.suse.de ([195.135.220.2]:48598 "EHLO mx1.suse.de"
+	Mon, 4 Aug 2008 16:23:17 -0400
+Received: from ns2.suse.de ([195.135.220.15]:45588 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758693AbYHDUWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:22:51 -0400
-Date: Mon, 4 Aug 2008 13:15:00 -0700
+	id S1762764AbYHDUXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:23:15 -0400
+Date: Mon, 4 Aug 2008 13:15:02 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mingming Cao <cmm@us.ibm.com>,
-       Jan Kara <jack@suse.cz>
-Subject: [patch 08/33] jbd: fix race between free buffer and commit
-	transaction
-Message-ID: <20080804201500.GI1139@suse.de>
+       alan@lxorguk.ukuu.org.uk, Josef Bacik <jbacik@redhat.com>,
+       linux-ext4@vger.kernel.org, Jan Kara <jack@ucw.cz>
+Subject: [patch 09/33] jbd: fix possible journal overflow issues
+Message-ID: <20080804201502.GJ1139@suse.de>
 References: <20080804200515.110033151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="jbd-fix-race-between-free-buffer-and-commit-transaction.patch"
+Content-Disposition: inline; filename="jbd-fix-possible-journal-overflow-issues.patch"
 In-Reply-To: <20080804201321.GA1139@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,137 +41,114 @@ know.
 
 ------------------
 
-From: Mingming Cao <cmm@us.ibm.com>
+From: Josef Bacik <jbacik@redhat.com>
 
-commit 3f31fddfa26b7594b44ff2b34f9a04ba409e0f91 upstream
+commit 5b9a499d77e9dd39c9e6611ea10c56a31604f274 upstream
 
-journal_try_to_free_buffers() could race with jbd commit transaction when
-the later is holding the buffer reference while waiting for the data
-buffer to flush to disk.  If the caller of journal_try_to_free_buffers()
-request tries hard to release the buffers, it will treat the failure as
-error and return back to the caller.  We have seen the directo IO failed
-due to this race.  Some of the caller of releasepage() also expecting the
-buffer to be dropped when passed with GFP_KERNEL mask to the
-releasepage()->journal_try_to_free_buffers().
+There are several cases where the running transaction can get buffers added to
+its BJ_Metadata list which it never dirtied, which makes its t_nr_buffers
+counter end up larger than its t_outstanding_credits counter.
 
-With this patch, if the caller is passing the __GFP_WAIT and __GFP_FS to
-indicating this call could wait, in case of try_to_free_buffers() failed,
-let's waiting for journal_commit_transaction() to finish commit the
-current committing transaction, then try to free those buffers again.
+This will cause issues when starting new transactions as while we are logging
+buffers we decrement t_outstanding_buffers, so when t_outstanding_buffers goes
+negative, we will report that we need less space in the journal than we
+actually need, so transactions will be started even though there may not be
+enough room for them.  In the worst case scenario (which admittedly is almost
+impossible to reproduce) this will result in the journal running out of space.
 
-[akpm@linux-foundation.org: coding-style fixes]
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com>
-Acked-by: Jan Kara <jack@suse.cz>
+The fix is to only
+refile buffers from the committing transaction to the running transactions
+BJ_Modified list when b_modified is set on that journal, which is the only way
+to be sure if the running transaction has modified that buffer.
+
+This patch also fixes an accounting error in journal_forget, it is possible
+that we can call journal_forget on a buffer without having modified it, only
+gotten write access to it, so instead of freeing a credit, we only do so if
+the buffer was modified.  The assert will help catch if this problem occurs.
+Without these two patches I could hit this assert within minutes of running
+postmark, with them this issue no longer arises.  Thank you,
+
+Signed-off-by: Josef Bacik <jbacik@redhat.com>
+Cc: <linux-ext4@vger.kernel.org>
+Acked-by: Jan Kara <jack@ucw.cz>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/jbd/transaction.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++--
- mm/filemap.c         |    3 --
- 2 files changed, 56 insertions(+), 4 deletions(-)
+ fs/jbd/commit.c      |    3 +++
+ fs/jbd/transaction.c |   21 ++++++++++++++++++---
+ 2 files changed, 21 insertions(+), 3 deletions(-)
 
+--- a/fs/jbd/commit.c
++++ b/fs/jbd/commit.c
+@@ -472,6 +472,9 @@ void journal_commit_transaction(journal_
+ 	 */
+ 	commit_transaction->t_state = T_COMMIT;
+ 
++	J_ASSERT(commit_transaction->t_nr_buffers <=
++		 commit_transaction->t_outstanding_credits);
++
+ 	descriptor = NULL;
+ 	bufs = 0;
+ 	while (commit_transaction->t_buffers) {
 --- a/fs/jbd/transaction.c
 +++ b/fs/jbd/transaction.c
-@@ -1633,12 +1633,42 @@ out:
- 	return;
- }
+@@ -1235,6 +1235,7 @@ int journal_forget (handle_t *handle, st
+ 	struct journal_head *jh;
+ 	int drop_reserve = 0;
+ 	int err = 0;
++	int was_modified = 0;
  
-+/*
-+ * journal_try_to_free_buffers() could race with journal_commit_transaction()
-+ * The latter might still hold the a count on buffers when inspecting
-+ * them on t_syncdata_list or t_locked_list.
-+ *
-+ * journal_try_to_free_buffers() will call this function to
-+ * wait for the current transaction to finish syncing data buffers, before
-+ * tryinf to free that buffer.
-+ *
-+ * Called with journal->j_state_lock held.
-+ */
-+static void journal_wait_for_transaction_sync_data(journal_t *journal)
-+{
-+	transaction_t *transaction = NULL;
-+	tid_t tid;
-+
-+	spin_lock(&journal->j_state_lock);
-+	transaction = journal->j_committing_transaction;
-+
-+	if (!transaction) {
-+		spin_unlock(&journal->j_state_lock);
-+		return;
-+	}
-+
-+	tid = transaction->t_tid;
-+	spin_unlock(&journal->j_state_lock);
-+	log_wait_commit(journal, tid);
-+}
+ 	BUFFER_TRACE(bh, "entry");
  
- /**
-  * int journal_try_to_free_buffers() - try to free page buffers.
-  * @journal: journal for operation
-  * @page: to try and free
-- * @unused_gfp_mask: unused
-+ * @gfp_mask: we use the mask to detect how hard should we try to release
-+ * buffers. If __GFP_WAIT and __GFP_FS is set, we wait for commit code to
-+ * release the buffers.
-  *
-  *
-  * For all the buffers on this page,
-@@ -1667,9 +1697,11 @@ out:
-  * journal_try_to_free_buffer() is changing its state.  But that
-  * cannot happen because we never reallocate freed data as metadata
-  * while the data is part of a transaction.  Yes?
-+ *
-+ * Return 0 on failure, 1 on success
-  */
- int journal_try_to_free_buffers(journal_t *journal,
--				struct page *page, gfp_t unused_gfp_mask)
-+				struct page *page, gfp_t gfp_mask)
- {
- 	struct buffer_head *head;
- 	struct buffer_head *bh;
-@@ -1698,7 +1730,28 @@ int journal_try_to_free_buffers(journal_
- 		if (buffer_jbd(bh))
- 			goto busy;
- 	} while ((bh = bh->b_this_page) != head);
+@@ -1253,6 +1254,9 @@ int journal_forget (handle_t *handle, st
+ 		goto not_jbd;
+ 	}
+ 
++	/* keep track of wether or not this transaction modified us */
++	was_modified = jh->b_modified;
 +
- 	ret = try_to_free_buffers(page);
+ 	/*
+ 	 * The buffer's going from the transaction, we must drop
+ 	 * all references -bzzz
+@@ -1270,7 +1274,12 @@ int journal_forget (handle_t *handle, st
+ 
+ 		JBUFFER_TRACE(jh, "belongs to current transaction: unfile");
+ 
+-		drop_reserve = 1;
++		/*
++		 * we only want to drop a reference if this transaction
++		 * modified the buffer
++		 */
++		if (was_modified)
++			drop_reserve = 1;
+ 
+ 		/*
+ 		 * We are no longer going to journal this buffer.
+@@ -1310,7 +1319,13 @@ int journal_forget (handle_t *handle, st
+ 		if (jh->b_next_transaction) {
+ 			J_ASSERT(jh->b_next_transaction == transaction);
+ 			jh->b_next_transaction = NULL;
+-			drop_reserve = 1;
 +
-+	/*
-+	 * There are a number of places where journal_try_to_free_buffers()
-+	 * could race with journal_commit_transaction(), the later still
-+	 * holds the reference to the buffers to free while processing them.
-+	 * try_to_free_buffers() failed to free those buffers. Some of the
-+	 * caller of releasepage() request page buffers to be dropped, otherwise
-+	 * treat the fail-to-free as errors (such as generic_file_direct_IO())
-+	 *
-+	 * So, if the caller of try_to_release_page() wants the synchronous
-+	 * behaviour(i.e make sure buffers are dropped upon return),
-+	 * let's wait for the current transaction to finish flush of
-+	 * dirty data buffers, then try to free those buffers again,
-+	 * with the journal locked.
-+	 */
-+	if (ret == 0 && (gfp_mask & __GFP_WAIT) && (gfp_mask & __GFP_FS)) {
-+		journal_wait_for_transaction_sync_data(journal);
-+		ret = try_to_free_buffers(page);
-+	}
-+
- busy:
- 	return ret;
- }
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -2574,9 +2574,8 @@ out:
-  * Otherwise return zero.
-  *
-  * The @gfp_mask argument specifies whether I/O may be performed to release
-- * this page (__GFP_IO), and whether the call may block (__GFP_WAIT).
-+ * this page (__GFP_IO), and whether the call may block (__GFP_WAIT & __GFP_FS).
-  *
-- * NOTE: @gfp_mask may go away, and this function may become non-blocking.
-  */
- int try_to_release_page(struct page *page, gfp_t gfp_mask)
- {
++			/*
++			 * only drop a reference if this transaction modified
++			 * the buffer
++			 */
++			if (was_modified)
++				drop_reserve = 1;
+ 		}
+ 	}
+ 
+@@ -2135,7 +2150,7 @@ void __journal_refile_buffer(struct jour
+ 	jh->b_transaction = jh->b_next_transaction;
+ 	jh->b_next_transaction = NULL;
+ 	__journal_file_buffer(jh, jh->b_transaction,
+-				was_dirty ? BJ_Metadata : BJ_Reserved);
++				jh->b_modified ? BJ_Metadata : BJ_Reserved);
+ 	J_ASSERT_JH(jh, jh->b_transaction->t_state == T_RUNNING);
+ 
+ 	if (was_dirty)
 
 -- 
