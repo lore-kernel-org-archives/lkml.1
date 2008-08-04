@@ -1,87 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbYHDRrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbYHDRwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755159AbYHDRrX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 13:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYHDRrH
+	id S1754221AbYHDRwR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 13:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYHDRwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 13:47:07 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:37438
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751351AbYHDRrF (ORCPT
+	Mon, 4 Aug 2008 13:52:03 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:35212 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750965AbYHDRwB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 13:47:05 -0400
-Date: Mon, 4 Aug 2008 19:46:59 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Dave Jones <davej@redhat.com>, Roland Dreier <rdreier@cisco.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
-Message-ID: <20080804174659.GK11476@duo.random>
-References: <20080804131012.246115111@chello.nl> <ada63qgvppx.fsf@cisco.com> <1217859571.3589.7.camel@twins> <aday73cua99.fsf@cisco.com> <1217860332.3589.11.camel@twins> <20080804145318.GA17867@redhat.com> <1217861763.3589.13.camel@twins> <20080804162657.GI11476@duo.random> <1217867935.3589.35.camel@twins> <20080804172728.GJ11476@duo.random>
+	Mon, 4 Aug 2008 13:52:01 -0400
+Date: Mon, 4 Aug 2008 13:50:16 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>, axboe@kernel.dk
+Subject: [PATCH] BLOCK: Simplify the Kconfig structure for the BLOCK layer.
+Message-ID: <alpine.LFD.1.10.0808041347270.7208@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080804172728.GJ11476@duo.random>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrea Arcangeli <andrea@qumranet.com>
 
-Lockdep can't recognize if spinlocks are at a different address. So
-trylock avoids lockdep to generate false positives. After lockdep will
-be fixed this change can and should be reverted.
+Given that everything in block/Kconfig and block/Kconfig.iosched
+depends on "BLOCK", might as well just wrap the entire contents in a
+single conditional and remove the unnecessary tests.
 
-Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+
 ---
 
-On Mon, Aug 04, 2008 at 07:27:28PM +0200, Andrea Arcangeli wrote:
-> I can reproduce this now yes after a 'make sync'.
+  unless there's something tricky or obscure that can happen in the
+block layer that *doesn't* depend on BLOCK, this should be a
+reasonable simplification.
 
-(btw it's not like I forgot to sync, but I sync against the wrong
-source tree previously because it was in the bash history, it's a bit
-complicate to explain)
 
-> I assume it can't understand the spinlock address is different (I
-> think it uses the address as key only for static locks), so I wonder
-> if you could call print_deadlock_bug() from the failure path of the
-> spinlock to solve this?
+ block/Kconfig         |    6 +++---
+ block/Kconfig.iosched |    4 ----
+ 2 files changed, 3 insertions(+), 7 deletions(-)
 
-In the meantime (as I doubt lockdep will get fixed any time soon) this
-will workaround it.
+diff --git a/block/Kconfig b/block/Kconfig
+index 1ab7c15..66cfacd 100644
+--- a/block/Kconfig
++++ b/block/Kconfig
+@@ -93,11 +93,11 @@ config BLK_DEV_INTEGRITY
+ 	T10/SCSI Data Integrity Field or the T13/ATA External Path
+ 	Protection.  If in doubt, say N.
 
-diff -r 3469dce61df1 mm/mmap.c
---- a/mm/mmap.c	Tue Jul 29 20:01:28 2008 +0200
-+++ b/mm/mmap.c	Mon Aug 04 19:41:53 2008 +0200
-@@ -2279,8 +2279,13 @@ static void vm_lock_anon_vma(struct anon
- 		/*
- 		 * The LSB of head.next can't change from under us
- 		 * because we hold the mm_all_locks_mutex.
-+		 *
-+		 * spin_lock would confuse lockdep who can't
-+		 * differentiate between the 'mapping' always changing
-+		 * address.
- 		 */
--		spin_lock(&anon_vma->lock);
-+		while (!spin_trylock(&anon_vma->lock))
-+			cpu_relax();
- 		/*
- 		 * We can safely modify head.next after taking the
- 		 * anon_vma->lock. If some other vma in this mm shares
-@@ -2310,7 +2315,13 @@ static void vm_lock_mapping(struct addre
- 		 */
- 		if (test_and_set_bit(AS_MM_ALL_LOCKS, &mapping->flags))
- 			BUG();
--		spin_lock(&mapping->i_mmap_lock);
-+		/*
-+		 * spin_lock would confuse lockdep who can't
-+		 * differentiate between the 'mapping' always changing
-+		 * address.
-+		 */
-+		while (!spin_trylock(&mapping->i_mmap_lock))
-+			cpu_relax();
- 	}
- }
- 
+-endif # BLOCK
+-
+ config BLOCK_COMPAT
+ 	bool
+-	depends on BLOCK && COMPAT
++	depends on COMPAT
+ 	default y
+
+ source block/Kconfig.iosched
++
++endif # BLOCK
+diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
+index 7e803fc..5ada7f1 100644
+--- a/block/Kconfig.iosched
++++ b/block/Kconfig.iosched
+@@ -1,5 +1,3 @@
+-if BLOCK
+-
+ menu "IO Schedulers"
+
+ config IOSCHED_NOOP
+@@ -69,5 +67,3 @@ config DEFAULT_IOSCHED
+ 	default "noop" if DEFAULT_NOOP
+
+ endmenu
+-
+-endif
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
