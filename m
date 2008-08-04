@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbYHDLSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYHDLUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755241AbYHDLSv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 07:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbYHDLSl
+	id S1755352AbYHDLUU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 07:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbYHDLUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 07:18:41 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:50289 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753075AbYHDLSk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 07:18:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Y3PuJWMBhjeheEVehFyS2PbGGDhstWzqv9SUpmXV7+J+YGbBg3sLbx1AJdcaTUuh9x
-         olZAoHUYLGX2gudRT5IzcwuhRkY1OkOgQLwo5TrDz0ye7lWOp0ZK5e5ZBmXFvryE2cz7
-         V1400ZTj1BRTfXLK9LtIp1rvGpnlDfZ/f5yb8=
-Message-ID: <9debc4410808040418u25f49436r4bb689f04f792564@mail.gmail.com>
-Date: Mon, 4 Aug 2008 16:48:38 +0530
-From: "Maxin John" <maxin.john@gmail.com>
-To: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Subject: Re: regarding mprotect() implementation in 2.6.26 kernel
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       ak@muc.de, mtk.manpages@gmail.com, shields@tembel.org,
-       hirofumi@mail.parknet.co.jp
-In-Reply-To: <cfd18e0f0808040341l1037ff77rc7c1b52f2bfe0dc7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Aug 2008 07:20:07 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:51839 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753165AbYHDLUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 07:20:06 -0400
+Date: Mon, 4 Aug 2008 15:23:46 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mark McLoughlin <markmc@redhat.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] posix-timers: don't switch to ->group_leader if ->it_process dies
+Message-ID: <20080804112346.GA76@tv-sign.ru>
+References: <20080803174910.GA4913@tv-sign.ru> <20080804025633.A4620154217@magilla.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <9debc4410807310315n4da5beafh853a71f532420e9a@mail.gmail.com>
-	 <9debc4410807310324m4a76aaf5s253242e5cc2bb130@mail.gmail.com>
-	 <4891D58E.1070308@goop.org>
-	 <9debc4410808040319i3358a916v3b6cd534c0a0802c@mail.gmail.com>
-	 <cfd18e0f0808040334p67b2c9f8g586fa984f6c96e55@mail.gmail.com>
-	 <cfd18e0f0808040341l1037ff77rc7c1b52f2bfe0dc7@mail.gmail.com>
+In-Reply-To: <20080804025633.A4620154217@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Michael,
+On 08/03, Roland McGrath wrote:
+>
+> The key thing that the old code does it to drop the ref to the old task as
+> soon as it notices.
 
+I thought about this too. But, again, this doesn't actually work. And it is
+very easy to pin the dead task_struct. The user can just create the
+SIGEV_THREAD_ID timer and kill the sub-thread (->it_process). Without
+calling timer_settime() the timer can't notice the death.
 
-> So, after a quick search, it looks as though in kernels before 2.4.19,
-> the EFAULT error resulted instead of ENOMEM for this case.  Does that
-> sound right to you?
+(just in case, please note that the next patch doesn't make things worse,
+ when ->group_leader dies the timer should be destroyed soon).
 
- Yes, I do agree with you. After Linux Kernel version 2.4.19 , the
-ENOMEM error resulted instead of EFAULT in the mprotect().
+> It may be worthwhile to do that in the case where
+> send_sigqueue fails.
 
-Regards,
+I think it is better to convert the posix timers to use "struct pid*" instead
+of "struct task_struct*". This change looks more or less straightforward, and
+it should fix the problem.
 
-Maxin B. John
-Bangalore, India
+Oleg.
+
