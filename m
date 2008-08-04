@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757502AbYHDRNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759357AbYHDRNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757502AbYHDRNs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 13:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbYHDRNg
+	id S1759357AbYHDRNX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 13:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756488AbYHDRNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 13:13:36 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:36692 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753646AbYHDRNf (ORCPT
+	Mon, 4 Aug 2008 13:13:14 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57704 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754658AbYHDRNN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 13:13:35 -0400
-Date: Tue, 5 Aug 2008 01:13:16 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Chris Mason <chris.mason@oracle.com>, dwmw2@infradead.org,
-       austin_zhang@linux.intel.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate	CRC32c algorithm by new crypto API.
-Message-ID: <20080804171316.GA13819@gondor.apana.org.au>
-References: <1217866496.29139.75.camel@think.oraclecorp.com> <E1KQ3Be-0003T3-00@gondolin.me.apana.org.au> <20080804100605.4f0921f4@infradead.org> <20080804171017.GA13725@gondor.apana.org.au>
+	Mon, 4 Aug 2008 13:13:13 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 5/6] alpha: Fix breakage in wdt_pci
+To: torvalds@osdl.org, linux-kernel@vger.kernel.org, wim@iguana.be
+Date: Mon, 04 Aug 2008 17:56:02 +0100
+Message-ID: <20080804165540.15222.82130.stgit@localhost.localdomain>
+In-Reply-To: <20080804164941.15222.24613.stgit@localhost.localdomain>
+References: <20080804164941.15222.24613.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080804171017.GA13725@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 01:10:17AM +0800, Herbert Xu wrote:
-> 
-> I don't see why you couldn't do that for the crypto API too
-> if you wanted to.  That way it would benefit all crypto users
-> rather than just the crc32c (note the extra c) users.
+From: Andrew Morton <akpm@linux-foundation.org>
 
-Anyway, the point here is the crc32c is nothing special.  It's
-just one out of many algorithms that has/will have hardware
-acceleration support.
+drivers/watchdog/wdt_pci.c: In function 'wdtpci_ctr_mode':
+drivers/watchdog/wdt_pci.c:120: error: implicit declaration of function 'udelay'
+{standard input}: Assembler messages:
 
-Rather than doing ad-hoc implementations and optimising that
-whenever such a thing pops up, let's spend our effort in creating
-a common platform that can be reused.
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+ drivers/watchdog/wdt_pci.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/watchdog/wdt_pci.c b/drivers/watchdog/wdt_pci.c
+index 078f37f..5d922fd 100644
+--- a/drivers/watchdog/wdt_pci.c
++++ b/drivers/watchdog/wdt_pci.c
+@@ -44,6 +44,7 @@
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+ #include <linux/ioport.h>
++#include <linux/delay.h>
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/init.h>
+
