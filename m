@@ -1,111 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbYHDRqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbYHDRrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754306AbYHDRqw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 13:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYHDRqo
+	id S1755159AbYHDRrX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 13:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYHDRrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 13:46:44 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:41916 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751319AbYHDRqn (ORCPT
+	Mon, 4 Aug 2008 13:47:07 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:37438
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751351AbYHDRrF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 13:46:43 -0400
-Date: Mon, 4 Aug 2008 10:45:11 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] KBUILD:  Extend "menuconfig" for modules to simplify
- Kconfig file.
-Message-Id: <20080804104511.2e02f15e.randy.dunlap@oracle.com>
-In-Reply-To: <alpine.LFD.1.10.0808041328440.6174@localhost.localdomain>
-References: <alpine.LFD.1.10.0808041328440.6174@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 4 Aug 2008 13:47:05 -0400
+Date: Mon, 4 Aug 2008 19:46:59 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Dave Jones <davej@redhat.com>, Roland Dreier <rdreier@cisco.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
+Message-ID: <20080804174659.GK11476@duo.random>
+References: <20080804131012.246115111@chello.nl> <ada63qgvppx.fsf@cisco.com> <1217859571.3589.7.camel@twins> <aday73cua99.fsf@cisco.com> <1217860332.3589.11.camel@twins> <20080804145318.GA17867@redhat.com> <1217861763.3589.13.camel@twins> <20080804162657.GI11476@duo.random> <1217867935.3589.35.camel@twins> <20080804172728.GJ11476@duo.random>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080804172728.GJ11476@duo.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Aug 2008 13:31:32 -0400 (EDT) Robert P. J. Day wrote:
+From: Andrea Arcangeli <andrea@qumranet.com>
 
-> 
-> Given that the init/Kconfig file uses a "menuconfig" directive for
-> modules already, might as well wrap all the submenu entries in an "if"
-> to toss all those dependencies.
-> 
-> Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+Lockdep can't recognize if spinlocks are at a different address. So
+trylock avoids lockdep to generate false positives. After lockdep will
+be fixed this change can and should be reverted.
 
-Looks good to me.  and tested.
-
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-
-
-> ---
-> 
-> diff --git a/init/Kconfig b/init/Kconfig
-> index 7e6dae1..b678803 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -845,9 +845,10 @@ menuconfig MODULES
-> 
->  	  If unsure, say Y.
-> 
-> +if MODULES
-> +
->  config MODULE_FORCE_LOAD
->  	bool "Forced module loading"
-> -	depends on MODULES
->  	default n
->  	help
->  	  Allow loading of modules without version information (ie. modprobe
-> @@ -856,7 +857,6 @@ config MODULE_FORCE_LOAD
-> 
->  config MODULE_UNLOAD
->  	bool "Module unloading"
-> -	depends on MODULES
->  	help
->  	  Without this option you will not be able to unload any
->  	  modules (note that some modules may not be unloadable
-> @@ -875,7 +875,6 @@ config MODULE_FORCE_UNLOAD
-> 
->  config MODVERSIONS
->  	bool "Module versioning support"
-> -	depends on MODULES
->  	help
->  	  Usually, you have to use modules compiled with your kernel.
->  	  Saying Y here makes it sometimes possible to use modules
-> @@ -886,7 +885,6 @@ config MODVERSIONS
-> 
->  config MODULE_SRCVERSION_ALL
->  	bool "Source checksum for all modules"
-> -	depends on MODULES
->  	help
->  	  Modules which contain a MODULE_VERSION get an extra "srcversion"
->  	  field inserted into their modinfo section, which contains a
-> @@ -898,11 +896,12 @@ config MODULE_SRCVERSION_ALL
-> 
->  config KMOD
->  	def_bool y
-> -	depends on MODULES
->  	help
->  	  This is being removed soon.  These days, CONFIG_MODULES
->  	  implies CONFIG_KMOD, so use that instead.
-> 
-> +endif # MODULES
-> +
->  config STOP_MACHINE
->  	bool
->  	default y
-
-
+Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
 ---
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+
+On Mon, Aug 04, 2008 at 07:27:28PM +0200, Andrea Arcangeli wrote:
+> I can reproduce this now yes after a 'make sync'.
+
+(btw it's not like I forgot to sync, but I sync against the wrong
+source tree previously because it was in the bash history, it's a bit
+complicate to explain)
+
+> I assume it can't understand the spinlock address is different (I
+> think it uses the address as key only for static locks), so I wonder
+> if you could call print_deadlock_bug() from the failure path of the
+> spinlock to solve this?
+
+In the meantime (as I doubt lockdep will get fixed any time soon) this
+will workaround it.
+
+diff -r 3469dce61df1 mm/mmap.c
+--- a/mm/mmap.c	Tue Jul 29 20:01:28 2008 +0200
++++ b/mm/mmap.c	Mon Aug 04 19:41:53 2008 +0200
+@@ -2279,8 +2279,13 @@ static void vm_lock_anon_vma(struct anon
+ 		/*
+ 		 * The LSB of head.next can't change from under us
+ 		 * because we hold the mm_all_locks_mutex.
++		 *
++		 * spin_lock would confuse lockdep who can't
++		 * differentiate between the 'mapping' always changing
++		 * address.
+ 		 */
+-		spin_lock(&anon_vma->lock);
++		while (!spin_trylock(&anon_vma->lock))
++			cpu_relax();
+ 		/*
+ 		 * We can safely modify head.next after taking the
+ 		 * anon_vma->lock. If some other vma in this mm shares
+@@ -2310,7 +2315,13 @@ static void vm_lock_mapping(struct addre
+ 		 */
+ 		if (test_and_set_bit(AS_MM_ALL_LOCKS, &mapping->flags))
+ 			BUG();
+-		spin_lock(&mapping->i_mmap_lock);
++		/*
++		 * spin_lock would confuse lockdep who can't
++		 * differentiate between the 'mapping' always changing
++		 * address.
++		 */
++		while (!spin_trylock(&mapping->i_mmap_lock))
++			cpu_relax();
+ 	}
+ }
+ 
