@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751608AbYHDVz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763688AbYHDV4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751608AbYHDVz6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759207AbYHDVsp
+	id S1763688AbYHDV4X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764762AbYHDVtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:48:45 -0400
-Received: from smtprelay04.ispgateway.de ([80.67.18.16]:56529 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758876AbYHDVsn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:48:43 -0400
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Keith Packard <keithp@keithp.com>
-Subject: Re: files/process scaling problem? (was: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM)
-Date: Mon, 4 Aug 2008 23:46:50 +0200
-User-Agent: KMail/1.9.9
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>, John Stoffel <john@stoffel.org>,
-       Christoph Hellwig <hch@infradead.org>, Eric Anholt <eric@anholt.net>,
-       linux-kernel@vger.kernel.org
-References: <1217573919-7496-1-git-send-email-eric@anholt.net> <20080804151146.71d9fcce@lxorguk.ukuu.org.uk> <1217869134.24714.70.camel@koto.keithp.com>
-In-Reply-To: <1217869134.24714.70.camel@koto.keithp.com>
+	Mon, 4 Aug 2008 17:49:12 -0400
+Received: from mx2.suse.de ([195.135.220.15]:50917 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755419AbYHDVtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:49:10 -0400
+Date: Mon, 4 Aug 2008 14:46:27 -0700
+From: Greg KH <gregkh@suse.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 01/25] ftrace: remove unneeded documentation
+Message-ID: <20080804214627.GA8840@suse.de>
+References: <20080804203506.816201392@mini.kroah.org> <20080804212932.GA8014@suse.de> <alpine.DEB.1.10.0808041741250.5205@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808042346.51391.ioe-lkml@rameria.de>
-X-Df-Sender: 849595
+In-Reply-To: <alpine.DEB.1.10.0808041741250.5205@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 August 2008, Keith Packard wrote:
-> On Mon, 2008-08-04 at 15:11 +0100, Alan Cox wrote:
+On Mon, Aug 04, 2008 at 05:42:20PM -0400, Steven Rostedt wrote:
 > 
-> > X libraries provide the event loop so that isn't really as complex as it
-> > seems.
+> On Mon, 4 Aug 2008, Greg KH wrote:
 > 
-> Uh, no, X doesn't. Gtk+ and Qt provide event loops that applications may
-> use, but still many choose to roll their own.
-
-Ok, how many need support for GEM? How many of them would change their
-event loop, if they can get better performance?
-
-Maybe have a slow path for legacy behavior?
-
-Really, the sleeping part of of event loops is usually hidden 
-in some libraries and the applications have a big switch statement 
-somewhere to dispatch the reasons for wakeup.
-
-> >  Shuffling the handles around for the benefit of the odd legacy app
-> > isn't something I'd disagree with but DRI and X in the general case can
-> > determine the event loop system used by the application.
+> > 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 > 
-> Yeah, it would be nice if we could just fix all of the existing
-> applications. 
+> Well, I object to this patch, but I'm sure I'll be ignored.
 
-That is never required as long as only performance suffers, 
-not functionality.
+Why?  There is no ftrace code in the 2.6.26 kernel, so why would we
+worry about keeping such documentation up to date, let alone even
+present at all?
 
-And the applications doing every syscall themselves are used to the pain :-)
+Why should this matter?
 
+thanks,
 
-Best Regards
-
-Ingo Oeser
+greg k-h
