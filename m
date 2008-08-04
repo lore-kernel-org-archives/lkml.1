@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760362AbYHCXoJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYHDAO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760362AbYHCXoJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 19:44:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759582AbYHCXnz
+	id S1755463AbYHDAO0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 20:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbYHDAOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 19:43:55 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42300 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758898AbYHCXnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 19:43:55 -0400
-Message-ID: <489642AF.3020708@pobox.com>
-Date: Sun, 03 Aug 2008 19:43:43 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, petkovbb@gmail.com,
-       petkovbb@googlemail.com, alan@redhat.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 1/2] pata_legacy: export functionality to ide
-References: <20080715053356.GA18628@gollum.tnic>	<20080803073756.GA8762@gollum.tnic>	<20080803125907.67676948@lxorguk.ukuu.org.uk>	<200808031537.41224.bzolnier@gmail.com> <20080803143939.37a74bf5@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080803143939.37a74bf5@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 3 Aug 2008 20:14:18 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:18568 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752688AbYHDAOR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 20:14:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=VhRkzsT3YlBz5TmrwkaV2t1FIEgs8Nk21PH0WvdHhszNTlL3qKt2/8O3nxSwgu1CWx
+         12jf2RKfwCwXEF6z0Svz4033toN0l8ZjpVmdBo3KQha+ubYoBbAwL9c+/S6/mmw1LwwH
+         WJ52GAyFE7CiCIABF+WtB13XACfM+ZDOiYQWY=
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+From: Josh Boyer <jwboyer@gmail.com>
+To: jmerkey@wolfmountaingroup.com
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <43318.166.70.238.45.1217792210.squirrel@webmail.wolfmountaingroup.com>
+References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
+	 <43318.166.70.238.45.1217792210.squirrel@webmail.wolfmountaingroup.com>
+Content-Type: text/plain
+Date: Sun, 03 Aug 2008 20:14:09 -0400
+Message-Id: <1217808849.2328.43.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> The code in question is 65 LOC total (43 LOC without counting comments)
->> so having a shared library just for it sounds like an overkill and we may
+On Sun, 2008-08-03 at 13:36 -0600, jmerkey@wolfmountaingroup.com wrote:
 > 
-> People expect code in C files, so in headers it gets missed as well as
-> dumped in a directory with no correlation between file name and subsystem.
+> This patch is formally submitted for consideration for inclusion in the
+> base linux kernel.
 > 
->> just copy that one function from pata_legacy to ide_generic instead.
-> 
-> If you are going to  #include two copies you might as well just copy it.
+> ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.26-ia32-08-02-08.patch
 
-That's pretty much my feeling...  just copy the code.
+Formally submitted patches should be sent to the list inline.  Reviewing
+something on an FTP server just becomes that much harder.
 
-If the shared code grows larger, create a kernel module with the stuff 
-shared by both libata and drivers/ide.
-
-liblibata?  libata-core-core?  :)
-
-	Jeff
-
+josh
 
