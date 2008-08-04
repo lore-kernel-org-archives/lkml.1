@@ -1,80 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763337AbYHDUvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763624AbYHDUwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763337AbYHDUvn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758425AbYHDUvc
+	id S1763624AbYHDUwc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbYHDUwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:51:32 -0400
-Received: from jenny.ondioline.org ([66.220.1.122]:49096 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758769AbYHDUvZ (ORCPT
+	Mon, 4 Aug 2008 16:52:23 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:65062 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755698AbYHDUwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:51:25 -0400
-From: Paul Collins <paul@burly.ondioline.org>
-To: michael@ellerman.id.au
-Cc: Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
-       linuxppc-dev@ozlabs.org, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux, post-2.6.27-rc1
-References: <87tze38vzt.fsf@burly.wgtn.ondioline.org>
-	<20080802184554.GB715@fieldses.org>
-	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
-	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
-	<18581.40960.737792.454035@notabene.brown>
-	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
-	<18582.32935.501672.689845@notabene.brown>
-	<87fxpll5zq.fsf@burly.wgtn.ondioline.org>
-	<87y73dcd60.fsf@burly.wgtn.ondioline.org>
-	<1217860597.12535.2.camel@localhost>
-Date: Tue, 05 Aug 2008 08:51:23 +1200
-In-Reply-To: <1217860597.12535.2.camel@localhost> (Michael Ellerman's message
-	of "Tue, 05 Aug 2008 00:36:37 +1000")
-Message-ID: <87hca05ws4.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
+	Mon, 4 Aug 2008 16:52:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=q76xr2OEbDGcVFTmWYfKmsPNRALEzf4YE0xaqakbd5Niu2DtiznxCXtPrSeb3JkkvP
+         W3gLVAKfQdJ6iUcNJO/ctmZbQGBTtYg/pa9qIvAhiUg9IJatLgB9F3jIzdnvPRf+h9jK
+         /zJzOFxv4r8QVNcq93Pq32FzdBgGokeU6DZZs=
+Message-ID: <520f0cf10808041352h78bd4319x1802f018aeffe6dc@mail.gmail.com>
+Date: Mon, 4 Aug 2008 22:52:19 +0200
+From: "John Kacur" <jkacur@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>
+Subject: [PATCH RFC] pm_qos_requirement might sleep
+Cc: "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Peter Zijlstra" <peterz@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_35101_28729097.1217883139712"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Ellerman <michael@ellerman.id.au> writes:
+------=_Part_35101_28729097.1217883139712
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> On Mon, 2008-08-04 at 22:00 +1200, Paul Collins wrote:
->> Paul Collins <paul@burly.ondioline.org> writes:
->> 
->> > Neil Brown <neilb@suse.de> writes:
->> >> Could you try removing the 'static' declaration for nfsd_acceptable
->> >> and recompile?
->> >> Or maybe try a different compiler?
->> >
->> > I will give these a try this evening.
->> 
->> I built myself a nice new cross compiler:
->> 
->>         powerpc-linux-gnu-gcc-4.1 (GCC) 4.1.3 20080623 (prerelease) (Debian 4.1.2-23)
->> 
->> and rebuilt 94ad374a0751f40d25e22e036c37f7263569d24c.  Running that on
->> the server and 2.6.26 on the client, I got yet another Oops.  This one
->> locked the machine up pretty good, so all I have is a picture:
->> 
->> http://ondioline.org/~paul/DSCN1608.JPG
->
-> Wow.
->
-> Can you try building a kernel on the server? ie. not over NFS.
+Even after applying some fixes posted by Chirag and Peter Z, I'm still
+getting some messages in my log like this
+BUG: sleeping function called from invalid context swapper(0) at
+kernel/rtmutex.c:743
+in_atomic():1 [00000001], irqs_disabled():1
+Pid: 0, comm: swapper Tainted: G        W 2.6.26.1-rt1.jk #2
 
-Built kernels on the server with native gcc 4.2.4 and 4.3.1 and repeated
-the build test.  Both of them threw an Oops with traces like the ones
-we've seen before.  Also, because now's about time to start shooting in
-the dark, I tried a cross-built kernel with CC_OPTIMIZE_FOR_SIZE
-disabled.  That one Oopses too.  Also I reseated the server's memory.
+Call Trace:
+ [<ffffffff802305d3>] __might_sleep+0x12d/0x132
+ [<ffffffff8046cdbe>] __rt_spin_lock+0x34/0x7d
+ [<ffffffff8046ce15>] rt_spin_lock+0xe/0x10
+ [<ffffffff802532e5>] pm_qos_requirement+0x1f/0x3c
+ [<ffffffff803e1b7f>] menu_select+0x7b/0x9c
+ [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
+ [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
+ [<ffffffff803e0b4b>] cpuidle_idle_call+0x68/0xd8
+ [<ffffffff803e0ae3>] ? cpuidle_idle_call+0x0/0xd8
+ [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
+ [<ffffffff8020b333>] cpu_idle+0xb2/0x12d
+ [<ffffffff80466af0>] start_secondary+0x186/0x18b
 
-Although I've been able to build kernels over NFS with 2.6.26 on the
-server, I've just realized I haven't tried to stress it much.  I'll try
-a build loop when the server's running 2.6.26 this evening.
+---------------------------
+| preempt count: 00000001 ]
+| 1-level deep critical section nesting:
+----------------------------------------
+.. [<ffffffff8020b39c>] .... cpu_idle+0x11b/0x12d
+.....[<ffffffff80466af0>] ..   ( <= start_secondary+0x186/0x18b)
 
--- 
-Paul Collins
-Wellington, New Zealand
+The following simple patch makes the messages disappear - however,
+there may be a better more fine grained solution, but the problem is
+also that all the functions are designed to use the same lock.
 
-Dag vijandelijk luchtschip de huismeester is dood
+------=_Part_35101_28729097.1217883139712
+Content-Type: text/x-patch; name=pm_qos_requirement.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fjhk3o5e0
+Content-Disposition: attachment; filename=pm_qos_requirement.patch
+
+cG1fcW9zX3JlcXVpcmVtZW50LWZpeApTaWduZWQtb2ZmLWJ5OiBKb2huIEthY3VyIDxqa2FjdXIg
+YXQgZ21haWwgZG90IGNvbT4KCkluZGV4OiBsaW51eC0yLjYuMjYuMS1qay1ydDEva2VybmVsL3Bt
+X3Fvc19wYXJhbXMuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYuMjYuMS1qay1ydDEub3JpZy9r
+ZXJuZWwvcG1fcW9zX3BhcmFtcy5jCisrKyBsaW51eC0yLjYuMjYuMS1qay1ydDEva2VybmVsL3Bt
+X3Fvc19wYXJhbXMuYwpAQCAtMTEwLDcgKzExMCw3IEBAIHN0YXRpYyBzdHJ1Y3QgcG1fcW9zX29i
+amVjdCAqcG1fcW9zX2FycmEKIAkmbmV0d29ya190aHJvdWdocHV0X3BtX3FvcwogfTsKIAotc3Rh
+dGljIERFRklORV9TUElOTE9DSyhwbV9xb3NfbG9jayk7CitzdGF0aWMgREVGSU5FX1JBV19TUElO
+TE9DSyhwbV9xb3NfbG9jayk7CiAKIHN0YXRpYyBzc2l6ZV90IHBtX3Fvc19wb3dlcl93cml0ZShz
+dHJ1Y3QgZmlsZSAqZmlscCwgY29uc3QgY2hhciBfX3VzZXIgKmJ1ZiwKIAkJc2l6ZV90IGNvdW50
+LCBsb2ZmX3QgKmZfcG9zKTsK
+------=_Part_35101_28729097.1217883139712--
