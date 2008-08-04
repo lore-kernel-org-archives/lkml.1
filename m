@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764835AbYHDVeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765071AbYHDVf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764835AbYHDVeu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764631AbYHDVd5
+	id S1765071AbYHDVf7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764858AbYHDVeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:33:57 -0400
-Received: from mx1.suse.de ([195.135.220.2]:54404 "EHLO mx1.suse.de"
+	Mon, 4 Aug 2008 17:34:46 -0400
+Received: from mx1.suse.de ([195.135.220.2]:54481 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763026AbYHDVdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:33:55 -0400
-Date: Mon, 4 Aug 2008 14:29:37 -0700
+	id S1765317AbYHDVeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:34:44 -0400
+Date: Mon, 4 Aug 2008 14:29:42 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,16 +23,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Matt Waddel <matt.waddel@freescale.com>,
-       Greg Ungerer <gerg@snapgear.com>
-Subject: [patch 02/25] romfs_readpage: dont report errors for pages beyond
-	i_size
-Message-ID: <20080804212937.GB8014@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Pete Wyckoff <pw@osc.edu>, Oliver Pinter <oliver.pntr@gmail.com>
+Subject: [patch 04/25] SCSI: bsg: fix bsg_mutex hang with device removal
+Message-ID: <20080804212942.GD8014@suse.de>
 References: <20080804203506.816201392@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="romfs_readpage-don-t-report-errors-for-pages-beyond-i_size.patch"
+Content-Disposition: inline; filename="scsi-bsg-fix-bsg_mutex-hang-with-device-removal.patch"
 In-Reply-To: <20080804212725.GA7944@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,83 +43,60 @@ know.
 
 ------------------
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-commit 0056e65f9e28d83ee1a3fb4f7d0041e838f03c34 upstream
+commit 3f27e3ed11e67c5ee19d560a50eafd93cf8c6682 upstream
 
-We zero-fill them like we are supposed to, and that's all fine.  It's
-only an error if the 'romfs_copyfrom()' routine isn't able to fill the
-data that is supposed to be there.
+[SCSI] bsg: fix bsg_mutex hang with device removal
 
-Most of the patch is really just re-organizing the code a bit, and using
-separate variables for the error value and for how much of the page we
-actually filled from the filesystem.
+We don't need to hold bsg_mutex during bsg_complete_all_commands(). It
+leads to a problem that we block bsg_unregister_queue during
+bsg_complete_all_commands (untill all the outstanding commands
+complete).
 
-Reported-and-tested-by: Chris Fester <cfester@wms.com>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: Matt Waddel <matt.waddel@freescale.com>
-Cc: Greg Ungerer <gerg@snapgear.com>
-Signed-of-by: Linus Torvalds <torvalds@linux-foundation.org>
+Thanks to Pete Wyckoff for finding the bug and testing the patch.
+
+The detailed bug report is:
+
+http://marc.info/?l=linux-scsi&m=121182137132145&w=2
+
+Tested-by: Pete Wyckoff <pw@osc.edu>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Oliver Pinter <oliver.pntr@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/romfs/inode.c |   37 +++++++++++++++++++++++--------------
- 1 file changed, 23 insertions(+), 14 deletions(-)
+ block/bsg.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
---- a/fs/romfs/inode.c
-+++ b/fs/romfs/inode.c
-@@ -418,7 +418,8 @@ static int
- romfs_readpage(struct file *file, struct page * page)
- {
- 	struct inode *inode = page->mapping->host;
--	loff_t offset, avail, readlen;
-+	loff_t offset, size;
-+	unsigned long filled;
- 	void *buf;
- 	int result = -EIO;
+--- a/block/bsg.c
++++ b/block/bsg.c
+@@ -725,8 +725,13 @@ static int bsg_put_device(struct bsg_dev
+ 	mutex_lock(&bsg_mutex);
  
-@@ -430,21 +431,29 @@ romfs_readpage(struct file *file, struct
+ 	do_free = atomic_dec_and_test(&bd->ref_count);
+-	if (!do_free)
++	if (!do_free) {
++		mutex_unlock(&bsg_mutex);
+ 		goto out;
++	}
++
++	hlist_del(&bd->dev_list);
++	mutex_unlock(&bsg_mutex);
  
- 	/* 32 bit warning -- but not for us :) */
- 	offset = page_offset(page);
--	if (offset < i_size_read(inode)) {
--		avail = inode->i_size-offset;
--		readlen = min_t(unsigned long, avail, PAGE_SIZE);
--		if (romfs_copyfrom(inode, buf, ROMFS_I(inode)->i_dataoffset+offset, readlen) == readlen) {
--			if (readlen < PAGE_SIZE) {
--				memset(buf + readlen,0,PAGE_SIZE-readlen);
--			}
--			SetPageUptodate(page);
--			result = 0;
-+	size = i_size_read(inode);
-+	filled = 0;
-+	result = 0;
-+	if (offset < size) {
-+		unsigned long readlen;
-+
-+		size -= offset;
-+		readlen = size > PAGE_SIZE ? PAGE_SIZE : size;
-+
-+		filled = romfs_copyfrom(inode, buf, ROMFS_I(inode)->i_dataoffset+offset, readlen);
-+
-+		if (filled != readlen) {
-+			SetPageError(page);
-+			filled = 0;
-+			result = -EIO;
- 		}
- 	}
--	if (result) {
--		memset(buf, 0, PAGE_SIZE);
--		SetPageError(page);
--	}
-+
-+	if (filled < PAGE_SIZE)
-+		memset(buf + filled, 0, PAGE_SIZE-filled);
-+
-+	if (!result)
-+		SetPageUptodate(page);
- 	flush_dcache_page(page);
+ 	dprintk("%s: tearing down\n", bd->name);
  
- 	unlock_page(page);
+@@ -742,10 +747,8 @@ static int bsg_put_device(struct bsg_dev
+ 	 */
+ 	ret = bsg_complete_all_commands(bd);
+ 
+-	hlist_del(&bd->dev_list);
+ 	kfree(bd);
+ out:
+-	mutex_unlock(&bsg_mutex);
+ 	kref_put(&q->bsg_dev.ref, bsg_kref_release_function);
+ 	if (do_free)
+ 		blk_put_queue(q);
 
 -- 
