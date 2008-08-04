@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbYHDOy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758587AbYHDOzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758393AbYHDOy4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 10:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbYHDOyW
+	id S1758587AbYHDOzY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 10:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbYHDOyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 10:54:22 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:43127 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756970AbYHDOyV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 10:54:21 -0400
-Date: Mon, 4 Aug 2008 22:54:11 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Austin Zhang <austin_zhang@linux.intel.com>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c algorithm by new crypto API.
-Message-ID: <20080804145411.GA11889@gondor.apana.org.au>
-References: <1217842507.20845.18.camel@localhost.localdomain> <1217844725.3454.580.camel@pmac.infradead.org> <1217846139.20845.25.camel@localhost.localdomain> <1217846726.3454.589.camel@pmac.infradead.org> <20080804140435.GA11227@gondor.apana.org.au> <20080804072015.0fcd23e7@infradead.org> <1217861341.3454.641.camel@pmac.infradead.org>
+	Mon, 4 Aug 2008 10:54:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:32819 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758140AbYHDOyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 10:54:38 -0400
+Date: Mon, 4 Aug 2008 10:53:18 -0400
+From: Dave Jones <davej@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Roland Dreier <rdreier@cisco.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
+Message-ID: <20080804145318.GA17867@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Roland Dreier <rdreier@cisco.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, jeremy@goop.org,
+	hugh@veritas.com, mingo@elte.hu, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
+References: <20080804130317.994042639@chello.nl> <20080804131012.246115111@chello.nl> <ada63qgvppx.fsf@cisco.com> <1217859571.3589.7.camel@twins> <aday73cua99.fsf@cisco.com> <1217860332.3589.11.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1217861341.3454.641.camel@pmac.infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1217860332.3589.11.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 04, 2008 at 03:49:01PM +0100, David Woodhouse wrote:
->
-> And even for people who don't care about that, it doesn't look
-> particularly good. It looks like btrfs would need either to keep setting
-> up a crypto context and then tearing it down, or have a pool of
-> long-standing contexts and do some kind of locking on them -- neither of
-> which seem particularly optimal compared with just calling into
-> libcrc32c.
+On Mon, Aug 04, 2008 at 04:32:12PM +0200, Peter Zijlstra wrote:
+ > On Mon, 2008-08-04 at 07:26 -0700, Roland Dreier wrote:
+ > > > No more than 48 locks (mutexes, rwlocks, spinlock, RCU, everything
+ > >  > covered by lockdep) held by any one code-path; including nested
+ > >  > interrupt contexts.
+ > > 
+ > > Does that mean that something like the new mm_take_all_locks() operation
+ > > is going to explode if someone tries to use it with lockdep on?
+ > 
+ > Gah - yes, clearly nobody tried this.. :-/
+ > 
+ > Just looking at the code it will not only run into this limit, but it
+ > would warn about recursion on the second file/anon vma due to utter lack
+ > of annotation.
+ > 
+ > Why are people still developing without lockdep?
 
-No you don't have to set things up every time you use crc32c.
-The crypto interface lets you have a single tfm that can be
-used by multiple users simultaneously.  For ahash algorithms
-all the state is stored in the request which can stay on the
-stack.
+More puzzling, is why hasn't this triggered in the Fedora rawhide kernels,
+which do have lockdep enabled.
 
-Cheers,
+	Dave
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+http://www.codemonkey.org.uk
