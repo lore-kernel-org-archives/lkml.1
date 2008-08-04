@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763562AbYHDVfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765579AbYHDVgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763562AbYHDVfJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763259AbYHDVeW
+	id S1765579AbYHDVgk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764930AbYHDVfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:34:22 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49840 "EHLO mx2.suse.de"
+	Mon, 4 Aug 2008 17:35:34 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54573 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763741AbYHDVeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:34:19 -0400
-Date: Mon, 4 Aug 2008 14:29:40 -0700
+	id S1764788AbYHDVfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:35:32 -0400
+Date: Mon, 4 Aug 2008 14:29:47 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Cyrill Gorcunov <gorcunov@gmail.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,127 +23,52 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Patrick McHardy <kaber@trash.net>
-Subject: [patch 03/25] netfilter: nf_nat_sip: c= is optional for session
-Message-ID: <20080804212940.GC8014@suse.de>
+       alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
+       Ingo Molnar <mingo@elte.hu>, Oliver Pinter <oliver.pntr@gmail.com>
+Subject: [patch 06/25] x86: io delay - add checking for NULL early param
+Message-ID: <20080804212947.GF8014@suse.de>
 References: <20080804203506.816201392@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="netfilter-nf_nat_sip-c-is-optional-for-session.patch"
+Content-Disposition: inline; filename="x86-io-delay-add-checking-for-null-early-param.patch"
 In-Reply-To: <20080804212725.GA7944@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.26-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Cyrill Gorcunov <gorcunov@gmail.com>
 
-netfilter: nf_nat_sip: c= is optional for session
+[ Upstream commit d6cd7effcc5e0047faf15ab0a54c980f1a616a07 ]
 
-Upstream commit c71529e4:
-
-According to RFC2327, the connection information is optional
-in the session description since it can be specified in the
-media description instead.
-
-My provider does exactly that and does not provide any connection
-information in the session description.  As a result the new
-kernel drops all invite responses.
-
-This patch makes it optional as documented.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: akpm@linux-foundation.org
+Cc: andi@firstfloor.org
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+CC: Oliver Pinter <oliver.pntr@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/netfilter/nf_nat_sip.c |   38 +++++++++++++++++++++++++-------------
- 1 file changed, 25 insertions(+), 13 deletions(-)
+ arch/x86/kernel/io_delay.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/net/ipv4/netfilter/nf_nat_sip.c
-+++ b/net/ipv4/netfilter/nf_nat_sip.c
-@@ -318,11 +318,11 @@ static int mangle_content_len(struct sk_
- 			     buffer, buflen);
- }
+--- a/arch/x86/kernel/io_delay.c
++++ b/arch/x86/kernel/io_delay.c
+@@ -103,6 +103,9 @@ void __init io_delay_init(void)
  
--static unsigned mangle_sdp_packet(struct sk_buff *skb, const char **dptr,
--				  unsigned int dataoff, unsigned int *datalen,
--				  enum sdp_header_types type,
--				  enum sdp_header_types term,
--				  char *buffer, int buflen)
-+static int mangle_sdp_packet(struct sk_buff *skb, const char **dptr,
-+			     unsigned int dataoff, unsigned int *datalen,
-+			     enum sdp_header_types type,
-+			     enum sdp_header_types term,
-+			     char *buffer, int buflen)
+ static int __init io_delay_param(char *s)
  {
- 	enum ip_conntrack_info ctinfo;
- 	struct nf_conn *ct = nf_ct_get(skb, &ctinfo);
-@@ -330,9 +330,9 @@ static unsigned mangle_sdp_packet(struct
- 
- 	if (ct_sip_get_sdp_header(ct, *dptr, dataoff, *datalen, type, term,
- 				  &matchoff, &matchlen) <= 0)
--		return 0;
-+		return -ENOENT;
- 	return mangle_packet(skb, dptr, datalen, matchoff, matchlen,
--			     buffer, buflen);
-+			     buffer, buflen) ? 0 : -EINVAL;
- }
- 
- static unsigned int ip_nat_sdp_addr(struct sk_buff *skb, const char **dptr,
-@@ -346,8 +346,8 @@ static unsigned int ip_nat_sdp_addr(stru
- 	unsigned int buflen;
- 
- 	buflen = sprintf(buffer, NIPQUAD_FMT, NIPQUAD(addr->ip));
--	if (!mangle_sdp_packet(skb, dptr, dataoff, datalen, type, term,
--			       buffer, buflen))
-+	if (mangle_sdp_packet(skb, dptr, dataoff, datalen, type, term,
-+			      buffer, buflen))
- 		return 0;
- 
- 	return mangle_content_len(skb, dptr, datalen);
-@@ -381,15 +381,27 @@ static unsigned int ip_nat_sdp_session(s
- 
- 	/* Mangle session description owner and contact addresses */
- 	buflen = sprintf(buffer, "%u.%u.%u.%u", NIPQUAD(addr->ip));
--	if (!mangle_sdp_packet(skb, dptr, dataoff, datalen,
-+	if (mangle_sdp_packet(skb, dptr, dataoff, datalen,
- 			       SDP_HDR_OWNER_IP4, SDP_HDR_MEDIA,
- 			       buffer, buflen))
- 		return 0;
- 
--	if (!mangle_sdp_packet(skb, dptr, dataoff, datalen,
--			       SDP_HDR_CONNECTION_IP4, SDP_HDR_MEDIA,
--			       buffer, buflen))
-+	switch (mangle_sdp_packet(skb, dptr, dataoff, datalen,
-+				  SDP_HDR_CONNECTION_IP4, SDP_HDR_MEDIA,
-+				  buffer, buflen)) {
-+	case 0:
-+	/*
-+	 * RFC 2327:
-+	 *
-+	 * Session description
-+	 *
-+	 * c=* (connection information - not required if included in all media)
-+	 */
-+	case -ENOENT:
-+		break;
-+	default:
- 		return 0;
-+	}
- 
- 	return mangle_content_len(skb, dptr, datalen);
- }
++	if (!s)
++		return -EINVAL;
++
+ 	if (!strcmp(s, "0x80"))
+ 		io_delay_type = CONFIG_IO_DELAY_TYPE_0X80;
+ 	else if (!strcmp(s, "0xed"))
 
 -- 
