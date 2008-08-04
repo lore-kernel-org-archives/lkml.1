@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbYHDAlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbYHDAu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757839AbYHDAlA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 20:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbYHDAkv
+	id S1756938AbYHDAu1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 20:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbYHDAuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 20:40:51 -0400
-Received: from smtp.blackdown.de ([78.47.134.53]:44789 "EHLO smtp.blackdown.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751547AbYHDAku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 20:40:50 -0400
-Message-ID: <4896500E.2040304@blackdown.de>
-Date: Mon, 04 Aug 2008 02:40:46 +0200
-From: Juergen Kreileder <jk@blackdown.de>
-Organization: Blackdown Java-Linux Team
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Sun, 3 Aug 2008 20:50:15 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61391 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752817AbYHDAuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 20:50:14 -0400
+Message-ID: <489651E6.90001@cn.fujitsu.com>
+Date: Mon, 04 Aug 2008 08:48:38 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: SW-IOMMU / ata_piix errors with 2.6.27-rc1
-References: <fa.64b92XSd5HpCdpOYcDENnJSZJyw@ifi.uio.no> <4896157A.2020907@shaw.ca>
-In-Reply-To: <4896157A.2020907@shaw.ca>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrea Righi <righi.andrea@gmail.com>
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       akpm@linux-foundation.org, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       axboe@kernel.dk, matt@bluehost.com, roberto@unbit.it,
+       Marco Innocenti <m.innocenti@cineca.it>, randy.dunlap@oracle.com,
+       Divyesh Shah <dpshah@google.com>, subrata@linux.vnet.ibm.com,
+       eric.rannaud@gmail.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 2/3] i/o controller infrastructure
+References: <> <1217801698-13438-3-git-send-email-righi.andrea@gmail.com>
+In-Reply-To: <1217801698-13438-3-git-send-email-righi.andrea@gmail.com>
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Juergen Kreileder wrote:
->> Hi,
->>
->> I get lots of errors like this with 2.6.27-rc1 on my
->> Macbook Pro (3rd generation), 2.6.26 seems to work fine:
->>
->> [  907.524509] DMA: Out of SW-IOMMU space for 45056 bytes at device 0000:00:1f.2
->> [  907.524783] ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
->> [  907.524796] ata3.00: cmd 35/00:50:08:91:5c/00:01:0f:00:00/e0 tag 0 dma 172032 out
->> [  907.524798]          res 50/00:00:ff:90:5c/00:00:0f:00:00/ef Emask 0x40 (internal error)
->> [  907.524805] ata3.00: status: { DRDY }
->> [  907.646590] ata3.00: configured for UDMA/133
->> [  907.646624] ata3: EH complete
-
->>
->>
->> Any suggestions?
+Andrea Righi wrote:
+> This is the core io-throttle kernel infrastructure. It creates the basic
+> interfaces to cgroups and implements the I/O measurement and throttling
+> functions.
 > 
-> You can try increasing the swiotlb size by booting with swiotlb=65536 
-> (for 128MB) or swiotlb=131072 (for 256MB), and see if that makes the 
-> problem go away.. It's unclear why you'd be running out of SWIOTLB space 
-> now, though, if 2.6.26 worked fine..
+> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> ---
+>  block/Makefile                |    2 ++
+>  include/linux/cgroup_subsys.h |    6 ++++++
+>  init/Kconfig                  |   10 ++++++++++
+>  3 files changed, 18 insertions(+), 0 deletions(-)
+> 
 
-Still happening, although 256M make it a bit harder to trigger.
+where is block/blk-io-throttle.c and include/linux/blk-io-throttle.h?
 
-
-	Juergen
-
--- 
-Juergen Kreileder, Blackdown Java-Linux Team
-http://blog.blackdown.de/
