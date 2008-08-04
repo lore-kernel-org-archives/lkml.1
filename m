@@ -1,124 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbYHDKJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbYHDKK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbYHDKJq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 06:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYHDKJh
+	id S1754945AbYHDKK5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 06:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbYHDKKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 06:09:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52215 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752648AbYHDKJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 06:09:36 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080804040025.GA11127@linux-sh.org>
-References: <20080804040025.GA11127@linux-sh.org> <20080728150501.GC16555@linux-sh.org> <20080728150359.GA16555@linux-sh.org> <20080728150430.GB16555@linux-sh.org> <27552.1217599279@redhat.com> <20080801214448.GA13448@linux-sh.org> <8bd0f97a0808032024x18a31d29tb44ebc6216a2aed@mail.gmail.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: dhowells@redhat.com, Mike Frysinger <vapier.adi@gmail.com>,
-       "Wu, Bryan" <Bryan.Wu@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] binfmt_elf_fdpic: Convert initial stack alignment to arch_align_stack().
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Mon, 04 Aug 2008 11:08:59 +0100
-Message-ID: <32309.1217844539@redhat.com>
+	Mon, 4 Aug 2008 06:10:47 -0400
+Received: from qb-out-0506.google.com ([72.14.204.233]:26698 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752648AbYHDKKq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 06:10:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=koZI4NYxFu77CbOg4onDDWeTFnsBoHV4E01Qc92O6tNEWdo4ZcsC+6RvnKR9D+BW5c
+         tmuzBIvUhFgrn2wTD467VrhYj05XTZ/YPowEAWCghEANCkr7hm0kT4viCJ+JqlHiaz2+
+         pA0/7Zuu+g6r9NTKWk0JuLbt1j0g+5IbTYwVQ=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH 00/04] dyn_array and nr_irqs support v3 -- addon
+Date: Mon,  4 Aug 2008 03:09:57 -0700
+Message-Id: <1217844601-4298-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt <lethal@linux-sh.org> wrote:
+use pre_allocate array and list to index struct with irq_no to avoid
+wasting struct between irq
 
-> There's no need, as David pointed out, that was the wrong thing to do for
-> the nommu case anyways. Here's an updated patch to replace the previous
-> one:
+01: x86_64: use get_irq_desc together with dyn_array
+02: x86: add get_irq_cfg in io_apic_64.c
+03: x86: put timer_rand_state pointer into irq_desc
+04: x86: put irq_2_pin pointer into irq_cfg - 64bit
 
-That's better, however:
+got:
+dyn_array irq_2_pin_head+0x0/0x8 size:0x10 nr:32 align:0x10
+dyn_array irq_cfgx+0x0/0x8 size:0x120 nr:32 align:0x1000
+dyn_array irq_desc+0x0/0x8 size:0x200 nr:32 align:0x1000
+dyn_array irq_2_iommu+0x0/0x8 size:0x10 nr:96 align:0x1000
+dyn_array total_size: 0x8200
+dyn_array irq_2_pin_head+0x0/0x8  ==> [0x28028000 - 0x28028200]
+dyn_array irq_cfgx+0x0/0x8  ==> [0x28029000 - 0x2802b400]
+dyn_array irq_desc+0x0/0x8  ==> [0x2802c000 - 0x28030000]
+dyn_array irq_2_iommu+0x0/0x8  ==> [0x28030000 - 0x28030600]
+per_cpu_dyn_array per_cpu__kstat+0x48/0x50 size:0x4 nr:96 align:0x8
 
-> -	/* we're going to shovel a whole load of stuff onto the stack */
->  #ifdef CONFIG_MMU
-> -	sp = bprm->p;
-> +	/*
-> +	 * we're going to shovel a whole load of stuff onto the stack
+irq_cfg/irq_desc will increase by 32 automatically, and the use one by one.
 
-I think that comment shouldn't be moved inside the conditional section since
-it applies to NOMMU as well.  Picky, I know, but...  It might actually be
-better to attach it to the banner comment for the whole function.
+to do:
+1. will work ong irq_2_iommu: put it in irq_desc or irq_cfg?
+2. will update Eric's patch to move kstat_irqs from per cpu to irq_desc...
+3. after that will clean up nr_irqs, and try to kill it
 
-David
----
-[PATCH] binfmt_elf_fdpic: Convert initial stack alignment to arch_align_stack()
+Thanks
 
-From: Paul Mundt <lethal@linux-sh.org>
+Yinghai Lu
 
-binfmt_elf_fdpic seems to have grabbed a hard-coded hack from an ancient
-version of binfmt_elf in order to try and fix up initial stack alignment
-on multi-threaded x86, which while in addition to being unused, was also
-pushed down beyond the first set of operations on the stack pointer,
-negating the entire purpose.
-
-These days, we have an architecture independent arch_align_stack(), so we
-switch to using that instead. Move the initial alignment up before the
-initial stores while we're at it.
-
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- fs/binfmt_elf_fdpic.c |   25 ++++++++-----------------
- 1 files changed, 8 insertions(+), 17 deletions(-)
-
-
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 7c83605..f9d6eaa 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -466,7 +466,8 @@ error_kill:
- #endif
- 
- /*
-- * present useful information to the program
-+ * present useful information to the program by shovelling it onto the new
-+ * process's stack
-  */
- static int create_elf_fdpic_tables(struct linux_binprm *bprm,
- 				   struct mm_struct *mm,
-@@ -482,9 +483,13 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
- 	int loop;
- 	int nr;	/* reset for each csp adjustment */
- 
--	/* we're going to shovel a whole load of stuff onto the stack */
- #ifdef CONFIG_MMU
--	sp = bprm->p;
-+	/* In some cases (e.g. Hyper-Threading), we want to avoid L1 evictions
-+	 * by the processes running on the same package. One thing we can do is
-+	 * to shuffle the initial stack for them, so we give the architecture
-+	 * an opportunity to do so here.
-+	 */
-+	sp = arch_align_stack(bprm->p);
- #else
- 	sp = mm->start_stack;
- 
-@@ -527,20 +532,6 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
- 			return -EFAULT;
- 	}
- 
--#if defined(__i386__) && defined(CONFIG_SMP)
--	/* in some cases (e.g. Hyper-Threading), we want to avoid L1 evictions
--	 * by the processes running on the same package. One thing we can do is
--	 * to shuffle the initial stack for them.
--	 *
--	 * the conditionals here are unneeded, but kept in to make the code
--	 * behaviour the same as pre change unless we have hyperthreaded
--	 * processors. This keeps Mr Marcelo Person happier but should be
--	 * removed for 2.5
--	 */
--	if (smp_num_siblings > 1)
--		sp = sp - ((current->pid % 64) << 7);
--#endif
--
- 	sp &= ~7UL;
- 
- 	/* stack the load map(s) */
