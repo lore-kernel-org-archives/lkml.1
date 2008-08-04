@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbYHDPM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbYHDPNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbYHDPM2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 11:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbYHDPMS
+	id S1755907AbYHDPNh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 11:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbYHDPN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 11:12:18 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:44841 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750751AbYHDPMR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 11:12:17 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: arjan@infradead.org (Arjan van de Ven)
-Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c algorithm by new crypto API.
-Cc: herbert@gondor.apana.org.au, dwmw2@infradead.org,
-       austin_zhang@linux.intel.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Organization: Core
-In-Reply-To: <20080804072015.0fcd23e7@infradead.org>
-X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1KQ1jD-00039b-00@gondolin.me.apana.org.au>
-Date: Mon, 04 Aug 2008 23:12:07 +0800
+	Mon, 4 Aug 2008 11:13:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53841 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753053AbYHDPN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 11:13:28 -0400
+Date: Mon, 4 Aug 2008 11:11:58 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       andi@firstfloor.org
+Subject: Re: No, really, stop trying to delete slab until you've finished
+ making slub perform as well
+Message-ID: <20080804111158.7f108047@cuia.bos.redhat.com>
+In-Reply-To: <48970779.80902@linux-foundation.org>
+References: <20080801182324.572058187@lameter.com>
+	<20080803015847.GD26461@parisc-linux.org>
+	<48970779.80902@linux-foundation.org>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@infradead.org> wrote:
-> On Mon, 4 Aug 2008 22:04:35 +0800
-> Herbert Xu <herbert@gondor.apana.org.au> wrote:
+On Mon, 04 Aug 2008 08:43:21 -0500
+Christoph Lameter <cl@linux-foundation.org> wrote:
+> Matthew Wilcox wrote:
+> > On Fri, May 09, 2008 at 07:21:01PM -0700, Christoph Lameter wrote:
+> >> - Add a patch that obsoletes SLAB and explains why SLOB does not support
+> >>   defrag (Either of those could be theoretically equipped to support
+> >>   slab defrag in some way but it seems that Andrew/Linus want to reduce
+> >>   the number of slab allocators).
+> > 
+> > Do we have to once again explain that slab still outperforms slub on at
+> > least one important benchmark?  I hope Nick Piggin finds time to finish
+> > tuning slqb; it already outperforms slub.
+> > 
 > 
->> There only three crc32c users in the kernel tree and the crypto
->> interface will serve the perfectly.
+> Uhh. I forgot to delete that statement. I did not include the patch in the series.
 > 
-> isn't it a bit heavy for something as simple as a crc?
-> (which after all is one instruction now ;0)
+> We have a fundamental issue design issue there. Queuing on free can result in
+> better performance as in SLAB. However, it limits concurrency (per node lock
+> taking) and causes latency spikes due to queue processing (f.e. one test load
+> had 118.65 vs. 34 usecs just by switching to SLUB).
+> 
+> Could you address the performance issues in different ways? F.e. try to free
+> when the object is hot or free from multiple processors? SLAB has to take the
+> list_lock rather frequently under high concurrent loads (depends on queue
+> size). That will not occur with SLUB. So you actually can free (and allocate)
+> concurrently with high performance.
 
-Well AES on the PadLock is also a single instruction and nobody
-has ever complained :)
+I guess you could bypass the queueing on free for objects that
+come from a "local" SLUB page, only queueing objects that go
+onto remote pages.
 
-Seriously, the crypto code is extremely small on the data path.
-The heaviest part is the indirect function call but you have to
-have that in order to support multiple implementations cleanly.
+That way workloads that already perform well with SLUB should
+keep the current performance, while workloads that currently
+perform badly with SLUB should get an improvement.
 
-All the fat is on the control path, i.e., tfm allocation.  For
-crc32c you only need a single tfm since all the state is stored
-in the request object.
-
-Note that you should ignore the existing crc32c user, iSCSI as
-it was written before the new crypto hash interface was available.
-I will be converting it along with the other two crc32c users. to
-the new ahash interface.
-
-Cheers,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+All Rights Reversed
