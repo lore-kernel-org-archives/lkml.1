@@ -1,245 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbYHDOii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbYHDOpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757924AbYHDOii (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 10:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbYHDOia
+	id S1756517AbYHDOpO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 10:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbYHDOo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 10:38:30 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47758 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754567AbYHDOia (ORCPT
+	Mon, 4 Aug 2008 10:44:59 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:52528 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753359AbYHDOo7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 10:38:30 -0400
-Date: Mon, 4 Aug 2008 15:17:34 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 21/25] serial: change remove NR_IRQS in 8250.c v2
-Message-ID: <20080804151734.0d82fbe9@lxorguk.ukuu.org.uk>
-In-Reply-To: <m1hca150t8.fsf@frodo.ebiederm.org>
-References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-9-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-10-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-11-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-12-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-13-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-14-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-15-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-16-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-17-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-18-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-19-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-20-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-21-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-22-git-send-email-yhlu.kernel@gmail.com>
-	<20080803161447.791705bb@lxorguk.ukuu.org.uk>
-	<m1hca150t8.fsf@frodo.ebiederm.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 4 Aug 2008 10:44:59 -0400
+Subject: Re: [GIT PATCH] SCSI fixes for 2.6.27-rc1
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080804142927.GG8301@fluff.org.uk>
+References: <1217800985.4179.55.camel@localhost.localdomain>
+	 <20080804142927.GG8301@fluff.org.uk>
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 09:44:52 -0500
+Message-Id: <1217861092.3318.10.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Would allow us to use the generic hash table code.
+On Mon, 2008-08-04 at 15:29 +0100, Ben Dooks wrote:
+> On Sun, Aug 03, 2008 at 05:03:05PM -0500, James Bottomley wrote:
+> > This is just a small selection of four fixes, one expanding driver
+> > bindings and the other three fixing actual bugs (all of which need
+> > backporting to 2.6.26 I'm afraid).
+> > 
+> > The patch is available here:
+> > 
+> > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+> > 
+> > The short changelog is:
+> > 
+> > HighPoint Linux Team (1):
+> 
+> I thought group (or non-person) submissions where explicitly
+> prohibitted in the signoff section in Documentation/SubmittingPatches
 
-Nice.. that makes the code a bit longer in source form but much clearer
-and sharing common design.
+Not as I read it.  It says:
 
-> Looks like we can also tweak serial_do_unlink to free irq_info when
-> the list goes empty, so we don't have a leak if the driver is ever
-> unloaded.
+        then you just add a line saying
+        
+                Signed-off-by: Random J Developer
+        <random@developer.example.org>
+        
+        using your real name (sorry, no pseudonyms or anonymous
+        contributions.)
+        
+Which doesn't preclude company signoffs (as long as it's a real
+company).  Of course, most companies worry about the legal liability
+from the GPL and the DCO, which is why we get so few of them.
 
-Like this (again not yet tested) 
-
-8250: Remove NR_IRQ usage
-
-From: Alan Cox <alan@redhat.com>
-
-
----
-
- drivers/serial/68328serial.c |   11 +------
- drivers/serial/8250.c        |   68 +++++++++++++++++++++++++++++++++---------
- 2 files changed, 56 insertions(+), 23 deletions(-)
+James
 
 
-diff --git a/drivers/serial/68328serial.c b/drivers/serial/68328serial.c
-index 381b12a..277b78d 100644
---- a/drivers/serial/68328serial.c
-+++ b/drivers/serial/68328serial.c
-@@ -66,7 +66,6 @@
- #endif
- 
- static struct m68k_serial m68k_soft[NR_PORTS];
--struct m68k_serial *IRQ_ports[NR_IRQS];
- 
- static unsigned int uart_irqs[NR_PORTS] = UART_IRQ_DEFNS;
- 
-@@ -375,15 +374,11 @@ clear_and_return:
-  */
- irqreturn_t rs_interrupt(int irq, void *dev_id)
- {
--	struct m68k_serial * info;
-+	struct m68k_serial * info = dev_id;
- 	m68328_uart *uart;
- 	unsigned short rx;
- 	unsigned short tx;
- 
--	info = IRQ_ports[irq];
--	if(!info)
--	    return IRQ_NONE;
--
- 	uart = &uart_addr[info->line];
- 	rx = uart->urx.w;
- 
-@@ -1383,8 +1378,6 @@ rs68328_init(void)
- 		   info->port, info->irq);
- 	    printk(" is a builtin MC68328 UART\n");
- 	    
--	    IRQ_ports[info->irq] = info;	/* waste of space */
--
- #ifdef CONFIG_M68VZ328
- 		if (i > 0 )
- 			PJSEL &= 0xCF;  /* PSW enable second port output */
-@@ -1393,7 +1386,7 @@ rs68328_init(void)
- 	    if (request_irq(uart_irqs[i],
- 			    rs_interrupt,
- 			    IRQF_DISABLED,
--			    "M68328_UART", NULL))
-+			    "M68328_UART", info))
-                 panic("Unable to attach 68328 serial interrupt\n");
- 	}
- 	local_irq_restore(flags);
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 342e12f..2245cd4 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -145,11 +145,15 @@ struct uart_8250_port {
- };
- 
- struct irq_info {
--	spinlock_t		lock;
-+	struct			hlist_node node;
-+	int			irq;
-+	spinlock_t		lock;	/* Protects list not the hash */
- 	struct list_head	*head;
- };
- 
--static struct irq_info irq_lists[NR_IRQS];
-+#define NR_IRQ_HASH		32	/* Can be adjusted later */
-+static struct hlist_head irq_lists[NR_IRQ_HASH];
-+static DEFINE_MUTEX(hash_mutex);	/* Used to walk the hash */
- 
- /*
-  * Here we define the default xmit fifo size used for each type of UART.
-@@ -1541,9 +1545,32 @@ static void serial_do_unlink(struct irq_info *i, struct uart_8250_port *up)
- 
- static int serial_link_irq_chain(struct uart_8250_port *up)
- {
--	struct irq_info *i = irq_lists + up->port.irq;
-+	struct hlist_head *h;
-+	struct hlist_node *n;
-+	struct irq_info *i;
- 	int ret, irq_flags = up->port.flags & UPF_SHARE_IRQ ? IRQF_SHARED : 0;
- 
-+	mutex_lock(&hash_mutex);
-+
-+	h = &irq_lists[up->port.irq % NR_IRQ_HASH];
-+	
-+	hlist_for_each(n, h) {
-+		i = hlist_entry(n, struct irq_info, node);
-+		if (i->irq == up->port.irq)
-+			break;
-+	}
-+
-+	if (n == NULL) {
-+		i = kzalloc(sizeof(struct irq_info), GFP_KERNEL);
-+		if (i == NULL) {
-+			mutex_unlock(&hash_mutex);
-+			return -ENOMEM;
-+		}
-+		spin_lock_init(&i->lock);
-+		hlist_add_head(&i->node, h);
-+	}
-+	mutex_unlock(&hash_mutex);
-+
- 	spin_lock_irq(&i->lock);
- 
- 	if (i->head) {
-@@ -1567,14 +1594,30 @@ static int serial_link_irq_chain(struct uart_8250_port *up)
- 
- static void serial_unlink_irq_chain(struct uart_8250_port *up)
- {
--	struct irq_info *i = irq_lists + up->port.irq;
-+	struct irq_info *i;
-+	struct hlist_node *n;
-+	struct hlist_head *h;
-+
-+	mutex_lock(&hash_mutex);
- 
-+	h = &irq_lists[up->port.irq % NR_IRQ_HASH];
-+	
-+	hlist_for_each(n, h) {
-+		i = hlist_entry(n, struct irq_info, node);
-+		if (i->irq == up->port.irq)
-+			break;
-+	}
-+	BUG_ON(n == NULL);
- 	BUG_ON(i->head == NULL);
- 
--	if (list_empty(i->head))
-+	if (list_empty(i->head)) {
- 		free_irq(up->port.irq, i);
--
--	serial_do_unlink(i, up);
-+		serial_do_unlink(i, up);
-+		hlist_del(&i->node);
-+		kfree(i);
-+	} else
-+		serial_do_unlink(i, up);
-+	mutex_unlock(&hash_mutex);
- }
- 
- /* Base timer interval for polling */
-@@ -2942,7 +2985,7 @@ EXPORT_SYMBOL(serial8250_unregister_port);
- 
- static int __init serial8250_init(void)
- {
--	int ret, i;
-+	int ret;
- 
- 	if (nr_uarts > UART_NR)
- 		nr_uarts = UART_NR;
-@@ -2951,9 +2994,6 @@ static int __init serial8250_init(void)
- 		"%d ports, IRQ sharing %sabled\n", nr_uarts,
- 		share_irqs ? "en" : "dis");
- 
--	for (i = 0; i < NR_IRQS; i++)
--		spin_lock_init(&irq_lists[i].lock);
--
- 	ret = uart_register_driver(&serial8250_reg);
- 	if (ret)
- 		goto out;
-@@ -2976,11 +3016,11 @@ static int __init serial8250_init(void)
- 		goto out;
- 
- 	platform_device_del(serial8250_isa_devs);
-- put_dev:
-+put_dev:
- 	platform_device_put(serial8250_isa_devs);
-- unreg_uart_drv:
-+unreg_uart_drv:
- 	uart_unregister_driver(&serial8250_reg);
-- out:
-+out:
- 	return ret;
- }
- 
