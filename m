@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbYHDOcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758375AbYHDOcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758097AbYHDOcj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 10:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755817AbYHDOcA
+	id S1758375AbYHDOcx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 10:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757215AbYHDOcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 10:32:00 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:44716 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755698AbYHDOb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 10:31:59 -0400
-Message-ID: <489712DB.80502@sgi.com>
-Date: Mon, 04 Aug 2008 07:31:55 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/25] dyn_array and nr_irqs support v3
-References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>	<m1fxpm8x3n.fsf@frodo.ebiederm.org>	<86802c440808022304g41749d9dn7688c81c3fdbed8a@mail.gmail.com> <m18wve7gbt.fsf@frodo.ebiederm.org>
-In-Reply-To: <m18wve7gbt.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 4 Aug 2008 10:32:18 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:60549 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756928AbYHDOcR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 10:32:17 -0400
+Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+In-Reply-To: <aday73cua99.fsf@cisco.com>
+References: <20080804130317.994042639@chello.nl>
+	 <20080804131012.246115111@chello.nl> <ada63qgvppx.fsf@cisco.com>
+	 <1217859571.3589.7.camel@twins>  <aday73cua99.fsf@cisco.com>
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 16:32:12 +0200
+Message-Id: <1217860332.3589.11.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+On Mon, 2008-08-04 at 07:26 -0700, Roland Dreier wrote:
+> > No more than 48 locks (mutexes, rwlocks, spinlock, RCU, everything
+>  > covered by lockdep) held by any one code-path; including nested
+>  > interrupt contexts.
 > 
->> On Sat, Aug 2, 2008 at 10:51 PM, Eric W. Biederman
->> <ebiederm@xmission.com> wrote:
->>> It appears that quite a few of the places you have changed are testing
->>> to see if an irq is valid.  The idiomatic way to perform that test in
->>> the kernel is:
->>>
->>> if (irq)
->> is uninitialized irq to be -1 or 0?
-> 
-> 0.  There is a long history behind it, but by decree of Linus and to conform
-> with reasonable intuition 0 is not a valid irq except in certain arch specific
-> corner cases.
-> 
->>> With no test to see if you are >= NR_IRQS.
->>>
->>> I expect that is the change we want in the drivers that are performing such a
->> silly
->>> extra check.
->> is_irq_valid(irq_no) ?
->>
->> wait to see your new patchset about dyn irq_cfg and irq_desc
-> 
-> I haven't promised one, at least not lately.  I went down a couple of
-> blind alleys and figured out what needed to be accomplished and then
-> ran out of steam about a year and a half 2 years ago, and I haven't
-> been able to get back to it.
-> 
-> Eric
+> Does that mean that something like the new mm_take_all_locks() operation
+> is going to explode if someone tries to use it with lockdep on?
 
-I've put this on my queue of "items to examine more closely".  Priority-wise,
-it's not quite at the front yet.
+Gah - yes, clearly nobody tried this.. :-/
 
-Thanks,
-Mike
+Just looking at the code it will not only run into this limit, but it
+would warn about recursion on the second file/anon vma due to utter lack
+of annotation.
+
+Why are people still developing without lockdep?
+
+/me sad
+
