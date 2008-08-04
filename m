@@ -1,54 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbYHDOSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYHDOS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757307AbYHDOSm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 10:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755207AbYHDOSb
+	id S1757539AbYHDOS7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 10:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbYHDOSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 10:18:31 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:60710 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754816AbYHDOS3 (ORCPT
+	Mon, 4 Aug 2008 10:18:49 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:51386 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755207AbYHDOSs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 10:18:29 -0400
-Date: Mon, 4 Aug 2008 22:18:22 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Austin Zhang <austin_zhang@linux.intel.com>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c algorithm by new crypto API.
-Message-ID: <20080804141822.GB11415@gondor.apana.org.au>
-References: <1217842507.20845.18.camel@localhost.localdomain>
+	Mon, 4 Aug 2008 10:18:48 -0400
+Message-ID: <48970F8E.9010507@s5r6.in-berlin.de>
+Date: Mon, 04 Aug 2008 16:17:50 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217842507.20845.18.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: jmerkey@wolfmountaingroup.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.27-rc1 6/25] mdb:  Merkey's Kernel Debugger 2.6.27-rc1
+References: <37445.166.70.238.45.1217831466.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <37445.166.70.238.45.1217831466.squirrel@webmail.wolfmountaingroup.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 04, 2008 at 05:35:07AM -0400, Austin Zhang wrote:
->
-> +static int crc32c_intel_cra_init(struct crypto_tfm *tfm)
+jmerkey@wolfmountaingroup.com wrote:
+> --- a/debug/mdb.c	1969-12-31 17:00:00.000000000 -0700
+> +++ b/debug/mdb.c	2008-08-03 16:15:00.000000000 -0600
+[...]
+> +ULONG ScreenInputFromKeyboard(BYTE *buf, ULONG buf_index, ULONG max_index)
 > +{
-> +	u32 *key = crypto_tfm_ctx(tfm);
+[...]
+> +    HistoryIndex = HistoryPointer;
+> +    while (1)
+> +    {
+> +       key = mdb_getkey();
 > +
-> +	*key = ~0;
+> +       if ((IsAccelerator(key)) && (key != 13))
+> +	  return key;
 > +
-> +	tfm->crt_ahash.reqsize = sizeof(u32);
+> +       switch (key)
+> +       {
+[...]
+> +	  default:
+> +	     if ((key > 0x7E) || (key < ' '))  // if above or below text
+> +		break;
+> +	     else
+> +	     {
+> +	        if (strlen(buf) < max_index)
+> +		{
+> +                   register int delta;
 > +
-> +	if (cpu_has_xmm4_2)
-> +		return 0;
-> +	else
-> +		return -1;
+> +		   for (i=max_index; i > buf_index; i--)
+> +		      buf[i] = buf[i-1];
+> +		   buf[buf_index] = (BYTE)key;
+> +		   if (buf_index < max_index)
+> +		      buf_index++;
+> +
+> +                   delta = strlen(buf) - buf_index;
+> +
+> +                   for (i=0; (i < delta) && (buf[i]); i++)
+> +                        DBGPrint("%c", buf[buf_index + i]);
+> +
+> +                   for (i=0; i < delta; i++)
+> +                        DBGPrint("\b");
+> +		}
+> +             }
+> +	     break;
+> +       }
+> +    }
 > +}
 
-This check needs to be moved to the module init function and
-if it fails the module should not register the algorithm.
-
-Cheers,
+This function would benefit from being broken up into smaller ones.
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Stefan Richter
+-=====-==--- =--- --=--
+http://arcgraph.de/sr/
