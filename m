@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760572AbYHDGqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760655AbYHDGr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760572AbYHDGqm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 02:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755228AbYHDGqf
+	id S1760655AbYHDGr7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 02:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbYHDGrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 02:46:35 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36573 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755218AbYHDGqe (ORCPT
+	Mon, 4 Aug 2008 02:47:52 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:48515 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755142AbYHDGrv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 02:46:34 -0400
-Date: Mon, 4 Aug 2008 08:28:23 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Ben Collins <ben.collins@canonical.com>
-Cc: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH 6/7] pm: Config option to disable handling of console during suspend/resume
-Message-ID: <20080804062823.GA22015@atrey.karlin.mff.cuni.cz>
-References: <24762.90.138.930.038.1036103001.ben.collins@canonical.com> <E1KKl4J-00068V-6f@swissweb.swissdisk.com> <20080729033309.GB12085@kroah.com> <200807292315.36511.rjw@sisk.pl> <1217368310.6066.56.camel@cunning> <20080730044716.GA2954@kroah.com> <1217427607.5976.104.camel@cunning>
+	Mon, 4 Aug 2008 02:47:51 -0400
+Message-ID: <51614.166.70.238.45.1217831246.squirrel@webmail.wolfmountaingroup.com>
+Date: Mon, 4 Aug 2008 00:27:26 -0600 (MDT)
+Subject: [PATCH 2.6.27-rc1 1/25] mdb:  Merkey's Kernel Debugger 2.6.27-rc1
+From: jmerkey@wolfmountaingroup.com
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217427607.5976.104.camel@cunning>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Netware style debugger for Linux written by Jeffrey Vernon Merkey
 
-> > > diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> > > index e7bea3e..6a042f8 100644
-> > > --- a/Documentation/kernel-parameters.txt
-> > > +++ b/Documentation/kernel-parameters.txt
-> > > @@ -2247,6 +2247,11 @@ and is between 256 and 4096 characters. It is defined in the file
-> > >  	vmpoff=		[KNL,S390] Perform z/VM CP command after power off.
-> > >  			Format: <command>
-> > >  
-> > > +	vt_switch=	[PM] Switch vt's during suspend/resume
-> > > +			Format: { 0 | 1 }
-> > > +			Default is normally '1', but depends on value of
-> > > +			the PM_DISABLE_CONSOLE config option.
-> > > +
-> > 
-> > Why a build time config option?  Why not just set the command line
-> > option if you need this?  And/or make it a sysctrl?
-> > 
-> > That way we don't have to add yet-another-config-option for distros and
-> > users to get wrong.
-> > 
-> > thanks,
-> 
-> Sysctl makes sense. I would rather not have to add a cmdline option to
-> default installs (and on upgrades). I'll redo the patch that way and
-> resend.
+--- a/arch/x86/kernel/reboot.c	2008-08-03 16:09:54.000000000 -0600
++++ b/arch/x86/kernel/reboot.c	2008-08-03 16:15:00.000000000 -0600
+@@ -432,7 +432,16 @@
+ 	/* O.K Now that I'm on the appropriate processor,
+ 	 * stop all of the others.
+ 	 */
++#ifdef CONFIG_MDB
++        // do not stop the other processors if the debugger is active
++        {
++           extern atomic_t inmdb;
++           if (!atomic_read(&inmdb))
++	      smp_send_stop();
++        }
++#else
+ 	smp_send_stop();
++#endif // CONFIG_MDB
+ #endif
 
-Maybe have acpi_sleep=no_vt_switch? THat is already settable from
-userspace...?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ 	lapic_shutdown();
+
+
+By making a contribution to this project, I certify that
+the contribution was created in whole or in part by me and I
+have the right to submit it under the open source license
+indicated in the file.
+
+Jeffrey Vernon Merkey
+
+
 
