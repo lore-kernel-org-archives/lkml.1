@@ -1,71 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850AbYHDAcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbYHDAgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755850AbYHDAcW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 20:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbYHDAcN
+	id S1756629AbYHDAgi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 20:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbYHDAga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 20:32:13 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:57402 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752030AbYHDAcM (ORCPT
+	Sun, 3 Aug 2008 20:36:30 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:43900 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751547AbYHDAg2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 20:32:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkwMAMfolUh5LBjh/2dsb2JhbACKZKJl
-X-IronPort-AV: E=Sophos;i="4.31,302,1215354600"; 
-   d="scan'208";a="163431399"
-Date: Mon, 4 Aug 2008 10:32:06 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Neil Brown <neilb@suse.de>, Michael Shuey <shuey@purdue.edu>,
-       Shehjar Tikoo <shehjart@cse.unsw.edu.au>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, rees@citi.umich.edu, aglo@citi.umich.edu
-Subject: Re: high latency NFS
-Message-ID: <20080804003206.GB6119@disturbed>
-Mail-Followup-To: "J. Bruce Fields" <bfields@fieldses.org>,
-	Neil Brown <neilb@suse.de>, Michael Shuey <shuey@purdue.edu>,
-	Shehjar Tikoo <shehjart@cse.unsw.edu.au>,
-	linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-	rees@citi.umich.edu, aglo@citi.umich.edu
-References: <200807241311.31457.shuey@purdue.edu> <20080730192110.GA17061@fieldses.org> <4890DFC7.3020309@cse.unsw.edu.au> <200807302235.50068.shuey@purdue.edu> <20080731031512.GA26203@fieldses.org> <18577.25513.494821.481623@notabene.brown> <20080801072320.GE6201@disturbed> <20080801191559.GI7764@fieldses.org>
+	Sun, 3 Aug 2008 20:36:28 -0400
+Message-ID: <48964E83.80002@snapgear.com>
+Date: Mon, 04 Aug 2008 10:34:11 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080801191559.GI7764@fieldses.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Sam Ravnborg <sam@ravnborg.org>, linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
+References: <20080728200500.GA14284@uranus.ravnborg.org> <48900EE4.8030606@snapgear.com> <20080730083853.GB18366@uranus.ravnborg.org> <4892A719.5090302@snapgear.com> <Pine.LNX.4.64.0808032205120.23329@anakin>
+In-Reply-To: <Pine.LNX.4.64.0808032205120.23329@anakin>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 03:15:59PM -0400, J. Bruce Fields wrote:
-> On Fri, Aug 01, 2008 at 05:23:20PM +1000, Dave Chinner wrote:
-> > On Thu, Jul 31, 2008 at 05:03:05PM +1000, Neil Brown wrote:
-> > > You might want to track the max length of the request queue too and
-> > > start more threads if the queue is long, to allow a quick ramp-up.
-> > 
-> > Right, but even request queue depth is not a good indicator. You
-> > need to leep track of how many NFSDs are actually doing useful
-> > work. That is, if you've got an NFSD on the CPU that is hitting
-> > the cache and not blocking, you don't need more NFSDs to handle
-> > that load because they can't do any more work than the NFSD
-> > that is currently running is. 
-> > 
-> > i.e. take the solution that Greg banks used for the CPU scheduler
-> > overload issue (limiting the number of nfsds woken but not yet on
-> > the CPU),
+Hi Geert,
+
+Geert Uytterhoeven wrote:
+> On Fri, 1 Aug 2008, Greg Ungerer wrote:
+>> Sam Ravnborg wrote:
+>>> On Wed, Jul 30, 2008 at 04:49:08PM +1000, Greg Ungerer wrote:
+>>>> Sam Ravnborg wrote:
+>>>>> The traditional location of the arch specific Makefiles
+>>>>> has been at:
+>>>>>
+>>>>> 	include/asm-$ARCH
+>>>>>
+>>>>> But as suggested by several people over time and lately
+>>>>> by Linus in the following post:
+>>>>> http://kerneltrap.org/mailarchive/linux-kernel/2008/5/21/1903924
+>>>>>
+>>>>> is is suggested to move the arch specific files under arch/
+>>>>> and for the header files this is arch/$ARCH/include.
+>>>>>
+>>>>> So I have hacked up support for this in kbuild so
+>>>>> for the simpler cases a simple move of header files as
+>>>>> in:
+>>>>> 	git mv include/asm-$ARCH arch/$ARCH/include/asm
+>>>>>
+>>>>> is enough.
+>>>>>
+>>>>> If Linus will accept it then I think -rc1 is a perfect
+>>>>> time to do it as people has less stuff pending touching
+>>>>> the header files that are moved.
+>>>>> Validation is easy - does the usual configs build?
+>>>>>
+>>>>> For the archs that plays games with symlinks this is a
+>>>>> splendid opportunity to get rid af these.
+>>>>> The receipe is simple:
+>>>>> Use 	KBUILD_CFLAGS += -Iarch/$ARCH/include/$CPU
+>>>>>
+>>>>> to select the CPU and then do a copy of the header files
+>>>>> like this:
+>>>>>
+>>>>> 	git mv include/asm-$ARCH/$CPU arch/$ARCH/include/$CPU/cpu
+>>>>>
+>>>>> Then the code can continue to use:
+>>>>>
+>>>>> 	#include <cpu/foo.h>
+>>>>>
+>>>>> I already converted sparc to use arch/sparc/include -
+>>>>> while I merged the header files for sparc and sparc64.
+>>>>> This change is already upstream.
+>>>>>
+>>>>> And for SH I posted a receipe which you can read here:
+>>>>> http://lkml.org/lkml/2008/7/28/83
+>>>>>
+>>>>> It is SH specific but anyway pretty generic.
+>>>>>
+>>>>> I am limited in time and resources at the moment but I
+>>>>> would be glad to help out as time permits should there
+>>>>> be any questions.
+>>>> I just tried moving the include/asm-m68knommu directory
+>>>> to arch/m68knommu/include/asm and it all worked fine.
+>>>> Clean compile first go :-)  Nice.  (As noted
+>>>> asm-offsets.h was still generated in incldue/asm-m68knommu
+>>>> afterwards though).
+>>>>
+>>>> So what is the status, should I prepare git/patch
+>>>> for Linus?
+>>> Yes please do so.
+>> The move change can be pulled from:
+>>
+>> git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-linus
+>>
+>> If there is no complaints I'll send Linus a pull request in a
+>> couple of days time.
 > 
-> I don't remember that, or wasn't watching when it happened.... Do you
-> have a pointer?
+> I did:
+> 
+>     mkdir arch/m68k/include
+>     mv include/asm-m68k arch/m68k/include/asm
+> 
+> and m68k still builds fine (I applied Stephen's patch for the
+> asm-sparc inclusion problem for Sun 3/3x first, of course).
+> 
+> As (a) I'm not using git (yet) for merging with Linus, and (b) this will
+> cause some breakage in the m68knommu tree anyway, perhaps it's easiest if Greg
+> takes care of it in m68knommu.git?
+> 
+> Greg, is that OK for you?
 
-Ah, I thought that had been sent to mainline because it was
-mentioned in his LCA talk at the start of the year. Slides
-65-67 here:
+Yep, I will do that.
 
-http://mirror.linux.org.au/pub/linux.conf.au/2007/video/talks/41.pdf
 
-Cheers,
+> You can add my Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> 
+> There seem to be 3 classes of m68knommu header files:
+>   1. Plain files (some of them may be (nearly) identical copies of the
+>      m68k variants,
+>   2. Files that just include the m68k variant,
+>   3. Files that include the m68k variant and do something more (pci.h and
+>      setup.h).
+> 
+> Since I don't think we want to do the m68k/m68knommu merge right now
+> (Sorry Arnd, I'll keep your script in mind anyway!), the simplest way is to:
+>   - Remove all files from class 2, and add to the Makefile:
+> 
+> 	ccflags-y += -Iarch/m68k/include
+> 
+>   - Include verbatim the contents of the m68k variant for class 3, cfr.
+>     Stephen patch for the asm-sparc inclusion problem for Sun 3/3x).
+> 
+> Do you agree?
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+That sounds like a good approach.
+
+Regards
+Greg
+
+
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+Secure Computing Corporation                PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
