@@ -1,193 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1770436AbYHDVok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1768100AbYHDVo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1770436AbYHDVok (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767575AbYHDVmx
+	id S1768100AbYHDVo5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765483AbYHDVnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:42:53 -0400
-Received: from mx2.suse.de ([195.135.220.15]:50469 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1771018AbYHDVmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:42:49 -0400
-Date: Mon, 4 Aug 2008 14:30:49 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, greg@kroah.com, chrisw@sous-sol.org,
-       Jiri Slaby <jirislaby@gmail.com>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Nick Kossifidis <mickflemm@gmail.com>
-Subject: [patch 24/25] Ath5k: fix memory corruption
-Message-ID: <20080804213049.GX8014@suse.de>
-References: <20080804203506.816201392@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline; filename="ath5k-fix-memory-corruption.patch"
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080804212725.GA7944@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 4 Aug 2008 17:43:04 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49018 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1771054AbYHDVnA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:43:00 -0400
+Date: Mon, 4 Aug 2008 14:42:28 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Dave Jones <davej@redhat.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] workaround minor lockdep bug triggered by
+ mm_take_all_locks
+Message-ID: <20080804144228.5f0c29c3@infradead.org>
+In-Reply-To: <20080804213018.GD12464@duo.random>
+References: <20080804162657.GI11476@duo.random>
+	<1217867935.3589.35.camel@twins>
+	<20080804172728.GJ11476@duo.random>
+	<20080804174659.GK11476@duo.random>
+	<20080804175730.GL11476@duo.random>
+	<1217875739.3589.56.camel@twins>
+	<20080804201514.GB12464@duo.random>
+	<1217882242.3589.90.camel@twins>
+	<20080804210954.GC12464@duo.random>
+	<84144f020808041414x2c1c8b82n5939b82e9a2ca99d@mail.gmail.com>
+	<20080804213018.GD12464@duo.random>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.26-stable review patch.  If anyone has any objections, please let us
-know.
+On Mon, 4 Aug 2008 23:30:18 +0200
+Andrea Arcangeli <andrea@qumranet.com> wrote:
 
-------------------
+> On Tue, Aug 05, 2008 at 12:14:48AM +0300, Pekka Enberg wrote:
+> > Sometimes it's hard to actually trigger a deadlock condition during
+> > development, especially if you're not developing on a big iron
+> > machine.
+> 
+> My understand is that lockdep can't do static analysis of code, it's
+> not a checker. It can only evaluate the locks in the order the cpu
+> takes them. And if the CPU never takes them in the wrong order because
+> only your unlikely to happen slow path takes them in the wrong order
 
-From: Jiri Slaby <jirislaby@gmail.com>
+yes lockdep will only complain WHEN you take them in the wrong order
 
-commit 3a0f2c871849f23c1070965bf94dec3f9c0b479d upstream
+But you claimed you would for sure be in a deadlock at that point which
+is generally not correct.
 
-When signal is noisy, hardware can use all RX buffers and since the last
-entry in the list is self-linked, it overwrites the entry until we link
-new buffers.
+> So now we learn lockdep also lead developers to think if their code
+> doesn't generate lockdep errors it will be safe in production, so
+> again more damage thanks to lockdep.
 
-Ensure that we don't free this last one until we are 100% sure that it
-is not used by the hardware anymore to not cause memory curruption as
-can be seen below.
+this comment totally puzzles me... rather than calling you naive...
+where was this said or even implied????
 
-This is done by checking next buffer in the list. Even after that we
-know that the hardware refetched the new link and proceeded further
-(the next buffer is ready) we can finally free the overwritten buffer.
 
-We discard it since the status in its descriptor is overwritten (OR-ed
-by new status) too.
 
-=============================================================================
-BUG kmalloc-4096: Poison overwritten
------------------------------------------------------------------------------
-
-INFO: 0xffff810067419060-0xffff810067419667. First byte 0x8 instead of 0x6b
-INFO: Allocated in dev_alloc_skb+0x18/0x30 age=1118 cpu=1 pid=0
-INFO: Freed in skb_release_data+0x85/0xd0 age=1105 cpu=1 pid=3718
-INFO: Slab 0xffffe200019d0600 objects=7 used=0 fp=0xffff810067419048 flags=0x40000000000020c3
-INFO: Object 0xffff810067419048 @offset=4168 fp=0xffff81006741c120
-
-Bytes b4 0xffff810067419038:  4f 0b 02 00 01 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a O.......ZZZZZZZZ
-  Object 0xffff810067419048:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-  Object 0xffff810067419058:  6b 6b 6b 6b 6b 6b 6b 6b 08 42 30 00 00 0b 6b 80 kkkkkkkk.B0...k.
-  Object 0xffff810067419068:  f0 5d 00 4f 62 08 a3 64 00 0c 42 16 52 e4 f0 5a 360].Ob.243d..B.R344360Z
-  Object 0xffff810067419078:  68 81 00 00 7b a5 b4 be 7d 3b 8f 53 cd d5 de 12 h...{245264276};.S315325336.
-  Object 0xffff810067419088:  96 10 0b 89 48 54 23 41 0f 4e 2d b9 37 c3 cb 29 ....HT#A.N-2717303313)
-  Object 0xffff810067419098:  d1 e0 de 14 8a 57 2a cc 3b 44 0d 78 7a 19 12 15 321340336..W*314;D.xz...
-  Object 0xffff8100674190a8:  a9 ec d4 35 a8 10 ec 8c 40 a7 06 0a 51 a7 48 bb 2513543245250.354.@247..Q247H273
-  Object 0xffff8100674190b8:  3e cf a1 c7 38 60 63 3f 51 15 c7 20 eb ba 65 30 >ϡ3078`c?Q.307.353272e0
- Redzone 0xffff81006741a048:  bb bb bb bb bb bb bb bb                         273273273273273273273273
- Padding 0xffff81006741a088:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ
-Pid: 3297, comm: ath5k_pci Not tainted 2.6.26-rc8-mm1_64 #427
-
-Call Trace:
- [<ffffffff802a7306>] print_trailer+0xf6/0x150
- [<ffffffff802a7485>] check_bytes_and_report+0x125/0x180
- [<ffffffff802a75dc>] check_object+0xac/0x260
- [<ffffffff802a9308>] __slab_alloc+0x368/0x6d0
- [<ffffffff80544f82>] ? wireless_send_event+0x142/0x310
- [<ffffffff804b1bd4>] ? __alloc_skb+0x44/0x150
- [<ffffffff80544f82>] ? wireless_send_event+0x142/0x310
- [<ffffffff802aa853>] __kmalloc_track_caller+0xc3/0xf0
- [<ffffffff804b1bfe>] __alloc_skb+0x6e/0x150
-[... stack snipped]
-
-FIX kmalloc-4096: Restoring 0xffff810067419060-0xffff810067419667=0x6b
-
-FIX kmalloc-4096: Marking all objects used
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Acked-by: Nick Kossifidis <mickflemm@gmail.com>
-Cc: Luis R. Rodriguez <mcgrof@gmail.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/net/wireless/ath5k/base.c |   32 +++++++++++++++++++++++++-------
- drivers/net/wireless/ath5k/base.h |    2 +-
- 2 files changed, 26 insertions(+), 8 deletions(-)
-
---- a/drivers/net/wireless/ath5k/base.c
-+++ b/drivers/net/wireless/ath5k/base.c
-@@ -1774,20 +1774,21 @@ ath5k_tasklet_rx(unsigned long data)
- 	struct ath5k_rx_status rs = {};
- 	struct sk_buff *skb;
- 	struct ath5k_softc *sc = (void *)data;
--	struct ath5k_buf *bf;
-+	struct ath5k_buf *bf, *bf_last;
- 	struct ath5k_desc *ds;
- 	int ret;
- 	int hdrlen;
- 	int pad;
- 
- 	spin_lock(&sc->rxbuflock);
-+	if (list_empty(&sc->rxbuf)) {
-+		ATH5K_WARN(sc, "empty rx buf pool\n");
-+		goto unlock;
-+	}
-+	bf_last = list_entry(sc->rxbuf.prev, struct ath5k_buf, list);
- 	do {
- 		rxs.flag = 0;
- 
--		if (unlikely(list_empty(&sc->rxbuf))) {
--			ATH5K_WARN(sc, "empty rx buf pool\n");
--			break;
--		}
- 		bf = list_first_entry(&sc->rxbuf, struct ath5k_buf, list);
- 		BUG_ON(bf->skb == NULL);
- 		skb = bf->skb;
-@@ -1797,8 +1798,24 @@ ath5k_tasklet_rx(unsigned long data)
- 		pci_dma_sync_single_for_cpu(sc->pdev, sc->desc_daddr,
- 				sc->desc_len, PCI_DMA_FROMDEVICE);
- 
--		if (unlikely(ds->ds_link == bf->daddr)) /* this is the end */
--			break;
-+		/*
-+		 * last buffer must not be freed to ensure proper hardware
-+		 * function. When the hardware finishes also a packet next to
-+		 * it, we are sure, it doesn't use it anymore and we can go on.
-+		 */
-+		if (bf_last == bf)
-+			bf->flags |= 1;
-+		if (bf->flags) {
-+			struct ath5k_buf *bf_next = list_entry(bf->list.next,
-+					struct ath5k_buf, list);
-+			ret = sc->ah->ah_proc_rx_desc(sc->ah, bf_next->desc,
-+					&rs);
-+			if (ret)
-+				break;
-+			bf->flags &= ~1;
-+			/* skip the overwritten one (even status is martian) */
-+			goto next;
-+		}
- 
- 		ret = sc->ah->ah_proc_rx_desc(sc->ah, ds, &rs);
- 		if (unlikely(ret == -EINPROGRESS))
-@@ -1921,6 +1938,7 @@ accept:
- next:
- 		list_move_tail(&bf->list, &sc->rxbuf);
- 	} while (ath5k_rxbuf_setup(sc, bf) == 0);
-+unlock:
- 	spin_unlock(&sc->rxbuflock);
- }
- 
---- a/drivers/net/wireless/ath5k/base.h
-+++ b/drivers/net/wireless/ath5k/base.h
-@@ -55,7 +55,7 @@
- 
- struct ath5k_buf {
- 	struct list_head	list;
--	unsigned int		flags;	/* tx descriptor flags */
-+	unsigned int		flags;	/* rx descriptor flags */
- 	struct ath5k_desc	*desc;	/* virtual addr of desc */
- 	dma_addr_t		daddr;	/* physical addr of desc */
- 	struct sk_buff		*skb;	/* skbuff for buf */
 
 -- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
