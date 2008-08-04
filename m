@@ -1,41 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbYHDN0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbYHDN0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756985AbYHDN0V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 09:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbYHDN0I
+	id S1756230AbYHDN0h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 09:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbYHDN0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 09:26:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36385 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752190AbYHDN0F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 09:26:05 -0400
-Message-ID: <4897032E.5020601@linux-foundation.org>
-Date: Mon, 04 Aug 2008 08:25:02 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Mon, 4 Aug 2008 09:26:20 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:64007 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756920AbYHDN0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 09:26:19 -0400
 MIME-Version: 1.0
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-CC: Badari Pulavarty <pbadari@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       linux-mm <linux-mm@kvack.org>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC:Patch: 000/008](memory hotplug) rough idea of pgdat removing
-References: <20080801180522.EC97.E1E9C6FF@jp.fujitsu.com> <489314FE.7080900@linux-foundation.org> <20080802090335.D6C8.E1E9C6FF@jp.fujitsu.com>
-In-Reply-To: <20080802090335.D6C8.E1E9C6FF@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18583.883.70907.983634@harpo.it.uu.se>
+Date: Mon, 4 Aug 2008 15:26:11 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Arkadiusz Miskiewicz <arekm@maven.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Opteron Rev E has a bug ... a locked  instruction doesn't act as a read-acquire barrier
+In-Reply-To: <200808031106.12366.arekm@maven.pl>
+References: <200808031106.12366.arekm@maven.pl>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yasunori Goto wrote:
+Arkadiusz Miskiewicz writes:
+ > 
+ > Hello,
+ > 
+ > http://google-perftools.googlecode.com/svn-history/r48/trunk/src/base/atomicops-internals-x86.cc
+ > says
+ > 
+ > "  // Opteron Rev E has a bug in which on very rare occasions a locked
+ >   // instruction doesn't act as a read-acquire barrier if followed by a
+ >   // non-locked read-modify-write instruction.  Rev F has this bug in 
+ >   // pre-release versions, but not in versions released to customers,
+ >   // so we test only for Rev E, which is family 15, model 32..63 inclusive.
+ >   if (strcmp(vendor, "AuthenticAMD") == 0 &&       // AMD
+ >       family == 15 &&
+ >       32 <= model && model <= 63) {
+ >     AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug = true;
+ >   } else {
+ >     AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug = false;
+ >   }
+ > "
+ > 
+ > does kernel have quirk/workaround for this? I'm looking at arch/x86/kernel/cpu 
+ > but I don't see workaround related to this (possibly I'm overlooking).
 
->>> Thanks for your comment.
->> Duh. Then the use of RCU would also mean that all of reclaim must
->>  be in a rcu period. So  reclaim cannot sleep anymore.
-> 
-> I use srcu_read_lock() (sleepable rcu lock) if kernel must be sleep for
-> page reclaim. So, my patch basic idea is followings.
+I can find no reference to this alleged RevE erratum in the
+Athlon64/Opteron revision guide (25759.pdf).
 
-But that introduces more overhead in __alloc_pages.
+But if this bug is real then we need to know about it. Could
+you ask the author of the code you quoted above to clarify?
+
+/Mikael
