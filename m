@@ -1,138 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757086AbYHDSGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbYHDSMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757086AbYHDSGg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 14:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbYHDSGW
+	id S1755841AbYHDSMb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 14:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYHDSMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 14:06:22 -0400
-Received: from gw.goop.org ([64.81.55.164]:51364 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756698AbYHDSGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 14:06:21 -0400
-Message-ID: <48974512.7000206@goop.org>
-Date: Mon, 04 Aug 2008 11:06:10 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 4 Aug 2008 14:12:22 -0400
+Received: from smtp-vbr17.xs4all.nl ([194.109.24.37]:4328 "EHLO
+	smtp-vbr17.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752269AbYHDSMW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 14:12:22 -0400
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: david@identd.dyndns.org
+Subject: Re: V4L2 & request_module("char-major-...")
+Date: Mon, 4 Aug 2008 20:10:47 +0200
+User-Agent: KMail/1.9.9
+Cc: v4l <video4linux-list@redhat.com>, linux-kernel@vger.kernel.org
+References: <200807302324.15221.hverkuil@xs4all.nl> <4893E3AE.4000204@gmail.com>
+In-Reply-To: <4893E3AE.4000204@gmail.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, hugh@veritas.com, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       davej@redhat.com
-Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
-References: <20080804130317.994042639@chello.nl> <20080804131012.246115111@chello.nl>
-In-Reply-To: <20080804131012.246115111@chello.nl>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808042010.47542.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> Expose the new lock protection lock.
+On Saturday 02 August 2008 06:33:50 David Ellingsworth wrote:
+> Hans Verkuil wrote:
+> > Hi all,
+> >
+> > I'm in the process of converting v4l2-dev.c (2.6.27, in earlier
+> > kernels it was called videodev.c) from using register_chrdev() to
+> > using register_chrdev_region() and cdev_add().
+> >
+> > The problem I have is that register_chrdev provides a
+> > file_operations struct. The video_open() function in there performs
+> > this piece of code when a video device is opened:
+> >
+> >         vfl = video_device[minor];
+> >         if (vfl == NULL) {
+> >                 mutex_unlock(&videodev_lock);
+> >                 request_module("char-major-%d-%d", VIDEO_MAJOR,
+> > minor); mutex_lock(&videodev_lock);
+> >                 vfl = video_device[minor];
+> >                 if (vfl == NULL) {
+> >                         mutex_unlock(&videodev_lock);
+> >                         unlock_kernel();
+> >                         return -ENODEV;
+> >                 }
+> >         }
+> >
+> > It checks if a V4L2 driver registered this particular minor, if not
+> > then it tries to load the appropriate module with a char-major-x-x
+> > alias. If still no luck, then we bail out.
+> >
+> > Now, as I understand it this can only happen if someone used mknod
+> > to create device nodes and is not using udev. It's not clear to me
+> > however how this can ever work: the char-major alias relies on the
+> > fact that someone has to link the minor number with an actual V4L
+> > driver, but you do not generally know what minor number will be
+> > used by a specific driver (depends on load order, etc). Or am I
+> > missing something?
+> >
+> > My questions are:
+> >
+> > 1) is this code still relevant?
 >
-> This can be used to annotate places where we take multiple locks of the
-> same class and avoid deadlocks by always taking another (top-level) lock
-> first.
->   
-
-OK, so the expected usage is:
-
-	spin_lock(&outer_lock);
-	/* take in any order */
-	spin_lock_nest_lock(&inner[0], &outer_lock);
-	spin_lock_nest_lock(&inner[2], &outer_lock);
-	spin_lock_nest_lock(&inner[1], &outer_lock);
-	...
-
-?
-
-And it's OK to
-
-   1. take inner locks one at a time without holding the outer lock
-   2. use plain spin_lock on inner locks when you're taking them one at
-      a time, and
-   3. release the outer lock before releasing the inner locks
-
-but it's not OK to try to use different outer locks for a given inner lock.
-
-Yes?
-
-    J
-
-> NOTE: we're still bound to the MAX_LOCK_DEPTH (48) limit.
+> The code is relevant as long as v4l2-dev allocs and associates a
+> block of minor number with it's fops.
 >
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  include/linux/lockdep.h  |    2 ++
->  include/linux/spinlock.h |    6 ++++++
->  kernel/spinlock.c        |   11 +++++++++++
->  3 files changed, 19 insertions(+)
+> > 2) if so, how can I replace this code when I switch to cdev since
+> > in that case there is no longer a video_open() that can be used for
+> > this.
 >
-> Index: linux-2.6/include/linux/lockdep.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/lockdep.h
-> +++ linux-2.6/include/linux/lockdep.h
-> @@ -410,8 +410,10 @@ static inline void print_irqtrace_events
->  #ifdef CONFIG_DEBUG_LOCK_ALLOC
->  # ifdef CONFIG_PROVE_LOCKING
->  #  define spin_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 2, NULL, i)
-> +#  define spin_acquire_nest(l, s, t, n, i)	lock_acquire(l, s, t, 0, 2, n, i)
->  # else
->  #  define spin_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 1, NULL, i)
-> +#  define spin_acquire_nest(l, s, t, n, i)	lock_acquire(l, s, t, 0, 1, NULL, i)
->  # endif
->  # define spin_release(l, n, i)			lock_release(l, n, i)
->  #else
-> Index: linux-2.6/include/linux/spinlock.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/spinlock.h
-> +++ linux-2.6/include/linux/spinlock.h
-> @@ -183,8 +183,14 @@ do {								\
->  
->  #ifdef CONFIG_DEBUG_LOCK_ALLOC
->  # define spin_lock_nested(lock, subclass) _spin_lock_nested(lock, subclass)
-> +# define spin_lock_nest_lock(lock, nest_lock)				\
-> +	 do {								\
-> +		 typecheck(struct lockdep_map *, &nest_lock->dep_map);	\
-> +		 _spin_lock_nest_lock(lock, &nest_lock->dep_map);	\
-> +	 } while (0)
->  #else
->  # define spin_lock_nested(lock, subclass) _spin_lock(lock)
-> +# define spin_lock_nest_lock(lock, nest_lock) _spin_lock(lock)
->  #endif
->  
->  #define write_lock(lock)		_write_lock(lock)
-> Index: linux-2.6/kernel/spinlock.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/spinlock.c
-> +++ linux-2.6/kernel/spinlock.c
-> @@ -292,6 +292,7 @@ void __lockfunc _spin_lock_nested(spinlo
->  }
->  
->  EXPORT_SYMBOL(_spin_lock_nested);
-> +
->  unsigned long __lockfunc _spin_lock_irqsave_nested(spinlock_t *lock, int subclass)
->  {
->  	unsigned long flags;
-> @@ -314,6 +315,16 @@ unsigned long __lockfunc _spin_lock_irqs
->  
->  EXPORT_SYMBOL(_spin_lock_irqsave_nested);
->  
-> +void __lockfunc _spin_lock_nest_lock(spinlock_t *lock,
-> +				     struct lockdep_map *nest_lock)
-> +{
-> +	preempt_disable();
-> +	spin_acquire_nest(&lock->dep_map, 0, 0, nest_lock, _RET_IP_);
-> +	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
-> +}
-> +
-> +EXPORT_SYMBOL(_spin_lock_nest_lock)
-> +
->  #endif
->  
->  void __lockfunc _spin_unlock(spinlock_t *lock)
->
->   
+> It's interesting that you mention this, I've examined this same
+> problem. Essentially, if v4l2-dev only calls cdev_add on minor
+> numbers which have been used, there is no need to keep the
+> request_module call in video_open. Since v4l2-dev currently calls
+> register_chrdev in videodev_init, cdev_add is always called on the
+> entire block. If register_chrdev_region is used instead, cdev_add can
+> be called during video_register_device_index and the call to
+> request_module can be removed.
 
+OK, clear.
+
+> > 3) I also saw after some googling this proposed patch:
+> > http://linux.derkeiler.com/Mailing-Lists/Kernel/2003-09/2925.html
+> > It adds a MODULE_ALIAS_CHARDEV_MAJOR line for videodev.c. Either
+> > this patch was never applied or quickly removed in videodev.c since
+> > it's not there. I'm not sure how this relates to the request_module
+> > in the current code and whether it should be added after all or
+> > not.
+>
+> I haven't reviewed this patch, but converting v4l2-dev to use
+> register_chrdev_region is rather trivial. However, removing
+> video_open can't be done without a) patching char_dev or b) reference
+> counting the video_device struct. v4l2-dev currently uses a static
+> fops which references video_open. The dependency on v4l2-dev's fops
+> can be removed if the cdev struct passed to cdev_add is initialized
+> with the the fops provided by drivers which use v4l2-dev. This means
+> a cdev struct would be needed for every video_device struct created.
+> Embedding the cdev struct in the video_device struct and using
+> cdev_init would surely solve this problem,
+
+That was my plan.
+
+> but it exposes another 
+> problem.
+>
+> The problem results from how the cdev struct is reference counted.
+> Taking a close look at char_dev you'll see that the reference count
+> of the kobject in the cdev struct is initialized during cdev_init or
+> cdev_alloc, incremented during cdev_open, and decremented during
+> cdev_del and __fputs(file_table.c) using cdev_get and cdev_put. Once
+> cdev's kobject reference count reaches 0, cdev_default_release or
+> cdev_dynamic_release will be called to cleanup or free the struct
+> depending on how it was initialized. Unfortunately,
+> cdev_default_release nor cdev_dynamic_release provide a way to
+> synchronize freeing of the containing struct. Thus, if a cdev struct
+> is embedded into the video_device struct, the video_device struct
+> must be reference counted in the same way which essentially ensures
+> keeping video_open and the addition of video_close. The alternative
+> is to add an optional release callback to the cdev struct and call
+> that function during
+> cdev_default_release and cdev_dynamic_release so that the containing
+> video_device struct may be freed properly.
+>
+> In addition to the above problem, there is the issue of sysfs. The
+> video_device struct has a release callback, but it's use is far from
+> correct. Currently this callback _always_ occurs in
+> video_unregister_device when unregister_device is called. If a cdev
+> struct is embedded in the video_device struct, this would certainly
+> result in the freeing of the cdev struct at an inappropriate time.
+> Some thought will have to be given about how to handle this properly.
+> Personally, I believe the kobject callback (video_release) should
+> only free sysfs related structures and not the entire video_device
+> struct, like soo many drivers currently do.
+>
+> I have some patches which address all of the above issues, but I have
+> not had time to thoroughly test them and have therefore not yet
+> submitted them. I'd be willing to send them to you if you're
+> interested.
+
+That would be very welcome. In the meantime I'll dig around some more to 
+understand how it works and how it is supposed to work.
+
+Thank you for your input, it's very welcome!
+
+       Hans
