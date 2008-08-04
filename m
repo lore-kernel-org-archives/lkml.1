@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762100AbYHDWUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762724AbYHDWVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762100AbYHDWUF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 18:20:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbYHDWTz
+	id S1762724AbYHDWVr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 18:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYHDWVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 18:19:55 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:42296 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752629AbYHDWTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 18:19:54 -0400
-Date: Mon, 4 Aug 2008 17:19:53 -0500
-From: Russ Anderson <rja@sgi.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: x86 BIOS interface for partitioning and system serial number on SGI UV
-Message-ID: <20080804221951.GA252105@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-References: <20080731195753.GB25715@sgi.com> <48934926.2010200@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 4 Aug 2008 18:21:37 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:40257 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750942AbYHDWVg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 18:21:36 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH 1/2] pci: add misrouted interrupt error handling
+Date: Mon, 4 Aug 2008 16:20:35 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+References: <1217786532.4179.24.camel@localhost.localdomain> <200808041443.20942.bjorn.helgaas@hp.com> <20080804213535.GM26461@parisc-linux.org>
+In-Reply-To: <20080804213535.GM26461@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48934926.2010200@zytor.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200808041620.35487.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 10:34:30AM -0700, H. Peter Anvin wrote:
-> Russ Anderson wrote:
-> >x86 BIOS interface for partitioning and system serial number on SGI UV
+On Monday 04 August 2008 03:35:35 pm Matthew Wilcox wrote:
+> On Mon, Aug 04, 2008 at 02:43:20PM -0600, Bjorn Helgaas wrote:
+> > I tried to standardize the PCI core on "[%04x/%04x]" for vendor/device ID.
 > 
-> >-	if (!proc_mkdir("sgi_uv", NULL))
-> >+	if (!sgi_uv_dir)
-> >+		sgi_uv_dir = proc_mkdir("sgi_uv", NULL);
-> >+	if (!sgi_uv_dir)
-> > 		return -EINVAL;
+> That's unfortunately different from lspci -nn:
 > 
-> This really seems more that it should belong in sysfs -- 
-> /sys/class/firmware presumably.
-
-/proc/sgi_uv already exists, similar to /proc/sgi_sn on Itanium systems.
-
-Would it be /sys/class/firmware?  Reading Documentation/sysfs-rules.txt
-seems to indicate somewhere under /sys/devices, such as /sys/devices/system/,
-but I may be wrong.
-
-> >+# define BIOS_CALL(result, a0, a1, a2, a3, a4, a5, a6, a7)		\
-> >+	do {								\
-> >+		/* XXX - the real call goes here */			\
-> >+		result.status = BIOS_STATUS_UNIMPLEMENTED;		\
-> >+		result.v0 = 0;						\
-> >+		result.v1 = 0;						\
-> >+	} while (0)
+> 00:00.0 Host bridge [0600]: Intel Corporation Mobile PM965/GM965/GL960
+> Memory Controller Hub [8086:2a00] (rev 03)
 > 
-> I have more than a little problem with submitting patches like this.  We 
-> have no way to judge the suitability of the coding or the interface with 
-> the "meat" of the driver stubbed out!
+> Sorry, I should have reviewed your patches ;-(
 
-This is also code for hardware that does not exist.  In order for the
-code to be in distro releases in time for the hardware to ship, we
-must push it _before_ we have hardware.  The main concern is getting in
-interfaces now, because the interfaces cannot change in a minor release.
-Providing more "meat" is on the ToDo list.  
-
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+I can change those.  I just copied what seemed to be the most
+prevalent.  But lspci is harder to change, so we should probably
+follow that.
