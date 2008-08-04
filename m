@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763287AbYHDV0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762805AbYHDV1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763287AbYHDV0a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758954AbYHDV0O
+	id S1762805AbYHDV1o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758870AbYHDV0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:26:14 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:38416 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758866AbYHDV0M (ORCPT
+	Mon, 4 Aug 2008 17:26:11 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37513 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753273AbYHDV0K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:26:12 -0400
-Message-ID: <48977330.4090501@cs.helsinki.fi>
-Date: Tue, 05 Aug 2008 00:22:56 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
-MIME-Version: 1.0
-To: Rene Herman <rene.herman@keyaccess.nl>
-CC: Matthew Wilcox <matthew@wil.cx>,
-       Christoph Lameter <cl@linux-foundation.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: No, really, stop trying to delete slab until you've finished
- making slub perform as well
-References: <20080801182324.572058187@lameter.com> <20080803015847.GD26461@parisc-linux.org> <4896225D.9090203@cs.helsinki.fi> <48966B6D.604@keyaccess.nl>
-In-Reply-To: <48966B6D.604@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Mon, 4 Aug 2008 17:26:10 -0400
+Date: Mon, 4 Aug 2008 22:06:19 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: Kernel Summit request for Discussion of future of ATA (libata)
+ and IDE
+Message-ID: <20080804220619.76b94ceb@lxorguk.ukuu.org.uk>
+In-Reply-To: <48977200.3050307@shaw.ca>
+References: <fa.OGeO7gZvBG4obEzRbVltjSebgTQ@ifi.uio.no>
+	<fa.KtvYE2B2yrJqUleolhtMPN9ljAQ@ifi.uio.no>
+	<fa.AqEKTvguYFAzDFHy/We/8MpOqmo@ifi.uio.no>
+	<48976168.3020804@shaw.ca>
+	<20080804205508.20a3f917@lxorguk.ukuu.org.uk>
+	<48977200.3050307@shaw.ca>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> On 03-08-08 23:25, Pekka Enberg wrote:
-> 
->> Matthew Wilcox wrote:
-> 
->>> Do we have to once again explain that slab still outperforms slub on at
->>> least one important benchmark?  I hope Nick Piggin finds time to finish
->>> tuning slqb; it already outperforms slub.
->>
->> No, you don't have to. I haven't merged that patch nor do I intend to 
->> do so until the regressions are fixed.
->>
->> And yes, I'm still waiting to hear from you how we're now doing with 
->> higher order page allocations...
-> 
-> General interested question -- I recently "accidentally" read some of 
-> slub and I believe that it doesn't feature the cache colouring support 
-> that slab did? Is that true, and if so, wasn't it needed/useful?
+> I guess that bit doesn't really make any difference with remotely modern 
+> drives, then.. Could we make that ata_id_has_dword_io check always 
+> return true if ata_id_is_ata returns true and only check word 48 if not?
 
-I don't know why Christoph decided not to implement it. Christoph?
+I suspect (but need to dig further) that ata_id_has_dword_io should only
+be called by pata_legacy.
+
+> I saw Willy Tarreau's patch from February for this, I agree that we 
+> should likely use a separate data_xfer method for 32-bit transfer (or if 
+> enough controllers should support 32-bit, then just make it be the 
+> default and make a separate 16-bit only function for those that don't), 
+> rather than punting the decision to the user with hdparm.
+
+Definitely.
+
+> You mentioned in the thread for Willy's patch that "some
+> controllers have quirky rules for 32bit xfers" - any details anywhere?
+
+There are two main ones
+
+- Some controllers only support 32bit I/O for a multiple of 32bit values
+[sometimes 'unless the fifo is disabled']. I'd have to go back over the
+docs but I think the AMD may be one of those
+- Some controllers (VLB generally) require a magic sequence before the
+transfer. You'll see that in the pata_legacy bits.
+
+Alan
