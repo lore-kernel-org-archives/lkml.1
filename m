@@ -1,145 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbYHDPpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbYHDPrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881AbYHDPpS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 11:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbYHDPpF
+	id S1756093AbYHDPrh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 11:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbYHDPr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 11:45:05 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:41169 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753520AbYHDPpD (ORCPT
+	Mon, 4 Aug 2008 11:47:28 -0400
+Received: from smtp.eu.citrix.com ([62.200.22.115]:34338 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753825AbYHDPr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 11:45:03 -0400
-Date: Mon, 4 Aug 2008 11:45:02 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: "Dasgupta, Romit" <romit@ti.com>, David Engraf <david.engraf@netcom.eu>,
-       Greg KH <greg@kroah.com>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] [PM] Fixes missing PM entries in sysfs without
- CONFIG_PM_SLEEP
-In-Reply-To: <200808041724.24016.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0808041143350.3818-100000@iolanthe.rowland.org>
+	Mon, 4 Aug 2008 11:47:28 -0400
+X-IronPort-AV: E=Sophos;i="4.31,304,1215388800"; 
+   d="scan'208";a="1277759"
+Date: Mon, 4 Aug 2008 16:47:27 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Andreas Schwab <schwab@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: ext3 seems to ignore ECC errors
+Message-ID: <20080804154727.GV4470@implementation.uk.xensource.com>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Andreas Schwab <schwab@suse.de>, linux-kernel@vger.kernel.org
+References: <20080804150353.GS4470@implementation.uk.xensource.com> <je8wvczt5x.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <je8wvczt5x.fsf@sykes.suse.de>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-OriginalArrivalTime: 04 Aug 2008 15:47:27.0115 (UTC) FILETIME=[65361DB0:01C8F649]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Aug 2008, Rafael J. Wysocki wrote:
-
-> > Do you think we will want to make device_pm_add() return an error at 
-> > some point in the future?
+Andreas Schwab, le Mon 04 Aug 2008 17:39:06 +0200, a écrit :
+> Samuel Thibault <samuel.thibault@ens-lyon.org> writes:
+> > However, to my surprise Linux (2.6.26) continued to mount the ext3
+> > filesystem read/write, spitting out a lot of IDE errors.  Shouldn't
+> > filesystems remount read-only and let the admin try to save data in such
+> > case?
 > 
-> Well, maybe, but not any time soon. :-)
+> That's a tunable parameter of the filesystem, see tune2fs(8).
 
-Okay, here's the updated patch.  Awaiting comments from the testers...
+Oh, I had assumed it was on by default, hum.  But now it reads
 
-Alan Stern
+Errors behavior:          Remount read-only
 
+and I am still getting the same behavior.  Indeed after some VFS
+modifications time it gets remounted read-only, but shouldn't that
+happen as soon as possible?
 
-
-Index: usb-2.6/drivers/base/power/power.h
-===================================================================
---- usb-2.6.orig/drivers/base/power/power.h
-+++ usb-2.6/drivers/base/power/power.h
-@@ -1,3 +1,8 @@
-+static inline void device_pm_init(struct device *dev)
-+{
-+	dev->power.status = DPM_ON;
-+}
-+
- #ifdef CONFIG_PM_SLEEP
- 
- /*
-@@ -11,12 +16,12 @@ static inline struct device *to_device(s
- 	return container_of(entry, struct device, power.entry);
- }
- 
--extern int device_pm_add(struct device *);
-+extern void device_pm_add(struct device *);
- extern void device_pm_remove(struct device *);
- 
- #else /* CONFIG_PM_SLEEP */
- 
--static inline int device_pm_add(struct device *dev) { return 0; }
-+static inline void device_pm_add(struct device *dev) {}
- static inline void device_pm_remove(struct device *dev) {}
- 
- #endif
-Index: usb-2.6/drivers/base/core.c
-===================================================================
---- usb-2.6.orig/drivers/base/core.c
-+++ usb-2.6/drivers/base/core.c
-@@ -542,6 +542,7 @@ void device_initialize(struct device *de
- 	spin_lock_init(&dev->devres_lock);
- 	INIT_LIST_HEAD(&dev->devres_head);
- 	device_init_wakeup(dev, 0);
-+	device_pm_init(dev);
- 	set_dev_node(dev, -1);
- }
- 
-@@ -898,9 +899,10 @@ int device_add(struct device *dev)
- 	error = bus_add_device(dev);
- 	if (error)
- 		goto BusError;
--	error = device_pm_add(dev);
-+	error = dpm_sysfs_add(dev);
- 	if (error)
- 		goto PMError;
-+	device_pm_add(dev);
- 	kobject_uevent(&dev->kobj, KOBJ_ADD);
- 	bus_attach_device(dev);
- 	if (parent)
-@@ -1008,6 +1010,7 @@ void device_del(struct device *dev)
- 	struct class_interface *class_intf;
- 
- 	device_pm_remove(dev);
-+	dpm_sysfs_remove(dev);
- 	if (parent)
- 		klist_del(&dev->knode_parent);
- 	if (MAJOR(dev->devt)) {
-Index: usb-2.6/drivers/base/power/main.c
-===================================================================
---- usb-2.6.orig/drivers/base/power/main.c
-+++ usb-2.6/drivers/base/power/main.c
-@@ -67,10 +67,8 @@ void device_pm_unlock(void)
-  *	device_pm_add - add a device to the list of active devices
-  *	@dev:	Device to be added to the list
-  */
--int device_pm_add(struct device *dev)
-+void device_pm_add(struct device *dev)
- {
--	int error;
--
- 	pr_debug("PM: Adding info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus",
- 		 kobject_name(&dev->kobj));
-@@ -89,13 +87,9 @@ int device_pm_add(struct device *dev)
- 		 */
- 		WARN_ON(true);
- 	}
--	error = dpm_sysfs_add(dev);
--	if (!error) {
--		dev->power.status = DPM_ON;
--		list_add_tail(&dev->power.entry, &dpm_list);
--	}
-+
-+	list_add_tail(&dev->power.entry, &dpm_list);
- 	mutex_unlock(&dpm_list_mtx);
--	return error;
- }
- 
- /**
-@@ -110,7 +104,6 @@ void device_pm_remove(struct device *dev
- 		 dev->bus ? dev->bus->name : "No Bus",
- 		 kobject_name(&dev->kobj));
- 	mutex_lock(&dpm_list_mtx);
--	dpm_sysfs_remove(dev);
- 	list_del_init(&dev->power.entry);
- 	mutex_unlock(&dpm_list_mtx);
- }
-
+Samuel
