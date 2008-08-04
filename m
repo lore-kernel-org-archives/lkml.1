@@ -1,72 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764294AbYHDVaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764149AbYHDVbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764294AbYHDVaT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762802AbYHDV37
+	id S1764149AbYHDVbo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761977AbYHDVaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:29:59 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:56486 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763145AbYHDV35 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:29:57 -0400
-X-Sasl-enc: BEHbwZoMqRsErY8TYWU5QlrJN0c6d6d+yQ9KrJj/N01T 1217885396
-Date: Mon, 4 Aug 2008 18:29:52 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: corentincj@iksaif.net, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, IvDoorn@gmail.com
-Subject: Re: [PATCH 2/2] eeepc-laptop: Use standard interfaces
-Message-ID: <20080804212952.GC24927@khazad-dum.debian.net>
-References: <20080804170833.GA9513@srcf.ucam.org> <20080804171504.GB9513@srcf.ucam.org>
+	Mon, 4 Aug 2008 17:30:07 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49585 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763944AbYHDVaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:30:04 -0400
+Date: Mon, 4 Aug 2008 14:27:25 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/25] 2.6.26-stable review
+Message-ID: <20080804212725.GA7944@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080804171504.GB9513@srcf.ucam.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 04 Aug 2008, Matthew Garrett wrote:
-> +static int eeepc_wlan_rfkill_set(void *data, enum rfkill_state state)
-> +{
-> +	return set_acpi(CM_ASL_WLAN, state);
-> +}
-> +
-> +static int eeepc_wlan_rfkill_state(void *data, enum rfkill_state *state)
-> +{
-> +	*state = get_acpi(CM_ASL_WLAN);
-> +	return 0;
-> +}
+This is the start of the stable review cycle for the 2.6.26.2 release.
+There are 25 patches in this series, all will be posted as a response
+to this one.  If anyone has any issues with these being applied, please
+let us know.  If anyone is a maintainer of the proper subsystem, and
+wants to add a Signed-off-by: line to the patch, please respond with it.
 
-This might just be style, but I'd rather you didn't do this unless get_acpi
-and set_acpi do take enum rfkill_state...  Doing state conversion would be a
-lot more future-proof, as well:
+These patches are sent out with a number of different people on the
+Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
+to add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-Something like:
-	set_acpi(CM_ASL_WLAN, (state == RFKILL_STATE_UNBLOCKED) ? 0 : 1);
+Responses should be made by Wed, August 6, 12:00:00 UTC.  Anything
+Anything received after that time might be too late.
 
-And:
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.26.2-rc1.gz
+and the diffstat can be found below.
 
-	*state = get_acpi(CM_ASL_WLAN) ? RFKILL_STATE_SOFT_BLOCKED :
-						RFKILL_STATE_UNBLOCKED;
 
-Adjust as needed.
+thanks,
 
-> +		ehotk->eeepc_wlan_rfkill->user_claim_unsupported = 0;
+the -stable release team
 
-This is not needed, and if we get rid of user_claim_unsupported later, your
-code wouldn't need changes if you get rid of that line.
+--------------
 
-I have not paid much attention to it yet, but so far I have failed to
-understand what user_claim_unsupported is good for in the new style rfkill
-interface.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+ Documentation/ftrace.txt              | 1353 ----------------------------------
+ Makefile                              |    2 
+ arch/powerpc/kernel/ppc32.h           |    2 
+ arch/powerpc/kernel/ptrace32.c        |   27 
+ arch/x86/kernel/io_delay.c            |    3 
+ arch/x86/kernel/kprobes.c             |    1 
+ arch/x86/kernel/process.c             |    3 
+ block/bsg.c                           |    9 
+ drivers/input/serio/i8042-x86ia64io.h |   43 -
+ drivers/md/linear.c                   |    2 
+ drivers/md/md.c                       |    2 
+ drivers/net/wireless/ath5k/base.c     |   35 
+ drivers/net/wireless/ath5k/base.h     |    2 
+ drivers/scsi/ch.c                     |    1 
+ fs/jbd/transaction.c                  |   57 +
+ fs/namei.c                            |   19 
+ fs/nfs/inode.c                        |    4 
+ fs/nfs/internal.h                     |    1 
+ fs/nfs/nfs3acl.c                      |    9 
+ fs/nfs/nfs4proc.c                     |    5 
+ fs/romfs/inode.c                      |   37 
+ include/sound/emu10k1.h               |    1 
+ mm/filemap.c                          |    3 
+ net/bluetooth/bnep/core.c             |    5 
+ net/bluetooth/hidp/core.c             |   10 
+ net/ipv4/netfilter/nf_nat_sip.c       |   38 
+ net/netfilter/xt_time.c               |    2 
+ sound/pci/emu10k1/emu10k1_main.c      |    1 
+ sound/pci/emu10k1/emumixer.c          |   13 
+ sound/pci/hda/hda_intel.c             |  124 ++-
+ sound/pci/hda/patch_analog.c          |   33 
+ 31 files changed, 395 insertions(+), 1452 deletions(-)
