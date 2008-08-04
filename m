@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762202AbYHDTjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762337AbYHDTlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762202AbYHDTjR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 15:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbYHDTjB
+	id S1762337AbYHDTlz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 15:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757528AbYHDTlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 15:39:01 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:57942 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754402AbYHDTjA (ORCPT
+	Mon, 4 Aug 2008 15:41:47 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58663 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757276AbYHDTlr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 15:39:00 -0400
-Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, David Miller <davem@davemloft.net>,
-       hugh@veritas.com, mingo@elte.hu, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, davej@redhat.com
-In-Reply-To: <alpine.LFD.1.10.0808041230070.3340@nehalem.linux-foundation.org>
-References: <20080804130317.994042639@chello.nl>
-	 <20080804131012.246115111@chello.nl>  <48974512.7000206@goop.org>
-	 <1217876046.3589.61.camel@twins> <489757EC.3000309@goop.org>
-	 <alpine.LFD.1.10.0808041230070.3340@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 04 Aug 2008 21:39:02 +0200
-Message-Id: <1217878742.3589.70.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Aug 2008 15:41:47 -0400
+Date: Mon, 4 Aug 2008 12:37:37 -0700
+From: Greg KH <greg@kroah.com>
+To: tvrtko.ursulin@sophos.com
+Cc: Jon Masters <jonathan@jonmasters.org>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net
+Subject: Re: [malware-list] request for comment: generic kernel interface
+	for malware vendors
+Message-ID: <20080804193737.GB21883@kroah.com>
+References: <1217307058.10237.13.camel@perihelion> <20080730111341.BA49F2FE875@pmx1.sophos.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080730111341.BA49F2FE875@pmx1.sophos.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-04 at 12:31 -0700, Linus Torvalds wrote:
+On Wed, Jul 30, 2008 at 12:13:36PM +0100, tvrtko.ursulin@sophos.com wrote:
+> malware-list-bounces@dmesg.printk.net wrote on 29/07/2008 05:50:58:
 > 
-> On Mon, 4 Aug 2008, Jeremy Fitzhardinge wrote:
+> > On Mon, 2008-07-28 at 20:39 -0700, Greg KH wrote:
+> > > On Mon, Jul 21, 2008 at 12:18:07AM -0400, Eric Paris wrote:
+> > > > 
+> > > > This is a request for comment.  This is a first stab and I'm here to
+> > > > address all of the concerns that people have.  Please don't hold 
+> back,
+> > > > I've got thick skin.  BUT, I don't want to hear 'this is how we have
+> > > > been doing it, do it that way.'  I want to hear how this won't work 
+> for
+> > > > your needs (and WHY) or how we can do it better.
+> > > > 
+> > > > you can find the patches at:
+> > > > http://people.redhat.com/~eparis/talpa
 > > 
-> > OK.  I don't actually need to do this, but I was asking for completeness.  But
-> > to clarify, you only need to do the reverse unlock if you do it after
-> > unlocking the outer lock?  If you're still holding the outer lock, you can
-> > unlock in any order?
+> > Ouch. Adds a bunch of hooks outside of LSM - what's the plan here wrt.
+> > LSM, because LKML folks are going to ask :)
 > 
-> Release order should always be totally irrelevant, whether you hold outer 
-> locks or not. Only the order of _getting_ locks matter.
-> 
-> And yes, if there is an outer lock, even the order of getting locks is 
-> irrelevant, as long as anybody who gets more than one inner lock always 
-> holds the outer one.
+> What is the plan with LSM is also a question? Is it gonna stay or be 
+> removed?
 
-I agree, its just non-trivial to convince lockdep of this. I can give it
-a go though.
+LSM is staying, no need to remove it.
 
+> Stacking looks like it will never happen and so it really doesn't cut
+> it for this kind of use.
+
+Agreed, stacking is probably never going to happen.
+
+thanks,
+
+greg k-h
