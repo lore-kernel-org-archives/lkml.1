@@ -1,125 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763577AbYHDVGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763193AbYHDVIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763577AbYHDVGo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758126AbYHDVGg
+	id S1763193AbYHDVIg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbYHDVI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:06:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49019 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755643AbYHDVGf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:06:35 -0400
-Date: Mon, 4 Aug 2008 14:05:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
+	Mon, 4 Aug 2008 17:08:26 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:24737 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754269AbYHDVIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:08:25 -0400
+Date: Mon, 4 Aug 2008 23:08:48 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Adrian Bunk <bunk@kernel.org>
-Cc: mel@csn.ul.ie, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] fix mm/mm_init.c compilation
-Message-Id: <20080804140554.aa1ef2da.akpm@linux-foundation.org>
-In-Reply-To: <20080804181915.GA12558@cs181140183.pp.htv.fi>
-References: <20080804181915.GA12558@cs181140183.pp.htv.fi>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Roman Zippel <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+Subject: Re: Kconfig no longer outputs a .config with freshly updated defconfigs
+Message-ID: <20080804210848.GA29902@uranus.ravnborg.org>
+References: <1217693013.2328.22.camel@localhost.localdomain> <20080802192646.GR19682@cs181140183.pp.htv.fi> <20080803080019.GA13265@uranus.ravnborg.org> <20080803100732.GA7442@cs181140183.pp.htv.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080803100732.GA7442@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Aug 2008 21:19:15 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
-
-> This patch fixes the following compile error with gcc 3.2:
+On Sun, Aug 03, 2008 at 01:07:32PM +0300, Adrian Bunk wrote:
+> On Sun, Aug 03, 2008 at 10:00:19AM +0200, Sam Ravnborg wrote:
+> > On Sat, Aug 02, 2008 at 10:26:47PM +0300, Adrian Bunk wrote:
+> > > On Sat, Aug 02, 2008 at 12:03:33PM -0400, Josh Boyer wrote:
+> > > > I was going through the somewhat tedious task of updating the 4xx
+> > > > defconfigs today, and I noticed some odd behavior from Kconfig.
+> > > > Basically, I would do:
+> > > > 
+> > > > 	make ppc44x_defconfig
+> > > > 	make oldconfig
+> > > > 	<build>
+> > > > 	cp .config arch/powerpc/configs/ppc44x_defconfig
+> > > > 	make distclean
+> > > > 
+> > > > I did this for a number of configs.  Then I went back and tried to build
+> > > > ppc44x_defconfig again and I got this result:
+> > > > 
+> > > > [jwboyer@localhost linux-2.6]$ make ppc44x_defconfig
+> > > >   HOSTCC  scripts/basic/fixdep
+> > > >   HOSTCC  scripts/basic/docproc
+> > > >   HOSTCC  scripts/kconfig/conf.o
+> > > >   HOSTCC  scripts/kconfig/kxgettext.o
+> > > >   SHIPPED scripts/kconfig/zconf.tab.c
+> > > >   SHIPPED scripts/kconfig/lex.zconf.c
+> > > >   SHIPPED scripts/kconfig/zconf.hash.c
+> > > >   HOSTCC  scripts/kconfig/zconf.tab.o
+> > > > scripts/kconfig/lex.zconf.c:1628: warning: ‘input’ defined but not used
+> > > >   HOSTLD  scripts/kconfig/conf
+> > > > [jwboyer@localhost linux-2.6]$ make oldconfig
+> > > > scripts/kconfig/conf -o arch/powerpc/Kconfig
+> > > > #
+> > > > # using defaults found in /boot/config-2.6.25.13-104.fc9.ppc64
+> > > > #
+> > > > 
+> > > > There was no .config file present after the initial 'make
+> > > > ppc44x_defconfig', so it defaulted to using something in /boot.  I'm a
+> > > > bit baffled here, but that seems to be common to any newly updated
+> > > > defconfig I've done.
+> > > > 
+> > > > Was there a change to Kconfig recently that won't copy the defconfig
+> > > > file to .config if there are no symbol changes or something like that?
+> > > 
+> > > Thanks for your bug report, this should have worked.
+> > > 
+> > > @Sam:
+> > > I've bisected this and it is caused by
+> > > commit f443d2eccf077afd8a839cc7ed66cc4d520c5f05
+> > > (kconfig: speed up all*config + randconfig).
+> > > 
+> > > Minimal example for reproducing it:
+> > > 
+> > > make x86_64_defconfig
+> > > cp .config arch/x86/configs/x86_64_defconfig
+> > > rm .config
+> > > make x86_64_defconfig
+> > > ls .config
+> > 
+> > Thanks Adrian.
+> > 
+> > The code has started to check if anything changed
+> > and if not - then do not write out a new config.
+> > So in your sample above we would not see any changes
+> > compared to what we read in autoconf.h so we did nto write
+> > out a new autoconf.h (and thus no .config).
+> > 
+> > The right fix seems to check for .config and for changes
+> > and in both cases to write a new config.
+> > 
+> > Patch below.
 > 
-> <--  snip  -->
+> This breaks with:
 > 
-> ...
->   CC      mm/mm_init.o
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/mm/mm_init.c:77:1: directives may not be used inside a macro argument
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/mm/mm_init.c:76:47: unterminated argument list invoking macro "mminit_dprintk"
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/mm/mm_init.c: In function `mminit_verify_pageflags_layout':
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/mm/mm_init.c:80: `mminit_dprintk' undeclared (first use in this function)
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/mm/mm_init.c:80: (Each undeclared identifier is reported only once
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/mm/mm_init.c:80: for each function it appears in.)
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/mm/mm_init.c:80: syntax error before numeric constant
-> make[2]: *** [mm/mm_init.o] Error 1
+> make ARCH=x86 x86_64_defconfig
+> cp .config arch/x86/configs/x86_64_defconfig
+> make ARCH=x86 i386_defconfig
+> make ARCH=x86 x86_64_defconfig
 > 
-> <--  snip  -->
-> 
-> 
-> --- a/mm/mm_init.c
-> +++ b/mm/mm_init.c
-> @@ -63,6 +63,13 @@ void __init mminit_verify_pageflags_layout(void)
->  {
->  	int shift, width;
->  	unsigned long or_mask, add_mask;
-> +	int sections_shift;
-> +
-> +#ifdef SECTIONS_SHIFT
-> +	sections_shift = SECTIONS_SHIFT;
-> +#else
-> +	sections_shift = 0;
-> +#endif
->  
->  	shift = 8 * sizeof(unsigned long);
->  	width = shift - SECTIONS_WIDTH - NODES_WIDTH - ZONES_WIDTH;
-> @@ -74,11 +81,7 @@ void __init mminit_verify_pageflags_layout(void)
->  		NR_PAGEFLAGS);
->  	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_shifts",
->  		"Section %d Node %d Zone %d\n",
-> -#ifdef SECTIONS_SHIFT
-> -		SECTIONS_SHIFT,
-> -#else
-> -		0,
-> -#endif
-> +		sections_shift,
->  		NODES_SHIFT,
->  		ZONES_SHIFT);
->  	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_offsets",
+> Why can't we simply always write the .config?
 
-OK, ifdefs inside macro expansion aren't a great idea.
+Hi Adrian.
 
-Mel, is there any erason why we shouldn't do it this way?
+I just pushed a patch that does this.
 
- include/linux/mmzone.h |    3 ++-
- mm/mm_init.c           |    4 ----
-
- 2 files changed, 2 insertions(+), 5 deletions(-)
-
-diff -puN include/linux/mmzone.h~a include/linux/mmzone.h
---- a/include/linux/mmzone.h~a
-+++ a/include/linux/mmzone.h
-@@ -831,7 +831,7 @@ static inline unsigned long early_pfn_to
- #ifdef CONFIG_SPARSEMEM
- 
- /*
-- * SECTION_SHIFT    		#bits space required to store a section #
-+ * SECTIONS_SHIFT    		#bits space required to store a section #
-  *
-  * PA_SECTION_SHIFT		physical address to/from section number
-  * PFN_SECTION_SHIFT		pfn to/from section number
-@@ -973,6 +973,7 @@ static inline int pfn_present(unsigned l
- #define early_pfn_valid(pfn)	pfn_valid(pfn)
- void sparse_init(void);
- #else
-+#define SECTIONS_SHIFT		0
- #define sparse_init()	do {} while (0)
- #define sparse_index_init(_sec, _nid)  do {} while (0)
- #endif /* CONFIG_SPARSEMEM */
-diff -puN mm/mm_init.c~a mm/mm_init.c
---- a/mm/mm_init.c~a
-+++ a/mm/mm_init.c
-@@ -74,11 +74,7 @@ void __init mminit_verify_pageflags_layo
- 		NR_PAGEFLAGS);
- 	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_shifts",
- 		"Section %d Node %d Zone %d\n",
--#ifdef SECTIONS_SHIFT
- 		SECTIONS_SHIFT,
--#else
--		0,
--#endif
- 		NODES_SHIFT,
- 		ZONES_SHIFT);
- 	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_offsets",
-_
-
+Thanks,
+	Sam
