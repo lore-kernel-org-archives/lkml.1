@@ -1,95 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbYHDRwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbYHDRxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754221AbYHDRwR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 13:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYHDRwD
+	id S1755437AbYHDRxS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 13:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYHDRxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 13:52:03 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:35212 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750965AbYHDRwB (ORCPT
+	Mon, 4 Aug 2008 13:53:08 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:52267 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751351AbYHDRxG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 13:52:01 -0400
-Date: Mon, 4 Aug 2008 13:50:16 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>, axboe@kernel.dk
-Subject: [PATCH] BLOCK: Simplify the Kconfig structure for the BLOCK layer.
-Message-ID: <alpine.LFD.1.10.0808041347270.7208@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 4 Aug 2008 13:53:06 -0400
+Message-ID: <489741F8.2080104@linux.vnet.ibm.com>
+Date: Mon, 04 Aug 2008 23:22:56 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       MinChan Kim <minchan.kim@gmail.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Race condition between putback_lru_page and mem_cgroup_move_list
+References: <28c262360808040736u7f364fc0p28d7ceea7303a626@mail.gmail.com> <1217863870.7065.62.camel@lts-notebook> <2f11576a0808040937y70f274e0j32f6b9c98b0f992d@mail.gmail.com>
+In-Reply-To: <2f11576a0808040937y70f274e0j32f6b9c98b0f992d@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KOSAKI Motohiro wrote:
+> Hi
+> 
+>>> I think this is a race condition if mem_cgroup_move_lists's comment isn't right.
+>>> I am not sure that it was already known problem.
+>>>
+>>> mem_cgroup_move_lists assume the appropriate zone's lru lock is already held.
+>>> but putback_lru_page calls mem_cgroup_move_lists without holding lru_lock.
+>> Hmmm, the comment on mem_cgroup_move_lists() does say this.  Although,
+>> reading thru' the code, I can't see why it requires this.  But then it's
+>> Monday, here...
+> 
+> I also think zone's lru lock is unnecessary.
+> So, I guess below "it" indicate lock_page_cgroup, not zone lru lock.
+> 
 
-Given that everything in block/Kconfig and block/Kconfig.iosched
-depends on "BLOCK", might as well just wrap the entire contents in a
-single conditional and remove the unnecessary tests.
+We need zone LRU lock, since the reclaim paths hold them. Not sure if I
+understand why you call zone's LRU lock unnecessary, could you elaborate please?
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+>  >> But we cannot safely get to page_cgroup without it, so just try_lock it:
+> 
+> if my assumption is true, comment modifying is better.
+> 
+> 
+>>> Repeatedly, spin_[un/lock]_irq use in mem_cgroup_move_list have a big overhead
+>>> while doing list iteration.
+>>>
+>>> Do we have to use pagevec ?
+>> This shouldn't be necessary, IMO.  putback_lru_page() is used as
+>> follows:
+>>
+>> 1) in vmscan.c [shrink_*_list()] when an unevictable page is
+>> encountered.  This should be relatively rare.  Once vmscan sees an
+>> unevictable page, it parks it on the unevictable lru list where it
+>> [vmscan] won't see the page again until it becomes reclaimable.
+>>
+>> 2) as a replacement for move_to_lru() in page migration as the inverse
+>> to isolate_lru_page().  We did this to catch patches that became
+>> unevictable or, more importantly, evictable while page migration held
+>> them isolated.  move_to_lru() already grabbed and released the zone lru
+>> lock on each page migrated.
+>>
+>> 3) In m[un]lock_vma_page() and clear_page_mlock(), new with in the
+>> "mlocked pages are unevictable" series.  This one can result in a storm
+>> of zone lru traffic--e.g., mlock()ing or munlocking() a large segment or
+>> mlockall() of a task with a lot of mapped address space.  Again, this is
+>> probably a very rare event--unless you're stressing [stressing over?]
+>> mlock(), as I've been doing :)--and often involves a major fault [page
+>> allocation], per page anyway.
+>>
+>> I﻿ originally did have a pagevec for the unevictable lru but it
+>> complicated ensuring that we don't strand evictable pages on the
+>> unevictable list.  See the retry logic in putback_lru_page().
+>>
+>> As for the !UNEVICTABLE_LRU version, the only place this should be
+>> called is from page migration as none of the other call sites are
+>> compiled in or reachable when !UNEVICTABLE_LRU.
+>>
+>> Thoughts?
+> 
+> I think both opinion is correct.
+> unevictable lru related code doesn't require pagevec.
+> 
+> but mem_cgroup_move_lists is used by active/inactive list transition too.
+> then, pagevec is necessary for keeping reclaim throuput.
+> 
 
----
+It's on my TODO list. I hope to get to it soon.
 
-  unless there's something tricky or obscure that can happen in the
-block layer that *doesn't* depend on BLOCK, this should be a
-reasonable simplification.
+> Kim-san, Thank you nice point out!
+> I queued this fix to my TODO list.
 
 
- block/Kconfig         |    6 +++---
- block/Kconfig.iosched |    4 ----
- 2 files changed, 3 insertions(+), 7 deletions(-)
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
 
-diff --git a/block/Kconfig b/block/Kconfig
-index 1ab7c15..66cfacd 100644
---- a/block/Kconfig
-+++ b/block/Kconfig
-@@ -93,11 +93,11 @@ config BLK_DEV_INTEGRITY
- 	T10/SCSI Data Integrity Field or the T13/ATA External Path
- 	Protection.  If in doubt, say N.
-
--endif # BLOCK
--
- config BLOCK_COMPAT
- 	bool
--	depends on BLOCK && COMPAT
-+	depends on COMPAT
- 	default y
-
- source block/Kconfig.iosched
-+
-+endif # BLOCK
-diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-index 7e803fc..5ada7f1 100644
---- a/block/Kconfig.iosched
-+++ b/block/Kconfig.iosched
-@@ -1,5 +1,3 @@
--if BLOCK
--
- menu "IO Schedulers"
-
- config IOSCHED_NOOP
-@@ -69,5 +67,3 @@ config DEFAULT_IOSCHED
- 	default "noop" if DEFAULT_NOOP
-
- endmenu
--
--endif
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
