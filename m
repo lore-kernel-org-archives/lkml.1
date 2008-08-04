@@ -1,80 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYHDOS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbYHDOTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757539AbYHDOS7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 10:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbYHDOSt
+	id S1755736AbYHDOTd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 10:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbYHDOTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 10:18:49 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:51386 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755207AbYHDOSs (ORCPT
+	Mon, 4 Aug 2008 10:19:21 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:60722 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754294AbYHDOTU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 10:18:48 -0400
-Message-ID: <48970F8E.9010507@s5r6.in-berlin.de>
-Date: Mon, 04 Aug 2008 16:17:50 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Mon, 4 Aug 2008 10:19:20 -0400
+Date: Mon, 4 Aug 2008 22:19:16 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Austin Zhang <austin_zhang@linux.intel.com>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c algorithm by new crypto API.
+Message-ID: <20080804141916.GC11415@gondor.apana.org.au>
+References: <1217842507.20845.18.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: jmerkey@wolfmountaingroup.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.27-rc1 6/25] mdb:  Merkey's Kernel Debugger 2.6.27-rc1
-References: <37445.166.70.238.45.1217831466.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <37445.166.70.238.45.1217831466.squirrel@webmail.wolfmountaingroup.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217842507.20845.18.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jmerkey@wolfmountaingroup.com wrote:
-> --- a/debug/mdb.c	1969-12-31 17:00:00.000000000 -0700
-> +++ b/debug/mdb.c	2008-08-03 16:15:00.000000000 -0600
-[...]
-> +ULONG ScreenInputFromKeyboard(BYTE *buf, ULONG buf_index, ULONG max_index)
-> +{
-[...]
-> +    HistoryIndex = HistoryPointer;
-> +    while (1)
-> +    {
-> +       key = mdb_getkey();
-> +
-> +       if ((IsAccelerator(key)) && (key != 13))
-> +	  return key;
-> +
-> +       switch (key)
-> +       {
-[...]
-> +	  default:
-> +	     if ((key > 0x7E) || (key < ' '))  // if above or below text
-> +		break;
-> +	     else
-> +	     {
-> +	        if (strlen(buf) < max_index)
-> +		{
-> +                   register int delta;
-> +
-> +		   for (i=max_index; i > buf_index; i--)
-> +		      buf[i] = buf[i-1];
-> +		   buf[buf_index] = (BYTE)key;
-> +		   if (buf_index < max_index)
-> +		      buf_index++;
-> +
-> +                   delta = strlen(buf) - buf_index;
-> +
-> +                   for (i=0; (i < delta) && (buf[i]); i++)
-> +                        DBGPrint("%c", buf[buf_index + i]);
-> +
-> +                   for (i=0; i < delta; i++)
-> +                        DBGPrint("\b");
-> +		}
-> +             }
-> +	     break;
-> +       }
-> +    }
-> +}
+On Mon, Aug 04, 2008 at 05:35:07AM -0400, Austin Zhang wrote:
+>
+> +config CRYPTO_CRC32C_INTEL
+> +        tristate "CRC32c INTEL hardware acceleration"
+> +        select CRYPTO_HASH
 
-This function would benefit from being broken up into smaller ones.
+You need some sort of a dependency here.  See what the other
+assembly algorithms do it.
+
+Cheers,
 -- 
-Stefan Richter
--=====-==--- =--- --=--
-http://arcgraph.de/sr/
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
