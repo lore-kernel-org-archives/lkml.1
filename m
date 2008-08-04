@@ -1,96 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbYHDXjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbYHDXjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759435AbYHDXjO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 19:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbYHDXiz
+	id S1756345AbYHDXjc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 19:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756993AbYHDXjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 19:38:55 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:20457 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754056AbYHDXix (ORCPT
+	Mon, 4 Aug 2008 19:39:04 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51786 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756790AbYHDXjB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 19:38:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Ykps8ph3xHreY+UZMP2p+C0UaasnU4d/+e6mB9nepBMneUlpjZFin/7GsB4rTsBtse
-         iEGuPk54uj6IjbMFDmUgjK4YOtP2WAJwa9e65N5Wpc92OkBETKUv5HFA9eoynzdytnq2
-         qfvTud102EcatDUpQ0hsb2DGVJI1D3ZmamXf8=
-Message-ID: <dd18b0c30808041638qcc67ab8xe5247fa8a1bbd36e@mail.gmail.com>
-Date: Mon, 4 Aug 2008 16:38:52 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Subject: Re: pull request: wireless-2.6 2008-08-04
-Cc: "Marcel Holtmann" <marcel@holtmann.org>,
-       "John W. Linville" <linville@tuxdriver.com>, davem@davemloft.net,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <43e72e890808041545y1b1727c1t90db35721a9c9d8d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 4 Aug 2008 19:39:01 -0400
+Date: Mon, 4 Aug 2008 16:38:16 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Dave Jones <davej@redhat.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] workaround minor lockdep bug triggered by
+ mm_take_all_locks
+Message-ID: <20080804163816.75fa63ba@infradead.org>
+In-Reply-To: <20080804223011.GG12464@duo.random>
+References: <20080804172728.GJ11476@duo.random>
+	<20080804174659.GK11476@duo.random>
+	<20080804175730.GL11476@duo.random>
+	<1217875739.3589.56.camel@twins>
+	<20080804201514.GB12464@duo.random>
+	<1217882242.3589.90.camel@twins>
+	<20080804210954.GC12464@duo.random>
+	<84144f020808041414x2c1c8b82n5939b82e9a2ca99d@mail.gmail.com>
+	<20080804213018.GD12464@duo.random>
+	<20080804144228.5f0c29c3@infradead.org>
+	<20080804223011.GG12464@duo.random>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080804193753.GA30345@tuxdriver.com>
-	 <1217882288.7819.19.camel@californication>
-	 <20080804204558.GA5866@tuxdriver.com>
-	 <1217886123.7819.23.camel@californication>
-	 <20080804215439.GA9658@tuxdriver.com>
-	 <1217889426.7819.26.camel@californication>
-	 <43e72e890808041545y1b1727c1t90db35721a9c9d8d@mail.gmail.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 4, 2008 at 3:45 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
-> On Mon, Aug 4, 2008 at 3:37 PM, Marcel Holtmann <marcel@holtmann.org> wrote:
->> Hi John,
->>
->>> > > > > Luis R. Rodriguez (4):
->>> > > > >       list.h: Add list_splice_tail() and list_splice_tail_init()
->>> > > > >       list.h: add list_cut_position()
->>> > > >
->>> > > > have these two changes got reviewed on LKML? I don't see any ACKs for it
->>> > > > in the commit message.
->>> > >
->>> > > Hmmm...no.  I thought the original patches had been copied to
->>> > > linux-kernel, but it looks like that is not the case.
->>> > >
->>> > > The original patches are archived here:
->>> > >
->>> > >   http://marc.info/?l=linux-wireless&m=121783421908441&w=2
->>> > >
->>> > >   http://marc.info/?l=linux-wireless&m=121783422008445&w=2
->>> > >
->>> > > What problems do you see with them?
->>> >
->>> > I don't see a problem with these patches, but they should at least be
->>> > reviewed on LKML once. Changes to core kernel infrastructure should not
->>> > be merged silently via subsystem trees without any kind of ACKs.
->>>
->>> Yes, fine.  That wasn't my intent. :-)  The patches were originally
->>> posted about two weeks ago, too bad that didn't actually go to
->>> linux-kernel. :-(
->>
->> just post them to LKML (or let Luis do it) so they get reviewed. I
->> really don't see an issue with them, but that is only me.
->
-> I'll repost those specific patches and add lkml.
->
->  Luis
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+On Tue, 5 Aug 2008 00:30:11 +0200
+Andrea Arcangeli <andrea@qumranet.com> wrote:
 
-I must be honest, I am really excited
-to see ath9k, finally an in kernel module
-for my wireless card.
+> On Mon, Aug 04, 2008 at 02:42:28PM -0700, Arjan van de Ven wrote:
+> > yes lockdep will only complain WHEN you take them in the wrong order
+> > 
+> > But you claimed you would for sure be in a deadlock at that point
+> > which is generally not correct.
+> 
+> I already said I didn't know about that despite having spent a fair
+> amount of time trying to understand why lockdep crashes systems at
+> boot about an year ago. I admit I didn't understand much about it and
+> reducing its computation time didn't look feasible, perhaps my fault,
+> and I'm glad if Peter found a way to make it boot after 1 year.
 
-regards;
+interesting; lockdep has been working for the last.. 2 1/2 years at
+least, and I don't remember seeing bugreports against it from you that
+would describe it as totally non-functional.
+
+
+Oh well.. seems you're rather preoccupied about it; that's ok, you're
+entitled to your opinion even if I don't agree with it ;-)
 
 -- 
-Justin P. Mattock
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
